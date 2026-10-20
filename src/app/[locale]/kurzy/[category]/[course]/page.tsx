@@ -3,25 +3,14 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCategoryBySlug } from "@/lib/taxonomy";
 import { getDictionary } from "@/i18n/dictionaries";
+import { getTestText } from "@/i18n/test";
 import { isLocale, type Locale } from "@/i18n/config";
-import { getGameText } from "@/i18n/game";
 
 export const revalidate = 0;
 
-type CourseWithLevels = {
-  id: string;
-  title: string;
-  slug: string;
-  description: string | null;
-  levels: { id: string; title: string; order: number; published: boolean }[];
-};
+const DIFFICULTIES = [1, 2, 3, 4, 5];
 
-// Dokud kurz nemá žádné skutečné levely v databázi, zobrazíme kostru
-// placeholder levelů, aby bylo vidět, jak bude cesta kurzem vypadat, až se
-// budou levely postupně přidávat.
-const PLACEHOLDER_LEVEL_COUNT = 6;
-
-export default async function CourseLevelsPage({
+export default async function CoursePage({
   params,
 }: {
   params: Promise<{ locale: string; category: string; course: string }>;
@@ -29,20 +18,25 @@ export default async function CourseLevelsPage({
   const { locale, category: categorySlug, course: courseSlug } = await params;
   if (!isLocale(locale)) notFound();
   const dict = getDictionary(locale as Locale);
+  const t = getTestText(locale as Locale);
 
   const category = getCategoryBySlug(categorySlug);
   if (!category) notFound();
 
-  let course: CourseWithLevels | null = null;
+  let course: {
+    title: string;
+    slug: string;
+    description: string | null;
+    levels: { order: number; published: boolean }[];
+  } | null = null;
   try {
     course = await prisma.course.findFirst({
       where: { slug: courseSlug, category: category.value, published: true },
       select: {
-        id: true,
         title: true,
         slug: true,
         description: true,
-        levels: { orderBy: { order: "asc" }, select: { id: true, title: true, order: true, published: true } },
+        levels: { select: { order: true, published: true } },
       },
     });
   } catch {
@@ -65,15 +59,45 @@ export default async function CourseLevelsPage({
     );
   }
 
-  const hasRealLevels = course.levels.length > 0;
-  const levels = hasRealLevels
-    ? course.levels
-    : Array.from({ length: PLACEHOLDER_LEVEL_COUNT }, (_, i) => ({
-        id: `placeholder-${i}`,
-        title: `${dict.course.level} ${i + 1}`,
-        order: i,
-        published: false,
-      }));
+  const base = `/${locale}/kurzy/${category.slug}/${course.slug}`;
+  const isAvailable = (n: number) => course.levels.some((l) => l.order === n && l.published);
+
+  const grid = (kind: "kurz" | "test") => (
+    <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      {DIFFICULTIES.map((n) => {
+        const available = isAvailable(n);
+        const className = `level-card card flex flex-col items-center gap-2 p-4 text-center ${
+          available ? "is-unlocked" : "is-locked"
+        }`;
+        const content = (
+          <>
+            <span
+              className={`pill h-10 w-10 items-center justify-center text-base font-bold ${
+                available
+                  ? "bg-[var(--brand-500)] text-white"
+                  : "bg-[var(--surface-muted)] text-[var(--foreground)]/40"
+              }`}
+            >
+              {available ? n : "🔒"}
+            </span>
+            <h3 className="text-sm font-semibold">{t.difficulties[n - 1]}</h3>
+            <p className="text-xs text-[var(--foreground)]/50">
+              {available ? (kind === "kurz" ? `🎮 ${t.openCourse}` : `📝 ${t.openTest}`) : t.locked}
+            </p>
+          </>
+        );
+        return available ? (
+          <Link key={n} href={`${base}/${kind}/${n}`} className={className}>
+            {content}
+          </Link>
+        ) : (
+          <div key={n} className={className}>
+            {content}
+          </div>
+        );
+      })}
+    </div>
+  );
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-16">
@@ -87,56 +111,20 @@ export default async function CourseLevelsPage({
         {course.title}
       </h1>
       {course.description && (
-        <p className="mb-2 text-[var(--foreground)]/60">{course.description}</p>
+        <p className="mb-8 text-[var(--foreground)]/60">{course.description}</p>
       )}
-      <p className="mb-6 text-sm text-[var(--foreground)]/50">{dict.course.levelsSubtitle}</p>
 
-      <h2 className="mb-6 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        🧩 {dict.course.levelsTitle}
+      <h2 className="mb-1 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+        🎮 {t.coursesTitle}
       </h2>
+      <p className="mb-4 text-sm text-[var(--foreground)]/50">{t.coursesSubtitle}</p>
+      {grid("kurz")}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {levels.map((level, i) => {
-          const unlocked = hasRealLevels ? level.published : i === 0;
-          const cardClass = `level-card card flex flex-col items-center gap-2 p-6 text-center ${
-            unlocked ? "is-unlocked" : "is-locked"
-          }`;
-          const Wrapper = hasRealLevels && unlocked ? Link : "div";
-          const wrapperProps =
-            hasRealLevels && unlocked
-              ? { href: `/${locale}/kurzy/${category.slug}/${course.slug}/uroven/${level.order}` }
-              : {};
-          return (
-            <Wrapper
-              key={level.id}
-              {...(wrapperProps as { href: string })}
-              className={cardClass}
-            >
-              <span
-                className={`pill h-12 w-12 items-center justify-center text-lg font-bold ${
-                  unlocked
-                    ? "bg-[var(--brand-500)] text-white"
-                    : "bg-[var(--surface-muted)] text-[var(--foreground)]/40"
-                }`}
-              >
-                {unlocked ? i + 1 : "🔒"}
-              </span>
-              <h3 className="font-semibold">{level.title}</h3>
-              <p className="text-xs text-[var(--foreground)]/50">
-                {unlocked && hasRealLevels
-                  ? `🎮 ${getGameText(locale as Locale).games}`
-                  : unlocked
-                    ? dict.course.comingSoon
-                    : dict.course.locked}
-              </p>
-            </Wrapper>
-          );
-        })}
-      </div>
-
-      <p className="mt-8 text-center text-sm text-[var(--foreground)]/40">
-        {dict.course.moreLevelsSoon}
-      </p>
+      <h2 className="mb-1 mt-12 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+        📝 {t.testsTitle}
+      </h2>
+      <p className="mb-4 text-sm text-[var(--foreground)]/50">{t.testsSubtitle}</p>
+      {grid("test")}
     </div>
   );
 }

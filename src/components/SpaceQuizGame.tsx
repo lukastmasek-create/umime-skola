@@ -2,9 +2,18 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { SpaceEngine, GAME_HEIGHT, GAME_WIDTH } from "@/lib/space-engine";
+import { SpaceEngine, GAME_HEIGHT, GAME_WIDTH, type EngineConfig } from "@/lib/space-engine";
+import { MarioEngine } from "@/lib/mario-engine";
+import type { GameSlug } from "@/lib/games";
 import { getGameText, type GameQuestion, type GameText } from "@/i18n/game";
 import type { Locale } from "@/i18n/config";
+
+type QuizEngine = {
+  destroy(): void;
+  setRunning(running: boolean): void;
+  setInput(input: Partial<{ left: boolean; right: boolean; fire: boolean }>): void;
+  loadQuestion(options: string[], correctIndex: number, config: EngineConfig): void;
+};
 
 type Phase = "intro" | "playing" | "explain" | "result";
 type UpgradeKey = "fire" | "life" | "slow";
@@ -125,20 +134,33 @@ export function SpaceQuizGame({
   courseTitle,
   backHref,
   questions,
+  game = "space-invaders",
 }: {
   locale: Locale;
   courseSlug: string;
   courseTitle: string;
   backHref: string;
   questions?: GameQuestion[];
+  game?: GameSlug;
 }) {
-  const t = getGameText(locale);
+  const base = getGameText(locale);
+  const mario = game === "super-mario";
+  const t: GameText = mario
+    ? {
+        ...base,
+        title: base.mario.title,
+        intro: base.mario.intro,
+        controls: base.mario.controls,
+        fire: base.mario.jump,
+        upgradeFire: base.mario.upgradeJump,
+      }
+    : base;
   const storageKey = `game:${courseSlug}`;
   const hasCourseQuestions = !!questions && questions.length > 0;
   const source = hasCourseQuestions ? questions : t.questions;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const engineRef = useRef<SpaceEngine | null>(null);
+  const engineRef = useRef<QuizEngine | null>(null);
   const handlersRef = useRef<{ onHit: (c: boolean) => void; onMiss: () => void }>({
     onHit: () => {},
     onMiss: () => {},
@@ -174,17 +196,20 @@ export function SpaceQuizGame({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const engine = new SpaceEngine(canvas, {
-      onHit: (_i, correct) => handlersRef.current.onHit(correct),
+    const callbacks = {
+      onHit: (_i: number, correct: boolean) => handlersRef.current.onHit(correct),
       onMiss: () => handlersRef.current.onMiss(),
-    });
+    };
+    const engine: QuizEngine = mario
+      ? new MarioEngine(canvas, callbacks)
+      : new SpaceEngine(canvas, callbacks);
     engineRef.current = engine;
     engine.loadQuestion(["Ahoj", "Hello", "Hallo", "Привет"], 0, { fireCooldown: 0.6, alienSpeedFactor: 1 });
     return () => {
       engine.destroy();
       engineRef.current = null;
     };
-  }, []);
+  }, [mario]);
 
   function persist(nextCoins: number, nextUpgrades: Upgrades) {
     try {
@@ -296,7 +321,7 @@ export function SpaceQuizGame({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-            🚀 {t.title}
+            {mario ? "🍄" : "🚀"} {t.title}
           </h1>
           <p className="text-sm text-[var(--foreground)]/60">{courseTitle}</p>
         </div>
@@ -369,7 +394,7 @@ export function SpaceQuizGame({
             onHold={(down) => setHeld("fire", down)}
             className="btn-bouncy h-14 flex-1 select-none rounded-2xl bg-[var(--accent-500)] text-sm font-bold text-white sm:max-w-xs"
           >
-            🔫 {t.fire}
+            {mario ? "🦘" : "🔫"} {t.fire}
           </HoldButton>
           <HoldButton
             onHold={(down) => setHeld("right", down)}

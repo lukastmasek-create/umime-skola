@@ -172,7 +172,7 @@ const cs: Dictionary = {
     noCourses: "V téhle sekci zatím nejsou žádné publikované kurzy.",
     noCoursesFiltered:
       "V téhle sekci zatím nejsou žádné publikované kurzy pro zvolený jazyk.",
-    viewLevels: "Zobrazit levely →",
+    viewLevels: "Otevřít kurz →",
   },
   languages: { CJ: "Čeština", NJ: "Němčina", RS: "Ruština", AJ: "Angličtina" },
   course: {
@@ -315,7 +315,7 @@ const en: Dictionary = {
     noCourses: "There are no published courses in this section yet.",
     noCoursesFiltered:
       "There are no published courses in this section for the selected language yet.",
-    viewLevels: "View levels →",
+    viewLevels: "Open course →",
   },
   languages: { CJ: "Czech", NJ: "German", RS: "Russian", AJ: "English" },
   course: {
@@ -458,7 +458,7 @@ const de: Dictionary = {
     noCourses: "In diesem Bereich gibt es noch keine veröffentlichten Kurse.",
     noCoursesFiltered:
       "In diesem Bereich gibt es noch keine veröffentlichten Kurse für die gewählte Sprache.",
-    viewLevels: "Levels ansehen →",
+    viewLevels: "Kurs öffnen →",
   },
   languages: { CJ: "Tschechisch", NJ: "Deutsch", RS: "Russisch", AJ: "Englisch" },
   course: {
@@ -601,7 +601,7 @@ const ru: Dictionary = {
     noCourses: "В этом разделе пока нет опубликованных курсов.",
     noCoursesFiltered:
       "В этом разделе пока нет опубликованных курсов для выбранного языка.",
-    viewLevels: "Смотреть уровни →",
+    viewLevels: "Открыть курс →",
   },
   languages: { CJ: "Чешский", NJ: "Немецкий", RS: "Русский", AJ: "Английский" },
   course: {

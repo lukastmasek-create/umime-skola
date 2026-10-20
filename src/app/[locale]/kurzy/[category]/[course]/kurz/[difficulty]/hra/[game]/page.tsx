@@ -4,28 +4,43 @@ import { getCategoryBySlug } from "@/lib/taxonomy";
 import { getGame } from "@/lib/games";
 import { isLocale, type Locale } from "@/i18n/config";
 import type { GameQuestion } from "@/i18n/game";
+import { getTestText } from "@/i18n/test";
 import { SpaceQuizGame } from "@/components/SpaceQuizGame";
 
 export const revalidate = 0;
 
-export default async function LevelGamePage({
+export default async function CourseGamePage({
   params,
 }: {
   params: Promise<{
     locale: string;
     category: string;
     course: string;
-    level: string;
+    difficulty: string;
     game: string;
   }>;
 }) {
-  const { locale, category: categorySlug, course: courseSlug, level: levelParam, game: gameSlug } =
-    await params;
+  const {
+    locale,
+    category: categorySlug,
+    course: courseSlug,
+    difficulty: difficultyParam,
+    game: gameSlug,
+  } = await params;
   if (!isLocale(locale)) notFound();
   const category = getCategoryBySlug(categorySlug);
   const game = getGame(gameSlug);
-  const levelOrder = Number(levelParam);
-  if (!category || !game || !game.available || !Number.isInteger(levelOrder)) notFound();
+  const difficulty = Number(difficultyParam);
+  if (
+    !category ||
+    !game ||
+    !game.available ||
+    !Number.isInteger(difficulty) ||
+    difficulty < 1 ||
+    difficulty > 5
+  ) {
+    notFound();
+  }
 
   let title: string | null = null;
   let questions: GameQuestion[] = [];
@@ -34,25 +49,18 @@ export default async function LevelGamePage({
       where: { slug: courseSlug, category: category.value, published: true },
       select: {
         title: true,
-        levels: {
-          where: { order: levelOrder, published: true },
-          select: {
-            title: true,
-            questions: {
-              orderBy: { order: "asc" },
-              select: { prompt: true, options: true, correctIndex: true, explanation: true },
-            },
-          },
+        questions: {
+          where: { difficulty },
+          select: { prompt: true, options: true, correctIndex: true, explanation: true },
         },
       },
     });
-    const level = course?.levels[0];
-    if (course && level) {
-      title = `${course.title} · ${level.title}`;
-      questions = level.questions
+    if (course) {
+      title = `${course.title} · ${getTestText(locale as Locale).difficulties[difficulty - 1]}`;
+      questions = course.questions
         .filter((q) => q.options.length === 4 && q.correctIndex >= 0 && q.correctIndex < 4)
         .map((q) => ({
-          prompt: q.prompt,
+          prompt: q.prompt.replaceAll("___", "…"),
           options: q.options as GameQuestion["options"],
           correctIndex: q.correctIndex,
           explanation: q.explanation,
@@ -71,6 +79,7 @@ export default async function LevelGamePage({
         courseTitle={title}
         backHref={`/${locale}/kurzy/${categorySlug}/${courseSlug}`}
         questions={questions}
+        game={game.slug}
       />
     </div>
   );

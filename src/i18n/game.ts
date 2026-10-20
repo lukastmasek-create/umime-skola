@@ -42,6 +42,7 @@ export type GameText = {
   soon: string;
   fire: string;
   demoNote: string;
+  mario: { title: string; intro: string; controls: string; jump: string; upgradeJump: string };
   questions: GameQuestion[];
 };
 
@@ -80,6 +81,7 @@ const cs: GameText = {
   soon: "Brzy",
   fire: "Střelba",
   demoNote: "Ukázkové otázky — obsah kurzu se bude doplňovat.",
+  mario: { title: "Mario kvíz", intro: "Želvy nesou odpovědi a pořád se hýbou. Naskoč shora na tu správnou!", controls: "← → nebo A D pohyb, mezerník / ↑ skok", jump: "Skok", upgradeJump: "Výška skoku" },
   questions: [
     {
       prompt: "Kolik je 7 × 8?",
@@ -149,6 +151,7 @@ const en: GameText = {
   soon: "Soon",
   fire: "Fire",
   demoNote: "Sample questions — course content will be added over time.",
+  mario: { title: "Mario Quiz", intro: "Turtles carry the answers and keep moving. Jump on the right one from above!", controls: "← → or A D to move, space / ↑ to jump", jump: "Jump", upgradeJump: "Jump height" },
   questions: [
     {
       prompt: "What is 7 × 8?",
@@ -218,6 +221,7 @@ const de: GameText = {
   soon: "Bald",
   fire: "Schießen",
   demoNote: "Beispielfragen — Kursinhalte werden nach und nach ergänzt.",
+  mario: { title: "Mario-Quiz", intro: "Schildkröten tragen die Antworten und bewegen sich ständig. Spring von oben auf die richtige!", controls: "← → oder A D bewegen, Leertaste / ↑ springen", jump: "Springen", upgradeJump: "Sprunghöhe" },
   questions: [
     {
       prompt: "Wie viel ist 7 × 8?",
@@ -287,6 +291,7 @@ const ru: GameText = {
   soon: "Скоро",
   fire: "Выстрел",
   demoNote: "Примеры вопросов — содержимое курса будет добавляться постепенно.",
+  mario: { title: "Квиз с Марио", intro: "Черепахи несут ответы и всё время двигаются. Запрыгни сверху на правильную!", controls: "← → или A D — движение, пробел / ↑ — прыжок", jump: "Прыжок", upgradeJump: "Высота прыжка" },
   questions: [
     {
       prompt: "Сколько будет 7 × 8?",

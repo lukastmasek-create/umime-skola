@@ -145,6 +145,9 @@ model Question {
   options      String[]
   correctIndex Int
   explanation  String
+  difficulty   Int      @default(1)
+  answers      String[]
+  hint         String?
   order        Int      @default(0)
 
   courseId String
@@ -156,6 +159,7 @@ model Question {
   createdAt DateTime @default(now())
 
   @@index([courseId, order])
+  @@index([courseId, difficulty])
 }
 
 // Kurz je rozdělený na levely, kterými žák prochází postupně (podobně jako
