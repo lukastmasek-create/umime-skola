@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { locales, localeNames, localeFlags, type Locale } from "@/i18n/config";
 import { setLocaleCookie } from "@/lib/locale-cookie";
+import { SchoolPicker } from "@/components/SchoolPicker";
 
 type Theme = "light" | "dark" | "system";
 type FontStyle = "playful" | "classic";
@@ -25,7 +26,7 @@ function OptionButton({
       className={`btn-bouncy rounded-full px-4 py-2 text-sm font-medium transition-colors ${
         active
           ? "bg-[var(--brand-500)] text-white"
-          : "bg-[var(--surface-muted)] text-[var(--foreground)]/70 hover:bg-[var(--brand-50)]"
+          : "bg-[var(--surface-muted)] text-[var(--muted)] hover:bg-[var(--brand-50)]"
       }`}
     >
       {children}
@@ -122,26 +123,26 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
     <div className="flex flex-col gap-8">
       <section className="card p-6">
         <h2 className="mb-4 text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          🎨 {dict.settings.appearance}
+          {dict.settings.appearance}
         </h2>
 
         <div className="mb-5">
-          <p className="mb-2 text-sm font-medium text-[var(--foreground)]/70">{dict.settings.theme}</p>
+          <p className="mb-2 text-sm font-medium text-[var(--muted)]">{dict.settings.theme}</p>
           <div className="flex flex-wrap gap-2">
             <OptionButton active={theme === "light"} onClick={() => applyTheme("light")}>
-              ☀️ {dict.settings.themeLight}
+              {dict.settings.themeLight}
             </OptionButton>
             <OptionButton active={theme === "dark"} onClick={() => applyTheme("dark")}>
-              🌙 {dict.settings.themeDark}
+              {dict.settings.themeDark}
             </OptionButton>
             <OptionButton active={theme === "system"} onClick={() => applyTheme("system")}>
-              💻 {dict.settings.themeSystem}
+              {dict.settings.themeSystem}
             </OptionButton>
           </div>
         </div>
 
         <div className="mb-5">
-          <p className="mb-2 text-sm font-medium text-[var(--foreground)]/70">{dict.settings.fontStyle}</p>
+          <p className="mb-2 text-sm font-medium text-[var(--muted)]">{dict.settings.fontStyle}</p>
           <div className="flex flex-wrap gap-2">
             <OptionButton active={font === "playful"} onClick={() => applyFont("playful")}>
               {dict.settings.fontPlayful}
@@ -153,7 +154,7 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
         </div>
 
         <div>
-          <p className="mb-2 text-sm font-medium text-[var(--foreground)]/70">{dict.settings.fontSize}</p>
+          <p className="mb-2 text-sm font-medium text-[var(--muted)]">{dict.settings.fontSize}</p>
           <div className="flex flex-wrap gap-2">
             <OptionButton active={fontSize === "small"} onClick={() => applyFontSize("small")}>
               {dict.settings.fontSizeSmall}
@@ -170,7 +171,7 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
 
       <section className="card p-6">
         <h2 className="mb-4 text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          🌐 {dict.settings.language}
+          {dict.settings.language}
         </h2>
         <div className="flex flex-wrap gap-2">
           {locales.map((l) => (
@@ -180,6 +181,8 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
           ))}
         </div>
       </section>
+
+      <SchoolPicker locale={locale} />
 
       <p
         className={`text-sm font-medium text-[var(--brand-600)] transition-opacity ${

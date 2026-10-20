@@ -18,9 +18,9 @@ export default function NastaveniPage({
   return (
     <div className="mx-auto max-w-2xl px-6 py-16">
       <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        ⚙️ {dict.settings.title}
+        {dict.settings.title}
       </h1>
-      <p className="mb-10 text-[var(--foreground)]/60">{dict.settings.subtitle}</p>
+      <p className="mb-10 text-[var(--muted)]">{dict.settings.subtitle}</p>
       <SettingsForm locale={locale as Locale} dict={dict} />
     </div>
   );

@@ -1,15 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CATEGORIES, type CategorySlug } from "@/lib/taxonomy";
+import { CATEGORIES } from "@/lib/taxonomy";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, type Locale } from "@/i18n/config";
-
-const CATEGORY_EMOJI: Record<CategorySlug, string> = {
-  zakladni: "📘",
-  stredni: "🎒",
-  prijimacky: "🎯",
-  maturita: "🎓",
-};
 
 export default async function KurzyPage({
   params,
@@ -25,12 +18,12 @@ export default async function KurzyPage({
       <h1 className="mb-2 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
         {dict.kurzyPage.title}
       </h1>
-      <p className="mb-4 text-[var(--foreground)]/60">{dict.kurzyPage.subtitle}</p>
+      <p className="mb-4 text-[var(--muted)]">{dict.kurzyPage.subtitle}</p>
       <Link
         href={`/${locale}/kurzy/sablony`}
         className="mb-8 inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--brand-600)] hover:underline"
       >
-        🧪 {dict.templates.title} →
+        {dict.templates.title} →
       </Link>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {CATEGORIES.map((cat) => (
@@ -39,9 +32,8 @@ export default async function KurzyPage({
             href={`/${locale}/kurzy/${cat.slug}`}
             className="card card-hover flex flex-col gap-2 p-6"
           >
-            <span className="text-2xl">{CATEGORY_EMOJI[cat.slug]}</span>
             <h2 className="text-lg font-semibold">{dict.categories[cat.slug].label}</h2>
-            <p className="text-sm text-[var(--foreground)]/60">
+            <p className="text-sm text-[var(--muted)]">
               {dict.categories[cat.slug].description}
             </p>
           </Link>

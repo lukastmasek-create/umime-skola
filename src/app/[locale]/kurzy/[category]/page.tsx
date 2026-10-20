@@ -97,12 +97,12 @@ export default async function CategoryPage({
     `pill px-4 py-2 text-sm ${
       active
         ? "bg-[var(--brand-500)] text-white"
-        : "bg-[var(--surface-muted)] text-[var(--foreground)]/70 hover:bg-[var(--brand-50)]"
+        : "bg-[var(--surface-muted)] text-[var(--muted)] hover:bg-[var(--brand-50)]"
     }`;
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-16">
-      <div className="mb-2 flex flex-wrap gap-2 text-sm text-[var(--foreground)]/50">
+      <div className="mb-2 flex flex-wrap gap-2 text-sm text-[var(--faint)]">
         {CATEGORIES.map((c) => (
           <span key={c.slug}>
             {c.slug === category.slug ? (
@@ -124,14 +124,14 @@ export default async function CategoryPage({
       <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
         {dict.categories[category.slug].label}
       </h1>
-      <p className="mb-8 text-[var(--foreground)]/60">
+      <p className="mb-8 text-[var(--muted)]">
         {dict.categories[category.slug].description}
       </p>
 
       {availableGrades.length > 0 && (
         <div className="mb-3 flex flex-wrap gap-2">
           <Link href={filterHref(selectedSubject?.slug)} className={chip(!selectedGrade)}>
-            🎒 {getAllGradesLabel(locale as Locale)}
+            {getAllGradesLabel(locale as Locale)}
           </Link>
           {availableGrades.map((n) => (
             <Link
@@ -155,13 +155,13 @@ export default async function CategoryPage({
             href={filterHref(s.slug, selectedGrade)}
             className={chip(selectedSubject?.value === s.value)}
           >
-            {s.emoji} {subjectText.labels[s.value]}
+            {subjectText.labels[s.value]}
           </Link>
         ))}
       </div>
 
       {courses.length === 0 ? (
-        <div className="card p-10 text-center text-[var(--foreground)]/60">
+        <div className="card p-10 text-center text-[var(--muted)]">
           {selectedSubject || selectedGrade ? dict.category.noCoursesFiltered : dict.category.noCourses}
         </div>
       ) : (
@@ -174,7 +174,7 @@ export default async function CategoryPage({
                   className="mb-5 text-2xl font-bold"
                   style={{ fontFamily: "var(--font-heading)" }}
                 >
-                  {subject ? `${subject.emoji} ${subjectText.labels[subject.value]}` : subjectText.other}
+                  {subject ? subjectText.labels[subject.value] : subjectText.other}
                 </h2>
                 <div className="flex flex-col gap-8">
                   {[...sections.entries()].map(([sectionKey, items]) => (
@@ -200,7 +200,7 @@ export default async function CategoryPage({
                               )}
                             </div>
                             {course.description && (
-                              <p className="text-sm text-[var(--foreground)]/60">
+                              <p className="text-sm text-[var(--muted)]">
                                 {course.description}
                               </p>
                             )}

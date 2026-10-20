@@ -12,7 +12,7 @@ type QuizEngine = {
   destroy(): void;
   setRunning(running: boolean): void;
   setInput(input: Partial<{ left: boolean; right: boolean; fire: boolean }>): void;
-  loadQuestion(options: string[], correctIndex: number, config: EngineConfig): void;
+  loadQuestion(options: string[], correctIndex: number, config: EngineConfig, prompt?: string): void;
 };
 
 type Phase = "intro" | "playing" | "explain" | "result";
@@ -110,7 +110,7 @@ function UpgradeShop({
               <p className="font-semibold">
                 {UPGRADE_ICONS[key]} {names[key]}
               </p>
-              <p className="mb-2 text-xs text-[var(--foreground)]/60">
+              <p className="mb-2 text-xs text-[var(--muted)]">
                 {t.level} {level}/{MAX_UPGRADE_LEVEL}
               </p>
               <button
@@ -160,6 +160,8 @@ export function SpaceQuizGame({
   const source = hasCourseQuestions ? questions : t.questions;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const explainSinceRef = useRef(0);
+  const nextStepRef = useRef<() => void>(() => {});
   const engineRef = useRef<QuizEngine | null>(null);
   const handlersRef = useRef<{ onHit: (c: boolean) => void; onMiss: () => void }>({
     onHit: () => {},
@@ -177,6 +179,7 @@ export function SpaceQuizGame({
   const [resolved, setResolved] = useState<Resolved | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
   const [completed, setCompleted] = useState(false);
+  const [xpGained, setXpGained] = useState(0);
 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
@@ -220,10 +223,15 @@ export function SpaceQuizGame({
   }
 
   function loadQuestion(q: GameQuestion) {
-    engineRef.current?.loadQuestion(q.options, q.correctIndex, {
-      fireCooldown: 0.6 * (1 - 0.2 * upgrades.fire),
-      alienSpeedFactor: 1 - 0.15 * upgrades.slow,
-    });
+    engineRef.current?.loadQuestion(
+      q.options,
+      q.correctIndex,
+      {
+        fireCooldown: 0.6 * (1 - 0.2 * upgrades.fire),
+        alienSpeedFactor: 1 - 0.15 * upgrades.slow,
+      },
+      mario ? q.prompt : undefined,
+    );
   }
 
   function startRun() {
@@ -236,9 +244,26 @@ export function SpaceQuizGame({
     setResolved(null);
     setFlash(null);
     setCompleted(false);
+    setXpGained(0);
     loadQuestion(newRun[0]);
     engineRef.current?.setRunning(true);
     setPhase("playing");
+  }
+
+  async function claimXp(amount: number) {
+    if (amount <= 0) return;
+    try {
+      const res = await fetch("/api/xp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ source: "game", amount }),
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.gained > 0) setXpGained(data.gained);
+    } catch {
+      // not logged in or offline: XP is simply not awarded
+    }
   }
 
   function finishRun(survived: boolean) {
@@ -246,6 +271,7 @@ export function SpaceQuizGame({
     const nextCoins = coins + score;
     setCoins(nextCoins);
     persist(nextCoins, upgrades);
+    claimXp(score);
     setCompleted(survived);
     setPhase("result");
   }
@@ -277,6 +303,7 @@ export function SpaceQuizGame({
   }
 
   useEffect(() => {
+    nextStepRef.current = nextStep;
     handlersRef.current = {
       onHit: (correct) => {
         if (correct) {
@@ -284,6 +311,7 @@ export function SpaceQuizGame({
           setScore((s) => s + pts);
           setCombo((c) => c + 1);
           setResolved({ kind: "correct", pts });
+          explainSinceRef.current = Date.now();
           setPhase("explain");
           return;
         }
@@ -293,6 +321,7 @@ export function SpaceQuizGame({
         if (remaining <= 0) {
           engineRef.current?.setRunning(false);
           setResolved({ kind: "wrong" });
+          explainSinceRef.current = Date.now();
           setPhase("explain");
         } else {
           setFlash(t.wrongLostLife);
@@ -303,10 +332,23 @@ export function SpaceQuizGame({
         setLives(lives - 1);
         setCombo(0);
         setResolved({ kind: "missed" });
-        setPhase("explain");
+        explainSinceRef.current = Date.now();
+          setPhase("explain");
       },
     };
   });
+
+  useEffect(() => {
+    if (phase !== "explain") return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.repeat || (e.code !== "Space" && e.code !== "Enter")) return;
+      if (Date.now() - explainSinceRef.current < 500) return;
+      e.preventDefault();
+      nextStepRef.current();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [phase]);
 
   const question = run[qIndex];
   const showExplanation = phase === "explain" && question && resolved;
@@ -323,7 +365,7 @@ export function SpaceQuizGame({
           <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
             {mario ? "🍄" : "🚀"} {t.title}
           </h1>
-          <p className="text-sm text-[var(--foreground)]/60">{courseTitle}</p>
+          <p className="text-sm text-[var(--muted)]">{courseTitle}</p>
         </div>
         {phase !== "intro" && (
           <div className="flex flex-wrap gap-2 text-sm font-semibold">
@@ -345,7 +387,7 @@ export function SpaceQuizGame({
         )}
       </div>
 
-      {(phase === "playing" || phase === "explain") && question && (
+      {(phase === "playing" || phase === "explain") && question && !mario && (
         <p className="rounded-xl bg-[var(--brand-50)] px-4 py-3 text-lg font-bold text-[var(--brand-700)]">
           {question.prompt}
         </p>
@@ -368,8 +410,8 @@ export function SpaceQuizGame({
 
       {phase === "intro" && (
         <div className="flex flex-col gap-4">
-          <p className="text-sm text-[var(--foreground)]/70">{t.intro}</p>
-          <p className="text-xs text-[var(--foreground)]/50">⌨️ {t.controls}</p>
+          <p className="text-sm text-[var(--muted)]">{t.intro}</p>
+          <p className="text-xs text-[var(--faint)]">⌨️ {t.controls}</p>
           <UpgradeShop t={t} coins={coins} upgrades={upgrades} onBuy={buy} />
           <button
             onClick={startRun}
@@ -377,7 +419,7 @@ export function SpaceQuizGame({
           >
             {t.start}
           </button>
-          {!hasCourseQuestions && <p className="text-xs text-[var(--foreground)]/40">{t.demoNote}</p>}
+          {!hasCourseQuestions && <p className="text-xs text-[var(--faint)]">{t.demoNote}</p>}
         </div>
       )}
 
@@ -425,7 +467,7 @@ export function SpaceQuizGame({
             <p className="mb-1 font-semibold">
               💡 {t.whyCorrect}: <span className="text-[var(--brand-600)]">{question.options[question.correctIndex]}</span>
             </p>
-            <p className="text-[var(--foreground)]/70">{question.explanation}</p>
+            <p className="text-[var(--muted)]">{question.explanation}</p>
           </div>
           <button
             onClick={nextStep}
@@ -433,6 +475,7 @@ export function SpaceQuizGame({
           >
             {lives <= 0 || lastQuestion ? t.finish : t.next}
           </button>
+          <p className="text-xs text-[var(--faint)]">⎵ {t.pressSpace}</p>
         </div>
       )}
 
@@ -444,8 +487,13 @@ export function SpaceQuizGame({
           <p className="text-sm">
             {t.earned}: <span className="font-bold text-[var(--brand-600)]">+{score}</span>
           </p>
+          {xpGained > 0 && (
+            <p className="pill self-start bg-[var(--accent-yellow)] px-3 py-1.5 text-sm text-[#16132b]">
+              +{xpGained} XP
+            </p>
+          )}
           <UpgradeShop t={t} coins={coins} upgrades={upgrades} onBuy={buy} />
-          <p className="text-xs text-[var(--foreground)]/50">🏆 {t.completionBonus}</p>
+          <p className="text-xs text-[var(--faint)]">🏆 {t.completionBonus}</p>
           <div className="flex flex-wrap items-center gap-4">
             <button
               onClick={startRun}

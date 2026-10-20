@@ -1,0 +1,317 @@
+import type { Locale } from "./config";
+
+export type EscapeText = {
+  nav: string;
+  list: {
+    title: string;
+    subtitle: string;
+    play: string;
+    soon: string;
+    note: string;
+    rooms: { id: string; name: string; subject: string; description: string; available: boolean }[];
+  };
+  ui: {
+    start: string;
+    modeTitle: string;
+    timed: string;
+    timedDesc: string;
+    relaxed: string;
+    relaxedDesc: string;
+    time: string;
+    elapsed: string;
+    danger: string;
+    inventory: string;
+    inventoryEmpty: string;
+    selected: string;
+    combineHint: string;
+    notes: string;
+    close: string;
+    check: string;
+    hint: string;
+    hintNext: string;
+    noMoreHints: string;
+    askAtom: string;
+    atomLabel: string;
+    atomDone: string;
+    wrong: string;
+    solved: string;
+    cantCombine: string;
+    nothingHere: string;
+    reset: string;
+    orderHint: string;
+    matchHint: string;
+    gotItems: string;
+    winTitle: string;
+    loseTime: string;
+    loseDanger: string;
+    loseText: string;
+    stars: string;
+    timeUsed: string;
+    mistakes: string;
+    hintsUsed: string;
+    xp: string;
+    unlocked: string;
+    loginToSave: string;
+    saveError: string;
+    playAgain: string;
+    backToRooms: string;
+  };
+};
+
+const cs: EscapeText = {
+  nav: "Únikovky",
+  list: {
+    title: "Únikovky",
+    subtitle: "Zamčená místnost, hádanky z učiva a čas, který běží. Dostaň se ven dřív, než bude pozdě.",
+    play: "Vstoupit",
+    soon: "Brzy",
+    note: "Na dalších místnostech pracujeme. Obsah hádanek je zatím jen česky.",
+    rooms: [
+      { id: "lab", name: "Laboratoř doktora Atoma", subject: "Chemie", description: "Reaktor se rozjíždí a dveře jsou zamčené. Najdi vodítka, namíchej správné látky a otevři kód.", available: true },
+      { id: "museum", name: "Zamčené muzeum", subject: "Dějepis", description: "Vitríny, časová osa a hádanky o významných událostech.", available: false },
+      { id: "expedition", name: "Expediční stan", subject: "Zeměpis", description: "Mapa světa, hlavní města a světové strany.", available: false },
+      { id: "jungle", name: "Ztracená džungle", subject: "Biologie", description: "Rostliny, živočichové a jejich třídění.", available: false },
+    ],
+  },
+  ui: {
+    start: "Začít",
+    modeTitle: "Vyber režim",
+    timed: "S časomírou",
+    timedDesc: "20 minut a ukazatel nebezpečí. Víc hvězdiček.",
+    relaxed: "Bez časomíry",
+    relaxedDesc: "Žádný spěch a nebezpečí tě nevyřadí. Nejvýš 2 hvězdičky.",
+    time: "Čas",
+    elapsed: "Uplynulo",
+    danger: "Nebezpečí",
+    inventory: "Inventář",
+    inventoryEmpty: "Zatím nic nemáš. Prohledej místnost.",
+    selected: "Vybráno",
+    combineHint: "Klikni na dva předměty a zkus je spojit, nebo vyber předmět a klikni na místo v místnosti.",
+    notes: "Poznámky",
+    close: "Zavřít",
+    check: "Zkontrolovat",
+    hint: "Nápověda",
+    hintNext: "Další nápověda",
+    noMoreHints: "Další nápověda už není.",
+    askAtom: "Zeptat se robota Atoma",
+    atomLabel: "Atom",
+    atomDone: "Už ti nemám co poradit. Zkus dveře.",
+    wrong: "To není správně. Reaktor se rozjel rychleji!",
+    solved: "Vyřešeno!",
+    cantCombine: "Tyhle dvě věci se spolu nespojí.",
+    nothingHere: "Tady ti to teď nepomůže.",
+    reset: "Začít znovu",
+    orderHint: "Klikej na kroky v pořadí, v jakém je chceš seřadit.",
+    matchHint: "Vyber položku vlevo a pak její dvojici vpravo.",
+    gotItems: "Získal/a jsi",
+    winTitle: "Utekl/a jsi!",
+    loseTime: "Čas vypršel",
+    loseDanger: "Laboratoř přetížila",
+    loseText: "Zkus to znovu, tentokrát ti to půjde líp.",
+    stars: "Hodnocení",
+    timeUsed: "Čas",
+    mistakes: "Chyby",
+    hintsUsed: "Nápovědy",
+    xp: "XP",
+    unlocked: "Odemčeno",
+    loginToSave: "Přihlas se, ať se ti ukládají odměny a čas.",
+    saveError: "Výsledek se nepodařilo uložit.",
+    playAgain: "Hrát znovu",
+    backToRooms: "Zpět na únikovky",
+  },
+};
+
+const en: EscapeText = {
+  nav: "Escape rooms",
+  list: {
+    title: "Escape rooms",
+    subtitle: "A locked room, puzzles from school subjects and a running clock. Get out before it's too late.",
+    play: "Enter",
+    soon: "Soon",
+    note: "We're working on more rooms. Puzzle content is Czech only for now.",
+    rooms: [
+      { id: "lab", name: "Doctor Atom's laboratory", subject: "Chemistry", description: "The reactor is spinning up and the door is locked. Find clues, mix the right substances and crack the code.", available: true },
+      { id: "museum", name: "The locked museum", subject: "History", description: "Display cases, a timeline and puzzles about important events.", available: false },
+      { id: "expedition", name: "Expedition tent", subject: "Geography", description: "A world map, capital cities and compass directions.", available: false },
+      { id: "jungle", name: "The lost jungle", subject: "Biology", description: "Plants, animals and how to classify them.", available: false },
+    ],
+  },
+  ui: {
+    start: "Start",
+    modeTitle: "Pick a mode",
+    timed: "Timed",
+    timedDesc: "20 minutes and a danger meter. More stars.",
+    relaxed: "No timer",
+    relaxedDesc: "No rush and danger can't knock you out. Up to 2 stars.",
+    time: "Time",
+    elapsed: "Elapsed",
+    danger: "Danger",
+    inventory: "Inventory",
+    inventoryEmpty: "Nothing yet. Search the room.",
+    selected: "Selected",
+    combineHint: "Click two items to try combining them, or select an item and click a spot in the room.",
+    notes: "Notes",
+    close: "Close",
+    check: "Check",
+    hint: "Hint",
+    hintNext: "Next hint",
+    noMoreHints: "No more hints.",
+    askAtom: "Ask robot Atom",
+    atomLabel: "Atom",
+    atomDone: "I have no more advice. Try the door.",
+    wrong: "That's not right. The reactor sped up!",
+    solved: "Solved!",
+    cantCombine: "Those two don't combine.",
+    nothingHere: "That won't help here right now.",
+    reset: "Start over",
+    orderHint: "Click the steps in the order you want to arrange them.",
+    matchHint: "Pick an item on the left, then its partner on the right.",
+    gotItems: "You got",
+    winTitle: "You escaped!",
+    loseTime: "Time's up",
+    loseDanger: "The lab overloaded",
+    loseText: "Try again, you'll do better this time.",
+    stars: "Rating",
+    timeUsed: "Time",
+    mistakes: "Mistakes",
+    hintsUsed: "Hints",
+    xp: "XP",
+    unlocked: "Unlocked",
+    loginToSave: "Log in to save your rewards and time.",
+    saveError: "The result couldn't be saved.",
+    playAgain: "Play again",
+    backToRooms: "Back to escape rooms",
+  },
+};
+
+const de: EscapeText = {
+  nav: "Escape Rooms",
+  list: {
+    title: "Escape Rooms",
+    subtitle: "Ein verschlossener Raum, Rätsel aus dem Schulstoff und eine laufende Uhr. Komm raus, bevor es zu spät ist.",
+    play: "Betreten",
+    soon: "Bald",
+    note: "An weiteren Räumen wird gearbeitet. Die Rätsel sind vorerst nur auf Tschechisch.",
+    rooms: [
+      { id: "lab", name: "Labor von Doktor Atom", subject: "Chemie", description: "Der Reaktor fährt hoch und die Tür ist verschlossen. Finde Hinweise, mische die richtigen Stoffe und knacke den Code.", available: true },
+      { id: "museum", name: "Das verschlossene Museum", subject: "Geschichte", description: "Vitrinen, ein Zeitstrahl und Rätsel zu wichtigen Ereignissen.", available: false },
+      { id: "expedition", name: "Expeditionszelt", subject: "Geografie", description: "Weltkarte, Hauptstädte und Himmelsrichtungen.", available: false },
+      { id: "jungle", name: "Der verlorene Dschungel", subject: "Biologie", description: "Pflanzen, Tiere und ihre Einteilung.", available: false },
+    ],
+  },
+  ui: {
+    start: "Starten",
+    modeTitle: "Modus wählen",
+    timed: "Mit Zeitlimit",
+    timedDesc: "20 Minuten und eine Gefahrenanzeige. Mehr Sterne.",
+    relaxed: "Ohne Zeitlimit",
+    relaxedDesc: "Keine Eile, und die Gefahr wirft dich nicht raus. Höchstens 2 Sterne.",
+    time: "Zeit",
+    elapsed: "Vergangen",
+    danger: "Gefahr",
+    inventory: "Inventar",
+    inventoryEmpty: "Noch nichts. Durchsuche den Raum.",
+    selected: "Ausgewählt",
+    combineHint: "Klicke zwei Gegenstände an, um sie zu kombinieren, oder wähle einen aus und klicke auf eine Stelle im Raum.",
+    notes: "Notizen",
+    close: "Schließen",
+    check: "Prüfen",
+    hint: "Hinweis",
+    hintNext: "Nächster Hinweis",
+    noMoreHints: "Keine weiteren Hinweise.",
+    askAtom: "Roboter Atom fragen",
+    atomLabel: "Atom",
+    atomDone: "Ich habe keinen Rat mehr. Versuch die Tür.",
+    wrong: "Das stimmt nicht. Der Reaktor wurde schneller!",
+    solved: "Gelöst!",
+    cantCombine: "Diese beiden passen nicht zusammen.",
+    nothingHere: "Das hilft hier gerade nicht.",
+    reset: "Neu beginnen",
+    orderHint: "Klicke die Schritte in der Reihenfolge an, in der du sie ordnen willst.",
+    matchHint: "Wähle links einen Eintrag und dann rechts den passenden.",
+    gotItems: "Du hast erhalten",
+    winTitle: "Du bist entkommen!",
+    loseTime: "Die Zeit ist um",
+    loseDanger: "Das Labor ist überlastet",
+    loseText: "Versuch es nochmal, diesmal klappt es besser.",
+    stars: "Bewertung",
+    timeUsed: "Zeit",
+    mistakes: "Fehler",
+    hintsUsed: "Hinweise",
+    xp: "XP",
+    unlocked: "Freigeschaltet",
+    loginToSave: "Melde dich an, damit Belohnungen und Zeit gespeichert werden.",
+    saveError: "Das Ergebnis konnte nicht gespeichert werden.",
+    playAgain: "Nochmal spielen",
+    backToRooms: "Zurück zu den Escape Rooms",
+  },
+};
+
+const ru: EscapeText = {
+  nav: "Квесты",
+  list: {
+    title: "Квесты",
+    subtitle: "Запертая комната, загадки из школьных предметов и бегущее время. Выберись, пока не поздно.",
+    play: "Войти",
+    soon: "Скоро",
+    note: "Мы работаем над новыми комнатами. Загадки пока только на чешском.",
+    rooms: [
+      { id: "lab", name: "Лаборатория доктора Атома", subject: "Химия", description: "Реактор разгоняется, а дверь заперта. Найди подсказки, смешай нужные вещества и подбери код.", available: true },
+      { id: "museum", name: "Запертый музей", subject: "История", description: "Витрины, лента времени и загадки о важных событиях.", available: false },
+      { id: "expedition", name: "Палатка экспедиции", subject: "География", description: "Карта мира, столицы и стороны света.", available: false },
+      { id: "jungle", name: "Потерянные джунгли", subject: "Биология", description: "Растения, животные и их классификация.", available: false },
+    ],
+  },
+  ui: {
+    start: "Начать",
+    modeTitle: "Выбери режим",
+    timed: "С таймером",
+    timedDesc: "20 минут и шкала опасности. Больше звёзд.",
+    relaxed: "Без таймера",
+    relaxedDesc: "Не торопись, опасность не выбьет тебя из игры. Максимум 2 звезды.",
+    time: "Время",
+    elapsed: "Прошло",
+    danger: "Опасность",
+    inventory: "Инвентарь",
+    inventoryEmpty: "Пока ничего нет. Осмотри комнату.",
+    selected: "Выбрано",
+    combineHint: "Нажми на два предмета, чтобы попробовать их соединить, или выбери предмет и нажми на место в комнате.",
+    notes: "Записки",
+    close: "Закрыть",
+    check: "Проверить",
+    hint: "Подсказка",
+    hintNext: "Следующая подсказка",
+    noMoreHints: "Подсказок больше нет.",
+    askAtom: "Спросить робота Атома",
+    atomLabel: "Атом",
+    atomDone: "Больше советовать нечего. Попробуй дверь.",
+    wrong: "Это неверно. Реактор ускорился!",
+    solved: "Решено!",
+    cantCombine: "Эти два предмета не соединяются.",
+    nothingHere: "Здесь это сейчас не поможет.",
+    reset: "Начать заново",
+    orderHint: "Нажимай на шаги в том порядке, в каком хочешь их расставить.",
+    matchHint: "Выбери пункт слева, затем пару справа.",
+    gotItems: "Ты получил(а)",
+    winTitle: "Ты выбрался!",
+    loseTime: "Время вышло",
+    loseDanger: "Лаборатория перегрузилась",
+    loseText: "Попробуй ещё раз, в этот раз получится лучше.",
+    stars: "Оценка",
+    timeUsed: "Время",
+    mistakes: "Ошибки",
+    hintsUsed: "Подсказки",
+    xp: "XP",
+    unlocked: "Открыто",
+    loginToSave: "Войди, чтобы сохранялись награды и время.",
+    saveError: "Не удалось сохранить результат.",
+    playAgain: "Играть снова",
+    backToRooms: "Назад к квестам",
+  },
+};
+
+const texts: Record<Locale, EscapeText> = { cs, en, de, ru };
+
+export function getEscapeText(locale: Locale): EscapeText {
+  return texts[locale];
+}

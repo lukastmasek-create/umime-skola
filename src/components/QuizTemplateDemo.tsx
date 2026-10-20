@@ -66,14 +66,14 @@ export function QuizTemplateDemo({
           className={`btn-bouncy pill px-3 py-1.5 text-xs font-semibold ${
             isSelectedTemplate
               ? "bg-[var(--accent-green)] text-white"
-              : "bg-[var(--surface-muted)] text-[var(--foreground)]/70 hover:bg-[var(--brand-50)]"
+              : "bg-[var(--surface-muted)] text-[var(--muted)] hover:bg-[var(--brand-50)]"
           }`}
         >
           {isSelectedTemplate ? dict.templates.picked : dict.templates.pickThisOne}
         </button>
       </div>
 
-      <p className="text-xs text-[var(--foreground)]/50">
+      <p className="text-xs text-[var(--faint)]">
         {dict.templates[variant === "cards" ? "templateA" : variant === "fullscreen" ? "templateB" : "templateC"].tagline}
       </p>
 
@@ -129,7 +129,7 @@ export function QuizTemplateDemo({
             >
               {isCorrect ? dict.templates.correct : dict.templates.incorrect}
             </p>
-            <div className="rounded-xl bg-[var(--surface-muted)] p-4 text-sm text-[var(--foreground)]/70">
+            <div className="rounded-xl bg-[var(--surface-muted)] p-4 text-sm text-[var(--muted)]">
               <p className="mb-1 font-semibold text-[var(--foreground)]">💡 {explanationTitle}</p>
               {explanation}
             </div>

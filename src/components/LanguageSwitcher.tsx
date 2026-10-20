@@ -32,20 +32,20 @@ export function LanguageSwitcher({ current }: { current: Locale }) {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1.5 rounded-full border border-[var(--border-soft)] bg-[var(--surface)] px-3 py-1.5 text-sm font-medium transition-transform hover:scale-105 hover:border-[var(--brand-100)]"
+        className="flex items-center gap-1.5 rounded-lg border-2 border-[var(--edge)] bg-[var(--surface)] px-2.5 py-1 text-sm font-semibold hover:bg-[var(--surface-muted)]"
         aria-label="Change language"
       >
         <span className="text-base leading-none">{localeFlags[current]}</span>
         <span className="hidden sm:inline">{current.toUpperCase()}</span>
-        <span className="text-xs text-[var(--foreground)]/40">▾</span>
+        <span className="text-xs text-[var(--faint)]">▾</span>
       </button>
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-2xl border border-[var(--border-soft)] bg-[var(--surface)] p-1.5 shadow-xl">
+        <div className="absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-xl border-2 border-[var(--edge)] bg-[var(--surface)] p-1.5 shadow-[4px_4px_0_var(--shadow-ink)]">
           {locales.map((locale) => (
             <button
               key={locale}
               onClick={() => switchTo(locale)}
-              className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm font-medium transition-colors ${
+              className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors ${
                 locale === current
                   ? "bg-[var(--brand-50)] text-[var(--brand-700)]"
                   : "hover:bg-[var(--surface-muted)]"

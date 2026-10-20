@@ -95,9 +95,9 @@ export function Wheel({
   return (
     <div className="card flex flex-col items-center gap-5 p-8 text-center">
       <h2 className="text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        {dict.shop.wheelTitle}
+        {dict.shop.wheelTitle.replace(/^[^a-zA-ZÀ-ɏА-я0-9]+/, "")}
       </h2>
-      <p className="max-w-sm text-sm text-[var(--foreground)]/60">{dict.shop.wheelDesc}</p>
+      <p className="max-w-sm text-sm text-[var(--muted)]">{dict.shop.wheelDesc}</p>
 
       <div className="relative h-64 w-64">
         <div
@@ -146,7 +146,7 @@ export function Wheel({
       </div>
 
       {!loggedIn ? (
-        <p className="text-sm text-[var(--foreground)]/60">
+        <p className="text-sm text-[var(--muted)]">
           {dict.shop.loginToSpin}{" "}
           <Link href={`/${locale}/prihlaseni`} className="font-semibold text-[var(--brand-600)] hover:underline">
             {dict.nav.login}
@@ -173,7 +173,7 @@ export function Wheel({
       )}
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
       {loggedIn && (
-        <p className="text-xs text-[var(--foreground)]/40">
+        <p className="text-xs text-[var(--faint)]">
           {dict.shop.yourPoints}: {points}
         </p>
       )}

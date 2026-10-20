@@ -15,9 +15,9 @@ export default async function SablonyPage({
   return (
     <div className="mx-auto max-w-6xl px-6 py-16">
       <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        🧪 {dict.templates.title}
+        {dict.templates.title}
       </h1>
-      <p className="mb-10 max-w-2xl text-[var(--foreground)]/60">{dict.templates.subtitle}</p>
+      <p className="mb-10 max-w-2xl text-[var(--muted)]">{dict.templates.subtitle}</p>
       <QuizTemplatesShowcase dict={dict} />
     </div>
   );

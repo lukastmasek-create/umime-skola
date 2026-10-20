@@ -50,7 +50,7 @@ export default function RegistracePage({
         <h1 className="mb-1 text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
           {dict.auth.register.title}
         </h1>
-        <p className="mb-6 text-sm text-[var(--foreground)]/60">{dict.auth.register.subtitle}</p>
+        <p className="mb-6 text-sm text-[var(--muted)]">{dict.auth.register.subtitle}</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <label className="flex flex-col gap-1 text-sm font-medium">
             {dict.auth.register.name}

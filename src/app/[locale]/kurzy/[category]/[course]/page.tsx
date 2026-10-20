@@ -47,7 +47,7 @@ export default async function CoursePage({
     return (
       <div className="mx-auto max-w-3xl px-6 py-16 text-center">
         <div className="card p-10">
-          <p className="text-[var(--foreground)]/60">{dict.course.notFound}</p>
+          <p className="text-[var(--muted)]">{dict.course.notFound}</p>
           <Link
             href={`/${locale}/kurzy/${category.slug}`}
             className="mt-4 inline-block text-sm font-semibold text-[var(--brand-600)] hover:underline"
@@ -75,14 +75,14 @@ export default async function CoursePage({
               className={`pill h-10 w-10 items-center justify-center text-base font-bold ${
                 available
                   ? "bg-[var(--brand-500)] text-white"
-                  : "bg-[var(--surface-muted)] text-[var(--foreground)]/40"
+                  : "bg-[var(--surface-muted)] text-[var(--faint)]"
               }`}
             >
               {available ? n : "🔒"}
             </span>
             <h3 className="text-sm font-semibold">{t.difficulties[n - 1]}</h3>
-            <p className="text-xs text-[var(--foreground)]/50">
-              {available ? (kind === "kurz" ? `🎮 ${t.openCourse}` : `📝 ${t.openTest}`) : t.locked}
+            <p className="text-xs text-[var(--faint)]">
+              {available ? `${kind === "kurz" ? t.openCourse : t.openTest} →` : t.locked}
             </p>
           </>
         );
@@ -103,7 +103,7 @@ export default async function CoursePage({
     <div className="mx-auto max-w-4xl px-6 py-16">
       <Link
         href={`/${locale}/kurzy/${category.slug}`}
-        className="mb-4 inline-block text-sm font-medium text-[var(--foreground)]/50 hover:text-[var(--foreground)]"
+        className="mb-4 inline-block text-sm font-medium text-[var(--faint)] hover:text-[var(--foreground)]"
       >
         ← {dict.course.backToCategory}
       </Link>
@@ -111,19 +111,19 @@ export default async function CoursePage({
         {course.title}
       </h1>
       {course.description && (
-        <p className="mb-8 text-[var(--foreground)]/60">{course.description}</p>
+        <p className="mb-8 text-[var(--muted)]">{course.description}</p>
       )}
 
       <h2 className="mb-1 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        🎮 {t.coursesTitle}
+        {t.coursesTitle}
       </h2>
-      <p className="mb-4 text-sm text-[var(--foreground)]/50">{t.coursesSubtitle}</p>
+      <p className="mb-4 text-sm text-[var(--faint)]">{t.coursesSubtitle}</p>
       {grid("kurz")}
 
       <h2 className="mb-1 mt-12 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        📝 {t.testsTitle}
+        {t.testsTitle}
       </h2>
-      <p className="mb-4 text-sm text-[var(--foreground)]/50">{t.testsSubtitle}</p>
+      <p className="mb-4 text-sm text-[var(--faint)]">{t.testsSubtitle}</p>
       {grid("test")}
     </div>
   );

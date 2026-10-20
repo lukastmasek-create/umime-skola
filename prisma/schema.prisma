@@ -25,6 +25,17 @@ model User {
   // Kdy uživatel naposledy roztočil kolo štěstí v obchodě (pro denní limit).
   lastWheelSpinAt DateTime?
 
+  // Škola hráče pro školní žebříčky.
+  schoolId String?
+  school   School? @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+
+  // Vybraný avatar (id z src/lib/avatars.ts). Fotky se nenahrávají.
+  avatar   String?
+  title    String?
+  xpEvents XpEvent[]
+  unlocks     Unlock[]
+  escapeRuns  EscapeRun[]
+
   accounts Account[]
   sessions Session[]
 
@@ -40,6 +51,65 @@ enum Role {
   STUDENT
   INSTRUCTOR
   ADMIN
+}
+
+// Zkušenosti (XP) pro úrovně. XP je součet všech záznamů hráče, takže se
+// nikdy nesnižuje utrácením bodů a dá se u každého záznamu dohledat zdroj
+// (kolo štěstí, hra, test…) a hlídat denní limity.
+model XpEvent {
+  id        String   @id @default(cuid())
+  amount    Int
+  source    String
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+// Odemčené odměny (avatary a tituly získané událostmi nebo úspěchy).
+// `key` má tvar "avatar:chemik" nebo "title:heisenberg".
+model Unlock {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+}
+
+// Jeden dokončený pokus o únikovku (pro žebříčky nejrychlejších časů).
+model EscapeRun {
+  id        String   @id @default(cuid())
+  room      String
+  seconds   Int
+  stars     Int
+  mistakes  Int
+  hints     Int
+  relaxed   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, room])
+  @@index([room, seconds])
+}
+
+// Škola pro školní žebříčky (lokální žebříček i škola vs škola). `city` je
+// prázdný řetězec, když ho hráč nevyplní, aby šlo hlídat unikátnost.
+model School {
+  id        String   @id @default(cuid())
+  name      String
+  city      String   @default("")
+  createdAt DateTime @default(now())
+
+  users User[]
+
+  @@unique([name, city])
 }
 
 model Account {

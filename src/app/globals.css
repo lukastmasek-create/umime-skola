@@ -1,23 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f6f5ff;
-  --foreground: #1c1a2e;
+  color-scheme: light;
 
-  /* Veselá fialovo-modrá paleta s barevnými akcenty */
-  --brand-50: #f2f0ff;
-  --brand-100: #e6e1ff;
-  --brand-500: #6d5bf6;
-  --brand-600: #5a45f0;
-  --brand-700: #4834c9;
-  --accent-500: #f6465d;
-  --accent-yellow: #ffb020;
-  --accent-green: #22c55e;
-  --accent-blue: #22b8f6;
+  --background: #f6f4ee;
+  --foreground: #16132b;
+  --muted: #4f4a66;
+  --faint: #6b6584;
+
+  --brand-50: #e6eaff;
+  --brand-100: #cdd6ff;
+  --brand-500: #3248f0;
+  --brand-600: #2336d1;
+  --brand-700: #1a2aa3;
+  --accent-500: #ff5a3c;
+  --accent-yellow: #ffc933;
+  --accent-green: #17a864;
+  --accent-blue: #29a3ff;
   --surface: #ffffff;
-  --surface-muted: #f0eefc;
-  --border-soft: #e5e1fb;
-  --danger: #dc2626;
+  --surface-muted: #efece3;
+  --border-soft: #e0dccf;
+  --edge: #16132b;
+  --shadow-ink: #16132b;
+  --danger: #d6291f;
   --font-scale: 1;
 }
 
@@ -38,41 +43,51 @@ html[data-font="classic"] {
 }
 
 /* Tmavý režim: ruční přepnutí (data-theme) i podle systému, když uživatel
-   nic explicitně nevybral. */
+   nic explicitně nevybral. Barvy textu se mění spolu s ním. */
 :root[data-theme="dark"] {
-  --background: #14121f;
-  --foreground: #f1eefc;
-  --brand-50: #2a2350;
-  --brand-100: #372c66;
-  --brand-500: #8b7bfb;
-  --brand-600: #a292ff;
-  --brand-700: #c7bdff;
-  --accent-500: #ff7e90;
-  --accent-yellow: #ffc861;
-  --accent-green: #4ade80;
-  --accent-blue: #5ec8fb;
-  --surface: #1e1b31;
-  --surface-muted: #262140;
-  --border-soft: #352c56;
+  color-scheme: dark;
+  --background: #12102a;
+  --foreground: #f6f1e4;
+  --muted: #cfc8e4;
+  --faint: #9d96bf;
+  --brand-50: #272a63;
+  --brand-100: #353b86;
+  --brand-500: #5a6cff;
+  --brand-600: #8d99ff;
+  --brand-700: #b8c1ff;
+  --accent-500: #ff7a5c;
+  --accent-yellow: #ffd24d;
+  --accent-green: #3ddc97;
+  --accent-blue: #5ab8ff;
+  --surface: #1c1936;
+  --surface-muted: #26224a;
+  --border-soft: #35305f;
+  --edge: #6a63ad;
+  --shadow-ink: #05040f;
   --danger: #ff8080;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]):not([data-theme="dark"]) {
-    --background: #14121f;
-    --foreground: #f1eefc;
-    --brand-50: #2a2350;
-    --brand-100: #372c66;
-    --brand-500: #8b7bfb;
-    --brand-600: #a292ff;
-    --brand-700: #c7bdff;
-    --accent-500: #ff7e90;
-    --accent-yellow: #ffc861;
-    --accent-green: #4ade80;
-    --accent-blue: #5ec8fb;
-    --surface: #1e1b31;
-    --surface-muted: #262140;
-    --border-soft: #352c56;
+    color-scheme: dark;
+    --background: #12102a;
+    --foreground: #f6f1e4;
+    --muted: #cfc8e4;
+    --faint: #9d96bf;
+    --brand-50: #272a63;
+    --brand-100: #353b86;
+    --brand-500: #5a6cff;
+    --brand-600: #8d99ff;
+    --brand-700: #b8c1ff;
+    --accent-500: #ff7a5c;
+    --accent-yellow: #ffd24d;
+    --accent-green: #3ddc97;
+    --accent-blue: #5ab8ff;
+    --surface: #1c1936;
+    --surface-muted: #26224a;
+    --border-soft: #35305f;
+    --edge: #6a63ad;
+    --shadow-ink: #05040f;
     --danger: #ff8080;
   }
 }
@@ -90,8 +105,7 @@ html[data-font="classic"] {
   --color-accent-green: var(--accent-green);
   --color-accent-blue: var(--accent-blue);
   --color-danger: var(--danger);
-  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
-    sans-serif;
+  --font-sans: "Onest", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   --font-heading: var(--font-heading);
   --font-body: var(--font-body);
@@ -105,139 +119,96 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* --- Sdílené utility třídy pro veselý, hravý vzhled --- */
+input,
+textarea,
+select {
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+::selection {
+  background: var(--accent-yellow);
+  color: #16132b;
+}
+
+/* --- Prvky designu: čisté plochy, ploché barvy, "mačkací" tlačítka --- */
 
 .gradient-hero {
-  position: relative;
-  background: radial-gradient(
-      circle at 15% 20%,
-      rgba(109, 91, 246, 0.28),
-      transparent 45%
-    ),
-    radial-gradient(circle at 85% 0%, rgba(246, 70, 93, 0.2), transparent 40%),
-    radial-gradient(circle at 60% 85%, rgba(34, 184, 246, 0.16), transparent 45%),
-    linear-gradient(180deg, #ffffff 0%, #f6f5ff 100%);
-  overflow: hidden;
+  background-color: var(--background);
 }
 
-.gradient-hero::before,
-.gradient-hero::after {
-  content: "";
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(0px);
-  opacity: 0.5;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.gradient-hero::before {
-  width: 3.5rem;
-  height: 3.5rem;
-  top: 12%;
-  left: 8%;
-  background: var(--accent-yellow);
-  animation: float-blob 7s ease-in-out infinite;
-}
-
-.gradient-hero::after {
-  width: 2.5rem;
-  height: 2.5rem;
-  bottom: 15%;
-  right: 10%;
-  background: var(--accent-green);
-  animation: float-blob 9s ease-in-out infinite reverse;
-}
-
-.gradient-hero > * {
-  position: relative;
-  z-index: 1;
-}
-
-@keyframes float-blob {
-  0%,
-  100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-18px) rotate(12deg);
-  }
-}
-
-@keyframes wiggle {
-  0%,
-  100% {
-    transform: rotate(-4deg);
-  }
-  50% {
-    transform: rotate(4deg);
-  }
-}
-
-.wiggle-on-hover:hover {
-  animation: wiggle 0.4s ease-in-out;
-}
-
+/* Zvýrazňovač místo barevného přechodu v textu */
 .gradient-text {
-  background: linear-gradient(90deg, var(--brand-600), var(--accent-500));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  background: var(--accent-yellow);
+  color: #16132b;
+  border-radius: 0.2em;
+  padding: 0 0.22em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 .card {
   background: var(--surface);
-  border: 1px solid var(--border-soft);
-  border-radius: 1.25rem;
-  box-shadow: 0 1px 2px rgba(28, 26, 46, 0.04);
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 0.2s ease, border-color 0.2s ease;
+  border: 2px solid var(--edge);
+  border-radius: 18px;
+  box-shadow: 0 4px 0 var(--shadow-ink);
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
 }
 
 .card-hover:hover {
-  transform: translateY(-4px) scale(1.02) rotate(-0.5deg);
-  box-shadow: 0 16px 30px -10px rgba(90, 69, 240, 0.3);
-  border-color: var(--brand-100);
+  transform: translateY(-3px);
+  box-shadow: 0 7px 0 var(--shadow-ink);
 }
 
 .pill {
   display: inline-flex;
   align-items: center;
-  border-radius: 9999px;
+  border-radius: 999px;
+  border: 1.5px solid var(--edge);
   font-weight: 600;
   font-size: 0.75rem;
   letter-spacing: 0.02em;
 }
 
 .points-badge {
-  background: linear-gradient(90deg, var(--brand-500), var(--accent-500));
-  color: white;
+  background: var(--accent-yellow);
+  color: #16132b;
   font-weight: 700;
 }
 
 .btn-bouncy {
-  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 2px solid var(--edge);
+  border-radius: 12px;
+  box-shadow: 0 4px 0 var(--shadow-ink);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .btn-bouncy:hover {
-  transform: scale(1.06) rotate(-1deg);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 0 var(--shadow-ink);
 }
 
 .btn-bouncy:active {
-  transform: scale(0.97);
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--shadow-ink);
 }
 
-/* Level path (kurzy) */
+.btn-bouncy:disabled:hover {
+  transform: none;
+  box-shadow: 0 4px 0 var(--shadow-ink);
+}
 
 .level-card {
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
 }
 
 .level-card.is-unlocked:hover {
-  transform: translateY(-3px) scale(1.03);
+  transform: translateY(-3px);
+  box-shadow: 0 7px 0 var(--shadow-ink);
 }
 
 .level-card.is-locked {
-  opacity: 0.55;
-  filter: grayscale(0.3);
+  opacity: 0.6;
+  box-shadow: none;
+  background: var(--surface-muted);
 }

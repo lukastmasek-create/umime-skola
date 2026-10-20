@@ -44,6 +44,7 @@ export async function POST() {
     await tx.pointTransaction.create({
       data: { userId, amount, reason: "Kolo štěstí" },
     });
+    await tx.xpEvent.create({ data: { userId, amount, source: "wheel" } });
     return updatedUser;
   });
 

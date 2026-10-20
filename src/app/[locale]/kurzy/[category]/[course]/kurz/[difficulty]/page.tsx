@@ -47,17 +47,17 @@ export default async function CourseGamesPage({
     <div className="mx-auto max-w-4xl px-6 py-16">
       <Link
         href={courseHref}
-        className="mb-4 inline-block text-sm font-medium text-[var(--foreground)]/50 hover:text-[var(--foreground)]"
+        className="mb-4 inline-block text-sm font-medium text-[var(--faint)] hover:text-[var(--foreground)]"
       >
         ← {courseTitle}
       </Link>
       <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
         {testText.difficulties[difficulty - 1]}
       </h1>
-      <p className="mb-8 text-[var(--foreground)]/60">{testText.coursesSubtitle}</p>
+      <p className="mb-8 text-[var(--muted)]">{testText.coursesSubtitle}</p>
 
       <h2 className="mb-4 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        🎮 {gameText.games}
+        {gameText.games}
       </h2>
       <div className="grid gap-4 sm:grid-cols-3">
         {GAMES.map((game) =>

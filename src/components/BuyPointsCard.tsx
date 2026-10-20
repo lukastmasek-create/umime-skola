@@ -23,9 +23,8 @@ export function BuyPointsCard({
           {dict.shop.mostPopular}
         </span>
       )}
-      <span className="text-3xl">💎</span>
       <p className="text-2xl font-bold">{pkg.points}</p>
-      <p className="text-sm text-[var(--foreground)]/50">{dict.shop.pointsSuffix}</p>
+      <p className="text-sm text-[var(--faint)]">{dict.shop.pointsSuffix}</p>
       <p className="mt-2 text-lg font-semibold text-[var(--brand-600)]">{pkg.price}</p>
       <button
         onClick={() => setClicked(true)}
@@ -34,7 +33,7 @@ export function BuyPointsCard({
         {dict.shop.buyButton}
       </button>
       {clicked && (
-        <p className="text-xs text-[var(--foreground)]/50">{dict.shop.comingSoon} ✨</p>
+        <p className="text-xs text-[var(--faint)]">{dict.shop.comingSoon} ✨</p>
       )}
     </div>
   );

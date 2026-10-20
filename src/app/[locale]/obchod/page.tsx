@@ -46,9 +46,9 @@ export default async function ShopPage({
   return (
     <div className="mx-auto max-w-4xl px-6 py-16">
       <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        🛍️ {dict.shop.title}
+        {dict.shop.title}
       </h1>
-      <p className="mb-10 text-[var(--foreground)]/60">{dict.shop.subtitle}</p>
+      <p className="mb-10 text-[var(--muted)]">{dict.shop.subtitle}</p>
 
       <Wheel
         locale={locale as Locale}
@@ -60,9 +60,9 @@ export default async function ShopPage({
 
       <div className="mt-12">
         <h2 className="mb-1 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          {dict.shop.buyTitle}
+          {dict.shop.buyTitle.replace(/^[^a-zA-ZÀ-ɏА-я0-9]+/, "")}
         </h2>
-        <p className="mb-6 text-sm text-[var(--foreground)]/60">{dict.shop.buyDesc}</p>
+        <p className="mb-6 text-sm text-[var(--muted)]">{dict.shop.buyDesc}</p>
         <div className="grid gap-5 sm:grid-cols-3">
           {POINT_PACKAGES.map((pkg) => (
             <BuyPointsCard key={pkg.points} pkg={pkg} dict={dict} />

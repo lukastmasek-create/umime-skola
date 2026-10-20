@@ -49,7 +49,7 @@ export default function PrihlaseniPage({
         <h1 className="mb-1 text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
           {dict.auth.login.title}
         </h1>
-        <p className="mb-6 text-sm text-[var(--foreground)]/60">{dict.auth.login.subtitle}</p>
+        <p className="mb-6 text-sm text-[var(--muted)]">{dict.auth.login.subtitle}</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <label className="flex flex-col gap-1 text-sm font-medium">
             {dict.auth.login.email}

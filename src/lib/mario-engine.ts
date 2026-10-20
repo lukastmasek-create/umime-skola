@@ -3,9 +3,9 @@ import type { EngineCallbacks, EngineConfig } from "./space-engine";
 const W = 640;
 const H = 420;
 const GROUND = 340;
-const TURTLE_W = 46;
-const TURTLE_H = 30;
-const SPACING = 108;
+const TURTLE_W = 36;
+const TURTLE_H = 24;
+const SPACING = 96;
 const SHELLS = ["#2fb344", "#e5484d", "#3b82f6", "#f5a524"];
 const QUESTION_TIME = 28;
 
@@ -43,6 +43,8 @@ export class MarioEngine {
     { x: 520, y: 50, s: 1.2 },
   ];
   private timeLeft = QUESTION_TIME;
+  private countdown = 0;
+  private prompt = "";
   private config: EngineConfig = { fireCooldown: 0.6, alienSpeedFactor: 1 };
 
   constructor(
@@ -72,8 +74,10 @@ export class MarioEngine {
     this.input = { ...this.input, ...partial };
   }
 
-  loadQuestion(options: string[], correctIndex: number, config: EngineConfig) {
+  loadQuestion(options: string[], correctIndex: number, config: EngineConfig, prompt = "") {
     this.config = config;
+    this.prompt = prompt;
+    this.countdown = prompt ? 3 : 0;
     this.px = 28;
     this.py = GROUND;
     this.vy = 0;
@@ -144,6 +148,11 @@ export class MarioEngine {
     });
 
     if (!this.running) return;
+
+    if (this.countdown > 0) {
+      this.countdown -= dt;
+      return;
+    }
 
     this.timeLeft -= dt;
     if (this.timeLeft <= 0) {
@@ -243,7 +252,7 @@ export class MarioEngine {
     const step = Math.sin(this.time * 9 + i * 1.7);
     ctx.save();
     ctx.translate(t.cx, GROUND);
-    ctx.scale(t.dir >= 0 ? 1 : -1, 1);
+    ctx.scale(t.dir >= 0 ? 0.72 : -0.72, 0.72);
     ctx.fillStyle = "#d9a441";
     ctx.beginPath();
     ctx.ellipse(-9, -2 + (step > 0 ? -2 : 0), 7, 5, 0, 0, Math.PI * 2);
@@ -285,25 +294,25 @@ export class MarioEngine {
     ctx.restore();
 
     const px = t.cx;
-    const py = GROUND - TURTLE_H - 34;
+    const py = GROUND - TURTLE_H - 28;
     ctx.strokeStyle = "#8a5a2b";
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(px, py + 24);
+    ctx.moveTo(px, py + 22);
     ctx.lineTo(px, GROUND - TURTLE_H + 2);
     ctx.stroke();
     ctx.fillStyle = "rgba(11,8,32,0.85)";
     ctx.strokeStyle = t.shell;
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.roundRect(px - 48, py, 96, 24, 9);
+    ctx.roundRect(px - 40, py, 80, 22, 8);
     ctx.fill();
     ctx.stroke();
     ctx.fillStyle = "#fff";
-    ctx.font = "bold 14px system-ui, sans-serif";
+    ctx.font = "bold 13px system-ui, sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(t.label, px, py + 13, 86);
+    ctx.fillText(t.label, px, py + 12, 72);
   }
 
   private drawHero() {
@@ -353,6 +362,33 @@ export class MarioEngine {
     ctx.restore();
   }
 
+  private drawBanner() {
+    const ctx = this.ctx;
+    ctx.font = "bold 24px system-ui, sans-serif";
+    const maxWidth = W - 96;
+    const lines: string[] = [];
+    let line = "";
+    for (const word of this.prompt.split(" ")) {
+      const test = line ? line + " " + word : word;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    }
+    if (line) lines.push(line);
+    const height = lines.length * 32 + 22;
+    ctx.fillStyle = "rgba(23,20,43,0.9)";
+    ctx.beginPath();
+    ctx.roundRect(28, 36, W - 56, height, 14);
+    ctx.fill();
+    ctx.fillStyle = "#ffffff";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    lines.forEach((l, i) => ctx.fillText(l, W / 2, 36 + 11 + 16 + i * 32));
+  }
+
   private draw() {
     const ctx = this.ctx;
     const sky = ctx.createLinearGradient(0, 0, 0, GROUND);
@@ -390,6 +426,20 @@ export class MarioEngine {
       ctx.fillRect(p.x, p.y, 4, 4);
     }
     ctx.globalAlpha = 1;
+
+    if (this.prompt) this.drawBanner();
+    if (this.running && this.countdown > 0) {
+      ctx.fillStyle = "rgba(0,0,0,0.18)";
+      ctx.fillRect(0, 0, W, GROUND);
+      ctx.font = "bold 120px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.lineWidth = 8;
+      ctx.strokeStyle = "#17142b";
+      ctx.strokeText(String(Math.ceil(this.countdown)), W / 2, 235);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText(String(Math.ceil(this.countdown)), W / 2, 235);
+    }
 
     const ratio = Math.max(0, this.timeLeft / QUESTION_TIME);
     ctx.fillStyle = "rgba(0,0,0,0.25)";
