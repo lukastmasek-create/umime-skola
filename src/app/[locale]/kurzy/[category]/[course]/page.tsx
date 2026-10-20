@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getCategoryBySlug } from "@/lib/taxonomy";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, type Locale } from "@/i18n/config";
+import { getGameText } from "@/i18n/game";
 
 export const revalidate = 0;
 
@@ -88,7 +89,14 @@ export default async function CourseLevelsPage({
       {course.description && (
         <p className="mb-2 text-[var(--foreground)]/60">{course.description}</p>
       )}
-      <p className="mb-10 text-sm text-[var(--foreground)]/50">{dict.course.levelsSubtitle}</p>
+      <p className="mb-6 text-sm text-[var(--foreground)]/50">{dict.course.levelsSubtitle}</p>
+
+      <Link
+        href={`/${locale}/kurzy/${category.slug}/${course.slug}/hra`}
+        className="btn-bouncy mb-10 inline-flex items-center gap-2 rounded-full bg-[var(--accent-500)] px-6 py-3 text-sm font-bold text-white shadow-sm"
+      >
+        🚀 {getGameText(locale as Locale).play}: {getGameText(locale as Locale).title}
+      </Link>
 
       <h2 className="mb-6 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
         🧩 {dict.course.levelsTitle}
