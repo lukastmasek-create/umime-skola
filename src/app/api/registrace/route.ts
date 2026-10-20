@@ -4,6 +4,18 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
+  try {
+    return await register(request);
+  } catch (error) {
+    console.error("Registrace selhala:", error);
+    return NextResponse.json(
+      { error: "Registraci se teď nepodařilo dokončit. Zkus to prosím za chvíli." },
+      { status: 500 }
+    );
+  }
+}
+
+async function register(request: Request) {
   const body = await request.json();
   const { name, email, password } = body as {
     name?: string;

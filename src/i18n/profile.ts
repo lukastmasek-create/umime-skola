@@ -25,6 +25,12 @@ export type ProfileText = {
   titles: string;
   titlesHint: string;
   noTitle: string;
+  fullProfile: string;
+  settings: string;
+  logout: string;
+  totalXp: string;
+  unlockedCount: string;
+  locked: string;
 };
 
 const cs: ProfileText = {
@@ -52,6 +58,12 @@ const cs: ProfileText = {
   titles: "Tituly",
   titlesHint: "Titul se ukáže pod tvým jménem. Odemykají se úrovněmi a úspěchy.",
   noTitle: "Bez titulu",
+  fullProfile: "Celý profil",
+  settings: "Nastavení",
+  logout: "Odhlásit se",
+  totalXp: "XP celkem",
+  unlockedCount: "Odemčeno",
+  locked: "Zamčeno",
 };
 
 const en: ProfileText = {
@@ -79,6 +91,12 @@ const en: ProfileText = {
   titles: "Titles",
   titlesHint: "A title shows under your name. They unlock with levels and achievements.",
   noTitle: "No title",
+  fullProfile: "Full profile",
+  settings: "Settings",
+  logout: "Log out",
+  totalXp: "Total XP",
+  unlockedCount: "Unlocked",
+  locked: "Locked",
 };
 
 const de: ProfileText = {
@@ -106,6 +124,12 @@ const de: ProfileText = {
   titles: "Titel",
   titlesHint: "Ein Titel erscheint unter deinem Namen. Sie werden durch Level und Erfolge freigeschaltet.",
   noTitle: "Kein Titel",
+  fullProfile: "Ganzes Profil",
+  settings: "Einstellungen",
+  logout: "Abmelden",
+  totalXp: "XP gesamt",
+  unlockedCount: "Freigeschaltet",
+  locked: "Gesperrt",
 };
 
 const ru: ProfileText = {
@@ -133,6 +157,12 @@ const ru: ProfileText = {
   titles: "Звания",
   titlesHint: "Звание отображается под твоим именем. Они открываются уровнями и достижениями.",
   noTitle: "Без звания",
+  fullProfile: "Весь профиль",
+  settings: "Настройки",
+  logout: "Выйти",
+  totalXp: "Всего XP",
+  unlockedCount: "Открыто",
+  locked: "Закрыто",
 };
 
 const texts: Record<Locale, ProfileText> = { cs, en, de, ru };
