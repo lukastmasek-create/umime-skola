@@ -91,12 +91,36 @@ export default async function CourseLevelsPage({
       )}
       <p className="mb-6 text-sm text-[var(--foreground)]/50">{dict.course.levelsSubtitle}</p>
 
-      <Link
-        href={`/${locale}/kurzy/${category.slug}/${course.slug}/hra`}
-        className="btn-bouncy mb-10 inline-flex items-center gap-2 rounded-full bg-[var(--accent-500)] px-6 py-3 text-sm font-bold text-white shadow-sm"
-      >
-        🚀 {getGameText(locale as Locale).play}: {getGameText(locale as Locale).title}
-      </Link>
+      <h2 className="mb-4 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+        🎮 {getGameText(locale as Locale).games}
+      </h2>
+      <div className="mb-12 grid gap-4 sm:grid-cols-3">
+        <Link
+          href={`/${locale}/kurzy/${category.slug}/${course.slug}/hra`}
+          className="card card-hover flex flex-col items-center gap-2 p-5 text-center"
+        >
+          <span className="text-4xl">👾</span>
+          <span className="font-semibold">{getGameText(locale as Locale).title}</span>
+          <span className="pill bg-[var(--accent-500)] px-3 py-1 text-white">
+            {getGameText(locale as Locale).play}
+          </span>
+        </Link>
+        {[
+          { emoji: "🍄", name: "Super Mario" },
+          { emoji: "🟡", name: "Pac-Man" },
+        ].map((game) => (
+          <div
+            key={game.name}
+            className="card flex flex-col items-center gap-2 p-5 text-center opacity-60"
+          >
+            <span className="text-4xl grayscale">{game.emoji}</span>
+            <span className="font-semibold">{game.name}</span>
+            <span className="pill bg-[var(--surface-muted)] px-3 py-1">
+              {getGameText(locale as Locale).soon}
+            </span>
+          </div>
+        ))}
+      </div>
 
       <h2 className="mb-6 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
         🧩 {dict.course.levelsTitle}

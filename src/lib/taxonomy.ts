@@ -48,3 +48,30 @@ export const LANGUAGES: { value: LanguageCode; label: string }[] = [
   { value: "RS", label: "RS" },
   { value: "AJ", label: "AJ" },
 ];
+
+export type SubjectValue =
+  | "CESTINA"
+  | "LITERATURA"
+  | "ANGLICTINA"
+  | "NEMCINA"
+  | "RUSTINA"
+  | "MATEMATIKA"
+  | "DEJEPIS"
+  | "ZEMEPIS"
+  | "PRIRODOPIS";
+
+export const SUBJECTS: { slug: string; value: SubjectValue; emoji: string }[] = [
+  { slug: "cestina", value: "CESTINA", emoji: "📝" },
+  { slug: "literatura", value: "LITERATURA", emoji: "📚" },
+  { slug: "anglictina", value: "ANGLICTINA", emoji: "🇬🇧" },
+  { slug: "nemcina", value: "NEMCINA", emoji: "🇩🇪" },
+  { slug: "rustina", value: "RUSTINA", emoji: "🇷🇺" },
+  { slug: "matematika", value: "MATEMATIKA", emoji: "➗" },
+  { slug: "dejepis", value: "DEJEPIS", emoji: "🏛️" },
+  { slug: "zemepis", value: "ZEMEPIS", emoji: "🌍" },
+  { slug: "prirodopis", value: "PRIRODOPIS", emoji: "🦎" },
+];
+
+export function getSubjectBySlug(slug: string | undefined) {
+  return SUBJECTS.find((s) => s.slug === slug);
+}

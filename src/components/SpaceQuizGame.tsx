@@ -124,14 +124,18 @@ export function SpaceQuizGame({
   courseSlug,
   courseTitle,
   backHref,
+  questions,
 }: {
   locale: Locale;
   courseSlug: string;
   courseTitle: string;
   backHref: string;
+  questions?: GameQuestion[];
 }) {
   const t = getGameText(locale);
   const storageKey = `game:${courseSlug}`;
+  const hasCourseQuestions = !!questions && questions.length > 0;
+  const source = hasCourseQuestions ? questions : t.questions;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<SpaceEngine | null>(null);
@@ -198,7 +202,7 @@ export function SpaceQuizGame({
   }
 
   function startRun() {
-    const newRun = prepareRun(t.questions);
+    const newRun = prepareRun(source);
     setRun(newRun);
     setScore(0);
     setLives(BASE_LIVES + upgrades.life);
@@ -348,7 +352,7 @@ export function SpaceQuizGame({
           >
             {t.start}
           </button>
-          <p className="text-xs text-[var(--foreground)]/40">{t.demoNote}</p>
+          {!hasCourseQuestions && <p className="text-xs text-[var(--foreground)]/40">{t.demoNote}</p>}
         </div>
       )}
 

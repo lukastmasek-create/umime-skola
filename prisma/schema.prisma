@@ -97,6 +97,21 @@ enum Language {
   AJ // Anglický jazyk
 }
 
+// Předmět, pod který kurz spadá (záložky uvnitř sekce typu školy).
+enum Subject {
+  CESTINA
+  LITERATURA
+  ANGLICTINA
+  NEMCINA
+  RUSTINA
+  MATEMATIKA
+  DEJEPIS
+  ZEMEPIS
+  PRIRODOPIS
+}
+
+// Kurz = jedno téma (např. "i/y", "Druhá světová válka", "Savci"), které se
+// procvičuje hrou. `section` je kategorie/obor uvnitř předmětu.
 model Course {
   id          String    @id @default(cuid())
   title       String
@@ -105,15 +120,37 @@ model Course {
   published   Boolean   @default(false)
   category    Category
   language    Language?
+  subject     Subject?
+  section     String?
 
   levels      Level[]
   lessons     Lesson[]
+  questions   Question[]
   enrollments Enrollment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([category, language])
+  @@index([category, subject])
+}
+
+// Otázka kurzu používaná hrami (Space Invaders atd.). `options` má 4 možnosti,
+// `correctIndex` je index správné, `explanation` vysvětluje proč.
+model Question {
+  id           String   @id @default(cuid())
+  prompt       String
+  options      String[]
+  correctIndex Int
+  explanation  String
+  order        Int      @default(0)
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([courseId, order])
 }
 
 // Kurz je rozdělený na levely, kterými žák prochází postupně (podobně jako

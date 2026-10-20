@@ -38,6 +38,8 @@ export type GameText = {
   earned: string;
   completionBonus: string;
   backToCourse: string;
+  games: string;
+  soon: string;
   fire: string;
   demoNote: string;
   questions: GameQuestion[];
@@ -74,6 +76,8 @@ const cs: GameText = {
   earned: "Získáno bodů",
   completionBonus: "Za dokončení celého kurzu dostaneš globální body (brzy).",
   backToCourse: "← Zpět na kurz",
+  games: "Vyber si hru",
+  soon: "Brzy",
   fire: "Střelba",
   demoNote: "Ukázkové otázky — obsah kurzu se bude doplňovat.",
   questions: [
@@ -141,6 +145,8 @@ const en: GameText = {
   earned: "Points earned",
   completionBonus: "Finishing the whole course earns you global points (coming soon).",
   backToCourse: "← Back to course",
+  games: "Pick a game",
+  soon: "Soon",
   fire: "Fire",
   demoNote: "Sample questions — course content will be added over time.",
   questions: [
@@ -208,6 +214,8 @@ const de: GameText = {
   earned: "Verdiente Punkte",
   completionBonus: "Für den Abschluss des ganzen Kurses gibt es globale Punkte (bald).",
   backToCourse: "← Zurück zum Kurs",
+  games: "Spiel wählen",
+  soon: "Bald",
   fire: "Schießen",
   demoNote: "Beispielfragen — Kursinhalte werden nach und nach ergänzt.",
   questions: [
@@ -275,6 +283,8 @@ const ru: GameText = {
   earned: "Получено баллов",
   completionBonus: "За прохождение всего курса ты получишь глобальные баллы (скоро).",
   backToCourse: "← Назад к курсу",
+  games: "Выбери игру",
+  soon: "Скоро",
   fire: "Выстрел",
   demoNote: "Примеры вопросов — содержимое курса будет добавляться постепенно.",
   questions: [
