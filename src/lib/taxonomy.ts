@@ -75,3 +75,12 @@ export const SUBJECTS: { slug: string; value: SubjectValue; emoji: string }[] = 
 export function getSubjectBySlug(slug: string | undefined) {
   return SUBJECTS.find((s) => s.slug === slug);
 }
+
+// Třídy/ročníky dostupné v jednotlivých sekcích (přijímačky a maturita
+// se podle tříd nedělí).
+export const GRADES: Record<CategorySlug, number[]> = {
+  zakladni: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+  stredni: [1, 2, 3, 4],
+  prijimacky: [],
+  maturita: [],
+};

@@ -3,14 +3,15 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import {
   CATEGORIES,
+  GRADES,
   SUBJECTS,
   getCategoryBySlug,
   getSubjectBySlug,
   type SubjectValue,
 } from "@/lib/taxonomy";
 import { getDictionary } from "@/i18n/dictionaries";
-import { getGameText } from "@/i18n/game";
 import { getSubjectText } from "@/i18n/subjects";
+import { getAllGradesLabel, gradeLabel } from "@/i18n/grades";
 import { isLocale, type Locale } from "@/i18n/config";
 
 export const revalidate = 0;
@@ -22,6 +23,7 @@ type Course = {
   description: string | null;
   subject: SubjectValue | null;
   section: string | null;
+  grade: number | null;
 };
 
 export default async function CategoryPage({
@@ -29,14 +31,13 @@ export default async function CategoryPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; category: string }>;
-  searchParams: Promise<{ predmet?: string }>;
+  searchParams: Promise<{ predmet?: string; trida?: string }>;
 }) {
   const { locale, category: categorySlug } = await params;
   if (!isLocale(locale)) notFound();
   const dict = getDictionary(locale as Locale);
   const subjectText = getSubjectText(locale as Locale);
-  const gameText = getGameText(locale as Locale);
-  const { predmet } = await searchParams;
+  const { predmet, trida } = await searchParams;
 
   const category = getCategoryBySlug(categorySlug);
   if (!category) notFound();
@@ -44,6 +45,17 @@ export default async function CategoryPage({
   // Hodnota z URL musí být platný předmět, ať do Prisma nikdy nepošleme
   // libovolný string z query parametru.
   const selectedSubject = getSubjectBySlug(predmet);
+  const availableGrades = GRADES[category.slug];
+  const gradeNumber = Number(trida);
+  const selectedGrade = availableGrades.includes(gradeNumber) ? gradeNumber : undefined;
+
+  const filterHref = (subjectSlug?: string, grade?: number) => {
+    const query = new URLSearchParams();
+    if (subjectSlug) query.set("predmet", subjectSlug);
+    if (grade) query.set("trida", String(grade));
+    const qs = query.toString();
+    return `/${locale}/kurzy/${category.slug}${qs ? `?${qs}` : ""}`;
+  };
 
   let courses: Course[] = [];
   try {
@@ -52,6 +64,7 @@ export default async function CategoryPage({
         published: true,
         category: category.value,
         ...(selectedSubject ? { subject: selectedSubject.value } : {}),
+        ...(selectedGrade ? { grade: selectedGrade } : {}),
       },
       orderBy: [{ subject: "asc" }, { section: "asc" }, { title: "asc" }],
       select: {
@@ -61,6 +74,7 @@ export default async function CategoryPage({
         description: true,
         subject: true,
         section: true,
+        grade: true,
       },
     });
   } catch {
@@ -114,14 +128,31 @@ export default async function CategoryPage({
         {dict.categories[category.slug].description}
       </p>
 
+      {availableGrades.length > 0 && (
+        <div className="mb-3 flex flex-wrap gap-2">
+          <Link href={filterHref(selectedSubject?.slug)} className={chip(!selectedGrade)}>
+            🎒 {getAllGradesLabel(locale as Locale)}
+          </Link>
+          {availableGrades.map((n) => (
+            <Link
+              key={n}
+              href={filterHref(selectedSubject?.slug, n)}
+              className={chip(selectedGrade === n)}
+            >
+              {gradeLabel(locale as Locale, category.slug, n)}
+            </Link>
+          ))}
+        </div>
+      )}
+
       <div className="mb-10 flex flex-wrap gap-2">
-        <Link href={`/${locale}/kurzy/${category.slug}`} className={chip(!selectedSubject)}>
+        <Link href={filterHref(undefined, selectedGrade)} className={chip(!selectedSubject)}>
           {subjectText.all}
         </Link>
         {SUBJECTS.map((s) => (
           <Link
             key={s.value}
-            href={`/${locale}/kurzy/${category.slug}?predmet=${s.slug}`}
+            href={filterHref(s.slug, selectedGrade)}
             className={chip(selectedSubject?.value === s.value)}
           >
             {s.emoji} {subjectText.labels[s.value]}
@@ -131,7 +162,7 @@ export default async function CategoryPage({
 
       {courses.length === 0 ? (
         <div className="card p-10 text-center text-[var(--foreground)]/60">
-          {selectedSubject ? dict.category.noCoursesFiltered : dict.category.noCourses}
+          {selectedSubject || selectedGrade ? dict.category.noCoursesFiltered : dict.category.noCourses}
         </div>
       ) : (
         <div className="flex flex-col gap-12">
@@ -160,14 +191,21 @@ export default async function CategoryPage({
                             href={`/${locale}/kurzy/${category.slug}/${course.slug}`}
                             className="card card-hover flex flex-col gap-2 p-5"
                           >
-                            <h4 className="text-lg font-semibold">{course.title}</h4>
+                            <div className="flex items-start justify-between gap-2">
+                              <h4 className="text-lg font-semibold">{course.title}</h4>
+                              {course.grade && (
+                                <span className="pill shrink-0 bg-[var(--brand-50)] px-2.5 py-1 text-xs text-[var(--brand-700)]">
+                                  {gradeLabel(locale as Locale, category.slug, course.grade)}
+                                </span>
+                              )}
+                            </div>
                             {course.description && (
                               <p className="text-sm text-[var(--foreground)]/60">
                                 {course.description}
                               </p>
                             )}
                             <span className="mt-auto pt-2 text-sm font-semibold text-[var(--brand-600)]">
-                              🚀 {gameText.play} →
+                              {dict.category.viewLevels}
                             </span>
                           </Link>
                         ))}

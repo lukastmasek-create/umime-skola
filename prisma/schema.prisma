@@ -122,6 +122,7 @@ model Course {
   language    Language?
   subject     Subject?
   section     String?
+  grade       Int?
 
   levels      Level[]
   lessons     Lesson[]
@@ -133,6 +134,7 @@ model Course {
 
   @@index([category, language])
   @@index([category, subject])
+  @@index([category, grade])
 }
 
 // Otázka kurzu používaná hrami (Space Invaders atd.). `options` má 4 možnosti,
@@ -148,6 +150,9 @@ model Question {
   courseId String
   course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
+  levelId String?
+  level   Level?  @relation(fields: [levelId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
 
   @@index([courseId, order])
@@ -162,6 +167,8 @@ model Level {
   title     String
   order     Int     @default(0)
   published Boolean @default(false)
+
+  questions Question[]
 
   courseId String
   course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
