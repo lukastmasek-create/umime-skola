@@ -45,7 +45,7 @@ export default async function CoursePage({
 
   if (!course) {
     return (
-      <div className="mx-auto max-w-3xl px-6 py-16 text-center">
+      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-16 text-center">
         <div className="card p-10">
           <p className="text-[var(--muted)]">{dict.course.notFound}</p>
           <Link
@@ -100,7 +100,7 @@ export default async function CoursePage({
   );
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-16">
+    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-16">
       <Link
         href={`/${locale}/kurzy/${category.slug}`}
         className="mb-4 inline-block text-sm font-medium text-[var(--faint)] hover:text-[var(--foreground)]"

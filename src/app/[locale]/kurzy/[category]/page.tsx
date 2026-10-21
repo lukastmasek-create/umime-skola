@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import {
-  CATEGORIES,
   GRADES,
   SUBJECTS,
   getCategoryBySlug,
@@ -101,26 +100,7 @@ export default async function CategoryPage({
     }`;
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-16">
-      <div className="mb-2 flex flex-wrap gap-2 text-sm text-[var(--faint)]">
-        {CATEGORIES.map((c) => (
-          <span key={c.slug}>
-            {c.slug === category.slug ? (
-              <span className="font-semibold text-[var(--brand-600)]">
-                {dict.categories[c.slug].label}
-              </span>
-            ) : (
-              <Link href={`/${locale}/kurzy/${c.slug}`} className="hover:underline">
-                {dict.categories[c.slug].label}
-              </Link>
-            )}
-            {c.slug !== CATEGORIES[CATEGORIES.length - 1].slug && (
-              <span className="mx-2">·</span>
-            )}
-          </span>
-        ))}
-      </div>
-
+    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
       <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
         {dict.categories[category.slug].label}
       </h1>
@@ -145,17 +125,33 @@ export default async function CategoryPage({
         </div>
       )}
 
-      <div className="mb-10 flex flex-wrap gap-2">
-        <Link href={filterHref(undefined, selectedGrade)} className={chip(!selectedSubject)}>
-          {subjectText.all}
-        </Link>
-        {SUBJECTS.map((s) => (
+      <div className="mb-10 grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-10">
+        {[
+          { key: "all", href: filterHref(undefined, selectedGrade), icon: "✨", label: subjectText.all, color: "var(--surface)", active: !selectedSubject },
+          ...SUBJECTS.map((s) => ({
+            key: s.value,
+            href: filterHref(s.slug, selectedGrade),
+            icon: s.emoji,
+            label: subjectText.labels[s.value],
+            color: s.color,
+            active: selectedSubject?.value === s.value,
+          })),
+        ].map((tile) => (
           <Link
-            key={s.value}
-            href={filterHref(s.slug, selectedGrade)}
-            className={chip(selectedSubject?.value === s.value)}
+            key={tile.key}
+            href={tile.href}
+            aria-current={tile.active ? "true" : undefined}
+            className={`flex flex-col items-center justify-center gap-1 rounded-2xl border-2 border-[var(--edge)] px-1 py-2.5 text-center text-xs font-bold leading-tight ${
+              tile.active
+                ? "-translate-y-0.5 shadow-[0_4px_0_var(--shadow-ink)] outline outline-2 outline-offset-2 outline-[var(--foreground)]"
+                : "opacity-80 hover:-translate-y-0.5 hover:opacity-100"
+            } ${tile.color === "var(--surface)" ? "" : "text-[#1b1830]"}`}
+            style={{ background: tile.color }}
           >
-            {subjectText.labels[s.value]}
+            <span aria-hidden className="text-2xl">
+              {tile.icon}
+            </span>
+            <span className="break-words">{tile.label}</span>
           </Link>
         ))}
       </div>
@@ -171,10 +167,20 @@ export default async function CategoryPage({
             return (
               <section key={subjectKey}>
                 <h2
-                  className="mb-5 text-2xl font-bold"
+                  className="mb-5 flex items-center gap-3 text-2xl font-bold"
                   style={{ fontFamily: "var(--font-heading)" }}
                 >
+                  <span
+                    aria-hidden
+                    className="flex h-11 w-11 items-center justify-center rounded-xl border-2 border-[var(--edge)] text-2xl"
+                    style={{ background: subject?.color ?? "var(--surface-muted)" }}
+                  >
+                    {subject?.emoji ?? "📖"}
+                  </span>
                   {subject ? subjectText.labels[subject.value] : subjectText.other}
+                  <span className="pill bg-[var(--surface-muted)] px-2.5 py-1 text-xs text-[var(--muted)]">
+                    {[...sections.values()].reduce((sum, list) => sum + list.length, 0)}
+                  </span>
                 </h2>
                 <div className="flex flex-col gap-8">
                   {[...sections.entries()].map(([sectionKey, items]) => (
@@ -189,7 +195,8 @@ export default async function CategoryPage({
                           <Link
                             key={course.id}
                             href={`/${locale}/kurzy/${category.slug}/${course.slug}`}
-                            className="card card-hover flex flex-col gap-2 p-5"
+                            className="card card-hover flex flex-col gap-2 overflow-hidden p-5 pt-6"
+                            style={{ borderTop: `8px solid ${subject?.color ?? "var(--edge)"}` }}
                           >
                             <div className="flex items-start justify-between gap-2">
                               <h4 className="text-lg font-semibold">{course.title}</h4>

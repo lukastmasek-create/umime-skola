@@ -60,16 +60,16 @@ export type SubjectValue =
   | "ZEMEPIS"
   | "PRIRODOPIS";
 
-export const SUBJECTS: { slug: string; value: SubjectValue; emoji: string }[] = [
-  { slug: "cestina", value: "CESTINA", emoji: "📝" },
-  { slug: "literatura", value: "LITERATURA", emoji: "📚" },
-  { slug: "anglictina", value: "ANGLICTINA", emoji: "🇬🇧" },
-  { slug: "nemcina", value: "NEMCINA", emoji: "🇩🇪" },
-  { slug: "rustina", value: "RUSTINA", emoji: "🇷🇺" },
-  { slug: "matematika", value: "MATEMATIKA", emoji: "➗" },
-  { slug: "dejepis", value: "DEJEPIS", emoji: "🏛️" },
-  { slug: "zemepis", value: "ZEMEPIS", emoji: "🌍" },
-  { slug: "prirodopis", value: "PRIRODOPIS", emoji: "🦎" },
+export const SUBJECTS: { slug: string; value: SubjectValue; emoji: string; color: string }[] = [
+  { slug: "cestina", value: "CESTINA", emoji: "📝", color: "#ffc933" },
+  { slug: "literatura", value: "LITERATURA", emoji: "📚", color: "#ff9ec7" },
+  { slug: "anglictina", value: "ANGLICTINA", emoji: "💬", color: "#8fd0ff" },
+  { slug: "nemcina", value: "NEMCINA", emoji: "🥨", color: "#ffb26b" },
+  { slug: "rustina", value: "RUSTINA", emoji: "🪆", color: "#ff8a6b" },
+  { slug: "matematika", value: "MATEMATIKA", emoji: "➗", color: "#7ee0b0" },
+  { slug: "dejepis", value: "DEJEPIS", emoji: "🏛️", color: "#c9b8ff" },
+  { slug: "zemepis", value: "ZEMEPIS", emoji: "🌍", color: "#7fdbd8" },
+  { slug: "prirodopis", value: "PRIRODOPIS", emoji: "🦎", color: "#b6e36a" },
 ];
 
 export function getSubjectBySlug(slug: string | undefined) {

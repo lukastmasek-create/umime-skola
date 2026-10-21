@@ -44,7 +44,7 @@ export default async function CourseGamesPage({
   const courseHref = `/${locale}/kurzy/${categorySlug}/${courseSlug}`;
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-16">
+    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-16">
       <Link
         href={courseHref}
         className="mb-4 inline-block text-sm font-medium text-[var(--faint)] hover:text-[var(--foreground)]"

@@ -3,6 +3,7 @@
 import { useState, use } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { notifyAccountChanged } from "@/lib/account-events";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, type Locale } from "@/i18n/config";
 import { notFound } from "next/navigation";
@@ -40,11 +41,13 @@ export default function PrihlaseniPage({
       return;
     }
 
+    notifyAccountChanged();
     router.push(`/${locale}/kurzy`);
+    router.refresh();
   }
 
   return (
-    <div className="gradient-hero flex min-h-[calc(100vh-140px)] items-center justify-center px-6 py-16">
+    <div className="gradient-hero flex min-h-[calc(100vh-140px)] items-center justify-center px-4 py-10 sm:px-6 sm:py-16">
       <div className="card w-full max-w-sm p-8">
         <h1 className="mb-1 text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
           {dict.auth.login.title}

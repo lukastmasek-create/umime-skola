@@ -7,26 +7,8 @@ import { Avatar } from "@/components/Avatar";
 import { AVATARS, isAvatarUnlocked } from "@/lib/avatars";
 import { TITLES, getTitle, isTitleUnlocked } from "@/lib/titles";
 import { fill, getProfileText } from "@/i18n/profile";
+import { useAccount } from "@/lib/use-account";
 import type { Locale } from "@/i18n/config";
-
-type Account =
-  | {
-      loggedIn: true;
-      degraded?: boolean;
-      name: string | null;
-      avatar: string;
-      title: string | null;
-      points: number;
-      school: { name: string; city: string } | null;
-      unlocks: string[];
-      level: number;
-      xp: number;
-      percent: number;
-      neededForNext: number;
-      intoLevel: number;
-    }
-  | { loggedIn: false }
-  | null;
 
 export function HeaderAccount({
   locale,
@@ -39,29 +21,12 @@ export function HeaderAccount({
   registerLabel: string;
   linkClass: string;
 }) {
-  const [account, setAccount] = useState<Account>(null);
+  const [account, setAccount] = useAccount();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const t = getProfileText(locale);
-
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      try {
-        const res = await fetch("/api/profil");
-        const data = await res.json();
-        if (!cancelled) setAccount(data);
-      } catch {
-        if (!cancelled) setAccount({ loggedIn: false });
-      }
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -105,12 +70,12 @@ export function HeaderAccount({
   if (!account.loggedIn) {
     return (
       <>
-        <Link href={`/${locale}/prihlaseni`} className={linkClass}>
+        <Link href={`/${locale}/prihlaseni`} className={`hidden sm:inline-flex ${linkClass}`}>
           {loginLabel}
         </Link>
         <Link
           href={`/${locale}/registrace`}
-          className="btn-bouncy bg-[var(--brand-500)] px-4 py-1.5 text-sm font-bold text-white"
+          className="btn-bouncy hidden bg-[var(--brand-500)] px-4 py-1.5 text-sm font-bold text-white sm:inline-flex"
         >
           {registerLabel}
         </Link>

@@ -7,6 +7,7 @@ import { LevelBadge } from "@/components/LevelBadge";
 import { AVATARS, isAvatarUnlocked } from "@/lib/avatars";
 import { TITLES, getTitle, isTitleUnlocked } from "@/lib/titles";
 import { fill, getProfileText } from "@/i18n/profile";
+import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
 
 type Profile = {
@@ -59,6 +60,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
       });
       if (!res.ok) throw new Error();
       setProfile((p) => (p ? { ...p, avatar: id } : p));
+      notifyAccountChanged();
     } catch {
       setError(true);
     }
@@ -76,6 +78,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
       });
       if (!res.ok) throw new Error();
       setProfile((p) => (p ? { ...p, title: id } : p));
+      notifyAccountChanged();
     } catch {
       setError(true);
     }

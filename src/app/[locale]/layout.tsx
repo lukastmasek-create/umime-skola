@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Unbounded, Onest } from "next/font/google";
 import "../globals.css";
-import { NavTabs } from "@/components/NavTabs";
+import { MobileMenu, NavTabs } from "@/components/NavTabs";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { HeaderAccount } from "@/components/HeaderAccount";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -58,7 +58,7 @@ export default async function LocaleLayout({
         style={{ fontFamily: "var(--font-body), var(--font-sans)" }}
       >
         <header className="sticky top-0 z-40 border-b-2 border-[var(--edge)] bg-[var(--surface)]">
-          <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-3">
+          <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:px-6">
             <div className="flex items-center justify-between gap-3">
               <Link
                 href={`/${locale}`}
@@ -67,11 +67,11 @@ export default async function LocaleLayout({
               >
                 Umíme<span className="text-[var(--accent-500)]">.</span>
               </Link>
-              <div className="flex flex-wrap items-center justify-end gap-1.5 text-sm">
-                <Link href={`/${locale}/obchod`} className={navLink}>
+              <div className="flex items-center justify-end gap-1.5 text-sm">
+                <Link href={`/${locale}/obchod`} className={`hidden lg:inline-flex ${navLink}`}>
                   {dict.nav.shop}
                 </Link>
-                <Link href={`/${locale}/nastaveni`} className={navLink}>
+                <Link href={`/${locale}/nastaveni`} className={`hidden lg:inline-flex ${navLink}`}>
                   {dict.nav.settings}
                 </Link>
                 <LanguageSwitcher current={locale as Locale} />
@@ -80,6 +80,14 @@ export default async function LocaleLayout({
                   loginLabel={dict.nav.login}
                   registerLabel={dict.nav.register}
                   linkClass={navLink}
+                />
+                <MobileMenu
+                  locale={locale as Locale}
+                  dict={dict}
+                  shopLabel={dict.nav.shop}
+                  settingsLabel={dict.nav.settings}
+                  loginLabel={dict.nav.login}
+                  registerLabel={dict.nav.register}
                 />
               </div>
             </div>

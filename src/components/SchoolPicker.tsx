@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getCommunityText } from "@/i18n/community";
+import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
 
 type School = { id: string; name: string; city: string };
@@ -72,6 +73,7 @@ export function SchoolPicker({ locale }: { locale: Locale }) {
       setName("");
       setCity("");
       setStatus("saved");
+      notifyAccountChanged();
     } catch {
       setStatus("error");
     }
@@ -84,6 +86,7 @@ export function SchoolPicker({ locale }: { locale: Locale }) {
       if (!res.ok) throw new Error();
       setCurrent(null);
       setStatus("idle");
+      notifyAccountChanged();
     } catch {
       setStatus("error");
     }
