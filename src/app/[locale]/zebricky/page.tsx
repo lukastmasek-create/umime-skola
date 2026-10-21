@@ -5,6 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { getCommunityText } from "@/i18n/community";
 import { isLocale, type Locale } from "@/i18n/config";
 import { Avatar } from "@/components/Avatar";
+import { Podium } from "@/components/Podium";
+import { RewardImage } from "@/components/RewardImage";
+import { TROPHIES } from "@/lib/rewards";
 import { getEscapeText } from "@/i18n/escape";
 import { getIdleText } from "@/i18n/idle";
 import { ROOMS } from "@/lib/escape/rewards";
@@ -22,21 +25,24 @@ type EscapeRow = {
 
 const mmss = (total: number) => `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
 
-const PODIUM = ["#ffc933", "#d4d9e3", "#e8a56b"];
-
 type Player = { id: string; name: string | null; points: number; avatar: string | null };
 type SchoolRow = { id: string; name: string; city: string; total: number; players: number; average: number };
 
 function RankBadge({ position }: { position: number }) {
-  const podium = PODIUM[position - 1];
+  const trophy = TROPHIES[position - 1];
+  if (trophy) {
+    // 1. až 3. místo: pohár z Blenderu, číslo zůstává pro čtečky obrazovky.
+    return (
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center">
+        <RewardImage name={trophy} size={44} />
+        <span className="sr-only">{position}</span>
+      </span>
+    );
+  }
   return (
     <span
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-[var(--edge)] text-base font-extrabold"
-      style={{
-        background: podium ?? "var(--surface-muted)",
-        color: podium ? "#16132b" : "var(--foreground)",
-        fontFamily: "var(--font-heading)",
-      }}
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 border-[var(--edge)] bg-[var(--surface-muted)] text-base font-extrabold text-[var(--foreground)]"
+      style={{ fontFamily: "var(--font-heading)" }}
     >
       {position}
     </span>
@@ -181,21 +187,24 @@ export default async function LeaderboardPage({
     }`;
 
   const playerList = (
-    <ol className="flex flex-col gap-3">
-      {top.map((player, i) => (
-        <li
-          key={player.id}
-          className={`card flex items-center gap-4 px-4 py-3 ${
-            player.id === userId ? "outline outline-2 outline-offset-2 outline-[var(--brand-500)]" : ""
-          }`}
-        >
-          <RankBadge position={i + 1} />
-          <Avatar id={player.avatar} size={36} />
-          <span className="flex-1 truncate font-semibold">{player.name || t.anonymous}</span>
-          <span className="font-bold tabular-nums">{player.points}</span>
-        </li>
-      ))}
-    </ol>
+    <>
+      <Podium players={top} anonymous={t.anonymous} highlightId={userId} />
+      <ol className="flex flex-col gap-3">
+        {top.map((player, i) => (
+          <li
+            key={player.id}
+            className={`card flex items-center gap-4 px-4 py-3 ${
+              player.id === userId ? "outline outline-2 outline-offset-2 outline-[var(--brand-500)]" : ""
+            }`}
+          >
+            <RankBadge position={i + 1} />
+            <Avatar id={player.avatar} size={36} />
+            <span className="flex-1 truncate font-semibold">{player.name || t.anonymous}</span>
+            <span className="font-bold tabular-nums">{player.points}</span>
+          </li>
+        ))}
+      </ol>
+    </>
   );
 
   let content: React.ReactNode;

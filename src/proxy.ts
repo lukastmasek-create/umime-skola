@@ -32,5 +32,6 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  // rewards/ jsou statické obrázky z public/, ty se na jazykovou verzi nepřesměrovávají.
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|rewards/).*)"],
 };

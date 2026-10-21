@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
+import { LevelBadge } from "@/components/LevelBadge";
 import { AVATARS, isAvatarUnlocked } from "@/lib/avatars";
 import { TITLES, getTitle, isTitleUnlocked } from "@/lib/titles";
 import { fill, getProfileText } from "@/i18n/profile";
@@ -120,6 +121,9 @@ export function ProfileView({ locale }: { locale: Locale }) {
             <span className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">
               {t.level}
             </span>
+          </div>
+          <div className="mt-3">
+            <LevelBadge level={level} locale={locale} />
           </div>
           <div className="mt-3 h-4 overflow-hidden rounded-full border-2 border-[var(--edge)] bg-[var(--surface-muted)]">
             <div

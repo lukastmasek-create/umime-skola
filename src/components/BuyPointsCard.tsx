@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { RewardImage } from "@/components/RewardImage";
 import type { Dictionary } from "@/i18n/dictionaries";
 
 export function BuyPointsCard({
   pkg,
   dict,
 }: {
-  pkg: { points: number; price: string; popular: boolean };
+  pkg: { points: number; price: string; popular: boolean; image: string };
   dict: Dictionary;
 }) {
   const [clicked, setClicked] = useState(false);
@@ -23,6 +24,7 @@ export function BuyPointsCard({
           {dict.shop.mostPopular}
         </span>
       )}
+      <RewardImage name={pkg.image} size={112} />
       <p className="text-2xl font-bold">{pkg.points}</p>
       <p className="text-sm text-[var(--faint)]">{dict.shop.pointsSuffix}</p>
       <p className="mt-2 text-lg font-semibold text-[var(--brand-600)]">{pkg.price}</p>

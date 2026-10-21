@@ -8,10 +8,11 @@ import { BuyPointsCard } from "@/components/BuyPointsCard";
 
 export const revalidate = 0;
 
+// image = odměna z public/rewards; čím větší balíček, tím víc pokladu.
 const POINT_PACKAGES = [
-  { points: 100, price: "49 Kč", popular: false },
-  { points: 300, price: "99 Kč", popular: true },
-  { points: 1000, price: "249 Kč", popular: false },
+  { points: 100, price: "49 Kč", popular: false, image: "mince" },
+  { points: 300, price: "99 Kč", popular: true, image: "truhla" },
+  { points: 1000, price: "249 Kč", popular: false, image: "truhla-otevrena" },
 ];
 
 export default async function ShopPage({
