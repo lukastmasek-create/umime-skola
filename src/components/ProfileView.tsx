@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { LevelBadge } from "@/components/LevelBadge";
-import { AVATARS, isAvatarUnlocked } from "@/lib/avatars";
+import { AVATARS, getAvatar, isAvatarUnlocked } from "@/lib/avatars";
+import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { TITLES, getTitle, isTitleUnlocked } from "@/lib/titles";
 import { fill, getProfileText } from "@/i18n/profile";
 import { notifyAccountChanged } from "@/lib/account-events";
@@ -107,7 +108,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
   return (
     <div className="flex flex-col gap-8">
       <section className="card flex flex-col gap-6 p-6 sm:flex-row sm:items-center">
-        <Avatar id={profile.avatar} size={104} />
+        <ProfileAvatar id={profile.avatar} label={getAvatar(profile.avatar).names[locale]} />
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
             {profile.name || t.anonymous}
