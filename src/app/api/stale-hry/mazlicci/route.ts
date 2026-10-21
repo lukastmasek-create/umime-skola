@@ -23,6 +23,12 @@ import {
 const GAME = "mazlicci";
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+function errorCode(error: unknown): string {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) return error.code;
+  if (error instanceof Error) return error.name;
+  return "unknown";
+}
+
 class Conflict extends Error {}
 class NotEnoughPoints extends Error {}
 
@@ -139,7 +145,7 @@ export async function POST(request: Request) {
         await tx.idleState.create({ data: { userId, game: GAME, data } });
       }
       return { outcome, points: points - cost };
-    });
+    }, { maxWait: 10_000, timeout: 20_000 });
 
     if (!result.outcome.ok) {
       return NextResponse.json({ error: result.outcome.error }, { status: 400 });
@@ -152,6 +158,7 @@ export async function POST(request: Request) {
     if (error instanceof Conflict || (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")) {
       return NextResponse.json({ error: "conflict" }, { status: 409 });
     }
-    return NextResponse.json({ error: "unavailable" }, { status: 503 });
+    console.error("mazlicci POST failed", error);
+    return NextResponse.json({ error: "unavailable", detail: errorCode(error) }, { status: 503 });
   }
 }

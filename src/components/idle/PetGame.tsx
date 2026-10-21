@@ -128,7 +128,7 @@ export function PetGame({ locale }: { locale: Locale }) {
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
         const code = (json.error as ErrorCode | "conflict" | undefined) ?? "generic";
-        showMessage(t.errors[code] ?? t.errors.generic);
+        showMessage((t.errors[code] ?? t.errors.generic) + (json.detail ? ` (${json.detail})` : ""));
         if (code === "conflict") void sync();
         return;
       }

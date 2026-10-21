@@ -193,7 +193,7 @@ export function CityGame({ locale }: { locale: Locale }) {
           });
           const json = await res.json().catch(() => ({}));
           if (!res.ok) {
-            toast(errorText(json.error));
+            toast(errorText(json.error) + (json.detail ? ` (${json.detail})` : ""));
             pendingRef.current--;
             await sync();
             return;
