@@ -9,6 +9,8 @@ import { SpaceQuizGame } from "@/components/SpaceQuizGame";
 
 export const revalidate = 0;
 
+const POOL_SIZE = 12;
+
 export default async function CourseGamePage({
   params,
 }: {
@@ -50,15 +52,18 @@ export default async function CourseGamePage({
       select: {
         title: true,
         questions: {
-          where: { difficulty },
-          select: { prompt: true, options: true, correctIndex: true, explanation: true },
+          select: { prompt: true, options: true, correctIndex: true, explanation: true, difficulty: true },
         },
       },
     });
     if (course) {
       title = `${course.title} · ${getTestText(locale as Locale).difficulties[difficulty - 1]}`;
+      // Na jednu úroveň připadá v kurzu jen pár otázek, takže kolo doplníme
+      // z nejbližších obtížností (nejdřív stejná, pak sousední), ať je dost na výběr.
       questions = course.questions
         .filter((q) => q.options.length === 4 && q.correctIndex >= 0 && q.correctIndex < 4)
+        .sort((a, b) => Math.abs(a.difficulty - difficulty) - Math.abs(b.difficulty - difficulty))
+        .slice(0, POOL_SIZE)
         .map((q) => ({
           prompt: q.prompt.replaceAll("___", "…"),
           options: q.options as GameQuestion["options"],

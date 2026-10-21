@@ -7,12 +7,14 @@ import { MarioEngine } from "@/lib/mario-engine";
 import type { GameSlug } from "@/lib/games";
 import { getGameText, type GameQuestion, type GameText } from "@/i18n/game";
 import type { Locale } from "@/i18n/config";
+import { isMuted, setMuted, sfx, unlockAudio } from "@/lib/game-fx";
 
 type QuizEngine = {
   destroy(): void;
   setRunning(running: boolean): void;
   setInput(input: Partial<{ left: boolean; right: boolean; fire: boolean }>): void;
   loadQuestion(options: string[], correctIndex: number, config: EngineConfig, prompt?: string): void;
+  popText(text: string, color?: string): void;
 };
 
 type Phase = "intro" | "playing" | "explain" | "result";
@@ -20,7 +22,8 @@ type UpgradeKey = "fire" | "life" | "slow";
 type Upgrades = Record<UpgradeKey, number>;
 type Resolved = { kind: "correct" | "wrong" | "missed"; pts?: number };
 
-const QUESTIONS_PER_RUN = 5;
+const QUESTIONS_PER_RUN = 8;
+const BASE_FIRE_COOLDOWN = 0.35;
 const BASE_LIVES = 3;
 const MAX_UPGRADE_LEVEL = 3;
 const COSTS: Record<UpgradeKey, number[]> = {
@@ -163,9 +166,10 @@ export function SpaceQuizGame({
   const explainSinceRef = useRef(0);
   const nextStepRef = useRef<() => void>(() => {});
   const engineRef = useRef<QuizEngine | null>(null);
-  const handlersRef = useRef<{ onHit: (c: boolean) => void; onMiss: () => void }>({
+  const handlersRef = useRef<{ onHit: (c: boolean) => void; onMiss: () => void; onDamage: () => void }>({
     onHit: () => {},
     onMiss: () => {},
+    onDamage: () => {},
   });
 
   const [run, setRun] = useState<GameQuestion[]>([]);
@@ -180,9 +184,11 @@ export function SpaceQuizGame({
   const [flash, setFlash] = useState<string | null>(null);
   const [completed, setCompleted] = useState(false);
   const [xpGained, setXpGained] = useState(0);
+  const [muted, setMutedState] = useState(false);
 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
+    setMutedState(isMuted());
     try {
       const raw = localStorage.getItem(storageKey);
       if (raw) {
@@ -202,12 +208,13 @@ export function SpaceQuizGame({
     const callbacks = {
       onHit: (_i: number, correct: boolean) => handlersRef.current.onHit(correct),
       onMiss: () => handlersRef.current.onMiss(),
+      onDamage: () => handlersRef.current.onDamage(),
     };
     const engine: QuizEngine = mario
       ? new MarioEngine(canvas, callbacks)
       : new SpaceEngine(canvas, callbacks);
     engineRef.current = engine;
-    engine.loadQuestion(["Ahoj", "Hello", "Hallo", "Привет"], 0, { fireCooldown: 0.6, alienSpeedFactor: 1 });
+    engine.loadQuestion(["Ahoj", "Hello", "Hallo", "Привет"], 0, { fireCooldown: BASE_FIRE_COOLDOWN, alienSpeedFactor: 1 });
     return () => {
       engine.destroy();
       engineRef.current = null;
@@ -222,19 +229,22 @@ export function SpaceQuizGame({
     }
   }
 
-  function loadQuestion(q: GameQuestion) {
+  function loadQuestion(q: GameQuestion, index: number, total: number) {
     engineRef.current?.loadQuestion(
       q.options,
       q.correctIndex,
       {
-        fireCooldown: 0.6 * (1 - 0.2 * upgrades.fire),
+        fireCooldown: BASE_FIRE_COOLDOWN * (1 - 0.2 * upgrades.fire),
         alienSpeedFactor: 1 - 0.15 * upgrades.slow,
+        round: index,
+        boss: total >= 4 && index === total - 1,
       },
       mario ? q.prompt : undefined,
     );
   }
 
   function startRun() {
+    unlockAudio();
     const newRun = prepareRun(source);
     setRun(newRun);
     setScore(0);
@@ -245,7 +255,7 @@ export function SpaceQuizGame({
     setFlash(null);
     setCompleted(false);
     setXpGained(0);
-    loadQuestion(newRun[0]);
+    loadQuestion(newRun[0], 0, newRun.length);
     engineRef.current?.setRunning(true);
     setPhase("playing");
   }
@@ -267,7 +277,8 @@ export function SpaceQuizGame({
   }
 
   function finishRun(survived: boolean) {
-    engineRef.current?.loadQuestion([], 0, { fireCooldown: 0.6, alienSpeedFactor: 1 });
+    engineRef.current?.loadQuestion([], 0, { fireCooldown: BASE_FIRE_COOLDOWN, alienSpeedFactor: 1 });
+    sfx(survived ? "win" : "lose");
     const nextCoins = coins + score;
     setCoins(nextCoins);
     persist(nextCoins, upgrades);
@@ -285,7 +296,7 @@ export function SpaceQuizGame({
     const next = qIndex + 1;
     setQIndex(next);
     setResolved(null);
-    loadQuestion(run[next]);
+    loadQuestion(run[next], next, run.length);
     engineRef.current?.setRunning(true);
     setPhase("playing");
   }
@@ -311,6 +322,7 @@ export function SpaceQuizGame({
           setScore((s) => s + pts);
           setCombo((c) => c + 1);
           setResolved({ kind: "correct", pts });
+          engineRef.current?.popText(combo > 0 ? `+${pts}  🔥×${combo + 1}` : `+${pts}`, "#7ee0b0");
           explainSinceRef.current = Date.now();
           setPhase("explain");
           return;
@@ -333,7 +345,21 @@ export function SpaceQuizGame({
         setCombo(0);
         setResolved({ kind: "missed" });
         explainSinceRef.current = Date.now();
+        setPhase("explain");
+      },
+      onDamage: () => {
+        const remaining = lives - 1;
+        setLives(remaining);
+        setCombo(0);
+        if (remaining <= 0) {
+          engineRef.current?.setRunning(false);
+          setResolved({ kind: "wrong" });
+          explainSinceRef.current = Date.now();
           setPhase("explain");
+        } else {
+          setFlash(t.damage);
+          window.setTimeout(() => setFlash(null), 1200);
+        }
       },
     };
   });
@@ -367,10 +393,26 @@ export function SpaceQuizGame({
           </h1>
           <p className="text-sm text-[var(--muted)]">{courseTitle}</p>
         </div>
-        {phase !== "intro" && (
-          <div className="flex flex-wrap gap-2 text-sm font-semibold">
+        <div className="flex flex-wrap items-center gap-2 text-sm font-semibold">
+          <button
+            type="button"
+            onClick={() => {
+              const next = !muted;
+              setMuted(next);
+              setMutedState(next);
+              unlockAudio();
+            }}
+            aria-pressed={!muted}
+            aria-label={t.sound}
+            title={t.sound}
+            className="pill bg-[var(--surface-muted)] px-3 py-1.5"
+          >
+            {muted ? "🔇" : "🔊"}
+          </button>
+          {phase !== "intro" && (
+            <>
             <span className="pill bg-[var(--surface-muted)] px-3 py-1.5">
-              {t.question} {Math.min(qIndex + 1, QUESTIONS_PER_RUN)}/{QUESTIONS_PER_RUN}
+              {t.question} {Math.min(qIndex + 1, run.length)}/{run.length}
             </span>
             <span className="pill bg-[var(--surface-muted)] px-3 py-1.5">
               {t.lives}: {"❤️".repeat(Math.max(lives, 0)) || "💀"}
@@ -383,8 +425,9 @@ export function SpaceQuizGame({
                 🔥 {t.combo} ×{combo}
               </span>
             )}
-          </div>
-        )}
+            </>
+          )}
+        </div>
       </div>
 
       {(phase === "playing" || phase === "explain") && question && !mario && (
@@ -412,6 +455,7 @@ export function SpaceQuizGame({
         <div className="flex flex-col gap-4">
           <p className="text-sm text-[var(--muted)]">{t.intro}</p>
           <p className="text-xs text-[var(--faint)]">⌨️ {t.controls}</p>
+          {!mario && <p className="text-xs text-[var(--faint)]">💡 {t.tipDodge}</p>}
           <UpgradeShop t={t} coins={coins} upgrades={upgrades} onBuy={buy} />
           <button
             onClick={startRun}

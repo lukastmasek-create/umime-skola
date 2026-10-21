@@ -1,4 +1,5 @@
 import type { EngineCallbacks, EngineConfig } from "./space-engine";
+import { drawFloatTexts, sfx, stepFloatTexts, type FloatText } from "./game-fx";
 
 const W = 640;
 const H = 420;
@@ -8,6 +9,8 @@ const TURTLE_H = 24;
 const SPACING = 96;
 const SHELLS = ["#2fb344", "#e5484d", "#3b82f6", "#f5a524"];
 const QUESTION_TIME = 28;
+const COYOTE = 0.1;
+const JUMP_BUFFER = 0.12;
 
 type Turtle = {
   cx: number;
@@ -18,11 +21,12 @@ type Turtle = {
   alive: boolean;
   shell: string;
 };
-type Particle = { x: number; y: number; vx: number; vy: number; life: number; color: string };
+type Particle = { x: number; y: number; vx: number; vy: number; life: number; color: string; size: number };
 type Cloud = { x: number; y: number; s: number };
 
 export class MarioEngine {
   private ctx: CanvasRenderingContext2D;
+  private dpr: number;
   private raf = 0;
   private last = 0;
   private running = false;
@@ -34,9 +38,20 @@ export class MarioEngine {
   private facing = 1;
   private knock = 0;
   private knockDir = 1;
+  private squash = 0;
+  private coyote = 0;
+  private jumpBuffer = 0;
+  private jumpHeld = false;
+  private prevFire = false;
+  private shake = 0;
+  private flash = { color: "#ffffff", a: 0 };
+  private banner = 0;
+  private lastTick = -1;
   private input = { left: false, right: false, fire: false };
+  private pointerTarget: number | null = null;
   private turtles: Turtle[] = [];
   private particles: Particle[] = [];
+  private texts: FloatText[] = [];
   private clouds: Cloud[] = [
     { x: 80, y: 60, s: 1 },
     { x: 300, y: 100, s: 0.7 },
@@ -45,17 +60,22 @@ export class MarioEngine {
   private timeLeft = QUESTION_TIME;
   private countdown = 0;
   private prompt = "";
-  private config: EngineConfig = { fireCooldown: 0.6, alienSpeedFactor: 1 };
+  private config: EngineConfig = { fireCooldown: 0.35, alienSpeedFactor: 1 };
 
   constructor(
     private canvas: HTMLCanvasElement,
     private cb: EngineCallbacks,
   ) {
-    canvas.width = W;
-    canvas.height = H;
+    this.dpr = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = W * this.dpr;
+    canvas.height = H * this.dpr;
     this.ctx = canvas.getContext("2d")!;
     window.addEventListener("keydown", this.onKeyDown);
     window.addEventListener("keyup", this.onKeyUp);
+    canvas.addEventListener("pointerdown", this.onPointerDown);
+    canvas.addEventListener("pointermove", this.onPointerMove);
+    canvas.addEventListener("pointerup", this.onPointerUp);
+    canvas.addEventListener("pointercancel", this.onPointerUp);
     this.raf = requestAnimationFrame(this.tick);
   }
 
@@ -63,34 +83,52 @@ export class MarioEngine {
     cancelAnimationFrame(this.raf);
     window.removeEventListener("keydown", this.onKeyDown);
     window.removeEventListener("keyup", this.onKeyUp);
+    this.canvas.removeEventListener("pointerdown", this.onPointerDown);
+    this.canvas.removeEventListener("pointermove", this.onPointerMove);
+    this.canvas.removeEventListener("pointerup", this.onPointerUp);
+    this.canvas.removeEventListener("pointercancel", this.onPointerUp);
   }
 
   setRunning(running: boolean) {
     this.running = running;
-    if (!running) this.input = { left: false, right: false, fire: false };
+    if (!running) {
+      this.input = { left: false, right: false, fire: false };
+      this.pointerTarget = null;
+    }
   }
 
   setInput(partial: Partial<typeof this.input>) {
     this.input = { ...this.input, ...partial };
   }
 
+  popText(text: string, color = "#ffe066", x = this.px, y = this.py - 60) {
+    this.texts.push({ x, y, text, color, life: 1.1 });
+  }
+
   loadQuestion(options: string[], correctIndex: number, config: EngineConfig, prompt = "") {
     this.config = config;
     this.prompt = prompt;
     this.countdown = prompt ? 3 : 0;
+    this.lastTick = -1;
     this.px = 28;
     this.py = GROUND;
     this.vy = 0;
     this.onGround = true;
     this.knock = 0;
+    this.squash = 0;
+    this.jumpBuffer = 0;
     this.timeLeft = QUESTION_TIME;
+    this.banner = config.boss ? 2.2 : 0;
+    if (config.boss && options.length > 0) sfx("boss");
     const n = options.length;
     const first = 130;
     const gap = n > 1 ? (W - SPACING / 2 - first) / (n - 1) : 0;
+    const round = config.round ?? 0;
+    const pace = (1 + Math.min(round, 6) * 0.07) * (config.boss ? 1.3 : 1);
     this.turtles = options.map((label, i) => ({
       cx: first + i * gap,
       dir: i % 2 === 0 ? 1 : -1,
-      speed: 38 + ((i * 17) % 28),
+      speed: (38 + ((i * 17) % 28)) * pace,
       label,
       correct: i === correctIndex,
       alive: true,
@@ -101,6 +139,28 @@ export class MarioEngine {
   private isJump(code: string) {
     return code === "Space" || code === "ArrowUp" || code === "KeyW";
   }
+
+  private screenX(clientX: number) {
+    const rect = this.canvas.getBoundingClientRect();
+    return ((clientX - rect.left) / rect.width) * W;
+  }
+
+  private onPointerDown = (e: PointerEvent) => {
+    if (!this.running) return;
+    this.canvas.setPointerCapture?.(e.pointerId);
+    this.pointerTarget = this.screenX(e.clientX);
+    this.input.fire = true;
+    e.preventDefault();
+  };
+
+  private onPointerMove = (e: PointerEvent) => {
+    if (this.pointerTarget !== null) this.pointerTarget = this.screenX(e.clientX);
+  };
+
+  private onPointerUp = () => {
+    this.pointerTarget = null;
+    this.input.fire = false;
+  };
 
   private onKeyDown = (e: KeyboardEvent) => {
     if (!this.running) return;
@@ -126,15 +186,35 @@ export class MarioEngine {
   };
 
   private burst(x: number, y: number, color: string) {
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 20; i++) {
       const a = Math.random() * Math.PI * 2;
-      const sp = 60 + Math.random() * 140;
-      this.particles.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 80, life: 0.7, color });
+      const sp = 60 + Math.random() * 160;
+      this.particles.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 90, life: 0.7, color, size: 4 });
+    }
+  }
+
+  private dust(x: number, y: number, count = 6) {
+    for (let i = 0; i < count; i++) {
+      const dir = i % 2 === 0 ? 1 : -1;
+      this.particles.push({
+        x,
+        y,
+        vx: dir * (30 + Math.random() * 70),
+        vy: -20 - Math.random() * 40,
+        life: 0.35,
+        color: "rgba(255,255,255,0.8)",
+        size: 3,
+      });
     }
   }
 
   private update(dt: number) {
     this.time += dt;
+    this.shake = Math.max(0, this.shake - dt * 40);
+    this.flash.a = Math.max(0, this.flash.a - dt * 1.6);
+    this.banner = Math.max(0, this.banner - dt);
+    this.squash += (0 - this.squash) * Math.min(1, 14 * dt);
+    this.texts = stepFloatTexts(this.texts, dt);
     for (const c of this.clouds) {
       c.x += 6 * c.s * dt;
       if (c.x > W + 80) c.x = -80;
@@ -150,35 +230,76 @@ export class MarioEngine {
     if (!this.running) return;
 
     if (this.countdown > 0) {
+      const before = Math.ceil(this.countdown);
       this.countdown -= dt;
+      const after = Math.ceil(this.countdown);
+      if (after !== before && after >= 0 && this.lastTick !== after) {
+        this.lastTick = after;
+        sfx(this.countdown > 0 ? "tick" : "go");
+      }
       return;
     }
 
     this.timeLeft -= dt;
+    if (this.timeLeft <= 5 && Math.ceil(this.timeLeft) !== this.lastTick && this.timeLeft > 0) {
+      this.lastTick = Math.ceil(this.timeLeft);
+      sfx("tick");
+    }
     if (this.timeLeft <= 0) {
       this.running = false;
+      this.shake = 12;
+      this.flash = { color: "#ff3355", a: 0.35 };
+      sfx("miss");
       this.cb.onMiss();
       return;
     }
 
+    // --- pohyb: plynulý rozjezd, tažení prstem a pohyb po klávesách ---
     const dir = (this.input.right ? 1 : 0) - (this.input.left ? 1 : 0);
-    if (dir !== 0) this.facing = dir;
-    let vx = dir * 200;
+    let vx = dir * 230;
+    if (this.pointerTarget !== null) {
+      const dx = this.pointerTarget - this.px;
+      vx = Math.abs(dx) < 6 ? 0 : Math.max(-280, Math.min(280, dx * 6));
+    }
+    if (vx !== 0) this.facing = vx > 0 ? 1 : -1;
     if (this.knock > 0) {
       this.knock -= dt;
       vx = this.knockDir * 230;
     }
     this.px = Math.max(14, Math.min(W - 14, this.px + vx * dt));
 
-    const boost = 1 + (0.6 - this.config.fireCooldown) * 0.5;
-    if (this.input.fire && this.onGround) {
-      this.vy = -520 * boost;
+    // --- skok: buffer stisku, coyote time a nižší skok při dřívějším puštění ---
+    if (this.input.fire && !this.prevFire) this.jumpBuffer = JUMP_BUFFER;
+    this.prevFire = this.input.fire;
+    this.jumpBuffer = Math.max(0, this.jumpBuffer - dt);
+    this.coyote = this.onGround ? COYOTE : Math.max(0, this.coyote - dt);
+
+    const boost = 1 + (0.35 - this.config.fireCooldown) * 0.6;
+    if (this.jumpBuffer > 0 && this.coyote > 0) {
+      this.vy = -540 * boost;
       this.onGround = false;
+      this.coyote = 0;
+      this.jumpBuffer = 0;
+      this.jumpHeld = true;
+      this.squash = -0.22;
+      this.dust(this.px, GROUND, 4);
+      sfx("jump");
     }
+    if (this.jumpHeld && !this.input.fire && this.vy < -220) {
+      this.vy = -220;
+      this.jumpHeld = false;
+    }
+    if (this.vy >= 0) this.jumpHeld = false;
+
     const prevFeet = this.py;
     this.vy += 1500 * dt;
     this.py += this.vy * dt;
     if (this.py >= GROUND) {
+      if (!this.onGround && this.vy > 250) {
+        this.squash = 0.3;
+        this.dust(this.px, GROUND);
+        sfx("land");
+      }
       this.py = GROUND;
       this.vy = 0;
       this.onGround = true;
@@ -186,6 +307,7 @@ export class MarioEngine {
       this.onGround = false;
     }
 
+    // --- želvy ---
     const alive = this.turtles.filter((t) => t.alive);
     for (const t of alive) {
       t.cx += t.dir * t.speed * this.config.alienSpeedFactor * dt;
@@ -223,16 +345,30 @@ export class MarioEngine {
       if (this.vy > 0 && prevFeet <= top + 10) {
         t.alive = false;
         this.py = top;
-        this.vy = -380;
+        this.vy = this.input.fire ? -520 : -380;
         this.onGround = false;
+        this.squash = -0.2;
         this.burst(t.cx, top + 8, t.shell);
-        if (t.correct) this.running = false;
+        if (t.correct) {
+          this.running = false;
+          this.shake = 8;
+          this.flash = { color: "#7ee0b0", a: 0.22 };
+          sfx("correct");
+          this.popText("⭐", "#ffe066", t.cx, top - 30);
+        } else {
+          this.shake = 10;
+          this.flash = { color: "#ff3355", a: 0.25 };
+          sfx("wrong");
+          this.popText("✖", "#ff6b81", t.cx, top - 30);
+        }
+        sfx("stomp");
         this.cb.onHit(i, t.correct);
         if (!this.running) return;
       } else {
         this.knockDir = this.px < t.cx ? -1 : 1;
         this.knock = 0.18;
         this.px = t.cx + this.knockDir * (TURTLE_W / 2 + 12);
+        this.shake = Math.max(this.shake, 3);
       }
     }
   }
@@ -252,6 +388,12 @@ export class MarioEngine {
     const step = Math.sin(this.time * 9 + i * 1.7);
     ctx.save();
     ctx.translate(t.cx, GROUND);
+    if (this.config.boss) {
+      ctx.fillStyle = `rgba(255,50,80,${0.12 + 0.1 * Math.sin(this.time * 6 + i)})`;
+      ctx.beginPath();
+      ctx.ellipse(0, -18, 34, 30, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.scale(t.dir >= 0 ? 0.72 : -0.72, 0.72);
     ctx.fillStyle = "#d9a441";
     ctx.beginPath();
@@ -317,11 +459,11 @@ export class MarioEngine {
 
   private drawHero() {
     const ctx = this.ctx;
-    const moving = (this.input.left || this.input.right) && this.onGround;
+    const moving = (this.input.left || this.input.right || this.pointerTarget !== null) && this.onGround;
     const swing = moving ? Math.sin(this.time * 16) * 6 : 0;
     ctx.save();
     ctx.translate(this.px, this.py);
-    ctx.scale(this.facing, 1);
+    ctx.scale(this.facing * (1 + this.squash), 1 - this.squash);
     ctx.fillStyle = "#5b3a1a";
     ctx.beginPath();
     ctx.roundRect(-11 + swing * 0.4, -6, 11, 6, 3);
@@ -391,12 +533,34 @@ export class MarioEngine {
 
   private draw() {
     const ctx = this.ctx;
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+
     const sky = ctx.createLinearGradient(0, 0, 0, GROUND);
-    sky.addColorStop(0, "#5ab7ff");
-    sky.addColorStop(1, "#d6f0ff");
+    sky.addColorStop(0, this.config.boss ? "#ff8a6b" : "#5ab7ff");
+    sky.addColorStop(1, this.config.boss ? "#ffe0c2" : "#d6f0ff");
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, W, H);
 
+    // slunce
+    ctx.fillStyle = "rgba(255,244,170,0.9)";
+    ctx.beginPath();
+    ctx.arc(560, 70, 26, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,244,170,0.25)";
+    ctx.beginPath();
+    ctx.arc(560, 70, 40, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.save();
+    if (this.shake > 0) ctx.translate((Math.random() - 0.5) * this.shake, (Math.random() - 0.5) * this.shake);
+
+    // vzdálené kopce
+    ctx.fillStyle = "#9bd8b0";
+    ctx.beginPath();
+    ctx.ellipse(40, GROUND, 130, 120, 0, Math.PI, 0);
+    ctx.ellipse(300, GROUND, 170, 100, 0, Math.PI, 0);
+    ctx.ellipse(600, GROUND, 140, 110, 0, Math.PI, 0);
+    ctx.fill();
     ctx.fillStyle = "#7fd58a";
     ctx.beginPath();
     ctx.ellipse(120, GROUND, 150, 70, 0, Math.PI, 0);
@@ -408,12 +572,21 @@ export class MarioEngine {
     ctx.fillRect(0, GROUND, W, H - GROUND);
     ctx.fillStyle = "#3fae3f";
     ctx.fillRect(0, GROUND, W, 10);
+    ctx.fillStyle = "#5fd35f";
+    ctx.fillRect(0, GROUND, W, 3);
     ctx.strokeStyle = "rgba(0,0,0,0.18)";
     ctx.lineWidth = 2;
     for (let x = 0; x < W; x += 40) {
       ctx.strokeRect(x, GROUND + 10, 40, 30);
       ctx.strokeRect(x + 20, GROUND + 40, 40, 30);
     }
+
+    // stín pod hrdinou
+    const shadowScale = Math.max(0.4, 1 - (GROUND - this.py) / 220);
+    ctx.fillStyle = "rgba(0,0,0,0.22)";
+    ctx.beginPath();
+    ctx.ellipse(this.px, GROUND + 3, 14 * shadowScale, 4 * shadowScale, 0, 0, Math.PI * 2);
+    ctx.fill();
 
     this.turtles.forEach((t, i) => {
       if (t.alive) this.drawTurtle(t, i);
@@ -423,9 +596,18 @@ export class MarioEngine {
     for (const p of this.particles) {
       ctx.globalAlpha = Math.max(0, p.life);
       ctx.fillStyle = p.color;
-      ctx.fillRect(p.x, p.y, 4, 4);
+      ctx.fillRect(p.x, p.y, p.size, p.size);
     }
     ctx.globalAlpha = 1;
+    drawFloatTexts(ctx, this.texts);
+    ctx.restore();
+
+    if (this.flash.a > 0) {
+      ctx.globalAlpha = this.flash.a;
+      ctx.fillStyle = this.flash.color;
+      ctx.fillRect(0, 0, W, H);
+      ctx.globalAlpha = 1;
+    }
 
     if (this.prompt) this.drawBanner();
     if (this.running && this.countdown > 0) {
@@ -439,6 +621,23 @@ export class MarioEngine {
       ctx.strokeText(String(Math.ceil(this.countdown)), W / 2, 235);
       ctx.fillStyle = "#ffffff";
       ctx.fillText(String(Math.ceil(this.countdown)), W / 2, 235);
+    }
+
+    if (this.banner > 0) {
+      const a = Math.min(1, this.banner * 1.5);
+      ctx.save();
+      ctx.globalAlpha = a;
+      ctx.translate(W / 2, H / 2 + 20);
+      ctx.scale(1 + (2.2 - this.banner) * 0.06, 1 + (2.2 - this.banner) * 0.06);
+      ctx.font = "900 64px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.lineWidth = 8;
+      ctx.strokeStyle = "rgba(10,8,30,0.9)";
+      ctx.strokeText("BOSS", 0, 0);
+      ctx.fillStyle = "#ff5d73";
+      ctx.fillText("BOSS", 0, 0);
+      ctx.restore();
     }
 
     const ratio = Math.max(0, this.timeLeft / QUESTION_TIME);
