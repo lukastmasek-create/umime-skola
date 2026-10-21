@@ -131,6 +131,25 @@ select {
   color: #16132b;
 }
 
+/* Logo: tmavá verze při tmavém motivu (zvoleném v nastavení, nebo podle systému). */
+.logo-dark {
+  display: none;
+}
+:root[data-theme="dark"] .logo-light {
+  display: none;
+}
+:root[data-theme="dark"] .logo-dark {
+  display: block;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) .logo-light {
+    display: none;
+  }
+  :root:not([data-theme="light"]):not([data-theme="dark"]) .logo-dark {
+    display: block;
+  }
+}
+
 /* --- Prvky designu: čisté plochy, ploché barvy, "mačkací" tlačítka --- */
 
 .gradient-hero {

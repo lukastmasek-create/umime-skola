@@ -5,6 +5,7 @@ import "../globals.css";
 import { MobileMenu, NavTabs } from "@/components/NavTabs";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { HeaderAccount } from "@/components/HeaderAccount";
+import { SiteLogo } from "@/components/SiteLogo";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, locales, type Locale } from "@/i18n/config";
 import { notFound } from "next/navigation";
@@ -25,9 +26,16 @@ export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
+const SITE_NAME = "Učíme se hrou";
+const SITE_DESCRIPTION = "Online příprava na základku, střední, přijímačky i maturitu";
+
+// Ikony a favicon jsou souborové konvence v src/app (icon.svg, apple-icon.png, favicon.ico,
+// manifest.ts), náhled odkazu v této složce (opengraph-image.png, twitter-image.png).
 export const metadata: Metadata = {
-  title: "Umíme",
-  description: "Online příprava na základku, střední, přijímačky i maturitu",
+  title: SITE_NAME,
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  openGraph: { title: SITE_NAME, description: SITE_DESCRIPTION, siteName: SITE_NAME, type: "website" },
 };
 
 export default async function LocaleLayout({
@@ -60,12 +68,8 @@ export default async function LocaleLayout({
         <header className="sticky top-0 z-40 border-b-2 border-[var(--edge)] bg-[var(--surface)]">
           <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:px-6">
             <div className="flex items-center justify-between gap-3">
-              <Link
-                href={`/${locale}`}
-                className="text-2xl font-extrabold tracking-tight"
-                style={{ fontFamily: "var(--font-heading)" }}
-              >
-                Umíme<span className="text-[var(--accent-500)]">.</span>
+              <Link href={`/${locale}`} className="shrink-0">
+                <SiteLogo />
               </Link>
               <div className="flex items-center justify-end gap-1.5 text-sm">
                 <Link href={`/${locale}/obchod`} className={`hidden lg:inline-flex ${navLink}`}>

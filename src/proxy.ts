@@ -32,6 +32,10 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // rewards/ jsou statické obrázky z public/, ty se na jazykovou verzi nepřesměrovávají.
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|rewards/).*)"],
+  // Statické obrázky z public/ (rewards/, brand/), ikony a manifest ze src/app a náhled odkazu
+  // se na jazykovou verzi nepřesměrovávají. Náhled leží v [locale] a Next ho pro všechny jazyky
+  // servíruje pod zástupným segmentem „-“ (/-/opengraph-image.png).
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|rewards/|brand/|icon.svg|apple-icon.png|manifest.webmanifest|-/).*)",
+  ],
 };

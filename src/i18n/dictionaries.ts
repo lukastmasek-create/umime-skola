@@ -207,7 +207,7 @@ const cs: Dictionary = {
       genericError: "Registrace se nezdařila.",
     },
   },
-  footer: { rights: "Umíme" },
+  footer: { rights: "Učíme se hrou" },
   shop: {
     title: "Obchod",
     subtitle: "Roztoč kolo štěstí nebo si přikup body a odemkni si odměny rychleji.",
@@ -350,7 +350,7 @@ const en: Dictionary = {
       genericError: "Registration failed.",
     },
   },
-  footer: { rights: "Umíme" },
+  footer: { rights: "Učíme se hrou" },
   shop: {
     title: "Shop",
     subtitle: "Spin the wheel of fortune or buy extra points to unlock rewards faster.",
@@ -493,7 +493,7 @@ const de: Dictionary = {
       genericError: "Registrierung fehlgeschlagen.",
     },
   },
-  footer: { rights: "Umíme" },
+  footer: { rights: "Učíme se hrou" },
   shop: {
     title: "Shop",
     subtitle: "Dreh das Glücksrad oder kauf dir Punkte dazu, um Belohnungen schneller freizuschalten.",
@@ -636,7 +636,7 @@ const ru: Dictionary = {
       genericError: "Регистрация не удалась.",
     },
   },
-  footer: { rights: "Umíme" },
+  footer: { rights: "Učíme se hrou" },
   shop: {
     title: "Магазин",
     subtitle: "Крути колесо фортуны или покупай баллы, чтобы быстрее открывать награды.",
