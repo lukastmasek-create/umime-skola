@@ -1,4 +1,6 @@
+import Image from "next/image";
 import { getAvatar } from "@/lib/avatars";
+import { getAvatarStills } from "@/lib/avatars3d";
 
 const INK = "#16132b";
 
@@ -12,6 +14,21 @@ export function Avatar({
   locked?: boolean;
 }) {
   const a = getAvatar(id);
+  const filter = locked ? "grayscale(1) opacity(0.45)" : undefined;
+
+  // Avatary s 3D postavou mají portrét vyrenderovaný z modelu; kolečko, barva a obrys zůstávají.
+  const stills = getAvatarStills(a.id);
+  if (stills) {
+    return (
+      <span
+        aria-hidden
+        className="inline-block shrink-0 overflow-hidden rounded-full"
+        style={{ width: size, height: size, background: a.bg, border: `${Math.max(1, size / 32)}px solid ${INK}`, filter }}
+      >
+        <Image src={stills.portrait} alt="" width={size} height={size} unoptimized className="block h-full w-full" />
+      </span>
+    );
+  }
 
   return (
     <svg
@@ -20,7 +37,7 @@ export function Avatar({
       height={size}
       role="img"
       aria-hidden
-      style={{ filter: locked ? "grayscale(1) opacity(0.45)" : undefined, flexShrink: 0 }}
+      style={{ filter, flexShrink: 0 }}
     >
       <circle cx="32" cy="32" r="31" fill={a.bg} stroke={INK} strokeWidth="2" />
 

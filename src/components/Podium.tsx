@@ -1,6 +1,25 @@
+import Image from "next/image";
 import { Avatar } from "@/components/Avatar";
 import { RewardImage } from "@/components/RewardImage";
+import { getAvatarStills } from "@/lib/avatars3d";
 import { PODIUM_SPOTS } from "@/lib/rewards";
+
+// Avatary s 3D postavou stojí na stupni celé, ostatní jako kulatá profilovka.
+function PodiumFigure({ avatar, first }: { avatar: string | null; first: boolean }) {
+  const figure = getAvatarStills(avatar)?.figure;
+  if (!figure) return <Avatar id={avatar} size={first ? 60 : 52} />;
+  const height = first ? 104 : 90;
+  return (
+    <Image
+      src={figure.src}
+      alt=""
+      width={Math.round((figure.width / figure.height) * height)}
+      height={height}
+      unoptimized
+      className="block"
+    />
+  );
+}
 
 type PodiumPlayer = { id: string; name: string | null; avatar: string | null };
 
@@ -34,7 +53,7 @@ export function Podium({
           >
             {player.name || anonymous}
           </span>
-          <Avatar id={player.avatar} size={i === 0 ? 60 : 52} />
+          <PodiumFigure avatar={player.avatar} first={i === 0} />
         </div>
       ))}
     </div>
