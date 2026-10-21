@@ -44,6 +44,11 @@ export type GameText = {
   demoNote: string;
   pressSpace: string;
   sound: string;
+  pause: string;
+  resume: string;
+  paused: string;
+  endRun: string;
+  autoContinue: string;
   damage: string;
   tipDodge: string;
   mario: { title: string; intro: string; controls: string; jump: string; upgradeJump: string };
@@ -87,6 +92,11 @@ const cs: GameText = {
   demoNote: "Ukázkové otázky — obsah kurzu se bude doplňovat.",
   pressSpace: "nebo stiskni mezerník",
   sound: "Zvuk",
+  pause: "Pozastavit",
+  resume: "Pokračovat",
+  paused: "Pozastaveno",
+  endRun: "Ukončit kolo",
+  autoContinue: "Další otázka přijde sama. Pozastav, kdybys chtěl číst déle.",
   damage: "Zásah! −1 život",
   tipDodge: "Sbírej bonusy 🛡️ ⚡ 🐌 a uhýbej červeným střelám. Poslední otázka je BOSS.",
   mario: { title: "Mario kvíz", intro: "Želvy nesou odpovědi a pořád se hýbou. Naskoč shora na tu správnou!", controls: "← → nebo A D pohyb, mezerník / ↑ skok (držíš = výš), na telefonu táhni prstem a klepni", jump: "Skok", upgradeJump: "Výška skoku" },
@@ -161,6 +171,11 @@ const en: GameText = {
   demoNote: "Sample questions — course content will be added over time.",
   pressSpace: "or press space",
   sound: "Sound",
+  pause: "Pause",
+  resume: "Resume",
+  paused: "Paused",
+  endRun: "End run",
+  autoContinue: "The next question starts on its own. Pause if you want more time to read.",
   damage: "Hit! −1 life",
   tipDodge: "Grab power-ups 🛡️ ⚡ 🐌 and dodge the red shots. The last question is the BOSS.",
   mario: { title: "Mario Quiz", intro: "Turtles carry the answers and keep moving. Jump on the right one from above!", controls: "← → or A D to move, space / ↑ to jump (hold = higher), on a phone drag and tap", jump: "Jump", upgradeJump: "Jump height" },
@@ -235,6 +250,11 @@ const de: GameText = {
   demoNote: "Beispielfragen — Kursinhalte werden nach und nach ergänzt.",
   pressSpace: "oder Leertaste drücken",
   sound: "Ton",
+  pause: "Pause",
+  resume: "Weiter",
+  paused: "Pausiert",
+  endRun: "Runde beenden",
+  autoContinue: "Die nächste Frage startet von selbst. Pausiere, wenn du länger lesen willst.",
   damage: "Treffer! −1 Leben",
   tipDodge: "Sammle Boni 🛡️ ⚡ 🐌 und weiche den roten Schüssen aus. Die letzte Frage ist der BOSS.",
   mario: { title: "Mario-Quiz", intro: "Schildkröten tragen die Antworten und bewegen sich ständig. Spring von oben auf die richtige!", controls: "← → oder A D bewegen, Leertaste / ↑ springen (halten = höher), am Handy ziehen und tippen", jump: "Springen", upgradeJump: "Sprunghöhe" },
@@ -309,6 +329,11 @@ const ru: GameText = {
   demoNote: "Примеры вопросов — содержимое курса будет добавляться постепенно.",
   pressSpace: "или нажми пробел",
   sound: "Звук",
+  pause: "Пауза",
+  resume: "Продолжить",
+  paused: "Пауза",
+  endRun: "Закончить раунд",
+  autoContinue: "Следующий вопрос начнётся сам. Поставь на паузу, если хочешь читать дольше.",
   damage: "Попадание! −1 жизнь",
   tipDodge: "Собирай бонусы 🛡️ ⚡ 🐌 и уворачивайся от красных выстрелов. Последний вопрос — БОСС.",
   mario: { title: "Квиз с Марио", intro: "Черепахи несут ответы и всё время двигаются. Запрыгни сверху на правильную!", controls: "← → или A D — движение, пробел / ↑ — прыжок (дольше = выше), на телефоне води пальцем и касайся", jump: "Прыжок", upgradeJump: "Высота прыжка" },

@@ -7,6 +7,7 @@ export type IdleText = {
   title: string;
   subtitle: string;
   soon: string;
+  play: string;
   note: string;
   games: [IdleGame, IdleGame, IdleGame, IdleGame];
 };
@@ -16,7 +17,8 @@ const cs: IdleText = {
   title: "Stálé hry",
   subtitle: "Hry, které nikdy nekončí. Body za učení v nich pracují: stavíš, vylepšuješ a staráš se o své věci.",
   soon: "Brzy",
-  note: "Tady zatím jen vidíš, co chystáme. Hratelné to bude později.",
+  play: "Hrát",
+  note: "Mazlíčci a Město už hratelní jsou, další hry přibudou postupně.",
   games: [
     { name: "Základna", description: "Postav si vlastní základnu a postupně ji vylepšuj za body, které získáš učením." },
     { name: "Mazlíčci", description: "Vychovávej mazlíčky, krm je, hraj si s nimi a sleduj, jak rostou." },
@@ -30,7 +32,8 @@ const en: IdleText = {
   title: "Endless games",
   subtitle: "Games that never end. Points from learning keep them going: you build, upgrade and take care of your stuff.",
   soon: "Soon",
-  note: "For now this just shows what we're planning. They'll be playable later.",
+  play: "Play",
+  note: "Pets and City are playable already, more games will follow.",
   games: [
     { name: "Base", description: "Build your own base and keep upgrading it with the points you earn by learning." },
     { name: "Pets", description: "Raise pets, feed them, play with them and watch them grow." },
@@ -44,7 +47,8 @@ const de: IdleText = {
   title: "Endlosspiele",
   subtitle: "Spiele, die nie enden. Punkte vom Lernen treiben sie an: Du baust, verbesserst und kümmerst dich um deine Sachen.",
   soon: "Bald",
-  note: "Hier siehst du erst einmal nur, was wir planen. Spielbar werden sie später.",
+  play: "Spielen",
+  note: "Haustiere und Stadt sind schon spielbar, weitere Spiele folgen nach und nach.",
   games: [
     { name: "Basis", description: "Baue deine eigene Basis und verbessere sie nach und nach mit den Punkten vom Lernen." },
     { name: "Haustiere", description: "Zieh Haustiere groß, füttere sie, spiel mit ihnen und sieh zu, wie sie wachsen." },
@@ -58,7 +62,8 @@ const ru: IdleText = {
   title: "Вечные игры",
   subtitle: "Игры, которые никогда не заканчиваются. Баллы за учёбу двигают их вперёд: ты строишь, улучшаешь и заботишься о своём.",
   soon: "Скоро",
-  note: "Пока это лишь показывает, что мы готовим. Играть можно будет позже.",
+  play: "Играть",
+  note: "Питомцы и Город уже доступны, остальные игры появятся постепенно.",
   games: [
     { name: "База", description: "Построй свою базу и постепенно улучшай её за баллы, которые получаешь за учёбу." },
     { name: "Питомцы", description: "Выращивай питомцев, кормите их, играй с ними и смотри, как они растут." },

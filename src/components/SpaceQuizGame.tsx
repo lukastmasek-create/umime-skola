@@ -23,6 +23,8 @@ type Upgrades = Record<UpgradeKey, number>;
 type Resolved = { kind: "correct" | "wrong" | "missed"; pts?: number };
 
 const QUESTIONS_PER_RUN = 8;
+// Jak dlouho zůstane vysvětlení na obrazovce, než hra sama pokračuje.
+const AUTO_CONTINUE_MS = { correct: 4500, other: 7000 };
 const BASE_FIRE_COOLDOWN = 0.35;
 const BASE_LIVES = 3;
 const MAX_UPGRADE_LEVEL = 3;
@@ -185,6 +187,11 @@ export function SpaceQuizGame({
   const [completed, setCompleted] = useState(false);
   const [xpGained, setXpGained] = useState(0);
   const [muted, setMutedState] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [autoElapsed, setAutoElapsed] = useState(0);
+  const autoElapsedRef = useRef(0);
+  const pauseToggleRef = useRef<() => void>(() => {});
+  const pausedRef = useRef(false);
 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
@@ -257,6 +264,7 @@ export function SpaceQuizGame({
     setXpGained(0);
     loadQuestion(newRun[0], 0, newRun.length);
     engineRef.current?.setRunning(true);
+    setPaused(false);
     setPhase("playing");
   }
 
@@ -298,7 +306,30 @@ export function SpaceQuizGame({
     setResolved(null);
     loadQuestion(run[next], next, run.length);
     engineRef.current?.setRunning(true);
+    setPaused(false);
     setPhase("playing");
+  }
+
+  function enterExplain() {
+    explainSinceRef.current = Date.now();
+    autoElapsedRef.current = 0;
+    setAutoElapsed(0);
+    setPhase("explain");
+  }
+
+  function pauseGame() {
+    if (phase === "playing") engineRef.current?.setRunning(false);
+    setPaused(true);
+  }
+
+  function resumeGame() {
+    if (phase === "playing") engineRef.current?.setRunning(true);
+    setPaused(false);
+  }
+
+  function endRunEarly() {
+    setPaused(false);
+    finishRun(false);
   }
 
   function buy(key: UpgradeKey) {
@@ -315,6 +346,8 @@ export function SpaceQuizGame({
 
   useEffect(() => {
     nextStepRef.current = nextStep;
+    pauseToggleRef.current = () => (paused ? resumeGame() : pauseGame());
+    pausedRef.current = paused;
     handlersRef.current = {
       onHit: (correct) => {
         if (correct) {
@@ -323,8 +356,7 @@ export function SpaceQuizGame({
           setCombo((c) => c + 1);
           setResolved({ kind: "correct", pts });
           engineRef.current?.popText(combo > 0 ? `+${pts}  🔥×${combo + 1}` : `+${pts}`, "#7ee0b0");
-          explainSinceRef.current = Date.now();
-          setPhase("explain");
+          enterExplain();
           return;
         }
         const remaining = lives - 1;
@@ -333,8 +365,7 @@ export function SpaceQuizGame({
         if (remaining <= 0) {
           engineRef.current?.setRunning(false);
           setResolved({ kind: "wrong" });
-          explainSinceRef.current = Date.now();
-          setPhase("explain");
+          enterExplain();
         } else {
           setFlash(t.wrongLostLife);
           window.setTimeout(() => setFlash(null), 1200);
@@ -344,8 +375,7 @@ export function SpaceQuizGame({
         setLives(lives - 1);
         setCombo(0);
         setResolved({ kind: "missed" });
-        explainSinceRef.current = Date.now();
-        setPhase("explain");
+        enterExplain();
       },
       onDamage: () => {
         const remaining = lives - 1;
@@ -354,8 +384,7 @@ export function SpaceQuizGame({
         if (remaining <= 0) {
           engineRef.current?.setRunning(false);
           setResolved({ kind: "wrong" });
-          explainSinceRef.current = Date.now();
-          setPhase("explain");
+          enterExplain();
         } else {
           setFlash(t.damage);
           window.setTimeout(() => setFlash(null), 1200);
@@ -365,7 +394,7 @@ export function SpaceQuizGame({
   });
 
   useEffect(() => {
-    if (phase !== "explain") return;
+    if (phase !== "explain" || paused) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.repeat || (e.code !== "Space" && e.code !== "Enter")) return;
       if (Date.now() - explainSinceRef.current < 500) return;
@@ -374,11 +403,49 @@ export function SpaceQuizGame({
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
+  }, [phase, paused]);
+
+  // Space Invaders jede po sobě: po vysvětlení se sama načte další otázka,
+  // dokud hráč hru nepozastaví. U posledního kola nebo po prohře se nepokračuje.
+  useEffect(() => {
+    if (mario || phase !== "explain" || paused || !resolved) return;
+    if (lives <= 0 || qIndex + 1 >= run.length) return;
+    const delay = resolved.kind === "correct" ? AUTO_CONTINUE_MS.correct : AUTO_CONTINUE_MS.other;
+    const id = window.setInterval(() => {
+      autoElapsedRef.current += 100;
+      setAutoElapsed(autoElapsedRef.current);
+      if (autoElapsedRef.current >= delay) {
+        window.clearInterval(id);
+        nextStepRef.current();
+      }
+    }, 100);
+    return () => window.clearInterval(id);
+  }, [mario, phase, paused, resolved, lives, qIndex, run.length]);
+
+  // Pauza klávesou P nebo Esc a automaticky, když hráč přepne na jinou záložku.
+  useEffect(() => {
+    if (phase !== "playing" && phase !== "explain") return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.repeat || (e.code !== "KeyP" && e.code !== "Escape")) return;
+      e.preventDefault();
+      pauseToggleRef.current();
+    };
+    const onVisibility = () => {
+      if (document.hidden && !pausedRef.current) pauseToggleRef.current();
+    };
+    window.addEventListener("keydown", onKey);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [phase]);
 
   const question = run[qIndex];
   const showExplanation = phase === "explain" && question && resolved;
   const lastQuestion = qIndex + 1 >= run.length;
+  const autoContinuing = !mario && lives > 0 && !lastQuestion;
+  const autoDelay = resolved?.kind === "correct" ? AUTO_CONTINUE_MS.correct : AUTO_CONTINUE_MS.other;
 
   function setHeld(key: "left" | "right" | "fire", down: boolean) {
     engineRef.current?.setInput({ [key]: down });
@@ -449,6 +516,39 @@ export function SpaceQuizGame({
             <span className="pill bg-[var(--danger)] px-4 py-2 text-sm text-white">{flash}</span>
           </div>
         )}
+        {phase === "playing" && !paused && (
+          <button
+            type="button"
+            onClick={pauseGame}
+            aria-label={t.pause}
+            title={`${t.pause} (P)`}
+            className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full border-2 border-white/30 bg-black/45 text-sm text-white hover:bg-black/65"
+          >
+            ⏸
+          </button>
+        )}
+        {paused && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/65 backdrop-blur-sm">
+            <p className="text-2xl font-extrabold text-white" style={{ fontFamily: "var(--font-heading)" }}>
+              ⏸ {t.paused}
+            </p>
+            <button
+              type="button"
+              onClick={resumeGame}
+              autoFocus
+              className="btn-bouncy bg-[var(--brand-500)] px-6 py-2.5 text-sm font-bold text-white"
+            >
+              ▶ {t.resume}
+            </button>
+            <button
+              type="button"
+              onClick={endRunEarly}
+              className="text-sm font-semibold text-white/80 underline hover:text-white"
+            >
+              {t.endRun}
+            </button>
+          </div>
+        )}
       </div>
 
       {phase === "intro" && (
@@ -513,13 +613,41 @@ export function SpaceQuizGame({
             </p>
             <p className="text-[var(--muted)]">{question.explanation}</p>
           </div>
-          <button
-            onClick={nextStep}
-            className="btn-bouncy self-start rounded-full bg-[var(--brand-500)] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[var(--brand-600)]"
-          >
-            {lives <= 0 || lastQuestion ? t.finish : t.next}
-          </button>
-          <p className="text-xs text-[var(--faint)]">⎵ {t.pressSpace}</p>
+          {autoContinuing && (
+            <div
+              className="h-2 overflow-hidden rounded-full bg-[var(--surface-muted)]"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(100 - (autoElapsed / autoDelay) * 100)}
+            >
+              <div
+                className="h-full bg-[var(--brand-500)]"
+                style={{ width: `${Math.max(0, 100 - (autoElapsed / autoDelay) * 100)}%`, transition: "width 0.1s linear" }}
+              />
+            </div>
+          )}
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={nextStep}
+              className="btn-bouncy rounded-full bg-[var(--brand-500)] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[var(--brand-600)]"
+            >
+              {lives <= 0 || lastQuestion ? t.finish : t.next}
+            </button>
+            {autoContinuing && (
+              <button
+                type="button"
+                onClick={paused ? resumeGame : pauseGame}
+                className="btn-bouncy bg-[var(--surface)] px-5 py-2.5 text-sm font-semibold"
+              >
+                {paused ? `▶ ${t.resume}` : `⏸ ${t.pause}`}
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-[var(--faint)]">
+            ⎵ {t.pressSpace}
+            {autoContinuing ? ` · ${t.autoContinue}` : ""}
+          </p>
         </div>
       )}
 
