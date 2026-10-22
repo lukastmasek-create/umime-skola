@@ -1,5 +1,6 @@
 import type { EngineCallbacks, EngineConfig } from "./space-engine";
 import { drawFloatTexts, sfx, stepFloatTexts, type FloatText } from "./game-fx";
+import type { Scene3D, View3D } from "./scene3d";
 
 export const W = 640;
 export const H = 420;
@@ -130,6 +131,7 @@ export abstract class ArcadeEngine {
   protected maxTime = 50;
   protected timeLeft = 50;
   private lastTick = -1;
+  private view3d: View3D | null = null;
   private swipeStart: { x: number; y: number } | null = null;
 
   constructor(
@@ -157,6 +159,19 @@ export abstract class ArcadeEngine {
     this.canvas.removeEventListener("pointermove", this.onPointerMove);
     this.canvas.removeEventListener("pointerup", this.onPointerUp);
     this.canvas.removeEventListener("pointercancel", this.onPointerUp);
+  }
+
+  // 3D režim: GameView3D vykresluje scénu z scene3d(), plátno nad ní kreslí jen efekty a časovač.
+  setView3D(view: View3D | null) {
+    this.view3d = view;
+  }
+
+  getScene3D(): Scene3D | null {
+    return this.scene3d();
+  }
+
+  protected scene3d(): Scene3D | null {
+    return null;
   }
 
   setRunning(running: boolean) {
@@ -302,15 +317,26 @@ export abstract class ArcadeEngine {
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
     ctx.save();
-    if (this.shake > 0) ctx.translate((Math.random() - 0.5) * 8 * this.shake * 3, (Math.random() - 0.5) * 8 * this.shake * 3);
-    this.draw(ctx);
+    const view = this.view3d && this.scene3d() ? this.view3d : null;
+    if (!view && this.shake > 0) ctx.translate((Math.random() - 0.5) * 8 * this.shake * 3, (Math.random() - 0.5) * 8 * this.shake * 3);
+    if (!view) this.draw(ctx);
     for (const p of this.particles) {
+      const pos = view ? view.project(p.x, p.y, 8) : p;
+      if (!pos) continue;
       ctx.globalAlpha = Math.max(0, Math.min(1, p.life * 2));
       ctx.fillStyle = p.color;
-      ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+      ctx.fillRect(pos.x - p.size / 2, pos.y - p.size / 2, p.size, p.size);
     }
     ctx.globalAlpha = 1;
-    drawFloatTexts(ctx, this.texts);
+    drawFloatTexts(
+      ctx,
+      view
+        ? this.texts.flatMap((t) => {
+            const pos = view.project(t.x, t.y, 30);
+            return pos ? [{ ...t, x: pos.x, y: pos.y }] : [];
+          })
+        : this.texts,
+    );
     ctx.restore();
     if (this.flashA > 0) {
       ctx.globalAlpha = this.flashA;

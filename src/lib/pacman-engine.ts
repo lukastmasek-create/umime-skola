@@ -1,5 +1,8 @@
 import { ANSWER_COLORS, ArcadeEngine, DIR_VEC, H, OPPOSITE, W, drawLabel, shuffleInPlace, type Dir } from "./arcade-base";
 import { sfx } from "./game-fx";
+import { facing, type Item3D, type Scene3D } from "./scene3d";
+
+const GHOST_MODEL: Record<string, string> = { "#ff4d4d": "cerveny", "#ff9ecb": "ruzovy", "#4de3ff": "modry", "#ffb347": "oranzovy" };
 
 const C = 20;
 const COLS = 31;
@@ -336,6 +339,53 @@ export class PacmanEngine extends ArcadeEngine {
     else if (Math.random() < 0.7) pick = options.reduce((a, b) => (dist(b) < dist(a) ? b : a));
     else pick = options[Math.floor(Math.random() * options.length)];
     this.setDir(g, pick);
+  }
+
+  protected scene3d(): Scene3D | null {
+    if (this.walls.length === 0) return null;
+    const items: Item3D[] = [];
+    for (let y = 0; y < ROWS; y++)
+      for (let x = 0; x < COLS; x++) {
+        const cx = OX + (x + 0.5) * C;
+        const cy = OY + (y + 0.5) * C;
+        if (this.walls[y]?.[x]) {
+          items.push({ key: "w" + x + "_" + y, model: "box", x: cx, y: cy, w: C - 1, d: C - 1, h: 13, color: (x + y) % 2 ? "#3a4be0" : "#4455f0" });
+          continue;
+        }
+        const v = this.dots[y]?.[x];
+        if (v) items.push({ key: "d" + x + "_" + y, model: "sphere", x: cx, y: cy, z: 4, w: v === 2 ? 11 : 4.5, h: v === 2 ? 11 : 4.5, d: v === 2 ? 11 : 4.5, color: v === 2 ? "#9fd3ff" : "#ffe9a8", bob: v === 2 ? 2 : 0 });
+      }
+    const pac = this.pac;
+    if (!(this.invuln > 0 && Math.floor(this.time * 10) % 2 === 0)) {
+      const dir = this.dirOf(pac) ?? this.lastDir ?? "right";
+      const v = DIR_VEC[dir];
+      items.push({ key: "pac", model: "pacman/pac", x: this.posX(pac), y: this.posY(pac), z: 0, w: C * 0.95, rot: facing(v.x, v.y) });
+    }
+    this.ghosts.forEach((g, i) => {
+      if (g.eatenWait > 0) return;
+      const blink = this.scared > 0 && this.scared < 2 && Math.floor(this.time * 8) % 2 === 0;
+      const model = this.scared > 0 ? "pacman/duch_vystraseny" : "pacman/duch_" + (GHOST_MODEL[g.color] ?? "cerveny");
+      items.push({ key: "g" + i, model, x: this.posX(g), y: this.posY(g), z: 2, w: C * 0.95, bob: 1.5, rot: facing(g.dx, g.dy), opacity: blink ? 0.6 : 1 });
+    });
+    for (const [i, a] of this.answers.entries()) {
+      if (!a.alive) continue;
+      items.push({
+        key: "a" + i,
+        model: "sphere",
+        x: OX + (a.tx + 0.5) * C,
+        y: OY + (a.ty + 0.5) * C,
+        z: 6,
+        w: 13,
+        h: 13,
+        d: 13,
+        color: a.color,
+        bob: 2,
+        label: a.label,
+        labelColor: a.color,
+        labelW: 130,
+      });
+    }
+    return { layout: "floor", items, ground: "#0b0a1f", sky: "linear-gradient(180deg, #14123a, #0b0a1f)" };
   }
 
   protected draw(ctx: CanvasRenderingContext2D) {

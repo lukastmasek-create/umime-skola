@@ -1,5 +1,8 @@
 import { ANSWER_COLORS, ArcadeEngine, H, W, drawLabel, shuffleInPlace } from "./arcade-base";
 import { sfx } from "./game-fx";
+import type { Item3D, Scene3D } from "./scene3d";
+
+const SEG_MODEL: Record<string, string> = { "#7c6cff": "fialovy", "#ff5d73": "cerveny", "#ffb020": "zluty", "#22c55e": "zeleny" };
 
 const ROW0 = 56;
 const ROW_H = 20;
@@ -269,6 +272,42 @@ export class CentipedeEngine extends ArcadeEngine {
         break;
       }
     }
+  }
+
+  protected scene3d(): Scene3D | null {
+    if (this.mush.length === 0) return null;
+    const items: Item3D[] = [];
+    for (let r = 0; r < ROWS; r++)
+      for (let col = 0; col < this.mush[r].length; col++) {
+        const hp = this.mush[r][col];
+        if (!hp) continue;
+        items.push({ key: "m" + r + "_" + col, model: hp === 2 ? "centipede/houba_cela" : "centipede/houba_poskozena", x: col * ROW_H + 10, y: ROW0 + r * ROW_H, w: ROW_H - 2 });
+      }
+    this.chains.forEach((chain, ci) => {
+      chain.segs.forEach((seg, i) => {
+        const pos = this.posAt(chain, chain.headD - i * SPACING);
+        if (pos.x < -SEG_W || pos.x > W + SEG_W) return;
+        const glow = this.hint > 0 && seg.correct;
+        if (glow) items.push({ key: "hint" + ci + "_" + i, model: "cyl", x: pos.x, y: pos.y, w: SEG_W + 22, d: SEG_H + 22, h: 2, color: "#ffe066", bob: 0 });
+        items.push({
+          key: "c" + seg.index,
+          model: "centipede/clanek_" + (SEG_MODEL[seg.color] ?? "zeleny"),
+          x: pos.x,
+          y: pos.y,
+          w: SEG_W,
+          bob: i === 0 ? 0 : 1,
+          label: seg.label,
+          labelColor: seg.color,
+          labelW: SEG_W + 30,
+        });
+      });
+    });
+    const sd = this.spider;
+    if (sd) items.push({ key: "spider", model: "centipede/pavouk", x: sd.x, y: sd.y, w: 34, z: 2, rot: Math.sin(sd.t * 6) * 0.4 });
+    this.shots.forEach((s, i) => items.push({ key: "shot" + i, model: "cyl", x: s.x, y: s.y, z: 6, w: 4, d: 4, h: 12, color: "#ffe066" }));
+    if (!(this.invuln > 0 && Math.floor(this.time * 10) % 2 === 0))
+      items.push({ key: "player", model: "centipede/strelec", x: this.px, y: this.py, w: 30, rot: Math.PI });
+    return { layout: "floor", items, ground: "#0e1c14", sky: "linear-gradient(180deg, #123020, #091109)" };
   }
 
   protected draw(ctx: CanvasRenderingContext2D) {

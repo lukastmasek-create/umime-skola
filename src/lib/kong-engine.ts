@@ -1,5 +1,6 @@
 import { ANSWER_COLORS, ArcadeEngine, H, W, drawLabel, shuffleInPlace } from "./arcade-base";
 import { sfx } from "./game-fx";
+import type { Item3D, Scene3D } from "./scene3d";
 
 // Patra: 0 je země, 4 je horní patro se dveřmi s odpověďmi.
 const LEVEL_Y = [398, 322, 246, 170, 94];
@@ -237,6 +238,39 @@ export class KongEngine extends ArcadeEngine {
         break;
       }
     }
+  }
+
+  protected scene3d(): Scene3D | null {
+    const items: Item3D[] = [];
+    // nosníky po dlaždicích
+    SPANS.forEach(([a, b], i) => {
+      for (let x = a + 24; x <= b; x += 48) items.push({ key: "g" + i + "_" + x, model: "kong/nosnik", x: Math.min(x, b - 24 + 24), y: LEVEL_Y[i] + 9, w: 48 });
+    });
+    LADDERS.forEach((l, i) => {
+      const top = LEVEL_Y[l.from + 1];
+      const bottom = LEVEL_Y[l.from];
+      items.push({ key: "l" + i, model: "kong/zebrik", x: l.x, y: (top + bottom) / 2 + 4, z: 6, w: 24, h: bottom - top + 4 });
+    });
+    items.push({ key: "kong", model: "kong/gorila", x: W - 40, y: LEVEL_Y[4] - 32, h: 66, z: 10, bob: 1.5 });
+    for (const [i, d] of this.doors.entries()) {
+      if (!d.alive) continue;
+      const bump = d.hit > 0 ? Math.sin((d.hit / 0.25) * Math.PI) * 8 : 0;
+      const cy = BLOCK_BOTTOM - BLOCK_H / 2 - bump;
+      items.push({ key: "b" + i, model: "box", x: d.x + d.w / 2, y: cy, z: 8, w: d.w, h: BLOCK_H, d: 26, color: d.color });
+      items.push({ key: "bl" + i, model: "none", x: d.x + d.w / 2, y: cy + 14, z: 24, label: d.label, labelColor: "rgba(20,16,50,0.85)", labelW: d.w - 8 });
+    }
+    this.barrels.forEach((b, i) => items.push({ key: "s" + i + "_" + Math.round(b.rot * 0), model: "kong/sud", x: b.x, y: b.y - 10, z: 8, w: 20, roll: b.rot }));
+    if (!(this.invuln > 0 && Math.floor(this.time * 10) % 2 === 0))
+      items.push({
+        key: "hrac",
+        model: "kong/hrac",
+        x: this.px,
+        y: this.py - 15,
+        z: 8,
+        h: 32,
+        rot: this.climbing ? 0 : this.facing * 0.7,
+      });
+    return { layout: "wall", zoom: 0.93, items, ground: "#120f33", sky: "linear-gradient(180deg, #1a1440, #0b0a22)" };
   }
 
   private respawn(keepBarrels: boolean) {

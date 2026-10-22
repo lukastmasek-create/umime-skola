@@ -1,5 +1,16 @@
 import { ANSWER_COLORS, ArcadeEngine, H, W, drawLabel, shuffleInPlace } from "./arcade-base";
 import { sfx } from "./game-fx";
+import type { Item3D, Scene3D } from "./scene3d";
+
+const COLOR_MODEL: Record<string, string> = {
+  "#4de3ff": "i",
+  "#ffe14d": "o",
+  "#b36bff": "t",
+  "#4ade80": "s",
+  "#ff5d73": "z",
+  "#5a8bff": "j",
+  "#ffb020": "l",
+};
 
 const COLS = 10;
 const ROWS = 20;
@@ -356,6 +367,53 @@ export class TetrisEngine extends ArcadeEngine {
     ctx.strokeStyle = "#fff";
     ctx.lineWidth = 1.5;
     ctx.stroke();
+  }
+
+  protected scene3d(): Scene3D | null {
+    const items: Item3D[] = [];
+    const cx = BX + (COLS * CELL) / 2;
+    const cy = BY + (ROWS * CELL) / 2;
+    // deska za hrací plochou a boční stěny
+    items.push({ key: "back", model: "box", x: cx, y: cy, z: -14, w: COLS * CELL + 8, h: ROWS * CELL + 8, d: 6, color: "#0c0b24" });
+    for (const side of [-1, 1])
+      items.push({ key: "wall" + side, model: "box", x: cx + side * ((COLS * CELL) / 2 + 5), y: cy, z: -2, w: 8, h: ROWS * CELL + 8, d: 24, color: "#3a3f7a" });
+    items.push({ key: "floor", model: "box", x: cx, y: BY + ROWS * CELL + 5, z: -2, w: COLS * CELL + 24, h: 8, d: 24, color: "#3a3f7a" });
+    const at = (x: number, y: number) => ({ x: BX + x * CELL + CELL / 2, y: BY + y * CELL + CELL / 2 });
+    for (let y = 0; y < ROWS; y++)
+      for (let x = 0; x < COLS; x++) {
+        const c = this.board[y]?.[x];
+        if (!c) continue;
+        const model = c[0] === "g" ? "tetris/drahokam_" + (Number(c.slice(1)) + 1) : "tetris/kostka_" + (COLOR_MODEL[c] ?? "smeti");
+        items.push({ key: "c" + x + "_" + y, model, ...at(x, y), w: CELL - 1, bob: c[0] === "g" ? 1.5 : 0, spin: c[0] === "g" ? 1.4 : 0 });
+      }
+    const p = this.piece;
+    if (p && !this.over) {
+      let gy = p.y;
+      while (this.fits(p.m, p.x, gy + 1)) gy += 1;
+      for (let r = 0; r < p.m.length; r++)
+        for (let c = 0; c < p.m[r].length; c++) {
+          if (!p.m[r][c]) continue;
+          if (gy + r >= 0) items.push({ key: "gh" + r + "_" + c, model: "box", ...at(p.x + c, gy + r), z: 0, w: CELL - 3, h: CELL - 3, d: 4, color: "#ffffff", opacity: 0.22 });
+          if (p.y + r >= 0) items.push({ key: "p" + r + "_" + c, model: "tetris/kostka_" + (COLOR_MODEL[p.color] ?? "i"), ...at(p.x + c, p.y + r), w: CELL - 1 });
+        }
+    }
+    // další kostka
+    const nm = this.next.m;
+    const ox = PX + 60 - (nm[0].length * 16) / 2 + 8;
+    for (let r = 0; r < nm.length; r++)
+      for (let c = 0; c < nm[r].length; c++)
+        if (nm[r][c]) items.push({ key: "n" + r + "_" + c, model: "tetris/kostka_" + (COLOR_MODEL[this.next.color] ?? "i"), x: ox + c * 16, y: 46 + r * 16 + 8, w: 15 });
+    // popisky odpovědí u řádků s drahokamy
+    for (let y = 0; y < ROWS; y++)
+      for (let x = 0; x < COLS; x++) {
+        const c = this.board[y]?.[x];
+        if (!c || c[0] !== "g") continue;
+        const idx = Number(c.slice(1));
+        const o = this.options[idx];
+        if (!o) continue;
+        items.push({ key: "lbl" + idx, model: "none", x: PX + 95, y: BY + y * CELL + CELL / 2 + 14, z: 4, label: o.label, labelColor: ANSWER_COLORS[idx % ANSWER_COLORS.length], labelW: 160 });
+      }
+    return { layout: "wall", zoom: 0.93, items, ground: "#14123a", sky: "linear-gradient(135deg, #14123a, #0a0a22)" };
   }
 
   private cell(ctx: CanvasRenderingContext2D, x: number, y: number, color: string, size = CELL) {

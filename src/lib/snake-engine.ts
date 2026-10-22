@@ -1,5 +1,8 @@
 import { ANSWER_COLORS, ArcadeEngine, DIR_VEC, H, OPPOSITE, W, drawLabel, shuffleInPlace, type Dir } from "./arcade-base";
 import { sfx } from "./game-fx";
+import type { Item3D, Scene3D } from "./scene3d";
+
+const APPLE_MODEL: Record<string, string> = { "#7c6cff": "fialove", "#ff5d73": "cervene", "#ffb020": "zlute", "#22c55e": "zelene" };
 
 const C = 20;
 const COLS = 32;
@@ -139,6 +142,47 @@ export class SnakeEngine extends ArcadeEngine {
       this.burst(px, py, "#ff5d73", 20);
       this.wrong(a.index);
     }
+  }
+
+  protected scene3d(): Scene3D | null {
+    if (this.snake.length === 0) return null;
+    const items: Item3D[] = [];
+    const pos = (c: Cell) => ({ x: (c.x + 0.5) * C, y: OY + (c.y + 0.5) * C });
+    // okraj hřiště
+    const fw = COLS * C;
+    const fh = ROWS * C;
+    items.push({ key: "bt", model: "box", x: fw / 2, y: OY, w: fw + 8, h: 10, d: 6, color: "#2f8f68" });
+    items.push({ key: "bb", model: "box", x: fw / 2, y: OY + fh, w: fw + 8, h: 10, d: 6, color: "#2f8f68" });
+    items.push({ key: "bl", model: "box", x: 0, y: OY + fh / 2, w: 6, h: 10, d: fh, color: "#2f8f68" });
+    items.push({ key: "br", model: "box", x: fw, y: OY + fh / 2, w: 6, h: 10, d: fh, color: "#2f8f68" });
+    this.food.forEach((f, i) => items.push({ key: "f" + i, model: "sphere", ...pos(f), z: 4, w: 7, h: 7, d: 7, color: "#ffe066", bob: 1.5 }));
+    const flicker = this.invuln > 0 && Math.floor(this.time * 12) % 2 === 0;
+    if (!flicker) {
+      const n = this.snake.length;
+      this.snake.forEach((c, i) => {
+        const p = pos(c);
+        if (i === 0) {
+          const v = DIR_VEC[this.dir];
+          items.push({ key: "sh", model: "snake/hlava", ...p, w: C * 1.4, rot: -Math.atan2(v.y, v.x) + Math.PI });
+          return;
+        }
+        const prev = this.snake[i - 1];
+        const next = this.snake[i + 1];
+        if (!next) {
+          items.push({ key: "st", model: "snake/ocas", ...p, w: C * 1.05, rot: -Math.atan2(prev.y - c.y, prev.x - c.x) });
+          return;
+        }
+        const straight = prev.x - c.x === c.x - next.x && prev.y - c.y === c.y - next.y;
+        if (straight) items.push({ key: "s" + i, model: "snake/telo", ...p, w: C * 1.1, rot: prev.y !== c.y ? Math.PI / 2 : 0 });
+        else items.push({ key: "s" + i, model: "sphere", ...p, z: 0, w: C * 0.8, h: C * 0.7, d: C * 0.8, color: "#35b36b" });
+        void n;
+      });
+    }
+    for (const [i, a] of this.apples.entries()) {
+      if (!a.alive) continue;
+      items.push({ key: "a" + i, model: "snake/jablko_" + (APPLE_MODEL[a.color] ?? "cervene"), ...pos(a), w: C * 1.5, bob: 1.5, spin: 1, label: a.label, labelColor: a.color, labelW: 130 });
+    }
+    return { layout: "floor", items, ground: "#0e2a22", sky: "linear-gradient(180deg, #123a2c, #0a1f18)" };
   }
 
   protected draw(ctx: CanvasRenderingContext2D) {
