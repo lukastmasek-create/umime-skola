@@ -1,0 +1,50 @@
+{
+  "groups": {
+    "had": {
+      "file": "had.webp",
+      "cell": [
+        40,
+        40
+      ],
+      "cols": 8,
+      "frames": {
+        "hlava": [
+          0,
+          0
+        ],
+        "telo": [
+          1,
+          0
+        ],
+        "ocas": [
+          2,
+          0
+        ],
+        "zatacka": [
+          3,
+          0
+        ],
+        "jidlo": [
+          4,
+          0
+        ],
+        "jablko_fialove": [
+          5,
+          0
+        ],
+        "jablko_cervene": [
+          6,
+          0
+        ],
+        "jablko_zlute": [
+          7,
+          0
+        ],
+        "jablko_zelene": [
+          0,
+          1
+        ]
+      }
+    }
+  }
+}

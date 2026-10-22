@@ -7,7 +7,7 @@ const CELL = 19;
 const BX = 22;
 const BY = 20;
 const PX = 236;
-const GARBAGE = "#6b6f8a";
+const GARBAGE: string = "#6b6f8a";
 
 type Shape = number[][];
 const SHAPES: { m: Shape; color: string }[] = [
@@ -21,7 +21,9 @@ const SHAPES: { m: Shape; color: string }[] = [
 ];
 
 type Piece = { m: Shape; color: string; x: number; y: number };
-type Option = { label: string; correct: boolean; index: number; used: boolean; rect: { x: number; y: number; w: number; h: number } };
+// Odpovědi jsou drahokamy zabudované do řádků na dně: vymaž řádek se správným drahokamem.
+// Políčko drahokamu je v poli zapsané jako "g<index odpovědi>".
+type Option = { label: string; correct: boolean; index: number };
 
 function rotate(m: Shape): Shape {
   const n = m.length;
@@ -36,23 +38,8 @@ export class TetrisEngine extends ArcadeEngine {
   private fall = 0;
   private repeat = { left: 0, right: 0 };
   private options: Option[] = [];
+  private pendingGarbage = 0;
   private clearing: { rows: number[]; t: number } | null = null;
-  private digit = (e: KeyboardEvent) => {
-    if (!this.running || this.over) return;
-    const m = /^(?:Digit|Numpad)([1-4])$/.exec(e.code);
-    if (m) this.choose(Number(m[1]) - 1);
-  };
-
-  constructor(canvas: HTMLCanvasElement, cb: ConstructorParameters<typeof ArcadeEngine>[1]) {
-    super(canvas, cb);
-    window.addEventListener("keydown", this.digit);
-  }
-
-  destroy() {
-    window.removeEventListener("keydown", this.digit);
-    super.destroy();
-  }
-
   protected questionTime() {
     return 90;
   }
@@ -74,20 +61,28 @@ export class TetrisEngine extends ArcadeEngine {
     this.bag = [];
     this.piece = null;
     this.options = [];
+    this.pendingGarbage = 0;
     if (options.length === 0) return;
-    for (let i = 0; i < 3; i++) this.addGarbage();
+    this.options = options.map((label, i) => ({ label, correct: i === correctIndex, index: i }));
+    // Zespodu: drahokamový řádek, prázdný řádek, … Díra se v řádcích posouvá o jedno políčko,
+    // takže jde zalepit kostkami shora.
+    const order = shuffleInPlace(options.map((_, i) => i));
+    let hole = Math.floor(Math.random() * COLS);
+    let row = ROWS - 1;
+    for (let k = 0; k < order.length; k++) {
+      for (let g = 0; g < 2 && row >= 0; g++, row--) {
+        hole = Math.max(0, Math.min(COLS - 1, hole + Math.floor(Math.random() * 3) - 1));
+        const line = Array.from({ length: COLS }, (_, x) => (x === hole ? null : GARBAGE));
+        if (g === 0) {
+          let gx = Math.floor(Math.random() * COLS);
+          if (gx === hole) gx = (gx + 3) % COLS;
+          line[gx] = "g" + order[k];
+        }
+        this.board[row] = line;
+      }
+    }
     this.next = this.nextShape();
     this.spawn();
-    const order = shuffleInPlace(options.map((_, i) => i));
-    const h = 64;
-    const gap = 8;
-    this.options = order.map((optIndex, k) => ({
-      label: options[optIndex],
-      correct: optIndex === correctIndex,
-      index: optIndex,
-      used: false,
-      rect: { x: PX, y: 112 + k * (h + gap), w: W - PX - 18, h },
-    }));
   }
 
   private addGarbage(): boolean {
@@ -164,12 +159,34 @@ export class TetrisEngine extends ArcadeEngine {
     for (let y = 0; y < ROWS; y++) if (this.board[y].every((c) => c !== null)) rows.push(y);
     if (rows.length) {
       this.clearing = { rows, t: 0.22 };
+      if (this.collectGems(rows)) return;
       sfx("stomp");
       this.popText(rows.length >= 4 ? "TETRIS!" : `+${rows.length}`, "#ffe066", BX + (COLS * CELL) / 2, BY + rows[0] * CELL);
     } else {
       sfx("land");
       this.spawn();
     }
+  }
+
+  // Vymazaný řádek s drahokamem = zvolená odpověď. Vrací true, když to byla správná (otázka končí).
+  private collectGems(rows: number[]): boolean {
+    for (const y of rows) {
+      for (const cell of this.board[y]) {
+        if (typeof cell !== "string" || cell[0] !== "g") continue;
+        const idx = Number(cell.slice(1));
+        const o = this.options[idx];
+        if (!o) continue;
+        const color = ANSWER_COLORS[idx % ANSWER_COLORS.length];
+        this.burst(BX + (COLS * CELL) / 2, BY + y * CELL, color, 28);
+        if (o.correct) {
+          this.win(o.index);
+          return true;
+        }
+        this.wrong(o.index);
+        this.pendingGarbage += 1;
+      }
+    }
+    return false;
   }
 
   private finishClear() {
@@ -180,6 +197,13 @@ export class TetrisEngine extends ArcadeEngine {
       this.board.unshift(Array<string | null>(COLS).fill(null));
     }
     this.clearing = null;
+    while (this.pendingGarbage > 0) {
+      this.pendingGarbage -= 1;
+      if (!this.addGarbage()) {
+        this.topOut();
+        return;
+      }
+    }
     this.spawn();
   }
 
@@ -188,32 +212,6 @@ export class TetrisEngine extends ArcadeEngine {
     if (!p) return;
     while (this.fits(p.m, p.x, p.y + 1)) p.y += 1;
     this.lock();
-  }
-
-  protected onTap(x: number, y: number) {
-    if (this.over) return;
-    this.options.forEach((o, i) => {
-      if (!o.used && x >= o.rect.x && x <= o.rect.x + o.rect.w && y >= o.rect.y && y <= o.rect.y + o.rect.h) this.choose(i);
-    });
-  }
-
-  private choose(i: number) {
-    const o = this.options[i];
-    if (!o || o.used || this.over) return;
-    o.used = true;
-    if (o.correct) {
-      // Odměna: spodní tři řádky zmizí.
-      for (let k = 0; k < 3; k++) {
-        this.board.pop();
-        this.board.unshift(Array<string | null>(COLS).fill(null));
-      }
-      this.burst(BX + (COLS * CELL) / 2, BY + ROWS * CELL - 30, ANSWER_COLORS[i % ANSWER_COLORS.length], 30);
-      this.win(o.index);
-    } else {
-      this.wrong(o.index);
-      if (!this.addGarbage()) this.topOut();
-      if (this.piece && !this.fits(this.piece.m, this.piece.x, this.piece.y)) this.piece.y -= 1;
-    }
   }
 
   protected update(dt: number) {
@@ -271,7 +269,9 @@ export class TetrisEngine extends ArcadeEngine {
     for (let y = 0; y < ROWS; y++)
       for (let x = 0; x < COLS; x++) {
         const c = this.board[y]?.[x];
-        if (c) this.cell(ctx, BX + x * CELL, BY + y * CELL, c);
+        if (!c) continue;
+        if (c[0] === "g") this.gem(ctx, BX + x * CELL, BY + y * CELL, Number(c.slice(1)));
+        else this.cell(ctx, BX + x * CELL, BY + y * CELL, c);
       }
     if (this.clearing) {
       ctx.fillStyle = `rgba(255,255,255,${0.5 + Math.sin(this.time * 40) * 0.3})`;
@@ -307,34 +307,55 @@ export class TetrisEngine extends ArcadeEngine {
     for (let r = 0; r < nm.length; r++)
       for (let c = 0; c < nm[r].length; c++) if (nm[r][c]) this.cell(ctx, ox + c * 16, 46 + r * 16, this.next.color, 16);
 
-    // odpovědi
-    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    // odpovědi: popisek vedle řádku s příslušným drahokamem, sleduje ho při propadávání
+    ctx.fillStyle = "rgba(255,255,255,0.75)";
     ctx.font = "700 12px system-ui, sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText("1–4 / tap", PX + 140, 34);
-    this.options.forEach((o, i) => {
-      const color = ANSWER_COLORS[i % ANSWER_COLORS.length];
-      ctx.globalAlpha = o.used ? 0.28 : 1;
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.roundRect(o.rect.x, o.rect.y, o.rect.w, o.rect.h, 12);
-      ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,0.85)";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.fillStyle = "rgba(0,0,0,0.3)";
-      ctx.beginPath();
-      ctx.arc(o.rect.x + 22, o.rect.y + o.rect.h / 2, 14, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#fff";
-      ctx.font = "800 16px system-ui, sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(String(i + 1), o.rect.x + 22, o.rect.y + o.rect.h / 2 + 1);
-      drawLabel(ctx, o.label, o.rect.x + 46 + (o.rect.w - 54) / 2, o.rect.y + o.rect.h / 2, o.rect.w - 54, "rgba(0,0,0,0.22)", { height: o.rect.h - 18, size: 19 });
-      ctx.globalAlpha = 1;
-    });
     ctx.textBaseline = "alphabetic";
+    ctx.fillText("◆ = odpověď", PX + 140, 34);
+    ctx.fillStyle = "rgba(255,255,255,0.5)";
+    ctx.font = "600 11px system-ui, sans-serif";
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        const c = this.board[y]?.[x];
+        if (!c || c[0] !== "g") continue;
+        const idx = Number(c.slice(1));
+        const o = this.options[idx];
+        if (!o) continue;
+        const cy = BY + y * CELL + CELL / 2;
+        const color = ANSWER_COLORS[idx % ANSWER_COLORS.length];
+        ctx.strokeStyle = color;
+        ctx.globalAlpha = 0.5;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(BX + COLS * CELL + 4, cy);
+        ctx.lineTo(PX + 6, cy);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        drawLabel(ctx, o.label, PX + 10 + 170 / 2, cy, 170, color, { height: 18, size: 13 });
+      }
+    }
+    ctx.textBaseline = "alphabetic";
+  }
+
+  private gem(ctx: CanvasRenderingContext2D, x: number, y: number, idx: number) {
+    const color = ANSWER_COLORS[idx % ANSWER_COLORS.length];
+    ctx.fillStyle = GARBAGE;
+    ctx.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
+    const cx = x + CELL / 2;
+    const cy = y + CELL / 2;
+    const pulse = 1 + Math.sin(this.time * 5 + idx) * 0.08;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - 8 * pulse);
+    ctx.lineTo(cx + 8 * pulse, cy);
+    ctx.lineTo(cx, cy + 8 * pulse);
+    ctx.lineTo(cx - 8 * pulse, cy);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
   }
 
   private cell(ctx: CanvasRenderingContext2D, x: number, y: number, color: string, size = CELL) {

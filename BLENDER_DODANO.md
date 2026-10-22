@@ -65,6 +65,26 @@ a pak `avatar_stills.mjs`.
 - Střed obrázku je klidnější (jméno a avatar), detaily jsou po stranách.
 - CSS přechody v `cosmetics.ts` můžou zůstat jako záloha (`background: url(...) center / cover, <přechod>`).
 
+## Hry u kurzů (`public/game-sprites/<hra>/`, `public/game-models/<hra>/`)
+
+Pro všech 8 her: `space`, `mario`, `pacman`, `snake`, `breakout` (Pong), `tetris`, `kong`, `centipede`.
+
+- **Sprity (pro dnešní canvas 640 × 420):** každá skupina je jeden `.webp` list se snímky v mřížce (nejvýš 8 v řádku).
+  Popis je v `<hra>.json`:
+  ```json
+  { "groups": { "lod": { "file": "lod.webp", "cell": [96, 96], "cols": 8, "frames": { "klid": [0, 0], "vlevo": [4, 0] } } } }
+  ```
+  - Snímek se kreslí jako `drawImage(list, col * w, row * h, w, h, x, y, w, h)`.
+  - Velikost buňky je 2× velikost, jakou má věc ve hře, takže je ostrá i na retině. Ve hře ji stačí kreslit poloviční.
+  - Postavy a předměty mají tenký inkoustový obrys, dlaždice a pozadí ne.
+- **3D modely (pro budoucí 3D režim):** `.glb` (Draco) s jednoduchými PBR materiály, každý model zvlášť. Měřítko je
+  zhruba „1 jednotka = 1 buňka“, přední strana je −Y v Blenderu (+Z v glTF).
+- Skript je `umime-art/scripts/game_sprites.py` (render) a `game_sheets.mjs` (balení listů).
+- Do kódu her jsem nesahal. Napojení (nahrazení kreslení kódem) nechávám na tobě, kódem kreslený vzhled ať zůstane
+  jako záloha, kdyby se list nenačetl.
+
+Co je v jednotlivých hrách, je vidět v `<hra>.json` (názvy skupin a snímků).
+
 ## Proxy
 
 `src/proxy.ts`: do výjimek přibyly `city/`, `pets/` a `cosmetics/`, aby se statické soubory nepřesměrovávaly

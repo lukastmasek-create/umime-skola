@@ -21,7 +21,10 @@ const PLAYER_H = 26;
 const START_X = 30;
 const GRAVITY = 1150;
 
-type Door = { x: number; w: number; label: string; correct: boolean; alive: boolean; index: number; color: string };
+// Odpovědi visí nad horním patrem jako bloky: musíš pod ně vyskočit a udeřit hlavou.
+type Door = { x: number; w: number; label: string; correct: boolean; alive: boolean; index: number; color: string; hit: number };
+const BLOCK_BOTTOM = 52;
+const BLOCK_H = 36;
 type Barrel = { x: number; y: number; vy: number; level: number; dir: number; falling: boolean; rot: number; jumped: boolean };
 
 export class KongEngine extends ArcadeEngine {
@@ -70,6 +73,7 @@ export class KongEngine extends ArcadeEngine {
       alive: true,
       index: optIndex,
       color: ANSWER_COLORS[k % ANSWER_COLORS.length],
+      hit: 0,
     }));
   }
 
@@ -211,21 +215,26 @@ export class KongEngine extends ArcadeEngine {
       }
     }
 
-    // --- dveře ---
-    if (this.level === 4 && this.onGround) {
+    // --- odpovědní bloky: úder hlavou při výskoku ---
+    for (const d of this.doors) d.hit = Math.max(0, d.hit - dt);
+    if (this.level === 4 && !this.onGround && !this.climbing && this.vy < 0) {
+      const headTop = this.py - PLAYER_H - 5;
       for (const d of this.doors) {
         if (!d.alive) continue;
-        if (this.px > d.x + 6 && this.px < d.x + d.w - 6) {
-          const cx = d.x + d.w / 2;
-          if (d.correct) {
-            this.burst(cx, LEVEL_Y[4] - 22, d.color, 30);
-            this.win(d.index);
-            return;
-          }
-          d.alive = false;
-          this.burst(cx, LEVEL_Y[4] - 22, "#ff5d73", 20);
-          this.wrong(d.index);
+        if (this.px < d.x - 4 || this.px > d.x + d.w + 4 || headTop > BLOCK_BOTTOM) continue;
+        const cx = d.x + d.w / 2;
+        this.vy = 140; // odrazí se dolů
+        d.hit = 0.25;
+        sfx("hit");
+        if (d.correct) {
+          this.burst(cx, BLOCK_BOTTOM, d.color, 30);
+          this.win(d.index);
+          return;
         }
+        d.alive = false;
+        this.burst(cx, BLOCK_BOTTOM - BLOCK_H / 2, "#ff5d73", 20);
+        this.wrong(d.index);
+        break;
       }
     }
   }
@@ -281,18 +290,28 @@ export class KongEngine extends ArcadeEngine {
     // gorila nahoře vpravo
     this.drawKong(ctx, W - 40, LEVEL_Y[4]);
 
-    // dveře
+    // odpovědní bloky nad horním patrem
     for (const d of this.doors) {
       if (!d.alive) continue;
-      const y = LEVEL_Y[4] - 52;
+      const bump = d.hit > 0 ? Math.sin((d.hit / 0.25) * Math.PI) * 8 : 0;
+      const y = BLOCK_BOTTOM - BLOCK_H - bump;
       ctx.fillStyle = d.color;
       ctx.beginPath();
-      ctx.roundRect(d.x, y, d.w, 52, [14, 14, 0, 0]);
+      ctx.roundRect(d.x, y, d.w, BLOCK_H, 8);
       ctx.fill();
       ctx.strokeStyle = "rgba(255,255,255,0.85)";
       ctx.lineWidth = 2;
       ctx.stroke();
-      drawLabel(ctx, d.label, d.x + d.w / 2, y + 26, d.w - 6, "rgba(0,0,0,0.25)", { height: 38, size: 17 });
+      drawLabel(ctx, d.label, d.x + d.w / 2, y + BLOCK_H / 2, d.w - 6, "rgba(0,0,0,0.25)", { height: BLOCK_H - 8, size: 16 });
+      // šipka naznačuje, že se pod blok skáče
+      ctx.fillStyle = "rgba(255,255,255,0.55)";
+      const ay = BLOCK_BOTTOM + 8 + Math.sin(this.time * 6 + d.x) * 2;
+      ctx.beginPath();
+      ctx.moveTo(d.x + d.w / 2, ay);
+      ctx.lineTo(d.x + d.w / 2 - 6, ay + 8);
+      ctx.lineTo(d.x + d.w / 2 + 6, ay + 8);
+      ctx.closePath();
+      ctx.fill();
     }
 
     // sudy

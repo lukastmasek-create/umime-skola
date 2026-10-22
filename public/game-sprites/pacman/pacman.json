@@ -1,0 +1,136 @@
+{
+  "groups": {
+    "bludiste": {
+      "file": "bludiste.webp",
+      "cell": [
+        40,
+        40
+      ],
+      "cols": 5,
+      "frames": {
+        "rovne": [
+          0,
+          0
+        ],
+        "roh": [
+          1,
+          0
+        ],
+        "t": [
+          2,
+          0
+        ],
+        "krizovatka": [
+          3,
+          0
+        ],
+        "konec": [
+          4,
+          0
+        ]
+      }
+    },
+    "duchove": {
+      "file": "duchove.webp",
+      "cell": [
+        64,
+        64
+      ],
+      "cols": 8,
+      "frames": {
+        "cerveny_1": [
+          0,
+          0
+        ],
+        "cerveny_2": [
+          1,
+          0
+        ],
+        "ruzovy_1": [
+          2,
+          0
+        ],
+        "ruzovy_2": [
+          3,
+          0
+        ],
+        "modry_1": [
+          4,
+          0
+        ],
+        "modry_2": [
+          5,
+          0
+        ],
+        "oranzovy_1": [
+          6,
+          0
+        ],
+        "oranzovy_2": [
+          7,
+          0
+        ],
+        "vystraseny_1": [
+          0,
+          1
+        ],
+        "vystraseny_2": [
+          1,
+          1
+        ],
+        "vystraseny_blik": [
+          2,
+          1
+        ],
+        "jen_oci": [
+          3,
+          1
+        ]
+      }
+    },
+    "pac": {
+      "file": "pac.webp",
+      "cell": [
+        64,
+        64
+      ],
+      "cols": 3,
+      "frames": {
+        "zavrena": [
+          0,
+          0
+        ],
+        "pootevrena": [
+          1,
+          0
+        ],
+        "otevrena": [
+          2,
+          0
+        ]
+      }
+    },
+    "tecky": {
+      "file": "tecky.webp",
+      "cell": [
+        32,
+        32
+      ],
+      "cols": 3,
+      "frames": {
+        "tecka": [
+          0,
+          0
+        ],
+        "energie": [
+          1,
+          0
+        ],
+        "tresne": [
+          2,
+          0
+        ]
+      }
+    }
+  }
+}

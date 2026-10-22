@@ -1,0 +1,374 @@
+{
+  "groups": {
+    "bonusy": {
+      "file": "bonusy.webp",
+      "cell": [
+        64,
+        64
+      ],
+      "cols": 3,
+      "frames": {
+        "stit": [
+          0,
+          0
+        ],
+        "rychla_strelba": [
+          1,
+          0
+        ],
+        "zpomaleni": [
+          2,
+          0
+        ]
+      }
+    },
+    "bossove": {
+      "file": "bossove.webp",
+      "cell": [
+        160,
+        160
+      ],
+      "cols": 8,
+      "frames": {
+        "kyklop_1": [
+          0,
+          0
+        ],
+        "kyklop_2": [
+          1,
+          0
+        ],
+        "krab_1": [
+          2,
+          0
+        ],
+        "krab_2": [
+          3,
+          0
+        ],
+        "chobotnice_1": [
+          4,
+          0
+        ],
+        "chobotnice_2": [
+          5,
+          0
+        ],
+        "ufo_1": [
+          6,
+          0
+        ],
+        "ufo_2": [
+          7,
+          0
+        ]
+      }
+    },
+    "lod": {
+      "file": "lod.webp",
+      "cell": [
+        96,
+        96
+      ],
+      "cols": 7,
+      "frames": {
+        "klid": [
+          0,
+          0
+        ],
+        "plamen_1": [
+          1,
+          0
+        ],
+        "plamen_2": [
+          2,
+          0
+        ],
+        "plamen_3": [
+          3,
+          0
+        ],
+        "vlevo": [
+          4,
+          0
+        ],
+        "vpravo": [
+          5,
+          0
+        ],
+        "zasah": [
+          6,
+          0
+        ]
+      }
+    },
+    "mimozemstane": {
+      "file": "mimozemstane.webp",
+      "cell": [
+        128,
+        128
+      ],
+      "cols": 8,
+      "frames": {
+        "kyklop_klid_1": [
+          0,
+          0
+        ],
+        "kyklop_klid_2": [
+          1,
+          0
+        ],
+        "kyklop_klid_3": [
+          2,
+          0
+        ],
+        "kyklop_klid_4": [
+          3,
+          0
+        ],
+        "kyklop_zasah_1": [
+          4,
+          0
+        ],
+        "kyklop_zasah_2": [
+          5,
+          0
+        ],
+        "kyklop_nabijeni_1": [
+          6,
+          0
+        ],
+        "kyklop_nabijeni_2": [
+          7,
+          0
+        ],
+        "krab_klid_1": [
+          0,
+          1
+        ],
+        "krab_klid_2": [
+          1,
+          1
+        ],
+        "krab_klid_3": [
+          2,
+          1
+        ],
+        "krab_klid_4": [
+          3,
+          1
+        ],
+        "krab_zasah_1": [
+          4,
+          1
+        ],
+        "krab_zasah_2": [
+          5,
+          1
+        ],
+        "krab_nabijeni_1": [
+          6,
+          1
+        ],
+        "krab_nabijeni_2": [
+          7,
+          1
+        ],
+        "chobotnice_klid_1": [
+          0,
+          2
+        ],
+        "chobotnice_klid_2": [
+          1,
+          2
+        ],
+        "chobotnice_klid_3": [
+          2,
+          2
+        ],
+        "chobotnice_klid_4": [
+          3,
+          2
+        ],
+        "chobotnice_zasah_1": [
+          4,
+          2
+        ],
+        "chobotnice_zasah_2": [
+          5,
+          2
+        ],
+        "chobotnice_nabijeni_1": [
+          6,
+          2
+        ],
+        "chobotnice_nabijeni_2": [
+          7,
+          2
+        ],
+        "ufo_klid_1": [
+          0,
+          3
+        ],
+        "ufo_klid_2": [
+          1,
+          3
+        ],
+        "ufo_klid_3": [
+          2,
+          3
+        ],
+        "ufo_klid_4": [
+          3,
+          3
+        ],
+        "ufo_zasah_1": [
+          4,
+          3
+        ],
+        "ufo_zasah_2": [
+          5,
+          3
+        ],
+        "ufo_nabijeni_1": [
+          6,
+          3
+        ],
+        "ufo_nabijeni_2": [
+          7,
+          3
+        ]
+      }
+    },
+    "pozadi_hvezdy_1": {
+      "file": "pozadi_hvezdy_1.webp",
+      "cell": [
+        640,
+        420
+      ],
+      "cols": 1,
+      "frames": {
+        "hvezdy_1": [
+          0,
+          0
+        ]
+      }
+    },
+    "pozadi_hvezdy_2": {
+      "file": "pozadi_hvezdy_2.webp",
+      "cell": [
+        640,
+        420
+      ],
+      "cols": 1,
+      "frames": {
+        "hvezdy_2": [
+          0,
+          0
+        ]
+      }
+    },
+    "pozadi_hvezdy_3": {
+      "file": "pozadi_hvezdy_3.webp",
+      "cell": [
+        640,
+        420
+      ],
+      "cols": 1,
+      "frames": {
+        "hvezdy_3": [
+          0,
+          0
+        ]
+      }
+    },
+    "pozadi_mlhovina": {
+      "file": "pozadi_mlhovina.webp",
+      "cell": [
+        640,
+        420
+      ],
+      "cols": 1,
+      "frames": {
+        "mlhovina": [
+          0,
+          0
+        ]
+      }
+    },
+    "pozadi_planeta": {
+      "file": "pozadi_planeta.webp",
+      "cell": [
+        640,
+        420
+      ],
+      "cols": 1,
+      "frames": {
+        "planeta": [
+          0,
+          0
+        ]
+      }
+    },
+    "strely": {
+      "file": "strely.webp",
+      "cell": [
+        64,
+        64
+      ],
+      "cols": 2,
+      "frames": {
+        "hrac": [
+          0,
+          0
+        ],
+        "nepritel": [
+          1,
+          0
+        ]
+      }
+    },
+    "vybuch": {
+      "file": "vybuch.webp",
+      "cell": [
+        64,
+        64
+      ],
+      "cols": 8,
+      "frames": {
+        "snimek_1": [
+          0,
+          0
+        ],
+        "snimek_2": [
+          1,
+          0
+        ],
+        "snimek_3": [
+          2,
+          0
+        ],
+        "snimek_4": [
+          3,
+          0
+        ],
+        "snimek_5": [
+          4,
+          0
+        ],
+        "snimek_6": [
+          5,
+          0
+        ],
+        "snimek_7": [
+          6,
+          0
+        ],
+        "snimek_8": [
+          7,
+          0
+        ]
+      }
+    }
+  }
+}

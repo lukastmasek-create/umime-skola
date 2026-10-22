@@ -1,0 +1,134 @@
+{
+  "groups": {
+    "dlazdice": {
+      "file": "dlazdice.webp",
+      "cell": [
+        48,
+        24
+      ],
+      "cols": 1,
+      "frames": {
+        "nosnik": [
+          0,
+          0
+        ]
+      }
+    },
+    "gorila": {
+      "file": "gorila.webp",
+      "cell": [
+        112,
+        128
+      ],
+      "cols": 6,
+      "frames": {
+        "klid_1": [
+          0,
+          0
+        ],
+        "klid_2": [
+          1,
+          0
+        ],
+        "buseni_1": [
+          2,
+          0
+        ],
+        "buseni_2": [
+          3,
+          0
+        ],
+        "hod_1": [
+          4,
+          0
+        ],
+        "hod_2": [
+          5,
+          0
+        ]
+      }
+    },
+    "hrac": {
+      "file": "hrac.webp",
+      "cell": [
+        48,
+        64
+      ],
+      "cols": 8,
+      "frames": {
+        "beh_1": [
+          0,
+          0
+        ],
+        "beh_2": [
+          1,
+          0
+        ],
+        "beh_3": [
+          2,
+          0
+        ],
+        "beh_4": [
+          3,
+          0
+        ],
+        "lezeni_1": [
+          4,
+          0
+        ],
+        "lezeni_2": [
+          5,
+          0
+        ],
+        "skok": [
+          6,
+          0
+        ],
+        "klid": [
+          7,
+          0
+        ]
+      }
+    },
+    "sud": {
+      "file": "sud.webp",
+      "cell": [
+        36,
+        36
+      ],
+      "cols": 4,
+      "frames": {
+        "kutaleni_1": [
+          0,
+          0
+        ],
+        "kutaleni_2": [
+          1,
+          0
+        ],
+        "kutaleni_3": [
+          2,
+          0
+        ],
+        "kutaleni_4": [
+          3,
+          0
+        ]
+      }
+    },
+    "zebrik": {
+      "file": "zebrik.webp",
+      "cell": [
+        32,
+        24
+      ],
+      "cols": 1,
+      "frames": {
+        "zebrik": [
+          0,
+          0
+        ]
+      }
+    }
+  }
+}
