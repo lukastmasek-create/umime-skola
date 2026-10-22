@@ -21,6 +21,27 @@ takže jde všechno kdykoli přerenderovat. Soubory v `public/` jsou připraven�
   je potřeba buď upravit kreslení, nebo se domluvit na kotvě.
 - V noci se sprite neztmavuje. Kódem kreslené budovy na noc reagují, sprity zatím ne.
 
+### Celé město (druhá sada)
+
+Vyrenderované jsou všechny položky z `CITY_ITEMS` kromě zábradlí (to se napojuje na sousedy a kreslí ho dál
+kód). Dále jsou hotové dlaždice silnic (16 tvarů podle sousedů), kolejí a přejezdů, tráva a auta a vlaky.
+Popis názvů je v hlavičce `city-render.ts`, render dělá `umime-art/scripts/city2.py`.
+
+- `city-render.ts` teď sprite umisťuje podle levého rohu půdorysu, takže sedí i budovy 3 × 2 a podobně.
+- Pro otočené budovy (`rot = 1`, w ≠ h) bere `<id>_r` a v noci přimíchá `<id>_noc` s rozsvícenými okny.
+- Upozornění o kotvě výše tím odpadá.
+
+## 3D mazlíčci (`public/pets/<druh>.glb`)
+
+Pro `cat`, `dog`, `bunny`, `fox` a `dragon` jsou hotové 3D modely s animacemi `klid`, `jedeni`, `hrani` a `radost`.
+Výrazy podle nálady jsou uzly `nalada_<happy|ok|sad|hungry>_*`. Doplněk z obchodu se připíná na kotvy `kotva_hlava`,
+`kotva_ucho`, `kotva_oci` a `kotva_krk`.
+
+- Hra je zobrazuje přes `PetView` a `Pet3D` (`src/components/idle/`). Fáze růstu řeší měřítkem.
+- Po krmení, hraní a pamlsku se přehraje příslušná animace, kliknutí na mazlíčka ho rozradostní.
+- 2D `PetArt` zůstává jako záloha bez WebGL a pro malé náhledy.
+- Statické náhledy jsou v `public/pets/<druh>-<nálada>.webp`.
+
 ## Doplňky mazlíčků (`public/pets/accessories/`)
 
 `bow`, `flower`, `party`, `glasses`, `scarf`, `crown`: každý jako `<id>.glb` (Draco, 18–130 kB) a náhled

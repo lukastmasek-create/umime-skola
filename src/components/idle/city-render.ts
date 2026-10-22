@@ -1,7 +1,11 @@
-// Izometrický vykreslovač města. Vše se kreslí kódem, takže hra nepotřebuje žádné
-// obrázky. Až budou hotové 3D modely z Blenderu, stačí vedle nich do
-// public/city/sprites/ dát PNG pojmenované podle id budovy (viz CITY_ASSETS.md)
-// a vykreslovač je použije místo kódem kreslených budov.
+// Izometrický vykreslovač města. Budovy, dlaždice a auta jsou rendery 3D modelů z Blenderu
+// (public/city/sprites/, seznam v manifest.json, postup v umime-art/scripts/city2.py).
+// Co v manifestu chybí nebo se nenačte, kreslí se dál kódem.
+//
+// Názvy spritů: <id> (budova v základní poloze), <id>_r (otočená, půdorys h × w),
+// <id>_noc a <id>_r_noc (noc s rozsvícenými okny), road_<maska> (1 = +x, 2 = −x, 4 = +y, 8 = −y),
+// rail_x / rail_y / rail_xy, crossing_x / crossing_y (podle směru kolejí), grass_a / grass_b,
+// car_<barva>_<x|y> a train_<lead|wagon>_<x|y> (vystředěné na bod na zemi).
 
 import { CITY_SIZE, footprint, getItem, type Placed } from "@/lib/idle/city";
 import { vehicleParts, type Traffic } from "./city-traffic";
@@ -876,7 +880,7 @@ function drawItem(ctx: CanvasRenderingContext2D, id: string, gx: number, gy: num
 
 // --- zem, silnice, koleje ---
 
-function drawGround(ctx: CanvasRenderingContext2D) {
+function drawGround(ctx: CanvasRenderingContext2D, sprites: SpriteStore | null) {
   const size = CITY_SIZE;
   // boky mapy
   const L0 = P(0, size);
@@ -888,7 +892,9 @@ function drawGround(ctx: CanvasRenderingContext2D) {
   for (let gx = 0; gx < size; gx++) {
     for (let gy = 0; gy < size; gy++) {
       const dark = (gx + gy) % 2 === 0;
-      groundDiamond(ctx, gx, gy, 1, 1, dark ? "#7cc47a" : "#74bb72");
+      const tile = sprites?.get(dark ? "grass_a" : "grass_b");
+      if (tile) drawFootprintSprite(ctx, tile, gx, gy, 1, 1);
+      else groundDiamond(ctx, gx, gy, 1, 1, dark ? "#7cc47a" : "#74bb72");
     }
   }
 }
@@ -899,9 +905,26 @@ function neighbours(items: Placed[], pred: (id: string) => boolean): Set<number>
   return set;
 }
 
-function drawRoad(ctx: CanvasRenderingContext2D, gx: number, gy: number, roads: Set<number>, rails: Set<number>, crossing: boolean) {
-  groundDiamond(ctx, gx, gy, 1, 1, "#3b3e4b", 0);
+function drawRoad(
+  ctx: CanvasRenderingContext2D,
+  gx: number,
+  gy: number,
+  roads: Set<number>,
+  rails: Set<number>,
+  crossing: boolean,
+  sprites: SpriteStore | null,
+) {
   const has = (dx: number, dy: number) => roads.has((gy + dy) * CITY_SIZE + gx + dx);
+  const railHas = (dx: number, dy: number) => rails.has((gy + dy) * CITY_SIZE + gx + dx);
+  const key = crossing
+    ? `crossing_${railHas(0, 1) || railHas(0, -1) ? "y" : "x"}`
+    : `road_${(has(1, 0) ? 1 : 0) | (has(-1, 0) ? 2 : 0) | (has(0, 1) ? 4 : 0) | (has(0, -1) ? 8 : 0)}`;
+  const tile = sprites?.get(key);
+  if (tile) {
+    drawFootprintSprite(ctx, tile, gx, gy, 1, 1);
+    return;
+  }
+  groundDiamond(ctx, gx, gy, 1, 1, "#3b3e4b", 0);
   // chodníky na stranách bez sousední silnice
   const walk = "#b9b4a6";
   const wd = 0.14;
@@ -980,6 +1003,26 @@ function drawRails(ctx: CanvasRenderingContext2D, gx: number, gy: number, rails:
   if (axes[1]) rail("y", 0, 1);
 }
 
+// Sprite budovy nebo dlaždice: šířka obrázku = šířka diamantu půdorysu, levý okraj v levém rohu
+// půdorysu, spodní okraj v rohu nejblíž ke kameře (pro w ≠ h není ve středu obrázku).
+function drawFootprintSprite(ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, w: number, h: number) {
+  const left = P(x, y + h)[0];
+  const bottom = P(x + w, y + h)[1];
+  const dw = ((w + h) * TW) / 2;
+  const dh = (img.height / img.width) * dw;
+  ctx.drawImage(img, left, bottom - dh, dw, dh);
+}
+
+const CAR_SPRITES: Record<string, string> = {
+  "#e5484d": "cervene",
+  "#3b82f6": "modre",
+  "#f5a524": "oranzove",
+  "#2fb344": "zelene",
+  "#f4f4f6": "bile",
+  "#8b5cf6": "fialove",
+  "#14b8a6": "tyrkysove",
+};
+
 // --- hlavní kreslení ---
 
 type Drawable = { depth: number; draw: () => void };
@@ -994,7 +1037,7 @@ export function drawCity(ctx: CanvasRenderingContext2D, width: number, height: n
   ctx.scale(camera.zoom, camera.zoom);
   ctx.translate(-camera.x, -camera.y);
 
-  drawGround(ctx);
+  drawGround(ctx, scene.sprites);
 
   const roads = neighbours(scene.items, (id) => id === "road" || id === "crossing");
   const rails = neighbours(scene.items, (id) => id === "rail" || id === "crossing");
@@ -1002,11 +1045,18 @@ export function drawCity(ctx: CanvasRenderingContext2D, width: number, height: n
 
   // plochá vrstva: silnice a koleje
   for (const [id, x, y] of scene.items) {
-    if (id === "road") drawRoad(ctx, x, y, roads, rails, false);
-    else if (id === "crossing") drawRoad(ctx, x, y, roads, rails, true);
+    if (id === "road") drawRoad(ctx, x, y, roads, rails, false, scene.sprites);
+    else if (id === "crossing") drawRoad(ctx, x, y, roads, rails, true, scene.sprites);
     else if (id === "rail") {
-      groundDiamond(ctx, x, y, 1, 1, "#9c9384", 0);
-      drawRails(ctx, x, y, rails);
+      const has = (dx: number, dy: number) => rails.has((y + dy) * CITY_SIZE + x + dx);
+      const ax = has(1, 0) || has(-1, 0);
+      const ay = has(0, 1) || has(0, -1);
+      const tile = scene.sprites?.get(ax && ay ? "rail_xy" : ay ? "rail_y" : "rail_x");
+      if (tile) drawFootprintSprite(ctx, tile, x, y, 1, 1);
+      else {
+        groundDiamond(ctx, x, y, 1, 1, "#9c9384", 0);
+        drawRails(ctx, x, y, rails);
+      }
     }
   }
 
@@ -1019,12 +1069,16 @@ export function drawCity(ctx: CanvasRenderingContext2D, width: number, height: n
     drawables.push({
       depth: x + w - 1 + (y + h - 1) + 0.01 * (w + h),
       draw: () => {
-        const sprite = scene.sprites?.get(id);
+        const key = rot === 1 && w !== h ? `${id}_r` : id;
+        const sprite = scene.sprites?.get(key);
         if (sprite) {
-          const bottom = P(x + w, y + h);
-          const dw = ((w + h) * TW) / 2;
-          const dh = (sprite.height / sprite.width) * dw;
-          ctx.drawImage(sprite, bottom[0] - dw / 2, bottom[1] - dh, dw, dh);
+          drawFootprintSprite(ctx, sprite, x, y, w, h);
+          const night = scene.night > 0.05 ? scene.sprites?.get(`${key}_noc`) : null;
+          if (night) {
+            ctx.globalAlpha = Math.min(1, scene.night * 1.4);
+            drawFootprintSprite(ctx, night, x, y, w, h);
+            ctx.globalAlpha = 1;
+          }
         } else {
           drawItem(ctx, id, x, y, w, h, scene, fences);
         }
@@ -1060,6 +1114,14 @@ export function drawCity(ctx: CanvasRenderingContext2D, width: number, height: n
           const oy = part.dx * lane;
           const bx = part.gx + ox - bw / 2;
           const by = part.gy + oy - bh / 2;
+          const name = v.kind === "train" ? `train_${part.lead ? "lead" : "wagon"}` : `car_${CAR_SPRITES[v.color] ?? "cervene"}`;
+          const sprite = scene.sprites?.get(`${name}_${alongX ? "x" : "y"}`);
+          if (sprite) {
+            const c = P(part.gx + ox, part.gy + oy);
+            const size = sprite.width / 2;
+            ctx.drawImage(sprite, c[0] - size / 2, c[1] - size / 2, size, size);
+            return;
+          }
           const color = v.kind === "train" ? (part.lead ? "#d94f5c" : "#4f7fbf") : v.color;
           const hz = v.kind === "train" ? 11 : 7;
           box(ctx, bx, by, bw, bh, 1, 1 + hz, color, shade(color, 0.25));

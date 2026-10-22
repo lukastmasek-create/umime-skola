@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { PetArt } from "@/components/idle/PetArt";
+import { PetView } from "@/components/idle/PetView";
+import type { PetAction } from "@/lib/pets3d";
 import { fillN, getPetText } from "@/i18n/pets";
 import {
   HAPPY_DECAY_PER_HOUR,
@@ -74,6 +76,8 @@ export function PetGame({ locale }: { locale: Locale }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [nameDraft, setNameDraft] = useState("");
+  // Poslední úspěšná akce, kterou 3D mazlíček přehraje (krmení, hraní, pamlsek).
+  const [petAction, setPetAction] = useState<{ id: number; kind: PetAction } | null>(null);
 
   const apply = useCallback((data: Payload) => {
     const now = Date.now();
@@ -135,6 +139,8 @@ export function PetGame({ locale }: { locale: Locale }) {
         return;
       }
       apply(json);
+      const kind: PetAction | null = body.action === "feed" ? "feed" : body.action === "play" ? "play" : body.action === "treat" ? "joy" : null;
+      if (kind) setPetAction((prev) => ({ id: (prev?.id ?? 0) + 1, kind }));
       if (body.action === "treat" || body.action === "adopt") notifyAccountChanged();
       if (body.action === "rename") setNameDraft("");
     } catch {
@@ -262,7 +268,15 @@ export function PetGame({ locale }: { locale: Locale }) {
       {header}
       <div className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <section className="card flex flex-col items-center gap-3 p-5 text-center">
-          <PetArt species={state.active} stage={stageFromLevel(level.level)} mood={mood} maxed={level.maxed} size={230} accessory={stats.accessory} />
+          <PetView
+            species={state.active}
+            stage={stageFromLevel(level.level)}
+            mood={mood}
+            maxed={level.maxed}
+            accessory={stats.accessory}
+            action={petAction}
+            label={stats.name || t.species[state.active]}
+          />
           <p className="text-xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
             {stats.name || t.species[state.active]}
           </p>
