@@ -4,7 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { SpaceEngine, GAME_HEIGHT, GAME_WIDTH, type EngineConfig } from "@/lib/space-engine";
 import { MarioEngine } from "@/lib/mario-engine";
-import type { GameSlug } from "@/lib/games";
+import { PacmanEngine } from "@/lib/pacman-engine";
+import { SnakeEngine } from "@/lib/snake-engine";
+import { BreakoutEngine } from "@/lib/breakout-engine";
+import { TetrisEngine } from "@/lib/tetris-engine";
+import { KongEngine } from "@/lib/kong-engine";
+import { CentipedeEngine } from "@/lib/centipede-engine";
+import type { HeldKey } from "@/lib/arcade-base";
+import { GAMES, type GameSlug } from "@/lib/games";
+import { getArcadeText, isArcadeSlug } from "@/i18n/arcade";
 import { getGameText, type GameQuestion, type GameText } from "@/i18n/game";
 import type { Locale } from "@/i18n/config";
 import { isMuted, setMuted, sfx, unlockAudio } from "@/lib/game-fx";
@@ -12,7 +20,7 @@ import { isMuted, setMuted, sfx, unlockAudio } from "@/lib/game-fx";
 type QuizEngine = {
   destroy(): void;
   setRunning(running: boolean): void;
-  setInput(input: Partial<{ left: boolean; right: boolean; fire: boolean }>): void;
+  setInput(input: Partial<Record<HeldKey, boolean>>): void;
   loadQuestion(options: string[], correctIndex: number, config: EngineConfig, prompt?: string): void;
   popText(text: string, color?: string): void;
 };
@@ -36,6 +44,17 @@ const COSTS: Record<UpgradeKey, number[]> = {
 const UPGRADE_ICONS: Record<UpgradeKey, string> = { fire: "⚡", life: "❤️", slow: "🐌" };
 const EMPTY_UPGRADES: Upgrades = { fire: 0, life: 0, slow: 0 };
 
+// Ovládací tlačítka na telefonu u retro her: které klávesy hra používá a jak se jmenují.
+type PadSpec = { keys: HeldKey[]; up?: string; down?: string };
+const PADS: Partial<Record<GameSlug, PadSpec>> = {
+  "pac-man": { keys: ["left", "right", "up", "down"] },
+  snake: { keys: ["left", "right", "up", "down"] },
+  breakout: { keys: ["left", "right", "fire"] },
+  tetris: { keys: ["left", "right", "up", "down", "fire"], up: "⟳", down: "▼" },
+  kong: { keys: ["left", "right", "up", "down", "fire"] },
+  stonozka: { keys: ["left", "right", "up", "down", "fire"] },
+};
+
 function shuffle<T>(items: T[]): T[] {
   const copy = [...items];
   for (let i = copy.length - 1; i > 0; i--) {
@@ -45,9 +64,9 @@ function shuffle<T>(items: T[]): T[] {
   return copy;
 }
 
-function prepareRun(questions: GameQuestion[]): GameQuestion[] {
+function prepareRun(questions: GameQuestion[], count = QUESTIONS_PER_RUN): GameQuestion[] {
   return shuffle(questions)
-    .slice(0, QUESTIONS_PER_RUN)
+    .slice(0, count)
     .map((q) => {
       const order = shuffle([0, 1, 2, 3]);
       return {
@@ -150,6 +169,11 @@ export function SpaceQuizGame({
 }) {
   const base = getGameText(locale);
   const mario = game === "super-mario";
+  // Had je nekonečná hra: otázky se opakují, dokud hráč nepřijde o všechny životy.
+  const endless = game === "snake";
+  const arcade = isArcadeSlug(game) ? getArcadeText(game, locale) : null;
+  const emoji = game === "space-invaders" ? "🚀" : (GAMES.find((g) => g.slug === game)?.emoji ?? "🎮");
+  const pad = PADS[game];
   const t: GameText = mario
     ? {
         ...base,
@@ -159,7 +183,16 @@ export function SpaceQuizGame({
         fire: base.mario.jump,
         upgradeFire: base.mario.upgradeJump,
       }
-    : base;
+    : arcade
+      ? {
+          ...base,
+          title: arcade.title,
+          intro: arcade.intro,
+          controls: arcade.controls,
+          fire: arcade.action,
+          upgradeFire: arcade.upgradeAction,
+        }
+      : base;
   const storageKey = `game:${courseSlug}`;
   const hasCourseQuestions = !!questions && questions.length > 0;
   const source = hasCourseQuestions ? questions : t.questions;
@@ -217,16 +250,29 @@ export function SpaceQuizGame({
       onMiss: () => handlersRef.current.onMiss(),
       onDamage: () => handlersRef.current.onDamage(),
     };
-    const engine: QuizEngine = mario
-      ? new MarioEngine(canvas, callbacks)
-      : new SpaceEngine(canvas, callbacks);
+    const engine: QuizEngine =
+      game === "super-mario"
+        ? new MarioEngine(canvas, callbacks)
+        : game === "pac-man"
+          ? new PacmanEngine(canvas, callbacks)
+          : game === "snake"
+            ? new SnakeEngine(canvas, callbacks)
+            : game === "breakout"
+              ? new BreakoutEngine(canvas, callbacks)
+              : game === "tetris"
+                ? new TetrisEngine(canvas, callbacks)
+                : game === "kong"
+                  ? new KongEngine(canvas, callbacks)
+                  : game === "stonozka"
+                    ? new CentipedeEngine(canvas, callbacks)
+                    : new SpaceEngine(canvas, callbacks);
     engineRef.current = engine;
     engine.loadQuestion(["Ahoj", "Hello", "Hallo", "Привет"], 0, { fireCooldown: BASE_FIRE_COOLDOWN, alienSpeedFactor: 1 });
     return () => {
       engine.destroy();
       engineRef.current = null;
     };
-  }, [mario]);
+  }, [game]);
 
   function persist(nextCoins: number, nextUpgrades: Upgrades) {
     try {
@@ -252,7 +298,9 @@ export function SpaceQuizGame({
 
   function startRun() {
     unlockAudio();
-    const newRun = prepareRun(source);
+    const newRun = endless
+      ? Array.from({ length: 6 }, () => prepareRun(source, source.length)).flat()
+      : prepareRun(source);
     setRun(newRun);
     setScore(0);
     setLives(BASE_LIVES + upgrades.life);
@@ -447,7 +495,7 @@ export function SpaceQuizGame({
   const autoContinuing = !mario && lives > 0 && !lastQuestion;
   const autoDelay = resolved?.kind === "correct" ? AUTO_CONTINUE_MS.correct : AUTO_CONTINUE_MS.other;
 
-  function setHeld(key: "left" | "right" | "fire", down: boolean) {
+  function setHeld(key: HeldKey, down: boolean) {
     engineRef.current?.setInput({ [key]: down });
   }
 
@@ -456,7 +504,7 @@ export function SpaceQuizGame({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-            {mario ? "🍄" : "🚀"} {t.title}
+            {mario ? "🍄" : emoji} {t.title}
           </h1>
           <p className="text-sm text-[var(--muted)]">{courseTitle}</p>
         </div>
@@ -479,7 +527,8 @@ export function SpaceQuizGame({
           {phase !== "intro" && (
             <>
             <span className="pill bg-[var(--surface-muted)] px-3 py-1.5">
-              {t.question} {Math.min(qIndex + 1, run.length)}/{run.length}
+              {t.question} {Math.min(qIndex + 1, run.length)}
+              {endless ? "" : `/${run.length}`}
             </span>
             <span className="pill bg-[var(--surface-muted)] px-3 py-1.5">
               {t.lives}: {"❤️".repeat(Math.max(lives, 0)) || "💀"}
@@ -555,7 +604,7 @@ export function SpaceQuizGame({
         <div className="flex flex-col gap-4">
           <p className="text-sm text-[var(--muted)]">{t.intro}</p>
           <p className="text-xs text-[var(--faint)]">⌨️ {t.controls}</p>
-          {!mario && <p className="text-xs text-[var(--faint)]">💡 {t.tipDodge}</p>}
+          {game === "space-invaders" && <p className="text-xs text-[var(--faint)]">💡 {t.tipDodge}</p>}
           <UpgradeShop t={t} coins={coins} upgrades={upgrades} onBuy={buy} />
           <button
             onClick={startRun}
@@ -567,7 +616,56 @@ export function SpaceQuizGame({
         </div>
       )}
 
-      {phase === "playing" && (
+      {phase === "playing" && pad && (
+        <div className="flex items-center justify-center gap-3">
+          <HoldButton
+            onHold={(down) => setHeld("left", down)}
+            label="←"
+            className="btn-bouncy h-14 w-16 select-none rounded-2xl bg-[var(--surface-muted)] text-2xl"
+          >
+            ◀
+          </HoldButton>
+          {(pad.keys.includes("up") || pad.keys.includes("down")) && (
+            <div className="flex flex-col gap-2">
+              {pad.keys.includes("up") && (
+                <HoldButton
+                  onHold={(down) => setHeld("up", down)}
+                  label="↑"
+                  className="btn-bouncy h-12 w-16 select-none rounded-2xl bg-[var(--surface-muted)] text-xl"
+                >
+                  {pad.up ?? "▲"}
+                </HoldButton>
+              )}
+              {pad.keys.includes("down") && (
+                <HoldButton
+                  onHold={(down) => setHeld("down", down)}
+                  label="↓"
+                  className="btn-bouncy h-12 w-16 select-none rounded-2xl bg-[var(--surface-muted)] text-xl"
+                >
+                  {pad.down ?? "▼"}
+                </HoldButton>
+              )}
+            </div>
+          )}
+          <HoldButton
+            onHold={(down) => setHeld("right", down)}
+            label="→"
+            className="btn-bouncy h-14 w-16 select-none rounded-2xl bg-[var(--surface-muted)] text-2xl"
+          >
+            ▶
+          </HoldButton>
+          {pad.keys.includes("fire") && (
+            <HoldButton
+              onHold={(down) => setHeld("fire", down)}
+              className="btn-bouncy h-14 flex-1 select-none rounded-2xl bg-[var(--accent-500)] text-sm font-bold text-white sm:max-w-xs"
+            >
+              {emoji} {t.fire}
+            </HoldButton>
+          )}
+        </div>
+      )}
+
+      {phase === "playing" && !pad && (
         <div className="flex items-center justify-center gap-3">
           <HoldButton
             onHold={(down) => setHeld("left", down)}
