@@ -217,6 +217,7 @@ export function SpaceQuizGame({
   const [upgrades, setUpgrades] = useState<Upgrades>(EMPTY_UPGRADES);
   const [resolved, setResolved] = useState<Resolved | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
   const [completed, setCompleted] = useState(false);
   const [xpGained, setXpGained] = useState(0);
   const [muted, setMutedState] = useState(false);
@@ -297,6 +298,7 @@ export function SpaceQuizGame({
   }
 
   function startRun() {
+    setToast(null);
     unlockAudio();
     const newRun = endless
       ? Array.from({ length: 6 }, () => prepareRun(source, source.length)).flat()
@@ -398,6 +400,18 @@ export function SpaceQuizGame({
     pausedRef.current = paused;
     handlersRef.current = {
       onHit: (correct) => {
+        if (correct && endless) {
+          // Nekonečná hra se nezastavuje: krátká zpráva s vysvětlením a hned další otázka.
+          const pts = 10 + Math.min(combo, 4) * 5;
+          setScore((s) => s + pts);
+          setCombo((c) => c + 1);
+          engineRef.current?.popText(combo > 0 ? `+${pts}  🔥×${combo + 1}` : `+${pts}`, "#7ee0b0");
+          const q = run[qIndex];
+          setToast(`${t.correct} +${pts} · ${q.options[q.correctIndex]} – ${q.explanation}`);
+          window.setTimeout(() => setToast(null), 5000);
+          window.setTimeout(() => nextStepRef.current(), 700);
+          return;
+        }
         if (correct) {
           const pts = 10 + Math.min(combo, 4) * 5;
           setScore((s) => s + pts);
@@ -420,6 +434,15 @@ export function SpaceQuizGame({
         }
       },
       onMiss: () => {
+        if (endless && lives - 1 > 0) {
+          setLives(lives - 1);
+          setCombo(0);
+          const q = run[qIndex];
+          setToast(`${t.missed} ${q.options[q.correctIndex]} – ${q.explanation}`);
+          window.setTimeout(() => setToast(null), 5000);
+          window.setTimeout(() => nextStepRef.current(), 400);
+          return;
+        }
         setLives(lives - 1);
         setCombo(0);
         setResolved({ kind: "missed" });
@@ -560,6 +583,13 @@ export function SpaceQuizGame({
           className="block h-auto w-full"
           style={{ aspectRatio: `${GAME_WIDTH} / ${GAME_HEIGHT}`, touchAction: "none" }}
         />
+        {toast && !flash && (
+          <div className="pointer-events-none absolute inset-x-2 bottom-2 flex justify-center">
+            <span className="rounded-xl bg-[color-mix(in_srgb,var(--accent-green)_85%,black)] px-3 py-2 text-center text-xs font-semibold text-white shadow-lg">
+              {toast}
+            </span>
+          </div>
+        )}
         {flash && (
           <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center">
             <span className="pill bg-[var(--danger)] px-4 py-2 text-sm text-white">{flash}</span>

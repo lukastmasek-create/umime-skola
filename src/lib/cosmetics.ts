@@ -1,3 +1,5 @@
+import { normalizeCustomMap, type AvatarCustom } from "@/lib/avatar-custom";
+
 // Ozdoby profilu, které se kupují v obchodě: rámečky kolem avataru a pozadí profilu.
 // Nové ozdoby přidává vývojář tady a v src/lib/shop.ts (cena a názvy).
 
@@ -30,12 +32,13 @@ export function isBannerId(value: unknown): value is string {
 // Výběr ozdob se ukládá do tabulky IdleState pod touto hrou (bez změny tabulky User).
 export const STYLE_GAME = "profile-style";
 
-export type ProfileStyle = { frame: FrameId | null; banner: string | null };
+export type ProfileStyle = { frame: FrameId | null; banner: string | null; custom: Record<string, AvatarCustom> };
 
 export function normalizeStyle(raw: unknown): ProfileStyle {
-  const r = (raw && typeof raw === "object" ? raw : {}) as { frame?: unknown; banner?: unknown };
+  const r = (raw && typeof raw === "object" ? raw : {}) as { frame?: unknown; banner?: unknown; custom?: unknown };
   return {
     frame: isFrameId(r.frame) ? r.frame : null,
     banner: isBannerId(r.banner) ? r.banner : null,
+    custom: normalizeCustomMap(r.custom),
   };
 }

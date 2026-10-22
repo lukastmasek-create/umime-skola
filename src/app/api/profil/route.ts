@@ -6,6 +6,9 @@ import { levelProgress } from "@/lib/progression";
 import { AVATARS, DEFAULT_AVATAR, isAvatarUnlocked } from "@/lib/avatars";
 import { TITLES, isTitleUnlocked } from "@/lib/titles";
 import { STYLE_GAME, isBannerId, isFrameId, normalizeStyle } from "@/lib/cosmetics";
+import { normalizeCustom } from "@/lib/avatar-custom";
+import { normalizeState as normalizePets, levelInfo } from "@/lib/idle/pets";
+import { computeCity, normalizeCity } from "@/lib/idle/city";
 import type { Prisma } from "@prisma/client";
 
 export async function GET() {
@@ -28,10 +31,39 @@ export async function GET() {
     const xp = await getXp(userId);
     const styleRow = await prisma.idleState.findUnique({ where: { userId_game: { userId, game: STYLE_GAME } } });
     const style = normalizeStyle(styleRow?.data);
+    // Doplňky profilu: pozice v žebříčku, mazlíčci a město. Když něco selže, prostě chybí.
+    const now = Date.now();
+    const [ahead, total, petRow, cityRow] = await Promise.all([
+      prisma.user.count({ where: { points: { gt: user?.points ?? 0 } } }).catch(() => null),
+      prisma.user.count().catch(() => null),
+      prisma.idleState.findUnique({ where: { userId_game: { userId, game: "mazlicci" } } }).catch(() => null),
+      prisma.idleState.findUnique({ where: { userId_game: { userId, game: "mesto" } } }).catch(() => null),
+    ]);
+    let pets: { owned: number; active: string | null; name: string; level: number } | null = null;
+    try {
+      const ps = normalizePets(petRow?.data, now);
+      const act = ps.active ? ps.pets[ps.active] : undefined;
+      pets = {
+        owned: Object.keys(ps.pets).length,
+        active: ps.active,
+        name: act?.name ?? "",
+        level: act ? levelInfo(act.growth).level : 0,
+      };
+    } catch {}
+    let city: { buildings: number; population: number } | null = null;
+    try {
+      const stats = computeCity(normalizeCity(cityRow?.data, now), 0);
+      city = { buildings: stats.buildings, population: Math.floor(stats.population) };
+    } catch {}
     return NextResponse.json({
       loggedIn: true,
+      rank: ahead === null ? null : ahead + 1,
+      players: total,
+      pets,
+      city,
       frame: style.frame,
       banner: style.banner,
+      custom: style.custom,
       name: user?.name ?? session.user.name ?? null,
       avatar: user?.avatar ?? DEFAULT_AVATAR,
       title: user?.title ?? null,
@@ -47,6 +79,7 @@ export async function GET() {
       degraded: true,
       frame: null,
       banner: null,
+      custom: {},
       name: session.user.name ?? null,
       avatar: DEFAULT_AVATAR,
       title: null,
@@ -91,6 +124,23 @@ export async function POST(request: Request) {
       }
       await prisma.user.update({ where: { id: userId }, data: { title: title.id } });
       return NextResponse.json({ title: title.id });
+    }
+
+    if (typeof body?.custom === "object" && body.custom && typeof body?.customFor === "string") {
+      if (!AVATARS.some((a) => a.id === body.customFor)) {
+        return NextResponse.json({ error: "Neznámý avatar." }, { status: 400 });
+      }
+      const row = await prisma.idleState.findUnique({ where: { userId_game: { userId, game: STYLE_GAME } } });
+      const prev = normalizeStyle(row?.data);
+      const custom = normalizeCustom(body.custom);
+      const next = { ...prev, custom: { ...prev.custom, [body.customFor]: custom } };
+      const data = next as unknown as Prisma.InputJsonValue;
+      await prisma.idleState.upsert({
+        where: { userId_game: { userId, game: STYLE_GAME } },
+        create: { userId, game: STYLE_GAME, data },
+        update: { data },
+      });
+      return NextResponse.json({ custom });
     }
 
     if ("frame" in body || "banner" in body) {

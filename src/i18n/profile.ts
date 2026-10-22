@@ -31,6 +31,14 @@ export type ProfileText = {
   totalXp: string;
   unlockedCount: string;
   locked: string;
+  frames: string;
+  framesHint: string;
+  banners: string;
+  bannersHint: string;
+  none: string;
+  shop: string;
+  inShop: string;
+  stats: string;
 };
 
 const cs: ProfileText = {
@@ -64,6 +72,14 @@ const cs: ProfileText = {
   totalXp: "XP celkem",
   unlockedCount: "Odemčeno",
   locked: "Zamčeno",
+  frames: "Rámečky",
+  framesHint: "Rámeček se ukáže kolem tvého avataru. Kupují se v obchodě.",
+  banners: "Pozadí",
+  bannersHint: "Pozadí tvé profilové karty. Kupují se v obchodě.",
+  none: "Žádný",
+  shop: "Obchod",
+  inShop: "V obchodě",
+  stats: "Přehled",
 };
 
 const en: ProfileText = {
@@ -97,6 +113,14 @@ const en: ProfileText = {
   totalXp: "Total XP",
   unlockedCount: "Unlocked",
   locked: "Locked",
+  frames: "Frames",
+  framesHint: "A frame shows around your avatar. Buy them in the shop.",
+  banners: "Backgrounds",
+  bannersHint: "The background of your profile card. Buy them in the shop.",
+  none: "None",
+  shop: "Shop",
+  inShop: "In the shop",
+  stats: "Overview",
 };
 
 const de: ProfileText = {
@@ -130,6 +154,14 @@ const de: ProfileText = {
   totalXp: "XP gesamt",
   unlockedCount: "Freigeschaltet",
   locked: "Gesperrt",
+  frames: "Rahmen",
+  framesHint: "Ein Rahmen erscheint um deinen Avatar. Im Shop erhältlich.",
+  banners: "Hintergründe",
+  bannersHint: "Der Hintergrund deiner Profilkarte. Im Shop erhältlich.",
+  none: "Keiner",
+  shop: "Shop",
+  inShop: "Im Shop",
+  stats: "Überblick",
 };
 
 const ru: ProfileText = {
@@ -163,6 +195,14 @@ const ru: ProfileText = {
   totalXp: "Всего XP",
   unlockedCount: "Открыто",
   locked: "Закрыто",
+  frames: "Рамки",
+  framesHint: "Рамка отображается вокруг аватара. Покупаются в магазине.",
+  banners: "Фоны",
+  bannersHint: "Фон карточки профиля. Покупаются в магазине.",
+  none: "Нет",
+  shop: "Магазин",
+  inShop: "В магазине",
+  stats: "Обзор",
 };
 
 const texts: Record<Locale, ProfileText> = { cs, en, de, ru };
