@@ -1,8 +1,5 @@
 import type { EngineCallbacks, EngineConfig } from "./space-engine";
 import { drawFloatTexts, sfx, stepFloatTexts, type FloatText } from "./game-fx";
-import type { Item3D, Scene3D, View3D } from "./scene3d";
-
-const TURTLE_MODEL: Record<string, string> = { "#2fb344": "zelena", "#e5484d": "cervena", "#3b82f6": "modra", "#f5a524": "oranzova" };
 
 const W = 640;
 const H = 420;
@@ -64,7 +61,6 @@ export class MarioEngine {
   private countdown = 0;
   private prompt = "";
   private config: EngineConfig = { fireCooldown: 0.35, alienSpeedFactor: 1 };
-  private view3d: View3D | null = null;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -91,59 +87,6 @@ export class MarioEngine {
     this.canvas.removeEventListener("pointermove", this.onPointerMove);
     this.canvas.removeEventListener("pointerup", this.onPointerUp);
     this.canvas.removeEventListener("pointercancel", this.onPointerUp);
-  }
-
-  setView3D(view: View3D | null) {
-    this.view3d = view;
-  }
-
-  getScene3D(): Scene3D | null {
-    const items: Item3D[] = [];
-    const boss = !!this.config.boss;
-    items.push({ key: "soil", model: "box", x: W / 2, y: (GROUND + H) / 2 + 6, z: 0, w: W + 40, h: H - GROUND - 12, d: 60, color: "#b5651d" });
-    items.push({ key: "grass", model: "box", x: W / 2, y: GROUND + 5, z: 0, w: W + 40, h: 10, d: 64, color: "#3fae3f" });
-    // kopce a slunce v pozadí
-    items.push({ key: "hill1", model: "sphere", x: 60, y: GROUND, z: -60, w: 300, h: 240, d: 80, color: "#9bd8b0" });
-    items.push({ key: "hill2", model: "sphere", x: 330, y: GROUND, z: -70, w: 360, h: 200, d: 80, color: "#9bd8b0" });
-    items.push({ key: "hill3", model: "sphere", x: 600, y: GROUND, z: -60, w: 290, h: 220, d: 80, color: "#9bd8b0" });
-    items.push({ key: "hill4", model: "sphere", x: 440, y: GROUND, z: -30, w: 380, h: 180, d: 60, color: "#7fd58a" });
-    items.push({ key: "sun", model: "sphere", x: 560, y: 70, z: -80, w: 56, h: 56, d: 20, color: "#fff4aa" });
-    this.clouds.forEach((c, i) => {
-      for (let k = 0; k < 3; k++)
-        items.push({ key: "cl" + i + "_" + k, model: "sphere", x: c.x + (k - 1) * 22 * c.s, y: c.y + (k === 1 ? -8 : 0), z: -40, w: 40 * c.s, h: 26 * c.s, d: 24, color: "#ffffff" });
-    });
-    this.turtles.forEach((t, i) => {
-      if (!t.alive) return;
-      items.push({
-        key: "t" + i,
-        model: "mario/zelva_" + (TURTLE_MODEL[t.shell] ?? "zelena"),
-        x: t.cx,
-        y: GROUND - 15,
-        z: 6,
-        w: TURTLE_W + 14,
-        rot: t.dir * 0.9,
-        label: t.label,
-        labelColor: t.shell,
-        labelW: 120,
-      });
-      if (boss) items.push({ key: "aura" + i, model: "sphere", x: t.cx, y: GROUND - 16, z: 4, w: 64, h: 52, d: 30, color: "#ff3250", opacity: 0.2 });
-    });
-    items.push({
-      key: "hero",
-      model: "mario/hrdina",
-      x: this.px,
-      y: this.py - 18,
-      z: 8,
-      h: 36 * (1 - this.squash * 0.6),
-      rot: this.facing * 0.8,
-    });
-    return {
-      layout: "wall",
-      zoom: 0.96,
-      items,
-      ground: boss ? "#ffc9a8" : "#8fcfff",
-      sky: boss ? "linear-gradient(180deg, #ff8a6b, #ffe0c2)" : "linear-gradient(180deg, #5ab7ff, #d6f0ff)",
-    };
   }
 
   setRunning(running: boolean) {
@@ -592,94 +535,72 @@ export class MarioEngine {
     const ctx = this.ctx;
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
 
-    const view = this.view3d;
-    if (view) {
-      // 3D režim: svět kreslí GameView3D, tady jen efekty a rozhraní.
-      ctx.clearRect(0, 0, W, H);
-      for (const p of this.particles) {
-        const pos = view.project(p.x, p.y, 8);
-        if (!pos) continue;
-        ctx.globalAlpha = Math.max(0, p.life);
-        ctx.fillStyle = p.color;
-        ctx.fillRect(pos.x, pos.y, p.size, p.size);
-      }
-      ctx.globalAlpha = 1;
-      drawFloatTexts(
-        ctx,
-        this.texts.flatMap((t) => {
-          const pos = view.project(t.x, t.y, 30);
-          return pos ? [{ ...t, x: pos.x, y: pos.y }] : [];
-        }),
-      );
-    } else {
-      const sky = ctx.createLinearGradient(0, 0, 0, GROUND);
-      sky.addColorStop(0, this.config.boss ? "#ff8a6b" : "#5ab7ff");
-      sky.addColorStop(1, this.config.boss ? "#ffe0c2" : "#d6f0ff");
-      ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, W, H);
+    const sky = ctx.createLinearGradient(0, 0, 0, GROUND);
+    sky.addColorStop(0, this.config.boss ? "#ff8a6b" : "#5ab7ff");
+    sky.addColorStop(1, this.config.boss ? "#ffe0c2" : "#d6f0ff");
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, H);
 
-      // slunce
-      ctx.fillStyle = "rgba(255,244,170,0.9)";
-      ctx.beginPath();
-      ctx.arc(560, 70, 26, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "rgba(255,244,170,0.25)";
-      ctx.beginPath();
-      ctx.arc(560, 70, 40, 0, Math.PI * 2);
-      ctx.fill();
+    // slunce
+    ctx.fillStyle = "rgba(255,244,170,0.9)";
+    ctx.beginPath();
+    ctx.arc(560, 70, 26, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "rgba(255,244,170,0.25)";
+    ctx.beginPath();
+    ctx.arc(560, 70, 40, 0, Math.PI * 2);
+    ctx.fill();
 
-      ctx.save();
-      if (this.shake > 0) ctx.translate((Math.random() - 0.5) * this.shake, (Math.random() - 0.5) * this.shake);
+    ctx.save();
+    if (this.shake > 0) ctx.translate((Math.random() - 0.5) * this.shake, (Math.random() - 0.5) * this.shake);
 
-      // vzdálené kopce
-      ctx.fillStyle = "#9bd8b0";
-      ctx.beginPath();
-      ctx.ellipse(40, GROUND, 130, 120, 0, Math.PI, 0);
-      ctx.ellipse(300, GROUND, 170, 100, 0, Math.PI, 0);
-      ctx.ellipse(600, GROUND, 140, 110, 0, Math.PI, 0);
-      ctx.fill();
-      ctx.fillStyle = "#7fd58a";
-      ctx.beginPath();
-      ctx.ellipse(120, GROUND, 150, 70, 0, Math.PI, 0);
-      ctx.ellipse(430, GROUND, 190, 90, 0, Math.PI, 0);
-      ctx.fill();
-      for (const c of this.clouds) this.cloud(c);
+    // vzdálené kopce
+    ctx.fillStyle = "#9bd8b0";
+    ctx.beginPath();
+    ctx.ellipse(40, GROUND, 130, 120, 0, Math.PI, 0);
+    ctx.ellipse(300, GROUND, 170, 100, 0, Math.PI, 0);
+    ctx.ellipse(600, GROUND, 140, 110, 0, Math.PI, 0);
+    ctx.fill();
+    ctx.fillStyle = "#7fd58a";
+    ctx.beginPath();
+    ctx.ellipse(120, GROUND, 150, 70, 0, Math.PI, 0);
+    ctx.ellipse(430, GROUND, 190, 90, 0, Math.PI, 0);
+    ctx.fill();
+    for (const c of this.clouds) this.cloud(c);
 
-      ctx.fillStyle = "#b5651d";
-      ctx.fillRect(0, GROUND, W, H - GROUND);
-      ctx.fillStyle = "#3fae3f";
-      ctx.fillRect(0, GROUND, W, 10);
-      ctx.fillStyle = "#5fd35f";
-      ctx.fillRect(0, GROUND, W, 3);
-      ctx.strokeStyle = "rgba(0,0,0,0.18)";
-      ctx.lineWidth = 2;
-      for (let x = 0; x < W; x += 40) {
-        ctx.strokeRect(x, GROUND + 10, 40, 30);
-        ctx.strokeRect(x + 20, GROUND + 40, 40, 30);
-      }
-
-      // stín pod hrdinou
-      const shadowScale = Math.max(0.4, 1 - (GROUND - this.py) / 220);
-      ctx.fillStyle = "rgba(0,0,0,0.22)";
-      ctx.beginPath();
-      ctx.ellipse(this.px, GROUND + 3, 14 * shadowScale, 4 * shadowScale, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      this.turtles.forEach((t, i) => {
-        if (t.alive) this.drawTurtle(t, i);
-      });
-      this.drawHero();
-
-      for (const p of this.particles) {
-        ctx.globalAlpha = Math.max(0, p.life);
-        ctx.fillStyle = p.color;
-        ctx.fillRect(p.x, p.y, p.size, p.size);
-      }
-      ctx.globalAlpha = 1;
-      drawFloatTexts(ctx, this.texts);
-      ctx.restore();
-
+    ctx.fillStyle = "#b5651d";
+    ctx.fillRect(0, GROUND, W, H - GROUND);
+    ctx.fillStyle = "#3fae3f";
+    ctx.fillRect(0, GROUND, W, 10);
+    ctx.fillStyle = "#5fd35f";
+    ctx.fillRect(0, GROUND, W, 3);
+    ctx.strokeStyle = "rgba(0,0,0,0.18)";
+    ctx.lineWidth = 2;
+    for (let x = 0; x < W; x += 40) {
+      ctx.strokeRect(x, GROUND + 10, 40, 30);
+      ctx.strokeRect(x + 20, GROUND + 40, 40, 30);
     }
+
+    // stín pod hrdinou
+    const shadowScale = Math.max(0.4, 1 - (GROUND - this.py) / 220);
+    ctx.fillStyle = "rgba(0,0,0,0.22)";
+    ctx.beginPath();
+    ctx.ellipse(this.px, GROUND + 3, 14 * shadowScale, 4 * shadowScale, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    this.turtles.forEach((t, i) => {
+      if (t.alive) this.drawTurtle(t, i);
+    });
+    this.drawHero();
+
+    for (const p of this.particles) {
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x, p.y, p.size, p.size);
+    }
+    ctx.globalAlpha = 1;
+    drawFloatTexts(ctx, this.texts);
+    ctx.restore();
 
     if (this.flash.a > 0) {
       ctx.globalAlpha = this.flash.a;

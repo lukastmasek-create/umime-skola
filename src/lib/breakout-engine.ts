@@ -1,8 +1,5 @@
 import { ANSWER_COLORS, ArcadeEngine, H, W, drawLabel, shuffleInPlace } from "./arcade-base";
 import { sfx } from "./game-fx";
-import type { Item3D, Scene3D } from "./scene3d";
-
-const BRICK_MODEL: Record<string, string> = { "#7c6cff": "fialova", "#ff5d73": "cervena", "#ffb020": "zluta", "#22c55e": "zelena", "#5a6cff": "fialova", "#4f8bff": "fialova", "#7ee0b0": "zelena" };
 
 const PADDLE_Y = H - 24;
 const PADDLE_H = 12;
@@ -179,33 +176,6 @@ export class BreakoutEngine extends ArcadeEngine {
       this.damage();
       this.resetBall();
     }
-  }
-
-  protected scene3d(): Scene3D | null {
-    if (this.blocks.length === 0) return null;
-    const items: Item3D[] = [];
-    items.push({ key: "wl", model: "box", x: 2, y: H / 2, w: 6, h: 16, d: H, color: "#3a3f7a" });
-    items.push({ key: "wr", model: "box", x: W - 2, y: H / 2, w: 6, h: 16, d: H, color: "#3a3f7a" });
-    items.push({ key: "wt", model: "box", x: W / 2, y: 4, w: W, h: 16, d: 8, color: "#3a3f7a" });
-    this.blocks.forEach((bl, i) => {
-      if (!bl.alive) return;
-      const model = "breakout/cihla_" + (BRICK_MODEL[bl.color] ?? "zelena");
-      const labeled = bl.label !== undefined;
-      items.push({
-        key: "b" + i,
-        model,
-        x: bl.x + bl.w / 2,
-        y: bl.y + bl.h / 2,
-        w: bl.w,
-        h: labeled ? 26 : bl.h,
-        label: bl.label,
-        labelColor: bl.color,
-        labelW: bl.w - 6,
-      });
-    });
-    items.push({ key: "pal", model: "breakout/palka", x: this.paddleX, y: PADDLE_Y + PADDLE_H / 2, w: this.paddleW, h: 14 });
-    items.push({ key: "ball", model: "breakout/micek", x: this.ballX, y: this.ballY, w: BALL_R * 2, z: 0 });
-    return { layout: "floor", items, ground: "#0a0a22", sky: "linear-gradient(180deg, #14123a, #0a0a22)" };
   }
 
   protected draw(ctx: CanvasRenderingContext2D) {

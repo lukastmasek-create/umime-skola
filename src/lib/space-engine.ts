@@ -1,5 +1,4 @@
 import { drawFloatTexts, sfx, stepFloatTexts, type FloatText } from "./game-fx";
-import type { Item3D, Scene3D, View3D } from "./scene3d";
 
 export type EngineCallbacks = {
   onHit: (index: number, correct: boolean) => void;
@@ -88,7 +87,6 @@ export class SpaceEngine {
   private boltTimer = 3;
   private pickupTimer = 6;
   private banner = 0;
-  private view3d: View3D | null = null;
 
   constructor(
     private canvas: HTMLCanvasElement,
@@ -119,47 +117,6 @@ export class SpaceEngine {
     this.canvas.removeEventListener("pointermove", this.onPointerMove);
     this.canvas.removeEventListener("pointerup", this.onPointerUp);
     this.canvas.removeEventListener("pointercancel", this.onPointerUp);
-  }
-
-  setView3D(view: View3D | null) {
-    this.view3d = view;
-  }
-
-  getScene3D(): Scene3D | null {
-    const items: Item3D[] = [];
-    items.push({ key: "line", model: "box", x: GAME_WIDTH / 2, y: LANDING_Y, w: GAME_WIDTH, h: 1.5, d: 2, color: "#ff5d73", opacity: 0.5 });
-    const types = ["kyklop", "krab", "chobotnice", "ufo"];
-    this.aliens.forEach((a, i) => {
-      if (!a.alive) return;
-      const p = this.alienPos(a, i);
-      items.push({
-        key: "al" + i,
-        model: "space/mimozemstan_" + types[i % types.length],
-        x: p.x + a.w / 2,
-        y: p.y + a.h / 2,
-        z: 4,
-        w: Math.min(a.w, a.h * 1.4) * 0.95,
-        bob: 2,
-        rot: Math.sin(this.time * 1.5 + i) * 0.25,
-        label: a.label,
-        labelColor: a.color,
-        labelW: Math.max(110, a.w),
-      });
-    });
-    if (!(this.invuln > 0 && Math.floor(this.time * 14) % 2 === 0)) {
-      items.push({ key: "ship", model: "space/lod", x: this.shipX, y: SHIP_Y, z: 2, w: 46, rot: Math.PI + Math.max(-0.3, Math.min(0.3, this.shipVx / 1400)) });
-      if (this.shield) items.push({ key: "shield", model: "sphere", x: this.shipX, y: SHIP_Y, z: 14, w: 62, h: 30, d: 62, color: "#5ab8ff", opacity: 0.28 });
-    }
-    this.bullets.forEach((b, i) => items.push({ key: "bu" + i, model: "box", x: b.x, y: b.y, z: 6, w: 4, h: 4, d: 20, color: "#fff7b0" }));
-    this.bolts.forEach((b, i) => items.push({ key: "bo" + i, model: "sphere", x: b.x, y: b.y, z: 6, w: 9, h: 9, d: 16, color: "#ff5d73" }));
-    const pk: Record<PickupKind, string> = { shield: "bonus_stit", rapid: "bonus_rychla_strelba", slow: "bonus_zpomaleni" };
-    this.pickups.forEach((p, i) => items.push({ key: "pk" + i, model: "space/" + pk[p.kind], x: p.x, y: p.y, z: 4, w: 30, bob: 3, spin: 2 }));
-    return {
-      layout: "floor",
-      items,
-      ground: this.config.boss ? "#2a0b1a" : "#0b0a2a",
-      sky: this.config.boss ? "linear-gradient(180deg, #3a0f24, #12061a)" : "linear-gradient(180deg, #0b0a2a, #1a1448)",
-    };
   }
 
   setRunning(running: boolean) {
@@ -783,34 +740,6 @@ export class SpaceEngine {
   private draw() {
     const ctx = this.ctx;
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    const view = this.view3d;
-    if (view) {
-      // 3D režim: svět kreslí GameView3D, tady jen efekty a rozhraní.
-      ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-      for (const p of this.particles) {
-        const pos = view.project(p.x, p.y, 8);
-        if (!pos) continue;
-        ctx.globalAlpha = Math.max(0, p.life);
-        ctx.fillStyle = p.color;
-        ctx.fillRect(pos.x, pos.y, 3, 3);
-      }
-      ctx.globalAlpha = 1;
-      drawFloatTexts(
-        ctx,
-        this.texts.flatMap((t) => {
-          const pos = view.project(t.x, t.y, 30);
-          return pos ? [{ ...t, x: pos.x, y: pos.y }] : [];
-        }),
-      );
-      if (this.flash.a > 0) {
-        ctx.globalAlpha = this.flash.a;
-        ctx.fillStyle = this.flash.color;
-        ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        ctx.globalAlpha = 1;
-      }
-      this.drawHud();
-      return;
-    }
     this.drawBackground();
 
     ctx.save();

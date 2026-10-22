@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getGameMode, setGameMode, type GameMode } from "@/lib/scene3d";
 import { useRouter, usePathname } from "next/navigation";
 import type { Dictionary } from "@/i18n/dictionaries";
 import { locales, localeNames, localeFlags, type Locale } from "@/i18n/config";
@@ -35,13 +34,6 @@ function OptionButton({
   );
 }
 
-const GAME_TEXT: Record<Locale, { title: string; hint: string; mode3d: string; mode2d: string }> = {
-  cs: { title: "Hry", hint: "Vzhled her u kurzů. 3D se nemusí hodit pro starší telefony.", mode3d: "3D (výchozí)", mode2d: "Klasické 2D" },
-  en: { title: "Games", hint: "How the course games look. 3D may be slow on older phones.", mode3d: "3D (default)", mode2d: "Classic 2D" },
-  de: { title: "Spiele", hint: "Aussehen der Kursspiele. 3D kann auf älteren Handys langsam sein.", mode3d: "3D (Standard)", mode2d: "Klassisch 2D" },
-  ru: { title: "Игры", hint: "Вид игр в курсах. 3D может тормозить на старых телефонах.", mode3d: "3D (по умолчанию)", mode2d: "Классика 2D" },
-};
-
 export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -50,7 +42,6 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
   const [font, setFont] = useState<FontStyle>("playful");
   const [fontSize, setFontSize] = useState<FontSize>("medium");
   const [saved, setSaved] = useState(false);
-  const [gameMode, setGameModeState] = useState<GameMode>("3d");
 
   useEffect(() => {
     // Hydrating from localStorage after mount — server has no access to it,
@@ -61,7 +52,6 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
       if (storedTheme === "light" || storedTheme === "dark") setTheme(storedTheme);
       const storedFont = localStorage.getItem("font");
       if (storedFont === "classic") setFont("classic");
-      setGameModeState(getGameMode());
       const storedSize = localStorage.getItem("fontSize");
       if (storedSize === "small" || storedSize === "large") setFontSize(storedSize);
     } catch {
@@ -176,28 +166,6 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
               {dict.settings.fontSizeLarge}
             </OptionButton>
           </div>
-        </div>
-      </section>
-
-      <section className="card p-6">
-        <h2 className="mb-1 text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          {GAME_TEXT[locale].title}
-        </h2>
-        <p className="mb-4 text-sm text-[var(--muted)]">{GAME_TEXT[locale].hint}</p>
-        <div className="flex flex-wrap gap-2">
-          {(["3d", "2d"] as const).map((m) => (
-            <OptionButton
-              key={m}
-              active={gameMode === m}
-              onClick={() => {
-                setGameModeState(m);
-                setGameMode(m);
-                flashSaved();
-              }}
-            >
-              {m === "3d" ? GAME_TEXT[locale].mode3d : GAME_TEXT[locale].mode2d}
-            </OptionButton>
-          ))}
         </div>
       </section>
 

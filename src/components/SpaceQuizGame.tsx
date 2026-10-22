@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { SpaceEngine, GAME_HEIGHT, GAME_WIDTH, type EngineConfig } from "@/lib/space-engine";
 import { MarioEngine } from "@/lib/mario-engine";
 import { PacmanEngine } from "@/lib/pacman-engine";
@@ -17,13 +16,6 @@ import { getArcadeText, isArcadeSlug } from "@/i18n/arcade";
 import { getGameText, type GameQuestion, type GameText } from "@/i18n/game";
 import type { Locale } from "@/i18n/config";
 import { isMuted, setMuted, sfx, unlockAudio } from "@/lib/game-fx";
-import { getGameMode, type Scene3D, type View3D } from "@/lib/scene3d";
-
-// three.js se stáhne, až když se hraje ve 3D.
-const GameView3D = dynamic(() => import("@/components/GameView3D"), { ssr: false });
-
-// Hry, které už mají 3D scénu (ostatní zůstávají v klasickém 2D).
-const GAMES_3D: GameSlug[] = ["space-invaders", "super-mario", "tetris", "kong", "pac-man", "snake", "breakout", "stonozka"];
 
 type QuizEngine = {
   destroy(): void;
@@ -31,8 +23,6 @@ type QuizEngine = {
   setInput(input: Partial<Record<HeldKey, boolean>>): void;
   loadQuestion(options: string[], correctIndex: number, config: EngineConfig, prompt?: string): void;
   popText(text: string, color?: string): void;
-  getScene3D?(): Scene3D | null;
-  setView3D?(view: View3D | null): void;
 };
 
 type Phase = "intro" | "playing" | "explain" | "result";
@@ -208,12 +198,6 @@ export function SpaceQuizGame({
   const source = hasCourseQuestions ? questions : t.questions;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  // 3D vzhled je výchozí, v nastavení jde vypnout. Bez WebGL se hra vrátí do 2D.
-  const [use3d, setUse3d] = useState(false);
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setUse3d(GAMES_3D.includes(game) && getGameMode() === "3d");
-  }, [game]);
   const explainSinceRef = useRef(0);
   const nextStepRef = useRef<() => void>(() => {});
   const engineRef = useRef<QuizEngine | null>(null);
@@ -592,12 +576,11 @@ export function SpaceQuizGame({
       )}
 
       <div className="relative overflow-hidden rounded-2xl border-2 border-[var(--border-soft)]">
-        {use3d && <GameView3D engineRef={engineRef} onFail={() => setUse3d(false)} />}
         <canvas
           ref={canvasRef}
           width={GAME_WIDTH}
           height={GAME_HEIGHT}
-          className="relative z-10 block h-auto w-full"
+          className="block h-auto w-full"
           style={{ aspectRatio: `${GAME_WIDTH} / ${GAME_HEIGHT}`, touchAction: "none" }}
         />
         {toast && !flash && (
