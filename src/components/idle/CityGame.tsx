@@ -28,6 +28,7 @@ import type { Locale } from "@/i18n/config";
 type Payload = {
   state: CityState;
   points: number;
+  owned: string[];
   level: number;
   learningBonus: number;
   now: number;
@@ -42,6 +43,7 @@ const EMOJI: Record<string, string> = {
   stall: "🧺", shop: "🏪", bakery: "🥐", cafe: "☕", market: "🥕", supermarket: "🛒", workshop: "🔧",
   factory: "🏭", office: "🏬", hotel: "🏨", mall: "🛍️", skyscraper: "🌆",
   school: "🏫", library: "📚", fire_station: "🚒", police: "🚓", town_hall: "🏛️", hospital: "🏥", museum: "🖼️", university: "🎓",
+  christmas_tree: "🎄", windmill: "🌬️", ferris_wheel: "🎡",
   tree: "🌳", bush: "🌿", flowerbed: "🌷", park: "🏞️", playground: "🛝", pond: "🦆", fountain: "⛲",
   lamp: "💡", bench: "🪑", bin: "🗑️", fence: "🚧", mailbox: "📮", flag: "🚩", statue: "🗿", clock_tower: "🕰️", memorial: "🕊️", monument: "🗽",
 };
@@ -89,6 +91,7 @@ export function CityGame({ locale }: { locale: Locale }) {
   const [load, setLoad] = useState<Load>("loading");
   const [city, setCity] = useState<CityState | null>(null);
   const [points, setPoints] = useState(0);
+  const [owned, setOwned] = useState<string[]>([]);
   const [level, setLevel] = useState(1);
   const [bonus, setBonus] = useState(0);
   const [offset, setOffset] = useState(0);
@@ -124,14 +127,15 @@ export function CityGame({ locale }: { locale: Locale }) {
   }, [stats]);
 
   // Poslední hodnoty pro kreslicí smyčku a pointer události (bez nového vykreslování).
-  const latest = useRef({ city, level, points, tool, rot, selected, notWorking, occ, offset });
+  const latest = useRef({ city, level, points, owned, tool, rot, selected, notWorking, occ, offset });
   useEffect(() => {
-    latest.current = { city, level, points, tool, rot, selected, notWorking, occ, offset };
+    latest.current = { city, level, points, owned, tool, rot, selected, notWorking, occ, offset };
   });
 
   const apply = useCallback((data: Payload) => {
     setCity(data.state);
     setPoints(data.points);
+    setOwned(data.owned ?? []);
     setLevel(data.level);
     setBonus(data.learningBonus);
     setOffset(data.now - Date.now());
@@ -217,7 +221,7 @@ export function CityGame({ locale }: { locale: Locale }) {
       const d = latest.current;
       if (!d.city || requests.length === 0) return;
       const settled = settleCity(d.city, Date.now() + d.offset, bonus);
-      const res = buildMany(settled, requests, { level: d.level, points: d.points });
+      const res = buildMany(settled, requests, { level: d.level, points: d.points, owned: d.owned });
       if (!res.ok) {
         toast(errorText(res.error));
         return;
@@ -361,7 +365,7 @@ export function CityGame({ locale }: { locale: Locale }) {
   const ghostFor = (id: string, x: number, y: number, rotation: 0 | 1, coinsLeft: number): Ghost => {
     const d = latest.current;
     const state = d.city ? { ...d.city, coins: coinsLeft } : null;
-    const valid = state ? canPlace(state, id, x, y, rotation, { level: d.level, points: d.points }, d.occ).ok : false;
+    const valid = state ? canPlace(state, id, x, y, rotation, { level: d.level, points: d.points, owned: d.owned }, d.occ).ok : false;
     return { id, x, y, rot: rotation, valid };
   };
 
@@ -739,7 +743,8 @@ export function CityGame({ locale }: { locale: Locale }) {
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
           {items.map((def) => {
-            const locked = def.level > level;
+            const needsShop = !!def.shop && !owned.includes(def.id);
+            const locked = def.level > level || needsShop;
             const active = tool === def.id;
             const poor = !locked && (city.coins + accrued < def.cost || (def.pointsCost ?? 0) > points);
             return (
@@ -764,7 +769,7 @@ export function CityGame({ locale }: { locale: Locale }) {
                 <span className="text-sm font-bold leading-tight">{def.names[locale]}</span>
                 <span className={`text-xs font-semibold ${poor ? "text-[var(--danger)]" : "text-[var(--muted)]"}`}>
                   {locked
-                    ? `🔒 ${fillTokens(t.lockedLevel, { n: def.level })}`
+                    ? `🔒 ${needsShop ? t.lockedShop : fillTokens(t.lockedLevel, { n: def.level })}`
                     : [def.cost > 0 ? `🪙 ${def.cost.toLocaleString(locale)}` : "", def.pointsCost ? `⭐ ${fillTokens(t.pointsCost, { n: def.pointsCost })}` : ""].filter(Boolean).join(" · ")}
                 </span>
               </button>

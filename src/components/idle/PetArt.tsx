@@ -20,12 +20,14 @@ export function PetArt({
   mood,
   maxed = false,
   size = 200,
+  accessory = null,
 }: {
   species: SpeciesId;
   stage: 1 | 2 | 3;
   mood: PetMood;
   maxed?: boolean;
   size?: number;
+  accessory?: string | null;
 }) {
   const look = LOOKS[species];
   const scale = stage === 1 ? 0.78 : stage === 2 ? 0.9 : 1;
@@ -162,6 +164,51 @@ export function PetArt({
           {species !== "dog" && <ellipse cx="60" cy="58" rx="3.2" ry="2.3" fill={species === "bunny" ? "#ff8aa5" : INK} />}
           {species === "dog" && <ellipse cx="60" cy="58" rx="4.4" ry="3" fill={INK} />}
           {mouth}
+          {accessory === "scarf" && (
+            <>
+              <path d="M36 80 Q60 92 84 80 L83 90 Q60 101 37 90 Z" fill="#e5484d" stroke={INK} strokeWidth="2.2" strokeLinejoin="round" />
+              <path d="M40 84 L44 94 M52 88 L55 98 M66 88 L69 98 M78 84 L81 94" stroke="#fff" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
+              <path d="M74 92 L86 108 L76 110 L70 98 Z" fill="#e5484d" stroke={INK} strokeWidth="2.2" strokeLinejoin="round" />
+            </>
+          )}
+          {accessory === "glasses" && (
+            <>
+              <rect x="39" y="45" width="18" height="12" rx="5" fill="#16132b" stroke="#16132b" strokeWidth="2" />
+              <rect x="63" y="45" width="18" height="12" rx="5" fill="#16132b" stroke="#16132b" strokeWidth="2" />
+              <path d="M57 49 L63 49" stroke="#16132b" strokeWidth="2.4" />
+              <path d="M42 48 L47 48 M66 48 L71 48" stroke="#ffffff" strokeWidth="1.8" strokeLinecap="round" opacity="0.7" />
+            </>
+          )}
+          {accessory === "bow" && (
+            <>
+              <path d="M40 30 L28 22 L28 38 Z" fill="#ff7aa8" stroke={INK} strokeWidth="2.2" strokeLinejoin="round" />
+              <path d="M40 30 L52 22 L52 38 Z" fill="#ff7aa8" stroke={INK} strokeWidth="2.2" strokeLinejoin="round" />
+              <circle cx="40" cy="30" r="4.2" fill="#ffd1e2" stroke={INK} strokeWidth="2" />
+            </>
+          )}
+          {accessory === "flower" && (
+            <g transform="translate(80 29)">
+              {[0, 72, 144, 216, 288].map((deg) => (
+                <ellipse key={deg} cx="0" cy="-6" rx="4.2" ry="5.6" fill="#ff8fb8" stroke={INK} strokeWidth="1.6" transform={`rotate(${deg})`} />
+              ))}
+              <circle r="4" fill="#ffd24d" stroke={INK} strokeWidth="1.6" />
+            </g>
+          )}
+          {accessory === "party" && (
+            <>
+              <path d="M47 33 L63 3 L75 33 Z" fill="#7c6cff" stroke={INK} strokeWidth="2.4" strokeLinejoin="round" />
+              <path d="M51 26 L69 20 M55 17 L66 13" stroke="#ffd24d" strokeWidth="3" strokeLinecap="round" />
+              <circle cx="63" cy="3" r="4.2" fill="#ff5d73" stroke={INK} strokeWidth="2" />
+            </>
+          )}
+          {accessory === "crown" && (
+            <>
+              <path d="M42 31 L44 14 L52 23 L60 10 L68 23 L76 14 L78 31 Z" fill="#ffd24d" stroke={INK} strokeWidth="2.4" strokeLinejoin="round" />
+              <circle cx="52" cy="26" r="2.2" fill="#e5484d" />
+              <circle cx="60" cy="24" r="2.4" fill="#3b82f6" />
+              <circle cx="68" cy="26" r="2.2" fill="#2fb344" />
+            </>
+          )}
           {mood === "hungry" && <text x="86" y="30" fontSize="18">🍖</text>}
           {mood === "sad" && <text x="82" y="46" fontSize="14">💧</text>}
           {mood === "happy" && <text x="84" y="26" fontSize="14">💖</text>}

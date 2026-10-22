@@ -30,6 +30,7 @@ export type CityText = {
   offlineNote: string; // {n}
   mood: { sad: string; ok: string; good: string; great: string };
   lockedLevel: string; // {n}
+  lockedShop: string;
   pointsCost: string; // {n}
   hintStart: string;
   hintBuild: string;
@@ -66,6 +67,7 @@ const cs: CityText = {
     nature: "Příroda",
     decor: "Dekorace",
     transport: "Doprava",
+    special: "Z obchodu",
   },
   modePan: "Posun",
   modeBuild: "Stavět",
@@ -87,6 +89,7 @@ const cs: CityText = {
   offlineNote: "Město vydělává i když jsi pryč, nejvýš {n} hodin.",
   mood: { sad: "Nespokojení", ok: "Průměrná", good: "Spokojení", great: "Skvělá" },
   lockedLevel: "Úroveň {n}",
+  lockedShop: "Koupit v obchodě",
   pointsCost: "{n} bodů",
   hintStart: "Domy a obchody fungují jen vedle silnice, která vede až k okraji mapy. Začni stavbou domů a obchodů u hlavní silnice a pak přidej parky a lampy.",
   hintBuild: "Klepni na políčko a pusť. U silnic, plotů a stromů taž prstem nebo myší a postavíš jich víc najednou.",
@@ -113,6 +116,7 @@ const cs: CityText = {
     locked: "Tahle budova se odemkne s vyšší úrovní účtu. Učení ji přiblíží.",
     "nothing-there": "Tady nic není.",
     "too-many": "Najednou jde stavět nejvýš 80 kusů.",
+    "not-owned": "Tuhle speciální budovu si nejdřív kup v obchodě.",
     conflict: "Město se mezitím změnilo. Zkus to ještě jednou.",
     generic: "Něco se nepovedlo. Zkus to znovu.",
     "unknown-action": "Neznámá akce.",
@@ -135,6 +139,7 @@ const en: CityText = {
     nature: "Nature",
     decor: "Decorations",
     transport: "Transport",
+    special: "From the shop",
   },
   modePan: "Move",
   modeBuild: "Build",
@@ -156,6 +161,7 @@ const en: CityText = {
   offlineNote: "The city earns while you're away, up to {n} hours.",
   mood: { sad: "Unhappy", ok: "Average", good: "Happy", great: "Great" },
   lockedLevel: "Level {n}",
+  lockedShop: "Buy in the shop",
   pointsCost: "{n} points",
   hintStart: "Houses and shops only work next to a road that leads to the edge of the map. Start with houses and shops by the main road, then add parks and lamps.",
   hintBuild: "Tap a tile and release. For roads, railings and trees drag your finger or mouse to build several at once.",
@@ -182,6 +188,7 @@ const en: CityText = {
     locked: "This building unlocks at a higher account level. Learning gets you there.",
     "nothing-there": "There's nothing here.",
     "too-many": "You can build at most 80 at once.",
+    "not-owned": "Buy this special building in the shop first.",
     conflict: "The city changed in the meantime. Try once more.",
     generic: "Something went wrong. Try again.",
     "unknown-action": "Unknown action.",
@@ -204,6 +211,7 @@ const de: CityText = {
     nature: "Natur",
     decor: "Dekoration",
     transport: "Verkehr",
+    special: "Aus dem Shop",
   },
   modePan: "Bewegen",
   modeBuild: "Bauen",
@@ -225,6 +233,7 @@ const de: CityText = {
   offlineNote: "Die Stadt verdient auch, wenn du weg bist, höchstens {n} Stunden.",
   mood: { sad: "Unzufrieden", ok: "Durchschnitt", good: "Zufrieden", great: "Großartig" },
   lockedLevel: "Level {n}",
+  lockedShop: "Im Shop kaufen",
   pointsCost: "{n} Punkte",
   hintStart: "Häuser und Läden funktionieren nur neben einer Straße, die bis zum Kartenrand führt. Beginne mit Häusern und Läden an der Hauptstraße und füge dann Parks und Laternen hinzu.",
   hintBuild: "Tippe auf ein Feld und lass los. Bei Straßen, Geländern und Bäumen ziehst du mit dem Finger oder der Maus und baust mehrere auf einmal.",
@@ -251,6 +260,7 @@ const de: CityText = {
     locked: "Dieses Gebäude wird mit höherem Konto-Level frei. Lernen bringt dich hin.",
     "nothing-there": "Hier ist nichts.",
     "too-many": "Du kannst höchstens 80 auf einmal bauen.",
+    "not-owned": "Kaufe dieses besondere Gebäude zuerst im Shop.",
     conflict: "Die Stadt hat sich inzwischen geändert. Versuch es noch einmal.",
     generic: "Etwas ist schiefgegangen. Versuch es erneut.",
     "unknown-action": "Unbekannte Aktion.",
@@ -273,6 +283,7 @@ const ru: CityText = {
     nature: "Природа",
     decor: "Украшения",
     transport: "Транспорт",
+    special: "Из магазина",
   },
   modePan: "Двигать",
   modeBuild: "Строить",
@@ -294,6 +305,7 @@ const ru: CityText = {
   offlineNote: "Город зарабатывает, даже когда тебя нет, не дольше {n} часов.",
   mood: { sad: "Недовольны", ok: "Средне", good: "Довольны", great: "Отлично" },
   lockedLevel: "Уровень {n}",
+  lockedShop: "Купить в магазине",
   pointsCost: "{n} баллов",
   hintStart: "Дома и магазины работают только рядом с дорогой, которая ведёт к краю карты. Начни с домов и магазинов у главной дороги, потом добавь парки и фонари.",
   hintBuild: "Коснись клетки и отпусти. Для дорог, ограждений и деревьев води пальцем или мышью, чтобы построить сразу несколько.",
@@ -320,6 +332,7 @@ const ru: CityText = {
     locked: "Это здание откроется на более высоком уровне. Учёба поможет.",
     "nothing-there": "Здесь ничего нет.",
     "too-many": "За раз можно построить не больше 80.",
+    "not-owned": "Сначала купи это особое здание в магазине.",
     conflict: "Город тем временем изменился. Попробуй ещё раз.",
     generic: "Что-то пошло не так. Попробуй снова.",
     "unknown-action": "Неизвестное действие.",

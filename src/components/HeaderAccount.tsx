@@ -8,6 +8,7 @@ import { AVATARS, isAvatarUnlocked } from "@/lib/avatars";
 import { TITLES, getTitle, isTitleUnlocked } from "@/lib/titles";
 import { fill, getProfileText } from "@/i18n/profile";
 import { useAccount } from "@/lib/use-account";
+import { BANNERS, isBannerId, isFrameId } from "@/lib/cosmetics";
 import type { Locale } from "@/i18n/config";
 
 export function HeaderAccount({
@@ -98,7 +99,7 @@ export function HeaderAccount({
         aria-label={t.nav}
         className="flex items-center gap-2 rounded-xl border-2 border-[var(--edge)] bg-[var(--surface)] py-0.5 pl-0.5 pr-3 text-sm font-bold hover:bg-[var(--surface-muted)]"
       >
-        <Avatar id={account.avatar} size={30} />
+        <Avatar id={account.avatar} size={30} frame={isFrameId(account.frame) ? account.frame : null} />
         <span>
           {t.level} {account.level}
         </span>
@@ -110,8 +111,13 @@ export function HeaderAccount({
           aria-label={t.nav}
           className="card absolute right-0 top-full z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] p-4"
         >
-          <div className="flex items-center gap-3">
-            <Avatar id={account.avatar} size={64} />
+          <div
+            className={`-mx-4 -mt-4 mb-1 flex items-center gap-3 rounded-t-[16px] px-4 pb-3 pt-4 ${
+              isBannerId(account.banner) ? "text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.65)]" : ""
+            }`}
+            style={isBannerId(account.banner) ? { background: BANNERS[account.banner] } : undefined}
+          >
+            <Avatar id={account.avatar} size={64} frame={isFrameId(account.frame) ? account.frame : null} />
             <div className="min-w-0">
               <p className="truncate text-lg font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
                 {account.name ?? t.anonymous}
@@ -119,7 +125,7 @@ export function HeaderAccount({
               <p className="truncate text-sm font-bold text-[var(--accent-500)]">
                 {title ? title.names[locale] : t.noTitle}
               </p>
-              <p className="truncate text-xs text-[var(--muted)]">
+              <p className={`truncate text-xs ${isBannerId(account.banner) ? "text-white/90" : "text-[var(--muted)]"}`}>
                 {account.school
                   ? `${account.school.name}${account.school.city ? `, ${account.school.city}` : ""}`
                   : t.noSchool}

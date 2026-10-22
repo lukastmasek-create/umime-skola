@@ -22,11 +22,13 @@ import {
   type PetGameState,
 } from "@/lib/idle/pets";
 import { notifyAccountChanged } from "@/lib/account-events";
+import { SHOP_ITEMS } from "@/lib/shop";
 import type { Locale } from "@/i18n/config";
 
 type Payload = {
   state: PetGameState;
   points: number;
+  accessories: string[];
   learningBonus: number;
   now: number;
   incomePerHour: number;
@@ -260,7 +262,7 @@ export function PetGame({ locale }: { locale: Locale }) {
       {header}
       <div className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <section className="card flex flex-col items-center gap-3 p-5 text-center">
-          <PetArt species={state.active} stage={stageFromLevel(level.level)} mood={mood} maxed={level.maxed} size={230} />
+          <PetArt species={state.active} stage={stageFromLevel(level.level)} mood={mood} maxed={level.maxed} size={230} accessory={stats.accessory} />
           <p className="text-xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
             {stats.name || t.species[state.active]}
           </p>
@@ -395,6 +397,36 @@ export function PetGame({ locale }: { locale: Locale }) {
             );
           })}
         </div>
+      </section>
+
+      <section className="card mt-5 p-5">
+        <h2 className="mb-3 text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+          {t.accessoriesTitle}
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {[null, ...data.accessories].map((ref) => {
+            const item = ref ? SHOP_ITEMS.find((i) => i.kind === "pet" && i.ref === ref) : null;
+            const active = (stats.accessory ?? null) === ref;
+            return (
+              <button
+                key={ref ?? "none"}
+                type="button"
+                disabled={busy}
+                onClick={() => act({ action: "accessory", accessory: ref })}
+                aria-pressed={active}
+                className={`flex items-center gap-2 rounded-xl border-2 px-2 py-1.5 text-sm font-semibold ${
+                  active ? "border-[var(--accent-500)] bg-[var(--surface-muted)]" : "border-[var(--border-soft)] hover:border-[var(--edge)]"
+                }`}
+              >
+                <PetArt species={state.active!} stage={2} mood="happy" size={44} accessory={ref} />
+                {item ? item.names[locale] : t.noAccessory}
+              </button>
+            );
+          })}
+        </div>
+        <Link href={`/${locale}/uzivatelsky-obchod`} className="mt-3 inline-block text-sm font-semibold text-[var(--brand-600)] hover:underline">
+          {t.getMore} →
+        </Link>
       </section>
 
       <div className="mt-5">{speciesPicker(t.switchPet)}</div>

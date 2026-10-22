@@ -12,6 +12,12 @@ export const TITLES: TitleDef[] = [
   { id: "expert", unlock: { level: 12 }, names: { cs: "Expert", en: "Expert", de: "Experte", ru: "Эксперт" } },
   // Odkaz na fyzika Wernera Heisenberga (princip neurčitosti), titul za Laboratoř.
   { id: "heisenberg", unlock: { event: "escape-lab" }, names: { cs: "Heisenberg", en: "Heisenberg", de: "Heisenberg", ru: "Гейзенберг" } },
+  { id: "scholar", unlock: { event: "shop" }, names: { cs: "Učenec", en: "Scholar", de: "Gelehrter", ru: "Учёный" } },
+  { id: "bookworm", unlock: { event: "shop" }, names: { cs: "Knihomol", en: "Bookworm", de: "Bücherwurm", ru: "Книголюб" } },
+  { id: "mathematician", unlock: { event: "shop" }, names: { cs: "Matematik", en: "Mathematician", de: "Mathematiker", ru: "Математик" } },
+  { id: "builder", unlock: { event: "shop" }, names: { cs: "Stavitel", en: "Builder", de: "Baumeister", ru: "Строитель" } },
+  { id: "pet-friend", unlock: { event: "shop" }, names: { cs: "Přítel zvířat", en: "Animal friend", de: "Tierfreund", ru: "Друг животных" } },
+  { id: "legend", unlock: { event: "shop" }, names: { cs: "Legenda", en: "Legend", de: "Legende", ru: "Легенда" } },
 ];
 
 export function getTitle(id: string | null | undefined) {

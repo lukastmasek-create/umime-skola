@@ -42,6 +42,9 @@ export type PetText = {
   save: string;
   namePlaceholder: string;
   switchPet: string;
+  accessoriesTitle: string;
+  noAccessory: string;
+  getMore: string;
   errors: Record<ErrorCode | "conflict" | "generic", string>;
 };
 
@@ -95,6 +98,9 @@ const cs: PetText = {
   save: "Uložit",
   namePlaceholder: "Jak se jmenuje?",
   switchPet: "Přepnout mazlíčka",
+  accessoriesTitle: "Doplňky",
+  noAccessory: "Bez doplňku",
+  getMore: "Další doplňky v obchodě",
   errors: {
     "no-pet": "Nejdřív si vyber mazlíčka.",
     "not-enough-coins": "Nemáš dost mincí.",
@@ -104,6 +110,7 @@ const cs: PetText = {
     "unknown-species": "Tenhle mazlíček neexistuje.",
     "unknown-upgrade": "Tohle vylepšení neexistuje.",
     "invalid-name": "Napiš nějaké jméno.",
+    "not-owned": "Tenhle doplněk ještě nemáš.",
     conflict: "Stav se mezitím změnil. Zkus to ještě jednou.",
     generic: "Něco se nepovedlo. Zkus to znovu.",
   },
@@ -159,6 +166,9 @@ const en: PetText = {
   save: "Save",
   namePlaceholder: "What's its name?",
   switchPet: "Switch pet",
+  accessoriesTitle: "Accessories",
+  noAccessory: "None",
+  getMore: "More accessories in the shop",
   errors: {
     "no-pet": "Choose a pet first.",
     "not-enough-coins": "Not enough coins.",
@@ -168,6 +178,7 @@ const en: PetText = {
     "unknown-species": "That pet doesn't exist.",
     "unknown-upgrade": "That upgrade doesn't exist.",
     "invalid-name": "Type a name.",
+    "not-owned": "You do not own this accessory yet.",
     conflict: "The state changed in the meantime. Try once more.",
     generic: "Something went wrong. Try again.",
   },
@@ -223,6 +234,9 @@ const de: PetText = {
   save: "Speichern",
   namePlaceholder: "Wie heißt es?",
   switchPet: "Haustier wechseln",
+  accessoriesTitle: "Zubehör",
+  noAccessory: "Keins",
+  getMore: "Mehr Zubehör im Shop",
   errors: {
     "no-pet": "Wähle zuerst ein Haustier.",
     "not-enough-coins": "Nicht genug Münzen.",
@@ -232,6 +246,7 @@ const de: PetText = {
     "unknown-species": "Dieses Haustier gibt es nicht.",
     "unknown-upgrade": "Diese Verbesserung gibt es nicht.",
     "invalid-name": "Gib einen Namen ein.",
+    "not-owned": "Dieses Zubehör besitzt du noch nicht.",
     conflict: "Der Stand hat sich inzwischen geändert. Versuch es noch einmal.",
     generic: "Etwas ist schiefgegangen. Versuch es erneut.",
   },
@@ -287,6 +302,9 @@ const ru: PetText = {
   save: "Сохранить",
   namePlaceholder: "Как его зовут?",
   switchPet: "Сменить питомца",
+  accessoriesTitle: "Аксессуары",
+  noAccessory: "Без аксессуара",
+  getMore: "Больше аксессуаров в магазине",
   errors: {
     "no-pet": "Сначала выбери питомца.",
     "not-enough-coins": "Не хватает монет.",
@@ -296,6 +314,7 @@ const ru: PetText = {
     "unknown-species": "Такого питомца нет.",
     "unknown-upgrade": "Такого улучшения нет.",
     "invalid-name": "Напиши имя.",
+    "not-owned": "Этого аксессуара у тебя ещё нет.",
     conflict: "Состояние изменилось. Попробуй ещё раз.",
     generic: "Что-то пошло не так. Попробуй снова.",
   },

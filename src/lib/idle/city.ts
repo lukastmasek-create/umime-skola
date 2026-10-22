@@ -12,7 +12,7 @@
 
 import type { Locale } from "@/i18n/config";
 
-export type CityCat = "road" | "housing" | "work" | "service" | "nature" | "decor" | "transport";
+export type CityCat = "road" | "housing" | "work" | "service" | "nature" | "decor" | "transport" | "special";
 
 export type CityItemDef = {
   id: string;
@@ -30,6 +30,8 @@ export type CityItemDef = {
   happy?: number;
   radius?: number;
   edu?: number;
+  // Speciální budova z obchodu: postavit ji smí jen ten, kdo ji koupil (odemčení "city:<id>").
+  shop?: boolean;
   needsRoad?: boolean;
   needsRail?: boolean;
   names: Record<Locale, string>;
@@ -97,9 +99,14 @@ export const CITY_ITEMS: CityItemDef[] = [
   { id: "clock_tower", cat: "decor", size: [2, 2], cost: 900, level: 6, happy: 4, radius: 6, names: n("Hodinová věž", "Clock tower", "Uhrturm", "Часовая башня") },
   { id: "memorial", cat: "decor", size: [2, 2], cost: 0, pointsCost: 120, level: 5, happy: 6, radius: 5, names: n("Pomník", "Memorial", "Denkmal", "Памятник") },
   { id: "monument", cat: "decor", size: [3, 3], cost: 0, pointsCost: 300, level: 8, happy: 10, radius: 8, names: n("Monument", "Monument", "Monument", "Монумент") },
+
+  // --- speciální budovy z obchodu ---
+  { id: "christmas_tree", cat: "special", size: [2, 2], cost: 100, level: 1, shop: true, happy: 4, radius: 5, names: n("Vánoční strom", "Christmas tree", "Weihnachtsbaum", "Новогодняя ёлка") },
+  { id: "windmill", cat: "special", size: [2, 2], cost: 400, level: 3, shop: true, jobs: 6, yield: 12, happy: 2, radius: 3, needsRoad: true, names: n("Větrný mlýn", "Windmill", "Windmühle", "Ветряная мельница") },
+  { id: "ferris_wheel", cat: "special", size: [3, 3], cost: 800, level: 5, shop: true, jobs: 20, yield: 14, happy: 5, radius: 6, needsRoad: true, names: n("Obří kolo", "Ferris wheel", "Riesenrad", "Колесо обозрения") },
 ];
 
-export const CITY_CATS: CityCat[] = ["road", "housing", "work", "service", "nature", "decor", "transport"];
+export const CITY_CATS: CityCat[] = ["road", "housing", "work", "service", "nature", "decor", "transport", "special"];
 
 const BY_ID = new Map(CITY_ITEMS.map((i) => [i.id, i]));
 
@@ -185,9 +192,11 @@ export type CityError =
   | "not-enough-points"
   | "locked"
   | "nothing-there"
-  | "too-many";
+  | "too-many"
+  | "not-owned";
 
-export type PlaceContext = { level: number; points: number };
+// owned = id speciálních budov z obchodu, které hráč vlastní.
+export type PlaceContext = { level: number; points: number; owned?: string[] };
 
 function cellIndex(x: number, y: number) {
   return y * CITY_SIZE + x;
@@ -219,6 +228,7 @@ export function canPlace(
   const [w, h] = footprint(def, rot);
   if (x < 0 || y < 0 || x + w > CITY_SIZE || y + h > CITY_SIZE) return { ok: false, error: "out-of-bounds" };
   if (def.level > ctx.level) return { ok: false, error: "locked" };
+  if (def.shop && !(ctx.owned ?? []).includes(def.id)) return { ok: false, error: "not-owned" };
   for (let dy = 0; dy < h; dy++) for (let dx = 0; dx < w; dx++) if (occ.has(cellIndex(x + dx, y + dy))) return { ok: false, error: "occupied" };
   if (state.coins < def.cost) return { ok: false, error: "not-enough-coins" };
   if ((def.pointsCost ?? 0) > ctx.points) return { ok: false, error: "not-enough-points" };
@@ -250,7 +260,7 @@ export function buildMany(
 
   for (const req of requests) {
     const rot: 0 | 1 = req.rot === 1 ? 1 : 0;
-    const check = canPlace({ ...state, items, coins }, req.id, req.x, req.y, rot, { level: ctx.level, points }, occ);
+    const check = canPlace({ ...state, items, coins }, req.id, req.x, req.y, rot, { level: ctx.level, points, owned: ctx.owned }, occ);
     if (!check.ok) {
       failed++;
       firstError ??= check.error;

@@ -5,6 +5,8 @@ import { getXp } from "@/lib/xp";
 import { levelProgress } from "@/lib/progression";
 import { AVATARS, DEFAULT_AVATAR, isAvatarUnlocked } from "@/lib/avatars";
 import { TITLES, isTitleUnlocked } from "@/lib/titles";
+import { STYLE_GAME, isBannerId, isFrameId, normalizeStyle } from "@/lib/cosmetics";
+import type { Prisma } from "@prisma/client";
 
 export async function GET() {
   const session = await auth();
@@ -24,8 +26,12 @@ export async function GET() {
       },
     });
     const xp = await getXp(userId);
+    const styleRow = await prisma.idleState.findUnique({ where: { userId_game: { userId, game: STYLE_GAME } } });
+    const style = normalizeStyle(styleRow?.data);
     return NextResponse.json({
       loggedIn: true,
+      frame: style.frame,
+      banner: style.banner,
       name: user?.name ?? session.user.name ?? null,
       avatar: user?.avatar ?? DEFAULT_AVATAR,
       title: user?.title ?? null,
@@ -39,6 +45,8 @@ export async function GET() {
     return NextResponse.json({
       loggedIn: true,
       degraded: true,
+      frame: null,
+      banner: null,
       name: session.user.name ?? null,
       avatar: DEFAULT_AVATAR,
       title: null,
@@ -83,6 +91,27 @@ export async function POST(request: Request) {
       }
       await prisma.user.update({ where: { id: userId }, data: { title: title.id } });
       return NextResponse.json({ title: title.id });
+    }
+
+    if ("frame" in body || "banner" in body) {
+      const key = "frame" in body ? "frame" : "banner";
+      const value = body[key];
+      if (value !== null) {
+        const known = key === "frame" ? isFrameId(value) : isBannerId(value);
+        if (!known) return NextResponse.json({ error: "Neznámá ozdoba." }, { status: 400 });
+        if (!unlocks.includes(`${key}:${value}`)) {
+          return NextResponse.json({ error: "Tuhle ozdobu ještě nemáš." }, { status: 403 });
+        }
+      }
+      const row = await prisma.idleState.findUnique({ where: { userId_game: { userId, game: STYLE_GAME } } });
+      const next = { ...normalizeStyle(row?.data), [key]: value };
+      const data = next as unknown as Prisma.InputJsonValue;
+      await prisma.idleState.upsert({
+        where: { userId_game: { userId, game: STYLE_GAME } },
+        create: { userId, game: STYLE_GAME, data },
+        update: { data },
+      });
+      return NextResponse.json({ [key]: value });
     }
 
     return NextResponse.json({ error: "Neplatný požadavek." }, { status: 400 });

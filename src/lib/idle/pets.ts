@@ -21,6 +21,8 @@ export type PetStats = {
   growth: number;
   hunger: number; // 0..100, 100 = syté
   happy: number; // 0..100
+  // Doplněk z obchodu, který mazlíček nosí (ref z katalogu, např. "crown").
+  accessory: string | null;
 };
 
 export type PetGameState = {
@@ -82,6 +84,7 @@ export function normalizeState(raw: unknown, now: number): PetGameState {
       growth: num(p.growth, 0),
       hunger: num(p.hunger, 100, 0, 100),
       happy: num(p.happy, 100, 0, 100),
+      accessory: typeof p.accessory === "string" && /^[a-z-]{1,24}$/.test(p.accessory) ? p.accessory : null,
     };
   }
   const active = isSpecies(r.active) && pets[r.active] ? r.active : null;
@@ -210,7 +213,8 @@ export type ErrorCode =
   | "max-level"
   | "unknown-species"
   | "unknown-upgrade"
-  | "invalid-name";
+  | "invalid-name"
+  | "not-owned";
 
 function withActive(state: PetGameState): { active: SpeciesId; stats: PetStats } | null {
   const active = state.active;
@@ -313,7 +317,7 @@ export function adopt(state: PetGameState, species: unknown, pointsAvailable: nu
     state: {
       ...state,
       active: species,
-      pets: { ...state.pets, [species]: { name: "", growth: 0, hunger: 100, happy: 100 } },
+      pets: { ...state.pets, [species]: { name: "", growth: 0, hunger: 100, happy: 100, accessory: null } },
     },
   };
 }
@@ -327,6 +331,19 @@ export function rename(state: PetGameState, name: unknown): ActionResult {
   return {
     ok: true,
     state: { ...state, pets: { ...state.pets, [pet.active]: { ...pet.stats, name: clean } } },
+  };
+}
+
+// Nasadí nebo sundá doplněk. Smí jen ten, který hráč koupil (owned = ref z klíčů "pet:<ref>").
+export function setAccessory(state: PetGameState, accessory: unknown, owned: string[]): ActionResult {
+  const pet = withActive(state);
+  if (!pet) return { ok: false, error: "no-pet" };
+  if (accessory !== null && (typeof accessory !== "string" || !owned.includes(accessory))) {
+    return { ok: false, error: "not-owned" };
+  }
+  return {
+    ok: true,
+    state: { ...state, pets: { ...state.pets, [pet.active]: { ...pet.stats, accessory } } },
   };
 }
 

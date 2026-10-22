@@ -40,11 +40,12 @@ async function learning(userId: string, now: number) {
   return { bonus: learningBonusFromXp(sum._sum.amount ?? 0), level: levelFromXp(xp) };
 }
 
-function payload(state: CityState, points: number, level: number, bonus: number, now: number) {
+function payload(state: CityState, points: number, level: number, bonus: number, now: number, owned: string[]) {
   const stats = computeCity(state, bonus);
   return {
     state,
     points,
+    owned,
     level,
     learningBonus: bonus,
     now,
@@ -73,10 +74,11 @@ export async function GET() {
 
   try {
     const now = Date.now();
-    const [row, user, learn] = await Promise.all([
+    const [row, user, learn, unlocks] = await Promise.all([
       prisma.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } }),
       prisma.user.findUnique({ where: { id: userId }, select: { points: true } }),
       learning(userId, now),
+      prisma.unlock.findMany({ where: { userId, key: { startsWith: "city:" } }, select: { key: true } }),
     ]);
     const settled = settleCity(row ? normalizeCity(row.data, now) : startState(now), now, learn.bonus);
     if (row) {
@@ -85,7 +87,7 @@ export async function GET() {
         data: { data: settled as unknown as Prisma.InputJsonValue },
       });
     }
-    return NextResponse.json(payload(settled, user?.points ?? 0, learn.level, learn.bonus, now));
+    return NextResponse.json(payload(settled, user?.points ?? 0, learn.level, learn.bonus, now, unlocks.map((u) => u.key.slice(5))));
   } catch {
     return NextResponse.json({ error: "unavailable" }, { status: 503 });
   }
@@ -125,6 +127,7 @@ export async function POST(request: Request) {
       const row = await tx.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } });
       const user = await tx.user.findUnique({ where: { id: userId }, select: { points: true } });
       const points = user?.points ?? 0;
+      const owned = (await tx.unlock.findMany({ where: { userId, key: { startsWith: "city:" } }, select: { key: true } })).map((u) => u.key.slice(5));
       const settled = settleCity(row ? normalizeCity(row.data, now) : startState(now), now, learn.bonus);
 
       let nextState: CityState;
@@ -132,7 +135,7 @@ export async function POST(request: Request) {
       let info: { placed?: number; failed?: number; removed?: number; refund?: number } = {};
 
       if (body.action === "build") {
-        const out = buildMany(settled, asList(body.items, isBuild), { level: learn.level, points });
+        const out = buildMany(settled, asList(body.items, isBuild), { level: learn.level, points, owned });
         if (!out.ok) return { error: out.error as CityError };
         nextState = out.state;
         spent = out.pointsSpent;
@@ -155,16 +158,16 @@ export async function POST(request: Request) {
       const data = nextState as unknown as Prisma.InputJsonValue;
       if (row) {
         // Optimistic lock: když mezitím město změnila jiná záložka, akci zahodíme.
-        const updated = await tx.idleState.updateMany({ where: { id: row.id, updatedAt: row.updatedAt }, data });
+        const updated = await tx.idleState.updateMany({ where: { id: row.id, updatedAt: row.updatedAt }, data: { data } });
         if (updated.count === 0) throw new Conflict();
       } else {
         await tx.idleState.create({ data: { userId, game: GAME, data } });
       }
-      return { state: nextState, points: points - spent, info };
+      return { state: nextState, points: points - spent, info, owned };
     }, { maxWait: 10_000, timeout: 20_000 });
 
     if ("error" in result) return NextResponse.json({ error: result.error }, { status: 400 });
-    return NextResponse.json({ ...payload(result.state, result.points, learn.level, learn.bonus, now), info: result.info });
+    return NextResponse.json({ ...payload(result.state, result.points, learn.level, learn.bonus, now, result.owned), info: result.info });
   } catch (error) {
     if (error instanceof NotEnoughPoints) return NextResponse.json({ error: "not-enough-points" }, { status: 400 });
     if (error instanceof Conflict || (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")) {

@@ -545,6 +545,134 @@ function sign(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, co
   ctx.fillRect(x - w + 3, y - 5, w * 2 - 6, 1.6);
 }
 
+// --- speciální budovy z obchodu ---
+
+function christmasTree(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number, time: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#eef4f8", 0.08, "rgba(0,0,0,0.12)");
+  const c = P(gx + w / 2, gy + h / 2);
+  ellipseAt(ctx, c[0], c[1] + 4, 26, 11, "rgba(0,0,0,0.2)");
+  ctx.fillStyle = "#6b4a2b";
+  ctx.fillRect(c[0] - 4, c[1] - 12, 8, 14);
+  const greens = ["#2f8f4e", "#37a05a", "#40b266", "#4cc276"];
+  for (let i = 0; i < 4; i++) {
+    const half = 36 - i * 8;
+    const base = c[1] - 8 - i * 17;
+    poly(ctx, [[c[0] - half, base], [c[0] + half, base], [c[0], base - 30]], greens[i], "rgba(0,0,0,0.3)", 1.2);
+  }
+  const colors = ["#ff5d73", "#ffd24d", "#5ab8ff", "#ffffff", "#ff9d3d"];
+  for (let i = 0; i < 13; i++) {
+    const tier = i % 4;
+    const half = 30 - tier * 7;
+    const u = ((i * 37) % 100) / 100;
+    const x = c[0] + (u * 2 - 1) * half * 0.8;
+    const y = c[1] - 10 - tier * 17 - (1 - Math.abs(u * 2 - 1)) * 9;
+    ctx.globalAlpha = 0.55 + 0.45 * Math.sin(time * 4 + i * 1.3);
+    ellipseAt(ctx, x, y, 2.6, 2.6, colors[i % colors.length]);
+  }
+  ctx.globalAlpha = 1;
+  const top = [c[0], c[1] - 8 - 3 * 17 - 30] as const;
+  const pts: Pt[] = [];
+  for (let i = 0; i < 10; i++) {
+    const r = i % 2 === 0 ? 8 : 3.6;
+    const a = (Math.PI / 5) * i - Math.PI / 2;
+    pts.push([top[0] + Math.cos(a) * r, top[1] + Math.sin(a) * r]);
+  }
+  poly(ctx, pts, "#ffd24d", "#b9831a", 1);
+  const gifts: [number, number, string][] = [[0.15, 0.7, "#e5484d"], [0.65, 0.78, "#3b82f6"]];
+  for (const [u, v, color] of gifts) box(ctx, gx + u, gy + v, 0.3, 0.3, 0, 8, color, shade(color, 0.3));
+}
+
+function windmill(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number, time: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#c9d98a", 0.05, "rgba(0,0,0,0.15)");
+  const c = P(gx + w / 2, gy + h / 2);
+  ellipseAt(ctx, c[0], c[1] + 4, 30, 12, "rgba(0,0,0,0.2)");
+  poly(ctx, [[c[0] - 24, c[1] + 4], [c[0], c[1] + 12], [c[0], c[1] - 56], [c[0] - 14, c[1] - 60]], "#d8c29c", "rgba(0,0,0,0.3)");
+  poly(ctx, [[c[0], c[1] + 12], [c[0] + 24, c[1] + 4], [c[0] + 14, c[1] - 60], [c[0], c[1] - 56]], "#b99e76", "rgba(0,0,0,0.3)");
+  poly(ctx, [[c[0] - 18, c[1] - 58], [c[0] + 18, c[1] - 58], [c[0], c[1] - 88]], "#b5473a", "rgba(0,0,0,0.3)");
+  ctx.fillStyle = "#6b4a2b";
+  ctx.beginPath();
+  ctx.roundRect(c[0] - 5, c[1] - 6, 10, 14, 4);
+  ctx.fill();
+  ctx.fillStyle = "#cfe6f7";
+  ctx.fillRect(c[0] + 6, c[1] - 30, 6, 8);
+  const hub: Pt = [c[0] + 2, c[1] - 62];
+  const angle = time * 0.9;
+  for (let i = 0; i < 4; i++) {
+    const a = angle + (Math.PI / 2) * i;
+    ctx.save();
+    ctx.translate(hub[0], hub[1]);
+    ctx.rotate(a);
+    ctx.fillStyle = "#f4efe2";
+    ctx.strokeStyle = "#5a4630";
+    ctx.lineWidth = 1.4;
+    ctx.fillRect(6, -5, 38, 10);
+    ctx.strokeRect(6, -5, 38, 10);
+    ctx.beginPath();
+    for (let x = 12; x < 44; x += 8) {
+      ctx.moveTo(x, -5);
+      ctx.lineTo(x, 5);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+  ellipseAt(ctx, hub[0], hub[1], 5, 5, "#5a4630");
+}
+
+function ferrisWheel(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number, time: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#d6d1c3", 0.1, "rgba(0,0,0,0.2)");
+  const c = P(gx + w / 2, gy + h / 2);
+  const hub: Pt = [c[0], c[1] - 78];
+  const R = 50;
+  ellipseAt(ctx, c[0], c[1] + 4, 42, 15, "rgba(0,0,0,0.2)");
+  ctx.strokeStyle = "#555b6b";
+  ctx.lineWidth = 5;
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(hub[0], hub[1]);
+  ctx.lineTo(c[0] - 36, c[1] + 4);
+  ctx.moveTo(hub[0], hub[1]);
+  ctx.lineTo(c[0] + 36, c[1] + 4);
+  ctx.stroke();
+  const angle = time * 0.25;
+  ctx.strokeStyle = "#e5484d";
+  ctx.lineWidth = 3.5;
+  ctx.beginPath();
+  ctx.arc(hub[0], hub[1], R, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = "#f4f4f6";
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.arc(hub[0], hub[1], R * 0.66, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  for (let i = 0; i < 8; i++) {
+    const a = angle + (Math.PI / 4) * i;
+    ctx.moveTo(hub[0], hub[1]);
+    ctx.lineTo(hub[0] + Math.cos(a) * R, hub[1] + Math.sin(a) * R);
+  }
+  ctx.stroke();
+  const colors = ["#ffd24d", "#5ab8ff", "#ff7aa8", "#7ee0b0"];
+  for (let i = 0; i < 8; i++) {
+    const a = angle + (Math.PI / 4) * i;
+    const x = hub[0] + Math.cos(a) * R;
+    const y = hub[1] + Math.sin(a) * R;
+    ctx.strokeStyle = "#3a3d4a";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x, y + 6);
+    ctx.stroke();
+    ctx.fillStyle = colors[i % colors.length];
+    ctx.strokeStyle = "rgba(0,0,0,0.4)";
+    ctx.beginPath();
+    ctx.roundRect(x - 5, y + 5, 10, 8, 2);
+    ctx.fill();
+    ctx.stroke();
+  }
+  ellipseAt(ctx, hub[0], hub[1], 5, 5, "#3a3d4a");
+}
+
 // --- tabulka vzhledu budov ---
 
 type Art = {
@@ -699,6 +827,12 @@ function drawItem(ctx: CanvasRenderingContext2D, id: string, gx: number, gy: num
       return busStop(ctx, cx, cy, false);
     case "tram_stop":
       return busStop(ctx, cx, cy, true);
+    case "christmas_tree":
+      return christmasTree(ctx, gx, gy, w, h, scene.time);
+    case "windmill":
+      return windmill(ctx, gx, gy, w, h, scene.time);
+    case "ferris_wheel":
+      return ferrisWheel(ctx, gx, gy, w, h, scene.time);
     case "fence": {
       ellipseAt(ctx, cx, cy + 1, 5, 2.4, "rgba(0,0,0,0.2)");
       const c = (dx: number, dy: number) => (fences.has((gy + dy) * CITY_SIZE + gx + dx) ? true : false);

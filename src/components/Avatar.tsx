@@ -1,10 +1,12 @@
 import Image from "next/image";
 import { getAvatar } from "@/lib/avatars";
 import { getAvatarStills } from "@/lib/avatars3d";
+import { AvatarFrame } from "@/components/AvatarFrame";
+import type { FrameId } from "@/lib/cosmetics";
 
 const INK = "#16132b";
 
-export function Avatar({
+function AvatarBase({
   id,
   size = 40,
   locked = false,
@@ -164,5 +166,25 @@ export function Avatar({
         </>
       )}
     </svg>
+  );
+}
+
+// Avatar s volitelným rámečkem z obchodu. Bez rámečku se vykreslí beze změny.
+export function Avatar({
+  frame,
+  ...props
+}: {
+  id: string | null | undefined;
+  size?: number;
+  locked?: boolean;
+  frame?: FrameId | null;
+}) {
+  if (!frame) return <AvatarBase {...props} />;
+  const size = props.size ?? 40;
+  return (
+    <span className="relative inline-block shrink-0" style={{ width: size, height: size }}>
+      <AvatarBase {...props} />
+      <AvatarFrame id={frame} size={size} />
+    </span>
   );
 }

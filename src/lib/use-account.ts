@@ -9,6 +9,8 @@ export type Account =
       degraded?: boolean;
       name: string | null;
       avatar: string;
+      frame?: string | null;
+      banner?: string | null;
       title: string | null;
       points: number;
       school: { name: string; city: string } | null;

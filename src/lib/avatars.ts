@@ -32,6 +32,10 @@ export const AVATARS: AvatarDef[] = [
   { id: "founder", bg: "#5a6cff", skin: "#ffe3b0", head: "round", ears: "crown", eyes: "one", mouth: "open", unlock: { event: "founder" }, names: { cs: "Zakladatel", en: "Founder", de: "Gründer", ru: "Основатель" } },
   { id: "chemik", bg: "#7ee0b0", skin: "#ffd5a8", head: "round", ears: "hair", eyes: "goggles", mouth: "smile", unlock: { event: "escape-lab" }, names: { cs: "Chemik", en: "Chemist", de: "Chemiker", ru: "Химик" } },
   { id: "winter", bg: "#d6efff", skin: "#ffffff", head: "round", ears: "bear", eyes: "big", mouth: "teeth", unlock: { event: "winter" }, names: { cs: "Zimní", en: "Winter", de: "Winter", ru: "Зимний" } },
+  { id: "astronaut", bg: "#243b7a", skin: "#eef1f7", head: "round", ears: "antenna", eyes: "visor", mouth: "smile", unlock: { event: "shop" }, names: { cs: "Astronaut", en: "Astronaut", de: "Astronaut", ru: "Астронавт" } },
+  { id: "pirate", bg: "#7fd0e8", skin: "#ffd5a8", head: "round", ears: "band", eyes: "one", mouth: "teeth", unlock: { event: "shop" }, names: { cs: "Pirát", en: "Pirate", de: "Pirat", ru: "Пират" } },
+  { id: "wizard", bg: "#7a5cff", skin: "#ffd5a8", head: "round", ears: "horns", eyes: "big", mouth: "open", unlock: { event: "shop" }, names: { cs: "Čaroděj", en: "Wizard", de: "Zauberer", ru: "Волшебник" } },
+  { id: "pumpkin", bg: "#ffb259", skin: "#ff8a1f", head: "round", ears: "none", eyes: "dots", mouth: "teeth", unlock: { event: "shop" }, names: { cs: "Dýně", en: "Pumpkin", de: "Kürbis", ru: "Тыква" } },
 ];
 
 export const DEFAULT_AVATAR = "robot";

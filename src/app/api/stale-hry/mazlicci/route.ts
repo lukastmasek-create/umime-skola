@@ -14,6 +14,7 @@ import {
   offlineCapHours,
   play,
   rename,
+  setAccessory,
   settle,
   treat,
   type ActionResult,
@@ -40,11 +41,12 @@ async function learningBonusFor(userId: string, now: number) {
   return learningBonusFromXp(sum._sum.amount ?? 0);
 }
 
-function payload(state: PetGameState, points: number, learningBonus: number, now: number) {
+function payload(state: PetGameState, points: number, learningBonus: number, now: number, accessories: string[]) {
   const active = state.active ? state.pets[state.active] : undefined;
   return {
     state,
     points,
+    accessories,
     learningBonus,
     now,
     incomePerHour: currentIncomePerHour(state, learningBonus),
@@ -55,9 +57,10 @@ function payload(state: PetGameState, points: number, learningBonus: number, now
 
 function applyAction(
   state: PetGameState,
-  body: { action?: unknown; species?: unknown; upgrade?: unknown; name?: unknown },
+  body: { action?: unknown; species?: unknown; upgrade?: unknown; name?: unknown; accessory?: unknown },
   points: number,
   now: number,
+  accessories: string[],
 ): ActionResult {
   switch (body.action) {
     case "adopt":
@@ -74,6 +77,8 @@ function applyAction(
       return buyUpgrade(state, body.upgrade);
     case "rename":
       return rename(state, body.name);
+    case "accessory":
+      return setAccessory(state, body.accessory ?? null, accessories);
     default:
       return { ok: true, state };
   }
@@ -86,10 +91,11 @@ export async function GET() {
 
   try {
     const now = Date.now();
-    const [row, user, bonus] = await Promise.all([
+    const [row, user, bonus, unlocks] = await Promise.all([
       prisma.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } }),
       prisma.user.findUnique({ where: { id: userId }, select: { points: true } }),
       learningBonusFor(userId, now),
+      prisma.unlock.findMany({ where: { userId, key: { startsWith: "pet:" } }, select: { key: true } }),
     ]);
     const settled = settle(row ? normalizeState(row.data, now) : emptyState(now), now, bonus);
     if (row) {
@@ -98,7 +104,7 @@ export async function GET() {
         data: { data: settled as unknown as Prisma.InputJsonValue },
       });
     }
-    return NextResponse.json(payload(settled, user?.points ?? 0, bonus, now));
+    return NextResponse.json(payload(settled, user?.points ?? 0, bonus, now, unlocks.map((u) => u.key.slice(4))));
   } catch {
     return NextResponse.json({ error: "unavailable" }, { status: 503 });
   }
@@ -119,10 +125,11 @@ export async function POST(request: Request) {
       const row = await tx.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } });
       const user = await tx.user.findUnique({ where: { id: userId }, select: { points: true } });
       const points = user?.points ?? 0;
+      const owned = (await tx.unlock.findMany({ where: { userId, key: { startsWith: "pet:" } }, select: { key: true } })).map((u) => u.key.slice(4));
 
       const settled = settle(row ? normalizeState(row.data, now) : emptyState(now), now, bonus);
-      const outcome = applyAction(settled, body, points, now);
-      if (!outcome.ok) return { outcome, points };
+      const outcome = applyAction(settled, body, points, now, owned);
+      if (!outcome.ok) return { outcome, points, owned };
 
       const cost = outcome.pointsSpent ?? 0;
       if (cost > 0) {
@@ -144,13 +151,13 @@ export async function POST(request: Request) {
       } else {
         await tx.idleState.create({ data: { userId, game: GAME, data } });
       }
-      return { outcome, points: points - cost };
+      return { outcome, points: points - cost, owned };
     }, { maxWait: 10_000, timeout: 20_000 });
 
     if (!result.outcome.ok) {
       return NextResponse.json({ error: result.outcome.error }, { status: 400 });
     }
-    return NextResponse.json(payload(result.outcome.state, result.points, bonus, now));
+    return NextResponse.json(payload(result.outcome.state, result.points, bonus, now, result.owned));
   } catch (error) {
     if (error instanceof NotEnoughPoints) {
       return NextResponse.json({ error: "not-enough-points" }, { status: 400 });
