@@ -7,7 +7,7 @@ import { LevelBadge } from "@/components/LevelBadge";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { AVATARS, getAvatar, isAvatarUnlocked } from "@/lib/avatars";
 import { TITLES, getTitle, isTitleUnlocked } from "@/lib/titles";
-import { BANNERS, FRAME_IDS, isFrameId, type FrameId } from "@/lib/cosmetics";
+import { BANNERS, FRAME_IDS, bannerCss, isFrameId, type FrameId } from "@/lib/cosmetics";
 import { SHOP_ITEMS } from "@/lib/shop";
 import {
   EMPTY_CUSTOM,
@@ -156,7 +156,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
   const unlocks = profile.unlocks ?? [];
   const remaining = (profile.neededForNext ?? 0) - (profile.intoLevel ?? 0);
   const frame: FrameId | null = isFrameId(profile.frame) ? profile.frame : null;
-  const banner = profile.banner && BANNERS[profile.banner] ? BANNERS[profile.banner] : DEFAULT_BANNER;
+  const banner = profile.banner && BANNERS[profile.banner] ? bannerCss(profile.banner) : DEFAULT_BANNER;
   const ownedFrames = FRAME_IDS.filter((f) => unlocks.includes(`frame:${f}`));
   const ownedBanners = Object.keys(BANNERS).filter((b) => unlocks.includes(`banner:${b}`));
   const unlockedCount =
@@ -603,7 +603,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
                   <>
                     <div
                       className="h-16 rounded-xl"
-                      style={{ background: BANNERS[b], filter: owned ? undefined : "grayscale(1) opacity(0.5)" }}
+                      style={{ background: bannerCss(b), filter: owned ? undefined : "grayscale(1) opacity(0.5)" }}
                     />
                     <span className="text-sm font-bold">{itemName("banner", b, locale)}</span>
                     <span className="text-xs text-[var(--faint)]">

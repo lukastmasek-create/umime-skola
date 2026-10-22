@@ -1,5 +1,8 @@
 import { ANSWER_COLORS, ArcadeEngine, DIR_VEC, H, OPPOSITE, W, drawLabel, shuffleInPlace, type Dir } from "./arcade-base";
 import { sfx } from "./game-fx";
+import { Sprites } from "./sprites";
+
+const APPLE_FRAME: Record<string, string> = { "#7c6cff": "jablko_fialove", "#ff5d73": "jablko_cervene", "#ffb020": "jablko_zlute", "#22c55e": "jablko_zelene" };
 
 const C = 20;
 const COLS = 32;
@@ -10,6 +13,7 @@ type Cell = { x: number; y: number };
 type Apple = Cell & { label: string; correct: boolean; alive: boolean; index: number; color: string };
 
 export class SnakeEngine extends ArcadeEngine {
+  private sp = new Sprites("snake");
   private snake: Cell[] = [];
   private dir: Dir = "right";
   private acc = 0;
@@ -156,6 +160,7 @@ export class SnakeEngine extends ArcadeEngine {
     ctx.strokeRect(1, OY + 1, W - 2, ROWS * C - 2);
 
     for (const f of this.food) {
+      if (this.sp.draw(ctx, "had", "jidlo", (f.x + 0.5) * C, OY + (f.y + 0.5) * C, 16, 16)) continue;
       ctx.fillStyle = "#ffe066";
       ctx.beginPath();
       ctx.arc((f.x + 0.5) * C, OY + (f.y + 0.5) * C, 4 + Math.sin(this.time * 6 + f.x) * 0.8, 0, Math.PI * 2);
@@ -164,7 +169,37 @@ export class SnakeEngine extends ArcadeEngine {
 
     // had
     const flicker = this.invuln > 0 && Math.floor(this.time * 12) % 2 === 0;
-    for (let i = this.snake.length - 1; i >= 0; i--) {
+    let drawn = false;
+    if (this.sp.has("had", "telo")) {
+      drawn = true;
+      ctx.globalAlpha = flicker ? 0.4 : 1;
+      for (let i = this.snake.length - 1; i >= 0; i--) {
+        const c = this.snake[i];
+        const cx = (c.x + 0.5) * C;
+        const cy = OY + (c.y + 0.5) * C;
+        const prev = this.snake[i - 1];
+        const next = this.snake[i + 1];
+        if (i === 0) {
+          const v = DIR_VEC[this.dir];
+          this.sp.draw(ctx, "had", "hlava", cx, cy, C * 1.15, C * 1.15, { rot: Math.atan2(v.y, v.x) });
+        } else if (!next) {
+          this.sp.draw(ctx, "had", "ocas", cx, cy, C * 1.15, C * 1.15, { rot: Math.atan2(prev.y - c.y, prev.x - c.x) });
+        } else if (prev.x - c.x === c.x - next.x && prev.y - c.y === c.y - next.y) {
+          this.sp.draw(ctx, "had", "telo", cx, cy, C * 1.15, C * 1.15, { rot: prev.y !== c.y ? Math.PI / 2 : 0 });
+        } else {
+          // zatáčka: základ spojuje východ a jih, otáčí se po čtvrtinách
+          const has = (dx: number, dy: number) => (prev.x - c.x === dx && prev.y - c.y === dy) || (next.x - c.x === dx && next.y - c.y === dy);
+          const e = has(1, 0);
+          const so = has(0, 1);
+          const w = has(-1, 0);
+          const q = Math.PI / 2;
+          const rot = e && so ? 0 : so && w ? q : w && !so ? 2 * q : 3 * q;
+          this.sp.draw(ctx, "had", "zatacka", cx, cy, C * 1.15, C * 1.15, { rot });
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+    for (let i = this.snake.length - 1; i >= 0 && !drawn; i--) {
       const c = this.snake[i];
       const t = 1 - i / Math.max(1, this.snake.length);
       ctx.globalAlpha = flicker ? 0.4 : 1;
@@ -175,7 +210,7 @@ export class SnakeEngine extends ArcadeEngine {
     }
     ctx.globalAlpha = 1;
     const h = this.snake[0];
-    if (h) {
+    if (h && !drawn) {
       const v = DIR_VEC[this.dir];
       const cx = (h.x + 0.5) * C;
       const cy = OY + (h.y + 0.5) * C;
@@ -203,19 +238,21 @@ export class SnakeEngine extends ArcadeEngine {
       if (!a.alive) continue;
       const ax = (a.x + 0.5) * C;
       const ay = OY + (a.y + 0.5) * C;
-      ctx.fillStyle = a.color;
-      ctx.beginPath();
-      ctx.arc(ax, ay + 1, 8 + Math.sin(this.time * 5) * 0.8, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.strokeStyle = "#6b4423";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(ax, ay - 7);
-      ctx.lineTo(ax + 2, ay - 12);
-      ctx.stroke();
+      if (!this.sp.draw(ctx, "had", APPLE_FRAME[a.color] ?? "jablko_cervene", ax, ay, C * 1.3 + Math.sin(this.time * 5), C * 1.3 + Math.sin(this.time * 5))) {
+        ctx.fillStyle = a.color;
+        ctx.beginPath();
+        ctx.arc(ax, ay + 1, 8 + Math.sin(this.time * 5) * 0.8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.strokeStyle = "#6b4423";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(ax, ay - 7);
+        ctx.lineTo(ax + 2, ay - 12);
+        ctx.stroke();
+      }
       const maxW = 140;
       const ly = a.y < 4 ? ay + 24 : ay - 24;
       const lx = Math.max(maxW / 2 + 3, Math.min(W - maxW / 2 - 3, ax));

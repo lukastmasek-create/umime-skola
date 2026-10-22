@@ -1,5 +1,8 @@
 import type { EngineCallbacks, EngineConfig } from "./space-engine";
 import { drawFloatTexts, sfx, stepFloatTexts, type FloatText } from "./game-fx";
+import { Sprites } from "./sprites";
+
+const SHELL_FRAME: Record<string, string> = { "#2fb344": "zelena", "#e5484d": "cervena", "#3b82f6": "modra", "#f5a524": "oranzova" };
 
 const W = 640;
 const H = 420;
@@ -25,6 +28,7 @@ type Particle = { x: number; y: number; vx: number; vy: number; life: number; co
 type Cloud = { x: number; y: number; s: number };
 
 export class MarioEngine {
+  private sp = new Sprites("mario");
   private ctx: CanvasRenderingContext2D;
   private dpr: number;
   private raf = 0;
@@ -394,45 +398,49 @@ export class MarioEngine {
       ctx.ellipse(0, -18, 34, 30, 0, 0, Math.PI * 2);
       ctx.fill();
     }
+    const frame = (SHELL_FRAME[t.shell] ?? "zelena") + "_chuze_" + (1 + (Math.floor(this.time * 9 + i * 2) % 6));
+    const spriteBody = this.sp.draw(ctx, "zelvy", frame, 0, 4, 54, 54, { anchorBottom: true, flip: t.dir < 0 });
     ctx.scale(t.dir >= 0 ? 0.72 : -0.72, 0.72);
-    ctx.fillStyle = "#d9a441";
-    ctx.beginPath();
-    ctx.ellipse(-9, -2 + (step > 0 ? -2 : 0), 7, 5, 0, 0, Math.PI * 2);
-    ctx.ellipse(9, -2 + (step > 0 ? 0 : -2), 7, 5, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#f3d9a0";
-    ctx.beginPath();
-    ctx.roundRect(-20, -14, 40, 12, 6);
-    ctx.fill();
-    ctx.fillStyle = t.shell;
-    ctx.beginPath();
-    ctx.ellipse(0, -17, 23, 16, 0, Math.PI, 0);
-    ctx.lineTo(23, -14);
-    ctx.lineTo(-23, -14);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = "rgba(0,0,0,0.25)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(-8, -14);
-    ctx.lineTo(-5, -30);
-    ctx.moveTo(8, -14);
-    ctx.lineTo(5, -30);
-    ctx.moveTo(-17, -22);
-    ctx.lineTo(17, -22);
-    ctx.stroke();
-    ctx.fillStyle = "#d9a441";
-    ctx.beginPath();
-    ctx.roundRect(15, -33 + (step > 0 ? 0 : 1), 11, 20, 5);
-    ctx.fill();
-    ctx.fillStyle = "#fff";
-    ctx.beginPath();
-    ctx.arc(22, -28, 3.4, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#1a1233";
-    ctx.beginPath();
-    ctx.arc(23, -28, 1.6, 0, Math.PI * 2);
-    ctx.fill();
+    if (!spriteBody) {
+      ctx.fillStyle = "#d9a441";
+      ctx.beginPath();
+      ctx.ellipse(-9, -2 + (step > 0 ? -2 : 0), 7, 5, 0, 0, Math.PI * 2);
+      ctx.ellipse(9, -2 + (step > 0 ? 0 : -2), 7, 5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#f3d9a0";
+      ctx.beginPath();
+      ctx.roundRect(-20, -14, 40, 12, 6);
+      ctx.fill();
+      ctx.fillStyle = t.shell;
+      ctx.beginPath();
+      ctx.ellipse(0, -17, 23, 16, 0, Math.PI, 0);
+      ctx.lineTo(23, -14);
+      ctx.lineTo(-23, -14);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,0.25)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-8, -14);
+      ctx.lineTo(-5, -30);
+      ctx.moveTo(8, -14);
+      ctx.lineTo(5, -30);
+      ctx.moveTo(-17, -22);
+      ctx.lineTo(17, -22);
+      ctx.stroke();
+      ctx.fillStyle = "#d9a441";
+      ctx.beginPath();
+      ctx.roundRect(15, -33 + (step > 0 ? 0 : 1), 11, 20, 5);
+      ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.arc(22, -28, 3.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#1a1233";
+      ctx.beginPath();
+      ctx.arc(23, -28, 1.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
     ctx.restore();
 
     const px = t.cx;
@@ -460,6 +468,8 @@ export class MarioEngine {
   private drawHero() {
     const ctx = this.ctx;
     const moving = (this.input.left || this.input.right || this.pointerTarget !== null) && this.onGround;
+    const heroFrame = !this.onGround ? (this.vy < 0 ? "skok" : "pad") : moving ? "beh_" + (1 + (Math.floor(this.time * 12) % 6)) : "klid_" + (1 + (Math.floor(this.time * 2) % 2));
+    if (this.sp.draw(ctx, "hrdina", heroFrame, this.px, this.py + 4, 52 * (1 + this.squash), 52 * (1 - this.squash), { anchorBottom: true, flip: this.facing < 0 })) return;
     const swing = moving ? Math.sin(this.time * 16) * 6 : 0;
     ctx.save();
     ctx.translate(this.px, this.py);
@@ -535,50 +545,65 @@ export class MarioEngine {
     const ctx = this.ctx;
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
 
-    const sky = ctx.createLinearGradient(0, 0, 0, GROUND);
-    sky.addColorStop(0, this.config.boss ? "#ff8a6b" : "#5ab7ff");
-    sky.addColorStop(1, this.config.boss ? "#ffe0c2" : "#d6f0ff");
-    ctx.fillStyle = sky;
-    ctx.fillRect(0, 0, W, H);
+    const spr = this.sp.has("nebe", "nebe");
+    if (spr) {
+      this.sp.draw(ctx, this.config.boss ? "nebe_boss" : "nebe", this.config.boss ? "nebe_boss" : "nebe", W / 2, H / 2, W, H);
+      this.sp.draw(ctx, "slunce", "slunce", 560, 70, 76, 76);
+    } else {
+      const sky = ctx.createLinearGradient(0, 0, 0, GROUND);
+      sky.addColorStop(0, this.config.boss ? "#ff8a6b" : "#5ab7ff");
+      sky.addColorStop(1, this.config.boss ? "#ffe0c2" : "#d6f0ff");
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, W, H);
 
-    // slunce
-    ctx.fillStyle = "rgba(255,244,170,0.9)";
-    ctx.beginPath();
-    ctx.arc(560, 70, 26, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "rgba(255,244,170,0.25)";
-    ctx.beginPath();
-    ctx.arc(560, 70, 40, 0, Math.PI * 2);
-    ctx.fill();
+      // slunce
+      ctx.fillStyle = "rgba(255,244,170,0.9)";
+      ctx.beginPath();
+      ctx.arc(560, 70, 26, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,244,170,0.25)";
+      ctx.beginPath();
+      ctx.arc(560, 70, 40, 0, Math.PI * 2);
+      ctx.fill();
+
+    }
 
     ctx.save();
     if (this.shake > 0) ctx.translate((Math.random() - 0.5) * this.shake, (Math.random() - 0.5) * this.shake);
 
-    // vzdálené kopce
-    ctx.fillStyle = "#9bd8b0";
-    ctx.beginPath();
-    ctx.ellipse(40, GROUND, 130, 120, 0, Math.PI, 0);
-    ctx.ellipse(300, GROUND, 170, 100, 0, Math.PI, 0);
-    ctx.ellipse(600, GROUND, 140, 110, 0, Math.PI, 0);
-    ctx.fill();
-    ctx.fillStyle = "#7fd58a";
-    ctx.beginPath();
-    ctx.ellipse(120, GROUND, 150, 70, 0, Math.PI, 0);
-    ctx.ellipse(430, GROUND, 190, 90, 0, Math.PI, 0);
-    ctx.fill();
-    for (const c of this.clouds) this.cloud(c);
+    if (spr) {
+      this.sp.draw(ctx, "kopce_daleke", "kopce_daleke", W / 2, H / 2, W, H);
+      this.sp.draw(ctx, "kopce_blizke", "kopce_blizke", W / 2, H / 2, W, H);
+      this.clouds.forEach((c, k) => this.sp.draw(ctx, "mraky", "mrak_" + ((k % 3) + 1), c.x, c.y, 96 * c.s, 56 * c.s));
+      for (let row = 0; row < 4; row++) for (let x = 0; x < W; x += 20) this.sp.draw(ctx, "zem", "cihla", x + 10, GROUND + 10 + row * 20, 20, 20);
+    } else {
+      // vzdálené kopce
+      ctx.fillStyle = "#9bd8b0";
+      ctx.beginPath();
+      ctx.ellipse(40, GROUND, 130, 120, 0, Math.PI, 0);
+      ctx.ellipse(300, GROUND, 170, 100, 0, Math.PI, 0);
+      ctx.ellipse(600, GROUND, 140, 110, 0, Math.PI, 0);
+      ctx.fill();
+      ctx.fillStyle = "#7fd58a";
+      ctx.beginPath();
+      ctx.ellipse(120, GROUND, 150, 70, 0, Math.PI, 0);
+      ctx.ellipse(430, GROUND, 190, 90, 0, Math.PI, 0);
+      ctx.fill();
+      for (const c of this.clouds) this.cloud(c);
 
-    ctx.fillStyle = "#b5651d";
-    ctx.fillRect(0, GROUND, W, H - GROUND);
-    ctx.fillStyle = "#3fae3f";
-    ctx.fillRect(0, GROUND, W, 10);
-    ctx.fillStyle = "#5fd35f";
-    ctx.fillRect(0, GROUND, W, 3);
-    ctx.strokeStyle = "rgba(0,0,0,0.18)";
-    ctx.lineWidth = 2;
-    for (let x = 0; x < W; x += 40) {
-      ctx.strokeRect(x, GROUND + 10, 40, 30);
-      ctx.strokeRect(x + 20, GROUND + 40, 40, 30);
+      ctx.fillStyle = "#b5651d";
+      ctx.fillRect(0, GROUND, W, H - GROUND);
+      ctx.fillStyle = "#3fae3f";
+      ctx.fillRect(0, GROUND, W, 10);
+      ctx.fillStyle = "#5fd35f";
+      ctx.fillRect(0, GROUND, W, 3);
+      ctx.strokeStyle = "rgba(0,0,0,0.18)";
+      ctx.lineWidth = 2;
+      for (let x = 0; x < W; x += 40) {
+        ctx.strokeRect(x, GROUND + 10, 40, 30);
+        ctx.strokeRect(x + 20, GROUND + 40, 40, 30);
+      }
+
     }
 
     // stín pod hrdinou

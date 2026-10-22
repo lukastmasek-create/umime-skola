@@ -25,6 +25,11 @@ export const BANNERS: Record<string, string> = {
   snow: "radial-gradient(circle at 25% 25%, #ffffff, transparent 30%), radial-gradient(circle at 70% 60%, #ffffff, transparent 25%), linear-gradient(160deg, #cfe9ff 0%, #8fc3f0 100%)",
 };
 
+// Pozadí je obrázek z Blenderu; CSS přechod pod ním je záloha, kdyby se obrázek nenačetl.
+export function bannerCss(id: string): string {
+  return `url(/cosmetics/banners/${id}.webp) center / cover no-repeat, ${BANNERS[id]}`;
+}
+
 export function isBannerId(value: unknown): value is string {
   return typeof value === "string" && Object.prototype.hasOwnProperty.call(BANNERS, value);
 }

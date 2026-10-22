@@ -1,5 +1,8 @@
 import { ANSWER_COLORS, ArcadeEngine, H, W, drawLabel, shuffleInPlace } from "./arcade-base";
 import { sfx } from "./game-fx";
+import { Sprites } from "./sprites";
+
+const SEG_FRAME: Record<string, string> = { "#7c6cff": "fialovy", "#ff5d73": "cerveny", "#ffb020": "zluty", "#22c55e": "zeleny" };
 
 const ROW0 = 56;
 const ROW_H = 20;
@@ -25,6 +28,7 @@ type Chain = {
 type Spider = { x: number; y: number; vx: number; t: number };
 
 export class CentipedeEngine extends ArcadeEngine {
+  private sp = new Sprites("centipede");
   private chains: Chain[] = [];
   private mush: number[][] = [];
   private shots: Shot[] = [];
@@ -287,6 +291,7 @@ export class CentipedeEngine extends ArcadeEngine {
         if (!hp) continue;
         const x = c * ROW_H + 10;
         const y = ROW0 + r * ROW_H;
+        if (this.sp.draw(ctx, "houby", hp === 2 ? "cela" : "poskozena", x, y, ROW_H, ROW_H)) continue;
         ctx.fillStyle = hp === 2 ? "#c24bff" : "#8a3fb0";
         ctx.beginPath();
         ctx.arc(x, y + 2, 9, Math.PI, 0);
@@ -315,14 +320,24 @@ export class CentipedeEngine extends ArcadeEngine {
           ctx.lineTo(pos.x + k * 14 + wob, pos.y + SEG_H / 2 + 7);
           ctx.stroke();
         }
-        ctx.fillStyle = seg.color;
-        ctx.beginPath();
-        ctx.roundRect(pos.x - SEG_W / 2, pos.y - SEG_H / 2, SEG_W, SEG_H, 12);
-        ctx.fill();
         const glow = this.hint > 0 && seg.correct;
-        ctx.strokeStyle = glow ? `rgba(255,224,102,${0.6 + Math.sin(this.time * 14) * 0.4})` : "rgba(255,255,255,0.85)";
-        ctx.lineWidth = glow ? 5 : 2;
-        ctx.stroke();
+        const name = (SEG_FRAME[seg.color] ?? "zeleny") + (i === 0 ? "_hlava_" : "_") + (Math.floor(this.time * 8 + i) % 2 === 0 ? 1 : 2);
+        const sprite = this.sp.draw(ctx, "clanky", name, pos.x, pos.y, SEG_W + 4, SEG_H + 8, { flip: chain.dir < 0 });
+        if (!sprite) {
+          ctx.fillStyle = seg.color;
+          ctx.beginPath();
+          ctx.roundRect(pos.x - SEG_W / 2, pos.y - SEG_H / 2, SEG_W, SEG_H, 12);
+          ctx.fill();
+        }
+        if (glow || !sprite) {
+          ctx.strokeStyle = glow ? `rgba(255,224,102,${0.6 + Math.sin(this.time * 14) * 0.4})` : "rgba(255,255,255,0.85)";
+          ctx.lineWidth = glow ? 5 : 2;
+          if (sprite) {
+            ctx.beginPath();
+            ctx.roundRect(pos.x - SEG_W / 2 - 2, pos.y - SEG_H / 2 - 2, SEG_W + 4, SEG_H + 4, 14);
+          }
+          ctx.stroke();
+        }
         drawLabel(ctx, seg.label, pos.x, pos.y, SEG_W + 40, "rgba(0,0,0,0.3)", { height: SEG_H + 2 });
         if (i === 0) {
           ctx.fillStyle = "#fff";
@@ -337,7 +352,9 @@ export class CentipedeEngine extends ArcadeEngine {
 
     // pavouk
     const sd = this.spider;
-    if (sd) {
+    if (sd && this.sp.draw(ctx, "pavouk", Math.floor(this.time * 10) % 2 === 0 ? "pavouk_1" : "pavouk_2", sd.x, sd.y, 36, 26)) {
+      // spritem nakresleno
+    } else if (sd) {
       ctx.strokeStyle = "#e9d5ff";
       ctx.lineWidth = 2;
       for (let k = -2; k <= 2; k++) {
@@ -363,10 +380,12 @@ export class CentipedeEngine extends ArcadeEngine {
 
     // střely
     ctx.fillStyle = "#ffe066";
-    for (const s of this.shots) ctx.fillRect(s.x - 1.5, s.y - 6, 3, 12);
+    for (const s of this.shots) if (!this.sp.draw(ctx, "strela", "strela", s.x, s.y, 5, 14)) ctx.fillRect(s.x - 1.5, s.y - 6, 3, 12);
 
     // hráč
-    if (!(this.invuln > 0 && Math.floor(this.time * 10) % 2 === 0)) {
+    if (!(this.invuln > 0 && Math.floor(this.time * 10) % 2 === 0) && this.sp.draw(ctx, "hrac", "strelec", this.px, this.py, 34, 34)) {
+      // spritem nakresleno
+    } else if (!(this.invuln > 0 && Math.floor(this.time * 10) % 2 === 0)) {
       ctx.fillStyle = "#7ee0ff";
       ctx.beginPath();
       ctx.moveTo(this.px, this.py - 14);

@@ -1,8 +1,30 @@
+"use client";
+
+import { useState } from "react";
 import type { FrameId } from "@/lib/cosmetics";
 
 // Rámeček se kreslí přes avatar. SVG je o pětinu větší než avatar, aby ozdoby mohly
 // přesahovat přes okraj kolečka.
+// Rámeček z Blenderu (obrázek 1,2× větší než avatar); když se nenačte, vykreslí se SVG.
 export function AvatarFrame({ id, size }: { id: FrameId; size: number }) {
+  const [failed, setFailed] = useState(false);
+  if (failed) return <FrameSvg id={id} size={size} />;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`/cosmetics/frames/${id}.webp`}
+      alt=""
+      aria-hidden
+      width={size * 1.2}
+      height={size * 1.2}
+      onError={() => setFailed(true)}
+      className="pointer-events-none absolute max-w-none"
+      style={{ left: -size * 0.1, top: -size * 0.1, width: size * 1.2, height: size * 1.2 }}
+    />
+  );
+}
+
+function FrameSvg({ id, size }: { id: FrameId; size: number }) {
   const pad = size * 0.1;
   const star = (cx: number, cy: number, r: number) => {
     const pts: string[] = [];

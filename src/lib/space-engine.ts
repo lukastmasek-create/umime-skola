@@ -1,4 +1,7 @@
 import { drawFloatTexts, sfx, stepFloatTexts, type FloatText } from "./game-fx";
+import { Sprites } from "./sprites";
+
+const ALIEN_TYPES = ["kyklop", "krab", "chobotnice", "ufo"];
 
 export type EngineCallbacks = {
   onHit: (index: number, correct: boolean) => void;
@@ -49,6 +52,7 @@ const PICKUP_ICONS: Record<PickupKind, string> = { shield: "🛡️", rapid: "�
 const PICKUP_COLORS: Record<PickupKind, string> = { shield: "#5ab8ff", rapid: "#ffd24d", slow: "#7ee0b0" };
 
 export class SpaceEngine {
+  private sp = new Sprites("space");
   private ctx: CanvasRenderingContext2D;
   private dpr: number;
   private raf = 0;
@@ -475,7 +479,16 @@ export class SpaceEngine {
     ctx.strokeStyle = style.body;
     ctx.lineCap = "round";
 
-    switch (i % ALIEN_STYLES.length) {
+    const type = ALIEN_TYPES[i % ALIEN_TYPES.length];
+    const sw = Math.min(a.w, 72) * (this.config.boss ? 1.25 : 1);
+    const spriteName = this.config.boss
+      ? "bossove:" + type + "_" + (1 + (Math.floor(t * 4) % 2))
+      : charging
+        ? "mimozemstane:" + type + "_nabijeni_" + (1 + (Math.floor(t * 10) % 2))
+        : "mimozemstane:" + type + "_klid_" + (1 + (Math.floor(t * 5 + i) % 4));
+    const [sg, sf] = spriteName.split(":");
+    const sprite = this.sp.draw(ctx, sg, sf, cx, y + (a.h - 26) / 2 + 4, sw, sw);
+    if (!sprite) switch (i % ALIEN_STYLES.length) {
       case 0: {
         ctx.beginPath();
         ctx.ellipse(cx, y + 26, a.w * 0.34, 23, 0, 0, Math.PI * 2);
@@ -591,6 +604,20 @@ export class SpaceEngine {
 
   private drawBackground() {
     const ctx = this.ctx;
+    if (this.sp.has("pozadi_mlhovina", "mlhovina")) {
+      const bg0 = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
+      bg0.addColorStop(0, "#070519");
+      bg0.addColorStop(1, "#1d0f45");
+      ctx.fillStyle = bg0;
+      ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+      this.sp.draw(ctx, "pozadi_mlhovina", "mlhovina", GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT);
+      this.sp.draw(ctx, "pozadi_planeta", "planeta", 110, 292, GAME_WIDTH * 0.4, GAME_HEIGHT * 0.4, { alpha: 0.6 });
+      [6, 14, 30].forEach((speed, k) => {
+        const off = (this.time * speed) % GAME_HEIGHT;
+        for (const dy of [0, -GAME_HEIGHT]) this.sp.draw(ctx, "pozadi_hvezdy_" + (k + 1), "hvezdy_" + (k + 1), GAME_WIDTH / 2, GAME_HEIGHT / 2 + off + dy, GAME_WIDTH, GAME_HEIGHT);
+      });
+      return;
+    }
     const bg = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
     bg.addColorStop(0, "#070519");
     bg.addColorStop(0.6, "#120b34");
@@ -642,6 +669,18 @@ export class SpaceEngine {
     const tilt = Math.max(-0.28, Math.min(0.28, this.shipVx / 1400));
     ctx.save();
     ctx.translate(this.shipX, SHIP_Y);
+    const shipFrame = this.shipVx < -60 ? "vlevo" : this.shipVx > 60 ? "vpravo" : this.running ? "plamen_" + (1 + (Math.floor(this.time * 14) % 3)) : "klid";
+    if (this.sp.draw(ctx, "lod", shipFrame, 0, -2, 52, 52)) {
+      if (this.shield) {
+        ctx.strokeStyle = `rgba(90,184,255,${0.55 + 0.25 * Math.sin(this.time * 8)})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, -2, 30, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+      return;
+    }
     ctx.rotate(tilt);
 
     // plamen z trysky
@@ -769,6 +808,7 @@ export class SpaceEngine {
 
     // nepřátelské střely
     for (const b of this.bolts) {
+      if (this.sp.draw(ctx, "strely", "nepritel", b.x, b.y, 24, 24)) continue;
       ctx.shadowColor = "#ff2244";
       ctx.shadowBlur = 12;
       ctx.fillStyle = "#ff5d73";
@@ -785,6 +825,8 @@ export class SpaceEngine {
     // bonusy
     for (const p of this.pickups) {
       const pulse = 1 + Math.sin(p.t * 8) * 0.1;
+      const pk = p.kind === "shield" ? "stit" : p.kind === "rapid" ? "rychla_strelba" : "zpomaleni";
+      if (this.sp.draw(ctx, "bonusy", pk, p.x, p.y, 34 * pulse, 34 * pulse)) continue;
       ctx.shadowColor = PICKUP_COLORS[p.kind];
       ctx.shadowBlur = 16;
       ctx.fillStyle = "rgba(10,8,30,0.85)";
@@ -803,6 +845,7 @@ export class SpaceEngine {
 
     // střely hráče se světelnou stopou
     for (const b of this.bullets) {
+      if (this.sp.draw(ctx, "strely", "hrac", b.x, b.y + 6, 24, 24)) continue;
       const g = ctx.createLinearGradient(0, b.y - 4, 0, b.y + 26);
       g.addColorStop(0, "#fff7b0");
       g.addColorStop(1, "rgba(255,224,102,0)");

@@ -1,5 +1,8 @@
 import { ANSWER_COLORS, ArcadeEngine, H, W, drawLabel, shuffleInPlace } from "./arcade-base";
 import { sfx } from "./game-fx";
+import { Sprites } from "./sprites";
+
+const BRICK_FRAME: Record<string, string> = { "#7c6cff": "fialova", "#ff5d73": "cervena", "#ffb020": "zluta", "#22c55e": "zelena", "#5a6cff": "fialova", "#4f8bff": "zluta", "#7ee0b0": "zelena" };
 
 const PADDLE_Y = H - 24;
 const PADDLE_H = 12;
@@ -9,6 +12,7 @@ const BRICK_H = 14;
 type Block = { x: number; y: number; w: number; h: number; alive: boolean; label?: string; correct?: boolean; index?: number; color: string };
 
 export class BreakoutEngine extends ArcadeEngine {
+  private sp = new Sprites("breakout");
   private blocks: Block[] = [];
   private paddleX = W / 2;
   private paddleW = 92;
@@ -187,11 +191,17 @@ export class BreakoutEngine extends ArcadeEngine {
 
     for (const b of this.blocks) {
       if (!b.alive) continue;
+      const frame = BRICK_FRAME[b.color] ?? "fialova";
       if (b.label === undefined) {
+        if (this.sp.draw(ctx, "cihly", frame, b.x + b.w / 2, b.y + b.h / 2, b.w, b.h)) continue;
         ctx.fillStyle = b.color;
         ctx.beginPath();
         ctx.roundRect(b.x, b.y, b.w, b.h, 3);
         ctx.fill();
+        continue;
+      }
+      if (this.sp.draw(ctx, "odpovedi", frame, b.x + b.w / 2, b.y + b.h / 2, b.w, b.h)) {
+        drawLabel(ctx, b.label, b.x + b.w / 2, b.y + b.h / 2, b.w - 8, "rgba(0,0,0,0.28)", { height: b.h - 12, size: 19 });
         continue;
       }
       ctx.fillStyle = b.color;
@@ -205,21 +215,25 @@ export class BreakoutEngine extends ArcadeEngine {
     }
 
     // pálka
-    ctx.fillStyle = "#ffe066";
-    ctx.beginPath();
-    ctx.roundRect(this.paddleX - this.paddleW / 2, PADDLE_Y, this.paddleW, PADDLE_H, 6);
-    ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,0.5)";
-    ctx.fillRect(this.paddleX - this.paddleW / 2 + 6, PADDLE_Y + 2, this.paddleW - 12, 2);
+    if (!this.sp.draw(ctx, "palka", "palka", this.paddleX, PADDLE_Y + PADDLE_H / 2, this.paddleW, PADDLE_H + 2)) {
+      ctx.fillStyle = "#ffe066";
+      ctx.beginPath();
+      ctx.roundRect(this.paddleX - this.paddleW / 2, PADDLE_Y, this.paddleW, PADDLE_H, 6);
+      ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.fillRect(this.paddleX - this.paddleW / 2 + 6, PADDLE_Y + 2, this.paddleW - 12, 2);
+    }
 
     // míček
-    ctx.fillStyle = "#ffffff";
-    ctx.shadowColor = "#9fd3ff";
-    ctx.shadowBlur = 12;
-    ctx.beginPath();
-    ctx.arc(this.ballX, this.ballY, BALL_R, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
+    if (!this.sp.draw(ctx, "micek", "micek", this.ballX, this.ballY, BALL_R * 2.2, BALL_R * 2.2)) {
+      ctx.fillStyle = "#ffffff";
+      ctx.shadowColor = "#9fd3ff";
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(this.ballX, this.ballY, BALL_R, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
 
     if (!this.launched && !this.over) {
       ctx.fillStyle = "rgba(255,255,255,0.75)";

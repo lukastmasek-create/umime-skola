@@ -8,7 +8,7 @@ import { AVATARS, isAvatarUnlocked } from "@/lib/avatars";
 import { TITLES, getTitle, isTitleUnlocked } from "@/lib/titles";
 import { fill, getProfileText } from "@/i18n/profile";
 import { useAccount } from "@/lib/use-account";
-import { BANNERS, isBannerId, isFrameId } from "@/lib/cosmetics";
+import { bannerCss, isBannerId, isFrameId } from "@/lib/cosmetics";
 import type { Locale } from "@/i18n/config";
 
 export function HeaderAccount({
@@ -115,7 +115,7 @@ export function HeaderAccount({
             className={`-mx-4 -mt-4 mb-1 flex items-center gap-3 rounded-t-[16px] px-4 pb-3 pt-4 ${
               isBannerId(account.banner) ? "text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.65)]" : ""
             }`}
-            style={isBannerId(account.banner) ? { background: BANNERS[account.banner] } : undefined}
+            style={isBannerId(account.banner) ? { background: bannerCss(account.banner) } : undefined}
           >
             <Avatar id={account.avatar} size={64} frame={isFrameId(account.frame) ? account.frame : null} />
             <div className="min-w-0">

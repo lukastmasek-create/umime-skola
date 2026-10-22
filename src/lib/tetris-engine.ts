@@ -1,5 +1,17 @@
 import { ANSWER_COLORS, ArcadeEngine, H, W, drawLabel, shuffleInPlace } from "./arcade-base";
 import { sfx } from "./game-fx";
+import { Sprites } from "./sprites";
+
+const COLOR_FRAME: Record<string, string> = {
+  "#4de3ff": "i",
+  "#ffe14d": "o",
+  "#b36bff": "t",
+  "#4ade80": "s",
+  "#ff5d73": "z",
+  "#5a8bff": "j",
+  "#ffb020": "l",
+  "#6b6f8a": "smeti",
+};
 
 const COLS = 10;
 const ROWS = 20;
@@ -31,6 +43,7 @@ function rotate(m: Shape): Shape {
 }
 
 export class TetrisEngine extends ArcadeEngine {
+  private sp = new Sprites("tetris");
   private board: (string | null)[][] = [];
   private piece: Piece | null = null;
   private next: { m: Shape; color: string } = SHAPES[0];
@@ -339,6 +352,7 @@ export class TetrisEngine extends ArcadeEngine {
   }
 
   private gem(ctx: CanvasRenderingContext2D, x: number, y: number, idx: number) {
+    if (this.sp.draw(ctx, "kostky", "drahokam_" + (idx + 1), x + CELL / 2, y + CELL / 2, CELL, CELL)) return;
     const color = ANSWER_COLORS[idx % ANSWER_COLORS.length];
     ctx.fillStyle = GARBAGE;
     ctx.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
@@ -359,6 +373,8 @@ export class TetrisEngine extends ArcadeEngine {
   }
 
   private cell(ctx: CanvasRenderingContext2D, x: number, y: number, color: string, size = CELL) {
+    const frame = COLOR_FRAME[color];
+    if (frame && this.sp.draw(ctx, "kostky", frame, x + size / 2, y + size / 2, size, size)) return;
     ctx.fillStyle = color;
     ctx.fillRect(x + 1, y + 1, size - 2, size - 2);
     ctx.fillStyle = "rgba(255,255,255,0.28)";

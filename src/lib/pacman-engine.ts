@@ -1,5 +1,8 @@
 import { ANSWER_COLORS, ArcadeEngine, DIR_VEC, H, OPPOSITE, W, drawLabel, shuffleInPlace, type Dir } from "./arcade-base";
 import { sfx } from "./game-fx";
+import { Sprites } from "./sprites";
+
+const GHOST_FRAME: Record<string, string> = { "#ff4d4d": "cerveny", "#ff9ecb": "ruzovy", "#4de3ff": "modry", "#ffb347": "oranzovy" };
 
 const C = 20;
 const COLS = 31;
@@ -14,6 +17,7 @@ type Ghost = Ent & { sx: number; sy: number; wait: number; color: string; eatenW
 type Answer = { tx: number; ty: number; label: string; correct: boolean; alive: boolean; index: number; color: string };
 
 export class PacmanEngine extends ArcadeEngine {
+  private sp = new Sprites("pacman");
   private walls: boolean[][] = [];
   private dots: number[][] = []; // 0 nic, 1 tečka, 2 power pilulka
   private maze: HTMLCanvasElement | null = null;
@@ -133,6 +137,45 @@ export class PacmanEngine extends ArcadeEngine {
     this.dots = walls.map((row) => row.map((w) => (w ? 0 : 1)));
     this.dots[this.startY][this.startX] = 0;
     this.renderMaze();
+  }
+
+  // Zdi ze spritů: podle sousedních zdí se vybere rovný kus, roh, T, křižovatka nebo konec.
+  private drawMazeSprites(ctx: CanvasRenderingContext2D): boolean {
+    if (!this.sp.has("bludiste", "rovne")) return false;
+    const wall = (x: number, y: number) => x < 0 || y < 0 || x >= COLS || y >= ROWS || this.walls[y][x];
+    const Q = Math.PI / 2;
+    for (let y = 0; y < ROWS; y++)
+      for (let x = 0; x < COLS; x++) {
+        if (!this.walls[y][x]) continue;
+        const n = wall(x, y - 1);
+        const e = wall(x + 1, y);
+        const s = wall(x, y + 1);
+        const w = wall(x - 1, y);
+        const count = +n + +e + +s + +w;
+        let frame = "konec";
+        let rot = 0;
+        if (count === 4) frame = "krizovatka";
+        else if (count === 3) {
+          frame = "t";
+          rot = !n ? 0 : !e ? Q : !s ? 2 * Q : 3 * Q;
+          // základ T: chybí sever
+          rot = !n ? 0 : !e ? Q : !s ? 2 * Q : 3 * Q;
+        } else if (count === 2) {
+          if (e && w) frame = "rovne";
+          else if (n && s) {
+            frame = "rovne";
+            rot = Q;
+          } else {
+            frame = "roh";
+            // základ rohu: východ + jih
+            rot = e && s ? 0 : s && w ? Q : w && n ? 2 * Q : 3 * Q;
+          }
+        } else if (count === 1) {
+          rot = e ? 0 : s ? Q : w ? 2 * Q : 3 * Q;
+        }
+        this.sp.draw(ctx, "bludiste", frame, OX + (x + 0.5) * C, OY + (y + 0.5) * C, C, C, { rot });
+      }
+    return true;
   }
 
   private renderMaze() {
@@ -341,7 +384,7 @@ export class PacmanEngine extends ArcadeEngine {
   protected draw(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = "#0b0a1f";
     ctx.fillRect(0, 0, W, H);
-    if (this.maze) ctx.drawImage(this.maze, 0, 0, W, H);
+    if (!this.drawMazeSprites(ctx) && this.maze) ctx.drawImage(this.maze, 0, 0, W, H);
     // tečky
     for (let y = 0; y < ROWS; y++)
       for (let x = 0; x < COLS; x++) {
@@ -349,6 +392,7 @@ export class PacmanEngine extends ArcadeEngine {
         if (!v) continue;
         const cx = OX + (x + 0.5) * C;
         const cy = OY + (y + 0.5) * C;
+        if (this.sp.draw(ctx, "tecky", v === 2 ? "energie" : "tecka", cx, cy, v === 2 ? 17 + Math.sin(this.time * 8) * 2 : 12, v === 2 ? 17 + Math.sin(this.time * 8) * 2 : 12)) continue;
         ctx.fillStyle = "#ffe9a8";
         ctx.beginPath();
         ctx.arc(cx, cy, v === 2 ? 5 + Math.sin(this.time * 8) : 2, 0, Math.PI * 2);
@@ -388,6 +432,8 @@ export class PacmanEngine extends ArcadeEngine {
     const dir = this.dirOf(pac) ?? this.lastDir ?? "right";
     const angle = { right: 0, down: Math.PI / 2, left: Math.PI, up: -Math.PI / 2 }[dir];
     const moving = pac.dx || pac.dy;
+    const open = moving ? Math.abs(Math.sin(this.time * 14)) : 0.3;
+    if (this.sp.draw(ctx, "pac", open > 0.66 ? "otevrena" : open > 0.33 ? "pootevrena" : "zavrena", x, y, C * 1.35, C * 1.35, { rot: angle })) return;
     const mouth = moving ? (0.15 + 0.3 * Math.abs(Math.sin(this.time * 14))) * Math.PI : 0.2 * Math.PI;
     ctx.fillStyle = "#ffe14d";
     ctx.beginPath();
@@ -407,6 +453,9 @@ export class PacmanEngine extends ArcadeEngine {
     const y = this.posY(g);
     const r = C * 0.46;
     const blink = this.scared > 0 && this.scared < 2 && Math.floor(this.time * 8) % 2 === 0;
+    const step = Math.floor(this.time * 6) % 2 === 0 ? "_1" : "_2";
+    const gname = this.scared > 0 ? (blink ? "vystraseny_blik" : "vystraseny" + step) : (GHOST_FRAME[g.color] ?? "cerveny") + step;
+    if (this.sp.draw(ctx, "duchove", gname, x, y, C * 1.35, C * 1.35)) return;
     ctx.fillStyle = this.scared > 0 ? (blink ? "#ffffff" : "#3b5bff") : g.color;
     ctx.beginPath();
     ctx.arc(x, y - 1, r, Math.PI, 0);

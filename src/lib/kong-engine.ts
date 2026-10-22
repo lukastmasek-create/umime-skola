@@ -1,5 +1,6 @@
 import { ANSWER_COLORS, ArcadeEngine, H, W, drawLabel, shuffleInPlace } from "./arcade-base";
 import { sfx } from "./game-fx";
+import { Sprites } from "./sprites";
 
 // Patra: 0 je země, 4 je horní patro se dveřmi s odpověďmi.
 const LEVEL_Y = [398, 322, 246, 170, 94];
@@ -28,6 +29,7 @@ const BLOCK_H = 36;
 type Barrel = { x: number; y: number; vy: number; level: number; dir: number; falling: boolean; rot: number; jumped: boolean };
 
 export class KongEngine extends ArcadeEngine {
+  private sp = new Sprites("kong");
   private px = START_X;
   private py = LEVEL_Y[0];
   private vy = 0;
@@ -262,6 +264,10 @@ export class KongEngine extends ArcadeEngine {
     for (const l of LADDERS) {
       const top = LEVEL_Y[l.from + 1];
       const bottom = LEVEL_Y[l.from];
+      if (this.sp.has("zebrik", "zebrik")) {
+        for (let y = top; y < bottom; y += 12) this.sp.draw(ctx, "zebrik", "zebrik", l.x, Math.min(y + 6, bottom - 6), 16, 12);
+        continue;
+      }
       ctx.strokeStyle = "#7ee0ff";
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -281,6 +287,10 @@ export class KongEngine extends ArcadeEngine {
     // nosníky
     SPANS.forEach(([a, b], i) => {
       const y = LEVEL_Y[i];
+      if (this.sp.has("dlazdice", "nosnik")) {
+        for (let x = a; x < b; x += 24) this.sp.draw(ctx, "dlazdice", "nosnik", Math.min(x + 12, b - 12 + 12), y + 5, 24, 12);
+        return;
+      }
       ctx.fillStyle = "#e0523a";
       ctx.fillRect(a, y, b - a, 9);
       ctx.fillStyle = "#ff8a6b";
@@ -288,7 +298,8 @@ export class KongEngine extends ArcadeEngine {
     });
 
     // gorila nahoře vpravo
-    this.drawKong(ctx, W - 40, LEVEL_Y[4]);
+    const gname = this.barrels.length > 0 && this.spawn < 0.4 ? "hod_1" : Math.floor(this.time * 3) % 2 === 0 ? "klid_1" : "klid_2";
+    if (!this.sp.draw(ctx, "gorila", gname, W - 40, LEVEL_Y[4], 60, 68, { anchorBottom: true })) this.drawKong(ctx, W - 40, LEVEL_Y[4]);
 
     // odpovědní bloky nad horním patrem
     for (const d of this.doors) {
@@ -316,6 +327,7 @@ export class KongEngine extends ArcadeEngine {
 
     // sudy
     for (const b of this.barrels) {
+      if (this.sp.draw(ctx, "sud", "kutaleni_" + (((Math.floor(Math.abs(b.rot) * 2.5) % 4) + 4) % 4 + 1), b.x, b.y - 9, 22, 22)) continue;
       ctx.save();
       ctx.translate(b.x, b.y - 9);
       ctx.rotate(b.rot);
@@ -364,6 +376,15 @@ export class KongEngine extends ArcadeEngine {
   }
 
   private drawPlayer(ctx: CanvasRenderingContext2D) {
+    const moving = this.input.left || this.input.right;
+    const name = this.climbing
+      ? "lezeni_" + (Math.floor(this.py / 6) % 2 === 0 ? 1 : 2)
+      : !this.onGround
+        ? "skok"
+        : moving
+          ? "beh_" + ((Math.floor(this.time * 10) % 4) + 1)
+          : "klid";
+    if (this.sp.draw(ctx, "hrac", name, this.px, this.py, 26, 34, { anchorBottom: true, flip: this.facing < 0 })) return;
     const x = this.px;
     const y = this.py;
     const step = this.climbing ? Math.sin(this.py * 0.4) : Math.sin(this.time * 14) * (this.input.left || this.input.right ? 1 : 0);
