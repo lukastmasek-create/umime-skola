@@ -9,6 +9,8 @@ import { getCommunityText } from "@/i18n/community";
 import { getIdleText } from "@/i18n/idle";
 import { getEscapeText } from "@/i18n/escape";
 import { getHomeText } from "@/i18n/home";
+import { getSocialText } from "@/i18n/social";
+import { getRoomText } from "@/i18n/room";
 import { useAccount } from "@/lib/use-account";
 import type { Locale } from "@/i18n/config";
 
@@ -24,6 +26,8 @@ function useTabs(locale: Locale, dict: Dictionary) {
   const play: Tab[] = [
     { key: "unikovky", href: `/${locale}/unikovky`, label: getEscapeText(locale).nav, icon: "🚪" },
     { key: "stale-hry", href: `/${locale}/stale-hry`, label: getIdleText(locale).nav, icon: "🐾" },
+    { key: "parta", href: `/${locale}/parta`, label: getSocialText(locale).nav, icon: "👥" },
+    { key: "pokoj", href: `/${locale}/pokoj`, label: getRoomText(locale).nav, icon: "🏠" },
     { key: "uzivatelsky-obchod", href: `/${locale}/uzivatelsky-obchod`, label: community.navMarketplace, icon: "🛒" },
     { key: "zebricky", href: `/${locale}/zebricky`, label: community.navLeaderboards, icon: "🏆" },
   ];
