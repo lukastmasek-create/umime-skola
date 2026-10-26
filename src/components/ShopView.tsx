@@ -18,6 +18,9 @@ const CITY_PREVIEW: Record<string, { emoji: string; color: string }> = {
   christmas_tree: { emoji: "🎄", color: "#7ee0b0" },
   windmill: { emoji: "🌾", color: "#ffc933" },
   ferris_wheel: { emoji: "🎡", color: "#8fd0ff" },
+  carousel: { emoji: "🎠", color: "#ffd0ec" },
+  lighthouse: { emoji: "🗼", color: "#bfe6ff" },
+  rocket_pad: { emoji: "🚀", color: "#e3c8ff" },
 };
 
 function Preview({ item, locale, avatar }: { item: ShopItem; locale: Locale; avatar: string | null }) {

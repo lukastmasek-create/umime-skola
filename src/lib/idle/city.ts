@@ -104,6 +104,51 @@ export const CITY_ITEMS: CityItemDef[] = [
   { id: "christmas_tree", cat: "special", size: [2, 2], cost: 100, level: 1, shop: true, happy: 4, radius: 5, names: n("Vánoční strom", "Christmas tree", "Weihnachtsbaum", "Новогодняя ёлка") },
   { id: "windmill", cat: "special", size: [2, 2], cost: 400, level: 3, shop: true, jobs: 6, yield: 12, happy: 2, radius: 3, needsRoad: true, names: n("Větrný mlýn", "Windmill", "Windmühle", "Ветряная мельница") },
   { id: "ferris_wheel", cat: "special", size: [3, 3], cost: 800, level: 5, shop: true, jobs: 20, yield: 14, happy: 5, radius: 6, needsRoad: true, names: n("Obří kolo", "Ferris wheel", "Riesenrad", "Колесо обозрения") },
+  { id: "carousel", cat: "special", size: [2, 2], cost: 500, level: 4, shop: true, jobs: 8, yield: 12, happy: 4, radius: 5, needsRoad: true, names: n("Kolotoč", "Carousel", "Karussell", "Карусель") },
+  { id: "lighthouse", cat: "special", size: [2, 2], cost: 1200, level: 6, shop: true, happy: 5, radius: 6, names: n("Maják", "Lighthouse", "Leuchtturm", "Маяк") },
+  { id: "rocket_pad", cat: "special", size: [3, 3], cost: 2500, level: 10, shop: true, jobs: 15, yield: 16, happy: 4, radius: 6, needsRoad: true, names: n("Kosmodrom", "Rocket pad", "Raketenstartplatz", "Космодром") },
+
+  // --- doprava (rozšíření) ---
+  { id: "gas_station", cat: "transport", size: [2, 2], cost: 700, level: 4, jobs: 4, yield: 12, happy: -1, radius: 2, needsRoad: true, names: n("Benzinka", "Petrol station", "Tankstelle", "Заправка") },
+  { id: "parking", cat: "transport", size: [2, 2], cost: 200, level: 3, jobs: 1, yield: 6, needsRoad: true, names: n("Parkoviště", "Car park", "Parkplatz", "Парковка") },
+  { id: "bus_station", cat: "transport", size: [3, 2], cost: 1100, level: 5, jobs: 8, yield: 8, happy: 2, radius: 4, needsRoad: true, names: n("Autobusové nádraží", "Bus station", "Busbahnhof", "Автовокзал") },
+  { id: "metro", cat: "transport", size: [2, 1], cost: 1800, level: 9, jobs: 6, yield: 10, happy: 3, radius: 5, needsRoad: true, names: n("Vstup do metra", "Metro station", "U-Bahn-Eingang", "Вход в метро") },
+  { id: "port", cat: "transport", size: [4, 3], cost: 7000, level: 14, jobs: 80, yield: 18, happy: -1, radius: 4, needsRoad: true, names: n("Přístav", "Port", "Hafen", "Порт") },
+  { id: "airport", cat: "transport", size: [5, 3], cost: 9000, level: 15, jobs: 120, yield: 16, happy: -2, radius: 6, needsRoad: true, names: n("Letiště", "Airport", "Flughafen", "Аэропорт") },
+
+  // --- obchody a práce (rozšíření) ---
+  { id: "restaurant", cat: "work", size: [2, 1], cost: 400, level: 3, jobs: 6, yield: 11, happy: 1, radius: 2, needsRoad: true, names: n("Restaurace", "Restaurant", "Restaurant", "Ресторан") },
+  { id: "bank", cat: "work", size: [2, 2], cost: 1500, level: 7, jobs: 16, yield: 15, needsRoad: true, names: n("Banka", "Bank", "Bank", "Банк") },
+  { id: "cinema", cat: "work", size: [3, 2], cost: 2000, level: 8, jobs: 14, yield: 13, happy: 3, radius: 5, needsRoad: true, names: n("Kino", "Cinema", "Kino", "Кинотеатр") },
+  { id: "theatre", cat: "work", size: [3, 2], cost: 2400, level: 9, jobs: 14, yield: 12, happy: 4, radius: 5, needsRoad: true, names: n("Divadlo", "Theatre", "Theater", "Театр") },
+  { id: "recycling", cat: "work", size: [3, 2], cost: 1200, level: 7, jobs: 20, yield: 9, happy: 1, radius: 4, needsRoad: true, names: n("Recyklační centrum", "Recycling centre", "Recyclinghof", "Пункт переработки") },
+  { id: "solar_farm", cat: "work", size: [3, 3], cost: 1800, level: 8, jobs: 6, yield: 15, happy: 1, radius: 3, needsRoad: true, names: n("Solární farma", "Solar farm", "Solarpark", "Солнечная ферма") },
+  { id: "power_plant", cat: "work", size: [4, 3], cost: 3000, level: 10, jobs: 40, yield: 14, happy: -4, radius: 6, needsRoad: true, names: n("Elektrárna", "Power plant", "Kraftwerk", "Электростанция") },
+
+  // --- služby (rozšíření) ---
+  { id: "kindergarten", cat: "service", size: [2, 2], cost: 700, level: 2, jobs: 6, yield: 5, edu: 1, happy: 3, radius: 4, needsRoad: true, names: n("Školka", "Kindergarten", "Kindergarten", "Детский сад") },
+  { id: "post_office", cat: "service", size: [2, 1], cost: 450, level: 3, jobs: 5, yield: 6, happy: 1, radius: 4, needsRoad: true, names: n("Pošta", "Post office", "Post", "Почта") },
+  { id: "church", cat: "service", size: [2, 3], cost: 900, level: 4, jobs: 3, yield: 4, happy: 3, radius: 5, needsRoad: true, names: n("Kostel", "Church", "Kirche", "Церковь") },
+  { id: "water_tower", cat: "service", size: [2, 2], cost: 600, level: 5, jobs: 2, yield: 6, happy: 1, radius: 4, needsRoad: true, names: n("Vodárna", "Water tower", "Wasserturm", "Водонапорная башня") },
+  { id: "pool", cat: "service", size: [3, 2], cost: 1500, level: 6, jobs: 10, yield: 6, happy: 4, radius: 5, needsRoad: true, names: n("Bazén", "Swimming pool", "Schwimmbad", "Бассейн") },
+  { id: "zoo", cat: "service", size: [4, 4], cost: 3500, level: 9, jobs: 25, yield: 10, edu: 1, happy: 6, radius: 7, needsRoad: true, names: n("Zoo", "Zoo", "Zoo", "Зоопарк") },
+  { id: "observatory", cat: "service", size: [2, 2], cost: 2200, level: 10, jobs: 8, yield: 5, edu: 3, happy: 3, radius: 5, needsRoad: true, names: n("Hvězdárna", "Observatory", "Sternwarte", "Обсерватория") },
+  { id: "stadium", cat: "service", size: [5, 4], cost: 5000, level: 11, jobs: 50, yield: 10, happy: 6, radius: 8, needsRoad: true, names: n("Stadion", "Stadium", "Stadion", "Стадион") },
+  { id: "aquarium", cat: "service", size: [3, 3], cost: 3200, level: 11, jobs: 20, yield: 8, edu: 2, happy: 5, radius: 6, needsRoad: true, names: n("Akvárium", "Aquarium", "Aquarium", "Аквариум") },
+  { id: "cathedral", cat: "service", size: [3, 4], cost: 4500, level: 12, jobs: 10, yield: 4, happy: 7, radius: 8, needsRoad: true, names: n("Katedrála", "Cathedral", "Kathedrale", "Собор") },
+  { id: "castle", cat: "service", size: [4, 4], cost: 6000, level: 13, jobs: 30, yield: 8, happy: 8, radius: 8, needsRoad: true, names: n("Hrad", "Castle", "Burg", "Замок") },
+
+  // --- příroda (rozšíření) ---
+  { id: "allotments", cat: "nature", size: [3, 2], cost: 200, level: 3, happy: 2, radius: 3, names: n("Zahrádky", "Allotments", "Schrebergärten", "Огороды") },
+  { id: "forest", cat: "nature", size: [3, 3], cost: 250, level: 2, happy: 4, radius: 4, names: n("Les", "Forest", "Wald", "Лес") },
+  { id: "lake", cat: "nature", size: [4, 3], cost: 700, level: 5, happy: 6, radius: 6, names: n("Jezero", "Lake", "See", "Озеро") },
+  { id: "mountain", cat: "nature", size: [3, 3], cost: 600, level: 7, happy: 5, radius: 6, names: n("Hora", "Mountain", "Berg", "Гора") },
+
+  // --- dekorace a sezónní (rozšíření) ---
+  { id: "pumpkin_patch", cat: "decor", size: [2, 2], cost: 150, level: 2, happy: 2, radius: 3, names: n("Dýňové pole", "Pumpkin patch", "Kürbisfeld", "Тыквенное поле") },
+  { id: "christmas_market", cat: "decor", size: [2, 2], cost: 300, level: 4, jobs: 2, yield: 10, happy: 3, radius: 4, needsRoad: true, names: n("Vánoční trh", "Christmas market", "Weihnachtsmarkt", "Рождественская ярмарка") },
+  { id: "ice_rink", cat: "decor", size: [3, 2], cost: 600, level: 5, happy: 4, radius: 4, names: n("Kluziště", "Ice rink", "Eisbahn", "Каток") },
+  { id: "astronomical_clock", cat: "decor", size: [2, 2], cost: 1500, level: 9, happy: 6, radius: 6, names: n("Orloj", "Astronomical clock", "Astronomische Uhr", "Астрономические часы") },
 ];
 
 export const CITY_CATS: CityCat[] = ["road", "housing", "work", "service", "nature", "decor", "transport", "special"];

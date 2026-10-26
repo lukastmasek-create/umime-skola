@@ -677,6 +677,522 @@ function ferrisWheel(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: n
   ellipseAt(ctx, hub[0], hub[1], 5, 5, "#3a3d4a");
 }
 
+// --- rozšíření: nové budovy kreslené kódem ---
+
+// Vodorovná plocha ve výšce z (střecha stadionu, hladina na molu a podobně).
+function topDiamond(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number, z: number, inset: number, fill: string, stroke?: string) {
+  poly(ctx, [P(gx + inset, gy + inset, z), P(gx + w - inset, gy + inset, z), P(gx + w - inset, gy + h - inset, z), P(gx + inset, gy + h - inset, z)], fill, stroke);
+}
+
+function treesIn(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number, count: number, scale: number, seed: number) {
+  const list: { u: number; v: number; s: number }[] = [];
+  for (let i = 0; i < count; i++) {
+    const u = gx + 0.3 + hash(seed + i, 3) * (w - 0.6);
+    const v = gy + 0.3 + hash(seed + 7, i) * (h - 0.6);
+    list.push({ u, v, s: hash(i, seed) });
+  }
+  list.sort((a, b) => a.u + a.v - (b.u + b.v));
+  for (const t of list) {
+    const p = P(t.u, t.v);
+    tree(ctx, p[0], p[1], t.s, scale);
+  }
+}
+
+function forest(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number, seed: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#4c9a56", 0.02, "rgba(0,0,0,0.2)");
+  treesIn(ctx, gx, gy, w, h, Math.round(w * h * 1.6), 0.95, Math.floor(seed * 50));
+}
+
+function lake(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number, time: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#8fcf86", 0.02, "rgba(0,0,0,0.15)");
+  groundDiamond(ctx, gx, gy, w, h, "#e6d9a8", 0.14);
+  groundDiamond(ctx, gx, gy, w, h, "#3f9bd6", 0.3, "rgba(255,255,255,0.4)");
+  groundDiamond(ctx, gx, gy, w, h, "#63b8ea", 0.6);
+  const c = P(gx + w / 2, gy + h / 2);
+  ctx.strokeStyle = "rgba(255,255,255,0.5)";
+  ctx.lineWidth = 1.2;
+  for (let i = 0; i < 3; i++) {
+    const r = 6 + i * 6 + Math.sin(time * 2 + i) * 1.4;
+    ctx.beginPath();
+    ctx.ellipse(c[0] + i * 3 - 5, c[1] + 2 - i, r * 1.5, r * 0.75, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  // loďka
+  const bx = c[0] + Math.sin(time * 0.7) * 10;
+  poly(ctx, [[bx - 8, c[1] - 6], [bx + 8, c[1] - 6], [bx + 5, c[1] - 1], [bx - 5, c[1] - 1]], "#a8622b", "rgba(0,0,0,0.3)");
+  poly(ctx, [[bx, c[1] - 6], [bx, c[1] - 20], [bx + 8, c[1] - 7]], "#ffffff", "rgba(0,0,0,0.25)");
+  const reed = P(gx + 0.3, gy + h - 0.35);
+  ctx.strokeStyle = "#3f7f3a";
+  ctx.lineWidth = 1.6;
+  for (let i = 0; i < 4; i++) {
+    ctx.beginPath();
+    ctx.moveTo(reed[0] + i * 3, reed[1]);
+    ctx.lineTo(reed[0] + i * 3 - 1, reed[1] - 10 - i);
+    ctx.stroke();
+  }
+}
+
+function mountain(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#7fb27a", 0.02, "rgba(0,0,0,0.2)");
+  const peaks: [number, number, number][] = [
+    [0.38, 0.4, 1],
+    [0.68, 0.62, 0.72],
+  ];
+  for (const [u, v, s] of peaks) {
+    const base = P(gx + w * u, gy + h * v);
+    const rw = 34 * s;
+    const top: Pt = [base[0], base[1] - 76 * s];
+    poly(ctx, [[base[0] - rw, base[1] + 4], top, [base[0] + 2, base[1] + 14]], "#8a8f9c", "rgba(0,0,0,0.3)");
+    poly(ctx, [top, [base[0] + rw, base[1] + 4], [base[0] + 2, base[1] + 14]], "#666b78", "rgba(0,0,0,0.3)");
+    poly(ctx, [top, [base[0] - 10 * s, top[1] + 22 * s], [base[0] - 3 * s, top[1] + 17 * s], [base[0] + 3 * s, top[1] + 24 * s], [base[0] + 11 * s, top[1] + 20 * s]], "#ffffff", "rgba(0,0,0,0.15)");
+  }
+  treesIn(ctx, gx, gy, w, h, 3, 0.7, 5);
+}
+
+function allotments(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#9bc77a", 0.02, "rgba(0,0,0,0.15)");
+  const cols = Math.round(w * 2);
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < 2; j++) {
+      const u = gx + 0.15 + (i * (w - 0.3)) / cols;
+      const v = gy + 0.15 + j * ((h - 0.3) / 2);
+      groundDiamond(ctx, u, v, (w - 0.3) / cols - 0.08, (h - 0.3) / 2 - 0.1, "#7a5a3a", 0, "rgba(0,0,0,0.25)");
+      const c = P(u + ((w - 0.3) / cols) / 2, v + ((h - 0.3) / 2) / 2);
+      ellipseAt(ctx, c[0] - 3, c[1] - 2, 3, 2.4, "#4aa84f");
+      ellipseAt(ctx, c[0] + 3, c[1] - 1, 3, 2.4, (i + j) % 2 ? "#e5484d" : "#f5a524");
+    }
+  }
+  box(ctx, gx + w - 0.7, gy + 0.1, 0.5, 0.5, 0, 12, "#c9a46a", "#8b4a2b", { roofStyle: "gable" });
+}
+
+function parking(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#5d6270", 0.02, "rgba(0,0,0,0.25)");
+  ctx.strokeStyle = "rgba(255,255,255,0.8)";
+  ctx.lineWidth = 1.2;
+  for (let i = 0; i <= 4; i++) {
+    const a = P(gx + 0.15 + (i * (w - 0.3)) / 4, gy + 0.12);
+    const b = P(gx + 0.15 + (i * (w - 0.3)) / 4, gy + h * 0.45);
+    ctx.beginPath();
+    ctx.moveTo(a[0], a[1]);
+    ctx.lineTo(b[0], b[1]);
+    ctx.stroke();
+  }
+  const colors = ["#e5484d", "#3b82f6", "#f5a524", "#ffffff"];
+  for (let i = 0; i < 3; i++) {
+    const u = gx + 0.2 + (i * (w - 0.3)) / 4 + 0.02;
+    box(ctx, u, gy + 0.18, (w - 0.3) / 4 - 0.12, h * 0.25, 1, 7, colors[i % 4], shade(colors[i % 4], 0.25));
+  }
+}
+
+function solarFarm(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#9bbf84", 0.02, "rgba(0,0,0,0.2)");
+  const rows = Math.max(2, Math.round(h * 1.4));
+  for (let r = 0; r < rows; r++) {
+    const v = gy + 0.25 + (r * (h - 0.5)) / rows;
+    const p0 = P(gx + 0.2, v, 6);
+    const p1 = P(gx + w - 0.2, v, 6);
+    const q1 = P(gx + w - 0.2, v + 0.35, 11);
+    const q0 = P(gx + 0.2, v + 0.35, 11);
+    poly(ctx, [p0, p1, q1, q0], "#2c4f9a", "rgba(255,255,255,0.45)");
+    ctx.strokeStyle = "rgba(255,255,255,0.35)";
+    ctx.lineWidth = 0.8;
+    for (let c = 1; c < 5; c++) {
+      const t = c / 5;
+      ctx.beginPath();
+      ctx.moveTo(p0[0] + (p1[0] - p0[0]) * t, p0[1] + (p1[1] - p0[1]) * t);
+      ctx.lineTo(q0[0] + (q1[0] - q0[0]) * t, q0[1] + (q1[1] - q0[1]) * t);
+      ctx.stroke();
+    }
+  }
+}
+
+function iceRink(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number, time: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#c9d3e0", 0.02, "rgba(0,0,0,0.2)");
+  groundDiamond(ctx, gx, gy, w, h, "#e7f6ff", 0.14, "#8fb4d0");
+  const c = P(gx + w / 2, gy + h / 2);
+  ctx.strokeStyle = "rgba(120,170,210,0.7)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.ellipse(c[0], c[1], 22, 11, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  // bruslař
+  const sx = c[0] + Math.cos(time * 1.2) * 14;
+  const sy = c[1] + Math.sin(time * 1.2) * 6;
+  ellipseAt(ctx, sx, sy + 1, 4, 1.8, "rgba(0,0,0,0.2)");
+  ctx.fillStyle = "#e5484d";
+  ctx.fillRect(sx - 2, sy - 10, 4, 8);
+  ellipseAt(ctx, sx, sy - 12, 2.6, 2.6, "#ffd5a8");
+}
+
+function pumpkinPatch(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number, seed: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#7da55a", 0.02, "rgba(0,0,0,0.2)");
+  for (let i = 0; i < 9; i++) {
+    const p = P(gx + 0.25 + hash(i, seed) * (w - 0.5), gy + 0.25 + hash(seed, i + 4) * (h - 0.5));
+    ellipseAt(ctx, p[0], p[1] + 1, 5, 2.2, "rgba(0,0,0,0.2)");
+    ellipseAt(ctx, p[0], p[1] - 3, 5.5, 4.4, "#ff8a1f");
+    ellipseAt(ctx, p[0] - 2, p[1] - 3, 2.4, 4, "#ffa347");
+    ctx.fillStyle = "#3f7f3a";
+    ctx.fillRect(p[0] - 0.8, p[1] - 9, 1.6, 3);
+  }
+}
+
+function christmasMarket(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number, time: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#e9eef5", 0.02, "rgba(0,0,0,0.15)");
+  const stalls: [number, number, string][] = [
+    [0.15, 0.2, "#e5484d"],
+    [1.0, 0.2, "#2f9e6f"],
+    [0.15, 1.05, "#f5a524"],
+  ];
+  for (const [u, v, color] of stalls) {
+    box(ctx, gx + u, gy + v, 0.7, 0.7, 0, 12, "#b8895b", color, { roofStyle: "gable" });
+  }
+  const lights = ["#ff5d73", "#ffd24d", "#7ee0b0", "#8fd0ff"];
+  for (let i = 0; i < 8; i++) {
+    const p = P(gx + 0.2 + i * 0.22, gy + h - 0.2, 20 + Math.sin(i) * 2);
+    ellipseAt(ctx, p[0], p[1], 1.8, 1.8, Math.sin(time * 3 + i) > -0.2 ? lights[i % 4] : "#555");
+  }
+}
+
+function carousel(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number, time: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#d6d1c3", 0.04, "rgba(0,0,0,0.2)");
+  const c = P(gx + w / 2, gy + h / 2);
+  ellipseAt(ctx, c[0], c[1] + 2, 24, 11, "#8a5aa8");
+  ellipseAt(ctx, c[0], c[1], 22, 10, "#e8d7ef");
+  const colors = ["#ff5d73", "#ffd24d", "#7ee0b0", "#8fd0ff"];
+  for (let i = 0; i < 6; i++) {
+    const a = time * 1.1 + (i / 6) * Math.PI * 2;
+    const x = c[0] + Math.cos(a) * 15;
+    const y = c[1] + Math.sin(a) * 7;
+    ctx.strokeStyle = "#f5e6a8";
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(x, y - 22);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ellipseAt(ctx, x, y - 6 + Math.sin(time * 3 + i) * 2, 3.4, 3, colors[i % 4]);
+  }
+  ctx.fillStyle = "#c9a46a";
+  ctx.fillRect(c[0] - 2, c[1] - 26, 4, 26);
+  poly(ctx, [[c[0] - 26, c[1] - 22], [c[0], c[1] - 40], [c[0] + 26, c[1] - 22], [c[0], c[1] - 14]], "#e5484d", "rgba(0,0,0,0.3)");
+  poly(ctx, [[c[0] - 26, c[1] - 22], [c[0], c[1] - 14], [c[0] + 26, c[1] - 22], [c[0] + 20, c[1] - 20], [c[0], c[1] - 10], [c[0] - 20, c[1] - 20]], "#ffd24d", "rgba(0,0,0,0.3)");
+}
+
+function lighthouse(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number, night: number, time: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#c8bfa8", 0.04, "rgba(0,0,0,0.2)");
+  groundDiamond(ctx, gx, gy, w, h, "#8d8a82", 0.3);
+  const c = P(gx + w / 2, gy + h / 2);
+  const top = 84;
+  const rw = 13;
+  for (let i = 0; i < 4; i++) {
+    const z0 = (i * top) / 4;
+    const z1 = ((i + 1) * top) / 4;
+    const k0 = rw - (z0 / top) * 5;
+    const k1 = rw - (z1 / top) * 5;
+    const color = i % 2 ? "#e5484d" : "#ffffff";
+    poly(ctx, [[c[0] - k0, c[1] - z0], [c[0] + k0, c[1] - z0], [c[0] + k1, c[1] - z1], [c[0] - k1, c[1] - z1]], color, "rgba(0,0,0,0.3)");
+    poly(ctx, [[c[0] + k0 * 0.15, c[1] - z0], [c[0] + k0, c[1] - z0], [c[0] + k1, c[1] - z1], [c[0] + k1 * 0.15, c[1] - z1]], "rgba(0,0,0,0.18)");
+  }
+  ctx.fillStyle = "#5d6270";
+  ctx.fillRect(c[0] - 11, c[1] - top - 2, 22, 3);
+  const lit = night > 0.2;
+  ctx.fillStyle = lit ? "#fff3b0" : "#cfe6f7";
+  ctx.fillRect(c[0] - 6, c[1] - top - 14, 12, 12);
+  poly(ctx, [[c[0] - 9, c[1] - top - 14], [c[0], c[1] - top - 23], [c[0] + 9, c[1] - top - 14]], "#e5484d", "rgba(0,0,0,0.3)");
+  if (lit) {
+    const a = Math.sin(time * 1.4) * 0.5 + 0.5;
+    ctx.globalAlpha = 0.35 * night * a;
+    poly(ctx, [[c[0], c[1] - top - 8], [c[0] + 90, c[1] - top - 28], [c[0] + 90, c[1] - top + 12]], "#fff3b0");
+    ctx.globalAlpha = 1;
+  }
+}
+
+function rocketPad(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number, time: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#7c8190", 0.02, "rgba(0,0,0,0.25)");
+  groundDiamond(ctx, gx, gy, w, h, "#9aa0ad", 0.4);
+  const c = P(gx + w / 2, gy + h / 2);
+  // věž
+  box(ctx, gx + 0.35, gy + 0.35, 0.28, 0.28, 0, 62, "#d94f5c", "#ffd24d");
+  poly(ctx, [[c[0] - 8, c[1] - 6], [c[0] + 8, c[1] - 6], [c[0] + 6, c[1] + 2], [c[0] - 6, c[1] + 2]], "#5d6270");
+  // raketa
+  const bob = Math.sin(time * 2) * 0.6;
+  poly(ctx, [[c[0] - 8, c[1] - 4 + bob], [c[0] + 8, c[1] - 4 + bob], [c[0] + 8, c[1] - 52 + bob], [c[0] - 8, c[1] - 52 + bob]], "#f4f6fa", "rgba(0,0,0,0.3)");
+  poly(ctx, [[c[0], c[1] - 4 + bob], [c[0] + 8, c[1] - 4 + bob], [c[0] + 8, c[1] - 52 + bob], [c[0], c[1] - 52 + bob]], "rgba(0,0,0,0.15)");
+  poly(ctx, [[c[0] - 8, c[1] - 52 + bob], [c[0], c[1] - 70 + bob], [c[0] + 8, c[1] - 52 + bob]], "#e5484d", "rgba(0,0,0,0.3)");
+  poly(ctx, [[c[0] - 8, c[1] - 4 + bob], [c[0] - 16, c[1] + 4 + bob], [c[0] - 8, c[1] - 22 + bob]], "#e5484d", "rgba(0,0,0,0.3)");
+  poly(ctx, [[c[0] + 8, c[1] - 4 + bob], [c[0] + 16, c[1] + 4 + bob], [c[0] + 8, c[1] - 22 + bob]], "#c43a44", "rgba(0,0,0,0.3)");
+  ellipseAt(ctx, c[0], c[1] - 36 + bob, 4, 4, "#8fd0ff");
+}
+
+function astronomicalClock(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number, night: number) {
+  const base = P(gx + w / 2, gy + h / 2);
+  ellipseAt(ctx, base[0], base[1] + 2, 24, 10, "rgba(0,0,0,0.2)");
+  box(ctx, gx + 0.35, gy + 0.35, w - 0.7, h - 0.7, 0, 90, "#d9cfb5", "#6b8f9c", { roofStyle: "gable" });
+  // ciferník
+  const c = P(gx + w / 2, gy + h - 0.35, 56);
+  ellipseAt(ctx, c[0] - 6, c[1], 12, 12, "#c9a24a");
+  ellipseAt(ctx, c[0] - 6, c[1], 9.5, 9.5, "#1f3a6b");
+  ctx.fillStyle = night > 0.3 ? "#ffe9a6" : "#f4efe2";
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    ctx.fillRect(c[0] - 6 + Math.cos(a) * 7 - 0.7, c[1] + Math.sin(a) * 7 - 0.7, 1.4, 1.4);
+  }
+  ellipseAt(ctx, c[0] - 6, c[1], 3.4, 3.4, "#ff9d3d");
+  ctx.fillStyle = "#c9a24a";
+  ctx.fillRect(c[0] - 6.4, c[1] - 7, 1.2, 7);
+  ctx.fillRect(c[0] - 6.4, c[1] - 0.6, 5, 1.2);
+  // nižší ciferník s kalendářem
+  const d = P(gx + w / 2, gy + h - 0.35, 28);
+  ellipseAt(ctx, d[0] - 6, d[1], 10, 10, "#c9a24a");
+  ellipseAt(ctx, d[0] - 6, d[1], 8, 8, "#e5484d");
+}
+
+function waterTower(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number) {
+  const c = P(gx + w / 2, gy + h / 2);
+  ellipseAt(ctx, c[0], c[1] + 2, 20, 9, "rgba(0,0,0,0.22)");
+  ctx.strokeStyle = "#6a6a74";
+  ctx.lineWidth = 3;
+  for (const dx of [-11, 11]) {
+    ctx.beginPath();
+    ctx.moveTo(c[0] + dx, c[1] + 1);
+    ctx.lineTo(c[0] + dx * 0.55, c[1] - 52);
+    ctx.stroke();
+  }
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(c[0] - 11, c[1] - 6);
+  ctx.lineTo(c[0] + 6, c[1] - 40);
+  ctx.moveTo(c[0] + 11, c[1] - 6);
+  ctx.lineTo(c[0] - 6, c[1] - 40);
+  ctx.stroke();
+  poly(ctx, [[c[0] - 15, c[1] - 52], [c[0] + 15, c[1] - 52], [c[0] + 15, c[1] - 76], [c[0] - 15, c[1] - 76]], "#8fb4d0", "rgba(0,0,0,0.3)");
+  poly(ctx, [[c[0], c[1] - 52], [c[0] + 15, c[1] - 52], [c[0] + 15, c[1] - 76], [c[0], c[1] - 76]], "rgba(0,0,0,0.18)");
+  poly(ctx, [[c[0] - 15, c[1] - 76], [c[0], c[1] - 88], [c[0] + 15, c[1] - 76]], "#e5484d", "rgba(0,0,0,0.3)");
+}
+
+function airport(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number, time: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#9bc487", 0.02, "rgba(0,0,0,0.2)");
+  // dráha podél delší strany
+  poly(ctx, [P(gx + 0.15, gy + h - 1.35), P(gx + w - 0.15, gy + h - 1.35), P(gx + w - 0.15, gy + h - 0.35), P(gx + 0.15, gy + h - 0.35)], "#4c505e", "rgba(0,0,0,0.3)");
+  ctx.strokeStyle = "rgba(255,255,255,0.85)";
+  ctx.lineWidth = 1.4;
+  ctx.setLineDash([6, 5]);
+  const a = P(gx + 0.4, gy + h - 0.85);
+  const b = P(gx + w - 0.4, gy + h - 0.85);
+  ctx.beginPath();
+  ctx.moveTo(a[0], a[1]);
+  ctx.lineTo(b[0], b[1]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // terminál a věž
+  box(ctx, gx + 0.3, gy + 0.2, w - 1.4, 0.9, 0, 20, "#e0e6ef", "#3b6fd0", { windows: { cols: 3, rows: 1, lit: false, glass: "#9cc5ee" }, door: true });
+  box(ctx, gx + w - 0.95, gy + 0.3, 0.45, 0.45, 0, 52, "#cdd5e0", "#3b6fd0");
+  box(ctx, gx + w - 1.05, gy + 0.2, 0.65, 0.65, 52, 62, "#9cc5ee", "#e5484d");
+  // letadlo
+  const t = (time * 0.12) % 1;
+  const p = P(gx + 0.5 + (w - 1) * t, gy + h - 0.85, 2 + Math.max(0, t - 0.6) * 60);
+  ellipseAt(ctx, p[0], p[1], 11, 3.4, "#f4f6fa");
+  ctx.fillStyle = "#e5484d";
+  ctx.fillRect(p[0] - 2, p[1] - 9, 3, 7);
+  poly(ctx, [[p[0] - 8, p[1] - 2], [p[0] + 3, p[1] - 11], [p[0] + 5, p[1] - 9], [p[0] - 2, p[1] - 1]], "#cdd5e0", "rgba(0,0,0,0.25)");
+}
+
+function port(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number, time: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#4a9bd0", 0.0, "rgba(0,0,0,0.2)");
+  groundDiamond(ctx, gx, gy + h * 0.5, w, h * 0.5, "#b8b2a0", 0.0);
+  groundDiamond(ctx, gx + 0.1, gy + h * 0.5, w - 0.2, 0.25, "#8d8a82");
+  // lodě
+  const bobY = Math.sin(time * 1.5) * 1.2;
+  const s = P(gx + 1.3, gy + 0.9);
+  poly(ctx, [[s[0] - 28, s[1] - 8 + bobY], [s[0] + 28, s[1] - 8 + bobY], [s[0] + 20, s[1] + 4 + bobY], [s[0] - 20, s[1] + 4 + bobY]], "#2f4d7a", "rgba(0,0,0,0.3)");
+  ctx.fillStyle = "#e5484d";
+  ctx.fillRect(s[0] - 22, s[1] - 16 + bobY, 14, 8);
+  ctx.fillStyle = "#f5a524";
+  ctx.fillRect(s[0] - 8, s[1] - 16 + bobY, 14, 8);
+  ctx.fillStyle = "#3b82f6";
+  ctx.fillRect(s[0] - 22, s[1] - 22 + bobY, 14, 6);
+  ctx.fillStyle = "#f4f6fa";
+  ctx.fillRect(s[0] + 10, s[1] - 22 + bobY, 10, 14);
+  // kontejnery a jeřáb
+  const colors = ["#e5484d", "#3b82f6", "#f5a524", "#2f9e6f"];
+  for (let i = 0; i < 5; i++) {
+    box(ctx, gx + 0.3 + (i % 3) * 0.7, gy + h - 1.0 + Math.floor(i / 3) * 0.45, 0.6, 0.4, 0, 9, colors[i % 4], shade(colors[i % 4], 0.25));
+  }
+  const k = P(gx + w - 0.8, gy + h * 0.55);
+  ctx.strokeStyle = "#f5a524";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(k[0], k[1]);
+  ctx.lineTo(k[0], k[1] - 52);
+  ctx.lineTo(k[0] - 38, k[1] - 44);
+  ctx.stroke();
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(k[0] - 32, k[1] - 45);
+  ctx.lineTo(k[0] - 32, k[1] - 22);
+  ctx.stroke();
+}
+
+function stadium(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number, night: number) {
+  const base = P(gx + w / 2, gy + h / 2);
+  ellipseAt(ctx, base[0], base[1] + 2, (w + h) * 11, (w + h) * 5, "rgba(0,0,0,0.18)");
+  box(ctx, gx + 0.1, gy + 0.1, w - 0.2, h - 0.2, 0, 26, "#c9cdd8", "#6a7f96");
+  topDiamond(ctx, gx + 0.1, gy + 0.1, w - 0.2, h - 0.2, 26, 0.55, "#58a95c", "rgba(255,255,255,0.4)");
+  topDiamond(ctx, gx + 0.1, gy + 0.1, w - 0.2, h - 0.2, 26, 0.35, "rgba(0,0,0,0)", "rgba(0,0,0,0.3)");
+  ctx.strokeStyle = "rgba(255,255,255,0.7)";
+  ctx.lineWidth = 1;
+  const m0 = P(gx + w / 2, gy + 0.65, 26);
+  const m1 = P(gx + w / 2, gy + h - 0.55, 26);
+  ctx.beginPath();
+  ctx.moveTo(m0[0], m0[1]);
+  ctx.lineTo(m1[0], m1[1]);
+  ctx.stroke();
+  // věže reflektorů
+  for (const [u, v] of [[0.2, 0.2], [w - 0.2, 0.2], [0.2, h - 0.2], [w - 0.2, h - 0.2]] as [number, number][]) {
+    const p = P(gx + u, gy + v, 26);
+    ctx.strokeStyle = "#6a6a74";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(p[0], p[1]);
+    ctx.lineTo(p[0], p[1] - 26);
+    ctx.stroke();
+    ctx.fillStyle = night > 0.3 ? "#fff3b0" : "#d6d1c3";
+    ctx.fillRect(p[0] - 4, p[1] - 32, 8, 6);
+  }
+}
+
+function zoo(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number, seed: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#8fcf86", 0.02, "rgba(0,0,0,0.2)");
+  poly(ctx, [P(gx + w / 2 - 0.1, gy), P(gx + w / 2 + 0.1, gy), P(gx + w / 2 + 0.1, gy + h), P(gx + w / 2 - 0.1, gy + h)], "#e3d5b0");
+  poly(ctx, [P(gx, gy + h / 2 - 0.1), P(gx + w, gy + h / 2 - 0.1), P(gx + w, gy + h / 2 + 0.1), P(gx, gy + h / 2 + 0.1)], "#e3d5b0");
+  const pens: [number, number, string, string][] = [
+    [0.15, 0.15, "#d9c38a", "#c8742a"],
+    [w / 2 + 0.2, 0.15, "#9cd0ee", "#5d6270"],
+    [0.15, h / 2 + 0.2, "#b9d98a", "#f4f6fa"],
+    [w / 2 + 0.2, h / 2 + 0.2, "#e6d3a0", "#8a5a3a"],
+  ];
+  pens.forEach(([u, v, ground, animal], i) => {
+    const pw = w / 2 - 0.35;
+    groundDiamond(ctx, gx + u, gy + v, pw, pw, ground, 0, "#6b5a46");
+    const c = P(gx + u + pw / 2, gy + v + pw / 2);
+    ellipseAt(ctx, c[0], c[1] + 1, 7, 3, "rgba(0,0,0,0.2)");
+    ellipseAt(ctx, c[0], c[1] - 5, 7, 5.5, animal);
+    ellipseAt(ctx, c[0] + 6, c[1] - 9, 3.5, 3.5, animal);
+    if (i === 0) {
+      ctx.fillStyle = "#c8742a";
+      ctx.fillRect(c[0] - 6, c[1] - 2, 2, 5);
+      ctx.fillRect(c[0] + 3, c[1] - 2, 2, 5);
+    }
+  });
+  treesIn(ctx, gx, gy, w, h, 4, 0.75, Math.floor(seed * 40));
+}
+
+function pool(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number, time: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#d6d1c3", 0.02, "rgba(0,0,0,0.2)");
+  groundDiamond(ctx, gx + 0.2, gy + 0.4, w - 0.4, h - 0.6, "#e8f4f8", 0, "rgba(0,0,0,0.2)");
+  groundDiamond(ctx, gx + 0.3, gy + 0.5, w - 0.6, h - 0.8, "#4fc3e8");
+  ctx.strokeStyle = "rgba(255,255,255,0.6)";
+  ctx.lineWidth = 1;
+  for (let i = 1; i < 3; i++) {
+    const a = P(gx + 0.3 + ((w - 0.6) * i) / 3, gy + 0.5);
+    const b = P(gx + 0.3 + ((w - 0.6) * i) / 3, gy + h - 0.3);
+    ctx.beginPath();
+    ctx.moveTo(a[0], a[1]);
+    ctx.lineTo(b[0], b[1]);
+    ctx.stroke();
+  }
+  const c = P(gx + w / 2, gy + h / 2 + 0.1);
+  ellipseAt(ctx, c[0] + Math.sin(time * 1.3) * 12, c[1] + 2, 3, 1.8, "#ffd5a8");
+  box(ctx, gx + 0.1, gy + 0.05, 0.6, 0.3, 0, 10, "#f2c6c6", "#d0575a");
+}
+
+function gasStation(ctx: CanvasRenderingContext2D, gx: number, gy: number, w: number, h: number) {
+  groundDiamond(ctx, gx, gy, w, h, "#6c7080", 0.02, "rgba(0,0,0,0.25)");
+  box(ctx, gx + 0.1, gy + 0.1, 0.7, 0.8, 0, 14, "#f0f0f0", "#e5484d", { door: true, windows: { cols: 2, rows: 1, lit: false, glass: "#9cc5ee" } });
+  // stříška
+  const t0 = P(gx + 0.7, gy + 1.0, 22);
+  const t1 = P(gx + 1.9, gy + 1.0, 22);
+  const t2 = P(gx + 1.9, gy + 1.9, 22);
+  const t3 = P(gx + 0.7, gy + 1.9, 22);
+  for (const [u, v] of [[0.8, 1.1], [1.8, 1.1], [0.8, 1.8], [1.8, 1.8]] as [number, number][]) {
+    const p = P(gx + u, gy + v);
+    ctx.fillStyle = "#d6d6de";
+    ctx.fillRect(p[0] - 1, p[1] - 22, 2, 22);
+  }
+  poly(ctx, [t0, t1, t2, t3], "#e5484d", "rgba(0,0,0,0.3)");
+  for (const u of [1.05, 1.55]) {
+    const p = P(gx + u, gy + 1.45);
+    ctx.fillStyle = "#3b82f6";
+    ctx.fillRect(p[0] - 2, p[1] - 9, 4, 9);
+  }
+}
+
+function drawExtra(ctx: CanvasRenderingContext2D, id: string, gx: number, gy: number, w: number, h: number, seed: number, scene: Scene): boolean {
+  switch (id) {
+    case "forest":
+      forest(ctx, gx, gy, w, h, seed);
+      return true;
+    case "lake":
+      lake(ctx, gx, gy, w, h, scene.time);
+      return true;
+    case "mountain":
+      mountain(ctx, gx, gy, w, h);
+      return true;
+    case "allotments":
+      allotments(ctx, gx, gy, w, h);
+      return true;
+    case "parking":
+      parking(ctx, gx, gy, w, h);
+      return true;
+    case "solar_farm":
+      solarFarm(ctx, gx, gy, w, h);
+      return true;
+    case "ice_rink":
+      iceRink(ctx, gx, gy, w, h, scene.time);
+      return true;
+    case "pumpkin_patch":
+      pumpkinPatch(ctx, gx, gy, w, h, Math.floor(seed * 40));
+      return true;
+    case "christmas_market":
+      christmasMarket(ctx, gx, gy, w, h, scene.time);
+      return true;
+    case "carousel":
+      carousel(ctx, gx, gy, w, h, scene.time);
+      return true;
+    case "lighthouse":
+      lighthouse(ctx, gx, gy, w, h, scene.night, scene.time);
+      return true;
+    case "rocket_pad":
+      rocketPad(ctx, gx, gy, w, h, scene.time);
+      return true;
+    case "astronomical_clock":
+      astronomicalClock(ctx, gx, gy, w, h, scene.night);
+      return true;
+    case "water_tower":
+      waterTower(ctx, gx, gy, w, h);
+      return true;
+    case "airport":
+      airport(ctx, gx, gy, w, h, scene.time);
+      return true;
+    case "port":
+      port(ctx, gx, gy, w, h, scene.time);
+      return true;
+    case "stadium":
+      stadium(ctx, gx, gy, w, h, scene.night);
+      return true;
+    case "zoo":
+      zoo(ctx, gx, gy, w, h, seed);
+      return true;
+    case "pool":
+      pool(ctx, gx, gy, w, h, scene.time);
+      return true;
+    case "gas_station":
+      gasStation(ctx, gx, gy, w, h);
+      return true;
+    default:
+      return false;
+  }
+}
+
 // --- tabulka vzhledu budov ---
 
 type Art = {
@@ -689,7 +1205,7 @@ type Art = {
   rows?: number;
   door?: boolean;
   awning?: [string, string];
-  extra?: "chimney" | "smoke" | "flag" | "cross" | "sign" | "crown" | "columns";
+  extra?: "chimney" | "smoke" | "flag" | "cross" | "sign" | "crown" | "columns" | "spire" | "dome" | "turrets";
 };
 
 const ART: Record<string, Art> = {
@@ -717,6 +1233,21 @@ const ART: Record<string, Art> = {
   museum: { wall: "#e6dccb", roof: "#8a7d6b", hz: 36, door: true, cols: 2, rows: 2, glass: "#9cc5ee", extra: "columns" },
   university: { wall: "#d4b896", roof: "#6d4c3a", hz: 48, door: true, cols: 2, rows: 3, glass: "#9cc5ee", extra: "flag" },
   train_station: { wall: "#d9c9a8", roof: "#4f6f8c", hz: 28, door: true, cols: 2, rows: 1, glass: "#9cc5ee", extra: "sign" },
+  bus_station: { wall: "#e4e8ef", roof: "#2f9e6f", hz: 24, door: true, cols: 2, rows: 1, glass: "#9cc5ee", extra: "sign" },
+  metro: { wall: "#d6d6de", roof: "#e5484d", hz: 20, door: true, cols: 1, rows: 1, glass: "#9cc5ee", extra: "sign" },
+  restaurant: { wall: "#f2d2a8", roof: "#b5473a", hz: 22, roofStyle: "gable", door: true, cols: 2, rows: 1, glass: "#ffe9a6", awning: ["#ffffff", "#b5473a"], extra: "chimney" },
+  bank: { wall: "#e6dccb", roof: "#3f6a4f", hz: 40, door: true, cols: 2, rows: 2, glass: "#9cc5ee", extra: "columns" },
+  cinema: { wall: "#3a3358", roof: "#e05a8a", hz: 34, door: true, cols: 2, rows: 1, glass: "#ffd24d", extra: "sign" },
+  theatre: { wall: "#c9a46a", roof: "#8a2b3a", hz: 40, door: true, cols: 2, rows: 2, glass: "#ffe9a6", extra: "columns" },
+  recycling: { wall: "#b8d9a0", roof: "#3f9d4a", hz: 24, cols: 2, rows: 1, glass: "#cfe6f7", extra: "sign" },
+  power_plant: { wall: "#c4c8d2", roof: "#55555f", hz: 40, cols: 3, rows: 2, glass: "#a7b9c9", extra: "smoke" },
+  kindergarten: { wall: "#ffe0a8", roof: "#4aa3d8", hz: 20, roofStyle: "gable", door: true, cols: 2, rows: 1, glass: "#9cc5ee", extra: "flag" },
+  post_office: { wall: "#ffe08a", roof: "#e5a524", hz: 22, door: true, cols: 2, rows: 1, glass: "#9cc5ee", extra: "sign" },
+  church: { wall: "#efe6d2", roof: "#8a4a3a", hz: 30, roofStyle: "gable", door: true, cols: 1, rows: 2, glass: "#7aa7d6", extra: "spire" },
+  observatory: { wall: "#dfe6f2", roof: "#3a4a7a", hz: 38, cols: 1, rows: 3, glass: "#8fb8dc", extra: "dome" },
+  aquarium: { wall: "#9fd6e8", roof: "#2f7fa8", hz: 30, door: true, cols: 3, rows: 2, glass: "#4fc3e8", extra: "sign" },
+  cathedral: { wall: "#e0d6c0", roof: "#5d6f8c", hz: 50, roofStyle: "gable", door: true, cols: 2, rows: 3, glass: "#7a5cff", extra: "spire" },
+  castle: { wall: "#cfc8b6", roof: "#8a8f9c", hz: 44, door: true, cols: 2, rows: 2, glass: "#6a6a74", extra: "turrets" },
 };
 
 const NIGHT_LIT = 0.35;
@@ -776,6 +1307,41 @@ function drawBuilding(ctx: CanvasRenderingContext2D, id: string, gx: number, gy:
         ctx.fillStyle = "#f4efe2";
         ctx.fillRect(p[0] - 1.8, p[1] - art.hz * 0.8, 3.6, art.hz * 0.8);
       }
+      break;
+    }
+    case "spire": {
+      const base = P(gx + w / 2, gy + h / 2, art.hz + 8);
+      poly(ctx, [[base[0] - 9, base[1]], [base[0], base[1] - 38], [base[0] + 9, base[1]]], shade(art.roof, 0.05), "rgba(0,0,0,0.3)");
+      poly(ctx, [[base[0], base[1] + 2], [base[0], base[1] - 38], [base[0] + 9, base[1]]], "rgba(0,0,0,0.2)");
+      ctx.fillStyle = "#ffd24d";
+      ctx.fillRect(base[0] - 0.8, base[1] - 50, 1.6, 12);
+      ctx.fillRect(base[0] - 3.5, base[1] - 46, 7, 1.6);
+      break;
+    }
+    case "dome": {
+      const base = P(gx + w / 2, gy + h / 2, art.hz);
+      ellipseAt(ctx, base[0], base[1], 17, 8, shade("#cfd8e8", -0.15));
+      ctx.beginPath();
+      ctx.ellipse(base[0], base[1], 15, 15, 0, Math.PI, 0);
+      ctx.fillStyle = "#e8eef8";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(0,0,0,0.3)";
+      ctx.stroke();
+      ctx.fillStyle = "#3a4a7a";
+      ctx.fillRect(base[0] - 1.6, base[1] - 15, 3.2, 15);
+      break;
+    }
+    case "turrets": {
+      const corners: [number, number][] = [[0.18, 0.18], [w - 0.18, 0.18], [0.18, h - 0.18], [w - 0.18, h - 0.18]];
+      for (const [u, v] of corners) {
+        const p = P(gx + u, gy + v, art.hz);
+        ctx.fillStyle = "#b9b2a0";
+        ctx.fillRect(p[0] - 6, p[1] - 28, 12, 28);
+        ctx.fillStyle = "rgba(0,0,0,0.2)";
+        ctx.fillRect(p[0], p[1] - 28, 6, 28);
+        poly(ctx, [[p[0] - 8, p[1] - 28], [p[0], p[1] - 44], [p[0] + 8, p[1] - 28]], "#e5484d", "rgba(0,0,0,0.3)");
+      }
+      flag(ctx, roofTop[0], roofTop[1] + 2, time);
       break;
     }
     default:
@@ -874,6 +1440,7 @@ function drawItem(ctx: CanvasRenderingContext2D, id: string, gx: number, gy: num
       return;
     }
     default:
+      if (drawExtra(ctx, id, gx, gy, w, h, seed, scene)) return;
       return drawBuilding(ctx, id, gx, gy, w, h, Math.floor(seed * 100), scene.night, scene.time);
   }
 }

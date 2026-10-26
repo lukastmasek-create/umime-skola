@@ -63,12 +63,17 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: "pet-party", kind: "pet", ref: "party", price: 100, asset3d: "pet-party", names: n("Oslavná čepice", "Party hat", "Partyhut", "Праздничная шапка") },
   { id: "pet-glasses", kind: "pet", ref: "glasses", price: 120, asset3d: "pet-glasses", names: n("Sluneční brýle", "Sunglasses", "Sonnenbrille", "Солнечные очки") },
   { id: "pet-scarf", kind: "pet", ref: "scarf", price: 130, asset3d: "pet-scarf", names: n("Šála", "Scarf", "Schal", "Шарф") },
+  { id: "pet-halo", kind: "pet", ref: "halo", price: 180, tag: "new", names: n("Svatozář", "Halo", "Heiligenschein", "Нимб") },
+  { id: "pet-headphones", kind: "pet", ref: "headphones", price: 200, tag: "new", names: n("Sluchátka", "Headphones", "Kopfhörer", "Наушники") },
   { id: "pet-crown", kind: "pet", ref: "crown", price: 250, tag: "popular", asset3d: "pet-crown", names: n("Koruna", "Crown", "Krone", "Корона") },
 
   // --- speciální budovy do města ---
   { id: "city-christmas-tree", kind: "city", ref: "christmas_tree", price: 150, tag: "new", asset3d: "city-christmas-tree", names: n("Vánoční strom", "Christmas tree", "Weihnachtsbaum", "Новогодняя ёлка") },
   { id: "city-windmill", kind: "city", ref: "windmill", price: 250, asset3d: "city-windmill", names: n("Větrný mlýn", "Windmill", "Windmühle", "Ветряная мельница") },
   { id: "city-ferris-wheel", kind: "city", ref: "ferris_wheel", price: 400, tag: "popular", asset3d: "city-ferris-wheel", names: n("Obří kolo", "Ferris wheel", "Riesenrad", "Колесо обозрения") },
+  { id: "city-carousel", kind: "city", ref: "carousel", price: 300, tag: "new", names: n("Kolotoč", "Carousel", "Karussell", "Карусель") },
+  { id: "city-lighthouse", kind: "city", ref: "lighthouse", price: 350, tag: "new", names: n("Maják", "Lighthouse", "Leuchtturm", "Маяк") },
+  { id: "city-rocket-pad", kind: "city", ref: "rocket_pad", price: 600, tag: "new", names: n("Kosmodrom", "Rocket pad", "Raketenstartplatz", "Космодром") },
 ];
 
 export function getShopItem(id: string): ShopItem | undefined {
