@@ -68,7 +68,7 @@ export default async function Home({
                 <span className="gradient-text">{dict.home.titleLine2}</span>
               </h1>
               <p className="max-w-xl text-lg leading-relaxed text-[var(--muted)]">{dict.home.subtitle}</p>
-              <div className="flex flex-wrap gap-4">
+              <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:gap-4">
                 <Link
                   href={`/${locale}/kurzy/zakladni`}
                   className="btn-bouncy btn-primary btn-lg"
@@ -237,7 +237,7 @@ export default async function Home({
                 <Link
                   key={cat.slug}
                   href={`/${locale}/kurzy/${cat.slug}`}
-                  className="card card-hover relative flex min-h-44 flex-col justify-between gap-6 overflow-hidden p-5 text-white"
+                  className="card card-hover relative flex min-h-36 flex-col justify-between gap-4 sm:min-h-44 sm:gap-6 overflow-hidden p-5 text-white"
                   style={{
                     background: `radial-gradient(circle at 85% 12%, ${color}66, transparent 55%), linear-gradient(160deg, #1d1848, #0d0a26)`,
                     borderColor: color,
