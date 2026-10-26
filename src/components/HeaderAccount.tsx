@@ -45,7 +45,7 @@ export function HeaderAccount({
     };
   }, [open]);
 
-  async function save(body: { avatar: string } | { title: string }) {
+  async function save(body: { avatar: string } | { title: string } | { frame: string | null } | { banner: string | null }) {
     if (busy) return;
     setBusy(true);
     setFailed(false);
@@ -88,6 +88,24 @@ export function HeaderAccount({
   const unlockedAvatars = AVATARS.filter((a) => isAvatarUnlocked(a, account.level, account.unlocks)).length;
   const unlockedTitles = TITLES.filter((x) => isTitleUnlocked(x, account.level, account.unlocks)).length;
   const toNext = account.neededForNext - account.intoLevel;
+
+  // Rychlý výběr: oblíbené odemčené věci. Bez oblíbených se ukáže pár odemčených, aby šlo hned vybrat.
+  // Zamčené věci a jak je odemknout jsou jen v profilu.
+  const favorites = account.favorites ?? { avatar: [], title: [], frame: [], banner: [] };
+  const QUICK_AVATARS = 12;
+  const QUICK_TITLES = 6;
+  const ownedAvatars = AVATARS.filter((a) => isAvatarUnlocked(a, account.level, account.unlocks));
+  const favAvatars = favorites.avatar.map((id) => ownedAvatars.find((a) => a.id === id)).filter((a): a is (typeof AVATARS)[number] => !!a);
+  const currentAvatar = ownedAvatars.find((a) => a.id === account.avatar);
+  const quickAvatars = (favAvatars.length > 0 ? favAvatars : ownedAvatars).slice(0, QUICK_AVATARS);
+  if (currentAvatar && !quickAvatars.some((a) => a.id === currentAvatar.id)) quickAvatars.splice(QUICK_AVATARS - 1, 1, currentAvatar);
+  const ownedTitles = TITLES.filter((x) => isTitleUnlocked(x, account.level, account.unlocks));
+  const favTitles = favorites.title.map((id) => ownedTitles.find((x) => x.id === id)).filter((x): x is (typeof TITLES)[number] => !!x);
+  const currentTitle = ownedTitles.find((x) => x.id === account.title);
+  const quickTitles = (favTitles.length > 0 ? favTitles : ownedTitles).slice(0, QUICK_TITLES);
+  if (currentTitle && !quickTitles.some((x) => x.id === currentTitle.id)) quickTitles.push(currentTitle);
+  const favFrames = favorites.frame.filter((f) => account.unlocks.includes(`frame:${f}`));
+  const favBanners = favorites.banner.filter((b) => account.unlocks.includes(`banner:${b}`));
 
   return (
     <div ref={rootRef} className="relative">
@@ -170,61 +188,121 @@ export function HeaderAccount({
           <p className="mb-1.5 mt-4 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
             {t.avatars}{" "}
             <span className="font-semibold normal-case">
-              · {t.unlockedCount} {unlockedAvatars}/{AVATARS.length}
+              · {favAvatars.length > 0 ? t.quickFavorites : t.quickUnlocked} · {t.unlockedCount} {unlockedAvatars}/{AVATARS.length}
+              {AVATARS.length - unlockedAvatars > 0 && ` · ${fill(t.lockedCount, AVATARS.length - unlockedAvatars)}`}
             </span>
           </p>
           <div className="grid grid-cols-6 gap-1.5">
-            {AVATARS.map((a) => {
-              const unlocked = isAvatarUnlocked(a, account.level, account.unlocks);
+            {quickAvatars.map((a) => {
               const selected = a.id === account.avatar;
               return (
                 <button
                   key={a.id}
                   type="button"
-                  disabled={!unlocked || busy}
+                  disabled={busy}
                   onClick={() => save({ avatar: a.id })}
-                  title={unlocked ? a.names[locale] : `${a.names[locale]} · ${t.locked}`}
+                  title={a.names[locale]}
                   aria-label={a.names[locale]}
                   aria-pressed={selected}
-                  className={`flex items-center justify-center rounded-xl border-2 p-0.5 ${
+                  className={`flex items-center justify-center rounded-xl border-2 p-0.5 hover:bg-[var(--surface-muted)] ${
                     selected ? "border-[var(--accent-500)] bg-[var(--surface-muted)]" : "border-transparent"
-                  } ${unlocked ? "hover:bg-[var(--surface-muted)]" : "cursor-not-allowed"}`}
+                  }`}
                 >
-                  <Avatar id={a.id} size={36} locked={!unlocked} />
+                  <Avatar id={a.id} size={36} />
                 </button>
               );
             })}
           </div>
+          {favAvatars.length === 0 && <p className="mt-1.5 text-[11px] text-[var(--muted)]">{t.quickHint}</p>}
+          <Link href={`/${locale}/profil`} onClick={() => setOpen(false)} className="mt-1.5 inline-block text-xs font-bold text-[var(--brand-600)] hover:underline">
+            {fill(t.quickMore, AVATARS.length)} →
+          </Link>
 
           <p className="mb-1.5 mt-4 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
             {t.titles}{" "}
             <span className="font-semibold normal-case">
-              · {t.unlockedCount} {unlockedTitles}/{TITLES.length}
+              · {favTitles.length > 0 ? t.quickFavorites : t.quickUnlocked} · {t.unlockedCount} {unlockedTitles}/{TITLES.length}
             </span>
           </p>
           <div className="flex flex-wrap gap-1.5">
-            {TITLES.map((x) => {
-              const unlocked = isTitleUnlocked(x, account.level, account.unlocks);
+            {quickTitles.map((x) => {
               const selected = x.id === account.title;
               return (
                 <button
                   key={x.id}
                   type="button"
-                  disabled={!unlocked || busy}
+                  disabled={busy}
                   onClick={() => save({ title: x.id })}
                   aria-pressed={selected}
-                  title={unlocked ? undefined : t.locked}
-                  className={`pill border-2 px-2.5 py-0.5 text-xs font-bold ${
-                    selected
-                      ? "border-[var(--edge)] bg-[var(--accent-500)] text-white"
-                      : "border-[var(--edge)] bg-[var(--surface)]"
-                  } ${unlocked ? "hover:bg-[var(--surface-muted)]" : "cursor-not-allowed opacity-45"}`}
+                  className={`pill border-2 px-2.5 py-0.5 text-xs font-bold hover:bg-[var(--surface-muted)] ${
+                    selected ? "border-[var(--edge)] bg-[var(--accent-500)] text-white" : "border-[var(--edge)] bg-[var(--surface)]"
+                  }`}
                 >
                   {x.names[locale]}
                 </button>
               );
             })}
           </div>
+
+          {favFrames.length > 0 && (
+            <>
+              <p className="mb-1.5 mt-4 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.frames}</p>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => save({ frame: null })}
+                  aria-pressed={!account.frame}
+                  title={t.none}
+                  className={`rounded-xl border-2 px-2 py-1 text-xs font-bold ${!account.frame ? "border-[var(--accent-500)]" : "border-transparent"} hover:bg-[var(--surface-muted)]`}
+                >
+                  {t.none}
+                </button>
+                {favFrames.map((f) => (
+                  <button
+                    key={f}
+                    type="button"
+                    disabled={busy}
+                    onClick={() => save({ frame: f })}
+                    aria-pressed={account.frame === f}
+                    aria-label={f}
+                    className={`rounded-xl border-2 p-1.5 hover:bg-[var(--surface-muted)] ${account.frame === f ? "border-[var(--accent-500)]" : "border-transparent"}`}
+                  >
+                    <Avatar id={account.avatar} size={32} frame={isFrameId(f) ? f : null} />
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          {favBanners.length > 0 && (
+            <>
+              <p className="mb-1.5 mt-4 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.banners}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => save({ banner: null })}
+                  aria-pressed={!account.banner}
+                  className={`rounded-xl border-2 px-2 py-1 text-xs font-bold ${!account.banner ? "border-[var(--accent-500)]" : "border-transparent"} hover:bg-[var(--surface-muted)]`}
+                >
+                  {t.none}
+                </button>
+                {favBanners.map((b) => (
+                  <button
+                    key={b}
+                    type="button"
+                    disabled={busy}
+                    onClick={() => save({ banner: b })}
+                    aria-pressed={account.banner === b}
+                    aria-label={b}
+                    className={`h-9 w-16 rounded-lg border-2 ${account.banner === b ? "border-[var(--accent-500)]" : "border-[var(--edge)]"}`}
+                    style={{ background: bannerCss(b) }}
+                  />
+                ))}
+              </div>
+            </>
+          )}
 
           {failed && <p className="mt-2 text-xs text-[var(--danger)]">{t.error}</p>}
 

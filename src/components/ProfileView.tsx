@@ -4,10 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { LevelBadge } from "@/components/LevelBadge";
+import { ProfileCollection } from "@/components/ProfileCollection";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { AVATARS, getAvatar, isAvatarUnlocked } from "@/lib/avatars";
 import { TITLES, getTitle, isTitleUnlocked } from "@/lib/titles";
-import { BANNERS, FRAME_IDS, bannerAttrs, bannerCss, isFrameId, type FrameId } from "@/lib/cosmetics";
+import { BANNERS, EMPTY_FAVORITES, FRAME_IDS, bannerAttrs, bannerCss, isFrameId, type FavoriteKind, type Favorites, type FrameId } from "@/lib/cosmetics";
+import { unlockHint } from "@/lib/unlock-hints";
 import { SHOP_ITEMS } from "@/lib/shop";
 import {
   EMPTY_CUSTOM,
@@ -35,6 +37,7 @@ type Profile = {
   frame?: string | null;
   banner?: string | null;
   custom?: Record<string, AvatarCustom>;
+  favorites?: Favorites;
   unlocks?: string[];
   points?: number;
   school?: { name: string; city: string } | null;
@@ -102,6 +105,31 @@ export function ProfileView({ locale }: { locale: Locale }) {
       setError(true);
     }
     setSaving(null);
+  }
+
+  const favorites: Favorites = profile?.favorites ?? EMPTY_FAVORITES;
+
+  // Hvězdička se projeví hned, na server se uloží na pozadí a při chybě se vrátí zpět.
+  async function toggleFavorite(kind: FavoriteKind, id: string, on: boolean) {
+    setError(false);
+    const withList = (p: Profile, list: string[]): Profile => ({ ...p, favorites: { ...(p.favorites ?? EMPTY_FAVORITES), [kind]: list } });
+    const before = favorites[kind];
+    const optimistic = on ? [...before.filter((x) => x !== id), id] : before.filter((x) => x !== id);
+    setProfile((p) => (p ? withList(p, optimistic) : p));
+    try {
+      const res = await fetch("/api/profil", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ favorite: { kind, id, on } }),
+      });
+      if (!res.ok) throw new Error();
+      const json = await res.json();
+      setProfile((p) => (p && json.favorites ? { ...p, favorites: json.favorites } : p));
+      notifyAccountChanged();
+    } catch {
+      setProfile((p) => (p ? withList(p, before) : p));
+      setError(true);
+    }
   }
 
   const avatarId = profile?.avatar ?? "robot";
@@ -479,165 +507,132 @@ export function ProfileView({ locale }: { locale: Locale }) {
         {tab === "avatars" && (
           <>
             <p className="mb-4 text-sm text-[var(--muted)]">{t.avatarsHint}</p>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {AVATARS.map((avatar) => {
+            <ProfileCollection
+              t={t}
+              busy={saving !== null}
+              grid="grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
+              favorites={favorites.avatar}
+              entries={AVATARS.map((avatar) => {
                 const unlocked = isAvatarUnlocked(avatar, level, unlocks);
-                const isCurrent = profile.avatar === avatar.id;
-                const requirement =
-                  "level" in avatar.unlock ? fill(t.unlockAtLevel, avatar.unlock.level) : t.eventHint;
-                return (
-                  <button
-                    key={avatar.id}
-                    disabled={!unlocked || saving !== null}
-                    onClick={() => post(avatar.id, { avatar: avatar.id }, (p) => ({ ...p, avatar: avatar.id }))}
-                    className={`card flex flex-col items-center gap-2 p-4 text-center ${
-                      unlocked ? "card-hover" : "cursor-not-allowed"
-                    } ${isCurrent ? "outline outline-4 outline-offset-2 outline-[var(--brand-500)]" : ""}`}
-                  >
-                    <Avatar id={avatar.id} size={72} locked={!unlocked} />
-                    <span className="text-sm font-bold">{avatar.names[locale]}</span>
-                    <span className="text-xs text-[var(--faint)]">
-                      {isCurrent ? t.selected : unlocked ? t.choose : requirement}
-                    </span>
-                  </button>
-                );
+                return {
+                  id: avatar.id,
+                  name: avatar.names[locale],
+                  unlocked,
+                  current: profile.avatar === avatar.id,
+                  preview: <Avatar id={avatar.id} size={72} locked={!unlocked} />,
+                  hint: unlocked ? null : unlockHint("avatar", avatar.id, locale),
+                };
               })}
-            </div>
+              onPick={(id) => post(id, { avatar: id }, (p) => ({ ...p, avatar: id }))}
+              onToggleFavorite={(id, on) => toggleFavorite("avatar", id, on)}
+            />
           </>
         )}
 
         {tab === "titles" && (
           <>
             <p className="mb-4 text-sm text-[var(--muted)]">{t.titlesHint}</p>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {TITLES.map((title) => {
+            <ProfileCollection
+              t={t}
+              busy={saving !== null}
+              grid="grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
+              favorites={favorites.title}
+              entries={TITLES.map((title) => {
                 const unlocked = isTitleUnlocked(title, level, unlocks);
-                const isCurrent = profile.title === title.id;
-                const requirement =
-                  "level" in title.unlock ? fill(t.unlockAtLevel, title.unlock.level) : t.eventHint;
-                return (
-                  <button
-                    key={title.id}
-                    disabled={!unlocked || saving !== null}
-                    onClick={() => post(title.id, { title: title.id }, (p) => ({ ...p, title: title.id }))}
-                    className={`card flex flex-col items-center gap-1 p-3 text-center ${
-                      unlocked ? "card-hover" : "cursor-not-allowed opacity-60"
-                    } ${isCurrent ? "outline outline-4 outline-offset-2 outline-[var(--brand-500)]" : ""}`}
-                  >
-                    <span className="text-sm font-bold">{title.names[locale]}</span>
-                    <span className="text-xs text-[var(--faint)]">
-                      {isCurrent ? t.selected : unlocked ? t.choose : requirement}
-                    </span>
-                  </button>
-                );
+                return {
+                  id: title.id,
+                  name: title.names[locale],
+                  unlocked,
+                  current: profile.title === title.id,
+                  preview: <span className="pill bg-[var(--accent-yellow)] px-3 py-1 text-sm text-[#16132b]">{title.names[locale]}</span>,
+                  hint: unlocked ? null : unlockHint("title", title.id, locale),
+                };
               })}
-            </div>
+              onPick={(id) => post(id, { title: id }, (p) => ({ ...p, title: id }))}
+              onToggleFavorite={(id, on) => toggleFavorite("title", id, on)}
+            />
           </>
         )}
 
         {tab === "frames" && (
           <>
             <p className="mb-4 text-sm text-[var(--muted)]">{t.framesHint}</p>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              <button
-                disabled={saving !== null}
-                onClick={() => post("frame-none", { frame: null }, (p) => ({ ...p, frame: null }))}
-                className={`card card-hover flex flex-col items-center gap-2 p-4 text-center ${
-                  !frame ? "outline outline-4 outline-offset-2 outline-[var(--brand-500)]" : ""
-                }`}
-              >
-                <Avatar id={avatarId} size={72} />
-                <span className="text-sm font-bold">{t.none}</span>
-              </button>
-              {FRAME_IDS.map((f) => {
+            <ProfileCollection
+              t={t}
+              busy={saving !== null}
+              grid="grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
+              favorites={favorites.frame}
+              leading={
+                <button
+                  type="button"
+                  disabled={saving !== null}
+                  onClick={() => post("frame-none", { frame: null }, (p) => ({ ...p, frame: null }))}
+                  className={`card card-hover flex flex-col items-center gap-2 p-4 text-center ${
+                    !frame ? "outline outline-4 outline-offset-2 outline-[var(--brand-500)]" : ""
+                  }`}
+                >
+                  <Avatar id={avatarId} size={72} />
+                  <span className="text-sm font-bold">{t.none}</span>
+                </button>
+              }
+              entries={FRAME_IDS.map((f) => {
                 const owned = ownedFrames.includes(f);
-                const isCurrent = frame === f;
-                const inner = (
-                  <>
-                    <Avatar id={avatarId} size={72} frame={f} locked={!owned} />
-                    <span className="text-sm font-bold">{itemName("frame", f, locale)}</span>
-                    <span className="text-xs text-[var(--faint)]">
-                      {isCurrent ? t.selected : owned ? t.choose : t.inShop}
-                    </span>
-                  </>
-                );
-                return owned ? (
-                  <button
-                    key={f}
-                    disabled={saving !== null}
-                    onClick={() => post(`frame-${f}`, { frame: f }, (p) => ({ ...p, frame: f }))}
-                    className={`card card-hover flex flex-col items-center gap-2 p-4 text-center ${
-                      isCurrent ? "outline outline-4 outline-offset-2 outline-[var(--brand-500)]" : ""
-                    }`}
-                  >
-                    {inner}
-                  </button>
-                ) : (
-                  <Link
-                    key={f}
-                    href={`/${locale}/obchod`}
-                    className="card flex flex-col items-center gap-2 p-4 text-center opacity-80 hover:opacity-100"
-                  >
-                    {inner}
-                  </Link>
-                );
+                return {
+                  id: f,
+                  name: itemName("frame", f, locale),
+                  unlocked: owned,
+                  current: frame === f,
+                  preview: <Avatar id={avatarId} size={72} frame={f} locked={!owned} />,
+                  hint: owned ? null : unlockHint("frame", f, locale),
+                };
               })}
-            </div>
+              onPick={(id) => post(`frame-${id}`, { frame: id }, (p) => ({ ...p, frame: id }))}
+              onToggleFavorite={(id, on) => toggleFavorite("frame", id, on)}
+            />
           </>
         )}
 
         {tab === "banners" && (
           <>
             <p className="mb-4 text-sm text-[var(--muted)]">{t.bannersHint}</p>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              <button
-                disabled={saving !== null}
-                onClick={() => post("banner-none", { banner: null }, (p) => ({ ...p, banner: null }))}
-                className={`card card-hover flex flex-col gap-2 p-3 text-center ${
-                  !profile.banner ? "outline outline-4 outline-offset-2 outline-[var(--brand-500)]" : ""
-                }`}
-              >
-                <div className="h-16 rounded-xl" style={{ background: DEFAULT_BANNER }} />
-                <span className="text-sm font-bold">{t.none}</span>
-              </button>
-              {Object.keys(BANNERS).map((b) => {
+            <ProfileCollection
+              t={t}
+              busy={saving !== null}
+              grid="grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
+              favorites={favorites.banner}
+              leading={
+                <button
+                  type="button"
+                  disabled={saving !== null}
+                  onClick={() => post("banner-none", { banner: null }, (p) => ({ ...p, banner: null }))}
+                  className={`card card-hover flex flex-col gap-2 p-3 text-center ${
+                    !profile.banner ? "outline outline-4 outline-offset-2 outline-[var(--brand-500)]" : ""
+                  }`}
+                >
+                  <div className="h-16 rounded-xl" style={{ background: DEFAULT_BANNER }} />
+                  <span className="text-sm font-bold">{t.none}</span>
+                </button>
+              }
+              entries={Object.keys(BANNERS).map((b) => {
                 const owned = ownedBanners.includes(b);
-                const isCurrent = profile.banner === b;
-                const inner = (
-                  <>
+                return {
+                  id: b,
+                  name: itemName("banner", b, locale),
+                  unlocked: owned,
+                  current: profile.banner === b,
+                  preview: (
                     <div
                       {...bannerAttrs(b)}
-                      className="banner-anim h-16 rounded-xl"
+                      className="banner-anim h-16 w-full rounded-xl"
                       style={{ background: bannerCss(b), filter: owned ? undefined : "grayscale(1) opacity(0.5)" }}
                     />
-                    <span className="text-sm font-bold">{itemName("banner", b, locale)}</span>
-                    <span className="text-xs text-[var(--faint)]">
-                      {isCurrent ? t.selected : owned ? t.choose : t.inShop}
-                    </span>
-                  </>
-                );
-                return owned ? (
-                  <button
-                    key={b}
-                    disabled={saving !== null}
-                    onClick={() => post(`banner-${b}`, { banner: b }, (p) => ({ ...p, banner: b }))}
-                    className={`card card-hover flex flex-col gap-2 p-3 text-center ${
-                      isCurrent ? "outline outline-4 outline-offset-2 outline-[var(--brand-500)]" : ""
-                    }`}
-                  >
-                    {inner}
-                  </button>
-                ) : (
-                  <Link
-                    key={b}
-                    href={`/${locale}/obchod`}
-                    className="card flex flex-col gap-2 p-3 text-center opacity-80 hover:opacity-100"
-                  >
-                    {inner}
-                  </Link>
-                );
+                  ),
+                  hint: owned ? null : unlockHint("banner", b, locale),
+                };
               })}
-            </div>
+              onPick={(id) => post(`banner-${id}`, { banner: id }, (p) => ({ ...p, banner: id }))}
+              onToggleFavorite={(id, on) => toggleFavorite("banner", id, on)}
+            />
           </>
         )}
 

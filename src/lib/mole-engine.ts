@@ -1,5 +1,6 @@
 import { ANSWER_COLORS, ArcadeEngine, H, W, drawLabel, shuffleInPlace } from "./arcade-base";
 import { sfx } from "./game-fx";
+import { Sprites } from "./sprites";
 
 const HOLE_Y = 290;
 const HOLE_X = [95, 245, 395, 545];
@@ -13,6 +14,7 @@ type Mole = { phase: "down" | "up" | "stunned"; t: number; label: string; index:
 export class MoleEngine extends ArcadeEngine {
   private moles: Mole[] = [];
   private cursor = 1;
+  private sp = new Sprites("mole");
 
   protected questionTime() {
     return 70;
@@ -120,9 +122,14 @@ export class MoleEngine extends ArcadeEngine {
     for (let i = 0; i < 20; i++) ctx.fillRect(i * 34 + 4, 184, 6, 24);
     ctx.fillRect(0, 192, W, 4);
 
+    const art = this.sp.has("dira", "dira") && this.sp.has("krtek", "nahoru");
     this.moles.forEach((m, i) => {
       const x = HOLE_X[i];
       const p = this.popOut(m);
+      if (art) {
+        this.drawMoleArt(ctx, m, i, x, p);
+        return;
+      }
       // dutina
       ctx.fillStyle = "#3b2a1c";
       ctx.beginPath();
@@ -199,5 +206,36 @@ export class MoleEngine extends ArcadeEngine {
     ctx.ellipse(cx, HOLE_Y, 64, 22, 0, 0, Math.PI * 2);
     ctx.stroke();
     ctx.setLineDash([]);
+  }
+
+  // 3D krtek z Blenderu: díra, krtek vylézá z dutiny (přední okraj díry ho překrývá), kladivo při úderu.
+  private drawMoleArt(ctx: CanvasRenderingContext2D, m: Mole, i: number, x: number, p: number) {
+    const holeW = 128;
+    const holeH = 52;
+    this.sp.draw(ctx, "dira", "dira", x, HOLE_Y, holeW, holeH);
+    if (p > 0 || m.phase === "stunned") {
+      const rise = m.phase === "stunned" ? 46 : p * 86;
+      const frame = m.phase === "stunned" ? "zasah" : p < 0.7 ? "vykukuje" : "nahoru";
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x - 80, 100, 160, HOLE_Y + 2 - 100);
+      ctx.clip();
+      this.sp.draw(ctx, "krtek", frame, x, HOLE_Y + 96 - rise, 84, 112, { anchorBottom: true });
+      ctx.restore();
+      // přední polovina okraje díry přes krtka
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x - holeW / 2, HOLE_Y, holeW, holeH);
+      ctx.clip();
+      this.sp.draw(ctx, "dira", "dira", x, HOLE_Y, holeW, holeH);
+      ctx.restore();
+      if (p > 0.6 && m.phase === "up") {
+        drawLabel(ctx, m.label, x, HOLE_Y - 130 + (1 - p) * 20, 138, ANSWER_COLORS[i % ANSWER_COLORS.length], { height: 34, size: 15 });
+      }
+    }
+    if (m.swing > 0) {
+      const t = 1 - m.swing / 0.22;
+      this.sp.draw(ctx, "kladivo", t > 0.45 ? "uder" : "klid", x + 34, HOLE_Y - 70, 84, 84, { rot: t * 0.5 - 0.25 });
+    }
   }
 }

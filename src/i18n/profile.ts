@@ -39,6 +39,25 @@ export type ProfileText = {
   shop: string;
   inShop: string;
   stats: string;
+  filterAll: string;
+  filterFavorites: string;
+  filterUnlocked: string;
+  filterLocked: string;
+  addFavorite: string;
+  removeFavorite: string;
+  emptyFilter: string;
+  hintLevel: string;
+  hintFounder: string;
+  hintWinter: string;
+  hintRoom: string;
+  hintShop: string;
+  hintShopGeneric: string;
+  hintOther: string;
+  quickFavorites: string;
+  quickUnlocked: string;
+  quickHint: string;
+  quickMore: string;
+  lockedCount: string;
 };
 
 const cs: ProfileText = {
@@ -80,6 +99,25 @@ const cs: ProfileText = {
   shop: "Obchod",
   inShop: "V obchodě",
   stats: "Přehled",
+  filterAll: "Vše",
+  filterFavorites: "Oblíbené",
+  filterUnlocked: "Odemčené",
+  filterLocked: "Zamčené",
+  addFavorite: "Přidat do oblíbených",
+  removeFavorite: "Odebrat z oblíbených",
+  emptyFilter: "Tady zatím nic není.",
+  hintLevel: "Dosáhni úrovně {n}",
+  hintFounder: "Jen pro zakladatele webu",
+  hintWinter: "Zimní událost",
+  hintRoom: "Dokonči únikovku: {room}",
+  hintShop: "Koupíš v obchodě za {n} bodů",
+  hintShopGeneric: "Koupíš v obchodě",
+  hintOther: "Speciální událost",
+  quickFavorites: "Oblíbené",
+  quickUnlocked: "Odemčené",
+  quickHint: "Hvězdičkou v profilu si vybereš oblíbené.",
+  quickMore: "Všech {n} v profilu",
+  lockedCount: "Zamčeno: {n}",
 };
 
 const en: ProfileText = {
@@ -121,6 +159,25 @@ const en: ProfileText = {
   shop: "Shop",
   inShop: "In the shop",
   stats: "Overview",
+  filterAll: "All",
+  filterFavorites: "Favorites",
+  filterUnlocked: "Unlocked",
+  filterLocked: "Locked",
+  addFavorite: "Add to favorites",
+  removeFavorite: "Remove from favorites",
+  emptyFilter: "Nothing here yet.",
+  hintLevel: "Reach level {n}",
+  hintFounder: "Only for the founders of the site",
+  hintWinter: "Winter event",
+  hintRoom: "Finish the escape room: {room}",
+  hintShop: "Buy it in the shop for {n} points",
+  hintShopGeneric: "Buy it in the shop",
+  hintOther: "Special event",
+  quickFavorites: "Favorites",
+  quickUnlocked: "Unlocked",
+  quickHint: "Use the star in your profile to pick favorites.",
+  quickMore: "All {n} in your profile",
+  lockedCount: "Locked: {n}",
 };
 
 const de: ProfileText = {
@@ -162,6 +219,25 @@ const de: ProfileText = {
   shop: "Shop",
   inShop: "Im Shop",
   stats: "Überblick",
+  filterAll: "Alle",
+  filterFavorites: "Favoriten",
+  filterUnlocked: "Freigeschaltet",
+  filterLocked: "Gesperrt",
+  addFavorite: "Zu Favoriten hinzufügen",
+  removeFavorite: "Aus Favoriten entfernen",
+  emptyFilter: "Hier ist noch nichts.",
+  hintLevel: "Erreiche Stufe {n}",
+  hintFounder: "Nur für die Gründer der Seite",
+  hintWinter: "Winter-Event",
+  hintRoom: "Schließe das Escape-Spiel ab: {room}",
+  hintShop: "Im Shop für {n} Punkte kaufen",
+  hintShopGeneric: "Im Shop kaufen",
+  hintOther: "Spezielles Event",
+  quickFavorites: "Favoriten",
+  quickUnlocked: "Freigeschaltet",
+  quickHint: "Mit dem Stern im Profil wählst du Favoriten.",
+  quickMore: "Alle {n} im Profil",
+  lockedCount: "Gesperrt: {n}",
 };
 
 const ru: ProfileText = {
@@ -203,6 +279,25 @@ const ru: ProfileText = {
   shop: "Магазин",
   inShop: "В магазине",
   stats: "Обзор",
+  filterAll: "Все",
+  filterFavorites: "Избранное",
+  filterUnlocked: "Открытые",
+  filterLocked: "Закрытые",
+  addFavorite: "Добавить в избранное",
+  removeFavorite: "Убрать из избранного",
+  emptyFilter: "Здесь пока ничего нет.",
+  hintLevel: "Достигни уровня {n}",
+  hintFounder: "Только для основателей сайта",
+  hintWinter: "Зимнее событие",
+  hintRoom: "Пройди квест: {room}",
+  hintShop: "Купи в магазине за {n} очков",
+  hintShopGeneric: "Купи в магазине",
+  hintOther: "Особое событие",
+  quickFavorites: "Избранное",
+  quickUnlocked: "Открытые",
+  quickHint: "Звёздочкой в профиле выбери избранное.",
+  quickMore: "Все {n} в профиле",
+  lockedCount: "Закрыто: {n}",
 };
 
 const texts: Record<Locale, ProfileText> = { cs, en, de, ru };

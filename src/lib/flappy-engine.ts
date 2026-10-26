@@ -1,5 +1,6 @@
 import { ANSWER_COLORS, ArcadeEngine, H, W, drawLabel, shuffleInPlace } from "./arcade-base";
 import { sfx } from "./game-fx";
+import { Sprites } from "./sprites";
 
 const BIRD_X = 150;
 const BIRD_R = 13;
@@ -21,6 +22,8 @@ export class FlappyEngine extends ArcadeEngine {
   private wallX = W + 40;
   private gapIndex: number | null = null;
   private wait = 1.2;
+  private hitFlash = 0;
+  private sp = new Sprites("flappy");
   private clouds = Array.from({ length: 5 }, (_, i) => ({ x: i * 140, y: 30 + (i % 3) * 55, s: 0.7 + (i % 2) * 0.4 }));
 
   protected questionTime() {
@@ -60,6 +63,7 @@ export class FlappyEngine extends ArcadeEngine {
 
   private crash() {
     this.damage();
+    this.hitFlash = 0.5;
     this.birdY = H / 2;
     this.vy = 0;
     this.wait = 0.9;
@@ -68,6 +72,7 @@ export class FlappyEngine extends ArcadeEngine {
   }
 
   protected update(dt: number) {
+    this.hitFlash = Math.max(0, this.hitFlash - dt);
     if (this.consume("fire") || this.consume("up")) this.flap();
     this.consume("down");
     this.consume("left");
@@ -147,6 +152,7 @@ export class FlappyEngine extends ArcadeEngine {
     for (let i = 0; i < GAP_CENTERS.length - 1; i++) edges.push([GAP_CENTERS[i] + GAP_H / 2, GAP_CENTERS[i + 1] - GAP_H / 2]);
     edges.push([GAP_CENTERS[GAP_CENTERS.length - 1] + GAP_H / 2, GROUND]);
     for (const [y0, y1] of edges) {
+      if (this.drawWall(ctx, y0, y1, y0 > 0, y1 < GROUND)) continue;
       ctx.fillStyle = "#3fae4a";
       ctx.strokeStyle = "#1f6b2b";
       ctx.lineWidth = 3;
@@ -165,7 +171,13 @@ export class FlappyEngine extends ArcadeEngine {
       drawLabel(ctx, this.labels[option], this.wallX + WALL_W / 2, c, 156, ANSWER_COLORS[i % ANSWER_COLORS.length], { height: 30, size: 14, alpha: 0.95 });
     });
 
-    // ptáček
+    // ptáček (3D render: mávání podle času, po nárazu zčervená)
+    const tilt = Math.max(-0.5, Math.min(0.9, this.vy / 520));
+    const wing = `mavani_${1 + (Math.floor(this.time * 12) % 3)}`;
+    if (this.sp.draw(ctx, "ptacek", this.hitFlash > 0 ? "naraz" : wing, BIRD_X, this.birdY, 36, 36, { rot: tilt })) {
+      this.drawHint(ctx);
+      return;
+    }
     ctx.save();
     ctx.translate(BIRD_X, this.birdY);
     ctx.rotate(Math.max(-0.5, Math.min(0.9, this.vy / 520)));
@@ -201,11 +213,30 @@ export class FlappyEngine extends ArcadeEngine {
     ctx.stroke();
     ctx.restore();
 
+    this.drawHint(ctx);
+  }
+
+  private drawHint(ctx: CanvasRenderingContext2D) {
     if (this.wait > 0 && !this.over) {
       ctx.fillStyle = "rgba(10,8,30,0.7)";
       ctx.font = "700 14px system-ui, sans-serif";
       ctx.textAlign = "center";
       ctx.fillText("▲", BIRD_X, this.birdY - 26);
     }
+  }
+
+  // Úsek zdi z 3D dílů: tělo se opakuje po 20 px, u průletů je hlavice (nahoře otočená).
+  private drawWall(ctx: CanvasRenderingContext2D, y0: number, y1: number, capTop: boolean, capBottom: boolean): boolean {
+    if (!this.sp.has("zed_telo", "zed_telo") || !this.sp.has("zed_hlavice", "zed_hlavice")) return false;
+    const cx = this.wallX + WALL_W / 2;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(this.wallX - 8, y0, WALL_W + 16, y1 - y0);
+    ctx.clip();
+    for (let y = y0; y < y1; y += 19) this.sp.draw(ctx, "zed_telo", "zed_telo", cx, y + 10, WALL_W, 20);
+    ctx.restore();
+    if (capTop) this.sp.draw(ctx, "zed_hlavice", "zed_hlavice", cx, y0 + 6, WALL_W + 4, 20, { rot: Math.PI });
+    if (capBottom) this.sp.draw(ctx, "zed_hlavice", "zed_hlavice", cx, y1 - 6, WALL_W + 4, 20);
+    return true;
   }
 }

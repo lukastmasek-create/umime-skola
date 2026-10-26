@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ACCOUNT_CHANGED_EVENT } from "@/lib/account-events";
+import type { Favorites } from "@/lib/cosmetics";
 
 export type Account =
   | {
@@ -11,6 +12,7 @@ export type Account =
       avatar: string;
       frame?: string | null;
       banner?: string | null;
+      favorites?: Favorites;
       title: string | null;
       points: number;
       school: { name: string; city: string } | null;

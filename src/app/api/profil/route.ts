@@ -5,7 +5,7 @@ import { getXp } from "@/lib/xp";
 import { levelProgress } from "@/lib/progression";
 import { AVATARS, DEFAULT_AVATAR, isAvatarUnlocked } from "@/lib/avatars";
 import { TITLES, isTitleUnlocked } from "@/lib/titles";
-import { STYLE_GAME, isBannerId, isFrameId, normalizeStyle } from "@/lib/cosmetics";
+import { MAX_FAVORITES, STYLE_GAME, isBannerId, isFavoriteTarget, isFrameId, normalizeStyle } from "@/lib/cosmetics";
 import { normalizeCustom } from "@/lib/avatar-custom";
 import { normalizeState as normalizePets, levelInfo } from "@/lib/idle/pets";
 import { computeCity, normalizeCity } from "@/lib/idle/city";
@@ -64,6 +64,7 @@ export async function GET() {
       frame: style.frame,
       banner: style.banner,
       custom: style.custom,
+      favorites: style.favorites,
       name: user?.name ?? session.user.name ?? null,
       avatar: user?.avatar ?? DEFAULT_AVATAR,
       title: user?.title ?? null,
@@ -80,6 +81,7 @@ export async function GET() {
       frame: null,
       banner: null,
       custom: {},
+      favorites: { avatar: [], title: [], frame: [], banner: [] },
       name: session.user.name ?? null,
       avatar: DEFAULT_AVATAR,
       title: null,
@@ -124,6 +126,28 @@ export async function POST(request: Request) {
       }
       await prisma.user.update({ where: { id: userId }, data: { title: title.id } });
       return NextResponse.json({ title: title.id });
+    }
+
+    if (body?.favorite && typeof body.favorite === "object") {
+      const { kind, id, on } = body.favorite as { kind?: unknown; id?: unknown; on?: unknown };
+      if (!isFavoriteTarget(kind, id) || typeof on !== "boolean") {
+        return NextResponse.json({ error: "Neplatný požadavek." }, { status: 400 });
+      }
+      const row = await prisma.idleState.findUnique({ where: { userId_game: { userId, game: STYLE_GAME } } });
+      const prev = normalizeStyle(row?.data);
+      const current = prev.favorites[kind];
+      if (on && !current.includes(id as string) && current.length >= MAX_FAVORITES) {
+        return NextResponse.json({ error: "Oblíbených je moc." }, { status: 400 });
+      }
+      const list = on ? (current.includes(id as string) ? current : [...current, id as string]) : current.filter((x) => x !== id);
+      const next = { ...prev, favorites: { ...prev.favorites, [kind]: list } };
+      const data = next as unknown as Prisma.InputJsonValue;
+      await prisma.idleState.upsert({
+        where: { userId_game: { userId, game: STYLE_GAME } },
+        create: { userId, game: STYLE_GAME, data },
+        update: { data },
+      });
+      return NextResponse.json({ favorites: next.favorites });
     }
 
     if (typeof body?.custom === "object" && body.custom && typeof body?.customFor === "string") {

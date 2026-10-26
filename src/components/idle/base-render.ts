@@ -42,6 +42,45 @@ export const MODULE_ICONS: Record<string, string> = {
   shipyard: "🏗️",
 };
 
+// 3D rendery modulů z Blenderu (public/base): pohled shora přes celý půdorys, 96 px na políčko.
+// Otočené moduly mají vlastní soubor <id>_r, chodba má dlaždici podle sousedů (chodba_<maska>).
+// Dokud se obrázek nenačte, kreslí se modul kódem jako dřív.
+const sprites = new Map<string, HTMLImageElement>();
+
+function sprite(name: string): HTMLImageElement | null {
+  if (typeof Image === "undefined") return null;
+  let img = sprites.get(name);
+  if (!img) {
+    img = new Image();
+    img.src = `/base/modules/${name}.webp`;
+    sprites.set(name, img);
+  }
+  return img.complete && img.naturalWidth > 0 ? img : null;
+}
+
+let dockedShip: HTMLImageElement | null = null;
+
+function shipSprite(): HTMLImageElement | null {
+  if (typeof Image === "undefined") return null;
+  if (!dockedShip) {
+    dockedShip = new Image();
+    dockedShip.src = "/base/ships/shuttle-top.webp";
+  }
+  return dockedShip.complete && dockedShip.naturalWidth > 0 ? dockedShip : null;
+}
+
+export function moduleIcon(id: string): string {
+  return `/base/icons/${id}.webp`;
+}
+
+export function shipIcon(type: string): string {
+  return `/base/ships/${type}.webp`;
+}
+
+export function planetImage(id: string): string {
+  return `/base/planets/${id}.webp`;
+}
+
 function hash(n: number): number {
   const s = Math.sin(n * 127.1 + 311.7) * 43758.5453;
   return s - Math.floor(s);
@@ -86,6 +125,8 @@ function drawModule(
   time: number,
   idle: boolean,
   docked: number,
+  rot: 0 | 1 = 0,
+  mask = 15,
 ) {
   const def = getModule(id);
   if (!def) return;
@@ -96,6 +137,13 @@ function drawModule(
   const ph = h * cell - 3;
   const cx = px + pw / 2;
   const cy = py + ph / 2;
+
+  const art = sprite(id === "corridor" ? `chodba_${mask}` : rot && w !== h ? `${id}_r` : id);
+  if (art) {
+    drawSprite(ctx, art, id, x, y, w, h, cell, time, rot, docked);
+    if (idle) drawIdle(ctx, px, py, pw, ph, cx, cell, time);
+    return;
+  }
 
   // stín a trup
   ctx.fillStyle = "rgba(0,0,0,0.35)";
@@ -206,21 +254,94 @@ function drawModule(
     ctx.fillText(icon, cx, cy + 1);
   }
 
-  if (idle) {
-    ctx.fillStyle = "rgba(255,70,90,0.35)";
-    roundRect(ctx, px, py, pw, ph, cell * 0.16);
-    ctx.fill();
-    const pulse = 0.6 + 0.4 * Math.sin(time * 5);
-    ctx.globalAlpha = pulse;
-    ctx.fillStyle = "#ff5d73";
+  if (idle) drawIdle(ctx, px, py, pw, ph, cx, cell, time);
+}
+
+// Modul odpojený od velitelského modulu: červený závoj a blikající vykřičník.
+function drawIdle(ctx: CanvasRenderingContext2D, px: number, py: number, pw: number, ph: number, cx: number, cell: number, time: number) {
+  ctx.fillStyle = "rgba(255,70,90,0.35)";
+  roundRect(ctx, px, py, pw, ph, cell * 0.16);
+  ctx.fill();
+  const pulse = 0.6 + 0.4 * Math.sin(time * 5);
+  ctx.globalAlpha *= pulse;
+  ctx.fillStyle = "#ff5d73";
+  ctx.beginPath();
+  ctx.arc(cx, py + 10, 8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha /= pulse;
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 12px system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("!", cx, py + 10.5);
+}
+
+// 3D render modulu a nad ním jen živé efekty: záře reaktoru, odlesk panelů, maják a lodě v hangáru.
+function drawSprite(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  id: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  cell: number,
+  time: number,
+  rot: 0 | 1,
+  docked: number,
+) {
+  const px = x * cell;
+  const py = y * cell;
+  const pw = w * cell;
+  const ph = h * cell;
+  const cx = px + pw / 2;
+  const cy = py + ph / 2;
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,0.45)";
+  ctx.shadowBlur = cell * 0.25;
+  ctx.shadowOffsetY = cell * 0.08;
+  ctx.drawImage(img, px, py, pw, ph);
+  ctx.restore();
+
+  if (id === "reactor") {
+    const pulse = 0.5 + 0.5 * Math.sin(time * 3);
+    const rg = ctx.createRadialGradient(cx, cy, 1, cx, cy, cell * 0.55);
+    rg.addColorStop(0, `rgba(255,236,140,${0.25 + pulse * 0.35})`);
+    rg.addColorStop(1, "rgba(255,200,60,0)");
+    ctx.fillStyle = rg;
+    ctx.fillRect(px, py, pw, ph);
+  } else if (id === "solar") {
+    const glint = ((time * 0.35) % 1) * (pw + ph);
+    ctx.save();
     ctx.beginPath();
-    ctx.arc(cx, py + 10, 8, 0, Math.PI * 2);
+    ctx.rect(px, py, pw, ph);
+    ctx.clip();
+    ctx.fillStyle = "rgba(255,255,255,0.22)";
+    ctx.beginPath();
+    ctx.moveTo(px + glint - ph, py + ph);
+    ctx.lineTo(px + glint - ph + 8, py + ph);
+    ctx.lineTo(px + glint + 8, py);
+    ctx.lineTo(px + glint, py);
+    ctx.closePath();
     ctx.fill();
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = "#fff";
-    ctx.font = "bold 12px system-ui, sans-serif";
-    ctx.textBaseline = "middle";
-    ctx.fillText("!", cx, py + 10.5);
+    ctx.restore();
+  } else if (id === "core") {
+    if (Math.sin(time * 4) > 0) {
+      ctx.fillStyle = "#ff5d73";
+      ctx.beginPath();
+      ctx.arc(px + pw * 0.67, py + ph * 0.67, Math.max(2, cell * 0.08), 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (id === "hangar") {
+    // Přistávací kruhy leží v přední polovině hangáru; otočený hangár je má vpravo.
+    const ship = shipSprite();
+    const spots = rot ? [[0.72, 0.3], [0.72, 0.7]] : [[0.3, 0.72], [0.7, 0.72]];
+    for (let i = 0; i < Math.min(docked, 2); i++) {
+      const sx = px + pw * spots[i][0];
+      const sy = py + ph * spots[i][1];
+      const s = cell * 0.95;
+      if (ship) ctx.drawImage(ship, sx - s / 2, sy - s / 2, s, s);
+    }
   }
 }
 
@@ -241,11 +362,22 @@ export function drawBase(ctx: CanvasRenderingContext2D, size: number, dpr: numbe
   }
   ctx.stroke();
 
+  // Obsazená políčka, aby chodba věděla, kam vést trubky (1 = +x, 2 = -x, 4 = +y, 8 = -y).
+  const taken = new Set<number>();
+  for (const [id, x, y, rot] of scene.items) {
+    const def = getModule(id);
+    if (!def) continue;
+    const [w, h] = footprint(def, rot);
+    for (let dy = 0; dy < h; dy++) for (let dx = 0; dx < w; dx++) taken.add((y + dy) * BASE_SIZE + x + dx);
+  }
+  const at = (x: number, y: number) => x >= 0 && y >= 0 && x < BASE_SIZE && y < BASE_SIZE && taken.has(y * BASE_SIZE + x);
+
   scene.items.forEach(([id, x, y, rot], index) => {
     const def = getModule(id);
     if (!def) return;
     const [w, h] = footprint(def, rot);
-    drawModule(ctx, id, x, y, w, h, cell, scene.time, scene.idle.has(index), scene.docked);
+    const mask = id === "corridor" ? (at(x + 1, y) ? 1 : 0) | (at(x - 1, y) ? 2 : 0) | (at(x, y + 1) ? 4 : 0) | (at(x, y - 1) ? 8 : 0) : 15;
+    drawModule(ctx, id, x, y, w, h, cell, scene.time, scene.idle.has(index), scene.docked, rot, mask);
     if (scene.selected === index) {
       ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = 3;
@@ -261,7 +393,9 @@ export function drawBase(ctx: CanvasRenderingContext2D, size: number, dpr: numbe
     if (def) {
       const [w, h] = footprint(def, scene.ghost.rot);
       ctx.globalAlpha = 0.6;
-      drawModule(ctx, scene.ghost.id, scene.ghost.x, scene.ghost.y, w, h, cell, scene.time, false, 0);
+      const { x: gx, y: gy } = scene.ghost;
+      const mask = (at(gx + 1, gy) ? 1 : 0) | (at(gx - 1, gy) ? 2 : 0) | (at(gx, gy + 1) ? 4 : 0) | (at(gx, gy - 1) ? 8 : 0);
+      drawModule(ctx, scene.ghost.id, gx, gy, w, h, cell, scene.time, false, 0, scene.ghost.rot, mask);
       ctx.globalAlpha = 1;
       ctx.fillStyle = scene.ghost.valid ? "rgba(80,230,150,0.25)" : "rgba(255,80,100,0.35)";
       ctx.fillRect(scene.ghost.x * cell, scene.ghost.y * cell, w * cell, h * cell);

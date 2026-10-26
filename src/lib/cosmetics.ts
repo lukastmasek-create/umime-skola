@@ -1,4 +1,6 @@
 import { normalizeCustomMap, type AvatarCustom } from "@/lib/avatar-custom";
+import { AVATARS } from "@/lib/avatars";
+import { TITLES } from "@/lib/titles";
 
 // Ozdoby profilu, které se kupují v obchodě: rámečky kolem avataru a pozadí profilu.
 // Nové ozdoby přidává vývojář tady a v src/lib/shop.ts (cena a názvy).
@@ -42,13 +44,52 @@ export function isBannerId(value: unknown): value is string {
 // Výběr ozdob se ukládá do tabulky IdleState pod touto hrou (bez změny tabulky User).
 export const STYLE_GAME = "profile-style";
 
-export type ProfileStyle = { frame: FrameId | null; banner: string | null; custom: Record<string, AvatarCustom> };
+// Oblíbené věci: hvězdičkou si hráč označí, co chce mít po ruce v rychlém výběru v hlavičce.
+// Označit jde i zamčenou věc (jako přání), v rychlém výběru se ukážou jen odemčené.
+export type FavoriteKind = "avatar" | "title" | "frame" | "banner";
+export const FAVORITE_KINDS: FavoriteKind[] = ["avatar", "title", "frame", "banner"];
+export type Favorites = Record<FavoriteKind, string[]>;
+export const MAX_FAVORITES = 24;
+export const EMPTY_FAVORITES: Favorites = { avatar: [], title: [], frame: [], banner: [] };
+
+export function isFavoriteTarget(kind: unknown, id: unknown): kind is FavoriteKind {
+  if (typeof id !== "string") return false;
+  switch (kind) {
+    case "avatar":
+      return AVATARS.some((a) => a.id === id);
+    case "title":
+      return TITLES.some((t) => t.id === id);
+    case "frame":
+      return isFrameId(id);
+    case "banner":
+      return isBannerId(id);
+    default:
+      return false;
+  }
+}
+
+export function normalizeFavorites(raw: unknown): Favorites {
+  const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const out: Favorites = { avatar: [], title: [], frame: [], banner: [] };
+  for (const kind of FAVORITE_KINDS) {
+    const list = r[kind];
+    if (!Array.isArray(list)) continue;
+    for (const id of list) {
+      if (isFavoriteTarget(kind, id) && !out[kind].includes(id as string)) out[kind].push(id as string);
+      if (out[kind].length >= MAX_FAVORITES) break;
+    }
+  }
+  return out;
+}
+
+export type ProfileStyle = { frame: FrameId | null; banner: string | null; custom: Record<string, AvatarCustom>; favorites: Favorites };
 
 export function normalizeStyle(raw: unknown): ProfileStyle {
-  const r = (raw && typeof raw === "object" ? raw : {}) as { frame?: unknown; banner?: unknown; custom?: unknown };
+  const r = (raw && typeof raw === "object" ? raw : {}) as { frame?: unknown; banner?: unknown; custom?: unknown; favorites?: unknown };
   return {
     frame: isFrameId(r.frame) ? r.frame : null,
     banner: isBannerId(r.banner) ? r.banner : null,
     custom: normalizeCustomMap(r.custom),
+    favorites: normalizeFavorites(r.favorites),
   };
 }

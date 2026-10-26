@@ -1,8 +1,12 @@
 import { ANSWER_COLORS, ArcadeEngine, H, W, drawLabel, shuffleInPlace } from "./arcade-base";
 import { sfx } from "./game-fx";
+import { Sprites } from "./sprites";
 
 const GRAVITY = 430;
 const ITEM_H = 40;
+// 3D ovoce z Blenderu, každá odpověď dostane jedno (celé a rozkrojené).
+const FRUITS = ["meloun", "jablko", "pomeranc", "ananas", "kiwi"];
+const FRUIT_SIZE = 56;
 
 type Item = {
   x: number;
@@ -14,11 +18,12 @@ type Item = {
   index: number;
   correct: boolean;
   color: string;
+  fruit: string;
   state: "wait" | "fly" | "gone";
   delay: number;
 };
 
-type Half = { x: number; y: number; vx: number; vy: number; rot: number; w: number; label: string; color: string; left: boolean; life: number };
+type Half = { x: number; y: number; vx: number; vy: number; rot: number; w: number; label: string; color: string; fruit: string; left: boolean; life: number };
 
 // Ninja: odpovědi vyletují jako ovoce. Švihni po té správné a rozkrojíš ji. Špatnou odpověď
 // neřež, ubere život. Propadlé ovoce nevadí, vyletí znovu.
@@ -30,6 +35,7 @@ export class NinjaEngine extends ArcadeEngine {
   private cx = W / 2;
   private cy = H / 2;
   private keyboard = false;
+  private sp = new Sprites("ninja");
 
   protected questionTime() {
     return 75;
@@ -47,6 +53,7 @@ export class NinjaEngine extends ArcadeEngine {
       index: optIndex,
       correct: optIndex === correctIndex,
       color: ANSWER_COLORS[k % ANSWER_COLORS.length],
+      fruit: FRUITS[k % FRUITS.length],
       state: "wait",
       delay: 0.4 + k * 0.75,
     }));
@@ -100,7 +107,7 @@ export class NinjaEngine extends ArcadeEngine {
       item.state = "gone";
       sfx("hit");
       for (const left of [true, false]) {
-        this.halves.push({ x: item.x, y: item.y, vx: item.vx + (left ? -90 : 90), vy: item.vy * 0.4, rot: 0, w: item.w, label: item.label, color: item.color, left, life: 1.2 });
+        this.halves.push({ x: item.x, y: item.y, vx: item.vx + (left ? -90 : 90), vy: item.vy * 0.4, rot: 0, w: item.w, label: item.label, color: item.color, fruit: item.fruit, left, life: 1.2 });
       }
       this.burst(item.x, item.y, item.color, 14);
       if (item.correct) {
@@ -187,6 +194,13 @@ export class NinjaEngine extends ArcadeEngine {
       ctx.translate(h.x, h.y);
       ctx.rotate(h.rot);
       ctx.globalAlpha = Math.min(1, h.life * 1.6);
+      const fx = -h.w / 2 - 6;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(h.left ? fx - FRUIT_SIZE : fx, -FRUIT_SIZE, FRUIT_SIZE, FRUIT_SIZE * 2);
+      ctx.clip();
+      this.sp.draw(ctx, "ovoce", `${h.fruit}_pulky`, fx + (h.left ? -8 : 8), 0, FRUIT_SIZE + 10, FRUIT_SIZE + 10);
+      ctx.restore();
       ctx.beginPath();
       ctx.rect(h.left ? -h.w / 2 : 0, -ITEM_H / 2, h.w / 2, ITEM_H);
       ctx.clip();
@@ -199,6 +213,7 @@ export class NinjaEngine extends ArcadeEngine {
       ctx.save();
       ctx.translate(item.x, item.y);
       ctx.rotate(Math.sin(item.x * 0.02 + this.time * 2) * 0.15);
+      this.sp.draw(ctx, "ovoce", `${item.fruit}_cele`, -item.w / 2 - 6, 0, FRUIT_SIZE, FRUIT_SIZE, { rot: this.time * 1.5 + item.index });
       drawLabel(ctx, item.label, 0, 0, item.w, item.color, { height: ITEM_H, size: 15 });
       ctx.restore();
     }
@@ -217,7 +232,13 @@ export class NinjaEngine extends ArcadeEngine {
         ctx.stroke();
       }
     }
-    if (this.keyboard && !this.over) {
+    const head = this.trail[this.trail.length - 1];
+    const prev = this.trail[this.trail.length - 2];
+    if (head && prev && head.life > 0.15) {
+      const a = Math.atan2(head.y - prev.y, head.x - prev.x);
+      this.sp.draw(ctx, "cepel", "cepel", head.x, head.y, 64, 64, { rot: a + (3 * Math.PI) / 4 });
+    }
+    if (this.keyboard && !this.over && !this.sp.draw(ctx, "cepel", "cepel", this.cx, this.cy, 64, 64)) {
       ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = 2;
       ctx.beginPath();

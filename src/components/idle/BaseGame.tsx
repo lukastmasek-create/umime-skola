@@ -24,7 +24,7 @@ import {
   type ModuleDef,
   type Ship,
 } from "@/lib/idle/base";
-import { cellAt, drawBase, CAT_COLORS, MODULE_ICONS } from "@/components/idle/base-render";
+import { cellAt, drawBase, moduleIcon, planetImage, shipIcon, CAT_COLORS } from "@/components/idle/base-render";
 import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
 
@@ -64,6 +64,12 @@ type Tool = { kind: "none" } | { kind: "module"; id: string } | { kind: "demolis
 const SYNC_EVERY_MS = 60_000;
 const SHIP_ICONS = { probe: "🛰️", shuttle: "🚀", explorer: "🛸" } as const;
 
+// 3D render z public/base (modul, loď); čistě ozdobný, název stojí vždy vedle.
+function Art({ src, size }: { src: string; size: number }) {
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={src} alt="" width={size} height={size} className="shrink-0" style={{ width: size, height: size }} />;
+}
+
 const fmt = (n: number) => Math.round(n).toLocaleString("cs-CZ");
 const pct = (n: number) => `${Math.round(n * 100)} %`;
 
@@ -96,7 +102,7 @@ function LessonCard({ t, locale, id }: { t: BaseText; locale: Locale; id: string
   return (
     <div className="card p-4 text-sm">
       <p className="flex items-center gap-2 text-base font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
-        <span aria-hidden>{MODULE_ICONS[id]}</span>
+        <Art src={moduleIcon(id)} size={40} />
         {def.names[locale]}
       </p>
       {bits.length > 0 && <p className="mt-1 text-xs font-semibold text-[var(--muted)]">{bits.join("  ·  ")}</p>}
@@ -457,7 +463,7 @@ export function BaseGame({ locale }: { locale: Locale }) {
                     aria-pressed={active}
                     className={`flex flex-col gap-0.5 rounded-xl border-2 border-[var(--edge)] p-2 text-left text-xs shadow-[0_3px_0_var(--shadow-ink)] ${active ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface)] hover:bg-[var(--surface-muted)]"} ${locked ? "opacity-55" : ""}`}
                   >
-                    <span className="text-base" aria-hidden>{MODULE_ICONS[m.id]}</span>
+                    <Art src={moduleIcon(m.id)} size={40} />
                     <span className="font-bold">{moduleName(m)}</span>
                     <span className="text-[11px] opacity-80">
                       {locked ? `${t.build.needLevel} ${m.level}` : `💰 ${fmt(m.cost)}${m.pointsCost ? ` · ⭐ ${m.pointsCost}` : ""}`}
@@ -508,7 +514,7 @@ export function BaseGame({ locale }: { locale: Locale }) {
                 <div key={ship.id} className="card flex flex-col gap-2 p-4">
                   <div className="flex items-center justify-between gap-2">
                     <p className="flex items-center gap-2 font-bold">
-                      <span className="text-2xl" aria-hidden>{SHIP_ICONS[ship.type]}</span>
+                      <Art src={shipIcon(ship.type)} size={44} />
                       {def.names[locale]}
                     </p>
                     <span className="pill bg-[var(--surface-muted)] px-2.5 py-1 text-xs font-bold">
@@ -558,7 +564,7 @@ export function BaseGame({ locale }: { locale: Locale }) {
               return (
                 <div key={s.id} className={`card flex flex-col gap-1 p-3 text-sm ${locked ? "opacity-55" : ""}`}>
                   <p className="flex items-center gap-2 font-bold">
-                    <span className="text-xl" aria-hidden>{SHIP_ICONS[s.id]}</span>
+                    <Art src={shipIcon(s.id)} size={36} />
                     {s.names[locale]}
                     <span className="text-xs font-semibold text-[var(--muted)]">{t.fleet.tier} {s.tier} · {t.fleet.speed} ×{s.speed}</span>
                   </p>
@@ -606,7 +612,7 @@ export function BaseGame({ locale }: { locale: Locale }) {
               const known = state.codex.includes(m.id);
               return (
                 <div key={m.id} className={`card p-3 text-sm ${known ? "" : "opacity-50"}`}>
-                  <p className="font-bold">{known ? <>{MODULE_ICONS[m.id]} {moduleName(m)}</> : `? ${t.codex.unknown}`}</p>
+                  <p className="flex items-center gap-2 font-bold">{known ? <><Art src={moduleIcon(m.id)} size={32} /> {moduleName(m)}</> : `? ${t.codex.unknown}`}</p>
                   {known && (
                     <>
                       <p className="mt-1">{t.modules[m.id].how}</p>
@@ -760,11 +766,11 @@ function SpaceMap({
             const p = position(d, i);
             return <ellipse key={d.id} cx={sun.x} cy={sun.y} rx={p.r} ry={p.r * 0.55} fill="none" stroke="rgba(160,170,255,0.18)" strokeDasharray="3 5" />;
           })}
-          <circle cx={sun.x} cy={sun.y} r="30" fill="#ffc933" />
-          <circle cx={sun.x} cy={sun.y} r="40" fill="#ffc933" opacity="0.18" />
+          <circle cx={sun.x} cy={sun.y} r="42" fill="#ffc933" opacity="0.16" />
+          <image href={planetImage("sun")} x={sun.x - 36} y={sun.y - 36} width="72" height="72" />
           <text x={sun.x + 8} y={sun.y + 58} fontSize="11" fill="#cfd4ff" textAnchor="middle">{t.map.sun}</text>
 
-          <circle cx={earth.x} cy={earth.y} r="10" fill="#3b82f6" stroke="#fff" strokeWidth="1.5" />
+          <image href={planetImage("earth")} x={earth.x - 13} y={earth.y - 13} width="26" height="26" />
           <text x={earth.x} y={earth.y + 24} fontSize="11" fill="#cfd4ff" textAnchor="middle">{t.map.earth}</text>
 
           {DESTINATIONS.map((d, i) => {
@@ -773,8 +779,15 @@ function SpaceMap({
             const open = isUnlocked(state, d);
             return (
               <g key={d.id} role="button" tabIndex={0} aria-label={d.names[locale]} onClick={() => onPick(d.id)} onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onPick(d.id)} className="cursor-pointer outline-none">
-                <circle cx={p.x} cy={p.y} r={active ? 17 : 13} fill={open ? d.color : "#4b4a63"} stroke={active ? "#fff" : "rgba(0,0,0,0.5)"} strokeWidth={active ? 3 : 1.5} />
-                {d.id === "saturn" && <ellipse cx={p.x} cy={p.y} rx="25" ry="7" fill="none" stroke="#f0dca0" strokeWidth="2" />}
+                {active && <circle cx={p.x} cy={p.y} r="21" fill="rgba(255,255,255,0.12)" stroke="#fff" strokeWidth="2.5" />}
+                <image
+                  href={planetImage(d.id)}
+                  x={p.x - (active ? 20 : 16)}
+                  y={p.y - (active ? 20 : 16)}
+                  width={active ? 40 : 32}
+                  height={active ? 40 : 32}
+                  opacity={open ? 1 : 0.45}
+                />
                 <text x={p.x} y={p.y + 30} fontSize="11" fill={open ? "#fff" : "#9a98b8"} textAnchor="middle">{d.names[locale]}</text>
                 {!open && <text x={p.x} y={p.y + 4} fontSize="12" fill="#fff" textAnchor="middle">🔒</text>}
               </g>
@@ -793,7 +806,7 @@ function SpaceMap({
             return (
               <g key={s.id}>
                 <line x1={earth.x} y1={earth.y} x2={to.x} y2={to.y} stroke="rgba(255,255,255,0.25)" strokeDasharray="4 4" />
-                <text x={x} y={y + 5} fontSize="16" textAnchor="middle">{SHIP_ICONS[s.type]}</text>
+                <image href={shipIcon(s.type)} x={x - 13} y={y - 13} width="26" height="26" />
               </g>
             );
           })}
