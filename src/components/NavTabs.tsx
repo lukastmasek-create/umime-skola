@@ -8,6 +8,7 @@ import type { Dictionary } from "@/i18n/dictionaries";
 import { getCommunityText } from "@/i18n/community";
 import { getIdleText } from "@/i18n/idle";
 import { getEscapeText } from "@/i18n/escape";
+import { getMaterialsText } from "@/i18n/materials";
 import { getHomeText } from "@/i18n/home";
 import { useAccount } from "@/lib/use-account";
 import type { Locale } from "@/i18n/config";
@@ -21,6 +22,7 @@ function useTabs(locale: Locale, dict: Dictionary) {
     href: `/${locale}/kurzy/${cat.slug}`,
     label: dict.categories[cat.slug].label,
   }));
+  learn.push({ key: "materialy", href: `/${locale}/materialy`, label: getMaterialsText(locale).nav, icon: "📘" });
   const play: Tab[] = [
     { key: "unikovky", href: `/${locale}/unikovky`, label: getEscapeText(locale).nav, icon: "🚪" },
     { key: "stale-hry", href: `/${locale}/stale-hry`, label: getIdleText(locale).nav, icon: "🐾" },
@@ -47,7 +49,7 @@ export function NavTabs({ locale, dict }: { locale: Locale; dict: Dictionary }) 
         key={tab.key}
         href={tab.href}
         aria-current={active ? "page" : undefined}
-        className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg border-2 px-3.5 py-1.5 text-sm font-semibold ${
+        className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg border-2 px-2.5 py-1.5 text-sm font-semibold 2xl:px-3.5 ${
           active
             ? "border-[var(--edge)] bg-[var(--accent-yellow)] text-[#16132b]"
             : "border-transparent text-[var(--muted)] hover:border-[var(--edge)] hover:text-[var(--foreground)]"
@@ -60,7 +62,7 @@ export function NavTabs({ locale, dict }: { locale: Locale; dict: Dictionary }) 
   };
 
   return (
-    <nav aria-label="Hlavní navigace" className="hidden items-center gap-1.5 lg:flex">
+    <nav aria-label="Hlavní navigace" className="hidden flex-wrap items-center gap-x-1.5 gap-y-1 lg:flex">
       {learn.map(link)}
       <span aria-hidden className="mx-1 h-5 w-0.5 rounded bg-[var(--border-soft)]" />
       {play.map(link)}
