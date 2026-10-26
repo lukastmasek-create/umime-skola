@@ -41,6 +41,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Python
+# vyrenderované snímky z Blenderu (z nich se skládá public/home/anim přes umime-art/encode.py)
+/umime-art/out/
+
 __pycache__/
-*.pyc
