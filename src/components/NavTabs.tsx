@@ -12,6 +12,7 @@ import { getHomeText } from "@/i18n/home";
 import { getSocialText } from "@/i18n/social";
 import { getRoomText } from "@/i18n/room";
 import { getReviewText } from "@/i18n/review";
+import { getLiveText } from "@/i18n/live";
 import { useAccount } from "@/lib/use-account";
 import type { Locale } from "@/i18n/config";
 
@@ -26,6 +27,7 @@ function useTabs(locale: Locale, dict: Dictionary) {
   }));
   const review = getReviewText(locale);
   const play: Tab[] = [
+    { key: "hrat-spolecne", href: `/${locale}/hrat-spolecne`, label: getLiveText(locale).nav, icon: "🎓" },
     { key: "unikovky", href: `/${locale}/unikovky`, label: getEscapeText(locale).nav, icon: "🚪" },
     { key: "stale-hry", href: `/${locale}/stale-hry`, label: getIdleText(locale).nav, icon: "🐾" },
     { key: "parta", href: `/${locale}/parta`, label: getSocialText(locale).nav, icon: "👥" },

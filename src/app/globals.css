@@ -570,6 +570,8 @@ select:not(:focus) {
 @media (prefers-reduced-motion: no-preference) {
   .banner-live[data-banner="galaxy"] { background-image: url(/cosmetics/banners/anim/galaxy.webp) !important; }
   .banner-live[data-banner="night-city"] { background-image: url(/cosmetics/banners/anim/night-city.webp) !important; }
+  .banner-live[data-banner="ocean"] { background-image: url(/cosmetics/banners/anim/ocean.webp) !important; }
+  .banner-live[data-banner="forest"] { background-image: url(/cosmetics/banners/anim/forest.webp) !important; }
 }
 
 /* Animace ozdob profilu: pozadí se jemně hýbe a rámeček se točí kolem avataru. */
