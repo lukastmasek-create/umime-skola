@@ -18,7 +18,7 @@ const cs: IdleText = {
   subtitle: "Hry, které nikdy nekončí. Body za učení v nich pracují: stavíš, vylepšuješ a staráš se o své věci.",
   soon: "Brzy",
   play: "Hrát",
-  note: "Mazlíčci a Město už hratelní jsou, další hry přibudou postupně.",
+  note: "Základna, Mazlíčci a Město už hratelní jsou, Farma přibude.",
   games: [
     { name: "Základna", description: "Postav si vlastní základnu a postupně ji vylepšuj za body, které získáš učením." },
     { name: "Mazlíčci", description: "Vychovávej mazlíčky, krm je, hraj si s nimi a sleduj, jak rostou." },
@@ -33,7 +33,7 @@ const en: IdleText = {
   subtitle: "Games that never end. Points from learning keep them going: you build, upgrade and take care of your stuff.",
   soon: "Soon",
   play: "Play",
-  note: "Pets and City are playable already, more games will follow.",
+  note: "Base, Pets and City are playable already, Farm is coming.",
   games: [
     { name: "Base", description: "Build your own base and keep upgrading it with the points you earn by learning." },
     { name: "Pets", description: "Raise pets, feed them, play with them and watch them grow." },
@@ -48,7 +48,7 @@ const de: IdleText = {
   subtitle: "Spiele, die nie enden. Punkte vom Lernen treiben sie an: Du baust, verbesserst und kümmerst dich um deine Sachen.",
   soon: "Bald",
   play: "Spielen",
-  note: "Haustiere und Stadt sind schon spielbar, weitere Spiele folgen nach und nach.",
+  note: "Basis, Haustiere und Stadt sind schon spielbar, die Farm folgt.",
   games: [
     { name: "Basis", description: "Baue deine eigene Basis und verbessere sie nach und nach mit den Punkten vom Lernen." },
     { name: "Haustiere", description: "Zieh Haustiere groß, füttere sie, spiel mit ihnen und sieh zu, wie sie wachsen." },
@@ -63,7 +63,7 @@ const ru: IdleText = {
   subtitle: "Игры, которые никогда не заканчиваются. Баллы за учёбу двигают их вперёд: ты строишь, улучшаешь и заботишься о своём.",
   soon: "Скоро",
   play: "Играть",
-  note: "Питомцы и Город уже доступны, остальные игры появятся постепенно.",
+  note: "База, Питомцы и Город уже доступны, Ферма появится позже.",
   games: [
     { name: "База", description: "Построй свою базу и постепенно улучшай её за баллы, которые получаешь за учёбу." },
     { name: "Питомцы", description: "Выращивай питомцев, кормите их, играй с ними и смотри, как они растут." },

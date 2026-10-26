@@ -4,6 +4,8 @@ import { getIdleText } from "@/i18n/idle";
 import { isLocale, type Locale } from "@/i18n/config";
 
 const COLORS = ["#8fd0ff", "#ff8a6b", "#7ee0b0", "#ffc933"];
+// Hra na stejném pořadí jako v texty.games: Základna, Mazlíčci, Farma, Město. null = zatím se chystá.
+const PATHS = ["zakladna", "mazlicci", null, "mesto"] as const;
 
 export default async function IdleGamesPage({
   params,
@@ -23,8 +25,8 @@ export default async function IdleGamesPage({
 
       <div className="grid gap-5 sm:grid-cols-2">
         {t.games.map((game, i) => {
-          // Zatím je hratelná jen druhá hra (Mazlíčci), ostatní se teprve chystají.
-          const href = i === 1 ? `/${locale}/stale-hry/mazlicci` : i === 3 ? `/${locale}/stale-hry/mesto` : null;
+          const path = PATHS[i];
+          const href = path ? `/${locale}/stale-hry/${path}` : null;
           const body = (
             <>
               <div
