@@ -461,7 +461,12 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
                             : "border-[var(--edge)] bg-[var(--surface)] hover:bg-[var(--surface-muted)]"
                         }`}
                       >
-                        <span className="text-xl">{item.symbol}</span>
+                        {roomId === "lab" ? (
+                          // Ikony předmětů laboratoře jsou vyrenderované v Blenderu (umime-art/scripts/lab.py).
+                          <img src={`/escape/lab/items/${item.id}.webp`} alt="" width={36} height={36} className="h-9 w-9 shrink-0" />
+                        ) : (
+                          <span className="text-xl">{item.symbol}</span>
+                        )}
                         <span className="flex-1">{item.name}</span>
                         {isSelected && <span className="text-xs text-[var(--brand-600)]">{ui.selected}</span>}
                       </button>
