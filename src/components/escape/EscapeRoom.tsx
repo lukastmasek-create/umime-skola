@@ -12,6 +12,7 @@ import type { Hotspot, Puzzle } from "@/lib/escape/types";
 import { getEscapeText } from "@/i18n/escape";
 import { getAvatar } from "@/lib/avatars";
 import { getTitle } from "@/lib/titles";
+import { DailyRecap } from "@/components/DailyChallenges";
 import type { Locale } from "@/i18n/config";
 
 type Phase = "mode" | "playing" | "won" | "lost";
@@ -347,6 +348,7 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
                 </span>
               )}
             </div>
+            {saveState === "saved" && <DailyRecap locale={locale} refreshKey={saved?.xp ?? 0} />}
             {saved && saved.unlocked.length > 0 && (
               <div className="rounded-xl bg-[var(--brand-50)] px-4 py-3 text-sm">
                 <p className="mb-1 font-bold">{ui.unlocked}</p>
