@@ -37,6 +37,12 @@ export function bannerAttrs(id: string): { className: string; "data-banner": str
   return { className: "banner-anim", "data-banner": id };
 }
 
+// Velké pozadí (profil, menu účtu) se přehrává jako animace z Blenderu (public/cosmetics/banners/anim/<id>.webp),
+// styl .banner-live v globals.css ji nasadí, pokud si uživatel nevypnul pohyb. Náhledy v seznamech zůstávají statické.
+export function bannerLiveAttrs(id: string): { className: string; "data-banner": string } {
+  return { className: "banner-live", "data-banner": id };
+}
+
 export function isBannerId(value: unknown): value is string {
   return typeof value === "string" && Object.prototype.hasOwnProperty.call(BANNERS, value);
 }

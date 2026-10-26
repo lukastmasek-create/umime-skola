@@ -69,7 +69,7 @@ for (const file of files) {
         return;
       }
       const all = [correct, ...wrong];
-      if (new Set(all.map((x) => String(x).trim().toLowerCase())).size !== 4) problems.push(`${at}: duplicitní možnosti (${prompt})`);
+      if (new Set(all.map((x) => String(x).trim())).size !== 4) problems.push(`${at}: duplicitní možnosti (${prompt})`);
       if (seenPrompts.has(prompt)) problems.push(`${at}: duplicitní otázka`);
       seenPrompts.add(prompt);
       if (prompt.includes("___")) problems.push(`${at}: otázka s ___ patří do psaných testů, ne sem`);

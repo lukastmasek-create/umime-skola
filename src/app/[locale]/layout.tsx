@@ -51,7 +51,7 @@ export default async function LocaleLayout({
   const dict = getDictionary(locale as Locale);
 
   const navLink =
-    "rounded-lg px-2.5 py-1.5 text-sm font-semibold text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]";
+    "rounded-lg px-3 py-2 text-sm font-semibold text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]";
 
   return (
     <html
@@ -67,7 +67,7 @@ export default async function LocaleLayout({
         style={{ fontFamily: "var(--font-body), var(--font-sans)" }}
       >
         <header className="sticky top-0 z-40 border-b-2 border-[var(--edge)] bg-[var(--surface)]">
-          <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:px-6">
+          <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-2.5 sm:px-6">
             <div className="flex items-center justify-between gap-3">
               <Link href={`/${locale}`} className="shrink-0">
                 <SiteLogo />
