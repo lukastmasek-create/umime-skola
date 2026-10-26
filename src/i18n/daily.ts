@@ -25,6 +25,11 @@ export type DailyText = {
   cityCoins: string; // {n}
   cardGot: string; // {n} název
   collection: string;
+  nudgeStreak: string; // {n}
+  nudgeOpen: string;
+  nudgeDismiss: string;
+  remindOn: string;
+  remindOff: string;
   claim: string;
   claimed: string;
   bonus: string; // {n}
@@ -38,6 +43,11 @@ export type DailyText = {
 
 const cs: DailyText = {
   title: "Denní výzvy",
+  nudgeStreak: "Tvoje série {n} dní dnes končí. Stačí jeden krátký test!",
+  nudgeOpen: "Pokračovat",
+  nudgeDismiss: "Zavřít",
+  remindOn: "Zapnout upozornění",
+  remindOff: "Upozornění zapnuté",
   freezes: 'Zmrazení série: {n}',
   buyFreeze: 'Koupit zmrazení ({n} b.)',
   freezeInfo: 'Zmrazení ochrání sérii, když jeden den vynecháš.',
@@ -89,6 +99,11 @@ const cs: DailyText = {
 
 const en: DailyText = {
   title: "Daily challenges",
+  nudgeStreak: "Your {n}-day streak ends today. One short test is enough!",
+  nudgeOpen: "Continue",
+  nudgeDismiss: "Close",
+  remindOn: "Turn on reminders",
+  remindOff: "Reminders on",
   freezes: 'Streak freezes: {n}',
   buyFreeze: 'Buy a freeze ({n} pts)',
   freezeInfo: 'A freeze protects your streak if you miss a day.',
@@ -140,6 +155,11 @@ const en: DailyText = {
 
 const de: DailyText = {
   title: "Tägliche Aufgaben",
+  nudgeStreak: "Deine Serie von {n} Tagen endet heute. Ein kurzer Test genügt!",
+  nudgeOpen: "Weiter",
+  nudgeDismiss: "Schließen",
+  remindOn: "Erinnerungen einschalten",
+  remindOff: "Erinnerungen an",
   freezes: 'Serien-Freezes: {n}',
   buyFreeze: 'Freeze kaufen ({n} P.)',
   freezeInfo: 'Ein Freeze schützt deine Serie, wenn du einen Tag verpasst.',
@@ -191,6 +211,11 @@ const de: DailyText = {
 
 const ru: DailyText = {
   title: "Ежедневные задания",
+  nudgeStreak: "Твоя серия в {n} дн. сегодня закончится. Хватит одного короткого теста!",
+  nudgeOpen: "Продолжить",
+  nudgeDismiss: "Закрыть",
+  remindOn: "Включить напоминания",
+  remindOff: "Напоминания включены",
   freezes: 'Заморозок серии: {n}',
   buyFreeze: 'Купить заморозку ({n} б.)',
   freezeInfo: 'Заморозка сохранит серию, если пропустишь день.',
