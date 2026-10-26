@@ -44,15 +44,15 @@ export function SpriteFrame({
 // Řádek v listu mimozemšťanů: kyklop 0, krab 1, chobotnice 2, ufo 3.
 export const ALIEN_ROW = { kyklop: 0, krab: 1, chobotnice: 2, ufo: 3 } as const;
 
+// Planeta se otáčí a obíhá ji měsíc (animovaný 3D render z Blenderu, public/home/planeta-tocici.webp).
 export function Planet({ className = "", size = 420, hue = 0 }: { className?: string; size?: number; hue?: number }) {
   return (
     <div
       aria-hidden
-      className={`pointer-events-none select-none ${className}`}
+      className={`planet-anim pointer-events-none select-none ${className}`}
       style={{
-        width: size,
-        height: size * 0.66,
-        backgroundImage: "url(/home/planeta.webp)",
+        width: size * 1.25,
+        height: size * 1.25 * (232 / 596),
         backgroundSize: "contain",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
@@ -77,6 +77,29 @@ export function Nebula({ className = "", flip = false }: { className?: string; f
         opacity: 0.55,
       }}
     />
+  );
+}
+
+// Hvězdy, prach a padající hvězdy ze 3D renderu v Blenderu (smyčka na černém pozadí, skládá se přes mlhovinu).
+export function StarsVideo({ className = "" }: { className?: string }) {
+  return (
+    <video
+      aria-hidden
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="auto"
+      className={`stars-video pointer-events-none select-none object-cover ${className}`}
+      style={{
+        opacity: 0.4,
+        maskImage: "linear-gradient(180deg, transparent, #000 18%, #000 80%, transparent)",
+        WebkitMaskImage: "linear-gradient(180deg, transparent, #000 18%, #000 80%, transparent)",
+      }}
+    >
+      <source src="/home/hvezdy.webm" type="video/webm" />
+      <source src="/home/hvezdy.mp4" type="video/mp4" />
+    </video>
   );
 }
 
