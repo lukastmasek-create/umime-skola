@@ -47,12 +47,19 @@ def still(name, dest, size=None, quality=86):
 
 
 def icons():
-    """Čtyři realistické ikony sekcí (1024 px z Blenderu) zmenšené na 512 px do public/home."""
+    """Čtyři realistické ikony sekcí (1024 px z Blenderu): ořez na obsah, na čtverec 512 px do public/home."""
     for name, dest in (("sekce_zakladni", "sekce-zakladni.webp"), ("sekce_stredni", "sekce-stredni.webp"),
                        ("sekce_prijimacky", "sekce-prijimacky.webp"), ("sekce_maturita", "sekce-maturita.webp")):
-        fr = frames(name, (512, 512))
+        im = frames(name)[0]
+        alpha = im.getchannel("A").point(lambda a: 255 if a > 24 else 0)
+        box = alpha.getbbox()
+        im = im.crop(box)
+        side = int(max(im.size) * 1.06)
+        canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+        canvas.paste(im, ((side - im.width) // 2, (side - im.height) // 2))
+        canvas = canvas.resize((512, 512), Image.LANCZOS)
         path = os.path.join(DEST, "..", dest)
-        fr[0].save(path, format="WEBP", quality=90, method=5, alpha_quality=95)
+        canvas.save(path, format="WEBP", quality=90, method=5, alpha_quality=95)
         print(dest, round(os.path.getsize(path) / 1024), "kB")
 
 
