@@ -9,6 +9,7 @@
 
 import { CITY_SIZE, footprint, getItem, type Placed } from "@/lib/idle/city";
 import { vehicleParts, type Traffic } from "./city-traffic";
+import { drawBirds, drawLiveEffects } from "./city-effects";
 
 export const TW = 64;
 export const TH = 32;
@@ -1572,12 +1573,17 @@ function drawRails(ctx: CanvasRenderingContext2D, gx: number, gy: number, rails:
 
 // Sprite budovy nebo dlaždice: šířka obrázku = šířka diamantu půdorysu, levý okraj v levém rohu
 // půdorysu, spodní okraj v rohu nejblíž ke kameře (pro w ≠ h není ve středu obrázku).
-function drawFootprintSprite(ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, w: number, h: number) {
+function footprintRect(img: HTMLImageElement, x: number, y: number, w: number, h: number) {
   const left = P(x, y + h)[0];
   const bottom = P(x + w, y + h)[1];
   const dw = ((w + h) * TW) / 2;
   const dh = (img.height / img.width) * dw;
-  ctx.drawImage(img, left, bottom - dh, dw, dh);
+  return { x: left, y: bottom - dh, w: dw, h: dh };
+}
+
+function drawFootprintSprite(ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number, w: number, h: number) {
+  const r = footprintRect(img, x, y, w, h);
+  ctx.drawImage(img, r.x, r.y, r.w, r.h);
 }
 
 const CAR_SPRITES: Record<string, string> = {
@@ -1646,6 +1652,11 @@ export function drawCity(ctx: CanvasRenderingContext2D, width: number, height: n
             drawFootprintSprite(ctx, night, x, y, w, h);
             ctx.globalAlpha = 1;
           }
+          // Kouř, majáky, voda a mince se kreslí přes nehybný sprite (jen pro základní polohu budovy).
+          if (key === id) {
+            const rect = footprintRect(sprite, x, y, w, h);
+            drawLiveEffects(ctx, id, rect, scene.time, (index * 0.137) % 1, scene.night, !scene.notWorking.has(index), (def.yield ?? 0) > 0);
+          }
         } else {
           drawItem(ctx, id, x, y, w, h, scene, fences);
         }
@@ -1702,6 +1713,7 @@ export function drawCity(ctx: CanvasRenderingContext2D, width: number, height: n
 
   drawables.sort((a, b) => a.depth - b.depth);
   for (const d of drawables) d.draw();
+  drawBirds(ctx, camera.x, camera.y, camera.zoom, scene.time);
 
   // duchové (náhled stavění) a označení pod kurzorem
   for (const g of scene.ghosts) {
