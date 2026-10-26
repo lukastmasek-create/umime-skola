@@ -10,6 +10,9 @@ import { BreakoutEngine } from "@/lib/breakout-engine";
 import { TetrisEngine } from "@/lib/tetris-engine";
 import { KongEngine } from "@/lib/kong-engine";
 import { CentipedeEngine } from "@/lib/centipede-engine";
+import { FlappyEngine } from "@/lib/flappy-engine";
+import { MoleEngine } from "@/lib/mole-engine";
+import { NinjaEngine } from "@/lib/ninja-engine";
 import type { HeldKey } from "@/lib/arcade-base";
 import { GAMES, type GameSlug } from "@/lib/games";
 import { getArcadeText, isArcadeSlug } from "@/i18n/arcade";
@@ -53,6 +56,9 @@ const PADS: Partial<Record<GameSlug, PadSpec>> = {
   tetris: { keys: ["left", "right", "up", "down", "fire"], up: "⟳", down: "▼" },
   kong: { keys: ["left", "right", "up", "down", "fire"] },
   stonozka: { keys: ["left", "right", "up", "down", "fire"] },
+  flappy: { keys: ["fire"] },
+  mole: { keys: ["left", "right", "fire"] },
+  ninja: { keys: ["left", "right", "up", "down", "fire"] },
 };
 
 function shuffle<T>(items: T[]): T[] {
@@ -266,7 +272,13 @@ export function SpaceQuizGame({
                   ? new KongEngine(canvas, callbacks)
                   : game === "stonozka"
                     ? new CentipedeEngine(canvas, callbacks)
-                    : new SpaceEngine(canvas, callbacks);
+                    : game === "flappy"
+                      ? new FlappyEngine(canvas, callbacks)
+                      : game === "mole"
+                        ? new MoleEngine(canvas, callbacks)
+                        : game === "ninja"
+                          ? new NinjaEngine(canvas, callbacks)
+                          : new SpaceEngine(canvas, callbacks);
     engineRef.current = engine;
     engine.loadQuestion(["Ahoj", "Hello", "Hallo", "Привет"], 0, { fireCooldown: BASE_FIRE_COOLDOWN, alienSpeedFactor: 1 });
     return () => {
@@ -648,13 +660,15 @@ export function SpaceQuizGame({
 
       {phase === "playing" && pad && (
         <div className="flex items-center justify-center gap-3">
-          <HoldButton
-            onHold={(down) => setHeld("left", down)}
-            label="←"
-            className="btn-bouncy h-14 w-16 select-none rounded-2xl bg-[var(--surface-muted)] text-2xl"
-          >
-            ◀
-          </HoldButton>
+          {pad.keys.includes("left") && (
+            <HoldButton
+              onHold={(down) => setHeld("left", down)}
+              label="←"
+              className="btn-bouncy h-14 w-16 select-none rounded-2xl bg-[var(--surface-muted)] text-2xl"
+            >
+              ◀
+            </HoldButton>
+          )}
           {(pad.keys.includes("up") || pad.keys.includes("down")) && (
             <div className="flex flex-col gap-2">
               {pad.keys.includes("up") && (
@@ -677,13 +691,15 @@ export function SpaceQuizGame({
               )}
             </div>
           )}
-          <HoldButton
-            onHold={(down) => setHeld("right", down)}
-            label="→"
-            className="btn-bouncy h-14 w-16 select-none rounded-2xl bg-[var(--surface-muted)] text-2xl"
-          >
-            ▶
-          </HoldButton>
+          {pad.keys.includes("right") && (
+            <HoldButton
+              onHold={(down) => setHeld("right", down)}
+              label="→"
+              className="btn-bouncy h-14 w-16 select-none rounded-2xl bg-[var(--surface-muted)] text-2xl"
+            >
+              ▶
+            </HoldButton>
+          )}
           {pad.keys.includes("fire") && (
             <HoldButton
               onHold={(down) => setHeld("fire", down)}

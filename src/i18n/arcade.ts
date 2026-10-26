@@ -193,6 +193,96 @@ const T: Record<ArcadeSlug, Record<Locale, ArcadeText>> = {
       upgradeAction: "Скорострельность",
     },
   },
+  flappy: {
+    cs: {
+      title: "Flappy kvíz",
+      intro: "Ptáček letí kolem čtyř průletů a u každého je odpověď. Proleť tím správným! Špatný průlet ubere život, stejně jako náraz do zdi nebo země.",
+      controls: "mezerník, ↑ nebo klepnutí = mávnutí křídly",
+      action: "Mávnout",
+      upgradeAction: "Síla křídel",
+    },
+    en: {
+      title: "Flappy Quiz",
+      intro: "The bird flies past four gaps, each with an answer. Fly through the right one! A wrong gap costs a life, and so does hitting a wall or the ground.",
+      controls: "space, ↑ or tap to flap",
+      action: "Flap",
+      upgradeAction: "Wing power",
+    },
+    de: {
+      title: "Flappy-Quiz",
+      intro: "Der Vogel fliegt an vier Lücken vorbei, jede mit einer Antwort. Flieg durch die richtige! Eine falsche Lücke kostet ein Leben, ebenso ein Aufprall an Wand oder Boden.",
+      controls: "Leertaste, ↑ oder Tippen zum Flattern",
+      action: "Flattern",
+      upgradeAction: "Flügelkraft",
+    },
+    ru: {
+      title: "Квиз Флэппи",
+      intro: "Птичка летит мимо четырёх проходов, у каждого ответ. Пролети через правильный! Неверный проход отнимает жизнь, как и удар о стену или землю.",
+      controls: "пробел, ↑ или касание — взмах крыльями",
+      action: "Взмах",
+      upgradeAction: "Сила крыльев",
+    },
+  },
+  mole: {
+    cs: {
+      title: "Krtkův kvíz",
+      intro: "Z děr vykukují krtci a každý drží cedulku s odpovědí. Klepni kladivem na toho se správnou! Špatný krtek ubere život a na chvíli se schová.",
+      controls: "← → vybrat díru, mezerník = klepnout; na telefonu klepni na krtka",
+      action: "Klepnout",
+      upgradeAction: "Rychlost kladiva",
+    },
+    en: {
+      title: "Whack-a-mole Quiz",
+      intro: "Moles pop out of the holes, each holding a sign with an answer. Whack the one with the right answer! A wrong mole costs a life and hides for a while.",
+      controls: "← → pick a hole, space to whack; on a phone tap the mole",
+      action: "Whack",
+      upgradeAction: "Hammer speed",
+    },
+    de: {
+      title: "Maulwurf-Quiz",
+      intro: "Maulwürfe schauen aus den Löchern, jeder hält ein Schild mit einer Antwort. Hau auf den mit der richtigen! Ein falscher Maulwurf kostet ein Leben und versteckt sich kurz.",
+      controls: "← → Loch wählen, Leertaste hauen; am Handy den Maulwurf antippen",
+      action: "Hauen",
+      upgradeAction: "Hammertempo",
+    },
+    ru: {
+      title: "Квиз Крот",
+      intro: "Из нор выглядывают кроты, у каждого табличка с ответом. Ударь молотком того, у кого правильный! Неверный крот отнимает жизнь и ненадолго прячется.",
+      controls: "← → выбрать нору, пробел — удар; на телефоне коснись крота",
+      action: "Удар",
+      upgradeAction: "Скорость молотка",
+    },
+  },
+  ninja: {
+    cs: {
+      title: "Ninja kvíz",
+      intro: "Odpovědi vyletují vzduchem jako ovoce. Švihni po té správné a rozkrojíš ji! Špatnou neřež, ubere život. Propadlé ovoce nevadí, vyletí znovu.",
+      controls: "táhni prstem nebo myší; klávesnicí šipky a mezerník = seknutí",
+      action: "Sekat",
+      upgradeAction: "Rychlost čepele",
+    },
+    en: {
+      title: "Ninja Quiz",
+      intro: "Answers fly through the air like fruit. Slash the right one to cut it in half! Don't cut a wrong one, it costs a life. Dropped fruit doesn't matter, it launches again.",
+      controls: "drag with a finger or mouse; on a keyboard arrows and space to slash",
+      action: "Slash",
+      upgradeAction: "Blade speed",
+    },
+    de: {
+      title: "Ninja-Quiz",
+      intro: "Antworten fliegen wie Obst durch die Luft. Schlitz die richtige auf! Eine falsche nicht, das kostet ein Leben. Heruntergefallenes Obst ist egal, es fliegt wieder los.",
+      controls: "mit Finger oder Maus ziehen; Tastatur: Pfeile und Leertaste zum Schlitzen",
+      action: "Schlitzen",
+      upgradeAction: "Klingentempo",
+    },
+    ru: {
+      title: "Квиз Ниндзя",
+      intro: "Ответы летят по воздуху, как фрукты. Разрежь правильный! Неверный не трогай, он отнимает жизнь. Упавший фрукт не страшен, он взлетит снова.",
+      controls: "проведи пальцем или мышью; на клавиатуре стрелки и пробел — удар",
+      action: "Удар",
+      upgradeAction: "Скорость клинка",
+    },
+  },
 };
 
 export function getArcadeText(game: ArcadeSlug, locale: Locale): ArcadeText {

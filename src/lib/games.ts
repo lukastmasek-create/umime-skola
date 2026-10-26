@@ -6,7 +6,10 @@ export type GameSlug =
   | "breakout"
   | "tetris"
   | "kong"
-  | "stonozka";
+  | "stonozka"
+  | "flappy"
+  | "mole"
+  | "ninja";
 
 export const GAMES: { slug: GameSlug; emoji: string; name: string; available: boolean }[] = [
   { slug: "space-invaders", emoji: "👾", name: "Space Invaders", available: true },
@@ -17,6 +20,9 @@ export const GAMES: { slug: GameSlug; emoji: string; name: string; available: bo
   { slug: "tetris", emoji: "🧩", name: "Tetris", available: true },
   { slug: "kong", emoji: "🦍", name: "Kong", available: true },
   { slug: "stonozka", emoji: "🐛", name: "Centipede", available: true },
+  { slug: "flappy", emoji: "🐤", name: "Flappy", available: true },
+  { slug: "mole", emoji: "🔨", name: "Whack-a-mole", available: true },
+  { slug: "ninja", emoji: "🥷", name: "Ninja", available: true },
 ];
 
 export function getGame(slug: string) {
