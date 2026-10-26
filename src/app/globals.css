@@ -24,6 +24,7 @@
   --shadow-ink: #16132b;
   --danger: #d6291f;
   --font-scale: 1;
+  --field-border: #8a849f;
   --radius-card: 18px;
   --radius-btn: 12px;
   --space-section: 5rem;
@@ -69,6 +70,7 @@ html[data-font="classic"] {
   --edge: #6a63ad;
   --shadow-ink: #05040f;
   --danger: #ff8080;
+  --field-border: #7d76c0;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -93,6 +95,7 @@ html[data-font="classic"] {
     --edge: #6a63ad;
     --shadow-ink: #05040f;
     --danger: #ff8080;
+    --field-border: #7d76c0;
   }
 }
 
@@ -145,6 +148,13 @@ textarea,
 select {
   background: var(--surface);
   color: var(--foreground);
+}
+
+/* Okraje polí musí být vidět (kontrast aspoň 3:1); při fokusu je přebírá Tailwind. */
+input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], :focus),
+textarea:not(:focus),
+select:not(:focus) {
+  border-color: var(--field-border);
 }
 
 ::selection {
