@@ -10,16 +10,20 @@ const COLOR_FRAME: Record<string, string> = {
   "#ff5d73": "z",
   "#5a8bff": "j",
   "#ffb020": "l",
-  "#6b6f8a": "smeti",
 };
 
-const COLS = 10;
-const ROWS = 20;
-const CELL = 19;
-const BX = 22;
-const BY = 20;
-const PX = 236;
-const GARBAGE: string = "#6b6f8a";
+// Hrací plocha: 12 sloupců ve čtyřech zónách po třech. Dole jsou čtyři přistávací plochy s odpověďmi
+// (vyvýšená podlaha, na kterou kostka dosedne). Kostka se zamkne tam, kam dopadne, a zóna, ve které
+// přistála, je zvolená odpověď.
+const COLS = 12;
+const ROWS = 15;
+const FLOOR = 2;
+const CELL = 26;
+const BX = 18;
+const BY = 12;
+const ZONES = 4;
+const ZONE_W = COLS / ZONES;
+const PX = 354;
 
 type Shape = number[][];
 const SHAPES: { m: Shape; color: string }[] = [
@@ -33,26 +37,27 @@ const SHAPES: { m: Shape; color: string }[] = [
 ];
 
 type Piece = { m: Shape; color: string; x: number; y: number };
-// Odpovědi jsou drahokamy zabudované do řádků na dně: vymaž řádek se správným drahokamem.
-// Políčko drahokamu je v poli zapsané jako "g<index odpovědi>".
-type Option = { label: string; correct: boolean; index: number };
+type Zone = { label: string; index: number; correct: boolean; closed: boolean; hit: number };
 
 function rotate(m: Shape): Shape {
   const n = m.length;
   return m.map((_, y) => m.map((__, x) => m[n - 1 - x][y]));
 }
 
+// Kostkový kvíz: pohybuj, otáčej a shoď kostku tak, aby dosedla na plochu se správnou odpovědí.
+// Zóna pod kostkou se zvýrazňuje už za letu, takže je vidět, kam to dopadne. Špatná odpověď ubere
+// život a plocha se zavře, správná ukončí otázku.
 export class TetrisEngine extends ArcadeEngine {
   private sp = new Sprites("tetris");
-  private board: (string | null)[][] = [];
   private piece: Piece | null = null;
   private next: { m: Shape; color: string } = SHAPES[0];
   private bag: number[] = [];
   private fall = 0;
   private repeat = { left: 0, right: 0 };
-  private options: Option[] = [];
-  private pendingGarbage = 0;
-  private clearing: { rows: number[]; t: number } | null = null;
+  private zones: Zone[] = [];
+  private landed: Piece | null = null;
+  private pause = 0;
+
   protected questionTime() {
     return 90;
   }
@@ -67,62 +72,42 @@ export class TetrisEngine extends ArcadeEngine {
   }
 
   protected setup(options: string[], correctIndex: number) {
-    this.board = Array.from({ length: ROWS }, () => Array<string | null>(COLS).fill(null));
-    this.clearing = null;
     this.fall = 0;
     this.repeat = { left: 0, right: 0 };
     this.bag = [];
     this.piece = null;
-    this.options = [];
-    this.pendingGarbage = 0;
+    this.landed = null;
+    this.pause = 0;
+    this.zones = [];
     if (options.length === 0) return;
-    this.options = options.map((label, i) => ({ label, correct: i === correctIndex, index: i }));
-    // Zespodu: drahokamový řádek, prázdný řádek, … Díra se v řádcích posouvá o jedno políčko,
-    // takže jde zalepit kostkami shora.
     const order = shuffleInPlace(options.map((_, i) => i));
-    let hole = Math.floor(Math.random() * COLS);
-    let row = ROWS - 1;
-    for (let k = 0; k < order.length; k++) {
-      for (let g = 0; g < 2 && row >= 0; g++, row--) {
-        hole = Math.max(0, Math.min(COLS - 3, hole + Math.floor(Math.random() * 3) - 1));
-        // Čím snazší obtížnost, tím širší mezera v řádku, takže jde zaplnit jednou kostkou.
-        const holeW = this.config.alienSpeedFactor <= 0.7 ? 3 : this.config.alienSpeedFactor <= 0.92 ? 2 : 1;
-        const line = Array.from({ length: COLS }, (_, x) => (x >= hole && x < hole + holeW ? null : GARBAGE));
-        if (g === 0) {
-          let gx = Math.floor(Math.random() * COLS);
-          while (gx >= hole - 1 && gx <= hole + holeW) gx = (gx + 3) % COLS;
-          line[gx] = "g" + order[k];
-        }
-        this.board[row] = line;
-      }
-    }
+    this.zones = order.slice(0, ZONES).map((optIndex) => ({
+      label: options[optIndex],
+      index: optIndex,
+      correct: optIndex === correctIndex,
+      closed: false,
+      hit: 0,
+    }));
     this.next = this.nextShape();
     this.spawn();
   }
 
-  // Nápověda 50:50: drahokam špatné odpovědi se změní na obyčejnou kostku.
+  // Nápověda 50:50: špatné plochy se zavřou.
   protected eliminate(indices: number[]) {
-    for (const i of indices) {
-      const o = this.options[i];
-      if (!o || o.correct) continue;
-      for (let y = 0; y < ROWS; y++)
-        for (let x = 0; x < COLS; x++)
-          if (this.board[y][x] === "g" + i) {
-            this.board[y][x] = GARBAGE;
-            this.burst(BX + x * CELL + CELL / 2, BY + y * CELL + CELL / 2, ANSWER_COLORS[i % ANSWER_COLORS.length], 12);
-          }
-      this.options[i] = { ...o, label: "" };
-    }
+    this.zones.forEach((z, i) => {
+      if (z.correct || z.closed || !indices.includes(z.index)) return;
+      z.closed = true;
+      this.burst(this.zoneCenterX(i), this.floorTop(), ANSWER_COLORS[i % ANSWER_COLORS.length], 14);
+    });
     sfx("pickup");
   }
 
-  private addGarbage(): boolean {
-    const topOccupied = this.board[0].some((c) => c !== null);
-    this.board.shift();
-    const hole = Math.floor(Math.random() * COLS);
-    const hole2 = Math.random() < 0.4 ? Math.floor(Math.random() * COLS) : hole;
-    this.board.push(Array.from({ length: COLS }, (_, x) => (x === hole || x === hole2 ? null : GARBAGE)));
-    return !topOccupied;
+  private zoneCenterX(zone: number) {
+    return BX + (zone * ZONE_W + ZONE_W / 2) * CELL;
+  }
+
+  private floorTop() {
+    return BY + (ROWS - FLOOR) * CELL;
   }
 
   private fits(m: Shape, x: number, y: number) {
@@ -131,8 +116,7 @@ export class TetrisEngine extends ArcadeEngine {
         if (!m[r][c]) continue;
         const bx = x + c;
         const by = y + r;
-        if (bx < 0 || bx >= COLS || by >= ROWS) return false;
-        if (by >= 0 && this.board[by][bx]) return false;
+        if (bx < 0 || bx >= COLS || by >= ROWS - FLOOR) return false;
       }
     return true;
   }
@@ -140,20 +124,8 @@ export class TetrisEngine extends ArcadeEngine {
   private spawn() {
     const s = this.next;
     this.next = this.nextShape();
-    const p: Piece = { m: s.m, color: s.color, x: Math.floor((COLS - s.m.length) / 2), y: s.m.length === 4 ? -1 : 0 };
-    if (!this.fits(p.m, p.x, p.y)) {
-      this.piece = null;
-      this.topOut();
-      return;
-    }
-    this.piece = p;
+    this.piece = { m: s.m, color: s.color, x: Math.floor((COLS - s.m.length) / 2), y: s.m.length === 4 ? -1 : 0 };
     this.fall = 0;
-  }
-
-  private topOut() {
-    this.damage();
-    for (let y = 0; y < ROWS - 3; y++) this.board[y] = Array<string | null>(COLS).fill(null);
-    this.spawn();
   }
 
   private move(dx: number) {
@@ -179,76 +151,68 @@ export class TetrisEngine extends ArcadeEngine {
     }
   }
 
+  private landingY(p: Piece) {
+    let y = p.y;
+    while (this.fits(p.m, p.x, y + 1)) y += 1;
+    return y;
+  }
+
+  // Do které zóny kostka dopadne: podle sloupců jejího nejnižšího řádku.
+  private zoneOf(p: Piece, y: number) {
+    let low = -99;
+    for (let r = 0; r < p.m.length; r++) if (p.m[r].some(Boolean)) low = Math.max(low, y + r);
+    const cols: number[] = [];
+    for (let r = 0; r < p.m.length; r++)
+      if (y + r === low) for (let c = 0; c < p.m[r].length; c++) if (p.m[r][c]) cols.push(p.x + c);
+    const avg = cols.reduce((a, b) => a + b, 0) / Math.max(1, cols.length);
+    return Math.max(0, Math.min(ZONES - 1, Math.floor((avg + 0.5) / ZONE_W)));
+  }
+
   private lock() {
     const p = this.piece;
     if (!p) return;
-    for (let r = 0; r < p.m.length; r++)
-      for (let c = 0; c < p.m[r].length; c++)
-        if (p.m[r][c] && p.y + r >= 0) this.board[p.y + r][p.x + c] = p.color;
+    p.y = this.landingY(p);
+    const z = this.zoneOf(p, p.y);
+    const zone = this.zones[z];
     this.piece = null;
-    const rows: number[] = [];
-    for (let y = 0; y < ROWS; y++) if (this.board[y].every((c) => c !== null)) rows.push(y);
-    if (rows.length) {
-      this.clearing = { rows, t: 0.22 };
-      if (this.collectGems(rows)) return;
-      sfx("stomp");
-      this.popText(rows.length >= 4 ? "TETRIS!" : `+${rows.length}`, "#ffe066", BX + (COLS * CELL) / 2, BY + rows[0] * CELL);
-    } else {
+    const cx = this.zoneCenterX(z);
+    zone.hit = 0.5;
+    if (zone.closed) {
+      // zavřená plocha: kostka se jen odrazí a zmizí, nic se neděje
+      this.burst(cx, this.floorTop(), "#9aa4c4", 10);
       sfx("land");
-      this.spawn();
+      this.landed = p;
+      this.pause = 0.35;
+      return;
     }
-  }
-
-  // Vymazaný řádek s drahokamem = zvolená odpověď. Vrací true, když to byla správná (otázka končí).
-  private collectGems(rows: number[]): boolean {
-    for (const y of rows) {
-      for (const cell of this.board[y]) {
-        if (typeof cell !== "string" || cell[0] !== "g") continue;
-        const idx = Number(cell.slice(1));
-        const o = this.options[idx];
-        if (!o) continue;
-        const color = ANSWER_COLORS[idx % ANSWER_COLORS.length];
-        this.burst(BX + (COLS * CELL) / 2, BY + y * CELL, color, 28);
-        if (o.correct) {
-          this.win(o.index);
-          return true;
-        }
-        this.wrong(o.index);
-        this.pendingGarbage += 1;
-      }
+    if (zone.correct) {
+      this.landed = p;
+      this.burst(cx, this.floorTop(), ANSWER_COLORS[z % ANSWER_COLORS.length], 34);
+      this.win(zone.index);
+      return;
     }
-    return false;
-  }
-
-  private finishClear() {
-    const c = this.clearing;
-    if (!c) return;
-    for (const y of c.rows) {
-      this.board.splice(y, 1);
-      this.board.unshift(Array<string | null>(COLS).fill(null));
-    }
-    this.clearing = null;
-    while (this.pendingGarbage > 0) {
-      this.pendingGarbage -= 1;
-      if (!this.addGarbage()) {
-        this.topOut();
-        return;
-      }
-    }
-    this.spawn();
+    this.landed = p;
+    zone.closed = true;
+    this.burst(cx, this.floorTop(), "#ff5d73", 20);
+    this.pause = 0.7;
+    this.wrong(zone.index);
   }
 
   private hardDrop() {
     const p = this.piece;
     if (!p) return;
-    while (this.fits(p.m, p.x, p.y + 1)) p.y += 1;
+    p.y = this.landingY(p);
     this.lock();
   }
 
   protected update(dt: number) {
-    if (this.clearing) {
-      this.clearing.t -= dt;
-      if (this.clearing.t <= 0) this.finishClear();
+    for (const z of this.zones) z.hit = Math.max(0, z.hit - dt);
+    if (this.pause > 0) {
+      this.pause -= dt;
+      if (this.pause <= 0) {
+        this.landed = null;
+        this.spawn();
+      }
       return;
     }
     const p = this.piece;
@@ -268,12 +232,13 @@ export class TetrisEngine extends ArcadeEngine {
         this.repeat[side] -= dt;
         if (this.repeat[side] <= 0) {
           this.move(dx);
-          this.repeat[side] = 0.065 / ctrl;
+          this.repeat[side] = 0.07 / ctrl;
         }
       }
     }
-    const interval = Math.max(0.07, 0.8 / this.pace());
-    this.fall += dt * (this.input.down ? 12 : 1);
+    // Pád: pomalejší než klasický tetris, ať je čas přemýšlet nad odpovědí.
+    const interval = Math.max(0.09, 0.62 / this.pace());
+    this.fall += dt * (this.input.down ? 10 : 1);
     while (this.fall >= interval) {
       this.fall -= interval;
       if (this.fits(p.m, p.x, p.y + 1)) p.y += 1;
@@ -297,97 +262,89 @@ export class TetrisEngine extends ArcadeEngine {
     ctx.strokeStyle = "rgba(255,255,255,0.18)";
     ctx.lineWidth = 2;
     ctx.strokeRect(BX - 3, BY - 3, COLS * CELL + 6, ROWS * CELL + 6);
-    for (let y = 0; y < ROWS; y++)
-      for (let x = 0; x < COLS; x++) {
-        const c = this.board[y]?.[x];
-        if (!c) continue;
-        if (c[0] === "g") this.gem(ctx, BX + x * CELL, BY + y * CELL, Number(c.slice(1)));
-        else this.cell(ctx, BX + x * CELL, BY + y * CELL, c);
-      }
-    if (this.clearing) {
-      ctx.fillStyle = `rgba(255,255,255,${0.5 + Math.sin(this.time * 40) * 0.3})`;
-      for (const y of this.clearing.rows) ctx.fillRect(BX, BY + y * CELL, COLS * CELL, CELL);
-    }
+
+    // zóna pod letící kostkou svítí, ať je vidět, kam dopadne
     const p = this.piece;
+    const aim = p && !this.over ? this.zoneOf(p, this.landingY(p)) : -1;
+    this.zones.forEach((z, i) => {
+      const x = BX + i * ZONE_W * CELL;
+      const color = ANSWER_COLORS[i % ANSWER_COLORS.length];
+      ctx.fillStyle = z.closed ? "rgba(255,255,255,0.03)" : color;
+      ctx.globalAlpha = z.closed ? 1 : i === aim ? 0.26 : 0.1;
+      ctx.fillRect(x, BY, ZONE_W * CELL, (ROWS - FLOOR) * CELL);
+      ctx.globalAlpha = 1;
+      if (i > 0) {
+        ctx.strokeStyle = "rgba(255,255,255,0.12)";
+        ctx.setLineDash([4, 6]);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x, BY);
+        ctx.lineTo(x, this.floorTop());
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      // podlaha s odpovědí
+      const fy = this.floorTop();
+      const lift = Math.sin((z.hit / 0.5) * Math.PI) * 6;
+      ctx.fillStyle = z.closed ? "#3a3d55" : color;
+      ctx.globalAlpha = z.closed ? 0.9 : i === aim ? 1 : 0.8;
+      ctx.beginPath();
+      ctx.roundRect(x + 3, fy - lift, ZONE_W * CELL - 6, FLOOR * CELL, 8);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      if (i === aim && !z.closed) {
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+      drawLabel(ctx, z.closed ? "✖" : z.label, x + (ZONE_W * CELL) / 2, fy + FLOOR * CELL * 0.5 - lift, ZONE_W * CELL - 12, "rgba(0,0,0,0.3)", {
+        height: FLOOR * CELL - 12,
+        size: 15,
+        alpha: z.closed ? 0.6 : 1,
+      });
+    });
+
+    // kostka, která dopadla (po správné odpovědi zůstane ležet)
+    const drawPiece = (piece: Piece, y: number, alpha = 1) => {
+      ctx.globalAlpha = alpha;
+      for (let r = 0; r < piece.m.length; r++)
+        for (let c = 0; c < piece.m[r].length; c++) if (piece.m[r][c] && y + r >= 0) this.cell(ctx, BX + (piece.x + c) * CELL, BY + (y + r) * CELL, piece.color);
+      ctx.globalAlpha = 1;
+    };
+    if (this.landed) drawPiece(this.landed, this.landed.y, this.pause > 0 ? Math.max(0, this.pause / 0.7) : 1);
     if (p && !this.over) {
-      let gy = p.y;
-      while (this.fits(p.m, p.x, gy + 1)) gy += 1;
+      const gy = this.landingY(p);
       for (let r = 0; r < p.m.length; r++)
         for (let c = 0; c < p.m[r].length; c++) {
-          if (!p.m[r][c]) continue;
-          if (gy + r >= 0) {
-            ctx.strokeStyle = "rgba(255,255,255,0.35)";
-            ctx.lineWidth = 1.5;
-            ctx.strokeRect(BX + (p.x + c) * CELL + 1.5, BY + (gy + r) * CELL + 1.5, CELL - 3, CELL - 3);
-          }
-          if (p.y + r >= 0) this.cell(ctx, BX + (p.x + c) * CELL, BY + (p.y + r) * CELL, p.color);
+          if (!p.m[r][c] || gy + r < 0) continue;
+          ctx.strokeStyle = "rgba(255,255,255,0.45)";
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(BX + (p.x + c) * CELL + 1.5, BY + (gy + r) * CELL + 1.5, CELL - 3, CELL - 3);
         }
+      drawPiece(p, p.y);
     }
 
     // další kostka
     ctx.fillStyle = "rgba(255,255,255,0.08)";
     ctx.beginPath();
-    ctx.roundRect(PX, 20, 120, 80, 10);
+    ctx.roundRect(PX, 16, 120, 90, 10);
     ctx.fill();
     ctx.fillStyle = "rgba(255,255,255,0.6)";
     ctx.font = "700 11px system-ui, sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText("NEXT", PX + 8, 34);
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText("NEXT", PX + 8, 32);
     const nm = this.next.m;
-    const ox = PX + 60 - (nm[0].length * 16) / 2;
+    const size = 18;
+    const ox = PX + 60 - (nm[0].length * size) / 2;
     for (let r = 0; r < nm.length; r++)
-      for (let c = 0; c < nm[r].length; c++) if (nm[r][c]) this.cell(ctx, ox + c * 16, 46 + r * 16, this.next.color, 16);
+      for (let c = 0; c < nm[r].length; c++) if (nm[r][c]) this.cell(ctx, ox + c * size, 42 + r * size, this.next.color, size);
 
-    // odpovědi: popisek vedle řádku s příslušným drahokamem, sleduje ho při propadávání
-    ctx.fillStyle = "rgba(255,255,255,0.75)";
-    ctx.font = "700 12px system-ui, sans-serif";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "alphabetic";
-    ctx.fillText("◆ = odpověď", PX + 140, 34);
-    ctx.fillStyle = "rgba(255,255,255,0.5)";
-    ctx.font = "600 11px system-ui, sans-serif";
-    for (let y = 0; y < ROWS; y++) {
-      for (let x = 0; x < COLS; x++) {
-        const c = this.board[y]?.[x];
-        if (!c || c[0] !== "g") continue;
-        const idx = Number(c.slice(1));
-        const o = this.options[idx];
-        if (!o) continue;
-        const cy = BY + y * CELL + CELL / 2;
-        const color = ANSWER_COLORS[idx % ANSWER_COLORS.length];
-        ctx.strokeStyle = color;
-        ctx.globalAlpha = 0.5;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(BX + COLS * CELL + 4, cy);
-        ctx.lineTo(PX + 6, cy);
-        ctx.stroke();
-        ctx.globalAlpha = 1;
-        drawLabel(ctx, o.label, PX + 10 + 170 / 2, cy, 170, color, { height: 18, size: 13 });
-      }
-    }
-    ctx.textBaseline = "alphabetic";
-  }
-
-  private gem(ctx: CanvasRenderingContext2D, x: number, y: number, idx: number) {
-    if (this.sp.draw(ctx, "kostky", "drahokam_" + (idx + 1), x + CELL / 2, y + CELL / 2, CELL, CELL)) return;
-    const color = ANSWER_COLORS[idx % ANSWER_COLORS.length];
-    ctx.fillStyle = GARBAGE;
-    ctx.fillRect(x + 1, y + 1, CELL - 2, CELL - 2);
-    const cx = x + CELL / 2;
-    const cy = y + CELL / 2;
-    const pulse = 1 + Math.sin(this.time * 5 + idx) * 0.08;
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy - 8 * pulse);
-    ctx.lineTo(cx + 8 * pulse, cy);
-    ctx.lineTo(cx, cy + 8 * pulse);
-    ctx.lineTo(cx - 8 * pulse, cy);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
+    // nápověda ovládání
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.font = "600 12px system-ui, sans-serif";
+    const tips = ["← →  posun", "↑  otočit", "↓  zrychlit", "mezerník  shodit"];
+    tips.forEach((t, i) => ctx.fillText(t, PX + 6, 140 + i * 20));
   }
 
   private cell(ctx: CanvasRenderingContext2D, x: number, y: number, color: string, size = CELL) {

@@ -384,9 +384,18 @@ export function SpaceQuizGame({
     );
   }
 
+  // Chybná otázka se na konci kola ještě jednou objeví (nejvýš dvakrát za kolo): opakování učí.
+  const repeatsLeftRef = useRef(0);
   function noteMistake(q: GameQuestion | undefined) {
-    if (!q) return;
+    if (!q || mistakes.some((m) => m.prompt === q.prompt)) return;
     setMistakes((list) => (list.some((m) => m.prompt === q.prompt) ? list : [...list, q]));
+    if (!endless && repeatsLeftRef.current > 0) {
+      repeatsLeftRef.current -= 1;
+      const again = prepareRun([q], 1)[0];
+      setRun((r) => [...r, again]);
+      setToast(t.repeatLater);
+      window.setTimeout(() => setToast((m) => (m === t.repeatLater ? null : m)), 3500);
+    }
   }
 
   function startRun(only?: GameQuestion[]) {
@@ -398,6 +407,7 @@ export function SpaceQuizGame({
       : prepareRun(pool, Math.min(QUESTIONS_PER_RUN, pool.length));
     setMistakes([]);
     setAsked(0);
+    repeatsLeftRef.current = 2;
     setRun(newRun);
     setScore(0);
     setLives(DIFFICULTIES[difficulty].lives + upgrades.life);

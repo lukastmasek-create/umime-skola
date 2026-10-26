@@ -62,6 +62,7 @@ export type GameText = {
   practiceMistakes: string;
   noMistakes: string;
   summary: string;
+  repeatLater: string;
   damage: string;
   tipDodge: string;
   mario: { title: string; intro: string; controls: string; jump: string; upgradeJump: string };
@@ -123,6 +124,7 @@ const cs: GameText = {
   practiceMistakes: "Procvičit chyby",
   noMistakes: "Bez jediné chyby! 🌟",
   summary: "Správně {a} z {b} otázek",
+  repeatLater: "Tuhle otázku dostaneš ještě jednou na konci.",
   damage: "Zásah! −1 život",
   tipDodge: "Sbírej bonusy 🛡️ ⚡ 🐌 a uhýbej červeným střelám. Poslední otázka je BOSS.",
   mario: { title: "Mario kvíz", intro: "Želvy nesou odpovědi a pořád se hýbou. Naskoč shora na tu správnou!", controls: "← → nebo A D pohyb, mezerník / ↑ skok (držíš = výš), na telefonu táhni prstem a klepni", jump: "Skok", upgradeJump: "Výška skoku" },
@@ -215,6 +217,7 @@ const en: GameText = {
   practiceMistakes: "Practice mistakes",
   noMistakes: "Not a single mistake! 🌟",
   summary: "{a} of {b} questions correct",
+  repeatLater: "You will get this question once more at the end.",
   damage: "Hit! −1 life",
   tipDodge: "Grab power-ups 🛡️ ⚡ 🐌 and dodge the red shots. The last question is the BOSS.",
   mario: { title: "Mario Quiz", intro: "Turtles carry the answers and keep moving. Jump on the right one from above!", controls: "← → or A D to move, space / ↑ to jump (hold = higher), on a phone drag and tap", jump: "Jump", upgradeJump: "Jump height" },
@@ -307,6 +310,7 @@ const de: GameText = {
   practiceMistakes: "Fehler üben",
   noMistakes: "Kein einziger Fehler! 🌟",
   summary: "{a} von {b} Fragen richtig",
+  repeatLater: "Diese Frage kommt am Ende noch einmal.",
   damage: "Treffer! −1 Leben",
   tipDodge: "Sammle Boni 🛡️ ⚡ 🐌 und weiche den roten Schüssen aus. Die letzte Frage ist der BOSS.",
   mario: { title: "Mario-Quiz", intro: "Schildkröten tragen die Antworten und bewegen sich ständig. Spring von oben auf die richtige!", controls: "← → oder A D bewegen, Leertaste / ↑ springen (halten = höher), am Handy ziehen und tippen", jump: "Springen", upgradeJump: "Sprunghöhe" },
@@ -399,6 +403,7 @@ const ru: GameText = {
   practiceMistakes: "Потренировать ошибки",
   noMistakes: "Ни одной ошибки! 🌟",
   summary: "Верно {a} из {b} вопросов",
+  repeatLater: "Этот вопрос ещё раз встретится в конце.",
   damage: "Попадание! −1 жизнь",
   tipDodge: "Собирай бонусы 🛡️ ⚡ 🐌 и уворачивайся от красных выстрелов. Последний вопрос — БОСС.",
   mario: { title: "Квиз с Марио", intro: "Черепахи несут ответы и всё время двигаются. Запрыгни сверху на правильную!", controls: "← → или A D — движение, пробел / ↑ — прыжок (дольше = выше), на телефоне води пальцем и касайся", jump: "Прыжок", upgradeJump: "Высота прыжка" },
