@@ -35,12 +35,14 @@ function isCorrect(question: TestQuestion, typed: string[] | undefined, choice: 
 
 export function TestRunner({
   locale,
+  courseId,
   title,
   t,
   questions,
   backHref,
 }: {
   locale: Locale;
+  courseId?: string;
   title: string;
   t: TestText;
   questions: TestQuestion[];
@@ -59,7 +61,17 @@ export function TestRunner({
 
   async function submitTest() {
     setSubmitted(true);
-    const correct = questions.filter((q) => isCorrect(q, typed[q.id], choices[q.id])).length;
+    const results = questions.map((q) => ({ id: q.id, correct: isCorrect(q, typed[q.id], choices[q.id]) }));
+    const correct = results.filter((r) => r.correct).length;
+    // Chyby se zapíšou do opakování a výsledek do mapy kurzů (hostům se nic neuloží).
+    fetch("/api/opakovani", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        results,
+        course: courseId ? { id: courseId, percent: questions.length ? (correct / questions.length) * 100 : 0 } : undefined,
+      }),
+    }).catch(() => {});
     if (correct <= 0) return;
     try {
       const res = await fetch("/api/xp", {

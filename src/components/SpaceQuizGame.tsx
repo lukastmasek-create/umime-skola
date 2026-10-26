@@ -221,6 +221,7 @@ export function SpaceQuizGame({
   const [lives, setLives] = useState(BASE_LIVES);
   const [combo, setCombo] = useState(0);
   const [bestCombo, setBestCombo] = useState(0);
+  const answersRef = useRef<{ id: string; correct: boolean }[]>([]);
   const [coins, setCoins] = useState(0);
   const [upgrades, setUpgrades] = useState<Upgrades>(EMPTY_UPGRADES);
   const [resolved, setResolved] = useState<Resolved | null>(null);
@@ -322,6 +323,7 @@ export function SpaceQuizGame({
     setLives(BASE_LIVES + upgrades.life);
     setCombo(0);
     setBestCombo(0);
+    answersRef.current = [];
     setQIndex(0);
     setResolved(null);
     setFlash(null);
@@ -349,7 +351,23 @@ export function SpaceQuizGame({
     }
   }
 
+  function recordAnswer(id: string | undefined, correct: boolean) {
+    if (id) answersRef.current.push({ id, correct });
+  }
+
+  // Chyby z kola se zapíšou do opakování (hostům se nic neuloží).
+  function reportAnswers() {
+    if (answersRef.current.length === 0) return;
+    fetch("/api/opakovani", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ results: answersRef.current }),
+    }).catch(() => {});
+    answersRef.current = [];
+  }
+
   function finishRun(survived: boolean) {
+    reportAnswers();
     engineRef.current?.loadQuestion([], 0, { fireCooldown: BASE_FIRE_COOLDOWN, alienSpeedFactor: 1 });
     sfx(survived ? "win" : "lose");
     const comboBonus = bestCombo > 1 ? bestCombo * 3 : 0;
@@ -416,6 +434,7 @@ export function SpaceQuizGame({
     pausedRef.current = paused;
     handlersRef.current = {
       onHit: (correct) => {
+        recordAnswer(run[qIndex]?.id, correct);
         if (correct && endless) {
           // Nekonečná hra se nezastavuje: krátká zpráva s vysvětlením a hned další otázka.
           const pts = 10 + Math.min(combo, 4) * 5;
@@ -452,6 +471,7 @@ export function SpaceQuizGame({
         }
       },
       onMiss: () => {
+        recordAnswer(run[qIndex]?.id, false);
         if (endless && lives - 1 > 0) {
           setLives(lives - 1);
           setCombo(0);

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { fill } from "@/i18n/profile";
 import { getDailyText } from "@/i18n/daily";
+import { getReviewText } from "@/i18n/review";
 import { notifyAccountChanged } from "@/lib/account-events";
 import { CARDS } from "@/lib/collection";
 import Link from "next/link";
@@ -23,6 +24,7 @@ export type Snapshot = {
   };
   pet: { name: string; species: string; hunger: number; happy: number } | null;
   cityCoins: number;
+  reviewDue: number;
   weekKey: string;
   weekly: { id: WeeklyId; target: number; bonusXp: number; progress: number; done: boolean; claimed: boolean }[];
   quests: { id: QuestId; target: number; bonusXp: number; progress: number; done: boolean; claimed: boolean }[];
@@ -85,7 +87,7 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
   if (state === "guest") return <p className="card p-5 text-sm text-[var(--muted)]">{t.guest}</p>;
   if (state === "error") return <p className="card p-5 text-sm text-[var(--muted)]">{t.error}</p>;
 
-  const { streak, pet, cityCoins, weekKey, quests, weekly, milestones, achievements } = state;
+  const { streak, pet, cityCoins, reviewDue, weekKey, quests, weekly, milestones, achievements } = state;
   const heading = { fontFamily: "var(--font-heading)" } as const;
   const claimButton = (id: string, ready: boolean, claimed: boolean) =>
     claimed ? (
@@ -142,6 +144,18 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
           )}
         </ul>
       )}
+
+      <div className="flex flex-wrap gap-2">
+        <Link
+          href={`/${locale}/opakovani`}
+          className={`btn-bouncy px-4 py-2 text-sm font-bold ${reviewDue > 0 ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface)]"}`}
+        >
+          🔁 {fill(getReviewText(locale).reviewCta, reviewDue)}
+        </Link>
+        <Link href={`/${locale}/mapa`} className="btn-bouncy bg-[var(--surface)] px-4 py-2 text-sm font-bold">
+          🗺️ {getReviewText(locale).mapNav}
+        </Link>
+      </div>
 
       <div className="flex flex-wrap items-center gap-3 rounded-xl border-2 border-[var(--edge)] px-3 py-2">
         <span className="text-sm font-semibold">🧊 {fill(t.freezes, `${streak.freezes}/${streak.maxFreezes}`)}</span>

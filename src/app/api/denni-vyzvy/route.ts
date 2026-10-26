@@ -7,6 +7,7 @@ import { levelFromXp } from "@/lib/progression";
 import { normalizeState as normalizePets, settle as settlePets } from "@/lib/idle/pets";
 import { normalizeCity, settleCity } from "@/lib/idle/city";
 import { normalizeCards, rollCard } from "@/lib/collection";
+import { REVIEW_GAME, dueIds, normalizeReview } from "@/lib/review";
 import {
   FREEZE_PRICE,
   MAX_FREEZES,
@@ -78,7 +79,7 @@ async function snapshot(userId: string) {
       select: { source: true },
     }),
     getXp(userId),
-    prisma.idleState.findMany({ where: { userId, game: { in: ["streak", "mazlicci", "mesto"] } } }),
+    prisma.idleState.findMany({ where: { userId, game: { in: ["streak", "mazlicci", "mesto", REVIEW_GAME] } } }),
   ]);
   const idleData = (game: string) => idleRows.find((r) => r.game === game)?.data;
 
@@ -158,6 +159,7 @@ async function snapshot(userId: string) {
     },
     pet,
     cityCoins,
+    reviewDue: dueIds(normalizeReview(idleData(REVIEW_GAME)), now).length,
     weekKey: dayKey(weekStart),
     weekly: WEEKLY_QUESTS.map((q) => ({
       id: q.id,
