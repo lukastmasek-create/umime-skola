@@ -53,14 +53,6 @@ export default async function Home({
             className="space-float absolute right-[8%] top-10 hidden md:block"
             style={{ animationDelay: "-2s" }}
           />
-          <SpriteFrame
-            sheet="aliens"
-            col={2}
-            row={ALIEN_ROW.chobotnice}
-            size={80}
-            className="space-float absolute bottom-10 left-[44%] hidden lg:block"
-            style={{ animationDelay: "-4s" }}
-          />
           <Rocket className="bottom-16" />
 
           <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-10 sm:px-6 sm:py-16 lg:grid-cols-[1.15fr_0.85fr] lg:py-24">
@@ -69,23 +61,23 @@ export default async function Home({
                 {badge}
               </span>
               <h1
-                className="text-3xl font-extrabold leading-[1.4] tracking-tight sm:text-4xl lg:text-[2.6rem]"
+                className="text-3xl font-extrabold leading-[1.3] tracking-tight sm:text-4xl lg:text-5xl"
                 style={heading}
               >
                 {dict.home.titleLine1}{" "}
                 <span className="gradient-text">{dict.home.titleLine2}</span>
               </h1>
-              <p className="max-w-xl text-lg text-[var(--muted)]">{dict.home.subtitle}</p>
+              <p className="max-w-xl text-lg leading-relaxed text-[var(--muted)]">{dict.home.subtitle}</p>
               <div className="flex flex-wrap gap-4">
                 <Link
                   href={`/${locale}/kurzy/zakladni`}
-                  className="btn-bouncy bg-[var(--brand-500)] px-6 py-3 text-sm font-bold text-white"
+                  className="btn-bouncy btn-primary btn-lg"
                 >
                   🚀 {dict.home.browseCourses}
                 </Link>
                 <Link
                   href={`/${locale}/registrace`}
-                  className="btn-bouncy bg-[var(--surface)] px-6 py-3 text-sm font-bold"
+                  className="btn-bouncy btn-secondary btn-lg"
                 >
                   {dict.home.createAccount}
                 </Link>
@@ -107,14 +99,14 @@ export default async function Home({
         <div className="relative z-10 mx-auto max-w-6xl px-4 pb-20 pt-24 sm:px-6">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="text-2xl font-bold tracking-tight" style={heading}>
+              <h2 className="text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
                 🌳 {h.subjectsTitle}
               </h2>
               <p className="mt-1 max-w-xl text-sm text-[var(--muted)]">{h.subjectsHint}</p>
             </div>
             <Link
               href={`/${locale}/kurzy/zakladni`}
-              className="text-sm font-bold text-[#9be8b4] hover:underline"
+              className="text-sm font-bold text-[var(--accent-green)] hover:underline"
             >
               {h.allCourses} →
             </Link>
@@ -152,11 +144,11 @@ export default async function Home({
         <Circuit className="right-0 top-20 hidden h-44 w-80 lg:block" />
         <Circuit className="bottom-6 left-0 hidden h-44 w-80 lg:block" flip />
         <div className="relative z-10 mx-auto max-w-6xl px-4 pb-20 pt-24 sm:px-6">
-          <h2 className="mb-2 text-2xl font-bold tracking-tight" style={heading}>
+          <h2 className="mb-2 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
             ⚙️ {h.featuresTitle}
           </h2>
           <p className="mb-8 font-mono text-xs uppercase tracking-[0.3em] text-[#35d0ff]/80">
-            <span className="tech-blink">●</span> online · 04 modules
+            <span className="tech-blink">●</span> 01 — 0{h.features.length}
           </p>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {h.features.map((feature, i) => {
@@ -196,7 +188,7 @@ export default async function Home({
         <HomeArt name="oblak-1" size={120} className="space-float absolute right-[12%] top-20 z-0 hidden h-auto sm:block" />
         <HomeArt name="oblak-2" size={96} className="space-float absolute left-[8%] top-28 z-0 hidden h-auto sm:block" style={{ animationDelay: "-3s" }} />
         <div className="relative z-10 mx-auto max-w-6xl px-4 pb-44 pt-24 sm:px-6 sm:pb-64">
-          <h2 className="mb-10 text-2xl font-bold tracking-tight" style={heading}>
+          <h2 className="mb-8 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
             🏔️ {h.stepsTitle}
           </h2>
           <ol className="relative grid gap-8 md:grid-cols-3 md:gap-5">
@@ -234,8 +226,8 @@ export default async function Home({
           className="space-float absolute right-8 top-20 hidden sm:block"
           style={{ animationDelay: "-2.5s" }}
         />
-        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-24 pt-24 sm:px-6">
-          <h2 className="mb-8 text-2xl font-bold tracking-tight" style={heading}>
+        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-20 pt-24 sm:px-6">
+          <h2 className="mb-8 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
             🌌 {dict.home.pickSection}
           </h2>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
