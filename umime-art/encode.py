@@ -46,6 +46,16 @@ def still(name, dest, size=None, quality=86):
     print(dest, round(os.path.getsize(path) / 1024), "kB", fr[0].size)
 
 
+def icons():
+    """Čtyři realistické ikony sekcí (1024 px z Blenderu) zmenšené na 512 px do public/home."""
+    for name, dest in (("sekce_zakladni", "sekce-zakladni.webp"), ("sekce_stredni", "sekce-stredni.webp"),
+                       ("sekce_prijimacky", "sekce-prijimacky.webp"), ("sekce_maturita", "sekce-maturita.webp")):
+        fr = frames(name, (512, 512))
+        path = os.path.join(DEST, "..", dest)
+        fr[0].save(path, format="WEBP", quality=90, method=5, alpha_quality=95)
+        print(dest, round(os.path.getsize(path) / 1024), "kB")
+
+
 def stills():
     """První snímek animací jako statický obrázek pro lidi s vypnutými animacemi."""
     for name, dest in (("motyl", "motyl-still.webp"), ("vlajka", "vlajka-still.webp"), ("raketa", "raketa-still.webp")):
@@ -53,7 +63,8 @@ def stills():
 
 
 if __name__ == "__main__":
-    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills"]
+    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons"]
+    if "icons" in what: icons()
     if "stills" in what: stills()
     if "planeta" in what: animated("planeta", "planeta.webp", fps=24, quality=68)
     if "motyl" in what: animated("motyl", "motyl.webp", fps=24, quality=72)
