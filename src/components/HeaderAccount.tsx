@@ -8,7 +8,7 @@ import { AVATARS, isAvatarUnlocked } from "@/lib/avatars";
 import { TITLES, getTitle, isTitleUnlocked } from "@/lib/titles";
 import { fill, getProfileText } from "@/i18n/profile";
 import { useAccount } from "@/lib/use-account";
-import { bannerAttrs, bannerCss, isBannerId, isFrameId } from "@/lib/cosmetics";
+import { bannerCss, bannerLiveAttrs, isBannerId, isFrameId } from "@/lib/cosmetics";
 import type { Locale } from "@/i18n/config";
 
 export function HeaderAccount({
@@ -132,7 +132,7 @@ export function HeaderAccount({
           <div
             {...(isBannerId(account.banner) ? { "data-banner": account.banner } : {})}
             className={`-mx-4 -mt-4 mb-1 flex items-center gap-3 rounded-t-[16px] px-4 pb-3 pt-4 ${
-              isBannerId(account.banner) ? `${bannerAttrs(account.banner).className} text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.65)]` : ""
+              isBannerId(account.banner) ? `${bannerLiveAttrs(account.banner).className} text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.65)]` : ""
             }`}
             style={isBannerId(account.banner) ? { background: bannerCss(account.banner) } : undefined}
           >

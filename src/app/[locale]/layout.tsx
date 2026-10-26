@@ -5,6 +5,7 @@ import "../globals.css";
 import { MobileMenu, NavTabs } from "@/components/NavTabs";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { HeaderAccount } from "@/components/HeaderAccount";
+import { ReturnNudge } from "@/components/ReturnNudge";
 import { SiteLogo } from "@/components/SiteLogo";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, locales, type Locale } from "@/i18n/config";
@@ -50,7 +51,7 @@ export default async function LocaleLayout({
   const dict = getDictionary(locale as Locale);
 
   const navLink =
-    "rounded-lg px-2.5 py-1.5 text-sm font-semibold text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]";
+    "rounded-lg px-3 py-2 text-sm font-semibold text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]";
 
   return (
     <html
@@ -66,16 +67,16 @@ export default async function LocaleLayout({
         style={{ fontFamily: "var(--font-body), var(--font-sans)" }}
       >
         <header className="sticky top-0 z-40 border-b-2 border-[var(--edge)] bg-[var(--surface)]">
-          <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:px-6">
+          <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-2.5 sm:px-6">
             <div className="flex items-center justify-between gap-3">
               <Link href={`/${locale}`} className="shrink-0">
                 <SiteLogo />
               </Link>
               <div className="flex items-center justify-end gap-1.5 text-sm">
-                <Link href={`/${locale}/obchod`} className={`hidden lg:inline-flex ${navLink}`}>
+                <Link href={`/${locale}/obchod`} className={`hidden xl:inline-flex ${navLink}`}>
                   {dict.nav.shop}
                 </Link>
-                <Link href={`/${locale}/nastaveni`} className={`hidden lg:inline-flex ${navLink}`}>
+                <Link href={`/${locale}/nastaveni`} className={`hidden xl:inline-flex ${navLink}`}>
                   {dict.nav.settings}
                 </Link>
                 <LanguageSwitcher current={locale as Locale} />
@@ -98,6 +99,7 @@ export default async function LocaleLayout({
             <NavTabs locale={locale as Locale} dict={dict} />
           </div>
         </header>
+        <ReturnNudge locale={locale as Locale} />
         <main className="flex-1">{children}</main>
         <footer className="border-t-2 border-[var(--edge)] bg-[var(--surface)] py-6 text-center text-sm text-[var(--muted)]">
           &copy; {new Date().getFullYear()} {dict.footer.rights}
