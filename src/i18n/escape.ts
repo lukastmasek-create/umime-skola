@@ -73,6 +73,9 @@ const cs: EscapeText = {
       { id: "jungle", name: "Ztracená džungle", subject: "Biologie", description: "Rostliny, živočichové a jejich třídění.", available: true },
       { id: "pirate", name: "Pirátská loď", subject: "Angličtina", description: "Zamknutá kajuta, anglická slovíčka a tajná mapa pokladu.", available: true },
       { id: "kitchen", name: "Kuchyně šéfkuchaře", subject: "Matematika", description: "Recepty, váhy a čas. Spočítej správně, než koláč shoří.", available: true },
+      { id: "library", name: "Tajná knihovna", subject: "Čeština", description: "Regály, autoři a příběhy. Najdi cestu ven dřív, než knihovník zhasne.", available: true },
+      { id: "observatory", name: "Hvězdárna", subject: "Vesmír", description: "Planety, dalekohled a hvězdná mapa. Otevři kupoli a podívej se na oblohu.", available: true },
+      { id: "castle", name: "Hrad na kopci", subject: "Dějepis", description: "Erby, rytíři a padací most. Vyřeš hádanky ze středověku.", available: true },
     ],
   },
   ui: {
@@ -138,6 +141,9 @@ const en: EscapeText = {
       { id: "jungle", name: "The lost jungle", subject: "Biology", description: "Plants, animals and how to classify them.", available: true },
       { id: "pirate", name: "Pirate ship", subject: "English", description: "A locked cabin, English words and a secret treasure map.", available: true },
       { id: "kitchen", name: "The chef's kitchen", subject: "Maths", description: "Recipes, weights and time. Count right before the cake burns.", available: true },
+      { id: "library", name: "The secret library", subject: "Czech language", description: "Shelves, authors and stories. Find the way out before the librarian turns off the lights.", available: true },
+      { id: "observatory", name: "The observatory", subject: "Space", description: "Planets, a telescope and a star map. Open the dome and look at the sky.", available: true },
+      { id: "castle", name: "The castle on the hill", subject: "History", description: "Coats of arms, knights and a drawbridge. Solve riddles from the Middle Ages.", available: true },
     ],
   },
   ui: {
@@ -203,6 +209,9 @@ const de: EscapeText = {
       { id: "jungle", name: "Der verlorene Dschungel", subject: "Biologie", description: "Pflanzen, Tiere und ihre Einteilung.", available: true },
       { id: "pirate", name: "Das Piratenschiff", subject: "Englisch", description: "Eine verschlossene Kajüte, englische Wörter und eine geheime Schatzkarte.", available: true },
       { id: "kitchen", name: "Die Küche des Chefkochs", subject: "Mathe", description: "Rezepte, Gewichte und Zeit. Rechne richtig, bevor der Kuchen verbrennt.", available: true },
+      { id: "library", name: "Die geheime Bibliothek", subject: "Tschechisch", description: "Regale, Autoren und Geschichten. Finde den Ausgang, bevor der Bibliothekar das Licht löscht.", available: true },
+      { id: "observatory", name: "Die Sternwarte", subject: "Weltall", description: "Planeten, ein Teleskop und eine Sternkarte. Öffne die Kuppel und schau zum Himmel.", available: true },
+      { id: "castle", name: "Die Burg auf dem Hügel", subject: "Geschichte", description: "Wappen, Ritter und eine Zugbrücke. Löse Rätsel aus dem Mittelalter.", available: true },
     ],
   },
   ui: {
@@ -268,6 +277,9 @@ const ru: EscapeText = {
       { id: "jungle", name: "Потерянные джунгли", subject: "Биология", description: "Растения, животные и их классификация.", available: true },
       { id: "pirate", name: "Пиратский корабль", subject: "Английский", description: "Запертая каюта, английские слова и тайная карта сокровищ.", available: true },
       { id: "kitchen", name: "Кухня шеф-повара", subject: "Математика", description: "Рецепты, вес и время. Посчитай верно, пока пирог не сгорел.", available: true },
+      { id: "library", name: "Тайная библиотека", subject: "Чешский язык", description: "Полки, авторы и истории. Найди выход, пока библиотекарь не выключил свет.", available: true },
+      { id: "observatory", name: "Обсерватория", subject: "Космос", description: "Планеты, телескоп и карта звёзд. Открой купол и посмотри на небо.", available: true },
+      { id: "castle", name: "Замок на холме", subject: "История", description: "Гербы, рыцари и подъёмный мост. Реши загадки Средневековья.", available: true },
     ],
   },
   ui: {
