@@ -5,10 +5,10 @@ import { isLocale, type Locale } from "@/i18n/config";
 
 const COLORS = ["#8fd0ff", "#ff8a6b", "#7ee0b0", "#ffc933"];
 // Hra na stejném pořadí jako v texty.games: Základna, Mazlíčci, Farma, Město. null = zatím se chystá.
-const PATHS = ["zakladna", "mazlicci", null, "mesto"] as const;
+const PATHS = ["zakladna", "mazlicci", "farma", "mesto"] as const;
 
-// Ilustrace uprostřed karty ve stejném pořadí jako hry (Farma zatím nemá).
-const ART = ["/base/ships/explorer.webp", "/pets/fox-happy.webp", null, "/city/sprites/apartments.png"] as const;
+// Ilustrace uprostřed karty ve stejném pořadí jako hry .
+const ART = ["/base/ships/explorer.webp", "/pets/fox-happy.webp", "/farm/animals/cow.webp", "/city/sprites/apartments.png"] as const;
 
 export default async function IdleGamesPage({
   params,
