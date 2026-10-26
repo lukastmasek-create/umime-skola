@@ -1,0 +1,68 @@
+{
+  "groups": {
+    "cepel": {
+      "file": "cepel.webp",
+      "cell": [
+        96,
+        96
+      ],
+      "cols": 1,
+      "frames": {
+        "cepel": [
+          0,
+          0
+        ]
+      }
+    },
+    "ovoce": {
+      "file": "ovoce.webp",
+      "cell": [
+        96,
+        96
+      ],
+      "cols": 8,
+      "frames": {
+        "meloun_cele": [
+          0,
+          0
+        ],
+        "meloun_pulky": [
+          1,
+          0
+        ],
+        "jablko_cele": [
+          2,
+          0
+        ],
+        "jablko_pulky": [
+          3,
+          0
+        ],
+        "pomeranc_cele": [
+          4,
+          0
+        ],
+        "pomeranc_pulky": [
+          5,
+          0
+        ],
+        "ananas_cele": [
+          6,
+          0
+        ],
+        "ananas_pulky": [
+          7,
+          0
+        ],
+        "kiwi_cele": [
+          0,
+          1
+        ],
+        "kiwi_pulky": [
+          1,
+          1
+        ]
+      }
+    }
+  }
+}

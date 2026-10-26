@@ -1,0 +1,58 @@
+{
+  "groups": {
+    "dira": {
+      "file": "dira.webp",
+      "cell": [
+        160,
+        64
+      ],
+      "cols": 1,
+      "frames": {
+        "dira": [
+          0,
+          0
+        ]
+      }
+    },
+    "kladivo": {
+      "file": "kladivo.webp",
+      "cell": [
+        96,
+        96
+      ],
+      "cols": 2,
+      "frames": {
+        "klid": [
+          0,
+          0
+        ],
+        "uder": [
+          1,
+          0
+        ]
+      }
+    },
+    "krtek": {
+      "file": "krtek.webp",
+      "cell": [
+        96,
+        128
+      ],
+      "cols": 3,
+      "frames": {
+        "nahoru": [
+          0,
+          0
+        ],
+        "vykukuje": [
+          1,
+          0
+        ],
+        "zasah": [
+          2,
+          0
+        ]
+      }
+    }
+  }
+}

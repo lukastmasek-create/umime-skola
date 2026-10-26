@@ -130,3 +130,24 @@ na jazykovou verzi. Bez toho hra nenačetla `manifest.json`.
 | `hory.webp` | 1440 × 260 | hřeben hor se sněhem místo SVG `Mountains` (spodní okraj) |
 
 `src/proxy.ts`: přidána výjimka `home/`.
+
+## Nová sada z obchodu a her (avatary, městečko, mazlíčci, únikovky, hry)
+
+- **Avatary (28)**: `public/avatars-3d/<id>.glb` + `-portret.webp` a `-postava.webp` pro frog, penguin, unicorn,
+  koala, llama, octopus, capybara, yeti, doctor, chef, firefighter, detective, pilot, inventor, archaeologist,
+  sailor, explorer, ranger, knight, fairy, elf, dwarf, vampire, mummy, mermaid, robot-dino, phoenix, cosmic.
+  Zapsáno v `src/lib/avatars3d.ts` (MODELS), takže je `getAvatarModel` / `getAvatarStills` vrací samy.
+  Render: `umime-art/scripts/avatar_chars3.py`.
+- **Městečko (35 budov)**: `public/city/sprites/<id>.png` (+ `_noc` u budov s okny, `_r` u nesouměrných),
+  v `manifest.json`. ID odpovídají `idle/city.ts`. Render: `city3.py`.
+- **Mazlíčci (6 druhů)**: `public/pets/<druh>.glb` a `<druh>-<nálada>.webp` pro hamster, panda, penguin, frog,
+  unicorn, robot; doplňky `public/pets/accessories/halo|headphones.glb/.png`. `src/lib/pets3d.ts`:
+  druhy přidány do `PETS_WITH_3D`, oba doplňky ke `kotva_hlava`.
+- **Únikovky** (`public/escape/<místnost>/`, místnosti museum, expedition, jungle, pirate, kitchen):
+  `bg.webp` (800 × 450, stěna a podlaha), místa `a|b|c|d|e|door|examine.webp` (256 × 256)
+  a předměty `items/key|partB|partC|tool|card.webp` (128 × 128). Klíče odpovídají `places` a `things`
+  v `src/lib/escape/rooms/<místnost>.ts`. Render `escape_assets.py`, kopírování `escape_publish.mjs`.
+- **Hry flappy, mole, ninja**: `public/game-sprites/<hra>/` a `public/game-models/<hra>/` (stejný formát
+  jako u ostatních her). Render `game_sprites2.py`.
+
+`src/proxy.ts`: přidána výjimka `escape/`.

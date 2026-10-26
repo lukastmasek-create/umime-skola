@@ -1,0 +1,58 @@
+{
+  "groups": {
+    "ptacek": {
+      "file": "ptacek.webp",
+      "cell": [
+        64,
+        64
+      ],
+      "cols": 4,
+      "frames": {
+        "mavani_1": [
+          0,
+          0
+        ],
+        "mavani_2": [
+          1,
+          0
+        ],
+        "mavani_3": [
+          2,
+          0
+        ],
+        "naraz": [
+          3,
+          0
+        ]
+      }
+    },
+    "zed_hlavice": {
+      "file": "zed_hlavice.webp",
+      "cell": [
+        140,
+        40
+      ],
+      "cols": 1,
+      "frames": {
+        "zed_hlavice": [
+          0,
+          0
+        ]
+      }
+    },
+    "zed_telo": {
+      "file": "zed_telo.webp",
+      "cell": [
+        140,
+        40
+      ],
+      "cols": 1,
+      "frames": {
+        "zed_telo": [
+          0,
+          0
+        ]
+      }
+    }
+  }
+}

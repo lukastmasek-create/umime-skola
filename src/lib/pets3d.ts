@@ -7,7 +7,9 @@ import type { SpeciesId } from "@/lib/idle/pets";
 export type PetAction = "feed" | "play" | "joy";
 
 // Druhy, které mají 3D model z Blenderu. Ostatní se kreslí jen 2D (PetArt).
-export const PETS_WITH_3D: ReadonlySet<string> = new Set(["cat", "dog", "bunny", "fox", "dragon"]);
+export const PETS_WITH_3D: ReadonlySet<string> = new Set([
+  "cat", "dog", "bunny", "fox", "dragon", "hamster", "panda", "penguin", "frog", "unicorn", "robot",
+]);
 
 export function petModel(species: SpeciesId): string {
   return `/pets/${species}.glb`;
@@ -25,6 +27,8 @@ export function petAccessoryModel(ref: string): string {
 export const PET_ACCESSORY_ANCHOR: Record<string, string> = {
   party: "kotva_hlava",
   crown: "kotva_hlava",
+  halo: "kotva_hlava",
+  headphones: "kotva_hlava",
   bow: "kotva_ucho",
   flower: "kotva_ucho",
   glasses: "kotva_oci",
