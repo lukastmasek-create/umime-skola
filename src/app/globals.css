@@ -555,6 +555,12 @@ select:not(:focus) {
   }
 }
 
+/* Velká pozadí profilu: smyčka z Blenderu místo CSS pohybu (animovaný WebP, nahrazuje statický obrázek). */
+@media (prefers-reduced-motion: no-preference) {
+  .banner-live[data-banner="galaxy"] { background-image: url(/cosmetics/banners/anim/galaxy.webp) !important; }
+  .banner-live[data-banner="night-city"] { background-image: url(/cosmetics/banners/anim/night-city.webp) !important; }
+}
+
 /* Animace ozdob profilu: pozadí se jemně hýbe a rámeček se točí kolem avataru. */
 .banner-anim {
   position: relative;

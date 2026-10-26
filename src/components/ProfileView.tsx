@@ -8,7 +8,7 @@ import { ProfileCollection } from "@/components/ProfileCollection";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { AVATARS, getAvatar, isAvatarUnlocked } from "@/lib/avatars";
 import { TITLES, getTitle, isTitleUnlocked } from "@/lib/titles";
-import { BANNERS, EMPTY_FAVORITES, FRAME_IDS, bannerAttrs, bannerCss, isFrameId, type FavoriteKind, type Favorites, type FrameId } from "@/lib/cosmetics";
+import { BANNERS, EMPTY_FAVORITES, FRAME_IDS, bannerAttrs, bannerCss, bannerLiveAttrs, isFrameId, type FavoriteKind, type Favorites, type FrameId } from "@/lib/cosmetics";
 import { unlockHint } from "@/lib/unlock-hints";
 import { SHOP_ITEMS } from "@/lib/shop";
 import {
@@ -247,7 +247,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
       <section className="card overflow-hidden p-0">
         <div
           {...(profile.banner && BANNERS[profile.banner] ? { "data-banner": profile.banner } : {})}
-          className={`relative px-4 pb-6 pt-5 sm:px-8 ${profile.banner && BANNERS[profile.banner] ? bannerAttrs(profile.banner).className : ""}`}
+          className={`relative px-4 pb-6 pt-5 sm:px-8 ${profile.banner && BANNERS[profile.banner] ? bannerLiveAttrs(profile.banner).className : ""}`}
           style={{ background: banner }}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/35" aria-hidden />
