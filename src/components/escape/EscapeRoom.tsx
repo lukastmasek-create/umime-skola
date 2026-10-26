@@ -465,6 +465,7 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
                       >
                         {roomId === "lab" || ART_ROOMS.includes(roomId) ? (
                           // Ikony předmětů jsou vyrenderované v Blenderu (umime-art/scripts/).
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img src={`/escape/${roomId}/items/${item.id}.webp`} alt="" width={36} height={36} className="h-9 w-9 shrink-0" />
                         ) : (
                           <span className="text-xl">{item.symbol}</span>
