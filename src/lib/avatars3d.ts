@@ -49,7 +49,7 @@ const MODELS: Record<string, { file: string; figureWidth: number }> = {
   mermaid: { file: "mermaid", figureWidth: 148 },
   "robot-dino": { file: "robot-dino", figureWidth: 159 },
   phoenix: { file: "phoenix", figureWidth: 146 },
-  cosmic: { file: "cosmic", figureWidth: 144 },
+  cosmic: { file: "cosmic", figureWidth: 162 },
 };
 
 export function getAvatarModel(id: string | null | undefined): string | null {
