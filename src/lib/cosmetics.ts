@@ -30,6 +30,11 @@ export function bannerCss(id: string): string {
   return `url(/cosmetics/banners/${id}.webp) center / cover no-repeat, ${BANNERS[id]}`;
 }
 
+// Atributy, kterými se pozadí rozpohybuje (styly .banner-anim v globals.css).
+export function bannerAttrs(id: string): { className: string; "data-banner": string } {
+  return { className: "banner-anim", "data-banner": id };
+}
+
 export function isBannerId(value: unknown): value is string {
   return typeof value === "string" && Object.prototype.hasOwnProperty.call(BANNERS, value);
 }

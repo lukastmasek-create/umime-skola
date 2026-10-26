@@ -6,6 +6,9 @@ import type { FrameId } from "@/lib/cosmetics";
 // Rámeček se kreslí přes avatar. SVG je o pětinu větší než avatar, aby ozdoby mohly
 // přesahovat přes okraj kolečka.
 // Rámeček z Blenderu (obrázek 1,2× větší než avatar); když se nenačte, vykreslí se SVG.
+// Doba jedné otáčky rámečku v sekundách: těžší ozdoby se točí pomaleji.
+const SPIN_SECONDS: Record<FrameId, number> = { gold: 26, rainbow: 10, neon: 18, leaf: 22, stars: 14, fire: 12 };
+
 export function AvatarFrame({ id, size }: { id: FrameId; size: number }) {
   const [failed, setFailed] = useState(false);
   if (failed) return <FrameSvg id={id} size={size} />;
@@ -18,8 +21,9 @@ export function AvatarFrame({ id, size }: { id: FrameId; size: number }) {
       width={size * 1.2}
       height={size * 1.2}
       onError={() => setFailed(true)}
-      className="pointer-events-none absolute max-w-none"
-      style={{ left: -size * 0.1, top: -size * 0.1, width: size * 1.2, height: size * 1.2 }}
+      data-frame={id}
+      className="frame-spin pointer-events-none absolute max-w-none"
+      style={{ left: -size * 0.1, top: -size * 0.1, width: size * 1.2, height: size * 1.2, animationDuration: `${SPIN_SECONDS[id]}s` }}
     />
   );
 }
@@ -42,8 +46,9 @@ function FrameSvg({ id, size }: { id: FrameId; size: number }) {
       width={size * 1.2}
       height={size * 1.2}
       aria-hidden
-      className="pointer-events-none absolute"
-      style={{ left: -pad, top: -pad, overflow: "visible" }}
+      data-frame={id}
+      className="frame-spin pointer-events-none absolute"
+      style={{ left: -pad, top: -pad, overflow: "visible", animationDuration: `${SPIN_SECONDS[id]}s` }}
     >
       <defs>
         <linearGradient id="fr-rainbow" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">

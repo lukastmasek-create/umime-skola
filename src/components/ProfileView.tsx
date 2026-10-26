@@ -7,7 +7,7 @@ import { LevelBadge } from "@/components/LevelBadge";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { AVATARS, getAvatar, isAvatarUnlocked } from "@/lib/avatars";
 import { TITLES, getTitle, isTitleUnlocked } from "@/lib/titles";
-import { BANNERS, FRAME_IDS, bannerCss, isFrameId, type FrameId } from "@/lib/cosmetics";
+import { BANNERS, FRAME_IDS, bannerAttrs, bannerCss, isFrameId, type FrameId } from "@/lib/cosmetics";
 import { SHOP_ITEMS } from "@/lib/shop";
 import {
   EMPTY_CUSTOM,
@@ -217,7 +217,11 @@ export function ProfileView({ locale }: { locale: Locale }) {
     <div className="flex flex-col gap-6">
       {/* Herní karta */}
       <section className="card overflow-hidden p-0">
-        <div className="relative px-4 pb-6 pt-5 sm:px-8" style={{ background: banner }}>
+        <div
+          {...(profile.banner && BANNERS[profile.banner] ? { "data-banner": profile.banner } : {})}
+          className={`relative px-4 pb-6 pt-5 sm:px-8 ${profile.banner && BANNERS[profile.banner] ? bannerAttrs(profile.banner).className : ""}`}
+          style={{ background: banner }}
+        >
           <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/35" aria-hidden />
 
           <div className="relative flex flex-wrap items-center justify-between gap-3">
@@ -602,7 +606,8 @@ export function ProfileView({ locale }: { locale: Locale }) {
                 const inner = (
                   <>
                     <div
-                      className="h-16 rounded-xl"
+                      {...bannerAttrs(b)}
+                      className="banner-anim h-16 rounded-xl"
                       style={{ background: bannerCss(b), filter: owned ? undefined : "grayscale(1) opacity(0.5)" }}
                     />
                     <span className="text-sm font-bold">{itemName("banner", b, locale)}</span>

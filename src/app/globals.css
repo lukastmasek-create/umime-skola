@@ -519,3 +519,134 @@ select {
     animation: none;
   }
 }
+
+/* Animace ozdob profilu: pozadí se jemně hýbe a rámeček se točí kolem avataru. */
+.banner-anim {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.banner-anim > * {
+  position: relative;
+  z-index: 1;
+}
+.banner-anim::before,
+.banner-anim::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+/* Společné pro všechna pozadí: světelný pruh, který občas přejede přes pozadí. */
+.banner-anim::after {
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.28) 50%, transparent 62%);
+  background-size: 260% 100%;
+  background-position: 170% 0;
+  mix-blend-mode: screen;
+  animation: banner-sweep 8s ease-in-out infinite;
+}
+@keyframes banner-sweep {
+  0% { background-position: 170% 0; }
+  55%, 100% { background-position: -70% 0; }
+}
+@keyframes banner-twinkle {
+  from { opacity: 0.45; }
+  to { opacity: 1; }
+}
+@keyframes banner-slide-x {
+  to { background-position: 400px 0; }
+}
+@keyframes banner-breathe {
+  from { opacity: 0.35; transform: scale(1); }
+  to { opacity: 0.85; transform: scale(1.12); }
+}
+@keyframes banner-stars-drift {
+  to { background-position: -200px 0, -200px 0, -200px 0, -200px 0; }
+}
+@keyframes banner-snow {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 40px 120px, -30px 240px; }
+}
+@keyframes banner-stripes {
+  to { background-position: 39.6px 0; }
+}
+@keyframes banner-fireflies {
+  0% { background-position: 0 0, 0 0; opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { background-position: 60px -40px, -50px 30px; opacity: 0.4; }
+}
+
+.banner-anim[data-banner="galaxy"]::before {
+  background-image:
+    radial-gradient(1.6px 1.6px at 20px 30px, #fff, transparent),
+    radial-gradient(1px 1px at 70px 80px, #fff, transparent),
+    radial-gradient(2px 2px at 130px 20px, #cfd8ff, transparent),
+    radial-gradient(1px 1px at 180px 100px, #fff, transparent);
+  background-size: 200px 120px;
+  animation: banner-stars-drift 50s linear infinite, banner-twinkle 2.6s ease-in-out infinite alternate;
+}
+.banner-anim[data-banner="snow"]::before {
+  background-image:
+    radial-gradient(2.4px 2.4px at 20px 20px, #fff, transparent),
+    radial-gradient(1.8px 1.8px at 70px 60px, #fff, transparent);
+  background-size: 120px 120px, 90px 90px;
+  animation: banner-snow 9s linear infinite;
+}
+.banner-anim[data-banner="ocean"]::before {
+  background: repeating-linear-gradient(100deg, transparent 0 40px, rgba(255, 255, 255, 0.16) 55px, transparent 80px);
+  background-size: 400px 100%;
+  animation: banner-slide-x 14s linear infinite;
+}
+.banner-anim[data-banner="sunset"]::before {
+  background: radial-gradient(circle at 72% 85%, rgba(255, 226, 140, 0.75), transparent 55%);
+  transform-origin: 72% 85%;
+  animation: banner-breathe 6s ease-in-out infinite alternate;
+}
+.banner-anim[data-banner="forest"]::before {
+  background-image:
+    radial-gradient(2px 2px at 30px 40px, #fff6a8, transparent),
+    radial-gradient(2px 2px at 90px 20px, #fff6a8, transparent);
+  background-size: 130px 90px, 100px 80px;
+  animation: banner-fireflies 9s ease-in-out infinite;
+}
+.banner-anim[data-banner="candy"]::before {
+  background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.22) 0 14px, transparent 14px 28px);
+  background-size: 39.6px 39.6px;
+  animation: banner-stripes 2.4s linear infinite;
+}
+.banner-anim[data-banner="night-city"]::before {
+  background-image:
+    radial-gradient(1.6px 1.6px at 14% 62%, #ffd98a, transparent),
+    radial-gradient(1.6px 1.6px at 31% 74%, #ffd98a, transparent),
+    radial-gradient(1.6px 1.6px at 52% 68%, #fff0b8, transparent),
+    radial-gradient(1.6px 1.6px at 68% 80%, #ffd98a, transparent),
+    radial-gradient(1.6px 1.6px at 86% 66%, #fff0b8, transparent),
+    radial-gradient(1.2px 1.2px at 40% 18%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 78% 28%, #fff, transparent);
+  animation: banner-twinkle 2.2s ease-in-out infinite alternate;
+}
+
+/* Rámeček se otáčí kolem avataru. Rychlost se nastavuje u každého rámečku zvlášť. */
+.frame-spin {
+  transform-origin: 50% 50%;
+  will-change: transform;
+  animation: frame-spin 16s linear infinite;
+}
+@keyframes frame-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes frame-glow {
+  from { filter: drop-shadow(0 0 2px rgba(37, 244, 255, 0.5)); }
+  to { filter: drop-shadow(0 0 9px rgba(255, 79, 216, 0.9)); }
+}
+.frame-spin[data-frame="neon"] {
+  animation: frame-spin 18s linear infinite, frame-glow 1.8s ease-in-out infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) {
+  .banner-anim::before,
+  .banner-anim::after,
+  .frame-spin {
+    animation: none !important;
+  }
+}

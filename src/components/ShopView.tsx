@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { PetArt } from "@/components/idle/PetArt";
-import { bannerCss, isFrameId } from "@/lib/cosmetics";
+import { bannerAttrs, bannerCss, isFrameId } from "@/lib/cosmetics";
 import { SHOP_ITEMS, SHOP_KINDS, type ShopItem, type ShopKind } from "@/lib/shop";
 import { getShopText } from "@/i18n/shop";
 import { notifyAccountChanged } from "@/lib/account-events";
@@ -45,7 +45,7 @@ function Preview({ item, locale, avatar }: { item: ShopItem; locale: Locale; ava
         </div>
       );
     case "banner":
-      return <div className={box} style={{ background: bannerCss(item.ref) }} />;
+      return <div {...bannerAttrs(item.ref)} className={`${box} banner-anim`} style={{ background: bannerCss(item.ref) }} />;
     case "pet":
       return (
         <div className={`${box} bg-[var(--surface-muted)]`}>
