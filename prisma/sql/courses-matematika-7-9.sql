@@ -18,7 +18,9 @@ INSERT INTO "Course" ("id","title","slug","description","published","category","
 ('c_mat-9-podobnost-goniometrie','Podobnost a goniometrie','mat-9-podobnost-goniometrie','Podobné útvary, poměr podobnosti, sinus, kosinus a tangens.',true,'ZAKLADNI'::"Category",'MATEMATIKA'::"Subject",'Geometrie',9,NOW(),NOW()),
 ('c_mat-9-teleso-jehlan-kuzel-koule','Jehlan, kužel a koule','mat-9-teleso-jehlan-kuzel-koule','Objem a povrch rotačních těles a jehlanu.',true,'ZAKLADNI'::"Category",'MATEMATIKA'::"Subject",'Geometrie',9,NOW(),NOW()),
 ('c_mat-9-financni-matematika','Finanční matematika','mat-9-financni-matematika','Úroky, složené úročení, půjčky a spoření.',true,'ZAKLADNI'::"Category",'MATEMATIKA'::"Subject",'Čísla a operace',9,NOW(),NOW()),
-('c_mat-9-pravdepodobnost-kombinatorika','Pravděpodobnost a kombinatorika','mat-9-pravdepodobnost-kombinatorika','Pravděpodobnost jevu, variace, permutace a kombinace.',true,'ZAKLADNI'::"Category",'MATEMATIKA'::"Subject",'Práce s daty',9,NOW(),NOW())
+('c_mat-9-pravdepodobnost-kombinatorika','Pravděpodobnost a kombinatorika','mat-9-pravdepodobnost-kombinatorika','Pravděpodobnost jevu, variace, permutace a kombinace.',true,'ZAKLADNI'::"Category",'MATEMATIKA'::"Subject",'Práce s daty',9,NOW(),NOW()),
+('c_mat-9-nerovnice','Lineární nerovnice','mat-9-nerovnice','Řešení nerovnic a zápis řešení intervalem.',true,'ZAKLADNI'::"Category",'MATEMATIKA'::"Subject",'Algebra',9,NOW(),NOW()),
+('c_mat-9-slovni-ulohy','Slovní úlohy: rychlost, práce, směsi','mat-9-slovni-ulohy','Úlohy o pohybu, společné práci a procentech.',true,'ZAKLADNI'::"Category",'MATEMATIKA'::"Subject",'Slovní úlohy',9,NOW(),NOW())
 ON CONFLICT ("slug") DO NOTHING;
 
 INSERT INTO "Level" ("id","title","order","published","courseId","createdAt","updatedAt") VALUES
@@ -111,7 +113,17 @@ INSERT INTO "Level" ("id","title","order","published","courseId","createdAt","up
 ('l_mat-9-pravdepodobnost-kombinatorika_2','Test 2',2,true,'c_mat-9-pravdepodobnost-kombinatorika',NOW(),NOW()),
 ('l_mat-9-pravdepodobnost-kombinatorika_3','Test 3',3,true,'c_mat-9-pravdepodobnost-kombinatorika',NOW(),NOW()),
 ('l_mat-9-pravdepodobnost-kombinatorika_4','Test 4',4,true,'c_mat-9-pravdepodobnost-kombinatorika',NOW(),NOW()),
-('l_mat-9-pravdepodobnost-kombinatorika_5','Test 5',5,true,'c_mat-9-pravdepodobnost-kombinatorika',NOW(),NOW())
+('l_mat-9-pravdepodobnost-kombinatorika_5','Test 5',5,true,'c_mat-9-pravdepodobnost-kombinatorika',NOW(),NOW()),
+('l_mat-9-nerovnice_1','Test 1',1,true,'c_mat-9-nerovnice',NOW(),NOW()),
+('l_mat-9-nerovnice_2','Test 2',2,true,'c_mat-9-nerovnice',NOW(),NOW()),
+('l_mat-9-nerovnice_3','Test 3',3,true,'c_mat-9-nerovnice',NOW(),NOW()),
+('l_mat-9-nerovnice_4','Test 4',4,true,'c_mat-9-nerovnice',NOW(),NOW()),
+('l_mat-9-nerovnice_5','Test 5',5,true,'c_mat-9-nerovnice',NOW(),NOW()),
+('l_mat-9-slovni-ulohy_1','Test 1',1,true,'c_mat-9-slovni-ulohy',NOW(),NOW()),
+('l_mat-9-slovni-ulohy_2','Test 2',2,true,'c_mat-9-slovni-ulohy',NOW(),NOW()),
+('l_mat-9-slovni-ulohy_3','Test 3',3,true,'c_mat-9-slovni-ulohy',NOW(),NOW()),
+('l_mat-9-slovni-ulohy_4','Test 4',4,true,'c_mat-9-slovni-ulohy',NOW(),NOW()),
+('l_mat-9-slovni-ulohy_5','Test 5',5,true,'c_mat-9-slovni-ulohy',NOW(),NOW())
 ON CONFLICT ("courseId","order") DO NOTHING;
 
 INSERT INTO "Question" ("id","prompt","options","correctIndex","explanation","difficulty","answers","hint","order","courseId","levelId","createdAt") VALUES
@@ -384,6 +396,36 @@ INSERT INTO "Question" ("id","prompt","options","correctIndex","explanation","di
 ('q_mat-9-pravdepodobnost-kombinatorika_11','Hodíme mincí dvakrát. Jaká je pravděpodobnost dvou panen?',ARRAY['1/2','2/3','1/3','1/4']::TEXT[],3,'1/2 · 1/2.',4,ARRAY[]::TEXT[],NULL,11,'c_mat-9-pravdepodobnost-kombinatorika',NULL,NOW()),
 ('q_mat-9-pravdepodobnost-kombinatorika_12','Kolik čtyřciferných kódů z číslic 0–9 lze vytvořit (číslice se mohou opakovat)?',ARRAY['5 040','9 999','40','10 000']::TEXT[],3,'10⁴.',5,ARRAY[]::TEXT[],NULL,12,'c_mat-9-pravdepodobnost-kombinatorika',NULL,NOW()),
 ('q_mat-9-pravdepodobnost-kombinatorika_13','Kolik různých slov (i nesmyslných) lze vytvořit přesmyčkou písmen slova MAMA?',ARRAY['6','24','4','12']::TEXT[],0,'4! : (2!·2!).',5,ARRAY[]::TEXT[],NULL,13,'c_mat-9-pravdepodobnost-kombinatorika',NULL,NOW()),
-('q_mat-9-pravdepodobnost-kombinatorika_14','Pravděpodobnost, že nastane jev, je 0,3. Jaká je pravděpodobnost opačného jevu?',ARRAY['0,3','1,3','0,03','0,7']::TEXT[],3,'1 − 0,3.',5,ARRAY[]::TEXT[],NULL,14,'c_mat-9-pravdepodobnost-kombinatorika',NULL,NOW())
+('q_mat-9-pravdepodobnost-kombinatorika_14','Pravděpodobnost, že nastane jev, je 0,3. Jaká je pravděpodobnost opačného jevu?',ARRAY['0,3','1,3','0,03','0,7']::TEXT[],3,'1 − 0,3.',5,ARRAY[]::TEXT[],NULL,14,'c_mat-9-pravdepodobnost-kombinatorika',NULL,NOW()),
+('q_mat-9-nerovnice_0','Kolik je řešení nerovnice x > 3 pro x = 5?',ARRAY['jen pro x = 3','ano, 5 je řešení','nelze určit','ne']::TEXT[],1,'5 > 3.',1,ARRAY[]::TEXT[],NULL,0,'c_mat-9-nerovnice',NULL,NOW()),
+('q_mat-9-nerovnice_1','Co znamená znak ≤?',ARRAY['menší','větší nebo rovno','různé','menší nebo rovno']::TEXT[],3,'Menší nebo rovno.',1,ARRAY[]::TEXT[],NULL,1,'c_mat-9-nerovnice',NULL,NOW()),
+('q_mat-9-nerovnice_2','Řeš: x + 2 > 5',ARRAY['x < 3','x < 7','x > 7','x > 3']::TEXT[],3,'Odečteme 2.',1,ARRAY[]::TEXT[],NULL,2,'c_mat-9-nerovnice',NULL,NOW()),
+('q_mat-9-nerovnice_3','Řeš: 2x < 8',ARRAY['x < 16','x < 4','x > 4','x > 16']::TEXT[],1,'Dělíme 2.',2,ARRAY[]::TEXT[],NULL,3,'c_mat-9-nerovnice',NULL,NOW()),
+('q_mat-9-nerovnice_4','Řeš: x − 4 ≥ 1',ARRAY['x ≥ 3','x ≤ 5','x ≥ −3','x ≥ 5']::TEXT[],3,'Přičteme 4.',2,ARRAY[]::TEXT[],NULL,4,'c_mat-9-nerovnice',NULL,NOW()),
+('q_mat-9-nerovnice_5','Které celé číslo je řešením x < 2 a největší?',ARRAY['3','1','2','0']::TEXT[],1,'Největší celé číslo menší než 2.',2,ARRAY[]::TEXT[],NULL,5,'c_mat-9-nerovnice',NULL,NOW()),
+('q_mat-9-nerovnice_6','Řeš: 3x + 1 > 10',ARRAY['x > 9','x < 3','x > 3','x > 11/3']::TEXT[],2,'3x > 9.',3,ARRAY[]::TEXT[],NULL,6,'c_mat-9-nerovnice',NULL,NOW()),
+('q_mat-9-nerovnice_7','Řeš: −x > 2',ARRAY['x < 2','x < −2','x > 2','x > −2']::TEXT[],1,'Při násobení −1 se obrací znak nerovnosti.',3,ARRAY[]::TEXT[],NULL,7,'c_mat-9-nerovnice',NULL,NOW()),
+('q_mat-9-nerovnice_8','Řeš: 5 − x ≤ 3',ARRAY['x ≤ 8','x ≤ 2','x ≥ 2','x ≥ 8']::TEXT[],2,'−x ≤ −2, tedy x ≥ 2.',3,ARRAY[]::TEXT[],NULL,8,'c_mat-9-nerovnice',NULL,NOW()),
+('q_mat-9-nerovnice_9','Řeš: 2(x − 1) < x + 3',ARRAY['x < 5','x < −5','x < 1','x > 5']::TEXT[],0,'2x − 2 < x + 3.',4,ARRAY[]::TEXT[],NULL,9,'c_mat-9-nerovnice',NULL,NOW()),
+('q_mat-9-nerovnice_10','Kolik celých čísel splňuje −2 < x ≤ 2?',ARRAY['2','3','4','5']::TEXT[],2,'−1, 0, 1, 2.',4,ARRAY[]::TEXT[],NULL,10,'c_mat-9-nerovnice',NULL,NOW()),
+('q_mat-9-nerovnice_11','Řeš: x/2 ≥ 3',ARRAY['x ≤ 6','x ≥ 5','x ≥ 1,5','x ≥ 6']::TEXT[],3,'Násobíme 2.',4,ARRAY[]::TEXT[],NULL,11,'c_mat-9-nerovnice',NULL,NOW()),
+('q_mat-9-nerovnice_12','Řeš: 3x − 2 < 5x + 4',ARRAY['x < 3','x < −3','x > −3','x > 3']::TEXT[],2,'−6 < 2x.',5,ARRAY[]::TEXT[],NULL,12,'c_mat-9-nerovnice',NULL,NOW()),
+('q_mat-9-nerovnice_13','Mají nerovnice x > 3 a x < 2 společné řešení?',ARRAY['jen x = 2,5','ano','ne','nekonečně mnoho']::TEXT[],2,'Průnik je prázdný.',5,ARRAY[]::TEXT[],NULL,13,'c_mat-9-nerovnice',NULL,NOW()),
+('q_mat-9-nerovnice_14','Žák potřebuje aspoň 20 bodů. Má 14 a každý příklad je za 2 body. Kolik příkladů musí ještě vyřešit?',ARRAY['aspoň 10','aspoň 3','aspoň 2','aspoň 6']::TEXT[],1,'14 + 2n ≥ 20, n ≥ 3.',5,ARRAY[]::TEXT[],NULL,14,'c_mat-9-nerovnice',NULL,NOW()),
+('q_mat-9-slovni-ulohy_0','Auto jede 60 km/h. Kolik ujede za 2 hodiny?',ARRAY['30 km','120 km','62 km','240 km']::TEXT[],1,'s = v · t.',1,ARRAY[]::TEXT[],NULL,0,'c_mat-9-slovni-ulohy',NULL,NOW()),
+('q_mat-9-slovni-ulohy_1','Kolik hodin trvá cesta 150 km při rychlosti 50 km/h?',ARRAY['2 hodiny','3 hodiny','5 hodin','7 500 hodin']::TEXT[],1,'t = s : v.',1,ARRAY[]::TEXT[],NULL,1,'c_mat-9-slovni-ulohy',NULL,NOW()),
+('q_mat-9-slovni-ulohy_2','Jaká je rychlost, když za 4 hodiny ujedeme 100 km?',ARRAY['25 km/h','400 km/h','104 km/h','4 km/h']::TEXT[],0,'v = s : t.',1,ARRAY[]::TEXT[],NULL,2,'c_mat-9-slovni-ulohy',NULL,NOW()),
+('q_mat-9-slovni-ulohy_3','Cyklista jede 20 km/h. Jak dlouho jede 15 km?',ARRAY['30 minut','45 minut','75 minut','20 minut']::TEXT[],1,'15 : 20 = 0,75 h.',2,ARRAY[]::TEXT[],NULL,3,'c_mat-9-slovni-ulohy',NULL,NOW()),
+('q_mat-9-slovni-ulohy_4','Dělník udělá práci za 6 dní. Kolik ji udělá za 1 den?',ARRAY['1/3','1/12','1/6','6']::TEXT[],2,'Jedna šestina.',2,ARRAY[]::TEXT[],NULL,4,'c_mat-9-slovni-ulohy',NULL,NOW()),
+('q_mat-9-slovni-ulohy_5','Kolik je 30 % ze 250 kg?',ARRAY['75 kg','30 kg','7,5 kg','220 kg']::TEXT[],0,'250 · 0,3.',2,ARRAY[]::TEXT[],NULL,5,'c_mat-9-slovni-ulohy',NULL,NOW()),
+('q_mat-9-slovni-ulohy_6','Dva dělníci dělají práci za 6 a za 3 dny. Za kolik dnů ji udělají společně?',ARRAY['za 4,5 dne','za 3 dny','za 2 dny','za 9 dní']::TEXT[],2,'1/6 + 1/3 = 1/2.',3,ARRAY[]::TEXT[],NULL,6,'c_mat-9-slovni-ulohy',NULL,NOW()),
+('q_mat-9-slovni-ulohy_7','Dva vlaky jedou proti sobě 80 km/h a 70 km/h ze vzdálenosti 300 km. Kdy se potkají?',ARRAY['za 2 hodiny','za 3 hodiny','za 1 hodinu','za 4 hodiny']::TEXT[],0,'300 : 150 = 2.',3,ARRAY[]::TEXT[],NULL,7,'c_mat-9-slovni-ulohy',NULL,NOW()),
+('q_mat-9-slovni-ulohy_8','Smícháme 2 l vody s 3 l šťávy. Kolik procent směsi je šťáva?',ARRAY['60 %','30 %','50 %','40 %']::TEXT[],0,'3 : 5.',3,ARRAY[]::TEXT[],NULL,8,'c_mat-9-slovni-ulohy',NULL,NOW()),
+('q_mat-9-slovni-ulohy_9','Auto jede tam 60 km/h a zpět 40 km/h. Jaká je průměrná rychlost?',ARRAY['48 km/h','50 km/h','100 km/h','52 km/h']::TEXT[],0,'Harmonický průměr 2·60·40/100.',4,ARRAY[]::TEXT[],NULL,9,'c_mat-9-slovni-ulohy',NULL,NOW()),
+('q_mat-9-slovni-ulohy_10','Součet tří po sobě jdoucích čísel je 45. Které je největší?',ARRAY['14','15','17','16']::TEXT[],3,'14 + 15 + 16.',4,ARRAY[]::TEXT[],NULL,10,'c_mat-9-slovni-ulohy',NULL,NOW()),
+('q_mat-9-slovni-ulohy_11','Otec je o 24 let starší než syn. Za 6 let bude 3krát starší. Kolik je synovi nyní?',ARRAY['18','12','8','6']::TEXT[],3,'Syn 6, otec 30; za 6 let 12 a 36.',4,ARRAY[]::TEXT[],NULL,11,'c_mat-9-slovni-ulohy',NULL,NOW()),
+('q_mat-9-slovni-ulohy_12','Cena stoupla o 20 % a pak klesla o 20 %. Jaká je změna od původní ceny?',ARRAY['nárůst o 4 %','pokles o 4 %','pokles o 20 %','beze změny']::TEXT[],1,'1,2 · 0,8 = 0,96.',5,ARRAY[]::TEXT[],NULL,12,'c_mat-9-slovni-ulohy',NULL,NOW()),
+('q_mat-9-slovni-ulohy_13','Za kolik minut dva kohoutky naplní nádrž, jestliže první ji naplní za 12 minut a druhý za 6 minut?',ARRAY['za 9 minut','za 18 minut','za 3 minuty','za 4 minuty']::TEXT[],3,'1/12 + 1/6 = 1/4.',5,ARRAY[]::TEXT[],NULL,13,'c_mat-9-slovni-ulohy',NULL,NOW()),
+('q_mat-9-slovni-ulohy_14','Kolik kilogramů soli musíme přidat do 100 kg roztoku s 10 % soli, aby měl 20 %?',ARRAY['10 kg','15 kg','20 kg','12,5 kg']::TEXT[],3,'10 + x = 0,2 (100 + x) → x = 12,5.',5,ARRAY[]::TEXT[],NULL,14,'c_mat-9-slovni-ulohy',NULL,NOW())
 ON CONFLICT ("id") DO NOTHING;
 
