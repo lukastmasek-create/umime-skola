@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CATEGORIES } from "@/lib/taxonomy";
@@ -9,6 +9,9 @@ import { getCommunityText } from "@/i18n/community";
 import { getIdleText } from "@/i18n/idle";
 import { getEscapeText } from "@/i18n/escape";
 import { getHomeText } from "@/i18n/home";
+import { getSocialText } from "@/i18n/social";
+import { getRoomText } from "@/i18n/room";
+import { getReviewText } from "@/i18n/review";
 import { getLiveText } from "@/i18n/live";
 import { useAccount } from "@/lib/use-account";
 import type { Locale } from "@/i18n/config";
@@ -22,14 +25,22 @@ function useTabs(locale: Locale, dict: Dictionary) {
     href: `/${locale}/kurzy/${cat.slug}`,
     label: dict.categories[cat.slug].label,
   }));
+  const review = getReviewText(locale);
   const play: Tab[] = [
     { key: "hrat-spolecne", href: `/${locale}/hrat-spolecne`, label: getLiveText(locale).nav, icon: "🎓" },
     { key: "unikovky", href: `/${locale}/unikovky`, label: getEscapeText(locale).nav, icon: "🚪" },
     { key: "stale-hry", href: `/${locale}/stale-hry`, label: getIdleText(locale).nav, icon: "🐾" },
-    { key: "uzivatelsky-obchod", href: `/${locale}/uzivatelsky-obchod`, label: community.navMarketplace, icon: "🛒" },
+    { key: "parta", href: `/${locale}/parta`, label: getSocialText(locale).nav, icon: "👥" },
     { key: "zebricky", href: `/${locale}/zebricky`, label: community.navLeaderboards, icon: "🏆" },
   ];
-  return { learn, play };
+  // Méně časté odkazy: na širokém displeji v rozbalovací nabídce „Více“.
+  const more: Tab[] = [
+    { key: "opakovani", href: `/${locale}/opakovani`, label: review.reviewNav, icon: "🔁" },
+    { key: "mapa", href: `/${locale}/mapa`, label: review.mapNav, icon: "🗺️" },
+    { key: "pokoj", href: `/${locale}/pokoj`, label: getRoomText(locale).nav, icon: "🏠" },
+    { key: "uzivatelsky-obchod", href: `/${locale}/uzivatelsky-obchod`, label: community.navMarketplace, icon: "🛒" },
+  ];
+  return { learn, play, more };
 }
 
 function isActiveTab(pathname: string | null, href: string) {
@@ -40,7 +51,13 @@ function isActiveTab(pathname: string | null, href: string) {
 // nahrazuje MobileMenu.
 export function NavTabs({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const pathname = usePathname();
-  const { learn, play } = useTabs(locale, dict);
+  const { learn, play, more } = useTabs(locale, dict);
+  const moreRef = useRef<HTMLDetailsElement>(null);
+
+  // Nabídka „Více“ se po přechodu na jinou stránku zavře.
+  useEffect(() => {
+    moreRef.current?.removeAttribute("open");
+  }, [pathname]);
 
   const link = (tab: Tab) => {
     const active = isActiveTab(pathname, tab.href);
@@ -49,7 +66,7 @@ export function NavTabs({ locale, dict }: { locale: Locale; dict: Dictionary }) 
         key={tab.key}
         href={tab.href}
         aria-current={active ? "page" : undefined}
-        className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg border-2 px-2 py-2 text-sm font-semibold xl:px-3.5 ${
+        className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg border-2 px-2.5 py-1.5 text-sm font-semibold ${
           active
             ? "border-[var(--edge)] bg-[var(--accent-yellow)] text-[#16132b]"
             : "border-transparent text-[var(--muted)] hover:border-[var(--edge)] hover:text-[var(--foreground)]"
@@ -62,10 +79,24 @@ export function NavTabs({ locale, dict }: { locale: Locale; dict: Dictionary }) 
   };
 
   return (
-    <nav aria-label="Hlavní navigace" className="hidden flex-wrap items-center gap-1 lg:flex">
+    <nav aria-label="Hlavní navigace" className="hidden flex-wrap items-center gap-1 xl:flex">
       {learn.map(link)}
       <span aria-hidden className="mx-1 h-5 w-0.5 rounded bg-[var(--border-soft)]" />
       {play.map(link)}
+      <details ref={moreRef} className="group relative">
+        <summary
+          className={`flex cursor-pointer list-none items-center gap-1.5 whitespace-nowrap rounded-lg border-2 px-2.5 py-1.5 text-sm font-semibold marker:hidden ${
+            more.some((tab) => isActiveTab(pathname, tab.href))
+              ? "border-[var(--edge)] bg-[var(--accent-yellow)] text-[#16132b]"
+              : "border-transparent text-[var(--muted)] hover:border-[var(--edge)] hover:text-[var(--foreground)]"
+          }`}
+        >
+          {getHomeText(locale).more} <span aria-hidden>▾</span>
+        </summary>
+        <div className="absolute right-0 top-full z-50 mt-1 flex min-w-48 flex-col gap-1 rounded-xl border-2 border-[var(--edge)] bg-[var(--surface)] p-2 shadow-[0_6px_0_var(--shadow-ink)]">
+          {more.map(link)}
+        </div>
+      </details>
     </nav>
   );
 }
@@ -89,7 +120,7 @@ export function MobileMenu({
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [account] = useAccount();
-  const { learn, play } = useTabs(locale, dict);
+  const { learn, play, more } = useTabs(locale, dict);
   const t = getHomeText(locale);
 
   useEffect(() => {
@@ -124,7 +155,7 @@ export function MobileMenu({
   const heading = "mb-2 mt-4 text-xs font-bold uppercase tracking-wide text-[var(--muted)] first:mt-0";
 
   return (
-    <div className="lg:hidden">
+    <div className="xl:hidden">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -163,7 +194,7 @@ export function MobileMenu({
           <div className="grid grid-cols-2 gap-2">{learn.map(item)}</div>
           <p className={heading}>{t.play}</p>
           <div className="grid grid-cols-2 gap-2">
-            {play.map(item)}
+            {[...play, ...more].map(item)}
             {item({ key: "obchod", href: `/${locale}/obchod`, label: shopLabel, icon: "🎡" })}
             {item({ key: "nastaveni", href: `/${locale}/nastaveni`, label: settingsLabel, icon: "⚙️" })}
           </div>

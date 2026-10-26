@@ -36,6 +36,11 @@ model User {
   unlocks     Unlock[]
   escapeRuns  EscapeRun[]
   idleStates  IdleState[]
+  groupMemberships GroupMember[]
+  ownedGroups      Group[]        @relation("GroupOwner")
+  duelsStarted     Duel[]         @relation("DuelChallenger")
+  duelsReceived    Duel[]         @relation("DuelOpponent")
+  leagueEntries    LeagueEntry[]
   questionSets QuestionSet[]
   hostedRooms  LiveRoom[]
   livePlayers  LivePlayer[]
@@ -116,6 +121,65 @@ model IdleState {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, game])
+}
+
+// Parta (třída nebo kamarádi) se společným týdenním cílem. Do party se vstupuje
+// kódem, `code` je krátký a unikátní.
+model Group {
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @unique
+  createdAt DateTime @default(now())
+
+  ownerId String
+  owner   User          @relation("GroupOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members GroupMember[]
+}
+
+model GroupMember {
+  id       String   @id @default(cuid())
+  joinedAt DateTime @default(now())
+
+  groupId String
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([userId])
+}
+
+// Týdenní souboj dvou hráčů: vyhrává víc XP za učení a hraní v okně startsAt až endsAt.
+// status: "pending" (čeká na přijetí), "active" (běží nebo skončil), "declined".
+model Duel {
+  id        String    @id @default(cuid())
+  status    String    @default("pending")
+  startsAt  DateTime?
+  endsAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  challengerId String
+  challenger   User   @relation("DuelChallenger", fields: [challengerId], references: [id], onDelete: Cascade)
+  opponentId   String
+  opponent     User   @relation("DuelOpponent", fields: [opponentId], references: [id], onDelete: Cascade)
+
+  @@index([challengerId])
+  @@index([opponentId])
+}
+
+// Řádek ligy hráče pro jeden týden (weekKey = datum pondělí). Liga týdne = všichni
+// se stejným weekKey a tier, rozdělení do skupin po 30 podle hashe. Řádky se nemění,
+// takže jde vždy zpětně spočítat, kdo postoupil a kdo sestoupil.
+model LeagueEntry {
+  id      String @id @default(cuid())
+  weekKey String
+  tier    Int    @default(0)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekKey])
+  @@index([weekKey, tier])
 }
 
 // Škola pro školní žebříčky (lokální žebříček i škola vs škola). `city` je

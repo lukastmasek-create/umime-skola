@@ -151,3 +151,12 @@ na jazykovou verzi. Bez toho hra nenačetla `manifest.json`.
   jako u ostatních her). Render `game_sprites2.py`.
 
 `src/proxy.ts`: přidána výjimka `escape/`.
+
+## Animace úvodní stránky (`public/home/`)
+
+Smyčky vyrenderované v Blenderu (zdrojové skripty jsou v `tools/blender/`, spouští se `python3 skript.py -- výstupní_složka počet_snímků`):
+
+- `raketa-let.webp`: 3D raketa s hořícím plamenem a jiskrami, průhledné pozadí (`rocket.py`, 24 snímků). Letí po dráze z CSS (`rocket-path`).
+- `planeta-tocici.webp`: otáčející se planeta s prstencem a obíhajícím měsícem, průhledné pozadí (`planet.py`, 48 snímků).
+- `hvezdy.webm` / `hvezdy.mp4`: hvězdy ve třech vrstvách, barevný prach, bokeh a padající hvězdy na černém pozadí (`bg.py`, 180 snímků po 15 fps). Přes mlhovinu se skládá přes `mix-blend-mode: screen`.
+- Při zapnutém „omezit pohyb“ se místo animací zobrazí statická `raketa.webp` a `planeta.webp` a video se skryje.
