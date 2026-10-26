@@ -17,6 +17,8 @@ export type RoomKit = {
   intro: string;
   winMessage: string;
   notes: [string, string, string, string];
+  // Název a popis poznámky v inventáři ({n} = číslo), výchozí je čeština.
+  noteLabel?: { name: string; description: string };
   things: { key: Thing; partB: Thing; partC: Thing; tool: Thing; card: Thing };
   recipeMessage: string;
   places: { a: Place; b: Place; c: Place; d: Place; e: Place; door: Place; examine: Place & { message: string }; robot: string };
@@ -35,9 +37,9 @@ export type RoomKit = {
 export function buildRoom(k: RoomKit): Room {
   const note = (id: string, n: number, text: string) => ({
     id,
-    name: `Poznámka ${n}`,
+    name: (k.noteLabel?.name ?? "Poznámka {n}").replace("{n}", String(n)),
     symbol: "📄",
-    description: `Papír s číslem ${n}.`,
+    description: (k.noteLabel?.description ?? "Papír s číslem {n}.").replace("{n}", String(n)),
     note: text,
   });
   const hotspot = (h: Hotspot) => h;

@@ -4,7 +4,7 @@ import { getEscapeText } from "@/i18n/escape";
 import { isLocale, type Locale } from "@/i18n/config";
 
 // Místnosti, které mají ilustrované pozadí ve veřejné složce; laboratoř je kreslená v SVG.
-const COVERS = new Set(["museum", "expedition", "jungle", "pirate", "kitchen"]);
+const COVERS = new Set(["museum", "expedition", "jungle", "pirate", "kitchen", "library", "observatory", "castle"]);
 const COLORS = ["#7ee0b0", "#ffc933", "#8fd0ff", "#ff8a6b"];
 
 export default async function EscapeRoomsPage({
