@@ -1,5 +1,7 @@
 "use client";
 
+import { DailyRecap } from "@/components/DailyChallenges";
+import type { Locale } from "@/i18n/config";
 import { useState } from "react";
 import Link from "next/link";
 import type { TestText } from "@/i18n/test";
@@ -32,11 +34,13 @@ function isCorrect(question: TestQuestion, typed: string[] | undefined, choice: 
 }
 
 export function TestRunner({
+  locale,
   title,
   t,
   questions,
   backHref,
 }: {
+  locale: Locale;
   title: string;
   t: TestText;
   questions: TestQuestion[];
@@ -117,6 +121,7 @@ export function TestRunner({
           )}
         </div>
       )}
+      {submitted && <DailyRecap locale={locale} refreshKey={xpGained} />}
 
       {questions.map((q, qi) => {
         const ok = submitted && isCorrect(q, typed[q.id], choices[q.id]);

@@ -1,5 +1,5 @@
 import type { Locale } from "./config";
-import type { QuestId } from "@/lib/gamify";
+import type { QuestId, WeeklyId } from "@/lib/gamify";
 
 export type DailyText = {
   title: string;
@@ -9,6 +9,11 @@ export type DailyText = {
   streakToday: string;
   quests: string;
   questNames: Record<QuestId, string>;
+  weekly: string;
+  weeklyNames: Record<WeeklyId, string>;
+  recapTitle: string;
+  recapClaimable: string; // {n}
+  recapOpen: string;
   claim: string;
   claimed: string;
   bonus: string; // {n}
@@ -22,6 +27,11 @@ export type DailyText = {
 
 const cs: DailyText = {
   title: "Denní výzvy",
+  weekly: "Týdenní výzvy",
+  weeklyNames: { xp: "Získej 150 XP v testech a hrách", days: "Buď aktivní 5 různých dní", tests: "Dokonči 5 testů", escape: "Vyřeš 3 únikovky" },
+  recapTitle: "Série a výzvy",
+  recapClaimable: "Máš k vyzvednutí odměny: {n}",
+  recapOpen: "Zobrazit výzvy",
   streak: "Série {n} dní",
   streakBest: "Rekord: {n}",
   streakIdle: "Dnes ještě nic. Procvičuj a udrž sérii!",
@@ -57,6 +67,11 @@ const cs: DailyText = {
 
 const en: DailyText = {
   title: "Daily challenges",
+  weekly: "Weekly challenges",
+  weeklyNames: { xp: "Earn 150 XP in tests and games", days: "Be active on 5 different days", tests: "Finish 5 tests", escape: "Solve 3 escape rooms" },
+  recapTitle: "Streak and challenges",
+  recapClaimable: "Rewards ready to claim: {n}",
+  recapOpen: "Show challenges",
   streak: "{n}-day streak",
   streakBest: "Best: {n}",
   streakIdle: "Nothing yet today. Practise to keep your streak!",
@@ -92,6 +107,11 @@ const en: DailyText = {
 
 const de: DailyText = {
   title: "Tägliche Aufgaben",
+  weekly: "Wochenaufgaben",
+  weeklyNames: { xp: "Sammle 150 XP in Tests und Spielen", days: "Sei an 5 verschiedenen Tagen aktiv", tests: "Schließe 5 Tests ab", escape: "Löse 3 Escape Rooms" },
+  recapTitle: "Serie und Aufgaben",
+  recapClaimable: "Belohnungen zum Abholen: {n}",
+  recapOpen: "Aufgaben anzeigen",
   streak: "{n} Tage in Folge",
   streakBest: "Rekord: {n}",
   streakIdle: "Heute noch nichts. Übe, um deine Serie zu halten!",
@@ -127,6 +147,11 @@ const de: DailyText = {
 
 const ru: DailyText = {
   title: "Ежедневные задания",
+  weekly: "Недельные задания",
+  weeklyNames: { xp: "Набери 150 XP в тестах и играх", days: "Занимайся в течение 5 разных дней", tests: "Пройди 5 тестов", escape: "Пройди 3 квест-комнаты" },
+  recapTitle: "Серия и задания",
+  recapClaimable: "Награды к получению: {n}",
+  recapOpen: "Показать задания",
   streak: "Серия: {n} дн.",
   streakBest: "Рекорд: {n}",
   streakIdle: "Сегодня пока ничего. Занимайся, чтобы сохранить серию!",

@@ -17,6 +17,7 @@ import type { HeldKey } from "@/lib/arcade-base";
 import { GAMES, type GameSlug } from "@/lib/games";
 import { getArcadeText, isArcadeSlug } from "@/i18n/arcade";
 import { getGameText, type GameQuestion, type GameText } from "@/i18n/game";
+import { DailyRecap } from "@/components/DailyChallenges";
 import type { Locale } from "@/i18n/config";
 import { isMuted, setMuted, sfx, unlockAudio } from "@/lib/game-fx";
 
@@ -219,6 +220,7 @@ export function SpaceQuizGame({
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(BASE_LIVES);
   const [combo, setCombo] = useState(0);
+  const [bestCombo, setBestCombo] = useState(0);
   const [coins, setCoins] = useState(0);
   const [upgrades, setUpgrades] = useState<Upgrades>(EMPTY_UPGRADES);
   const [resolved, setResolved] = useState<Resolved | null>(null);
@@ -319,6 +321,7 @@ export function SpaceQuizGame({
     setScore(0);
     setLives(BASE_LIVES + upgrades.life);
     setCombo(0);
+    setBestCombo(0);
     setQIndex(0);
     setResolved(null);
     setFlash(null);
@@ -349,10 +352,11 @@ export function SpaceQuizGame({
   function finishRun(survived: boolean) {
     engineRef.current?.loadQuestion([], 0, { fireCooldown: BASE_FIRE_COOLDOWN, alienSpeedFactor: 1 });
     sfx(survived ? "win" : "lose");
-    const nextCoins = coins + score;
+    const comboBonus = bestCombo > 1 ? bestCombo * 3 : 0;
+    const nextCoins = coins + score + comboBonus;
     setCoins(nextCoins);
     persist(nextCoins, upgrades);
-    claimXp(score);
+    claimXp(score + comboBonus);
     setCompleted(survived);
     setPhase("result");
   }
@@ -417,6 +421,7 @@ export function SpaceQuizGame({
           const pts = 10 + Math.min(combo, 4) * 5;
           setScore((s) => s + pts);
           setCombo((c) => c + 1);
+          setBestCombo((b) => Math.max(b, combo + 1));
           engineRef.current?.popText(combo > 0 ? `+${pts}  🔥×${combo + 1}` : `+${pts}`, "#7ee0b0");
           const q = run[qIndex];
           setToast(`${t.correct} +${pts} · ${q.options[q.correctIndex]} – ${q.explanation}`);
@@ -428,6 +433,7 @@ export function SpaceQuizGame({
           const pts = 10 + Math.min(combo, 4) * 5;
           setScore((s) => s + pts);
           setCombo((c) => c + 1);
+          setBestCombo((b) => Math.max(b, combo + 1));
           setResolved({ kind: "correct", pts });
           engineRef.current?.popText(combo > 0 ? `+${pts}  🔥×${combo + 1}` : `+${pts}`, "#7ee0b0");
           enterExplain();
@@ -802,12 +808,18 @@ export function SpaceQuizGame({
           </p>
           <p className="text-sm">
             {t.earned}: <span className="font-bold text-[var(--brand-600)]">+{score}</span>
+            {bestCombo > 1 && (
+              <span className="ml-3 font-bold">
+                🔥 {t.combo} ×{bestCombo} (+{bestCombo * 3})
+              </span>
+            )}
           </p>
           {xpGained > 0 && (
             <p className="pill self-start bg-[var(--accent-yellow)] px-3 py-1.5 text-sm text-[#16132b]">
               +{xpGained} XP
             </p>
           )}
+          <DailyRecap locale={locale} refreshKey={xpGained} />
           <UpgradeShop t={t} coins={coins} upgrades={upgrades} onBuy={buy} />
           <p className="text-xs text-[var(--faint)]">🏆 {t.completionBonus}</p>
           <div className="flex flex-wrap items-center gap-4">

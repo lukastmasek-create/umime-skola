@@ -5,13 +5,15 @@ import { fill } from "@/i18n/profile";
 import { getDailyText } from "@/i18n/daily";
 import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
-import type { QuestId } from "@/lib/gamify";
+import type { QuestId, WeeklyId } from "@/lib/gamify";
 
-type Snapshot = {
+export type Snapshot = {
   streak: { current: number; best: number; doneToday: boolean };
+  weekKey: string;
+  weekly: { id: WeeklyId; target: number; bonusXp: number; progress: number; done: boolean; claimed: boolean }[];
   quests: { id: QuestId; target: number; bonusXp: number; progress: number; done: boolean; claimed: boolean }[];
   milestones: { id: string; days: number; bonusXp: number; reached: boolean; claimed: boolean }[];
-  achievements: { id: string; icon: string; target: number; value: number; done: boolean }[];
+  achievements: { id: string; icon: string; target: number; bonusXp: number; value: number; done: boolean; claimed: boolean }[];
 };
 
 type State = "loading" | "guest" | "error" | Snapshot;
@@ -62,7 +64,7 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
   if (state === "guest") return <p className="card p-5 text-sm text-[var(--muted)]">{t.guest}</p>;
   if (state === "error") return <p className="card p-5 text-sm text-[var(--muted)]">{t.error}</p>;
 
-  const { streak, quests, milestones, achievements } = state;
+  const { streak, weekKey, quests, weekly, milestones, achievements } = state;
   const heading = { fontFamily: "var(--font-heading)" } as const;
   const claimButton = (id: string, ready: boolean, claimed: boolean) =>
     claimed ? (
@@ -113,6 +115,24 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
       </section>
 
       <section>
+        <h3 className="mb-2 text-sm font-bold text-[var(--muted)]">{t.weekly}</h3>
+        <ul className="flex flex-col gap-2">
+          {weekly.map((w) => (
+            <li key={w.id} className="flex items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold">{t.weeklyNames[w.id]}</p>
+                <div className="mt-1 h-2.5 overflow-hidden rounded-full border-2 border-[var(--edge)] bg-[var(--surface-muted)]">
+                  <div className="h-full bg-[var(--brand-500)]" style={{ width: `${(w.progress / w.target) * 100}%` }} />
+                </div>
+              </div>
+              <span className="shrink-0 text-xs font-bold text-[var(--accent-500)]">{fill(t.bonus, w.bonusXp)}</span>
+              {claimButton(`weekly:${w.id}:${weekKey}`, w.done, w.claimed)}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section>
         <h3 className="mb-2 text-sm font-bold text-[var(--muted)]">{t.milestones}</h3>
         <ul className="grid gap-2 sm:grid-cols-2">
           {milestones.map((m) => (
@@ -142,14 +162,63 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
                   {a.icon}
                 </span>
                 <span className="min-w-0 flex-1 text-sm font-semibold">{t.achievementNames[a.id]}</span>
-                <span className="text-xs font-bold text-[var(--muted)]">
-                  {a.value}/{a.target}
-                </span>
+                <span className="text-xs font-bold text-[var(--accent-500)]">{fill(t.bonus, a.bonusXp)}</span>
+                {a.done ? (
+                  claimButton(`achievement:${a.id}`, true, a.claimed)
+                ) : (
+                  <span className="text-xs font-bold text-[var(--muted)]">
+                    {a.value}/{a.target}
+                  </span>
+                )}
               </li>
             ))}
           </ul>
         </section>
       )}
+    </div>
+  );
+}
+
+// Malý souhrn po dokončení testu, hry nebo únikovky: série a počet odměn
+// k vyzvednutí s odkazem na výzvy. Nic neukazuje hostům ani při chybě.
+export function DailyRecap({ locale, refreshKey = 0 }: { locale: Locale; refreshKey?: number }) {
+  const t = getDailyText(locale);
+  const [snap, setSnap] = useState<Snapshot | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/denni-vyzvy")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled && data.loggedIn && !data.error) setSnap(data);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshKey]);
+
+  if (!snap) return null;
+  const ready =
+    snap.quests.filter((q) => q.done && !q.claimed).length +
+    snap.weekly.filter((w) => w.done && !w.claimed).length +
+    snap.milestones.filter((m) => m.reached && !m.claimed).length +
+    snap.achievements.filter((a) => a.done && !a.claimed).length;
+
+  return (
+    <div className="card flex flex-wrap items-center justify-between gap-3 p-4">
+      <div>
+        <p className="font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
+          🔥 {fill(t.streak, snap.streak.current)}
+        </p>
+        {ready > 0 && <p className="text-xs font-semibold text-[var(--accent-500)]">{fill(t.recapClaimable, ready)}</p>}
+      </div>
+      <a
+        href={`/${locale}${ready > 0 ? "/profil" : ""}`}
+        className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-xs font-bold"
+      >
+        {t.recapOpen}
+      </a>
     </div>
   );
 }
