@@ -39,6 +39,9 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: "title-builder", kind: "title", ref: "builder", price: 120, names: n("Stavitel", "Builder", "Baumeister", "Строитель") },
   { id: "title-pet-friend", kind: "title", ref: "pet-friend", price: 100, names: n("Přítel zvířat", "Animal friend", "Tierfreund", "Друг животных") },
   { id: "title-legend", kind: "title", ref: "legend", price: 400, tag: "popular", names: n("Legenda", "Legend", "Legende", "Легенда") },
+  { id: "title-dreamer", kind: "title", ref: "dreamer", price: 90, tag: "new", names: n("Snílek", "Dreamer", "Träumer", "Мечтатель") },
+  { id: "title-adventurer", kind: "title", ref: "adventurer", price: 140, tag: "new", names: n("Dobrodruh", "Adventurer", "Abenteurer", "Авантюрист") },
+  { id: "title-hero", kind: "title", ref: "hero", price: 300, tag: "new", names: n("Hrdina", "Hero", "Held", "Герой") },
 
   // --- rámečky avataru ---
   { id: "frame-leaf", kind: "frame", ref: "leaf", price: 100, names: n("Listový rámeček", "Leaf frame", "Blätterrahmen", "Рамка из листьев") },

@@ -41,10 +41,26 @@ async function snapshot(userId: string) {
   };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ loggedIn: false });
+
+  // /api/shop?history=1: posledních 100 nákupů a dárků.
+  if (new URL(request.url).searchParams.has("history")) {
+    try {
+      const rows = await prisma.pointTransaction.findMany({
+        where: { userId, reason: { startsWith: "shop:" } },
+        orderBy: { createdAt: "desc" },
+        take: 100,
+        select: { id: true, amount: true, reason: true, createdAt: true },
+      });
+      return NextResponse.json({ history: rows });
+    } catch (error) {
+      console.error("shop history failed", error);
+      return NextResponse.json({ error: "unavailable", detail: errorCode(error) }, { status: 503 });
+    }
+  }
 
   try {
     return NextResponse.json(await snapshot(userId));
@@ -55,9 +71,17 @@ export async function GET() {
 }
 
 // Strhne body jen tehdy, když je hráč má, takže se nikdy nepůjde do mínusu.
-async function pay(tx: Prisma.TransactionClient, userId: string, price: number) {
+// Do historie nákupů se zapisuje do PointTransaction s důvodem "shop:<druh>:<id>[:<kdo>]".
+async function pay(tx: Prisma.TransactionClient, userId: string, price: number, reason: string) {
   const paid = await tx.user.updateMany({ where: { id: userId, points: { gte: price } }, data: { points: { decrement: price } } });
   if (paid.count === 0) throw new NotEnoughPoints();
+  await tx.pointTransaction.create({ data: { userId, amount: -price, reason } });
+}
+
+// Z e-mailu zůstane jen začátek a doména, ať historie neprozradí celou adresu.
+function maskEmail(email: string): string {
+  const [name, domain] = email.split("@");
+  return `${name.slice(0, 1)}***@${domain}`;
 }
 
 export async function POST(request: Request) {
@@ -77,7 +101,7 @@ export async function POST(request: Request) {
       const key = unlockKey(item);
       await prisma.$transaction(async (t) => {
         if (await t.unlock.findUnique({ where: { userId_key: { userId, key } } })) throw new AlreadyOwned();
-        await pay(t, userId, salePrice(item, day));
+        await pay(t, userId, salePrice(item, day), `shop:buy:${item.id}`);
         await t.unlock.create({ data: { userId, key } });
       }, tx);
     } else if (body.action === "buyBundle") {
@@ -88,7 +112,7 @@ export async function POST(request: Request) {
         const have = new Set(ownedItems(unlocks.map((u) => u.key)));
         const { price, missing } = bundlePrice(bundle, have);
         if (missing.length === 0) throw new AlreadyOwned();
-        await pay(t, userId, price);
+        await pay(t, userId, price, `shop:bundle:${bundle.id}`);
         const keys = missing.map((m) => unlockKey(getShopItem(m)!));
         await t.unlock.createMany({ data: keys.map((key) => ({ userId, key })), skipDuplicates: true });
       }, tx);
@@ -103,8 +127,9 @@ export async function POST(request: Request) {
         if (!to) throw new RecipientUnavailable();
         if (to.id === userId) throw new SelfGift();
         if (await t.unlock.findUnique({ where: { userId_key: { userId: to.id, key } } })) throw new RecipientUnavailable();
-        await pay(t, userId, salePrice(item, day));
+        await pay(t, userId, salePrice(item, day), `shop:gift:${item.id}:${maskEmail(email)}`);
         await t.unlock.create({ data: { userId: to.id, key } });
+        await t.pointTransaction.create({ data: { userId: to.id, amount: 0, reason: `shop:received:${item.id}` } });
       }, tx);
     } else {
       return NextResponse.json({ error: "unknown-item" }, { status: 400 });

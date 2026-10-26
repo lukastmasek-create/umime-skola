@@ -30,6 +30,14 @@ export type ShopExtraText = {
   giftSend: string; // {n}
   giftSent: string; // {name}
   cancel: string;
+  historyTitle: string;
+  historyHint: string;
+  historyEmpty: string;
+  historyBuy: string; // {name}
+  historyBundle: string; // {name}
+  historyGift: string; // {name} {who}
+  historyReceived: string; // {name}
+  historyUnknown: string;
   errors: Record<"recipient-unavailable" | "self-gift" | "bad-email", string>;
 };
 
@@ -63,6 +71,14 @@ const cs: ShopExtraText = {
   giftSend: "Darovat za {n} bodů",
   giftSent: "Dárek odeslán: {name}",
   cancel: "Zrušit",
+  historyTitle: "Historie nákupů",
+  historyHint: "Tvých posledních 100 nákupů a dárků.",
+  historyEmpty: "Zatím jsi nic nekoupil/a. První nákup se tu objeví hned.",
+  historyBuy: "Koupeno: {name}",
+  historyBundle: "Sada: {name}",
+  historyGift: "Dárek pro {who}: {name}",
+  historyReceived: "Dostal/a jsi dárek: {name}",
+  historyUnknown: "Starší zboží",
   errors: {
     "recipient-unavailable": "Tomuto účtu se dárek poslat nedá. Zkontroluj e-mail, nebo to zboží už možná má.",
     "self-gift": "Sám sobě darovat nemůžeš, kup si to rovnou.",
@@ -100,6 +116,14 @@ const en: ShopExtraText = {
   giftSend: "Gift for {n} points",
   giftSent: "Gift sent: {name}",
   cancel: "Cancel",
+  historyTitle: "Purchase history",
+  historyHint: "Your last 100 purchases and gifts.",
+  historyEmpty: "You haven't bought anything yet. Your first purchase will show up here.",
+  historyBuy: "Bought: {name}",
+  historyBundle: "Set: {name}",
+  historyGift: "Gift for {who}: {name}",
+  historyReceived: "You received a gift: {name}",
+  historyUnknown: "Older item",
   errors: {
     "recipient-unavailable": "This account can't receive the gift. Check the email, or they may already own the item.",
     "self-gift": "You can't gift to yourself, just buy it.",
@@ -137,6 +161,14 @@ const de: ShopExtraText = {
   giftSend: "Für {n} Punkte verschenken",
   giftSent: "Geschenk gesendet: {name}",
   cancel: "Abbrechen",
+  historyTitle: "Kaufverlauf",
+  historyHint: "Deine letzten 100 Käufe und Geschenke.",
+  historyEmpty: "Du hast noch nichts gekauft. Dein erster Kauf erscheint hier.",
+  historyBuy: "Gekauft: {name}",
+  historyBundle: "Set: {name}",
+  historyGift: "Geschenk für {who}: {name}",
+  historyReceived: "Du hast ein Geschenk bekommen: {name}",
+  historyUnknown: "Älterer Artikel",
   errors: {
     "recipient-unavailable": "Dieses Konto kann das Geschenk nicht erhalten. Prüfe die E-Mail, oder der Artikel ist schon vorhanden.",
     "self-gift": "Du kannst dir nichts selbst schenken, kauf es einfach.",
@@ -174,6 +206,14 @@ const ru: ShopExtraText = {
   giftSend: "Подарить за {n} очков",
   giftSent: "Подарок отправлен: {name}",
   cancel: "Отмена",
+  historyTitle: "История покупок",
+  historyHint: "Твои последние 100 покупок и подарков.",
+  historyEmpty: "Ты пока ничего не купил. Первая покупка появится здесь.",
+  historyBuy: "Куплено: {name}",
+  historyBundle: "Набор: {name}",
+  historyGift: "Подарок для {who}: {name}",
+  historyReceived: "Тебе подарили: {name}",
+  historyUnknown: "Старый товар",
   errors: {
     "recipient-unavailable": "Этот аккаунт не может получить подарок. Проверь e-mail, возможно, вещь уже есть.",
     "self-gift": "Нельзя дарить себе, просто купи.",

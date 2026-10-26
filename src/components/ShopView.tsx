@@ -32,6 +32,8 @@ type Sort = "default" | "asc" | "desc";
 
 const WISHLIST_KEY = "shop-wishlist";
 
+type HistoryRow = { id: string; amount: number; reason: string; createdAt: string };
+
 function formatLeft(ms: number): string {
   const total = Math.max(0, Math.floor(ms / 1000));
   const h = Math.floor(total / 3600);
@@ -130,6 +132,8 @@ export function ShopView({ locale }: { locale: Locale }) {
   const [giftId, setGiftId] = useState<string | null>(null);
   const [giftEmail, setGiftEmail] = useState("");
   const [nowMs, setNowMs] = useState(0);
+  const [history, setHistory] = useState<HistoryRow[] | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   useEffect(() => {
     const id = window.setTimeout(() => {
@@ -208,6 +212,36 @@ export function ShopView({ locale }: { locale: Locale }) {
     }
   }
 
+  const loadHistory = useCallback(async () => {
+    try {
+      const res = await fetch("/api/shop?history=1");
+      const json = await res.json().catch(() => ({}));
+      setHistory(res.ok && Array.isArray(json.history) ? json.history : []);
+    } catch {
+      setHistory([]);
+    }
+  }, []);
+
+  // Při otevření historie a po každém nákupu (změní se počet bodů) se načte znovu.
+  const points = state.status === "ready" ? state.data.points : 0;
+  useEffect(() => {
+    if (!historyOpen) return;
+    const id = window.setTimeout(() => void loadHistory(), 0);
+    return () => window.clearTimeout(id);
+  }, [historyOpen, points, loadHistory]);
+
+  function historyLine(row: HistoryRow): string {
+    const [, kind, ref, who] = row.reason.split(":");
+    if (kind === "bundle") {
+      const bundle = SHOP_BUNDLES.find((b) => b.id === ref);
+      return x.historyBundle.replace("{name}", bundle?.names[locale] ?? x.historyUnknown);
+    }
+    const name = getShopItem(ref)?.names[locale] ?? x.historyUnknown;
+    if (kind === "gift") return x.historyGift.replace("{name}", name).replace("{who}", who ?? "?");
+    if (kind === "received") return x.historyReceived.replace("{name}", name);
+    return x.historyBuy.replace("{name}", name);
+  }
+
   const buy = (item: ShopItem) =>
     post({ action: "buy", id: item.id }, t.bought.replace("{name}", item.names[locale]), item.id);
   const buyBundle = (bundle: ShopBundle) =>
@@ -272,7 +306,6 @@ export function ShopView({ locale }: { locale: Locale }) {
 
   const ready = state.status === "ready" ? state.data : null;
   const owned = new Set(ready?.owned ?? []);
-  const points = ready?.points ?? 0;
   const day = ready?.day ?? dayKey();
   const dealIds = new Set(dailyDealIds(day));
   const priceOf = (item: ShopItem) => salePrice(item, day);
@@ -641,6 +674,43 @@ export function ShopView({ locale }: { locale: Locale }) {
             </div>
           </form>
         </Modal>
+      )}
+
+      {ready && (
+        <section className="mt-10">
+          <button
+            type="button"
+            onClick={() => setHistoryOpen((o) => !o)}
+            aria-expanded={historyOpen}
+            className="btn-bouncy bg-[var(--surface)] px-4 py-2 text-sm font-bold"
+          >
+            📜 {x.historyTitle} {historyOpen ? "▲" : "▼"}
+          </button>
+          {historyOpen && (
+            <div className="card mt-3 p-4">
+              <p className="mb-3 text-sm text-[var(--muted)]">{x.historyHint}</p>
+              {history === null ? (
+                <div className="h-24 animate-pulse rounded-lg bg-[var(--surface-muted)]" aria-label={t.loading} />
+              ) : history.length === 0 ? (
+                <p className="text-sm text-[var(--muted)]">{x.historyEmpty}</p>
+              ) : (
+                <ul className="divide-y divide-[var(--edge)]/30">
+                  {history.map((row) => (
+                    <li key={row.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                      <span>
+                        <span className="font-semibold">{historyLine(row)}</span>
+                        <span className="block text-xs text-[var(--muted)]">{new Date(row.createdAt).toLocaleString(locale)}</span>
+                      </span>
+                      <span className={`shrink-0 font-extrabold ${row.amount < 0 ? "text-[var(--danger)]" : "text-[var(--accent-green)]"}`}>
+                        {row.amount === 0 ? "🎁" : `${row.amount > 0 ? "+" : ""}${row.amount} ⭐`}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </section>
       )}
 
       {message && (
