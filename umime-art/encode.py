@@ -54,7 +54,7 @@ def icons():
         alpha = im.getchannel("A").point(lambda a: 255 if a > 24 else 0)
         box = alpha.getbbox()
         im = im.crop(box)
-        side = int(max(im.size) * 1.06)
+        side = int(max(im.size) * 1.1)
         canvas = Image.new("RGBA", (side, side), (0, 0, 0, 0))
         canvas.paste(im, ((side - im.width) // 2, (side - im.height) // 2))
         canvas = canvas.resize((512, 512), Image.LANCZOS)

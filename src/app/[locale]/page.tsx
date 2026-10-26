@@ -253,7 +253,7 @@ export default async function Home({
                     ["--glow" as string]: `${color}55`,
                   }}
                 >
-                  <HomeArt name={GALAXY_ICONS[i % GALAXY_ICONS.length]} size={96} className="absolute -right-3 -top-3 opacity-80" />
+                  <HomeArt name={GALAXY_ICONS[i % GALAXY_ICONS.length]} size={128} className="absolute -right-4 -top-5 opacity-95" />
                   <span className="text-4xl font-extrabold leading-none" style={{ ...heading, color }}>
                     {String(i + 1).padStart(2, "0")}
                   </span>
