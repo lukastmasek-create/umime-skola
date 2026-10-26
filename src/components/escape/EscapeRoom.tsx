@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { LabScene } from "./LabScene";
+import { RoomScene } from "./RoomScene";
 import { PuzzleModal } from "./PuzzleModal";
 import { ROOMS } from "@/lib/escape/rewards";
 import { computeStars, DANGER_PER_MISTAKE, DANGER_PER_MISTAKE_RELAXED } from "@/lib/escape/score";
@@ -410,14 +411,26 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
       <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
         <div className="flex flex-col gap-3">
           <div className="card overflow-hidden p-0">
-            <LabScene
-              hotspots={room.hotspots}
-              solved={solved}
-              used={used}
-              danger={danger}
-              selectedItem={selected}
-              onHotspot={handleHotspot}
-            />
+            {room.theme ? (
+              <RoomScene
+                theme={room.theme}
+                hotspots={room.hotspots}
+                solved={solved}
+                used={used}
+                danger={danger}
+                selectedItem={selected}
+                onHotspot={handleHotspot}
+              />
+            ) : (
+              <LabScene
+                hotspots={room.hotspots}
+                solved={solved}
+                used={used}
+                danger={danger}
+                selectedItem={selected}
+                onHotspot={handleHotspot}
+              />
+            )}
           </div>
           <div className="min-h-14 rounded-xl bg-[var(--surface-muted)] px-4 py-3 text-sm" aria-live="polite">
             {message ?? <span className="text-[var(--faint)]">{ui.combineHint}</span>}

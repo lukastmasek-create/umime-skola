@@ -1,0 +1,88 @@
+import { buildRoom } from "./kit";
+
+// Zamčené muzeum (dějepis). Kód ke dveřím: 4379. Texty hádanek jsou zatím jen česky.
+export const MUSEUM_ROOM = buildRoom({
+  id: "museum",
+  theme: { wall: "#efe3cc", floor: "#b59a73", accent: "#c9a46a", title: "Zamčené muzeum" },
+  intro:
+    "Muzeum se zavřelo a ty jsi zůstal/a uvnitř. Strážní automat vypne alarm jen tomu, kdo dokáže, že zná dějiny. Prohledej sály, vyřeš hádanky a vyjdi ven dřív, než se vrátí noční hlídka!",
+  winMessage: "Dveře muzea se otevřely a ty jsi vyšel/vyšla do chladné noci. Automat za tebou spokojeně zapípal: „Skvělý historik!“",
+  notes: [
+    "První číslice kódu: kolik let trvala první světová válka? Odečti letopočty 1914 a 1918.",
+    "Druhá číslice kódu: kolik velkých pyramid stojí v Gíze (Cheopsova, Rachefova, Menkaureova)?",
+    "Třetí číslice kódu: římské číslo VII v arabských číslicích.",
+    "Čtvrtá číslice kódu: římské číslo IX v arabských číslicích.",
+  ],
+  things: {
+    key: { name: "Klíč od vitríny", symbol: "🗝", description: "Malý klíček s ozdobným uchem." },
+    partB: { name: "Provázek", symbol: "🧵", description: "Dlouhý pevný provázek z vitríny." },
+    partC: { name: "Háček", symbol: "🪝", description: "Kovový háček z časové osy." },
+    tool: { name: "Udice", symbol: "🎣", description: "Provázek s háčkem. Dosáhne i tam, kam ruka nedosáhne." },
+    card: { name: "Strážcův žeton", symbol: "🏅", description: "Kovový žeton, který aktivuje strážní automat." },
+  },
+  recipeMessage: "Provázek jsi uvázal/a na háček. Máš improvizovanou udici, kterou dosáhneš vysoko!",
+  places: {
+    a: { label: "Egyptský sarkofág", icon: "🏺" },
+    b: { label: "Vitrína s předměty", icon: "🖼️" },
+    c: { label: "Časová osa na zdi", icon: "⏳" },
+    d: { label: "Římsa nad vchodem", icon: "🕯️" },
+    e: { label: "Strážní automat", icon: "🛡️" },
+    door: { label: "Hlavní dveře", icon: "🚪" },
+    examine: { label: "Busta", icon: "🗿", message: "Kamenná busta s přísným výrazem. Nic užitečného, ale působí vznešeně." },
+    robot: "Strážce Atom",
+  },
+  lockedB: "Vitrína je zamčená. Potřebuješ klíč. Vyber ho v inventáři a klikni na vitrínu.",
+  lockedD: "Na římse něco leží, ale nedosáhneš tam. Zkus vyrobit něco, čím se dá sáhnout daleko.",
+  lockedE: "Automat chce žeton. Vyber ho v inventáři a klikni na automat.",
+  lockedDoor: "Dveře jsou zamčené elektronickým zámkem. Nejdřív musíš odpovědět strážnímu automatu.",
+  useMessage: "Udicí jsi přitáhl/a z římsy žeton a papírek s poznámkou.",
+  a: {
+    title: "Egyptský sarkofág",
+    prompt: "Na víku sarkofágu je nápis: „Postavili jsme pyramidy u řeky Nil.“ Která země to je?",
+    answers: ["Egypt", "Egypta", "Staroegyptská říše", "Starověký Egypt"],
+    placeholder: "název země",
+    hints: ["Pyramidy a faraoni patří do starověku.", "Země leží v severovýchodní Africe.", "Název má pět písmen a začíná na E."],
+    rewardMessage: "Pod víkem sarkofágu je schovaný klíč a poznámka.",
+  },
+  b: {
+    title: "Vitrína",
+    prompt: "Vitrína se odemkne, když přiřadíš každou osobnost k tomu, co s ní souvisí.",
+    pairs: [
+      ["Cyril a Metoděj", "Velká Morava"],
+      ["Karel IV.", "Karlštejn"],
+      ["Jan Hus", "Kostnice"],
+      ["Jan Amos Komenský", "Orbis pictus"],
+    ],
+    hints: ["Komenského znáš jako učitele národů, napsal slavnou učebnici s obrázky.", "Karel IV. nechal postavit hrad pro korunovační klenoty.", "Jan Hus byl upálen na církevním koncilu v jednom městě."],
+    rewardMessage: "Vitrína cvakla. Uvnitř je provázek a papírek s číslem.",
+  },
+  c: {
+    title: "Časová osa",
+    prompt: "Dlaždice na zdi jsou promíchané. Seřaď události od nejstarší po nejmladší.",
+    items: [
+      "Pád Západořímské říše (476)",
+      "Příchod Cyrila a Metoděje (863)",
+      "Upálení Jana Husa (1415)",
+      "Objevení Ameriky (1492)",
+      "Vznik Československa (1918)",
+    ],
+    hints: ["Začni nejstarší událostí, ještě z doby Římanů.", "Hus žil před Kolumbem, oba ve středověku a na jeho konci.", "Vznik Československa je nejmladší, je po první světové válce."],
+    rewardMessage: "Dlaždice zapadly a za nimi je schovaný kovový háček a poznámka.",
+  },
+  e: {
+    title: "Strážní automat",
+    prompt: "Automat se ptá: „Který panovník nechal postavit Karlův most a založil univerzitu v Praze?“",
+    options: ["Rudolf II.", "Karel IV.", "Přemysl Otakar II.", "Jiří z Poděbrad"],
+    correct: 1,
+    hints: ["Univerzita v Praze nese jeho jméno.", "Byl to český král a zároveň římský císař ve 14. století.", "Přemyslovec to nebyl, byl to Lucemburk. Jmenoval se Karel."],
+    rewardMessage: "Automat zapípal, alarm utichl a zámek dveří se odblokoval. Zbývá zadat kód.",
+  },
+  door: {
+    title: "Hlavní dveře",
+    prompt: "Na dveřích svítí čtyřmístný kód. Přečti si všechny čtyři poznámky ve svém inventáři a odvoď z nich číslice.",
+    answers: ["4379"],
+    placeholder: "čtyři číslice",
+    hints: ["Otevři inventář a přečti si všechny čtyři poznámky.", "1918 − 1914 = 4. Pyramid je v Gíze tři. VII je 7.", "Poslední číslice je IX = 9. Kód je 4379."],
+    rewardMessage: "Zámek cvakl a dveře se otevřely!",
+  },
+});

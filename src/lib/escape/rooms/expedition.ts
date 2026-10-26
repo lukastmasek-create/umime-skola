@@ -1,0 +1,82 @@
+import { buildRoom } from "./kit";
+
+// Expediční stan (zeměpis). Kód ke dveřím: 4543. Texty hádanek jsou zatím jen česky.
+export const EXPEDITION_ROOM = buildRoom({
+  id: "expedition",
+  theme: { wall: "#e8d9b5", floor: "#a8864f", accent: "#d9a54a", title: "Expediční stan" },
+  intro:
+    "Bouře tě zahnala do expedičního stanu uprostřed pouště. Vysílačka je rozbitá a výjezd je zamčený kódem. Prozkoumej výbavu, vyřeš hádanky ze zeměpisu a vyraz dřív, než přijde písečná bouře!",
+  winMessage: "Stan se rozevřel a venku zářilo slunce. Vysílačka ožila: „Expedice splněna, skvělá práce, zeměpisče!“",
+  notes: [
+    "První číslice kódu: kolik hlavních světových stran má kompas (sever, jih, východ, západ)?",
+    "Druhá číslice kódu: kolik oceánů se obvykle uvádí na Zemi (Tichý, Atlantický, Indický, Severní ledový, Jižní)?",
+    "Třetí číslice kódu: s kolika státy sousedí Česká republika (Německo, Polsko, Slovensko, Rakousko)?",
+    "Čtvrtá číslice kódu: kolik barev má česká vlajka?",
+  ],
+  things: {
+    key: { name: "Klíč od truhly", symbol: "🗝", description: "Těžký mosazný klíč od expediční truhly." },
+    partB: { name: "Lano", symbol: "🪢", description: "Pevné lano z truhly." },
+    partC: { name: "Kotvička", symbol: "⚓", description: "Malá kotvička se čtyřmi háky." },
+    tool: { name: "Lano s kotvičkou", symbol: "🪝", description: "Lano s kotvičkou, kterou se dá zachytit o vysokou větev." },
+    card: { name: "Vysílačka", symbol: "📻", description: "Stará vysílačka, kterou lze zapnout." },
+  },
+  recipeMessage: "Lano jsi uvázal/a na kotvičku. Teď se dá hodit vysoko!",
+  places: {
+    a: { label: "Kompas na stolku", icon: "🧭" },
+    b: { label: "Expediční truhla", icon: "🧰" },
+    c: { label: "Atlas s mapami", icon: "🗺️" },
+    d: { label: "Vysoká palma", icon: "🌴" },
+    e: { label: "Vysílačka", icon: "📡" },
+    door: { label: "Výjezd ze stanu", icon: "🚪" },
+    examine: { label: "Sud s vodou", icon: "🛢️", message: "Sud je skoro prázdný. Rozhodně nemáš času nazbyt." },
+    robot: "Průvodce Atom",
+  },
+  lockedB: "Truhla je zamčená. Potřebuješ klíč. Vyber ho v inventáři a klikni na truhlu.",
+  lockedD: "Na palmě visí něco užitečného, ale ve výšce. Potřebuješ něco, co se dá hodit nahoru.",
+  lockedE: "Vysílačka potřebuje zapnout. Vyber ji v inventáři a klikni na anténu.",
+  lockedDoor: "Výjezd je zamčený. Nejdřív musíš zprovoznit vysílačku a přijmout kód.",
+  useMessage: "Kotvička se zachytila o větev a spadla na tebe vysílačka a lístek s poznámkou.",
+  a: {
+    title: "Kompas",
+    prompt: "Střelka kompasu ukazuje na sever. Která světová strana je přesně opačná?",
+    answers: ["jih", "south", "J"],
+    placeholder: "světová strana",
+    hints: ["Světové strany jsou čtyři: sever, jih, východ a západ.", "Je to opak severu.", "Začíná na J a má tři písmena."],
+    rewardMessage: "Pod kompasem je schovaný klíč a poznámka.",
+  },
+  b: {
+    title: "Expediční truhla",
+    prompt: "Zámek truhly se odemkne, když přiřadíš ke každé zemi její hlavní město.",
+    pairs: [
+      ["Francie", "Paříž"],
+      ["Itálie", "Řím"],
+      ["Španělsko", "Madrid"],
+      ["Německo", "Berlín"],
+    ],
+    hints: ["Eiffelova věž stojí v hlavním městě Francie.", "Koloseum najdeš v Itálii.", "Berlínská zeď stála v Německu."],
+    rewardMessage: "Truhla se otevřela. Uvnitř je pevné lano a papírek s číslem.",
+  },
+  c: {
+    title: "Atlas",
+    prompt: "Stránky atlasu jsou promíchané. Seřaď světadíly od největšího podle rozlohy.",
+    items: ["Asie", "Afrika", "Severní Amerika", "Jižní Amerika", "Evropa"],
+    hints: ["Největší světadíl je ten, kde leží Čína a Indie.", "Afrika je druhá největší a Evropa mezi uvedenými nejmenší.", "Pořadí: Asie, Afrika, Severní Amerika, Jižní Amerika, Evropa."],
+    rewardMessage: "Atlas se otevřel a mezi stránkami je kotvička a poznámka.",
+  },
+  e: {
+    title: "Vysílačka",
+    prompt: "Z vysílačky se ozve: „Na kterou stranu světa vychází Slunce?“",
+    options: ["Na západě", "Na východě", "Na severu", "Na jihu"],
+    correct: 1,
+    hints: ["Slunce vychází ráno a zapadá večer.", "Zapadá na západě, takže vychází na opačné straně.", "Správně je východ."],
+    rewardMessage: "Vysílačka zapraskala a poslala kód ke dveřím. Zbývá ho zadat.",
+  },
+  door: {
+    title: "Výjezd ze stanu",
+    prompt: "Na zámku svítí čtyřmístný kód. Přečti si všechny čtyři poznámky ve svém inventáři a odvoď z nich číslice.",
+    answers: ["4543"],
+    placeholder: "čtyři číslice",
+    hints: ["Otevři inventář a přečti si všechny čtyři poznámky.", "Světové strany jsou 4, oceánů 5 a sousedů ČR také 4.", "Česká vlajka má tři barvy. Kód je 4543."],
+    rewardMessage: "Zámek cvakl a plachta se otevřela!",
+  },
+});

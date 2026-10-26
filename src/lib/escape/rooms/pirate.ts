@@ -1,0 +1,87 @@
+import { buildRoom } from "./kit";
+
+// Pirátská loď (angličtina). Kód ke dveřím: 6783. Texty hádanek jsou česky s anglickými slovy.
+export const PIRATE_ROOM = buildRoom({
+  id: "pirate",
+  theme: { wall: "#b9dcf0", floor: "#8a5a35", accent: "#d98e4a", title: "Pirate ship" },
+  intro:
+    "Probudil/a ses v kajutě pirátské lodi a kapitán zamknul dveře kódem. Piráti mluví jen anglicky. Najdi stopy, vyřeš hádanky s anglickými slovíčky a unikni z lodi dřív, než zvednou kotvu a vyplují!",
+  winMessage: "Dveře kajuty se rozletěly a ty jsi vyběhl/a na palubu. Kapitán se zasmál: „Well done, little sailor!“",
+  notes: [
+    "První číslice kódu: z kolika písmen se skládá slovo PIRATE?",
+    "Druhá číslice kódu: kolik dní má týden (days in a week)?",
+    "Třetí číslice kódu: kolik chapadel má chobotnice (octopus)?",
+    "Čtvrtá číslice kódu: kolik stran má trojúhelník (triangle)?",
+  ],
+  things: {
+    key: { name: "Klíč od truhly", symbol: "🗝", description: "Rezavý klíč s lebkou na ouzku." },
+    partB: { name: "Lano", symbol: "🪢", description: "Dlouhé lodní lano." },
+    partC: { name: "Hák", symbol: "🪝", description: "Pirátský hák na železném řetězu." },
+    tool: { name: "Lano s hákem", symbol: "🎣", description: "Lano s hákem. Dosáhne na stěžeň." },
+    card: { name: "Kompas", symbol: "🧭", description: "Zlatý kompas, který ukazuje cestu z lodi." },
+  },
+  recipeMessage: "Lano jsi připevnil/a k háku. Máš pirátský chňapák, který dosáhne až na stěžeň!",
+  places: {
+    a: { label: "Treasure map", icon: "🗺️" },
+    b: { label: "Treasure chest", icon: "🧰" },
+    c: { label: "Captain's table", icon: "📜" },
+    d: { label: "Top of the mast", icon: "🏴‍☠️" },
+    e: { label: "Parrot", icon: "🦜" },
+    door: { label: "Cabin door", icon: "🚪" },
+    examine: { label: "Barrel", icon: "🛢️", message: "V sudu je rum. Žádný pirát se ho nedotkne, dokud nesplníš úkoly." },
+    robot: "Pirát Atom",
+  },
+  lockedB: "Truhla je zamčená. Potřebuješ klíč. Vyber ho v inventáři a klikni na truhlu.",
+  lockedD: "Na stěžni něco visí, ale je to příliš vysoko. Potřebuješ něco s hákem a lanem.",
+  lockedE: "Papoušek chce kompas. Vyber ho v inventáři a klikni na papouška.",
+  lockedDoor: "Dveře jsou zamčené. Nejdřív musíš odpovědět papouškovi.",
+  useMessage: "Hákem jsi stáhl/a ze stěžně zlatý kompas a lísteček s poznámkou.",
+  a: {
+    title: "Treasure map",
+    prompt: "Na mapě stojí: „Where is the treasure? On the ship!“ Co česky znamená slovo ship?",
+    answers: ["loď", "lod", "lodě"],
+    placeholder: "české slovo",
+    hints: ["Pirát na ní pluje po moři.", "Je to dopravní prostředek na vodě.", "Česky začíná na L a má tři písmena."],
+    rewardMessage: "Za mapou je klíč a poznámka s číslem.",
+  },
+  b: {
+    title: "Treasure chest",
+    prompt: "Zámek truhly se odemkne, když přiřadíš každé anglické slovo k českému překladu.",
+    pairs: [
+      ["sword", "meč"],
+      ["parrot", "papoušek"],
+      ["treasure", "poklad"],
+      ["island", "ostrov"],
+    ],
+    hints: ["Parrot je pták, který umí opakovat slova.", "Treasure je to, co piráti hledají.", "Island je kus země uprostřed moře, sword je zbraň."],
+    rewardMessage: "Truhla se otevřela. Uvnitř je lano a papírek.",
+  },
+  c: {
+    title: "Captain's table",
+    prompt: "Na kapitánově stole leží zmatený příběh. Seřaď věty, aby dávaly smysl.",
+    items: [
+      "First, the pirates find a map.",
+      "Then they sail to an island.",
+      "Next, they dig a deep hole.",
+      "Finally, they find a big chest.",
+    ],
+    hints: ["Slovo first znamená nejdřív.", "Then a next označují, co se stane potom.", "Finally znamená nakonec, tedy poslední věta."],
+    rewardMessage: "Příběh dává smysl. Zpod něj vypadl železný hák a poznámka.",
+  },
+  e: {
+    title: "Parrot",
+    prompt: "Papoušek zakřičí: „The pirates ___ on the ship yesterday.“ Která forma slovesa patří do věty?",
+    options: ["sail", "sails", "sailed", "sailing"],
+    correct: 2,
+    hints: ["Yesterday znamená včera, děj už proběhl.", "Potřebuješ minulý čas.", "Minulý čas pravidelných sloves končí na -ed."],
+    rewardMessage: "Papoušek spokojeně zakrákal a odemkl zámek dveří. Zbývá zadat kód.",
+  },
+  door: {
+    title: "Cabin door",
+    prompt: "Na dveřích svítí čtyřmístný kód. Přečti si všechny čtyři poznámky ve svém inventáři a odvoď z nich číslice.",
+    answers: ["6783"],
+    placeholder: "čtyři číslice",
+    hints: ["Otevři inventář a přečti si všechny čtyři poznámky.", "PIRATE má šest písmen, týden sedm dní a chobotnice osm chapadel.", "Trojúhelník má tři strany. Kód je 6783."],
+    rewardMessage: "Zámek cvakl a dveře se otevřely!",
+  },
+});

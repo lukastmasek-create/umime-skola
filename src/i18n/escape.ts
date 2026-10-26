@@ -68,9 +68,11 @@ const cs: EscapeText = {
     note: "Na dalších místnostech pracujeme. Obsah hádanek je zatím jen česky.",
     rooms: [
       { id: "lab", name: "Laboratoř doktora Atoma", subject: "Chemie", description: "Reaktor se rozjíždí a dveře jsou zamčené. Najdi vodítka, namíchej správné látky a otevři kód.", available: true },
-      { id: "museum", name: "Zamčené muzeum", subject: "Dějepis", description: "Vitríny, časová osa a hádanky o významných událostech.", available: false },
-      { id: "expedition", name: "Expediční stan", subject: "Zeměpis", description: "Mapa světa, hlavní města a světové strany.", available: false },
-      { id: "jungle", name: "Ztracená džungle", subject: "Biologie", description: "Rostliny, živočichové a jejich třídění.", available: false },
+      { id: "museum", name: "Zamčené muzeum", subject: "Dějepis", description: "Vitríny, časová osa a hádanky o významných událostech.", available: true },
+      { id: "expedition", name: "Expediční stan", subject: "Zeměpis", description: "Mapa světa, hlavní města a světové strany.", available: true },
+      { id: "jungle", name: "Ztracená džungle", subject: "Biologie", description: "Rostliny, živočichové a jejich třídění.", available: true },
+      { id: "pirate", name: "Pirátská loď", subject: "Angličtina", description: "Zamknutá kajuta, anglická slovíčka a tajná mapa pokladu.", available: true },
+      { id: "kitchen", name: "Kuchyně šéfkuchaře", subject: "Matematika", description: "Recepty, váhy a čas. Spočítej správně, než koláč shoří.", available: true },
     ],
   },
   ui: {
@@ -131,9 +133,11 @@ const en: EscapeText = {
     note: "We're working on more rooms. Puzzle content is Czech only for now.",
     rooms: [
       { id: "lab", name: "Doctor Atom's laboratory", subject: "Chemistry", description: "The reactor is spinning up and the door is locked. Find clues, mix the right substances and crack the code.", available: true },
-      { id: "museum", name: "The locked museum", subject: "History", description: "Display cases, a timeline and puzzles about important events.", available: false },
-      { id: "expedition", name: "Expedition tent", subject: "Geography", description: "A world map, capital cities and compass directions.", available: false },
-      { id: "jungle", name: "The lost jungle", subject: "Biology", description: "Plants, animals and how to classify them.", available: false },
+      { id: "museum", name: "The locked museum", subject: "History", description: "Display cases, a timeline and puzzles about important events.", available: true },
+      { id: "expedition", name: "Expedition tent", subject: "Geography", description: "A world map, capital cities and compass directions.", available: true },
+      { id: "jungle", name: "The lost jungle", subject: "Biology", description: "Plants, animals and how to classify them.", available: true },
+      { id: "pirate", name: "Pirate ship", subject: "English", description: "A locked cabin, English words and a secret treasure map.", available: true },
+      { id: "kitchen", name: "The chef's kitchen", subject: "Maths", description: "Recipes, weights and time. Count right before the cake burns.", available: true },
     ],
   },
   ui: {
@@ -194,9 +198,11 @@ const de: EscapeText = {
     note: "An weiteren Räumen wird gearbeitet. Die Rätsel sind vorerst nur auf Tschechisch.",
     rooms: [
       { id: "lab", name: "Labor von Doktor Atom", subject: "Chemie", description: "Der Reaktor fährt hoch und die Tür ist verschlossen. Finde Hinweise, mische die richtigen Stoffe und knacke den Code.", available: true },
-      { id: "museum", name: "Das verschlossene Museum", subject: "Geschichte", description: "Vitrinen, ein Zeitstrahl und Rätsel zu wichtigen Ereignissen.", available: false },
-      { id: "expedition", name: "Expeditionszelt", subject: "Geografie", description: "Weltkarte, Hauptstädte und Himmelsrichtungen.", available: false },
-      { id: "jungle", name: "Der verlorene Dschungel", subject: "Biologie", description: "Pflanzen, Tiere und ihre Einteilung.", available: false },
+      { id: "museum", name: "Das verschlossene Museum", subject: "Geschichte", description: "Vitrinen, ein Zeitstrahl und Rätsel zu wichtigen Ereignissen.", available: true },
+      { id: "expedition", name: "Expeditionszelt", subject: "Geografie", description: "Weltkarte, Hauptstädte und Himmelsrichtungen.", available: true },
+      { id: "jungle", name: "Der verlorene Dschungel", subject: "Biologie", description: "Pflanzen, Tiere und ihre Einteilung.", available: true },
+      { id: "pirate", name: "Das Piratenschiff", subject: "Englisch", description: "Eine verschlossene Kajüte, englische Wörter und eine geheime Schatzkarte.", available: true },
+      { id: "kitchen", name: "Die Küche des Chefkochs", subject: "Mathe", description: "Rezepte, Gewichte und Zeit. Rechne richtig, bevor der Kuchen verbrennt.", available: true },
     ],
   },
   ui: {
@@ -257,9 +263,11 @@ const ru: EscapeText = {
     note: "Мы работаем над новыми комнатами. Загадки пока только на чешском.",
     rooms: [
       { id: "lab", name: "Лаборатория доктора Атома", subject: "Химия", description: "Реактор разгоняется, а дверь заперта. Найди подсказки, смешай нужные вещества и подбери код.", available: true },
-      { id: "museum", name: "Запертый музей", subject: "История", description: "Витрины, лента времени и загадки о важных событиях.", available: false },
-      { id: "expedition", name: "Палатка экспедиции", subject: "География", description: "Карта мира, столицы и стороны света.", available: false },
-      { id: "jungle", name: "Потерянные джунгли", subject: "Биология", description: "Растения, животные и их классификация.", available: false },
+      { id: "museum", name: "Запертый музей", subject: "История", description: "Витрины, лента времени и загадки о важных событиях.", available: true },
+      { id: "expedition", name: "Палатка экспедиции", subject: "География", description: "Карта мира, столицы и стороны света.", available: true },
+      { id: "jungle", name: "Потерянные джунгли", subject: "Биология", description: "Растения, животные и их классификация.", available: true },
+      { id: "pirate", name: "Пиратский корабль", subject: "Английский", description: "Запертая каюта, английские слова и тайная карта сокровищ.", available: true },
+      { id: "kitchen", name: "Кухня шеф-повара", subject: "Математика", description: "Рецепты, вес и время. Посчитай верно, пока пирог не сгорел.", available: true },
     ],
   },
   ui: {

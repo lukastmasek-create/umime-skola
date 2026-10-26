@@ -31,6 +31,8 @@ type HotspotBase = {
   y: number;
   w: number;
   h: number;
+  // Emoji, kterým obecná scéna místnost vykreslí (laboratoř má vlastní kresbu).
+  icon?: string;
 };
 
 export type Hotspot =
@@ -55,8 +57,12 @@ export type Hotspot =
 
 export type Recipe = { a: string; b: string; result: string; message: string };
 
+// Barvy obecné scény (RoomScene) pro místnosti bez vlastní kresby.
+export type RoomTheme = { wall: string; floor: string; accent: string; title: string };
+
 export type Room = {
   id: string;
+  theme?: RoomTheme;
   timeLimitSeconds: number;
   intro: string;
   items: Item[];
