@@ -9,6 +9,8 @@ import { OBSERVATORY_ROOM } from "./rooms/observatory";
 import { PIRATE_ROOM } from "./rooms/pirate";
 import { buildRoom } from "./rooms/kit";
 import { ROOM_KITS } from "./rooms/translations";
+import { OLD_ROOM_KITS } from "./rooms/translations-old";
+import { LAB_VARIANTS } from "./rooms/translations-lab";
 import type { Locale } from "@/i18n/config";
 import type { Room } from "./types";
 
@@ -24,10 +26,11 @@ export const ROOMS: Record<string, Room> = {
   castle: CASTLE_ROOM,
 };
 
-// Místnost v jazyce hráče. Nové místnosti mají překlady, ostatní zatím jen česky.
-const VARIANTS: Record<string, Partial<Record<Locale, Room>>> = Object.fromEntries(
-  Object.entries(ROOM_KITS).map(([id, kits]) => [id, Object.fromEntries(Object.entries(kits).map(([loc, kit]) => [loc, buildRoom(kit!)]))]),
-);
+// Místnost v jazyce hráče. Všechny místnosti mají překlady, čeština je výchozí.
+const VARIANTS: Record<string, Partial<Record<Locale, Room>>> = Object.fromEntries([
+  ...Object.entries({ ...ROOM_KITS, ...OLD_ROOM_KITS }).map(([id, kits]) => [id, Object.fromEntries(Object.entries(kits).map(([loc, kit]) => [loc, buildRoom(kit!)]))]),
+  ["lab", LAB_VARIANTS] as const,
+]);
 
 export function getRoom(id: string, locale: Locale): Room | undefined {
   return VARIANTS[id]?.[locale] ?? ROOMS[id];

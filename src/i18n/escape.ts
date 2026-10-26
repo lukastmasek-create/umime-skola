@@ -65,7 +65,7 @@ const cs: EscapeText = {
     subtitle: "Zamčená místnost, hádanky z učiva a čas, který běží. Dostaň se ven dřív, než bude pozdě.",
     play: "Vstoupit",
     soon: "Brzy",
-    note: "Na dalších místnostech pracujeme. Knihovna, hvězdárna a hrad mají hádanky přeložené, starší místnosti zatím jen česky.",
+    note: "Na dalších místnostech pracujeme. Hádanky jsou přeložené do všech jazyků webu.",
     rooms: [
       { id: "lab", name: "Laboratoř doktora Atoma", subject: "Chemie", description: "Reaktor se rozjíždí a dveře jsou zamčené. Najdi vodítka, namíchej správné látky a otevři kód.", available: true },
       { id: "museum", name: "Zamčené muzeum", subject: "Dějepis", description: "Vitríny, časová osa a hádanky o významných událostech.", available: true },
@@ -133,7 +133,7 @@ const en: EscapeText = {
     subtitle: "A locked room, puzzles from school subjects and a running clock. Get out before it's too late.",
     play: "Enter",
     soon: "Soon",
-    note: "We're working on more rooms. The library, observatory and castle are translated, the older rooms are Czech only for now.",
+    note: "We're working on more rooms. The puzzles are translated into all languages of the site.",
     rooms: [
       { id: "lab", name: "Doctor Atom's laboratory", subject: "Chemistry", description: "The reactor is spinning up and the door is locked. Find clues, mix the right substances and crack the code.", available: true },
       { id: "museum", name: "The locked museum", subject: "History", description: "Display cases, a timeline and puzzles about important events.", available: true },
@@ -201,7 +201,7 @@ const de: EscapeText = {
     subtitle: "Ein verschlossener Raum, Rätsel aus dem Schulstoff und eine laufende Uhr. Komm raus, bevor es zu spät ist.",
     play: "Betreten",
     soon: "Bald",
-    note: "An weiteren Räumen wird gearbeitet. Bibliothek, Sternwarte und Burg sind übersetzt, die älteren Räume vorerst nur auf Tschechisch.",
+    note: "An weiteren Räumen wird gearbeitet. Die Rätsel sind in alle Sprachen der Seite übersetzt.",
     rooms: [
       { id: "lab", name: "Labor von Doktor Atom", subject: "Chemie", description: "Der Reaktor fährt hoch und die Tür ist verschlossen. Finde Hinweise, mische die richtigen Stoffe und knacke den Code.", available: true },
       { id: "museum", name: "Das verschlossene Museum", subject: "Geschichte", description: "Vitrinen, ein Zeitstrahl und Rätsel zu wichtigen Ereignissen.", available: true },
@@ -269,7 +269,7 @@ const ru: EscapeText = {
     subtitle: "Запертая комната, загадки из школьных предметов и бегущее время. Выберись, пока не поздно.",
     play: "Войти",
     soon: "Скоро",
-    note: "Мы работаем над новыми комнатами. Библиотека, обсерватория и замок переведены, старые комнаты пока только на чешском.",
+    note: "Мы работаем над новыми комнатами. Загадки переведены на все языки сайта.",
     rooms: [
       { id: "lab", name: "Лаборатория доктора Атома", subject: "Химия", description: "Реактор разгоняется, а дверь заперта. Найди подсказки, смешай нужные вещества и подбери код.", available: true },
       { id: "museum", name: "Запертый музей", subject: "История", description: "Витрины, лента времени и загадки о важных событиях.", available: true },
