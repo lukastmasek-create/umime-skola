@@ -712,31 +712,32 @@ BUILDERS = {
 }
 CAM = {"cestina": (-14, 14), "dejepis": (-24, 24), "zemepis": (-20, 14), "prirodopis": (-20, 24), "matematika": (-22, 20), "anglictina": (-14, 10), "rustina": (-16, 8), "nemcina": (-6, 6), "literatura": (-30, 24)}
 
-for slug, fn in BUILDERS.items():
-    if ONLY and slug not in ONLY:
-        continue
-    reset()
-    setup_scene()
-    fn()
-    az, el = CAM.get(slug, (-25, 20))
-    frame_camera(az=az, el=el)
-    path = os.path.join(OUT, f"{slug}.png")
-    bpy.context.scene.render.filepath = path
-    bpy.ops.render.render(write_still=True)
-    print("OK", slug)
 
-from PIL import Image  # noqa: E402
+def render_all(builders, cams, only, out, prefix, size=512):
+    from PIL import Image
 
-for slug in BUILDERS:
-    p = os.path.join(OUT, f"{slug}.png")
-    if os.path.exists(p) and (not ONLY or slug in ONLY):
-        im = Image.open(p).convert("RGBA")
+    for slug, fn in builders.items():
+        if only and slug not in only:
+            continue
+        reset()
+        setup_scene()
+        fn()
+        az, el = cams.get(slug, (-25, 20))
+        frame_camera(az=az, el=el)
+        path = os.path.join(out, f"{slug}.png")
+        bpy.context.scene.render.filepath = path
+        bpy.ops.render.render(write_still=True)
+        im = Image.open(path).convert("RGBA")
         bb = im.getchannel("A").point(lambda a: 255 if a > 6 else 0).getbbox()
         if bb:
-            pad = int(max(bb[2] - bb[0], bb[3] - bb[1]) * 0.04)
-            side = max(bb[2] - bb[0], bb[3] - bb[1]) + 2 * pad
-            cx, cy = (bb[0] + bb[2]) // 2, (bb[1] + bb[3]) // 2
+            w, h = bb[2] - bb[0], bb[3] - bb[1]
+            side = max(w, h) + 2 * int(max(w, h) * 0.04)
             sq = Image.new("RGBA", (side, side), (0, 0, 0, 0))
-            sq.paste(im.crop(bb), ((side - (bb[2] - bb[0])) // 2, (side - (bb[3] - bb[1])) // 2))
+            sq.paste(im.crop(bb), ((side - w) // 2, (side - h) // 2))
             im = sq
-        im.resize((512, 512), Image.LANCZOS).save(os.path.join(OUT, f"predmet-{slug}.webp"), quality=90, method=6)
+        im.resize((size, size), Image.LANCZOS).save(os.path.join(out, f"{prefix}{slug}.webp"), quality=90, method=6)
+        print("OK", slug)
+
+
+if __name__ == "__main__":
+    render_all(BUILDERS, CAM, ONLY, OUT, "predmet-")
