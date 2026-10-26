@@ -14,6 +14,17 @@ export type DailyText = {
   recapTitle: string;
   recapClaimable: string; // {n}
   recapOpen: string;
+  freezes: string; // {n}
+  buyFreeze: string; // {n} cena
+  freezeInfo: string;
+  freezeUsed: string;
+  rescueUsed: string;
+  rescueHint: string;
+  petHungry: string; // {n} jméno
+  petWaiting: string;
+  cityCoins: string; // {n}
+  cardGot: string; // {n} název
+  collection: string;
   claim: string;
   claimed: string;
   bonus: string; // {n}
@@ -27,6 +38,17 @@ export type DailyText = {
 
 const cs: DailyText = {
   title: "Denní výzvy",
+  freezes: 'Zmrazení série: {n}',
+  buyFreeze: 'Koupit zmrazení ({n} b.)',
+  freezeInfo: 'Zmrazení ochrání sérii, když jeden den vynecháš.',
+  freezeUsed: 'Zmrazení tě dnes zachránilo: včerejšek je kryt.',
+  rescueUsed: 'Série zachráněna dnešním testem!',
+  rescueHint: 'Včera jsi vynechal/a. Dokonči dnes test a sérii zachráníš.',
+  petHungry: '{n} má hlad',
+  petWaiting: '{n} se na tebe těší',
+  cityCoins: 'Město vydělalo {n} mincí',
+  cardGot: 'Nová karta: {n}',
+  collection: 'Sbírka',
   weekly: "Týdenní výzvy",
   weeklyNames: { xp: "Získej 150 XP v testech a hrách", days: "Buď aktivní 5 různých dní", tests: "Dokonči 5 testů", escape: "Vyřeš 3 únikovky" },
   recapTitle: "Série a výzvy",
@@ -67,6 +89,17 @@ const cs: DailyText = {
 
 const en: DailyText = {
   title: "Daily challenges",
+  freezes: 'Streak freezes: {n}',
+  buyFreeze: 'Buy a freeze ({n} pts)',
+  freezeInfo: 'A freeze protects your streak if you miss a day.',
+  freezeUsed: 'A freeze saved you today: yesterday is covered.',
+  rescueUsed: "Streak rescued by today's test!",
+  rescueHint: 'You missed yesterday. Finish a test today to rescue your streak.',
+  petHungry: '{n} is hungry',
+  petWaiting: '{n} is waiting for you',
+  cityCoins: 'Your city earned {n} coins',
+  cardGot: 'New card: {n}',
+  collection: 'Collection',
   weekly: "Weekly challenges",
   weeklyNames: { xp: "Earn 150 XP in tests and games", days: "Be active on 5 different days", tests: "Finish 5 tests", escape: "Solve 3 escape rooms" },
   recapTitle: "Streak and challenges",
@@ -107,6 +140,17 @@ const en: DailyText = {
 
 const de: DailyText = {
   title: "Tägliche Aufgaben",
+  freezes: 'Serien-Freezes: {n}',
+  buyFreeze: 'Freeze kaufen ({n} P.)',
+  freezeInfo: 'Ein Freeze schützt deine Serie, wenn du einen Tag verpasst.',
+  freezeUsed: 'Ein Freeze hat dich heute gerettet: Gestern ist abgedeckt.',
+  rescueUsed: 'Serie durch den heutigen Test gerettet!',
+  rescueHint: 'Du hast gestern verpasst. Schließe heute einen Test ab, um die Serie zu retten.',
+  petHungry: '{n} hat Hunger',
+  petWaiting: '{n} wartet auf dich',
+  cityCoins: 'Deine Stadt hat {n} Münzen verdient',
+  cardGot: 'Neue Karte: {n}',
+  collection: 'Sammlung',
   weekly: "Wochenaufgaben",
   weeklyNames: { xp: "Sammle 150 XP in Tests und Spielen", days: "Sei an 5 verschiedenen Tagen aktiv", tests: "Schließe 5 Tests ab", escape: "Löse 3 Escape Rooms" },
   recapTitle: "Serie und Aufgaben",
@@ -147,6 +191,17 @@ const de: DailyText = {
 
 const ru: DailyText = {
   title: "Ежедневные задания",
+  freezes: 'Заморозок серии: {n}',
+  buyFreeze: 'Купить заморозку ({n} б.)',
+  freezeInfo: 'Заморозка сохранит серию, если пропустишь день.',
+  freezeUsed: 'Заморозка спасла тебя: вчерашний день закрыт.',
+  rescueUsed: 'Серия спасена сегодняшним тестом!',
+  rescueHint: 'Ты пропустил вчера. Пройди сегодня тест, чтобы спасти серию.',
+  petHungry: '{n} голоден',
+  petWaiting: '{n} ждёт тебя',
+  cityCoins: 'Город заработал монет: {n}',
+  cardGot: 'Новая карточка: {n}',
+  collection: 'Коллекция',
   weekly: "Недельные задания",
   weeklyNames: { xp: "Набери 150 XP в тестах и играх", days: "Занимайся в течение 5 разных дней", tests: "Пройди 5 тестов", escape: "Пройди 3 квест-комнаты" },
   recapTitle: "Серия и задания",

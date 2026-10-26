@@ -4,11 +4,25 @@ import { useEffect, useState } from "react";
 import { fill } from "@/i18n/profile";
 import { getDailyText } from "@/i18n/daily";
 import { notifyAccountChanged } from "@/lib/account-events";
+import { CARDS } from "@/lib/collection";
+import Link from "next/link";
 import type { Locale } from "@/i18n/config";
 import type { QuestId, WeeklyId } from "@/lib/gamify";
 
 export type Snapshot = {
-  streak: { current: number; best: number; doneToday: boolean };
+  streak: {
+    current: number;
+    best: number;
+    doneToday: boolean;
+    freezes: number;
+    maxFreezes: number;
+    freezePrice: number;
+    atRisk: boolean;
+    usedProtection: "freeze" | "rescue" | null;
+    rescuable: boolean;
+  };
+  pet: { name: string; species: string; hunger: number; happy: number } | null;
+  cityCoins: number;
   weekKey: string;
   weekly: { id: WeeklyId; target: number; bonusXp: number; progress: number; done: boolean; claimed: boolean }[];
   quests: { id: QuestId; target: number; bonusXp: number; progress: number; done: boolean; claimed: boolean }[];
@@ -23,6 +37,7 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
   const t = getDailyText(locale);
   const [state, setState] = useState<State>("loading");
   const [busy, setBusy] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,17 +56,23 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
   }, []);
 
   async function claim(id: string) {
-    setBusy(id);
+    await post(id, { id });
+  }
+
+  async function post(key: string, payload: Record<string, string>) {
+    setBusy(key);
     try {
       const res = await fetch("/api/denni-vyzvy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (res.ok) {
         setState(data);
         notifyAccountChanged();
+        const card = CARDS.find((c) => c.id === data.card);
+        if (card) setNotice(fill(t.cardGot, `${card.icon} ${card.names[locale]}`));
       }
     } catch {
       // zůstane tlačítko k opakování
@@ -64,7 +85,7 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
   if (state === "guest") return <p className="card p-5 text-sm text-[var(--muted)]">{t.guest}</p>;
   if (state === "error") return <p className="card p-5 text-sm text-[var(--muted)]">{t.error}</p>;
 
-  const { streak, weekKey, quests, weekly, milestones, achievements } = state;
+  const { streak, pet, cityCoins, weekKey, quests, weekly, milestones, achievements } = state;
   const heading = { fontFamily: "var(--font-heading)" } as const;
   const claimButton = (id: string, ready: boolean, claimed: boolean) =>
     claimed ? (
@@ -94,6 +115,45 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
             {streak.doneToday ? t.streakToday : t.streakIdle} · {fill(t.streakBest, streak.best)}
           </p>
         </div>
+      </div>
+
+      {(notice || streak.usedProtection || streak.rescuable || (pet && (pet.hunger < 50 || pet.happy < 40)) || cityCoins > 0) && (
+        <ul className="flex flex-col gap-1.5 text-sm font-semibold">
+          {notice && <li>🃏 {notice}</li>}
+          {streak.usedProtection && (
+            <li>🧊 {streak.usedProtection === "freeze" ? t.freezeUsed : t.rescueUsed}</li>
+          )}
+          {streak.rescuable && <li>🛟 {t.rescueHint}</li>}
+          {pet && (pet.hunger < 50 || pet.happy < 40) && (
+            <li>
+              🐾{" "}
+              <Link href={`/${locale}/stale-hry/mazlicci`} className="underline">
+                {fill(t.petHungry, pet.name || "🐾")}
+              </Link>
+            </li>
+          )}
+          {cityCoins > 0 && (
+            <li>
+              🏙️{" "}
+              <Link href={`/${locale}/stale-hry/mesto`} className="underline">
+                {fill(t.cityCoins, cityCoins)}
+              </Link>
+            </li>
+          )}
+        </ul>
+      )}
+
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border-2 border-[var(--edge)] px-3 py-2">
+        <span className="text-sm font-semibold">🧊 {fill(t.freezes, `${streak.freezes}/${streak.maxFreezes}`)}</span>
+        <span className="min-w-0 flex-1 text-xs text-[var(--muted)]">{t.freezeInfo}</span>
+        <button
+          type="button"
+          disabled={busy === "buy-freeze" || streak.freezes >= streak.maxFreezes}
+          onClick={() => post("buy-freeze", { action: "buy-freeze" })}
+          className="btn-bouncy shrink-0 bg-[var(--surface)] px-3 py-1.5 text-xs font-bold disabled:opacity-40"
+        >
+          {fill(t.buyFreeze, streak.freezePrice)}
+        </button>
       </div>
 
       <section>

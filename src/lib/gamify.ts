@@ -107,3 +107,55 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: "level-5", icon: "⭐", value: (s) => s.level, target: 5, bonusXp: 30 },
   { id: "level-10", icon: "🌟", value: (s) => s.level, target: 10, bonusXp: 80 },
 ];
+
+// --- Zmrazení a záchrana série ---
+
+export const FREEZE_PRICE = 100;
+export const MAX_FREEZES = 3;
+export const RESCUE_COOLDOWN_DAYS = 7;
+
+// Stav uložený v IdleState (game "streak"): zmrazení v zásobě, dny kryté
+// zmrazením nebo záchranou a den, kdy byla naposledy použita záchrana.
+export type StreakState = { freezes: number; covered: string[]; lastRescue: string | null };
+
+export function normalizeStreakState(raw: unknown): StreakState {
+  const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const freezes = Math.floor(Number(r.freezes));
+  return {
+    freezes: Number.isFinite(freezes) ? Math.min(MAX_FREEZES, Math.max(0, freezes)) : 0,
+    covered: Array.isArray(r.covered)
+      ? r.covered.filter((d): d is string => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)).slice(-120)
+      : [],
+    lastRescue: typeof r.lastRescue === "string" ? r.lastRescue : null,
+  };
+}
+
+// Doplní do `state` kryté dny, pokud včerejšek chybí a série by se přetrhla.
+// Nejdřív se spotřebuje zmrazení; když žádné není a hráč dnes dokončil test,
+// použije se záchrana (jednou za týden). Vrací `rescuable`, jestli by hráči dnes
+// záchrana ještě pomohla (stačí dokončit test).
+export function applyStreakProtection(
+  realDays: Set<string>,
+  state: StreakState,
+  now: number,
+  testToday: boolean,
+): { state: StreakState; changed: boolean; rescuable: boolean; used: "freeze" | "rescue" | null } {
+  const days = new Set([...realDays, ...state.covered]);
+  const today = dayKey(new Date(now));
+  const yesterday = dayKey(new Date(now - DAY_MS));
+  const before = dayKey(new Date(now - 2 * DAY_MS));
+  const broken = !days.has(today) && !days.has(yesterday) && days.has(before);
+  const brokenAfterToday = days.has(today) && !days.has(yesterday) && days.has(before);
+  if (!broken && !brokenAfterToday) return { state, changed: false, rescuable: false, used: null };
+
+  const next = { ...state, covered: [...state.covered, yesterday] };
+  if (state.freezes > 0) {
+    return { state: { ...next, freezes: state.freezes - 1 }, changed: true, rescuable: false, used: "freeze" };
+  }
+  const cooledDown =
+    !state.lastRescue || now - Date.parse(state.lastRescue) >= RESCUE_COOLDOWN_DAYS * DAY_MS;
+  if (cooledDown && testToday) {
+    return { state: { ...next, lastRescue: today }, changed: true, rescuable: false, used: "rescue" };
+  }
+  return { state, changed: false, rescuable: cooledDown, used: null };
+}
