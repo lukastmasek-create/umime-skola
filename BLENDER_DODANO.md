@@ -110,3 +110,23 @@ Co je v jednotlivých hrách, je vidět v `<hra>.json` (názvy skupin a snímků
 
 `src/proxy.ts`: do výjimek přibyly `city/`, `pets/` a `cosmetics/`, aby se statické soubory nepřesměrovávaly
 na jazykovou verzi. Bez toho hra nenačetla `manifest.json`.
+
+## Hlavní stránka (`public/home/`)
+
+3D náhrady emoji a SVG ozdob na hlavní stránce. Vše je WebP s průhledností, ikony jsou ve 2× rozlišení
+(kreslit poloviční). Render dělá `umime-art/scripts/home_assets.py`, kopírování na web `home_publish.mjs`.
+
+| Soubory | Rozměr | Kam |
+|---|---|---|
+| `predmet-<slug>.webp` (9, slugy z `taxonomy.ts`) | 256 × 256 | dlaždice předmětů místo emoji |
+| `funkce-kurzy`, `-hry`, `-unikovky`, `-zebricky` | 256 × 256 | karty „Co tu najdeš“ |
+| `sekce-zakladni`, `-stredni`, `-prijimacky`, `-maturita` | 256 × 256 | karty sekcí (planeta, galaxie, kometa, raketa) |
+| `planeta.webp` | 1024 × 680 | velká planeta v hero (místo `pozadi_planeta`) |
+| `raketa.webp` | 256 × 256 | letící raketa (`Rocket`) |
+| `list`, `motyl`, `kapradi`, `houba`, `beruska` | 192 × 192 | ozdoby přírodní části (`NatureDecor`) |
+| `oblak-1`, `oblak-2` | 256 × 160 | mraky v části s horami |
+| `vlajka.webp` | 192 × 192 | vlajka na vrcholu |
+| `krok-1`, `-2`, `-3` | 128 × 128 | čísla kroků „Jak to funguje“ |
+| `hory.webp` | 1440 × 260 | hřeben hor se sněhem místo SVG `Mountains` (spodní okraj) |
+
+`src/proxy.ts`: přidána výjimka `home/`.

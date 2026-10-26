@@ -231,3 +231,291 @@ select {
   box-shadow: none;
   background: var(--surface-muted);
 }
+
+/* --- Úvodní stránka: každá část má jiný svět (vesmír, příroda, technika, hory), vždy tmavá --- */
+
+.space-page {
+  color-scheme: dark;
+  --background: #0c0a24;
+  --foreground: #f6f1e4;
+  --muted: #cfc8e4;
+  --faint: #9d96bf;
+  --brand-50: #272a63;
+  --brand-100: #353b86;
+  --brand-500: #5a6cff;
+  --brand-600: #8d99ff;
+  --brand-700: #b8c1ff;
+  --accent-yellow: #ffd24d;
+  --accent-green: #3ddc97;
+  --surface: #1c1936;
+  --surface-muted: #26224a;
+  --border-soft: #35305f;
+  --edge: #6a63ad;
+  --shadow-ink: #05040f;
+  position: relative;
+  overflow: hidden;
+  color: var(--foreground);
+  background: #0c0a24;
+}
+
+.zone {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/* Vesmír: mlhovina, dvě vrstvy hvězd (jedna bliká) */
+.zone-space {
+  background:
+    radial-gradient(ellipse 80% 40% at 15% 0%, rgba(124, 108, 255, 0.28), transparent 70%),
+    radial-gradient(ellipse 70% 35% at 90% 30%, rgba(255, 93, 115, 0.16), transparent 70%),
+    linear-gradient(180deg, #0a0820 0%, #120b34 60%, #0c0a24 100%);
+}
+.zone-space::before,
+.zone-space::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.zone-space::before {
+  background-image:
+    radial-gradient(1.5px 1.5px at 22px 38px, #fff, transparent),
+    radial-gradient(1px 1px at 120px 90px, #cfd6ff, transparent),
+    radial-gradient(1.5px 1.5px at 210px 20px, #fff, transparent),
+    radial-gradient(1px 1px at 300px 140px, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 60px 180px, #ffe9a8, transparent),
+    radial-gradient(1px 1px at 260px 260px, #cfd6ff, transparent),
+    radial-gradient(1.4px 1.4px at 150px 310px, #fff, transparent);
+  background-size: 340px 340px;
+  opacity: 0.8;
+}
+.zone-space::after {
+  background-image:
+    radial-gradient(2px 2px at 80px 60px, #fff, transparent),
+    radial-gradient(2px 2px at 250px 200px, #ffd1e8, transparent),
+    radial-gradient(1.6px 1.6px at 170px 280px, #bfe9ff, transparent);
+  background-size: 410px 410px;
+  animation: space-twinkle 4s ease-in-out infinite alternate;
+}
+
+/* Příroda: hluboká zeleň, světlušky */
+.zone-nature {
+  background:
+    radial-gradient(ellipse 60% 50% at 85% 10%, rgba(255, 224, 130, 0.16), transparent 70%),
+    radial-gradient(ellipse 70% 60% at 10% 90%, rgba(80, 200, 120, 0.2), transparent 70%),
+    linear-gradient(180deg, #0f2d27 0%, #14402e 55%, #0f3326 100%);
+}
+.zone-nature::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(3px 3px at 60px 80px, rgba(255, 240, 150, 0.9), transparent),
+    radial-gradient(2px 2px at 220px 160px, rgba(190, 255, 170, 0.8), transparent),
+    radial-gradient(3px 3px at 150px 250px, rgba(255, 240, 150, 0.8), transparent);
+  background-size: 300px 300px;
+  animation: space-twinkle 3s ease-in-out infinite alternate;
+}
+
+/* Technika: modrotisk s mřížkou */
+.zone-tech {
+  background-color: #071427;
+  background-image:
+    radial-gradient(ellipse 70% 60% at 50% 0%, rgba(53, 208, 255, 0.16), transparent 70%),
+    linear-gradient(rgba(80, 200, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(80, 200, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(rgba(80, 200, 255, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(80, 200, 255, 0.16) 1px, transparent 1px);
+  background-size: auto, 24px 24px, 24px 24px, 120px 120px, 120px 120px;
+}
+
+/* Hory: soumrak nad hřebeny */
+.zone-peak {
+  background:
+    radial-gradient(circle at 78% 82%, rgba(255, 190, 110, 0.45), transparent 38%),
+    linear-gradient(180deg, #170e33 0%, #35194f 45%, #7a3560 78%, #e8794f 100%);
+}
+
+@keyframes space-twinkle {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes space-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(3deg);
+  }
+}
+@keyframes space-fly {
+  from {
+    transform: translateX(-12vw);
+  }
+  to {
+    transform: translateX(112vw);
+  }
+}
+@keyframes tech-blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+@keyframes leaf-sway {
+  0%,
+  100% {
+    transform: translateX(0) rotate(-8deg);
+  }
+  50% {
+    transform: translateX(12px) rotate(10deg);
+  }
+}
+
+.space-float {
+  animation: space-float 6s ease-in-out infinite;
+}
+.space-fly {
+  animation: space-fly 26s linear infinite;
+}
+.leaf-sway {
+  animation: leaf-sway 7s ease-in-out infinite;
+}
+.tech-blink {
+  animation: tech-blink 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .space-float,
+  .space-fly,
+  .leaf-sway,
+  .tech-blink,
+  .zone-space::after,
+  .zone-nature::before {
+    animation: none;
+  }
+}
+
+.space-page .gradient-hero {
+  background: transparent;
+}
+.space-page .gradient-text {
+  background: linear-gradient(90deg, #ffd24d, #ff8fd0);
+  color: #16132b;
+}
+.space-page .card {
+  box-shadow: 0 4px 0 var(--shadow-ink), 0 0 26px var(--glow, rgba(124, 108, 255, 0.18));
+}
+.space-page .card-hover:hover {
+  box-shadow: 0 7px 0 var(--shadow-ink), 0 0 34px var(--glow, rgba(124, 108, 255, 0.45));
+}
+
+/* Technická karta: rohové značky a mono štítek */
+.tech-card {
+  position: relative;
+  background: linear-gradient(180deg, rgba(10, 30, 58, 0.95), rgba(7, 20, 39, 0.95));
+  border-radius: 6px !important;
+}
+.tech-card::before,
+.tech-card::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--tc, #35d0ff);
+  pointer-events: none;
+}
+.tech-card::before {
+  top: -2px;
+  left: -2px;
+  border-right: 0;
+  border-bottom: 0;
+}
+.tech-card::after {
+  right: -2px;
+  bottom: -2px;
+  border-left: 0;
+  border-top: 0;
+}
+
+/* Raketa na úvodní stránce letí po vlnovce a naklání se po směru letu; plamen se mění po snímcích. */
+@keyframes rocket-path {
+  0.00% { transform: translate(-12.00vw, 13.5px) rotate(127.3deg); }
+  2.08% { transform: translate(-9.42vw, 33.9px) rotate(114.4deg); }
+  4.17% { transform: translate(-6.83vw, 43.2px) rotate(96.6deg); }
+  6.25% { transform: translate(-4.25vw, 42.5px) rotate(82.4deg); }
+  8.33% { transform: translate(-1.67vw, 36.2px) rotate(77.5deg); }
+  10.42% { transform: translate(0.92vw, 29.5px) rotate(80.8deg); }
+  12.50% { transform: translate(3.50vw, 26.2px) rotate(88.1deg); }
+  14.58% { transform: translate(6.08vw, 26.9px) rotate(93.3deg); }
+  16.67% { transform: translate(8.67vw, 28.6px) rotate(91.2deg); }
+  18.75% { transform: translate(11.25vw, 26.6px) rotate(80.7deg); }
+  20.83% { transform: translate(13.83vw, 16.7px) rotate(66.1deg); }
+  22.92% { transform: translate(16.42vw, -2.6px) rotate(54.8deg); }
+  25.00% { transform: translate(19.00vw, -28.5px) rotate(50.3deg); }
+  27.08% { transform: translate(21.58vw, -55.0px) rotate(53.6deg); }
+  29.17% { transform: translate(24.17vw, -74.8px) rotate(66.7deg); }
+  31.25% { transform: translate(26.75vw, -82.0px) rotate(90.5deg); }
+  33.33% { transform: translate(29.33vw, -74.3px) rotate(113.9deg); }
+  35.42% { transform: translate(31.92vw, -54.2px) rotate(126.5deg); }
+  37.50% { transform: translate(34.50vw, -27.8px) rotate(129.4deg); }
+  39.58% { transform: translate(37.08vw, -2.2px) rotate(124.7deg); }
+  41.67% { transform: translate(39.67vw, 16.5px) rotate(113.2deg); }
+  43.75% { transform: translate(42.25vw, 26.0px) rotate(98.8deg); }
+  45.83% { transform: translate(44.83vw, 27.8px) rotate(88.8deg); }
+  47.92% { transform: translate(47.42vw, 26.2px) rotate(87.3deg); }
+  50.00% { transform: translate(50.00vw, 26.0px) rotate(92.8deg); }
+  52.08% { transform: translate(52.58vw, 29.8px) rotate(100.1deg); }
+  54.17% { transform: translate(55.17vw, 36.9px) rotate(102.9deg); }
+  56.25% { transform: translate(57.75vw, 43.3px) rotate(97.4deg); }
+  58.33% { transform: translate(60.33vw, 43.8px) rotate(82.7deg); }
+  60.42% { transform: translate(62.92vw, 34.0px) rotate(64.8deg); }
+  62.50% { transform: translate(65.50vw, 13.1px) rotate(52.2deg); }
+  64.58% { transform: translate(68.08vw, -15.6px) rotate(47.3deg); }
+  66.67% { transform: translate(70.67vw, -45.3px) rotate(50.1deg); }
+  68.75% { transform: translate(73.25vw, -68.5px) rotate(62.0deg); }
+  70.83% { transform: translate(75.83vw, -79.1px) rotate(84.2deg); }
+  72.92% { transform: translate(78.42vw, -75.3px) rotate(107.7deg); }
+  75.00% { transform: translate(81.00vw, -59.5px) rotate(121.1deg); }
+  77.08% { transform: translate(83.58vw, -37.7px) rotate(124.3deg); }
+  79.17% { transform: translate(86.17vw, -16.6px) rotate(119.6deg); }
+  81.25% { transform: translate(88.75vw, -1.2px) rotate(109.4deg); }
+  83.33% { transform: translate(91.33vw, 6.9px) rotate(98.5deg); }
+  85.42% { transform: translate(93.92vw, 9.9px) rotate(93.1deg); }
+  87.50% { transform: translate(96.50vw, 12.1px) rotate(95.8deg); }
+  89.58% { transform: translate(99.08vw, 17.7px) rotate(103.8deg); }
+  91.67% { transform: translate(101.67vw, 28.3px) rotate(111.1deg); }
+  93.75% { transform: translate(104.25vw, 42.0px) rotate(112.5deg); }
+  95.83% { transform: translate(106.83vw, 53.7px) rotate(104.8deg); }
+  97.92% { transform: translate(109.42vw, 57.5px) rotate(87.0deg); }
+  100.00% { transform: translate(112.00vw, 49.3px) rotate(65.9deg); }
+}
+@keyframes rocket-flame {
+  0% { background-position: -72px 0; }
+  34% { background-position: -144px 0; }
+  67% { background-position: -216px 0; }
+}
+.rocket-path {
+  animation: rocket-path 30s linear infinite;
+  will-change: transform;
+}
+.rocket-flame {
+  width: 72px;
+  height: 72px;
+  background: url(/game-sprites/space/lod.webp) -72px 0 / 504px auto no-repeat;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45));
+  animation: rocket-flame 0.3s steps(1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rocket-path,
+  .rocket-flame {
+    animation: none;
+  }
+}
