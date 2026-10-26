@@ -1,7 +1,7 @@
-import { buildRoom } from "./kit";
+import { buildRoom, type RoomKit } from "./kit";
 
 // Ztracená džungle (biologie). Kód ke dveřím: 6842. Texty hádanek jsou zatím jen česky.
-export const JUNGLE_ROOM = buildRoom({
+export const JUNGLE_KIT: RoomKit = {
   id: "jungle",
   theme: { wall: "#cfe8b8", floor: "#6b8f4a", accent: "#8fbf6a", title: "Ztracená džungle" },
   intro:
@@ -79,4 +79,6 @@ export const JUNGLE_ROOM = buildRoom({
     hints: ["Otevři inventář a přečti si všechny čtyři poznámky.", "Hmyz má šest nohou a pavouk osm.", "Srdce savce má čtyři dutiny a většina savců dvě oči. Kód je 6842."],
     rewardMessage: "Brána se rozevřela!",
   },
-});
+};
+
+export const JUNGLE_ROOM = buildRoom(JUNGLE_KIT);
