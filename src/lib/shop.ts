@@ -84,3 +84,74 @@ export function getShopItem(id: string): ShopItem | undefined {
 export function unlockKey(item: ShopItem): string {
   return `${item.kind}:${item.ref}`;
 }
+
+// --- Denní nabídka, balíčky a dárky ---
+
+export const DEAL_COUNT = 3;
+export const DEAL_DISCOUNT = 0.3;
+export const BUNDLE_DISCOUNT = 0.25;
+
+// Den ve tvaru RRRR-MM-DD podle UTC: server i prohlížeč z něj dostanou stejnou denní nabídku.
+export function dayKey(now: Date = new Date()): string {
+  return now.toISOString().slice(0, 10);
+}
+
+// Kdy se nabídka mění (půlnoc UTC).
+export function nextDealReset(now: Date = new Date()): Date {
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+}
+
+function seededRandom(seed: string): () => number {
+  let h = 1779033703 ^ seed.length;
+  for (let i = 0; i < seed.length; i++) {
+    h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return () => {
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    h ^= h >>> 16;
+    return (h >>> 0) / 4294967296;
+  };
+}
+
+// Id zboží, které je v daný den ve slevě.
+export function dailyDealIds(day: string): string[] {
+  const rand = seededRandom(`deals:${day}`);
+  const pool = [...SHOP_ITEMS];
+  const picked: string[] = [];
+  while (picked.length < DEAL_COUNT && pool.length > 0) {
+    picked.push(pool.splice(Math.floor(rand() * pool.length), 1)[0].id);
+  }
+  return picked;
+}
+
+// Cena, kterou za zboží v daný den zaplatíš.
+export function salePrice(item: ShopItem, day: string): number {
+  return dailyDealIds(day).includes(item.id) ? Math.max(1, Math.round(item.price * (1 - DEAL_DISCOUNT))) : item.price;
+}
+
+export type ShopBundle = {
+  id: string;
+  itemIds: string[];
+  color: string;
+  names: Record<Locale, string>;
+};
+
+export const SHOP_BUNDLES: ShopBundle[] = [
+  { id: "pirate", itemIds: ["avatar-pirate", "frame-gold", "pet-glasses", "banner-ocean"], color: "#7fd0e8", names: n("Pirátská sada", "Pirate set", "Piraten-Set", "Пиратский набор") },
+  { id: "space", itemIds: ["avatar-astronaut", "frame-stars", "banner-galaxy", "city-rocket-pad"], color: "#8c7cff", names: n("Vesmírná sada", "Space set", "Weltraum-Set", "Космический набор") },
+  { id: "winter", itemIds: ["avatar-winter", "banner-snow", "pet-scarf", "city-christmas-tree"], color: "#bfe6ff", names: n("Zimní sada", "Winter set", "Winter-Set", "Зимний набор") },
+  { id: "magic", itemIds: ["avatar-wizard", "frame-neon", "pet-party", "title-scholar"], color: "#c9a8ff", names: n("Kouzelná sada", "Magic set", "Zauber-Set", "Волшебный набор") },
+];
+
+export function getBundle(id: string): ShopBundle | undefined {
+  return SHOP_BUNDLES.find((b) => b.id === id);
+}
+
+// Cena balíčku za to, co ještě nevlastníš: základní ceny mínus sleva za sadu.
+export function bundlePrice(bundle: ShopBundle, ownedIds: ReadonlySet<string>): { price: number; full: number; missing: string[] } {
+  const missing = bundle.itemIds.filter((id) => !ownedIds.has(id));
+  const full = missing.reduce((sum, id) => sum + (getShopItem(id)?.price ?? 0), 0);
+  return { price: Math.round(full * (1 - BUNDLE_DISCOUNT)), full, missing };
+}

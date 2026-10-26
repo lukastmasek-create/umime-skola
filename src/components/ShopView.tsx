@@ -1,17 +1,65 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { PetArt } from "@/components/idle/PetArt";
 import { bannerAttrs, bannerCss, isFrameId } from "@/lib/cosmetics";
-import { SHOP_ITEMS, SHOP_KINDS, type ShopItem, type ShopKind } from "@/lib/shop";
+import {
+  BUNDLE_DISCOUNT,
+  DEAL_DISCOUNT,
+  SHOP_BUNDLES,
+  SHOP_ITEMS,
+  SHOP_KINDS,
+  bundlePrice,
+  dailyDealIds,
+  dayKey,
+  getShopItem,
+  salePrice,
+  type ShopBundle,
+  type ShopItem,
+  type ShopKind,
+} from "@/lib/shop";
+import { SPECIES, type SpeciesId } from "@/lib/idle/pets";
 import { getShopText } from "@/i18n/shop";
+import { getShopExtraText } from "@/i18n/shop-extra";
 import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
 
 type Equipped = { avatar: string | null; title: string | null; frame: string | null; banner: string | null };
-type Snapshot = { loggedIn: true; points: number; owned: string[]; equipped: Equipped };
+type Snapshot = { loggedIn: true; points: number; owned: string[]; equipped: Equipped; day: string; resetAt: string };
+type Sort = "default" | "asc" | "desc";
+
+const WISHLIST_KEY = "shop-wishlist";
+
+function formatLeft(ms: number): string {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  return h > 0 ? `${h} h ${String(m).padStart(2, "0")} min` : `${m} min ${String(total % 60).padStart(2, "0")} s`;
+}
+
+// Okno nad obsahem stránky: Esc nebo klik mimo ho zavře.
+function Modal({ title, onClose, closeLabel, children }: { title: string; onClose: () => void; closeLabel: string; children: ReactNode }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()} className="card relative max-h-[90vh] w-full max-w-md overflow-y-auto p-5">
+        <button type="button" onClick={onClose} aria-label={closeLabel} className="absolute right-3 top-3 rounded-lg px-2 py-1 text-lg font-bold text-[var(--muted)] hover:bg-[var(--surface-muted)]">
+          ✕
+        </button>
+        <h2 className="mb-3 pr-8 text-lg font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
+          {title}
+        </h2>
+        {children}
+      </div>
+    </div>
+  );
+}
 type State = { status: "loading" } | { status: "unavailable" } | { status: "guest" } | { status: "ready"; data: Snapshot };
 
 const CITY_PREVIEW: Record<string, { emoji: string; color: string }> = {
@@ -71,6 +119,42 @@ export function ShopView({ locale }: { locale: Locale }) {
   const [tab, setTab] = useState<ShopKind | "all">("all");
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
+  const x = getShopExtraText(locale);
+  const [wishlist, setWishlist] = useState<string[]>([]);
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<Sort>("default");
+  const [onlyNew, setOnlyNew] = useState(false);
+  const [onlyFav, setOnlyFav] = useState(false);
+  const [previewId, setPreviewId] = useState<string | null>(null);
+  const [petPick, setPetPick] = useState<SpeciesId>("cat");
+  const [giftId, setGiftId] = useState<string | null>(null);
+  const [giftEmail, setGiftEmail] = useState("");
+  const [nowMs, setNowMs] = useState(0);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      try {
+        const raw = JSON.parse(window.localStorage.getItem(WISHLIST_KEY) ?? "[]");
+        if (Array.isArray(raw)) setWishlist(raw.filter((v): v is string => typeof v === "string"));
+      } catch {}
+      setNowMs(Date.now());
+    }, 0);
+    const tick = window.setInterval(() => setNowMs(Date.now()), 1000);
+    return () => {
+      window.clearTimeout(id);
+      window.clearInterval(tick);
+    };
+  }, []);
+
+  function toggleWish(id: string) {
+    setWishlist((list) => {
+      const next = list.includes(id) ? list.filter((v) => v !== id) : [...list, id];
+      try {
+        window.localStorage.setItem(WISHLIST_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }
 
   const toast = useCallback((text: string, ok = false) => {
     setMessage({ text, ok });
@@ -96,31 +180,43 @@ export function ShopView({ locale }: { locale: Locale }) {
     return () => window.clearTimeout(id);
   }, [load]);
 
-  const errorText = (code: string | undefined) =>
-    t.errors[(code as keyof typeof t.errors) ?? "generic"] ?? t.errors.generic;
+  const errorText = (code: string | undefined) => {
+    const c = code ?? "generic";
+    return (x.errors as Record<string, string>)[c] ?? (t.errors as Record<string, string>)[c] ?? t.errors.generic;
+  };
 
-  async function buy(item: ShopItem) {
-    if (busy) return;
-    setBusy(item.id);
+  async function post(payload: Record<string, unknown>, okText: string, busyKey: string): Promise<boolean> {
+    if (busy) return false;
+    setBusy(busyKey);
     try {
-      const res = await fetch("/api/shop", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "buy", id: item.id }),
-      });
+      const res = await fetch("/api/shop", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
         toast(errorText(json.error) + (json.detail ? ` (${json.detail})` : ""));
         if (json.error === "owned") void load();
-        return;
+        return false;
       }
       setState({ status: "ready", data: json });
       notifyAccountChanged();
-      toast(t.bought.replace("{name}", item.names[locale]), true);
+      toast(okText, true);
+      return true;
     } catch {
       toast(t.errors.generic);
+      return false;
     } finally {
       setBusy(null);
+    }
+  }
+
+  const buy = (item: ShopItem) =>
+    post({ action: "buy", id: item.id }, t.bought.replace("{name}", item.names[locale]), item.id);
+  const buyBundle = (bundle: ShopBundle) =>
+    post({ action: "buyBundle", id: bundle.id }, x.bundleBought.replace("{name}", bundle.names[locale]), `bundle-${bundle.id}`);
+  async function sendGift(item: ShopItem) {
+    const ok = await post({ action: "gift", id: item.id, email: giftEmail }, x.giftSent.replace("{name}", item.names[locale]), `gift-${item.id}`);
+    if (ok) {
+      setGiftId(null);
+      setGiftEmail("");
     }
   }
 
@@ -177,9 +273,180 @@ export function ShopView({ locale }: { locale: Locale }) {
   const ready = state.status === "ready" ? state.data : null;
   const owned = new Set(ready?.owned ?? []);
   const points = ready?.points ?? 0;
-  const items = SHOP_ITEMS.filter((i) => tab === "all" || i.kind === tab);
+  const day = ready?.day ?? dayKey();
+  const dealIds = new Set(dailyDealIds(day));
+  const priceOf = (item: ShopItem) => salePrice(item, day);
+  const q = query.trim().toLowerCase();
+  let items = SHOP_ITEMS.filter(
+    (i) =>
+      (tab === "all" || i.kind === tab) &&
+      (!q || i.names[locale].toLowerCase().includes(q) || t.tabs[i.kind].toLowerCase().includes(q)) &&
+      (!onlyNew || !owned.has(i.id)) &&
+      (!onlyFav || wishlist.includes(i.id)),
+  );
+  if (sort !== "default") items = [...items].sort((a, b) => (sort === "asc" ? priceOf(a) - priceOf(b) : priceOf(b) - priceOf(a)));
+  const dealItems = [...dealIds].map((id) => getShopItem(id)).filter((i): i is ShopItem => !!i);
+  const msLeft = ready && nowMs ? new Date(ready.resetAt).getTime() - nowMs : null;
+  const previewItem = previewId ? getShopItem(previewId) : undefined;
+  const giftItem = giftId ? getShopItem(giftId) : undefined;
 
   const isEquipped = (item: ShopItem) => !!ready && ready.equipped[item.kind as keyof Equipped] === item.ref;
+
+
+  const renderCard = (item: ShopItem) => {
+    const have = owned.has(item.id);
+    const equippable = item.kind === "avatar" || item.kind === "title" || item.kind === "frame" || item.kind === "banner";
+    const price = priceOf(item);
+    const onSale = dealIds.has(item.id);
+    const missing = price - points;
+    const wished = wishlist.includes(item.id);
+    return (
+      <article key={item.id} className="card flex flex-col gap-3 p-4">
+        <div className="relative">
+          <Preview item={item} locale={locale} avatar={ready?.equipped.avatar ?? null} />
+          {onSale ? (
+            <span className="pill absolute left-2 top-2 bg-[var(--danger)] px-2 py-0.5 text-[11px] text-white">-{Math.round(DEAL_DISCOUNT * 100)} %</span>
+          ) : (
+            item.tag && (
+              <span className="pill absolute left-2 top-2 bg-[var(--accent-500)] px-2 py-0.5 text-[11px] text-white">
+                {item.tag === "new" ? t.tagNew : t.tagPopular}
+              </span>
+            )
+          )}
+          <button
+            type="button"
+            onClick={() => toggleWish(item.id)}
+            aria-pressed={wished}
+            aria-label={wished ? x.unfav : x.fav}
+            title={wished ? x.unfav : x.fav}
+            className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-base leading-none transition-transform hover:scale-110"
+          >
+            {wished ? "❤️" : "🤍"}
+          </button>
+        </div>
+        <div>
+          <h2 className="font-bold leading-tight">{item.names[locale]}</h2>
+          <p className="text-xs text-[var(--muted)]">{t.tabs[item.kind]}</p>
+        </div>
+        <div className="mt-auto flex flex-col gap-2">
+          {!have ? (
+            <button
+              type="button"
+              disabled={!ready || busy !== null || missing > 0}
+              onClick={() => buy(item)}
+              className="btn-bouncy bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {ready && missing > 0 ? (
+                t.needPoints.replace("{n}", String(missing))
+              ) : (
+                <>
+                  ⭐ {onSale && <s className="opacity-70">{item.price}</s>} {price} · {t.buy}
+                </>
+              )}
+            </button>
+          ) : (
+            <>
+              <p className="text-sm font-semibold text-[var(--accent-green)]">✓ {t.owned}</p>
+              {equippable && (
+                <button
+                  type="button"
+                  disabled={busy !== null}
+                  onClick={() => equip(item, isEquipped(item) && (item.kind === "frame" || item.kind === "banner"))}
+                  className={`btn-bouncy px-3 py-2 text-sm font-bold disabled:opacity-45 ${
+                    isEquipped(item) ? "bg-[var(--surface-muted)]" : "bg-[var(--accent-yellow)] text-[#16132b]"
+                  }`}
+                >
+                  {isEquipped(item) ? (item.kind === "frame" || item.kind === "banner" ? `${t.unequip}` : `✓ ${t.equipped}`) : t.equip}
+                </button>
+              )}
+              {item.kind === "pet" && (
+                <Link href={`/${locale}/stale-hry/mazlicci`} className="text-sm font-semibold text-[var(--brand-600)] hover:underline">
+                  {t.useInPets} →
+                </Link>
+              )}
+              {item.kind === "city" && (
+                <Link href={`/${locale}/stale-hry/mesto`} className="text-sm font-semibold text-[var(--brand-600)] hover:underline">
+                  {t.useInCity} →
+                </Link>
+              )}
+            </>
+          )}
+          <div className="flex gap-2">
+            <button type="button" onClick={() => setPreviewId(item.id)} className="btn-bouncy flex-1 bg-[var(--surface)] px-2 py-1.5 text-xs font-bold">
+              👁 {x.preview}
+            </button>
+            {ready && (
+              <button
+                type="button"
+                onClick={() => {
+                  setGiftEmail("");
+                  setGiftId(item.id);
+                }}
+                className="btn-bouncy flex-1 bg-[var(--surface)] px-2 py-1.5 text-xs font-bold"
+              >
+                🎁 {x.gift}
+              </button>
+            )}
+          </div>
+        </div>
+      </article>
+    );
+  };
+
+  const profileCard = (over: { avatar?: string; frame?: string | null; banner?: string | null; title?: string | null }) => {
+    const banner = over.banner !== undefined ? over.banner : ready?.equipped.banner ?? null;
+    const frame = over.frame !== undefined ? over.frame : ready?.equipped.frame ?? null;
+    return (
+      <div
+        {...(banner ? bannerAttrs(banner) : {})}
+        className={`flex items-center gap-4 rounded-xl border-2 border-[var(--edge)] p-5 ${banner ? "banner-anim" : "bg-[var(--surface-muted)]"}`}
+        style={banner ? { background: bannerCss(banner) } : undefined}
+      >
+        <Avatar id={over.avatar ?? ready?.equipped.avatar ?? "robot"} size={88} frame={frame && isFrameId(frame) ? frame : null} />
+        <div className="rounded-lg bg-black/35 px-3 py-2 text-white">
+          <p className="font-extrabold">{locale === "cs" ? "Ty" : locale === "ru" ? "Ты" : locale === "de" ? "Du" : "You"}</p>
+          {over.title && <span className="pill mt-1 bg-[var(--accent-yellow)] px-3 py-0.5 text-xs text-[#16132b]">{over.title}</span>}
+        </div>
+      </div>
+    );
+  };
+
+  const previewBody = (item: ShopItem) => {
+    switch (item.kind) {
+      case "avatar":
+        return profileCard({ avatar: item.ref });
+      case "frame":
+        return profileCard({ frame: item.ref });
+      case "banner":
+        return profileCard({ banner: item.ref });
+      case "title":
+        return profileCard({ title: item.names[locale] });
+      case "pet":
+        return (
+          <div>
+            <div className="mb-2 flex flex-wrap gap-1.5">
+              {SPECIES.map((sp) => (
+                <button
+                  key={sp.id}
+                  type="button"
+                  onClick={() => setPetPick(sp.id)}
+                  aria-pressed={petPick === sp.id}
+                  className={`rounded-lg border-2 px-2 py-1 ${petPick === sp.id ? "border-[var(--edge)] bg-[var(--accent-yellow)]" : "border-transparent hover:border-[var(--edge)]"}`}
+                  title={x.petPick}
+                >
+                  <PetArt species={sp.id} stage={2} mood="happy" size={34} />
+                </button>
+              ))}
+            </div>
+            <div className="flex justify-center rounded-xl border-2 border-[var(--edge)] bg-[var(--surface-muted)] py-3">
+              <PetArt species={petPick} stage={3} mood="happy" size={220} accessory={item.ref} />
+            </div>
+          </div>
+        );
+      case "city":
+        return <Preview item={item} locale={locale} avatar={null} />;
+    }
+  };
 
   return (
     <div>
@@ -207,6 +474,96 @@ export function ShopView({ locale }: { locale: Locale }) {
         </div>
       </div>
 
+      <section className="mb-8">
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h2 className="text-xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
+              🔥 {x.dealsTitle}
+            </h2>
+            <p className="text-sm text-[var(--muted)]">{x.dealsHint}</p>
+          </div>
+          {msLeft !== null && <span className="pill bg-[var(--surface)] px-3 py-1 text-sm">⏳ {x.resetsIn.replace("{t}", formatLeft(msLeft))}</span>}
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{dealItems.map((item) => renderCard(item))}</div>
+      </section>
+
+      <section className="mb-8">
+        <h2 className="text-xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
+          🎒 {x.bundlesTitle}
+        </h2>
+        <p className="mb-3 text-sm text-[var(--muted)]">{x.bundlesHint}</p>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {SHOP_BUNDLES.map((bundle) => {
+            const { price, full, missing } = bundlePrice(bundle, owned);
+            const all = bundle.itemIds.map((id) => getShopItem(id)).filter((i): i is ShopItem => !!i);
+            const done = missing.length === 0;
+            return (
+              <article key={bundle.id} className="card flex flex-col gap-3 p-4" style={{ borderColor: bundle.color }}>
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-bold">{bundle.names[locale]}</h3>
+                  <span className="pill bg-[var(--accent-yellow)] px-2 py-0.5 text-[11px] text-[#16132b]">-{Math.round(BUNDLE_DISCOUNT * 100)} %</span>
+                </div>
+                <ul className="flex flex-wrap gap-1.5 text-xs">
+                  {all.map((i) => (
+                    <li
+                      key={i.id}
+                      className={`rounded-lg border-2 px-2 py-1 ${owned.has(i.id) ? "border-[var(--accent-green)] text-[var(--accent-green)]" : "border-[var(--edge)]"}`}
+                    >
+                      {owned.has(i.id) ? "✓ " : ""}
+                      {i.names[locale]}
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  disabled={!ready || done || busy !== null || points < price}
+                  onClick={() => buyBundle(bundle)}
+                  className="btn-bouncy mt-auto bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  {done ? (
+                    x.bundleOwned
+                  ) : (
+                    <>
+                      ⭐ <s className="opacity-70">{full}</s> {price} · {x.bundleBuy}
+                    </>
+                  )}
+                </button>
+                {!done && <p className="text-xs text-[var(--muted)]">{x.bundleSave.replace("{n}", String(full - price))}</p>}
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={x.search}
+          aria-label={x.search}
+          className="min-w-48 flex-1 rounded-lg border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-2 text-sm"
+        />
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as Sort)}
+          aria-label={x.sortDefault}
+          className="rounded-lg border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-2 text-sm"
+        >
+          <option value="default">{x.sortDefault}</option>
+          <option value="asc">{x.sortAsc}</option>
+          <option value="desc">{x.sortDesc}</option>
+        </select>
+        {ready && (
+          <label className="flex items-center gap-1.5 text-sm font-semibold">
+            <input type="checkbox" checked={onlyNew} onChange={(e) => setOnlyNew(e.target.checked)} /> {x.onlyNew}
+          </label>
+        )}
+        <label className="flex items-center gap-1.5 text-sm font-semibold">
+          <input type="checkbox" checked={onlyFav} onChange={(e) => setOnlyFav(e.target.checked)} /> ❤️ {x.onlyFav}
+        </label>
+      </div>
+
       <div className="mb-4 flex flex-wrap gap-1.5" role="tablist">
         {(["all", ...SHOP_KINDS] as const).map((k) => (
           <button
@@ -225,67 +582,66 @@ export function ShopView({ locale }: { locale: Locale }) {
       </div>
       {tab !== "all" && <p className="mb-4 text-sm text-[var(--muted)]">{t.hints[tab]}</p>}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {items.map((item) => {
-          const have = owned.has(item.id);
-          const equippable = item.kind === "avatar" || item.kind === "title" || item.kind === "frame" || item.kind === "banner";
-          const missing = item.price - points;
-          return (
-            <article key={item.id} className="card flex flex-col gap-3 p-4">
-              <div className="relative">
-                <Preview item={item} locale={locale} avatar={ready?.equipped.avatar ?? null} />
-                {item.tag && (
-                  <span className="pill absolute left-2 top-2 bg-[var(--accent-500)] px-2 py-0.5 text-[11px] text-white">
-                    {item.tag === "new" ? t.tagNew : t.tagPopular}
-                  </span>
-                )}
-              </div>
-              <div>
-                <h2 className="font-bold leading-tight">{item.names[locale]}</h2>
-                <p className="text-xs text-[var(--muted)]">{t.tabs[item.kind]}</p>
-              </div>
-              <div className="mt-auto flex flex-col gap-2">
-                {!have ? (
-                  <button
-                    type="button"
-                    disabled={!ready || busy !== null || missing > 0}
-                    onClick={() => buy(item)}
-                    className="btn-bouncy bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"
-                  >
-                    {ready && missing > 0 ? t.needPoints.replace("{n}", String(missing)) : `⭐ ${item.price} · ${t.buy}`}
-                  </button>
-                ) : (
-                  <>
-                    <p className="text-sm font-semibold text-[var(--accent-green)]">✓ {t.owned}</p>
-                    {equippable && (
-                      <button
-                        type="button"
-                        disabled={busy !== null}
-                        onClick={() => equip(item, isEquipped(item) && (item.kind === "frame" || item.kind === "banner"))}
-                        className={`btn-bouncy px-3 py-2 text-sm font-bold disabled:opacity-45 ${
-                          isEquipped(item) ? "bg-[var(--surface-muted)]" : "bg-[var(--accent-yellow)] text-[#16132b]"
-                        }`}
-                      >
-                        {isEquipped(item) ? (item.kind === "frame" || item.kind === "banner" ? `${t.unequip}` : `✓ ${t.equipped}`) : t.equip}
-                      </button>
-                    )}
-                    {item.kind === "pet" && (
-                      <Link href={`/${locale}/stale-hry/mazlicci`} className="text-sm font-semibold text-[var(--brand-600)] hover:underline">
-                        {t.useInPets} →
-                      </Link>
-                    )}
-                    {item.kind === "city" && (
-                      <Link href={`/${locale}/stale-hry/mesto`} className="text-sm font-semibold text-[var(--brand-600)] hover:underline">
-                        {t.useInCity} →
-                      </Link>
-                    )}
-                  </>
-                )}
-              </div>
-            </article>
-          );
-        })}
-      </div>
+      {items.length === 0 ? (
+        <p className="card p-6 text-center text-[var(--muted)]">{x.noResults}</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{items.map((item) => renderCard(item))}</div>
+      )}
+
+
+      {previewItem && (
+        <Modal title={`${x.preview}: ${previewItem.names[locale]}`} onClose={() => setPreviewId(null)} closeLabel={x.close}>
+          {previewBody(previewItem)}
+          <p className="mt-3 text-sm text-[var(--muted)]">{x.previewHint}</p>
+          {ready && !owned.has(previewItem.id) && (
+            <button
+              type="button"
+              disabled={busy !== null || priceOf(previewItem) > points}
+              onClick={async () => {
+                if (await buy(previewItem)) setPreviewId(null);
+              }}
+              className="btn-bouncy mt-4 w-full bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {priceOf(previewItem) > points ? t.needPoints.replace("{n}", String(priceOf(previewItem) - points)) : `⭐ ${priceOf(previewItem)} · ${t.buy}`}
+            </button>
+          )}
+        </Modal>
+      )}
+
+      {giftItem && ready && (
+        <Modal title={x.giftTitle.replace("{name}", giftItem.names[locale])} onClose={() => setGiftId(null)} closeLabel={x.close}>
+          <p className="mb-3 text-sm text-[var(--muted)]">{x.giftHint}</p>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void sendGift(giftItem);
+            }}
+          >
+            <input
+              type="email"
+              required
+              autoFocus
+              value={giftEmail}
+              onChange={(e) => setGiftEmail(e.target.value)}
+              placeholder={x.giftEmail}
+              aria-label={x.giftEmail}
+              className="mb-4 w-full rounded-lg border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-2 text-sm"
+            />
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setGiftId(null)} className="btn-bouncy flex-1 bg-[var(--surface)] px-3 py-2 text-sm font-bold">
+                {x.cancel}
+              </button>
+              <button
+                type="submit"
+                disabled={busy !== null || priceOf(giftItem) > points}
+                className="btn-bouncy flex-[2] bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                🎁 {x.giftSend.replace("{n}", String(priceOf(giftItem)))}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
 
       {message && (
         <div

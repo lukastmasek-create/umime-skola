@@ -3,10 +3,14 @@ import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { STYLE_GAME, normalizeStyle } from "@/lib/cosmetics";
-import { SHOP_ITEMS, getShopItem, unlockKey } from "@/lib/shop";
+import { SHOP_ITEMS, bundlePrice, dayKey, getBundle, getShopItem, nextDealReset, salePrice, unlockKey } from "@/lib/shop";
 
 class AlreadyOwned extends Error {}
 class NotEnoughPoints extends Error {}
+class RecipientUnavailable extends Error {}
+class SelfGift extends Error {}
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function errorCode(error: unknown): string {
   if (error instanceof Prisma.PrismaClientKnownRequestError) return error.code;
@@ -31,6 +35,8 @@ async function snapshot(userId: string) {
     loggedIn: true as const,
     points: user?.points ?? 0,
     owned: ownedItems(unlocks.map((u) => u.key)),
+    day: dayKey(),
+    resetAt: nextDealReset().toISOString(),
     equipped: { avatar: user?.avatar ?? null, title: user?.title ?? null, frame: style.frame, banner: style.banner },
   };
 }
@@ -48,35 +54,67 @@ export async function GET() {
   }
 }
 
+// Strhne body jen tehdy, když je hráč má, takže se nikdy nepůjde do mínusu.
+async function pay(tx: Prisma.TransactionClient, userId: string, price: number) {
+  const paid = await tx.user.updateMany({ where: { id: userId, points: { gte: price } }, data: { points: { decrement: price } } });
+  if (paid.count === 0) throw new NotEnoughPoints();
+}
+
 export async function POST(request: Request) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: "login-required" }, { status: 401 });
 
-  const body = (await request.json().catch(() => ({}))) as { action?: unknown; id?: unknown };
-  const item = body.action === "buy" && typeof body.id === "string" ? getShopItem(body.id) : undefined;
-  if (!item) return NextResponse.json({ error: "unknown-item" }, { status: 400 });
-  const key = unlockKey(item);
+  const body = (await request.json().catch(() => ({}))) as { action?: unknown; id?: unknown; email?: unknown };
+  const id = typeof body.id === "string" ? body.id : "";
+  const day = dayKey();
+  const tx = { maxWait: 10_000, timeout: 20_000 };
 
   try {
-    await prisma.$transaction(
-      async (tx) => {
-        const existing = await tx.unlock.findUnique({ where: { userId_key: { userId, key } } });
-        if (existing) throw new AlreadyOwned();
-        // Body se strhnou jen když je hráč má, takže se nikdy nepůjde do mínusu.
-        const paid = await tx.user.updateMany({
-          where: { id: userId, points: { gte: item.price } },
-          data: { points: { decrement: item.price } },
-        });
-        if (paid.count === 0) throw new NotEnoughPoints();
-        await tx.unlock.create({ data: { userId, key } });
-      },
-      { maxWait: 10_000, timeout: 20_000 },
-    );
+    if (body.action === "buy") {
+      const item = getShopItem(id);
+      if (!item) return NextResponse.json({ error: "unknown-item" }, { status: 400 });
+      const key = unlockKey(item);
+      await prisma.$transaction(async (t) => {
+        if (await t.unlock.findUnique({ where: { userId_key: { userId, key } } })) throw new AlreadyOwned();
+        await pay(t, userId, salePrice(item, day));
+        await t.unlock.create({ data: { userId, key } });
+      }, tx);
+    } else if (body.action === "buyBundle") {
+      const bundle = getBundle(id);
+      if (!bundle) return NextResponse.json({ error: "unknown-item" }, { status: 400 });
+      await prisma.$transaction(async (t) => {
+        const unlocks = await t.unlock.findMany({ where: { userId }, select: { key: true } });
+        const have = new Set(ownedItems(unlocks.map((u) => u.key)));
+        const { price, missing } = bundlePrice(bundle, have);
+        if (missing.length === 0) throw new AlreadyOwned();
+        await pay(t, userId, price);
+        const keys = missing.map((m) => unlockKey(getShopItem(m)!));
+        await t.unlock.createMany({ data: keys.map((key) => ({ userId, key })), skipDuplicates: true });
+      }, tx);
+    } else if (body.action === "gift") {
+      const item = getShopItem(id);
+      if (!item) return NextResponse.json({ error: "unknown-item" }, { status: 400 });
+      const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+      if (!EMAIL.test(email) || email.length > 200) return NextResponse.json({ error: "bad-email" }, { status: 400 });
+      const key = unlockKey(item);
+      await prisma.$transaction(async (t) => {
+        const to = await t.user.findFirst({ where: { email: { equals: email, mode: "insensitive" } }, select: { id: true } });
+        if (!to) throw new RecipientUnavailable();
+        if (to.id === userId) throw new SelfGift();
+        if (await t.unlock.findUnique({ where: { userId_key: { userId: to.id, key } } })) throw new RecipientUnavailable();
+        await pay(t, userId, salePrice(item, day));
+        await t.unlock.create({ data: { userId: to.id, key } });
+      }, tx);
+    } else {
+      return NextResponse.json({ error: "unknown-item" }, { status: 400 });
+    }
     return NextResponse.json(await snapshot(userId));
   } catch (error) {
     if (error instanceof AlreadyOwned) return NextResponse.json({ error: "owned" }, { status: 400 });
     if (error instanceof NotEnoughPoints) return NextResponse.json({ error: "not-enough-points" }, { status: 400 });
+    if (error instanceof RecipientUnavailable) return NextResponse.json({ error: "recipient-unavailable" }, { status: 400 });
+    if (error instanceof SelfGift) return NextResponse.json({ error: "self-gift" }, { status: 400 });
     // Dvojklik nebo dvě záložky: druhý nákup narazí na unikátní klíč.
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return NextResponse.json({ error: "owned" }, { status: 400 });
