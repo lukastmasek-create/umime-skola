@@ -47,7 +47,7 @@ export function NavTabs({ locale, dict }: { locale: Locale; dict: Dictionary }) 
         key={tab.key}
         href={tab.href}
         aria-current={active ? "page" : undefined}
-        className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg border-2 px-3.5 py-1.5 text-sm font-semibold ${
+        className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg border-2 px-3.5 py-2 text-sm font-semibold ${
           active
             ? "border-[var(--edge)] bg-[var(--accent-yellow)] text-[#16132b]"
             : "border-transparent text-[var(--muted)] hover:border-[var(--edge)] hover:text-[var(--foreground)]"
@@ -128,7 +128,7 @@ export function MobileMenu({
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls="mobile-menu"
-        className="btn-bouncy flex items-center gap-2 bg-[var(--surface)] px-3 py-1.5 text-sm font-bold"
+        className="btn-bouncy flex min-h-11 items-center gap-2 bg-[var(--surface)] px-3 py-1.5 text-sm font-bold"
       >
         <span aria-hidden>{open ? "✕" : "☰"}</span>
         {open ? t.closeMenu : t.menu}
