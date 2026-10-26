@@ -9,7 +9,7 @@ const MODELS: Record<string, { file: string; figureWidth: number }> = {
   robot: { file: "robot", figureWidth: 142 },
   astronaut: { file: "astronaut", figureWidth: 144 },
   pirate: { file: "pirate", figureWidth: 150 },
-  wizard: { file: "wizard", figureWidth: 148 },
+  wizard: { file: "wizard", figureWidth: 146 },
   pumpkin: { file: "pumpkin", figureWidth: 151 },
   alien: { file: "alien", figureWidth: 145 },
   owl: { file: "owl", figureWidth: 149 },
