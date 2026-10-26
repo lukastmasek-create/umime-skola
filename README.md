@@ -56,3 +56,11 @@ src/app/
 - Přidat administrační rozhraní pro vytváření kurzů a lekcí.
 - Napojit zápis studenta do kurzu (`Enrollment`) a sledování postupu (`LessonProgress`).
 - Případně doplnit přihlášení přes Google/GitHub OAuth v `src/lib/auth.ts`.
+
+## Hrát společně (živé hry)
+
+Stránka `/hrat-spolecne`: kdokoliv založí hru (kvíz, závod nebo zlatá horečka), ostatní se připojí kódem. Stav se čte pollingem (~1 s), takže stačí Next.js a Postgres.
+
+- Před nasazením jednou spusť `prisma/sql/live-games.sql` v databázi (nové tabulky `QuestionSet`, `LiveRoom`, `LivePlayer`, `LiveAnswer`).
+- Herní logika (body, pořadí, truhly) je v `src/lib/live/logic.ts`, testy: `npm test`.
+- Server: `src/lib/live/service.ts` a `src/app/api/live/`, obrazovky: `src/components/live/`, texty: `src/i18n/live.ts`.
