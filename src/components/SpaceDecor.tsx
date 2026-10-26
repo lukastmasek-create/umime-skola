@@ -145,6 +145,16 @@ export function Circuit({ className = "", flip = false }: { className?: string; 
       strokeWidth="2"
     >
       <path d="M0 40H120L160 80H300M0 100H80L120 140H260M300 80V20H400M260 140V190" />
+      {/* Světelné impulsy běžící po vodičích */}
+      {["M0 40H120L160 80H300", "M0 100H80L120 140H260", "M300 80V20H400", "M260 140V190"].map((d, i) => (
+        <path
+          key={d}
+          d={d}
+          pathLength={100}
+          className="circuit-pulse"
+          style={{ animationDelay: `${-i * 1.1}s`, animationDuration: `${3.2 + i * 0.5}s` }}
+        />
+      ))}
       <circle cx="300" cy="80" r="5" fill="#35d0ff" className="tech-blink" />
       <circle cx="260" cy="140" r="5" fill="#35d0ff" />
       <circle cx="400" cy="20" r="4" fill="#35d0ff" className="tech-blink" style={{ animationDelay: "-0.8s" }} />
