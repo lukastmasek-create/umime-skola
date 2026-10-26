@@ -36,6 +36,40 @@ export const AVATARS: AvatarDef[] = [
   { id: "pirate", bg: "#7fd0e8", skin: "#ffd5a8", head: "round", ears: "band", eyes: "one", mouth: "teeth", unlock: { event: "shop" }, names: { cs: "Pirát", en: "Pirate", de: "Pirat", ru: "Пират" } },
   { id: "wizard", bg: "#7a5cff", skin: "#ffd5a8", head: "round", ears: "horns", eyes: "big", mouth: "open", unlock: { event: "shop" }, names: { cs: "Čaroděj", en: "Wizard", de: "Zauberer", ru: "Волшебник" } },
   { id: "pumpkin", bg: "#ffb259", skin: "#ff8a1f", head: "round", ears: "none", eyes: "dots", mouth: "teeth", unlock: { event: "shop" }, names: { cs: "Dýně", en: "Pumpkin", de: "Kürbis", ru: "Тыква" } },
+
+  // --- zvířata ---
+  { id: "frog", bg: "#c9f0a8", skin: "#6fcf5a", head: "round", ears: "none", eyes: "big", mouth: "smile", unlock: { level: 4 }, names: { cs: "Žabák", en: "Frog", de: "Frosch", ru: "Лягушонок" } },
+  { id: "penguin", bg: "#bfe6ff", skin: "#2d3a5c", head: "round", ears: "none", eyes: "dots", mouth: "open", unlock: { level: 6 }, names: { cs: "Tučňák", en: "Penguin", de: "Pinguin", ru: "Пингвин" } },
+  { id: "unicorn", bg: "#ffd0ec", skin: "#fff4fb", head: "round", ears: "horns", eyes: "sleepy", mouth: "smile", unlock: { level: 8 }, names: { cs: "Jednorožec", en: "Unicorn", de: "Einhorn", ru: "Единорог" } },
+  { id: "koala", bg: "#d9e4ef", skin: "#b8bfc9", head: "round", ears: "bear", eyes: "dots", mouth: "flat", unlock: { level: 9 }, names: { cs: "Koala", en: "Koala", de: "Koala", ru: "Коала" } },
+  { id: "llama", bg: "#ffe7b3", skin: "#f3dcc0", head: "round", ears: "cat", eyes: "sleepy", mouth: "cat", unlock: { level: 11 }, names: { cs: "Lama", en: "Llama", de: "Lama", ru: "Лама" } },
+  { id: "octopus", bg: "#e3c8ff", skin: "#c06bd8", head: "ghost", ears: "none", eyes: "big", mouth: "open", unlock: { level: 12 }, names: { cs: "Chobotnice", en: "Octopus", de: "Krake", ru: "Осьминог" } },
+  { id: "capybara", bg: "#f0dcb8", skin: "#b0804f", head: "box", ears: "bear", eyes: "sleepy", mouth: "flat", unlock: { level: 14 }, names: { cs: "Kapybara", en: "Capybara", de: "Wasserschwein", ru: "Капибара" } },
+  { id: "yeti", bg: "#d8f0ff", skin: "#f4fbff", head: "round", ears: "bear", eyes: "one", mouth: "teeth", unlock: { level: 22 }, names: { cs: "Yetti", en: "Yeti", de: "Yeti", ru: "Йети" } },
+
+  // --- povolání ---
+  { id: "doctor", bg: "#c9f3ee", skin: "#ffd5a8", head: "round", ears: "band", eyes: "dots", mouth: "smile", unlock: { level: 15 }, names: { cs: "Doktor", en: "Doctor", de: "Arzt", ru: "Доктор" } },
+  { id: "chef", bg: "#ffe0c2", skin: "#ffd5a8", head: "round", ears: "hair", eyes: "dots", mouth: "smile", unlock: { event: "escape-kitchen" }, names: { cs: "Kuchař", en: "Chef", de: "Koch", ru: "Повар" } },
+  { id: "firefighter", bg: "#ff9b8a", skin: "#ffd5a8", head: "round", ears: "crown", eyes: "goggles", mouth: "flat", unlock: { level: 18 }, names: { cs: "Hasič", en: "Firefighter", de: "Feuerwehrmann", ru: "Пожарный" } },
+  { id: "detective", bg: "#c4b8a2", skin: "#ffd5a8", head: "round", ears: "band", eyes: "goggles", mouth: "flat", unlock: { level: 24 }, names: { cs: "Detektiv", en: "Detective", de: "Detektiv", ru: "Детектив" } },
+  { id: "pilot", bg: "#9fd2ff", skin: "#ffd5a8", head: "round", ears: "band", eyes: "visor", mouth: "smile", unlock: { level: 26 }, names: { cs: "Pilot", en: "Pilot", de: "Pilot", ru: "Пилот" } },
+  { id: "inventor", bg: "#fff0a8", skin: "#ffd5a8", head: "round", ears: "hair", eyes: "goggles", mouth: "open", unlock: { level: 28 }, names: { cs: "Vynálezce", en: "Inventor", de: "Erfinder", ru: "Изобретатель" } },
+  { id: "archaeologist", bg: "#e8cf9b", skin: "#e0b48a", head: "round", ears: "band", eyes: "dots", mouth: "smile", unlock: { event: "escape-museum" }, names: { cs: "Archeolog", en: "Archaeologist", de: "Archäologe", ru: "Археолог" } },
+  { id: "sailor", bg: "#a8d8f0", skin: "#ffd5a8", head: "round", ears: "band", eyes: "dots", mouth: "teeth", unlock: { event: "escape-pirate" }, names: { cs: "Námořník", en: "Sailor", de: "Seemann", ru: "Моряк" } },
+  { id: "explorer", bg: "#f2d9a0", skin: "#e0b48a", head: "round", ears: "band", eyes: "goggles", mouth: "smile", unlock: { event: "escape-expedition" }, names: { cs: "Cestovatel", en: "Explorer", de: "Entdecker", ru: "Путешественник" } },
+  { id: "ranger", bg: "#b8e3a6", skin: "#ffd5a8", head: "round", ears: "hair", eyes: "dots", mouth: "smile", unlock: { event: "escape-jungle" }, names: { cs: "Hajný", en: "Ranger", de: "Förster", ru: "Лесник" } },
+  { id: "knight", bg: "#c8cfe0", skin: "#dfe5f0", head: "box", ears: "crown", eyes: "visor", mouth: "flat", unlock: { level: 36 }, names: { cs: "Rytíř", en: "Knight", de: "Ritter", ru: "Рыцарь" } },
+
+  // --- fantasy ---
+  { id: "fairy", bg: "#ffd9f2", skin: "#ffe1d0", head: "round", ears: "antenna", eyes: "big", mouth: "smile", unlock: { level: 40 }, names: { cs: "Víla", en: "Fairy", de: "Fee", ru: "Фея" } },
+  { id: "elf", bg: "#c8f2c0", skin: "#ffe6c8", head: "round", ears: "fox", eyes: "dots", mouth: "smile", unlock: { level: 44 }, names: { cs: "Elf", en: "Elf", de: "Elf", ru: "Эльф" } },
+  { id: "dwarf", bg: "#e4c9a8", skin: "#f0b98a", head: "box", ears: "hair", eyes: "dots", mouth: "teeth", unlock: { level: 48 }, names: { cs: "Trpaslík", en: "Dwarf", de: "Zwerg", ru: "Гном" } },
+  { id: "vampire", bg: "#c9a6d6", skin: "#f1e8f4", head: "round", ears: "fox", eyes: "sleepy", mouth: "teeth", unlock: { level: 52 }, names: { cs: "Upír", en: "Vampire", de: "Vampir", ru: "Вампир" } },
+  { id: "mummy", bg: "#e8dcc0", skin: "#f0e6cc", head: "box", ears: "band", eyes: "one", mouth: "flat", unlock: { level: 56 }, names: { cs: "Mumie", en: "Mummy", de: "Mumie", ru: "Мумия" } },
+  { id: "mermaid", bg: "#a8f0e6", skin: "#ffd9c4", head: "round", ears: "hair", eyes: "big", mouth: "smile", unlock: { level: 60 }, names: { cs: "Mořská panna", en: "Mermaid", de: "Meerjungfrau", ru: "Русалка" } },
+  { id: "robot-dino", bg: "#b8f0d0", skin: "#58c48a", head: "box", ears: "horns", eyes: "visor", mouth: "teeth", unlock: { level: 66 }, names: { cs: "Robodinosaurus", en: "Robo-dino", de: "Robo-Dino", ru: "Робо-динозавр" } },
+  { id: "phoenix", bg: "#ffc29a", skin: "#ff6a3d", head: "round", ears: "crown", eyes: "big", mouth: "open", unlock: { level: 75 }, names: { cs: "Fénix", en: "Phoenix", de: "Phönix", ru: "Феникс" } },
+  { id: "cosmic", bg: "#3a2b7a", skin: "#a98bff", head: "ghost", ears: "antenna", eyes: "visor", mouth: "smile", unlock: { level: 90 }, names: { cs: "Kosmický", en: "Cosmic", de: "Kosmisch", ru: "Космический" } },
 ];
 
 export const DEFAULT_AVATAR = "robot";

@@ -109,7 +109,7 @@ export function HeaderAccount({
         <div
           role="dialog"
           aria-label={t.nav}
-          className="card absolute right-0 top-full z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] p-4"
+          className="card absolute right-0 top-full z-50 mt-2 max-h-[calc(100vh-6rem)] w-[min(22rem,calc(100vw-2rem))] overflow-y-auto p-4"
         >
           <div
             className={`-mx-4 -mt-4 mb-1 flex items-center gap-3 rounded-t-[16px] px-4 pb-3 pt-4 ${
