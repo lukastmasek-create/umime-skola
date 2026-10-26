@@ -62,6 +62,16 @@ export class NinjaEngine extends ArcadeEngine {
     this.lastPoint = null;
   }
 
+  // Nápověda 50:50: špatné ovoce zmizí.
+  protected eliminate(indices: number[]) {
+    for (const item of this.items) {
+      if (item.correct || item.state === "gone" || !indices.includes(item.index)) continue;
+      if (item.state === "fly") this.burst(item.x, item.y, item.color, 14);
+      item.state = "gone";
+    }
+    sfx("pickup");
+  }
+
   protected usesSwipe() {
     return false;
   }

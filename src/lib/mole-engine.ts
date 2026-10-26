@@ -7,7 +7,7 @@ const HOLE_X = [95, 245, 395, 545];
 const UP_TIME = 2.0;
 const DOWN_TIME = 0.9;
 
-type Mole = { phase: "down" | "up" | "stunned"; t: number; label: string; index: number; correct: boolean; swing: number };
+type Mole = { phase: "down" | "up" | "stunned"; t: number; label: string; index: number; correct: boolean; swing: number; gone?: boolean };
 
 // Krtek: čtyři krtci vystrkují hlavy a každý drží cedulku s odpovědí. Klepni kladivem na toho
 // se správnou. Špatný krtek ubere život a na chvíli se schová.
@@ -34,6 +34,16 @@ export class MoleEngine extends ArcadeEngine {
     this.cursor = 1;
   }
 
+  // Nápověda 50:50: špatní krtci se schovají a už nevylezou.
+  protected eliminate(indices: number[]) {
+    this.moles.forEach((m, i) => {
+      if (m.correct || m.gone || !indices.includes(m.index)) return;
+      m.gone = true;
+      this.burst(HOLE_X[i], HOLE_Y - 40, "#ff5d73", 14);
+    });
+    sfx("pickup");
+  }
+
   protected usesSwipe() {
     return false;
   }
@@ -56,7 +66,7 @@ export class MoleEngine extends ArcadeEngine {
 
   private whack(i: number) {
     const m = this.moles[i];
-    if (!m) return;
+    if (!m || m.gone) return;
     m.swing = 0.22;
     if (m.phase !== "up") {
       sfx("miss");
@@ -82,6 +92,11 @@ export class MoleEngine extends ArcadeEngine {
     if (this.consume("fire")) this.whack(this.cursor);
 
     for (const m of this.moles) {
+      if (m.gone) {
+        m.phase = "down";
+        m.t = 9;
+        continue;
+      }
       m.swing = Math.max(0, m.swing - dt);
       m.t -= dt * this.pace();
       if (m.t > 0) continue;

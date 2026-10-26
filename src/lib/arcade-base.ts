@@ -186,6 +186,11 @@ export abstract class ArcadeEngine {
     return (1 + Math.min(round, 6) * 0.06) * (this.config.boss ? 1.25 : 1) * this.config.alienSpeedFactor;
   }
 
+  // Shovívavost pro snadnější obtížnosti: >1, čím pomalejší hra, tím větší zásahová místa a pálky.
+  protected forgive(): number {
+    return 1 + Math.max(0, 1 - this.config.alienSpeedFactor) * 0.9;
+  }
+
   // Vylepšení „rychlost hráče“ (fireCooldown klesá s úrovní) se promítne do pohyblivosti.
   protected moveMul(): number {
     return 1 + (0.35 / Math.max(0.1, this.config.fireCooldown) - 1) * 0.4;
@@ -205,7 +210,7 @@ export abstract class ArcadeEngine {
     this.config = config;
     this.over = options.length === 0;
     this.time = 0;
-    this.maxTime = this.questionTime();
+    this.maxTime = this.questionTime() * (config.timeFactor ?? 1);
     this.timeLeft = this.maxTime;
     this.lastTick = -1;
     this.particles = [];
@@ -219,6 +224,15 @@ export abstract class ArcadeEngine {
 
   protected questionTime(): number {
     return 50;
+  }
+
+  // Nápověda 50:50: hra odstraní zadané špatné odpovědi (každá hra po svém).
+  setHint(eliminated: number[]) {
+    this.eliminate(eliminated);
+  }
+
+  protected eliminate(_indices: number[]): void {
+    void _indices;
   }
 
   protected abstract setup(options: string[], correctIndex: number): void;

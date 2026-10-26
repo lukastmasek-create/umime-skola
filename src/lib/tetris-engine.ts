@@ -84,11 +84,13 @@ export class TetrisEngine extends ArcadeEngine {
     let row = ROWS - 1;
     for (let k = 0; k < order.length; k++) {
       for (let g = 0; g < 2 && row >= 0; g++, row--) {
-        hole = Math.max(0, Math.min(COLS - 1, hole + Math.floor(Math.random() * 3) - 1));
-        const line = Array.from({ length: COLS }, (_, x) => (x === hole ? null : GARBAGE));
+        hole = Math.max(0, Math.min(COLS - 3, hole + Math.floor(Math.random() * 3) - 1));
+        // Čím snazší obtížnost, tím širší mezera v řádku, takže jde zaplnit jednou kostkou.
+        const holeW = this.config.alienSpeedFactor <= 0.7 ? 3 : this.config.alienSpeedFactor <= 0.92 ? 2 : 1;
+        const line = Array.from({ length: COLS }, (_, x) => (x >= hole && x < hole + holeW ? null : GARBAGE));
         if (g === 0) {
           let gx = Math.floor(Math.random() * COLS);
-          if (gx === hole) gx = (gx + 3) % COLS;
+          while (gx >= hole - 1 && gx <= hole + holeW) gx = (gx + 3) % COLS;
           line[gx] = "g" + order[k];
         }
         this.board[row] = line;
@@ -96,6 +98,22 @@ export class TetrisEngine extends ArcadeEngine {
     }
     this.next = this.nextShape();
     this.spawn();
+  }
+
+  // Nápověda 50:50: drahokam špatné odpovědi se změní na obyčejnou kostku.
+  protected eliminate(indices: number[]) {
+    for (const i of indices) {
+      const o = this.options[i];
+      if (!o || o.correct) continue;
+      for (let y = 0; y < ROWS; y++)
+        for (let x = 0; x < COLS; x++)
+          if (this.board[y][x] === "g" + i) {
+            this.board[y][x] = GARBAGE;
+            this.burst(BX + x * CELL + CELL / 2, BY + y * CELL + CELL / 2, ANSWER_COLORS[i % ANSWER_COLORS.length], 12);
+          }
+      this.options[i] = { ...o, label: "" };
+    }
+    sfx("pickup");
   }
 
   private addGarbage(): boolean {

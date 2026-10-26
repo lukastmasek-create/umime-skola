@@ -31,7 +31,7 @@ export class BreakoutEngine extends ArcadeEngine {
   protected setup(options: string[], correctIndex: number) {
     this.blocks = [];
     this.paddleX = W / 2;
-    this.paddleW = 92 * (1 + (this.moveMul() - 1) * 0.5);
+    this.paddleW = 92 * (1 + (this.moveMul() - 1) * 0.5) * this.forgive();
     this.target = null;
     this.resetBall();
     if (options.length === 0) return;
@@ -67,6 +67,15 @@ export class BreakoutEngine extends ArcadeEngine {
           color: ["#5a6cff", "#4f8bff", "#7ee0b0"][r],
         });
       }
+  }
+
+  protected eliminate(indices: number[]) {
+    for (const b of this.blocks) {
+      if (!b.alive || b.label === undefined || b.correct || !indices.includes(b.index ?? -1)) continue;
+      b.alive = false;
+      this.burst(b.x + b.w / 2, b.y + b.h / 2, b.color, 14);
+    }
+    sfx("pickup");
   }
 
   private resetBall() {

@@ -49,6 +49,19 @@ export type GameText = {
   paused: string;
   endRun: string;
   autoContinue: string;
+  difficulty: string;
+  easy: string;
+  normal: string;
+  hard: string;
+  difficultyHint: { easy: string; normal: string; hard: string };
+  hint: string;
+  hintLeft: string;
+  hintText: string;
+  hintUsed: string;
+  reviewTitle: string;
+  practiceMistakes: string;
+  noMistakes: string;
+  summary: string;
   damage: string;
   tipDodge: string;
   mario: { title: string; intro: string; controls: string; jump: string; upgradeJump: string };
@@ -97,6 +110,19 @@ const cs: GameText = {
   paused: "Pozastaveno",
   endRun: "Ukončit kolo",
   autoContinue: "Další otázka přijde sama. Pozastav, kdybys chtěl číst déle.",
+  difficulty: "Obtížnost",
+  easy: "🐢 Snadná",
+  normal: "🙂 Střední",
+  hard: "🔥 Těžká",
+  difficultyHint: { easy: "Pomalejší hra, víc času a 5 životů. Nejlepší na začátek.", normal: "Vyvážená hra se 4 životy.", hard: "Rychlá hra, méně času a 3 životy, ale víc bodů." },
+  hint: "💡 Nápověda",
+  hintLeft: "zbývá",
+  hintText: "Není to: {a} ani {b}",
+  hintUsed: "Za bod s nápovědou dostaneš jen půlku.",
+  reviewTitle: "Co si zopakovat",
+  practiceMistakes: "Procvičit chyby",
+  noMistakes: "Bez jediné chyby! 🌟",
+  summary: "Správně {a} z {b} otázek",
   damage: "Zásah! −1 život",
   tipDodge: "Sbírej bonusy 🛡️ ⚡ 🐌 a uhýbej červeným střelám. Poslední otázka je BOSS.",
   mario: { title: "Mario kvíz", intro: "Želvy nesou odpovědi a pořád se hýbou. Naskoč shora na tu správnou!", controls: "← → nebo A D pohyb, mezerník / ↑ skok (držíš = výš), na telefonu táhni prstem a klepni", jump: "Skok", upgradeJump: "Výška skoku" },
@@ -176,6 +202,19 @@ const en: GameText = {
   paused: "Paused",
   endRun: "End run",
   autoContinue: "The next question starts on its own. Pause if you want more time to read.",
+  difficulty: "Difficulty",
+  easy: "🐢 Easy",
+  normal: "🙂 Medium",
+  hard: "🔥 Hard",
+  difficultyHint: { easy: "Slower game, more time and 5 lives. Best to start with.", normal: "A balanced game with 4 lives.", hard: "Fast game, less time and 3 lives, but more points." },
+  hint: "💡 Hint",
+  hintLeft: "left",
+  hintText: "It is not: {a} or {b}",
+  hintUsed: "A point earned with a hint is worth half.",
+  reviewTitle: "Worth reviewing",
+  practiceMistakes: "Practice mistakes",
+  noMistakes: "Not a single mistake! 🌟",
+  summary: "{a} of {b} questions correct",
   damage: "Hit! −1 life",
   tipDodge: "Grab power-ups 🛡️ ⚡ 🐌 and dodge the red shots. The last question is the BOSS.",
   mario: { title: "Mario Quiz", intro: "Turtles carry the answers and keep moving. Jump on the right one from above!", controls: "← → or A D to move, space / ↑ to jump (hold = higher), on a phone drag and tap", jump: "Jump", upgradeJump: "Jump height" },
@@ -255,6 +294,19 @@ const de: GameText = {
   paused: "Pausiert",
   endRun: "Runde beenden",
   autoContinue: "Die nächste Frage startet von selbst. Pausiere, wenn du länger lesen willst.",
+  difficulty: "Schwierigkeit",
+  easy: "🐢 Leicht",
+  normal: "🙂 Mittel",
+  hard: "🔥 Schwer",
+  difficultyHint: { easy: "Langsameres Spiel, mehr Zeit und 5 Leben. Am besten zum Anfangen.", normal: "Ausgewogenes Spiel mit 4 Leben.", hard: "Schnelles Spiel, weniger Zeit und 3 Leben, aber mehr Punkte." },
+  hint: "💡 Tipp",
+  hintLeft: "übrig",
+  hintText: "Es ist nicht: {a} und nicht {b}",
+  hintUsed: "Ein Punkt mit Tipp zählt nur halb.",
+  reviewTitle: "Zum Wiederholen",
+  practiceMistakes: "Fehler üben",
+  noMistakes: "Kein einziger Fehler! 🌟",
+  summary: "{a} von {b} Fragen richtig",
   damage: "Treffer! −1 Leben",
   tipDodge: "Sammle Boni 🛡️ ⚡ 🐌 und weiche den roten Schüssen aus. Die letzte Frage ist der BOSS.",
   mario: { title: "Mario-Quiz", intro: "Schildkröten tragen die Antworten und bewegen sich ständig. Spring von oben auf die richtige!", controls: "← → oder A D bewegen, Leertaste / ↑ springen (halten = höher), am Handy ziehen und tippen", jump: "Springen", upgradeJump: "Sprunghöhe" },
@@ -334,6 +386,19 @@ const ru: GameText = {
   paused: "Пауза",
   endRun: "Закончить раунд",
   autoContinue: "Следующий вопрос начнётся сам. Поставь на паузу, если хочешь читать дольше.",
+  difficulty: "Сложность",
+  easy: "🐢 Легко",
+  normal: "🙂 Средне",
+  hard: "🔥 Сложно",
+  difficultyHint: { easy: "Медленнее, больше времени и 5 жизней. Лучше всего для начала.", normal: "Сбалансированная игра с 4 жизнями.", hard: "Быстро, меньше времени и 3 жизни, но больше очков." },
+  hint: "💡 Подсказка",
+  hintLeft: "осталось",
+  hintText: "Это не: {a} и не {b}",
+  hintUsed: "Очко с подсказкой стоит вдвое меньше.",
+  reviewTitle: "Стоит повторить",
+  practiceMistakes: "Потренировать ошибки",
+  noMistakes: "Ни одной ошибки! 🌟",
+  summary: "Верно {a} из {b} вопросов",
   damage: "Попадание! −1 жизнь",
   tipDodge: "Собирай бонусы 🛡️ ⚡ 🐌 и уворачивайся от красных выстрелов. Последний вопрос — БОСС.",
   mario: { title: "Квиз с Марио", intro: "Черепахи несут ответы и всё время двигаются. Запрыгни сверху на правильную!", controls: "← → или A D — движение, пробел / ↑ — прыжок (дольше = выше), на телефоне води пальцем и касайся", jump: "Прыжок", upgradeJump: "Высота прыжка" },

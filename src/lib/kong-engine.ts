@@ -79,6 +79,15 @@ export class KongEngine extends ArcadeEngine {
     }));
   }
 
+  protected eliminate(indices: number[]) {
+    for (const d of this.doors) {
+      if (!d.alive || d.correct || !indices.includes(d.index)) continue;
+      d.alive = false;
+      this.burst(d.x + d.w / 2, BLOCK_BOTTOM - BLOCK_H / 2, d.color, 14);
+    }
+    sfx("pickup");
+  }
+
   private spanOk(level: number, x: number) {
     const [a, b] = SPANS[level];
     return x >= a - 4 && x <= b + 4;
@@ -171,7 +180,9 @@ export class KongEngine extends ArcadeEngine {
 
     // --- sudy ---
     this.spawn -= dt;
-    if (this.spawn <= 0) {
+    // Na snazších obtížnostech je na plátně méně sudů najednou.
+    const maxBarrels = this.forgive() > 1.2 ? 3 : 6;
+    if (this.spawn <= 0 && this.barrels.length < maxBarrels) {
       this.spawn = Math.max(1.1, 2.6 / this.pace()) * (0.8 + Math.random() * 0.5);
       this.barrels.push({ x: W - 36, y: LEVEL_Y[4], vy: 0, level: 4, dir: -1, falling: false, rot: 0, jumped: false });
     }
@@ -208,7 +219,7 @@ export class KongEngine extends ArcadeEngine {
       for (const b of this.barrels) {
         const dx = Math.abs(b.x - this.px);
         const dy = b.y - 9 - (this.py - PLAYER_H / 2);
-        if (dx < 14 && Math.abs(dy) < 17) {
+        if (dx < 14 / Math.sqrt(this.forgive()) && Math.abs(dy) < 17) {
           this.damage();
           this.burst(this.px, this.py - 10, "#ffb020", 20);
           this.respawn(true);

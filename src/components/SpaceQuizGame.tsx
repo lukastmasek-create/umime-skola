@@ -26,6 +26,8 @@ type QuizEngine = {
   setInput(input: Partial<Record<HeldKey, boolean>>): void;
   loadQuestion(options: string[], correctIndex: number, config: EngineConfig, prompt?: string): void;
   popText(text: string, color?: string): void;
+  // Vyřadí špatné odpovědi z hry (nápověda 50:50); hra je z plátna odstraní.
+  setHint?(eliminated: number[]): void;
 };
 
 type Phase = "intro" | "playing" | "explain" | "result";
@@ -37,7 +39,15 @@ const QUESTIONS_PER_RUN = 8;
 // Jak dlouho zůstane vysvětlení na obrazovce, než hra sama pokračuje.
 const AUTO_CONTINUE_MS = { correct: 4500, other: 7000 };
 const BASE_FIRE_COOLDOWN = 0.35;
-const BASE_LIVES = 3;
+
+// Obtížnost: snadná je výchozí. Zpomaluje hru, prodlužuje čas na otázku, přidává životy a nápovědy.
+type Difficulty = "easy" | "normal" | "hard";
+const DIFFICULTIES: Record<Difficulty, { speed: number; time: number; lives: number; hints: number; mult: number }> = {
+  easy: { speed: 0.62, time: 1.7, lives: 5, hints: 3, mult: 1 },
+  normal: { speed: 0.85, time: 1.25, lives: 4, hints: 2, mult: 1.5 },
+  hard: { speed: 1.05, time: 1, lives: 3, hints: 1, mult: 2 },
+};
+const DIFFICULTY_KEY = "game:difficulty";
 const MAX_UPGRADE_LEVEL = 3;
 const COSTS: Record<UpgradeKey, number[]> = {
   fire: [50, 100, 200],
@@ -105,6 +115,32 @@ function HoldButton({
     >
       {children}
     </button>
+  );
+}
+
+function DifficultyPicker({ t, value, onChange }: { t: GameText; value: Difficulty; onChange: (d: Difficulty) => void }) {
+  const labels: Record<Difficulty, string> = { easy: t.easy, normal: t.normal, hard: t.hard };
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-sm font-semibold">{t.difficulty}</p>
+      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t.difficulty}>
+        {(Object.keys(labels) as Difficulty[]).map((d) => (
+          <button
+            key={d}
+            type="button"
+            role="radio"
+            aria-checked={value === d}
+            onClick={() => onChange(d)}
+            className={`btn-bouncy rounded-full border-2 px-4 py-2 text-sm font-semibold ${
+              value === d ? "border-[var(--brand-500)] bg-[var(--brand-50)]" : "border-[var(--border-soft)] bg-[var(--surface)]"
+            }`}
+          >
+            {labels[d]}
+          </button>
+        ))}
+      </div>
+      <p className="text-xs text-[var(--muted)]">{t.difficultyHint[value]}</p>
+    </div>
   );
 }
 
@@ -213,11 +249,18 @@ export function SpaceQuizGame({
     onDamage: () => {},
   });
 
+  const [difficulty, setDifficultyState] = useState<Difficulty>("easy");
+  const [hintsLeft, setHintsLeft] = useState(0);
+  const [hintOut, setHintOut] = useState<number[] | null>(null);
+  const hintUsedRef = useRef(false);
+  // Otázky, u kterých hráč chyboval: na konci se ukážou k zopakování a jde je procvičit.
+  const [mistakes, setMistakes] = useState<GameQuestion[]>([]);
+  const [asked, setAsked] = useState(0);
   const [run, setRun] = useState<GameQuestion[]>([]);
   const [phase, setPhase] = useState<Phase>("intro");
   const [qIndex, setQIndex] = useState(0);
   const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(BASE_LIVES);
+  const [lives, setLives] = useState(DIFFICULTIES.easy.lives);
   const [combo, setCombo] = useState(0);
   const [coins, setCoins] = useState(0);
   const [upgrades, setUpgrades] = useState<Upgrades>(EMPTY_UPGRADES);
@@ -236,6 +279,12 @@ export function SpaceQuizGame({
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
     setMutedState(isMuted());
+    try {
+      const d = localStorage.getItem(DIFFICULTY_KEY);
+      if (d === "easy" || d === "normal" || d === "hard") setDifficultyState(d);
+    } catch {
+      // bez uložené obtížnosti zůstane snadná
+    }
     try {
       const raw = localStorage.getItem(storageKey);
       if (raw) {
@@ -280,6 +329,8 @@ export function SpaceQuizGame({
                           ? new NinjaEngine(canvas, callbacks)
                           : new SpaceEngine(canvas, callbacks);
     engineRef.current = engine;
+    // Testovací háček: automatické testy (umime-art/../tests) si přes něj vezmou engine.
+    if ((window as unknown as { __QUIZ_TEST__?: boolean }).__QUIZ_TEST__) (window as unknown as { __quizEngine?: QuizEngine }).__quizEngine = engine;
     engine.loadQuestion(["Ahoj", "Hello", "Hallo", "Привет"], 0, { fireCooldown: BASE_FIRE_COOLDOWN, alienSpeedFactor: 1 });
     return () => {
       engine.destroy();
@@ -295,13 +346,37 @@ export function SpaceQuizGame({
     }
   }
 
+  function setDifficulty(d: Difficulty) {
+    setDifficultyState(d);
+    try {
+      localStorage.setItem(DIFFICULTY_KEY, d);
+    } catch {
+      // ignore
+    }
+  }
+
+  function useHint() {
+    const q = run[qIndex];
+    if (phase !== "playing" || paused || !q || hintsLeft <= 0 || hintOut) return;
+    const wrong = [0, 1, 2, 3].filter((i) => i !== q.correctIndex && i < q.options.length);
+    const out = shuffle(wrong).slice(0, 2);
+    hintUsedRef.current = true;
+    setHintOut(out);
+    setHintsLeft((n) => n - 1);
+    engineRef.current?.setHint?.(out);
+    sfx("pickup");
+  }
+
   function loadQuestion(q: GameQuestion, index: number, total: number) {
+    hintUsedRef.current = false;
+    setHintOut(null);
     engineRef.current?.loadQuestion(
       q.options,
       q.correctIndex,
       {
         fireCooldown: BASE_FIRE_COOLDOWN * (1 - 0.2 * upgrades.fire),
-        alienSpeedFactor: 1 - 0.15 * upgrades.slow,
+        alienSpeedFactor: (1 - 0.15 * upgrades.slow) * DIFFICULTIES[difficulty].speed,
+        timeFactor: DIFFICULTIES[difficulty].time,
         round: index,
         boss: total >= 4 && index === total - 1,
       },
@@ -309,15 +384,24 @@ export function SpaceQuizGame({
     );
   }
 
-  function startRun() {
+  function noteMistake(q: GameQuestion | undefined) {
+    if (!q) return;
+    setMistakes((list) => (list.some((m) => m.prompt === q.prompt) ? list : [...list, q]));
+  }
+
+  function startRun(only?: GameQuestion[]) {
     setToast(null);
     unlockAudio();
+    const pool = only && only.length > 0 ? only : source;
     const newRun = endless
-      ? Array.from({ length: 6 }, () => prepareRun(source, source.length)).flat()
-      : prepareRun(source);
+      ? Array.from({ length: 6 }, () => prepareRun(pool, pool.length)).flat()
+      : prepareRun(pool, Math.min(QUESTIONS_PER_RUN, pool.length));
+    setMistakes([]);
+    setAsked(0);
     setRun(newRun);
     setScore(0);
-    setLives(BASE_LIVES + upgrades.life);
+    setLives(DIFFICULTIES[difficulty].lives + upgrades.life);
+    setHintsLeft(DIFFICULTIES[difficulty].hints);
     setCombo(0);
     setQIndex(0);
     setResolved(null);
@@ -412,9 +496,11 @@ export function SpaceQuizGame({
     pausedRef.current = paused;
     handlersRef.current = {
       onHit: (correct) => {
+        const earn = () => Math.max(1, Math.round((10 + Math.min(combo, 4) * 5) * DIFFICULTIES[difficulty].mult * (hintUsedRef.current ? 0.5 : 1)));
         if (correct && endless) {
           // Nekonečná hra se nezastavuje: krátká zpráva s vysvětlením a hned další otázka.
-          const pts = 10 + Math.min(combo, 4) * 5;
+          const pts = earn();
+          setAsked((n) => n + 1);
           setScore((s) => s + pts);
           setCombo((c) => c + 1);
           engineRef.current?.popText(combo > 0 ? `+${pts}  🔥×${combo + 1}` : `+${pts}`, "#7ee0b0");
@@ -425,7 +511,8 @@ export function SpaceQuizGame({
           return;
         }
         if (correct) {
-          const pts = 10 + Math.min(combo, 4) * 5;
+          const pts = earn();
+          setAsked((n) => n + 1);
           setScore((s) => s + pts);
           setCombo((c) => c + 1);
           setResolved({ kind: "correct", pts });
@@ -433,11 +520,13 @@ export function SpaceQuizGame({
           enterExplain();
           return;
         }
+        noteMistake(run[qIndex]);
         const remaining = lives - 1;
         setLives(remaining);
         setCombo(0);
         if (remaining <= 0) {
           engineRef.current?.setRunning(false);
+          setAsked((n) => n + 1);
           setResolved({ kind: "wrong" });
           enterExplain();
         } else {
@@ -446,6 +535,8 @@ export function SpaceQuizGame({
         }
       },
       onMiss: () => {
+        noteMistake(run[qIndex]);
+        setAsked((n) => n + 1);
         if (endless && lives - 1 > 0) {
           setLives(lives - 1);
           setCombo(0);
@@ -576,6 +667,17 @@ export function SpaceQuizGame({
                 🔥 {t.combo} ×{combo}
               </span>
             )}
+            {phase === "playing" && (
+              <button
+                type="button"
+                onClick={useHint}
+                disabled={hintsLeft <= 0 || !!hintOut || paused}
+                title={t.hintUsed}
+                className="btn-bouncy rounded-full border-2 border-[var(--border-soft)] bg-[var(--surface)] px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {t.hint} · {hintsLeft}
+              </button>
+            )}
             </>
           )}
         </div>
@@ -584,6 +686,16 @@ export function SpaceQuizGame({
       {(phase === "playing" || phase === "explain") && question && !mario && (
         <p className="rounded-xl bg-[var(--brand-50)] px-4 py-3 text-lg font-bold text-[var(--brand-700)]">
           {question.prompt}
+        </p>
+      )}
+
+      {phase === "playing" && qIndex === 0 && !paused && (
+        <p className="rounded-xl bg-[var(--surface-muted)] px-4 py-2 text-xs text-[var(--muted)]">⌨️ {t.controls}</p>
+      )}
+
+      {phase === "playing" && hintOut && question && (
+        <p className="rounded-xl bg-[var(--accent-yellow)] px-4 py-2 text-sm font-semibold text-[#16132b]">
+          💡 {t.hintText.replace("{a}", `„${question.options[hintOut[0]]}“`).replace("{b}", `„${question.options[hintOut[1]]}“`)}
         </p>
       )}
 
@@ -647,9 +759,10 @@ export function SpaceQuizGame({
           <p className="text-sm text-[var(--muted)]">{t.intro}</p>
           <p className="text-xs text-[var(--faint)]">⌨️ {t.controls}</p>
           {game === "space-invaders" && <p className="text-xs text-[var(--faint)]">💡 {t.tipDodge}</p>}
+          <DifficultyPicker t={t} value={difficulty} onChange={setDifficulty} />
           <UpgradeShop t={t} coins={coins} upgrades={upgrades} onBuy={buy} />
           <button
-            onClick={startRun}
+            onClick={() => startRun()}
             className="btn-bouncy self-start rounded-full bg-[var(--brand-500)] px-6 py-3 text-sm font-semibold text-white hover:bg-[var(--brand-600)]"
           >
             {t.start}
@@ -808,11 +921,39 @@ export function SpaceQuizGame({
               +{xpGained} XP
             </p>
           )}
+          {asked > 0 && (
+            <p className="text-sm font-semibold">
+              {t.summary.replace("{a}", String(Math.max(0, asked - mistakes.length))).replace("{b}", String(asked))}
+              {mistakes.length === 0 && ` · ${t.noMistakes}`}
+            </p>
+          )}
+          {mistakes.length > 0 && (
+            <div className="flex flex-col gap-2 rounded-xl bg-[var(--surface-muted)] p-4 text-sm">
+              <p className="font-semibold">📚 {t.reviewTitle}</p>
+              <ul className="flex flex-col gap-2">
+                {mistakes.map((m) => (
+                  <li key={m.prompt} className="rounded-lg bg-[var(--surface)] p-3">
+                    <p className="font-semibold">{m.prompt}</p>
+                    <p className="text-[var(--brand-600)]">✓ {m.options[m.correctIndex]}</p>
+                    <p className="text-xs text-[var(--muted)]">{m.explanation}</p>
+                  </li>
+                ))}
+              </ul>
+              <button
+                type="button"
+                onClick={() => startRun(mistakes)}
+                className="btn-bouncy self-start rounded-full bg-[var(--accent-500)] px-5 py-2 text-sm font-semibold text-white"
+              >
+                🔁 {t.practiceMistakes} ({mistakes.length})
+              </button>
+            </div>
+          )}
+          <DifficultyPicker t={t} value={difficulty} onChange={setDifficulty} />
           <UpgradeShop t={t} coins={coins} upgrades={upgrades} onBuy={buy} />
           <p className="text-xs text-[var(--faint)]">🏆 {t.completionBonus}</p>
           <div className="flex flex-wrap items-center gap-4">
             <button
-              onClick={startRun}
+              onClick={() => startRun()}
               className="btn-bouncy rounded-full bg-[var(--brand-500)] px-6 py-3 text-sm font-semibold text-white hover:bg-[var(--brand-600)]"
             >
               {t.again}
