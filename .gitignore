@@ -43,3 +43,5 @@ next-env.d.ts
 
 # vyrenderované snímky z Blenderu (z nich se skládá public/home/anim přes umime-art/encode.py)
 /umime-art/out/
+
+__pycache__/
