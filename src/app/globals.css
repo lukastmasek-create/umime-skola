@@ -497,25 +497,36 @@ select {
   97.92% { transform: translate(109.42vw, 57.5px) rotate(87.0deg); }
   100.00% { transform: translate(112.00vw, 49.3px) rotate(65.9deg); }
 }
-@keyframes rocket-flame {
-  0% { background-position: -72px 0; }
-  34% { background-position: -144px 0; }
-  67% { background-position: -216px 0; }
-}
 .rocket-path {
   animation: rocket-path 30s linear infinite;
   will-change: transform;
 }
+/* Animovaná 3D raketa z Blenderu (plamen a jiskry jsou přímo v obrázku). */
 .rocket-flame {
-  width: 72px;
-  height: 72px;
-  background: url(/game-sprites/space/lod.webp) -72px 0 / 504px auto no-repeat;
-  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45));
-  animation: rocket-flame 0.3s steps(1) infinite;
+  width: 60px;
+  height: 132px;
+  background: url(/home/raketa-let.webp) center / contain no-repeat;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.45));
+}
+.planet-anim {
+  background-image: url(/home/planeta-tocici.webp);
+}
+.stars-video {
+  mix-blend-mode: screen;
 }
 @media (prefers-reduced-motion: reduce) {
-  .rocket-path,
   .rocket-flame {
+    background-image: url(/home/raketa.webp);
+  }
+  .planet-anim {
+    background-image: url(/home/planeta.webp) !important;
+  }
+  .stars-video {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rocket-path {
     animation: none;
   }
 }

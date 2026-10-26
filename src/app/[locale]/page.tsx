@@ -2,7 +2,7 @@ import Link from "next/link";
 import { CATEGORIES, SUBJECTS } from "@/lib/taxonomy";
 import { HomeProgress } from "@/components/HomeProgress";
 import { ArcadeDemo } from "@/components/ArcadeDemo";
-import { ALIEN_ROW, Circuit, HomeArt, Mountains, NatureDecor, Nebula, Planet, Rocket, SpriteFrame, Wave } from "@/components/SpaceDecor";
+import { ALIEN_ROW, Circuit, HomeArt, Mountains, NatureDecor, Nebula, Planet, Rocket, SpriteFrame, StarsVideo, Wave } from "@/components/SpaceDecor";
 import { getHomeText } from "@/i18n/home";
 import { getSubjectText } from "@/i18n/subjects";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -36,13 +36,14 @@ export default async function Home({
       {/* 1) Vesmír: hrdina a postup */}
       <div className="zone zone-space">
         <Nebula className="absolute inset-x-0 top-0 -z-10 h-[820px]" />
+        <StarsVideo className="absolute inset-x-0 top-0 -z-10 h-[820px] w-full" />
         <div aria-hidden className="hero-aurora">
           <span style={{ left: "-8%", top: "4%", width: 460, height: 460, background: "#7c6cff" }} />
           <span style={{ right: "6%", top: "28%", width: 380, height: 380, background: "#ff8fd0", animationDelay: "-6s" }} />
           <span style={{ left: "38%", top: "-6%", width: 320, height: 320, background: "#35d0ff", animationDelay: "-11s" }} />
         </div>
         <section className="gradient-hero relative">
-          <Planet className="absolute -right-24 top-6 -z-10 hidden opacity-90 lg:block" size={560} />
+          <Planet className="absolute -right-20 top-16 -z-10 hidden opacity-90 lg:block" size={470} />
           <SpriteFrame
             sheet="aliens"
             col={0}
