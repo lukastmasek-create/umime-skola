@@ -137,7 +137,7 @@ export function SocialView({ locale }: { locale: Locale }) {
             </div>
             <div className="text-right">
               <p className="text-lg font-extrabold" style={heading}>
-                {fill(t.place, `${league.rank} / ${league.size}`)}
+                {fill(t.place, league.rank)} <span className="text-sm font-semibold text-[var(--muted)]">/ {league.size}</span>
               </p>
               <p className="text-xs text-[var(--muted)]">{fill(t.leagueEnds, date(league.endsAt))}</p>
             </div>
@@ -147,7 +147,7 @@ export function SocialView({ locale }: { locale: Locale }) {
           <ol className="flex flex-col gap-1.5">
             {league.rows.map((row, i) => (
               <li key={row.id}>
-                {i === league.promote && league.promote > 0 && (
+                {i === 0 && league.promote > 0 && (
                   <p className="my-1 text-xs font-bold text-[var(--accent-500)]">▲ {t.promoteZone}</p>
                 )}
                 {i === league.rows.length - league.demote && league.demote > 0 && (

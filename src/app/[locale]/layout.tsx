@@ -73,10 +73,10 @@ export default async function LocaleLayout({
                 <SiteLogo />
               </Link>
               <div className="flex items-center justify-end gap-1.5 text-sm">
-                <Link href={`/${locale}/obchod`} className={`hidden lg:inline-flex ${navLink}`}>
+                <Link href={`/${locale}/obchod`} className={`hidden xl:inline-flex ${navLink}`}>
                   {dict.nav.shop}
                 </Link>
-                <Link href={`/${locale}/nastaveni`} className={`hidden lg:inline-flex ${navLink}`}>
+                <Link href={`/${locale}/nastaveni`} className={`hidden xl:inline-flex ${navLink}`}>
                   {dict.nav.settings}
                 </Link>
                 <LanguageSwitcher current={locale as Locale} />

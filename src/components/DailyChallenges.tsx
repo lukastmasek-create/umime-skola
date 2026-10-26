@@ -90,17 +90,22 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
   const { streak, pet, cityCoins, reviewDue, weekKey, quests, weekly, milestones, achievements } = state;
   const heading = { fontFamily: "var(--font-heading)" } as const;
   const claimButton = (id: string, ready: boolean, claimed: boolean) =>
-    claimed ? (
-      <span className="shrink-0 text-xs font-bold text-[var(--muted)]">✓ {t.claimed}</span>
-    ) : (
-      <button
-        type="button"
-        disabled={!ready || busy === id}
-        onClick={() => claim(id)}
-        className="btn-bouncy shrink-0 bg-[var(--accent-500)] px-3 py-1.5 text-xs font-bold text-white disabled:opacity-40"
-      >
-        {t.claim}
-      </button>
+    // Pevná šířka sloupce, ať jsou ukazatele ve všech řádcích stejně dlouhé.
+    (
+      <span className="flex w-24 shrink-0 justify-end">
+        {claimed ? (
+          <span className="text-xs font-bold text-[var(--muted)]">✓ {t.claimed}</span>
+        ) : (
+          <button
+            type="button"
+            disabled={!ready || busy === id}
+            onClick={() => claim(id)}
+            className="btn-bouncy bg-[var(--accent-500)] px-3 py-1.5 text-xs font-bold text-white disabled:opacity-40"
+          >
+            {t.claim}
+          </button>
+        )}
+      </span>
     );
 
   return (
@@ -181,7 +186,7 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
                   <div className="h-full bg-[var(--brand-500)]" style={{ width: `${(q.progress / q.target) * 100}%` }} />
                 </div>
               </div>
-              <span className="shrink-0 text-xs font-bold text-[var(--accent-500)]">{fill(t.bonus, q.bonusXp)}</span>
+              <span className="w-14 shrink-0 text-right text-xs font-bold text-[var(--accent-500)]">{fill(t.bonus, q.bonusXp)}</span>
               {claimButton(`quest:${q.id}`, q.done, q.claimed)}
             </li>
           ))}
@@ -199,7 +204,7 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
                   <div className="h-full bg-[var(--brand-500)]" style={{ width: `${(w.progress / w.target) * 100}%` }} />
                 </div>
               </div>
-              <span className="shrink-0 text-xs font-bold text-[var(--accent-500)]">{fill(t.bonus, w.bonusXp)}</span>
+              <span className="w-14 shrink-0 text-right text-xs font-bold text-[var(--accent-500)]">{fill(t.bonus, w.bonusXp)}</span>
               {claimButton(`weekly:${w.id}:${weekKey}`, w.done, w.claimed)}
             </li>
           ))}

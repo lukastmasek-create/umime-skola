@@ -86,7 +86,7 @@ export function RoomView({ locale }: { locale: Locale }) {
       {tab === "room" && (
         <>
           <p className="text-sm text-[var(--muted)]">{t.pickSlot}</p>
-          <div className="card grid grid-cols-4 gap-2 p-3 sm:gap-3 sm:p-4" style={{ background: "var(--surface-muted)" }}>
+          <div className="card mx-auto grid w-full max-w-xl grid-cols-4 gap-2 p-3 sm:gap-3 sm:p-4" style={{ background: "var(--surface-muted)" }}>
             {Array.from({ length: ROOM_SLOTS }, (_, slot) => {
               const id = data.room.placed[slot];
               return (
@@ -105,7 +105,7 @@ export function RoomView({ locale }: { locale: Locale }) {
                     selected && !id ? "border-dashed border-[var(--accent-500)]" : "border-[var(--border-soft)]"
                   } bg-[var(--surface)]`}
                 >
-                  {iconOf(id)}
+                  {id ? iconOf(id) : selected ? <span className="text-2xl text-[var(--accent-500)]">+</span> : null}
                 </button>
               );
             })}
