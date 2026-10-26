@@ -8,6 +8,7 @@ import type { Dictionary } from "@/i18n/dictionaries";
 import { getCommunityText } from "@/i18n/community";
 import { getIdleText } from "@/i18n/idle";
 import { getEscapeText } from "@/i18n/escape";
+import { getMaterialsText } from "@/i18n/materials";
 import { getHomeText } from "@/i18n/home";
 import { getSocialText } from "@/i18n/social";
 import { getRoomText } from "@/i18n/room";
@@ -25,6 +26,7 @@ function useTabs(locale: Locale, dict: Dictionary) {
     href: `/${locale}/kurzy/${cat.slug}`,
     label: dict.categories[cat.slug].label,
   }));
+  learn.push({ key: "materialy", href: `/${locale}/materialy`, label: getMaterialsText(locale).nav, icon: "📘" });
   const review = getReviewText(locale);
   const play: Tab[] = [
     { key: "hrat-spolecne", href: `/${locale}/hrat-spolecne`, label: getLiveText(locale).nav, icon: "🎓" },
