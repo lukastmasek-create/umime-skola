@@ -503,4 +503,5 @@ def main():
         print("OK icon", name, flush=True)
 
 
-main()
+if __name__ == "__main__":
+    main()

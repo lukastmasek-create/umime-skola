@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { ART_ROOMS } from "@/lib/escape/art";
 import { LabScene } from "./LabScene";
 import { RoomScene } from "./RoomScene";
 import { PuzzleModal } from "./PuzzleModal";
@@ -413,6 +414,7 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
           <div className="card overflow-hidden p-0">
             {room.theme ? (
               <RoomScene
+                roomId={roomId}
                 theme={room.theme}
                 hotspots={room.hotspots}
                 solved={solved}
@@ -461,9 +463,9 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
                             : "border-[var(--edge)] bg-[var(--surface)] hover:bg-[var(--surface-muted)]"
                         }`}
                       >
-                        {roomId === "lab" ? (
-                          // Ikony předmětů laboratoře jsou vyrenderované v Blenderu (umime-art/scripts/lab.py).
-                          <img src={`/escape/lab/items/${item.id}.webp`} alt="" width={36} height={36} className="h-9 w-9 shrink-0" />
+                        {roomId === "lab" || ART_ROOMS.includes(roomId) ? (
+                          // Ikony předmětů jsou vyrenderované v Blenderu (umime-art/scripts/).
+                          <img src={`/escape/${roomId}/items/${item.id}.webp`} alt="" width={36} height={36} className="h-9 w-9 shrink-0" />
                         ) : (
                           <span className="text-xl">{item.symbol}</span>
                         )}
