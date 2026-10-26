@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { ART_ROOMS } from "@/lib/escape/art";
 import { LabScene } from "./LabScene";
 import { RoomScene } from "./RoomScene";
 import { PuzzleModal } from "./PuzzleModal";
@@ -413,6 +414,7 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
           <div className="card overflow-hidden p-0">
             {room.theme ? (
               <RoomScene
+                roomId={roomId}
                 theme={room.theme}
                 hotspots={room.hotspots}
                 solved={solved}
@@ -461,7 +463,13 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
                             : "border-[var(--edge)] bg-[var(--surface)] hover:bg-[var(--surface-muted)]"
                         }`}
                       >
-                        <span className="text-xl">{item.symbol}</span>
+                        {roomId === "lab" || ART_ROOMS.includes(roomId) ? (
+                          // Ikony předmětů jsou vyrenderované v Blenderu (umime-art/scripts/).
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={`/escape/${roomId}/items/${item.id}.webp`} alt="" width={36} height={36} className="h-9 w-9 shrink-0" />
+                        ) : (
+                          <span className="text-xl">{item.symbol}</span>
+                        )}
                         <span className="flex-1">{item.name}</span>
                         {isSelected && <span className="text-xs text-[var(--brand-600)]">{ui.selected}</span>}
                       </button>
