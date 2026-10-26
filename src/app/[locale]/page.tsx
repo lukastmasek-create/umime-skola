@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CATEGORIES, SUBJECTS } from "@/lib/taxonomy";
 import { HomeProgress } from "@/components/HomeProgress";
+import { DailyChallenges } from "@/components/DailyChallenges";
 import { ArcadeDemo } from "@/components/ArcadeDemo";
 import { ALIEN_ROW, Circuit, HomeArt, Mountains, NatureDecor, Nebula, Planet, Rocket, SpriteFrame, Wave } from "@/components/SpaceDecor";
 import { getHomeText } from "@/i18n/home";
@@ -97,6 +98,9 @@ export default async function Home({
 
         <section className="relative mx-auto max-w-6xl px-4 pb-14 pt-4 sm:px-6">
           <HomeProgress locale={locale as Locale} registerLabel={dict.home.createAccount} />
+          <div className="mt-4">
+            <DailyChallenges locale={locale as Locale} />
+          </div>
         </section>
       </div>
 
