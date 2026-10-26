@@ -1,0 +1,69 @@
+{
+  "size": [
+    800,
+    450
+  ],
+  "states": {
+    "cabinet_open": [
+      {
+        "file": "cabinet_open.webp",
+        "x": 268,
+        "y": 88,
+        "w": 194,
+        "h": 224
+      }
+    ],
+    "door_open": [
+      {
+        "file": "door_open.webp",
+        "x": 626,
+        "y": 98,
+        "w": 148,
+        "h": 298
+      }
+    ],
+    "pc_on": [
+      {
+        "file": "pc_on-1.webp",
+        "x": 474,
+        "y": 250,
+        "w": 112,
+        "h": 82
+      },
+      {
+        "file": "pc_on-2.webp",
+        "x": 650,
+        "y": 218,
+        "w": 50,
+        "h": 66
+      }
+    ],
+    "reactor_crit": [
+      {
+        "file": "reactor_crit.webp",
+        "x": 585,
+        "y": 196,
+        "w": 65,
+        "h": 136
+      }
+    ],
+    "reactor_warn": [
+      {
+        "file": "reactor_warn.webp",
+        "x": 585,
+        "y": 196,
+        "w": 65,
+        "h": 136
+      }
+    ],
+    "vent_used": [
+      {
+        "file": "vent_used.webp",
+        "x": 505,
+        "y": 48,
+        "w": 55,
+        "h": 50
+      }
+    ]
+  }
+}

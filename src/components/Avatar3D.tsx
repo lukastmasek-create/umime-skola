@@ -6,6 +6,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { DRACO_DECODER_PATH } from "@/lib/avatars3d";
+import { AVATAR_IDLE_GESTURES, AVATAR_REACTIONS, resetMotion, type Gesture, type Motion } from "@/components/motion-gestures";
 import {
   PATTERNS,
   SLOTS,
@@ -44,7 +45,8 @@ function addPattern(mat: THREE.Material) {
   m.needsUpdate = true;
 }
 
-// Živá 3D postava: klid ve smyčce, kliknutí = radost, tažení = otočení.
+// Živá 3D postava: klid ve smyčce, kolem toho náhodná gesta, kliknutí = radost a pokaždé jiná reakce
+// (přemet, tanec, úklon, výskok), tažení = otočení, pohyb myši ji nechá koukat za kurzorem.
 // Načítá se přes next/dynamic (ProfileAvatar), takže three.js stahuje jen ten, kdo ji vidí.
 export default function Avatar3D({
   src,
@@ -136,6 +138,18 @@ export default function Avatar3D({
     let mixer: THREE.AnimationMixer | null = null;
     let model: THREE.Object3D | null = null;
     let playJoy = () => {};
+    // Celá postava visí na pivotu v pase, aby se přemet otáčel kolem těla a ne kolem chodidel.
+    const PIVOT_Y = 0.9;
+    const pivot = new THREE.Group();
+    pivot.position.y = PIVOT_Y;
+    scene.add(pivot);
+    const motion: Motion = { y: 0, rotX: 0, rotY: 0, rotZ: 0, sx: 1, sy: 1 };
+    let gesture: { t: number; g: Gesture } | null = null;
+    let untilIdle = 3 + Math.random() * 3;
+    let reaction = Math.floor(Math.random() * AVATAR_REACTIONS.length);
+    let look = 0; // plynule sledovaný náklon za kurzorem
+    let lookTarget = 0;
+    let dragging = false;
 
     const draco = new DRACOLoader().setDecoderPath(DRACO_DECODER_PATH).setDecoderConfig({ type: "wasm" });
     const loader = new GLTFLoader().setDRACOLoader(draco);
@@ -147,7 +161,8 @@ export default function Avatar3D({
         model.traverse((o) => {
           if ((o as THREE.Mesh).isMesh) o.castShadow = true;
         });
-        scene.add(model);
+        model.position.y = -PIVOT_Y;
+        pivot.add(model);
 
         // Zjistí, co jde na modelu upravit, a uloží si původní vzhled.
         const slotMats: Record<string, THREE.MeshStandardMaterial[]> = {};
@@ -214,6 +229,13 @@ export default function Avatar3D({
             if (idle?.isRunning()) joy.crossFadeFrom(idle, 0.12, false);
           };
         }
+        // Kliknutí: radost z modelu plus gesto celé postavy, každé kliknutí jiné.
+        const joyClipPlay = playJoy;
+        playJoy = () => {
+          joyClipPlay();
+          if (reduceMotion) return;
+          gesture = { t: 0, g: AVATAR_REACTIONS[reaction++ % AVATAR_REACTIONS.length] };
+        };
         renderer.render(scene, camera);
         handlers.current.onReady();
       },
@@ -228,12 +250,20 @@ export default function Avatar3D({
     let moved = 0;
     const onDown = (e: PointerEvent) => {
       dragX = e.clientX;
+      dragging = true;
       moved = 0;
     };
     const onMove = (e: PointerEvent) => {
-      if (dragX === null || !model) return;
+      // Bez tlačítka postava jen pootočí hlavu směrem ke kurzoru.
+      if (dragX === null) {
+        const r = el.getBoundingClientRect();
+        lookTarget = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width - 0.5) * 2));
+        return;
+      }
+      if (!model) return;
       if (e.buttons === 0) {
         dragX = null; // tlačítko se pustilo mimo okno: netočit při pouhém pohybu myši
+        dragging = false;
         return;
       }
       const dx = e.clientX - dragX;
@@ -257,7 +287,26 @@ export default function Avatar3D({
 
     // Mimo obrazovku se nevykresluje (šetří baterii na telefonech).
     const tick = () => {
-      mixer?.update(clock.getDelta());
+      const dt = Math.min(clock.getDelta(), 0.1);
+      mixer?.update(dt);
+      resetMotion(motion);
+      if (!reduceMotion) {
+        if (gesture) {
+          gesture.t += dt;
+          gesture.g.run(Math.min(1, gesture.t / gesture.g.duration), motion);
+          if (gesture.t >= gesture.g.duration) {
+            gesture = null;
+            untilIdle = 4 + Math.random() * 4;
+          }
+        } else if (!dragging && (untilIdle -= dt) <= 0) {
+          gesture = { t: 0, g: AVATAR_IDLE_GESTURES[Math.floor(Math.random() * AVATAR_IDLE_GESTURES.length)] };
+        }
+        look += (lookTarget - look) * Math.min(1, dt * 4);
+        motion.rotY += look * 0.28;
+      }
+      pivot.position.y = PIVOT_Y + motion.y;
+      pivot.rotation.set(motion.rotX, motion.rotY, motion.rotZ);
+      pivot.scale.set(motion.sx, motion.sy, motion.sx);
       renderer.render(scene, camera);
     };
     const visibility = new IntersectionObserver(([entry]) => {

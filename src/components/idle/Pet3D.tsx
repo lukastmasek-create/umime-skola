@@ -8,11 +8,16 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { DRACO_DECODER_PATH } from "@/lib/avatars3d";
 import { PET_ACCESSORY_ANCHOR, petAccessoryModel, petModel, type PetAction } from "@/lib/pets3d";
 import type { PetMood } from "@/components/idle/PetArt";
+import { makeBall, makeFeedingProp, makeHeart, makeStar, setOpacity } from "@/components/idle/pet-props";
+import { IDLE_GESTURES, clamp01, easeOutBack, resetMotion, type Gesture, type Motion } from "@/components/motion-gestures";
 import type { SpeciesId } from "@/lib/idle/pets";
 
 // Velikost podle fáze růstu, stejně jako u 2D mazlíčků.
 const STAGE_SCALE = { 1: 0.78, 2: 0.9, 3: 1 } as const;
 const MOODS: PetMood[] = ["happy", "ok", "sad", "hungry"];
+
+// Efekt trvá, dokud `update` nevrátí true (hotovo); `t` jsou sekundy od začátku.
+type Effect = { t: number; update: (t: number, m: Motion) => boolean; dispose: () => void };
 
 type Props = {
   species: SpeciesId;
@@ -104,7 +109,7 @@ export default function Pet3D({ species, stage, mood, accessory, action, label, 
 
     const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 30);
     camera.position.set(0, 1.25, 4.3);
-    camera.lookAt(0, 0.72, 0);
+    camera.lookAt(0, 0.66, 0);
     const resize = () => {
       const { clientWidth: w, clientHeight: h } = el;
       renderer.setSize(w, h, false);
@@ -121,6 +126,16 @@ export default function Pet3D({ species, stage, mood, accessory, action, label, 
     let model: THREE.Object3D | null = null;
     const holder = new THREE.Group();
     scene.add(holder);
+    // Rekvizity (miska, míč, srdíčka) nejsou v `holder`, takže se netočí s tažením myší.
+    const extras = new THREE.Group();
+    scene.add(extras);
+    const motion: Motion = { y: 0, rotX: 0, rotY: 0, rotZ: 0, sx: 1, sy: 1 };
+    let baseRotY = 0;
+    let stageScale: number = STAGE_SCALE[live.current.stage];
+    let dragging = false;
+    const effects: Effect[] = [];
+    let idle: { t: number; variant: Gesture } | null = null;
+    let untilIdle = 3 + Math.random() * 3;
 
     const draco = new DRACOLoader().setDecoderPath(DRACO_DECODER_PATH).setDecoderConfig({ type: "wasm" });
     const loader = new GLTFLoader().setDRACOLoader(draco);
@@ -134,6 +149,102 @@ export default function Pet3D({ species, stage, mood, accessory, action, label, 
           m.dispose();
         }
       });
+
+
+    const startEffect = (effect: Effect) => {
+      effects.push(effect);
+      idle = null;
+    };
+    // Krmení: miska s oblíbeným jídlem druhu vyskočí před mazlíčka, ten se do ní pouští a jídlo ubývá.
+    const feedEffect = (): Effect => {
+      const prop = makeFeedingProp(species);
+      prop.root.position.set(0, 0, 0.8);
+      prop.root.scale.setScalar(0);
+      extras.add(prop.root);
+      return {
+        t: 0,
+        update(t, m) {
+          const grow = easeOutBack(t / 0.45);
+          const leave = clamp01((t - 3.1) / 0.5);
+          prop.root.scale.setScalar(0.55 * grow * (1 - leave));
+          setOpacity(prop.root, 1 - leave);
+          const eaten = clamp01((t - 0.9) / 2.1);
+          prop.food.scale.setScalar(Math.max(0.001, 1 - 0.9 * eaten * eaten));
+          if (prop.hover) {
+            prop.food.position.y = 0.3 + 0.1 * Math.sin(t * 5);
+            prop.food.position.x = 0.12 * Math.sin(t * 2.3);
+            for (const w of prop.wings) w.scale.y = 1 + 0.9 * Math.sin(t * 60);
+          } else {
+            prop.food.position.y = 0.012 * Math.sin(t * 7);
+          }
+          if (t > 0.6 && t < 3.0) m.rotX += 0.17 * (0.5 + 0.5 * Math.sin((t - 0.6) * 9));
+          return t >= 3.6;
+        },
+        dispose() {
+          extras.remove(prop.root);
+          disposeTree(prop.root);
+        },
+      };
+    };
+    // Hraní: skákavý míč přeletí před mazlíčkem a ten ho sleduje.
+    const playEffect = (): Effect => {
+      const ball = makeBall();
+      ball.scale.setScalar(0);
+      extras.add(ball);
+      return {
+        t: 0,
+        update(t, m) {
+          const u = clamp01(t / 2.6);
+          const x = -1.15 + 2.3 * u;
+          ball.position.set(x, 0.2 + Math.abs(Math.sin(u * Math.PI * 3)) * 0.75, 0.9);
+          ball.rotation.z = -x * 5;
+          const out = clamp01((t - 2.4) / 0.3);
+          ball.scale.setScalar(0.8 * (1 - out));
+          m.rotY += x * 0.35;
+          m.y += 0.12 * Math.abs(Math.sin(t * 6));
+          return t >= 2.7;
+        },
+        dispose() {
+          extras.remove(ball);
+          disposeTree(ball);
+        },
+      };
+    };
+    // Radost: srdíčka a hvězdičky stoupají nad mazlíčkem, ten poskočí a trochu se zploští.
+    const joyEffect = (): Effect => {
+      const bits: { obj: THREE.Mesh; x: number; z: number; delay: number; spin: number }[] = [];
+      for (let i = 0; i < 7; i++) {
+        const obj = i % 3 === 2 ? makeStar() : makeHeart(i % 2 ? "#ff5a7a" : "#ff8fb3");
+        obj.visible = false;
+        extras.add(obj);
+        bits.push({ obj, x: (Math.random() - 0.5) * 1.2, z: 0.3 + Math.random() * 0.6, delay: i * 0.12, spin: (Math.random() - 0.5) * 3 });
+      }
+      return {
+        t: 0,
+        update(t, m) {
+          for (const b of bits) {
+            const u = clamp01((t - b.delay) / 1.4);
+            b.obj.visible = u > 0 && u < 1;
+            b.obj.position.set(b.x + 0.15 * Math.sin(u * 6 + b.delay), 0.9 + u * 1.2, b.z);
+            b.obj.rotation.y = t * b.spin;
+            const pop = easeOutBack(u * 4) * (1 - clamp01((u - 0.7) / 0.3));
+            b.obj.scale.setScalar(Math.max(0.001, pop));
+            setOpacity(b.obj, 1 - clamp01((u - 0.6) / 0.4));
+          }
+          const k = Math.max(0, 1 - t / 1.4);
+          m.y += 0.3 * Math.abs(Math.sin(t * 7)) * k;
+          m.sy += 0.05 * Math.sin(t * 14) * k;
+          return t >= 2.1;
+        },
+        dispose() {
+          for (const b of bits) {
+            extras.remove(b.obj);
+            disposeTree(b.obj);
+          }
+        },
+      };
+    };
+    const spawnEffect = (kind: PetAction) => startEffect(kind === "feed" ? feedEffect() : kind === "play" ? playEffect() : joyEffect());
 
     loader.load(
       petModel(species),
@@ -157,7 +268,7 @@ export default function Pet3D({ species, stage, mood, accessory, action, label, 
           for (const m of MOODS) for (const n of moodNodes[m] ?? []) n.visible = m === value;
         };
         apply.current.stage = (value) => {
-          holder.scale.setScalar(STAGE_SCALE[value]);
+          stageScale = STAGE_SCALE[value];
         };
 
         // Doplněk: načte se jeho GLB a připne na kotvu (kotva má měřítko hlavy mazlíčka).
@@ -194,6 +305,7 @@ export default function Pet3D({ species, stage, mood, accessory, action, label, 
           }
         });
         apply.current.play = (kind) => {
+          spawnEffect(kind);
           const name = kind === "feed" ? "jedeni" : kind === "play" ? "hrani" : "radost";
           const clip = clips[name];
           if (!clip) return;
@@ -218,6 +330,7 @@ export default function Pet3D({ species, stage, mood, accessory, action, label, 
     let moved = 0;
     const onDown = (e: PointerEvent) => {
       dragX = e.clientX;
+      dragging = true;
       moved = 0;
     };
     const onMove = (e: PointerEvent) => {
@@ -229,14 +342,16 @@ export default function Pet3D({ species, stage, mood, accessory, action, label, 
       const dx = e.clientX - dragX;
       dragX = e.clientX;
       moved += Math.abs(dx);
-      holder.rotation.y += dx * 0.012;
+      baseRotY += dx * 0.012;
     };
     const onUp = () => {
       if (dragX !== null && moved < 6) apply.current.play("joy");
       dragX = null;
+      dragging = false;
     };
     const onCancel = () => {
       dragX = null;
+      dragging = false;
     };
     const canvas = renderer.domElement;
     canvas.addEventListener("pointerdown", onDown);
@@ -245,7 +360,32 @@ export default function Pet3D({ species, stage, mood, accessory, action, label, 
     window.addEventListener("pointercancel", onCancel);
 
     const tick = () => {
-      mixer?.update(clock.getDelta());
+      const dt = Math.min(clock.getDelta(), 0.1);
+      mixer?.update(dt);
+      resetMotion(motion);
+      for (let i = effects.length - 1; i >= 0; i--) {
+        const fx = effects[i];
+        fx.t += dt;
+        if (fx.update(fx.t, motion)) {
+          fx.dispose();
+          effects.splice(i, 1);
+        }
+      }
+      if (!reduceMotion && !dragging && effects.length === 0) {
+        if (idle) {
+          idle.t += dt;
+          idle.variant.run(clamp01(idle.t / idle.variant.duration), motion);
+          if (idle.t >= idle.variant.duration) {
+            idle = null;
+            untilIdle = 5 + Math.random() * 5;
+          }
+        } else if ((untilIdle -= dt) <= 0) {
+          idle = { t: 0, variant: IDLE_GESTURES[Math.floor(Math.random() * IDLE_GESTURES.length)] };
+        }
+      }
+      holder.position.y = motion.y;
+      holder.rotation.set(motion.rotX, baseRotY + motion.rotY, motion.rotZ);
+      holder.scale.set(stageScale * motion.sx, stageScale * motion.sy, stageScale * motion.sx);
       renderer.render(scene, camera);
     };
     const visibility = new IntersectionObserver(([entry]) => {
@@ -264,6 +404,7 @@ export default function Pet3D({ species, stage, mood, accessory, action, label, 
       window.removeEventListener("pointerup", onUp);
       window.removeEventListener("pointercancel", onCancel);
       mixer?.stopAllAction();
+      for (const fx of effects) fx.dispose();
       disposeTree(scene);
       env.dispose();
       pmrem.dispose();
