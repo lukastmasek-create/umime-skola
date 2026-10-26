@@ -9,33 +9,15 @@ import { DRACO_DECODER_PATH } from "@/lib/avatars3d";
 import { PET_ACCESSORY_ANCHOR, petAccessoryModel, petModel, type PetAction } from "@/lib/pets3d";
 import type { PetMood } from "@/components/idle/PetArt";
 import { makeBall, makeFeedingProp, makeHeart, makeStar, setOpacity } from "@/components/idle/pet-props";
+import { IDLE_GESTURES, clamp01, easeOutBack, resetMotion, type Gesture, type Motion } from "@/components/motion-gestures";
 import type { SpeciesId } from "@/lib/idle/pets";
 
 // Velikost podle fáze růstu, stejně jako u 2D mazlíčků.
 const STAGE_SCALE = { 1: 0.78, 2: 0.9, 3: 1 } as const;
 const MOODS: PetMood[] = ["happy", "ok", "sad", "hungry"];
 
-const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
-const easeOutBack = (v: number) => {
-  const c = 1.70158;
-  const x = clamp01(v) - 1;
-  return 1 + (c + 1) * x * x * x + c * x * x;
-};
-
-// Pohyb navíc, který model sám nemá: je to posun, náklon a stlačení celé postavy kolem jejích kostí.
-type Motion = { y: number; rotX: number; rotY: number; rotZ: number; sx: number; sy: number };
 // Efekt trvá, dokud `update` nevrátí true (hotovo); `t` jsou sekundy od začátku.
 type Effect = { t: number; update: (t: number, m: Motion) => boolean; dispose: () => void };
-
-// Drobné živé pohyby v klidu: pokaždé se vybere jiný, aby se mazlíček neopakoval.
-const IDLE_VARIANTS: { duration: number; run: (u: number, m: Motion) => void }[] = [
-  { duration: 0.7, run: (u, m) => (m.y = 0.22 * Math.sin(u * Math.PI)) }, // hop
-  { duration: 1.4, run: (u, m) => (m.rotZ = 0.12 * Math.sin(u * Math.PI * 4) * (1 - u)) }, // zavrtí se
-  { duration: 1.3, run: (u, m) => ((m.rotY = u * Math.PI * 2), (m.y = 0.1 * Math.sin(u * Math.PI))) }, // otočka
-  { duration: 2.4, run: (u, m) => (m.rotY = 0.55 * Math.sin(u * Math.PI * 2)) }, // rozhlédne se
-  { duration: 1.3, run: (u, m) => ((m.sy = 1 + 0.07 * Math.sin(u * Math.PI)), (m.sx = 1 - 0.035 * Math.sin(u * Math.PI))) }, // protáhne se
-  { duration: 1.6, run: (u, m) => ((m.rotX = 0.1 * Math.sin(u * Math.PI * 3)), (m.rotZ = 0.05 * Math.sin(u * Math.PI * 3))) }, // zakýve hlavou
-];
 
 type Props = {
   species: SpeciesId;
@@ -152,7 +134,7 @@ export default function Pet3D({ species, stage, mood, accessory, action, label, 
     let stageScale: number = STAGE_SCALE[live.current.stage];
     let dragging = false;
     const effects: Effect[] = [];
-    let idle: { t: number; variant: (typeof IDLE_VARIANTS)[number] } | null = null;
+    let idle: { t: number; variant: Gesture } | null = null;
     let untilIdle = 3 + Math.random() * 3;
 
     const draco = new DRACOLoader().setDecoderPath(DRACO_DECODER_PATH).setDecoderConfig({ type: "wasm" });
@@ -380,8 +362,7 @@ export default function Pet3D({ species, stage, mood, accessory, action, label, 
     const tick = () => {
       const dt = Math.min(clock.getDelta(), 0.1);
       mixer?.update(dt);
-      motion.y = motion.rotX = motion.rotY = motion.rotZ = 0;
-      motion.sx = motion.sy = 1;
+      resetMotion(motion);
       for (let i = effects.length - 1; i >= 0; i--) {
         const fx = effects[i];
         fx.t += dt;
@@ -399,7 +380,7 @@ export default function Pet3D({ species, stage, mood, accessory, action, label, 
             untilIdle = 5 + Math.random() * 5;
           }
         } else if ((untilIdle -= dt) <= 0) {
-          idle = { t: 0, variant: IDLE_VARIANTS[Math.floor(Math.random() * IDLE_VARIANTS.length)] };
+          idle = { t: 0, variant: IDLE_GESTURES[Math.floor(Math.random() * IDLE_GESTURES.length)] };
         }
       }
       holder.position.y = motion.y;
