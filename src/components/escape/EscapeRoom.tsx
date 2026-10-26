@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { ART_ROOMS } from "@/lib/escape/art";
 import { LabScene } from "./LabScene";
 import { RoomScene } from "./RoomScene";
 import { PuzzleModal } from "./PuzzleModal";
@@ -11,6 +12,7 @@ import type { Hotspot, Puzzle } from "@/lib/escape/types";
 import { getEscapeText } from "@/i18n/escape";
 import { getAvatar } from "@/lib/avatars";
 import { getTitle } from "@/lib/titles";
+import { DailyRecap } from "@/components/DailyChallenges";
 import type { Locale } from "@/i18n/config";
 
 type Phase = "mode" | "playing" | "won" | "lost";
@@ -346,6 +348,7 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
                 </span>
               )}
             </div>
+            {saveState === "saved" && <DailyRecap locale={locale} refreshKey={saved?.xp ?? 0} />}
             {saved && saved.unlocked.length > 0 && (
               <div className="rounded-xl bg-[var(--brand-50)] px-4 py-3 text-sm">
                 <p className="mb-1 font-bold">{ui.unlocked}</p>
@@ -413,6 +416,7 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
           <div className="card overflow-hidden p-0">
             {room.theme ? (
               <RoomScene
+                roomId={roomId}
                 theme={room.theme}
                 hotspots={room.hotspots}
                 solved={solved}
@@ -461,7 +465,13 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
                             : "border-[var(--edge)] bg-[var(--surface)] hover:bg-[var(--surface-muted)]"
                         }`}
                       >
-                        <span className="text-xl">{item.symbol}</span>
+                        {roomId === "lab" || ART_ROOMS.includes(roomId) ? (
+                          // Ikony předmětů jsou vyrenderované v Blenderu (umime-art/scripts/).
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={`/escape/${roomId}/items/${item.id}.webp`} alt="" width={36} height={36} className="h-9 w-9 shrink-0" />
+                        ) : (
+                          <span className="text-xl">{item.symbol}</span>
+                        )}
                         <span className="flex-1">{item.name}</span>
                         {isSelected && <span className="text-xs text-[var(--brand-600)]">{ui.selected}</span>}
                       </button>

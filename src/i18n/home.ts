@@ -2,6 +2,7 @@ import type { Locale } from "./config";
 
 export type HomeText = {
   menu: string;
+  more: string;
   closeMenu: string;
   learn: string;
   play: string;
@@ -22,12 +23,13 @@ export type HomeText = {
 };
 
 const cs: HomeText = {
+  more: "Více",
   menu: "Menu",
   closeMenu: "Zavřít menu",
   learn: "Učení",
   play: "Hry a komunita",
   subjectsTitle: "Vyber si předmět",
-  subjectsHint: "Devět předmětů od 1. do 6. třídy, každý s kurzy od nejsnazších po nejtěžší.",
+  subjectsHint: "Devět předmětů od 1. do 9. třídy, každý s kurzy od nejsnazších po nejtěžší.",
   allCourses: "Všechny kurzy",
   featuresTitle: "Co tu najdeš",
   features: [
@@ -52,12 +54,13 @@ const cs: HomeText = {
 };
 
 const en: HomeText = {
+  more: "More",
   menu: "Menu",
   closeMenu: "Close menu",
   learn: "Learn",
   play: "Games and community",
   subjectsTitle: "Pick a subject",
-  subjectsHint: "Nine subjects from grade 1 to 6, each with courses from the easiest to the hardest.",
+  subjectsHint: "Nine subjects from grade 1 to 9, each with courses from the easiest to the hardest.",
   allCourses: "All courses",
   featuresTitle: "What you'll find here",
   features: [
@@ -82,12 +85,13 @@ const en: HomeText = {
 };
 
 const de: HomeText = {
+  more: "Mehr",
   menu: "Menü",
   closeMenu: "Menü schließen",
   learn: "Lernen",
   play: "Spiele und Community",
   subjectsTitle: "Wähle ein Fach",
-  subjectsHint: "Neun Fächer von der 1. bis zur 6. Klasse, jedes mit Kursen vom leichtesten bis zum schwersten.",
+  subjectsHint: "Neun Fächer von der 1. bis zur 9. Klasse, jedes mit Kursen vom leichtesten bis zum schwersten.",
   allCourses: "Alle Kurse",
   featuresTitle: "Das findest du hier",
   features: [
@@ -112,12 +116,13 @@ const de: HomeText = {
 };
 
 const ru: HomeText = {
+  more: "Ещё",
   menu: "Меню",
   closeMenu: "Закрыть меню",
   learn: "Обучение",
   play: "Игры и сообщество",
   subjectsTitle: "Выбери предмет",
-  subjectsHint: "Девять предметов с 1 по 6 класс, в каждом курсы от самых лёгких до самых сложных.",
+  subjectsHint: "Девять предметов с 1 по 9 класс, в каждом курсы от самых лёгких до самых сложных.",
   allCourses: "Все курсы",
   featuresTitle: "Что здесь есть",
   features: [

@@ -52,7 +52,7 @@ export default async function CourseGamePage({
       select: {
         title: true,
         questions: {
-          select: { prompt: true, options: true, correctIndex: true, explanation: true, difficulty: true },
+          select: { id: true, prompt: true, options: true, correctIndex: true, explanation: true, difficulty: true },
         },
       },
     });
@@ -65,6 +65,7 @@ export default async function CourseGamePage({
         .sort((a, b) => Math.abs(a.difficulty - difficulty) - Math.abs(b.difficulty - difficulty))
         .slice(0, POOL_SIZE)
         .map((q) => ({
+          id: q.id,
           prompt: q.prompt.replaceAll("___", "…"),
           options: q.options as GameQuestion["options"],
           correctIndex: q.correctIndex,
