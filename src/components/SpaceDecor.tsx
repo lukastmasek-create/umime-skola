@@ -165,6 +165,8 @@ const LEAVES: { img: string; pos: string; size: number; delay: string }[] = [
 export function NatureDecor() {
   return (
     <>
+      <HomeArt name="liana" size={190} className="pointer-events-none absolute bottom-28 left-[0.5%] z-0 hidden h-auto w-36 xl:block 2xl:left-[3%] 2xl:w-44" />
+      <HomeArt name="liana" size={190} className="pointer-events-none absolute bottom-28 right-[0.5%] z-0 hidden h-auto w-36 -scale-x-100 xl:block 2xl:right-[3%] 2xl:w-44" />
       {LEAVES.map((l) => (
         <HomeArt key={l.img} name={l.img} size={l.size} className={`leaf-sway absolute z-0 hidden sm:block ${l.pos}`} style={{ animationDelay: l.delay }} />
       ))}
