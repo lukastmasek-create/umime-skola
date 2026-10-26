@@ -76,7 +76,7 @@ export function HeaderAccount({
         </Link>
         <Link
           href={`/${locale}/registrace`}
-          className="btn-bouncy hidden bg-[var(--brand-500)] px-4 py-1.5 text-sm font-bold text-white sm:inline-flex"
+          className="btn-bouncy inline-flex bg-[var(--brand-500)] px-3 py-1.5 text-sm font-bold text-white sm:px-4"
         >
           {registerLabel}
         </Link>

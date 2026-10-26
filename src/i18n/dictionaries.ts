@@ -30,6 +30,7 @@ export type Dictionary = {
     allLanguages: string;
     noCourses: string;
     noCoursesFiltered: string;
+    loadFailed: string;
     viewLevels: string;
   };
   languages: Record<LanguageCode, string>;
@@ -172,6 +173,7 @@ const cs: Dictionary = {
     noCourses: "V téhle sekci zatím nejsou žádné publikované kurzy.",
     noCoursesFiltered:
       "V téhle sekci zatím nejsou žádné publikované kurzy pro zvolený jazyk.",
+    loadFailed: "Kurzy se teď nepodařilo načíst. Zkus to prosím za chvíli znovu.",
     viewLevels: "Otevřít kurz →",
   },
   languages: { CJ: "Čeština", NJ: "Němčina", RS: "Ruština", AJ: "Angličtina" },
@@ -315,6 +317,7 @@ const en: Dictionary = {
     noCourses: "There are no published courses in this section yet.",
     noCoursesFiltered:
       "There are no published courses in this section for the selected language yet.",
+    loadFailed: "Courses couldn't be loaded right now. Try again in a moment.",
     viewLevels: "Open course →",
   },
   languages: { CJ: "Czech", NJ: "German", RS: "Russian", AJ: "English" },
@@ -458,6 +461,7 @@ const de: Dictionary = {
     noCourses: "In diesem Bereich gibt es noch keine veröffentlichten Kurse.",
     noCoursesFiltered:
       "In diesem Bereich gibt es noch keine veröffentlichten Kurse für die gewählte Sprache.",
+    loadFailed: "Die Kurse konnten gerade nicht geladen werden. Versuche es gleich noch einmal.",
     viewLevels: "Kurs öffnen →",
   },
   languages: { CJ: "Tschechisch", NJ: "Deutsch", RS: "Russisch", AJ: "Englisch" },
@@ -601,6 +605,7 @@ const ru: Dictionary = {
     noCourses: "В этом разделе пока нет опубликованных курсов.",
     noCoursesFiltered:
       "В этом разделе пока нет опубликованных курсов для выбранного языка.",
+    loadFailed: "Не удалось загрузить курсы. Попробуй ещё раз через минуту.",
     viewLevels: "Открыть курс →",
   },
   languages: { CJ: "Чешский", NJ: "Немецкий", RS: "Русский", AJ: "Английский" },

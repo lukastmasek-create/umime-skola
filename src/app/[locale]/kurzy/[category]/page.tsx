@@ -57,6 +57,7 @@ export default async function CategoryPage({
   };
 
   let courses: Course[] = [];
+  let loadFailed = false;
   try {
     courses = await prisma.course.findMany({
       where: {
@@ -76,9 +77,12 @@ export default async function CategoryPage({
         grade: true,
       },
     });
-  } catch {
-    // Databáze zatím není nastavená (např. lokální vývoj bez DATABASE_URL).
+  } catch (error) {
+    // Databáze není dostupná (chybí DATABASE_URL, síť, výpadek). Chybu zalogujeme
+    // a stránka řekne, že se nepodařilo načíst, ne že kurzy neexistují.
+    console.error("[kurzy] Načtení kurzů selhalo:", error);
     courses = [];
+    loadFailed = true;
   }
 
   // Seskupení: předmět -> kategorie (obor) -> kurzy.
@@ -157,8 +161,12 @@ export default async function CategoryPage({
       </div>
 
       {courses.length === 0 ? (
-        <div className="card p-10 text-center text-[var(--muted)]">
-          {selectedSubject || selectedGrade ? dict.category.noCoursesFiltered : dict.category.noCourses}
+        <div className="card p-10 text-center text-[var(--muted)]" role={loadFailed ? "alert" : undefined}>
+          {loadFailed
+            ? dict.category.loadFailed
+            : selectedSubject || selectedGrade
+              ? dict.category.noCoursesFiltered
+              : dict.category.noCourses}
         </div>
       ) : (
         <div className="flex flex-col gap-12">

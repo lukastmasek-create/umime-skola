@@ -174,7 +174,8 @@ export default async function LeaderboardPage({
         ];
       });
     }
-  } catch {
+  } catch (error) {
+    console.error("[zebricky] Načtení žebříčku selhalo:", error);
     failed = true;
   }
 
