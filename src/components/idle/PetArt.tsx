@@ -10,6 +10,12 @@ const LOOKS: Record<SpeciesId, Look> = {
   bunny: { skin: "#f5f2f7", belly: "#ffffff", accent: "#ffb3c7" },
   fox: { skin: "#ff8a3d", belly: "#fff1de", accent: "#3a2a22" },
   dragon: { skin: "#44c27a", belly: "#b8f0cd", accent: "#ffd24d" },
+  hamster: { skin: "#f0b878", belly: "#fff3e0", accent: "#ffb3a0" },
+  panda: { skin: "#fbfbfb", belly: "#ffffff", accent: "#2a2a35" },
+  penguin: { skin: "#34406b", belly: "#ffffff", accent: "#ffb020" },
+  frog: { skin: "#6fcf5a", belly: "#d6f5b8", accent: "#ff7a8f" },
+  unicorn: { skin: "#fff0fa", belly: "#ffffff", accent: "#c9a8ff" },
+  robot: { skin: "#b9c7d8", belly: "#e6edf5", accent: "#ff5a3c" },
 };
 
 export type PetMood = "happy" | "ok" | "sad" | "hungry";
@@ -102,6 +108,47 @@ export function PetArt({
         <polygon points="77,32 82,10 66,26" fill={look.accent} {...stroke} />
       </>
     ),
+    hamster: (
+      <>
+        <circle cx="40" cy="34" r="10" fill={look.skin} {...stroke} />
+        <circle cx="80" cy="34" r="10" fill={look.skin} {...stroke} />
+        <circle cx="40" cy="34" r="5" fill={look.accent} />
+        <circle cx="80" cy="34" r="5" fill={look.accent} />
+      </>
+    ),
+    panda: (
+      <>
+        <circle cx="40" cy="32" r="11" fill={look.accent} {...stroke} />
+        <circle cx="80" cy="32" r="11" fill={look.accent} {...stroke} />
+      </>
+    ),
+    penguin: <></>,
+    frog: (
+      <>
+        <circle cx="45" cy="30" r="10" fill={look.skin} {...stroke} />
+        <circle cx="75" cy="30" r="10" fill={look.skin} {...stroke} />
+        <circle cx="45" cy="30" r="5.6" fill="#fff" stroke={INK} strokeWidth="2" />
+        <circle cx="75" cy="30" r="5.6" fill="#fff" stroke={INK} strokeWidth="2" />
+        <circle cx="46" cy="31" r="2.6" fill={INK} />
+        <circle cx="74" cy="31" r="2.6" fill={INK} />
+      </>
+    ),
+    unicorn: (
+      <>
+        <polygon points="40,40 42,18 56,32" fill={look.skin} {...stroke} />
+        <polygon points="80,40 78,18 64,32" fill={look.skin} {...stroke} />
+        <polygon points="54,30 60,0 66,30" fill="#ffd24d" {...stroke} />
+        <path d="M56 22 L64 18 M56 14 L63 10" stroke="#ff9d3d" strokeWidth="1.6" strokeLinecap="round" />
+      </>
+    ),
+    robot: (
+      <>
+        <rect x="58" y="10" width="4" height="16" fill="#6a7385" stroke={INK} strokeWidth="2" />
+        <circle cx="60" cy="9" r="5" fill={look.accent} stroke={INK} strokeWidth="2.2" />
+        <rect x="30" y="44" width="8" height="16" rx="3" fill="#8f9bad" {...stroke} />
+        <rect x="82" y="44" width="8" height="16" rx="3" fill="#8f9bad" {...stroke} />
+      </>
+    ),
   }[species];
 
   const behind = {
@@ -121,6 +168,22 @@ export function PetArt({
         <polygon points="84,70 106,58 98,82" fill="#2fa066" {...stroke} />
       </>
     ),
+    hamster: <circle cx="90" cy="98" r="6" fill={look.skin} stroke={INK} strokeWidth="2.5" />,
+    panda: <circle cx="90" cy="98" r="7" fill={look.accent} stroke={INK} strokeWidth="2.5" />,
+    penguin: (
+      <>
+        <polygon points="32,86 12,96 34,104" fill={look.skin} {...stroke} />
+        <polygon points="88,86 108,96 86,104" fill={look.skin} {...stroke} />
+      </>
+    ),
+    frog: <path d="M88 100 Q100 98 98 90" fill="none" stroke={look.skin} strokeWidth="6" strokeLinecap="round" />,
+    unicorn: (
+      <>
+        <path d="M86 94 Q112 96 106 72" fill="none" stroke="#ff9ed8" strokeWidth="12" strokeLinecap="round" />
+        <path d="M104 78 Q106 70 108 66" fill="none" stroke="#c9a8ff" strokeWidth="8" strokeLinecap="round" />
+      </>
+    ),
+    robot: <path d="M88 96 L104 92 L108 74" fill="none" stroke="#6a7385" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />,
   }[species];
 
   return (
@@ -155,6 +218,25 @@ export function PetArt({
               <circle cx="69" cy="64" r="1.6" fill={INK} />
             </>
           )}
+          {species === "panda" && (
+            <>
+              <ellipse cx="47" cy="52" rx="8" ry="10" fill={look.accent} transform="rotate(-12 47 52)" />
+              <ellipse cx="73" cy="52" rx="8" ry="10" fill={look.accent} transform="rotate(12 73 52)" />
+            </>
+          )}
+          {species === "penguin" && (
+            <>
+              <path d="M34 54 Q60 20 86 54 Q74 74 60 74 Q46 74 34 54 Z" fill={look.belly} />
+              <polygon points="54,62 66,62 60,70" fill={look.accent} {...stroke} />
+            </>
+          )}
+          {species === "robot" && (
+            <>
+              <rect x="38" y="40" width="44" height="24" rx="8" fill="#bfe8ff" />
+              <rect x="48" y="70" width="24" height="5" rx="2" fill="#6a7385" />
+            </>
+          )}
+          {species === "hamster" && <circle cx="60" cy="66" r="2" fill={look.accent} />}
           {species === "cat" && (
             <path d="M32 58 L44 60 M32 64 L44 63 M88 58 L76 60 M88 64 L76 63" fill="none" stroke={INK} strokeWidth="1.6" strokeLinecap="round" />
           )}
@@ -207,6 +289,16 @@ export function PetArt({
               <circle cx="52" cy="26" r="2.2" fill="#e5484d" />
               <circle cx="60" cy="24" r="2.4" fill="#3b82f6" />
               <circle cx="68" cy="26" r="2.2" fill="#2fb344" />
+            </>
+          )}
+          {accessory === "halo" && (
+            <ellipse cx="60" cy="18" rx="16" ry="5" fill="none" stroke="#ffd24d" strokeWidth="4" />
+          )}
+          {accessory === "headphones" && (
+            <>
+              <path d="M34 52 Q34 20 60 20 Q86 20 86 52" fill="none" stroke="#16132b" strokeWidth="4" strokeLinecap="round" />
+              <rect x="29" y="46" width="10" height="16" rx="4" fill="#7c6cff" stroke={INK} strokeWidth="2.2" />
+              <rect x="81" y="46" width="10" height="16" rx="4" fill="#7c6cff" stroke={INK} strokeWidth="2.2" />
             </>
           )}
           {mood === "hungry" && <text x="86" y="30" fontSize="18">🍖</text>}

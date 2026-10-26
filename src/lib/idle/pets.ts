@@ -2,7 +2,7 @@
 // serveru (autoritativně) i v prohlížeči (jen pro plynulé zobrazení výdělku).
 // Čas se nikdy nebere ze "hodin hráče", vždy ho dodá volající.
 
-export type SpeciesId = "cat" | "dog" | "bunny" | "fox" | "dragon";
+export type SpeciesId = "cat" | "dog" | "bunny" | "fox" | "dragon" | "hamster" | "panda" | "penguin" | "frog" | "unicorn" | "robot";
 
 export const SPECIES: { id: SpeciesId; pointsCost: number }[] = [
   { id: "cat", pointsCost: 0 },
@@ -10,6 +10,12 @@ export const SPECIES: { id: SpeciesId; pointsCost: number }[] = [
   { id: "bunny", pointsCost: 0 },
   { id: "fox", pointsCost: 150 },
   { id: "dragon", pointsCost: 500 },
+  { id: "hamster", pointsCost: 100 },
+  { id: "panda", pointsCost: 200 },
+  { id: "penguin", pointsCost: 250 },
+  { id: "frog", pointsCost: 300 },
+  { id: "unicorn", pointsCost: 700 },
+  { id: "robot", pointsCost: 900 },
 ];
 
 export type UpgradeId = "bowl" | "toys" | "bed";

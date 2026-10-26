@@ -3,7 +3,7 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import { PetArt, type PetMood } from "@/components/idle/PetArt";
-import type { PetAction } from "@/lib/pets3d";
+import { PETS_WITH_3D, type PetAction } from "@/lib/pets3d";
 import type { SpeciesId } from "@/lib/idle/pets";
 
 // three.js se stáhne až pro hlavního mazlíčka, náhledy jinde zůstávají lehké.
@@ -27,10 +27,11 @@ export function PetView({
   action: { id: number; kind: PetAction } | null;
   label: string;
 }) {
+  const has3d = PETS_WITH_3D.has(species);
   const [state, setState] = useState<{ species: SpeciesId; status: "loading" | "ready" | "failed" }>({ species, status: "loading" });
   // Při změně druhu začíná načítání znovu.
   if (state.species !== species) setState({ species, status: "loading" });
-  if (state.status === "failed") {
+  if (!has3d || state.status === "failed") {
     return <PetArt species={species} stage={stage} mood={mood} maxed={maxed} size={230} accessory={accessory} />;
   }
   const ready = state.status === "ready";
