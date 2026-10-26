@@ -7,7 +7,7 @@ for s in "$@"; do
   $PY tools/banner-anim/run.py "$s" --frames 60 --samples 16 || exit 1
   case "$s" in
     galaxy|night-city) G=0.8 ;;
-    ocean|sunset) G=0.5 ;;
+    sunset) G=0.5 ;;
     *) G=0 ;;
   esac
   $PY tools/banner-anim/pack.py "$s" --glow "$G"

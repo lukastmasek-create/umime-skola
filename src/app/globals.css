@@ -561,6 +561,9 @@ select:not(:focus) {
   .banner-live[data-banner="night-city"] { background-image: url(/cosmetics/banners/anim/night-city.webp) !important; }
   .banner-live[data-banner="ocean"] { background-image: url(/cosmetics/banners/anim/ocean.webp) !important; }
   .banner-live[data-banner="forest"] { background-image: url(/cosmetics/banners/anim/forest.webp) !important; }
+  .banner-live[data-banner="snow"] { background-image: url(/cosmetics/banners/anim/snow.webp) !important; }
+  .banner-live[data-banner="sunset"] { background-image: url(/cosmetics/banners/anim/sunset.webp) !important; }
+  .banner-live[data-banner="candy"] { background-image: url(/cosmetics/banners/anim/candy.webp) !important; }
 }
 
 /* Animace ozdob profilu: pozadí se jemně hýbe a rámeček se točí kolem avataru. */
