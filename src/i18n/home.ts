@@ -2,6 +2,7 @@ import type { Locale } from "./config";
 
 export type HomeText = {
   menu: string;
+  more: string;
   closeMenu: string;
   learn: string;
   play: string;
@@ -22,6 +23,7 @@ export type HomeText = {
 };
 
 const cs: HomeText = {
+  more: "Více",
   menu: "Menu",
   closeMenu: "Zavřít menu",
   learn: "Učení",
@@ -52,6 +54,7 @@ const cs: HomeText = {
 };
 
 const en: HomeText = {
+  more: "More",
   menu: "Menu",
   closeMenu: "Close menu",
   learn: "Learn",
@@ -82,6 +85,7 @@ const en: HomeText = {
 };
 
 const de: HomeText = {
+  more: "Mehr",
   menu: "Menü",
   closeMenu: "Menü schließen",
   learn: "Lernen",
@@ -112,6 +116,7 @@ const de: HomeText = {
 };
 
 const ru: HomeText = {
+  more: "Ещё",
   menu: "Меню",
   closeMenu: "Закрыть меню",
   learn: "Обучение",

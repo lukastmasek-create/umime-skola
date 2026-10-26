@@ -50,6 +50,7 @@ export type ProfileText = {
   hintFounder: string;
   hintWinter: string;
   hintRoom: string;
+  hintAllRooms: string;
   hintShop: string;
   hintShopGeneric: string;
   hintOther: string;
@@ -110,6 +111,7 @@ const cs: ProfileText = {
   hintFounder: "Jen pro zakladatele webu",
   hintWinter: "Zimní událost",
   hintRoom: "Dokonči únikovku: {room}",
+  hintAllRooms: "Dokonči všechny únikovky.",
   hintShop: "Koupíš v obchodě za {n} bodů",
   hintShopGeneric: "Koupíš v obchodě",
   hintOther: "Speciální událost",
@@ -170,6 +172,7 @@ const en: ProfileText = {
   hintFounder: "Only for the founders of the site",
   hintWinter: "Winter event",
   hintRoom: "Finish the escape room: {room}",
+  hintAllRooms: "Finish all escape rooms.",
   hintShop: "Buy it in the shop for {n} points",
   hintShopGeneric: "Buy it in the shop",
   hintOther: "Special event",
@@ -230,6 +233,7 @@ const de: ProfileText = {
   hintFounder: "Nur für die Gründer der Seite",
   hintWinter: "Winter-Event",
   hintRoom: "Schließe das Escape-Spiel ab: {room}",
+  hintAllRooms: "Schließe alle Escape-Spiele ab.",
   hintShop: "Im Shop für {n} Punkte kaufen",
   hintShopGeneric: "Im Shop kaufen",
   hintOther: "Spezielles Event",
@@ -290,6 +294,7 @@ const ru: ProfileText = {
   hintFounder: "Только для основателей сайта",
   hintWinter: "Зимнее событие",
   hintRoom: "Пройди квест: {room}",
+  hintAllRooms: "Пройди все квесты.",
   hintShop: "Купи в магазине за {n} очков",
   hintShopGeneric: "Купи в магазине",
   hintOther: "Особое событие",

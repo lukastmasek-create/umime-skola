@@ -1,8 +1,16 @@
 "use client";
 
 import type { Hotspot } from "@/lib/escape/types";
+import labArt from "../../../public/escape/lab/lab.json";
 
 const INK = "#16132b";
+
+// Vyrenderovaná místnost (umime-art/scripts/lab.py). Výřezy přepisují jen ty části scény, které se
+// po vyřešení hádanky změní; souřadnice jsou v jednotkách SVG a jsou v lab.json. Kreslená SVG scéna
+// pod obrázky zůstává jako záloha, kdyby se obrázky nenačetly.
+const ART = "/escape/lab";
+type ArtPatch = { file: string; x: number; y: number; w: number; h: number };
+const ART_STATES = labArt.states as Record<string, ArtPatch[]>;
 
 function Periodic() {
   const cells = [];
@@ -47,6 +55,15 @@ export function LabScene({
   const doorSolved = solved.includes("door");
   const cabinetSolved = solved.includes("cabinet");
   const ventUsed = used.includes("vent");
+  // Poslední výřez vyhrává, proto je pořadí důležité (počítač a dveře před reaktorem).
+  const activeStates = [
+    cabinetSolved && "cabinet_open",
+    ventUsed && "vent_used",
+    computerSolved && "pc_on",
+    doorSolved && "door_open",
+    !doorSolved && danger >= 70 && "reactor_crit",
+    !doorSolved && danger >= 40 && danger < 70 && "reactor_warn",
+  ].filter((key): key is string => Boolean(key));
   const glow = 0.35 + danger / 160;
   const pulse = Math.max(0.35, 1.6 - danger / 70);
 
@@ -129,6 +146,21 @@ export function LabScene({
       <circle cx="360" cy="338" r="4" fill={INK} />
       <line x1="350" y1="324" x2="350" y2="310" stroke={INK} strokeWidth="3" />
       <circle cx="350" cy="308" r="5" fill="#ff5a3c" stroke={INK} strokeWidth="2" />
+
+      <image href={`${ART}/bg.webp`} x="0" y="0" width="800" height="450" preserveAspectRatio="none" />
+      {activeStates.flatMap((key) =>
+        (ART_STATES[key] ?? []).map((patch) => (
+          <image
+            key={patch.file}
+            href={`${ART}/${patch.file}`}
+            x={patch.x}
+            y={patch.y}
+            width={patch.w}
+            height={patch.h}
+            preserveAspectRatio="none"
+          />
+        )),
+      )}
 
       {danger > 40 && <rect x="0" y="0" width="800" height="450" fill="#ff2d2d" opacity={(danger - 40) / 400} />}
 

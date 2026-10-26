@@ -6,7 +6,7 @@
   --background: #f6f4ee;
   --foreground: #16132b;
   --muted: #4f4a66;
-  --faint: #6b6584;
+  --faint: #5f5978;
 
   --brand-50: #e6eaff;
   --brand-100: #cdd6ff;
@@ -24,6 +24,10 @@
   --shadow-ink: #16132b;
   --danger: #d6291f;
   --font-scale: 1;
+  --field-border: #8a849f;
+  --radius-card: 18px;
+  --radius-btn: 12px;
+  --space-section: 5rem;
 }
 
 html {
@@ -44,7 +48,8 @@ html[data-font="classic"] {
 
 /* Tmavý režim: ruční přepnutí (data-theme) i podle systému, když uživatel
    nic explicitně nevybral. Barvy textu se mění spolu s ním. */
-:root[data-theme="dark"] {
+:root[data-theme="dark"],
+.space-page {
   color-scheme: dark;
   --background: #12102a;
   --foreground: #f6f1e4;
@@ -65,6 +70,7 @@ html[data-font="classic"] {
   --edge: #6a63ad;
   --shadow-ink: #05040f;
   --danger: #ff8080;
+  --field-border: #7d76c0;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -89,6 +95,7 @@ html[data-font="classic"] {
     --edge: #6a63ad;
     --shadow-ink: #05040f;
     --danger: #ff8080;
+    --field-border: #7d76c0;
   }
 }
 
@@ -119,11 +126,35 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* Viditelný fokus pro ovládání klávesnicí */
+:focus-visible {
+  outline: 3px solid var(--brand-500);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
 input,
 textarea,
 select {
   background: var(--surface);
   color: var(--foreground);
+}
+
+/* Okraje polí musí být vidět (kontrast aspoň 3:1); při fokusu je přebírá Tailwind. */
+input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], :focus),
+textarea:not(:focus),
+select:not(:focus) {
+  border-color: var(--field-border);
 }
 
 ::selection {
@@ -169,7 +200,7 @@ select {
 .card {
   background: var(--surface);
   border: 2px solid var(--edge);
-  border-radius: 18px;
+  border-radius: var(--radius-card);
   box-shadow: 0 4px 0 var(--shadow-ink);
   transition: transform 0.14s ease, box-shadow 0.14s ease;
 }
@@ -197,7 +228,7 @@ select {
 
 .btn-bouncy {
   border: 2px solid var(--edge);
-  border-radius: 12px;
+  border-radius: var(--radius-btn);
   box-shadow: 0 4px 0 var(--shadow-ink);
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
@@ -217,6 +248,25 @@ select {
   box-shadow: 0 4px 0 var(--shadow-ink);
 }
 
+.btn-primary {
+  background: var(--brand-500);
+  color: #fff;
+}
+.btn-secondary {
+  background: var(--surface);
+  color: var(--foreground);
+}
+.btn-lg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
 .level-card {
   transition: transform 0.14s ease, box-shadow 0.14s ease;
 }
@@ -234,24 +284,9 @@ select {
 
 /* --- Úvodní stránka: každá část má jiný svět (vesmír, příroda, technika, hory), vždy tmavá --- */
 
-.space-page {
-  color-scheme: dark;
+/* Úvodní stránka je vždy tmavá; tokeny sdílí s tmavým motivem (nahoře). */
+:root .space-page {
   --background: #0c0a24;
-  --foreground: #f6f1e4;
-  --muted: #cfc8e4;
-  --faint: #9d96bf;
-  --brand-50: #272a63;
-  --brand-100: #353b86;
-  --brand-500: #5a6cff;
-  --brand-600: #8d99ff;
-  --brand-700: #b8c1ff;
-  --accent-yellow: #ffd24d;
-  --accent-green: #3ddc97;
-  --surface: #1c1936;
-  --surface-muted: #26224a;
-  --border-soft: #35305f;
-  --edge: #6a63ad;
-  --shadow-ink: #05040f;
   position: relative;
   overflow: hidden;
   color: var(--foreground);
@@ -497,27 +532,46 @@ select {
   97.92% { transform: translate(109.42vw, 57.5px) rotate(87.0deg); }
   100.00% { transform: translate(112.00vw, 49.3px) rotate(65.9deg); }
 }
-@keyframes rocket-flame {
-  0% { background-position: -72px 0; }
-  34% { background-position: -144px 0; }
-  67% { background-position: -216px 0; }
-}
 .rocket-path {
   animation: rocket-path 30s linear infinite;
   will-change: transform;
 }
+/* Animovaná 3D raketa z Blenderu (plamen a jiskry jsou přímo v obrázku). */
 .rocket-flame {
-  width: 72px;
-  height: 72px;
-  background: url(/game-sprites/space/lod.webp) -72px 0 / 504px auto no-repeat;
-  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45));
-  animation: rocket-flame 0.3s steps(1) infinite;
+  width: 60px;
+  height: 132px;
+  background: url(/home/raketa-let.webp) center / contain no-repeat;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.45));
+}
+.planet-anim {
+  background-image: url(/home/planeta-tocici.webp);
+}
+.stars-video {
+  mix-blend-mode: screen;
 }
 @media (prefers-reduced-motion: reduce) {
-  .rocket-path,
   .rocket-flame {
+    background-image: url(/home/raketa.webp);
+  }
+  .planet-anim {
+    background-image: url(/home/planeta.webp) !important;
+  }
+  .stars-video {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rocket-path {
     animation: none;
   }
+}
+
+/* Velká pozadí profilu: smyčka z Blenderu místo CSS pohybu (animovaný WebP, nahrazuje statický obrázek). */
+@media (prefers-reduced-motion: no-preference) {
+  .banner-live[data-banner="galaxy"] { background-image: url(/cosmetics/banners/anim/galaxy.webp) !important; }
+  .banner-live[data-banner="night-city"] { background-image: url(/cosmetics/banners/anim/night-city.webp) !important; }
+  .banner-live[data-banner="ocean"] { background-image: url(/cosmetics/banners/anim/ocean.webp) !important; }
+  .banner-live[data-banner="forest"] { background-image: url(/cosmetics/banners/anim/forest.webp) !important; }
 }
 
 /* Animace ozdob profilu: pozadí se jemně hýbe a rámeček se točí kolem avataru. */
@@ -648,5 +702,196 @@ select {
   .banner-anim::after,
   .frame-spin {
     animation: none !important;
+  }
+}
+
+/* --- Úvodní stránka: moderní, přívětivé animace --- */
+
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.98);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+@keyframes hero-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(36px) rotate(1.5deg) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes shimmer-text {
+  to {
+    background-position: 200% center;
+  }
+}
+@keyframes aurora-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(6%, -8%, 0) scale(1.15);
+  }
+  66% {
+    transform: translate3d(-5%, 6%, 0) scale(0.95);
+  }
+}
+@keyframes cta-pulse {
+  0%,
+  100% {
+    box-shadow: 0 4px 0 var(--shadow-ink), 0 0 0 0 rgba(124, 108, 255, 0.55);
+  }
+  60% {
+    box-shadow: 0 4px 0 var(--shadow-ink), 0 0 0 14px rgba(124, 108, 255, 0);
+  }
+}
+@keyframes btn-shine {
+  from {
+    transform: translateX(-130%) skewX(-20deg);
+  }
+  to {
+    transform: translateX(260%) skewX(-20deg);
+  }
+}
+@keyframes icon-wiggle {
+  0%,
+  100% {
+    transform: rotate(0) scale(1);
+  }
+  25% {
+    transform: rotate(-9deg) scale(1.12);
+  }
+  60% {
+    transform: rotate(7deg) scale(1.12);
+  }
+}
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(44px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes line-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.hero-in {
+  animation: hero-in 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: var(--d, 0s);
+}
+.hero-in-right {
+  animation: hero-in-right 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.35s both;
+}
+
+.space-page .gradient-text {
+  background: linear-gradient(90deg, #ffd24d, #ff8fd0, #8fd0ff, #ffd24d);
+  background-size: 200% auto;
+  animation: shimmer-text 6s linear infinite;
+}
+
+.hero-aurora {
+  position: absolute;
+  inset: 0;
+  z-index: -10;
+  overflow: hidden;
+  pointer-events: none;
+}
+.hero-aurora span {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(70px);
+  opacity: 0.45;
+  animation: aurora-drift 16s ease-in-out infinite;
+}
+
+/* Hlavní tlačítko: jemný puls a lesk při najetí */
+.btn-cta {
+  position: relative;
+  overflow: hidden;
+  animation: cta-pulse 2.8s ease-out infinite;
+}
+.btn-cta::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: translateX(-130%) skewX(-20deg);
+  pointer-events: none;
+}
+.btn-cta:hover::after {
+  animation: btn-shine 0.8s ease;
+}
+
+.space-page .btn-bouncy,
+.space-page .card {
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease;
+}
+.space-page .card-hover:hover {
+  transform: translateY(-6px) scale(1.02);
+}
+.card-hover:hover .home-icon {
+  animation: icon-wiggle 0.6s ease;
+}
+
+.steps-line {
+  transform-origin: left;
+}
+
+/* Objevení při scrollu: jen tam, kde to prohlížeč umí, jinak je obsah rovnou vidět */
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: reveal-up linear both;
+    animation-timeline: view();
+    animation-range: entry 5% entry 45%;
+  }
+  .steps-line {
+    animation: line-draw linear both;
+    animation-timeline: view();
+    animation-range: entry 10% cover 40%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-in,
+  .hero-in-right,
+  .reveal,
+  .steps-line,
+  .btn-cta,
+  .hero-aurora span,
+  .space-page .gradient-text,
+  .card-hover:hover .home-icon {
+    animation: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .btn-bouncy,
+  .level-card {
+    transition: none;
+  }
+  .card-hover:hover,
+  .btn-bouncy:hover,
+  .level-card.is-unlocked:hover {
+    transform: none;
   }
 }

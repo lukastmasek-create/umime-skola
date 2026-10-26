@@ -33,11 +33,13 @@ export default async function CourseTestPage({
   const t = getTestText(locale as Locale);
 
   let courseTitle: string | null = null;
+  let courseId: string | undefined;
   let pool: TestQuestion[] = [];
   try {
     const course = await prisma.course.findFirst({
       where: { slug: courseSlug, category: category.value, published: true },
       select: {
+        id: true,
         title: true,
         questions: {
           where: { difficulty },
@@ -53,6 +55,7 @@ export default async function CourseTestPage({
       },
     });
     courseTitle = course?.title ?? null;
+    courseId = course?.id;
     pool = (course?.questions ?? []).filter((q) => {
       const gaps = q.prompt.split("___").length - 1;
       return q.answers.length > 0
@@ -69,6 +72,8 @@ export default async function CourseTestPage({
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <TestRunner
+        locale={locale as Locale}
+        courseId={courseId}
         title={`${courseTitle} · ${t.difficulties[difficulty - 1]}`}
         t={t}
         questions={questions}
