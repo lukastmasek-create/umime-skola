@@ -90,7 +90,7 @@ export class BreakoutEngine extends ArcadeEngine {
   private launch() {
     if (this.launched) return;
     this.launched = true;
-    const sp = 250 * this.pace();
+    const sp = Math.max(190, 300 * this.pace());
     const a = (-Math.PI / 2) + (Math.random() - 0.5) * 0.7;
     this.vx = Math.cos(a) * sp;
     this.vy = Math.sin(a) * sp;
