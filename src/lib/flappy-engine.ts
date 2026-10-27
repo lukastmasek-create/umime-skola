@@ -5,7 +5,7 @@ import { Sprites } from "./sprites";
 const BIRD_X = 150;
 const BIRD_R = 13;
 const WALL_W = 70;
-const GAP_BASE = 68;
+const GAP_BASE = 74;
 const GAP_CENTERS = [56, 150, 244, 338];
 const GRAVITY = 760;
 const FLAP = -265;
