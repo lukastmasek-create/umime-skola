@@ -1,7 +1,7 @@
-import { buildRoom } from "./kit";
+import { buildRoom, type RoomKit } from "./kit";
 
 // Expediční stan (zeměpis). Kód ke dveřím: 4543. Texty hádanek jsou zatím jen česky.
-export const EXPEDITION_ROOM = buildRoom({
+export const EXPEDITION_KIT: RoomKit = {
   id: "expedition",
   theme: { wall: "#e8d9b5", floor: "#a8864f", accent: "#d9a54a", title: "Expediční stan" },
   intro:
@@ -79,4 +79,6 @@ export const EXPEDITION_ROOM = buildRoom({
     hints: ["Otevři inventář a přečti si všechny čtyři poznámky.", "Světové strany jsou 4, oceánů 5 a sousedů ČR také 4.", "Česká vlajka má tři barvy. Kód je 4543."],
     rewardMessage: "Zámek cvakl a plachta se otevřela!",
   },
-});
+};
+
+export const EXPEDITION_ROOM = buildRoom(EXPEDITION_KIT);

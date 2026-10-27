@@ -1,7 +1,7 @@
-import { buildRoom } from "./kit";
+import { buildRoom, type RoomKit } from "./kit";
 
 // Hvězdárna (vesmír a přírodověda). Kód ke dveřím: 8145. Texty hádanek jsou zatím jen česky.
-export const OBSERVATORY_ROOM = buildRoom({
+export const OBSERVATORY_KIT: RoomKit = {
   id: "observatory",
   theme: { wall: "#27305e", floor: "#434a7d", accent: "#ffd24d", title: "Hvězdárna" },
   intro:
@@ -79,4 +79,6 @@ export const OBSERVATORY_ROOM = buildRoom({
     hints: ["Otevři inventář a přečti si všechny čtyři poznámky.", "Planet je osm a Země má jeden Měsíc.", "Ročních období jsou čtyři a hvězda má pět cípů. Kód je 8145."],
     rewardMessage: "Zámek cvakl a kupole se otevřela!",
   },
-});
+};
+
+export const OBSERVATORY_ROOM = buildRoom(OBSERVATORY_KIT);

@@ -1,7 +1,7 @@
-import { buildRoom } from "./kit";
+import { buildRoom, type RoomKit } from "./kit";
 
 // Tajná knihovna (čeština a literatura). Kód ke dveřím: 3745. Texty hádanek jsou zatím jen česky.
-export const LIBRARY_ROOM = buildRoom({
+export const LIBRARY_KIT: RoomKit = {
   id: "library",
   theme: { wall: "#f3e3c8", floor: "#9a7b5a", accent: "#7a4b2a", title: "Tajná knihovna" },
   intro:
@@ -79,4 +79,6 @@ export const LIBRARY_ROOM = buildRoom({
     hints: ["Otevři inventář a přečti si všechny čtyři poznámky.", "Kni-hov-na má tři slabiky, pádů je sedm.", "V abecedě jsou 4 samohlásky (a, e, e, a), báseň má 5 písmen. Kód je 3745."],
     rewardMessage: "Zámek cvakl a dveře se otevřely!",
   },
-});
+};
+
+export const LIBRARY_ROOM = buildRoom(LIBRARY_KIT);

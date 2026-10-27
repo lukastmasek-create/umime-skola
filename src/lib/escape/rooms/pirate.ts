@@ -1,7 +1,7 @@
-import { buildRoom } from "./kit";
+import { buildRoom, type RoomKit } from "./kit";
 
 // Pirátská loď (angličtina). Kód ke dveřím: 6783. Texty hádanek jsou česky s anglickými slovy.
-export const PIRATE_ROOM = buildRoom({
+export const PIRATE_KIT: RoomKit = {
   id: "pirate",
   theme: { wall: "#b9dcf0", floor: "#8a5a35", accent: "#d98e4a", title: "Pirate ship" },
   intro:
@@ -84,4 +84,6 @@ export const PIRATE_ROOM = buildRoom({
     hints: ["Otevři inventář a přečti si všechny čtyři poznámky.", "PIRATE má šest písmen, týden sedm dní a chobotnice osm chapadel.", "Trojúhelník má tři strany. Kód je 6783."],
     rewardMessage: "Zámek cvakl a dveře se otevřely!",
   },
-});
+};
+
+export const PIRATE_ROOM = buildRoom(PIRATE_KIT);

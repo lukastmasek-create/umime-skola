@@ -6,7 +6,7 @@ import { ART_ROOMS } from "@/lib/escape/art";
 import { LabScene } from "./LabScene";
 import { RoomScene } from "./RoomScene";
 import { PuzzleModal } from "./PuzzleModal";
-import { ROOMS } from "@/lib/escape/rewards";
+import { getRoom } from "@/lib/escape/rewards";
 import { computeStars, DANGER_PER_MISTAKE, DANGER_PER_MISTAKE_RELAXED } from "@/lib/escape/score";
 import type { Hotspot, Puzzle } from "@/lib/escape/types";
 import { getEscapeText } from "@/i18n/escape";
@@ -33,7 +33,7 @@ const mmss = (total: number) => {
 };
 
 export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string }) {
-  const room = ROOMS[roomId];
+  const room = getRoom(roomId, locale)!;
   const ui = getEscapeText(locale).ui;
   const listHref = `/${locale}/unikovky`;
 

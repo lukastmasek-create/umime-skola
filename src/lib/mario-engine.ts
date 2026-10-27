@@ -62,6 +62,7 @@ export class MarioEngine {
     { x: 520, y: 50, s: 1.2 },
   ];
   private timeLeft = QUESTION_TIME;
+  private maxTimeLeft = QUESTION_TIME;
   private countdown = 0;
   private prompt = "";
   private config: EngineConfig = { fireCooldown: 0.35, alienSpeedFactor: 1 };
@@ -109,6 +110,17 @@ export class MarioEngine {
     this.texts.push({ x, y, text, color, life: 1.1 });
   }
 
+  // Nápověda 50:50: špatné želvy zmizí.
+  setHint(eliminated: number[]) {
+    for (const i of eliminated) {
+      const t = this.turtles[i];
+      if (!t || !t.alive || t.correct) continue;
+      t.alive = false;
+      this.burst(t.cx, GROUND - TURTLE_H / 2, t.shell);
+    }
+    sfx("pickup");
+  }
+
   loadQuestion(options: string[], correctIndex: number, config: EngineConfig, prompt = "") {
     this.config = config;
     this.prompt = prompt;
@@ -121,7 +133,8 @@ export class MarioEngine {
     this.knock = 0;
     this.squash = 0;
     this.jumpBuffer = 0;
-    this.timeLeft = QUESTION_TIME;
+    this.maxTimeLeft = QUESTION_TIME * (config.timeFactor ?? 1);
+    this.timeLeft = this.maxTimeLeft;
     this.banner = config.boss ? 2.2 : 0;
     if (config.boss && options.length > 0) sfx("boss");
     const n = options.length;
@@ -665,7 +678,7 @@ export class MarioEngine {
       ctx.restore();
     }
 
-    const ratio = Math.max(0, this.timeLeft / QUESTION_TIME);
+    const ratio = Math.max(0, this.timeLeft / this.maxTimeLeft);
     ctx.fillStyle = "rgba(0,0,0,0.25)";
     ctx.fillRect(14, 12, 160, 10);
     ctx.fillStyle = ratio > 0.4 ? "#2fb344" : ratio > 0.2 ? "#f5a524" : "#e5484d";

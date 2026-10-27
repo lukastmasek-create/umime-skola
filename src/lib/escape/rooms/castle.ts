@@ -1,7 +1,7 @@
-import { buildRoom } from "./kit";
+import { buildRoom, type RoomKit } from "./kit";
 
 // Hrad na kopci (dějepis). Kód ke dveřím: 5472. Texty hádanek jsou zatím jen česky.
-export const CASTLE_ROOM = buildRoom({
+export const CASTLE_KIT: RoomKit = {
   id: "castle",
   theme: { wall: "#cfc7b8", floor: "#8a8579", accent: "#b3402e", title: "Hrad na kopci" },
   intro:
@@ -79,4 +79,6 @@ export const CASTLE_ROOM = buildRoom({
     hints: ["Otevři inventář a přečti si všechny čtyři poznámky.", "Století má 100 let, 100 děleno 20 je 5. Věž má 4 rohy.", "VII je 7 a mezi lety 1000 a 1200 uplynula dvě století. Kód je 5472."],
     rewardMessage: "Zámek cvakl a brána se otevřela!",
   },
-});
+};
+
+export const CASTLE_ROOM = buildRoom(CASTLE_KIT);
