@@ -32,10 +32,10 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Statické soubory z public/ (rewards/, brand/, avatars-3d/, draco/, city/, pets/, cosmetics/, game-sprites/, game-models/, home/, escape/, base/, farm/), ikony a manifest ze src/app
+  // Statické soubory z public/ (rewards/, brand/, avatars-3d/, draco/, city/, pets/, cosmetics/, game-sprites/, game-models/, home/, escape/, base/, farm/, room/), ikony a manifest ze src/app
   // a náhled odkazu se na jazykovou verzi nepřesměrovávají. Náhled leží v [locale] a Next ho pro
   // všechny jazyky servíruje pod zástupným segmentem „-“ (/-/opengraph-image.png).
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|rewards/|brand/|avatars-3d/|draco/|city/|pets/|cosmetics/|game-sprites/|game-models/|home/|escape/|base/|farm/|icon.svg|apple-icon.png|manifest.webmanifest|-/).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|rewards/|brand/|avatars-3d/|draco/|city/|pets/|cosmetics/|game-sprites/|game-models/|home/|escape/|base/|farm/|room/|icon.svg|apple-icon.png|manifest.webmanifest|-/).*)",
   ],
 };
