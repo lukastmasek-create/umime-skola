@@ -180,6 +180,8 @@ export function NatureDecor() {
       <div aria-hidden className="ladybug-walk pointer-events-none absolute z-0 hidden sm:block">
         <HomeArt name="beruska" size={34} />
       </div>
+      <span aria-hidden className="peek peek-a pointer-events-none absolute bottom-0 z-0 select-none">🦔</span>
+      <span aria-hidden className="peek peek-b pointer-events-none absolute bottom-0 z-0 select-none">🐿️</span>
       {FIREFLIES.map((f, i) => (
         <span
           key={i}

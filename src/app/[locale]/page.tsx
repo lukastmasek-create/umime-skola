@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CATEGORIES, SUBJECTS } from "@/lib/taxonomy";
 import { HomeProgress } from "@/components/HomeProgress";
 import { ArcadeDemo } from "@/components/ArcadeDemo";
+import { NatureSky } from "@/components/NatureSky";
 import { ALIEN_ROW, Circuit, HomeArt, Mountains, NatureDecor, Nebula, Planet, Rocket, SpriteFrame, Wave } from "@/components/SpaceDecor";
 import { getHomeText } from "@/i18n/home";
 import { getSubjectText } from "@/i18n/subjects";
@@ -11,6 +12,18 @@ import { notFound } from "next/navigation";
 
 const TILE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
 const GALAXY_ICONS = ["sekce-zakladni", "sekce-stredni", "sekce-prijimacky", "sekce-maturita"];
+
+const SUBJECT_SYMBOLS: Record<string, string> = {
+  cestina: "ě š ř",
+  literatura: "📖",
+  anglictina: "Hi!",
+  nemcina: "ä ö ü ß",
+  rustina: "Я Ж Ш",
+  matematika: "+ × π",
+  dejepis: "⌛ 1918",
+  zemepis: "🌍",
+  prirodopis: "🌿 🐾",
+};
 
 export default async function Home({
   params,
@@ -104,6 +117,7 @@ export default async function Home({
       <section className="zone zone-nature">
         <Wave fill="#0c0a24" />
         <NatureDecor />
+        <NatureSky />
         <div className="relative z-10 mx-auto max-w-6xl px-4 pb-20 pt-24 sm:px-6">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -124,7 +138,8 @@ export default async function Home({
               <Link
                 key={subject.slug}
                 href={`/${locale}/kurzy/zakladni?predmet=${subject.slug}`}
-                className="card card-hover flex items-center gap-3 p-3 text-[#1b1830] last:col-span-2 sm:gap-4 sm:p-4 sm:last:col-span-1"
+                className="card card-hover subject-card flex items-center gap-3 p-3 text-[#1b1830] last:col-span-2 sm:gap-4 sm:p-4 sm:last:col-span-1"
+                data-sym={SUBJECT_SYMBOLS[subject.slug] ?? "✦"}
                 style={{
                   background: subject.color,
                   borderColor: "#16132b",

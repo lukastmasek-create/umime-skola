@@ -577,6 +577,119 @@ select {
   }
 }
 
+/* Příroda: karty předmětů (naklonění, odskok, symboly), slunce/měsíc, zvířátka */
+.zone-nature .subject-card {
+  position: relative;
+  --tilt: -1.4deg;
+  transition: transform 0.2s cubic-bezier(0.3, 1.6, 0.5, 1), box-shadow 0.2s;
+}
+.zone-nature .subject-card:nth-child(even) {
+  --tilt: 1.4deg;
+}
+.zone-nature .subject-card:hover {
+  transform: translateY(-5px) rotate(var(--tilt)) scale(1.025);
+}
+.zone-nature .subject-card:active {
+  transform: translateY(1px) scale(0.965);
+}
+.zone-nature .subject-card::before {
+  content: attr(data-sym);
+  position: absolute;
+  right: 14px;
+  top: 6px;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  color: rgba(22, 19, 43, 0.55);
+  opacity: 0;
+  pointer-events: none;
+}
+.zone-nature .subject-card:hover::before {
+  animation: card-symbols 1.4s ease-out infinite;
+}
+@keyframes card-symbols {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-26px);
+    opacity: 0;
+  }
+}
+@keyframes sky-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(8px);
+  }
+}
+.sky-body {
+  width: 54px;
+  height: 54px;
+  border-radius: 9999px;
+  animation: sky-bob 9s ease-in-out infinite;
+}
+.sky-sun {
+  background: radial-gradient(circle at 40% 40%, #fff7b0, #ffd24d 60%, #ffb020);
+  box-shadow: 0 0 32px 12px rgba(255, 215, 90, 0.35);
+}
+.sky-moon {
+  background: transparent;
+  box-shadow: inset -14px -6px 0 0 #f4f1d8, 0 0 30px 6px rgba(244, 241, 216, 0.25);
+}
+/* Světlušky svítí jen večer a v noci. */
+.zone-nature:not([data-time="night"]) .firefly {
+  display: none;
+}
+@keyframes peek {
+  0%,
+  70%,
+  100% {
+    transform: translateY(110%);
+  }
+  76%,
+  92% {
+    transform: translateY(8%);
+  }
+  84% {
+    transform: translateY(8%) rotate(-8deg);
+  }
+}
+.peek {
+  font-size: 40px;
+  line-height: 1;
+  animation: peek 26s ease-in-out infinite;
+}
+.peek-a {
+  left: 14%;
+}
+.peek-b {
+  left: 71%;
+  animation-delay: -13s;
+}
+@media (max-width: 639px) {
+  .peek {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .zone-nature .subject-card:hover,
+  .zone-nature .subject-card:hover::before,
+  .sky-body {
+    animation: none;
+    transform: none;
+  }
+  .peek {
+    display: none;
+  }
+}
+
 .space-page .gradient-hero {
   background: transparent;
 }
