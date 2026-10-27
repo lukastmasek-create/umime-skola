@@ -375,41 +375,6 @@ select:not(:focus) {
     linear-gradient(180deg, #170e33 0%, #35194f 45%, #7a3560 78%, #e8794f 100%);
 }
 
-/* Sněžení nad horami */
-.snowfall {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background-image:
-    radial-gradient(3px 3px at 30px 20px, #fff, transparent),
-    radial-gradient(2px 2px at 90px 120px, #fff, transparent),
-    radial-gradient(4px 4px at 170px 60px, rgba(255, 255, 255, 0.9), transparent),
-    radial-gradient(2px 2px at 240px 180px, #fff, transparent),
-    radial-gradient(3px 3px at 310px 100px, rgba(255, 255, 255, 0.85), transparent);
-  background-size: 340px 220px;
-  animation: snow-fall 9s linear infinite;
-}
-.snowfall::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(2px 2px at 60px 70px, #fff, transparent),
-    radial-gradient(3px 3px at 200px 140px, #fff, transparent),
-    radial-gradient(2px 2px at 280px 30px, rgba(255, 255, 255, 0.8), transparent);
-  background-size: 290px 190px;
-  animation: snow-fall 6s linear infinite;
-}
-@keyframes snow-fall {
-  from {
-    background-position: 0 -220px;
-  }
-  to {
-    background-position: 40px 0;
-  }
-}
-
 @keyframes space-twinkle {
   from {
     opacity: 0.25;
@@ -468,9 +433,7 @@ select:not(:focus) {
   .leaf-sway,
   .tech-blink,
   .zone-space::after,
-  .zone-nature::before,
-  .snowfall,
-  .snowfall::after {
+  .zone-nature::before {
     animation: none;
   }
 }
