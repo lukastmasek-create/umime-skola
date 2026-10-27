@@ -1193,3 +1193,22 @@ select:not(:focus) {
     transform: none;
   }
 }
+
+/* Farma: zralá plodina jemně poskakuje */
+@keyframes farm-ripe {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-3px) scale(1.04);
+  }
+}
+.farm-ripe {
+  animation: farm-ripe 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .farm-ripe {
+    animation: none;
+  }
+}
