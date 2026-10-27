@@ -208,3 +208,37 @@ export function toGaps(questions: GameQuestion[], count: number, maxAnswer: numb
 export function normalizeAnswer(s: string): string {
   return stripDiacritics(s).toLowerCase().replace(/[.,;:!?'"„“]/g, "").replace(/\s+/g, " ").trim();
 }
+
+export type Shuffled = { id?: string; prompt: string; options: string[]; correct: number; explanation: string };
+
+// Otázka s náhodně zamíchanými možnostmi (správná odpověď nezůstává na stejném místě).
+export function shuffleQuestion(q: GameQuestion): Shuffled {
+  const order = shuffle([0, 1, 2, 3]);
+  return {
+    id: q.id,
+    prompt: q.prompt,
+    options: order.map((i) => q.options[i]),
+    correct: order.indexOf(q.correctIndex),
+    explanation: q.explanation,
+  };
+}
+
+export type Scramble = { id?: string; clue: string; word: string; letters: string[]; explanation: string };
+
+// Přesmyčky: jednoslovné odpovědi o 4 až 10 písmenech, písmena zamíchaná tak, aby slovo nevzniklo samo.
+export function toScrambles(questions: GameQuestion[], count: number): Scramble[] {
+  const seen = new Set<string>();
+  const out: Scramble[] = [];
+  for (const q of shuffle(questions)) {
+    const raw = answerOf(q);
+    if (!/^\p{L}{4,10}$/u.test(raw)) continue;
+    const word = raw.toLocaleUpperCase("cs");
+    if (seen.has(word) || new Set(word).size < 3) continue;
+    seen.add(word);
+    let letters = shuffle([...word]);
+    for (let tries = 0; tries < 12 && letters.join("") === word; tries++) letters = shuffle([...word]);
+    out.push({ id: q.id, clue: q.prompt, word, letters, explanation: q.explanation });
+    if (out.length >= count) break;
+  }
+  return out;
+}

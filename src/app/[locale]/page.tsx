@@ -3,6 +3,7 @@ import { CATEGORIES, SUBJECTS } from "@/lib/taxonomy";
 import { HomeProgress } from "@/components/HomeProgress";
 import { DailyChallenges } from "@/components/DailyChallenges";
 import { ArcadeDemo } from "@/components/ArcadeDemo";
+import { NatureSky } from "@/components/NatureSky";
 import { ALIEN_ROW, Circuit, HomeArt, NatureDecor, Nebula, Planet, Rocket, SpriteFrame, TechBus, Wave } from "@/components/SpaceDecor";
 import { CardIcon3D, GearHolo3D, TechBackdrop, type IconKind } from "@/components/TechScenes";
 import { Liana, MountainScene } from "@/components/HomeAnim";
@@ -14,6 +15,18 @@ import { notFound } from "next/navigation";
 
 const TILE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
 const GALAXY_ICONS = ["sekce-zakladni", "sekce-stredni", "sekce-prijimacky", "sekce-maturita"];
+
+const SUBJECT_SYMBOLS: Record<string, string> = {
+  cestina: "ě š ř",
+  literatura: "📖",
+  anglictina: "Hi!",
+  nemcina: "ä ö ü ß",
+  rustina: "Я Ж Ш",
+  matematika: "+ × π",
+  dejepis: "⌛ 1918",
+  zemepis: "🌍",
+  prirodopis: "🌿 🐾",
+};
 
 export default async function Home({
   params,
@@ -109,6 +122,7 @@ export default async function Home({
       <section className="zone zone-nature">
         <Wave fill="#0c0a24" />
         <NatureDecor />
+        <NatureSky />
         <div className="relative z-10 mx-auto max-w-6xl px-4 pb-20 pt-24 sm:px-6">
           <div className="reveal mb-8 flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -132,7 +146,8 @@ export default async function Home({
               <Link
                 key={subject.slug}
                 href={`/${locale}/kurzy/zakladni?predmet=${subject.slug}`}
-                className="reveal card card-hover group relative flex items-center gap-3 p-3 text-[#1b1830] last:col-span-2 sm:gap-4 sm:p-4 sm:last:col-span-1"
+                className="reveal card card-hover subject-card group relative flex items-center gap-3 p-3 text-[#1b1830] last:col-span-2 sm:gap-4 sm:p-4 sm:last:col-span-1"
+                data-sym={SUBJECT_SYMBOLS[subject.slug] ?? "✦"}
                 style={{
                   background: subject.color,
                   borderColor: "#16132b",
@@ -235,7 +250,7 @@ export default async function Home({
       {/* 5) Zpět do vesmíru: kategorie */}
       <section className="zone zone-space">
         <Wave fill="#160a2c" />
-        <Planet className="absolute -bottom-6 -left-24 -z-10 hidden opacity-80 lg:block" size={460} hue={140} />
+        <Planet className="absolute -bottom-10 -left-12 -z-10 hidden opacity-95 lg:block" size={500} variant="realistic" />
         <SpriteFrame
           sheet="aliens"
           col={1}

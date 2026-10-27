@@ -99,12 +99,12 @@ export class KongEngine extends ArcadeEngine {
 
   protected update(dt: number) {
     this.invuln = Math.max(0, this.invuln - dt);
-    const speed = 105 * this.moveMul();
+    const speed = 115 * this.moveMul();
 
     // --- hráč ---
     if (this.climbing) {
       const l = this.climbing;
-      const climbSpeed = 78 * this.moveMul();
+      const climbSpeed = 88 * this.moveMul();
       if (this.input.up) this.py -= climbSpeed * dt;
       else if (this.input.down) this.py += climbSpeed * dt;
       this.px = l.x;
@@ -135,7 +135,7 @@ export class KongEngine extends ArcadeEngine {
           this.vy = 0;
         }
         if (this.consume("fire")) {
-          this.vy = -400;
+          this.vy = -335; // nižší skok: hlava nezasáhne sudy valící se o patro výš
           this.onGround = false;
           sfx("jump");
         }
@@ -181,7 +181,7 @@ export class KongEngine extends ArcadeEngine {
     // --- sudy ---
     this.spawn -= dt;
     // Na snazších obtížnostech je na plátně méně sudů najednou.
-    const maxBarrels = this.forgive() > 1.2 ? 3 : 6;
+    const maxBarrels = this.forgive() > 1.2 ? 3 : this.forgive() > 1.05 ? 4 : 6;
     if (this.spawn <= 0 && this.barrels.length < maxBarrels) {
       this.spawn = Math.max(1.1, 2.6 / this.pace()) * (0.8 + Math.random() * 0.5);
       this.barrels.push({ x: W - 36, y: LEVEL_Y[4], vy: 0, level: 4, dir: -1, falling: false, rot: 0, jumped: false });
@@ -215,7 +215,8 @@ export class KongEngine extends ArcadeEngine {
     this.barrels = this.barrels.filter((b) => b.x > -30 && b.x < W + 30 && b.y < H + 40);
 
     // --- kolize se sudy ---
-    if (this.invuln <= 0) {
+    // Na žebříku sudy nezasahují: šplhání je bezpečný úsek.
+    if (this.invuln <= 0 && !this.climbing) {
       for (const b of this.barrels) {
         const dx = Math.abs(b.x - this.px);
         const dy = b.y - 9 - (this.py - PLAYER_H / 2);

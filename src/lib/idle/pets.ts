@@ -18,8 +18,8 @@ export const SPECIES: { id: SpeciesId; pointsCost: number }[] = [
   { id: "robot", pointsCost: 900 },
 ];
 
-export type UpgradeId = "bowl" | "toys" | "bed";
-export const UPGRADES: UpgradeId[] = ["bowl", "toys", "bed"];
+export type UpgradeId = "bowl" | "toys" | "bed" | "playground" | "school";
+export const UPGRADES: UpgradeId[] = ["bowl", "toys", "bed", "playground", "school"];
 export const MAX_UPGRADE_LEVEL = 5;
 
 export type PetStats = {
@@ -51,6 +51,7 @@ export const FEED_GROWTH = 6;
 export const PLAY_GROWTH = 6;
 export const TREAT_GROWTH = 30;
 export const MAX_LEARNING_BONUS = 0.5;
+export const EVENT_CAP = 0.3;
 
 const BASE_OFFLINE_HOURS = 6;
 const OFFLINE_HOURS_PER_BED = 3;
@@ -67,7 +68,7 @@ export function emptyState(now: number): PetGameState {
     pets: {},
     coins: 0,
     totalEarned: 0,
-    upgrades: { bowl: 0, toys: 0, bed: 0 },
+    upgrades: { bowl: 0, toys: 0, bed: 0, playground: 0, school: 0 },
     lastSeen: now,
     lastPlayAt: 0,
   };
@@ -105,6 +106,8 @@ export function normalizeState(raw: unknown, now: number): PetGameState {
       bowl: num(r.upgrades?.bowl, 0, 0, MAX_UPGRADE_LEVEL),
       toys: num(r.upgrades?.toys, 0, 0, MAX_UPGRADE_LEVEL),
       bed: num(r.upgrades?.bed, 0, 0, MAX_UPGRADE_LEVEL),
+      playground: num(r.upgrades?.playground, 0, 0, MAX_UPGRADE_LEVEL),
+      school: num(r.upgrades?.school, 0, 0, MAX_UPGRADE_LEVEL),
     },
     lastSeen: num(r.lastSeen, now, 0, now),
     lastPlayAt: num(r.lastPlayAt, 0),
@@ -140,6 +143,16 @@ export function hungerDecayPerHour(state: PetGameState): number {
 
 export const HAPPY_DECAY_PER_HOUR = 6;
 
+// Hřiště: každá úroveň zkrátí pauzu mezi hrami o 14 % (na nejvyšší úrovni zbývá 30 %).
+export function playCooldownMs(state: PetGameState): number {
+  return Math.round(PLAY_COOLDOWN_MS * (1 - 0.14 * state.upgrades.playground));
+}
+
+// Škola: každá úroveň zesílí vliv učení na výdělek o 20 % (na nejvyšší úrovni dvojnásobně).
+export function learningPower(state: PetGameState): number {
+  return 1 + 0.2 * state.upgrades.school;
+}
+
 export function offlineCapHours(state: PetGameState): number {
   return BASE_OFFLINE_HOURS + OFFLINE_HOURS_PER_BED * state.upgrades.bed;
 }
@@ -149,19 +162,20 @@ export function incomePerHour(
   state: PetGameState,
   stats: PetStats,
   learningBonus: number,
+  eventBonus = 0,
 ): number {
   const level = levelFromGrowth(stats.growth);
   const base = 20 + 12 * (level - 1);
   const hungerFactor = stats.hunger <= 0 ? 0 : stats.hunger < 25 ? 0.5 : 1;
   const happyFactor = 0.6 + 0.4 * (stats.happy / 100);
   const toys = 1 + 0.15 * state.upgrades.toys;
-  const learning = 1 + Math.min(MAX_LEARNING_BONUS, Math.max(0, learningBonus));
-  return base * hungerFactor * happyFactor * toys * learning;
+  const learning = 1 + Math.min(MAX_LEARNING_BONUS, Math.max(0, learningBonus)) * learningPower(state);
+  return base * hungerFactor * happyFactor * toys * learning * (1 + Math.min(EVENT_CAP, Math.max(0, eventBonus)));
 }
 
-export function currentIncomePerHour(state: PetGameState, learningBonus: number): number {
+export function currentIncomePerHour(state: PetGameState, learningBonus: number, eventBonus = 0): number {
   const stats = state.active ? state.pets[state.active] : undefined;
-  return stats ? incomePerHour(state, stats, learningBonus) : 0;
+  return stats ? incomePerHour(state, stats, learningBonus, eventBonus) : 0;
 }
 
 // Bonus za učení: každých 100 XP získaných za posledních 24 hodin dá +10 %.
@@ -171,7 +185,7 @@ export function learningBonusFromXp(xpLast24h: number): number {
 
 // Dopočítá výdělek a hlad/spokojenost od posledního uložení. Maximálně
 // offlineCapHours hodin zpětně, zbytek je ztracený (aby hra nebyla povinnost).
-export function settle(state: PetGameState, now: number, learningBonus: number): PetGameState {
+export function settle(state: PetGameState, now: number, learningBonus: number, eventBonus = 0): PetGameState {
   const next: PetGameState = {
     ...state,
     pets: { ...state.pets },
@@ -188,7 +202,7 @@ export function settle(state: PetGameState, now: number, learningBonus: number):
   let { hunger, happy } = stats;
   let earned = 0;
   for (let i = 0; i < SIMULATION_STEPS; i++) {
-    earned += incomePerHour(state, { ...stats, hunger, happy }, learningBonus) * dt;
+    earned += incomePerHour(state, { ...stats, hunger, happy }, learningBonus, eventBonus) * dt;
     hunger = Math.max(0, hunger - hungerDecayPerHour(state) * dt);
     happy = Math.max(0, happy - HAPPY_DECAY_PER_HOUR * dt);
   }
@@ -220,7 +234,8 @@ export type ErrorCode =
   | "unknown-species"
   | "unknown-upgrade"
   | "invalid-name"
-  | "not-owned";
+  | "not-owned"
+  | "no-item";
 
 function withActive(state: PetGameState): { active: SpeciesId; stats: PetStats } | null {
   const active = state.active;
@@ -253,7 +268,7 @@ export function feed(state: PetGameState): ActionResult {
 export function play(state: PetGameState, now: number): ActionResult {
   const pet = withActive(state);
   if (!pet) return { ok: false, error: "no-pet" };
-  if (now - state.lastPlayAt < PLAY_COOLDOWN_MS) return { ok: false, error: "cooldown" };
+  if (now - state.lastPlayAt < playCooldownMs(state)) return { ok: false, error: "cooldown" };
   return {
     ok: true,
     state: {
@@ -272,6 +287,31 @@ export function play(state: PetGameState, now: number): ActionResult {
 }
 
 // Pamlsek se platí body z učení; volající je musí atomicky strhnout z účtu.
+// Krmení úrodou z farmy: růst podle ceny položky (drahá surovina nakrmí víc), nejvýš jako pamlsek za body.
+export function farmFeedGrowth(price: number): number {
+  return Math.max(2, Math.min(20, Math.round(price / 3)));
+}
+
+export function feedWithFarm(state: PetGameState, itemPrice: number): ActionResult {
+  const pet = withActive(state);
+  if (!pet) return { ok: false, error: "no-pet" };
+  return {
+    ok: true,
+    state: {
+      ...state,
+      pets: {
+        ...state.pets,
+        [pet.active]: {
+          ...pet.stats,
+          hunger: Math.min(100, pet.stats.hunger + 25),
+          happy: Math.min(100, pet.stats.happy + 5),
+          growth: pet.stats.growth + farmFeedGrowth(itemPrice),
+        },
+      },
+    },
+  };
+}
+
 export function treat(state: PetGameState): ActionResult {
   const pet = withActive(state);
   if (!pet) return { ok: false, error: "no-pet" };

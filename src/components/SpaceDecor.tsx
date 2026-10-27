@@ -46,18 +46,34 @@ export function SpriteFrame({
 // Řádek v listu mimozemšťanů: kyklop 0, krab 1, chobotnice 2, ufo 3.
 export const ALIEN_ROW = { kyklop: 0, krab: 1, chobotnice: 2, ufo: 3 } as const;
 
-// Planeta se otáčí a obíhají ji měsíce (3D render z Blenderu: video 60 fps, záloha animované webp, statický obrázek).
-export function Planet({ className = "", size = 420, hue = 0 }: { className?: string; size?: number; hue?: number }) {
+// Planeta se otáčí a obíhají ji měsíce. Výchozí (hračková) varianta je 3D render z Blenderu jako video 60 fps
+// se zálohou (animované webp, statický obrázek); "realistic" je detailní plynný obr z Blenderu (planeta-realna).
+export function Planet({
+  className = "",
+  size = 420,
+  hue = 0,
+  variant = "stylized",
+}: {
+  className?: string;
+  size?: number;
+  hue?: number;
+  variant?: "stylized" | "realistic";
+}) {
+  const style = {
+    width: size,
+    height: size * 0.66,
+    filter: `hue-rotate(${hue}deg) drop-shadow(0 0 40px rgba(180,120,255,0.35))`,
+  };
+  if (variant === "realistic") {
+    return (
+      <picture aria-hidden className={`pointer-events-none block select-none ${className}`} style={style}>
+        <source media="(prefers-reduced-motion: reduce)" srcSet="/home/anim/planeta-realna-still.webp" />
+        <img src="/home/anim/planeta-realna.webp" alt="" width={size} height={size * 0.66} draggable={false} loading="lazy" className="h-full w-full object-contain" />
+      </picture>
+    );
+  }
   return (
-    <div
-      aria-hidden
-      className={`pointer-events-none block select-none ${className}`}
-      style={{
-        width: size,
-        height: size * 0.66,
-        filter: `hue-rotate(${hue}deg) drop-shadow(0 0 40px rgba(180,120,255,0.35))`,
-      }}
-    >
+    <div aria-hidden className={`pointer-events-none block select-none ${className}`} style={style}>
       <PlanetAnim width={size} height={size * 0.66} />
     </div>
   );
@@ -184,20 +200,74 @@ export function TechBus({ colors }: { colors: string[] }) {
   );
 }
 
-// Listy a motýli pro přírodní část (3D rendery v public/home).
-const LEAVES: { img: string; pos: string; size: number; delay: string }[] = [
-  { img: "list", pos: "left-[4%] top-10", size: 56, delay: "0s" },
-  { img: "kapradi", pos: "right-[3%] bottom-8", size: 80, delay: "-4s" },
-  { img: "houba", pos: "left-[2%] bottom-8", size: 60, delay: "-1s" },
-  { img: "beruska", pos: "left-[48%] top-4", size: 40, delay: "-3s" },
+// Přírodní část: listy, houba a kapradí se houpou, motýl krouží po obloze, listy padají, světlušky svítí
+// a beruška přechází po nadpisu. Vše je čistě ozdobné a vypíná se při „omezit pohyb“.
+const LEAVES: { img: string; pos: string; size: number; delay: string; cls: string }[] = [
+  { img: "list", pos: "left-[4%] top-10", size: 56, delay: "0s", cls: "leaf-sway" },
+  { img: "kapradi", pos: "right-[3%] bottom-8", size: 80, delay: "-4s", cls: "fern-sway" },
+  { img: "houba", pos: "left-[2%] bottom-8", size: 60, delay: "-1s", cls: "shroom-wobble" },
+];
+const FALLING: { left: string; size: number; delay: string; dur: string }[] = [
+  { left: "12%", size: 34, delay: "-2s", dur: "17s" },
+  { left: "31%", size: 26, delay: "-9s", dur: "21s" },
+  { left: "58%", size: 30, delay: "-5s", dur: "19s" },
+  { left: "74%", size: 24, delay: "-13s", dur: "23s" },
+  { left: "90%", size: 32, delay: "-7s", dur: "18s" },
+];
+const FIREFLIES: { left: string; top: string; delay: string; dur: string }[] = [
+  { left: "8%", top: "22%", delay: "0s", dur: "7s" },
+  { left: "17%", top: "58%", delay: "-2s", dur: "9s" },
+  { left: "27%", top: "36%", delay: "-4s", dur: "8s" },
+  { left: "38%", top: "76%", delay: "-1s", dur: "10s" },
+  { left: "46%", top: "18%", delay: "-5s", dur: "7s" },
+  { left: "55%", top: "64%", delay: "-3s", dur: "9s" },
+  { left: "63%", top: "28%", delay: "-6s", dur: "8s" },
+  { left: "72%", top: "82%", delay: "-2s", dur: "11s" },
+  { left: "81%", top: "46%", delay: "-7s", dur: "9s" },
+  { left: "89%", top: "70%", delay: "-4s", dur: "7s" },
+  { left: "94%", top: "24%", delay: "-8s", dur: "10s" },
+  { left: "3%", top: "84%", delay: "-5s", dur: "8s" },
 ];
 export function NatureDecor() {
   return (
     <>
       <Butterfly3D size={110} className="butterfly-fly absolute left-[6%] top-12 z-10 hidden sm:block" />
       {LEAVES.map((l) => (
-        <HomeArt key={l.img} name={l.img} size={l.size} className={`leaf-sway absolute z-0 hidden sm:block ${l.pos}`} style={{ animationDelay: l.delay }} />
+        <HomeArt key={l.img} name={l.img} size={l.size} className={`${l.cls} absolute z-0 hidden sm:block ${l.pos}`} style={{ animationDelay: l.delay }} />
       ))}
+      {FALLING.map((f, i) => (
+        <AnimatedArt
+          key={i}
+          name="list"
+          height={f.size + 18}
+          className="leaf-fall absolute top-0 z-0 hidden sm:block"
+          style={{ left: f.left, animationDelay: f.delay, animationDuration: f.dur }}
+        />
+      ))}
+      <div aria-hidden className="ladybug-walk pointer-events-none absolute z-0 hidden sm:block">
+        <AnimatedArt name="beruska" height={26} />
+      </div>
+      <AnimatedArt name="jezek" height={56} className="peek peek-a absolute bottom-0 z-0" />
+      <AnimatedArt name="veverka" height={84} className="peek peek-b absolute bottom-0 z-0" />
+      {FIREFLIES.map((f, i) =>
+        i % 3 === 0 ? (
+          <div
+            key={i}
+            aria-hidden
+            className="firefly-fly pointer-events-none absolute z-0"
+            style={{ left: f.left, top: f.top, animationDelay: f.delay, animationDuration: f.dur }}
+          >
+            <AnimatedArt name="svetluska" height={38} />
+          </div>
+        ) : (
+          <span
+            key={i}
+            aria-hidden
+            className="firefly pointer-events-none absolute z-0"
+            style={{ left: f.left, top: f.top, animationDelay: f.delay, animationDuration: f.dur }}
+          />
+        ),
+      )}
     </>
   );
 }
@@ -248,6 +318,52 @@ export function AnimArt({
       <source media="(prefers-reduced-motion: reduce)" srcSet={`/home/anim/${name}-still.webp`} />
       <img src={`/home/anim/${name}.webp`} alt="" width={size} height={height ?? size} draggable={false} className="h-full w-full object-contain" />
     </picture>
+  );
+}
+
+// Animovaný pás snímků z Blenderu (public/home/anim/<name>.webp, viz home_anim.py): CSS `steps()` posouvá
+// pozadí po snímcích. `ratio` je šířka ku výšce jednoho snímku. Při „omezit pohyb“ zůstane první snímek.
+export const ANIM: Record<string, { n: number; ratio: number; dur: number }> = {
+  beruska: { n: 8, ratio: 1.492, dur: 0.8 },
+  svetluska: { n: 12, ratio: 0.996, dur: 0.6 },
+  slunce: { n: 16, ratio: 1.0, dur: 6 },
+  mesic: { n: 12, ratio: 0.973, dur: 5 },
+  list: { n: 16, ratio: 0.73, dur: 3 },
+  jezek: { n: 16, ratio: 1.324, dur: 2.4 },
+  veverka: { n: 16, ratio: 0.598, dur: 2.4 },
+};
+
+export function AnimatedArt({
+  name,
+  height,
+  className = "",
+  style,
+}: {
+  name: keyof typeof ANIM;
+  height: number;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  const a = ANIM[name];
+  const w = Math.round(height * a.ratio);
+  return (
+    <div
+      aria-hidden
+      className={`anim-strip pointer-events-none select-none ${className}`}
+      style={
+        {
+          width: w,
+          height,
+          backgroundImage: `url(/home/anim/${name}.webp)`,
+          backgroundSize: `${w * a.n}px ${height}px`,
+          "--fw": `${w}px`,
+          "--n": a.n,
+          animationTimingFunction: `steps(${a.n})`,
+          animationDuration: `${a.dur}s`,
+          ...style,
+        } as React.CSSProperties
+      }
+    />
   );
 }
 

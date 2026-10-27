@@ -196,7 +196,7 @@
     if (e.climbing) {
       want.up = true;
     } else {
-      const near = e.barrels.find((b) => b.level === e.level && !b.falling && Math.abs(b.x - e.px) < 75 && Math.abs(b.x - e.px) > 20 && ((b.dir < 0 && b.x > e.px) || (b.dir > 0 && b.x < e.px)));
+      const near = e.barrels.find((b) => b.level === e.level && !b.falling && Math.abs(b.x - e.px) < 48 && Math.abs(b.x - e.px) > 20 && ((b.dir < 0 && b.x > e.px) || (b.dir > 0 && b.x < e.px)));
       if (near && e.onGround) want.fire = true;
       else if (e.level < 4) {
         const lad = LAD.find((l) => l.from === e.level);

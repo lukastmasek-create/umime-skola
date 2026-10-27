@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { eventBonusFor } from "@/lib/idle/events";
+import { getItem as getCityItem, normalizeCity } from "@/lib/idle/city";
+import { levelFromGrowth, normalizeState as normalizePets } from "@/lib/idle/pets";
 import {
   ANIMAL_BATCH_CAP,
   buyAnimal,
@@ -15,6 +18,8 @@ import {
   harvest,
   harvestAll,
   learningBonusFromXp,
+  petSpeedBonus,
+  citySpeedBonus,
   levelInfo,
   normalizeState,
   plant,
@@ -39,19 +44,36 @@ function errorCode(error: unknown): string {
 class Conflict extends Error {}
 class NotEnoughPoints extends Error {}
 
-async function learningBonusFor(userId: string, now: number) {
-  const sum = await prisma.xpEvent.aggregate({
-    where: { userId, createdAt: { gte: new Date(now - DAY_MS) } },
-    _sum: { amount: true },
-  });
-  return learningBonusFromXp(sum._sum.amount ?? 0);
+// Zrychlení farmy = učení + aktivní mazlíček + velikost města; každý díl má vlastní strop (viz lib/idle/farm.ts).
+async function speedBonusFor(userId: string, now: number) {
+  const [sum, pets, city] = await Promise.all([
+    prisma.xpEvent.aggregate({ where: { userId, createdAt: { gte: new Date(now - DAY_MS) } }, _sum: { amount: true } }),
+    prisma.idleState.findUnique({ where: { userId_game: { userId, game: "mazlicci" } }, select: { data: true } }),
+    prisma.idleState.findUnique({ where: { userId_game: { userId, game: "mesto" } }, select: { data: true } }),
+  ]);
+  let petLevel: number | null = null;
+  if (pets) {
+    const state = normalizePets(pets.data, now);
+    const active = state.active ? state.pets[state.active] : undefined;
+    petLevel = active ? levelFromGrowth(active.growth) : null;
+  }
+  const buildings = city ? normalizeCity(city.data, now).items.filter((it) => getCityItem(it[0])?.cat !== "road").length : 0;
+  const learning = learningBonusFromXp(sum._sum.amount ?? 0);
+  const pet = petSpeedBonus(petLevel);
+  const cityB = citySpeedBonus(buildings);
+  const event = eventBonusFor("farm", now);
+  return { learning, pet, city: cityB, event: event.total, eventInfo: event, total: learning + pet + cityB + event.total };
 }
+type SpeedBonus = Awaited<ReturnType<typeof speedBonusFor>>;
 
-function payload(state: FarmState, points: number, learningBonus: number, now: number) {
+function payload(state: FarmState, points: number, bonus: SpeedBonus, now: number) {
   return {
     state,
     points,
-    learningBonus,
+    // Celkové zrychlení (klient podle něj počítá odpočty); rozpis je v `bonuses`.
+    learningBonus: bonus.total,
+    bonuses: { learning: bonus.learning, pet: bonus.pet, city: bonus.city, event: bonus.event },
+    event: bonus.eventInfo,
     now,
     level: levelInfo(state.xp),
     silo: { used: stockTotal(state), capacity: siloCapacity(state) },
@@ -102,7 +124,7 @@ export async function GET() {
     const [row, user, bonus] = await Promise.all([
       prisma.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } }),
       prisma.user.findUnique({ where: { id: userId }, select: { points: true } }),
-      learningBonusFor(userId, now),
+      speedBonusFor(userId, now),
     ]);
     const loaded = row ? normalizeState(row.data, now) : emptyState(now);
     const state = fillOrders({ ...loaded, lastSeen: now });
@@ -131,7 +153,7 @@ export async function POST(request: Request) {
 
   try {
     const now = Date.now();
-    const bonus = await learningBonusFor(userId, now);
+    const bonus = await speedBonusFor(userId, now);
 
     const result = await prisma.$transaction(
       async (tx) => {
@@ -140,7 +162,7 @@ export async function POST(request: Request) {
         const points = user?.points ?? 0;
 
         const current = fillOrders(row ? normalizeState(row.data, now) : emptyState(now));
-        const outcome = applyAction(current, body, now, bonus);
+        const outcome = applyAction(current, body, now, bonus.total);
         if (!outcome.ok) return { outcome, points };
 
         const cost = outcome.pointsSpent ?? 0;
