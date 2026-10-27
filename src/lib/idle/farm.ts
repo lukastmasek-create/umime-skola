@@ -145,6 +145,18 @@ export function levelInfo(xp: number) {
   return { level, percent: Math.floor(((xp - from) / (to - from)) * 100), intoLevel: xp - from, needed: to - from, maxed: false };
 }
 
+// Bonusy z ostatních Stálých her (společně s učením zrychlují růst plodin i zvířat).
+export const MAX_PET_BONUS = 0.1;
+export const MAX_CITY_BONUS = 0.1;
+// Aktivní mazlíček: +1 % za každou svou úroveň, nejvýš +10 %.
+export function petSpeedBonus(level: number | null): number {
+  return level ? Math.min(MAX_PET_BONUS, Math.max(0, level) * 0.01) : 0;
+}
+// Město: +1 % za každých 15 budov (bez silnic), nejvýš +10 %.
+export function citySpeedBonus(buildings: number): number {
+  return Math.min(MAX_CITY_BONUS, Math.floor(Math.max(0, buildings) / 15) * 0.01);
+}
+
 // Bonus za učení: každých 100 XP z posledních 24 hodin dá +10 %, nejvýš +50 %.
 export function learningBonusFromXp(xpLast24h: number): number {
   return Math.min(MAX_LEARNING_BONUS, Math.max(0, xpLast24h) / 1000);
@@ -442,6 +454,17 @@ export function collectAll(state: FarmState, now: number, bonus: number): Action
 }
 
 // Prodá jednu surovinu, nebo (item = "all") celou sýpku.
+/** Odebere ze sýpky jeden kus (krmení mazlíčků úrodou z farmy). */
+export function takeItem(state: FarmState, item: unknown): ActionResult {
+  if (!isItem(item)) return fail("bad-request");
+  const have = state.stock[item] ?? 0;
+  if (have < 1) return fail("nothing-to-sell");
+  const stock = { ...state.stock };
+  if (have === 1) delete stock[item];
+  else stock[item] = have - 1;
+  return { ok: true, state: { ...state, stock } };
+}
+
 export function sell(state: FarmState, item: unknown): ActionResult {
   const entries = item === "all" ? (Object.entries(state.stock) as [ItemId, number][]) : isItem(item) ? [[item, state.stock[item] ?? 0] as [ItemId, number]] : null;
   if (!entries) return fail("bad-request");

@@ -16,6 +16,11 @@ export type FarmText = {
   points: string;
   learningBonus: string; // {n}
   learningHint: string;
+  speedBonus: string; // {n}
+  speedHint: string;
+  bonusLearning: string; // {n}
+  bonusPet: string; // {n}
+  bonusCity: string; // {n}
   tabs: { field: string; animals: string; silo: string; orders: string };
   seedsTitle: string;
   seedHint: string;
@@ -83,6 +88,11 @@ const cs: FarmText = {
   points: "Body",
   learningBonus: "Učení zrychluje farmu o {n} %",
   learningHint: "Každých 100 XP z posledních 24 hodin zrychlí růst i zvířata o 10 % (nejvíc o 50 %).",
+  speedBonus: "Farma běží o {n} % rychleji",
+  speedHint: "Zrychlení tvoří učení (nejvíc 50 %), aktivní mazlíček (nejvíc 10 %) a velikost města (nejvíc 10 %).",
+  bonusLearning: "Učení {n} %",
+  bonusPet: "Mazlíček {n} %",
+  bonusCity: "Město {n} %",
   tabs: { field: "Pole", animals: "Zvířata", silo: "Sýpka", orders: "Zakázky" },
   seedsTitle: "Semínka",
   seedHint: "Vyber plodinu a klepni na prázdný záhon. Zralou úrodu sklidíš klepnutím.",
@@ -170,6 +180,11 @@ const en: FarmText = {
   points: "Points",
   learningBonus: "Learning speeds up your farm by {n} %",
   learningHint: "Every 100 XP from the last 24 hours speeds up crops and animals by 10 % (up to 50 %).",
+  speedBonus: "The farm runs {n} % faster",
+  speedHint: "The speed-up comes from learning (up to 50 %), your active pet (up to 10 %) and the size of your city (up to 10 %).",
+  bonusLearning: "Learning {n} %",
+  bonusPet: "Pet {n} %",
+  bonusCity: "City {n} %",
   tabs: { field: "Field", animals: "Animals", silo: "Silo", orders: "Orders" },
   seedsTitle: "Seeds",
   seedHint: "Pick a crop and tap an empty plot. Tap ripe crops to harvest them.",
@@ -257,6 +272,11 @@ const de: FarmText = {
   points: "Punkte",
   learningBonus: "Lernen beschleunigt deine Farm um {n} %",
   learningHint: "Je 100 XP der letzten 24 Stunden beschleunigen Pflanzen und Tiere um 10 % (höchstens 50 %).",
+  speedBonus: "Die Farm läuft {n} % schneller",
+  speedHint: "Die Beschleunigung kommt vom Lernen (bis 50 %), dem aktiven Haustier (bis 10 %) und der Größe der Stadt (bis 10 %).",
+  bonusLearning: "Lernen {n} %",
+  bonusPet: "Haustier {n} %",
+  bonusCity: "Stadt {n} %",
   tabs: { field: "Feld", animals: "Tiere", silo: "Silo", orders: "Aufträge" },
   seedsTitle: "Saatgut",
   seedHint: "Wähle eine Pflanze und tippe auf ein leeres Beet. Reife Ernte erntest du durch Antippen.",
@@ -344,6 +364,11 @@ const ru: FarmText = {
   points: "Очки",
   learningBonus: "Учёба ускоряет ферму на {n} %",
   learningHint: "Каждые 100 XP за последние 24 часа ускоряют рост и животных на 10 % (максимум 50 %).",
+  speedBonus: "Ферма работает на {n} % быстрее",
+  speedHint: "Ускорение дают учёба (до 50 %), активный питомец (до 10 %) и размер города (до 10 %).",
+  bonusLearning: "Учёба {n} %",
+  bonusPet: "Питомец {n} %",
+  bonusCity: "Город {n} %",
   tabs: { field: "Поле", animals: "Животные", silo: "Амбар", orders: "Заказы" },
   seedsTitle: "Семена",
   seedHint: "Выбери культуру и нажми на пустую грядку. Спелый урожай собирается нажатием.",

@@ -18,12 +18,14 @@ import {
   levelFromGrowth,
   moodOf,
   stageFromLevel,
+  farmFeedGrowth,
   upgradeCost,
   type ErrorCode,
   type LevelInfo,
   type PetGameState,
 } from "@/lib/idle/pets";
 import { notifyAccountChanged } from "@/lib/account-events";
+import { cropDef, isCrop, itemPrice, productDef, type ItemId } from "@/lib/idle/farm";
 import { SHOP_ITEMS } from "@/lib/shop";
 import type { Locale } from "@/i18n/config";
 
@@ -31,6 +33,7 @@ type Payload = {
   state: PetGameState;
   points: number;
   accessories: string[];
+  farmStock?: Partial<Record<ItemId, number>>;
   learningBonus: number;
   now: number;
   incomePerHour: number;
@@ -139,10 +142,11 @@ export function PetGame({ locale }: { locale: Locale }) {
         return;
       }
       apply(json);
-      const kind: PetAction | null = body.action === "feed" ? "feed" : body.action === "play" ? "play" : body.action === "treat" ? "joy" : null;
+      const kind: PetAction | null = body.action === "feed" || body.action === "feedFarm" ? "feed" : body.action === "play" ? "play" : body.action === "treat" ? "joy" : null;
       if (kind) setPetAction((prev) => ({ id: (prev?.id ?? 0) + 1, kind }));
       if (body.action === "treat" || body.action === "adopt") notifyAccountChanged();
       if (body.action === "rename") setNameDraft("");
+      if (body.action === "feedFarm") showMessage(t.farmFeedDone);
     } catch {
       showMessage(t.errors.generic);
     } finally {
@@ -380,6 +384,40 @@ export function PetGame({ locale }: { locale: Locale }) {
           </div>
         </section>
       </div>
+
+      <section className="card mt-5 p-5">
+        <h2 className="mb-1 text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+          🌾 {t.farmFeedTitle}
+        </h2>
+        <p className="mb-3 text-sm text-[var(--muted)]">{t.farmFeedHint}</p>
+        {(() => {
+          const stock = Object.entries(data.farmStock ?? {}) as [ItemId, number][];
+          if (stock.length === 0) return <p className="text-sm text-[var(--faint)]">{t.farmFeedEmpty}</p>;
+          return (
+            <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {stock.map(([id, qty]) => {
+                const name = isCrop(id) ? cropDef(id).names[locale] : productDef(id as Parameters<typeof productDef>[0]).names[locale];
+                return (
+                  <li key={id}>
+                    <button
+                      type="button"
+                      disabled={busy || !state.active}
+                      onClick={() => act({ action: "feedFarm", item: id })}
+                      className="btn-bouncy flex w-full items-center gap-3 bg-[var(--surface)] px-3 py-2 text-left text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={`/farm/icons/${id}.webp`} alt="" aria-hidden className="h-8 w-8 shrink-0 object-contain" onError={(e) => ((e.currentTarget as HTMLImageElement).style.visibility = "hidden")} />
+                      <span className="min-w-0 flex-1 truncate">{name}</span>
+                      <span className="font-mono text-xs text-[var(--muted)]">×{qty}</span>
+                      <span className="pill bg-[var(--accent-green)] px-2 py-0.5 text-[#16132b]">{fillN(t.farmFeedGain, farmFeedGrowth(itemPrice(id)))}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          );
+        })()}
+      </section>
 
       <section className="card mt-5 p-5">
         <h2 className="mb-3 text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>

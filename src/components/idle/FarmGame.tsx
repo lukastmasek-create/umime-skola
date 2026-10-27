@@ -48,6 +48,7 @@ type Payload = {
   state: FarmState;
   points: number;
   learningBonus: number;
+  bonuses?: { learning: number; pet: number; city: number };
   now: number;
   level: { level: number; percent: number; intoLevel: number; needed: number; maxed: boolean };
   gained?: { coins?: number; xp?: number; items?: number } | null;
@@ -242,7 +243,7 @@ export function FarmGame({ locale }: { locale: Locale }) {
     );
   }
 
-  const { state, points, learningBonus } = view.data;
+  const { state, points, learningBonus, bonuses } = view.data;
   const level = levelFromXp(state.xp);
   const info = view.data.level;
   const capacity = siloCapacity(state);
@@ -296,8 +297,19 @@ export function FarmGame({ locale }: { locale: Locale }) {
           </div>
         </div>
         {learningBonus > 0 && (
-          <span className="pill bg-[var(--accent-yellow)] px-3 py-1 text-sm text-[#16132b]" title={t.learningHint}>
-            📚 {fill(t.learningBonus, { n: Math.round(learningBonus * 100) })}
+          <span className="pill flex-wrap gap-x-2 bg-[var(--accent-yellow)] px-3 py-1 text-sm text-[#16132b]" title={t.speedHint}>
+            <span>⚡ {fill(t.speedBonus, { n: Math.round(learningBonus * 100) })}</span>
+            {bonuses && (
+              <span className="text-xs font-medium opacity-80">
+                {[
+                  bonuses.learning > 0 && `📚 ${fill(t.bonusLearning, { n: Math.round(bonuses.learning * 100) })}`,
+                  bonuses.pet > 0 && `🐾 ${fill(t.bonusPet, { n: Math.round(bonuses.pet * 100) })}`,
+                  bonuses.city > 0 && `🏙️ ${fill(t.bonusCity, { n: Math.round(bonuses.city * 100) })}`,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            )}
           </span>
         )}
       </div>

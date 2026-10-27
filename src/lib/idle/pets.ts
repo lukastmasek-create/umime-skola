@@ -220,7 +220,8 @@ export type ErrorCode =
   | "unknown-species"
   | "unknown-upgrade"
   | "invalid-name"
-  | "not-owned";
+  | "not-owned"
+  | "no-item";
 
 function withActive(state: PetGameState): { active: SpeciesId; stats: PetStats } | null {
   const active = state.active;
@@ -272,6 +273,31 @@ export function play(state: PetGameState, now: number): ActionResult {
 }
 
 // Pamlsek se platí body z učení; volající je musí atomicky strhnout z účtu.
+// Krmení úrodou z farmy: růst podle ceny položky (drahá surovina nakrmí víc), nejvýš jako pamlsek za body.
+export function farmFeedGrowth(price: number): number {
+  return Math.max(2, Math.min(20, Math.round(price / 3)));
+}
+
+export function feedWithFarm(state: PetGameState, itemPrice: number): ActionResult {
+  const pet = withActive(state);
+  if (!pet) return { ok: false, error: "no-pet" };
+  return {
+    ok: true,
+    state: {
+      ...state,
+      pets: {
+        ...state.pets,
+        [pet.active]: {
+          ...pet.stats,
+          hunger: Math.min(100, pet.stats.hunger + 25),
+          happy: Math.min(100, pet.stats.happy + 5),
+          growth: pet.stats.growth + farmFeedGrowth(itemPrice),
+        },
+      },
+    },
+  };
+}
+
 export function treat(state: PetGameState): ActionResult {
   const pet = withActive(state);
   if (!pet) return { ok: false, error: "no-pet" };
