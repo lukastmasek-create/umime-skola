@@ -8,12 +8,13 @@ import bmesh
 from mathutils import Matrix, Vector
 
 PREVIEW = "--preview" in args()
-RES = 640 if PREVIEW else 1024
-sc = reset(RES, RES, 1, samples=48 if PREVIEW else 192, name="sekce_prijimacky", world=("#000000", 0.0), view="AgX", look="AgX - Punchy")
+RES = 640 if PREVIEW else 800
+sc = reset(RES, RES, 1, samples=48 if PREVIEW else 90, name="sekce_prijimacky", world=("#000000", 0.0), view="AgX", look="AgX - Punchy")
 sc.cycles.volume_bounces = 1
+sc.cycles.volume_step_rate = 2.0
 rnd = random.Random(11)
 
-HEAD = Vector((1.25, 0, -1.0))
+HEAD = Vector((1.1, 0, -1.05))
 TAIL = Vector((-1.0, 0, 0.78)).normalized()  # směr ohonu (od Slunce pryč)
 
 
@@ -44,7 +45,7 @@ bump = nt.nodes.new("ShaderNodeBump"); bump.inputs["Strength"].default_value = 1
 nt.links.new(add.outputs[0], bump.inputs["Height"]); nt.links.new(bump.outputs["Normal"], bs.inputs["Normal"])
 nt.links.new(bs.outputs[0], out.inputs[0])
 
-bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=6, radius=0.36, location=HEAD)
+bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=6, radius=0.58, location=HEAD)
 nuc = bpy.context.object
 nuc.scale = (1.2, 0.88, 0.82)
 nuc.rotation_euler = (0.4, 0.3, 0.9)
@@ -55,8 +56,8 @@ nuc.data.materials.append(nm)
 for p in nuc.data.polygons: p.use_smooth = True
 # úlomky okolo
 for i in range(7):
-    a = rnd.uniform(0, math.tau); d = rnd.uniform(0.5, 0.95)
-    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=3, radius=rnd.uniform(0.025, 0.06), location=HEAD + Vector((math.cos(a) * d, rnd.uniform(-0.1, 0.1), math.sin(a) * d)))
+    a = rnd.uniform(0, math.tau); d = rnd.uniform(0.8, 1.45)
+    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=3, radius=rnd.uniform(0.04, 0.09), location=HEAD + Vector((math.cos(a) * d, rnd.uniform(-0.1, 0.1), math.sin(a) * d)))
     o = bpy.context.object; o.scale = (1.3, 1, 0.8); o.data.materials.append(nm)
 
 # ---------- kóma ----------
@@ -74,12 +75,12 @@ nt.links.new(tcc.outputs["Object"], cn.inputs["Vector"])
 cm1 = nt.nodes.new("ShaderNodeMath"); cm1.operation = "MULTIPLY_ADD"; cm1.inputs[1].default_value = 0.8; cm1.inputs[2].default_value = 0.4
 nt.links.new(cn.outputs["Fac"], cm1.inputs[0])
 cm2 = nt.nodes.new("ShaderNodeMath"); cm2.operation = "MULTIPLY"; nt.links.new(sq.outputs[0], cm2.inputs[0]); nt.links.new(cm1.outputs[0], cm2.inputs[1])
-dn = nt.nodes.new("ShaderNodeMath"); dn.operation = "MULTIPLY"; dn.inputs[1].default_value = 0.1; nt.links.new(cm2.outputs[0], dn.inputs[0])
-es = nt.nodes.new("ShaderNodeMath"); es.operation = "MULTIPLY"; es.inputs[1].default_value = 2.0; nt.links.new(cm2.outputs[0], es.inputs[0])
+dn = nt.nodes.new("ShaderNodeMath"); dn.operation = "MULTIPLY"; dn.inputs[1].default_value = 0.12; nt.links.new(cm2.outputs[0], dn.inputs[0])
+es = nt.nodes.new("ShaderNodeMath"); es.operation = "MULTIPLY"; es.inputs[1].default_value = 3.6; nt.links.new(cm2.outputs[0], es.inputs[0])
 pv.inputs["Color"].default_value = hex_rgba("#bfe6ff"); pv.inputs["Emission Color"].default_value = hex_rgba("#9fd8ff")
 nt.links.new(dn.outputs[0], pv.inputs["Density"]); nt.links.new(es.outputs[0], pv.inputs["Emission Strength"])
 nt.links.new(pv.outputs[0], out.inputs["Volume"])
-bpy.ops.mesh.primitive_uv_sphere_add(radius=0.95, segments=48, ring_count=32, location=HEAD)
+bpy.ops.mesh.primitive_uv_sphere_add(radius=1.5, segments=48, ring_count=32, location=HEAD)
 coma = bpy.context.object; coma.data.materials.append(cm)
 
 # ---------- iontový ohon (modrý, paprskovitý) ----------
@@ -136,30 +137,30 @@ def aim(obj, direction, origin):
     obj.location = origin + direction * (length / 2)
 
 
-ion = tail_volume("ion", 4.6, 0.34, ("#cfe6ff", "#1f56ff"), 340.0, 10.0, 5.0, 3.0)
-aim(ion, TAIL, HEAD)
-ion2 = tail_volume("ion2", 3.6, 0.16, ("#ffffff", "#3f7bff"), 420.0, 10.0, 8.0, 11.0)
-aim(ion2, (TAIL + Vector((0, 0, 0.05))).normalized(), HEAD)
+ion = tail_volume("ion", 4.1, 0.62, ("#d6ebff", "#1b50ff"), 560.0, 10.0, 5.0, 3.0)
+aim(ion, TAIL, HEAD + TAIL * 0.75)
+ion2 = tail_volume("ion2", 3.3, 0.3, ("#ffffff", "#3a78ff"), 700.0, 10.0, 8.0, 11.0)
+aim(ion2, (TAIL + Vector((0, 0, 0.05))).normalized(), HEAD + TAIL * 0.75)
 
 # ---------- prachový ohon: zakřivený roj částic ----------
 mat = bpy.data.materials.new("prach"); nt = nodes(mat)
 out = nt.nodes.new("ShaderNodeOutputMaterial")
 attr = nt.nodes.new("ShaderNodeAttribute"); attr.attribute_name = "Col"
-em = nt.nodes.new("ShaderNodeEmission"); em.inputs["Strength"].default_value = 3.2
+em = nt.nodes.new("ShaderNodeEmission"); em.inputs["Strength"].default_value = 5.5
 nt.links.new(attr.outputs["Color"], em.inputs["Color"]); nt.links.new(em.outputs[0], out.inputs[0])
 bm = bmesh.new(); layer = bm.verts.layers.float_color.new("Col")
-for i in range(14000):
+for i in range(22000):
     t = rnd.random() ** 0.8
-    L = 3.5 * t
+    L = 3.2 * t
     # zakřivení: osa se postupně stáčí k dolní straně
     ang = math.atan2(TAIL.z, TAIL.x) + 0.55 * t * t - 0.12
     pos = HEAD + Vector((math.cos(ang), 0, math.sin(ang))) * (0.25 + L)
-    spread = 0.03 + 0.4 * t
+    spread = 0.06 + 0.7 * t
     pos += Vector((rnd.gauss(0, spread * 0.35), rnd.gauss(0, 0.05), rnd.gauss(0, spread * 0.35)))
     fade = (1 - t) ** 1.7
     b = (0.15 + 0.85 * fade) * rnd.uniform(0.4, 1.0)
     warm = (1.0, 0.78 + 0.15 * (1 - t), 0.48 + 0.3 * (1 - t))
-    r = rnd.choice((0.003, 0.004, 0.005, 0.007)) * (1.3 - 0.5 * t)
+    r = rnd.choice((0.005, 0.007, 0.009, 0.012)) * (1.3 - 0.5 * t)
     res = bmesh.ops.create_icosphere(bm, subdivisions=1, radius=r, matrix=Matrix.Translation(pos))
     for v in res["verts"]:
         v[layer] = (warm[0] * b, warm[1] * b, warm[2] * b, 1.0)
@@ -173,5 +174,5 @@ so.rotation_euler = TAIL.to_track_quat("-Z", "Y").to_euler()  # světlo svítí 
 fill = bpy.data.lights.new("fill", "SUN"); fill.energy = 0.2; fill.color = (0.5, 0.65, 1.0)
 fo = bpy.data.objects.new("fill", fill); sc.collection.objects.link(fo); fo.rotation_euler = (math.radians(100), 0, math.radians(30))
 
-add_camera((0, -10, 0), (0, 0, 0), ortho_scale=5.2)
+add_camera((0, -10, 0), (0.0, 0, 0.1), ortho_scale=4.7)
 render(lambda t: None)
