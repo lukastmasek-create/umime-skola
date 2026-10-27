@@ -22,7 +22,7 @@ def hex_rgba(h, a=1.0):
     return (lin(r), lin(g), lin(b), a)
 
 
-def reset(width, height, frames, fps=24, samples=24, name="anim"):
+def reset(width, height, frames, fps=24, samples=24, name="anim", world=("#b9b4ff", 0.55), view="Standard", look="None"):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     sc = bpy.context.scene
     sc.render.engine = "CYCLES"
@@ -40,19 +40,19 @@ def reset(width, height, frames, fps=24, samples=24, name="anim"):
     sc.render.film_transparent = True
     sc.render.image_settings.file_format = "PNG"
     sc.render.image_settings.color_mode = "RGBA"
-    sc.view_settings.view_transform = "Standard"
-    sc.view_settings.look = "None"
+    sc.view_settings.view_transform = view
+    sc.view_settings.look = look
     sc.frame_start = 1
     sc.frame_end = frames
     sc.render.fps = fps
     sc.render.filepath = os.path.join(OUT, name, "f_")
     # Měkké okolní světlo, aby stíny nebyly černé (hračkový vzhled jako ostatní grafika webu)
-    world = bpy.data.worlds.new("w")
-    world.use_nodes = True
-    bg = world.node_tree.nodes["Background"]
-    bg.inputs[0].default_value = hex_rgba("#b9b4ff")
-    bg.inputs[1].default_value = 0.55
-    sc.world = world
+    w = bpy.data.worlds.new("w")
+    w.use_nodes = True
+    bg = w.node_tree.nodes["Background"]
+    bg.inputs[0].default_value = hex_rgba(world[0])
+    bg.inputs[1].default_value = world[1]
+    sc.world = w
     return sc
 
 
