@@ -1,4 +1,5 @@
 // Ozdoby úvodní stránky z grafiky her: jeden snímek ze spritesheetu vystřižený přes CSS.
+import { Butterfly3D } from "@/components/Butterfly3D";
 
 type Sheet = { file: string; cols: number };
 const SHEETS: Record<string, Sheet> = {
@@ -44,21 +45,20 @@ export function SpriteFrame({
 // Řádek v listu mimozemšťanů: kyklop 0, krab 1, chobotnice 2, ufo 3.
 export const ALIEN_ROW = { kyklop: 0, krab: 1, chobotnice: 2, ufo: 3 } as const;
 
+// Planeta se otáčí a obíhá ji měsíc (animovaný 3D render z Blenderu, public/home/planeta-tocici.webp).
 export function Planet({ className = "", size = 420, hue = 0 }: { className?: string; size?: number; hue?: number }) {
   return (
-    <div
-      aria-hidden
-      className={`pointer-events-none select-none ${className}`}
+    <picture
+      className={`pointer-events-none block select-none ${className}`}
       style={{
         width: size,
         height: size * 0.66,
-        backgroundImage: "url(/home/planeta.webp)",
-        backgroundSize: "contain",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
         filter: `hue-rotate(${hue}deg) drop-shadow(0 0 40px rgba(180,120,255,0.35))`,
       }}
-    />
+    >
+      <source media="(prefers-reduced-motion: reduce)" srcSet="/home/planeta.webp" />
+      <img src="/home/anim/planeta.webp" alt="" width={size} height={size * 0.66} draggable={false} className="h-full w-full object-contain" />
+    </picture>
   );
 }
 
@@ -80,6 +80,29 @@ export function Nebula({ className = "", flip = false }: { className?: string; f
   );
 }
 
+// Hvězdy, prach a padající hvězdy ze 3D renderu v Blenderu (smyčka na černém pozadí, skládá se přes mlhovinu).
+export function StarsVideo({ className = "" }: { className?: string }) {
+  return (
+    <video
+      aria-hidden
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="auto"
+      className={`stars-video pointer-events-none select-none object-cover ${className}`}
+      style={{
+        opacity: 0.4,
+        maskImage: "linear-gradient(180deg, transparent, #000 18%, #000 80%, transparent)",
+        WebkitMaskImage: "linear-gradient(180deg, transparent, #000 18%, #000 80%, transparent)",
+      }}
+    >
+      <source src="/home/hvezdy.webm" type="video/webm" />
+      <source src="/home/hvezdy.mp4" type="video/mp4" />
+    </video>
+  );
+}
+
 // Vlnitý přechod mezi světy: vyplní horní okraj barvou předchozí části.
 export function Wave({ fill, className = "" }: { fill: string; className?: string }) {
   return (
@@ -97,18 +120,13 @@ export function Wave({ fill, className = "" }: { fill: string; className?: strin
   );
 }
 
-// Hřebeny hor se sněhem na dolním okraji (render z Blenderu, spodek ladí s další částí #160a2c).
-export function Mountains() {
-  return (
-    <div
-      aria-hidden
-      className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-32 w-full select-none sm:h-52"
-      style={{ backgroundImage: "url(/home/hory.webp)", backgroundSize: "100% 100%", backgroundRepeat: "no-repeat" }}
-    />
-  );
-}
+// Obvodové spoje pro technickou část: po trasách putují světelné pulsy a uzly při průchodu zableskují.
+const CIRCUIT_TRACKS = [
+  { d: "M0 40H120L160 80H300V20H400", delay: 0, nodes: [{ x: 300, y: 80, p: 0.611 }, { x: 400, y: 20, p: 0.926 }] },
+  { d: "M0 100H80L120 140H260V190", delay: -1.3, nodes: [{ x: 260, y: 140, p: 0.784 }] },
+];
+const CIRCUIT_PERIOD = 3.4;
 
-// Obvodové spoje pro technickou část.
 export function Circuit({ className = "", flip = false }: { className?: string; flip?: boolean }) {
   return (
     <svg
@@ -121,12 +139,46 @@ export function Circuit({ className = "", flip = false }: { className?: string; 
       strokeOpacity="0.4"
       strokeWidth="2"
     >
-      <path d="M0 40H120L160 80H300M0 100H80L120 140H260M300 80V20H400M260 140V190" />
-      <circle cx="300" cy="80" r="5" fill="#35d0ff" className="tech-blink" />
-      <circle cx="260" cy="140" r="5" fill="#35d0ff" />
-      <circle cx="400" cy="20" r="4" fill="#35d0ff" className="tech-blink" style={{ animationDelay: "-0.8s" }} />
+      {CIRCUIT_TRACKS.map((t) => (
+        <path key={t.d} d={t.d} />
+      ))}
       <rect x="150" y="68" width="22" height="22" rx="3" />
       <rect x="110" y="128" width="22" height="22" rx="3" />
+      {CIRCUIT_TRACKS.map((t) => (
+        <path key={`pulse-${t.d}`} d={t.d} pathLength={100} className="circuit-pulse" style={{ animationDelay: `${t.delay}s` }} />
+      ))}
+      {CIRCUIT_TRACKS.flatMap((t) =>
+        t.nodes.map((n) => (
+          <circle
+            key={`${n.x}-${n.y}`}
+            cx={n.x}
+            cy={n.y}
+            r="5"
+            fill="#35d0ff"
+            stroke="none"
+            className="circuit-node"
+            style={{ animationDelay: `${(t.delay + (n.p - 0.7) * CIRCUIT_PERIOD).toFixed(2)}s` }}
+          />
+        )),
+      )}
+    </svg>
+  );
+}
+
+// Sběrnice nad čtyřmi kartami: společná linka s pulsem a přípojka ke každé kartě (rozsvítí se při najetí).
+export function TechBus({ colors }: { colors: string[] }) {
+  const xs = [125, 375, 625, 875];
+  return (
+    <svg aria-hidden viewBox="0 0 1000 44" preserveAspectRatio="none" className="pointer-events-none relative z-10 -mb-0.5 hidden h-11 w-full lg:block">
+      <path d="M0 14H1000" className="bus-line" />
+      <path d="M0 14H1000" pathLength={100} className="bus-pulse" />
+      {xs.map((x, i) => (
+        <g key={x} style={{ ["--c" as string]: colors[i] }}>
+          <path d={`M${x} 14V44`} className="bus-stub" />
+          <path d={`M${x} 14V44`} pathLength={100} className="bus-stub-pulse" data-i={i} />
+          <circle cx={x} cy="14" r="5" className="bus-node" data-i={i} />
+        </g>
+      ))}
     </svg>
   );
 }
@@ -162,6 +214,7 @@ const FIREFLIES: { left: string; top: string; delay: string; dur: string }[] = [
 export function NatureDecor() {
   return (
     <>
+      <Butterfly3D size={110} className="butterfly-fly absolute left-[6%] top-12 z-10 hidden sm:block" />
       {LEAVES.map((l) => (
         <HomeArt key={l.img} name={l.img} size={l.size} className={`${l.cls} absolute z-0 hidden sm:block ${l.pos}`} style={{ animationDelay: l.delay }} />
       ))}
@@ -174,9 +227,6 @@ export function NatureDecor() {
           style={{ left: f.left, animationDelay: f.delay, animationDuration: f.dur }}
         />
       ))}
-      <div aria-hidden className="butterfly-path pointer-events-none absolute left-0 top-16 z-0 hidden sm:block">
-        <AnimatedArt name="motyl" height={52} />
-      </div>
       <div aria-hidden className="ladybug-walk pointer-events-none absolute z-0 hidden sm:block">
         <AnimatedArt name="beruska" height={26} />
       </div>
@@ -232,10 +282,31 @@ export function HomeArt({
   );
 }
 
+// Animace z Blenderu (animované webp v public/home/anim); při vypnutých animacích se ukáže první snímek.
+export function AnimArt({
+  name,
+  size,
+  height,
+  className = "",
+  style,
+}: {
+  name: string;
+  size: number;
+  height?: number;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <picture className={`pointer-events-none block select-none ${className}`} style={{ width: size, height: height ?? size, ...style }}>
+      <source media="(prefers-reduced-motion: reduce)" srcSet={`/home/anim/${name}-still.webp`} />
+      <img src={`/home/anim/${name}.webp`} alt="" width={size} height={height ?? size} draggable={false} className="h-full w-full object-contain" />
+    </picture>
+  );
+}
+
 // Animovaný pás snímků z Blenderu (public/home/anim/<name>.webp, viz home_anim.py): CSS `steps()` posouvá
 // pozadí po snímcích. `ratio` je šířka ku výšce jednoho snímku. Při „omezit pohyb“ zůstane první snímek.
 export const ANIM: Record<string, { n: number; ratio: number; dur: number }> = {
-  motyl: { n: 10, ratio: 1.371, dur: 0.5 },
   beruska: { n: 8, ratio: 1.492, dur: 0.8 },
   svetluska: { n: 12, ratio: 0.996, dur: 0.6 },
   slunce: { n: 16, ratio: 1.0, dur: 6 },
@@ -279,11 +350,11 @@ export function AnimatedArt({
   );
 }
 
-// Raketa letící po vlnovce přes celou šířku.
+// Raketa letící po vlnovce přes celou šířku (3D animace s plápolajícím plamenem).
 export function Rocket({ className = "" }: { className?: string }) {
   return (
     <div aria-hidden className={`rocket-path pointer-events-none absolute left-0 z-0 select-none ${className}`}>
-      <div className="rocket-flame" />
+      <AnimArt name="raketa" size={72} height={90} style={{ filter: "drop-shadow(0 6px 14px rgba(0,0,0,0.45))" }} />
     </div>
   );
 }

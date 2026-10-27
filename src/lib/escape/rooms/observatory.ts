@@ -1,0 +1,84 @@
+import { buildRoom, type RoomKit } from "./kit";
+
+// Hvězdárna (vesmír a přírodověda). Kód ke dveřím: 8145. Texty hádanek jsou zatím jen česky.
+export const OBSERVATORY_KIT: RoomKit = {
+  id: "observatory",
+  theme: { wall: "#27305e", floor: "#434a7d", accent: "#ffd24d", title: "Hvězdárna" },
+  intro:
+    "Stmívá se a kupole hvězdárny se zavřela. Astronom odjel a ty jsi uvnitř zamčený/á s dalekohledem, mapami hvězd a planetami. Vyřeš hádanky o vesmíru a otevři kupoli dřív, než vyprší čas!",
+  winMessage: "Kupole se otevřela a nad tebou se rozzářila obloha plná hvězd. Astronom ti zamával: „Správný objevitel vesmíru!“",
+  notes: [
+    "První číslice kódu: kolik planet má Sluneční soustava?",
+    "Druhá číslice kódu: kolik měsíců má Země?",
+    "Třetí číslice kódu: kolik je ročních období?",
+    "Čtvrtá číslice kódu: kolik cípů má klasická hvězda na obrázku?",
+  ],
+  things: {
+    key: { name: "Klíč od skříňky", symbol: "🗝", description: "Malý stříbrný klíč s hvězdičkou." },
+    partB: { name: "Magnet", symbol: "🧲", description: "Silný podkovovitý magnet." },
+    partC: { name: "Dlouhá tyč", symbol: "📏", description: "Kovová tyč s očkem na konci." },
+    tool: { name: "Magnetická tyč", symbol: "🧲", description: "Tyč s magnetem na konci. Dosáhne na vysokou polici." },
+    card: { name: "Přístupová karta", symbol: "🪪", description: "Karta, která zapne velký dalekohled." },
+  },
+  recipeMessage: "Magnet jsi přidělal/a na tyč. Máš pomůcku, která dosáhne na vysokou polici!",
+  places: {
+    a: { label: "Hvězdná mapa", icon: "🗺️" },
+    b: { label: "Skříňka s čočkami", icon: "🔭" },
+    c: { label: "Stůl s planetami", icon: "🪐" },
+    d: { label: "Vysoká police", icon: "📦" },
+    e: { label: "Velký dalekohled", icon: "🔭" },
+    door: { label: "Dveře kupole", icon: "🚪" },
+    examine: { label: "Glóbus oblohy", icon: "🌌", message: "Glóbus ukazuje souhvězdí. Je krásný, ale s útěkem ti nepomůže." },
+    robot: "Pomocník Atom",
+  },
+  lockedB: "Skříňka je zamčená. Potřebuješ klíč. Vyber ho v inventáři a klikni na skříňku.",
+  lockedD: "Na vysoké polici je něco užitečného, ale nedosáhneš tam. Potřebuješ něco dlouhého s magnetem.",
+  lockedE: "Dalekohled chce přístupovou kartu. Vyber ji v inventáři a klikni na dalekohled.",
+  lockedDoor: "Kupole je zamčená. Nejdřív musíš vyřešit úlohu s dalekohledem.",
+  useMessage: "Magnetickou tyčí jsi z vysoké police přitáhl/a přístupovou kartu a lísteček s poznámkou.",
+  a: {
+    title: "Hvězdná mapa",
+    prompt: "Na mapě je zakroužkovaná planeta s popiskem: „Nejmenší planeta Sluneční soustavy a ta, která je nejblíž ke Slunci.“ Jak se jmenuje?",
+    answers: ["merkur"],
+    placeholder: "planeta",
+    hints: ["Je menší než Země a velmi rychle obíhá Slunce.", "Její jméno začíná na M a je podle římského posla bohů.", "Je to Merkur."],
+    rewardMessage: "Za mapou je přilepený klíč a lísteček s číslem.",
+  },
+  b: {
+    title: "Skříňka s čočkami",
+    prompt: "Zámek skříňky se odemkne, když přiřadíš k planetě její typickou vlastnost.",
+    pairs: [
+      ["Mars", "Rudá planeta"],
+      ["Jupiter", "Největší planeta"],
+      ["Saturn", "Planeta s prstenci"],
+      ["Venuše", "Nejžhavější planeta"],
+    ],
+    hints: ["Mars je rudý, protože jeho povrch obsahuje rez.", "Největší planeta je plynný obr Jupiter.", "Saturn je slavný svými prstenci."],
+    rewardMessage: "Skříňka se otevřela. Uvnitř je magnet a lístek s číslem.",
+  },
+  c: {
+    title: "Stůl s planetami",
+    prompt: "Na stole leží modely planet. Seřaď je od Slunce nejblíž až po nejdál.",
+    items: ["Merkur", "Venuše", "Země", "Mars", "Jupiter"],
+    hints: ["Merkur je Slunci nejblíž.", "Země je třetí planeta od Slunce.", "Mars je čtvrtý a Jupiter pátý."],
+    rewardMessage: "Planety jsou na svých drahách. Pod nimi je dlouhá tyč a lístek.",
+  },
+  e: {
+    title: "Velký dalekohled",
+    prompt: "Dalekohled se zeptá: „Co obíhá kolem Země?“",
+    options: ["Slunce", "Měsíc", "Mars", "Kometa"],
+    correct: 1,
+    hints: ["Kolem Země obíhá jeden přirozený průvodce.", "V noci ho vidíš na obloze, někdy jako srpek, někdy jako kruh.", "Správně je Měsíc."],
+    rewardMessage: "Dalekohled se zaostřil, ozvalo se cvaknutí a zámek kupole se odblokoval. Zbývá zadat kód.",
+  },
+  door: {
+    title: "Dveře kupole",
+    prompt: "Na dveřích svítí čtyřmístný kód. Přečti si všechny čtyři poznámky ve svém inventáři a odvoď z nich číslice.",
+    answers: ["8145"],
+    placeholder: "čtyři číslice",
+    hints: ["Otevři inventář a přečti si všechny čtyři poznámky.", "Planet je osm a Země má jeden Měsíc.", "Ročních období jsou čtyři a hvězda má pět cípů. Kód je 8145."],
+    rewardMessage: "Zámek cvakl a kupole se otevřela!",
+  },
+};
+
+export const OBSERVATORY_ROOM = buildRoom(OBSERVATORY_KIT);

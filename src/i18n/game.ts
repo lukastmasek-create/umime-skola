@@ -1,6 +1,7 @@
 import type { Locale } from "./config";
 
 export type GameQuestion = {
+  id?: string;
   prompt: string;
   options: [string, string, string, string];
   correctIndex: number;

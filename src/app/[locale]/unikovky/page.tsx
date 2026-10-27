@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { getEscapeText } from "@/i18n/escape";
 import { isLocale, type Locale } from "@/i18n/config";
 
+// Místnosti, které mají ilustrované pozadí ve veřejné složce; laboratoř je kreslená v SVG.
+const COVERS = new Set(["museum", "expedition", "jungle", "pirate", "kitchen", "library", "observatory", "castle"]);
 const COLORS = ["#7ee0b0", "#ffc933", "#8fd0ff", "#ff8a6b"];
 
 export default async function EscapeRoomsPage({
@@ -26,8 +28,13 @@ export default async function EscapeRoomsPage({
           const content = (
             <>
               <div
-                className="flex h-28 items-end justify-between rounded-xl border-2 border-[var(--edge)] p-3"
-                style={{ background: COLORS[i % COLORS.length] }}
+                className="flex h-32 items-end justify-between rounded-xl border-2 border-[var(--edge)] p-3"
+                style={{
+                  backgroundColor: COLORS[i % COLORS.length],
+                  ...(COVERS.has(room.id)
+                    ? { backgroundImage: `url(/escape/${room.id}/bg.webp)`, backgroundSize: "cover", backgroundPosition: "center" }
+                    : {}),
+                }}
               >
                 <span className="pill bg-[var(--surface)] px-2.5 py-1">{room.subject}</span>
                 <span className="pill bg-[var(--surface)] px-2.5 py-1">

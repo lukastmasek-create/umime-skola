@@ -5,7 +5,10 @@ import { isLocale, type Locale } from "@/i18n/config";
 
 const COLORS = ["#8fd0ff", "#ff8a6b", "#7ee0b0", "#ffc933"];
 // Hra na stejném pořadí jako v texty.games: Základna, Mazlíčci, Farma, Město. null = zatím se chystá.
-const PATHS = ["zakladna", "mazlicci", null, "mesto"] as const;
+const PATHS = ["zakladna", "mazlicci", "farma", "mesto"] as const;
+
+// Ilustrace uprostřed karty ve stejném pořadí jako hry .
+const ART = ["/base/ships/explorer.webp", "/pets/fox-happy.webp", "/farm/animals/cow.webp", "/city/sprites/apartments.png"] as const;
 
 export default async function IdleGamesPage({
   params,
@@ -30,17 +33,26 @@ export default async function IdleGamesPage({
           const body = (
             <>
               <div
-                className="flex h-28 items-end justify-between rounded-xl border-2 border-[var(--edge)] p-3"
+                className="relative flex h-28 items-end justify-between overflow-hidden rounded-xl border-2 border-[var(--edge)] p-3"
                 style={{ background: COLORS[i % COLORS.length] }}
               >
+                {ART[i] && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={ART[i]}
+                    alt=""
+                    aria-hidden
+                    className="pointer-events-none absolute bottom-1 left-1/2 h-24 w-auto -translate-x-1/2 object-contain drop-shadow-[0_4px_0_rgba(22,19,43,0.25)]"
+                  />
+                )}
                 <span
-                  className="text-4xl font-extrabold leading-none text-[#16132b]"
+                  className="relative text-4xl font-extrabold leading-none text-[#16132b]"
                   style={{ fontFamily: "var(--font-heading)" }}
                 >
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <span
-                  className={`pill px-2.5 py-1 ${href ? "bg-[var(--accent-500)] text-white" : "bg-[var(--surface)]"}`}
+                  className={`pill relative px-2.5 py-1 ${href ? "bg-[var(--accent-500)] text-white" : "bg-[var(--surface)]"}`}
                 >
                   {href ? t.play : t.soon}
                 </span>

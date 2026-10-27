@@ -65,7 +65,7 @@ const cs: EscapeText = {
     subtitle: "Zamčená místnost, hádanky z učiva a čas, který běží. Dostaň se ven dřív, než bude pozdě.",
     play: "Vstoupit",
     soon: "Brzy",
-    note: "Na dalších místnostech pracujeme. Obsah hádanek je zatím jen česky.",
+    note: "Na dalších místnostech pracujeme. Hádanky jsou přeložené do všech jazyků webu.",
     rooms: [
       { id: "lab", name: "Laboratoř doktora Atoma", subject: "Chemie", description: "Reaktor se rozjíždí a dveře jsou zamčené. Najdi vodítka, namíchej správné látky a otevři kód.", available: true },
       { id: "museum", name: "Zamčené muzeum", subject: "Dějepis", description: "Vitríny, časová osa a hádanky o významných událostech.", available: true },
@@ -73,6 +73,9 @@ const cs: EscapeText = {
       { id: "jungle", name: "Ztracená džungle", subject: "Biologie", description: "Rostliny, živočichové a jejich třídění.", available: true },
       { id: "pirate", name: "Pirátská loď", subject: "Angličtina", description: "Zamknutá kajuta, anglická slovíčka a tajná mapa pokladu.", available: true },
       { id: "kitchen", name: "Kuchyně šéfkuchaře", subject: "Matematika", description: "Recepty, váhy a čas. Spočítej správně, než koláč shoří.", available: true },
+      { id: "library", name: "Tajná knihovna", subject: "Čeština", description: "Regály, autoři a příběhy. Najdi cestu ven dřív, než knihovník zhasne.", available: true },
+      { id: "observatory", name: "Hvězdárna", subject: "Vesmír", description: "Planety, dalekohled a hvězdná mapa. Otevři kupoli a podívej se na oblohu.", available: true },
+      { id: "castle", name: "Hrad na kopci", subject: "Dějepis", description: "Erby, rytíři a padací most. Vyřeš hádanky ze středověku.", available: true },
     ],
   },
   ui: {
@@ -130,7 +133,7 @@ const en: EscapeText = {
     subtitle: "A locked room, puzzles from school subjects and a running clock. Get out before it's too late.",
     play: "Enter",
     soon: "Soon",
-    note: "We're working on more rooms. Puzzle content is Czech only for now.",
+    note: "We're working on more rooms. The puzzles are translated into all languages of the site.",
     rooms: [
       { id: "lab", name: "Doctor Atom's laboratory", subject: "Chemistry", description: "The reactor is spinning up and the door is locked. Find clues, mix the right substances and crack the code.", available: true },
       { id: "museum", name: "The locked museum", subject: "History", description: "Display cases, a timeline and puzzles about important events.", available: true },
@@ -138,6 +141,9 @@ const en: EscapeText = {
       { id: "jungle", name: "The lost jungle", subject: "Biology", description: "Plants, animals and how to classify them.", available: true },
       { id: "pirate", name: "Pirate ship", subject: "English", description: "A locked cabin, English words and a secret treasure map.", available: true },
       { id: "kitchen", name: "The chef's kitchen", subject: "Maths", description: "Recipes, weights and time. Count right before the cake burns.", available: true },
+      { id: "library", name: "The secret library", subject: "Czech language", description: "Shelves, authors and stories. Find the way out before the librarian turns off the lights.", available: true },
+      { id: "observatory", name: "The observatory", subject: "Space", description: "Planets, a telescope and a star map. Open the dome and look at the sky.", available: true },
+      { id: "castle", name: "The castle on the hill", subject: "History", description: "Coats of arms, knights and a drawbridge. Solve riddles from the Middle Ages.", available: true },
     ],
   },
   ui: {
@@ -195,7 +201,7 @@ const de: EscapeText = {
     subtitle: "Ein verschlossener Raum, Rätsel aus dem Schulstoff und eine laufende Uhr. Komm raus, bevor es zu spät ist.",
     play: "Betreten",
     soon: "Bald",
-    note: "An weiteren Räumen wird gearbeitet. Die Rätsel sind vorerst nur auf Tschechisch.",
+    note: "An weiteren Räumen wird gearbeitet. Die Rätsel sind in alle Sprachen der Seite übersetzt.",
     rooms: [
       { id: "lab", name: "Labor von Doktor Atom", subject: "Chemie", description: "Der Reaktor fährt hoch und die Tür ist verschlossen. Finde Hinweise, mische die richtigen Stoffe und knacke den Code.", available: true },
       { id: "museum", name: "Das verschlossene Museum", subject: "Geschichte", description: "Vitrinen, ein Zeitstrahl und Rätsel zu wichtigen Ereignissen.", available: true },
@@ -203,6 +209,9 @@ const de: EscapeText = {
       { id: "jungle", name: "Der verlorene Dschungel", subject: "Biologie", description: "Pflanzen, Tiere und ihre Einteilung.", available: true },
       { id: "pirate", name: "Das Piratenschiff", subject: "Englisch", description: "Eine verschlossene Kajüte, englische Wörter und eine geheime Schatzkarte.", available: true },
       { id: "kitchen", name: "Die Küche des Chefkochs", subject: "Mathe", description: "Rezepte, Gewichte und Zeit. Rechne richtig, bevor der Kuchen verbrennt.", available: true },
+      { id: "library", name: "Die geheime Bibliothek", subject: "Tschechisch", description: "Regale, Autoren und Geschichten. Finde den Ausgang, bevor der Bibliothekar das Licht löscht.", available: true },
+      { id: "observatory", name: "Die Sternwarte", subject: "Weltall", description: "Planeten, ein Teleskop und eine Sternkarte. Öffne die Kuppel und schau zum Himmel.", available: true },
+      { id: "castle", name: "Die Burg auf dem Hügel", subject: "Geschichte", description: "Wappen, Ritter und eine Zugbrücke. Löse Rätsel aus dem Mittelalter.", available: true },
     ],
   },
   ui: {
@@ -260,7 +269,7 @@ const ru: EscapeText = {
     subtitle: "Запертая комната, загадки из школьных предметов и бегущее время. Выберись, пока не поздно.",
     play: "Войти",
     soon: "Скоро",
-    note: "Мы работаем над новыми комнатами. Загадки пока только на чешском.",
+    note: "Мы работаем над новыми комнатами. Загадки переведены на все языки сайта.",
     rooms: [
       { id: "lab", name: "Лаборатория доктора Атома", subject: "Химия", description: "Реактор разгоняется, а дверь заперта. Найди подсказки, смешай нужные вещества и подбери код.", available: true },
       { id: "museum", name: "Запертый музей", subject: "История", description: "Витрины, лента времени и загадки о важных событиях.", available: true },
@@ -268,6 +277,9 @@ const ru: EscapeText = {
       { id: "jungle", name: "Потерянные джунгли", subject: "Биология", description: "Растения, животные и их классификация.", available: true },
       { id: "pirate", name: "Пиратский корабль", subject: "Английский", description: "Запертая каюта, английские слова и тайная карта сокровищ.", available: true },
       { id: "kitchen", name: "Кухня шеф-повара", subject: "Математика", description: "Рецепты, вес и время. Посчитай верно, пока пирог не сгорел.", available: true },
+      { id: "library", name: "Тайная библиотека", subject: "Чешский язык", description: "Полки, авторы и истории. Найди выход, пока библиотекарь не выключил свет.", available: true },
+      { id: "observatory", name: "Обсерватория", subject: "Космос", description: "Планеты, телескоп и карта звёзд. Открой купол и посмотри на небо.", available: true },
+      { id: "castle", name: "Замок на холме", subject: "История", description: "Гербы, рыцари и подъёмный мост. Реши загадки Средневековья.", available: true },
     ],
   },
   ui: {

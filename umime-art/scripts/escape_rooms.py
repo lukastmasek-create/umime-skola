@@ -1,4 +1,4 @@
-"""Render pěti únikových místností: museum, expedition, jungle, pirate, kitchen.
+"""Render osmi únikových místností: museum, expedition, jungle, pirate, kitchen, library, observatory, castle.
 
     blender -b --python umime-art/scripts/escape_rooms.py -- <výstupní složka> [místnost]
     python umime-art/scripts/escape_rooms.py <výstupní složka> [místnost]
@@ -450,7 +450,166 @@ def kitchen(s):
     robot()
 
 
-ROOMS = dict(museum=museum, expedition=expedition, jungle=jungle, pirate=pirate, kitchen=kitchen)
+def library(s):
+    base(("#e6d2b0", "#c9b08a", 4.0), ("#8a6a48", "#7a5c3c", 14.0), "#ffe9c4")
+    wood = M("#5a3a24", rough=0.55)
+    pal = ["#c0392b", "#3248f0", "#17a864", "#ffc933", "#8e44ad", "#e67e22", "#16a085", "#d35490"]
+    # a: regál s klasiky
+    for a in ((70, 70, 260, 78), (70, 202, 260, 210), (70, 70, 78, 210), (252, 70, 260, 210)):
+        box(*a, 0.42, wood, bevel=0.01)
+    box(78, 78, 252, 202, 0.04, M("#2a1a10", rough=0.9), front=0.0, bevel=0)
+    for row, yy in enumerate((78, 124, 170)):
+        box(76, yy + 38, 254, yy + 46, 0.4, M("#7a4b2a", rough=0.5), bevel=0.008)
+        x = 84
+        i = row * 3
+        while x < 240:
+            w = 9 + (i * 7) % 8
+            h = 26 + (i * 11) % 12
+            box(x, yy + 38 - h, x + w, yy + 38, 0.28, M(pal[i % len(pal)], rough=0.55), front=0.08, bevel=0.006)
+            x += w + 2
+            i += 1
+    # b: zamčená skříň
+    cabinet(s, "#5a3a24", "#7a4b2a", "#d9a54a", "#2a1a10", ["#c0392b", "#3248f0", "#17a864", "#ffc933", "#8e44ad"])
+    # c: čtenářský stůl s knihou a lampou
+    desk(80, 290, 336, "#7a5535")
+    box(110, 322, 172, 336, 0.34, M("#f6f0e0", rough=0.7), front=0.12, bevel=0.01)
+    box(172, 322, 234, 336, 0.34, M("#f6f0e0", rough=0.7), front=0.12, bevel=0.01)
+    box(170, 322, 174, 336, 0.34, M("#8e44ad", rough=0.6), front=0.12, bevel=0.003)
+    for yy in (326, 330):
+        box(118, yy, 164, yy + 1.5, 0.01, M("#9c8c6d"), front=0.47, bevel=0)
+        box(180, yy, 226, yy + 1.5, 0.01, M("#9c8c6d"), front=0.47, bevel=0)
+    cyl(262, 300, 3, 26, M("#c9a46a", metal=0.8, rough=0.3), front=0.25)
+    sphere(262, 288, 14, M("#17a864", rough=0.3, emit=0.4), front=0.2, sz=0.7)
+    box(252, 330, 274, 336, 0.16, M("#c9a46a", metal=0.8, rough=0.3), front=0.18, bevel=0.01)
+    # d: nejvyšší police s průkazem
+    box(466, 70, 594, 90, 0.34, wood, bevel=0.012)
+    for i, xx in enumerate((470, 482, 494, 508)):
+        box(xx, 40, xx + 11, 70, 0.26, M(pal[(i + 3) % len(pal)], rough=0.55), front=0.04, bevel=0.005)
+    for i, xx in enumerate((574, 560, 548)):
+        box(xx, 44, xx + 11, 70, 0.26, M(pal[(i + 1) % len(pal)], rough=0.55), front=0.04, bevel=0.005)
+    if not s["d_used"]:
+        c = box(520, 40, 548, 76, 0.02, M("#ffffff", rough=0.4), front=0.14, bevel=0.004)
+        box(523, 46, 545, 50, 0.01, M("#3248f0"), front=0.16, bevel=0)
+        sphere(528, 62, 5, M("#f6f0e0", rough=0.6), front=0.16, sz=0.6)
+        c.rotation_euler = (0, math.radians(-8), 0)
+    # e: katalogový počítač
+    box(476, 292, 584, 350, 0.4, M("#6f6250", rough=0.5), bevel=0.02)
+    box(486, 252, 574, 306, 0.14, M("#cfd8e3", metal=0.4, rough=0.35), bevel=0.02)
+    box(494, 260, 566, 298, 0.03, M("#0f5132" if s["e_on"] else "#0e1a3a", rough=0.2, emit=0.8 if s["e_on"] else 0), front=0.14, bevel=0)
+    if s["e_on"]:
+        for i, yy in enumerate((266, 276, 286)):
+            box(500, yy, 500 + 56 - i * 12, yy + 4, 0.012, M("#7ee0b0", emit=3.0), front=0.17, bevel=0)
+    box(490, 318, 570, 332, 0.1, M("#444a58", rough=0.5), front=0.4, bevel=0.01)
+    sphere(560, 268, 0.01, M("#16132b"), front=0.0)
+    # examine: globus
+    cyl(615, 322, 3, 40, M("#c9a46a", metal=0.8, rough=0.3), front=0.18)
+    box(603, 318, 627, 324, 0.2, M("#5a3a24", rough=0.5), front=0.1, bevel=0.01)
+    sphere(615, 268, 17, M("#3b82f6", rough=0.35), front=0.18)
+    torus(615, 268, 21, 2, M("#c9a46a", metal=0.8, rough=0.3), rot=(90, 0, 0), front=0.14)
+    door("#6b3f23", "#5a3a24", s, "double")
+    robot()
+
+
+def observatory(s):
+    base(("#27305e", "#1c2347", 4.0), ("#434a7d", "#3a4070", 14.0), "#cfd8ff")
+    # a: hvězdná mapa s Merkurem
+    box(80, 70, 250, 200, 0.06, M("#10163a", rough=0.7), bevel=0.02)
+    box(88, 78, 242, 192, 0.03, M("#1a2250", rough=0.5), front=0.06, bevel=0.004)
+    stars = [(104, 100), (130, 92), (150, 118), (178, 100), (205, 128), (226, 104), (118, 150), (160, 166), (196, 172), (232, 150), (140, 134)]
+    for i, (sx, sy) in enumerate(stars):
+        sphere(sx, sy, 2.4 + (i % 3), M("#fff4c0", emit=5.0), front=0.09)
+    torus(118, 150, 12, 2, M("#ff5a3c", emit=2.5), front=0.1)
+    sphere(118, 150, 6, M("#b8b0a0", rough=0.6), front=0.1)
+    # b: skříňka s čočkami
+    cabinet(s, "#3a3f6b", "#4a5088", "#ffd24d", "#171b38", ["#5be7ff", "#ffd24d", "#ff8fb3", "#7ee0b0"])
+    # c: stůl s planetami
+    desk(80, 290, 336, "#5a4a7a")
+    for (xx, r, col) in ((112, 9, "#b8b0a0"), (146, 13, "#f0c070"), (184, 15, "#3b82f6"), (222, 11, "#e5484d"), (262, 20, "#e0a870")):
+        cyl(xx, 336 - r * 2, 1.6, r * 2 + 4, M("#cfd8e3", metal=0.8, rough=0.3), front=0.2)
+        sphere(xx, 336 - r * 2 - r + 2, r, M(col, rough=0.45), front=0.2)
+    torus(262, 288, 28, 3, M("#e8d2a0", rough=0.5), rot=(90, 0, 0), front=0.16).scale = (1, 1, 0.35)
+    # d: vysoká police
+    box(466, 70, 594, 90, 0.34, M("#5a4a7a", rough=0.6), bevel=0.012)
+    for xx, c in ((476, "#5be7ff"), (570, "#ffd24d")):
+        cyl(xx, 58, 9, 28, M(c, glass=True), front=0.1)
+    box(494, 54, 520, 70, 0.2, M("#10163a", rough=0.6), front=0.08, bevel=0.01)
+    if not s["d_used"]:
+        c = box(526, 40, 556, 78, 0.02, M("#ffffff", rough=0.4), front=0.14, bevel=0.004)
+        box(530, 46, 552, 50, 0.01, M("#3248f0"), front=0.16, bevel=0)
+        sphere(538, 62, 5, M("#ffd24d", metal=0.8, rough=0.3), front=0.16, sz=0.6)
+        c.rotation_euler = (0, math.radians(8), 0)
+    # e: velký dalekohled
+    box(482, 308, 578, 350, 0.4, M("#434a7d", metal=0.4, rough=0.4), bevel=0.02)
+    for lx in (510, 550):
+        cyl(lx, 290, 3, 60, M("#cfd8e3", metal=0.8, rough=0.3), front=0.2)
+    tube = cyl(530, 280, 18, 110, M("#e8ecf4", metal=0.5, rough=0.3), front=0.1)
+    tube.rotation_euler = (0, math.radians(38), 0)
+    ring = torus(500, 306, 19, 3, M("#ffd24d", metal=0.8, rough=0.3), rot=(90, 38, 0), front=0.12)
+    sphere(566, 256, 7, M("#16132b", rough=0.3), front=0.22)
+    sphere(493, 318, 12, M("#5be7ff" if s["e_on"] else "#2a3a5a", emit=4.0 if s["e_on"] else 0, rough=0.1), front=0.22)
+    sphere(498, 330, 4, M("#3ddc97" if s["e_on"] else "#ff5a3c", emit=5.0), front=0.4)
+    # examine: glóbus oblohy
+    cyl(615, 322, 3, 40, M("#ffd24d", metal=0.8, rough=0.3), front=0.18)
+    box(603, 318, 627, 324, 0.2, M("#434a7d", rough=0.5), front=0.1, bevel=0.01)
+    sphere(615, 268, 17, M("#10163a", rough=0.4), front=0.18)
+    for (dx, dy) in ((-6, -6), (7, -2), (-2, 6), (6, 9), (-9, 4)):
+        sphere(615 + dx, 268 + dy, 1.6, M("#fff4c0", emit=5.0), front=0.19)
+    door("#2a2f55", "#ffd24d", s, "porthole", "#cfe8ff", "#ffd24d")
+    robot()
+
+
+def castle(s):
+    base(("#cfc7b8", "#a39b8c", 5.0), ("#8a8579", "#7a7569", 14.0), "#fff1d0")
+    stone = M("#9c9486", rough=0.8)
+    # a: erb na zdi
+    box(120, 74, 220, 150, 0.1, M("#c0392b", rough=0.55), bevel=0.02)
+    box(120, 74, 170, 112, 0.04, M("#f6f0e0", rough=0.55), front=0.1, bevel=0.004)
+    box(170, 112, 220, 150, 0.04, M("#f6f0e0", rough=0.55), front=0.1, bevel=0.004)
+    cone(170, 168, 50, 36, M("#c0392b", rough=0.55), front=0.0).rotation_euler = (math.radians(180), 0, 0)
+    for (dx, dy) in ((145, 93), (195, 131)):
+        sphere(dx, dy, 8, M("#ffc933", metal=0.7, rough=0.3), front=0.14, sz=0.5)
+    cyl(170, 66, 20, 6, M("#ffc933", metal=0.8, rough=0.3), front=0.04)
+    for xx in (82, 258):
+        box(xx - 8, 72, xx + 8, 180, 0.04, M("#3248f0", rough=0.6), front=0.06, bevel=0.004)
+        cone(xx, 198, 8, 22, M("#3248f0", rough=0.6), front=0.0).rotation_euler = (math.radians(180), 0, 0)
+    # b: zbrojnice
+    cabinet(s, "#4a3a2a", "#5f4a36", "#c9a46a", "#2a2018", ["#b8c4d6", "#c0392b", "#3b82f6", "#ffc933"])
+    # c: rytířský stůl
+    desk(80, 290, 336, "#6b4a2a")
+    box(112, 326, 210, 336, 0.34, M("#f3e4c0", rough=0.8), front=0.12, bevel=0.01)
+    cyl(112, 331, 5, 0.3, M("#e0c890", rough=0.8), axis="y", front=0.12)
+    box(124, 329, 196, 331, 0.01, M("#9c8c6d"), front=0.47, bevel=0)
+    cyl(250, 306, 6, 26, M("#fff4d6", rough=0.6), front=0.22)
+    sphere(250, 292, 4, M("#ffb347", emit=6.0), front=0.22, sz=1.3)
+    box(238, 330, 262, 336, 0.16, M("#444a58", metal=0.7, rough=0.4), front=0.18, bevel=0.01)
+    # d: vysoký výklenek s pečetí
+    for a in ((464, 14, 596, 24), (464, 84, 596, 92), (464, 14, 474, 92), (586, 14, 596, 92)):
+        box(*a, 0.34, M("#6f6a60", rough=0.9), bevel=0.01)
+    box(474, 22, 586, 90, 0.04, M("#2a2622", rough=0.9), front=0.0, bevel=0)
+    sphere(488, 34, 4, M("#ffb347", emit=6.0), front=0.1, sz=1.4)
+    sphere(572, 34, 4, M("#ffb347", emit=6.0), front=0.1, sz=1.4)
+    if not s["d_used"]:
+        cyl(530, 66, 15, 0.08, M("#c9a46a", metal=0.7, rough=0.35), axis="y", front=0.12)
+        cyl(530, 66, 10, 0.09, M("#c0392b", rough=0.4), axis="y", front=0.12)
+    # e: kolo padacího mostu
+    box(482, 270, 578, 350, 0.36, M("#6b4a2a", rough=0.65), bevel=0.02)
+    torus(530, 306, 30, 5, M("#8b5e3c", rough=0.6), rot=(90, 0, 0), front=0.34)
+    for a in (0, 45, 90, 135):
+        r = math.radians(a)
+        b = box(528, 276, 532, 336, 0.06, M("#8b5e3c", rough=0.6), front=0.34, bevel=0.004)
+        b.rotation_euler = (0, r, 0)
+    sphere(530, 306, 8, M("#c9a46a", metal=0.8, rough=0.3), front=0.4)
+    sphere(494, 282, 5, M("#3ddc97" if s["e_on"] else "#ff5a3c", emit=5.0), front=0.36)
+    # examine: rytířské brnění
+    box(602, 268, 628, 322, 0.24, M("#b8c4d6", metal=0.9, rough=0.3), front=0.0, bevel=0.02)
+    sphere(615, 250, 14, M("#b8c4d6", metal=0.9, rough=0.25), front=0.0, sz=1.15)
+    box(606, 246, 624, 252, 0.04, M("#16132b"), front=0.22, bevel=0.002)
+    cyl(615, 232, 3, 18, M("#c0392b", rough=0.5), front=0.1)
+    door("#5a3a24", "#6f6a60", s, "plank", "#fff1c0", "#444a58")
+    robot()
+
+
+ROOMS = dict(museum=museum, expedition=expedition, jungle=jungle, pirate=pirate, kitchen=kitchen, library=library, observatory=observatory, castle=castle)
 
 
 # ------------------------------------------------------------------------------------------
@@ -558,6 +717,39 @@ def i_card(col="#ffffff"):
     box(-6, 30, 40, 36, 0.012, M("#9c9486"), front=0.04, bevel=0)
 
 
+def i_ladder(col, ln=150):
+    g = M(col, rough=0.6)
+    for xx in (-22, 22):
+        box(xx - 5, -ln / 2, xx + 5, ln / 2, 0.1, g, bevel=0.008)
+    for yy in range(int(-ln / 2) + 20, int(ln / 2) - 10, 32):
+        box(-22, yy, 22, yy + 7, 0.1, M("#c9a46a", rough=0.6), front=0.0, bevel=0.005)
+
+
+def i_magnet():
+    g = M("#b8c4d6", metal=0.9, rough=0.3)
+    box(-44, -50, -22, 40, 0.12, M("#c0392b", rough=0.4), bevel=0.01)
+    box(22, -50, 44, 40, 0.12, M("#3b82f6", rough=0.4), bevel=0.01)
+    box(-44, 40, 44, 62, 0.12, M("#d9a54a", metal=0.8, rough=0.3), bevel=0.01)
+    box(-44, -62, -22, -50, 0.12, g, bevel=0.005)
+    box(22, -62, 44, -50, 0.12, g, bevel=0.005)
+
+
+def i_magtool():
+    i_stick("#cfd8e3", 150, -35)
+    box(40, 82, 82, 104, 0.12, M("#c0392b", rough=0.4), front=0.04, bevel=0.01)
+    box(40, 100, 82, 112, 0.12, M("#b8c4d6", metal=0.9, rough=0.3), front=0.04, bevel=0.005)
+
+
+def i_seal():
+    cyl(0, 0, 54, 0.12, M("#c9a46a", metal=0.7, rough=0.35), axis="y")
+    cyl(0, 0, 42, 0.13, M("#c0392b", rough=0.4), axis="y", front=0.0)
+    for a in range(0, 360, 72):
+        b = box(-4, -30, 4, 0, 0.02, M("#ffd24d", metal=0.8, rough=0.3), front=0.14, bevel=0)
+        r = math.radians(a)
+        b.location = (px(0) + 0.15 * math.sin(r), b.location.y, pz(0) + 0.15 * math.cos(r))
+        b.rotation_euler = (0, -r, 0)
+
+
 NOTES = {i: i for i in (1, 2, 3, 4)}
 
 
@@ -605,6 +797,27 @@ ICONS = {
         partC=lambda: i_hook("#444a58"),
         tool=lambda: i_tool("#5a3d27"),
         card=lambda: i_disc("#ffd24d", "#fffaf0", "compass"),
+    ),
+    "library": dict(
+        key=lambda: i_key("#c9a24a"),
+        partB=lambda: i_ladder("#7a4b2a", 110),
+        partC=lambda: i_ladder("#8b5e3c", 110),
+        tool=lambda: i_ladder("#7a4b2a", 170),
+        card=lambda: i_card("#ffffff"),
+    ),
+    "observatory": dict(
+        key=lambda: i_key("#c0c8d4"),
+        partB=lambda: i_magnet(),
+        partC=lambda: i_stick("#cfd8e3", 150, -25),
+        tool=lambda: i_magtool(),
+        card=lambda: i_card("#dfe8ff"),
+    ),
+    "castle": dict(
+        key=lambda: i_key("#444a58"),
+        partB=lambda: i_hook("#6f6a60"),
+        partC=lambda: i_coil("#b98a5a"),
+        tool=lambda: i_tool("#b98a5a", hook=True),
+        card=lambda: i_seal(),
     ),
     "kitchen": dict(
         key=lambda: i_key("#c0c8d4", "hat"),

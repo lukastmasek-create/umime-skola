@@ -6,12 +6,13 @@ import { ART_ROOMS } from "@/lib/escape/art";
 import { LabScene } from "./LabScene";
 import { RoomScene } from "./RoomScene";
 import { PuzzleModal } from "./PuzzleModal";
-import { ROOMS } from "@/lib/escape/rewards";
+import { getRoom } from "@/lib/escape/rewards";
 import { computeStars, DANGER_PER_MISTAKE, DANGER_PER_MISTAKE_RELAXED } from "@/lib/escape/score";
 import type { Hotspot, Puzzle } from "@/lib/escape/types";
 import { getEscapeText } from "@/i18n/escape";
 import { getAvatar } from "@/lib/avatars";
 import { getTitle } from "@/lib/titles";
+import { DailyRecap } from "@/components/DailyChallenges";
 import type { Locale } from "@/i18n/config";
 
 type Phase = "mode" | "playing" | "won" | "lost";
@@ -32,7 +33,7 @@ const mmss = (total: number) => {
 };
 
 export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string }) {
-  const room = ROOMS[roomId];
+  const room = getRoom(roomId, locale)!;
   const ui = getEscapeText(locale).ui;
   const listHref = `/${locale}/unikovky`;
 
@@ -347,6 +348,7 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
                 </span>
               )}
             </div>
+            {saveState === "saved" && <DailyRecap locale={locale} refreshKey={saved?.xp ?? 0} />}
             {saved && saved.unlocked.length > 0 && (
               <div className="rounded-xl bg-[var(--brand-50)] px-4 py-3 text-sm">
                 <p className="mb-1 font-bold">{ui.unlocked}</p>

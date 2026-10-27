@@ -1,7 +1,7 @@
-import { buildRoom } from "./kit";
+import { buildRoom, type RoomKit } from "./kit";
 
 // Kuchyně šéfkuchaře (matematika). Kód ke dveřím: 7943. Texty hádanek jsou zatím jen česky.
-export const KITCHEN_ROOM = buildRoom({
+export const KITCHEN_KIT: RoomKit = {
   id: "kitchen",
   theme: { wall: "#fff0d6", floor: "#c9b49a", accent: "#e8a24f", title: "Kuchyně šéfkuchaře" },
   intro:
@@ -79,4 +79,6 @@ export const KITCHEN_ROOM = buildRoom({
     hints: ["Otevři inventář a přečti si všechny čtyři poznámky.", "Polovina ze 14 je 7, třetina z 27 je 9 a 25 − 21 = 4.", "Trojúhelník má tři vrcholy. Kód je 7943."],
     rewardMessage: "Zámek cvakl a dveře se otevřely!",
   },
-});
+};
+
+export const KITCHEN_ROOM = buildRoom(KITCHEN_KIT);

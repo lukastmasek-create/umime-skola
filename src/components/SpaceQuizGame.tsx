@@ -17,6 +17,7 @@ import type { HeldKey } from "@/lib/arcade-base";
 import { GAMES, type GameSlug } from "@/lib/games";
 import { getArcadeText, isArcadeSlug } from "@/i18n/arcade";
 import { getGameText, type GameQuestion, type GameText } from "@/i18n/game";
+import { DailyRecap } from "@/components/DailyChallenges";
 import type { Locale } from "@/i18n/config";
 import { isMuted, setMuted, sfx, unlockAudio } from "@/lib/game-fx";
 
@@ -262,6 +263,8 @@ export function SpaceQuizGame({
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(DIFFICULTIES.easy.lives);
   const [combo, setCombo] = useState(0);
+  const [bestCombo, setBestCombo] = useState(0);
+  const answersRef = useRef<{ id: string; correct: boolean }[]>([]);
   const [coins, setCoins] = useState(0);
   const [upgrades, setUpgrades] = useState<Upgrades>(EMPTY_UPGRADES);
   const [resolved, setResolved] = useState<Resolved | null>(null);
@@ -413,6 +416,8 @@ export function SpaceQuizGame({
     setLives(DIFFICULTIES[difficulty].lives + upgrades.life);
     setHintsLeft(DIFFICULTIES[difficulty].hints);
     setCombo(0);
+    setBestCombo(0);
+    answersRef.current = [];
     setQIndex(0);
     setResolved(null);
     setFlash(null);
@@ -440,13 +445,30 @@ export function SpaceQuizGame({
     }
   }
 
+  function recordAnswer(id: string | undefined, correct: boolean) {
+    if (id) answersRef.current.push({ id, correct });
+  }
+
+  // Chyby z kola se zapíšou do opakování (hostům se nic neuloží).
+  function reportAnswers() {
+    if (answersRef.current.length === 0) return;
+    fetch("/api/opakovani", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ results: answersRef.current }),
+    }).catch(() => {});
+    answersRef.current = [];
+  }
+
   function finishRun(survived: boolean) {
+    reportAnswers();
     engineRef.current?.loadQuestion([], 0, { fireCooldown: BASE_FIRE_COOLDOWN, alienSpeedFactor: 1 });
     sfx(survived ? "win" : "lose");
-    const nextCoins = coins + score;
+    const comboBonus = bestCombo > 1 ? bestCombo * 3 : 0;
+    const nextCoins = coins + score + comboBonus;
     setCoins(nextCoins);
     persist(nextCoins, upgrades);
-    claimXp(score);
+    claimXp(score + comboBonus);
     setCompleted(survived);
     setPhase("result");
   }
@@ -506,6 +528,7 @@ export function SpaceQuizGame({
     pausedRef.current = paused;
     handlersRef.current = {
       onHit: (correct) => {
+        recordAnswer(run[qIndex]?.id, correct);
         const earn = () => Math.max(1, Math.round((10 + Math.min(combo, 4) * 5) * DIFFICULTIES[difficulty].mult * (hintUsedRef.current ? 0.5 : 1)));
         if (correct && endless) {
           // Nekonečná hra se nezastavuje: krátká zpráva s vysvětlením a hned další otázka.
@@ -513,6 +536,7 @@ export function SpaceQuizGame({
           setAsked((n) => n + 1);
           setScore((s) => s + pts);
           setCombo((c) => c + 1);
+          setBestCombo((b) => Math.max(b, combo + 1));
           engineRef.current?.popText(combo > 0 ? `+${pts}  🔥×${combo + 1}` : `+${pts}`, "#7ee0b0");
           const q = run[qIndex];
           setToast(`${t.correct} +${pts} · ${q.options[q.correctIndex]} – ${q.explanation}`);
@@ -525,6 +549,7 @@ export function SpaceQuizGame({
           setAsked((n) => n + 1);
           setScore((s) => s + pts);
           setCombo((c) => c + 1);
+          setBestCombo((b) => Math.max(b, combo + 1));
           setResolved({ kind: "correct", pts });
           engineRef.current?.popText(combo > 0 ? `+${pts}  🔥×${combo + 1}` : `+${pts}`, "#7ee0b0");
           enterExplain();
@@ -545,6 +570,7 @@ export function SpaceQuizGame({
         }
       },
       onMiss: () => {
+        recordAnswer(run[qIndex]?.id, false);
         noteMistake(run[qIndex]);
         setAsked((n) => n + 1);
         if (endless && lives - 1 > 0) {
@@ -925,12 +951,18 @@ export function SpaceQuizGame({
           </p>
           <p className="text-sm">
             {t.earned}: <span className="font-bold text-[var(--brand-600)]">+{score}</span>
+            {bestCombo > 1 && (
+              <span className="ml-3 font-bold">
+                🔥 {t.combo} ×{bestCombo} (+{bestCombo * 3})
+              </span>
+            )}
           </p>
           {xpGained > 0 && (
             <p className="pill self-start bg-[var(--accent-yellow)] px-3 py-1.5 text-sm text-[#16132b]">
               +{xpGained} XP
             </p>
           )}
+          <DailyRecap locale={locale} refreshKey={xpGained} />
           {asked > 0 && (
             <p className="text-sm font-semibold">
               {t.summary.replace("{a}", String(Math.max(0, asked - mistakes.length))).replace("{b}", String(asked))}
