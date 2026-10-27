@@ -10,9 +10,9 @@ DEST = os.path.join(ROOT, "..", "public", "home", "anim")
 os.makedirs(DEST, exist_ok=True)
 
 
-def frames(name, size=None):
+def frames(name, size=None, step=1):
     out = []
-    for f in sorted(glob.glob(os.path.join(ROOT, "out", name, "f_*.png"))):
+    for f in sorted(glob.glob(os.path.join(ROOT, "out", name, "f_*.png")))[::step]:
         im = Image.open(f).convert("RGBA")
         if size:
             im = im.resize(size, Image.LANCZOS)
@@ -20,8 +20,8 @@ def frames(name, size=None):
     return out
 
 
-def animated(name, dest, fps=24, quality=70, size=None, loop=0):
-    fr = frames(name, size)
+def animated(name, dest, fps=24, quality=70, size=None, loop=0, step=1):
+    fr = frames(name, size, step)
     path = os.path.join(DEST, dest)
     fr[0].save(path, format="WEBP", save_all=True, append_images=fr[1:], duration=int(1000 / fps), loop=loop,
                quality=quality, method=5, alpha_quality=85)
@@ -73,7 +73,8 @@ if __name__ == "__main__":
     what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons"]
     if "icons" in what: icons()
     if "stills" in what: stills()
-    if "planeta" in what: animated("planeta", "planeta.webp", fps=24, quality=68)
+    # Planeta má hodně jemného detailu: každý druhý snímek a menší rozměr drží soubor pod 1 MB.
+    if "planeta" in what: animated("planeta", "planeta.webp", fps=12, quality=55, size=(616, 409), step=2)
     if "motyl" in what: animated("motyl", "motyl.webp", fps=24, quality=72)
     if "vlajka" in what: animated("vlajka", "vlajka.webp", fps=24, quality=72)
     if "raketa" in what: animated("raketa", "raketa.webp", fps=24, quality=72)
