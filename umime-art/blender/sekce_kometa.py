@@ -112,7 +112,12 @@ def tail_volume(name, length, radius, color, emit, density, streak_scale, seed_o
     nzr = nt.nodes.new("ShaderNodeMapRange"); nzr.inputs["From Min"].default_value = 0.3; nzr.inputs["From Max"].default_value = 0.75; nzr.clamp = True
     nt.links.new(nz.outputs["Fac"], nzr.inputs["Value"])
     prod = nt.nodes.new("ShaderNodeMath"); prod.operation = "MULTIPLY"; nt.links.new(rfp.outputs[0], prod.inputs[0]); nt.links.new(af.outputs[0], prod.inputs[1])
-    prod2 = nt.nodes.new("ShaderNodeMath"); prod2.operation = "MULTIPLY"; nt.links.new(prod.outputs[0], prod2.inputs[0]); nt.links.new(nzr.outputs["Result"], prod2.inputs[1])
+    prod1 = nt.nodes.new("ShaderNodeMath"); prod1.operation = "MULTIPLY"; nt.links.new(prod.outputs[0], prod1.inputs[0]); nt.links.new(nzr.outputs["Result"], prod1.inputs[1])
+    # plynulý náběh ohonu od jádra: bez ostré hrany podstavy kuželu
+    fadein = nt.nodes.new("ShaderNodeMapRange"); fadein.inputs["From Min"].default_value = 0.0; fadein.inputs["From Max"].default_value = 0.22
+    fadein.clamp = True; fadein.interpolation_type = "SMOOTHSTEP"
+    nt.links.new(z, fadein.inputs["Value"])
+    prod2 = nt.nodes.new("ShaderNodeMath"); prod2.operation = "MULTIPLY"; nt.links.new(prod1.outputs[0], prod2.inputs[0]); nt.links.new(fadein.outputs["Result"], prod2.inputs[1])
     dsc = nt.nodes.new("ShaderNodeMath"); dsc.operation = "MULTIPLY"; dsc.inputs[1].default_value = density; nt.links.new(prod2.outputs[0], dsc.inputs[0])
     esc = nt.nodes.new("ShaderNodeMath"); esc.operation = "MULTIPLY"; esc.inputs[1].default_value = emit; nt.links.new(prod2.outputs[0], esc.inputs[0])
     col = nt.nodes.new("ShaderNodeValToRGB")
@@ -138,9 +143,9 @@ def aim(obj, direction, origin):
 
 
 ion = tail_volume("ion", 4.1, 0.62, ("#d6ebff", "#1b50ff"), 560.0, 10.0, 5.0, 3.0)
-aim(ion, TAIL, HEAD + TAIL * 0.75)
+aim(ion, TAIL, HEAD - TAIL * 0.1)
 ion2 = tail_volume("ion2", 3.3, 0.3, ("#ffffff", "#3a78ff"), 700.0, 10.0, 8.0, 11.0)
-aim(ion2, (TAIL + Vector((0, 0, 0.05))).normalized(), HEAD + TAIL * 0.75)
+aim(ion2, (TAIL + Vector((0, 0, 0.05))).normalized(), HEAD - TAIL * 0.1)
 
 # ---------- prachový ohon: zakřivený roj částic ----------
 mat = bpy.data.materials.new("prach"); nt = nodes(mat)

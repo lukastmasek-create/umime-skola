@@ -1,5 +1,5 @@
 import type { Locale } from "./config";
-import type { GameSlug } from "@/lib/games";
+import type { ClassicSlug, GameSlug } from "@/lib/games";
 
 // Texty retro her. `action` je popisek tlačítka (střelba, skok…), `upgradeAction` název vylepšení rychlosti hráče.
 export type ArcadeText = {
@@ -10,7 +10,7 @@ export type ArcadeText = {
   upgradeAction: string;
 };
 
-export type ArcadeSlug = Exclude<GameSlug, "space-invaders" | "super-mario">;
+export type ArcadeSlug = Exclude<GameSlug, "space-invaders" | "super-mario" | ClassicSlug>;
 
 const T: Record<ArcadeSlug, Record<Locale, ArcadeText>> = {
   "pac-man": {

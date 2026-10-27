@@ -1,4 +1,5 @@
 // Ozdoby úvodní stránky z grafiky her: jeden snímek ze spritesheetu vystřižený přes CSS.
+import { Butterfly3D } from "@/components/Butterfly3D";
 
 type Sheet = { file: string; cols: number };
 const SHEETS: Record<string, Sheet> = {
@@ -192,7 +193,7 @@ const LEAVES: { img: string; pos: string; size: number; delay: string }[] = [
 export function NatureDecor() {
   return (
     <>
-      <AnimArt name="motyl" size={84} height={84} className="butterfly-fly absolute left-[6%] top-14 z-10 hidden sm:block" />
+      <Butterfly3D size={110} className="butterfly-fly absolute left-[6%] top-12 z-10 hidden sm:block" />
       {LEAVES.map((l) => (
         <HomeArt key={l.img} name={l.img} size={l.size} className={`leaf-sway absolute z-0 hidden sm:block ${l.pos}`} style={{ animationDelay: l.delay }} />
       ))}

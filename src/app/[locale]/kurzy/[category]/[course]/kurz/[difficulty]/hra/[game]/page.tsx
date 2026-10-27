@@ -1,15 +1,18 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCategoryBySlug } from "@/lib/taxonomy";
-import { getGame } from "@/lib/games";
+import { getGame, isClassicSlug } from "@/lib/games";
 import { isLocale, type Locale } from "@/i18n/config";
 import type { GameQuestion } from "@/i18n/game";
 import { getTestText } from "@/i18n/test";
 import { SpaceQuizGame } from "@/components/SpaceQuizGame";
+import { ClassicGame } from "@/components/ClassicGame";
 
 export const revalidate = 0;
 
 const POOL_SIZE = 12;
+// Klasické hry potřebují z kurzu víc otázek na výběr (slova do osmisměrky, dvojice).
+const CLASSIC_POOL_SIZE = 40;
 
 export default async function CourseGamePage({
   params,
@@ -37,6 +40,7 @@ export default async function CourseGamePage({
     !category ||
     !game ||
     !game.available ||
+    game.archived ||
     !Number.isInteger(difficulty) ||
     difficulty < 1 ||
     difficulty > 5
@@ -63,7 +67,7 @@ export default async function CourseGamePage({
       questions = course.questions
         .filter((q) => q.options.length === 4 && q.correctIndex >= 0 && q.correctIndex < 4)
         .sort((a, b) => Math.abs(a.difficulty - difficulty) - Math.abs(b.difficulty - difficulty))
-        .slice(0, POOL_SIZE)
+        .slice(0, isClassicSlug(game.slug) ? CLASSIC_POOL_SIZE : POOL_SIZE)
         .map((q) => ({
           id: q.id,
           prompt: q.prompt.replaceAll("___", "…"),
@@ -77,13 +81,22 @@ export default async function CourseGamePage({
   }
   if (!title) notFound();
 
+  const backHref = `/${locale}/kurzy/${categorySlug}/${courseSlug}`;
+  if (isClassicSlug(game.slug)) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+        <ClassicGame locale={locale as Locale} game={game.slug} questions={questions} difficulty={difficulty} backHref={backHref} />
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <SpaceQuizGame
         locale={locale as Locale}
         courseSlug={courseSlug}
         courseTitle={title}
-        backHref={`/${locale}/kurzy/${categorySlug}/${courseSlug}`}
+        backHref={backHref}
         questions={questions}
         game={game.slug}
       />

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCategoryBySlug } from "@/lib/taxonomy";
-import { GAMES } from "@/lib/games";
+import { ACTIVE_GAMES } from "@/lib/games";
 import { getGameText } from "@/i18n/game";
 import { getTestText } from "@/i18n/test";
 import { isLocale, type Locale } from "@/i18n/config";
@@ -60,7 +60,7 @@ export default async function CourseGamesPage({
         {gameText.games}
       </h2>
       <div className="grid gap-4 sm:grid-cols-3">
-        {GAMES.map((game) =>
+        {ACTIVE_GAMES.map((game) =>
           game.available ? (
             <Link
               key={game.slug}
