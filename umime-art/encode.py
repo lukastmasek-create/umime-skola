@@ -77,6 +77,10 @@ if __name__ == "__main__":
     if "motyl" in what: animated("motyl", "motyl.webp", fps=24, quality=72)
     if "vlajka" in what: animated("vlajka", "vlajka.webp", fps=24, quality=72)
     if "raketa" in what: animated("raketa", "raketa.webp", fps=24, quality=72)
+    if "sopka" in what:
+        animated("sopka", "sopka.webp", fps=18, quality=62)
+        fr = frames("sopka")
+        fr[30].save(os.path.join(DEST, "sopka-still.webp"), format="WEBP", quality=82, method=5, alpha_quality=90)
     if "liana" in what: strip("liana", "liana-strip.webp", (288, 288))
     if "kvetina" in what: strip("kvetina", "kvetina-strip.webp", (192, 192))
     if "hory" in what:

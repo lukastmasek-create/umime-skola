@@ -208,7 +208,7 @@ export default async function Home({
         <Wave fill="#071427" />
         <HomeArt name="oblak-1" size={120} className="space-float absolute right-[12%] top-20 z-0 hidden h-auto sm:block" />
         <HomeArt name="oblak-2" size={96} className="space-float absolute left-[2%] top-28 z-0 hidden h-auto sm:block" style={{ animationDelay: "-3s" }} />
-        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-48 pt-24 sm:px-6 sm:pb-80">
+        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-48 pt-24 sm:px-6 sm:pb-[26rem]">
           <h2 className="reveal mb-8 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
             🏔️ {h.stepsTitle}
           </h2>
