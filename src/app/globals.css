@@ -514,6 +514,18 @@ select {
     opacity: 0.95;
   }
 }
+@keyframes anim-strip {
+  to {
+    background-position-x: calc(var(--fw) * var(--n) * -1);
+  }
+}
+.anim-strip {
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  animation-name: anim-strip;
+  animation-iteration-count: infinite;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
 @keyframes icon-wiggle {
   0%,
   100% {
@@ -548,6 +560,9 @@ select {
   top: 4.2rem;
   animation: ladybug-walk 14s ease-in-out infinite;
 }
+.firefly-fly {
+  animation: firefly 8s ease-in-out infinite;
+}
 .firefly {
   width: 6px;
   height: 6px;
@@ -561,6 +576,7 @@ select {
   animation: icon-wiggle 0.6s ease-in-out;
 }
 @media (prefers-reduced-motion: reduce) {
+  .anim-strip,
   .fern-sway,
   .shroom-wobble,
   .leaf-fall,
@@ -568,6 +584,7 @@ select {
   .butterfly-flap,
   .ladybug-walk,
   .firefly,
+  .firefly-fly,
   .zone-nature .card:hover img {
     animation: none;
   }
@@ -630,21 +647,11 @@ select {
   }
 }
 .sky-body {
-  width: 54px;
-  height: 54px;
-  border-radius: 9999px;
   animation: sky-bob 9s ease-in-out infinite;
 }
-.sky-sun {
-  background: radial-gradient(circle at 40% 40%, #fff7b0, #ffd24d 60%, #ffb020);
-  box-shadow: 0 0 32px 12px rgba(255, 215, 90, 0.35);
-}
-.sky-moon {
-  background: transparent;
-  box-shadow: inset -14px -6px 0 0 #f4f1d8, 0 0 30px 6px rgba(244, 241, 216, 0.25);
-}
 /* Světlušky svítí jen večer a v noci. */
-.zone-nature:not([data-time="night"]) .firefly {
+.zone-nature:not([data-time="night"]) .firefly,
+.zone-nature:not([data-time="night"]) .firefly-fly {
   display: none;
 }
 @keyframes peek {

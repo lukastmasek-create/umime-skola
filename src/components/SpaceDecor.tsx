@@ -166,30 +166,41 @@ export function NatureDecor() {
         <HomeArt key={l.img} name={l.img} size={l.size} className={`${l.cls} absolute z-0 hidden sm:block ${l.pos}`} style={{ animationDelay: l.delay }} />
       ))}
       {FALLING.map((f, i) => (
-        <HomeArt
+        <AnimatedArt
           key={i}
           name="list"
-          size={f.size}
+          height={f.size + 18}
           className="leaf-fall absolute top-0 z-0 hidden sm:block"
           style={{ left: f.left, animationDelay: f.delay, animationDuration: f.dur }}
         />
       ))}
       <div aria-hidden className="butterfly-path pointer-events-none absolute left-0 top-16 z-0 hidden sm:block">
-        <HomeArt name="motyl" size={64} className="butterfly-flap" />
+        <AnimatedArt name="motyl" height={52} />
       </div>
       <div aria-hidden className="ladybug-walk pointer-events-none absolute z-0 hidden sm:block">
-        <HomeArt name="beruska" size={34} />
+        <AnimatedArt name="beruska" height={26} />
       </div>
-      <span aria-hidden className="peek peek-a pointer-events-none absolute bottom-0 z-0 select-none">🦔</span>
-      <span aria-hidden className="peek peek-b pointer-events-none absolute bottom-0 z-0 select-none">🐿️</span>
-      {FIREFLIES.map((f, i) => (
-        <span
-          key={i}
-          aria-hidden
-          className="firefly pointer-events-none absolute z-0"
-          style={{ left: f.left, top: f.top, animationDelay: f.delay, animationDuration: f.dur }}
-        />
-      ))}
+      <AnimatedArt name="jezek" height={56} className="peek peek-a absolute bottom-0 z-0" />
+      <AnimatedArt name="veverka" height={84} className="peek peek-b absolute bottom-0 z-0" />
+      {FIREFLIES.map((f, i) =>
+        i % 3 === 0 ? (
+          <div
+            key={i}
+            aria-hidden
+            className="firefly-fly pointer-events-none absolute z-0"
+            style={{ left: f.left, top: f.top, animationDelay: f.delay, animationDuration: f.dur }}
+          >
+            <AnimatedArt name="svetluska" height={38} />
+          </div>
+        ) : (
+          <span
+            key={i}
+            aria-hidden
+            className="firefly pointer-events-none absolute z-0"
+            style={{ left: f.left, top: f.top, animationDelay: f.delay, animationDuration: f.dur }}
+          />
+        ),
+      )}
     </>
   );
 }
@@ -217,6 +228,53 @@ export function HomeArt({
       draggable={false}
       className={`pointer-events-none select-none object-contain ${className}`}
       style={style}
+    />
+  );
+}
+
+// Animovaný pás snímků z Blenderu (public/home/anim/<name>.webp, viz home_anim.py): CSS `steps()` posouvá
+// pozadí po snímcích. `ratio` je šířka ku výšce jednoho snímku. Při „omezit pohyb“ zůstane první snímek.
+export const ANIM: Record<string, { n: number; ratio: number; dur: number }> = {
+  motyl: { n: 10, ratio: 1.371, dur: 0.5 },
+  beruska: { n: 8, ratio: 1.492, dur: 0.8 },
+  svetluska: { n: 12, ratio: 0.996, dur: 0.6 },
+  slunce: { n: 16, ratio: 1.0, dur: 6 },
+  mesic: { n: 12, ratio: 0.973, dur: 5 },
+  list: { n: 16, ratio: 0.73, dur: 3 },
+  jezek: { n: 16, ratio: 1.324, dur: 2.4 },
+  veverka: { n: 16, ratio: 0.598, dur: 2.4 },
+};
+
+export function AnimatedArt({
+  name,
+  height,
+  className = "",
+  style,
+}: {
+  name: keyof typeof ANIM;
+  height: number;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  const a = ANIM[name];
+  const w = Math.round(height * a.ratio);
+  return (
+    <div
+      aria-hidden
+      className={`anim-strip pointer-events-none select-none ${className}`}
+      style={
+        {
+          width: w,
+          height,
+          backgroundImage: `url(/home/anim/${name}.webp)`,
+          backgroundSize: `${w * a.n}px ${height}px`,
+          "--fw": `${w}px`,
+          "--n": a.n,
+          animationTimingFunction: `steps(${a.n})`,
+          animationDuration: `${a.dur}s`,
+          ...style,
+        } as React.CSSProperties
+      }
     />
   );
 }
