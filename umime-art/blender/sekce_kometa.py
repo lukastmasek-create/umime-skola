@@ -8,9 +8,10 @@ import bmesh
 from mathutils import Matrix, Vector
 
 PREVIEW = "--preview" in args()
-RES = 640 if PREVIEW else 1024
-sc = reset(RES, RES, 1, samples=48 if PREVIEW else 192, name="sekce_prijimacky", world=("#000000", 0.0), view="AgX", look="AgX - Punchy")
+RES = 640 if PREVIEW else 800
+sc = reset(RES, RES, 1, samples=48 if PREVIEW else 90, name="sekce_prijimacky", world=("#000000", 0.0), view="AgX", look="AgX - Punchy")
 sc.cycles.volume_bounces = 1
+sc.cycles.volume_step_rate = 2.0
 rnd = random.Random(11)
 
 HEAD = Vector((1.1, 0, -1.05))
@@ -137,9 +138,9 @@ def aim(obj, direction, origin):
 
 
 ion = tail_volume("ion", 4.1, 0.62, ("#d6ebff", "#1b50ff"), 560.0, 10.0, 5.0, 3.0)
-aim(ion, TAIL, HEAD)
+aim(ion, TAIL, HEAD + TAIL * 0.75)
 ion2 = tail_volume("ion2", 3.3, 0.3, ("#ffffff", "#3a78ff"), 700.0, 10.0, 8.0, 11.0)
-aim(ion2, (TAIL + Vector((0, 0, 0.05))).normalized(), HEAD)
+aim(ion2, (TAIL + Vector((0, 0, 0.05))).normalized(), HEAD + TAIL * 0.75)
 
 # ---------- prachový ohon: zakřivený roj částic ----------
 mat = bpy.data.materials.new("prach"); nt = nodes(mat)
