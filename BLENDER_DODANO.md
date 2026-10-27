@@ -171,3 +171,12 @@ Grafika stálé hry Farma (zdrojové skripty `umime-art/scripts/farm.py` a `farm
 - `hero.webp` (1600 × 520): panorama farmy se stodolou, silem, záhony a plotem.
 - Herní logika je v `src/lib/idle/farm.ts`, API v `src/app/api/stale-hry/farma/route.ts`, rozhraní v `src/components/idle/FarmGame.tsx`. Chybí-li obrázek, hra zobrazí emoji.
 - Složka `farm/` musí být ve výjimkách `matcher` v `src/proxy.ts`, jinak se obrázky přesměrují na jazykovou verzi.
+
+## Pokoj (`public/room/`)
+
+3D rendery pro hráčský pokoj (zdrojové skripty `umime-art/scripts/room.py` a `room_publish.py`):
+
+- `furniture/<id>.webp` (256 × 256, průhledné): všech 12 kusů nábytku z `src/lib/room.ts` (květina, pohovka, počítač, knihovna, globus, kytara, akvárium, dalekohled, vitrína s poháry, herní automat, piano, postel-raketa). Místo, kde nábytek stojí na podlaze, je ve 65 % výšky obrázku.
+- `background.webp` (1600 × 1000): pokoj s okny, obrazy, kobercem a prkennou podlahou.
+- Sloty v pokoji jsou v `ROOM_SLOT_POS` (`src/lib/room.ts`) v procentech, zadní řada je menší než přední. Chybí-li obrázek, zobrazí se emoji.
+- Složka `room/` je ve výjimkách `matcher` v `src/proxy.ts`.

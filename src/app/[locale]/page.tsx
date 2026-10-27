@@ -37,7 +37,7 @@ export default async function Home({
     <div className="space-page">
       {/* 1) Vesmír: hrdina a postup */}
       <div className="zone zone-space">
-        <Nebula className="absolute inset-x-0 top-0 -z-10 h-[820px]" />
+        <Nebula className="absolute inset-0 -z-10 h-full" />
         <div aria-hidden className="hero-aurora">
           <span style={{ left: "-8%", top: "4%", width: 460, height: 460, background: "#7c6cff" }} />
           <span style={{ right: "6%", top: "28%", width: 380, height: 380, background: "#ff8fd0", animationDelay: "-6s" }} />
