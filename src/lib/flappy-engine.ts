@@ -5,7 +5,7 @@ import { Sprites } from "./sprites";
 const BIRD_X = 150;
 const BIRD_R = 13;
 const WALL_W = 70;
-const GAP_H = 68;
+const GAP_BASE = 68;
 const GAP_CENTERS = [56, 150, 244, 338];
 const GRAVITY = 760;
 const FLAP = -265;
@@ -23,6 +23,7 @@ export class FlappyEngine extends ArcadeEngine {
   private gapIndex: number | null = null;
   private wait = 1.2;
   private hitFlash = 0;
+  private eliminated = new Set<number>();
   private sp = new Sprites("flappy");
   private clouds = Array.from({ length: 5 }, (_, i) => ({ x: i * 140, y: 30 + (i % 3) * 55, s: 0.7 + (i % 2) * 0.4 }));
 
@@ -30,7 +31,27 @@ export class FlappyEngine extends ArcadeEngine {
     return 75;
   }
 
+  // Průlet o něco větší a pomalejší pád pro snazší obtížnosti.
+  private gapH() {
+    return Math.min(84, GAP_BASE * this.forgive());
+  }
+
+  private blocked(i: number) {
+    return this.eliminated.has(this.order[i]);
+  }
+
+  protected eliminate(indices: number[]) {
+    for (const i of indices) {
+      if (i === this.correct) continue;
+      this.eliminated.add(i);
+      const g = this.order.indexOf(i);
+      if (g >= 0) this.burst(this.wallX + WALL_W / 2, GAP_CENTERS[g], "#ff5d73", 14);
+    }
+    sfx("pickup");
+  }
+
   protected setup(options: string[], correctIndex: number) {
+    this.eliminated = new Set();
     this.labels = options;
     this.correct = correctIndex;
     this.order = shuffleInPlace(options.map((_, i) => i));
@@ -49,8 +70,13 @@ export class FlappyEngine extends ArcadeEngine {
     this.flap();
   }
 
+  // Snazší obtížnost = pomalejší, plovoucí let: nižší gravitace a úměrně slabší mávnutí (stejná výška skoku).
+  private floaty() {
+    return Math.max(0.5, 1 / Math.pow(this.forgive(), 1.6));
+  }
+
   private flap() {
-    this.vy = FLAP;
+    this.vy = FLAP * Math.sqrt(this.floaty());
     if (this.wait > 0) this.wait = Math.min(this.wait, 0.25);
     sfx("shoot");
   }
@@ -84,7 +110,7 @@ export class FlappyEngine extends ArcadeEngine {
       return;
     }
 
-    this.vy += GRAVITY * dt;
+    this.vy += GRAVITY * this.floaty() * dt;
     this.birdY += this.vy * dt;
     if (this.birdY < BIRD_R) {
       this.birdY = BIRD_R;
@@ -98,7 +124,8 @@ export class FlappyEngine extends ArcadeEngine {
     this.wallX -= 100 * this.pace() * dt;
     const overlaps = this.wallX < BIRD_X + BIRD_R && this.wallX + WALL_W > BIRD_X - BIRD_R;
     if (overlaps) {
-      const inside = GAP_CENTERS.findIndex((c) => this.birdY - BIRD_R * 0.8 >= c - GAP_H / 2 && this.birdY + BIRD_R * 0.8 <= c + GAP_H / 2);
+      const h = this.gapH();
+      const inside = GAP_CENTERS.findIndex((c, i) => !this.blocked(i) && this.birdY - BIRD_R * 0.8 >= c - h / 2 && this.birdY + BIRD_R * 0.8 <= c + h / 2);
       if (inside < 0) {
         this.crash();
         return;
@@ -148,9 +175,11 @@ export class FlappyEngine extends ArcadeEngine {
     ctx.fillRect(0, GROUND, W, 3);
 
     // zeď: úseky mezi průlety
-    const edges: [number, number][] = [[0, GAP_CENTERS[0] - GAP_H / 2]];
-    for (let i = 0; i < GAP_CENTERS.length - 1; i++) edges.push([GAP_CENTERS[i] + GAP_H / 2, GAP_CENTERS[i + 1] - GAP_H / 2]);
-    edges.push([GAP_CENTERS[GAP_CENTERS.length - 1] + GAP_H / 2, GROUND]);
+    const h = this.gapH();
+    const open = GAP_CENTERS.filter((_, i) => !this.blocked(i));
+    const edges: [number, number][] = [[0, open[0] - h / 2]];
+    for (let i = 0; i < open.length - 1; i++) edges.push([open[i] + h / 2, open[i + 1] - h / 2]);
+    edges.push([open[open.length - 1] + h / 2, GROUND]);
     for (const [y0, y1] of edges) {
       if (this.drawWall(ctx, y0, y1, y0 > 0, y1 < GROUND)) continue;
       ctx.fillStyle = "#3fae4a";
@@ -167,7 +196,7 @@ export class FlappyEngine extends ArcadeEngine {
     // popisky odpovědí v průletech
     GAP_CENTERS.forEach((c, i) => {
       const option = this.order[i];
-      if (option === undefined) return;
+      if (option === undefined || this.blocked(i)) return;
       drawLabel(ctx, this.labels[option], this.wallX + WALL_W / 2, c, 156, ANSWER_COLORS[i % ANSWER_COLORS.length], { height: 30, size: 14, alpha: 0.95 });
     });
 

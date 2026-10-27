@@ -72,7 +72,9 @@ export class PacmanEngine extends ArcadeEngine {
 
     // Duchové startují daleko od hráče.
     const round = this.config.round ?? 0;
-    const count = 2 + (round >= 2 ? 1 : 0) + (round >= 5 || this.config.boss ? 1 : 0);
+    // Snadnější obtížnosti mají méně duchů, kteří se objeví později.
+    const gentle = this.config.alienSpeedFactor <= 0.7;
+    const count = gentle ? 1 + (round >= 3 ? 1 : 0) + (round >= 6 || this.config.boss ? 1 : 0) : 2 + (round >= 2 ? 1 : 0) + (round >= 5 || this.config.boss ? 1 : 0);
     const far = shuffleInPlace(open.filter(([x, y]) => dist[y][x] >= 16 && !this.answers.some((a) => a.tx === x && a.ty === y)));
     const spawns: [number, number][] = [];
     for (const [x, y] of far) {
@@ -95,6 +97,15 @@ export class PacmanEngine extends ArcadeEngine {
     // Power pilulky v rozích mapy.
     const powers = shuffleInPlace(open.filter(([x, y]) => dist[y][x] >= 8 && this.dots[y][x] === 1)).slice(0, 3);
     for (const [x, y] of powers) this.dots[y][x] = 2;
+  }
+
+  protected eliminate(indices: number[]) {
+    for (const a of this.answers) {
+      if (!a.alive || a.correct || !indices.includes(a.index)) continue;
+      a.alive = false;
+      this.burst(OX + (a.tx + 0.5) * C, OY + (a.ty + 0.5) * C, a.color, 14);
+    }
+    sfx("pickup");
   }
 
   private isOpen(x: number, y: number) {
@@ -376,7 +387,7 @@ export class PacmanEngine extends ArcadeEngine {
     const dist = (d: Dir) => Math.abs(g.tx + DIR_VEC[d].x - this.pac.tx) + Math.abs(g.ty + DIR_VEC[d].y - this.pac.ty);
     let pick: Dir;
     if (this.scared > 0) pick = options.reduce((a, b) => (dist(b) > dist(a) ? b : a));
-    else if (Math.random() < 0.7) pick = options.reduce((a, b) => (dist(b) < dist(a) ? b : a));
+    else if (Math.random() < Math.min(0.7, 0.7 * Math.pow(this.config.alienSpeedFactor, 1.2))) pick = options.reduce((a, b) => (dist(b) < dist(a) ? b : a));
     else pick = options[Math.floor(Math.random() * options.length)];
     this.setDir(g, pick);
   }
