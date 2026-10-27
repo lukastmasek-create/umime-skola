@@ -4,6 +4,7 @@ import { HomeProgress } from "@/components/HomeProgress";
 import { DailyChallenges } from "@/components/DailyChallenges";
 import { ArcadeDemo } from "@/components/ArcadeDemo";
 import { ALIEN_ROW, Circuit, HomeArt, NatureDecor, Nebula, Planet, Rocket, SpriteFrame, TechBus, Wave } from "@/components/SpaceDecor";
+import { CardIcon3D, GearHolo3D, TechBackdrop, type IconKind } from "@/components/TechScenes";
 import { Liana, MountainScene } from "@/components/HomeAnim";
 import { getHomeText } from "@/i18n/home";
 import { getSubjectText } from "@/i18n/subjects";
@@ -26,11 +27,11 @@ export default async function Home({
   const h = getHomeText(locale as Locale);
   const subjectText = getSubjectText(locale as Locale);
   const featureLinks = {
-    courses: { href: `/${locale}/kurzy/zakladni`, icon: "funkce-kurzy", color: "#8fd0ff" },
-    games: { href: `/${locale}/kurzy/zakladni`, icon: "funkce-hry", color: "#c9b8ff" },
-    escape: { href: `/${locale}/unikovky`, icon: "funkce-unikovky", color: "#7ee0b0" },
-    boards: { href: `/${locale}/zebricky`, icon: "funkce-zebricky", color: "#ffc933" },
-  } as const;
+    courses: { href: `/${locale}/kurzy/zakladni`, icon: "funkce-kurzy", color: "#8fd0ff", kind: "book" },
+    games: { href: `/${locale}/kurzy/zakladni`, icon: "funkce-hry", color: "#c9b8ff", kind: "joystick" },
+    escape: { href: `/${locale}/unikovky`, icon: "funkce-unikovky", color: "#7ee0b0", kind: "door" },
+    boards: { href: `/${locale}/zebricky`, icon: "funkce-zebricky", color: "#ffc933", kind: "trophy" },
+  } as const satisfies Record<string, { href: string; icon: string; color: string; kind: IconKind }>;
   const heading = { fontFamily: "var(--font-heading)" };
 
   return (
@@ -160,9 +161,10 @@ export default async function Home({
         <Wave fill="#0f3326" />
         <Circuit className="right-0 top-20 hidden h-44 w-80 lg:block" />
         <Circuit className="bottom-6 left-0 hidden h-44 w-80 lg:block" flip />
+        <TechBackdrop />
         <div className="relative z-10 mx-auto max-w-6xl px-4 pb-20 pt-24 sm:px-6">
           <h2 className="reveal mb-2 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
-            ⚙️ {h.featuresTitle}
+            <GearHolo3D /> {h.featuresTitle}
           </h2>
           <p className="mb-8 font-mono text-xs uppercase tracking-[0.3em] text-[#35d0ff]/80">
             <span className="tech-blink">●</span> 01 — 0{h.features.length}
@@ -176,7 +178,7 @@ export default async function Home({
                   key={feature.key}
                   href={f.href}
                   className="reveal card card-hover tech-card flex flex-col gap-3 p-5"
-                  style={{ borderColor: `${f.color}88`, ["--tc" as string]: f.color, ["--glow" as string]: `${f.color}33` }}
+                  style={{ borderColor: `${f.color}88`, ["--tc" as string]: f.color, ["--i" as string]: i, ["--glow" as string]: `${f.color}33` }}
                 >
                   <span aria-hidden className="electric" />
                   <span className="font-mono text-[11px] tracking-[0.25em]" style={{ color: f.color }}>
@@ -187,7 +189,7 @@ export default async function Home({
                     className="flex h-12 w-12 items-center justify-center rounded-md border-2 text-2xl"
                     style={{ borderColor: f.color, background: `${f.color}22`, boxShadow: `0 0 18px ${f.color}55` }}
                   >
-                    <HomeArt name={f.icon} size={44} className="home-icon" />
+                    <CardIcon3D kind={f.kind} fallback={f.icon} />
                   </span>
                   <h3 className="text-lg font-bold">{feature.title}</h3>
                   <p className="text-sm text-[var(--muted)]">{feature.text}</p>
