@@ -51,6 +51,7 @@ const EMOJI: Record<string, string> = {
   allotments: "🥕", forest: "🌲", lake: "🌊", mountain: "⛰️",
   pumpkin_patch: "🎃", christmas_market: "🎅", ice_rink: "⛸️", astronomical_clock: "🕰️",
   tree: "🌳", bush: "🌿", flowerbed: "🌷", park: "🏞️", playground: "🛝", pond: "🦆", fountain: "⛲",
+  villa: "🏘️", bookshop: "📖", farmers_market: "🧺", art_gallery: "🎨", sports_hall: "🏀", botanical_garden: "🪴", science_center: "🧪",
   lamp: "💡", bench: "🪑", bin: "🗑️", fence: "🚧", mailbox: "📮", flag: "🚩", statue: "🗿", clock_tower: "🕰️", memorial: "🕊️", monument: "🗽",
 };
 

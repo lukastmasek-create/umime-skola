@@ -62,6 +62,7 @@ export const MODULES: ModuleDef[] = [
 
   { id: "solar", cat: "energy", size: [2, 1], cost: 120, level: 1, energy: 6, names: n("Solární panely", "Solar panels", "Solarpaneele", "Солнечные панели") },
   { id: "reactor", cat: "energy", size: [2, 2], cost: 1800, pointsCost: 150, level: 6, energy: 30, crew: 2, names: n("Jaderný reaktor", "Nuclear reactor", "Kernreaktor", "Ядерный реактор") },
+  { id: "fusion", cat: "energy", size: [3, 3], cost: 9000, pointsCost: 400, level: 11, energy: 90, crew: 3, names: n("Fúzní reaktor", "Fusion reactor", "Fusionsreaktor", "Термоядерный реактор") },
 
   { id: "quarters", cat: "life", size: [2, 2], cost: 300, level: 1, energy: -2, housing: 8, names: n("Ubytování", "Quarters", "Unterkünfte", "Жилой модуль") },
   { id: "greenhouse", cat: "life", size: [2, 2], cost: 400, level: 2, energy: -2, crew: 2, life: 6, credits: 14, names: n("Skleník", "Greenhouse", "Gewächshaus", "Оранжерея") },
@@ -69,12 +70,15 @@ export const MODULES: ModuleDef[] = [
 
   { id: "lab", cat: "science", size: [2, 2], cost: 700, level: 3, energy: -4, crew: 3, science: 3, credits: 8, names: n("Laboratoř", "Laboratory", "Labor", "Лаборатория") },
   { id: "observatory", cat: "science", size: [2, 2], cost: 1400, level: 5, energy: -3, crew: 2, science: 5, names: n("Observatoř", "Observatory", "Observatorium", "Обсерватория") },
+  { id: "biolab", cat: "science", size: [2, 2], cost: 2600, level: 7, energy: -6, crew: 4, science: 9, credits: 10, names: n("Biolaboratoř", "Biolab", "Biolabor", "Биолаборатория") },
   { id: "antenna", cat: "science", size: [1, 1], cost: 600, level: 4, energy: -1, crew: 1, missionBonus: 0.08, names: n("Komunikační anténa", "Comms antenna", "Kommunikationsantenne", "Антенна связи") },
 
   { id: "workshop", cat: "industry", size: [2, 2], cost: 500, level: 2, energy: -3, crew: 3, credits: 24, names: n("Dílna", "Workshop", "Werkstatt", "Мастерская") },
   { id: "trade", cat: "industry", size: [2, 2], cost: 900, level: 4, energy: -3, crew: 4, credits: 40, names: n("Obchodní modul", "Trade module", "Handelsmodul", "Торговый модуль") },
+  { id: "mining", cat: "industry", size: [3, 2], cost: 2200, level: 6, energy: -6, crew: 5, credits: 80, names: n("Těžební modul", "Mining module", "Bergbaumodul", "Добывающий модуль") },
 
   { id: "hangar", cat: "ships", size: [3, 2], cost: 1000, level: 3, energy: -2, crew: 2, slots: 2, names: n("Hangár", "Hangar", "Hangar", "Ангар") },
+  { id: "dock", cat: "ships", size: [2, 3], cost: 2400, level: 6, energy: -3, crew: 3, slots: 4, names: n("Dok", "Docking bay", "Dockbucht", "Док") },
   { id: "shipyard", cat: "ships", size: [3, 3], cost: 1600, level: 4, energy: -6, crew: 4, shipyard: true, names: n("Loděnice", "Shipyard", "Werft", "Верфь") },
 ];
 
@@ -132,11 +136,14 @@ export type DestDef = {
 
 export const DESTINATIONS: DestDef[] = [
   { id: "moon", tier: 1, baseMinutes: 15, credits: 150, science: 3, researchCost: 0, quizCorrect: 1, orbit: 0.22, color: "#c9c9d6", names: n("Měsíc", "The Moon", "Der Mond", "Луна") },
+  { id: "mercury", tier: 2, baseMinutes: 75, credits: 600, science: 12, researchCost: 30, quizCorrect: 1, orbit: 0.14, color: "#a39a90", names: n("Merkur", "Mercury", "Merkur", "Меркурий") },
   { id: "venus", tier: 2, baseMinutes: 60, credits: 500, science: 10, researchCost: 25, quizCorrect: 2, orbit: 0.36, color: "#e8c27a", names: n("Venuše", "Venus", "Venus", "Венера") },
   { id: "mars", tier: 2, baseMinutes: 90, credits: 700, science: 14, researchCost: 40, quizCorrect: 0, orbit: 0.5, color: "#d9694a", names: n("Mars", "Mars", "Mars", "Марс") },
   { id: "asteroids", tier: 2, baseMinutes: 120, credits: 1000, science: 18, researchCost: 70, quizCorrect: 3, orbit: 0.62, color: "#9a8f80", names: n("Pás planetek", "Asteroid belt", "Asteroidengürtel", "Пояс астероидов") },
+  { id: "jupiter", tier: 3, baseMinutes: 540, credits: 4200, science: 70, researchCost: 280, quizCorrect: 2, orbit: 0.7, color: "#e3b98a", names: n("Jupiter", "Jupiter", "Jupiter", "Юпитер") },
   { id: "europa", tier: 3, baseMinutes: 360, credits: 2600, science: 45, researchCost: 150, quizCorrect: 1, orbit: 0.76, color: "#bfe3f2", names: n("Europa", "Europa", "Europa", "Европа") },
   { id: "saturn", tier: 3, baseMinutes: 480, credits: 3600, science: 60, researchCost: 220, quizCorrect: 2, orbit: 0.9, color: "#e6cf8f", names: n("Saturnovy prstence", "Saturn's rings", "Saturnringe", "Кольца Сатурна") },
+  { id: "titan", tier: 3, baseMinutes: 600, credits: 4800, science: 80, researchCost: 320, quizCorrect: 1, orbit: 0.96, color: "#e8a64a", names: n("Titan", "Titan", "Titan", "Титан") },
 ];
 
 const DEST_BY_ID = new Map(DESTINATIONS.map((d) => [d.id, d]));

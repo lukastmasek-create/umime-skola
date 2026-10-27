@@ -66,8 +66,17 @@ const SHIP_ICONS = { probe: "🛰️", shuttle: "🚀", explorer: "🛸" } as co
 
 // 3D render z public/base (modul, loď); čistě ozdobný, název stojí vždy vedle.
 function Art({ src, size }: { src: string; size: number }) {
+  // Když obrázek chybí (nová věc bez ilustrace), ukáže se neutrální dlaždice místo rozbité ikony.
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <span aria-hidden className="inline-flex shrink-0 items-center justify-center rounded-lg border-2 border-[var(--border-soft)] bg-[var(--surface-muted)] text-[var(--faint)]" style={{ width: size, height: size, fontSize: size * 0.5 }}>
+        ◈
+      </span>
+    );
+  }
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt="" width={size} height={size} className="shrink-0" style={{ width: size, height: size }} />;
+  return <img src={src} alt="" width={size} height={size} className="shrink-0" style={{ width: size, height: size }} onError={() => setFailed(true)} />;
 }
 
 const fmt = (n: number) => Math.round(n).toLocaleString("cs-CZ");

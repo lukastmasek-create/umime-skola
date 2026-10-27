@@ -54,11 +54,14 @@ export const CITY_ITEMS: CityItemDef[] = [
   { id: "townhouse", cat: "housing", size: [2, 1], cost: 300, level: 3, housing: 12, needsRoad: true, names: n("Řadový dům", "Townhouse", "Reihenhaus", "Таунхаус") },
   { id: "apartments", cat: "housing", size: [2, 2], cost: 900, level: 5, housing: 40, needsRoad: true, names: n("Bytový dům", "Apartment block", "Wohnblock", "Многоквартирный дом") },
   { id: "tower", cat: "housing", size: [3, 3], cost: 3500, level: 10, housing: 150, needsRoad: true, names: n("Věžák", "High-rise", "Hochhaus", "Высотка") },
+  { id: "villa", cat: "housing", size: [2, 2], cost: 1500, level: 7, housing: 20, happy: 1, radius: 2, needsRoad: true, names: n("Vila", "Villa", "Villa", "Вилла") },
 
   // --- obchody a práce ---
   { id: "stall", cat: "work", size: [1, 1], cost: 50, level: 1, jobs: 1, yield: 8, needsRoad: true, names: n("Stánek", "Stall", "Marktstand", "Ларёк") },
   { id: "shop", cat: "work", size: [2, 1], cost: 180, level: 1, jobs: 4, yield: 8, needsRoad: true, names: n("Obchod", "Shop", "Laden", "Магазин") },
   { id: "bakery", cat: "work", size: [1, 1], cost: 150, level: 2, jobs: 3, yield: 10, happy: 1, radius: 2, needsRoad: true, names: n("Pekárna", "Bakery", "Bäckerei", "Пекарня") },
+  { id: "bookshop", cat: "work", size: [1, 1], cost: 260, level: 3, jobs: 3, yield: 10, edu: 1, happy: 1, radius: 2, needsRoad: true, names: n("Knihkupectví", "Bookshop", "Buchhandlung", "Книжный магазин") },
+  { id: "farmers_market", cat: "work", size: [2, 2], cost: 650, level: 4, jobs: 8, yield: 11, happy: 2, radius: 3, needsRoad: true, names: n("Farmářský trh", "Farmers market", "Bauernmarkt", "Фермерский рынок") },
   { id: "cafe", cat: "work", size: [2, 1], cost: 240, level: 2, jobs: 4, yield: 10, happy: 2, radius: 3, needsRoad: true, names: n("Kavárna", "Café", "Café", "Кафе") },
   { id: "market", cat: "work", size: [3, 3], cost: 700, level: 3, jobs: 10, yield: 10, happy: 3, radius: 4, needsRoad: true, names: n("Tržnice", "Market hall", "Markthalle", "Рынок") },
   { id: "supermarket", cat: "work", size: [3, 2], cost: 900, level: 4, jobs: 14, yield: 10, needsRoad: true, names: n("Supermarket", "Supermarket", "Supermarkt", "Супермаркет") },
@@ -77,6 +80,10 @@ export const CITY_ITEMS: CityItemDef[] = [
   { id: "town_hall", cat: "service", size: [3, 3], cost: 2500, level: 5, jobs: 12, yield: 6, happy: 4, radius: 8, needsRoad: true, names: n("Radnice", "Town hall", "Rathaus", "Ратуша") },
   { id: "hospital", cat: "service", size: [3, 3], cost: 2200, level: 6, jobs: 30, yield: 6, happy: 5, radius: 7, needsRoad: true, names: n("Nemocnice", "Hospital", "Krankenhaus", "Больница") },
   { id: "museum", cat: "service", size: [3, 2], cost: 1800, level: 7, jobs: 10, yield: 5, edu: 2, happy: 4, radius: 6, needsRoad: true, names: n("Muzeum", "Museum", "Museum", "Музей") },
+  { id: "art_gallery", cat: "service", size: [2, 2], cost: 1500, level: 6, jobs: 8, yield: 9, edu: 1, happy: 4, radius: 5, needsRoad: true, names: n("Galerie", "Art gallery", "Kunstgalerie", "Картинная галерея") },
+  { id: "sports_hall", cat: "service", size: [3, 2], cost: 2000, level: 7, jobs: 12, yield: 7, happy: 5, radius: 6, needsRoad: true, names: n("Sportovní hala", "Sports hall", "Sporthalle", "Спортивный зал") },
+  { id: "botanical_garden", cat: "service", size: [3, 3], cost: 1800, level: 8, jobs: 6, yield: 6, happy: 8, radius: 6, needsRoad: true, names: n("Botanická zahrada", "Botanical garden", "Botanischer Garten", "Ботанический сад") },
+  { id: "science_center", cat: "service", size: [3, 2], cost: 3000, level: 9, jobs: 18, yield: 8, edu: 4, happy: 3, radius: 6, needsRoad: true, names: n("Science centrum", "Science center", "Science Center", "Научный центр") },
   { id: "university", cat: "service", size: [4, 3], cost: 4000, level: 8, jobs: 40, yield: 7, edu: 6, happy: 2, radius: 6, needsRoad: true, names: n("Univerzita", "University", "Universität", "Университет") },
 
   // --- příroda ---

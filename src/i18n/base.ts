@@ -231,6 +231,10 @@ const cs: BaseText = {
     trade: { how: "Obchoduje se zásobami a výrobky. Vydělává hodně kreditů, ale potřebuje větší posádku.", fact: "Dopravit jeden kilogram nákladu na oběžnou dráhu stálo dříve desítky tisíc dolarů. Proto je ve vesmíru každý gram cenný." },
     hangar: { how: "Zaparkuje lodě a chrání je před zářením a prachem. Každý hangár má dvě místa.", fact: "Mikrometeority jsou zrnka prachu, která létají desítky tisíc kilometrů za hodinu a na lodi mohou udělat díru." },
     shipyard: { how: "Z dílů a kovů skládá nové lodě. Bez loděnice nemůžeš stavět lodě.", fact: "Raketoplán Discovery uskutečnil 39 letů. Raketoplány se opravovaly a létaly znovu." },
+    fusion: { how: "Slučuje lehká atomová jádra vodíku na hélium a uvolňuje obrovské množství energie, stejně jako Slunce.", fact: "Ve Slunci se každou sekundu přemění přibližně 600 milionů tun vodíku na hélium." },
+    biolab: { how: "Zkoumá živé organismy a pěstuje buňky a rostliny pro budoucí mise.", fact: "Na Mezinárodní kosmické stanici astronauti vypěstovali salát, ředkvičky i chilli papričky." },
+    mining: { how: "Získává z asteroidů a měsíců kovy a vodu, které se prodávají nebo se z nich staví.", fact: "Asteroid Psyche je podle vědců tvořen převážně železem a niklem." },
+    dock: { how: "Sem se k základně připojují lodě. V doku se vejde víc lodí najednou než do hangáru.", fact: "Kosmické lodě se ke stanici připojují přesným manévrem a spojí se dokovacím mechanismem." },
   },
   ships: {
     probe: { desc: "Malá bezpilotní loď. Doletí na Měsíc a k nejbližším cílům." },
@@ -244,6 +248,9 @@ const cs: BaseText = {
     asteroids: { blurb: "Zbytky z vzniku sluneční soustavy, mezi Marsem a Jupiterem.", fact: "Největší těleso pásu, Ceres, je trpasličí planeta.", question: "Kde se nachází hlavní pás planetek?", options: ["Mezi Zemí a Marsem", "Mezi Venuší a Zemí", "Za Neptunem", "Mezi Marsem a Jupiterem"], explanation: "Hlavní pás planetek leží mezi Marsem a Jupiterem." },
     europa: { blurb: "Měsíc Jupiteru pokrytý ledem.", fact: "Pod ledem Europy je pravděpodobně oceán, který má víc vody než všechny oceány na Zemi dohromady.", question: "Co je pravděpodobně pod ledovou krustou Europy?", options: ["Roztavená skála", "Oceán tekuté vody", "Hustý les", "Prázdno"], explanation: "Pod ledem je pravděpodobně oceán tekuté vody. Tam by mohl být život, proto se Europa zkoumá." },
     saturn: { blurb: "Planeta s nejnápadnějšími prstenci.", fact: "Saturn je tak lehký, že by se v obří vaně vody udržel na hladině (jeho hustota je menší než vody).", question: "Z čeho jsou Saturnovy prstence?", options: ["Z plynu", "Z pevné desky", "Hlavně z kousků ledu a kamení", "Z mraků"], explanation: "Prstence tvoří miliardy kousků ledu a kamení, od zrnek po velké balvany." },
+    mercury: { blurb: "Nejmenší planeta a nejblíž Slunci. Přes den je tu horko, v noci mráz.", fact: "Merkur obletí Slunce za pouhých 88 pozemských dnů.", question: "Která planeta je nejblíž Slunci?", options: ["Venuše", "Merkur", "Mars", "Země"], explanation: "Nejblíž Slunci je Merkur." },
+    jupiter: { blurb: "Největší planeta sluneční soustavy, plynný obr s pruhy mraků.", fact: "Velká rudá skvrna je bouře větší než celá Země a trvá už stovky let.", question: "Z čeho je Jupiter převážně složen?", options: ["Ze skály", "Z vodního ledu", "Z vodíku a hélia", "Ze železa"], explanation: "Jupiter je plynný obr tvořený hlavně vodíkem a héliem." },
+    titan: { blurb: "Největší měsíc Saturnu s hustou oranžovou atmosférou a jezery z metanu.", fact: "Sonda Huygens na Titanu přistála v roce 2005.", question: "Který měsíc Saturnu má hustou atmosféru a jezera z metanu?", options: ["Europa", "Titan", "Io", "Triton"], explanation: "Titan je největší měsíc Saturnu a jako jediný měsíc má hustou atmosféru." },
   },
 };
 
@@ -382,6 +389,10 @@ const en: BaseText = {
     trade: { how: "It trades supplies and goods. It earns a lot of credits but needs a bigger crew.", fact: "Getting one kilogram of cargo to orbit used to cost tens of thousands of dollars. That's why every gram matters in space." },
     hangar: { how: "It parks ships and protects them from radiation and dust. Each hangar has two slots.", fact: "Micrometeoroids are specks of dust flying tens of thousands of kilometres per hour that can make a hole in a ship." },
     shipyard: { how: "It assembles new ships from parts and metal. You can't build ships without a shipyard.", fact: "The space shuttle Discovery flew 39 missions. Shuttles were repaired and flew again." },
+    fusion: { how: "It fuses light hydrogen nuclei into helium and releases a huge amount of energy, just like the Sun.", fact: "Every second the Sun turns roughly 600 million tonnes of hydrogen into helium." },
+    biolab: { how: "It studies living organisms and grows cells and plants for future missions.", fact: "On the International Space Station astronauts have grown lettuce, radishes and chili peppers." },
+    mining: { how: "It gets metals and water from asteroids and moons, which are sold or used for building.", fact: "Scientists think the asteroid Psyche is made mostly of iron and nickel." },
+    dock: { how: "Ships connect to the base here. A docking bay holds more ships at once than a hangar.", fact: "Spacecraft join a station with a precise manoeuvre and lock on with a docking mechanism." },
   },
   ships: {
     probe: { desc: "A small uncrewed ship. It reaches the Moon and the nearest targets." },
@@ -395,6 +406,9 @@ const en: BaseText = {
     asteroids: { blurb: "Leftovers from the birth of the solar system, between Mars and Jupiter.", fact: "The biggest object of the belt, Ceres, is a dwarf planet.", question: "Where is the main asteroid belt?", options: ["Between Earth and Mars", "Between Venus and Earth", "Beyond Neptune", "Between Mars and Jupiter"], explanation: "The main asteroid belt lies between Mars and Jupiter." },
     europa: { blurb: "A moon of Jupiter covered in ice.", fact: "Under Europa's ice there is probably an ocean with more water than all of Earth's oceans put together.", question: "What is probably under Europa's icy crust?", options: ["Molten rock", "An ocean of liquid water", "A dense forest", "Nothing"], explanation: "Under the ice there is probably an ocean of liquid water. Life might exist there, which is why Europa is studied." },
     saturn: { blurb: "The planet with the most striking rings.", fact: "Saturn is so light it would float in a giant bathtub of water (its density is less than water's).", question: "What are Saturn's rings made of?", options: ["Gas", "A solid disc", "Mostly pieces of ice and rock", "Clouds"], explanation: "The rings are made of billions of pieces of ice and rock, from specks to big boulders." },
+    mercury: { blurb: "The smallest planet and the closest to the Sun. Scorching by day, freezing at night.", fact: "Mercury orbits the Sun in just 88 Earth days.", question: "Which planet is closest to the Sun?", options: ["Venus", "Mercury", "Mars", "Earth"], explanation: "Mercury is the closest planet to the Sun." },
+    jupiter: { blurb: "The biggest planet in the solar system, a gas giant with bands of clouds.", fact: "The Great Red Spot is a storm bigger than the whole Earth and has lasted for hundreds of years.", question: "What is Jupiter mostly made of?", options: ["Rock", "Water ice", "Hydrogen and helium", "Iron"], explanation: "Jupiter is a gas giant made mainly of hydrogen and helium." },
+    titan: { blurb: "Saturn’s largest moon, with a thick orange atmosphere and lakes of methane.", fact: "The Huygens probe landed on Titan in 2005.", question: "Which moon of Saturn has a thick atmosphere and methane lakes?", options: ["Europa", "Titan", "Io", "Triton"], explanation: "Titan is Saturn’s largest moon and the only moon with a thick atmosphere." },
   },
 };
 
@@ -533,6 +547,10 @@ const de: BaseText = {
     trade: { how: "Sie handelt mit Vorräten und Waren. Sie verdient viele Credits, braucht aber eine größere Besatzung.", fact: "Ein Kilogramm Fracht in die Umlaufbahn zu bringen kostete früher Zehntausende Dollar. Deshalb zählt im All jedes Gramm." },
     hangar: { how: "Er parkt Schiffe und schützt sie vor Strahlung und Staub. Jeder Hangar hat zwei Plätze.", fact: "Mikrometeoriten sind Staubkörnchen, die mit Zehntausenden km/h fliegen und ein Loch in ein Schiff schlagen können." },
     shipyard: { how: "Sie baut neue Schiffe aus Teilen und Metall. Ohne Werft kannst du keine Schiffe bauen.", fact: "Das Space Shuttle Discovery absolvierte 39 Flüge. Shuttles wurden repariert und flogen wieder." },
+    fusion: { how: "Er verschmilzt leichte Wasserstoffkerne zu Helium und setzt dabei riesige Energiemengen frei, genau wie die Sonne.", fact: "In der Sonne werden jede Sekunde etwa 600 Millionen Tonnen Wasserstoff zu Helium." },
+    biolab: { how: "Es erforscht lebende Organismen und züchtet Zellen und Pflanzen für künftige Missionen.", fact: "Auf der Internationalen Raumstation haben Astronauten Salat, Radieschen und Chilischoten angebaut." },
+    mining: { how: "Es gewinnt Metalle und Wasser von Asteroiden und Monden, die verkauft oder zum Bauen verwendet werden.", fact: "Der Asteroid Psyche besteht nach Ansicht von Forschern hauptsächlich aus Eisen und Nickel." },
+    dock: { how: "Hier legen Schiffe an der Basis an. Eine Dockbucht fasst mehr Schiffe gleichzeitig als ein Hangar.", fact: "Raumschiffe docken mit einem präzisen Manöver an eine Station an und verriegeln sich mit einem Kopplungsmechanismus." },
   },
   ships: {
     probe: { desc: "Ein kleines unbemanntes Schiff. Es erreicht den Mond und die nächsten Ziele." },
@@ -546,6 +564,9 @@ const de: BaseText = {
     asteroids: { blurb: "Überreste aus der Entstehung des Sonnensystems, zwischen Mars und Jupiter.", fact: "Das größte Objekt des Gürtels, Ceres, ist ein Zwergplanet.", question: "Wo liegt der Hauptgürtel der Asteroiden?", options: ["Zwischen Erde und Mars", "Zwischen Venus und Erde", "Hinter dem Neptun", "Zwischen Mars und Jupiter"], explanation: "Der Hauptgürtel der Asteroiden liegt zwischen Mars und Jupiter." },
     europa: { blurb: "Ein eisbedeckter Jupitermond.", fact: "Unter dem Eis der Europa liegt vermutlich ein Ozean mit mehr Wasser als alle Ozeane der Erde zusammen.", question: "Was liegt vermutlich unter der Eiskruste der Europa?", options: ["Geschmolzenes Gestein", "Ein Ozean aus flüssigem Wasser", "Ein dichter Wald", "Nichts"], explanation: "Unter dem Eis liegt vermutlich ein Ozean aus flüssigem Wasser. Dort könnte Leben sein, deshalb wird die Europa erforscht." },
     saturn: { blurb: "Der Planet mit den auffälligsten Ringen.", fact: "Der Saturn ist so leicht, dass er in einer riesigen Badewanne schwimmen würde (seine Dichte ist kleiner als die von Wasser).", question: "Woraus bestehen die Saturnringe?", options: ["Aus Gas", "Aus einer festen Scheibe", "Hauptsächlich aus Eis- und Gesteinsbrocken", "Aus Wolken"], explanation: "Die Ringe bestehen aus Milliarden Eis- und Gesteinsbrocken, von Körnchen bis zu großen Felsen." },
+    mercury: { blurb: "Der kleinste Planet und der Sonne am nächsten. Tagsüber glühend heiß, nachts eiskalt.", fact: "Der Merkur umkreist die Sonne in nur 88 Erdentagen.", question: "Welcher Planet ist der Sonne am nächsten?", options: ["Venus", "Merkur", "Mars", "Erde"], explanation: "Der Merkur ist der Sonne am nächsten." },
+    jupiter: { blurb: "Der größte Planet des Sonnensystems, ein Gasriese mit Wolkenbändern.", fact: "Der Große Rote Fleck ist ein Sturm, größer als die ganze Erde, und tobt seit Hunderten von Jahren.", question: "Woraus besteht der Jupiter hauptsächlich?", options: ["Aus Gestein", "Aus Wassereis", "Aus Wasserstoff und Helium", "Aus Eisen"], explanation: "Der Jupiter ist ein Gasriese, der hauptsächlich aus Wasserstoff und Helium besteht." },
+    titan: { blurb: "Der größte Mond des Saturn mit dichter oranger Atmosphäre und Methanseen.", fact: "Die Sonde Huygens landete 2005 auf dem Titan.", question: "Welcher Saturnmond hat eine dichte Atmosphäre und Methanseen?", options: ["Europa", "Titan", "Io", "Triton"], explanation: "Der Titan ist der größte Saturnmond und der einzige Mond mit dichter Atmosphäre." },
   },
 };
 
@@ -684,6 +705,10 @@ const ru: BaseText = {
     trade: { how: "Торгует припасами и товарами. Много зарабатывает, но нужен экипаж побольше.", fact: "Доставить килограмм груза на орбиту раньше стоило десятки тысяч долларов. Поэтому в космосе дорог каждый грамм." },
     hangar: { how: "Паркует корабли и защищает их от радиации и пыли. В каждом ангаре два места.", fact: "Микрометеориты — это пылинки, летящие со скоростью десятки тысяч километров в час, они могут пробить корабль." },
     shipyard: { how: "Собирает новые корабли из деталей и металла. Без верфи корабли не построить.", fact: "Шаттл «Дискавери» совершил 39 полётов. Шаттлы ремонтировали и запускали снова." },
+    fusion: { how: "Он сливает лёгкие ядра водорода в гелий и выделяет огромное количество энергии, как Солнце.", fact: "В Солнце каждую секунду около 600 миллионов тонн водорода превращается в гелий." },
+    biolab: { how: "Она изучает живые организмы и выращивает клетки и растения для будущих миссий.", fact: "На Международной космической станции астронавты вырастили салат, редис и перец чили." },
+    mining: { how: "Он добывает на астероидах и спутниках металлы и воду, которые продаются или идут на строительство.", fact: "Учёные считают, что астероид Психея состоит в основном из железа и никеля." },
+    dock: { how: "Сюда причаливают корабли. В доке помещается больше кораблей одновременно, чем в ангаре.", fact: "Космические корабли стыкуются со станцией точным манёвром и фиксируются стыковочным механизмом." },
   },
   ships: {
     probe: { desc: "Маленький беспилотный корабль. Долетает до Луны и ближайших целей." },
@@ -697,6 +722,9 @@ const ru: BaseText = {
     asteroids: { blurb: "Остатки от рождения Солнечной системы, между Марсом и Юпитером.", fact: "Самое большое тело пояса, Церера, — карликовая планета.", question: "Где находится главный пояс астероидов?", options: ["Между Землёй и Марсом", "Между Венерой и Землёй", "За Нептуном", "Между Марсом и Юпитером"], explanation: "Главный пояс астероидов находится между Марсом и Юпитером." },
     europa: { blurb: "Покрытый льдом спутник Юпитера.", fact: "Под льдом Европы, вероятно, океан, в котором воды больше, чем во всех океанах Земли вместе.", question: "Что, вероятно, находится под ледяной коркой Европы?", options: ["Расплавленная порода", "Океан жидкой воды", "Густой лес", "Ничего"], explanation: "Под льдом, вероятно, океан жидкой воды. Там может быть жизнь, поэтому Европу изучают." },
     saturn: { blurb: "Планета с самыми заметными кольцами.", fact: "Сатурн такой лёгкий, что плавал бы в гигантской ванне с водой (его плотность меньше плотности воды).", question: "Из чего состоят кольца Сатурна?", options: ["Из газа", "Из твёрдого диска", "В основном из кусков льда и камня", "Из облаков"], explanation: "Кольца состоят из миллиардов кусков льда и камня — от песчинок до больших глыб." },
+    mercury: { blurb: "Самая маленькая планета и ближайшая к Солнцу. Днём жарко, ночью мороз.", fact: "Меркурий обращается вокруг Солнца всего за 88 земных суток.", question: "Какая планета ближе всех к Солнцу?", options: ["Венера", "Меркурий", "Марс", "Земля"], explanation: "Ближе всех к Солнцу находится Меркурий." },
+    jupiter: { blurb: "Самая большая планета Солнечной системы, газовый гигант с полосами облаков.", fact: "Большое красное пятно — буря больше всей Земли, она бушует сотни лет.", question: "Из чего в основном состоит Юпитер?", options: ["Из камня", "Из водяного льда", "Из водорода и гелия", "Из железа"], explanation: "Юпитер — газовый гигант, состоящий в основном из водорода и гелия." },
+    titan: { blurb: "Крупнейший спутник Сатурна с плотной оранжевой атмосферой и метановыми озёрами.", fact: "Зонд «Гюйгенс» сел на Титан в 2005 году.", question: "У какого спутника Сатурна плотная атмосфера и метановые озёра?", options: ["Европа", "Титан", "Ио", "Тритон"], explanation: "Титан — крупнейший спутник Сатурна и единственный спутник с плотной атмосферой." },
   },
 };
 
