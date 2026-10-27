@@ -131,19 +131,62 @@ export function Circuit({ className = "", flip = false }: { className?: string; 
   );
 }
 
-// Listy a motýli pro přírodní část (3D rendery v public/home).
-const LEAVES: { img: string; pos: string; size: number; delay: string }[] = [
-  { img: "list", pos: "left-[4%] top-10", size: 56, delay: "0s" },
-  { img: "motyl", pos: "right-[7%] top-8", size: 60, delay: "-2s" },
-  { img: "kapradi", pos: "right-[3%] bottom-8", size: 80, delay: "-4s" },
-  { img: "houba", pos: "left-[2%] bottom-8", size: 60, delay: "-1s" },
-  { img: "beruska", pos: "left-[48%] top-4", size: 40, delay: "-3s" },
+// Přírodní část: listy, houba a kapradí se houpou, motýl krouží po obloze, listy padají, světlušky svítí
+// a beruška přechází po nadpisu. Vše je čistě ozdobné a vypíná se při „omezit pohyb“.
+const LEAVES: { img: string; pos: string; size: number; delay: string; cls: string }[] = [
+  { img: "list", pos: "left-[4%] top-10", size: 56, delay: "0s", cls: "leaf-sway" },
+  { img: "kapradi", pos: "right-[3%] bottom-8", size: 80, delay: "-4s", cls: "fern-sway" },
+  { img: "houba", pos: "left-[2%] bottom-8", size: 60, delay: "-1s", cls: "shroom-wobble" },
+];
+const FALLING: { left: string; size: number; delay: string; dur: string }[] = [
+  { left: "12%", size: 34, delay: "-2s", dur: "17s" },
+  { left: "31%", size: 26, delay: "-9s", dur: "21s" },
+  { left: "58%", size: 30, delay: "-5s", dur: "19s" },
+  { left: "74%", size: 24, delay: "-13s", dur: "23s" },
+  { left: "90%", size: 32, delay: "-7s", dur: "18s" },
+];
+const FIREFLIES: { left: string; top: string; delay: string; dur: string }[] = [
+  { left: "8%", top: "22%", delay: "0s", dur: "7s" },
+  { left: "17%", top: "58%", delay: "-2s", dur: "9s" },
+  { left: "27%", top: "36%", delay: "-4s", dur: "8s" },
+  { left: "38%", top: "76%", delay: "-1s", dur: "10s" },
+  { left: "46%", top: "18%", delay: "-5s", dur: "7s" },
+  { left: "55%", top: "64%", delay: "-3s", dur: "9s" },
+  { left: "63%", top: "28%", delay: "-6s", dur: "8s" },
+  { left: "72%", top: "82%", delay: "-2s", dur: "11s" },
+  { left: "81%", top: "46%", delay: "-7s", dur: "9s" },
+  { left: "89%", top: "70%", delay: "-4s", dur: "7s" },
+  { left: "94%", top: "24%", delay: "-8s", dur: "10s" },
+  { left: "3%", top: "84%", delay: "-5s", dur: "8s" },
 ];
 export function NatureDecor() {
   return (
     <>
       {LEAVES.map((l) => (
-        <HomeArt key={l.img} name={l.img} size={l.size} className={`leaf-sway absolute z-0 hidden sm:block ${l.pos}`} style={{ animationDelay: l.delay }} />
+        <HomeArt key={l.img} name={l.img} size={l.size} className={`${l.cls} absolute z-0 hidden sm:block ${l.pos}`} style={{ animationDelay: l.delay }} />
+      ))}
+      {FALLING.map((f, i) => (
+        <HomeArt
+          key={i}
+          name="list"
+          size={f.size}
+          className="leaf-fall absolute top-0 z-0 hidden sm:block"
+          style={{ left: f.left, animationDelay: f.delay, animationDuration: f.dur }}
+        />
+      ))}
+      <div aria-hidden className="butterfly-path pointer-events-none absolute left-0 top-16 z-0 hidden sm:block">
+        <HomeArt name="motyl" size={64} className="butterfly-flap" />
+      </div>
+      <div aria-hidden className="ladybug-walk pointer-events-none absolute z-0 hidden sm:block">
+        <HomeArt name="beruska" size={34} />
+      </div>
+      {FIREFLIES.map((f, i) => (
+        <span
+          key={i}
+          aria-hidden
+          className="firefly pointer-events-none absolute z-0"
+          style={{ left: f.left, top: f.top, animationDelay: f.delay, animationDuration: f.dur }}
+        />
       ))}
     </>
   );

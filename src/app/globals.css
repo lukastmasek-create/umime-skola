@@ -403,6 +403,180 @@ select {
   }
 }
 
+/* Příroda: další pohyb (viz NatureDecor) */
+@keyframes fern-sway {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+@keyframes shroom-wobble {
+  0%,
+  86%,
+  100% {
+    transform: scale(1, 1) rotate(0);
+  }
+  90% {
+    transform: scale(1.1, 0.9) rotate(-4deg);
+  }
+  94% {
+    transform: scale(0.94, 1.08) rotate(3deg);
+  }
+}
+@keyframes leaf-fall {
+  0% {
+    transform: translate(0, -60px) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.9;
+  }
+  25% {
+    transform: translate(40px, 22vh) rotate(110deg);
+  }
+  50% {
+    transform: translate(-30px, 46vh) rotate(220deg);
+  }
+  75% {
+    transform: translate(35px, 70vh) rotate(330deg);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-10px, 94vh) rotate(430deg);
+    opacity: 0;
+  }
+}
+@keyframes butterfly-path {
+  0% {
+    transform: translate(-10vw, 40px) rotate(8deg);
+  }
+  20% {
+    transform: translate(18vw, -10px) rotate(-6deg);
+  }
+  40% {
+    transform: translate(42vw, 120px) rotate(10deg);
+  }
+  60% {
+    transform: translate(64vw, 30px) rotate(-8deg);
+  }
+  80% {
+    transform: translate(86vw, 150px) rotate(6deg);
+  }
+  100% {
+    transform: translate(112vw, 60px) rotate(-4deg);
+  }
+}
+@keyframes butterfly-flap {
+  0%,
+  100% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(0.35);
+  }
+}
+@keyframes ladybug-walk {
+  0% {
+    transform: translateX(0) scaleX(1);
+  }
+  47% {
+    transform: translateX(210px) scaleX(1);
+  }
+  50% {
+    transform: translateX(210px) scaleX(-1);
+  }
+  97% {
+    transform: translateX(0) scaleX(-1);
+  }
+  100% {
+    transform: translateX(0) scaleX(1);
+  }
+}
+@keyframes firefly {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.15;
+  }
+  25% {
+    transform: translate(14px, -18px);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-8px, -34px);
+    opacity: 0.3;
+  }
+  75% {
+    transform: translate(-18px, -12px);
+    opacity: 0.95;
+  }
+}
+@keyframes icon-wiggle {
+  0%,
+  100% {
+    transform: rotate(0) scale(1);
+  }
+  25% {
+    transform: rotate(-10deg) scale(1.1);
+  }
+  60% {
+    transform: rotate(8deg) scale(1.1);
+  }
+}
+.fern-sway {
+  transform-origin: 50% 100%;
+  animation: fern-sway 5.5s ease-in-out infinite;
+}
+.shroom-wobble {
+  transform-origin: 50% 100%;
+  animation: shroom-wobble 6s ease-in-out infinite;
+}
+.leaf-fall {
+  animation: leaf-fall 20s linear infinite;
+}
+.butterfly-path {
+  animation: butterfly-path 38s linear infinite;
+}
+.butterfly-flap {
+  animation: butterfly-flap 0.28s ease-in-out infinite;
+}
+.ladybug-walk {
+  left: 46%;
+  top: 4.2rem;
+  animation: ladybug-walk 14s ease-in-out infinite;
+}
+.firefly {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: #fff6a8;
+  box-shadow: 0 0 10px 3px rgba(255, 240, 140, 0.75);
+  animation: firefly 8s ease-in-out infinite;
+}
+/* Ikony předmětů si při najetí „zamávají“. */
+.zone-nature .card:hover img {
+  animation: icon-wiggle 0.6s ease-in-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fern-sway,
+  .shroom-wobble,
+  .leaf-fall,
+  .butterfly-path,
+  .butterfly-flap,
+  .ladybug-walk,
+  .firefly,
+  .zone-nature .card:hover img {
+    animation: none;
+  }
+  .leaf-fall,
+  .firefly {
+    opacity: 0.4;
+  }
+}
+
 .space-page .gradient-hero {
   background: transparent;
 }
