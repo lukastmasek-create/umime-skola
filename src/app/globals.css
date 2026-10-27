@@ -1000,6 +1000,17 @@ select:not(:focus) {
   filter: drop-shadow(0 0 8px var(--c));
 }
 
+/* Puls ze sběrnice na chvíli rozsvítí každou kartu ve chvíli, kdy k ní dorazí (4,2 s jako .bus-pulse). */
+@keyframes card-ping {
+  0% { box-shadow: 0 4px 0 var(--shadow-ink), 0 0 0 var(--tc); filter: none; }
+  4% { box-shadow: 0 4px 0 var(--shadow-ink), 0 0 34px var(--tc); filter: brightness(1.25); }
+  16%, 100% { box-shadow: 0 4px 0 var(--shadow-ink), 0 0 26px var(--glow, transparent); filter: none; }
+}
+.tech-card {
+  animation: card-ping 4.2s linear infinite;
+  animation-delay: calc(0.5s + var(--i, 0) * 1.05s);
+}
+
 /* Kolem karty při najetí oběhne jiskra. */
 @property --ang {
   syntax: "<angle>";
@@ -1159,6 +1170,9 @@ select:not(:focus) {
   .steps-line,
   .steps-runner,
   .step-badge,
+  .tech-card {
+    animation: none;
+  }
   .tech-card:hover .electric {
     animation: none;
   }
