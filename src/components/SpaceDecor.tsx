@@ -68,7 +68,7 @@ export function Planet({
       }}
     >
       <source media="(prefers-reduced-motion: reduce)" srcSet={still} />
-      <img src={src} alt="" width={size} height={size * 0.66} draggable={false} className="h-full w-full object-contain" />
+      <img src={src} alt="" width={size} height={size * 0.66} draggable={false} loading={variant === "realistic" ? "lazy" : undefined} className="h-full w-full object-contain" />
     </picture>
   );
 }

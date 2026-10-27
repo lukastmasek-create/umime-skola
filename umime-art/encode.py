@@ -75,7 +75,7 @@ if __name__ == "__main__":
     if "stills" in what: stills()
     if "planeta" in what: animated("planeta", "planeta.webp", fps=24, quality=68)
     if "planeta_realna" in what:
-        animated("planeta_realna", "planeta-realna.webp", fps=16, quality=72, size=(560, 372))
+        animated("planeta_realna", "planeta-realna.webp", fps=16, quality=58, size=(496, 329))
         still("planeta_realna", "planeta-realna-still.webp", size=(560, 372), quality=88)
     if "motyl" in what: animated("motyl", "motyl.webp", fps=24, quality=72)
     if "vlajka" in what: animated("vlajka", "vlajka.webp", fps=24, quality=72)
