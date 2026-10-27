@@ -26,9 +26,25 @@ export const FERTILIZE_POINTS_COST = 10;
 export const ORDER_COUNT = 3;
 export const MAX_LEARNING_BONUS = 0.5;
 
-export type CropId = "wheat" | "carrot" | "corn" | "potato" | "tomato" | "strawberry" | "sunflower" | "pumpkin" | "apple" | "grapes";
-export type AnimalId = "chicken" | "duck" | "sheep" | "goat" | "cow" | "pig" | "bee";
-export type ProductId = "egg" | "duckegg" | "wool" | "cheese" | "milk" | "truffle" | "honey";
+export type CropId =
+  | "wheat"
+  | "carrot"
+  | "corn"
+  | "potato"
+  | "tomato"
+  | "strawberry"
+  | "sunflower"
+  | "cabbage"
+  | "pumpkin"
+  | "watermelon"
+  | "apple"
+  | "cherry"
+  | "grapes"
+  | "peach"
+  | "lavender"
+  | "rose";
+export type AnimalId = "chicken" | "duck" | "sheep" | "goat" | "cow" | "turkey" | "pig" | "bee" | "alpaca" | "silkworm";
+export type ProductId = "egg" | "duckegg" | "wool" | "cheese" | "milk" | "turkeyegg" | "truffle" | "honey" | "alpacawool" | "silk";
 export type ItemId = CropId | ProductId;
 
 export type CropDef = { id: CropId; level: number; seed: number; minutes: number; price: number; xp: number; names: Record<Locale, string> };
@@ -51,9 +67,15 @@ export const CROPS: CropDef[] = [
   { id: "tomato", level: 4, seed: 30, minutes: 45, price: 76, xp: 6, names: n("Rajče", "Tomato", "Tomate", "Помидор") },
   { id: "strawberry", level: 5, seed: 45, minutes: 90, price: 128, xp: 9, names: n("Jahoda", "Strawberry", "Erdbeere", "Клубника") },
   { id: "sunflower", level: 6, seed: 60, minutes: 120, price: 170, xp: 11, names: n("Slunečnice", "Sunflower", "Sonnenblume", "Подсолнух") },
+  { id: "cabbage", level: 7, seed: 75, minutes: 150, price: 205, xp: 13, names: n("Zelí", "Cabbage", "Kohl", "Капуста") },
   { id: "pumpkin", level: 8, seed: 90, minutes: 180, price: 260, xp: 15, names: n("Dýně", "Pumpkin", "Kürbis", "Тыква") },
+  { id: "watermelon", level: 9, seed: 115, minutes: 240, price: 330, xp: 18, names: n("Meloun", "Watermelon", "Wassermelone", "Арбуз") },
   { id: "apple", level: 10, seed: 140, minutes: 300, price: 430, xp: 22, names: n("Jablko", "Apple", "Apfel", "Яблоко") },
+  { id: "cherry", level: 11, seed: 170, minutes: 360, price: 500, xp: 26, names: n("Třešně", "Cherries", "Kirschen", "Вишня") },
   { id: "grapes", level: 12, seed: 200, minutes: 480, price: 660, xp: 32, names: n("Hrozny", "Grapes", "Trauben", "Виноград") },
+  { id: "peach", level: 14, seed: 240, minutes: 600, price: 810, xp: 38, names: n("Broskev", "Peach", "Pfirsich", "Персик") },
+  { id: "lavender", level: 16, seed: 300, minutes: 720, price: 980, xp: 46, names: n("Levandule", "Lavender", "Lavendel", "Лаванда") },
+  { id: "rose", level: 18, seed: 420, minutes: 900, price: 1330, xp: 62, names: n("Růže", "Rose", "Rose", "Роза") },
 ];
 
 export const ANIMALS: AnimalDef[] = [
@@ -62,8 +84,11 @@ export const ANIMALS: AnimalDef[] = [
   { id: "sheep", level: 5, cost: 500, product: "wool", minutes: 20, names: n("Ovce", "Sheep", "Schaf", "Овца") },
   { id: "goat", level: 6, cost: 750, product: "cheese", minutes: 30, names: n("Koza", "Goat", "Ziege", "Коза") },
   { id: "cow", level: 8, cost: 1200, product: "milk", minutes: 40, names: n("Kráva", "Cow", "Kuh", "Корова") },
+  { id: "turkey", level: 9, cost: 1600, product: "turkeyegg", minutes: 50, names: n("Krocan", "Turkey", "Truthahn", "Индюк") },
   { id: "pig", level: 11, cost: 2000, product: "truffle", minutes: 60, names: n("Prase", "Pig", "Schwein", "Свинья") },
   { id: "bee", level: 13, cost: 3200, product: "honey", minutes: 90, names: n("Včely", "Bees", "Bienen", "Пчёлы") },
+  { id: "alpaca", level: 15, cost: 4300, product: "alpacawool", minutes: 110, names: n("Alpaka", "Alpaca", "Alpaka", "Альпака") },
+  { id: "silkworm", level: 17, cost: 5600, product: "silk", minutes: 150, names: n("Bource", "Silkworm", "Seidenraupe", "Шелкопряд") },
 ];
 
 export const PRODUCTS: ProductDef[] = [
@@ -72,8 +97,11 @@ export const PRODUCTS: ProductDef[] = [
   { id: "wool", price: 60, xp: 4, names: n("Vlna", "Wool", "Wolle", "Шерсть") },
   { id: "cheese", price: 95, xp: 6, names: n("Sýr", "Cheese", "Käse", "Сыр") },
   { id: "milk", price: 140, xp: 8, names: n("Mléko", "Milk", "Milch", "Молоко") },
+  { id: "turkeyegg", price: 185, xp: 10, names: n("Krocaní vejce", "Turkey egg", "Truthahn-Ei", "Индюшиное яйцо") },
   { id: "truffle", price: 230, xp: 12, names: n("Lanýž", "Truffle", "Trüffel", "Трюфель") },
   { id: "honey", price: 360, xp: 18, names: n("Med", "Honey", "Honig", "Мёд") },
+  { id: "alpacawool", price: 480, xp: 25, names: n("Vlna z alpaky", "Alpaca wool", "Alpaka-Wolle", "Шерсть альпаки") },
+  { id: "silk", price: 700, xp: 36, names: n("Hedvábí", "Silk", "Seide", "Шёлк") },
 ];
 
 export type Plot = { crop: CropId; plantedAt: number } | null;
@@ -143,6 +171,18 @@ export function levelInfo(xp: number) {
   const from = xpForLevel(level);
   const to = xpForLevel(level + 1);
   return { level, percent: Math.floor(((xp - from) / (to - from)) * 100), intoLevel: xp - from, needed: to - from, maxed: false };
+}
+
+// Bonusy z ostatních Stálých her (společně s učením zrychlují růst plodin i zvířat).
+export const MAX_PET_BONUS = 0.1;
+export const MAX_CITY_BONUS = 0.1;
+// Aktivní mazlíček: +1 % za každou svou úroveň, nejvýš +10 %.
+export function petSpeedBonus(level: number | null): number {
+  return level ? Math.min(MAX_PET_BONUS, Math.max(0, level) * 0.01) : 0;
+}
+// Město: +1 % za každých 15 budov (bez silnic), nejvýš +10 %.
+export function citySpeedBonus(buildings: number): number {
+  return Math.min(MAX_CITY_BONUS, Math.floor(Math.max(0, buildings) / 15) * 0.01);
 }
 
 // Bonus za učení: každých 100 XP z posledních 24 hodin dá +10 %, nejvýš +50 %.
@@ -442,6 +482,17 @@ export function collectAll(state: FarmState, now: number, bonus: number): Action
 }
 
 // Prodá jednu surovinu, nebo (item = "all") celou sýpku.
+/** Odebere ze sýpky jeden kus (krmení mazlíčků úrodou z farmy). */
+export function takeItem(state: FarmState, item: unknown): ActionResult {
+  if (!isItem(item)) return fail("bad-request");
+  const have = state.stock[item] ?? 0;
+  if (have < 1) return fail("nothing-to-sell");
+  const stock = { ...state.stock };
+  if (have === 1) delete stock[item];
+  else stock[item] = have - 1;
+  return { ok: true, state: { ...state, stock } };
+}
+
 export function sell(state: FarmState, item: unknown): ActionResult {
   const entries = item === "all" ? (Object.entries(state.stock) as [ItemId, number][]) : isItem(item) ? [[item, state.stock[item] ?? 0] as [ItemId, number]] : null;
   if (!entries) return fail("bad-request");

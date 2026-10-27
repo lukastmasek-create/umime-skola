@@ -33,6 +33,11 @@ export type PetText = {
   playIn: string; // {n}
   treat: string; // {n}
   treatHint: string;
+  farmFeedTitle: string;
+  farmFeedHint: string;
+  farmFeedEmpty: string;
+  farmFeedGain: string; // {n}
+  farmFeedDone: string;
   upgradesTitle: string;
   upgrades: Record<UpgradeId, { name: string; effect: string }>;
   upgradeLevel: string;
@@ -85,11 +90,18 @@ const cs: PetText = {
   playIn: "Za {n} s",
   treat: "Pamlsek ({n} bodů)",
   treatHint: "Pamlsek za body z učení: úplně zasytí, potěší a hodně pomůže růstu.",
+  farmFeedTitle: "Krmení z farmy",
+  farmFeedHint: "Nakrm mazlíčka úrodou z farmy. Úroda ze sýpky zmizí, mazlíček sní, trochu povyroste a zvedne se mu nálada.",
+  farmFeedEmpty: "Na farmě zatím nemáš žádnou úrodu. Sklidit ji můžeš ve hře Farma.",
+  farmFeedGain: "+{n} růstu",
+  farmFeedDone: "Mňam! Mazlíček si pochutnal.",
   upgradesTitle: "Vylepšení",
   upgrades: {
     bowl: { name: "Miska", effect: "Hlad klesá pomaleji." },
     toys: { name: "Hračky", effect: "+15 % výdělku za úroveň." },
     bed: { name: "Pelíšek", effect: "Vydělává o 3 hodiny déle, i když jsi pryč." },
+    playground: { name: "Hřiště", effect: "Hra je dostupná o 14 % častěji za úroveň." },
+    school: { name: "Učebna", effect: "Učení zvyšuje výdělek o 20 % víc za úroveň." },
   },
   upgradeLevel: "úr.",
   buy: "Koupit · {n}",
@@ -111,6 +123,7 @@ const cs: PetText = {
     "unknown-upgrade": "Tohle vylepšení neexistuje.",
     "invalid-name": "Napiš nějaké jméno.",
     "not-owned": "Tenhle doplněk ještě nemáš.",
+    "no-item": "Tuhle úrodu už na farmě nemáš.",
     conflict: "Stav se mezitím změnil. Zkus to ještě jednou.",
     generic: "Něco se nepovedlo. Zkus to znovu.",
   },
@@ -153,11 +166,18 @@ const en: PetText = {
   playIn: "In {n} s",
   treat: "Treat ({n} points)",
   treatHint: "A treat paid for with learning points: fills it up, cheers it up and helps it grow a lot.",
+  farmFeedTitle: "Farm treats",
+  farmFeedHint: "Feed your pet with produce from the farm. The item leaves the silo, your pet eats it, grows a little and cheers up.",
+  farmFeedEmpty: "You have no produce on the farm yet. Harvest some in the Farm game.",
+  farmFeedGain: "+{n} growth",
+  farmFeedDone: "Yum! Your pet enjoyed it.",
   upgradesTitle: "Upgrades",
   upgrades: {
     bowl: { name: "Bowl", effect: "Hunger drops more slowly." },
     toys: { name: "Toys", effect: "+15% income per level." },
     bed: { name: "Bed", effect: "Earns 3 hours longer while you're away." },
+    playground: { name: "Playground", effect: "You can play 14 % more often per level." },
+    school: { name: "Classroom", effect: "Learning boosts income 20 % more per level." },
   },
   upgradeLevel: "lv.",
   buy: "Buy · {n}",
@@ -179,6 +199,7 @@ const en: PetText = {
     "unknown-upgrade": "That upgrade doesn't exist.",
     "invalid-name": "Type a name.",
     "not-owned": "You do not own this accessory yet.",
+    "no-item": "You no longer have this produce on the farm.",
     conflict: "The state changed in the meantime. Try once more.",
     generic: "Something went wrong. Try again.",
   },
@@ -221,11 +242,18 @@ const de: PetText = {
   playIn: "In {n} s",
   treat: "Leckerli ({n} Punkte)",
   treatHint: "Ein Leckerli, bezahlt mit Lernpunkten: macht satt, froh und hilft stark beim Wachsen.",
+  farmFeedTitle: "Futter von der Farm",
+  farmFeedHint: "Füttere dein Haustier mit Ernte von der Farm. Sie verschwindet aus dem Silo, dein Haustier frisst sie, wächst ein wenig und freut sich.",
+  farmFeedEmpty: "Auf der Farm hast du noch keine Ernte. Du kannst sie im Spiel Farm ernten.",
+  farmFeedGain: "+{n} Wachstum",
+  farmFeedDone: "Lecker! Dein Haustier hat es genossen.",
   upgradesTitle: "Verbesserungen",
   upgrades: {
     bowl: { name: "Napf", effect: "Der Hunger sinkt langsamer." },
     toys: { name: "Spielzeug", effect: "+15 % Verdienst pro Stufe." },
     bed: { name: "Körbchen", effect: "Verdient 3 Stunden länger, wenn du weg bist." },
+    playground: { name: "Spielplatz", effect: "Spielen ist pro Stufe 14 % öfter möglich." },
+    school: { name: "Klassenzimmer", effect: "Lernen steigert den Ertrag pro Stufe um 20 % mehr." },
   },
   upgradeLevel: "St.",
   buy: "Kaufen · {n}",
@@ -247,6 +275,7 @@ const de: PetText = {
     "unknown-upgrade": "Diese Verbesserung gibt es nicht.",
     "invalid-name": "Gib einen Namen ein.",
     "not-owned": "Dieses Zubehör besitzt du noch nicht.",
+    "no-item": "Diese Ernte hast du auf der Farm nicht mehr.",
     conflict: "Der Stand hat sich inzwischen geändert. Versuch es noch einmal.",
     generic: "Etwas ist schiefgegangen. Versuch es erneut.",
   },
@@ -289,11 +318,18 @@ const ru: PetText = {
   playIn: "Через {n} с",
   treat: "Лакомство ({n} баллов)",
   treatHint: "Лакомство за баллы за учёбу: полностью насыщает, радует и сильно помогает расти.",
+  farmFeedTitle: "Угощение с фермы",
+  farmFeedHint: "Накорми питомца урожаем с фермы. Он исчезнет из амбара, питомец его съест, немного подрастёт и повеселеет.",
+  farmFeedEmpty: "На ферме пока нет урожая. Собери его в игре «Ферма».",
+  farmFeedGain: "+{n} роста",
+  farmFeedDone: "Ням! Питомцу понравилось.",
   upgradesTitle: "Улучшения",
   upgrades: {
     bowl: { name: "Миска", effect: "Голод растёт медленнее." },
     toys: { name: "Игрушки", effect: "+15 % дохода за уровень." },
     bed: { name: "Лежанка", effect: "Зарабатывает на 3 часа дольше, пока тебя нет." },
+    playground: { name: "Площадка", effect: "Играть можно на 14 % чаще за уровень." },
+    school: { name: "Класс", effect: "Учёба повышает доход на 20 % сильнее за уровень." },
   },
   upgradeLevel: "ур.",
   buy: "Купить · {n}",
@@ -315,6 +351,7 @@ const ru: PetText = {
     "unknown-upgrade": "Такого улучшения нет.",
     "invalid-name": "Напиши имя.",
     "not-owned": "Этого аксессуара у тебя ещё нет.",
+    "no-item": "Этого урожая на ферме больше нет.",
     conflict: "Состояние изменилось. Попробуй ещё раз.",
     generic: "Что-то пошло не так. Попробуй снова.",
   },
