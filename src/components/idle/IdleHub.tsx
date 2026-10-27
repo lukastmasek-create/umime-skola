@@ -3,11 +3,20 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import type { Locale } from "@/i18n/config";
-import { ACHIEVEMENT_TEXT, DAILY_TEXT, GAME_ICON, GAME_LABEL, HUB_TEXT, fill, tr } from "@/i18n/hub";
+import { ACHIEVEMENT_TEXT, DAILY_TEXT, GAME_ICON, GAME_LABEL, HUB_TEXT, WEEKLY_TEXT, fill, tr } from "@/i18n/hub";
+import { EVENT_TEXT, eventLabel } from "@/i18n/events";
 import { notifyAccountChanged } from "@/lib/account-events";
 import type { AchievementView, DailyView, GameKey } from "@/lib/idle/hub";
 
-type Payload = { points: number; daily: DailyView[]; achievements: AchievementView[]; reward?: number };
+type EventBonus = { total: number; events: string[]; focus: boolean };
+type Payload = {
+  points: number;
+  daily: DailyView[];
+  weekly?: DailyView[];
+  events?: Record<"base" | "city" | "farm" | "pets", EventBonus>;
+  achievements: AchievementView[];
+  reward?: number;
+};
 
 const GAMES: GameKey[] = ["farm", "city", "base", "pets", "learn"];
 const fmtNum = (n: number) => n.toLocaleString("cs-CZ").replace(/ /g, " ");
@@ -89,7 +98,7 @@ export function IdleHub({ locale }: { locale: Locale }) {
     void load();
   }, [load]);
 
-  async function claim(kind: "daily" | "achievement", id: string) {
+  async function claim(kind: "daily" | "weekly" | "achievement", id: string) {
     setBusy(true);
     try {
       const res = await fetch("/api/stale-hry/prehled", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "claim", kind, id }) });
@@ -141,6 +150,33 @@ export function IdleHub({ locale }: { locale: Locale }) {
         )}
       </div>
 
+      {data.events && (
+        <div className="flex flex-col gap-2">
+          <h3 className="text-lg font-bold">🎉 {tr(EVENT_TEXT.title, locale)}</h3>
+          {(["farm", "city", "base", "pets"] as const).filter((g) => data.events![g].total > 0).length === 0 ? (
+            <p className="text-sm text-[var(--muted)]">{tr(EVENT_TEXT.none, locale)}</p>
+          ) : (
+            <ul className="grid gap-2 sm:grid-cols-2">
+              {(["farm", "city", "base", "pets"] as const)
+                .filter((g) => data.events![g].total > 0)
+                .map((g) => {
+                  const e = data.events![g];
+                  return (
+                    <li key={g} className="flex items-center justify-between gap-3 rounded-xl border-2 border-[var(--border-soft)] bg-[var(--surface)] px-3 py-2 text-sm">
+                      <span className="min-w-0">
+                        <span className="font-bold">{tr(EVENT_TEXT.games[g], locale)}</span>
+                        <span className="block truncate text-xs text-[var(--muted)]">{eventLabel(e.events, e.focus, locale)}</span>
+                      </span>
+                      <span className="pill shrink-0 bg-[var(--accent-500)] px-2 py-0.5 text-white">+{Math.round(e.total * 100)} %</span>
+                    </li>
+                  );
+                })}
+            </ul>
+          )}
+          <p className="text-xs text-[var(--faint)]">{tr(EVENT_TEXT.hint, locale)}</p>
+        </div>
+      )}
+
       <div className="flex flex-col gap-3">
         <h3 className="text-lg font-bold">{tr(HUB_TEXT.daily, locale)}</h3>
         <p className="text-sm text-[var(--muted)]">{tr(HUB_TEXT.dailyHint, locale)}</p>
@@ -150,6 +186,18 @@ export function IdleHub({ locale }: { locale: Locale }) {
           ))}
         </ul>
       </div>
+
+      {data.weekly && data.weekly.length > 0 && (
+        <div className="flex flex-col gap-3">
+          <h3 className="text-lg font-bold">{tr(HUB_TEXT.weekly, locale)}</h3>
+          <p className="text-sm text-[var(--muted)]">{tr(HUB_TEXT.weeklyHint, locale)}</p>
+          <ul className="grid gap-3 md:grid-cols-3">
+            {data.weekly.map((d) => (
+              <Row key={d.id} locale={locale} text={fill(tr(WEEKLY_TEXT[d.id] ?? HUB_TEXT.weekly, locale), { n: fmtNum(d.target) })} value={d.progress} target={d.target} reward={d.reward} done={d.done} claimed={d.claimed} busy={busy} onClaim={() => claim("weekly", d.id)} />
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-2">

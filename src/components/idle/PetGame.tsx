@@ -25,6 +25,7 @@ import {
   type PetGameState,
 } from "@/lib/idle/pets";
 import { notifyAccountChanged } from "@/lib/account-events";
+import { EventPill, type EventInfo } from "@/components/idle/EventPill";
 import { cropDef, isCrop, itemPrice, productDef, type ItemId } from "@/lib/idle/farm";
 import { SHOP_ITEMS } from "@/lib/shop";
 import type { Locale } from "@/i18n/config";
@@ -34,6 +35,7 @@ type Payload = {
   points: number;
   accessories: string[];
   farmStock?: Partial<Record<ItemId, number>>;
+  event?: EventInfo;
   learningBonus: number;
   now: number;
   incomePerHour: number;
@@ -345,6 +347,7 @@ export function PetGame({ locale }: { locale: Locale }) {
 
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="pill bg-[var(--surface-muted)] px-3 py-1.5">{fillN(t.perHour, Math.round(data.incomePerHour))}</span>
+            <EventPill event={data.event} locale={locale} />
             {bonusPercent > 0 && (
               <span className="pill bg-[var(--accent-green)] px-3 py-1.5 text-[#16132b]" title={t.learningHint}>
                 📚 {fillN(t.learningBonus, bonusPercent)}

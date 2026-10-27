@@ -42,13 +42,15 @@ import {
   type ItemId,
   type Order,
 } from "@/lib/idle/farm";
+import { EventPill, type EventInfo } from "@/components/idle/EventPill";
 import type { Locale } from "@/i18n/config";
 
 type Payload = {
   state: FarmState;
   points: number;
   learningBonus: number;
-  bonuses?: { learning: number; pet: number; city: number };
+  bonuses?: { learning: number; pet: number; city: number; event?: number };
+  event?: EventInfo;
   now: number;
   level: { level: number; percent: number; intoLevel: number; needed: number; maxed: boolean };
   gained?: { coins?: number; xp?: number; items?: number } | null;
@@ -298,6 +300,7 @@ export function FarmGame({ locale }: { locale: Locale }) {
             <div className="h-full bg-[var(--accent-green)] transition-all" style={{ width: `${info.percent}%` }} />
           </div>
         </div>
+        <EventPill event={view.data.event} locale={locale} />
         {learningBonus > 0 && (
           <span className="pill flex-wrap gap-x-2 bg-[var(--accent-yellow)] px-3 py-1 text-sm text-[#16132b]" title={t.speedHint}>
             <span>⚡ {fill(t.speedBonus, { n: Math.round(learningBonus * 100) })}</span>
@@ -307,6 +310,7 @@ export function FarmGame({ locale }: { locale: Locale }) {
                   bonuses.learning > 0 && `📚 ${fill(t.bonusLearning, { n: Math.round(bonuses.learning * 100) })}`,
                   bonuses.pet > 0 && `🐾 ${fill(t.bonusPet, { n: Math.round(bonuses.pet * 100) })}`,
                   bonuses.city > 0 && `🏙️ ${fill(t.bonusCity, { n: Math.round(bonuses.city * 100) })}`,
+                  (bonuses.event ?? 0) > 0 && `🎉 ${Math.round((bonuses.event ?? 0) * 100)} %`,
                 ]
                   .filter(Boolean)
                   .join(" · ")}

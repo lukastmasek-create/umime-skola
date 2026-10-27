@@ -7,8 +7,8 @@ import { EMPTY_METRICS, type Metrics } from "./hub";
 export type RawStates = { zakladna?: unknown; mesto?: unknown; farma?: unknown; mazlicci?: unknown };
 
 /** Čísla pro úspěchy a úkoly z uložených stavů všech her (chybějící hra = nuly). */
-export function metricsFrom(raw: RawStates, learnXp: number, learnXpToday: number, now: number): Metrics {
-  const m: Metrics = { ...EMPTY_METRICS, learnXp, learnXpToday };
+export function metricsFrom(raw: RawStates, learnXp: number, learnXpToday: number, learnXpWeek: number, now: number): Metrics {
+  const m: Metrics = { ...EMPTY_METRICS, learnXp, learnXpToday, learnXpWeek };
   if (raw.zakladna) {
     const s = normalizeBase(raw.zakladna, now);
     m.baseModules = s.items.filter((it) => it[0] !== "core" && it[0] !== "corridor").length;

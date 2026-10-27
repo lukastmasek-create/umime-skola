@@ -16,7 +16,8 @@ export type MetricId =
   | "petLevel"
   | "petsEarned"
   | "learnXp"
-  | "learnXpToday";
+  | "learnXpToday"
+  | "learnXpWeek";
 
 export type Metrics = Record<MetricId, number>;
 
@@ -35,6 +36,7 @@ export const EMPTY_METRICS: Metrics = {
   petsEarned: 0,
   learnXp: 0,
   learnXpToday: 0,
+  learnXpWeek: 0,
 };
 
 export type GameKey = "base" | "city" | "farm" | "pets" | "learn";
@@ -77,13 +79,28 @@ export const DAILY_LEARN: DailyDef = { id: "learnXpToday", metric: "learnXpToday
 
 export const DAILY_COUNT = 3;
 
+// Týdenní cíle: větší částky a větší odměna; stejná logika jako denní úkoly, ale s týdenním klíčem (např. 2026-W44).
+export const WEEKLY_GAME_POOL: DailyDef[] = [
+  { id: "w:farmEarned", metric: "farmEarned", target: 3_000, reward: 40 },
+  { id: "w:cityEarned", metric: "cityEarned", target: 6_000, reward: 40 },
+  { id: "w:baseEarned", metric: "baseEarned", target: 8_000, reward: 40 },
+  { id: "w:petsEarned", metric: "petsEarned", target: 2_000, reward: 40 },
+  { id: "w:farmOrders", metric: "farmOrders", target: 12, reward: 50 },
+  { id: "w:cityBuildings", metric: "cityBuildings", target: 15, reward: 40 },
+];
+export const WEEKLY_LEARN: DailyDef = { id: "w:learnXpWeek", metric: "learnXpWeek", target: 300, reward: 60 };
+export const WEEKLY_COUNT = 3;
+
+type Period = { key: string; baseline: Partial<Metrics>; claimed: string[] };
+
 export type HubState = {
   v: 1;
   claimed: string[];
   daily: { date: string; baseline: Partial<Metrics>; claimed: string[] } | null;
+  weekly: { week: string; baseline: Partial<Metrics>; claimed: string[] } | null;
 };
 
-export const EMPTY_HUB: HubState = { v: 1, claimed: [], daily: null };
+export const EMPTY_HUB: HubState = { v: 1, claimed: [], daily: null, weekly: null };
 
 const isStr = (v: unknown): v is string => typeof v === "string";
 
@@ -91,20 +108,24 @@ export function normalizeHub(raw: unknown): HubState {
   const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
   const known = new Set(ACHIEVEMENTS.map((a) => a.id));
   const claimed = Array.isArray(r.claimed) ? r.claimed.filter((x): x is string => isStr(x) && known.has(x)) : [];
-  let daily: HubState["daily"] = null;
-  if (r.daily && typeof r.daily === "object") {
-    const d = r.daily as Record<string, unknown>;
-    if (isStr(d.date) && /^\d{4}-\d{2}-\d{2}$/.test(d.date)) {
-      const baseline: Partial<Metrics> = {};
-      if (d.baseline && typeof d.baseline === "object") {
-        for (const [k, v] of Object.entries(d.baseline as Record<string, unknown>)) {
-          if (k in EMPTY_METRICS && typeof v === "number" && Number.isFinite(v)) baseline[k as MetricId] = v;
-        }
+  const period = (raw: unknown, keyName: "date" | "week", pattern: RegExp): Period | null => {
+    if (!raw || typeof raw !== "object") return null;
+    const d = raw as Record<string, unknown>;
+    const key = d[keyName];
+    if (!isStr(key) || !pattern.test(key)) return null;
+    const baseline: Partial<Metrics> = {};
+    if (d.baseline && typeof d.baseline === "object") {
+      for (const [k, v] of Object.entries(d.baseline as Record<string, unknown>)) {
+        if (k in EMPTY_METRICS && typeof v === "number" && Number.isFinite(v)) baseline[k as MetricId] = v;
       }
-      daily = { date: d.date, baseline, claimed: Array.isArray(d.claimed) ? d.claimed.filter(isStr) : [] };
     }
-  }
-  return { v: 1, claimed: [...new Set(claimed)], daily };
+    return { key, baseline, claimed: Array.isArray(d.claimed) ? d.claimed.filter(isStr) : [] };
+  };
+  const d = period(r.daily, "date", /^\d{4}-\d{2}-\d{2}$/);
+  const w = period(r.weekly, "week", /^\d{4}-W\d{2}$/);
+  const daily: HubState["daily"] = d ? { date: d.key, baseline: d.baseline, claimed: d.claimed } : null;
+  const weekly: HubState["weekly"] = w ? { week: w.key, baseline: w.baseline, claimed: w.claimed } : null;
+  return { v: 1, claimed: [...new Set(claimed)], daily, weekly };
 }
 
 export function dayKey(now: number): string {
@@ -152,10 +173,15 @@ export function achievementViews(metrics: Metrics, hub: HubState): AchievementVi
   });
 }
 
-export function dailyProgress(def: DailyDef, metrics: Metrics, hub: HubState): number {
-  if (def.metric === "learnXpToday") return Math.min(def.target, Math.max(0, metrics.learnXpToday));
-  const base = hub.daily?.baseline[def.metric] ?? metrics[def.metric];
+// Úkoly na učení čtou dnešní/týdenní XP přímo, ostatní počítají přírůstek od začátku období.
+function periodProgress(def: DailyDef, metrics: Metrics, baseline: Partial<Metrics> | undefined): number {
+  if (def.metric === "learnXpToday" || def.metric === "learnXpWeek") return Math.min(def.target, Math.max(0, metrics[def.metric]));
+  const base = baseline?.[def.metric] ?? metrics[def.metric];
   return Math.min(def.target, Math.max(0, metrics[def.metric] - base));
+}
+
+export function dailyProgress(def: DailyDef, metrics: Metrics, hub: HubState): number {
+  return periodProgress(def, metrics, hub.daily?.baseline);
 }
 
 export function dailyViews(userId: string, metrics: Metrics, hub: HubState): DailyView[] {
@@ -183,4 +209,43 @@ export function claimDaily(userId: string, hub: HubState, metrics: Metrics, id: 
   if (d.claimed) return { ok: false, error: "already-claimed" };
   if (!d.done) return { ok: false, error: "not-done" };
   return { ok: true, hub: { ...hub, daily: { ...hub.daily, claimed: [...hub.daily.claimed, id] } }, reward: d.reward };
+}
+
+// --- týdenní cíle ---
+
+/** Tři cíle na týden: vždycky jeden z učení a dva herní, pro stejného hráče a týden pořád stejné. */
+export function pickWeekly(userId: string, week: string): DailyDef[] {
+  const pool = [...WEEKLY_GAME_POOL];
+  const picked: DailyDef[] = [];
+  let h = hash(`${userId}|${week}`);
+  while (picked.length < WEEKLY_COUNT - 1 && pool.length > 0) {
+    const i = h % pool.length;
+    picked.push(pool.splice(i, 1)[0]);
+    h = hash(`${h}|${i}`);
+  }
+  return [WEEKLY_LEARN, ...picked];
+}
+
+export function rollWeekly(hub: HubState, week: string, metrics: Metrics): HubState {
+  if (hub.weekly && hub.weekly.week === week) return hub;
+  const baseline: Partial<Metrics> = {};
+  for (const q of WEEKLY_GAME_POOL) baseline[q.metric] = metrics[q.metric];
+  return { ...hub, weekly: { week, baseline, claimed: [] } };
+}
+
+export function weeklyViews(userId: string, metrics: Metrics, hub: HubState): DailyView[] {
+  if (!hub.weekly) return [];
+  const claimed = new Set(hub.weekly.claimed);
+  return pickWeekly(userId, hub.weekly.week).map((d) => {
+    const progress = periodProgress(d, metrics, hub.weekly?.baseline);
+    return { ...d, progress, done: progress >= d.target, claimed: claimed.has(d.id) };
+  });
+}
+
+export function claimWeekly(userId: string, hub: HubState, metrics: Metrics, id: string): ClaimResult {
+  const d = weeklyViews(userId, metrics, hub).find((x) => x.id === id);
+  if (!d || !hub.weekly) return { ok: false, error: "unknown" };
+  if (d.claimed) return { ok: false, error: "already-claimed" };
+  if (!d.done) return { ok: false, error: "not-done" };
+  return { ok: true, hub: { ...hub, weekly: { ...hub.weekly, claimed: [...hub.weekly.claimed, id] } }, reward: d.reward };
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { eventBonusFor, type EventBonus } from "@/lib/idle/events";
 import { itemPrice, normalizeState as normalizeFarm, takeItem } from "@/lib/idle/farm";
 import {
   adopt,
@@ -43,7 +44,7 @@ async function learningBonusFor(userId: string, now: number) {
   return learningBonusFromXp(sum._sum.amount ?? 0);
 }
 
-function payload(state: PetGameState, points: number, learningBonus: number, now: number, accessories: string[], farmStock: Record<string, number> = {}) {
+function payload(state: PetGameState, points: number, learningBonus: number, event: EventBonus, now: number, accessories: string[], farmStock: Record<string, number> = {}) {
   const active = state.active ? state.pets[state.active] : undefined;
   return {
     state,
@@ -51,8 +52,9 @@ function payload(state: PetGameState, points: number, learningBonus: number, now
     accessories,
     farmStock,
     learningBonus,
+    event,
     now,
-    incomePerHour: currentIncomePerHour(state, learningBonus),
+    incomePerHour: currentIncomePerHour(state, learningBonus, event.total),
     offlineCapHours: offlineCapHours(state),
     level: active ? levelInfo(active.growth) : null,
   };
@@ -108,14 +110,15 @@ export async function GET() {
       prisma.unlock.findMany({ where: { userId, key: { startsWith: "pet:" } }, select: { key: true } }),
       prisma.idleState.findUnique({ where: { userId_game: { userId, game: "farma" } }, select: { data: true } }),
     ]);
-    const settled = settle(row ? normalizeState(row.data, now) : emptyState(now), now, bonus);
+    const event = eventBonusFor("pets", now);
+    const settled = settle(row ? normalizeState(row.data, now) : emptyState(now), now, bonus, event.total);
     if (row) {
       await prisma.idleState.update({
         where: { id: row.id },
         data: { data: settled as unknown as Prisma.InputJsonValue },
       });
     }
-    return NextResponse.json(payload(settled, user?.points ?? 0, bonus, now, unlocks.map((u) => u.key.slice(4)), stockOf(farmRow?.data, now)));
+    return NextResponse.json(payload(settled, user?.points ?? 0, bonus, event, now, unlocks.map((u) => u.key.slice(4)), stockOf(farmRow?.data, now)));
   } catch {
     return NextResponse.json({ error: "unavailable" }, { status: 503 });
   }
@@ -131,6 +134,7 @@ export async function POST(request: Request) {
   try {
     const now = Date.now();
     const bonus = await learningBonusFor(userId, now);
+    const event = eventBonusFor("pets", now);
 
     const result = await prisma.$transaction(async (tx) => {
       const row = await tx.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } });
@@ -138,7 +142,7 @@ export async function POST(request: Request) {
       const points = user?.points ?? 0;
       const owned = (await tx.unlock.findMany({ where: { userId, key: { startsWith: "pet:" } }, select: { key: true } })).map((u) => u.key.slice(4));
 
-      const settled = settle(row ? normalizeState(row.data, now) : emptyState(now), now, bonus);
+      const settled = settle(row ? normalizeState(row.data, now) : emptyState(now), now, bonus, event.total);
 
       // Krmení úrodou z farmy sahá do dvou her naráz, proto běží ve stejné transakci s oběma zámky.
       const farmRow = await tx.idleState.findUnique({ where: { userId_game: { userId, game: "farma" } } });
@@ -186,7 +190,7 @@ export async function POST(request: Request) {
     if (!result.outcome.ok) {
       return NextResponse.json({ error: result.outcome.error }, { status: 400 });
     }
-    return NextResponse.json(payload(result.outcome.state, result.points, bonus, now, result.owned, stockOf(result.farmData, now)));
+    return NextResponse.json(payload(result.outcome.state, result.points, bonus, event, now, result.owned, stockOf(result.farmData, now)));
   } catch (error) {
     if (error instanceof NotEnoughPoints) {
       return NextResponse.json({ error: "not-enough-points" }, { status: 400 });

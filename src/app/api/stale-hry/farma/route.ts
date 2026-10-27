@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { eventBonusFor } from "@/lib/idle/events";
 import { getItem as getCityItem, normalizeCity } from "@/lib/idle/city";
 import { levelFromGrowth, normalizeState as normalizePets } from "@/lib/idle/pets";
 import {
@@ -60,7 +61,8 @@ async function speedBonusFor(userId: string, now: number) {
   const learning = learningBonusFromXp(sum._sum.amount ?? 0);
   const pet = petSpeedBonus(petLevel);
   const cityB = citySpeedBonus(buildings);
-  return { learning, pet, city: cityB, total: learning + pet + cityB };
+  const event = eventBonusFor("farm", now);
+  return { learning, pet, city: cityB, event: event.total, eventInfo: event, total: learning + pet + cityB + event.total };
 }
 type SpeedBonus = Awaited<ReturnType<typeof speedBonusFor>>;
 
@@ -70,7 +72,8 @@ function payload(state: FarmState, points: number, bonus: SpeedBonus, now: numbe
     points,
     // Celkové zrychlení (klient podle něj počítá odpočty); rozpis je v `bonuses`.
     learningBonus: bonus.total,
-    bonuses: { learning: bonus.learning, pet: bonus.pet, city: bonus.city },
+    bonuses: { learning: bonus.learning, pet: bonus.pet, city: bonus.city, event: bonus.event },
+    event: bonus.eventInfo,
     now,
     level: levelInfo(state.xp),
     silo: { used: stockTotal(state), capacity: siloCapacity(state) },

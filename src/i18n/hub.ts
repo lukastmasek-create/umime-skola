@@ -16,6 +16,8 @@ export const HUB_TEXT = {
   login: n("Přihlásit se", "Sign in", "Anmelden", "Войти"),
   error: n("Něco se nepovedlo, zkus to znovu.", "Something went wrong, try again.", "Etwas ist schiefgelaufen, versuche es noch einmal.", "Что-то пошло не так, попробуй ещё раз."),
   got: n("Získal jsi {n} bodů!", "You got {n} points!", "Du hast {n} Punkte bekommen!", "Ты получил {n} очков!"),
+  weekly: n("Týdenní cíle", "Weekly goals", "Wochenziele", "Цели недели"),
+  weeklyHint: n("Nové cíle každé pondělí. Větší úkoly, větší odměna.", "New goals every Monday. Bigger tasks, bigger rewards.", "Jeden Montag gibt es neue Ziele. Größere Aufgaben, größere Belohnung.", "Новые цели каждый понедельник. Задания больше, награда больше."),
   showAll: n("Zobrazit všechny", "Show all", "Alle anzeigen", "Показать все"),
   showLess: n("Zobrazit méně", "Show less", "Weniger anzeigen", "Показать меньше"),
 } satisfies Record<string, L4>;
@@ -46,6 +48,7 @@ export const ACHIEVEMENT_TEXT: Record<MetricId, L4> = {
   petsEarned: n("Vydělej s mazlíčky {n} mincí", "Earn {n} coins with pets", "Verdiene {n} Münzen mit Haustieren", "Заработай с питомцами {n} монет"),
   learnXp: n("Získej učením celkem {n} XP", "Earn {n} XP from learning in total", "Sammle insgesamt {n} XP durch Lernen", "Набери за учёбу {n} XP"),
   learnXpToday: n("", "", "", ""),
+  learnXpWeek: n("", "", "", ""),
 };
 
 // Šablony denních úkolů (id úkolu = klíč).
@@ -57,6 +60,17 @@ export const DAILY_TEXT: Record<string, L4> = {
   petsEarned: n("Vydělej dnes s mazlíčky {n} mincí", "Earn {n} coins with pets today", "Verdiene heute {n} Münzen mit Haustieren", "Заработай сегодня с питомцами {n} монет"),
   farmOrders: n("Splň dnes {n} zakázky na farmě", "Complete {n} farm orders today", "Erfülle heute {n} Farm-Aufträge", "Выполни сегодня {n} заказа на ферме"),
   cityBuildings: n("Postav dnes ve městě {n} budovy", "Build {n} buildings in the city today", "Baue heute {n} Gebäude in der Stadt", "Построй сегодня в городе {n} здания"),
+};
+
+// Týdenní cíle: stejné šablony jako denní, jen s „týdně“ (id začíná „w:“).
+export const WEEKLY_TEXT: Record<string, L4> = {
+  "w:learnXpWeek": n("Získej tento týden {n} XP učením", "Earn {n} XP from learning this week", "Sammle diese Woche {n} XP durch Lernen", "Набери на этой неделе {n} XP за учёбу"),
+  "w:farmEarned": n("Vydělej tento týden na farmě {n} mincí", "Earn {n} coins on the farm this week", "Verdiene diese Woche {n} Münzen auf der Farm", "Заработай на этой неделе на ферме {n} монет"),
+  "w:cityEarned": n("Vydělej tento týden ve městě {n} mincí", "Earn {n} coins in the city this week", "Verdiene diese Woche {n} Münzen in der Stadt", "Заработай на этой неделе в городе {n} монет"),
+  "w:baseEarned": n("Vydělej tento týden na Základně {n} kreditů", "Earn {n} credits on the Base this week", "Verdiene diese Woche {n} Credits auf der Basis", "Заработай на этой неделе на Базе {n} кредитов"),
+  "w:petsEarned": n("Vydělej tento týden s mazlíčky {n} mincí", "Earn {n} coins with pets this week", "Verdiene diese Woche {n} Münzen mit Haustieren", "Заработай на этой неделе с питомцами {n} монет"),
+  "w:farmOrders": n("Splň tento týden {n} zakázek na farmě", "Complete {n} farm orders this week", "Erfülle diese Woche {n} Farm-Aufträge", "Выполни на этой неделе {n} заказов на ферме"),
+  "w:cityBuildings": n("Postav tento týden ve městě {n} budov", "Build {n} buildings in the city this week", "Baue diese Woche {n} Gebäude in der Stadt", "Построй на этой неделе в городе {n} зданий"),
 };
 
 export function tr(text: L4, locale: Locale): string {

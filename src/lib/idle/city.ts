@@ -184,6 +184,7 @@ export const OFFLINE_CAP_HOURS = 8;
 export const MAX_BATCH = 80;
 export const REFUND_RATE = 0.5;
 export const MAX_LEARNING_BONUS = 0.5;
+export const EVENT_CAP = 0.3;
 // Hodnoty `happy` v katalogu jsou malá čísla, tímto se přepočtou na body spokojenosti 0–100.
 export const HAPPY_SCALE = 3;
 
@@ -434,7 +435,7 @@ function touches(
   return false;
 }
 
-export function computeCity(state: CityState, learningBonus: number): CityStats {
+export function computeCity(state: CityState, learningBonus: number, eventBonus = 0): CityStats {
   const items = state.items;
   const roads = connectedRoads(items);
   const rails = new Set<number>();
@@ -519,7 +520,7 @@ export function computeCity(state: CityState, learningBonus: number): CityStats 
     employed: Math.floor(employed),
     unemployed: Math.floor(unemployed),
     happiness,
-    incomePerHour: raw * happyMult * learning * transportMult,
+    incomePerHour: raw * happyMult * learning * transportMult * (1 + Math.min(EVENT_CAP, Math.max(0, eventBonus))),
     eduPoints,
     eduCoverage,
     stations,
@@ -534,9 +535,9 @@ export function learningBonusFromXp(xpLast24h: number): number {
 }
 
 // Dopočítá výdělek od posledního uložení, nejvýš OFFLINE_CAP_HOURS zpětně.
-export function settleCity(state: CityState, now: number, learningBonus: number): CityState {
+export function settleCity(state: CityState, now: number, learningBonus: number, eventBonus = 0): CityState {
   const hours = Math.min(OFFLINE_CAP_HOURS, Math.max(0, (now - state.lastSeen) / 3_600_000));
   if (hours <= 0) return { ...state, lastSeen: now };
-  const earned = Math.floor(computeCity(state, learningBonus).incomePerHour * hours);
+  const earned = Math.floor(computeCity(state, learningBonus, eventBonus).incomePerHour * hours);
   return { ...state, coins: state.coins + earned, totalEarned: state.totalEarned + earned, lastSeen: now };
 }

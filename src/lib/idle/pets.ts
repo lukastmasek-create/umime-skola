@@ -51,6 +51,7 @@ export const FEED_GROWTH = 6;
 export const PLAY_GROWTH = 6;
 export const TREAT_GROWTH = 30;
 export const MAX_LEARNING_BONUS = 0.5;
+export const EVENT_CAP = 0.3;
 
 const BASE_OFFLINE_HOURS = 6;
 const OFFLINE_HOURS_PER_BED = 3;
@@ -161,6 +162,7 @@ export function incomePerHour(
   state: PetGameState,
   stats: PetStats,
   learningBonus: number,
+  eventBonus = 0,
 ): number {
   const level = levelFromGrowth(stats.growth);
   const base = 20 + 12 * (level - 1);
@@ -168,12 +170,12 @@ export function incomePerHour(
   const happyFactor = 0.6 + 0.4 * (stats.happy / 100);
   const toys = 1 + 0.15 * state.upgrades.toys;
   const learning = 1 + Math.min(MAX_LEARNING_BONUS, Math.max(0, learningBonus)) * learningPower(state);
-  return base * hungerFactor * happyFactor * toys * learning;
+  return base * hungerFactor * happyFactor * toys * learning * (1 + Math.min(EVENT_CAP, Math.max(0, eventBonus)));
 }
 
-export function currentIncomePerHour(state: PetGameState, learningBonus: number): number {
+export function currentIncomePerHour(state: PetGameState, learningBonus: number, eventBonus = 0): number {
   const stats = state.active ? state.pets[state.active] : undefined;
-  return stats ? incomePerHour(state, stats, learningBonus) : 0;
+  return stats ? incomePerHour(state, stats, learningBonus, eventBonus) : 0;
 }
 
 // Bonus za učení: každých 100 XP získaných za posledních 24 hodin dá +10 %.
@@ -183,7 +185,7 @@ export function learningBonusFromXp(xpLast24h: number): number {
 
 // Dopočítá výdělek a hlad/spokojenost od posledního uložení. Maximálně
 // offlineCapHours hodin zpětně, zbytek je ztracený (aby hra nebyla povinnost).
-export function settle(state: PetGameState, now: number, learningBonus: number): PetGameState {
+export function settle(state: PetGameState, now: number, learningBonus: number, eventBonus = 0): PetGameState {
   const next: PetGameState = {
     ...state,
     pets: { ...state.pets },
@@ -200,7 +202,7 @@ export function settle(state: PetGameState, now: number, learningBonus: number):
   let { hunger, happy } = stats;
   let earned = 0;
   for (let i = 0; i < SIMULATION_STEPS; i++) {
-    earned += incomePerHour(state, { ...stats, hunger, happy }, learningBonus) * dt;
+    earned += incomePerHour(state, { ...stats, hunger, happy }, learningBonus, eventBonus) * dt;
     hunger = Math.max(0, hunger - hungerDecayPerHour(state) * dt);
     happy = Math.max(0, happy - HAPPY_DECAY_PER_HOUR * dt);
   }

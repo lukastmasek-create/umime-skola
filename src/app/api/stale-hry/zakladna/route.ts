@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { eventBonusFor } from "@/lib/idle/events";
 import { getXp } from "@/lib/xp";
 import { levelFromXp } from "@/lib/progression";
 import {
@@ -61,6 +62,7 @@ async function bonuses(db: Db, userId: string, now: number): Promise<{ bonus: Bo
       learning: learningBonusFromXp(sum._sum.amount ?? 0),
       pet: petBonusFromLevel(petLevel),
       city: cityBonusFromBuildings(buildings),
+      event: eventBonusFor("base", now).total,
     },
     level: levelFromXp(xp),
   };
@@ -73,6 +75,7 @@ function payload(state: BaseState, points: number, level: number, bonus: Bonus, 
     points,
     level,
     bonus,
+    event: eventBonusFor("base", now),
     now,
     offlineCapHours: OFFLINE_CAP_HOURS,
     stats: {

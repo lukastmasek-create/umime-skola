@@ -53,6 +53,7 @@ export const REFUND_RATE = 0.5;
 export const MAX_LEARNING_BONUS = 0.5;
 export const MAX_PET_BONUS = 0.2;
 export const MAX_CITY_BONUS = 0.2;
+export const EVENT_CAP = 0.3;
 export const MAX_ANTENNAS = 3;
 export const MAX_DEBRIEFS = 6;
 
@@ -435,12 +436,13 @@ export type BaseStats = {
   modules: number;
 };
 
-function bonusMultiplier(bonus: Bonus): number {
-  return 1 + Math.min(MAX_LEARNING_BONUS, Math.max(0, bonus.learning)) + Math.min(MAX_PET_BONUS, Math.max(0, bonus.pet)) + Math.min(MAX_CITY_BONUS, Math.max(0, bonus.city));
+export function bonusMultiplier(bonus: Bonus): number {
+  return 1 + Math.min(MAX_LEARNING_BONUS, Math.max(0, bonus.learning)) + Math.min(MAX_PET_BONUS, Math.max(0, bonus.pet)) + Math.min(MAX_CITY_BONUS, Math.max(0, bonus.city)) + Math.min(EVENT_CAP, Math.max(0, bonus.event ?? 0));
 }
 
-export type Bonus = { learning: number; pet: number; city: number };
-export const NO_BONUS: Bonus = { learning: 0, pet: 0, city: 0 };
+// event = bonus ze sezónní události nebo hry týdne (viz events.ts), nejvýš EVENT_CAP.
+export type Bonus = { learning: number; pet: number; city: number; event?: number };
+export const NO_BONUS: Bonus = { learning: 0, pet: 0, city: 0, event: 0 };
 
 // Bonus za učení: každých 100 XP získaných za posledních 24 hodin dá +10 %.
 export function learningBonusFromXp(xpLast24h: number): number {
