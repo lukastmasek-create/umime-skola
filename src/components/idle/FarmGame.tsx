@@ -62,6 +62,8 @@ const EMOJI: Record<string, string> = {
   wheat: "🌾", corn: "🌽", carrot: "🥕", tomato: "🍅", strawberry: "🍓", pumpkin: "🎃", potato: "🥔", sunflower: "🌻", apple: "🍎", grapes: "🍇",
   egg: "🥚", duckegg: "🥚", milk: "🥛", wool: "🧶", cheese: "🧀", truffle: "🍄", honey: "🍯",
   chicken: "🐔", duck: "🦆", sheep: "🐑", goat: "🐐", cow: "🐄", pig: "🐖", bee: "🐝",
+  cabbage: "🥬", watermelon: "🍉", cherry: "🍒", peach: "🍑", lavender: "💐", rose: "🌹",
+  turkey: "🦃", alpaca: "🦙", silkworm: "🐛", turkeyegg: "🥚", alpacawool: "🧶", silk: "🧵",
 };
 
 // Obrázek z Blenderu; když chybí, zobrazí se emoji.

@@ -18,8 +18,8 @@ export const SPECIES: { id: SpeciesId; pointsCost: number }[] = [
   { id: "robot", pointsCost: 900 },
 ];
 
-export type UpgradeId = "bowl" | "toys" | "bed";
-export const UPGRADES: UpgradeId[] = ["bowl", "toys", "bed"];
+export type UpgradeId = "bowl" | "toys" | "bed" | "playground" | "school";
+export const UPGRADES: UpgradeId[] = ["bowl", "toys", "bed", "playground", "school"];
 export const MAX_UPGRADE_LEVEL = 5;
 
 export type PetStats = {
@@ -67,7 +67,7 @@ export function emptyState(now: number): PetGameState {
     pets: {},
     coins: 0,
     totalEarned: 0,
-    upgrades: { bowl: 0, toys: 0, bed: 0 },
+    upgrades: { bowl: 0, toys: 0, bed: 0, playground: 0, school: 0 },
     lastSeen: now,
     lastPlayAt: 0,
   };
@@ -105,6 +105,8 @@ export function normalizeState(raw: unknown, now: number): PetGameState {
       bowl: num(r.upgrades?.bowl, 0, 0, MAX_UPGRADE_LEVEL),
       toys: num(r.upgrades?.toys, 0, 0, MAX_UPGRADE_LEVEL),
       bed: num(r.upgrades?.bed, 0, 0, MAX_UPGRADE_LEVEL),
+      playground: num(r.upgrades?.playground, 0, 0, MAX_UPGRADE_LEVEL),
+      school: num(r.upgrades?.school, 0, 0, MAX_UPGRADE_LEVEL),
     },
     lastSeen: num(r.lastSeen, now, 0, now),
     lastPlayAt: num(r.lastPlayAt, 0),
@@ -140,6 +142,16 @@ export function hungerDecayPerHour(state: PetGameState): number {
 
 export const HAPPY_DECAY_PER_HOUR = 6;
 
+// Hřiště: každá úroveň zkrátí pauzu mezi hrami o 14 % (na nejvyšší úrovni zbývá 30 %).
+export function playCooldownMs(state: PetGameState): number {
+  return Math.round(PLAY_COOLDOWN_MS * (1 - 0.14 * state.upgrades.playground));
+}
+
+// Škola: každá úroveň zesílí vliv učení na výdělek o 20 % (na nejvyšší úrovni dvojnásobně).
+export function learningPower(state: PetGameState): number {
+  return 1 + 0.2 * state.upgrades.school;
+}
+
 export function offlineCapHours(state: PetGameState): number {
   return BASE_OFFLINE_HOURS + OFFLINE_HOURS_PER_BED * state.upgrades.bed;
 }
@@ -155,7 +167,7 @@ export function incomePerHour(
   const hungerFactor = stats.hunger <= 0 ? 0 : stats.hunger < 25 ? 0.5 : 1;
   const happyFactor = 0.6 + 0.4 * (stats.happy / 100);
   const toys = 1 + 0.15 * state.upgrades.toys;
-  const learning = 1 + Math.min(MAX_LEARNING_BONUS, Math.max(0, learningBonus));
+  const learning = 1 + Math.min(MAX_LEARNING_BONUS, Math.max(0, learningBonus)) * learningPower(state);
   return base * hungerFactor * happyFactor * toys * learning;
 }
 
@@ -254,7 +266,7 @@ export function feed(state: PetGameState): ActionResult {
 export function play(state: PetGameState, now: number): ActionResult {
   const pet = withActive(state);
   if (!pet) return { ok: false, error: "no-pet" };
-  if (now - state.lastPlayAt < PLAY_COOLDOWN_MS) return { ok: false, error: "cooldown" };
+  if (now - state.lastPlayAt < playCooldownMs(state)) return { ok: false, error: "cooldown" };
   return {
     ok: true,
     state: {

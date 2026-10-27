@@ -9,7 +9,7 @@ import { fillN, getPetText } from "@/i18n/pets";
 import {
   HAPPY_DECAY_PER_HOUR,
   MAX_UPGRADE_LEVEL,
-  PLAY_COOLDOWN_MS,
+  playCooldownMs,
   SPECIES,
   TREAT_POINTS_COST,
   UPGRADES,
@@ -263,7 +263,7 @@ export function PetGame({ locale }: { locale: Locale }) {
   const mood = moodOf({ ...stats, hunger, happy });
   const coins = Math.floor(state.coins + data.incomePerHour * hoursSince);
   const serverNow = data.now + (nowMs - receivedAt);
-  const cooldownLeft = Math.max(0, Math.ceil((state.lastPlayAt + PLAY_COOLDOWN_MS - serverNow) / 1000));
+  const cooldownLeft = Math.max(0, Math.ceil((state.lastPlayAt + playCooldownMs(state) - serverNow) / 1000));
   const feedPrice = feedCost(level.level);
   const bonusPercent = Math.round(data.learningBonus * 100);
 
