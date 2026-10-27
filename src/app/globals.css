@@ -1070,7 +1070,7 @@ select:not(:focus) {
 .peak-layer-volcano .volcano {
   position: absolute;
   left: 50%;
-  bottom: -2.5rem;
+  bottom: -3.2rem;
   max-width: none;
   transform: translateX(-50%);
   filter: brightness(0.92);

@@ -24,7 +24,7 @@ def animated(name, dest, fps=24, quality=70, size=None, loop=0):
     fr = frames(name, size)
     path = os.path.join(DEST, dest)
     fr[0].save(path, format="WEBP", save_all=True, append_images=fr[1:], duration=int(1000 / fps), loop=loop,
-               quality=quality, method=5, alpha_quality=85)
+               quality=quality, method=5, alpha_quality=60 if dest.startswith("sopka") else 85)
     print(dest, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB")
 
 
@@ -35,7 +35,7 @@ def strip(name, dest, size, quality=72):
     for i, im in enumerate(fr):
         sheet.paste(im, (i * size[0], 0))
     path = os.path.join(DEST, dest)
-    sheet.save(path, format="WEBP", quality=quality, method=5, alpha_quality=85)
+    sheet.save(path, format="WEBP", quality=quality, method=5, alpha_quality=60 if dest.startswith("sopka") else 85)
     print(dest, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB", sheet.size)
 
 
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     if "vlajka" in what: animated("vlajka", "vlajka.webp", fps=24, quality=72)
     if "raketa" in what: animated("raketa", "raketa.webp", fps=24, quality=72)
     if "sopka" in what:
-        animated("sopka", "sopka.webp", fps=18, quality=62)
+        animated("sopka", "sopka.webp", fps=18, quality=36, size=(520, 585))
         fr = frames("sopka")
         fr[30].save(os.path.join(DEST, "sopka-still.webp"), format="WEBP", quality=82, method=5, alpha_quality=90)
     if "liana" in what: strip("liana", "liana-strip.webp", (288, 288))

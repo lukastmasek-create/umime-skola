@@ -112,11 +112,11 @@ export function MountainScene() {
             style={{ left: "69.5%", top: "13.5%", transform: "translate(-44%, -80%)" }}
           />
         </div>
+        <div className="peak-layer peak-layer-mid" />
         <div className="peak-layer peak-layer-volcano">
           <div className="volcano-glow" />
-          <AnimArt name="sopka" size={400} height={450} className="volcano hidden sm:block" />
+          <AnimArt name="sopka" size={430} height={484} className="volcano hidden sm:block" />
         </div>
-        <div className="peak-layer peak-layer-mid" />
         <div className="peak-layer peak-layer-front" />
       </div>
     </>
