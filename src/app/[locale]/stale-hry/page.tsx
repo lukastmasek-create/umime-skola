@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { IdleHub } from "@/components/idle/IdleHub";
 import { getIdleText } from "@/i18n/idle";
 import { isLocale, type Locale } from "@/i18n/config";
 
@@ -76,6 +77,8 @@ export default async function IdleGamesPage({
       </div>
 
       <p className="mt-8 text-sm text-[var(--faint)]">{t.note}</p>
+
+      <IdleHub locale={locale as Locale} />
     </div>
   );
 }
