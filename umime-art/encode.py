@@ -70,10 +70,13 @@ def stills():
 
 
 if __name__ == "__main__":
-    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons"]
+    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_realna"]
     if "icons" in what: icons()
     if "stills" in what: stills()
     if "planeta" in what: animated("planeta", "planeta.webp", fps=24, quality=68)
+    if "planeta_realna" in what:
+        animated("planeta_realna", "planeta-realna.webp", fps=16, quality=72, size=(560, 372))
+        still("planeta_realna", "planeta-realna-still.webp", size=(560, 372), quality=88)
     if "motyl" in what: animated("motyl", "motyl.webp", fps=24, quality=72)
     if "vlajka" in what: animated("vlajka", "vlajka.webp", fps=24, quality=72)
     if "raketa" in what: animated("raketa", "raketa.webp", fps=24, quality=72)

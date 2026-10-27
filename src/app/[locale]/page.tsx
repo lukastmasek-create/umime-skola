@@ -226,7 +226,7 @@ export default async function Home({
       {/* 5) Zpět do vesmíru: kategorie */}
       <section className="zone zone-space">
         <Wave fill="#160a2c" />
-        <Planet className="absolute -bottom-6 -left-24 -z-10 hidden opacity-80 lg:block" size={460} hue={140} />
+        <Planet className="absolute -bottom-6 -left-24 -z-10 hidden opacity-95 lg:block" size={500} variant="realistic" />
         <SpriteFrame
           sheet="aliens"
           col={1}
