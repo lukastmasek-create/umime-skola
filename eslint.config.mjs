@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Testovací nástroje her (boti a harness) nejsou součástí aplikace.
+    "tests/games/**",
+    "umime-art/**",
   ]),
 ]);
 

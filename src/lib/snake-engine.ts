@@ -89,6 +89,15 @@ export class SnakeEngine extends ArcadeEngine {
     for (let i = 0; i < 3; i++) this.spawnFood();
   }
 
+  protected eliminate(indices: number[]) {
+    for (const a of this.apples) {
+      if (!a.alive || a.correct || !indices.includes(a.index)) continue;
+      a.alive = false;
+      this.burst((a.x + 0.5) * C, OY + (a.y + 0.5) * C, a.color, 14);
+    }
+    sfx("pickup");
+  }
+
   private spawnFood() {
     const c = this.randomFree(1, COLS - 1, 2, ROWS - 1);
     this.food.push(c);

@@ -2,7 +2,7 @@
 // a zkontroluje ho. Spuštění: node prisma/build-courses-sql.cjs
 //
 // Formát souboru s obsahem:
-//   module.exports = { subject: "MATEMATIKA", courses: [ { slug, title, desc, section, grade,
+//   module.exports = { subject: "MATEMATIKA", category: "PRIJIMACKY" (volitelné, výchozí ZAKLADNI; bez třídy → grade: null), courses: [ { slug, title, desc, section, grade,
 //     qs: [ [obtížnost 1-5, "otázka", "správná odpověď", ["špatná 1","špatná 2","špatná 3"], "vysvětlení"], ... ] } ] }
 
 const fs = require("fs");
@@ -50,11 +50,14 @@ for (const file of files) {
     if (!/^[a-z0-9-]+$/.test(course.slug)) problems.push(`${where}: slug smí obsahovat jen a-z, 0-9 a pomlčky`);
     seenSlugs.add(course.slug);
     if (!course.title || !course.desc || !course.section) problems.push(`${where}: chybí title, desc nebo section`);
-    if (!Number.isInteger(course.grade) || course.grade < 1 || course.grade > 9) problems.push(`${where}: špatná třída`);
+    const category = data.category || "ZAKLADNI";
+    if (!["ZAKLADNI", "STREDNI", "PRIJIMACKY", "MATURITA"].includes(category)) problems.push(`${where}: neznámá kategorie ${category}`);
+    const gradeless = category !== "ZAKLADNI" && course.grade == null;
+    if (!gradeless && (!Number.isInteger(course.grade) || course.grade < 1 || course.grade > 9)) problems.push(`${where}: špatná třída`);
 
     const courseId = `c_${course.slug}`;
     courseRows.push(
-      `(${esc(courseId)},${esc(course.title)},${esc(course.slug)},${esc(course.desc)},true,'ZAKLADNI'::"Category",${esc(data.subject)}::"Subject",${esc(course.section)},${course.grade},NOW(),NOW())`,
+      `(${esc(courseId)},${esc(course.title)},${esc(course.slug)},${esc(course.desc)},true,'${category}'::"Category",${esc(data.subject)}::"Subject",${esc(course.section)},${gradeless ? "NULL" : course.grade},NOW(),NOW())`,
     );
 
     const perDifficulty = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };

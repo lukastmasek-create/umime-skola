@@ -3,7 +3,8 @@ import { CATEGORIES, SUBJECTS } from "@/lib/taxonomy";
 import { HomeProgress } from "@/components/HomeProgress";
 import { DailyChallenges } from "@/components/DailyChallenges";
 import { ArcadeDemo } from "@/components/ArcadeDemo";
-import { ALIEN_ROW, Circuit, HomeArt, Mountains, NatureDecor, Nebula, Planet, Rocket, SpriteFrame, StarsVideo, Wave } from "@/components/SpaceDecor";
+import { ALIEN_ROW, Circuit, HomeArt, NatureDecor, Nebula, Planet, Rocket, SpriteFrame, TechBus, Wave } from "@/components/SpaceDecor";
+import { Liana, MountainScene } from "@/components/HomeAnim";
 import { getHomeText } from "@/i18n/home";
 import { getSubjectText } from "@/i18n/subjects";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -37,7 +38,6 @@ export default async function Home({
       {/* 1) Vesmír: hrdina a postup */}
       <div className="zone zone-space">
         <Nebula className="absolute inset-x-0 top-0 -z-10 h-[820px]" />
-        <StarsVideo className="absolute inset-x-0 top-0 -z-10 h-[820px] w-full" />
         <div aria-hidden className="hero-aurora">
           <span style={{ left: "-8%", top: "4%", width: 460, height: 460, background: "#7c6cff" }} />
           <span style={{ right: "6%", top: "28%", width: 380, height: 380, background: "#ff8fd0", animationDelay: "-6s" }} />
@@ -123,12 +123,15 @@ export default async function Home({
               {h.allCourses} →
             </Link>
           </div>
+          <div className="relative">
+            <Liana className="absolute -bottom-16 -left-40 z-20 hidden lg:block" />
+            <Liana className="absolute -bottom-16 -right-40 z-20 hidden lg:block" flip />
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5">
             {SUBJECTS.map((subject) => (
               <Link
                 key={subject.slug}
                 href={`/${locale}/kurzy/zakladni?predmet=${subject.slug}`}
-                className="reveal card card-hover flex items-center gap-3 p-3 text-[#1b1830] last:col-span-2 sm:gap-4 sm:p-4 sm:last:col-span-1"
+                className="reveal card card-hover group relative flex items-center gap-3 p-3 text-[#1b1830] last:col-span-2 sm:gap-4 sm:p-4 sm:last:col-span-1"
                 style={{
                   background: subject.color,
                   borderColor: "#16132b",
@@ -144,8 +147,10 @@ export default async function Home({
                 <span className="text-sm font-bold leading-tight sm:text-base">
                   {subjectText.labels[subject.value]}
                 </span>
+                <span aria-hidden className="bloom hidden sm:block" />
               </Link>
             ))}
+          </div>
           </div>
         </div>
       </section>
@@ -162,6 +167,7 @@ export default async function Home({
           <p className="mb-8 font-mono text-xs uppercase tracking-[0.3em] text-[#35d0ff]/80">
             <span className="tech-blink">●</span> 01 — 0{h.features.length}
           </p>
+          <TechBus colors={h.features.map((feature) => featureLinks[feature.key].color)} />
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {h.features.map((feature, i) => {
               const f = featureLinks[feature.key];
@@ -172,6 +178,7 @@ export default async function Home({
                   className="reveal card card-hover tech-card flex flex-col gap-3 p-5"
                   style={{ borderColor: `${f.color}88`, ["--tc" as string]: f.color, ["--glow" as string]: `${f.color}33` }}
                 >
+                  <span aria-hidden className="electric" />
                   <span className="font-mono text-[11px] tracking-[0.25em]" style={{ color: f.color }}>
                     {"// 0" + (i + 1)}
                   </span>
@@ -198,19 +205,17 @@ export default async function Home({
       <section className="zone zone-peak">
         <Wave fill="#071427" />
         <HomeArt name="oblak-1" size={120} className="space-float absolute right-[12%] top-20 z-0 hidden h-auto sm:block" />
-        <HomeArt name="oblak-2" size={96} className="space-float absolute left-[8%] top-28 z-0 hidden h-auto sm:block" style={{ animationDelay: "-3s" }} />
-        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-44 pt-24 sm:px-6 sm:pb-64">
+        <HomeArt name="oblak-2" size={96} className="space-float absolute left-[2%] top-28 z-0 hidden h-auto sm:block" style={{ animationDelay: "-3s" }} />
+        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-48 pt-24 sm:px-6 sm:pb-80">
           <h2 className="reveal mb-8 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
             🏔️ {h.stepsTitle}
           </h2>
           <ol className="relative grid gap-8 md:grid-cols-3 md:gap-5">
-            <span
-              aria-hidden
-              className="steps-line absolute left-6 right-6 top-6 hidden border-t-2 border-dashed border-white/40 md:block"
-            />
+            <span aria-hidden className="steps-line absolute left-6 right-6 top-6 hidden md:block" />
+            <span aria-hidden className="steps-runner hidden md:block" />
             {h.steps.map((step, i) => (
               <li key={step.title} className="reveal relative flex gap-4 md:flex-col md:items-start">
-                <span className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full shadow-[0_0_22px_rgba(255,210,77,0.6)]">
+                <span className="step-badge relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full shadow-[0_0_22px_rgba(255,210,77,0.6)]" style={{ ["--d" as string]: `${[-0.45, 1.6, 3.65][i]}s` }}>
                   <HomeArt name={`krok-${i + 1}`} size={56} className="h-14 w-14 max-w-none" />
                   <span className="sr-only">{i + 1}</span>
                 </span>
@@ -222,8 +227,7 @@ export default async function Home({
             ))}
           </ol>
         </div>
-        <Mountains />
-        <HomeArt name="vlajka" size={64} className="absolute bottom-[6.5rem] left-[22%] z-0 hidden sm:bottom-[10rem] sm:block" />
+        <MountainScene />
       </section>
 
       {/* 5) Zpět do vesmíru: kategorie */}
@@ -256,7 +260,7 @@ export default async function Home({
                     ["--glow" as string]: `${color}55`,
                   }}
                 >
-                  <HomeArt name={GALAXY_ICONS[i % GALAXY_ICONS.length]} size={96} className="absolute -right-3 -top-3 opacity-80" />
+                  <HomeArt name={GALAXY_ICONS[i % GALAXY_ICONS.length]} size={128} className="absolute -right-4 -top-5 opacity-95" />
                   <span className="text-4xl font-extrabold leading-none" style={{ ...heading, color }}>
                     {String(i + 1).padStart(2, "0")}
                   </span>
