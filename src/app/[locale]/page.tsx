@@ -3,7 +3,7 @@ import { CATEGORIES, SUBJECTS } from "@/lib/taxonomy";
 import { HomeProgress } from "@/components/HomeProgress";
 import { DailyChallenges } from "@/components/DailyChallenges";
 import { ArcadeDemo } from "@/components/ArcadeDemo";
-import { ALIEN_ROW, Circuit, HomeArt, Mountains, NatureDecor, Nebula, Planet, Rocket, SpriteFrame, StarsVideo, Wave } from "@/components/SpaceDecor";
+import { ALIEN_ROW, Circuit, HomeArt, Mountains, NatureDecor, Nebula, Planet, Rocket, SpriteFrame, Wave } from "@/components/SpaceDecor";
 import { getHomeText } from "@/i18n/home";
 import { getSubjectText } from "@/i18n/subjects";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -37,7 +37,6 @@ export default async function Home({
       {/* 1) Vesmír: hrdina a postup */}
       <div className="zone zone-space">
         <Nebula className="absolute inset-x-0 top-0 -z-10 h-[820px]" />
-        <StarsVideo className="absolute inset-x-0 top-0 -z-10 h-[820px] w-full" />
         <div aria-hidden className="hero-aurora">
           <span style={{ left: "-8%", top: "4%", width: 460, height: 460, background: "#7c6cff" }} />
           <span style={{ right: "6%", top: "28%", width: 380, height: 380, background: "#ff8fd0", animationDelay: "-6s" }} />
@@ -197,6 +196,7 @@ export default async function Home({
       {/* 4) Hory: jak to funguje */}
       <section className="zone zone-peak">
         <Wave fill="#071427" />
+        <div aria-hidden className="snowfall" />
         <HomeArt name="oblak-1" size={120} className="space-float absolute right-[12%] top-20 z-0 hidden h-auto sm:block" />
         <HomeArt name="oblak-2" size={96} className="space-float absolute left-[8%] top-28 z-0 hidden h-auto sm:block" style={{ animationDelay: "-3s" }} />
         <div className="relative z-10 mx-auto max-w-6xl px-4 pb-44 pt-24 sm:px-6 sm:pb-64">
