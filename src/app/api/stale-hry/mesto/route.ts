@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { eventBonusFor, type EventBonus } from "@/lib/idle/events";
 import { getXp } from "@/lib/xp";
 import { levelFromXp } from "@/lib/progression";
 import {
@@ -37,17 +38,18 @@ async function learning(userId: string, now: number) {
     }),
     getXp(userId),
   ]);
-  return { bonus: learningBonusFromXp(sum._sum.amount ?? 0), level: levelFromXp(xp) };
+  return { bonus: learningBonusFromXp(sum._sum.amount ?? 0), event: eventBonusFor("city", now), level: levelFromXp(xp) };
 }
 
-function payload(state: CityState, points: number, level: number, bonus: number, now: number, owned: string[]) {
-  const stats = computeCity(state, bonus);
+function payload(state: CityState, points: number, level: number, bonus: number, event: EventBonus, now: number, owned: string[]) {
+  const stats = computeCity(state, bonus, event.total);
   return {
     state,
     points,
     owned,
     level,
     learningBonus: bonus,
+    event,
     now,
     offlineCapHours: OFFLINE_CAP_HOURS,
     stats: {
@@ -80,14 +82,14 @@ export async function GET() {
       learning(userId, now),
       prisma.unlock.findMany({ where: { userId, key: { startsWith: "city:" } }, select: { key: true } }),
     ]);
-    const settled = settleCity(row ? normalizeCity(row.data, now) : startState(now), now, learn.bonus);
+    const settled = settleCity(row ? normalizeCity(row.data, now) : startState(now), now, learn.bonus, learn.event.total);
     if (row) {
       await prisma.idleState.update({
         where: { id: row.id },
         data: { data: settled as unknown as Prisma.InputJsonValue },
       });
     }
-    return NextResponse.json(payload(settled, user?.points ?? 0, learn.level, learn.bonus, now, unlocks.map((u) => u.key.slice(5))));
+    return NextResponse.json(payload(settled, user?.points ?? 0, learn.level, learn.bonus, learn.event, now, unlocks.map((u) => u.key.slice(5))));
   } catch {
     return NextResponse.json({ error: "unavailable" }, { status: 503 });
   }
@@ -128,7 +130,7 @@ export async function POST(request: Request) {
       const user = await tx.user.findUnique({ where: { id: userId }, select: { points: true } });
       const points = user?.points ?? 0;
       const owned = (await tx.unlock.findMany({ where: { userId, key: { startsWith: "city:" } }, select: { key: true } })).map((u) => u.key.slice(5));
-      const settled = settleCity(row ? normalizeCity(row.data, now) : startState(now), now, learn.bonus);
+      const settled = settleCity(row ? normalizeCity(row.data, now) : startState(now), now, learn.bonus, learn.event.total);
 
       let nextState: CityState;
       let spent = 0;
@@ -167,7 +169,7 @@ export async function POST(request: Request) {
     }, { maxWait: 10_000, timeout: 20_000 });
 
     if ("error" in result) return NextResponse.json({ error: result.error }, { status: 400 });
-    return NextResponse.json({ ...payload(result.state, result.points, learn.level, learn.bonus, now, result.owned), info: result.info });
+    return NextResponse.json({ ...payload(result.state, result.points, learn.level, learn.bonus, learn.event, now, result.owned), info: result.info });
   } catch (error) {
     if (error instanceof NotEnoughPoints) return NextResponse.json({ error: "not-enough-points" }, { status: 400 });
     if (error instanceof Conflict || (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")) {

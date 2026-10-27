@@ -23,6 +23,7 @@ import {
 import { notifyAccountChanged } from "@/lib/account-events";
 import { SpriteStore, TH, TW, drawCity, screenToGrid, type Camera, type Ghost } from "@/components/idle/city-render";
 import { createTraffic, updateTraffic } from "@/components/idle/city-traffic";
+import { EventPill, type EventInfo } from "@/components/idle/EventPill";
 import type { Locale } from "@/i18n/config";
 
 type Payload = {
@@ -31,6 +32,7 @@ type Payload = {
   owned: string[];
   level: number;
   learningBonus: number;
+  event?: EventInfo;
   now: number;
 };
 
@@ -51,6 +53,7 @@ const EMOJI: Record<string, string> = {
   allotments: "🥕", forest: "🌲", lake: "🌊", mountain: "⛰️",
   pumpkin_patch: "🎃", christmas_market: "🎅", ice_rink: "⛸️", astronomical_clock: "🕰️",
   tree: "🌳", bush: "🌿", flowerbed: "🌷", park: "🏞️", playground: "🛝", pond: "🦆", fountain: "⛲",
+  villa: "🏘️", bookshop: "📖", farmers_market: "🧺", art_gallery: "🎨", sports_hall: "🏀", botanical_garden: "🪴", science_center: "🧪",
   lamp: "💡", bench: "🪑", bin: "🗑️", fence: "🚧", mailbox: "📮", flag: "🚩", statue: "🗿", clock_tower: "🕰️", memorial: "🕊️", monument: "🗽",
 };
 
@@ -100,6 +103,7 @@ export function CityGame({ locale }: { locale: Locale }) {
   const [owned, setOwned] = useState<string[]>([]);
   const [level, setLevel] = useState(1);
   const [bonus, setBonus] = useState(0);
+  const [event, setEvent] = useState<EventInfo | null>(null);
   const [offset, setOffset] = useState(0);
   const [nowMs, setNowMs] = useState(0);
   const [tool, setTool] = useState<Tool>("pan");
@@ -144,6 +148,7 @@ export function CityGame({ locale }: { locale: Locale }) {
     setOwned(data.owned ?? []);
     setLevel(data.level);
     setBonus(data.learningBonus);
+    setEvent(data.event ?? null);
     setOffset(data.now - Date.now());
     setNowMs(Date.now());
     setLoad("ready");
@@ -633,6 +638,12 @@ export function CityGame({ locale }: { locale: Locale }) {
   return (
     <div>
       {header}
+
+      {event && event.total > 0 && (
+        <div className="mb-3">
+          <EventPill event={event} locale={locale} />
+        </div>
+      )}
 
       <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
         {statBox(t.coins, `🪙 ${liveCoins.toLocaleString(locale)}`, fillTokens(t.income, { n: Math.round(stats.incomePerHour).toLocaleString(locale) }))}

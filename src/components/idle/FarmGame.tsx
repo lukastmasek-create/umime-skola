@@ -42,12 +42,15 @@ import {
   type ItemId,
   type Order,
 } from "@/lib/idle/farm";
+import { EventPill, type EventInfo } from "@/components/idle/EventPill";
 import type { Locale } from "@/i18n/config";
 
 type Payload = {
   state: FarmState;
   points: number;
   learningBonus: number;
+  bonuses?: { learning: number; pet: number; city: number; event?: number };
+  event?: EventInfo;
   now: number;
   level: { level: number; percent: number; intoLevel: number; needed: number; maxed: boolean };
   gained?: { coins?: number; xp?: number; items?: number } | null;
@@ -61,6 +64,8 @@ const EMOJI: Record<string, string> = {
   wheat: "🌾", corn: "🌽", carrot: "🥕", tomato: "🍅", strawberry: "🍓", pumpkin: "🎃", potato: "🥔", sunflower: "🌻", apple: "🍎", grapes: "🍇",
   egg: "🥚", duckegg: "🥚", milk: "🥛", wool: "🧶", cheese: "🧀", truffle: "🍄", honey: "🍯",
   chicken: "🐔", duck: "🦆", sheep: "🐑", goat: "🐐", cow: "🐄", pig: "🐖", bee: "🐝",
+  cabbage: "🥬", watermelon: "🍉", cherry: "🍒", peach: "🍑", lavender: "💐", rose: "🌹",
+  turkey: "🦃", alpaca: "🦙", silkworm: "🐛", turkeyegg: "🥚", alpacawool: "🧶", silk: "🧵",
 };
 
 // Obrázek z Blenderu; když chybí, zobrazí se emoji.
@@ -242,7 +247,7 @@ export function FarmGame({ locale }: { locale: Locale }) {
     );
   }
 
-  const { state, points, learningBonus } = view.data;
+  const { state, points, learningBonus, bonuses } = view.data;
   const level = levelFromXp(state.xp);
   const info = view.data.level;
   const capacity = siloCapacity(state);
@@ -295,9 +300,22 @@ export function FarmGame({ locale }: { locale: Locale }) {
             <div className="h-full bg-[var(--accent-green)] transition-all" style={{ width: `${info.percent}%` }} />
           </div>
         </div>
+        <EventPill event={view.data.event} locale={locale} />
         {learningBonus > 0 && (
-          <span className="pill bg-[var(--accent-yellow)] px-3 py-1 text-sm text-[#16132b]" title={t.learningHint}>
-            📚 {fill(t.learningBonus, { n: Math.round(learningBonus * 100) })}
+          <span className="pill flex-wrap gap-x-2 bg-[var(--accent-yellow)] px-3 py-1 text-sm text-[#16132b]" title={t.speedHint}>
+            <span>⚡ {fill(t.speedBonus, { n: Math.round(learningBonus * 100) })}</span>
+            {bonuses && (
+              <span className="text-xs font-medium opacity-80">
+                {[
+                  bonuses.learning > 0 && `📚 ${fill(t.bonusLearning, { n: Math.round(bonuses.learning * 100) })}`,
+                  bonuses.pet > 0 && `🐾 ${fill(t.bonusPet, { n: Math.round(bonuses.pet * 100) })}`,
+                  bonuses.city > 0 && `🏙️ ${fill(t.bonusCity, { n: Math.round(bonuses.city * 100) })}`,
+                  (bonuses.event ?? 0) > 0 && `🎉 ${Math.round((bonuses.event ?? 0) * 100)} %`,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+            )}
           </span>
         )}
       </div>

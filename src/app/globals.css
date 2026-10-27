@@ -438,6 +438,300 @@ select:not(:focus) {
   }
 }
 
+/* Příroda: další pohyb (viz NatureDecor) */
+@keyframes fern-sway {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(5deg);
+  }
+}
+@keyframes shroom-wobble {
+  0%,
+  86%,
+  100% {
+    transform: scale(1, 1) rotate(0);
+  }
+  90% {
+    transform: scale(1.1, 0.9) rotate(-4deg);
+  }
+  94% {
+    transform: scale(0.94, 1.08) rotate(3deg);
+  }
+}
+@keyframes leaf-fall {
+  0% {
+    transform: translate(0, -60px) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.9;
+  }
+  25% {
+    transform: translate(40px, 22vh) rotate(110deg);
+  }
+  50% {
+    transform: translate(-30px, 46vh) rotate(220deg);
+  }
+  75% {
+    transform: translate(35px, 70vh) rotate(330deg);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-10px, 94vh) rotate(430deg);
+    opacity: 0;
+  }
+}
+@keyframes butterfly-path {
+  0% {
+    transform: translate(-10vw, 40px) rotate(8deg);
+  }
+  20% {
+    transform: translate(18vw, -10px) rotate(-6deg);
+  }
+  40% {
+    transform: translate(42vw, 120px) rotate(10deg);
+  }
+  60% {
+    transform: translate(64vw, 30px) rotate(-8deg);
+  }
+  80% {
+    transform: translate(86vw, 150px) rotate(6deg);
+  }
+  100% {
+    transform: translate(112vw, 60px) rotate(-4deg);
+  }
+}
+@keyframes butterfly-flap {
+  0%,
+  100% {
+    transform: scaleX(1);
+  }
+  50% {
+    transform: scaleX(0.35);
+  }
+}
+@keyframes ladybug-walk {
+  0% {
+    transform: translateX(0) scaleX(1);
+  }
+  47% {
+    transform: translateX(210px) scaleX(1);
+  }
+  50% {
+    transform: translateX(210px) scaleX(-1);
+  }
+  97% {
+    transform: translateX(0) scaleX(-1);
+  }
+  100% {
+    transform: translateX(0) scaleX(1);
+  }
+}
+@keyframes firefly {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0.15;
+  }
+  25% {
+    transform: translate(14px, -18px);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-8px, -34px);
+    opacity: 0.3;
+  }
+  75% {
+    transform: translate(-18px, -12px);
+    opacity: 0.95;
+  }
+}
+@keyframes anim-strip {
+  to {
+    background-position-x: calc(var(--fw) * var(--n) * -1);
+  }
+}
+.anim-strip {
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  animation-name: anim-strip;
+  animation-iteration-count: infinite;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+@keyframes icon-wiggle {
+  0%,
+  100% {
+    transform: rotate(0) scale(1);
+  }
+  25% {
+    transform: rotate(-10deg) scale(1.1);
+  }
+  60% {
+    transform: rotate(8deg) scale(1.1);
+  }
+}
+.fern-sway {
+  transform-origin: 50% 100%;
+  animation: fern-sway 5.5s ease-in-out infinite;
+}
+.shroom-wobble {
+  transform-origin: 50% 100%;
+  animation: shroom-wobble 6s ease-in-out infinite;
+}
+.leaf-fall {
+  animation: leaf-fall 20s linear infinite;
+}
+.butterfly-path {
+  animation: butterfly-path 38s linear infinite;
+}
+.butterfly-flap {
+  animation: butterfly-flap 0.28s ease-in-out infinite;
+}
+.ladybug-walk {
+  left: 46%;
+  top: 4.2rem;
+  animation: ladybug-walk 14s ease-in-out infinite;
+}
+.firefly-fly {
+  animation: firefly 8s ease-in-out infinite;
+}
+.firefly {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: #fff6a8;
+  box-shadow: 0 0 10px 3px rgba(255, 240, 140, 0.75);
+  animation: firefly 8s ease-in-out infinite;
+}
+/* Ikony předmětů si při najetí „zamávají“. */
+.zone-nature .card:hover img {
+  animation: icon-wiggle 0.6s ease-in-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .anim-strip,
+  .fern-sway,
+  .shroom-wobble,
+  .leaf-fall,
+  .butterfly-path,
+  .butterfly-flap,
+  .ladybug-walk,
+  .firefly,
+  .firefly-fly,
+  .zone-nature .card:hover img {
+    animation: none;
+  }
+  .leaf-fall,
+  .firefly {
+    opacity: 0.4;
+  }
+}
+
+/* Příroda: karty předmětů (naklonění, odskok, symboly), slunce/měsíc, zvířátka */
+.zone-nature .subject-card {
+  position: relative;
+  --tilt: -1.4deg;
+  transition: transform 0.2s cubic-bezier(0.3, 1.6, 0.5, 1), box-shadow 0.2s;
+}
+.zone-nature .subject-card:nth-child(even) {
+  --tilt: 1.4deg;
+}
+.zone-nature .subject-card:hover {
+  transform: translateY(-5px) rotate(var(--tilt)) scale(1.025);
+}
+.zone-nature .subject-card:active {
+  transform: translateY(1px) scale(0.965);
+}
+.zone-nature .subject-card::before {
+  content: attr(data-sym);
+  position: absolute;
+  right: 14px;
+  top: 6px;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.1em;
+  color: rgba(22, 19, 43, 0.55);
+  opacity: 0;
+  pointer-events: none;
+}
+.zone-nature .subject-card:hover::before {
+  animation: card-symbols 1.4s ease-out infinite;
+}
+@keyframes card-symbols {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-26px);
+    opacity: 0;
+  }
+}
+@keyframes sky-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(8px);
+  }
+}
+.sky-body {
+  animation: sky-bob 9s ease-in-out infinite;
+}
+/* Světlušky svítí jen večer a v noci. */
+.zone-nature:not([data-time="night"]) .firefly,
+.zone-nature:not([data-time="night"]) .firefly-fly {
+  display: none;
+}
+@keyframes peek {
+  0%,
+  70%,
+  100% {
+    transform: translateY(110%);
+  }
+  76%,
+  92% {
+    transform: translateY(8%);
+  }
+  84% {
+    transform: translateY(8%) rotate(-8deg);
+  }
+}
+.peek {
+  font-size: 40px;
+  line-height: 1;
+  animation: peek 26s ease-in-out infinite;
+}
+.peek-a {
+  left: 14%;
+}
+.peek-b {
+  left: 71%;
+  animation-delay: -13s;
+}
+@media (max-width: 639px) {
+  .peek {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .zone-nature .subject-card:hover,
+  .zone-nature .subject-card:hover::before,
+  .sky-body {
+    animation: none;
+    transform: none;
+  }
+  .peek {
+    display: none;
+  }
+}
+
 .space-page .gradient-hero {
   background: transparent;
 }

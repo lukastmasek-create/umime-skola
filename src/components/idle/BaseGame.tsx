@@ -24,6 +24,7 @@ import {
   type ModuleDef,
   type Ship,
 } from "@/lib/idle/base";
+import { EventPill, type EventInfo } from "@/components/idle/EventPill";
 import { cellAt, drawBase, moduleIcon, planetImage, shipIcon, CAT_COLORS } from "@/components/idle/base-render";
 import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
@@ -51,6 +52,7 @@ type Payload = {
   points: number;
   level: number;
   bonus: Bonus;
+  event?: EventInfo;
   now: number;
   stats: Stats;
   idle: number[];
@@ -66,8 +68,17 @@ const SHIP_ICONS = { probe: "🛰️", shuttle: "🚀", explorer: "🛸" } as co
 
 // 3D render z public/base (modul, loď); čistě ozdobný, název stojí vždy vedle.
 function Art({ src, size }: { src: string; size: number }) {
+  // Když obrázek chybí (nová věc bez ilustrace), ukáže se neutrální dlaždice místo rozbité ikony.
+  const [failed, setFailed] = useState(false);
+  if (failed) {
+    return (
+      <span aria-hidden className="inline-flex shrink-0 items-center justify-center rounded-lg border-2 border-[var(--border-soft)] bg-[var(--surface-muted)] text-[var(--faint)]" style={{ width: size, height: size, fontSize: size * 0.5 }}>
+        ◈
+      </span>
+    );
+  }
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt="" width={size} height={size} className="shrink-0" style={{ width: size, height: size }} />;
+  return <img src={src} alt="" width={size} height={size} className="shrink-0" style={{ width: size, height: size }} onError={() => setFailed(true)} />;
 }
 
 const fmt = (n: number) => Math.round(n).toLocaleString("cs-CZ");
@@ -392,6 +403,7 @@ export function BaseGame({ locale }: { locale: Locale }) {
           <span className="text-xs font-semibold text-[var(--muted)]">
             {t.stats.bonuses}: {t.stats.learning} {pct(bonus.learning)} · {t.stats.pet} {pct(bonus.pet)} · {t.stats.city} {pct(bonus.city)}
           </span>
+          <EventPill event={data.event} locale={locale} />
         </div>
         <div className="flex flex-wrap gap-4">
           <Meter label={`⚡ ${t.stats.energy}`} value={stats.powerFactor} note={`${stats.energyProduced} / ${stats.energyUsed}`} ok={stats.powerFactor >= 1} />

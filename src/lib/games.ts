@@ -13,10 +13,16 @@ export type GameSlug =
   | "osmismerka"
   | "spojovani"
   | "pexeso"
-  | "sibenice";
+  | "sibenice"
+  | "trideni"
+  | "doplnovani"
+  | "milionar"
+  | "presmycky"
+  | "blesk"
+  | "poklad";
 
 // Klasické hry bez enginu: hrají se na otázkách kurzu (src/components/classic).
-export const CLASSIC_SLUGS = ["osmismerka", "spojovani", "pexeso", "sibenice"] as const;
+export const CLASSIC_SLUGS = ["osmismerka", "spojovani", "pexeso", "sibenice", "trideni", "doplnovani", "milionar", "presmycky", "blesk", "poklad"] as const;
 export type ClassicSlug = (typeof CLASSIC_SLUGS)[number];
 
 export function isClassicSlug(slug: string): slug is ClassicSlug {
@@ -40,6 +46,12 @@ export const GAMES: { slug: GameSlug; emoji: string; name: string; available: bo
   { slug: "spojovani", emoji: "🔗", name: "Spojování", available: true },
   { slug: "pexeso", emoji: "🃏", name: "Pexeso", available: true },
   { slug: "sibenice", emoji: "🪢", name: "Šibenice", available: true },
+  { slug: "trideni", emoji: "🗂️", name: "Třídění", available: true },
+  { slug: "doplnovani", emoji: "✏️", name: "Doplňování", available: true },
+  { slug: "milionar", emoji: "💰", name: "Milionář", available: true },
+  { slug: "presmycky", emoji: "🔀", name: "Přesmyčky", available: true },
+  { slug: "blesk", emoji: "⚡", name: "Bleskový kvíz", available: true },
+  { slug: "poklad", emoji: "🏴‍☠️", name: "Hon za pokladem", available: true },
 ];
 
 // Hry, které se nabízejí hráčům (bez archivovaných).

@@ -1249,6 +1249,13 @@ const ART: Record<string, Art> = {
   aquarium: { wall: "#9fd6e8", roof: "#2f7fa8", hz: 30, door: true, cols: 3, rows: 2, glass: "#4fc3e8", extra: "sign" },
   cathedral: { wall: "#e0d6c0", roof: "#5d6f8c", hz: 50, roofStyle: "gable", door: true, cols: 2, rows: 3, glass: "#7a5cff", extra: "spire" },
   castle: { wall: "#cfc8b6", roof: "#8a8f9c", hz: 44, door: true, cols: 2, rows: 2, glass: "#6a6a74", extra: "turrets" },
+  villa: { wall: "#f6e6c8", roof: "#5a8f6a", hz: 26, roofStyle: "gable", door: true, cols: 2, rows: 1, glass: "#9cc5ee", extra: "chimney" },
+  bookshop: { wall: "#d9b99b", roof: "#7a4f3a", hz: 20, door: true, cols: 1, rows: 1, glass: "#9cc5ee", awning: ["#ffffff", "#7a4f3a"] },
+  farmers_market: { wall: "#e9d9a6", roof: "#6bab4f", hz: 18, door: true, cols: 2, rows: 1, glass: "#9cc5ee", awning: ["#ffffff", "#6bab4f"] },
+  art_gallery: { wall: "#eee9e1", roof: "#9a6fb5", hz: 34, door: true, cols: 2, rows: 2, glass: "#9cc5ee", extra: "columns" },
+  sports_hall: { wall: "#cfe0ef", roof: "#3a8f6a", hz: 30, door: true, cols: 3, rows: 1, glass: "#9cc5ee", extra: "sign" },
+  botanical_garden: { wall: "#d4f0dc", roof: "#3f9d6a", hz: 30, cols: 3, rows: 2, glass: "#bfeed0", extra: "dome" },
+  science_center: { wall: "#dfe6f2", roof: "#4a5fb0", hz: 42, door: true, cols: 2, rows: 2, glass: "#8fb8dc", extra: "dome" },
 };
 
 const NIGHT_LIT = 0.35;
