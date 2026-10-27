@@ -37,3 +37,14 @@ export function normalizeRoom(raw: unknown): RoomState {
   const seen = new Set<string>();
   return { owned, placed: placed.map((v) => (v && !seen.has(v) ? (seen.add(v), v) : null)) };
 }
+
+// Kde v obrázku pokoje (poměr 8 : 5) stojí jednotlivé sloty: [x, y, šířka] v procentech.
+// y je místo na podlaze, kde nábytek stojí; zadní řada je menší (dál od kamery), přední větší.
+export const ROOM_SLOT_POS: [number, number, number][] = [
+  [14, 67, 17], [38, 67, 17], [62, 67, 17], [86, 67, 17],
+  [14, 82, 20], [38, 82, 20], [62, 82, 20], [86, 82, 20],
+  [14, 98, 23], [38, 98, 23], [62, 98, 23], [86, 98, 23],
+];
+
+// Sprite nábytku z Blenderu (public/room/furniture). Místo, kde stojí na podlaze, je ve 65 % výšky obrázku.
+export const furnitureSprite = (id: string) => `/room/furniture/${id}.webp`;

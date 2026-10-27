@@ -1,7 +1,7 @@
 // Vyrenderovaná grafika únikových místností (umime-art/scripts/escape_rooms.py a escape_publish.py).
 // Všechny místnosti z kostry `rooms/kit.ts` sdílejí stejné rozložení, takže mají i stejné výřezy stavů.
 // Souřadnice jsou v jednotkách SVG 800 × 450 a odpovídají REGIONS v escape_publish.py.
-export const ART_ROOMS = ["museum", "expedition", "jungle", "pirate", "kitchen"];
+export const ART_ROOMS = ["museum", "expedition", "jungle", "pirate", "kitchen", "library", "observatory", "castle"];
 
 export type ArtPatch = { file: string; x: number; y: number; w: number; h: number };
 

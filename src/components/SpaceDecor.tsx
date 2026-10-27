@@ -1,4 +1,5 @@
 // Ozdoby úvodní stránky z grafiky her: jeden snímek ze spritesheetu vystřižený přes CSS.
+import { Butterfly3D } from "@/components/Butterfly3D";
 
 type Sheet = { file: string; cols: number };
 const SHEETS: Record<string, Sheet> = {
@@ -88,6 +89,29 @@ export function Nebula({ className = "", flip = false }: { className?: string; f
         opacity: 0.55,
       }}
     />
+  );
+}
+
+// Hvězdy, prach a padající hvězdy ze 3D renderu v Blenderu (smyčka na černém pozadí, skládá se přes mlhovinu).
+export function StarsVideo({ className = "" }: { className?: string }) {
+  return (
+    <video
+      aria-hidden
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="auto"
+      className={`stars-video pointer-events-none select-none object-cover ${className}`}
+      style={{
+        opacity: 0.4,
+        maskImage: "linear-gradient(180deg, transparent, #000 18%, #000 80%, transparent)",
+        WebkitMaskImage: "linear-gradient(180deg, transparent, #000 18%, #000 80%, transparent)",
+      }}
+    >
+      <source src="/home/hvezdy.webm" type="video/webm" />
+      <source src="/home/hvezdy.mp4" type="video/mp4" />
+    </video>
   );
 }
 
@@ -181,7 +205,7 @@ const LEAVES: { img: string; pos: string; size: number; delay: string }[] = [
 export function NatureDecor() {
   return (
     <>
-      <AnimArt name="motyl" size={84} height={84} className="butterfly-fly absolute left-[6%] top-14 z-10 hidden sm:block" />
+      <Butterfly3D size={110} className="butterfly-fly absolute left-[6%] top-12 z-10 hidden sm:block" />
       {LEAVES.map((l) => (
         <HomeArt key={l.img} name={l.img} size={l.size} className={`leaf-sway absolute z-0 hidden sm:block ${l.pos}`} style={{ animationDelay: l.delay }} />
       ))}

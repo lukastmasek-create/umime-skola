@@ -151,3 +151,32 @@ na jazykovou verzi. Bez toho hra nenačetla `manifest.json`.
   jako u ostatních her). Render `game_sprites2.py`.
 
 `src/proxy.ts`: přidána výjimka `escape/`.
+
+## Animace úvodní stránky (`public/home/`)
+
+Smyčky vyrenderované v Blenderu (zdrojové skripty jsou v `tools/blender/`, spouští se `python3 skript.py -- výstupní_složka počet_snímků`):
+
+- `raketa-let.webp`: 3D raketa s hořícím plamenem a jiskrami, průhledné pozadí (`rocket.py`, 24 snímků). Letí po dráze z CSS (`rocket-path`).
+- `planeta-tocici.webp`: otáčející se planeta s prstencem a obíhajícím měsícem, průhledné pozadí (`planet.py`, 48 snímků).
+- `hvezdy.webm` / `hvezdy.mp4`: hvězdy ve třech vrstvách, barevný prach, bokeh a padající hvězdy na černém pozadí (`bg.py`, 180 snímků po 15 fps). Přes mlhovinu se skládá přes `mix-blend-mode: screen`.
+- Při zapnutém „omezit pohyb“ se místo animací zobrazí statická `raketa.webp` a `planeta.webp` a video se skryje.
+
+## Farma (`public/farm/`)
+
+Grafika stálé hry Farma (zdrojové skripty `umime-art/scripts/farm.py` a `farm_publish.py`, Blender přes `bpy`):
+
+- `crops/<plodina>_<stadium>.webp` (256 × 256): 10 plodin (pšenice, mrkev, kukuřice, brambor, rajče, jahoda, slunečnice, dýně, jablko, hrozny) ve třech stádiích (sazenice, roste, zralé), každý snímek i se záhonem; `soil.webp` je prázdný záhon.
+- `animals/<zvíře>.webp` (256 × 256): slepice, kachna, ovce, koza, kráva, prase, včela.
+- `icons/<surovina>.webp` (128 × 128): ikony plodin a výrobků zvířat (vejce, kachní vejce, vlna, sýr, mléko, lanýž, med).
+- `hero.webp` (1600 × 520): panorama farmy se stodolou, silem, záhony a plotem.
+- Herní logika je v `src/lib/idle/farm.ts`, API v `src/app/api/stale-hry/farma/route.ts`, rozhraní v `src/components/idle/FarmGame.tsx`. Chybí-li obrázek, hra zobrazí emoji.
+- Složka `farm/` musí být ve výjimkách `matcher` v `src/proxy.ts`, jinak se obrázky přesměrují na jazykovou verzi.
+
+## Pokoj (`public/room/`)
+
+3D rendery pro hráčský pokoj (zdrojové skripty `umime-art/scripts/room.py` a `room_publish.py`):
+
+- `furniture/<id>.webp` (256 × 256, průhledné): všech 12 kusů nábytku z `src/lib/room.ts` (květina, pohovka, počítač, knihovna, globus, kytara, akvárium, dalekohled, vitrína s poháry, herní automat, piano, postel-raketa). Místo, kde nábytek stojí na podlaze, je ve 65 % výšky obrázku.
+- `background.webp` (1600 × 1000): pokoj s okny, obrazy, kobercem a prkennou podlahou.
+- Sloty v pokoji jsou v `ROOM_SLOT_POS` (`src/lib/room.ts`) v procentech, zadní řada je menší než přední. Chybí-li obrázek, zobrazí se emoji.
+- Složka `room/` je ve výjimkách `matcher` v `src/proxy.ts`.

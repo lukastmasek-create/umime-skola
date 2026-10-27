@@ -21,6 +21,7 @@ export function unlockHint(kind: UnlockKind, id: string, locale: Locale): Unlock
   if (def) {
     if ("level" in def.unlock) return { text: t.hintLevel.replace("{n}", String(def.unlock.level)) };
     const event = def.unlock.event;
+    if (event === "escape-all") return { text: t.hintAllRooms, href: `/${locale}/unikovky` };
     if (event.startsWith("escape-")) {
       const room = getEscapeText(locale).list.rooms.find((r) => r.id === event.slice("escape-".length));
       return { text: t.hintRoom.replace("{room}", room?.name ?? event), href: room ? `/${locale}/unikovky/${room.id}` : undefined };

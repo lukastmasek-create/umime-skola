@@ -1,7 +1,7 @@
-import { buildRoom } from "./kit";
+import { buildRoom, type RoomKit } from "./kit";
 
 // Zamčené muzeum (dějepis). Kód ke dveřím: 4379. Texty hádanek jsou zatím jen česky.
-export const MUSEUM_ROOM = buildRoom({
+export const MUSEUM_KIT: RoomKit = {
   id: "museum",
   theme: { wall: "#efe3cc", floor: "#b59a73", accent: "#c9a46a", title: "Zamčené muzeum" },
   intro:
@@ -85,4 +85,6 @@ export const MUSEUM_ROOM = buildRoom({
     hints: ["Otevři inventář a přečti si všechny čtyři poznámky.", "1918 − 1914 = 4. Pyramid je v Gíze tři. VII je 7.", "Poslední číslice je IX = 9. Kód je 4379."],
     rewardMessage: "Zámek cvakl a dveře se otevřely!",
   },
-});
+};
+
+export const MUSEUM_ROOM = buildRoom(MUSEUM_KIT);

@@ -1,5 +1,5 @@
 import type { Locale } from "./config";
-import type { GameSlug } from "@/lib/games";
+import type { ClassicSlug, GameSlug } from "@/lib/games";
 
 // Texty retro her. `action` je popisek tlačítka (střelba, skok…), `upgradeAction` název vylepšení rychlosti hráče.
 export type ArcadeText = {
@@ -10,7 +10,7 @@ export type ArcadeText = {
   upgradeAction: string;
 };
 
-export type ArcadeSlug = Exclude<GameSlug, "space-invaders" | "super-mario">;
+export type ArcadeSlug = Exclude<GameSlug, "space-invaders" | "super-mario" | ClassicSlug>;
 
 const T: Record<ArcadeSlug, Record<Locale, ArcadeText>> = {
   "pac-man": {
@@ -106,28 +106,28 @@ const T: Record<ArcadeSlug, Record<Locale, ArcadeText>> = {
   tetris: {
     cs: {
       title: "Kostkový kvíz",
-      intro: "Dole v hromadě svítí drahokamy a vedle nich jsou odpovědi. Skládej padající kostky a vymaž řádek se správným drahokamem. Vymazat špatný řádek přidá nepořádek, nenech věž dorůst nahoru!",
-      controls: "← → pohyb, ↑ otočit, ↓ zrychlit, mezerník shodit",
+      intro: "Dole jsou čtyři plochy s odpověďmi. Pohybuj padající kostkou, otoč ji a shoď ji na plochu se správnou odpovědí. Zóna, na kterou kostka dopadne, svítí. Špatná plocha ubere život a zavře se.",
+      controls: "← → posun, ↑ otočit, ↓ zrychlit, mezerník shodit",
       action: "Shodit",
       upgradeAction: "Ovládání kostek",
     },
     en: {
       title: "Block Quiz",
-      intro: "Gems glow in the stack with answers next to them. Stack the falling blocks and clear the row with the right gem. Clearing a wrong row adds mess, so don't let the tower reach the top!",
+      intro: "Four landing pads with answers wait at the bottom. Move and rotate the falling block and drop it on the pad with the right answer. The pad below the block glows. A wrong pad costs a life and closes.",
       controls: "← → move, ↑ rotate, ↓ speed up, space drop",
       action: "Drop",
       upgradeAction: "Block control",
     },
     de: {
       title: "Blöcke-Quiz",
-      intro: "Im Haufen leuchten Edelsteine, daneben stehen die Antworten. Staple die fallenden Blöcke und räume die Reihe mit dem richtigen Edelstein. Eine falsche Reihe macht Unordnung, lass den Turm nicht bis oben wachsen!",
+      intro: "Unten warten vier Landeflächen mit Antworten. Bewege und drehe den fallenden Block und wirf ihn auf die Fläche mit der richtigen Antwort. Die Fläche unter dem Block leuchtet. Eine falsche Fläche kostet ein Leben und schließt sich.",
       controls: "← → bewegen, ↑ drehen, ↓ schneller, Leertaste fallen lassen",
       action: "Fallen",
       upgradeAction: "Blocksteuerung",
     },
     ru: {
       title: "Квиз Блоки",
-      intro: "В куче светятся самоцветы, рядом ответы. Складывай падающие блоки и убери ряд с правильным самоцветом. Неверный ряд добавляет мусор, не дай башне дорасти до верха!",
+      intro: "Внизу четыре площадки с ответами. Двигай и поворачивай падающий блок и сбрось его на площадку с правильным ответом. Площадка под блоком подсвечивается. Неверная отнимает жизнь и закрывается.",
       controls: "← → движение, ↑ повернуть, ↓ ускорить, пробел — сбросить",
       action: "Сбросить",
       upgradeAction: "Управление блоками",

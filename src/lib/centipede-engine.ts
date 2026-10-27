@@ -95,6 +95,21 @@ export class CentipedeEngine extends ArcadeEngine {
     ];
   }
 
+  // Nápověda 50:50: špatné články se rozpadnou na houby.
+  protected eliminate(indices: number[]) {
+    for (const idx of indices) {
+      for (const chain of [...this.chains]) {
+        const i = chain.segs.findIndex((sg) => sg.index === idx && !sg.correct);
+        if (i < 0) continue;
+        const pos = this.posAt(chain, chain.headD - i * SPACING);
+        this.burst(pos.x, pos.y, chain.segs[i].color, 18);
+        this.split(chain, i);
+        break;
+      }
+    }
+    sfx("pickup");
+  }
+
   private posAt(chain: Chain, d: number) {
     const p = chain.path;
     for (let i = p.length - 1; i > 0; i--) {

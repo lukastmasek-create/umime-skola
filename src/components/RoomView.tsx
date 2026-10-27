@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { fill } from "@/i18n/profile";
 import { getRoomText } from "@/i18n/room";
-import { FURNITURE, ROOM_SLOTS } from "@/lib/room";
+import { FURNITURE, ROOM_SLOTS, ROOM_SLOT_POS, furnitureSprite } from "@/lib/room";
 import { CARDS, type Rarity } from "@/lib/collection";
 import type { Locale } from "@/i18n/config";
 
@@ -15,6 +15,23 @@ const RARITY_STYLE: Record<Rarity, string> = {
   rare: "#4da3ff",
   epic: "#ffc933",
 };
+
+// Obrázek nábytku z Blenderu; když chybí, zobrazí se emoji.
+function Piece({ id, className = "" }: { id: string; className?: string }) {
+  const [failed, setFailed] = useState(false);
+  const def = FURNITURE.find((f) => f.id === id);
+  if (failed) {
+    return (
+      <span aria-hidden className={`flex items-center justify-center ${className}`}>
+        {def?.icon ?? "❔"}
+      </span>
+    );
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={furnitureSprite(id)} alt="" aria-hidden draggable={false} onError={() => setFailed(true)} className={`pointer-events-none select-none object-contain ${className}`} />
+  );
+}
 
 // Vlastní pokoj s nábytkem za body a sbírka karet za splněné výzvy.
 export function RoomView({ locale }: { locale: Locale }) {
@@ -65,7 +82,6 @@ export function RoomView({ locale }: { locale: Locale }) {
   }
 
   const heading = { fontFamily: "var(--font-heading)" } as const;
-  const iconOf = (id: string | null) => FURNITURE.find((f) => f.id === id)?.icon ?? "";
   const cardTotal = Object.values(data.cards).reduce((a, b) => a + b, 0);
   const tabClass = (active: boolean) =>
     `btn-bouncy px-4 py-2 text-sm font-bold ${active ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface)]"}`;
@@ -86,9 +102,13 @@ export function RoomView({ locale }: { locale: Locale }) {
       {tab === "room" && (
         <>
           <p className="text-sm text-[var(--muted)]">{t.pickSlot}</p>
-          <div className="card mx-auto grid w-full max-w-xl grid-cols-4 gap-2 p-3 sm:gap-3 sm:p-4" style={{ background: "var(--surface-muted)" }}>
+          <div
+            className="relative mx-auto aspect-[8/5] w-full max-w-4xl overflow-hidden rounded-2xl border-2 border-[var(--edge)] shadow-[0_4px_0_var(--shadow-ink)]"
+            style={{ backgroundColor: "#d9a27c", backgroundImage: "url(/room/background.webp)", backgroundSize: "100% 100%" }}
+          >
             {Array.from({ length: ROOM_SLOTS }, (_, slot) => {
               const id = data.room.placed[slot];
+              const [x, y, w] = ROOM_SLOT_POS[slot];
               return (
                 <button
                   key={slot}
@@ -100,12 +120,22 @@ export function RoomView({ locale }: { locale: Locale }) {
                       setSelected(null);
                     } else if (id) post({ action: "place", slot, id: null });
                   }}
-                  title={id ? t.remove : t.emptySlot}
-                  className={`flex aspect-square items-center justify-center rounded-xl border-2 text-4xl sm:text-5xl ${
-                    selected && !id ? "border-dashed border-[var(--accent-500)]" : "border-[var(--border-soft)]"
-                  } bg-[var(--surface)]`}
+                  title={id ? `${FURNITURE.find((f) => f.id === id)?.names[locale] ?? ""} · ${t.remove}` : t.emptySlot}
+                  aria-label={id ? (FURNITURE.find((f) => f.id === id)?.names[locale] ?? t.remove) : t.emptySlot}
+                  className="group absolute aspect-square -translate-x-1/2 -translate-y-[65%]"
+                  style={{ left: `${x}%`, top: `${y}%`, width: `${w}%` }}
                 >
-                  {id ? iconOf(id) : selected ? <span className="text-2xl text-[var(--accent-500)]">+</span> : null}
+                  {/* Místo na podlaze: nenápadná elipsa, při vybraném kusu zvýrazněná */}
+                  {!id && (
+                    <span
+                      className={`absolute left-[18%] top-[56%] flex h-[18%] w-[64%] items-center justify-center rounded-full border-2 border-dashed text-lg font-bold leading-none transition-colors ${
+                        selected ? "border-white bg-white/30 text-white" : "border-white/40 text-transparent group-hover:border-white/80"
+                      }`}
+                    >
+                      +
+                    </span>
+                  )}
+                  {id && <Piece id={id} className="h-full w-full transition-transform duration-200 group-hover:-translate-y-1 group-hover:scale-105" />}
                 </button>
               );
             })}
@@ -120,9 +150,7 @@ export function RoomView({ locale }: { locale: Locale }) {
               const placed = data.room.placed.includes(f.id);
               return (
                 <li key={f.id} className="flex items-center gap-3 rounded-xl border-2 border-[var(--border-soft)] px-3 py-2">
-                  <span className="text-3xl" aria-hidden>
-                    {f.icon}
-                  </span>
+                  <Piece id={f.id} className="h-12 w-12 shrink-0 text-3xl" />
                   <span className="min-w-0 flex-1 truncate text-sm font-semibold">{f.names[locale]}</span>
                   {owned ? (
                     <button

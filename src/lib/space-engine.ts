@@ -13,6 +13,8 @@ export type EngineCallbacks = {
 export type EngineConfig = {
   fireCooldown: number;
   alienSpeedFactor: number;
+  // Násobek času na otázku podle obtížnosti (1 = základní čas hry).
+  timeFactor?: number;
   // Pořadí otázky v kole od 0; s ním roste rychlost a od 3. otázky začnou vetřelci střílet.
   round?: number;
   // Poslední otázka kola: rychlejší vetřelci, červená aura a častější střelba.
@@ -138,6 +140,18 @@ export class SpaceEngine {
 
   popText(text: string, color = "#ffe066", x = this.shipX, y = SHIP_Y - 40) {
     this.texts.push({ x, y, text, color, life: 1.1 });
+  }
+
+  // Nápověda 50:50: špatní mimozemšťané zmizí.
+  setHint(eliminated: number[]) {
+    for (const i of eliminated) {
+      const a = this.aliens[i];
+      if (!a || !a.alive || a.correct) continue;
+      a.alive = false;
+      const p = this.alienPos(a, i);
+      this.burst(p.x + a.w / 2, p.y + a.h / 2, a.color, 14);
+    }
+    sfx("pickup");
   }
 
   loadQuestion(options: string[], correctIndex: number, config: EngineConfig) {

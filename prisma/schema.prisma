@@ -41,6 +41,9 @@ model User {
   duelsStarted     Duel[]         @relation("DuelChallenger")
   duelsReceived    Duel[]         @relation("DuelOpponent")
   leagueEntries    LeagueEntry[]
+  questionSets QuestionSet[]
+  hostedRooms  LiveRoom[]
+  livePlayers  LivePlayer[]
 
   accounts Account[]
   sessions Session[]
@@ -388,4 +391,89 @@ model PointTransaction {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// --- Živé třídní hry (Kahoot/Blooket styl) ---
+// Místnost založí kdokoliv; kdo ji založil, je v ní učitel. Otázky se při založení zkopírují do `questions`,
+// takže se hra nemění, když se upraví kurz, a hráči nikdy nedostanou správné odpovědi dřív než při odhalení.
+
+// Vlastní sada otázek přihlášeného uživatele. `questions` je pole { prompt, options[4], correctIndex, explanation? }.
+model QuestionSet {
+  id        String   @id @default(cuid())
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  title     String
+  questions Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId, updatedAt])
+}
+
+// mode: QUIZ | RACE | GOLD. status: LOBBY | QUESTION | REVEAL | ENDED (skutečný stav se dopočítává z času).
+model LiveRoom {
+  id                String    @id @default(cuid())
+  pin               String    @unique
+  hostSecret        String
+  hostUserId        String?
+  hostUser          User?     @relation(fields: [hostUserId], references: [id], onDelete: SetNull)
+  title             String
+  mode              String
+  status            String    @default("LOBBY")
+  questions         Json
+  settings          Json
+  current           Int       @default(-1)
+  questionStartedAt DateTime?
+  endsAt            DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  players LivePlayer[]
+  answers LiveAnswer[]
+
+  @@index([createdAt])
+}
+
+model LivePlayer {
+  id           String   @id @default(cuid())
+  roomId       String
+  room         LiveRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  name         String
+  token        String
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  avatar       String?
+  score        Int      @default(0)
+  gold         Int      @default(0)
+  progress     Int      @default(0)
+  answered     Int      @default(0)
+  streak       Int      @default(0)
+  pendingChest Json?
+  // Odměna za dohranou hru (jen přihlášení hráči); null = ještě nevyplaceno.
+  rewardXp     Int?
+  rewardPoints Int?
+  joinedAt     DateTime @default(now())
+
+  answers LiveAnswer[]
+
+  @@unique([roomId, name])
+  @@index([roomId, score])
+}
+
+model LiveAnswer {
+  id        String     @id @default(cuid())
+  roomId    String
+  room      LiveRoom   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  playerId  String
+  player    LivePlayer @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  qIndex    Int
+  seq       Int
+  choice    Int
+  correct   Boolean
+  ms        Int
+  points    Int        @default(0)
+  createdAt DateTime   @default(now())
+
+  @@unique([playerId, seq])
+  @@index([roomId, qIndex])
 }
