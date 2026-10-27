@@ -1,5 +1,6 @@
 // Ozdoby úvodní stránky z grafiky her: jeden snímek ze spritesheetu vystřižený přes CSS.
 import { Butterfly3D } from "@/components/Butterfly3D";
+import { PlanetAnim } from "@/components/PlanetAnim";
 
 type Sheet = { file: string; cols: number };
 const SHEETS: Record<string, Sheet> = {
@@ -45,10 +46,11 @@ export function SpriteFrame({
 // Řádek v listu mimozemšťanů: kyklop 0, krab 1, chobotnice 2, ufo 3.
 export const ALIEN_ROW = { kyklop: 0, krab: 1, chobotnice: 2, ufo: 3 } as const;
 
-// Planeta se otáčí a obíhá ji měsíc (animovaný 3D render z Blenderu, public/home/planeta-tocici.webp).
+// Planeta se otáčí a obíhají ji měsíce (3D render z Blenderu: video 60 fps, záloha animované webp, statický obrázek).
 export function Planet({ className = "", size = 420, hue = 0 }: { className?: string; size?: number; hue?: number }) {
   return (
-    <picture
+    <div
+      aria-hidden
       className={`pointer-events-none block select-none ${className}`}
       style={{
         width: size,
@@ -56,9 +58,8 @@ export function Planet({ className = "", size = 420, hue = 0 }: { className?: st
         filter: `hue-rotate(${hue}deg) drop-shadow(0 0 40px rgba(180,120,255,0.35))`,
       }}
     >
-      <source media="(prefers-reduced-motion: reduce)" srcSet="/home/planeta.webp" />
-      <img src="/home/anim/planeta.webp" alt="" width={size} height={size * 0.66} draggable={false} className="h-full w-full object-contain" />
-    </picture>
+      <PlanetAnim width={size} height={size * 0.66} />
+    </div>
   );
 }
 

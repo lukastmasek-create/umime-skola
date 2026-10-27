@@ -28,6 +28,17 @@ def animated(name, dest, fps=24, quality=70, size=None, loop=0, step=1):
     print(dest, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB")
 
 
+def video(name, dest, fps=60, size=None, crf=24):
+    """Smyčka jako WebM VP9 s průhledností (yuva420p); 60 fps je při video kodeku malý soubor."""
+    import subprocess
+    src = os.path.join(ROOT, "out", name, "f_%04d.png")
+    path = os.path.join(DEST, dest)
+    vf = ["-vf", f"scale={size[0]}:{size[1]}:flags=lanczos"] if size else []
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(fps), "-i", src, *vf, "-c:v", "libvpx-vp9",
+                    "-pix_fmt", "yuva420p", "-b:v", "0", "-crf", str(crf), "-auto-alt-ref", "0", "-row-mt", "1", path], check=True)
+    print(dest, round(os.path.getsize(path) / 1024), "kB")
+
+
 def strip(name, dest, size, quality=72):
     """Pás snímků vedle sebe (pro CSS steps())."""
     fr = frames(name, size)
@@ -75,6 +86,8 @@ if __name__ == "__main__":
     if "stills" in what: stills()
     # Planeta má hodně jemného detailu: každý druhý snímek a menší rozměr drží soubor pod 1 MB.
     if "planeta" in what: animated("planeta", "planeta.webp", fps=12, quality=55, size=(616, 409), step=2)
+    # Plynulá verze (FRAMES=180 FPS=60 při renderu): video 60 fps, animované webp zůstává jako záloha.
+    if "planeta-video" in what: video("planeta", "planeta.webm", fps=60, size=(616, 409))
     if "motyl" in what: animated("motyl", "motyl.webp", fps=24, quality=72)
     if "vlajka" in what: animated("vlajka", "vlajka.webp", fps=24, quality=72)
     if "raketa" in what: animated("raketa", "raketa.webp", fps=24, quality=72)

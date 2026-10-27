@@ -1226,3 +1226,10 @@ select:not(:focus) {
     animation: none;
   }
 }
+
+/* Planeta: při vypnutých animacích se místo videa ukáže statický obrázek pod ním */
+@media (prefers-reduced-motion: reduce) {
+  .planet-video {
+    display: none;
+  }
+}
