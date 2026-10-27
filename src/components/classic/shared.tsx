@@ -67,6 +67,7 @@ export function FinishCard({
   results,
   onAgain,
   backHref,
+  children,
 }: {
   t: ClassicText;
   xp: number;
@@ -75,6 +76,7 @@ export function FinishCard({
   results: AnswerResult[];
   onAgain: () => void;
   backHref: string;
+  children?: ReactNode;
 }) {
   const [gained, setGained] = useState(0);
   const sent = useRef(false);
@@ -125,6 +127,7 @@ export function FinishCard({
         )}
       </div>
       {hadMistakes && <p className="text-sm text-[var(--muted)]">{t.reviewHint}</p>}
+      {children}
       <div className="flex flex-wrap gap-3 pt-1">
         <button type="button" onClick={onAgain} className="btn-bouncy btn-primary btn-lg">
           {t.again}

@@ -132,3 +132,79 @@ export function toHangman(questions: GameQuestion[], count: number): HangmanItem
 export function formatTime(seconds: number): string {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 }
+
+export type Statement = {
+  id?: string;
+  question: string;
+  shown: string;
+  truth: boolean;
+  correct: string;
+  explanation: string;
+};
+
+// Tvrzení pro třídění: otázka + odpověď, která je buď správná, nebo jedna ze špatných z téže otázky.
+export function toStatements(questions: GameQuestion[], count: number): Statement[] {
+  const short = questions.filter((q) => q.prompt.length <= 120 && q.options.every((o) => o.length <= 48));
+  const pool = shuffle(short.length >= count ? short : questions).slice(0, count);
+  const truths = shuffle(pool.map((_, i) => i < Math.ceil(pool.length / 2)));
+  return pool.map((q, i) => {
+    const correct = answerOf(q);
+    const wrongs = q.options.filter((_, k) => k !== q.correctIndex);
+    return {
+      id: q.id,
+      question: q.prompt,
+      shown: truths[i] ? correct : wrongs[Math.floor(Math.random() * wrongs.length)],
+      truth: truths[i],
+      correct,
+      explanation: q.explanation,
+    };
+  });
+}
+
+export type Gap = {
+  id?: string;
+  before: string;
+  after: string;
+  answer: string;
+  explanation: string;
+};
+
+// Věty s mezerou pro doplňování. Otázka s „…“ se rozdělí v mezeře, jinak se mezera přidá na konec.
+export function toGaps(questions: GameQuestion[], count: number, maxAnswer: number): { gaps: Gap[]; extras: string[] } {
+  const rank = (q: GameQuestion) => (/…|___/.test(q.prompt) ? 0 : q.prompt.trimEnd().endsWith(":") ? 1 : 2);
+  const usable = shuffle(questions.filter((q) => answerOf(q).length <= maxAnswer && q.prompt.length <= 140)).sort(
+    (a, b) => rank(a) - rank(b),
+  );
+  const seen = new Set<string>();
+  const picked: GameQuestion[] = [];
+  for (const q of usable) {
+    const a = answerOf(q).toLowerCase();
+    if (seen.has(a)) continue;
+    seen.add(a);
+    picked.push(q);
+    if (picked.length >= count) break;
+  }
+  const gaps = shuffle(picked).map((q): Gap => {
+    const m = q.prompt.match(/…|___/);
+    if (m && m.index !== undefined) {
+      return {
+        id: q.id,
+        before: q.prompt.slice(0, m.index).trimEnd(),
+        after: q.prompt.slice(m.index + m[0].length).trimStart(),
+        answer: answerOf(q),
+        explanation: q.explanation,
+      };
+    }
+    return { id: q.id, before: q.prompt.trimEnd(), after: "", answer: answerOf(q), explanation: q.explanation };
+  });
+  // Dvě špatné odpovědi navíc do banky slov, ať se nedá doplnit vylučovací metodou.
+  const answers = new Set(gaps.map((g) => g.answer.toLowerCase()));
+  const extras = shuffle(
+    picked.flatMap((q) => q.options.filter((_, k) => k !== q.correctIndex)).filter((o) => !answers.has(o.toLowerCase()) && o.length <= maxAnswer),
+  );
+  return { gaps, extras: [...new Set(extras)].slice(0, 2) };
+}
+
+export function normalizeAnswer(s: string): string {
+  return stripDiacritics(s).toLowerCase().replace(/[.,;:!?'"„“]/g, "").replace(/\s+/g, " ").trim();
+}

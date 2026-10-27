@@ -21,7 +21,9 @@ export type ClassicText = {
   triesLeft: string;
   gameOver: string;
   rightAnswer: string;
-  games: Record<"osmismerka" | "spojovani" | "pexeso" | "sibenice", { title: string; intro: string }>;
+  games: Record<"osmismerka" | "spojovani" | "pexeso" | "sibenice" | "trideni" | "doplnovani", { title: string; intro: string }>;
+  sort: { right: string; wrong: string; hint: string; card: string; wasRight: string; wasWrong: string; correctIs: string; review: string };
+  fill: { bank: string; check: string; placeholder: string; attemptsLeft: string; revealed: string; correctIs: string; pickWord: string };
   matching: { questions: string; answers: string };
 };
 
@@ -50,8 +52,12 @@ const cs: ClassicText = {
     spojovani: { title: "Spojování", intro: "Klikni na otázku vlevo a pak na její správnou odpověď vpravo. Spoj všechny dvojice co nejrychleji a s co nejméně chybami." },
     pexeso: { title: "Pexeso", intro: "Otáčej karty a hledej dvojice: otázku a její správnou odpověď. Pamatuj si, kde co leží." },
     sibenice: { title: "Šibenice", intro: "Z otázky poznej odpověď a hádej ji písmeno po písmenu. Šest chyb a oběšenec je hotový." },
+    trideni: { title: "Třídění", intro: "Roztřiď tvrzení na správná a špatná. Kartu přetáhni doprava (správně) nebo doleva (špatně), nebo použij tlačítka či šipky." },
+    doplnovani: { title: "Doplňování", intro: "Doplň správná slova do vět. Na lehčí úrovni je vybíráš z nabídky, na těžší je píšeš sám." },
   },
   matching: { questions: "Otázky", answers: "Odpovědi" },
+  sort: { right: "Správně", wrong: "Špatně", hint: "Přetáhni kartu, nebo ← →", card: "Karta", wasRight: "Správně!", wasWrong: "Chyba.", correctIs: "Správná odpověď", review: "Tady jsi chyboval" },
+  fill: { bank: "Slova k doplnění", check: "Zkontrolovat", placeholder: "Doplň…", attemptsLeft: "pokusů", revealed: "Správně je", correctIs: "Správně", pickWord: "Vyber slovo a klepni na mezeru" },
 };
 
 const en: ClassicText = {
@@ -79,8 +85,12 @@ const en: ClassicText = {
     spojovani: { title: "Matching", intro: "Click a question on the left and then its right answer on the right. Match all the pairs fast and with as few mistakes as possible." },
     pexeso: { title: "Memory", intro: "Flip cards to find pairs: a question and its right answer. Remember where everything is." },
     sibenice: { title: "Hangman", intro: "Work out the answer from the question and guess it letter by letter. Six mistakes and the hangman is complete." },
+    trideni: { title: "Sorting", intro: "Sort the statements into right and wrong. Drag a card right (true) or left (false), or use the buttons or arrow keys." },
+    doplnovani: { title: "Fill in the blanks", intro: "Fill the right words into the sentences. On easier levels you pick them from a list, on harder ones you type them." },
   },
   matching: { questions: "Questions", answers: "Answers" },
+  sort: { right: "Right", wrong: "Wrong", hint: "Drag the card, or ← →", card: "Card", wasRight: "Right!", wasWrong: "Mistake.", correctIs: "Right answer", review: "Where you slipped" },
+  fill: { bank: "Words to fill in", check: "Check", placeholder: "Fill in…", attemptsLeft: "tries", revealed: "The answer is", correctIs: "Correct", pickWord: "Pick a word, then tap a blank" },
 };
 
 const de: ClassicText = {
@@ -108,8 +118,12 @@ const de: ClassicText = {
     spojovani: { title: "Zuordnen", intro: "Klicke links auf eine Frage und rechts auf die richtige Antwort. Ordne alle Paare schnell und mit möglichst wenig Fehlern zu." },
     pexeso: { title: "Memory", intro: "Dreh Karten um und finde Paare: eine Frage und ihre richtige Antwort. Merk dir, wo was liegt." },
     sibenice: { title: "Galgenmännchen", intro: "Erkenne die Antwort an der Frage und rate sie Buchstabe für Buchstabe. Sechs Fehler und der Galgen ist fertig." },
+    trideni: { title: "Sortieren", intro: "Sortiere die Aussagen in richtig und falsch. Zieh die Karte nach rechts (richtig) oder links (falsch) oder nutze die Tasten oder Pfeile." },
+    doplnovani: { title: "Lückentext", intro: "Setze die richtigen Wörter in die Sätze ein. Auf leichten Stufen wählst du sie aus einer Liste, auf schweren tippst du sie selbst." },
   },
   matching: { questions: "Fragen", answers: "Antworten" },
+  sort: { right: "Richtig", wrong: "Falsch", hint: "Karte ziehen oder ← →", card: "Karte", wasRight: "Richtig!", wasWrong: "Fehler.", correctIs: "Richtige Antwort", review: "Hier lagst du daneben" },
+  fill: { bank: "Wörter zum Einsetzen", check: "Prüfen", placeholder: "Ergänze…", attemptsLeft: "Versuche", revealed: "Richtig ist", correctIs: "Richtig", pickWord: "Wort wählen, dann Lücke antippen" },
 };
 
 const ru: ClassicText = {
@@ -137,8 +151,12 @@ const ru: ClassicText = {
     spojovani: { title: "Соединение", intro: "Нажми на вопрос слева, а затем на правильный ответ справа. Соедини все пары быстро и с минимумом ошибок." },
     pexeso: { title: "Мемори", intro: "Переворачивай карточки и ищи пары: вопрос и его правильный ответ. Запоминай, что где лежит." },
     sibenice: { title: "Виселица", intro: "Пойми ответ по вопросу и угадывай его по буквам. Шесть ошибок — и виселица готова." },
+    trideni: { title: "Сортировка", intro: "Рассортируй утверждения на верные и неверные. Перетащи карточку вправо (верно) или влево (неверно) либо используй кнопки или стрелки." },
+    doplnovani: { title: "Вставь слова", intro: "Вставь нужные слова в предложения. На лёгких уровнях выбираешь их из списка, на сложных вводишь сам." },
   },
   matching: { questions: "Вопросы", answers: "Ответы" },
+  sort: { right: "Верно", wrong: "Неверно", hint: "Перетащи карточку или ← →", card: "Карточка", wasRight: "Верно!", wasWrong: "Ошибка.", correctIs: "Правильный ответ", review: "Где ты ошибся" },
+  fill: { bank: "Слова для вставки", check: "Проверить", placeholder: "Вставь…", attemptsLeft: "попыток", revealed: "Правильно так", correctIs: "Верно", pickWord: "Выбери слово и коснись пропуска" },
 };
 
 const texts: Record<Locale, ClassicText> = { cs, en, de, ru };
