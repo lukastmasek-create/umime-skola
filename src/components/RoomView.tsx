@@ -34,10 +34,10 @@ function Piece({ id, className = "" }: { id: string; className?: string }) {
 }
 
 // Vlastní pokoj s nábytkem za body a sbírka karet za splněné výzvy.
-export function RoomView({ locale }: { locale: Locale }) {
+export function RoomView({ locale, initialTab = "room" }: { locale: Locale; initialTab?: "room" | "cards" }) {
   const t = getRoomText(locale);
   const [data, setData] = useState<Data | null | "guest" | "error">(null);
-  const [tab, setTab] = useState<"room" | "cards">("room");
+  const [tab, setTab] = useState<"room" | "cards">(initialTab);
   const [selected, setSelected] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);

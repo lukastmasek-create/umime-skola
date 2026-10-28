@@ -3,8 +3,15 @@ import { isLocale, type Locale } from "@/i18n/config";
 import { getRoomText } from "@/i18n/room";
 import { RoomView } from "@/components/RoomView";
 
-export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ tab?: string }>;
+}) {
   const { locale } = await params;
+  const { tab } = await searchParams;
   if (!isLocale(locale)) notFound();
   const t = getRoomText(locale as Locale);
 
@@ -14,7 +21,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
         {t.title}
       </h1>
       <p className="mb-8 max-w-2xl text-[var(--muted)]">{t.subtitle}</p>
-      <RoomView locale={locale as Locale} />
+      <RoomView locale={locale as Locale} initialTab={tab === "cards" ? "cards" : "room"} />
     </div>
   );
 }
