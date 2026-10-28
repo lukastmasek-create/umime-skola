@@ -317,7 +317,7 @@ def kuchyne():
     @anim
     def _k(t):
         ph = t * math.tau
-        set_glow(flame_m.node_tree.nodes["Principled BSDF"].id_data, 4.0 + 1.5 * math.sin(3 * ph))
+        set_glow(flame_m, 4.0 + 1.5 * math.sin(3 * ph))
         rise(steam, t, 0.1, 0.65, 0.98, 0.85, grow=1.0, drift=0.07)
         hat_o.location.z = 0.1 + 0.05 * abs(math.sin(ph))
         hat_o.rotation_euler = (0, 0, 0.2 * math.sin(ph))
@@ -379,7 +379,7 @@ def knihovna():
             p.location = (0.05 + 0.5 * math.cos(a + i), -0.3 + 0.35 * math.sin(a + i), 0.7 + 0.5 * q)
             p.rotation_euler = (ph + i, 0.4, a)
             s = math.sin(math.pi * q) ** 0.5
-            p.scale = (s, s, s)
+            p.scale = (0.12 * s, 0.17 * s, 0.004 * s)
         rise(glowing, t, 0.05, -0.3, 0.85, 0.7, grow=1.0, drift=0.2)
 
     run(lambda t: None, "uni_knihovna")
@@ -419,7 +419,7 @@ def observator():
     rnd = random.Random(9)
     sp = [(rnd.uniform(-1.8, 1.8), rnd.uniform(-1.0, 1.4), rnd.uniform(1.0, 2.8), rnd.uniform(0, 6)) for _ in stars]
     # padající hvězda
-    shoot = sphere((0, 0, 0), 0.03, glow("ob_sh", "#fff", 10.0), scale=(4, 1, 1), seg=8, rings=6)
+    shoot = sphere((0, 0, 0), 0.03, glow("ob_sh", "#ffffff", 10.0), scale=(4, 1, 1), seg=8, rings=6)
     # planeta s prstencem
     pl = sphere((-1.3, 0.6, 1.5), 0.22, M("ob_pl", "#e8845e", roughness=0.6), seg=20, rings=14)
     torus((-1.3, 0.6, 1.5), 0.36, 0.015, M("ob_rg", "#f0d0a0", roughness=0.5), rot=(math.radians(75), 0, 0.3))
@@ -473,7 +473,7 @@ def hrad():
     bridge.location = (0, -0.48, 0.07)
     child(box((0, -0.28, 0.0), (0.34, 0.5, 0.03), M("hr_br", "#7a4a26", roughness=0.7), bevel=0.005), bridge)
     for dx in (-0.14, 0.14):
-        bar((dx, -0.48, 0.5), (dx, -0.5, 0.07), 0.008, M("hr_ch", "#444", roughness=0.4, metallic=0.8), verts=6)
+        bar((dx, -0.48, 0.5), (dx, -0.5, 0.07), 0.008, M("hr_ch", "#444444", roughness=0.4, metallic=0.8), verts=6)
     # voda v příkopu
     torus((0, 0.1, 0.03), 1.02, 0.06, M("hr_wt", "#4aa8e8", roughness=0.15))
     # pochodně
