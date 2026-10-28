@@ -26,8 +26,8 @@ const SPR = {
   hero_joy: { f: "hrdina-radost", n: 24, o: 1.9, tz: 0.7, dur: 1.1 },
   knihovnice: { f: "knihovnice", n: 24, o: 1.7, tz: 0.62, dur: 2.6 },
   pekar: { f: "pekar", n: 24, o: 1.9, tz: 0.62, dur: 2.0 },
-  farmar: { f: "farmar", n: 16, o: 1.9, tz: 0.62, dur: 1.2 },
-  babicka: { f: "babicka", n: 16, o: 1.7, tz: 0.55, dur: 1.5 },
+  farmar: { f: "farmar", n: 16, o: 1.9, tz: 0.62, dur: 1.6 },
+  babicka: { f: "babicka", n: 16, o: 1.7, tz: 0.55, dur: 1.7 },
   kluk: { f: "kluk", n: 24, o: 1.7, tz: 0.55, dur: 1.6 },
   pes_bezi: { f: "pes-bezi", n: 16, o: 1.3, tz: 0.28, dur: 0.6 },
   pes_sedi: { f: "pes-sedi", n: 24, o: 1.3, tz: 0.3, dur: 1.8 },
@@ -263,12 +263,12 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
         if (mode !== heroMode) {
           heroMode = mode;
           setStrip(hs, mode as SK);
-          place(hr, hp, mode as SK, facing > 0);
+          place(hr, hp, mode as SK, facing < 0);
         }
-        place(hr, hp, mode as SK, facing > 0);
+        place(hr, hp, mode as SK, facing < 0);
         if (mode === "hero_walk") {
           walkAcc += Math.abs(u - wasU) * TOTAL;
-          setFrame(hs, Math.floor(walkAcc / 38) % 16);
+          setFrame(hs, Math.floor(walkAcc / 4.4) % 16); // jeden cyklus chůze = asi 70 px cesty, nohy tedy neklouzou
         } else if (st.calm) {
           setFrame(hs, 0);
         } else if (mode === "hero_joy") {
@@ -295,9 +295,11 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
           ds.dataset.k = dmode;
           setStrip(ds, dmode);
         }
-        place(dg, [dp[0] + 0.004, dp[1] + 0.012], dmode, dogFace > 0);
+        place(dg, [dp[0] + 0.004, dp[1] + 0.012], dmode, dogFace < 0);
         const sec = now / 1000;
-        setFrame(ds, Math.floor((dmoving ? sec * 18 : sec * 12) % SPR[dmode].n));
+        if (dmoving) dogAcc += Math.abs(du - dogPrev) * TOTAL;
+        dogPrev = du;
+        setFrame(ds, Math.floor(dmoving ? (dogAcc / 5.6) % SPR[dmode].n : (sec * 12) % SPR[dmode].n));
       }
 
       // chodci: farmář a babička chodí tam a zpět
@@ -313,7 +315,7 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
         const f = x < 1 ? x : 2 - x;
         const e = f < 0.5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2;
         const p: P = [a[0] + (b[0] - a[0]) * (st.calm ? 0.4 : e), a[1] + (b[1] - a[1]) * (st.calm ? 0.4 : e)];
-        place(el, p, k, x < 1 ? b[0] > a[0] : b[0] < a[0]);
+        place(el, p, k, x < 1 ? b[0] < a[0] : b[0] > a[0]);
         if (!sp.dataset.n) setStrip(sp, k);
         setFrame(sp, st.calm ? 0 : Math.floor((now / 1000) * (SPR[k].n / SPR[k].dur)) % SPR[k].n);
       }
@@ -540,6 +542,8 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
     let calmFrames = 0;
     let wasU = cur;
     let dogU = cur;
+    let dogPrev = cur;
+    let dogAcc = 0;
     let dogX = 0;
     let dogFace = 1;
     const kick = () => {
