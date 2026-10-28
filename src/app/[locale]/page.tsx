@@ -4,13 +4,12 @@ import { HomeProgress } from "@/components/HomeProgress";
 import { DailyChallenges } from "@/components/DailyChallenges";
 import { ArcadeDemo } from "@/components/ArcadeDemo";
 import { Tilt } from "@/components/Tilt";
-import { ALIEN_ROW, Circuit, HomeArt, SpriteFrame, Wave } from "@/components/SpaceDecor";
-import { GearHolo3D, TechBackdrop } from "@/components/TechScenes";
+import { ALIEN_ROW, HomeArt, SpriteFrame, Wave } from "@/components/SpaceDecor";
 import { MountainTrek } from "@/components/MountainTrek";
 import { PlanetLive } from "@/components/PlanetLive";
 import { SubjectGlobe } from "@/components/SubjectGlobe";
 import { GlobeSky } from "@/components/GlobeSky";
-import { TechBoard } from "@/components/TechBoard";
+import { IslandHub } from "@/components/IslandHub";
 import { HeroSky } from "@/components/HeroSky";
 import { getHomeText } from "@/i18n/home";
 import { getSubjectText } from "@/i18n/subjects";
@@ -148,19 +147,15 @@ export default async function Home({
       </section>
 
       {/* 3) Technika: co tu najdeš */}
-      <section className="zone zone-tech">
+      <section className="zone zone-isles">
         <Wave fill="#0c0a24" />
-        <Circuit className="right-0 top-20 hidden h-44 w-80 lg:block" />
-        <Circuit className="bottom-6 left-0 hidden h-44 w-80 lg:block" flip />
-        <TechBackdrop />
-        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-20 pt-24 sm:px-6">
-          <h2 className="reveal mb-2 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
-            <GearHolo3D /> {h.featuresTitle}
+        <HomeArt name="oblak-1" size={120} className="space-float absolute right-[8%] top-28 z-0 hidden h-auto opacity-70 sm:block" />
+        <HomeArt name="oblak-2" size={96} className="space-float absolute left-[3%] bottom-24 z-0 hidden h-auto opacity-70 sm:block" style={{ animationDelay: "-3s" }} />
+        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-24 pt-24 sm:px-6">
+          <h2 className="reveal mb-10 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
+            {h.featuresTitle}
           </h2>
-          <p className="mb-8 font-mono text-xs uppercase tracking-[0.3em] text-[#35d0ff]/80">
-            <span className="tech-blink">●</span> 01 — 0{h.features.length}
-          </p>
-          <TechBoard
+          <IslandHub
             features={h.features.map((feature) => ({
               key: feature.key,
               title: feature.title,
