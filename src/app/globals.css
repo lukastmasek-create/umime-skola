@@ -2036,3 +2036,23 @@ select:not(:focus) {
     display: none;
   }
 }
+
+/* Hra na celou obrazovku (FullscreenFrame): obal se roztáhne a canvas se vejde na výšku. */
+.fs-frame.is-fs {
+  background: var(--background);
+  overflow-y: auto;
+}
+.fs-frame.is-fs-fallback {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+.fs-frame.is-fs .fs-inner {
+  margin-inline: auto;
+  max-width: 72rem;
+  padding: 1rem;
+}
+.fs-frame.is-fs canvas {
+  width: min(100%, calc(66vh * 640 / 420)) !important;
+  margin-inline: auto;
+}

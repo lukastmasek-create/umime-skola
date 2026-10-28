@@ -138,6 +138,21 @@ def hry():
         print(name, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB", sheet.size)
 
 
+def unikovky():
+    """Dioramata únikových místností jako pásy snímků do public/home/unikovky (název souboru = id místnosti)."""
+    dest_dir = os.path.join(DEST, "..", "unikovky")
+    os.makedirs(dest_dir, exist_ok=True)
+    for name, room in (("muzeum", "museum"), ("expedice", "expedition"), ("dzungle", "jungle"), ("pirati", "pirate"), ("kuchyne", "kitchen"),
+                       ("knihovna", "library"), ("observator", "observatory"), ("hrad", "castle"), ("laborator", "lab")):
+        fr = frames("uni_" + name, (384, 384))
+        sheet = Image.new("RGBA", (384 * len(fr), 384), (0, 0, 0, 0))
+        for i, im in enumerate(fr):
+            sheet.paste(im, (i * 384, 0))
+        path = os.path.join(dest_dir, room + ".webp")
+        sheet.save(path, format="WEBP", quality=76, method=5, alpha_quality=85)
+        print(room, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB")
+
+
 def hory():
     """Hora se stezkou, turista, oheň a vlajka pro MountainTrek do public/home/hory (+ stezka do JSON)."""
     import json
@@ -226,7 +241,7 @@ def stills():
 
 
 if __name__ == "__main__":
-    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_live", "globe", "hero", "tech", "hory", "svet", "hry"]
+    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_live", "globe", "hero", "tech", "hory", "svet", "hry", "unikovky"]
     if "icons" in what: icons()
     if "stills" in what: stills()
     # Planeta má hodně jemného detailu: každý druhý snímek a menší rozměr drží soubor pod 1 MB.
@@ -239,6 +254,7 @@ if __name__ == "__main__":
     if "svet" in what: svet()
     if "mesto" in what: mesto()
     if "hry" in what: hry()
+    if "unikovky" in what: unikovky()
     if "motyl" in what: animated("motyl", "motyl.webp", fps=24, quality=72)
     if "vlajka" in what: animated("vlajka", "vlajka.webp", fps=24, quality=72)
     if "raketa" in what: animated("raketa", "raketa.webp", fps=24, quality=72)
