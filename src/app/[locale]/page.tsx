@@ -4,7 +4,7 @@ import { HomeProgress } from "@/components/HomeProgress";
 import { DailyChallenges } from "@/components/DailyChallenges";
 import { ArcadeDemo } from "@/components/ArcadeDemo";
 import { Tilt } from "@/components/Tilt";
-import { ALIEN_ROW, HomeArt, SpriteFrame, Wave } from "@/components/SpaceDecor";
+import { ALIEN_ROW, Circuit, HomeArt, SpriteFrame, Wave } from "@/components/SpaceDecor";
 import { TownLife } from "@/components/TownLife";
 import { PlanetLive } from "@/components/PlanetLive";
 import { SubjectGlobe } from "@/components/SubjectGlobe";
@@ -147,14 +147,17 @@ export default async function Home({
       </section>
 
       {/* 3) Technika: co tu najdeš */}
-      <section className="zone zone-isles">
+      <section className="zone zone-tech">
         <Wave fill="#0c0a24" />
-        <HomeArt name="oblak-1" size={120} className="space-float absolute right-[8%] top-28 z-0 hidden h-auto opacity-70 sm:block" />
-        <HomeArt name="oblak-2" size={96} className="space-float absolute left-[3%] bottom-24 z-0 hidden h-auto opacity-70 sm:block" style={{ animationDelay: "-3s" }} />
+        <Circuit className="right-0 top-20 hidden h-44 w-80 lg:block" />
+        <Circuit className="bottom-6 left-0 hidden h-44 w-80 lg:block" flip />
         <div className="relative z-10 mx-auto max-w-6xl px-4 pb-24 pt-24 sm:px-6">
-          <h2 className="reveal mb-10 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
+          <h2 className="reveal mb-2 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
             {h.featuresTitle}
           </h2>
+          <p className="mb-10 font-mono text-xs uppercase tracking-[0.3em] text-[#35d0ff]/80">
+            <span className="tech-blink">●</span> 01 — 0{h.features.length}
+          </p>
           <IslandHub
             features={h.features.map((feature) => ({
               key: feature.key,
