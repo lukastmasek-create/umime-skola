@@ -10,7 +10,7 @@ from znacky_lib import *
 
 
 def scene(name, el=24, az=-30, ortho=2.5, target=(0, 0, 0)):
-    sc = setup(name, samples=64, size=192, frames=1, az=az, el=el, ortho=ortho, target_z=target[2], world=("#ffffff", 0.9))
+    sc = setup(name, samples=128, size=256, frames=1, az=az, el=el, ortho=ortho, target_z=target[2], world=("#ffffff", 0.9))
     return sc
 
 
@@ -180,14 +180,21 @@ def svitek():
 
 
 def letadlo():
-    paper = M("pap", "#ffffff", roughness=0.8)
-    shade = M("pap2", "#cfe0ff", roughness=0.8)
+    paper = M("pap", "#dfe7f8", roughness=0.8)
+    shade = M("pap2", "#a9bcea", roughness=0.8)
     pink = M("pap3", "#ffb6d5", roughness=0.8)
     # papírové letadlo míří doprava (+x): trup, dvě křídla a kýl
     mesh_obj("kridlo_l", [(1.0, 0, 0.0), (-0.8, 0.0, 0.05), (-0.8, -0.75, 0.32), (0.0, -0.03, 0.0)], [(0, 1, 2), (0, 2, 3)], paper)
     mesh_obj("kridlo_r", [(1.0, 0, 0.0), (-0.8, 0.0, 0.05), (-0.8, 0.75, 0.32), (0.0, 0.03, 0.0)], [(0, 2, 1), (0, 3, 2)], shade)
     mesh_obj("kil", [(1.0, 0, 0.0), (-0.8, 0.0, 0.05), (-0.8, 0.0, -0.28), (0.1, 0.0, -0.06)], [(0, 1, 2), (0, 2, 3)], pink)
     mesh_obj("kil2", [(1.0, 0, 0.0), (-0.8, 0.0, 0.05), (-0.8, 0.0, -0.28), (0.1, 0.0, -0.06)], [(0, 2, 1), (0, 3, 2)], pink)
+    tipm = M("tip", "#ff7ab0", roughness=0.7)
+    mesh_obj("hrot_l", [(1.0, 0, 0.006), (0.55, -0.02, 0.006), (0.55, -0.2, 0.09)], [(0, 1, 2)], tipm)
+    mesh_obj("hrot_r", [(1.0, 0, -0.006), (0.55, 0.02, -0.006), (0.55, 0.2, 0.07)], [(0, 2, 1)], tipm)
+    crease = M("crease", "#8aa0d0", roughness=0.8)
+    bar((1.0, 0, 0.003), (-0.8, 0, 0.055), 0.012, crease, verts=6)
+    bar((0.1, -0.02, 0.0), (-0.8, -0.5, 0.2), 0.006, crease, verts=4)
+    bar((0.1, 0.02, 0.0), (-0.8, 0.5, 0.2), 0.006, crease, verts=4)
 
 
 def raketa():
@@ -208,8 +215,110 @@ def raketa():
     root.rotation_euler = (0, math.radians(90), 0)
 
 
+def mikroskop():
+    body, metal, dark, glass_m = M("mb", "#3b7be0", roughness=0.35), M("mm", "#c9ced6", roughness=0.25, metallic=0.9), M("md", "#2a2a35", roughness=0.5), glow("ml", "#fff2a8", 1.0)
+    cyl((0, 0, -0.78), 0.42, 0.1, dark, verts=28)
+    box((0.0, 0.18, -0.2), (0.14, 0.14, 1.1), body, bevel=0.03)
+    root = bpy.data.objects.new("tube", None)
+    bpy.context.scene.collection.objects.link(root)
+    tube = cyl((0, 0, 0), 0.085, 0.8, metal, verts=20)
+    eye = cyl((0, 0, 0.45), 0.055, 0.14, dark, verts=16)
+    obj = cone((0, 0, -0.5), 0.07, 0.03, 0.18, dark, verts=16)
+    for o in (tube, eye, obj):
+        loc = o.location.copy(); o.parent = root; o.location = loc
+    root.location = (0, -0.05, 0.3)
+    root.rotation_euler = (math.radians(-28), 0, 0)
+    box((0, -0.14, -0.55), (0.46, 0.34, 0.05), metal, bevel=0.01)
+    sphere((0.18, 0.26, -0.22), 0.07, metal, seg=12, rings=8)
+    sphere((-0.18, 0.26, -0.22), 0.07, metal, seg=12, rings=8)
+    cyl((0, -0.14, -0.62), 0.05, 0.12, body, verts=12)
+    sphere((0, -0.14, -0.48), 0.04, glass_m, seg=10, rings=8)
+
+
+def kruzitko():
+    metal, tip, pen = M("km", "#c9ced6", roughness=0.25, metallic=0.9), M("kt", "#2a2a35", roughness=0.4), M("kp", "#ff5a3c", roughness=0.4)
+    cyl((0, 0, 0.72), 0.07, 0.16, pen, verts=14)
+    sphere((0, 0, 0.82), 0.075, metal, seg=12, rings=8)
+    bar((0, 0.0, 0.7), (-0.5, 0, -0.75), 0.05, metal, verts=10)
+    bar((0, 0.0, 0.7), (0.5, 0, -0.75), 0.05, metal, verts=10)
+    cone((-0.5, 0, -0.8), 0.04, 0.0, 0.14, tip, verts=10, rot=(math.radians(180), 0, 0))
+    cone((0.5, 0, -0.8), 0.045, 0.0, 0.16, M("kl", "#ff9a3c"), verts=10, rot=(math.radians(180), 0, 0))
+    bar((-0.22, 0, 0.0), (0.22, 0, 0.0), 0.025, metal, verts=8)
+
+
+def sesit():
+    cov, pg, ring = M("sc", "#7ee0b0", roughness=0.5), M("sp", "#fffdf2", roughness=0.8), M("sr", "#9aa0ac", roughness=0.3, metallic=0.9)
+    box((0, 0, 0), (1.15, 0.12, 1.5), cov, rot=(0, math.radians(8), 0), bevel=0.04)
+    box((0.03, -0.075, 0.0), (1.0, 0.03, 1.38), pg, rot=(0, math.radians(8), 0), bevel=0.008)
+    for i in range(7):
+        box((0.03, -0.095, 0.55 - i * 0.17), (0.9, 0.006, 0.01), M("sl%d" % i, "#6ab6ff"), rot=(0, math.radians(8), 0), bevel=0)
+    for i in range(5):
+        torus((-0.5, -0.08, 0.5 - i * 0.25), 0.045, 0.012, ring, rot=(0, math.radians(90), 0))
+    box((0.0, -0.1, 0.78), (0.5, 0.004, 0.1), M("sh", "#ffd24d"), rot=(0, math.radians(8), 0), bevel=0)
+
+
+def dna():
+    cols = ["#ff5a7a", "#6ab6ff", "#ffd24d", "#7dff9a"]
+    prev1 = prev2 = None
+    N = 14
+    for i in range(N + 1):
+        t = i / N
+        z = -0.85 + 1.7 * t
+        a = t * math.tau * 1.6
+        p1 = (0.32 * math.cos(a), 0.32 * math.sin(a), z)
+        p2 = (-0.32 * math.cos(a), -0.32 * math.sin(a), z)
+        if prev1:
+            bar(prev1, p1, 0.04, M("d1", "#ff5a7a", roughness=0.4), verts=8)
+            bar(prev2, p2, 0.04, M("d2", "#6ab6ff", roughness=0.4), verts=8)
+        if i % 1 == 0 and 0 < i < N:
+            bar(p1, p2, 0.022, M("dr%d" % (i % 4), cols[i % 4], roughness=0.4), verts=6)
+        sphere(p1, 0.055, M("dn1", "#ff5a7a", roughness=0.4), seg=10, rings=8)
+        sphere(p2, 0.055, M("dn2", "#6ab6ff", roughness=0.4), seg=10, rings=8)
+        prev1, prev2 = p1, p2
+
+
+def pero():
+    ink, nib, feather = M("ik", "#2a2a5a", roughness=0.2), M("nb", "#ffc933", roughness=0.25, metallic=0.9), M("fe", "#ffffff", roughness=0.7)
+    cyl((0.0, 0.0, -0.55), 0.38, 0.5, ink, verts=28)
+    cyl((0.0, 0.0, -0.25), 0.16, 0.12, ink, verts=20)
+    torus((0, 0, -0.19), 0.17, 0.025, M("ikc", "#c9ced6", metallic=0.8, roughness=0.3))
+    cyl((0, 0, -0.5), 0.395, 0.05, glow("ikl", "#5b7cff", 0.6), verts=28)
+    # brk: tělo, hrot a prapor
+    root = bpy.data.objects.new("pen", None)
+    bpy.context.scene.collection.objects.link(root)
+    parts = [bar((0, 0, 0), (0.0, 0, 1.2), 0.025, M("qs", "#f0e8d0"), verts=8)]
+    for k in range(10):
+        z = 0.3 + k * 0.095
+        w = 0.28 * math.sin((k + 1) / 11 * math.pi) ** 0.7
+        parts.append(box((w / 2, 0, z), (w, 0.01, 0.1), feather, rot=(0, math.radians(-18), 0), bevel=0))
+        parts.append(box((-w * 0.4, 0, z), (w * 0.8, 0.01, 0.1), feather, rot=(0, math.radians(18), 0), bevel=0))
+    parts.append(cone((0, 0, -0.04), 0.03, 0.0, 0.14, nib, verts=8, rot=(math.radians(180), 0, 0)))
+    for o in parts:
+        loc = o.location.copy(); o.parent = root; o.location = loc
+    root.location = (0.05, 0, -0.1)
+    root.rotation_euler = (0, math.radians(32), math.radians(10))
+
+
+def rostlina():
+    pot, soil, stem, leaf = M("pt", "#e07a4a", roughness=0.6), M("so", "#5a3d28", roughness=0.9), M("st", "#3fa752", roughness=0.6), [M("lf%d" % i, c, roughness=0.55) for i, c in enumerate(("#3fbf5c", "#58cf63", "#2f9e4f"))]
+    cone((0, 0, -0.6), 0.36, 0.26, 0.5, pot, verts=24)
+    torus((0, 0, -0.35), 0.3, 0.05, pot)
+    cyl((0, 0, -0.36), 0.28, 0.03, soil, verts=24)
+    bar((0, 0, -0.35), (0.03, 0.02, 0.4), 0.03, stem, verts=8)
+    for k in range(6):
+        a = k * math.tau / 6
+        h = -0.05 + 0.12 * k
+        sphere((0.22 * math.cos(a), 0.22 * math.sin(a), h), 0.2, leaf[k % 3], scale=(1.0, 0.45, 0.12), seg=14, rings=8).rotation_euler = (0.5 * math.sin(a), 0.5 * math.cos(a), a)
+    sphere((0.03, 0.02, 0.55), 0.14, leaf[0], scale=(1, 1, 0.8), seg=14, rings=10)
+    for k in range(5):  # květ
+        pa = k * math.tau / 5
+        sphere((0.12 * math.cos(pa), 0.12 * math.sin(pa), 0.78), 0.07, M("pe%d" % k, "#ff7ab0", roughness=0.5), scale=(1, 1, 0.6), seg=10, rings=6)
+    sphere((0.0, 0.0, 0.8), 0.05, M("pc", "#ffd24d"), seg=10, rings=8)
+
+
 ALL = {"kniha": kniha, "tuzka": tuzka, "banka": banka, "atom": atom, "kalkulacka": kalkulacka, "pravitko": pravitko, "cepice": cepice,
-       "zarovka": zarovka, "lupa": lupa, "glob": glob, "kostky": kostky, "svitek": svitek, "letadlo": letadlo, "raketa": raketa}
+       "zarovka": zarovka, "lupa": lupa, "glob": glob, "kostky": kostky, "svitek": svitek, "letadlo": letadlo, "raketa": raketa,
+       "mikroskop": mikroskop, "kruzitko": kruzitko, "sesit": sesit, "dna": dna, "pero": pero, "rostlina": rostlina}
 
 if __name__ == "__main__":
     wanted = [a for a in args() if a in ALL] or list(ALL)

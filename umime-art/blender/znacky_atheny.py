@@ -43,6 +43,48 @@ for x in (-0.58, 0.58):
     sphere((x, -1.0, Z0 + COL_H + 0.22), 0.04, marble_d, scale=(1, 1, 1.4), seg=10, rings=8)
 sphere((0, -1.0, Z0 + COL_H + 0.54), 0.04, marble_d, scale=(1, 1, 1.4), seg=10, rings=8)
 
+
+# --- detaily: Akropolis (skalní podstavec), kanelury, sochy ve štítu, olivovníky, sova ---
+rockm = stone_material("rockm", "#b9a98c", scale=12, strength=0.4, roughness=0.9)
+rnd = random.Random(4)
+for k in range(26):  # skalní okraj Akropole kolem stupňů
+    a = k * math.tau / 26 + rnd.uniform(-0.05, 0.05)
+    r = rnd.uniform(1.0, 1.18)
+    s_ = rnd.uniform(0.14, 0.26)
+    sphere((r * 0.66 * math.cos(a) * 1.0, r * 1.05 * math.sin(a), 0.03), s_, rockm, scale=(1, 1, 0.6), seg=10, rings=6)
+for x in fx:
+    for y in (-0.9, 0.9):
+        for k in range(4):
+            torus((x, y, Z0 + 0.15 + k * 0.22), 0.05, 0.004, marble_d)
+for x in (-0.5, 0.5):
+    for y in sy[1:-1]:
+        for k in range(2):
+            torus((x, y, Z0 + 0.25 + k * 0.4), 0.05, 0.004, marble_d)
+for i in range(7):  # postavy ve štítu (sloupkovité sochy s hlavou)
+    x = -0.34 + i * 0.113
+    h_ = 0.14 if i in (2, 3, 4) else 0.09
+    cone((x, -1.02, Z0 + COL_H + 0.23 + h_ / 2), 0.03, 0.012, h_, marble_d, verts=8)
+    sphere((x, -1.02, Z0 + COL_H + 0.25 + h_), 0.018, marble_d, seg=8, rings=6)
+for (x, y) in ((-0.95, -1.1), (0.95, -1.15), (0.9, 0.9)):
+    tree(x, y, 1.1, kind="round", leaf="#7a9a5a")     # olivovníky
+cone((-0.7, 1.1, 0.35), 0.06, 0.0, 0.62, material("cyp", "#2f6a46", roughness=0.7), verts=10)
+cone((0.65, 1.12, 0.35), 0.06, 0.0, 0.62, material("cyp2", "#2f6a46", roughness=0.7), verts=10)
+# Athénina sova na soklu před chrámem
+cyl((0.9, -1.15, 0.15), 0.07, 0.3, marble, verts=12)
+owl = sphere((0.9, -1.15, 0.38), 0.06, material("owl", "#b8a07a", roughness=0.6), scale=(0.9, 0.7, 1.3), seg=12, rings=8)
+sphere((0.88, -1.2, 0.42), 0.018, material("eye", "#ffffff"), seg=8, rings=6)
+sphere((0.92, -1.2, 0.42), 0.018, material("eye2", "#ffffff"), seg=8, rings=6)
+cobbles(1.1, 40, material("cob", "#c8d4c8", roughness=0.9), z=0.052)
+lampm = [glow("lamp%d" % i, "#ffe2a0", 3.0) for i in range(2)]
+for i, (x, y) in enumerate(((-0.75, -1.15), (0.45, -1.2))):
+    lamp_post(x, y, lampm[i])
+
+
+@anim
+def _atheny_more(t):
+    for i, m in enumerate(lampm):
+        set_glow(m, 3.0 + 1.2 * math.sin(2 * t * math.tau + i * 2.0))
+
 # zářící značky: plus, rovná se, krát, pí, kružnice, trojúhelník
 SYM = []
 cols = ["#7ee0b0", "#ffd24d", "#ff9ec7", "#8fd0ff", "#c9b8ff", "#ff8a6b"]

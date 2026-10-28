@@ -1670,12 +1670,12 @@ select:not(:focus) {
 /* --- Globus předmětů: animovaná památka (pás 20 snímků) a vyskočení při výběru --- */
 .globe-sprite {
   background-repeat: no-repeat;
-  background-size: 2000% 100%;
-  animation: globe-sprite 1.7s steps(20) infinite;
+  background-size: 2400% 100%;
+  animation: globe-sprite 1.9s steps(24) infinite;
 }
 @keyframes globe-sprite {
   to {
-    background-position: 105.263% 0;
+    background-position: 104.348% 0;
   }
 }
 .globe-pop {

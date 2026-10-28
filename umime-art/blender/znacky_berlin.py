@@ -93,6 +93,43 @@ for sx in (-1, 1):
     flags.append(Flag((x + 0.012, y, Z0 + 2.72), 0.42, 0.27, colors, lambda u, v: 0 if v < 1 / 3 else (1 if v < 2 / 3 else 2), amp=0.09, waves=1.6, droop=0.02))
 flags[1].origin = Vector((1.112, -0.33, Z0 + 2.72))
 
+
+# --- detaily: kanelování sloupů, hřívy koní, orel, scenérie ---
+for y in (-0.38, 0.38):
+    for x in COLS_X:
+        for k in range(3):
+            torus((x, y, Z0 + 0.2 + k * 0.34), 0.07, 0.007, stone_d)
+for dx in (-0.8, -0.4, 0.0, 0.4, 0.8):  # postavy v reliéfu na atice
+    for k in range(2):
+        sphere((dx + 0.05 * k, -0.37, Z0 + 1.82), 0.02, stone_d, seg=8, rings=6)
+        cone((dx + 0.05 * k, -0.37, Z0 + 1.74), 0.025, 0.012, 0.1, stone_d, verts=8)
+for h, i in horses:
+    for k in range(4):  # hříva
+        sphere((0, -0.22 - 0.02 * k, 0.36 - 0.02 * k + 0.02), 0.025, patina_d, seg=8, rings=6).parent = h
+        bpy.context.object.location = (0, -0.22 - 0.025 * k, 0.37 - 0.03 * k)
+    sphere((-0.025, -0.28, 0.46), 0.016, patina_d, seg=6, rings=4).parent = h
+    sphere((0.025, -0.28, 0.46), 0.016, patina_d, seg=6, rings=4).parent = h
+sphere((0, 0.13, Z1 + 1.12), 0.028, goldm, scale=(1.6, 1, 0.7))  # orel na žezle
+cobbles(1.1, 70, material("cob", "#b8aa8a", roughness=0.9), z=0.052)
+for sx in (-1, 1):
+    tree(sx * 1.05, 0.7, 1.25, kind="round")
+    tree(sx * 0.55, 0.95, 1.0, kind="round", leaf="#2f8f4f")
+    bush(sx * 0.9, -0.75, 1.0)
+lampm = [glow("lamp%d" % i, "#ffe2a0", 4.0) for i in range(3)]
+for i, (x, y) in enumerate(((-0.6, -0.75), (0.6, -0.75), (0.0, -0.95))):
+    lamp_post(x, y, lampm[i])
+# stožáry s praporky a kamenné vázy
+for sx in (-1, 1):
+    cyl((sx * 1.2, -0.52, Z0 + 0.12), 0.07, 0.24, stone, verts=14)
+    sphere((sx * 1.2, -0.52, Z0 + 0.3), 0.08, stone_d, seg=12, rings=8)
+
+
+@anim
+def _berlin_more(t):
+    ph = t * math.tau
+    for i, m in enumerate(lampm):
+        set_glow(m, 4.0 + 1.6 * math.sin(2 * ph + i * 2.0))
+
 doves = [Bird(material("dv%d" % i, "#ffffff", roughness=0.6), material("dvw%d" % i, "#f3f3ff", roughness=0.6), s=0.65) for i in range(2)]
 
 

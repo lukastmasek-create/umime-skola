@@ -13,13 +13,13 @@ sys.path.insert(0, os.path.dirname(__file__))
 from common import *  # noqa: E402,F401,F403
 import bmesh  # noqa: E402
 
-FRAMES = 20
-SIZE = 320
+FRAMES = 24
+SIZE = 448
 ORTHO = 4.2  # šířka záběru ve scéně; podstavec (poloměr 1.2) se vejde i s vlajkami
 TARGET_Z = 1.3  # kam kamera míří: podstavec je pak ve spodní čtvrtině obrázku
 
 
-def setup(name, samples=40, size=SIZE, frames=FRAMES, az=-28, el=19, ortho=ORTHO, target_z=TARGET_Z, world=("#bcd0ff", 0.65)):
+def setup(name, samples=96, size=SIZE, frames=FRAMES, az=-28, el=19, ortho=ORTHO, target_z=TARGET_Z, world=("#bcd0ff", 0.65)):
     sc = reset(size, size, frames, samples=samples, name=name, world=world)
     a, e, d = math.radians(az), math.radians(el), 14.0
     add_camera((math.sin(a) * math.cos(e) * d, -math.cos(a) * math.cos(e) * d, math.sin(e) * d + target_z), (0, 0, target_z), ortho_scale=ortho)
@@ -221,8 +221,24 @@ def pole(base, top, r=0.018, mat=None, ball=True):
         sphere(top, r * 2.4, material("ball", "#ffc933", roughness=0.3, metallic=0.5), seg=12, rings=8)
 
 
+ANIM = []
+
+
+def anim(fn):
+    """Zaregistruje další animaci (funkce t -> None), kterou run() zavolá spolu s update()."""
+    ANIM.append(fn)
+    return fn
+
+
 def run(update, name):
     """--preview vykreslí čtyři snímky, jinak celou smyčku; --frame N jediný snímek."""
+    base = update
+
+    def update(t):
+        base(t)
+        for f in ANIM:
+            f(t)
+
     a = args()
     sc = bpy.context.scene
     total = sc.frame_end - sc.frame_start + 1
@@ -275,3 +291,45 @@ def flat(obj):
     for p in obj.data.polygons:
         p.use_smooth = False
     return obj
+
+
+# --- scenérie kolem památek: stromy, keře, lampy, dlažba ---
+
+def bush(x, y, s=1.0, mats=None, z=0.0):
+    mats = mats or [material("bu1", "#3fa752", roughness=0.7), material("bu2", "#59c460", roughness=0.7)]
+    for k, (dx, dy, r) in enumerate(((0, 0, 0.11), (0.09, 0.03, 0.08), (-0.08, 0.04, 0.085), (0.02, -0.08, 0.075))):
+        sphere((x + dx * s, y + dy * s, z + 0.06 * s + r * s * 0.5), r * s, mats[k % len(mats)], seg=12, rings=8)
+
+
+def tree(x, y, s=1.0, z=0.0, kind="round", leaf="#3fa752", trunk="#7a5636"):
+    tm = material("trk", trunk, roughness=0.9)
+    lm = material("lf" + leaf, leaf, roughness=0.65)
+    lm2 = material("lf2" + leaf, "#59c460", roughness=0.65)
+    cyl((x, y, z + 0.12 * s), 0.025 * s, 0.24 * s, tm, verts=8)
+    if kind == "cone":
+        for k in range(3):
+            cone((x, y, z + (0.22 + 0.13 * k) * s), (0.13 - 0.03 * k) * s, 0.0, 0.2 * s, lm if k % 2 else lm2, verts=12)
+    else:
+        sphere((x, y, z + 0.3 * s), 0.13 * s, lm, seg=14, rings=10)
+        sphere((x + 0.06 * s, y + 0.02 * s, z + 0.36 * s), 0.09 * s, lm2, seg=12, rings=8)
+
+
+def lamp_post(x, y, mat, z=0.0, h=0.42):
+    m = material("lamp_pole", "#3b3a4a", roughness=0.4, metallic=0.7)
+    bar((x, y, z), (x, y, z + h), 0.012, m, verts=8)
+    sphere((x, y, z + h + 0.025), 0.035, mat, seg=10, rings=8)
+
+
+def cobbles(radius, count, mat, seed=3, z=0.045):
+    """Dlažba: drobné ploché kameny roztroušené po podstavci."""
+    rnd = random.Random(seed)
+    for _ in range(count):
+        a, r = rnd.uniform(0, math.tau), radius * math.sqrt(rnd.uniform(0.15, 1))
+        box((r * math.cos(a), r * math.sin(a), z), (rnd.uniform(0.05, 0.09), rnd.uniform(0.05, 0.09), 0.012), mat, rot=(0, 0, rnd.uniform(0, 3)), bevel=0.004)
+
+
+def pointed_window(x, y, z, w, h, mat, rot=0.0, depth=0.02):
+    """Gotické okno: obdélník s lomeným obloukem nahoře (jen přední plocha)."""
+    c, sn = math.cos(rot), math.sin(rot)
+    box((x, y, z), (w, depth, h * 0.7), mat, rot=(0, 0, rot), bevel=0)
+    cone((x, y, z + h * 0.35 + w * 0.3), w * 0.72, 0.0, w * 0.9, mat, verts=3, rot=(math.radians(90), 0, rot))

@@ -53,8 +53,50 @@ for i in range(46):
 
 # maják s rotujícím paprskem
 sphere((0, 0, 3.24), 0.04, lampm, seg=12, rings=8)
-beam = cone((0.0, 0.0, 0), 0.01, 0.09, 0.5, beam_m, verts=16)
+beam = cone((0.0, 0.0, 0), 0.006, 0.03, 0.2, beam_m, verts=12)
 beam.rotation_euler = (math.radians(90), 0, 0)
+
+
+# --- detaily: oblouky při patě, výtahy, Champ de Mars s alejemi a lavičkami ---
+for sx, sy, tx, ty in ((-1, -1, 1, -1), (1, -1, 1, 1), (1, 1, -1, 1), (-1, 1, -1, -1)):
+    prev = None
+    for i in range(9):
+        u = i / 8
+        px = (sx + (tx - sx) * u) * hw(0.0) * (1 - 0.1 * math.sin(u * math.pi))
+        py = (sy + (ty - sy) * u) * hw(0.0) * (1 - 0.1 * math.sin(u * math.pi))
+        pt = (px, py, 0.5 * math.sin(u * math.pi) ** 0.7)
+        if prev:
+            bar(prev, pt, 0.018, iron, verts=6)
+        prev = pt
+# trávník s pruhy a cestami
+lawn_a, lawn_b, path_m = material("lawn_a", "#7fcf7a", roughness=0.8), material("lawn_b", "#69bd6a", roughness=0.8), material("pathm", "#e8dcc0", roughness=0.9)
+for i in range(6):
+    box((-0.9 + i * 0.36, 0.0, 0.052), (0.2, 2.1, 0.01), lawn_b if i % 2 else lawn_a, rot=(0, 0, math.radians(8)), bevel=0)
+for k in range(2):
+    box((0.0, -0.95 + k * 1.9, 0.056), (1.6, 0.1, 0.008), path_m, bevel=0)
+for sx in (-1, 1):
+    for k in range(5):  # stromořadí
+        tree(sx * 1.0, -0.8 + k * 0.4, 0.9, kind="round" if k % 2 else "cone", leaf="#3fa752")
+    for k in range(3):
+        box((sx * 0.8, -0.5 + k * 0.5, 0.075), (0.1, 0.035, 0.03), material("bench", "#7a5636", roughness=0.8), bevel=0)
+lampm = [glow("lamp%d" % i, "#ffe2a0", 4.0) for i in range(4)]
+for i, (x, y) in enumerate(((-0.55, -0.95), (0.55, -0.95), (-0.55, 0.95), (0.55, 0.95))):
+    lamp_post(x, y, lampm[i], z=0.05)
+# výtahové kabiny jezdící po nohách
+cabs = []
+for k, (sx, sy) in enumerate(((1, 1), (-1, -1))):
+    cabs.append((box((0, 0, 0), (0.07, 0.07, 0.09), glow("cab%d" % k, "#ffe9a8", 1.2), bevel=0.01), sx, sy, k))
+
+
+@anim
+def _paris_more(t):
+    ph = t * math.tau
+    for i, m in enumerate(lampm):
+        set_glow(m, 4.0 + 1.6 * math.sin(2 * ph + i * 1.7))
+    for c, sx, sy, k in cabs:
+        u = 0.5 + 0.5 * math.sin(ph + k * math.pi)
+        z = 0.1 + u * 1.5
+        c.location = (sx * hw(z) * 0.93, sy * hw(z) * 0.93, z)
 
 # létající knihy
 class Book:
@@ -92,7 +134,7 @@ def update(t):
     for m, k, p0, _ in LAMPS:
         set_glow(m, 9.0 * max(0.0, math.sin(ph * k + p0)) ** 3)
     a = ph * 1.0
-    beam.location = (0.27 * math.cos(a), 0.27 * math.sin(a), 3.24)
+    beam.location = (0.12 * math.cos(a), 0.12 * math.sin(a), 3.24)
     beam.rotation_euler = (math.radians(90), 0, a + math.pi / 2)
     for i, b in enumerate(books):
         ang = ph + i * math.tau / 3

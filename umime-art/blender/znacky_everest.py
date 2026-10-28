@@ -7,7 +7,7 @@ sc = setup("znacka_zemepis", world=("#cfe6ff", 0.7), ortho=5.0, target_z=1.55)
 plinth("#d8e8ef", "#ffffff")
 
 # výšková mapa: hlavní štít (Everest), Lhotse, Nuptse a skalní hřebeny
-N = 90
+N = 130
 SIZE = 2.5
 
 
@@ -41,7 +41,9 @@ for j in range(N + 1):
         slope = math.hypot(dx, dy)
         snow_line = 0.95 + 0.25 * math.sin(x * 6 + y * 5)
         snow = max(0.0, min(1.0, (z - snow_line) / 0.2)) * max(0.0, min(1.0, 2.4 - slope * 0.9))
+        ice = max(0.0, min(1.0, (z - 0.55) / 0.3)) * max(0.0, min(1.0, 1.3 - slope * 1.2)) * (1 - snow)
         rock = (0.30, 0.26, 0.27) if slope > 0.8 else (0.50, 0.41, 0.34)
+        rock = tuple(rock[k] * (1 - 0.7 * ice) + (0.62, 0.8, 0.9)[k] * 0.7 * ice for k in range(3))
         green = max(0.0, min(1.0, (0.55 - z) / 0.35))
         c = [rock[k] * (1 - green) + (0.38, 0.6, 0.32)[k] * green for k in range(3)]
         c = [c[k] * (1 - snow) + (0.97, 0.98, 1.0)[k] * snow for k in range(3)]
@@ -103,6 +105,66 @@ for i in range(11):
     o.location = (p.x, p.y, z - 0.05)
     pray.append((o, i, p, z))
 bar((P1.x, P1.y, 0.55), (P2.x, P2.y, 0.5), 0.004, material("rope", "#6b4a2d"), verts=4) if False else None
+
+
+# --- detaily: stúpa se zlatým hrotem, jaci, kameny, oblačné věnce, horolezci ---
+wht = material("stupa", "#f5f1e6", roughness=0.7)
+gld = material("gld", "#ffc933", roughness=0.3, metallic=0.8)
+sx_, sy_ = 0.45, -0.85
+cyl((sx_, sy_, 0.07), 0.12, 0.08, wht, verts=16)
+sphere((sx_, sy_, 0.16), 0.1, wht, scale=(1, 1, 0.9), seg=16, rings=10)
+box((sx_, sy_, 0.26), (0.07, 0.07, 0.06), gld, bevel=0.005)
+cone((sx_, sy_, 0.36), 0.045, 0.0, 0.16, gld, verts=12)
+for k in range(5):
+    torus((sx_, sy_, 0.3 + k * 0.01), 0.04 - 0.005 * k, 0.004, gld)
+yak_m = material("yak", "#3a2a22", roughness=0.9)
+for k, (yx, yy, rot) in enumerate(((-0.1, -0.95, 0.3), (0.15, -1.0, -0.2))):
+    root = bpy.data.objects.new("yak", None)
+    sc.collection.objects.link(root)
+    parts = [sphere((0, 0, 0.1), 0.08, yak_m, scale=(1.4, 0.8, 0.8)), sphere((-0.12, 0, 0.12), 0.05, yak_m, seg=10, rings=8)]
+    for lx in (-0.07, 0.07):
+        for ly in (-0.04, 0.04):
+            parts.append(bar((lx, ly, 0.07), (lx, ly, 0.0), 0.012, yak_m, verts=6))
+    for o in parts:
+        loc = o.location.copy(); o.parent = root; o.location = loc
+    root.location = (yx, yy, 0.0)
+    root.rotation_euler = (0, 0, rot)
+rnd = random.Random(2)
+for _ in range(14):  # kameny
+    a = rnd.uniform(0, math.tau); r = rnd.uniform(0.75, 1.1)
+    sphere((r * math.cos(a), r * math.sin(a), 0.06), rnd.uniform(0.03, 0.07), material("kam", "#7a6f66", roughness=0.9), scale=(1, 1, 0.7), seg=8, rings=6)
+def puff(i):
+    root = bpy.data.objects.new("puff", None)
+    sc.collection.objects.link(root)
+    m = material("cl%d" % i, "#ffffff", roughness=1.0)
+    for dx, dz, r in ((0, 0, 0.11), (0.1, -0.01, 0.08), (-0.1, -0.01, 0.075), (0.04, 0.05, 0.07)):
+        o = sphere((dx, 0, dz), r, m, scale=(1.2, 1.0, 0.85), seg=12, rings=8)
+        o.parent = root
+        o.location = (dx, 0, dz)
+    return root
+
+
+clouds = [(puff(i), i) for i in range(5)]
+climbers = []
+for k, c in enumerate(("#ff4d4d", "#ffd24d", "#3b9bff")):
+    climbers.append((sphere((0, 0, 0), 0.025, material("cli%d" % k, c, roughness=0.6), seg=8, rings=6), k))
+heli_pos = None
+
+
+@anim
+def _everest_more(t):
+    ph = t * math.tau
+    for c, i in clouds:
+        a = ph + i * math.tau / 5
+        r = 0.95 + 0.06 * math.sin(2 * ph + i)
+        c.location = (r * math.cos(a), r * math.sin(a), 1.15 + 0.35 * math.sin(i * 2.1) + 0.04 * math.sin(3 * ph + i))
+        c.rotation_euler = (0, 0, a)
+    for cl, k in climbers:
+        u = 0.5 + 0.5 * math.sin(ph + k * 1.1)
+        # trasa k vrcholu: od základního tábora po hřebeni
+        x = -0.5 + u * (sx0 + 0.5) * 0.85
+        y = -0.78 + u * (sy0 + 0.78) * 0.85
+        cl.location = (x, y, height(x, y) + 0.05)
 
 # sněhová vichřice: oblak sněhu odfukovaný z vrcholu
 rnd = random.Random(7)

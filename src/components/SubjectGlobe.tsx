@@ -19,8 +19,8 @@ const BASE_R = 0.26; // poloměr globu v zlomku šířky plátna při zoomu 1
 const DWELL_MS = 3400;
 
 // Prstenec ze školních předmětů (jako u Saturnu) a letadla s raketou, které globus obíhají.
-const RING_ITEMS = ["kniha", "tuzka", "banka", "atom", "kalkulacka", "pravitko", "cepice", "zarovka", "lupa", "glob", "kostky", "svitek"] as const;
-const RING_COUNT = 26;
+const RING_ITEMS = ["kniha", "mikroskop", "tuzka", "banka", "atom", "kalkulacka", "pravitko", "dna", "cepice", "zarovka", "lupa", "glob", "kruzitko", "kostky", "pero", "svitek", "sesit", "rostlina"] as const;
+const RING_COUNT = 32;
 const RING_INCL = 0.27; // sklon roviny prstence k pohledu (malý = plochá elipsa)
 const RING_ROLL = -0.3; // natočení prstence na obrazovce
 const FLYERS = [
@@ -147,7 +147,7 @@ void main() {
   // země předmětů: světlý obrys, vybraná navíc pulzuje
   float idx = floor(textureLod(uId, vec2(u, v), 0.0).r * 255.0 / 20.0 + 0.5);
   if (idx > 0.5) {
-    vec2 px = vec2(1.0 / 2048.0, 1.0 / 1024.0) * 1.2;
+    vec2 px = vec2(1.0 / 3072.0, 1.0 / 1536.0) * 1.3;
     float edge = 0.0;
     edge += step(0.5, abs(floor(textureLod(uId, vec2(u + px.x, v), 0.0).r * 255.0 / 20.0 + 0.5) - idx));
     edge += step(0.5, abs(floor(textureLod(uId, vec2(u - px.x, v), 0.0).r * 255.0 / 20.0 + 0.5) - idx));
@@ -159,6 +159,11 @@ void main() {
     col = mix(col, col * 1.2 + 0.04, sel * 0.7);
     col += edge * vec3(1.0, 0.97, 0.85) * (0.18 + 0.7 * sel * pulse) * (0.5 + 0.5 * lit);
   }
+
+  // světla měst na noční straně (kanál G mapy zemí)
+  float cityLights = textureLod(uId, vec2(u, v), 0.0).g;
+  float night = 1.0 - smoothstep(-0.12, 0.28, ndl);
+  col += cityLights * night * vec3(1.0, 0.78, 0.4) * 1.5;
 
   // atmosférický okraj
   float fres = pow(1.0 - (-n.y), 3.0);

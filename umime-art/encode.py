@@ -89,7 +89,7 @@ def globe():
         path = os.path.join(dest_dir, subject + ".webp")
         sheet.save(path, format="WEBP", quality=74, method=5, alpha_quality=80)
         print(subject, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB", sheet.size)
-    for name in ("kniha", "tuzka", "banka", "atom", "kalkulacka", "pravitko", "cepice", "zarovka", "lupa", "glob", "kostky", "svitek", "letadlo", "raketa"):
+    for name in ("kniha", "tuzka", "banka", "atom", "kalkulacka", "pravitko", "cepice", "zarovka", "lupa", "glob", "kostky", "svitek", "letadlo", "raketa", "mikroskop", "kruzitko", "sesit", "dna", "pero", "rostlina"):
         im = frames("pr_" + name)[0]
         path = os.path.join(dest_dir, "obj-" + name + ".webp")
         im.save(path, format="WEBP", quality=86, method=5, alpha_quality=92)

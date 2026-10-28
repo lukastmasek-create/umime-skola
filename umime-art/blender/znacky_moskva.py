@@ -3,7 +3,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 from znacky_lib import *
 
-sc = setup("znacka_rustina", world=("#c9d4ff", 0.7))
+sc = setup("znacka_rustina", world=("#c9d4ff", 0.7), ortho=4.3, target_z=1.3)
 plinth("#f4f8ff", "#ffffff")  # sněhový podstavec
 
 brick = stone_material("brick", "#c2443a", scale=40, strength=0.3)
@@ -61,9 +61,41 @@ for i, (x, y) in enumerate(pos_small):
 # sněhová čepička a závěje
 sphere((0, 0, 0.25), 1.0, snow, scale=(1, 1, 0.06))
 
+
+# --- detaily: kokošniky, cihlová spárořez, zimní scenérie ---
+cob = material("snowcob", "#dfe8f6", roughness=0.9)
+cobbles(1.1, 70, cob, z=0.043)
+for ring_r, n, z0, mat_ in ((0.5, 16, 0.98, brick_l), (0.37, 12, 1.57, brick)):
+    for k in range(n):  # kokošniky: věnec drobných půlkruhových štítků
+        a = k * math.tau / n
+        cyl((ring_r * math.cos(a), ring_r * math.sin(a), z0), 0.055, 0.03, mat_, verts=12, rot=(math.radians(90), 0, a + math.pi / 2))
+for k in range(8):  # svislé žebra hlavního stanu
+    a = k * math.tau / 8 + math.radians(22.5)
+    bar((0.34 * math.cos(a), 0.34 * math.sin(a), 1.38), (0.04 * math.cos(a), 0.04 * math.sin(a), 2.18), 0.012, gold, verts=6)
+for z in (0.3, 0.5, 0.7, 0.9):  # vodorovné spáry cihel na hlavním válci
+    torus((0, 0, z), 0.482, 0.006, brick_l)
+firs = []
+for k, (x, y, s_) in enumerate(((-1.0, -0.35, 1.2), (-0.9, 0.55, 1.0), (1.0, 0.45, 1.15), (0.95, -0.5, 0.95), (0.2, 1.0, 0.9), (-0.45, -1.0, 0.85))):
+    tree(x, y, s_, kind="cone", leaf="#2f6f55")
+    for j in range(3):  # sníh na větvích
+        cone((x, y, (0.26 + 0.13 * j) * s_ + 0.03), (0.095 - 0.03 * j) * s_, 0.0, 0.06 * s_, snow, verts=12)
+lampm = [glow("lamp%d" % i, "#ffe2a0", 4.0) for i in range(3)]
+for i, (x, y) in enumerate(((0.55, -1.0), (-0.65, -0.95), (1.05, 0.0))):
+    lamp_post(x, y, lampm[i])
+for k in range(10):  # zlaté pruhy a rýhy na kopulích: drobné lesklé kuličky na hřebenech
+    a = k * math.tau / 10
+    sphere((0.78 * math.cos(a) * 0 + 0, 0, 0), 0.0, gold) if False else None
+
+
+@anim
+def _more(t):
+    ph = t * math.tau
+    for i, m in enumerate(lampm):
+        set_glow(m, 4.0 + 1.6 * math.sin(2 * ph + i * 2.0))
+
 rnd = random.Random(5)
 flakes = []
-for i in range(46):
+for i in range(90):
     s = sphere((0, 0, 0), rnd.uniform(0.018, 0.04), snow, seg=8, rings=6)
     flakes.append((s, rnd.uniform(-1.5, 1.5), rnd.uniform(-1.3, 1.3), rnd.uniform(0, 1), rnd.uniform(0.04, 0.12), rnd.uniform(0, math.tau)))
 FALL_TOP, FALL_H = 3.1, 3.1

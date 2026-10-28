@@ -60,6 +60,76 @@ for i in range(10):
     r = rnd.uniform(0.75, 1.05)
     cone((r * math.cos(a), r * math.sin(a), 0.12), 0.13, 0.0, 0.28, fern, verts=7, rot=(0, 0, rnd.uniform(0, 3)))
 
+
+# --- detaily: druhá vrstva koruny, orchideje, vodopád, lekníny, lenochod ---
+crown2 = []
+for i in range(26):
+    a = rnd.uniform(0, math.tau)
+    r = rnd.uniform(0.05, 1.05)
+    x, y = r * math.cos(a), r * math.sin(a)
+    z = 2.35 + 0.3 * (1 - r) + rnd.uniform(-0.1, 0.3)
+    rad = rnd.uniform(0.13, 0.24)
+    crown2.append((sphere((x, y, z), rad, greens[(i + 2) % 5], scale=(1, 1, 0.8), seg=14, rings=10), (x, y, z), rnd.random() * math.tau))
+orch_cols = ["#ff5fa2", "#c77dff", "#ffd24d", "#ffffff"]
+for i in range(10):  # orchideje a bromélie na kmeni a větvích
+    a = rnd.uniform(0, math.tau)
+    z = rnd.uniform(0.7, 1.7)
+    x, y = 0.26 * math.cos(a) * (1 - z * 0.05), 0.26 * math.sin(a) * (1 - z * 0.05)
+    for k in range(5):
+        pa = k * math.tau / 5
+        cone((x + 0.045 * math.cos(pa), y + 0.045 * math.sin(pa), z), 0.03, 0.0, 0.07, material("orc%d_%d" % (i, k), orch_cols[i % 4], roughness=0.5), verts=6, rot=(math.radians(60) * math.sin(pa), math.radians(60) * math.cos(pa), 0))
+    sphere((x, y, z), 0.018, material("orcc", "#ffd24d"), seg=6, rings=4)
+# vodopád po skalách vlevo vzadu
+rock_m = stone_material("rockw", "#7a7468", scale=14, strength=0.4, roughness=0.9)
+for (x, y, z, r) in ((-0.95, 0.6, 0.35, 0.3), (-0.8, 0.85, 0.55, 0.26), (-1.05, 0.35, 0.2, 0.22), (-0.7, 0.55, 0.15, 0.2)):
+    sphere((x, y, z), r, rock_m, scale=(1, 1, 0.9), seg=12, rings=8)
+water_f = bpy.data.materials.new("wf")
+water_f.use_nodes = True
+nt = water_f.node_tree
+bsdf = nt.nodes["Principled BSDF"]
+tc = nt.nodes.new("ShaderNodeTexCoord")
+mp = nt.nodes.new("ShaderNodeMapping")
+wv = nt.nodes.new("ShaderNodeTexWave")
+wv.wave_type = "BANDS"
+wv.bands_direction = "Z"
+wv.inputs["Scale"].default_value = 1.5
+wv.inputs["Distortion"].default_value = 2.0
+ramp = nt.nodes.new("ShaderNodeValToRGB")
+ramp.color_ramp.elements[0].color = hex_rgba("#3fa8e0")
+ramp.color_ramp.elements[1].color = hex_rgba("#f2fbff")
+nt.links.new(tc.outputs["Object"], mp.inputs["Vector"])
+nt.links.new(mp.outputs["Vector"], wv.inputs["Vector"])
+nt.links.new(wv.outputs["Color"], ramp.inputs["Fac"])
+nt.links.new(ramp.outputs["Color"], bsdf.inputs["Base Color"])
+nt.links.new(ramp.outputs["Color"], bsdf.inputs["Emission Color"])
+bsdf.inputs["Emission Strength"].default_value = 0.35
+bsdf.inputs["Roughness"].default_value = 0.2
+fall = box((-0.93, 0.3, 0.4), (0.22, 0.05, 0.62), water_f, rot=(0, 0, math.radians(-28)), bevel=0)
+cyl((-0.8, 0.12, 0.06), 0.2, 0.02, river, verts=24)
+for i, (x, y) in enumerate(((0.6, -0.95), (0.35, -0.75), (0.75, -0.7))):  # lekníny a žába
+    cyl((x, y, 0.056), 0.07, 0.012, greens[i], verts=16)
+frog = sphere((0.6, -0.95, 0.09), 0.03, material("frog", "#2fbf5f"), scale=(1, 1.2, 0.8), seg=8, rings=6)
+# lenochod na větvi
+sloth = bpy.data.objects.new("sloth", None)
+sc.collection.objects.link(sloth)
+parts = [sphere((0, 0, 0), 0.075, material("sl", "#8a6a4a", roughness=0.9), scale=(0.9, 0.9, 1.2), seg=12, rings=8),
+         sphere((0, -0.01, 0.1), 0.045, material("sl2", "#e8d8b8", roughness=0.9), seg=10, rings=8)]
+for ax in (-0.07, 0.07):
+    parts.append(bar((ax, 0, 0.03), (ax * 1.5, 0, 0.17), 0.014, material("slp", "#6b4f35", roughness=0.9), verts=6))
+for o in parts:
+    loc = o.location.copy(); o.parent = sloth; o.location = loc
+sloth.location = (0.38, 0.0, 1.62)
+
+
+@anim
+def _amazon_more(t):
+    ph = t * math.tau
+    for o, (x, y, z), p in crown2:
+        o.location = (x + 0.035 * math.sin(ph + p), y + 0.03 * math.cos(ph + p), z + 0.02 * math.sin(2 * ph + p))
+    mp.inputs["Location"].default_value[2] = -t * (2 * math.pi / (20 * 1.5))
+    sloth.rotation_euler = (0.1 * math.sin(ph), 0.08 * math.sin(2 * ph), 0)
+    frog.location.z = 0.09 + 0.02 * max(0.0, math.sin(3 * ph)) ** 3
+
 toucan = Bird(material("tk_b", "#1b1830", roughness=0.5), material("tk_w", "#2a2640", roughness=0.5), material("tk_beak", "#ff9a1f", roughness=0.4), s=1.05, beak_len=0.14)
 macaw = Bird(material("ma_b", "#e53935", roughness=0.5), material("ma_w", "#2f6fe0", roughness=0.5), material("ma_beak", "#f4e3c1", roughness=0.4), s=1.0, beak_len=0.05)
 

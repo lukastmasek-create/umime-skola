@@ -18,7 +18,7 @@ gold = material("gold", "#ffc933", roughness=0.3, metallic=0.8)
 A, B = 1.04, 0.82  # poloosy elipsy
 N = 56
 TIER_H = 0.3
-GAP = (math.radians(285), math.radians(350))  # zřícená část stěny na pravé zadní straně
+GAP = (math.radians(268), math.radians(348))  # zřícená část stěny na pravé zadní straně
 
 
 def broken(a):
@@ -41,7 +41,7 @@ for i in range(N):
     tx, ty = -A * math.sin(a), B * math.cos(a)
     yaw = math.atan2(ty, tx)
     seg = math.tau / N * math.hypot(tx, ty) * 1.02
-    tiers = 4 if not broken(a) else (2 if (a % math.tau) > math.radians(305) and (a % math.tau) < math.radians(335) else 3)
+    tiers = 4 if not broken(a) else (1 if (a % math.tau) > math.radians(290) and (a % math.tau) < math.radians(330) else 2)
     for tier in range(tiers):
         z = 0.08 + tier * TIER_H + TIER_H / 2
         att = tier == 3
@@ -76,6 +76,42 @@ for ang in (30, 150, 210, 330):
     x, y = 0.42 * A * math.cos(a), 0.42 * B * math.sin(a)
     bar((x, y, 0.12), (x, y, 0.5), 0.014, pole_m, verts=8)
     torches.append(sphere((x, y, 0.55), 0.045, flame_m, scale=(1, 1, 1.5), seg=10, rings=8))
+
+
+# --- detaily: sedadla s radiálními schody, suť, cypřiše, pinie, Konstantinův oblouk ---
+for ring_k, h in ((0.88, 0.3), (0.8, 0.44), (0.72, 0.58)):
+    for k in range(36):  # schodiště: radiální žebra na hledišti
+        a = k * math.tau / 36
+        x, y = ring_k * A * math.cos(a), ring_k * B * math.sin(a)
+        box((x, y, h + 0.05), (0.02, 0.02, 0.01), trav_d, rot=(0, 0, a), bevel=0)
+rnd = random.Random(8)
+for _ in range(16):  # suť v místě zřícené stěny
+    a = math.radians(rnd.uniform(272, 346))
+    r = rnd.uniform(0.9, 1.15)
+    box((r * A * math.cos(a), r * B * math.sin(a), 0.1), (rnd.uniform(0.05, 0.12), rnd.uniform(0.05, 0.1), rnd.uniform(0.04, 0.09)), trav_d, rot=(rnd.random(), rnd.random(), rnd.random()), bevel=0.006)
+for k, (x, y) in enumerate(((-1.18, 0.15), (-1.05, -0.5), (1.15, 0.05), (0.35, 1.1))):
+    cone((x, y, 0.4), 0.065, 0.0, 0.72, material("cyp", "#2f6a46", roughness=0.7), verts=10)   # cypřiš
+    cyl((x, y, 0.1), 0.012, 0.2, material("cyt", "#6b4a2d"), verts=6)
+for (x, y) in ((-0.8, 1.0), (0.9, -0.95)):  # pinie (deštníkovitá koruna)
+    cyl((x, y, 0.28), 0.025, 0.5, material("pit", "#6b4a2d"), verts=8)
+    sphere((x, y, 0.58), 0.22, material("pil", "#4f9a4a", roughness=0.7), scale=(1, 1, 0.38), seg=14, rings=8)
+# Konstantinův oblouk: tři průchody a atika
+ax, ay = -0.55, -1.05
+box((ax, ay, 0.22), (0.5, 0.14, 0.4), trav, bevel=0.01)
+box((ax, ay, 0.45), (0.46, 0.13, 0.08), trav_d, bevel=0.005)
+for dx, wd in ((0, 0.12), (-0.17, 0.07), (0.17, 0.07)):
+    box((ax + dx, ay - 0.072, 0.15), (wd, 0.01, 0.26 if dx == 0 else 0.2), arch_m, bevel=0)
+for dx in (-0.2, 0.0, 0.2):
+    cyl((ax + dx, ay - 0.075, 0.33), 0.012, 0.1, trav_d, verts=8)
+lampm = [glow("lamp%d" % i, "#ffe2a0", 4.0) for i in range(2)]
+for i, (x, y) in enumerate(((0.3, -1.08), (-1.1, -0.75))):
+    lamp_post(x, y, lampm[i])
+
+
+@anim
+def _rim_more(t):
+    for i, m in enumerate(lampm):
+        set_glow(m, 4.0 + 1.6 * math.sin(2 * t * math.tau + i * 2.0))
 
 doves = [Bird(material("dv%d" % i, "#ffffff", roughness=0.6), material("dvw%d" % i, "#eef0ff", roughness=0.6), s=0.65) for i in range(3)]
 

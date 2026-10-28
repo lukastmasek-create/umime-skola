@@ -3,7 +3,7 @@ import { CATEGORIES, SUBJECTS } from "@/lib/taxonomy";
 import { HomeProgress } from "@/components/HomeProgress";
 import { DailyChallenges } from "@/components/DailyChallenges";
 import { ArcadeDemo } from "@/components/ArcadeDemo";
-import { ALIEN_ROW, Circuit, HomeArt, NatureDecor, Nebula, Planet, Rocket, SpriteFrame, TechBus, Wave } from "@/components/SpaceDecor";
+import { ALIEN_ROW, Circuit, HomeArt, Nebula, Planet, Rocket, SpriteFrame, TechBus, Wave } from "@/components/SpaceDecor";
 import { CardIcon3D, GearHolo3D, TechBackdrop, type IconKind } from "@/components/TechScenes";
 import { MountainScene } from "@/components/HomeAnim";
 import { PlanetLive } from "@/components/PlanetLive";
@@ -112,7 +112,6 @@ export default async function Home({
       <section className="zone zone-space zone-globe">
         <Wave fill="#0c0a24" />
         <GlobeSky />
-        <NatureDecor />
         <div className="relative z-10 mx-auto max-w-6xl px-4 pb-20 pt-24 sm:px-6">
           <div className="reveal mb-8 flex flex-wrap items-end justify-between gap-3">
             <div>

@@ -99,7 +99,86 @@ for o in parts:
     o.parent = bus
     o.location = loc
 
-lamps = [sphere((0.0, 0, 0), 0.03, lamp, seg=8, rings=6) for _ in range(1)]
+
+# --- detaily: parlament, londýnské oko, telefonní budka, stromy, lampy, vlajka ---
+cobbles(1.1, 60, material("cob", "#9a9aa8", roughness=0.9), z=0.052)
+water = material("thames", "#4ca8e0", roughness=0.15)
+rv = cyl((0.15, -0.98, 0.047), 1.0, 0.015, water, verts=40)
+rv.scale = (0.85, 0.17, 1)
+for i in range(7):  # pásy gotických oken a věžiček parlamentu
+    pointed_window(-1.28 + i * 0.22, 0.272, 0.32, 0.07, 0.24, glass, rot=0)
+    cone((-1.28 + i * 0.22, 0.55, 0.64), 0.04, 0.0, 0.14, roof, verts=6) if i % 2 == 0 else None
+box((-1.2, 0.55, 0.5), (0.2, 0.2, 1.0), stone)          # Viktoriina věž
+cone((-1.2, 0.55, 1.18), 0.16, 0.0, 0.3, roof, verts=4, rot=(0, 0, math.radians(45)))
+for sx in (-1, 1):
+    for sy in (-1, 1):
+        cone((-1.2 + sx * 0.1, 0.55 + sy * 0.1, 1.03), 0.025, 0.0, 0.1, gold, verts=6)
+for k in range(5):
+    box((-1.2, 0.447, 0.35 + k * 0.15), (0.06, 0.01, 0.1), black, bevel=0)
+# vlajka Union Jack na střeše parlamentu
+pole((-0.62, 0.55, 0.6), (-0.62, 0.55, 1.0), r=0.012)
+blue_, white_, red_ = material("uj_b", "#1b3a8a"), material("uj_w", "#ffffff"), material("uj_r", "#cf142b")
+
+
+def union_jack(u, v):
+    x, y = (u - 0.5) * 2.0, v - 0.5
+    if abs(y) < 0.08 and True: return 2 if abs(y) < 0.045 else 1
+    if abs(x) < 0.16: return 2 if abs(x) < 0.09 else 1
+    d = abs(abs(x) * 0.5 - abs(y))
+    if d < 0.075: return 2 if d < 0.035 else 1
+    return 0
+
+
+uj = Flag((-0.608, 0.55, 0.98), 0.5, 0.28, [blue_, white_, red_], union_jack, cols=36, rows=18, amp=0.09, waves=1.5, droop=0.02)
+# červená telefonní budka
+bx, by = 0.75, -0.62
+box((bx, by, 0.17), (0.12, 0.12, 0.34), red, bevel=0.01)
+box((bx, by - 0.062, 0.18), (0.08, 0.01, 0.22), glass, bevel=0)
+box((bx, by, 0.36), (0.14, 0.14, 0.03), red, bevel=0.01)
+# London Eye: velké kolo s kabinkami, pomalu se otáčí
+EYE = Vector((0.95, 0.3, 0.5))
+R_EYE = 0.4
+torus(tuple(EYE), R_EYE, 0.012, white, rot=(math.radians(90), 0, math.radians(-28)))
+torus(tuple(EYE), R_EYE * 0.65, 0.008, white, rot=(math.radians(90), 0, math.radians(-28)))
+for a in (-1, 1):
+    bar((EYE.x + a * 0.1, EYE.y, 0.0), tuple(EYE), 0.014, white, verts=8)
+cabins = []
+for k in range(14):
+    c = box((0, 0, 0), (0.06, 0.045, 0.05), glass, bevel=0.006)
+    cabins.append((c, k))
+eye_piv = bpy.data.objects.new("eye", None)
+bpy.context.scene.collection.objects.link(eye_piv)
+eye_piv.location = tuple(EYE)
+eye_piv.rotation_euler = (0, 0, math.radians(-28))
+eye_spokes = []
+for k in range(7):
+    sp = box((0, 0, 0), (2 * R_EYE, 0.006, 0.006), white, bevel=0)
+    sp.parent = eye_piv
+    sp.location = (0, 0, 0)
+    eye_spokes.append((sp, k))
+tx, ty = math.cos(math.radians(-28)), math.sin(math.radians(-28))
+for i, (x, y) in enumerate(((-0.9, -0.7), (1.0, 0.0), (-0.2, 1.05))):
+    tree(x, y, 1.2, kind="round")
+lampm = [glow("lamp%d" % i, "#ffe2a0", 4.0) for i in range(3)]
+for i, (x, y) in enumerate(((0.35, -0.7), (-0.8, -0.65), (0.95, -0.3))):
+    lamp_post(x, y, lampm[i])
+
+
+@anim
+def _london_more(t):
+    ph = t * math.tau
+    uj.update(t)
+    for i, m in enumerate(lampm):
+        set_glow(m, 4.0 + 1.6 * math.sin(2 * ph + i * 2.0))
+    ang0 = ph * 0.5
+    for c, k in cabins:
+        a = ang0 + k * math.tau / 14
+        c.location = (EYE.x + R_EYE * math.sin(a) * tx, EYE.y + R_EYE * math.sin(a) * ty, EYE.z + R_EYE * math.cos(a))
+        c.rotation_euler = (0, 0, math.radians(-28))
+    for sp, k in eye_spokes:
+        sp.rotation_euler = (0, -(ang0 + k * math.pi / 7), 0)
+
+lamps = []
 flag_pole = (0, 0, 3.74)
 
 
