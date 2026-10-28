@@ -6,6 +6,7 @@ import { isLocale, type Locale } from "@/i18n/config";
 import type { GameQuestion } from "@/i18n/game";
 import { getTestText } from "@/i18n/test";
 import { SpaceQuizGame } from "@/components/SpaceQuizGame";
+import { FullscreenFrame } from "@/components/FullscreenFrame";
 import { ClassicGame } from "@/components/ClassicGame";
 
 export const revalidate = 0;
@@ -85,21 +86,25 @@ export default async function CourseGamePage({
   if (isClassicSlug(game.slug)) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-        <ClassicGame locale={locale as Locale} game={game.slug} questions={questions} difficulty={difficulty} backHref={backHref} />
+        <FullscreenFrame locale={locale as Locale}>
+          <ClassicGame locale={locale as Locale} game={game.slug} questions={questions} difficulty={difficulty} backHref={backHref} />
+        </FullscreenFrame>
       </div>
     );
   }
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-      <SpaceQuizGame
-        locale={locale as Locale}
-        courseSlug={courseSlug}
-        courseTitle={title}
-        backHref={backHref}
-        questions={questions}
-        game={game.slug}
-      />
+      <FullscreenFrame locale={locale as Locale}>
+        <SpaceQuizGame
+          locale={locale as Locale}
+          courseSlug={courseSlug}
+          courseTitle={title}
+          backHref={backHref}
+          questions={questions}
+          game={game.slug}
+        />
+      </FullscreenFrame>
     </div>
   );
 }

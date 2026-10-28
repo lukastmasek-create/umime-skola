@@ -27,7 +27,7 @@ export default async function MaterialsSubjectPage({ params }: { params: Promise
   const levels = ([1, 2, 3, 4] as const).filter((level) => topics.some((x) => x.level === level));
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
+    <div data-world={subject.slug} className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
       <Link href={`/${locale}/materialy`} className="mb-4 inline-flex text-sm font-semibold text-[var(--brand-600)] hover:underline">
         ← {t.allSubjects}
       </Link>

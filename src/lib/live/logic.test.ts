@@ -8,13 +8,17 @@ import {
   cleanSettings,
   effectiveStatus,
   generatePin,
+  isSyncMode,
+  livesLeft,
   playerQuestionIndex,
   questionOrder,
   quizPoints,
   rankPlayers,
+  streakPoints,
+  teamOf,
 } from "./logic.ts";
 
-const base = { mode: "QUIZ" as const, status: "QUESTION" as const, questionStartedAt: 1000, endsAt: null, settings: { seconds: 20, raceTarget: 10, durationMin: 5 }, now: 1000, answered: 0, players: 3 };
+const base = { mode: "QUIZ" as const, status: "QUESTION" as const, questionStartedAt: 1000, endsAt: null, settings: { seconds: 20, raceTarget: 10, durationMin: 5, lives: 3 }, now: 1000, answered: 0, players: 3 };
 
 test("quizPoints: rychlost a série", () => {
   assert.equal(quizPoints(false, 100, 20, 3), 0);
@@ -66,8 +70,30 @@ test("čištění vstupů", () => {
   assert.equal(cleanName("  Anna\n\tNovák   "), "Anna Novák");
   assert.equal(cleanName("x".repeat(40)).length, 16);
   assert.equal(cleanName(5), "");
-  assert.deepEqual(cleanSettings({ seconds: 1, raceTarget: 999, durationMin: "x" }), { seconds: 5, raceTarget: 50, durationMin: 5 });
+  assert.deepEqual(cleanSettings({ seconds: 1, raceTarget: 999, durationMin: "x" }), { seconds: 5, raceTarget: 50, durationMin: 5, lives: 3 });
   assert.equal(cleanQuestion({ prompt: "?", options: ["a", "b"], correctIndex: 2 }), null);
   assert.deepEqual(cleanQuestion({ prompt: " ? ", options: ["a", "b", "c", "d"], correctIndex: 1 }), { prompt: "?", options: ["a", "b", "c", "d"], correctIndex: 1 });
   assert.match(generatePin(), /^\d{6}$/);
+});
+
+test("série: násobek roste do pětinásobku", () => {
+  assert.deepEqual([0, 1, 2, 3, 4, 5, 9].map(streakPoints), [100, 200, 300, 400, 500, 500, 500]);
+});
+
+test("přežití: životy a pořadí podle ztrát", () => {
+  assert.equal(livesLeft(3, 1), 2);
+  assert.equal(livesLeft(3, 7), 0);
+  // progress = ztracené životy: méně ztrát je lepší, při shodě rozhodují body.
+  const p = (id: string, score: number, gold: number, progress: number, joinedAt: number) => ({ id, score, gold, progress, joinedAt });
+  const ps = [p("a", 100, 0, 2, 1), p("b", 50, 0, 0, 2), p("c", 300, 0, 2, 3)];
+  assert.deepEqual(rankPlayers("SURVIVAL", ps).map((x) => x.id), ["b", "c", "a"]);
+  assert.equal(cleanSettings({ lives: 99 }).lives, 5);
+  assert.equal(cleanSettings({ lives: 0 }).lives, 1);
+});
+
+test("týmy se střídají a řízené režimy se poznají", () => {
+  assert.deepEqual([0, 1, 2, 3, 4].map(teamOf), [0, 1, 0, 1, 0]);
+  assert.deepEqual((["QUIZ", "SURVIVAL", "TEAMS", "RACE", "GOLD", "STREAK"] as const).map(isSyncMode), [true, true, true, false, false, false]);
+  assert.equal(effectiveStatus({ ...base, mode: "SURVIVAL", answered: 2, players: 2 }), "REVEAL");
+  assert.equal(effectiveStatus({ ...base, mode: "STREAK", endsAt: 500, now: 1000 }), "ENDED");
 });

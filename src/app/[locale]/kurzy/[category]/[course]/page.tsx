@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { getCategoryBySlug } from "@/lib/taxonomy";
+import { SUBJECTS, getCategoryBySlug, type SubjectValue } from "@/lib/taxonomy";
 import { getDictionary } from "@/i18n/dictionaries";
 import { getTestText } from "@/i18n/test";
 import { isLocale, type Locale } from "@/i18n/config";
@@ -27,6 +27,7 @@ export default async function CoursePage({
     title: string;
     slug: string;
     description: string | null;
+    subject: SubjectValue | null;
     levels: { order: number; published: boolean }[];
   } | null = null;
   try {
@@ -36,6 +37,7 @@ export default async function CoursePage({
         title: true,
         slug: true,
         description: true,
+        subject: true,
         levels: { select: { order: true, published: true } },
       },
     });
@@ -100,7 +102,7 @@ export default async function CoursePage({
   );
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-16">
+    <div data-world={SUBJECTS.find((s) => s.value === course.subject)?.slug} className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-16">
       <Link
         href={`/${locale}/kurzy/${category.slug}`}
         className="mb-4 inline-block text-sm font-medium text-[var(--faint)] hover:text-[var(--foreground)]"

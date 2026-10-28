@@ -73,12 +73,6 @@ export default async function LocaleLayout({
                 <SiteLogo />
               </Link>
               <div className="flex items-center justify-end gap-1.5 text-sm">
-                <Link href={`/${locale}/obchod`} className={`hidden xl:inline-flex ${navLink}`}>
-                  {dict.nav.shop}
-                </Link>
-                <Link href={`/${locale}/nastaveni`} className={`hidden xl:inline-flex ${navLink}`}>
-                  {dict.nav.settings}
-                </Link>
                 <LanguageSwitcher current={locale as Locale} />
                 <HeaderAccount
                   locale={locale as Locale}
@@ -86,21 +80,14 @@ export default async function LocaleLayout({
                   registerLabel={dict.nav.register}
                   linkClass={navLink}
                 />
-                <MobileMenu
-                  locale={locale as Locale}
-                  dict={dict}
-                  shopLabel={dict.nav.shop}
-                  settingsLabel={dict.nav.settings}
-                  loginLabel={dict.nav.login}
-                  registerLabel={dict.nav.register}
-                />
+                <MobileMenu locale={locale as Locale} dict={dict} />
               </div>
             </div>
             <NavTabs locale={locale as Locale} dict={dict} />
           </div>
         </header>
         <ReturnNudge locale={locale as Locale} />
-        <main className="flex-1">{children}</main>
+        <main className="world flex-1">{children}</main>
         <footer className="border-t-2 border-[var(--edge)] bg-[var(--surface)] py-6 text-center text-sm text-[var(--muted)]">
           &copy; {new Date().getFullYear()} {dict.footer.rights}
         </footer>

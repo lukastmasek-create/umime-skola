@@ -24,7 +24,7 @@ def animated(name, dest, fps=24, quality=70, size=None, loop=0, step=1):
     fr = frames(name, size, step)
     path = os.path.join(DEST, dest)
     fr[0].save(path, format="WEBP", save_all=True, append_images=fr[1:], duration=int(1000 / fps), loop=loop,
-               quality=quality, method=5, alpha_quality=85)
+               quality=quality, method=5, alpha_quality=60 if dest.startswith("sopka") else 85)
     print(dest, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB")
 
 
@@ -46,7 +46,7 @@ def strip(name, dest, size, quality=72):
     for i, im in enumerate(fr):
         sheet.paste(im, (i * size[0], 0))
     path = os.path.join(DEST, dest)
-    sheet.save(path, format="WEBP", quality=quality, method=5, alpha_quality=85)
+    sheet.save(path, format="WEBP", quality=quality, method=5, alpha_quality=60 if dest.startswith("sopka") else 85)
     print(dest, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB", sheet.size)
 
 
@@ -74,6 +74,142 @@ def icons():
         print(dest, round(os.path.getsize(path) / 1024), "kB")
 
 
+def planet_live():
+    """Vrstvy planet pro živé vykreslení ve WebGL (PlanetLive.tsx): dolní oranžová (pv_) a horní fialová (hv_)."""
+    for prefix, folder in (("pv_", "planet-live"), ("hv_", "planet-hero")):
+        dest_dir = os.path.join(DEST, "..", folder)
+        os.makedirs(dest_dir, exist_ok=True)
+        for name, dest, quality in (("albedo", "albedo.webp", 88), ("stin", "stin.webp", 94), ("halo", "halo.webp", 88),
+                                    ("prsten_zadni", "prsten-zadni.webp", 90), ("prsten_predni", "prsten-predni.webp", 90),
+                                    ("mesic1", "mesic1.webp", 92), ("mesic2", "mesic2.webp", 92)):
+            if not glob.glob(os.path.join(ROOT, "out", prefix + name, "f_*.png")):
+                continue
+            im = frames(prefix + name)[0]
+            path = os.path.join(dest_dir, dest)
+            im.save(path, format="WEBP", quality=quality, method=5, alpha_quality=96)
+            print(folder, dest, round(os.path.getsize(path) / 1024), "kB", im.size)
+
+
+def hero():
+    """Hrdina úvodní scény: loď z Blenderu (12 snímků plamene vedle sebe) do public/home/hero."""
+    dest_dir = os.path.join(DEST, "..", "hero")
+    os.makedirs(dest_dir, exist_ok=True)
+    fr = frames("hrdina_lod")
+    w, h = fr[0].size
+    sheet = Image.new("RGBA", (w * len(fr), h), (0, 0, 0, 0))
+    for i, im in enumerate(fr):
+        sheet.paste(im, (i * w, 0))
+    path = os.path.join(dest_dir, "lod-strip.webp")
+    sheet.save(path, format="WEBP", quality=88, method=5, alpha_quality=92)
+    print("lod-strip", len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB", sheet.size)
+
+
+def tech():
+    """Deska plošného spoje a čtyři animované předměty pro TechBoard do public/home/tech (+ polohy do JSON)."""
+    import json
+    dest_dir = os.path.join(DEST, "..", "tech")
+    os.makedirs(dest_dir, exist_ok=True)
+    board = frames("tech_deska")[0]
+    board.save(os.path.join(dest_dir, "deska.webp"), format="WEBP", quality=88, method=5, alpha_quality=92)
+    print("deska", round(os.path.getsize(os.path.join(dest_dir, "deska.webp")) / 1024), "kB", board.size)
+    for name, dest in (("kniha", "kniha"), ("joystick", "joystick"), ("dvere", "dvere"), ("pohar", "pohar")):
+        fr = frames("tech_" + name)
+        w, h = fr[0].size
+        sheet = Image.new("RGBA", (w * len(fr), h), (0, 0, 0, 0))
+        for i, im in enumerate(fr):
+            sheet.paste(im, (i * w, 0))
+        path = os.path.join(dest_dir, dest + ".webp")
+        sheet.save(path, format="WEBP", quality=80, method=5, alpha_quality=85)
+        print(dest, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB", sheet.size)
+    meta = json.load(open(os.path.join(ROOT, "out", "tech_deska", "paths.json")))
+    import math
+    ppu, bw, bh, el, n = meta["ppu"], meta["w"], meta["h"], math.radians(54), 384
+    ped_x, ped_y = [-5.1, -1.7, 1.7, 5.1], -0.55
+    meta["sprites"] = []
+    for px in ped_x:
+        ox, oy = bw / 2 + ppu * px, bh / 2 - ppu * (ped_y * math.sin(el))
+        meta["sprites"].append({"x": (ox - n / 2) / bw, "y": (oy - (n / 2 + ppu * 0.9 * math.cos(el))) / bh, "w": n / bw})
+    json.dump(meta, open(os.path.join(ROOT, "..", "src", "components", "tech-board.json"), "w"))
+
+
+def hry():
+    """Čtyři diorámata stálých her jako pásy snímků do public/home/hry."""
+    dest_dir = os.path.join(DEST, "..", "hry")
+    os.makedirs(dest_dir, exist_ok=True)
+    for name in ("zakladna", "mazlicci", "farma", "mesto"):
+        fr = frames("hra_" + name, (384, 384))
+        sheet = Image.new("RGBA", (384 * len(fr), 384), (0, 0, 0, 0))
+        for i, im in enumerate(fr):
+            sheet.paste(im, (i * 384, 0))
+        path = os.path.join(dest_dir, name + ".webp")
+        sheet.save(path, format="WEBP", quality=78, method=5, alpha_quality=85)
+        fr[0].save(os.path.join(dest_dir, name + "-still.webp"), format="WEBP", quality=84, method=5, alpha_quality=90)
+        print(name, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB", sheet.size)
+
+
+def unikovky():
+    """Dioramata únikových místností jako pásy snímků do public/home/unikovky (název souboru = id místnosti)."""
+    dest_dir = os.path.join(DEST, "..", "unikovky")
+    os.makedirs(dest_dir, exist_ok=True)
+    for name, room in (("muzeum", "museum"), ("expedice", "expedition"), ("dzungle", "jungle"), ("pirati", "pirate"), ("kuchyne", "kitchen"),
+                       ("knihovna", "library"), ("observator", "observatory"), ("hrad", "castle"), ("laborator", "lab")):
+        fr = frames("uni_" + name, (384, 384))
+        sheet = Image.new("RGBA", (384 * len(fr), 384), (0, 0, 0, 0))
+        for i, im in enumerate(fr):
+            sheet.paste(im, (i * 384, 0))
+        path = os.path.join(dest_dir, room + ".webp")
+        sheet.save(path, format="WEBP", quality=76, method=5, alpha_quality=85)
+        print(room, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB")
+
+
+def hory():
+    """Hora se stezkou, turista, oheň a vlajka pro MountainTrek do public/home/hory (+ stezka do JSON)."""
+    import json
+    dest_dir = os.path.join(DEST, "..", "hory")
+    os.makedirs(dest_dir, exist_ok=True)
+    im = frames("hory_hora")[0]
+    path = os.path.join(dest_dir, "hora.webp")
+    im.save(path, format="WEBP", quality=86, method=5, alpha_quality=92)
+    print("hora", round(os.path.getsize(path) / 1024), "kB", im.size)
+    for name, dest in (("hory_turista", "turista"), ("hory_ohen", "ohen"), ("hory_vlajka", "vlajka")):
+        strip(name, "../hory/" + dest + ".webp", frames(name)[0].size, quality=82)
+    shutil_json = os.path.join(ROOT, "out", "hory_hora", "trail.json")
+    json.dump(json.load(open(shutil_json)), open(os.path.join(ROOT, "..", "src", "components", "hory-stezka.json"), "w"))
+
+
+def svet():
+    """Plachetnice (12 snímků) a statické náhledy ostrovů pro CourseWorld do public/home/svet a globe."""
+    dest_dir = os.path.join(DEST, "..", "svet")
+    os.makedirs(dest_dir, exist_ok=True)
+    strip("svet_lod", "../svet/plachetnice.webp", frames("svet_lod")[0].size, quality=84)
+    gdir = os.path.join(DEST, "..", "globe")
+    for subject in ("cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis"):
+        im = frames("znacka_" + subject)[0].resize((320, 320), Image.LANCZOS)
+        path = os.path.join(gdir, "still-" + subject + ".webp")
+        im.save(path, format="WEBP", quality=86, method=5, alpha_quality=90)
+    print("still-*", "9 ostrovů")
+
+
+def globe():
+    """Památky předmětů (pás 20 snímků) a školní předměty prstence pro SubjectGlobe do public/home/globe."""
+    dest_dir = os.path.join(DEST, "..", "globe")
+    os.makedirs(dest_dir, exist_ok=True)
+    for subject in ("cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis"):
+        fr = frames("znacka_" + subject)
+        w, h = fr[0].size
+        sheet = Image.new("RGBA", (w * len(fr), h), (0, 0, 0, 0))
+        for i, im in enumerate(fr):
+            sheet.paste(im, (i * w, 0))
+        path = os.path.join(dest_dir, subject + ".webp")
+        sheet.save(path, format="WEBP", quality=74, method=5, alpha_quality=80)
+        print(subject, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB", sheet.size)
+    for name in ("kniha", "tuzka", "banka", "atom", "kalkulacka", "pravitko", "cepice", "zarovka", "lupa", "glob", "kostky", "svitek", "letadlo", "raketa", "mikroskop", "kruzitko", "sesit", "dna", "pero", "rostlina"):
+        im = frames("pr_" + name)[0]
+        path = os.path.join(dest_dir, "obj-" + name + ".webp")
+        im.save(path, format="WEBP", quality=86, method=5, alpha_quality=92)
+        print("obj-" + name, round(os.path.getsize(path) / 1024), "kB", im.size)
+
+
 def stills():
     """První snímek animací jako statický obrázek pro lidi s vypnutými animacemi."""
     for name, dest in (("motyl", "motyl-still.webp"), ("vlajka", "vlajka-still.webp"), ("raketa", "raketa-still.webp")):
@@ -81,7 +217,7 @@ def stills():
 
 
 if __name__ == "__main__":
-    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_realna"]
+    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_live", "globe", "hero", "tech", "hory", "svet", "hry", "unikovky"]
     if "icons" in what: icons()
     if "stills" in what: stills()
     # Planeta má hodně jemného detailu: každý druhý snímek a menší rozměr drží soubor pod 1 MB.
@@ -91,9 +227,21 @@ if __name__ == "__main__":
     if "planeta_realna" in what:
         animated("planeta_realna", "planeta-realna.webp", fps=16, quality=58, size=(496, 329))
         still("planeta_realna", "planeta-realna-still.webp", size=(560, 372), quality=88)
+    if "planeta_live" in what: planet_live()
+    if "globe" in what: globe()
+    if "hero" in what: hero()
+    if "tech" in what: tech()
+    if "hory" in what: hory()
+    if "svet" in what: svet()
+    if "hry" in what: hry()
+    if "unikovky" in what: unikovky()
     if "motyl" in what: animated("motyl", "motyl.webp", fps=24, quality=72)
     if "vlajka" in what: animated("vlajka", "vlajka.webp", fps=24, quality=72)
     if "raketa" in what: animated("raketa", "raketa.webp", fps=24, quality=72)
+    if "sopka" in what:
+        animated("sopka", "sopka.webp", fps=18, quality=36, size=(520, 585))
+        fr = frames("sopka")
+        fr[30].save(os.path.join(DEST, "sopka-still.webp"), format="WEBP", quality=82, method=5, alpha_quality=90)
     if "liana" in what: strip("liana", "liana-strip.webp", (288, 288))
     if "kvetina" in what: strip("kvetina", "kvetina-strip.webp", (192, 192))
     if "hory" in what:

@@ -113,6 +113,10 @@ export function MountainScene() {
           />
         </div>
         <div className="peak-layer peak-layer-mid" />
+        <div className="peak-layer peak-layer-volcano">
+          <div className="volcano-glow" />
+          <AnimArt name="sopka" size={430} height={484} className="volcano hidden sm:block" />
+        </div>
         <div className="peak-layer peak-layer-front" />
       </div>
     </>

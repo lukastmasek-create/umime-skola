@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Avatar } from "@/components/Avatar";
+import { livesLeft } from "@/lib/live/logic";
 import type { LiveMode, PlayerRow } from "@/lib/live/types";
 
 // Čtyři barvy a tvary možností jako v kvízech: poznají se i bez barev.
@@ -97,8 +98,34 @@ export function EndsIn({ endsAt, now, label }: { endsAt: number; now: () => numb
   );
 }
 
-export function metricOf(mode: LiveMode, p: PlayerRow): number {
-  return mode === "GOLD" ? p.gold : mode === "RACE" ? p.progress : p.score;
+export function metricOf(mode: LiveMode, p: PlayerRow, lives = 0): number {
+  return mode === "GOLD" ? p.gold : mode === "RACE" ? p.progress : mode === "SURVIVAL" ? livesLeft(lives, p.progress) : p.score;
+}
+
+// Barvy týmů se liší i tvarem, aby se daly rozeznat bez barev.
+export const TEAM_STYLES = [
+  { color: "#ff5a3c", shape: "▲" },
+  { color: "#29a3ff", shape: "●" },
+] as const;
+
+/** Součty bodů obou týmů jako dva pruhy. */
+export function TeamScores({ teams, names, meTeam }: { teams: { score: number; players: number }[]; names: [string, string]; meTeam?: 0 | 1 }) {
+  const max = Math.max(1, ...teams.map((x) => x.score));
+  return (
+    <div className="flex flex-col gap-2">
+      {teams.map((team, i) => (
+        <div key={i} className={`relative overflow-hidden rounded-xl border-2 px-3 py-2 ${meTeam === i ? "border-[var(--foreground)]" : "border-[var(--border-soft)]"} bg-[var(--surface)]`}>
+          <span aria-hidden className="absolute inset-y-0 left-0 opacity-30" style={{ width: `${(team.score / max) * 100}%`, background: TEAM_STYLES[i].color, transition: "width 0.5s ease" }} />
+          <span className="relative flex items-center justify-between gap-3 font-bold">
+            <span>
+              <span aria-hidden style={{ color: TEAM_STYLES[i].color }}>{TEAM_STYLES[i].shape}</span> {names[i]} <span className="text-xs font-semibold text-[var(--muted)]">({team.players})</span>
+            </span>
+            <span className="font-mono text-lg font-extrabold tabular-nums">{team.score}</span>
+          </span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function Leaderboard({
@@ -107,6 +134,8 @@ export function Leaderboard({
   meId,
   limit,
   raceTarget,
+  lives,
+  teamNames,
   unit,
 }: {
   mode: LiveMode;
@@ -114,14 +143,18 @@ export function Leaderboard({
   meId?: string;
   limit?: number;
   raceTarget?: number;
+  /** Přežití: počet životů na začátku. */
+  lives?: number;
+  /** Týmový mód: názvy týmů pro čtečky obrazovky. */
+  teamNames?: [string, string];
   unit: string;
 }) {
   const shown = limit ? rows.slice(0, limit) : rows;
-  const max = Math.max(1, ...shown.map((p) => metricOf(mode, p)));
+  const max = mode === "SURVIVAL" ? Math.max(1, lives ?? 1) : Math.max(1, ...shown.map((p) => metricOf(mode, p)));
   return (
     <ol className="flex flex-col gap-2">
       {shown.map((p, i) => {
-        const value = metricOf(mode, p);
+        const value = metricOf(mode, p, lives);
         const pct = mode === "RACE" && raceTarget ? (value / raceTarget) * 100 : (value / max) * 100;
         return (
           <li
@@ -133,7 +166,14 @@ export function Leaderboard({
             <span className="relative">
               <Avatar id={p.avatar} size={32} />
             </span>
-            <span className="relative min-w-0 flex-1 truncate font-bold">{p.name}</span>
+            <span className={`relative min-w-0 flex-1 truncate font-bold ${mode === "SURVIVAL" && value === 0 ? "line-through opacity-60" : ""}`}>
+              {p.team !== undefined && (
+                <span role="img" aria-label={teamNames?.[p.team]} style={{ color: TEAM_STYLES[p.team].color }} className="mr-1">
+                  {TEAM_STYLES[p.team].shape}
+                </span>
+              )}
+              {p.name}
+            </span>
             <span className="relative font-mono font-extrabold tabular-nums">
               {value} <span className="text-xs font-semibold text-[var(--muted)]">{unit}</span>
             </span>

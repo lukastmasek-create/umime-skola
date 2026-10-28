@@ -10,6 +10,7 @@ import {
 } from "@/lib/taxonomy";
 import { getDictionary } from "@/i18n/dictionaries";
 import { getSubjectText } from "@/i18n/subjects";
+import { CourseWorld } from "@/components/CourseWorld";
 import { getAllGradesLabel, gradeLabel } from "@/i18n/grades";
 import { isLocale, type Locale } from "@/i18n/config";
 
@@ -56,6 +57,7 @@ export default async function CategoryPage({
     return `/${locale}/kurzy/${category.slug}${qs ? `?${qs}` : ""}`;
   };
 
+  const counts = new Map<string, number>();
   let courses: Course[] = [];
   let loadFailed = false;
   try {
@@ -77,6 +79,12 @@ export default async function CategoryPage({
         grade: true,
       },
     });
+    const grouped = await prisma.course.groupBy({
+      by: ["subject"],
+      where: { published: true, category: category.value, ...(selectedGrade ? { grade: selectedGrade } : {}) },
+      _count: { _all: true },
+    });
+    for (const g of grouped) if (g.subject) counts.set(g.subject, g._count._all);
   } catch (error) {
     // Databáze není dostupná (chybí DATABASE_URL, síť, výpadek). Chybu zalogujeme
     // a stránka řekne, že se nepodařilo načíst, ne že kurzy neexistují.
@@ -104,7 +112,7 @@ export default async function CategoryPage({
     }`;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
+    <div data-world={selectedSubject?.slug} className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
       <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
         {dict.categories[category.slug].label}
       </h1>
@@ -129,36 +137,20 @@ export default async function CategoryPage({
         </div>
       )}
 
-      <div className="mb-10 grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-10">
-        {[
-          { key: "all", href: filterHref(undefined, selectedGrade), icon: "✨", label: subjectText.all, color: "var(--surface)", active: !selectedSubject },
-          ...SUBJECTS.map((s) => ({
-            key: s.value,
-            href: filterHref(s.slug, selectedGrade),
-            icon: s.emoji,
-            label: subjectText.labels[s.value],
-            color: s.color,
-            active: selectedSubject?.value === s.value,
-          })),
-        ].map((tile) => (
-          <Link
-            key={tile.key}
-            href={tile.href}
-            aria-current={tile.active ? "true" : undefined}
-            className={`flex flex-col items-center justify-center gap-1 rounded-2xl border-2 border-[var(--edge)] px-1 py-2.5 text-center text-xs font-bold leading-tight ${
-              tile.active
-                ? "-translate-y-0.5 shadow-[0_4px_0_var(--shadow-ink)] outline outline-2 outline-offset-2 outline-[var(--foreground)]"
-                : "opacity-80 hover:-translate-y-0.5 hover:opacity-100"
-            } ${tile.color === "var(--surface)" ? "" : "text-[#1b1830]"}`}
-            style={{ background: tile.color }}
-          >
-            <span aria-hidden className="text-2xl">
-              {tile.icon}
-            </span>
-            <span className="break-words">{tile.label}</span>
-          </Link>
-        ))}
-      </div>
+      <CourseWorld
+        locale={locale}
+        allHref={filterHref(undefined, selectedGrade)}
+        allLabel={subjectText.all}
+        noteLabel={subjectText.worldNote}
+        islands={SUBJECTS.map((subject) => ({
+          slug: subject.slug,
+          label: subjectText.labels[subject.value],
+          color: subject.color,
+          count: counts.get(subject.value) ?? 0,
+          href: filterHref(subject.slug, selectedGrade),
+          active: selectedSubject?.value === subject.value,
+        }))}
+      />
 
       {courses.length === 0 ? (
         <div className="card p-10 text-center text-[var(--muted)]" role={loadFailed ? "alert" : undefined}>
