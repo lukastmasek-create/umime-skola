@@ -180,7 +180,7 @@ export function HeroSky() {
     const meteors: Meteor[] = [];
     let nextMeteor = 1.2;
     let comet: { x: number; y: number; vx: number; vy: number; boost: number; seed: number } | null = null;
-    let nextComet = 4;
+    let nextComet = 2;
     const cdust: { x: number; y: number; vx: number; vy: number; life: number; max: number; size: number; warm: boolean }[] = [];
     const cometImg = new Image();
     let cometReady = false;
@@ -332,7 +332,7 @@ export function HeroSky() {
         // --- kometa z Blenderu: prolétá z pravého horního rohu doleva dolů, u kurzoru zrychlí ---
         nextComet -= dt;
         if (!comet && nextComet <= 0 && cometReady) {
-          comet = { x: W + 260, y: rnd(0.05, 0.22) * H, vx: -rnd(70, 95), vy: rnd(22, 38), boost: 0, seed: Math.random() * 100 };
+          comet = { x: W + 260, y: rnd(0.05, 0.1) * H, vx: -rnd(75, 100), vy: rnd(7, 13), boost: 0, seed: Math.random() * 100 };
           nextComet = rnd(24, 38);
         }
         if (comet) {
