@@ -28,6 +28,7 @@ import { notifyAccountChanged } from "@/lib/account-events";
 import { EventPill, type EventInfo } from "@/components/idle/EventPill";
 import { cropDef, isCrop, itemPrice, productDef, type ItemId } from "@/lib/idle/farm";
 import { SHOP_ITEMS } from "@/lib/shop";
+import { ChallengePanel } from "@/components/idle/ChallengePanel";
 import type { Locale } from "@/i18n/config";
 
 type Payload = {
@@ -485,6 +486,7 @@ export function PetGame({ locale }: { locale: Locale }) {
       </section>
 
       <div className="mt-5">{speciesPicker(t.switchPet)}</div>
+      <ChallengePanel game="pets" locale={locale} onChange={() => void sync()} />
       {toastEl}
     </div>
   );

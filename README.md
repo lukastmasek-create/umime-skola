@@ -71,7 +71,7 @@ Obsah kurzů je v `prisma/content/*.cjs`, SQL se generuje příkazem `node prism
 Předmět Fyzika je nová hodnota enumu `Subject`, proto se v databázi spouští ve dvou krocích:
 
 1. `prisma/sql/subject-fyzika.sql` (přidá hodnotu `FYZIKA`),
-2. `prisma/sql/courses-fyzika-6-9.sql`, `courses-cestina-mezery.sql` a `courses-matematika-mezery.sql` (kurzy a otázky; opakované spuštění nic nezdvojí).
+2. `prisma/sql/courses-fyzika-6-9.sql`, `courses-cestina-mezery.sql`, `courses-matematika-mezery.sql`, `courses-fyzika-stredni.sql` a `courses-matematika-stredni.sql` (kurzy a otázky; opakované spuštění nic nezdvojí).
 
 ## Výzvy ve stálých hrách
 
