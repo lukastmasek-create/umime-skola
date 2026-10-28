@@ -18,12 +18,12 @@ export function IslandHub({ features }: { features: IslandFeature[] }) {
                 <span aria-hidden className="isle-glow absolute inset-x-[18%] bottom-[2%] h-[14%] rounded-[50%]" />
                 <span
                   aria-hidden
-                  className="globe-sprite absolute inset-0 block drop-shadow-[0_14px_14px_rgba(5,6,30,0.5)]"
+                  className="globe-sprite absolute inset-0 block origin-[50%_40%] scale-[1.28] drop-shadow-[0_14px_14px_rgba(5,6,30,0.5)]"
                   style={{ backgroundImage: `url(/home/namesti/${SPRITE[f.key]}.webp)`, animationDelay: `${-i * 0.37}s` }}
                 />
               </div>
             </div>
-            <h3 className="mt-1 text-lg font-bold text-white sm:text-xl" style={{ fontFamily: "var(--font-heading)" }}>
+            <h3 className="relative mt-14 text-lg font-bold text-white sm:text-xl" style={{ fontFamily: "var(--font-heading)" }}>
               {f.title}
             </h3>
             <p className="mx-auto mt-1 max-w-[16rem] text-sm text-white/75">{f.text}</p>
