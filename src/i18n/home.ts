@@ -6,6 +6,9 @@ export type HomeText = {
   closeMenu: string;
   learn: string;
   play: string;
+  groups: { courses: string; settings: string; games: string; shop: string; study: string; extras: string; together: string; boards: string };
+  languages: string;
+  index: string;
   subjectsTitle: string;
   subjectsHint: string;
   allCourses: string;
@@ -28,6 +31,9 @@ const cs: HomeText = {
   closeMenu: "Zavřít menu",
   learn: "Učení",
   play: "Hry a komunita",
+  groups: { courses: "Kurzy", settings: "Nastavení", games: "Hry", shop: "Obchod", study: "Učivo", extras: "Přídavky", together: "Společné hry", boards: "Žebříčky" },
+  languages: "Jazyky",
+  index: "Sbírka karet",
   subjectsTitle: "Vyber si předmět",
   subjectsHint: "Devět předmětů od 1. do 9. třídy, každý s kurzy od nejsnazších po nejtěžší.",
   allCourses: "Všechny kurzy",
@@ -59,6 +65,9 @@ const en: HomeText = {
   closeMenu: "Close menu",
   learn: "Learn",
   play: "Games and community",
+  groups: { courses: "Courses", settings: "Settings", games: "Games", shop: "Shop", study: "Study", extras: "Extras", together: "Play together", boards: "Leaderboards" },
+  languages: "Languages",
+  index: "Card collection",
   subjectsTitle: "Pick a subject",
   subjectsHint: "Nine subjects from grade 1 to 9, each with courses from the easiest to the hardest.",
   allCourses: "All courses",
@@ -90,6 +99,9 @@ const de: HomeText = {
   closeMenu: "Menü schließen",
   learn: "Lernen",
   play: "Spiele und Community",
+  groups: { courses: "Kurse", settings: "Einstellungen", games: "Spiele", shop: "Shop", study: "Lernstoff", extras: "Extras", together: "Gemeinsam spielen", boards: "Ranglisten" },
+  languages: "Sprachen",
+  index: "Kartensammlung",
   subjectsTitle: "Wähle ein Fach",
   subjectsHint: "Neun Fächer von der 1. bis zur 9. Klasse, jedes mit Kursen vom leichtesten bis zum schwersten.",
   allCourses: "Alle Kurse",
@@ -121,6 +133,9 @@ const ru: HomeText = {
   closeMenu: "Закрыть меню",
   learn: "Обучение",
   play: "Игры и сообщество",
+  groups: { courses: "Курсы", settings: "Настройки", games: "Игры", shop: "Магазин", study: "Материал", extras: "Бонусы", together: "Играть вместе", boards: "Рейтинги" },
+  languages: "Языки",
+  index: "Коллекция карточек",
   subjectsTitle: "Выбери предмет",
   subjectsHint: "Девять предметов с 1 по 9 класс, в каждом курсы от самых лёгких до самых сложных.",
   allCourses: "Все курсы",
