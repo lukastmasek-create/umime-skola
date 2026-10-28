@@ -26,6 +26,7 @@ const SUBJECT_SYMBOLS: Record<string, string> = {
   dejepis: "⌛ 1918",
   zemepis: "🌍",
   prirodopis: "🌿 🐾",
+  fyzika: "⚛ N·m",
 };
 
 export default async function Home({
@@ -146,7 +147,7 @@ export default async function Home({
               <Link
                 key={subject.slug}
                 href={`/${locale}/kurzy/zakladni?predmet=${subject.slug}`}
-                className="reveal card card-hover subject-card group relative flex items-center gap-3 p-3 text-[#1b1830] last:col-span-2 sm:gap-4 sm:p-4 sm:last:col-span-1"
+                className="reveal card card-hover subject-card group relative flex items-center gap-3 p-3 text-[#1b1830] last:odd:col-span-2 sm:gap-4 sm:p-4 sm:last:odd:col-span-1"
                 data-sym={SUBJECT_SYMBOLS[subject.slug] ?? "✦"}
                 style={{
                   background: subject.color,

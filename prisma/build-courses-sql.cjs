@@ -27,7 +27,7 @@ function seededRandom(seed) {
 }
 
 const esc = (s) => "'" + String(s).replace(/'/g, "''") + "'";
-const SUBJECTS = ["CESTINA", "LITERATURA", "ANGLICTINA", "NEMCINA", "RUSTINA", "MATEMATIKA", "DEJEPIS", "ZEMEPIS", "PRIRODOPIS"];
+const SUBJECTS = ["CESTINA", "LITERATURA", "ANGLICTINA", "NEMCINA", "RUSTINA", "MATEMATIKA", "DEJEPIS", "ZEMEPIS", "PRIRODOPIS", "FYZIKA"];
 
 const problems = [];
 const seenSlugs = new Set();

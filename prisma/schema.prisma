@@ -261,6 +261,7 @@ enum Subject {
   DEJEPIS
   ZEMEPIS
   PRIRODOPIS
+  FYZIKA
 }
 
 // Kurz = jedno téma (např. "i/y", "Druhá světová válka", "Savci"), které se

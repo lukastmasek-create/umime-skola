@@ -21,6 +21,7 @@ const texts: Record<Locale, SubjectText> = {
       DEJEPIS: "Dějepis",
       ZEMEPIS: "Zeměpis",
       PRIRODOPIS: "Přírodopis",
+      FYZIKA: "Fyzika",
     },
   },
   en: {
@@ -36,6 +37,7 @@ const texts: Record<Locale, SubjectText> = {
       DEJEPIS: "History",
       ZEMEPIS: "Geography",
       PRIRODOPIS: "Biology",
+      FYZIKA: "Physics",
     },
   },
   de: {
@@ -51,6 +53,7 @@ const texts: Record<Locale, SubjectText> = {
       DEJEPIS: "Geschichte",
       ZEMEPIS: "Geografie",
       PRIRODOPIS: "Biologie",
+      FYZIKA: "Physik",
     },
   },
   ru: {
@@ -66,6 +69,7 @@ const texts: Record<Locale, SubjectText> = {
       DEJEPIS: "История",
       ZEMEPIS: "География",
       PRIRODOPIS: "Биология",
+      FYZIKA: "Физика",
     },
   },
 };

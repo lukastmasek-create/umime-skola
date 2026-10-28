@@ -64,3 +64,16 @@ Stránka `/hrat-spolecne`: kdokoliv založí hru (kvíz, závod nebo zlatá hore
 - Před nasazením jednou spusť `prisma/sql/live-games.sql` v databázi (nové tabulky `QuestionSet`, `LiveRoom`, `LivePlayer`, `LiveAnswer`).
 - Herní logika (body, pořadí, truhly) je v `src/lib/live/logic.ts`, testy: `npm test`.
 - Server: `src/lib/live/service.ts` a `src/app/api/live/`, obrazovky: `src/components/live/`, texty: `src/i18n/live.ts`.
+
+## Nové kurzy a předmět Fyzika
+
+Obsah kurzů je v `prisma/content/*.cjs`, SQL se generuje příkazem `node prisma/build-courses-sql.cjs`.
+Předmět Fyzika je nová hodnota enumu `Subject`, proto se v databázi spouští ve dvou krocích:
+
+1. `prisma/sql/subject-fyzika.sql` (přidá hodnotu `FYZIKA`),
+2. `prisma/sql/courses-fyzika-6-9.sql`, `courses-cestina-mezery.sql` a `courses-matematika-mezery.sql` (kurzy a otázky; opakované spuštění nic nezdvojí).
+
+## Výzvy ve stálých hrách
+
+Farma, Město a Základna mají panel Výzvy (`src/components/idle/ChallengePanel.tsx`, API `src/app/api/stale-hry/vyzvy/route.ts`,
+logika `src/lib/idle/challenge.ts`, testy v `challenge.test.ts`). Stav je v `IdleState` pod klíčem `vyzvy`, nové tabulky nejsou potřeba.
