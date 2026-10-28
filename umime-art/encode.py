@@ -93,6 +93,34 @@ def hero():
     print("lod-strip", len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB", sheet.size)
 
 
+def tech():
+    """Deska plošného spoje a čtyři animované předměty pro TechBoard do public/home/tech (+ polohy do JSON)."""
+    import json
+    dest_dir = os.path.join(DEST, "..", "tech")
+    os.makedirs(dest_dir, exist_ok=True)
+    board = frames("tech_deska")[0]
+    board.save(os.path.join(dest_dir, "deska.webp"), format="WEBP", quality=88, method=5, alpha_quality=92)
+    print("deska", round(os.path.getsize(os.path.join(dest_dir, "deska.webp")) / 1024), "kB", board.size)
+    for name, dest in (("kniha", "kniha"), ("joystick", "joystick"), ("dvere", "dvere"), ("pohar", "pohar")):
+        fr = frames("tech_" + name)
+        w, h = fr[0].size
+        sheet = Image.new("RGBA", (w * len(fr), h), (0, 0, 0, 0))
+        for i, im in enumerate(fr):
+            sheet.paste(im, (i * w, 0))
+        path = os.path.join(dest_dir, dest + ".webp")
+        sheet.save(path, format="WEBP", quality=80, method=5, alpha_quality=85)
+        print(dest, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB", sheet.size)
+    meta = json.load(open(os.path.join(ROOT, "out", "tech_deska", "paths.json")))
+    import math
+    ppu, bw, bh, el, n = meta["ppu"], meta["w"], meta["h"], math.radians(54), 384
+    ped_x, ped_y = [-5.1, -1.7, 1.7, 5.1], -0.55
+    meta["sprites"] = []
+    for px in ped_x:
+        ox, oy = bw / 2 + ppu * px, bh / 2 - ppu * (ped_y * math.sin(el))
+        meta["sprites"].append({"x": (ox - n / 2) / bw, "y": (oy - (n / 2 + ppu * 0.9 * math.cos(el))) / bh, "w": n / bw})
+    json.dump(meta, open(os.path.join(ROOT, "..", "src", "components", "tech-board.json"), "w"))
+
+
 def globe():
     """Památky předmětů (pás 20 snímků) a školní předměty prstence pro SubjectGlobe do public/home/globe."""
     dest_dir = os.path.join(DEST, "..", "globe")
@@ -120,7 +148,7 @@ def stills():
 
 
 if __name__ == "__main__":
-    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_live", "globe", "hero"]
+    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_live", "globe", "hero", "tech"]
     if "icons" in what: icons()
     if "stills" in what: stills()
     # Planeta má hodně jemného detailu: každý druhý snímek a menší rozměr drží soubor pod 1 MB.
@@ -128,6 +156,7 @@ if __name__ == "__main__":
     if "planeta_live" in what: planet_live()
     if "globe" in what: globe()
     if "hero" in what: hero()
+    if "tech" in what: tech()
     if "motyl" in what: animated("motyl", "motyl.webp", fps=24, quality=72)
     if "vlajka" in what: animated("vlajka", "vlajka.webp", fps=24, quality=72)
     if "raketa" in what: animated("raketa", "raketa.webp", fps=24, quality=72)
