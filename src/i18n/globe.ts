@@ -13,6 +13,9 @@ export type GlobeText = {
   review: string; // {n}
   guest: string;
   drag: string;
+  zoomIn: string;
+  zoomOut: string;
+  resetView: string;
 };
 
 const cs: GlobeText = {
@@ -36,7 +39,10 @@ const cs: GlobeText = {
   noCourses: "Kurzy tu zatím nejsou.",
   review: "{n} k opakování",
   guest: "Po přihlášení uvidíš svůj postup.",
-  drag: "Táhni a otáčej",
+  drag: "Táhni a otáčej, kolečko nebo ± přiblíží",
+  zoomIn: "Přiblížit",
+  zoomOut: "Oddálit",
+  resetView: "Obnovit pohled (dvojklik)",
 };
 
 const en: GlobeText = {
@@ -60,7 +66,10 @@ const en: GlobeText = {
   noCourses: "No courses here yet.",
   review: "{n} to review",
   guest: "Sign in to see your progress.",
-  drag: "Drag to rotate",
+  drag: "Drag to rotate, wheel or ± to zoom",
+  zoomIn: "Zoom in",
+  zoomOut: "Zoom out",
+  resetView: "Reset view (double click)",
 };
 
 const de: GlobeText = {
@@ -84,7 +93,10 @@ const de: GlobeText = {
   noCourses: "Hier gibt es noch keine Kurse.",
   review: "{n} zu wiederholen",
   guest: "Melde dich an, um deinen Fortschritt zu sehen.",
-  drag: "Ziehen zum Drehen",
+  drag: "Ziehen zum Drehen, Rad oder ± zum Zoomen",
+  zoomIn: "Vergrößern",
+  zoomOut: "Verkleinern",
+  resetView: "Ansicht zurücksetzen (Doppelklick)",
 };
 
 const ru: GlobeText = {
@@ -108,7 +120,10 @@ const ru: GlobeText = {
   noCourses: "Курсов пока нет.",
   review: "{n} на повторение",
   guest: "Войди, чтобы видеть свой прогресс.",
-  drag: "Тяни, чтобы вращать",
+  drag: "Тяни, чтобы вращать, колесо или ± — масштаб",
+  zoomIn: "Приблизить",
+  zoomOut: "Отдалить",
+  resetView: "Сбросить вид (двойной щелчок)",
 };
 
 const texts: Record<Locale, GlobeText> = { cs, en, de, ru };

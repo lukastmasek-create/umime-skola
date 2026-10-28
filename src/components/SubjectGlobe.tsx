@@ -17,6 +17,10 @@ import type { Locale } from "@/i18n/config";
 const DIR = "/home/globe";
 const BASE_R = 0.26; // poloměr globu v zlomku šířky plátna při zoomu 1
 const DWELL_MS = 3400;
+const CANVAS_SCALE = 1.5; // velikost plátna s globem vůči scéně
+const MIN_ZOOM = 0.7;
+const MAX_ZOOM = 2.4;
+const MANUAL_MS = 8000; // jak dlouho po zásahu uživatele prohlídka počká
 
 // Prstenec ze školních předmětů (jako u Saturnu) a letadla s raketou, které globus obíhají.
 const RING_ITEMS = ["kniha", "mikroskop", "tuzka", "banka", "atom", "kalkulacka", "pravitko", "dna", "cepice", "zarovka", "lupa", "glob", "kruzitko", "kostky", "pero", "svitek", "sesit", "rostlina"] as const;
@@ -217,6 +221,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
   const flyEls = useRef<(HTMLImageElement | null)[]>([]);
   const pinnedRef = useRef<string | null>(null);
   const activeRef = useRef<string>("cestina");
+  const ctlRef = useRef<{ zoomBy: (f: number) => void; reset: () => void } | null>(null);
   const releaseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const active = pinned ?? front;
@@ -305,14 +310,15 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
     const resize = () => {
       size = box.clientWidth;
       dpr = Math.min(window.devicePixelRatio || 1, 1.6);
-      cv.width = Math.round(size * dpr);
-      cv.height = Math.round(size * dpr);
+      // plátno s globem je o čtvrtinu větší na každou stranu, aby přiblížený globus nebyl uříznutý
+      cv.width = Math.round(size * CANVAS_SCALE * dpr);
+      cv.height = cv.width;
       gl.viewport(0, 0, cv.width, cv.height);
       gl.uniform2f(u("uRes"), cv.width, cv.height);
       for (const c of [back2d, front2d]) {
         if (!c) continue;
-        c.width = cv.width;
-        c.height = cv.height;
+        c.width = Math.round(size * dpr);
+        c.height = c.width;
       }
     };
     const back2d = backCv.current;
@@ -339,6 +345,27 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
     let anchor = near(desiredSpin(TOUR[tourIdx]), spin);
     let stepAt = performance.now();
     let manualUntil = 0;
+    let wasManual = false;
+    let userZoom = 1;
+    let vel = 0; // setrvačnost otáčení (rad/s)
+    let tvel = 0;
+    const pointers = new Map<number, { x: number; y: number }>();
+    const clampZoom = (z: number) => Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, z));
+    const nearest = () => {
+      let best = ORDER[0] as string;
+      let bestD = 99;
+      for (const slug of ORDER) {
+        const lo = (SPOTS[slug].lon * Math.PI) / 180, la = (SPOTS[slug].lat * Math.PI) / 180;
+        const dl = wrapAngle(lo - (spin - Math.PI / 2)) * Math.cos(la);
+        const dp = la - tilt;
+        const d = Math.hypot(dl, dp);
+        if (d < bestD) {
+          bestD = d;
+          best = slug;
+        }
+      }
+      return { slug: best, d: bestD };
+    };
     let last = performance.now();
     let lastPinned: string | null = null;
 
@@ -347,7 +374,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       const pin = pinnedRef.current;
-      const dragging = now < manualUntil;
+      const dragging = now < manualUntil || pointers.size > 0;
 
       if (pin) {
         spinTar = near(desiredSpin(pin), spin);
@@ -378,11 +405,37 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
       }
       lastPinned = pin;
 
+      if (dragging) {
+        wasManual = true;
+        if (pointers.size === 0 && !pin) {
+          // setrvačnost po puštění: globus dotáčí a zpomaluje
+          spin += vel * dt;
+          tilt = Math.max(-1.25, Math.min(1.25, tilt + tvel * dt));
+          spinTar = spin;
+          tiltTar = tilt;
+          const decay = Math.exp(-dt * 2.4);
+          vel *= decay;
+          tvel *= decay;
+        }
+        // panel ukazuje předmět, k jehož zemi se uživatel právě dotočil
+        const n = nearest();
+        if (!pin && n.d < 0.5 && n.slug !== activeRef.current) setFront(n.slug);
+      } else if (wasManual) {
+        // po manuálním otáčení prohlídka pokračuje od nejbližšího předmětu
+        wasManual = false;
+        const n = nearest();
+        tourIdx = Math.max(0, TOUR.indexOf(n.slug as (typeof TOUR)[number]));
+        anchor = near(desiredSpin(TOUR[tourIdx]), spin);
+        stepAt = now;
+        setFront(TOUR[tourIdx]);
+      }
+
       const k = dragging ? 12 : 2.6;
       spin += (spinTar - spin) * (1 - Math.exp(-dt * k));
       tilt += (tiltTar - tilt) * (1 - Math.exp(-dt * k));
       const settled = Math.abs(spinTar - spin) < 0.18;
-      const zoomTar = dragging ? 1.15 : settled ? 1.5 : 1.12;
+      const auto = dragging ? 1.15 : settled ? 1.5 : 1.12;
+      const zoomTar = Math.min(MAX_ZOOM + 0.3, auto * userZoom);
       zoom += (zoomTar - zoom) * (1 - Math.exp(-dt * 3));
 
       const R = size * BASE_R * zoom;
@@ -397,7 +450,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
       // prstenec ze školních předmětů, prach a dráhy letadel; zadní polovina je pod globem, přední nad ním
-      const sw = cv.width;
+      const sw = back2d?.width ?? 0;
       if (bctx && fctx) {
         bctx.clearRect(0, 0, sw, sw);
         fctx.clearRect(0, 0, sw, sw);
@@ -503,7 +556,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
         }
       }
 
-      if (visible && (!reduced || Math.abs(spinTar - spin) > 0.002 || Math.abs(zoomTar - zoom) > 0.002)) raf = requestAnimationFrame(frame);
+      if (visible && (!reduced || Math.abs(spinTar - spin) > 0.002 || Math.abs(zoomTar - zoom) > 0.002 || Math.abs(vel) > 0.01 || Math.abs(tvel) > 0.01)) raf = requestAnimationFrame(frame);
       else raf = 0;
     };
 
@@ -514,34 +567,109 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
       }
     };
 
-    // přetahování myší nebo prstem otáčí globusem
-    let dragX = 0, dragY = 0, down = false;
-    const onDown = (e: PointerEvent) => {
-      if ((e.target as HTMLElement).closest("a,button")) return;
-      down = true;
-      dragX = e.clientX;
-      dragY = e.clientY;
-      box.setPointerCapture(e.pointerId);
-    };
-    const onMove = (e: PointerEvent) => {
-      if (!down) return;
-      const R = size * BASE_R * zoom;
-      spin -= (e.clientX - dragX) / R;
-      spinTar = spin;
-      tilt = Math.max(-0.9, Math.min(0.9, tilt + (e.clientY - dragY) / R));
-      tiltTar = tilt;
-      dragX = e.clientX;
-      dragY = e.clientY;
-      manualUntil = performance.now() + 4500;
+    // ovládání: tažení otáčí (se setrvačností), kolečko po kliknutí nebo Ctrl+kolečko, štípnutí a tlačítka
+    // přibližují, dvojklik vrací výchozí pohled, šipky a +/- fungují z klávesnice
+    let engaged = false;
+    let lastMoveAt = 0;
+    const bump = () => {
+      manualUntil = performance.now() + MANUAL_MS;
       kick();
     };
-    const onUp = () => {
-      down = false;
+    let pinch0 = 0;
+    let pinchZoom0 = 1;
+    const onDown = (e: PointerEvent) => {
+      if ((e.target as HTMLElement).closest("a,button")) return;
+      box.setPointerCapture(e.pointerId);
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      engaged = true;
+      vel = 0;
+      tvel = 0;
+      if (pointers.size === 2) {
+        const [a, b] = [...pointers.values()];
+        pinch0 = Math.hypot(a.x - b.x, a.y - b.y);
+        pinchZoom0 = userZoom;
+      }
+      bump();
+    };
+    const onMove = (e: PointerEvent) => {
+      const p = pointers.get(e.pointerId);
+      if (!p) return;
+      const dx = e.clientX - p.x, dy = e.clientY - p.y;
+      p.x = e.clientX;
+      p.y = e.clientY;
+      if (pointers.size >= 2) {
+        const [a, b] = [...pointers.values()];
+        if (pinch0 > 0) userZoom = clampZoom((pinchZoom0 * Math.hypot(a.x - b.x, a.y - b.y)) / pinch0);
+      } else {
+        const R = size * BASE_R * zoom;
+        const dSpin = -dx / R, dTilt = dy / R;
+        spin += dSpin;
+        tilt = Math.max(-1.25, Math.min(1.25, tilt + dTilt));
+        spinTar = spin;
+        tiltTar = tilt;
+        const dtm = Math.max(0.008, (e.timeStamp - lastMoveAt) / 1000);
+        lastMoveAt = e.timeStamp;
+        vel = Math.max(-8, Math.min(8, vel * 0.5 + (dSpin / dtm) * 0.5));
+        tvel = Math.max(-8, Math.min(8, tvel * 0.5 + (dTilt / dtm) * 0.5));
+      }
+      bump();
+    };
+    const onUp = (e: PointerEvent) => {
+      pointers.delete(e.pointerId);
+      if (pointers.size < 2) pinch0 = 0;
+      // kdo před puštěním zastavil, žádný švih nechce
+      if (e.timeStamp - lastMoveAt > 90) {
+        vel = 0;
+        tvel = 0;
+      }
+      bump();
+    };
+    const onLeave = () => {
+      engaged = false;
+    };
+    const onWheel = (e: WheelEvent) => {
+      if (!(e.ctrlKey || engaged)) return;
+      e.preventDefault();
+      userZoom = clampZoom(userZoom * Math.exp(-e.deltaY * 0.0016));
+      bump();
+    };
+    const resetView = () => {
+      userZoom = 1;
+      vel = 0;
+      tvel = 0;
+      manualUntil = 0;
+      kick();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      const step = 0.16;
+      if (e.key === "ArrowLeft") spin -= step;
+      else if (e.key === "ArrowRight") spin += step;
+      else if (e.key === "ArrowUp") tilt = Math.min(1.25, tilt + step);
+      else if (e.key === "ArrowDown") tilt = Math.max(-1.25, tilt - step);
+      else if (e.key === "+" || e.key === "=") userZoom = clampZoom(userZoom * 1.2);
+      else if (e.key === "-" || e.key === "_") userZoom = clampZoom(userZoom / 1.2);
+      else if (e.key === "0" || e.key === "Home") return resetView();
+      else return;
+      e.preventDefault();
+      spinTar = spin;
+      tiltTar = tilt;
+      bump();
+    };
+    ctlRef.current = {
+      zoomBy: (f: number) => {
+        userZoom = clampZoom(userZoom * f);
+        bump();
+      },
+      reset: resetView,
     };
     box.addEventListener("pointerdown", onDown);
     box.addEventListener("pointermove", onMove);
     box.addEventListener("pointerup", onUp);
     box.addEventListener("pointercancel", onUp);
+    box.addEventListener("pointerleave", onLeave);
+    box.addEventListener("wheel", onWheel, { passive: false });
+    box.addEventListener("dblclick", resetView);
+    box.addEventListener("keydown", onKey);
 
     const ro = new ResizeObserver(() => {
       resize();
@@ -591,6 +719,11 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
       box.removeEventListener("pointermove", onMove);
       box.removeEventListener("pointerup", onUp);
       box.removeEventListener("pointercancel", onUp);
+      box.removeEventListener("pointerleave", onLeave);
+      box.removeEventListener("wheel", onWheel);
+      box.removeEventListener("dblclick", resetView);
+      box.removeEventListener("keydown", onKey);
+      ctlRef.current = null;
       cleanup();
     };
   }, []);
@@ -599,6 +732,12 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
     if (releaseTimer.current) clearTimeout(releaseTimer.current);
     if (slug) setPinned(slug);
     else releaseTimer.current = setTimeout(() => setPinned(null), 900);
+  };
+
+  // Tlačítka přiblížení: factor 0 = obnovit pohled.
+  const control = (factor: number) => () => {
+    if (factor === 0) ctlRef.current?.reset();
+    else ctlRef.current?.zoomBy(factor);
   };
 
   const subject = bySlug(active) ?? subjects[0];
@@ -614,7 +753,8 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
         ref={stage}
         role="group"
         aria-label={t.label}
-        className="relative mx-auto aspect-square w-full max-w-[600px] cursor-grab touch-pan-y select-none active:cursor-grabbing"
+        tabIndex={0}
+        className="relative mx-auto aspect-square w-full max-w-[600px] cursor-grab touch-pan-y select-none rounded-3xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/70 active:cursor-grabbing"
         onPointerLeave={() => pin(null)}
       >
         {fallback ? (
@@ -669,7 +809,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
               />
             ))}
             {/* eslint-enable @next/next/no-img-element */}
-            <canvas ref={canvas} aria-hidden className={`absolute inset-0 z-[2] h-full w-full ${stageHidden}`} style={{ opacity: ready ? 1 : 0, transition: "opacity 0.6s" }} />
+            <canvas ref={canvas} aria-hidden className={`pointer-events-none absolute left-[-25%] top-[-25%] z-[2] h-[150%] w-[150%] ${stageHidden}`} style={{ opacity: ready ? 1 : 0, transition: "opacity 0.6s" }} />
             {!ready && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={`${DIR}/still.webp`} alt="" aria-hidden draggable={false} className="absolute inset-0 h-full w-full object-contain" />
@@ -723,10 +863,32 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
             </Link>
           </>
         )}
+        {!fallback && (
+          <div className="absolute right-1 top-1 z-30 flex flex-col gap-1.5">
+            {(
+              [
+                ["+", t.zoomIn, 1.3],
+                ["−", t.zoomOut, 1 / 1.3],
+                ["⟲", t.resetView, 0],
+              ] as const
+            ).map(([label, name, factor]) => (
+              <button
+                key={name}
+                type="button"
+                aria-label={name}
+                title={name}
+                onClick={control(factor)}
+                className="btn-bouncy flex h-9 w-9 items-center justify-center bg-[var(--surface)] text-lg font-extrabold leading-none"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
         <p className="pointer-events-none absolute inset-x-0 bottom-0 text-center text-xs font-semibold text-white/70">↔ {t.drag}</p>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="relative z-10 flex flex-col gap-4">
         <p className="text-sm text-[var(--muted)]">{t.hint}</p>
         <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
           {subjects.map((s) => {
