@@ -6,6 +6,7 @@ import { getCommunityText } from "@/i18n/community";
 import { isLocale, type Locale } from "@/i18n/config";
 import { Avatar } from "@/components/Avatar";
 import { Podium } from "@/components/Podium";
+import { LeaderboardStage } from "@/components/LeaderboardStage";
 import { RewardImage } from "@/components/RewardImage";
 import { TROPHIES } from "@/lib/rewards";
 import { getEscapeText } from "@/i18n/escape";
@@ -189,7 +190,12 @@ export default async function LeaderboardPage({
 
   const playerList = (
     <>
-      <Podium players={top} anonymous={t.anonymous} highlightId={userId} />
+      <LeaderboardStage
+        entries={top.slice(0, 9).map((p) => ({ id: p.id, name: p.name || t.anonymous, avatar: p.avatar, value: String(p.points) }))}
+        highlightId={userId}
+        label={t.title}
+        fallback={<Podium players={top} anonymous={t.anonymous} highlightId={userId} />}
+      />
       <ol className="flex flex-col gap-3">
         {top.map((player, i) => (
           <li
@@ -234,6 +240,13 @@ export default async function LeaderboardPage({
       escapeRows.length === 0 ? (
         <div className="card p-8 text-center text-[var(--muted)]">{t.noRuns}</div>
       ) : (
+        <>
+        <LeaderboardStage
+          entries={escapeRows.slice(0, 9).map((r) => ({ id: r.id, name: r.name || t.anonymous, avatar: r.avatar, value: mmss(r.seconds) }))}
+          highlightId={userId}
+          label={t.title}
+          fallback={null}
+        />
         <ol className="flex flex-col gap-3">
           {escapeRows.map((row, i) => (
             <li
@@ -257,6 +270,7 @@ export default async function LeaderboardPage({
             </li>
           ))}
         </ol>
+        </>
       );
   } else if ((tab === "skola" || tab === "unikovky") && !mySchool) {
     content = (
