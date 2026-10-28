@@ -3,11 +3,12 @@ import { CATEGORIES, SUBJECTS } from "@/lib/taxonomy";
 import { HomeProgress } from "@/components/HomeProgress";
 import { DailyChallenges } from "@/components/DailyChallenges";
 import { ArcadeDemo } from "@/components/ArcadeDemo";
-import { NatureSky } from "@/components/NatureSky";
 import { ALIEN_ROW, Circuit, HomeArt, NatureDecor, Nebula, Planet, Rocket, SpriteFrame, TechBus, Wave } from "@/components/SpaceDecor";
 import { CardIcon3D, GearHolo3D, TechBackdrop, type IconKind } from "@/components/TechScenes";
-import { Liana, MountainScene } from "@/components/HomeAnim";
+import { MountainScene } from "@/components/HomeAnim";
 import { PlanetLive } from "@/components/PlanetLive";
+import { SubjectGlobe } from "@/components/SubjectGlobe";
+import { GlobeSky } from "@/components/GlobeSky";
 import { getHomeText } from "@/i18n/home";
 import { getSubjectText } from "@/i18n/subjects";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -16,18 +17,6 @@ import { notFound } from "next/navigation";
 
 const TILE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
 const GALAXY_ICONS = ["sekce-zakladni", "sekce-stredni", "sekce-prijimacky", "sekce-maturita"];
-
-const SUBJECT_SYMBOLS: Record<string, string> = {
-  cestina: "ě š ř",
-  literatura: "📖",
-  anglictina: "Hi!",
-  nemcina: "ä ö ü ß",
-  rustina: "Я Ж Ш",
-  matematika: "+ × π",
-  dejepis: "⌛ 1918",
-  zemepis: "🌍",
-  prirodopis: "🌿 🐾",
-};
 
 export default async function Home({
   params,
@@ -120,10 +109,10 @@ export default async function Home({
       </div>
 
       {/* 2) Příroda: předměty */}
-      <section className="zone zone-nature">
+      <section className="zone zone-space zone-globe">
         <Wave fill="#0c0a24" />
+        <GlobeSky />
         <NatureDecor />
-        <NatureSky />
         <div className="relative z-10 mx-auto max-w-6xl px-4 pb-20 pt-24 sm:px-6">
           <div className="reveal mb-8 flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -140,41 +129,22 @@ export default async function Home({
             </Link>
           </div>
           <div className="relative">
-            <Liana className="absolute -bottom-16 -left-40 z-20 hidden lg:block" />
-            <Liana className="absolute -bottom-16 -right-40 z-20 hidden lg:block" flip />
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5">
-            {SUBJECTS.map((subject) => (
-              <Link
-                key={subject.slug}
-                href={`/${locale}/kurzy/zakladni?predmet=${subject.slug}`}
-                className="reveal card card-hover subject-card group relative flex items-center gap-3 p-3 text-[#1b1830] last:col-span-2 sm:gap-4 sm:p-4 sm:last:col-span-1"
-                data-sym={SUBJECT_SYMBOLS[subject.slug] ?? "✦"}
-                style={{
-                  background: subject.color,
-                  borderColor: "#16132b",
-                  ["--glow" as string]: "rgba(120,220,150,0.35)",
-                }}
-              >
-                <span
-                  aria-hidden
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-[#16132b] bg-white/60 text-2xl shadow-[inset_-4px_-4px_0_rgba(0,0,0,0.12)] sm:h-14 sm:w-14 sm:text-3xl"
-                >
-                  <HomeArt name={`predmet-${subject.slug}`} size={52} className="home-icon h-10 w-10 sm:h-12 sm:w-12" />
-                </span>
-                <span className="text-sm font-bold leading-tight sm:text-base">
-                  {subjectText.labels[subject.value]}
-                </span>
-                <span aria-hidden className="bloom hidden sm:block" />
-              </Link>
-            ))}
-          </div>
+          <SubjectGlobe
+            locale={locale as Locale}
+            subjects={SUBJECTS.map((subject) => ({
+              slug: subject.slug,
+              value: subject.value,
+              label: subjectText.labels[subject.value],
+              color: subject.color,
+            }))}
+          />
           </div>
         </div>
       </section>
 
       {/* 3) Technika: co tu najdeš */}
       <section className="zone zone-tech">
-        <Wave fill="#0f3326" />
+        <Wave fill="#0c0a24" />
         <Circuit className="right-0 top-20 hidden h-44 w-80 lg:block" />
         <Circuit className="bottom-6 left-0 hidden h-44 w-80 lg:block" flip />
         <TechBackdrop />
