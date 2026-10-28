@@ -1,5 +1,6 @@
 // Ozdoby úvodní stránky z grafiky her: jeden snímek ze spritesheetu vystřižený přes CSS.
 import { Butterfly3D } from "@/components/Butterfly3D";
+import { PlanetAnim } from "@/components/PlanetAnim";
 
 type Sheet = { file: string; cols: number };
 const SHEETS: Record<string, Sheet> = {
@@ -45,19 +46,36 @@ export function SpriteFrame({
 // Řádek v listu mimozemšťanů: kyklop 0, krab 1, chobotnice 2, ufo 3.
 export const ALIEN_ROW = { kyklop: 0, krab: 1, chobotnice: 2, ufo: 3 } as const;
 
-export function Planet({ className = "", size = 420, hue = 0 }: { className?: string; size?: number; hue?: number }) {
+// Planeta se otáčí a obíhají ji měsíce. Výchozí (hračková) varianta je 3D render z Blenderu jako video 60 fps
+// se zálohou (animované webp, statický obrázek); "realistic" je detailní plynný obr z Blenderu (planeta-realna).
+export function Planet({
+  className = "",
+  size = 420,
+  hue = 0,
+  variant = "stylized",
+}: {
+  className?: string;
+  size?: number;
+  hue?: number;
+  variant?: "stylized" | "realistic";
+}) {
+  const style = {
+    width: size,
+    height: size * 0.66,
+    filter: `hue-rotate(${hue}deg) drop-shadow(0 0 40px rgba(180,120,255,0.35))`,
+  };
+  if (variant === "realistic") {
+    return (
+      <picture aria-hidden className={`pointer-events-none block select-none ${className}`} style={style}>
+        <source media="(prefers-reduced-motion: reduce)" srcSet="/home/anim/planeta-realna-still.webp" />
+        <img src="/home/anim/planeta-realna.webp" alt="" width={size} height={size * 0.66} draggable={false} loading="lazy" className="h-full w-full object-contain" />
+      </picture>
+    );
+  }
   return (
-    <picture
-      className={`pointer-events-none block select-none ${className}`}
-      style={{
-        width: size,
-        height: size * 0.66,
-        filter: `hue-rotate(${hue}deg) drop-shadow(0 0 40px rgba(180,120,255,0.35))`,
-      }}
-    >
-      <source media="(prefers-reduced-motion: reduce)" srcSet="/home/planeta.webp" />
-      <img src="/home/anim/planeta.webp" alt="" width={size} height={size * 0.66} draggable={false} className="h-full w-full object-contain" />
-    </picture>
+    <div aria-hidden className={`pointer-events-none block select-none ${className}`} style={style}>
+      <PlanetAnim width={size} height={size * 0.66} />
+    </div>
   );
 }
 

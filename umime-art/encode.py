@@ -20,12 +20,25 @@ def frames(name, size=None, step=1):
     return out
 
 
-def animated(name, dest, fps=24, quality=70, size=None, loop=0, step=1):
+def animated(name, dest, fps=24, quality=70, size=None, loop=0, clean=False, step=1):
     fr = frames(name, size, step)
+    if clean:  # slabý šum v průhlednosti by na tmavé obloze dělal viditelný obdélník
+        fr = [Image.merge("RGBA", (*im.split()[:3], im.getchannel("A").point(lambda a: 0 if a < 14 else a))) for im in fr]
     path = os.path.join(DEST, dest)
     fr[0].save(path, format="WEBP", save_all=True, append_images=fr[1:], duration=int(1000 / fps), loop=loop,
-               quality=quality, method=5, alpha_quality=60 if dest.startswith("sopka") else 85)
+               quality=quality, method=5, alpha_quality=80 if clean else 85)
     print(dest, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB")
+
+
+def video(name, dest, fps=60, size=None, crf=24):
+    """Smyčka jako WebM VP9 s průhledností (yuva420p); 60 fps je při video kodeku malý soubor."""
+    import subprocess
+    src = os.path.join(ROOT, "out", name, "f_%04d.png")
+    path = os.path.join(DEST, dest)
+    vf = ["-vf", f"scale={size[0]}:{size[1]}:flags=lanczos"] if size else []
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(fps), "-i", src, *vf, "-c:v", "libvpx-vp9",
+                    "-pix_fmt", "yuva420p", "-b:v", "0", "-crf", str(crf), "-auto-alt-ref", "0", "-row-mt", "1", path], check=True)
+    print(dest, round(os.path.getsize(path) / 1024), "kB")
 
 
 def strip(name, dest, size, quality=72):
@@ -151,6 +164,20 @@ def unikovky():
         print(room, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB")
 
 
+def namesti():
+    """Čtyři létající ostrovy „Co tu najdeš“ jako pásy snímků do public/home/namesti."""
+    dest_dir = os.path.join(DEST, "..", "namesti")
+    os.makedirs(dest_dir, exist_ok=True)
+    for name in ("skola", "herna", "vez", "sin"):
+        fr = frames("nam_" + name, (448, 448))
+        sheet = Image.new("RGBA", (448 * len(fr), 448), (0, 0, 0, 0))
+        for i, im in enumerate(fr):
+            sheet.paste(im, (i * 448, 0))
+        path = os.path.join(dest_dir, name + ".webp")
+        sheet.save(path, format="WEBP", quality=76, method=5, alpha_quality=85)
+        print(name, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB")
+
+
 def hory():
     """Hora se stezkou, turista, oheň a vlajka pro MountainTrek do public/home/hory (+ stezka do JSON)."""
     import json
@@ -164,6 +191,39 @@ def hory():
         strip(name, "../hory/" + dest + ".webp", frames(name)[0].size, quality=82)
     shutil_json = os.path.join(ROOT, "out", "hory_hora", "trail.json")
     json.dump(json.load(open(shutil_json)), open(os.path.join(ROOT, "..", "src", "components", "hory-stezka.json"), "w"))
+
+
+def mesto():
+    """Městečko (scéna), obyvatelé, zvířata a větrník pro TownLife do public/home/mesto (+ polohy do JSON)."""
+    import json, math
+    dest_dir = os.path.join(DEST, "..", "mesto")
+    os.makedirs(dest_dir, exist_ok=True)
+    im = frames("mesto_scena")[0]
+    path = os.path.join(dest_dir, "scena.webp")
+    im.save(path, format="WEBP", quality=82, method=5, alpha_quality=92)
+    print("scena", round(os.path.getsize(path) / 1024), "kB", im.size)
+    for job, dest in (("hrdina_chuze", "hrdina-chuze"), ("hrdina_stoji", "hrdina-stoji"), ("hrdina_radost", "hrdina-radost"),
+                      ("knihovnice", "knihovnice"), ("pekar", "pekar"), ("farmar", "farmar"), ("babicka", "babicka"), ("kluk", "kluk"),
+                      ("pes_bezi", "pes-bezi"), ("pes_sedi", "pes-sedi"), ("kocka", "kocka"), ("ovce", "ovce"), ("slepice", "slepice"),
+                      ("kralik", "kralik"), ("ptak", "ptak"), ("ryba", "ryba")):
+        if glob.glob(os.path.join(ROOT, "out", "mf_" + job, "f_*.png")):
+            strip("mf_" + job, "../mesto/" + dest + ".webp", (192, 192), quality=80)
+    if glob.glob(os.path.join(ROOT, "out", "mf_mlyn", "f_*.png")):
+        frames("mf_mlyn", (256, 256))[0].save(os.path.join(dest_dir, "mlyn.webp"), format="WEBP", quality=84, method=5, alpha_quality=92)
+    meta = json.load(open(os.path.join(ROOT, "out", "mesto_scena", "paths.json")))
+    ppu, W, H, el, tz = meta["ppu"], meta["w"], meta["h"], math.radians(26), 1.3
+
+    def norm(x, y, z=0.0):
+        return [round((W / 2 + ppu * x) / W, 5), round((H / 2 - ppu * (y * math.sin(el) + (z - tz) * math.cos(el))) / H, 5)]
+
+    meta["extra"] = {
+        "b1_door": meta["b1_door"], "b2_door": meta["b2_door"], "b3_door": meta["b3_door"], "sopka": meta["sopka"],
+        "knihovnice": norm(-4.15, -0.05), "pekar": norm(-1.35, 0.05), "kluk": norm(-3.55, -1.35), "kocka": norm(2.4, -3.2, 0.24),
+        "ovce_a": norm(4.0, -4.2), "ovce_b": norm(6.3, -4.7), "slepice_a": norm(5.2, -3.7), "slepice_b": norm(3.1, -4.9),
+        "farmar_a": norm(-3.2, -4.3), "farmar_b": norm(1.4, -3.9), "babicka_a": norm(-0.9, -1.15), "babicka_b": norm(1.7, -0.95),
+        "jezek": norm(-1.6, -4.7), "veverka": norm(7.2, -0.35, 0.0), "kralik_a": norm(-8.4, -4.4), "kralik_b": norm(-4.9, -3.8), "rybnik": norm(0, -2.55, -0.1),
+    }
+    json.dump(meta, open(os.path.join(ROOT, "..", "src", "components", "mesto-scena.json"), "w"))
 
 
 def svet():
@@ -206,24 +266,31 @@ def stills():
 
 
 if __name__ == "__main__":
-    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_live", "globe", "hero", "tech", "hory", "svet", "hry", "unikovky"]
+    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_live", "globe", "hero", "tech", "hory", "svet", "hry", "unikovky", "namesti"]
     if "icons" in what: icons()
     if "stills" in what: stills()
     # Planeta má hodně jemného detailu: každý druhý snímek a menší rozměr drží soubor pod 1 MB.
     if "planeta" in what: animated("planeta", "planeta.webp", fps=12, quality=55, size=(616, 409), step=2)
+    # Plynulá verze (FRAMES=180 FPS=60 při renderu): video 60 fps, animované webp zůstává jako záloha.
+    if "planeta-video" in what: video("planeta", "planeta.webm", fps=60, size=(616, 409))
+    if "planeta_realna" in what:
+        animated("planeta_realna", "planeta-realna.webp", fps=16, quality=58, size=(496, 329))
+        still("planeta_realna", "planeta-realna-still.webp", size=(560, 372), quality=88)
     if "planeta_live" in what: planet_live()
     if "globe" in what: globe()
     if "hero" in what: hero()
     if "tech" in what: tech()
     if "hory" in what: hory()
     if "svet" in what: svet()
+    if "mesto" in what: mesto()
     if "hry" in what: hry()
     if "unikovky" in what: unikovky()
+    if "namesti" in what: namesti()
     if "motyl" in what: animated("motyl", "motyl.webp", fps=24, quality=72)
     if "vlajka" in what: animated("vlajka", "vlajka.webp", fps=24, quality=72)
     if "raketa" in what: animated("raketa", "raketa.webp", fps=24, quality=72)
     if "sopka" in what:
-        animated("sopka", "sopka.webp", fps=18, quality=36, size=(520, 585))
+        animated("sopka", "sopka.webp", fps=18, quality=32, size=(440, 495), clean=True)
         fr = frames("sopka")
         fr[30].save(os.path.join(DEST, "sopka-still.webp"), format="WEBP", quality=82, method=5, alpha_quality=90)
     if "liana" in what: strip("liana", "liana-strip.webp", (288, 288))

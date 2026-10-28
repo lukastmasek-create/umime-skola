@@ -699,6 +699,33 @@ def prirodopis():
         sph("skvrna", 0.1 - i * 0.005, (x, 0.0, 0.8 + 0.0), spot, scale=(1.2, 1.0, 0.45), seg=24)
 
 
+def fyzika():
+    """Atom: jádro z červených a modrých kuliček, tři kovové oběžné dráhy a tři elektrony."""
+    red = mat("proton", (0.9, 0.15, 0.1), rough=0.25, coat=0.8, coat_rough=0.1, sss=0.1)
+    blue = mat("neutron", (0.15, 0.4, 0.95), rough=0.25, coat=0.8, coat_rough=0.1, sss=0.1)
+    ring = mat("draha", (0.85, 0.87, 0.92), rough=0.22, metal=1.0)
+    elec = mat("elektron", (1.0, 0.8, 0.12), rough=0.2, coat=0.9, coat_rough=0.06, emit=(1.0, 0.55, 0.05))
+    for i, (x, y, z) in enumerate([(0.2, 0.0, 0.2), (-0.2, 0.15, 0.1), (0.0, -0.2, -0.2), (0.12, 0.22, -0.18), (-0.18, -0.1, 0.24), (0.0, 0.0, -0.02)]):
+        sph("jadro", 0.27, (x, y, z), red if i % 2 == 0 else blue, seg=32)
+    R, r = 1.35, 0.5
+    for k, ang in enumerate((0, 60, 120)):
+        a = math.radians(ang)
+        pts = []
+        for j in range(64):
+            t = 2 * math.pi * j / 64
+            x, z = R * math.cos(t), r * 2.0 * math.sin(t) * 0.5
+            # elipsa se otočí kolem osy pohledu o `ang`
+            xr = x * math.cos(a) - z * math.sin(a) * 1.0
+            zr = x * math.sin(a) + z * math.cos(a)
+            pts.append((xr, 0.0 + 0.45 * math.sin(t + k) * 0.5, zr))
+        curve_tube("draha", pts, 0.035, ring, closed=True, res=8)
+        t0 = 2 * math.pi * (0.15 + 0.3 * k)
+        x, z = R * math.cos(t0), r * math.sin(t0)
+        xr = x * math.cos(a) - z * math.sin(a)
+        zr = x * math.sin(a) + z * math.cos(a)
+        sph("elektron", 0.16, (xr, 0.45 * math.sin(t0 + k) * 0.5, zr), elec, seg=32)
+
+
 BUILDERS = {
     "cestina": cestina,
     "literatura": literatura,
@@ -709,8 +736,9 @@ BUILDERS = {
     "dejepis": dejepis,
     "zemepis": zemepis,
     "prirodopis": prirodopis,
+    "fyzika": fyzika,
 }
-CAM = {"cestina": (-14, 14), "dejepis": (-24, 24), "zemepis": (-20, 14), "prirodopis": (-20, 24), "matematika": (-22, 20), "anglictina": (-14, 10), "rustina": (-16, 8), "nemcina": (-6, 6), "literatura": (-30, 24)}
+CAM = {"fyzika": (-18, 22), "cestina": (-14, 14), "dejepis": (-24, 24), "zemepis": (-20, 14), "prirodopis": (-20, 24), "matematika": (-22, 20), "anglictina": (-14, 10), "rustina": (-16, 8), "nemcina": (-6, 6), "literatura": (-30, 24)}
 
 
 def render_all(builders, cams, only, out, prefix, size=512):

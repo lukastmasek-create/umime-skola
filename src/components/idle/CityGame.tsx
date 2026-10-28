@@ -24,6 +24,7 @@ import { notifyAccountChanged } from "@/lib/account-events";
 import { SpriteStore, TH, TW, drawCity, screenToGrid, type Camera, type Ghost } from "@/components/idle/city-render";
 import { createTraffic, updateTraffic } from "@/components/idle/city-traffic";
 import { EventPill, type EventInfo } from "@/components/idle/EventPill";
+import { ChallengePanel } from "@/components/idle/ChallengePanel";
 import type { Locale } from "@/i18n/config";
 
 type Payload = {
@@ -798,6 +799,8 @@ export function CityGame({ locale }: { locale: Locale }) {
       <p className="mt-3 text-xs text-[var(--faint)]">
         {fillTokens(t.offlineNote, { n: OFFLINE_CAP_HOURS })} {t.learningHint}
       </p>
+
+      <ChallengePanel game="city" locale={locale} onChange={() => void sync()} />
 
       {message && (
         <div role="status" className="pill fixed inset-x-0 bottom-6 z-50 mx-auto w-fit bg-[var(--danger)] px-4 py-2 text-sm text-white shadow-lg">
