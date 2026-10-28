@@ -85,7 +85,7 @@ function ShowcaseItem({ item, x, y, w, openLabel }: { item: Item; x: number; y: 
       <span className={`showcase-item block transition-transform duration-300 ${hot && item.unlocked ? "-translate-y-2 scale-105" : ""}`} style={item.unlocked ? undefined : { filter: "grayscale(1) brightness(0.55)", opacity: 0.5 }}>
         <RewardImage name={name} size={256} alt={item.label} className="h-auto w-full" />
       </span>
-      <span className="pointer-events-none absolute left-1/2 top-[88%] z-10 w-max max-w-[150%] -translate-x-1/2 rounded-full bg-[#16132b]/85 px-2 py-0.5 text-center text-[10px] font-bold leading-tight text-white sm:text-xs">
+      <span className="pointer-events-none absolute left-1/2 top-[88%] z-10 hidden w-max sm:block max-w-[150%] -translate-x-1/2 rounded-full bg-[#16132b]/85 px-2 py-0.5 text-center text-[10px] font-bold leading-tight text-white sm:text-xs">
         {item.label}
         {item.value ? ` · ${item.value}` : ""}
       </span>
