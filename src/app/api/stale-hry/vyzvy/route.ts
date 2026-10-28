@@ -7,6 +7,7 @@ import { DAILY_ACTIVITY_XP_CAP } from "@/lib/progression";
 import { applyResults, dueIds, normalizeReview, REVIEW_GAME } from "@/lib/review";
 import { getItem as getCityItem, normalizeCity } from "@/lib/idle/city";
 import { normalizeBase } from "@/lib/idle/base";
+import { levelFromGrowth, normalizeState as normalizePets } from "@/lib/idle/pets";
 import { levelInfo } from "@/lib/idle/farm";
 import {
   BOSS_LIVES,
@@ -41,8 +42,8 @@ import {
   type Reward,
 } from "@/lib/idle/challenge";
 
-const GAME_KEY: Record<ChGame, string> = { farm: "farma", city: "mesto", base: "zakladna" };
-const COIN_FIELD: Record<ChGame, string> = { farm: "coins", city: "coins", base: "credits" };
+const GAME_KEY: Record<ChGame, string> = { farm: "farma", city: "mesto", base: "zakladna", pets: "mazlicci" };
+const COIN_FIELD: Record<ChGame, string> = { farm: "coins", city: "coins", base: "credits", pets: "coins" };
 const QUESTION_LIMIT_MS = 30_000;
 
 class Conflict extends Error {}
@@ -61,6 +62,7 @@ const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : 0
 function gameProgress(game: ChGame, data: unknown, now: number): number {
   if (game === "farm") return levelInfo(num(obj(data).xp)).level;
   if (game === "city") return normalizeCity(data, now).items.filter((it) => getCityItem(it[0])?.cat !== "road").length;
+  if (game === "pets") return Math.max(0, ...Object.values(normalizePets(data, now).pets).map((p) => (p ? levelFromGrowth(p.growth) : 0)));
   return normalizeBase(data, now).items.length;
 }
 

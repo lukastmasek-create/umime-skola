@@ -18,7 +18,7 @@ function startOfUtcWeek(now: number): Date {
 }
 
 export const CHALLENGE_GAME = "vyzvy";
-export const CH_GAMES = ["farm", "city", "base"] as const;
+export const CH_GAMES = ["farm", "city", "base", "pets"] as const;
 export type ChGame = (typeof CH_GAMES)[number];
 export const isChGame = (v: unknown): v is ChGame => typeof v === "string" && (CH_GAMES as readonly string[]).includes(v);
 
@@ -36,11 +36,12 @@ export const MAX_INBOX = 20;
 export const GIFTS_PER_DAY = 5;
 export const WEAK_CHANCE = 0.4;
 
-/** Co hra potřebuje, aby se boss kapitoly otevřel (úroveň farmy / počet budov města / počet modulů základny). */
+/** Co hra potřebuje, aby se boss kapitoly otevřel (úroveň farmy / počet budov města / počet modulů základny / úroveň nejlepšího mazlíčka). */
 export const CHAPTER_REQUIREMENT: Record<ChGame, number[]> = {
   farm: [2, 5, 8, 12, 16],
   city: [4, 12, 25, 50, 90],
   base: [3, 8, 14, 22, 32],
+  pets: [2, 4, 7, 10, 14],
 };
 
 export const GIFT_AMOUNTS = [100, 500, 2000];
@@ -112,7 +113,7 @@ export function weekKeyAt(now: number): string {
 export function emptyChallenge(now: number): ChallengeState {
   return {
     v: 1,
-    games: { farm: emptyMeta(), city: emptyMeta(), base: emptyMeta() },
+    games: { farm: emptyMeta(), city: emptyMeta(), base: emptyMeta(), pets: emptyMeta() },
     pending: null,
     recent: [],
     seen: [],
@@ -206,7 +207,7 @@ export function normalizeChallenge(raw: unknown, now: number): ChallengeState {
   const sent = obj(r.sent);
   return {
     v: 1,
-    games: { farm: normalizeMeta(g.farm), city: normalizeMeta(g.city), base: normalizeMeta(g.base) },
+    games: { farm: normalizeMeta(g.farm), city: normalizeMeta(g.city), base: normalizeMeta(g.base), pets: normalizeMeta(g.pets) },
     pending: normalizePending(r.pending),
     recent: Array.isArray(r.recent) ? r.recent.map((x) => (x ? 1 : 0)).slice(-RECENT_SIZE) : [],
     seen: Array.isArray(r.seen) ? r.seen.filter((s): s is string => typeof s === "string").slice(-SEEN_SIZE) : [],

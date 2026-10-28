@@ -64,7 +64,7 @@ type Board = { rows: { id: string; name: string; avatar: string | null; earned: 
 type Load = { state: "loading" } | { state: "guest" } | { state: "error" } | { state: "ready"; data: Snapshot };
 type Tab = "quiz" | "boss" | "compete";
 
-const ICON: Record<ChGame, string> = { farm: "🌾", city: "🏙️", base: "🚀" };
+const ICON: Record<ChGame, string> = { farm: "🌾", city: "🏙️", base: "🚀", pets: "🐾" };
 
 export function ChallengePanel({ game, locale, onChange }: { game: ChGame; locale: Locale; onChange?: () => void }) {
   const t = getChallengeText(locale);

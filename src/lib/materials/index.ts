@@ -9,6 +9,7 @@ import { matematika } from "./matematika";
 import { dejepis } from "./dejepis";
 import { zemepis } from "./zemepis";
 import { prirodopis } from "./prirodopis";
+import { fyzika } from "./fyzika";
 
 // Klíč = slug předmětu z taxonomy.ts.
 const MATERIALS: Record<string, Topic[]> = {
@@ -21,6 +22,7 @@ const MATERIALS: Record<string, Topic[]> = {
   dejepis,
   zemepis,
   prirodopis,
+  fyzika,
 };
 
 export function getTopics(subjectSlug: string): Topic[] {
