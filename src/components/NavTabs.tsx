@@ -15,11 +15,11 @@ import { getRoomText } from "@/i18n/room";
 import { getReviewText } from "@/i18n/review";
 import { getLiveText } from "@/i18n/live";
 import { useAccount } from "@/lib/use-account";
-import { locales, localeFlags, localeNames, type Locale } from "@/i18n/config";
+import { locales, localeNames, type Locale } from "@/i18n/config";
 import { setLocaleCookie } from "@/lib/locale-cookie";
 
-type Tab = { key: string; href: string; label: string; icon?: string; exact?: boolean; noActive?: boolean };
-type Group = { key: string; label: string; icon: string; items: Tab[] };
+type Tab = { key: string; href: string; label: string; exact?: boolean; noActive?: boolean };
+type Group = { key: string; label: string; items: Tab[] };
 
 function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
   const community = getCommunityText(locale);
@@ -34,68 +34,62 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
   const settings: Tab[] = [];
   // Přihlášení a registrace jen hostům; než se stav účtu načte, nezobrazují se.
   if (loggedIn === false) {
-    settings.push({ key: "prihlaseni", href: `/${locale}/prihlaseni`, label: dict.nav.login, icon: "🔑" });
-    settings.push({ key: "registrace", href: `/${locale}/registrace`, label: dict.nav.register, icon: "✨" });
+    settings.push({ key: "prihlaseni", href: `/${locale}/prihlaseni`, label: dict.nav.login });
+    settings.push({ key: "registrace", href: `/${locale}/registrace`, label: dict.nav.register });
   }
-  settings.push({ key: "nastaveni", href: `/${locale}/nastaveni`, label: dict.nav.settings, icon: "⚙️" });
+  settings.push({ key: "nastaveni", href: `/${locale}/nastaveni`, label: dict.nav.settings });
   const groups: Group[] = [
-    { key: "courses", label: home.groups.courses, icon: "🎓", items: courses },
-    { key: "settings", label: home.groups.settings, icon: "⚙️", items: settings },
+    { key: "courses", label: home.groups.courses, items: courses },
+    { key: "settings", label: home.groups.settings, items: settings },
     {
       key: "games",
       label: home.groups.games,
-      icon: "🎮",
       items: [
-        { key: "stale-hry", href: `/${locale}/stale-hry`, label: getIdleText(locale).nav, icon: "🐾" },
-        { key: "unikovky", href: `/${locale}/unikovky`, label: getEscapeText(locale).nav, icon: "🚪" },
-        { key: "hrat-spolecne", href: `/${locale}/hrat-spolecne`, label: live.nav, icon: "🎓", exact: true },
+        { key: "stale-hry", href: `/${locale}/stale-hry`, label: getIdleText(locale).nav },
+        { key: "unikovky", href: `/${locale}/unikovky`, label: getEscapeText(locale).nav },
+        { key: "hrat-spolecne", href: `/${locale}/hrat-spolecne`, label: live.nav, exact: true },
       ],
     },
     {
       key: "shop",
       label: home.groups.shop,
-      icon: "🛍️",
       items: [
-        { key: "obchod", href: `/${locale}/obchod`, label: dict.nav.shop, icon: "🎡" },
-        { key: "uzivatelsky-obchod", href: `/${locale}/uzivatelsky-obchod`, label: community.navMarketplace, icon: "🛒" },
+        { key: "obchod", href: `/${locale}/obchod`, label: dict.nav.shop },
+        { key: "uzivatelsky-obchod", href: `/${locale}/uzivatelsky-obchod`, label: community.navMarketplace },
       ],
     },
     {
       key: "study",
       label: home.groups.study,
-      icon: "📚",
       items: [
-        { key: "mapa", href: `/${locale}/mapa`, label: review.mapNav, icon: "🗺️" },
-        { key: "opakovani", href: `/${locale}/opakovani`, label: review.reviewNav, icon: "🔁" },
-        { key: "materialy", href: `/${locale}/materialy`, label: getMaterialsText(locale).nav, icon: "📘" },
+        { key: "mapa", href: `/${locale}/mapa`, label: review.mapNav },
+        { key: "opakovani", href: `/${locale}/opakovani`, label: review.reviewNav },
+        { key: "materialy", href: `/${locale}/materialy`, label: getMaterialsText(locale).nav },
       ],
     },
     {
       key: "extras",
       label: home.groups.extras,
-      icon: "🎁",
       items: [
-        { key: "pokoj", href: `/${locale}/pokoj`, label: getRoomText(locale).nav, icon: "🏠" },
-        { key: "index", href: `/${locale}/pokoj?tab=cards`, label: home.index, icon: "🃏", noActive: true },
+        { key: "pokoj", href: `/${locale}/pokoj`, label: getRoomText(locale).nav },
+        { key: "index", href: `/${locale}/pokoj?tab=cards`, label: home.index, noActive: true },
       ],
     },
     {
       key: "together",
       label: home.groups.together,
-      icon: "👥",
       items: [
-        { key: "sady", href: `/${locale}/hrat-spolecne/sady`, label: live.sets.title, icon: "✏️" },
-        { key: "nova", href: `/${locale}/hrat-spolecne/nova`, label: live.host.title, icon: "🚀" },
-        { key: "pripojit", href: `/${locale}/hrat-spolecne`, label: live.join.title, icon: "🔗", noActive: true },
+        { key: "sady", href: `/${locale}/hrat-spolecne/sady`, label: live.sets.title },
+        { key: "nova", href: `/${locale}/hrat-spolecne/nova`, label: live.host.title },
+        { key: "pripojit", href: `/${locale}/hrat-spolecne`, label: live.join.title, noActive: true },
       ],
     },
     {
       key: "boards",
       label: home.groups.boards,
-      icon: "🏆",
       items: [
-        { key: "liga", href: `/${locale}/parta`, label: getSocialText(locale).league, icon: "🥇" },
-        { key: "zebricky", href: `/${locale}/zebricky`, label: community.navLeaderboards, icon: "🏆" },
+        { key: "liga", href: `/${locale}/parta`, label: getSocialText(locale).league },
+        { key: "zebricky", href: `/${locale}/zebricky`, label: community.navLeaderboards },
       ],
     },
   ];
@@ -125,7 +119,6 @@ function LanguageLinks({ locale, className, onPick }: { locale: Locale; classNam
           }}
           className={className(l === locale)}
         >
-          <span aria-hidden>{localeFlags[l]}</span>
           {localeNames[l]}
         </Link>
       ))}
@@ -187,7 +180,6 @@ export function NavTabs({ locale, dict }: { locale: Locale; dict: Dictionary }) 
                   : "border-transparent text-[var(--muted)] hover:border-[var(--edge)] hover:text-[var(--foreground)]"
               }`}
             >
-              <span aria-hidden>{group.icon}</span>
               {group.label}
               <span aria-hidden className="text-xs">▾</span>
             </button>
@@ -200,7 +192,6 @@ export function NavTabs({ locale, dict }: { locale: Locale; dict: Dictionary }) 
                     aria-current={isActiveTab(pathname, tab) ? "page" : undefined}
                     className={itemClass(isActiveTab(pathname, tab))}
                   >
-                    {tab.icon && <span aria-hidden>{tab.icon}</span>}
                     {tab.label}
                   </Link>
                 ))}
@@ -276,8 +267,7 @@ export function MobileMenu({ locale, dict }: { locale: Locale; dict: Dictionary 
                     }`}
                   >
                     <span className="flex items-center gap-2">
-                      <span aria-hidden>{group.icon}</span>
-                      {group.label}
+                              {group.label}
                     </span>
                     <span aria-hidden>{expanded ? "▴" : "▾"}</span>
                   </button>
@@ -291,7 +281,6 @@ export function MobileMenu({ locale, dict }: { locale: Locale; dict: Dictionary 
                           aria-current={isActiveTab(pathname, tab) ? "page" : undefined}
                           className={itemClass(isActiveTab(pathname, tab))}
                         >
-                          {tab.icon && <span aria-hidden>{tab.icon}</span>}
                           {tab.label}
                         </Link>
                       ))}

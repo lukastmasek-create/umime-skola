@@ -104,7 +104,7 @@ export default async function CategoryPage({
     }`;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
+    <div data-world={selectedSubject?.slug} className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
       <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
         {dict.categories[category.slug].label}
       </h1>
