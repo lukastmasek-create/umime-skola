@@ -64,16 +64,19 @@ def icons():
 
 
 def planet_live():
-    """Vrstvy planety pro živé vykreslení ve WebGL (PlanetLive.tsx) do public/home/planet-live."""
-    dest_dir = os.path.join(DEST, "..", "planet-live")
-    os.makedirs(dest_dir, exist_ok=True)
-    for name, dest, quality in (("pv_albedo", "albedo.webp", 88), ("pv_stin", "stin.webp", 94), ("pv_halo", "halo.webp", 88),
-                                ("pv_prsten_zadni", "prsten-zadni.webp", 90), ("pv_prsten_predni", "prsten-predni.webp", 90),
-                                ("pv_mesic1", "mesic1.webp", 92), ("pv_mesic2", "mesic2.webp", 92)):
-        im = frames(name)[0]
-        path = os.path.join(dest_dir, dest)
-        im.save(path, format="WEBP", quality=quality, method=5, alpha_quality=96)
-        print(dest, round(os.path.getsize(path) / 1024), "kB", im.size)
+    """Vrstvy planet pro živé vykreslení ve WebGL (PlanetLive.tsx): dolní oranžová (pv_) a horní fialová (hv_)."""
+    for prefix, folder in (("pv_", "planet-live"), ("hv_", "planet-hero")):
+        dest_dir = os.path.join(DEST, "..", folder)
+        os.makedirs(dest_dir, exist_ok=True)
+        for name, dest, quality in (("albedo", "albedo.webp", 88), ("stin", "stin.webp", 94), ("halo", "halo.webp", 88),
+                                    ("prsten_zadni", "prsten-zadni.webp", 90), ("prsten_predni", "prsten-predni.webp", 90),
+                                    ("mesic1", "mesic1.webp", 92), ("mesic2", "mesic2.webp", 92)):
+            if not glob.glob(os.path.join(ROOT, "out", prefix + name, "f_*.png")):
+                continue
+            im = frames(prefix + name)[0]
+            path = os.path.join(dest_dir, dest)
+            im.save(path, format="WEBP", quality=quality, method=5, alpha_quality=96)
+            print(folder, dest, round(os.path.getsize(path) / 1024), "kB", im.size)
 
 
 def globe():

@@ -3,7 +3,7 @@ import { CATEGORIES, SUBJECTS } from "@/lib/taxonomy";
 import { HomeProgress } from "@/components/HomeProgress";
 import { DailyChallenges } from "@/components/DailyChallenges";
 import { ArcadeDemo } from "@/components/ArcadeDemo";
-import { ALIEN_ROW, Circuit, HomeArt, Nebula, Planet, Rocket, SpriteFrame, TechBus, Wave } from "@/components/SpaceDecor";
+import { ALIEN_ROW, Circuit, HomeArt, Nebula, Rocket, SpriteFrame, TechBus, Wave } from "@/components/SpaceDecor";
 import { CardIcon3D, GearHolo3D, TechBackdrop, type IconKind } from "@/components/TechScenes";
 import { MountainScene } from "@/components/HomeAnim";
 import { PlanetLive } from "@/components/PlanetLive";
@@ -48,7 +48,14 @@ export default async function Home({
           <span style={{ left: "38%", top: "-6%", width: 320, height: 320, background: "#35d0ff", animationDelay: "-11s" }} />
         </div>
         <section className="gradient-hero relative">
-          <Planet className="absolute -right-20 top-16 -z-10 hidden opacity-90 lg:block" size={470} />
+          <PlanetLive
+            className="absolute -right-20 top-16 -z-10 hidden opacity-95 lg:block"
+            size={500}
+            dir="/home/planet-hero"
+            still="/home/planeta.webp"
+            spinSeconds={64}
+            glow="drop-shadow(0 0 40px rgba(180,120,255,0.35))"
+          />
           <SpriteFrame
             sheet="aliens"
             col={0}
