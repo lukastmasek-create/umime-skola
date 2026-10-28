@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { LevelBadge } from "@/components/LevelBadge";
 import { ProfileCollection } from "@/components/ProfileCollection";
+import { ProfileShowcase } from "@/components/ProfileShowcase";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { AVATARS, getAvatar, isAvatarUnlocked } from "@/lib/avatars";
 import { TITLES, getTitle, isTitleUnlocked } from "@/lib/titles";
@@ -55,6 +56,45 @@ type Profile = {
 type Tab = "look" | "avatars" | "titles" | "frames" | "banners";
 
 const DEFAULT_BANNER = "linear-gradient(135deg, #5a6cff 0%, #7a5cff 55%, #ff6f91 100%)";
+
+// Úroveň jako zlatý prstenec: oblouk se při načtení plynule vyplní na aktuální procento (čisté CSS).
+function XpRing({ level, percent, label }: { level: number; percent: number; label: string }) {
+  const r = 46;
+  const c = 2 * Math.PI * r;
+  const off = c * (1 - Math.max(0, Math.min(100, percent)) / 100);
+  return (
+    <div className="relative h-[112px] w-[112px] shrink-0">
+      <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90" aria-hidden>
+        <defs>
+          <linearGradient id="xpg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#ffd23a" />
+            <stop offset="100%" stopColor="#ff7a3c" />
+          </linearGradient>
+        </defs>
+        <circle cx="60" cy="60" r={r} fill="none" stroke="#16132b" strokeOpacity="0.12" strokeWidth="12" />
+        <circle cx="60" cy="60" r={r + 7} fill="none" stroke="#16132b" strokeOpacity="0.2" strokeWidth="1.5" strokeDasharray="2 6" />
+        <circle
+          cx="60"
+          cy="60"
+          r={r}
+          fill="none"
+          stroke="url(#xpg)"
+          strokeWidth="12"
+          strokeLinecap="round"
+          strokeDasharray={c}
+          className="xp-ring-arc"
+          style={{ ["--c" as string]: c, ["--o" as string]: off }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-3xl font-extrabold leading-none" style={{ fontFamily: "var(--font-heading)" }}>
+          {level}
+        </span>
+        <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-wide opacity-70">{label}</span>
+      </div>
+    </div>
+  );
+}
 
 function itemName(kind: "frame" | "banner", ref: string, locale: Locale) {
   return SHOP_ITEMS.find((i) => i.kind === kind && i.ref === ref)?.names[locale] ?? ref;
@@ -286,18 +326,13 @@ export function ProfileView({ locale }: { locale: Locale }) {
 
           <div className="relative mt-2 grid items-end gap-4 sm:grid-cols-[1fr_auto_1fr]">
             <div className="order-2 flex flex-col gap-3 sm:order-1">
-              <div className="rounded-2xl bg-white/90 p-4 text-[#16132b] shadow">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-extrabold" style={heading}>
-                    {level}
+              <div className="flex items-center gap-4 rounded-2xl bg-white/90 p-4 text-[#16132b] shadow">
+                <XpRing level={level} percent={profile.percent ?? 0} label={t.level} />
+                <p className="min-w-0 text-xs leading-snug opacity-80">
+                  <span className="block text-sm font-bold opacity-100">
+                    {profile.xp ?? 0} {t.xp}
                   </span>
-                  <span className="text-xs font-semibold uppercase tracking-wide opacity-70">{t.level}</span>
-                </div>
-                <div className="mt-2 h-3 overflow-hidden rounded-full border-2 border-[#16132b] bg-white">
-                  <div className="h-full bg-[var(--accent-yellow)]" style={{ width: `${profile.percent ?? 0}%` }} />
-                </div>
-                <p className="mt-1.5 text-xs opacity-80">
-                  {profile.xp ?? 0} {t.xp} · {fill(t.toNext, remaining)}
+                  {fill(t.toNext, remaining)}
                 </p>
               </div>
               <div className="rounded-2xl bg-white/90 p-3 text-[#16132b] shadow">
@@ -307,9 +342,10 @@ export function ProfileView({ locale }: { locale: Locale }) {
 
             <div className="order-1 flex flex-col items-center sm:order-2">
               <div className="relative">
-                <div
-                  className="absolute bottom-3 left-1/2 h-10 w-[85%] -translate-x-1/2 rounded-[50%] bg-black/25 blur-md"
+                <span
                   aria-hidden
+                  className="globe-sprite pointer-events-none absolute -bottom-[34%] left-1/2 h-[125%] w-[165%] -translate-x-1/2 drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)]"
+                  style={{ backgroundImage: "url(/home/profil/podstavec.webp)" }}
                 />
                 <ProfileAvatar
                   id={profile.avatar}
@@ -371,6 +407,16 @@ export function ProfileView({ locale }: { locale: Locale }) {
           </div>
         </div>
       </section>
+
+      <ProfileShowcase
+        locale={locale}
+        level={level}
+        rank={profile.rank ?? null}
+        points={profile.points ?? 0}
+        avatars={AVATARS.filter((a) => isAvatarUnlocked(a, level, unlocks)).length}
+        titles={TITLES.filter((x) => isTitleUnlocked(x, level, unlocks)).length}
+        looks={ownedFrames.length + ownedBanners.length}
+      />
 
       {profile.degraded && <p className="text-sm text-[var(--faint)]">{t.degraded}</p>}
 
