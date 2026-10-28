@@ -2101,7 +2101,8 @@ select:not(:focus) {
   }
 }
 
-/* Hra na celou obrazovku (FullscreenFrame): obal se roztáhne a canvas se vejde na výšku. */
+/* Hra na celou obrazovku (FullscreenFrame): jako video na YouTube. Plátno vyplní celou plochu, nahoře je
+   záhlaví s otázkou, dole ovládání a úvod, vysvětlení i výsledky jsou panel přes plátno. */
 .fs-frame.is-fs {
   background: var(--background);
   overflow-y: auto;
@@ -2116,8 +2117,64 @@ select:not(:focus) {
   max-width: 72rem;
   padding: 1rem;
 }
-.fs-frame.is-fs canvas {
-  width: min(100%, calc(66vh * 640 / 420)) !important;
+.fs-frame.is-fs:has(.fs-game) {
+  overflow: hidden;
+}
+.fs-frame.is-fs:has(.fs-game) .fs-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: none;
+  padding: 0.5rem 0.75rem;
+}
+.fs-frame.is-fs .fs-game {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 1rem;
+}
+.fs-frame.is-fs .fs-stage {
+  flex: 1;
+  min-height: 0;
+  background: #000;
+}
+.fs-frame.is-fs .fs-stage canvas {
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: auto !important;
+  object-fit: contain;
+}
+.fs-frame.is-fs .fs-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  overflow-y: auto;
+  padding: 2rem clamp(1rem, 10vw, 8rem);
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--surface) 95%, transparent);
+  backdrop-filter: blur(6px);
+}
+.fs-frame.is-fs .fs-start {
+  position: sticky;
+  bottom: 0;
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--surface) 95%, transparent);
+}
+
+/* Klasické hry na celou obrazovku: obsah na střed a zvětšený, aby vyplnil velkou obrazovku. */
+.fs-frame.is-fs:has(.fs-classic) .fs-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  max-width: none;
+  padding: 0.75rem 1.5rem 2rem;
+}
+.fs-frame.is-fs .fs-classic {
+  flex: 1;
+  justify-content: center;
+  width: 100%;
+  max-width: 68rem;
   margin-inline: auto;
 }
 
@@ -2189,5 +2246,16 @@ select:not(:focus) {
   }
   .isle-scan {
     opacity: 0.5;
+  }
+}
+
+@media (min-width: 1100px) {
+  .fs-frame.is-fs .fs-classic {
+    zoom: 1.2;
+  }
+}
+@media (min-width: 1600px) {
+  .fs-frame.is-fs .fs-classic {
+    zoom: 1.45;
   }
 }

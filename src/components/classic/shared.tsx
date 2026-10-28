@@ -34,7 +34,7 @@ export function GameFrame({
   children: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-5">
+    <div className="fs-classic flex flex-col gap-5">
       <div>
         <Link href={backHref} className="text-sm font-medium text-[var(--faint)] hover:text-[var(--foreground)]">
           {backLabel}

@@ -662,7 +662,7 @@ export function SpaceQuizGame({
   }
 
   return (
-    <div className="card flex flex-col gap-4 p-5">
+    <div className="fs-game card flex flex-col gap-4 p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
@@ -735,7 +735,7 @@ export function SpaceQuizGame({
         </p>
       )}
 
-      <div className="relative overflow-hidden rounded-2xl border-2 border-[var(--border-soft)]">
+      <div className="fs-stage relative overflow-hidden rounded-2xl border-2 border-[var(--border-soft)]">
         <canvas
           ref={canvasRef}
           width={GAME_WIDTH}
@@ -791,7 +791,7 @@ export function SpaceQuizGame({
       </div>
 
       {phase === "intro" && (
-        <div className="flex flex-col gap-4">
+        <div className="fs-panel flex flex-col gap-4">
           <p className="text-sm text-[var(--muted)]">{t.intro}</p>
           <p className="text-xs text-[var(--faint)]">⌨️ {t.controls}</p>
           {game === "space-invaders" && <p className="text-xs text-[var(--faint)]">💡 {t.tipDodge}</p>}
@@ -799,7 +799,7 @@ export function SpaceQuizGame({
           <UpgradeShop t={t} coins={coins} upgrades={upgrades} onBuy={buy} />
           <button
             onClick={() => startRun()}
-            className="btn-bouncy self-start rounded-full bg-[var(--brand-500)] px-6 py-3 text-sm font-semibold text-white hover:bg-[var(--brand-600)]"
+            className="fs-start btn-bouncy self-start rounded-full bg-[var(--brand-500)] px-6 py-3 text-sm font-semibold text-white hover:bg-[var(--brand-600)]"
           >
             {t.start}
           </button>
@@ -886,7 +886,7 @@ export function SpaceQuizGame({
       )}
 
       {showExplanation && (
-        <div className="flex flex-col gap-3">
+        <div className="fs-panel flex flex-col gap-3">
           <p
             className={`pill self-start px-3 py-1.5 text-sm font-semibold ${
               resolved.kind === "correct"
@@ -945,7 +945,7 @@ export function SpaceQuizGame({
       )}
 
       {phase === "result" && (
-        <div className="flex flex-col gap-4">
+        <div className="fs-panel flex flex-col gap-4">
           <p className="text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
             {completed ? t.runComplete : `${t.gameOver} 💥`}
           </p>
