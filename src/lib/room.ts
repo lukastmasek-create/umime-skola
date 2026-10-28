@@ -1,4 +1,5 @@
 import type { Locale } from "@/i18n/config";
+import layout from "./room-layout.json";
 
 export type FurnitureDef = { id: string; icon: string; price: number; names: Record<Locale, string> };
 
@@ -38,13 +39,17 @@ export function normalizeRoom(raw: unknown): RoomState {
   return { owned, placed: placed.map((v) => (v && !seen.has(v) ? (seen.add(v), v) : null)) };
 }
 
-// Kde v obrázku pokoje (poměr 8 : 5) stojí jednotlivé sloty: [x, y, šířka] v procentech.
-// y je místo na podlaze, kde nábytek stojí; zadní řada je menší (dál od kamery), přední větší.
-export const ROOM_SLOT_POS: [number, number, number][] = [
-  [14, 67, 17], [38, 67, 17], [62, 67, 17], [86, 67, 17],
-  [14, 82, 20], [38, 82, 20], [62, 82, 20], [86, 82, 20],
-  [14, 98, 23], [38, 98, 23], [62, 98, 23], [86, 98, 23],
-];
+// Izometrický pokoj z Blenderu (umime-art/scripts/room_iso.py). Rozložení (polohy slotů, velikost a kotva
+// každého sprajtu nábytku, okno, sluneční paprsek, lampa) je v room-layout.json; hodnoty jsou v procentech obrázku.
+export const ROOM_LAYOUT = layout as unknown as {
+  aspect: number;
+  slots: [number, number][];
+  furn: Record<string, { w: number; o: number }>;
+  pane: [number, number][];
+  beam: [number, number][];
+  lamp: [number, number];
+};
+export const ROOM_SLOT_POS = ROOM_LAYOUT.slots;
 
-// Sprite nábytku z Blenderu (public/room/furniture). Místo, kde stojí na podlaze, je ve 65 % výšky obrázku.
+// Sprite nábytku z Blenderu (public/room/furniture). Kotva (místo na podlaze) je v ROOM_LAYOUT.furn[id].o jako podíl výšky sprajtu.
 export const furnitureSprite = (id: string) => `/room/furniture/${id}.webp`;
