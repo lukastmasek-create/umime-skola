@@ -3,12 +3,14 @@ import { CATEGORIES, SUBJECTS } from "@/lib/taxonomy";
 import { HomeProgress } from "@/components/HomeProgress";
 import { DailyChallenges } from "@/components/DailyChallenges";
 import { ArcadeDemo } from "@/components/ArcadeDemo";
-import { ALIEN_ROW, Circuit, HomeArt, Nebula, Rocket, SpriteFrame, TechBus, Wave } from "@/components/SpaceDecor";
+import { Tilt } from "@/components/Tilt";
+import { ALIEN_ROW, Circuit, HomeArt, SpriteFrame, TechBus, Wave } from "@/components/SpaceDecor";
 import { CardIcon3D, GearHolo3D, TechBackdrop, type IconKind } from "@/components/TechScenes";
 import { MountainScene } from "@/components/HomeAnim";
 import { PlanetLive } from "@/components/PlanetLive";
 import { SubjectGlobe } from "@/components/SubjectGlobe";
 import { GlobeSky } from "@/components/GlobeSky";
+import { HeroSky } from "@/components/HeroSky";
 import { getHomeText } from "@/i18n/home";
 import { getSubjectText } from "@/i18n/subjects";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -41,12 +43,7 @@ export default async function Home({
     <div className="space-page">
       {/* 1) Vesmír: hrdina a postup */}
       <div className="zone zone-space">
-        <Nebula className="absolute inset-0 -z-10 h-full" />
-        <div aria-hidden className="hero-aurora">
-          <span style={{ left: "-8%", top: "4%", width: 460, height: 460, background: "#7c6cff" }} />
-          <span style={{ right: "6%", top: "28%", width: 380, height: 380, background: "#ff8fd0", animationDelay: "-6s" }} />
-          <span style={{ left: "38%", top: "-6%", width: 320, height: 320, background: "#35d0ff", animationDelay: "-11s" }} />
-        </div>
+        <HeroSky />
         <section className="gradient-hero relative">
           <PlanetLive
             className="absolute -right-20 top-16 -z-10 hidden opacity-95 lg:block"
@@ -71,7 +68,6 @@ export default async function Home({
             className="space-float absolute right-[8%] top-10 hidden md:block"
             style={{ animationDelay: "-2s" }}
           />
-          <Rocket className="bottom-16" />
 
           <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-10 sm:px-6 sm:py-16 lg:grid-cols-[1.15fr_0.85fr] lg:py-24">
             <div className="flex flex-col items-start gap-6">
@@ -102,7 +98,9 @@ export default async function Home({
               </div>
             </div>
             <div className="hero-in-right">
-              <ArcadeDemo />
+              <Tilt max={6}>
+                <ArcadeDemo />
+              </Tilt>
             </div>
           </div>
         </section>
