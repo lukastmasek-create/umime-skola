@@ -134,8 +134,6 @@ def vitrina():
     box((0, -0.5, 2.4), (0.09, 0.07, 3.7), gold, bevel=0.01)
     sphere((-0.12, -0.55, 2.4), 0.05, gold, seg=8, rings=6)
     sphere((0.12, -0.55, 2.4), 0.05, gold, seg=8, rings=6)
-    for k, (x, w) in enumerate(((-1.8, 0.1), (1.0, 0.25))):  # odlesky
-        box((x, -0.49, 2.8), (w, 0.01, 2.6), glow("vt_r%d" % k, "#ffffff", 0.07), rot=(0, math.radians(14), 0), bevel=0)
     # sloty pro odměny: střed každé police na x = -1.9, 0, 1.9; úroveň = vršek police
     slots = []
     for z in shelves:
@@ -145,7 +143,7 @@ def vitrina():
         slots.append(row)
     os.makedirs(os.path.join(OUT, "profil_vitrina"), exist_ok=True)
     with open(os.path.join(OUT, "profil_vitrina", "layout.json"), "w") as fh:
-        json.dump({"w": W, "h": H, "slots": slots, "item": round(1.55 / OS, 4)}, fh)
+        json.dump({"w": W, "h": H, "slots": slots, "item": round(1.15 / OS, 4)}, fh)
     run(lambda t: None, "profil_vitrina")
 
 
