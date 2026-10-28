@@ -2334,3 +2334,20 @@ select:not(:focus) {
     animation: none;
   }
 }
+
+/* Prstenec úrovně v profilu */
+.xp-ring-arc {
+  stroke-dashoffset: var(--o);
+  animation: xp-ring-fill 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  filter: drop-shadow(0 0 4px rgba(255, 170, 60, 0.7));
+}
+@keyframes xp-ring-fill {
+  from {
+    stroke-dashoffset: var(--c);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .xp-ring-arc {
+    animation: none;
+  }
+}
