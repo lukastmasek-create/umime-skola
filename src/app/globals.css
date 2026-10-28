@@ -2267,3 +2267,173 @@ select:not(:focus) {
   right: 0.75rem;
   z-index: 200;
 }
+
+
+/* Bubliny kroků ve scéně městečka */
+.town-bubble {
+  transform-origin: 50% 100%;
+  transition: opacity 0.35s ease, transform 0.55s cubic-bezier(0.2, 1.5, 0.4, 1);
+  font-size: clamp(10px, 1.18cqw, 15px);
+}
+.town-bubble-body {
+  position: relative;
+  padding: 0.8em 1em 0.85em 3.1em;
+  border: 2px solid var(--tint);
+  border-radius: 1.1em;
+  background: linear-gradient(160deg, rgba(34, 24, 84, 0.94), rgba(14, 10, 44, 0.94));
+  box-shadow: 0 0.35em 0 rgba(8, 5, 30, 0.55), 0 0 1.8em color-mix(in srgb, var(--tint) 35%, transparent);
+  color: #fff;
+  transition: opacity 0.4s;
+}
+.town-bubble-body::after {
+  content: "";
+  position: absolute;
+  left: var(--tail, 50%);
+  bottom: -0.62em;
+  width: 1em;
+  height: 1em;
+  background: rgba(16, 11, 48, 0.96);
+  border-right: 2px solid var(--tint);
+  border-bottom: 2px solid var(--tint);
+  transform: translateX(-50%) rotate(45deg);
+}
+.town-bubble-num {
+  position: absolute;
+  left: 0.7em;
+  top: 0.75em;
+  display: flex;
+  width: 1.9em;
+  height: 1.9em;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.05em;
+}
+.town-bubble-on .town-bubble-num {
+  background: #ffd24d;
+  border-color: #16132b;
+  color: #16132b;
+}
+.town-bubble-on .town-bubble-body {
+  animation: town-bubble-glow 1.8s ease-out 1;
+}
+.town-bubble-title {
+  display: block;
+  font-size: 1.12em;
+  line-height: 1.2;
+}
+.town-bubble-text {
+  display: block;
+  margin-top: 0.25em;
+  font-size: 0.86em;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.82);
+}
+@keyframes town-bubble-glow {
+  0% { box-shadow: 0 0.35em 0 rgba(8, 5, 30, 0.55), 0 0 0 0 var(--tint); }
+  30% { box-shadow: 0 0.35em 0 rgba(8, 5, 30, 0.55), 0 0 3.2em 0.5em var(--tint); }
+  100% { box-shadow: 0 0.35em 0 rgba(8, 5, 30, 0.55), 0 0 1.8em color-mix(in srgb, var(--tint) 35%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .town-bubble {
+    transition: opacity 0.2s;
+  }
+  .town-bubble-on .town-bubble-body {
+    animation: none;
+  }
+}
+
+/* --- Živý izometrický pokoj --- */
+.room-tile {
+  transform: scaleY(0.52) rotate(45deg);
+}
+.room-cloud {
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 50%, #fff 0 55%, rgba(255, 255, 255, 0) 72%);
+  filter: blur(1.5px);
+  animation: room-cloud 34s linear infinite;
+}
+@keyframes room-cloud {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}
+.room-beam {
+  background: linear-gradient(200deg, rgba(255, 244, 196, 0.75), rgba(255, 244, 196, 0.2));
+  mix-blend-mode: screen;
+  animation: room-beam 6s ease-in-out infinite;
+}
+@keyframes room-beam {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+.room-mote {
+  box-shadow: 0 0 6px rgba(255, 240, 180, 0.9);
+  animation: room-mote 8s ease-in-out infinite;
+}
+@keyframes room-mote {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  20%,
+  80% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(14px, -26px);
+  }
+}
+.room-lamp {
+  background: radial-gradient(circle, rgba(255, 236, 170, 0.55), rgba(255, 236, 170, 0) 70%);
+  mix-blend-mode: screen;
+  animation: room-lamp 4s ease-in-out infinite;
+}
+@keyframes room-lamp {
+  0%,
+  100% {
+    opacity: 0.55;
+    scale: 0.92;
+  }
+  50% {
+    opacity: 1;
+    scale: 1.08;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .room-cloud,
+  .room-beam,
+  .room-mote,
+  .room-lamp {
+    animation: none;
+  }
+}
+
+/* Prstenec úrovně v profilu */
+.xp-ring-arc {
+  stroke-dashoffset: var(--o);
+  animation: xp-ring-fill 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  filter: drop-shadow(0 0 4px rgba(255, 170, 60, 0.7));
+}
+@keyframes xp-ring-fill {
+  from {
+    stroke-dashoffset: var(--c);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .xp-ring-arc {
+    animation: none;
+  }
+}

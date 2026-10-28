@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { eventBonusFor, type EventBonus } from "@/lib/idle/events";
+import { challengeBoost } from "@/lib/idle/challenge-server";
 import { itemPrice, normalizeState as normalizeFarm, takeItem } from "@/lib/idle/farm";
 import {
   adopt,
@@ -41,7 +42,8 @@ async function learningBonusFor(userId: string, now: number) {
     where: { userId, createdAt: { gte: new Date(now - DAY_MS) } },
     _sum: { amount: true },
   });
-  return learningBonusFromXp(sum._sum.amount ?? 0);
+  // Boost ze série otázek (výzvy) se přičítá k bonusu z učení.
+  return learningBonusFromXp(sum._sum.amount ?? 0) + (await challengeBoost(prisma, userId, "pets", now));
 }
 
 function payload(state: PetGameState, points: number, learningBonus: number, event: EventBonus, now: number, accessories: string[], farmStock: Record<string, number> = {}) {

@@ -16,8 +16,8 @@ export type StageEntry = { id: string; name: string; avatar: string | null; valu
 // čtou nebo fandí. Postavy jsou stejné modely z Blenderu jako na profilu; stoly, rekvizity, korunu,
 // konfety a světla skládá tento soubor z jednoduchých těles.
 
-type Activity = "eat" | "drink" | "read" | "cheer";
-const ACTIVITIES: Activity[] = ["eat", "read", "drink", "cheer"];
+type Activity = "eat" | "drink" | "read" | "cheer" | "laptop" | "cards" | "cocoa";
+const ACTIVITIES: Activity[] = ["eat", "laptop", "read", "cocoa", "drink", "cards", "cheer"];
 
 const PODIUM_X = [0, -1.22, 1.22];
 const PODIUM_H = [1.0, 0.72, 0.52];
@@ -229,7 +229,98 @@ function popcorn(): Prop {
   return { group: g, update: () => {} };
 }
 
-const PROPS: Record<Activity, () => Prop> = { eat: cupcake, drink: juice, read: book, cheer: popcorn };
+function laptop(): Prop {
+  const g = new THREE.Group();
+  const body = std("#aeb7c9", 0.35, 0.7);
+  const base = box(0.34, 0.02, 0.24, body, 0.01);
+  base.position.y = 0.01;
+  const screenTex = canvasTexture(128, 96, (c) => {
+    c.fillStyle = "#14224a";
+    c.fillRect(0, 0, 128, 96);
+    c.fillStyle = "#4cc9f0";
+    for (let i = 0; i < 6; i++) c.fillRect(10, 12 + i * 13, 30 + ((i * 37) % 70), 6);
+    c.fillStyle = "#ffc933";
+    c.fillRect(100, 12, 18, 18);
+  });
+  const lid = box(0.34, 0.24, 0.015, body, 0.008);
+  lid.position.set(0, 0.14, -0.11);
+  lid.rotation.x = -0.18;
+  const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.2), new THREE.MeshBasicMaterial({ map: screenTex, toneMapped: false }));
+  screen.position.set(0, 0.14, -0.1);
+  screen.rotation.x = -0.18;
+  screen.position.z += 0.012;
+  const keys = box(0.28, 0.006, 0.12, std("#3d4256", 0.6), 0.003);
+  keys.position.set(0, 0.023, 0.03);
+  g.add(base, lid, screen, keys);
+  // Obrazovka je otočená k postavě (ta sedí za stolem, tedy na opačné straně), proto se celý notebook otáčí zády ke kameře.
+  g.rotation.y = Math.PI;
+  return {
+    group: g,
+    update: (t) => {
+      (screen.material as THREE.MeshBasicMaterial).color.setScalar(0.85 + 0.15 * Math.sin(t * 3));
+    },
+  };
+}
+
+function cards(): Prop {
+  const g = new THREE.Group();
+  const backs = ["#e63946", "#3d57ff", "#2fbf71"];
+  const fan: THREE.Mesh[] = [];
+  for (let i = 0; i < 3; i++) {
+    const card = box(0.09, 0.004, 0.13, std("#ffffff", 0.5), 0.002);
+    card.position.set((i - 1) * 0.08, 0.004 + i * 0.001, 0);
+    card.rotation.y = (i - 1) * -0.35;
+    const mark = new THREE.Mesh(new THREE.CircleGeometry(0.022, 16), new THREE.MeshBasicMaterial({ color: backs[i] }));
+    mark.rotation.x = -Math.PI / 2;
+    mark.position.y = 0.0025;
+    card.add(mark);
+    fan.push(card);
+    g.add(card);
+  }
+  const stack = box(0.09, 0.03, 0.13, std("#3d57ff", 0.5), 0.004);
+  stack.position.set(0.24, 0.015, 0.02);
+  g.add(stack);
+  return {
+    group: g,
+    update: (t) => {
+      fan.forEach((c, i) => {
+        const hop = Math.max(0, Math.sin(t * 1.3 + i * 2.1)) ** 6;
+        c.position.y = 0.006 + hop * 0.09;
+        c.rotation.x = -hop * 0.7;
+      });
+    },
+  };
+}
+
+function cocoa(): Prop {
+  const g = new THREE.Group();
+  const mug = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.055, 0.1, 24), std("#ff8fa3", 0.4));
+  mug.position.y = 0.05;
+  const handle = new THREE.Mesh(new THREE.TorusGeometry(0.03, 0.008, 8, 16), std("#ff8fa3", 0.4));
+  handle.position.set(0.065, 0.055, 0);
+  const drink = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.052, 0.004, 24), std("#6b3f2a", 0.3));
+  drink.position.y = 0.095;
+  g.add(mug, handle, drink);
+  const puffs: THREE.Mesh[] = [];
+  for (let i = 0; i < 3; i++) {
+    const puff = new THREE.Mesh(new THREE.SphereGeometry(0.022, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4, depthWrite: false }));
+    puffs.push(puff);
+    g.add(puff);
+  }
+  return {
+    group: g,
+    update: (t) => {
+      puffs.forEach((pf, i) => {
+        const u = (t * 0.45 + i / 3) % 1;
+        pf.position.set(Math.sin(u * 6 + i) * 0.02, 0.11 + u * 0.18, 0);
+        pf.scale.setScalar(0.6 + u * 1.2);
+        (pf.material as THREE.MeshBasicMaterial).opacity = 0.45 * (1 - u);
+      });
+    },
+  };
+}
+
+const PROPS: Record<Activity, () => Prop> = { eat: cupcake, drink: juice, read: book, cheer: popcorn, laptop, cards, cocoa };
 
 // --- postavy ---
 type ActorState = {
@@ -458,14 +549,14 @@ export default function LeaderboardStage3D({
     }
 
     // --- sedadla a stoly ---
-    const perSide = entries.length > 7 ? 3 : entries.length > 5 ? 3 : 2;
+    const perSide = entries.length > 9 ? 4 : 3;
     const seatCount = Math.max(0, entries.length - 3);
     // Na úzkém displeji sedí u každého stolu jen jeden, ať jsou postavy vidět; zbytek je v seznamu pod scénou.
     const narrow = el.clientWidth < 520;
     const sideCount = Math.max(1, Math.min(narrow ? 1 : perSide, Math.ceil(seatCount / 2)));
     const tables: THREE.Group[] = [];
     const tableW = sideCount * SEAT_GAP + 0.35;
-    halfW = 2.2 + tableW + 0.7;
+    halfW = 2.2 + tableW + 1.15;
     for (const side of [-1, 1]) {
       const t = new THREE.Group();
       const cx = side * (2.2 + tableW / 2);
@@ -727,6 +818,26 @@ export default function LeaderboardStage3D({
               case "read": {
                 m.rotX = 0.13;
                 m.rotY = 0.28 * Math.sin(t * 0.9);
+                break;
+              }
+              case "laptop": {
+                // rychlé klepání a občasné zamyšlení
+                const thinking = Math.sin(t * 0.5) > 0.7;
+                m.rotX = 0.12 + (thinking ? 0 : 0.03 * Math.sin(t * 16));
+                m.rotY = thinking ? 0.18 * Math.sin(t * 1.5) : 0;
+                break;
+              }
+              case "cards": {
+                const hop = Math.max(0, Math.sin(t * 1.3 + a.phase)) ** 6;
+                m.rotZ = 0.1 * Math.sin(t * 0.9) + 0.12 * hop;
+                m.y = 0.03 * hop;
+                m.rotY = 0.3 * Math.sin(t * 0.6);
+                break;
+              }
+              case "cocoa": {
+                const u = (t % 4.2) / 4.2;
+                m.rotX = -0.1 * bell(u, 0.25, 0.55) + 0.07 * bell(u, 0.05, 0.25);
+                m.sy = 1 + 0.012 * Math.sin(t * 2);
                 break;
               }
               case "cheer": {

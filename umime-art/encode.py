@@ -178,6 +178,23 @@ def namesti():
         print(name, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB")
 
 
+def profil():
+    """Podstavec avatara (pás 24 snímků) a vitrína odměn do public/home/profil."""
+    dest_dir = os.path.join(DEST, "..", "profil")
+    os.makedirs(dest_dir, exist_ok=True)
+    fr = frames("profil_podstavec", (448, 448))
+    sheet = Image.new("RGBA", (448 * len(fr), 448), (0, 0, 0, 0))
+    for i, im in enumerate(fr):
+        sheet.paste(im, (i * 448, 0))
+    path = os.path.join(dest_dir, "podstavec.webp")
+    sheet.save(path, format="WEBP", quality=78, method=5, alpha_quality=85)
+    print("podstavec", len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB")
+    vit = frames("profil_vitrina")[0]
+    path = os.path.join(dest_dir, "vitrina.webp")
+    vit.save(path, format="WEBP", quality=86, method=5, alpha_quality=92)
+    print("vitrina", round(os.path.getsize(path) / 1024), "kB", vit.size)
+
+
 def hory():
     """Hora se stezkou, turista, oheň a vlajka pro MountainTrek do public/home/hory (+ stezka do JSON)."""
     import json
@@ -217,7 +234,7 @@ def mesto():
         return [round((W / 2 + ppu * x) / W, 5), round((H / 2 - ppu * (y * math.sin(el) + (z - tz) * math.cos(el))) / H, 5)]
 
     meta["extra"] = {
-        "b1_door": meta["b1_door"], "b2_door": meta["b2_door"], "b3_door": meta["b3_door"], "sopka": meta["sopka"],
+        "b1_top": norm(-5.3, 0.8, 3.2), "b2_top": norm(0.45, 1.0, 2.85), "b3_top": norm(5.45, 1.0, 4.5), "b1_door": meta["b1_door"], "b2_door": meta["b2_door"], "b3_door": meta["b3_door"], "sopka": meta["sopka"],
         "knihovnice": norm(-4.15, -0.05), "pekar": norm(-1.35, 0.05), "kluk": norm(-3.55, -1.35), "kocka": norm(2.4, -3.2, 0.24),
         "ovce_a": norm(4.0, -4.2), "ovce_b": norm(6.3, -4.7), "slepice_a": norm(5.2, -3.7), "slepice_b": norm(3.1, -4.9),
         "farmar_a": norm(-3.2, -4.3), "farmar_b": norm(1.4, -3.9), "babicka_a": norm(-0.9, -1.15), "babicka_b": norm(1.7, -0.95),
@@ -266,7 +283,7 @@ def stills():
 
 
 if __name__ == "__main__":
-    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_live", "globe", "hero", "tech", "hory", "svet", "hry", "unikovky", "namesti"]
+    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_live", "globe", "hero", "tech", "hory", "svet", "hry", "unikovky", "namesti", "profil"]
     if "icons" in what: icons()
     if "stills" in what: stills()
     # Planeta má hodně jemného detailu: každý druhý snímek a menší rozměr drží soubor pod 1 MB.
@@ -286,6 +303,7 @@ if __name__ == "__main__":
     if "hry" in what: hry()
     if "unikovky" in what: unikovky()
     if "namesti" in what: namesti()
+    if "profil" in what: profil()
     if "motyl" in what: animated("motyl", "motyl.webp", fps=24, quality=72)
     if "vlajka" in what: animated("vlajka", "vlajka.webp", fps=24, quality=72)
     if "raketa" in what: animated("raketa", "raketa.webp", fps=24, quality=72)
