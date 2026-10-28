@@ -58,16 +58,20 @@ export function FullscreenFrame({ locale, children }: { locale: Locale; children
   return (
     <div ref={ref} className={`fs-frame ${active ? "is-fs" : ""} ${fallback ? "is-fs-fallback" : ""}`}>
       <div className="fs-inner">
-        <div className="mb-2 flex justify-end">
+        {/* Ve fullscreenu tlačítko plave nad hrou (nesjede při posouvání a panely ho nepřekryjí). */}
+        <div className={active ? "fs-bar" : "mb-2 flex justify-end"}>
           <button
             type="button"
             onClick={toggle}
             aria-pressed={active}
-            className="btn-bouncy rounded-full border-2 border-[var(--border-soft)] bg-[var(--surface)] px-3 py-1.5 text-xs font-semibold"
+            className={`btn-bouncy rounded-full border-2 px-3 py-1.5 text-xs font-semibold ${
+              active ? "border-white/40 bg-black/70 text-white shadow-lg" : "border-[var(--border-soft)] bg-[var(--surface)]"
+            }`}
           >
             {active ? `✕ ${t.exit}` : `⛶ ${t.enter}`}
           </button>
         </div>
+        {active && <div aria-hidden className="h-9 shrink-0" />}
         {children}
       </div>
     </div>
