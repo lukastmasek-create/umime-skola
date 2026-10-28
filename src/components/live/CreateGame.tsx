@@ -1,5 +1,6 @@
 "use client";
 
+import { MODES, isSyncMode } from "@/lib/live/logic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
@@ -12,8 +13,7 @@ import { errorText } from "./LiveRoom";
 type Course = { slug: string; title: string; category: string; subject: string | null; grade: number | null; questions: number };
 type SetRow = { id: string; title: string; questions: LiveQuestion[] };
 
-const MODES: LiveMode[] = ["QUIZ", "RACE", "GOLD"];
-const MODE_ICON: Record<LiveMode, string> = { QUIZ: "⏱️", RACE: "🏁", GOLD: "🪙" };
+const MODE_ICON: Record<LiveMode, string> = { QUIZ: "⏱️", RACE: "🏁", GOLD: "🪙", STREAK: "🔥", SURVIVAL: "❤️", TEAMS: "🤝" };
 
 export function CreateGame({ locale }: { locale: Locale }) {
   const t = getLiveText(locale);
@@ -30,6 +30,7 @@ export function CreateGame({ locale }: { locale: Locale }) {
   const [seconds, setSeconds] = useState(20);
   const [raceTarget, setRaceTarget] = useState(10);
   const [durationMin, setDurationMin] = useState(5);
+  const [lives, setLives] = useState(3);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,7 +66,7 @@ export function CreateGame({ locale }: { locale: Locale }) {
     const body = {
       mode,
       source: source === "course" ? { type: "course", slug, difficulty: difficulty || undefined, count } : { type: "set", id: setId, count },
-      settings: { seconds, raceTarget, durationMin },
+      settings: { seconds, raceTarget, durationMin, lives },
     };
     const r = await liveApi<{ pin: string; hostSecret: string }>("/rooms", { body });
     setBusy(false);
@@ -188,11 +189,19 @@ export function CreateGame({ locale }: { locale: Locale }) {
         </div>
 
         <h3 className="mt-2 font-bold">{t.create.settings}</h3>
-        {mode === "QUIZ" ? (
-          <label className={label}>
-            {t.create.seconds}: {seconds} s
-            <input type="range" min={5} max={60} step={5} value={seconds} onChange={(e) => setSeconds(Number(e.target.value))} />
-          </label>
+        {isSyncMode(mode) ? (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className={label}>
+              {t.create.seconds}: {seconds} s
+              <input type="range" min={5} max={60} step={5} value={seconds} onChange={(e) => setSeconds(Number(e.target.value))} />
+            </label>
+            {mode === "SURVIVAL" && (
+              <label className={label}>
+                {t.create.lives}: {lives}
+                <input type="range" min={1} max={5} value={lives} onChange={(e) => setLives(Number(e.target.value))} />
+              </label>
+            )}
+          </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {mode === "RACE" && (

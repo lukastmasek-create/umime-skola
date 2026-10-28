@@ -1,13 +1,19 @@
 import type { ChestOutcome, LiveMode, LiveQuestion, LiveSettings, LiveStatus, StoredStatus } from "./types";
 
-export const MODES: LiveMode[] = ["QUIZ", "RACE", "GOLD"];
+export const MODES: LiveMode[] = ["QUIZ", "RACE", "GOLD", "STREAK", "SURVIVAL", "TEAMS"];
 
-export const DEFAULT_SETTINGS: LiveSettings = { seconds: 20, raceTarget: 10, durationMin: 5 };
+/** Režimy, kde hru řídí učitel otázku po otázce (všichni hrají tu samou naráz). */
+export function isSyncMode(mode: LiveMode): boolean {
+  return mode === "QUIZ" || mode === "SURVIVAL" || mode === "TEAMS";
+}
+
+export const DEFAULT_SETTINGS: LiveSettings = { seconds: 20, raceTarget: 10, durationMin: 5, lives: 3 };
 
 export const LIMITS = {
   seconds: [5, 120],
   raceTarget: [3, 50],
   durationMin: [1, 30],
+  lives: [1, 5],
   questions: [1, 100],
   name: 16,
   title: 80,
@@ -25,6 +31,7 @@ export function cleanSettings(raw: unknown): LiveSettings {
     seconds: clamp(num(r.seconds, DEFAULT_SETTINGS.seconds), LIMITS.seconds),
     raceTarget: clamp(num(r.raceTarget, DEFAULT_SETTINGS.raceTarget), LIMITS.raceTarget),
     durationMin: clamp(num(r.durationMin, DEFAULT_SETTINGS.durationMin), LIMITS.durationMin),
+    lives: clamp(num(r.lives, DEFAULT_SETTINGS.lives), LIMITS.lives),
   };
 }
 
@@ -93,6 +100,23 @@ export function quizPoints(correct: boolean, ms: number, seconds: number, streak
   return Math.round(1000 * (1 - fraction / 2)) + Math.min(streakBefore, 5) * 50;
 }
 
+/** Série: správná odpověď je za 100 × násobek série (nejvýš 5×), špatná sérii přeruší. */
+export function streakPoints(streakBefore: number): number {
+  return 100 * Math.min(streakBefore + 1, 5);
+}
+
+export const STREAK_PENALTY = 50;
+
+/** Poslední přeživší: hráč je ve hře, dokud neztratil všechny životy. */
+export function livesLeft(lives: number, lost: number): number {
+  return Math.max(0, lives - lost);
+}
+
+/** Týmy se skládají střídavě podle pořadí připojení (první hráč do týmu 0, druhý do 1…), takže jsou vyrovnané. */
+export function teamOf(joinIndex: number): 0 | 1 {
+  return joinIndex % 2 === 0 ? 0 : 1;
+}
+
 export type StatusInput = {
   mode: LiveMode;
   status: StoredStatus;
@@ -107,7 +131,7 @@ export type StatusInput = {
 
 export function effectiveStatus(i: StatusInput): LiveStatus {
   if (i.status !== "QUESTION") return i.status;
-  if (i.mode === "QUIZ") {
+  if (isSyncMode(i.mode)) {
     if (i.questionStartedAt === null) return "QUESTION";
     const over = i.now >= i.questionStartedAt + i.settings.seconds * 1000;
     const everyone = i.players > 0 && i.answered >= i.players;
@@ -164,7 +188,8 @@ export type Ranked = { id: string; score: number; gold: number; progress: number
 
 /** Pořadí podle režimu; při shodě rozhoduje dřívější připojení. */
 export function rankPlayers<T extends Ranked>(mode: LiveMode, players: T[]): T[] {
-  const key = (p: T) => (mode === "GOLD" ? [p.gold, p.score] : mode === "RACE" ? [p.progress, p.score] : [p.score, 0]);
+  const key = (p: T) =>
+    mode === "GOLD" ? [p.gold, p.score] : mode === "RACE" ? [p.progress, p.score] : mode === "SURVIVAL" ? [-p.progress, p.score] : [p.score, 0];
   return [...players].sort((a, b) => {
     const [a1, a2] = key(a);
     const [b1, b2] = key(b);

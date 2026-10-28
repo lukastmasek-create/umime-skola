@@ -7,9 +7,10 @@ import type { Locale } from "@/i18n/config";
 import type { AnswerResult, ChestOutcome, ChestResult, LiveView } from "@/lib/live/types";
 import { forget, liveApi, type Identity } from "./api";
 import { errorText } from "./LiveRoom";
-import { Countdown, EndsIn, Leaderboard, OptionButton } from "./shared";
+import { isSyncMode } from "@/lib/live/logic";
+import { Countdown, EndsIn, Leaderboard, OptionButton, TEAM_STYLES, TeamScores } from "./shared";
 
-type Feedback = { choice: number; correct: boolean; correctIndex: number; explanation?: string; chests: number; question: NonNullable<LiveView["question"]> };
+type Feedback = { choice: number; correct: boolean; correctIndex: number; explanation?: string; chests: number; points: number; question: NonNullable<LiveView["question"]> };
 
 function chestMessage(t: LiveText, r: ChestResult): string {
   const o: ChestOutcome = r.outcome;
@@ -46,9 +47,12 @@ export function PlayerView({
     [],
   );
 
-  const unit = view.mode === "GOLD" ? t.end.gold : view.mode === "RACE" ? t.end.progress : t.end.score;
+  const unit = view.mode === "GOLD" ? t.end.gold : view.mode === "RACE" ? t.end.progress : view.mode === "SURVIVAL" ? t.end.lives : t.end.score;
   const question = view.question;
-  const quiz = view.mode === "QUIZ";
+  const quiz = isSyncMode(view.mode);
+  const teamNames = t.play.teamNames;
+  const eliminated = view.mode === "SURVIVAL" && me?.lives === 0;
+  const boardProps = { mode: view.mode, rows: view.leaderboard, meId: me?.id, unit, raceTarget: view.settings.raceTarget, lives: view.settings.lives, teamNames };
 
   async function answer(choice: number) {
     if (sending || !question) return;
@@ -64,6 +68,7 @@ export function PlayerView({
       correctIndex: r.correctIndex ?? -1,
       explanation: r.explanation,
       chests: r.chests ?? 0,
+      points: r.points ?? 0,
       question,
     });
     if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
@@ -100,11 +105,26 @@ export function PlayerView({
       <span className="flex items-center gap-3">
         {me.streak >= 2 && <span className="pill bg-[var(--accent-yellow)] px-2 py-0.5 text-[#16132b]">🔥 {fmt(t.play.streak, { n: me.streak })}</span>}
         <span className="font-mono tabular-nums">
-          {view.mode === "GOLD" ? `🪙 ${me.gold}` : view.mode === "RACE" ? `🏁 ${me.progress}/${view.settings.raceTarget}` : `${me.score} ${t.play.points}`}
+          {view.mode === "GOLD"
+            ? `🪙 ${me.gold}`
+            : view.mode === "RACE"
+              ? `🏁 ${me.progress}/${view.settings.raceTarget}`
+              : view.mode === "SURVIVAL"
+                ? `${"❤️".repeat(me.lives ?? 0) || "💀"} · ${me.score} ${t.play.points}`
+                : `${me.score} ${t.play.points}`}
         </span>
       </span>
     </div>
   );
+  const teamBanner =
+    me?.team !== undefined && view.teams ? (
+      <div className="mb-4 flex flex-col gap-2">
+        <p className="text-center text-sm font-bold">
+          {t.play.youTeam}: <span style={{ color: TEAM_STYLES[me.team].color }}>{TEAM_STYLES[me.team].shape}</span> {teamNames[me.team]}
+        </p>
+        <TeamScores teams={view.teams} names={teamNames} meTeam={me.team} />
+      </div>
+    ) : null;
 
   // --- Čekárna ---
   if (view.status === "LOBBY") {
@@ -143,8 +163,16 @@ export function PlayerView({
           )}
         </div>
         <div className="card p-5">
-          <Leaderboard mode={view.mode} rows={view.leaderboard} meId={me?.id} limit={10} unit={unit} raceTarget={view.settings.raceTarget} />
+          <Leaderboard {...boardProps} limit={10} />
         </div>
+        {view.teams && (
+          <div className="card flex flex-col gap-2 p-5">
+            {view.teams[0].score !== view.teams[1].score && (
+              <p className="text-center text-lg font-bold">{fmt(t.play.teamWins, { name: teamNames[view.teams[0].score > view.teams[1].score ? 0 : 1] })}</p>
+            )}
+            <TeamScores teams={view.teams} names={teamNames} meTeam={me?.team} />
+          </div>
+        )}
         <Link
           href={`/${locale}/hrat-spolecne`}
           onClick={() => forget(view.pin)}
@@ -164,6 +192,13 @@ export function PlayerView({
     return (
       <div className="mx-auto flex max-w-2xl flex-col gap-4">
         {hud}
+        {teamBanner}
+        {eliminated && (
+          <div role="status" className="card p-4 text-center">
+            <p className="text-lg font-extrabold">💀 {t.play.eliminated}</p>
+            <p className="text-sm text-[var(--muted)]">{t.play.spectating}</p>
+          </div>
+        )}
         <div className="card flex flex-col gap-4 p-5">
           <span className="text-sm font-semibold text-[var(--muted)]">{fmt(t.play.questionOf, { n: question.index + 1, total: view.total })}</span>
           <h1 className="text-xl font-bold leading-snug sm:text-2xl" style={{ fontFamily: "var(--font-heading)" }}>
@@ -177,7 +212,7 @@ export function PlayerView({
                 index={i}
                 label={o}
                 onClick={() => answer(i)}
-                disabled={sending || me?.answeredCurrent || reveal}
+                disabled={sending || me?.answeredCurrent || reveal || eliminated}
                 state={reveal ? (i === question.correctIndex ? "correct" : i === chosen ? "wrong" : "dim") : chosen === i ? "chosen" : chosen !== null ? "dim" : null}
               />
             ))}
@@ -194,7 +229,7 @@ export function PlayerView({
         {reveal && (
           <div className="card p-5">
             {me && <p className="mb-2 font-bold">{fmt(t.play.rank, { n: me.rank })}</p>}
-            <Leaderboard mode="QUIZ" rows={view.leaderboard} meId={me?.id} limit={5} unit={unit} />
+            <Leaderboard {...boardProps} limit={view.mode === "SURVIVAL" ? 10 : 5} />
           </div>
         )}
         {err}
@@ -212,9 +247,10 @@ export function PlayerView({
     <div className="mx-auto flex max-w-2xl flex-col gap-4">
       {hud}
       <div className="flex items-center justify-between">
-        <span className="font-bold">{view.mode === "RACE" ? t.play.race : t.play.gold}</span>
+        <span className="font-bold">{view.mode === "RACE" ? t.play.race : view.mode === "STREAK" ? t.play.streakMode : t.play.gold}</span>
         {view.endsAt && <EndsIn endsAt={view.endsAt} now={serverNow} label={t.play.timeLeft} />}
       </div>
+      {view.mode === "STREAK" && <p className="text-sm text-[var(--muted)]">{t.play.streakHint}</p>}
       {view.mode === "RACE" && me && (
         <div className="h-4 overflow-hidden rounded-full border-2 border-[var(--edge)] bg-[var(--surface-muted)]">
           <div className="h-full rounded-full" style={{ width: `${Math.min(100, (me.progress / view.settings.raceTarget) * 100)}%`, background: "var(--brand-500)", transition: "width 0.4s ease" }} />
@@ -258,7 +294,10 @@ export function PlayerView({
           </div>
           {feedback && (
             <div className="rounded-xl p-3 text-center" style={{ background: feedback.correct ? "var(--accent-green)" : "var(--surface-muted)", color: feedback.correct ? "#fff" : "inherit" }}>
-              <p className="text-lg font-extrabold">{feedback.correct ? t.play.correct : t.play.wrong}</p>
+              <p className="text-lg font-extrabold">
+                {feedback.correct ? t.play.correct : t.play.wrong}
+                {view.mode === "STREAK" && feedback.correct && ` +${feedback.points}`}
+              </p>
               {feedback.explanation && <p className="text-sm">{feedback.explanation}</p>}
             </div>
           )}
@@ -266,7 +305,7 @@ export function PlayerView({
       )}
       {err}
       <div className="card p-4">
-        <Leaderboard mode={view.mode} rows={view.leaderboard} meId={me?.id} limit={5} unit={unit} raceTarget={view.settings.raceTarget} />
+        <Leaderboard {...boardProps} limit={5} />
       </div>
     </div>
   );

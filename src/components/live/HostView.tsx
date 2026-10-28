@@ -8,7 +8,8 @@ import type { Locale } from "@/i18n/config";
 import type { LiveView } from "@/lib/live/types";
 import { liveApi, type Identity } from "./api";
 import { errorText } from "./LiveRoom";
-import { Countdown, EndsIn, Leaderboard, OptionButton } from "./shared";
+import { isSyncMode } from "@/lib/live/logic";
+import { Countdown, EndsIn, Leaderboard, OptionButton, TeamScores } from "./shared";
 
 export function HostView({
   locale,
@@ -26,7 +27,10 @@ export function HostView({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const unit = view.mode === "GOLD" ? t.end.gold : view.mode === "RACE" ? t.end.progress : t.end.score;
+  const unit = view.mode === "GOLD" ? t.end.gold : view.mode === "RACE" ? t.end.progress : view.mode === "SURVIVAL" ? t.end.lives : t.end.score;
+  const teamNames = t.play.teamNames;
+  const teams = view.teams && <TeamScores teams={view.teams} names={teamNames} />;
+  const boardProps = { mode: view.mode, rows: view.leaderboard, unit, raceTarget: view.settings.raceTarget, lives: view.settings.lives, teamNames };
 
   async function control(action: "next" | "end") {
     if (action === "end" && !window.confirm(t.play.confirmEnd)) return;
@@ -134,8 +138,16 @@ export function HostView({
           )}
           {top.length > 0 && <Podium players={top} anonymous="" />}
         </div>
+        {view.teams && (
+          <div className="card flex flex-col gap-2 p-5">
+            {view.teams[0].score !== view.teams[1].score && (
+              <p className="text-center text-lg font-bold">{fmt(t.play.teamWins, { name: teamNames[view.teams[0].score > view.teams[1].score ? 0 : 1] })}</p>
+            )}
+            {teams}
+          </div>
+        )}
         <div className="card p-5">
-          <Leaderboard mode={view.mode} rows={view.leaderboard} unit={unit} raceTarget={view.settings.raceTarget} />
+          <Leaderboard {...boardProps} />
         </div>
         <Link href={`/${locale}/hrat-spolecne/nova`} className="btn-bouncy btn-primary btn-lg self-center">
           {t.end.newGame}
@@ -145,7 +157,7 @@ export function HostView({
   }
 
   // --- Klasický kvíz ---
-  if (view.mode === "QUIZ" && view.question) {
+  if (isSyncMode(view.mode) && view.question) {
     const q = view.question;
     const reveal = view.status === "REVEAL";
     const last = q.index + 1 >= view.total;
@@ -175,10 +187,11 @@ export function HostView({
           </div>
           {reveal && q.explanation && <p className="rounded-xl bg-[var(--surface-muted)] p-3 text-sm">{q.explanation}</p>}
         </div>
+        {teams && <div className="card p-5">{teams}</div>}
         {reveal && (
           <div className="card p-5">
             <h3 className="mb-2 font-bold">{t.lobby.players}</h3>
-            <Leaderboard mode="QUIZ" rows={view.leaderboard} limit={5} unit={unit} />
+            <Leaderboard {...boardProps} limit={view.mode === "SURVIVAL" ? undefined : 5} />
           </div>
         )}
         {err}
@@ -189,17 +202,18 @@ export function HostView({
     );
   }
 
-  // --- Závod a Zlatá horečka: učitel sleduje průběh ---
+  // --- Závod, Zlatá horečka a Série: učitel sleduje průběh ---
   return (
     <div className="flex flex-col gap-4">
       {header}
       <div className="card flex flex-col gap-3 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-xl font-bold">{view.mode === "RACE" ? t.play.race : t.play.gold}</h2>
+          <h2 className="text-xl font-bold">{view.mode === "RACE" ? t.play.race : view.mode === "STREAK" ? t.play.streakMode : t.play.gold}</h2>
           {view.endsAt && <EndsIn endsAt={view.endsAt} now={serverNow} label={t.play.timeLeft} />}
         </div>
         {view.mode === "RACE" && <p className="text-sm text-[var(--muted)]">🏁 {view.settings.raceTarget}</p>}
-        <Leaderboard mode={view.mode} rows={view.leaderboard} unit={unit} raceTarget={view.settings.raceTarget} />
+        {view.mode === "STREAK" && <p className="text-sm text-[var(--muted)]">{t.play.streakHint}</p>}
+        <Leaderboard {...boardProps} />
       </div>
       {err}
     </div>
