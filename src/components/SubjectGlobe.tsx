@@ -895,14 +895,16 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
             const sum = data?.[s.slug];
             const pct = sum && sum.total > 0 ? (sum.done / sum.total) * 100 : 0;
             const isActive = s.slug === active;
+            // Předměty bez vlastní země na globu (Fyzika) jsou jen odkaz; globus se kvůli nim nezastavuje.
+            const onGlobe = (ORDER as readonly string[]).includes(s.slug);
             return (
               <li key={s.slug}>
                 <Link
                   href={href(s.slug)}
-                  onMouseEnter={() => pin(s.slug)}
-                  onMouseLeave={() => pin(null)}
-                  onFocus={() => pin(s.slug)}
-                  onBlur={() => pin(null)}
+                  onMouseEnter={() => onGlobe && pin(s.slug)}
+                  onMouseLeave={() => onGlobe && pin(null)}
+                  onFocus={() => onGlobe && pin(s.slug)}
+                  onBlur={() => onGlobe && pin(null)}
                   aria-current={isActive ? "true" : undefined}
                   className={`card card-hover relative flex h-full flex-col gap-1.5 p-2.5 text-[#1b1830] ${isActive ? "ring-4 ring-white/80" : ""}`}
                   style={{ background: s.color, borderColor: "#16132b" }}

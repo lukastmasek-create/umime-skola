@@ -43,6 +43,7 @@ import {
   type Order,
 } from "@/lib/idle/farm";
 import { EventPill, type EventInfo } from "@/components/idle/EventPill";
+import { ChallengePanel } from "@/components/idle/ChallengePanel";
 import type { Locale } from "@/i18n/config";
 
 type Payload = {
@@ -623,6 +624,8 @@ export function FarmGame({ locale }: { locale: Locale }) {
           </div>
         </section>
       )}
+
+      <ChallengePanel game="farm" locale={locale} onChange={() => void refresh()} />
 
       {toast && (
         <div

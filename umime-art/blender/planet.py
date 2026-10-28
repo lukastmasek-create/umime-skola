@@ -9,10 +9,11 @@ import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 from common import *
 
-FRAMES = 72
+# FRAMES=180 dá 60 fps při smyčce 3 s; SAMPLES a velikost jdou přepsat proměnnými prostředí.
+FRAMES = int(os.environ.get("FRAMES", 72))
 PREVIEW = "--preview" in args()
-W, H = 672, 446
-sc = reset(W, H, FRAMES, samples=48 if not PREVIEW else 20, name="planeta", world=("#3a2f7a", 0.02))
+W, H = int(os.environ.get("WIDTH", 672)), int(os.environ.get("HEIGHT", 446))
+sc = reset(W, H, FRAMES, fps=int(os.environ.get("FPS", 24)), samples=int(os.environ.get("SAMPLES", 48)) if not PREVIEW else 20, name="planeta", world=("#3a2f7a", 0.02))
 sc.cycles.max_bounces = 6
 sc.cycles.transparent_max_bounces = 16
 

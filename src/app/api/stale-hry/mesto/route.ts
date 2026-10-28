@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { eventBonusFor, type EventBonus } from "@/lib/idle/events";
+import { challengeBoost } from "@/lib/idle/challenge-server";
 import { getXp } from "@/lib/xp";
 import { levelFromXp } from "@/lib/progression";
 import {
@@ -31,14 +32,17 @@ class Conflict extends Error {}
 class NotEnoughPoints extends Error {}
 
 async function learning(userId: string, now: number) {
-  const [sum, xp] = await Promise.all([
+  const [sum, xp, boost] = await Promise.all([
     prisma.xpEvent.aggregate({
       where: { userId, createdAt: { gte: new Date(now - DAY_MS) } },
       _sum: { amount: true },
     }),
     getXp(userId),
+    challengeBoost(prisma, userId, "city", now),
   ]);
-  return { bonus: learningBonusFromXp(sum._sum.amount ?? 0), event: eventBonusFor("city", now), level: levelFromXp(xp) };
+  // Boost ze série otázek se přičítá k události, ať se promítne do výnosů beze změn ve výpočtu města.
+  const event = eventBonusFor("city", now);
+  return { bonus: learningBonusFromXp(sum._sum.amount ?? 0), event: { ...event, total: event.total + boost }, level: levelFromXp(xp) };
 }
 
 function payload(state: CityState, points: number, level: number, bonus: number, event: EventBonus, now: number, owned: string[]) {

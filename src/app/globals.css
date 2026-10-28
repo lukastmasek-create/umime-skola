@@ -1527,6 +1527,12 @@ select:not(:focus) {
   }
 }
 
+/* Planeta: při vypnutých animacích se místo videa ukáže statický obrázek pod ním */
+@media (prefers-reduced-motion: reduce) {
+  .planet-video {
+    display: none;
+  }
+}
 /* --- Světy pro všechny stránky: stejný vesmírný základ jako úvodní stránka, u předmětů vlastní motiv ---
    Stránka předmětu dá kořenovému prvku data-world="<slug předmětu>"; <main> si podle toho vezme pozadí. */
 
