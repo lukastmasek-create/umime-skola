@@ -64,16 +64,39 @@ def icons():
 
 
 def planet_live():
-    """Vrstvy planety pro živé vykreslení ve WebGL (PlanetLive.tsx) do public/home/planet-live."""
-    dest_dir = os.path.join(DEST, "..", "planet-live")
+    """Vrstvy planet pro živé vykreslení ve WebGL (PlanetLive.tsx): dolní oranžová (pv_) a horní fialová (hv_)."""
+    for prefix, folder in (("pv_", "planet-live"), ("hv_", "planet-hero")):
+        dest_dir = os.path.join(DEST, "..", folder)
+        os.makedirs(dest_dir, exist_ok=True)
+        for name, dest, quality in (("albedo", "albedo.webp", 88), ("stin", "stin.webp", 94), ("halo", "halo.webp", 88),
+                                    ("prsten_zadni", "prsten-zadni.webp", 90), ("prsten_predni", "prsten-predni.webp", 90),
+                                    ("mesic1", "mesic1.webp", 92), ("mesic2", "mesic2.webp", 92)):
+            if not glob.glob(os.path.join(ROOT, "out", prefix + name, "f_*.png")):
+                continue
+            im = frames(prefix + name)[0]
+            path = os.path.join(dest_dir, dest)
+            im.save(path, format="WEBP", quality=quality, method=5, alpha_quality=96)
+            print(folder, dest, round(os.path.getsize(path) / 1024), "kB", im.size)
+
+
+def globe():
+    """Památky předmětů (pás 20 snímků) a školní předměty prstence pro SubjectGlobe do public/home/globe."""
+    dest_dir = os.path.join(DEST, "..", "globe")
     os.makedirs(dest_dir, exist_ok=True)
-    for name, dest, quality in (("pv_albedo", "albedo.webp", 88), ("pv_stin", "stin.webp", 94), ("pv_halo", "halo.webp", 88),
-                                ("pv_prsten_zadni", "prsten-zadni.webp", 90), ("pv_prsten_predni", "prsten-predni.webp", 90),
-                                ("pv_mesic1", "mesic1.webp", 92), ("pv_mesic2", "mesic2.webp", 92)):
-        im = frames(name)[0]
-        path = os.path.join(dest_dir, dest)
-        im.save(path, format="WEBP", quality=quality, method=5, alpha_quality=96)
-        print(dest, round(os.path.getsize(path) / 1024), "kB", im.size)
+    for subject in ("cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis"):
+        fr = frames("znacka_" + subject)
+        w, h = fr[0].size
+        sheet = Image.new("RGBA", (w * len(fr), h), (0, 0, 0, 0))
+        for i, im in enumerate(fr):
+            sheet.paste(im, (i * w, 0))
+        path = os.path.join(dest_dir, subject + ".webp")
+        sheet.save(path, format="WEBP", quality=74, method=5, alpha_quality=80)
+        print(subject, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB", sheet.size)
+    for name in ("kniha", "tuzka", "banka", "atom", "kalkulacka", "pravitko", "cepice", "zarovka", "lupa", "glob", "kostky", "svitek", "letadlo", "raketa", "mikroskop", "kruzitko", "sesit", "dna", "pero", "rostlina"):
+        im = frames("pr_" + name)[0]
+        path = os.path.join(dest_dir, "obj-" + name + ".webp")
+        im.save(path, format="WEBP", quality=86, method=5, alpha_quality=92)
+        print("obj-" + name, round(os.path.getsize(path) / 1024), "kB", im.size)
 
 
 def stills():
@@ -83,12 +106,13 @@ def stills():
 
 
 if __name__ == "__main__":
-    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_live"]
+    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_live", "globe"]
     if "icons" in what: icons()
     if "stills" in what: stills()
     # Planeta má hodně jemného detailu: každý druhý snímek a menší rozměr drží soubor pod 1 MB.
     if "planeta" in what: animated("planeta", "planeta.webp", fps=12, quality=55, size=(616, 409), step=2)
     if "planeta_live" in what: planet_live()
+    if "globe" in what: globe()
     if "motyl" in what: animated("motyl", "motyl.webp", fps=24, quality=72)
     if "vlajka" in what: animated("vlajka", "vlajka.webp", fps=24, quality=72)
     if "raketa" in what: animated("raketa", "raketa.webp", fps=24, quality=72)

@@ -12,6 +12,8 @@ sys.path.insert(0, os.path.dirname(__file__))
 from planeta_lib import *
 from mathutils import Vector
 
+PFX = PAL["prefix"]
+
 W, H = 720, 478
 ORTHO = 5.5
 RING_TILT = (math.radians(21), math.radians(-17), 0)
@@ -49,7 +51,7 @@ def add_sphere(radius=1.0, mat=None):
 
 
 def job_albedo():
-    sc = reset(2048, 1024, 1, samples=8, name="pv_albedo", world=("#000000", 0.0), view="Standard")
+    sc = reset(2048, 1024, 1, samples=8, name=PFX + "albedo", world=("#000000", 0.0), view="Standard")
     sc.render.film_transparent = False
     sc.cycles.use_denoising = False
     bpy.ops.mesh.primitive_plane_add(size=2)
@@ -60,7 +62,7 @@ def job_albedo():
 
 
 def job_shade():
-    sc = reset(W, H, 1, samples=64, name="pv_stin", world=("#0a0f30", 0.0), view="Standard")
+    sc = reset(W, H, 1, samples=64, name=PFX + "stin", world=("#0a0f30", 0.0), view="Standard")
     white = material("bila", "#ffffff", roughness=0.7)
     add_sphere(1.0, white)
     add_ring("front", cam_visible=False)  # jen vrhá stín na planetu
@@ -70,12 +72,12 @@ def job_shade():
 
 
 def job_halo():
-    sc = reset(W, H, 1, samples=48, name="pv_halo", world=("#000000", 0.0), view="Standard")
+    sc = reset(W, H, 1, samples=48, name=PFX + "halo", world=("#000000", 0.0), view="Standard")
     # okrajová záře na kotouči planety
     m = bpy.data.materials.new("rim"); nt = nodes(m)
     o = N(nt, "ShaderNodeOutputMaterial"); lw = N(nt, "ShaderNodeLayerWeight", Blend=0.4)
     inv = math_(nt, "SUBTRACT", 1.0, lw.outputs["Facing"]); pw = math_(nt, "POWER", inv.outputs[0], 3.0); rs = math_(nt, "MULTIPLY", pw.outputs[0], 0.5)
-    em = N(nt, "ShaderNodeEmission", Strength=1.2); em.inputs["Color"].default_value = hex_rgba("#9fdad0")
+    em = N(nt, "ShaderNodeEmission", Strength=1.2); em.inputs["Color"].default_value = hex_rgba(PAL["rim"])
     tr = N(nt, "ShaderNodeBsdfTransparent"); mx = N(nt, "ShaderNodeMixShader")
     L(nt, rs.outputs[0], mx.inputs[0]); L(nt, tr.outputs[0], mx.inputs[1]); L(nt, em.outputs[0], mx.inputs[2]); L(nt, mx.outputs[0], o.inputs[0])
     add_sphere(1.0, m)
@@ -83,7 +85,7 @@ def job_halo():
     am = bpy.data.materials.new("atm"); nt = nodes(am)
     ao = N(nt, "ShaderNodeOutputMaterial"); alw = N(nt, "ShaderNodeLayerWeight", Blend=0.5)
     asc = math_(nt, "MULTIPLY", math_(nt, "POWER", alw.outputs["Facing"], 5.0).outputs[0], 0.55)
-    aem = N(nt, "ShaderNodeEmission", Strength=1.1); aem.inputs["Color"].default_value = hex_rgba("#8fe0d2")
+    aem = N(nt, "ShaderNodeEmission", Strength=1.1); aem.inputs["Color"].default_value = hex_rgba(PAL["atm"])
     atr = N(nt, "ShaderNodeBsdfTransparent"); amix = N(nt, "ShaderNodeMixShader")
     L(nt, asc.outputs[0], amix.inputs[0]); L(nt, atr.outputs[0], amix.inputs[1]); L(nt, aem.outputs[0], amix.inputs[2]); L(nt, amix.outputs[0], ao.inputs[0])
     add_sphere(1.045, am)
@@ -92,7 +94,7 @@ def job_halo():
 
 
 def job_ring(side):
-    sc = reset(W, H, 1, samples=96, name="pv_prsten_" + ("zadni" if side == "back" else "predni"), world=("#0a0f30", 0.15), view="AgX", look="AgX - Punchy")
+    sc = reset(W, H, 1, samples=96, name=PFX + "prsten_" + ("zadni" if side == "back" else "predni"), world=("#0a0f30", 0.15), view="AgX", look="AgX - Punchy")
     add_ring(side)
     planet = add_sphere(1.0, material("stinitel", "#888888"))
     hidden(planet)  # planeta jen vrhá stín na prstenec
@@ -116,8 +118,8 @@ if __name__ == "__main__":
     jobs = {
         "albedo": job_albedo, "stin": job_shade, "halo": job_halo,
         "zadni": lambda: job_ring("back"), "predni": lambda: job_ring("front"),
-        "mesic1": lambda: job_moon("pv_mesic1", 0.24, "#5a4f48", "#d2c2ae"),
-        "mesic2": lambda: job_moon("pv_mesic2", 0.11, "#3f4a55", "#aebdc9"),
+        "mesic1": lambda: job_moon(PFX + "mesic1", 0.24, *PAL["moon1"]),
+        "mesic2": lambda: job_moon(PFX + "mesic2", 0.11, *PAL["moon2"]),
     }
     for name, fn in jobs.items():
         if not only or name in only:

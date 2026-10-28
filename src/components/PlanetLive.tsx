@@ -7,11 +7,9 @@ import { useEffect, useRef, useState } from "react";
 // osvětlení se stínem prstence, atmosférická záře, prstenec za a před planetou a měsíce.
 // Shader položí texturu na kouli a otáčí s ní; měsíce se pohybují po oběžných drahách v DOM.
 
-const DIR = "/home/planet-live";
 const W = 720;
 const H = 478;
 const ORTHO = 5.5; // šířka záběru v jednotkách scény (poloměr planety = 1)
-const SPIN_SECONDS = 48; // jedna otáčka planety
 const TILT = (6 * Math.PI) / 180;
 
 const MOONS = [
@@ -80,7 +78,26 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-export function PlanetLive({ className = "", size = 500 }: { className?: string; size?: number }) {
+export function PlanetLive({
+  className = "",
+  size = 500,
+  dir = "/home/planet-live",
+  still = "/home/anim/planeta-realna-still.webp",
+  spinSeconds = 48,
+  glow,
+}: {
+  className?: string;
+  size?: number;
+  /** Složka s vrstvami (albedo, stin, halo, prsteny, mesice). */
+  dir?: string;
+  /** Statický obrázek pro prohlížeče bez WebGL a pro omezení animací. */
+  still?: string;
+  /** Jedna otáčka planety v sekundách. */
+  spinSeconds?: number;
+  /** CSS filtr kolem planety (např. fialová záře). */
+  glow?: string;
+}) {
+
   const wrap = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const moonEls = useRef<(HTMLImageElement | null)[]>([]);
@@ -145,7 +162,7 @@ export function PlanetLive({ className = "", size = 500 }: { className?: string;
 
     const draw = (seconds: number) => {
       gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.uniform1f(u("uSpin"), (seconds / SPIN_SECONDS) * Math.PI * 2);
+      gl.uniform1f(u("uSpin"), (seconds / spinSeconds) * Math.PI * 2);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       MOONS.forEach((m, i) => {
         const el = moonEls.current[i];
@@ -163,7 +180,7 @@ export function PlanetLive({ className = "", size = 500 }: { className?: string;
 
     (async () => {
       try {
-        const [albedo, shade] = await Promise.all([loadImage(`${DIR}/albedo.webp`), loadImage(`${DIR}/stin.webp`)]);
+        const [albedo, shade] = await Promise.all([loadImage(`${dir}/albedo.webp`), loadImage(`${dir}/stin.webp`)]);
         if (disposed) return;
         texture(0, albedo, true);
         texture(1, shade, false);
@@ -196,29 +213,29 @@ export function PlanetLive({ className = "", size = 500 }: { className?: string;
       cancelAnimationFrame(raf);
       cleanup();
     };
-  }, [size, height]);
+  }, [size, height, dir, spinSeconds]);
 
   const layer = "absolute inset-0 h-full w-full select-none";
   return (
-    <div aria-hidden className={`pointer-events-none select-none ${className}`} style={{ width: size, height }}>
+    <div aria-hidden className={`pointer-events-none select-none ${className}`} style={{ width: size, height, filter: glow }}>
       <div ref={wrap} className="relative h-full w-full">
       {fallback ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src="/home/anim/planeta-realna-still.webp" alt="" draggable={false} className="h-full w-full object-contain" />
+        <img src={still} alt="" draggable={false} className="h-full w-full object-contain" />
       ) : (
         <>
           {/* eslint-disable @next/next/no-img-element */}
-          <img src={`${DIR}/prsten-zadni.webp`} alt="" draggable={false} loading="lazy" className={layer} style={{ zIndex: 1 }} />
+          <img src={`${dir}/prsten-zadni.webp`} alt="" draggable={false} loading="lazy" className={layer} style={{ zIndex: 1 }} />
           <canvas ref={canvas} className={layer} style={{ zIndex: 3, width: size, height }} />
-          <img src={`${DIR}/halo.webp`} alt="" draggable={false} loading="lazy" className={layer} style={{ zIndex: 4, mixBlendMode: "screen" }} />
-          <img src={`${DIR}/prsten-predni.webp`} alt="" draggable={false} loading="lazy" className={layer} style={{ zIndex: 5 }} />
+          <img src={`${dir}/halo.webp`} alt="" draggable={false} loading="lazy" className={layer} style={{ zIndex: 4, mixBlendMode: "screen" }} />
+          <img src={`${dir}/prsten-predni.webp`} alt="" draggable={false} loading="lazy" className={layer} style={{ zIndex: 5 }} />
           {MOONS.map((m, i) => (
             <img
               key={m.id}
               ref={(el) => {
                 moonEls.current[i] = el;
               }}
-              src={`${DIR}/${m.id}.webp`}
+              src={`${dir}/${m.id}.webp`}
               alt=""
               draggable={false}
               className="absolute left-0 top-0 max-w-none"

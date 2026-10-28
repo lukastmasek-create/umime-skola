@@ -6,6 +6,32 @@ from common import *
 
 STORM = (0.34, -0.9, -0.28)
 
+# Dvě barevné verze téže planety: "real" (oranžový plynný obr dole na úvodní stránce)
+# a "fialova" (růžovo-fialová planeta nahoře). Vybírá se proměnnou prostředí PLANETA.
+PALETTES = {
+    "real": {
+        "bands": [(0.0, "#5e220e"), (0.15, "#a24a1f"), (0.3, "#d9873f"), (0.44, "#f2cf96"), (0.52, "#e6b06a"), (0.58, "#a9c29a"), (0.62, "#4f8f7c"), (0.67, "#c98a4a"), (0.78, "#d48a45"), (0.9, "#8a3a18"), (1.0, "#4a1a0c")],
+        "storm": ("#c8482a", "#ffe6c4"),
+        "ring": ("#3d5a68", "#6b8f9e", "#98b8c4"),
+        "rim": "#9fdad0",
+        "atm": "#8fe0d2",
+        "moon1": ("#5a4f48", "#d2c2ae"),
+        "moon2": ("#3f4a55", "#aebdc9"),
+        "prefix": "pv_",
+    },
+    "fialova": {
+        "bands": [(0.0, "#241368"), (0.15, "#4a2ea6"), (0.3, "#8a63e0"), (0.44, "#ffb4d8"), (0.52, "#ff8fbf"), (0.58, "#ffe2f0"), (0.62, "#7fa8ff"), (0.67, "#d06ad8"), (0.78, "#9a4fd0"), (0.9, "#3a2288"), (1.0, "#1e1050")],
+        "storm": ("#6a22c8", "#ffd2f0"),
+        "ring": ("#7a5a1e", "#b8923a", "#f0cf7a"),
+        "rim": "#c9a0ff",
+        "atm": "#c79bff",
+        "moon1": ("#7a6a5a", "#f0dcc8"),
+        "moon2": ("#5a4f80", "#ece4ff"),
+        "prefix": "hv_",
+    },
+}
+PAL = PALETTES[os.environ.get("PLANETA", "real")]
+
 
 def nodes(mat):
     mat.use_nodes = True
@@ -83,7 +109,7 @@ def planet_albedo_material():
     band = math_(nt, "MULTIPLY_ADD", sum2.outputs[0], 0.5); band.inputs[2].default_value = 0.5; band.use_clamp = True
 
     ramp = N(nt, "ShaderNodeValToRGB")
-    stops = [(0.0, "#5e220e"), (0.15, "#a24a1f"), (0.3, "#d9873f"), (0.44, "#f2cf96"), (0.52, "#e6b06a"), (0.58, "#a9c29a"), (0.62, "#4f8f7c"), (0.67, "#c98a4a"), (0.78, "#d48a45"), (0.9, "#8a3a18"), (1.0, "#4a1a0c")]
+    stops = PAL["bands"]
     ramp.color_ramp.elements[0].position = stops[0][0]; ramp.color_ramp.elements[0].color = hex_rgba(stops[0][1])
     ramp.color_ramp.elements[1].position = stops[-1][0]; ramp.color_ramp.elements[1].color = hex_rgba(stops[-1][1])
     for p_, c in stops[1:-1]:
@@ -100,7 +126,7 @@ def planet_albedo_material():
     sx2 = math_(nt, "POWER", math_(nt, "MULTIPLY", dist.outputs["Value"], 3.2).outputs[0], 2.0)
     smask = math_(nt, "EXPONENT", math_(nt, "MULTIPLY", sx2.outputs[0], -1.0).outputs[0])
     storm_col = N(nt, "ShaderNodeValToRGB")
-    storm_col.color_ramp.elements[0].color = hex_rgba("#c8482a"); storm_col.color_ramp.elements[1].color = hex_rgba("#ffe6c4")
+    storm_col.color_ramp.elements[0].color = hex_rgba(PAL["storm"][0]); storm_col.color_ramp.elements[1].color = hex_rgba(PAL["storm"][1])
     L(nt, n1.outputs["Fac"], storm_col.inputs[0])
     smask2 = math_(nt, "MULTIPLY", smask.outputs[0], 0.85)
     mixstorm = N(nt, "ShaderNodeMix"); mixstorm.data_type = "RGBA"
@@ -133,8 +159,8 @@ def ring_material(side):
     half = math_(nt, "GREATER_THAN" if side == "back" else "LESS_THAN", gsep.outputs["Y"], 0.0)
     alpha4 = math_(nt, "MULTIPLY", alpha3.outputs[0], half.outputs[0])
     cr = N(nt, "ShaderNodeValToRGB")
-    cr.color_ramp.elements[0].color = hex_rgba("#3d5a68"); cr.color_ramp.elements[1].color = hex_rgba("#98b8c4")
-    e = cr.color_ramp.elements.new(0.5); e.color = hex_rgba("#6b8f9e")
+    cr.color_ramp.elements[0].color = hex_rgba(PAL["ring"][0]); cr.color_ramp.elements[1].color = hex_rgba(PAL["ring"][2])
+    e = cr.color_ramp.elements.new(0.5); e.color = hex_rgba(PAL["ring"][1])
     L(nt, fine2.outputs["Fac"], cr.inputs[0]); L(nt, cr.outputs[0], rb.inputs["Base Color"])
     invr = math_(nt, "SUBTRACT", 1.0, alpha4.outputs[0])
     rt = N(nt, "ShaderNodeBsdfTransparent"); rmix = N(nt, "ShaderNodeMixShader")
