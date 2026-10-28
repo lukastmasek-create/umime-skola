@@ -2111,6 +2111,7 @@ select:not(:focus) {
   position: fixed;
   inset: 0;
   z-index: 100;
+  height: 100dvh;
 }
 .fs-frame.is-fs .fs-inner {
   margin-inline: auto;
@@ -2171,6 +2172,8 @@ select:not(:focus) {
   padding: 0.75rem 1.5rem 2rem;
 }
 .fs-frame.is-fs .fs-classic {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   justify-content: center;
   width: 100%;
@@ -2259,6 +2262,13 @@ select:not(:focus) {
     zoom: 1.45;
   }
 }
+.fs-frame.is-fs .fs-bar {
+  position: fixed;
+  top: 0.5rem;
+  right: 0.75rem;
+  z-index: 200;
+}
+
 
 /* Bubliny kroků ve scéně městečka */
 .town-bubble {
@@ -2527,5 +2537,44 @@ select:not(:focus) {
 @media (prefers-reduced-motion: reduce) {
   .market-flag {
     animation: none;
+  }
+}
+
+/* Mobil ve fullscreenu: bezpečné okraje displeje, malé záhlaví a ovládání přes hru. */
+.fs-frame.is-fs .fs-inner {
+  padding-left: max(0.75rem, env(safe-area-inset-left));
+  padding-right: max(0.75rem, env(safe-area-inset-right));
+}
+.fs-frame.is-fs .fs-bar {
+  top: max(0.5rem, env(safe-area-inset-top));
+  right: max(0.75rem, env(safe-area-inset-right));
+}
+@media (pointer: coarse), (max-height: 520px) {
+  .fs-frame.is-fs .fs-game {
+    gap: 0.35rem;
+    padding: 0.4rem;
+  }
+  .fs-frame.is-fs .fs-title > p,
+  .fs-frame.is-fs .fs-tip {
+    display: none;
+  }
+  .fs-frame.is-fs .fs-title h1 {
+    font-size: 1rem;
+  }
+  .fs-frame.is-fs .fs-panel {
+    padding: 1rem;
+  }
+  .fs-frame.is-fs .fs-classic {
+    zoom: 1;
+  }
+}
+@media (pointer: coarse) {
+  .fs-frame.is-fs .fs-pad {
+    position: absolute;
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: max(0.75rem, env(safe-area-inset-bottom));
+    z-index: 10;
+    opacity: 0.8;
   }
 }

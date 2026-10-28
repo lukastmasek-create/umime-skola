@@ -664,7 +664,7 @@ export function SpaceQuizGame({
   return (
     <div className="fs-game card flex flex-col gap-4 p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
+        <div className="fs-title">
           <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
             {mario ? "🍄" : emoji} {t.title}
           </h1>
@@ -726,7 +726,7 @@ export function SpaceQuizGame({
       )}
 
       {phase === "playing" && qIndex === 0 && !paused && (
-        <p className="rounded-xl bg-[var(--surface-muted)] px-4 py-2 text-xs text-[var(--muted)]">⌨️ {t.controls}</p>
+        <p className="fs-tip rounded-xl bg-[var(--surface-muted)] px-4 py-2 text-xs text-[var(--muted)]">⌨️ {t.controls}</p>
       )}
 
       {phase === "playing" && hintOut && question && (
@@ -808,7 +808,7 @@ export function SpaceQuizGame({
       )}
 
       {phase === "playing" && pad && (
-        <div className="flex items-center justify-center gap-3">
+        <div className="fs-pad flex items-center justify-center gap-3">
           {pad.keys.includes("left") && (
             <HoldButton
               onHold={(down) => setHeld("left", down)}
@@ -861,7 +861,7 @@ export function SpaceQuizGame({
       )}
 
       {phase === "playing" && !pad && (
-        <div className="flex items-center justify-center gap-3">
+        <div className="fs-pad flex items-center justify-center gap-3">
           <HoldButton
             onHold={(down) => setHeld("left", down)}
             label="←"

@@ -96,9 +96,15 @@ export function LiveRoom({ locale, pin }: { locale: Locale; pin: string }) {
   }
   if (!view) return <p className="text-center text-[var(--muted)]">{t.create.loading}</p>;
 
-  return identity.kind === "host" ? (
-    <HostView locale={locale} t={t} view={view} identity={identity} serverNow={serverNow} />
-  ) : (
-    <PlayerView locale={locale} t={t} view={view} identity={identity} serverNow={serverNow} />
+  return (
+    <div className="fs-classic">
+      <div className="w-full">
+        {identity.kind === "host" ? (
+          <HostView locale={locale} t={t} view={view} identity={identity} serverNow={serverNow} />
+        ) : (
+          <PlayerView locale={locale} t={t} view={view} identity={identity} serverNow={serverNow} />
+        )}
+      </div>
+    </div>
   );
 }
