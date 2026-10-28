@@ -1830,6 +1830,64 @@ select:not(:focus) {
   }
 }
 
+/* --- Co tu najdeš: létající ostrovy --- */
+.zone-isles {
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 100%, rgba(255, 150, 190, 0.28), transparent 70%),
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.9) 0 1px, transparent 2px),
+    radial-gradient(circle at 78% 12%, rgba(255, 255, 255, 0.8) 0 1px, transparent 2px),
+    radial-gradient(circle at 44% 28%, rgba(255, 255, 255, 0.7) 0 1px, transparent 2px),
+    radial-gradient(circle at 91% 38%, rgba(255, 255, 255, 0.8) 0 1px, transparent 2px),
+    linear-gradient(180deg, #0c0a24 0%, #151a5c 38%, #2a4fa8 78%, #6fb0e6 100%);
+}
+.isle-bob {
+  animation: isle-bob 6.5s ease-in-out infinite;
+}
+@keyframes isle-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+.isle-lift {
+  transition: transform 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+.isle-glow {
+  background: var(--c);
+  opacity: 0;
+  filter: blur(18px);
+  transition: opacity 0.3s;
+}
+.isle:hover .isle-lift,
+.isle:focus-visible .isle-lift {
+  transform: translateY(-12px) scale(1.07);
+}
+.isle:hover .isle-glow,
+.isle:focus-visible .isle-glow {
+  opacity: 0.75;
+}
+.isle:hover .globe-sprite,
+.isle:focus-visible .globe-sprite {
+  animation-duration: 0.9s;
+}
+.isle:focus-visible {
+  box-shadow: 0 0 0 3px var(--c);
+}
+.isle:hover .isle-cta {
+  transform: translateY(-2px);
+}
+.isle-cta {
+  transition: transform 0.2s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .isle-bob {
+    animation: none;
+  }
+}
+
 /* Hra na celou obrazovku (FullscreenFrame): obal se roztáhne a canvas se vejde na výšku. */
 .fs-frame.is-fs {
   background: var(--background);
