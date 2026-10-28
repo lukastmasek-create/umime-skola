@@ -90,7 +90,7 @@ export default async function MaterialTopicPage({ params }: { params: Promise<Pa
   const practiceHref = `/${locale}/kurzy/${topic.level === 4 ? "prijimacky" : "zakladni"}?predmet=${slug}`;
 
   return (
-    <article className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
+    <article data-world={subject.slug} className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
       <Link href={`/${locale}/materialy/${slug}`} className="mb-4 inline-flex text-sm font-semibold text-[var(--brand-600)] hover:underline">
         ← {label}
       </Link>
