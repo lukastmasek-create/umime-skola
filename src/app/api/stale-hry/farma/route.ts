@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { eventBonusFor } from "@/lib/idle/events";
+import { challengeBoost } from "@/lib/idle/challenge-server";
 import { getItem as getCityItem, normalizeCity } from "@/lib/idle/city";
 import { levelFromGrowth, normalizeState as normalizePets } from "@/lib/idle/pets";
 import {
@@ -46,10 +47,11 @@ class NotEnoughPoints extends Error {}
 
 // Zrychlení farmy = učení + aktivní mazlíček + velikost města; každý díl má vlastní strop (viz lib/idle/farm.ts).
 async function speedBonusFor(userId: string, now: number) {
-  const [sum, pets, city] = await Promise.all([
+  const [sum, pets, city, boost] = await Promise.all([
     prisma.xpEvent.aggregate({ where: { userId, createdAt: { gte: new Date(now - DAY_MS) } }, _sum: { amount: true } }),
     prisma.idleState.findUnique({ where: { userId_game: { userId, game: "mazlicci" } }, select: { data: true } }),
     prisma.idleState.findUnique({ where: { userId_game: { userId, game: "mesto" } }, select: { data: true } }),
+    challengeBoost(prisma, userId, "farm", now),
   ]);
   let petLevel: number | null = null;
   if (pets) {
@@ -62,7 +64,7 @@ async function speedBonusFor(userId: string, now: number) {
   const pet = petSpeedBonus(petLevel);
   const cityB = citySpeedBonus(buildings);
   const event = eventBonusFor("farm", now);
-  return { learning, pet, city: cityB, event: event.total, eventInfo: event, total: learning + pet + cityB + event.total };
+  return { learning, pet, city: cityB, event: event.total, boost, eventInfo: event, total: learning + pet + cityB + event.total + boost };
 }
 type SpeedBonus = Awaited<ReturnType<typeof speedBonusFor>>;
 
@@ -72,7 +74,7 @@ function payload(state: FarmState, points: number, bonus: SpeedBonus, now: numbe
     points,
     // Celkové zrychlení (klient podle něj počítá odpočty); rozpis je v `bonuses`.
     learningBonus: bonus.total,
-    bonuses: { learning: bonus.learning, pet: bonus.pet, city: bonus.city, event: bonus.event },
+    bonuses: { learning: bonus.learning, pet: bonus.pet, city: bonus.city, event: bonus.event, boost: bonus.boost },
     event: bonus.eventInfo,
     now,
     level: levelInfo(state.xp),

@@ -27,6 +27,7 @@ import {
 import { EventPill, type EventInfo } from "@/components/idle/EventPill";
 import { cellAt, drawBase, moduleIcon, planetImage, shipIcon, CAT_COLORS } from "@/components/idle/base-render";
 import { notifyAccountChanged } from "@/lib/account-events";
+import { ChallengePanel } from "@/components/idle/ChallengePanel";
 import type { Locale } from "@/i18n/config";
 
 type Stats = {
@@ -657,6 +658,8 @@ export function BaseGame({ locale }: { locale: Locale }) {
           </div>
         </div>
       )}
+
+      <ChallengePanel game="base" locale={locale} onChange={() => void sync()} />
 
       {debrief && (
         <DebriefModal
