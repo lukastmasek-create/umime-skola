@@ -213,11 +213,8 @@ def build_book():
             # list se přetáčí zleva doprava, každý s posunem fáze
             u = (t * 2.0 + i / 6.0) % 1.0
             ang = math.pi * u
-            p.location = (0, 0, 0.56)
-            p.rotation_euler = (0, -ang, 0)
-            p.scale = (1, 1, 1)
-            # list je zavěšený za hřbet: posun jeho středu o půl šířky ve směru natočení
-            p.location = (0.2 * math.cos(ang), 0, 0.56 + 0.2 * math.sin(ang))
+            # list je zavěšený za hřbet: střed listu je o půl šířky od hřbetu ve směru natočení
+            p.location = (0.2 * math.cos(ang), 0, 0.57 + 0.2 * math.sin(ang))
             p.rotation_euler = (0, -ang, 0)
         for k, s in enumerate(sparks):
             u = (t + k / 10.0) % 1.0
@@ -310,14 +307,6 @@ def build_cup():
          sphere((0, 0, 0.7), 0.1, gold2, scale=(1, 1, 0.8), seg=20, rings=14)]
     for sx in (-1, 1):
         torus((sx * 0.42, 0, 1.0), 0.17, 0.035, gold2, rot=(math.radians(90), 0, 0))
-    star = bpy.data.objects.new("star", None)
-    bpy.context.scene.collection.objects.link(star)
-    for k in range(5):
-        a = k * math.tau / 5
-        s = cone((0.0, 0.0, 0), 0.07, 0.0, 0.17, material("st%d" % k, "#fff3b0", roughness=0.3, metallic=0.5), verts=3)
-        s.location = (0.1 * math.cos(a + math.pi / 2), -0.37, 0.95 + 0.1 * math.sin(a + math.pi / 2))
-        s.rotation_euler = (0, 0, 0)
-        s.parent = root
     for o in P:
         o.parent = root
     # ohlazené kopie: stany se vyrovnají na jednu rovinu (hvězda na boku poháru)

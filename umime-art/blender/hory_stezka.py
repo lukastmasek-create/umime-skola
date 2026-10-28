@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from znacky_lib import *
 
 W, H = 1500, 1650
-UNITS = 8.0                 # šířka záběru
+UNITS = 8.8                 # šířka záběru
 PPU = W / UNITS
 EL = math.radians(14)
 SIZE = 6.4                  # velikost terénu
@@ -26,14 +26,14 @@ def peak(x, y, cx, cy, h, w, sharp=1.2):
 
 
 def ridge(x, y):
-    return 0.5 * math.sin(x * 7.3 + 1.1) * math.sin(y * 6.1 + 0.4) + 0.3 * math.sin(x * 13 - y * 9) + 0.16 * math.sin(x * 27 + y * 21)
+    return 0.5 * math.sin(x * 7.3 + 1.1) * math.sin(y * 6.1 + 0.4) + 0.25 * math.sin(x * 13 - y * 9)
 
 
 def height(x, y):
     r = math.hypot(x, y)
     h = peak(x, y, *PEAK, 4.7, 1.25, 1.1) + peak(x, y, -1.75, -0.2, 2.6, 0.95, 1.3) + peak(x, y, 1.9, -0.3, 2.2, 0.85, 1.3) + peak(x, y, -0.5, 1.0, 3.4, 1.1, 1.2)
     h += peak(x, y, 0.0, -1.7, 0.6, 1.6, 1.8)
-    h += 0.32 * ridge(x, y) * (0.25 + h / 4.5)
+    h += 0.16 * ridge(x, y) * (0.25 + h / 4.5)
     mask = max(0.0, min(1.0, (3.1 - r) / 0.9))
     mask = mask * mask * (3 - 2 * mask)
     return max(0.0, h) * mask
@@ -92,8 +92,11 @@ def carved(x, y):
     return h
 
 
+TZ = 2.45
+
+
 def project(x, y, z):
-    return (W / 2 + PPU * x, H * 0.82 - PPU * (y * math.sin(EL) + z * math.cos(EL)))
+    return (W / 2 + PPU * x, H / 2 - PPU * (y * math.sin(EL) + (z - TZ) * math.cos(EL)))
 
 
 def build_mountain():
@@ -104,7 +107,7 @@ def build_mountain():
     add_area((-5, -9, 7), (0, 0, 2), energy=900, size=10, color="#ffe3cc")
     add_area((6, 3, 4), (0, 0, 2), energy=250, size=8, color="#8fb0ff")
     d = 60.0
-    add_camera((0, -d * math.cos(EL), d * math.sin(EL) + 1.5), (0, 0, 1.5), ortho_scale=UNITS * (H / W) * (W / H) if False else UNITS)
+    add_camera((0, -d * math.cos(EL), d * math.sin(EL) + TZ), (0, 0, TZ), ortho_scale=UNITS)
     # --- terén s barvami po vrcholech ---
     verts, cols, faces = [], [], []
     for j in range(N + 1):
@@ -156,6 +159,7 @@ def build_mountain():
         p.use_smooth = True
     ob = bpy.data.objects.new("hora", me)
     sc.collection.objects.link(ob)
+    plinth("#7fcf7a", "#fff4d0", radius=3.15)
     # --- stromy, kameny, tábory ---
     rnd = random.Random(5)
     for _ in range(140):
@@ -176,11 +180,11 @@ def build_mountain():
         x, y = TRAIL[idx]
         z = TH[idx]
         camps.append((x, y, z))
-        cyl((x, y, z + 0.015), 0.3, 0.05, material("platf", "#b9a07a", roughness=0.9), verts=24)
+        cyl((x, y, z + 0.015), 0.38, 0.06, material("platf", "#b9a07a", roughness=0.9), verts=24)
         col = ["#ff5a3c", "#ffc933", "#3b9bff"][ci]
         for k in range(2):
             a = k * math.tau / 2 + 0.7
-            cone((x + 0.14 * math.cos(a), y + 0.14 * math.sin(a), z + 0.14), 0.11, 0.0, 0.26, material("tent%d_%d" % (ci, k), col if k == 0 else "#f3f0e6", roughness=0.6), verts=4, rot=(0, 0, a + math.pi / 4))
+            cone((x + 0.17 * math.cos(a), y + 0.17 * math.sin(a), z + 0.2), 0.16, 0.0, 0.38, material("tent%d_%d" % (ci, k), col if k == 0 else "#f3f0e6", roughness=0.6), verts=4, rot=(0, 0, a + math.pi / 4))
         for k in range(5):  # polínka na ohni
             a = k * math.tau / 5
             bar((x - 0.2 + 0.05 * math.cos(a), y - 0.12 + 0.05 * math.sin(a), z + 0.06), (x - 0.2, y - 0.12, z + 0.1), 0.012, material("wd", "#6b4a2d"), verts=6)
