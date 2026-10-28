@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { fill } from "@/i18n/profile";
 import { getRoomText } from "@/i18n/room";
-import { FURNITURE, ROOM_SLOTS, ROOM_SLOT_POS, furnitureSprite } from "@/lib/room";
+import { FURNITURE, ROOM_LAYOUT, ROOM_SLOTS, ROOM_SLOT_POS, furnitureSprite } from "@/lib/room";
 import { CARDS, type Rarity } from "@/lib/collection";
 import type { Locale } from "@/i18n/config";
 
@@ -30,6 +30,39 @@ function Piece({ id, className = "" }: { id: string; className?: string }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img src={furnitureSprite(id)} alt="" aria-hidden draggable={false} onError={() => setFailed(true)} className={`pointer-events-none select-none object-contain ${className}`} />
+  );
+}
+
+const poly = (pts: [number, number][]) => `polygon(${pts.map(([x, y]) => `${x}% ${y}%`).join(",")})`;
+
+// Živý pokoj: za oknem plují mraky, dovnitř padá sluneční paprsek s tančícím prachem a lampa jemně pulzuje.
+function RoomAmbient() {
+  const beam = ROOM_LAYOUT.beam;
+  const bx = Math.min(...beam.map((p) => p[0]));
+  const bw = Math.max(...beam.map((p) => p[0])) - bx;
+  const by = Math.min(...beam.map((p) => p[1]));
+  const bh = Math.max(...beam.map((p) => p[1])) - by;
+  const pane = ROOM_LAYOUT.pane;
+  const px = Math.min(...pane.map((p) => p[0]));
+  const pw = Math.max(...pane.map((p) => p[0])) - px;
+  const py = Math.min(...pane.map((p) => p[1]));
+  const ph = Math.max(...pane.map((p) => p[1])) - py;
+  return (
+    <div aria-hidden className="pointer-events-none absolute inset-0">
+      <div className="absolute inset-0" style={{ clipPath: poly(ROOM_LAYOUT.pane) }}>
+        <div className="absolute overflow-hidden" style={{ left: `${px}%`, top: `${py}%`, width: `${pw}%`, height: `${ph}%`, background: "linear-gradient(180deg,#5db8ff 0%,#b8e6ff 100%)" }}>
+          <span className="room-cloud absolute left-0 top-[12%] h-[34%] w-[38%]" />
+          <span className="room-cloud absolute left-0 top-[48%] h-[28%] w-[30%]" style={{ animationDuration: "46s", animationDelay: "-22s" }} />
+        </div>
+      </div>
+      <div className="room-beam absolute inset-0" style={{ clipPath: poly(beam) }} />
+      <div className="absolute" style={{ left: `${bx}%`, top: `${by}%`, width: `${bw}%`, height: `${bh}%` }}>
+        {Array.from({ length: 12 }, (_, i) => (
+          <span key={i} className="room-mote absolute block h-[3px] w-[3px] rounded-full bg-[#fff6cf]" style={{ left: `${(i * 37) % 90 + 4}%`, top: `${(i * 53) % 70 + 15}%`, animationDelay: `${-i * 0.9}s`, animationDuration: `${7 + (i % 4)}s` }} />
+        ))}
+      </div>
+      <span className="room-lamp absolute h-[16%] w-[11%] -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ left: `${ROOM_LAYOUT.lamp[0]}%`, top: `${ROOM_LAYOUT.lamp[1]}%` }} />
+    </div>
   );
 }
 
@@ -102,13 +135,15 @@ export function RoomView({ locale, initialTab = "room" }: { locale: Locale; init
       {tab === "room" && (
         <>
           <p className="text-sm text-[var(--muted)]">{t.pickSlot}</p>
-          <div
-            className="relative mx-auto aspect-[8/5] w-full max-w-4xl overflow-hidden rounded-2xl border-2 border-[var(--edge)] shadow-[0_4px_0_var(--shadow-ink)]"
-            style={{ backgroundColor: "#d9a27c", backgroundImage: "url(/room/background.webp)", backgroundSize: "100% 100%" }}
-          >
+          <div className="room-stage relative mx-auto w-full max-w-4xl" style={{ aspectRatio: ROOM_LAYOUT.aspect }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/room/iso.webp" alt="" aria-hidden draggable={false} className="pointer-events-none absolute inset-0 h-full w-full select-none drop-shadow-[0_26px_30px_rgba(0,0,0,0.45)]" />
+            <RoomAmbient />
             {Array.from({ length: ROOM_SLOTS }, (_, slot) => {
               const id = data.room.placed[slot];
-              const [x, y, w] = ROOM_SLOT_POS[slot];
+              const [x, y] = ROOM_SLOT_POS[slot];
+              const lay = id ? ROOM_LAYOUT.furn[id] : null;
+              const name = id ? (FURNITURE.find((f) => f.id === id)?.names[locale] ?? t.remove) : t.emptySlot;
               return (
                 <button
                   key={slot}
@@ -120,22 +155,26 @@ export function RoomView({ locale, initialTab = "room" }: { locale: Locale; init
                       setSelected(null);
                     } else if (id) post({ action: "place", slot, id: null });
                   }}
-                  title={id ? `${FURNITURE.find((f) => f.id === id)?.names[locale] ?? ""} · ${t.remove}` : t.emptySlot}
-                  aria-label={id ? (FURNITURE.find((f) => f.id === id)?.names[locale] ?? t.remove) : t.emptySlot}
-                  className="group absolute aspect-square -translate-x-1/2 -translate-y-[65%]"
-                  style={{ left: `${x}%`, top: `${y}%`, width: `${w}%` }}
+                  title={id ? `${name} · ${t.remove}` : t.emptySlot}
+                  aria-label={id ? name : t.emptySlot}
+                  className="group absolute aspect-square"
+                  style={{
+                    left: `${x}%`,
+                    top: `${y}%`,
+                    width: `${lay ? lay.w : 11}%`,
+                    transform: `translate(-50%, -${(lay ? lay.o : 0.5) * 100}%)`,
+                    zIndex: Math.round(y),
+                  }}
                 >
-                  {/* Místo na podlaze: nenápadná elipsa, při vybraném kusu zvýrazněná */}
+                  {/* Prázdné místo na podlaze: izometrická dlaždice, při vybraném kusu zvýrazněná */}
                   {!id && (
                     <span
-                      className={`absolute left-[18%] top-[56%] flex h-[18%] w-[64%] items-center justify-center rounded-full border-2 border-dashed text-lg font-bold leading-none transition-colors ${
-                        selected ? "border-white bg-white/30 text-white" : "border-white/40 text-transparent group-hover:border-white/80"
+                      className={`room-tile absolute inset-[8%] rounded-lg border-2 border-dashed transition-all ${
+                        selected ? "border-white bg-white/30 shadow-[0_0_18px_rgba(255,255,255,0.7)]" : "border-white/45 group-hover:border-white group-hover:bg-white/20"
                       }`}
-                    >
-                      +
-                    </span>
+                    />
                   )}
-                  {id && <Piece id={id} className="h-full w-full transition-transform duration-200 group-hover:-translate-y-1 group-hover:scale-105" />}
+                  {id && <Piece id={id} className="h-full w-full transition-transform duration-200 group-hover:-translate-y-2 group-hover:scale-[1.04]" />}
                 </button>
               );
             })}

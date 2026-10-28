@@ -2259,3 +2259,95 @@ select:not(:focus) {
     zoom: 1.45;
   }
 }
+
+/* --- Živý izometrický pokoj --- */
+.room-tile {
+  transform: scaleY(0.52) rotate(45deg);
+}
+.room-cloud {
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 50%, #fff 0 55%, rgba(255, 255, 255, 0) 72%);
+  filter: blur(1.5px);
+  animation: room-cloud 34s linear infinite;
+}
+@keyframes room-cloud {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}
+.room-beam {
+  background: linear-gradient(200deg, rgba(255, 244, 196, 0.75), rgba(255, 244, 196, 0.2));
+  mix-blend-mode: screen;
+  animation: room-beam 6s ease-in-out infinite;
+}
+@keyframes room-beam {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+.room-mote {
+  box-shadow: 0 0 6px rgba(255, 240, 180, 0.9);
+  animation: room-mote 8s ease-in-out infinite;
+}
+@keyframes room-mote {
+  0%,
+  100% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  20%,
+  80% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(14px, -26px);
+  }
+}
+.room-lamp {
+  background: radial-gradient(circle, rgba(255, 236, 170, 0.55), rgba(255, 236, 170, 0) 70%);
+  mix-blend-mode: screen;
+  animation: room-lamp 4s ease-in-out infinite;
+}
+@keyframes room-lamp {
+  0%,
+  100% {
+    opacity: 0.55;
+    scale: 0.92;
+  }
+  50% {
+    opacity: 1;
+    scale: 1.08;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .room-cloud,
+  .room-beam,
+  .room-mote,
+  .room-lamp {
+    animation: none;
+  }
+}
+
+/* Prstenec úrovně v profilu */
+.xp-ring-arc {
+  stroke-dashoffset: var(--o);
+  animation: xp-ring-fill 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  filter: drop-shadow(0 0 4px rgba(255, 170, 60, 0.7));
+}
+@keyframes xp-ring-fill {
+  from {
+    stroke-dashoffset: var(--c);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .xp-ring-arc {
+    animation: none;
+  }
+}
