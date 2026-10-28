@@ -29,10 +29,11 @@ export type LiveText = {
     count: string;
     available: string;
     mode: string;
-    modes: Record<"QUIZ" | "RACE" | "GOLD", ModeText>;
+    modes: Record<"QUIZ" | "RACE" | "GOLD" | "STREAK" | "SURVIVAL" | "TEAMS", ModeText>;
     settings: string;
     seconds: string;
     raceTarget: string;
+    lives: string;
     duration: string;
     minutes: string;
     submit: string;
@@ -72,6 +73,16 @@ export type LiveText = {
     streak: string;
     race: string;
     gold: string;
+    streakMode: string;
+    survival: string;
+    teamsMode: string;
+    teamNames: [string, string];
+    livesLeft: string;
+    eliminated: string;
+    spectating: string;
+    youTeam: string;
+    teamWins: string;
+    streakHint: string;
     chestTitle: string;
     chestHint: string;
     youGot: string;
@@ -92,6 +103,7 @@ export type LiveText = {
     score: string;
     gold: string;
     progress: string;
+    lives: string;
     reward: string;
   };
   sets: {
@@ -155,10 +167,14 @@ const cs: LiveText = {
       QUIZ: { name: "Klasický kvíz", description: "Všichni odpovídají na stejnou otázku proti času. Čím rychleji a správněji, tím víc bodů." },
       RACE: { name: "Závod", description: "Každý jede svým tempem. Za správné odpovědi postupuješ k cíli, kdo dojede první, vyhrává." },
       GOLD: { name: "Zlatá horečka", description: "Správná odpověď otevírá truhly: zlato, krádeže i pasti. Vyhrává, kdo má nakonec nejvíc zlata." },
+      STREAK: { name: "Série", description: "Každá správná odpověď v řadě násobí body (až 5×), chyba sérii přeruší a bere body. Hraje se na čas, každý svým tempem." },
+      SURVIVAL: { name: "Poslední přeživší", description: "Každý má pár životů. Kdo odpoví špatně nebo nestihne, jeden ztratí. Vyhrává poslední, kdo ve hře zůstane." },
+      TEAMS: { name: "Týmy", description: "Žáci se rozdělí do dvou týmů a body se sčítají. Soutěží se jako v klasickém kvízu, vyhrává tým." },
     },
     settings: "Nastavení",
     seconds: "Čas na otázku",
     raceTarget: "Cíl závodu (správných odpovědí)",
+    lives: "Počet životů",
     duration: "Délka hry",
     minutes: "min",
     submit: "Založit hru",
@@ -197,6 +213,16 @@ const cs: LiveText = {
     answers: "Odpovědi",
     streak: "Série {n}",
     race: "Závod",
+    streakMode: "Série",
+    survival: "Poslední přeživší",
+    teamsMode: "Týmy",
+    teamNames: ["Červení", "Modří"],
+    livesLeft: "Životy: {n}",
+    eliminated: "Vypadl jsi z této hry",
+    spectating: "Sleduj, jak to dopadne.",
+    youTeam: "Tvůj tým",
+    teamWins: "Vyhrál tým {name}",
+    streakHint: "Čím delší série správných odpovědí, tím víc bodů. Chyba sérii přeruší.",
     gold: "Zlato",
     chestTitle: "Vyber si truhlu",
     chestHint: "Uvnitř je zlato, ale pozor na krádež i past.",
@@ -218,6 +244,7 @@ const cs: LiveText = {
     score: "body",
     gold: "zlato",
     progress: "v cíli",
+    lives: "životů",
     reward: "Odměna: +{xp} XP a +{points} bodů",
   },
   sets: {
@@ -244,6 +271,8 @@ const cs: LiveText = {
     back: "Zpět",
   },
   errors: {
+    eliminated: "Už jsi vyřazený, hru můžeš jen sledovat.",
+    "game-started": "Tahle hra už běží, připojit se jde jen do čekárny.",
     "room-not-found": "Hra s tímto kódem neexistuje.",
     "room-ended": "Tahle hra už skončila.",
     "name-required": "Zadej přezdívku.",
@@ -297,10 +326,14 @@ const en: LiveText = {
       QUIZ: { name: "Classic quiz", description: "Everyone answers the same question against the clock. The faster and more accurate, the more points." },
       RACE: { name: "Race", description: "Everyone goes at their own pace. Correct answers move you toward the finish, first to finish wins." },
       GOLD: { name: "Gold rush", description: "Correct answers open chests: gold, steals and traps. Whoever has the most gold at the end wins." },
+      STREAK: { name: "Streak", description: "Every correct answer in a row multiplies your points (up to 5×); a mistake breaks the streak and costs points. Timed, everyone at their own pace." },
+      SURVIVAL: { name: "Last one standing", description: "Everyone has a few lives. Answer wrong or run out of time and you lose one. The last player left wins." },
+      TEAMS: { name: "Teams", description: "Players are split into two teams and their points add up. Played like the classic quiz; the best team wins." },
     },
     settings: "Settings",
     seconds: "Time per question",
     raceTarget: "Race goal (correct answers)",
+    lives: "Number of lives",
     duration: "Game length",
     minutes: "min",
     submit: "Create game",
@@ -339,6 +372,16 @@ const en: LiveText = {
     answers: "Answers",
     streak: "Streak {n}",
     race: "Race",
+    streakMode: "Streak",
+    survival: "Last one standing",
+    teamsMode: "Teams",
+    teamNames: ["Red", "Blue"],
+    livesLeft: "Lives: {n}",
+    eliminated: "You are out of this game",
+    spectating: "Watch how it ends.",
+    youTeam: "Your team",
+    teamWins: "Team {name} wins",
+    streakHint: "The longer your streak of correct answers, the more points. A mistake breaks it.",
     gold: "Gold",
     chestTitle: "Pick a chest",
     chestHint: "Inside is gold, but watch out for steals and traps.",
@@ -360,6 +403,7 @@ const en: LiveText = {
     score: "points",
     gold: "gold",
     progress: "to goal",
+    lives: "lives",
     reward: "Reward: +{xp} XP and +{points} points",
   },
   sets: {
@@ -386,6 +430,8 @@ const en: LiveText = {
     back: "Back",
   },
   errors: {
+    eliminated: "You are out, you can only watch now.",
+    "game-started": "This game has already started; you can only join in the lobby.",
     "room-not-found": "No game with this code exists.",
     "room-ended": "This game has already ended.",
     "name-required": "Enter a nickname.",
@@ -439,10 +485,14 @@ const de: LiveText = {
       QUIZ: { name: "Klassisches Quiz", description: "Alle beantworten dieselbe Frage gegen die Uhr. Je schneller und richtiger, desto mehr Punkte." },
       RACE: { name: "Rennen", description: "Jeder in seinem Tempo. Richtige Antworten bringen dich näher ans Ziel, wer zuerst ankommt, gewinnt." },
       GOLD: { name: "Goldrausch", description: "Richtige Antworten öffnen Truhen: Gold, Diebstähle und Fallen. Wer am Ende das meiste Gold hat, gewinnt." },
+      STREAK: { name: "Serie", description: "Jede richtige Antwort in Folge vervielfacht die Punkte (bis 5×); ein Fehler unterbricht die Serie und kostet Punkte. Auf Zeit, jeder in eigenem Tempo." },
+      SURVIVAL: { name: "Letzter Überlebender", description: "Jeder hat ein paar Leben. Wer falsch antwortet oder zu langsam ist, verliert eines. Wer zuletzt übrig bleibt, gewinnt." },
+      TEAMS: { name: "Teams", description: "Die Spieler werden in zwei Teams geteilt und die Punkte addieren sich. Gespielt wird wie im klassischen Quiz, das beste Team gewinnt." },
     },
     settings: "Einstellungen",
     seconds: "Zeit pro Frage",
     raceTarget: "Rennziel (richtige Antworten)",
+    lives: "Anzahl der Leben",
     duration: "Spieldauer",
     minutes: "Min.",
     submit: "Spiel erstellen",
@@ -481,6 +531,16 @@ const de: LiveText = {
     answers: "Antworten",
     streak: "Serie {n}",
     race: "Rennen",
+    streakMode: "Serie",
+    survival: "Letzter Überlebender",
+    teamsMode: "Teams",
+    teamNames: ["Rot", "Blau"],
+    livesLeft: "Leben: {n}",
+    eliminated: "Du bist in diesem Spiel raus",
+    spectating: "Sieh zu, wie es ausgeht.",
+    youTeam: "Dein Team",
+    teamWins: "Team {name} gewinnt",
+    streakHint: "Je länger deine Serie richtiger Antworten, desto mehr Punkte. Ein Fehler unterbricht sie.",
     gold: "Gold",
     chestTitle: "Wähle eine Truhe",
     chestHint: "Drin ist Gold, aber Vorsicht vor Diebstahl und Fallen.",
@@ -502,6 +562,7 @@ const de: LiveText = {
     score: "Punkte",
     gold: "Gold",
     progress: "im Ziel",
+    lives: "Leben",
     reward: "Belohnung: +{xp} XP und +{points} Punkte",
   },
   sets: {
@@ -528,6 +589,8 @@ const de: LiveText = {
     back: "Zurück",
   },
   errors: {
+    eliminated: "Du bist ausgeschieden und kannst nur noch zusehen.",
+    "game-started": "Dieses Spiel läuft schon; man kann nur in der Lobby beitreten.",
     "room-not-found": "Ein Spiel mit diesem Code gibt es nicht.",
     "room-ended": "Dieses Spiel ist schon vorbei.",
     "name-required": "Gib einen Spitznamen ein.",
@@ -581,10 +644,14 @@ const ru: LiveText = {
       QUIZ: { name: "Классическая викторина", description: "Все отвечают на один вопрос на время. Чем быстрее и точнее, тем больше очков." },
       RACE: { name: "Гонка", description: "Каждый в своём темпе. Правильные ответы приближают к финишу, побеждает тот, кто пришёл первым." },
       GOLD: { name: "Золотая лихорадка", description: "Правильные ответы открывают сундуки: золото, кражи и ловушки. Побеждает тот, у кого в конце больше всего золота." },
+      STREAK: { name: "Серия", description: "Каждый правильный ответ подряд умножает очки (до 5×), ошибка прерывает серию и отнимает очки. На время, каждый в своём темпе." },
+      SURVIVAL: { name: "Последний выживший", description: "У каждого несколько жизней. Ошибся или не успел, и одна жизнь потеряна. Побеждает тот, кто останется последним." },
+      TEAMS: { name: "Команды", description: "Игроки делятся на две команды, очки суммируются. Играют как в обычной викторине, побеждает лучшая команда." },
     },
     settings: "Настройки",
     seconds: "Время на вопрос",
     raceTarget: "Цель гонки (правильных ответов)",
+    lives: "Количество жизней",
     duration: "Длительность игры",
     minutes: "мин",
     submit: "Создать игру",
@@ -623,6 +690,16 @@ const ru: LiveText = {
     answers: "Ответы",
     streak: "Серия {n}",
     race: "Гонка",
+    streakMode: "Серия",
+    survival: "Последний выживший",
+    teamsMode: "Команды",
+    teamNames: ["Красные", "Синие"],
+    livesLeft: "Жизни: {n}",
+    eliminated: "Ты выбыл из этой игры",
+    spectating: "Следи, чем всё закончится.",
+    youTeam: "Твоя команда",
+    teamWins: "Побеждает команда {name}",
+    streakHint: "Чем длиннее серия правильных ответов, тем больше очков. Ошибка её прерывает.",
     gold: "Золото",
     chestTitle: "Выбери сундук",
     chestHint: "Внутри золото, но берегись краж и ловушек.",
@@ -644,6 +721,7 @@ const ru: LiveText = {
     score: "очков",
     gold: "золота",
     progress: "до цели",
+    lives: "жизней",
     reward: "Награда: +{xp} XP и +{points} очков",
   },
   sets: {
@@ -670,6 +748,8 @@ const ru: LiveText = {
     back: "Назад",
   },
   errors: {
+    eliminated: "Ты выбыл и можешь только наблюдать.",
+    "game-started": "Игра уже идёт, присоединиться можно только в ожидании.",
     "room-not-found": "Игры с таким кодом нет.",
     "room-ended": "Эта игра уже закончилась.",
     "name-required": "Введи никнейм.",

@@ -1,4 +1,4 @@
-export type LiveMode = "QUIZ" | "RACE" | "GOLD";
+export type LiveMode = "QUIZ" | "RACE" | "GOLD" | "STREAK" | "SURVIVAL" | "TEAMS";
 export type StoredStatus = "LOBBY" | "QUESTION" | "ENDED";
 // REVEAL se dopočítává z času (nebo když odpověděli všichni), do databáze se neukládá.
 export type LiveStatus = StoredStatus | "REVEAL";
@@ -17,6 +17,8 @@ export type LiveSettings = {
   raceTarget: number;
   /** Závod a Zlatá horečka: jak dlouho hra trvá (minuty). */
   durationMin: number;
+  /** Poslední přeživší: kolik životů hráči na začátku mají. */
+  lives: number;
 };
 
 export type ChestOutcome =
@@ -24,7 +26,8 @@ export type ChestOutcome =
   | { kind: "steal"; amount: number }
   | { kind: "lose"; amount: number };
 
-export type PlayerRow = { id: string; name: string; avatar: string | null; score: number; gold: number; progress: number };
+/** `progress` je v módu Poslední přeživší počet ztracených životů; `team` je 0 nebo 1 jen v týmovém módu. */
+export type PlayerRow = { id: string; name: string; avatar: string | null; score: number; gold: number; progress: number; team?: 0 | 1 };
 
 /** Co vidí prohlížeč při pollingu. Správná odpověď je v `question` jen při odhalení (a vždy pro učitele). */
 export type LiveView = {
@@ -34,7 +37,7 @@ export type LiveView = {
   mode: LiveMode;
   status: LiveStatus;
   role: "host" | "player";
-  settings: { seconds: number; raceTarget: number; durationMin: number };
+  settings: LiveSettings;
   total: number;
   endsAt: number | null;
   question: null | {
@@ -50,6 +53,8 @@ export type LiveView = {
   /** Učitel v klasickém kvízu: kolik hráčů zvolilo kterou možnost. */
   distribution?: number[];
   leaderboard: PlayerRow[];
+  /** Týmový mód: součet bodů a počet hráčů obou týmů. */
+  teams?: { score: number; players: number }[];
   /** Přihlášený hráč po konci hry: co mu hra připsala. */
   reward?: { xp: number; points: number };
   me?: {
@@ -66,8 +71,12 @@ export type LiveView = {
     lastPoints: number;
     /** Zlatá horečka: počet truhel k otevření (0 nebo 3). */
     chests: number;
+    /** Týmový mód: do kterého týmu hráč patří. */
+    team?: 0 | 1;
+    /** Poslední přeživší: kolik životů mu zbývá. */
+    lives?: number;
   };
 };
 
-export type AnswerResult = { ok: true; correct?: boolean; correctIndex?: number; explanation?: string; chests?: number; won?: boolean };
+export type AnswerResult = { ok: true; correct?: boolean; correctIndex?: number; explanation?: string; chests?: number; won?: boolean; points?: number };
 export type ChestResult = { ok: true; outcome: ChestOutcome; gold: number; victim: string | null; all: ChestOutcome[] };
