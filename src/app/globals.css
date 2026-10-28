@@ -2428,3 +2428,104 @@ select:not(:focus) {
     animation: none;
   }
 }
+
+/* Výhra na kole štěstí */
+.wheel-win {
+  animation: wheel-win-out 4.2s ease-in forwards;
+}
+@keyframes wheel-win-out {
+  0%,
+  78% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.wheel-chest {
+  animation: wheel-chest 0.7s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+@keyframes wheel-chest {
+  from {
+    transform: translate(-50%, 40%) scale(0.1);
+    opacity: 0;
+  }
+}
+.wheel-confetti {
+  animation: wheel-confetti 1.9s cubic-bezier(0.1, 0.8, 0.3, 1) both;
+}
+@keyframes wheel-confetti {
+  from {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  60% {
+    opacity: 1;
+  }
+  to {
+    transform: translate(calc(var(--dx) * 1.15), calc(var(--dy) + 150px)) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+.wheel-coin {
+  animation: wheel-coin 1.7s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+@keyframes wheel-coin {
+  from {
+    transform: translate(0, 0) scale(0.3);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  45% {
+    transform: translate(var(--dx), -150px) scale(1);
+  }
+  to {
+    transform: translate(var(--dx2), 160px) scale(0.8);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wheel-win,
+  .wheel-chest,
+  .wheel-confetti,
+  .wheel-coin {
+    animation: none;
+  }
+  .wheel-confetti,
+  .wheel-coin {
+    display: none;
+  }
+}
+
+/* Trh v hlavičce obchodu */
+.market-banner {
+  background:
+    radial-gradient(ellipse 60% 80% at 50% 120%, rgba(255, 190, 120, 0.4), transparent 70%),
+    linear-gradient(180deg, #1c1a5a 0%, #3a3f9a 55%, #e08aa0 100%);
+}
+.market-cobbles {
+  background:
+    radial-gradient(ellipse 16px 8px at 50% 50%, rgba(255, 255, 255, 0.18) 60%, transparent 62%) 0 0 / 32px 14px,
+    linear-gradient(180deg, #8a6a52, #5a4636);
+}
+.market-flag {
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: 50% 0;
+  animation: market-sway 2.6s ease-in-out infinite;
+}
+@keyframes market-sway {
+  0%,
+  100% {
+    transform: rotate(-9deg);
+  }
+  50% {
+    transform: rotate(9deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .market-flag {
+    animation: none;
+  }
+}

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
+import { MarketBanner } from "@/components/MarketBanner";
 import { PetArt } from "@/components/idle/PetArt";
 import { bannerAttrs, bannerCss, isFrameId } from "@/lib/cosmetics";
 import {
@@ -484,6 +485,7 @@ export function ShopView({ locale }: { locale: Locale }) {
   return (
     <div>
       {header}
+      <MarketBanner />
 
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] p-4 shadow-[0_4px_0_var(--shadow-ink)]">
         {ready ? (

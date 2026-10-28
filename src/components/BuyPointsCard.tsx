@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { RewardImage } from "@/components/RewardImage";
 import type { Dictionary } from "@/i18n/dictionaries";
 
 export function BuyPointsCard({
@@ -15,7 +14,7 @@ export function BuyPointsCard({
 
   return (
     <div
-      className={`card card-hover relative flex flex-col items-center gap-2 p-6 text-center ${
+      className={`group card card-hover relative flex flex-col items-center gap-2 p-6 text-center ${
         pkg.popular ? "border-[var(--brand-500)]" : ""
       }`}
     >
@@ -24,7 +23,11 @@ export function BuyPointsCard({
           {dict.shop.mostPopular}
         </span>
       )}
-      <RewardImage name={pkg.image} size={112} />
+      <span
+        aria-hidden
+        className="globe-sprite -mx-4 -mt-4 block h-48 w-48 drop-shadow-[0_8px_8px_rgba(0,0,0,0.35)] group-hover:[animation-duration:0.9s]"
+        style={{ backgroundImage: `url(/home/obchod/stanek-${pkg.image}.webp)` }}
+      />
       <p className="text-2xl font-bold">{pkg.points}</p>
       <p className="text-sm text-[var(--faint)]">{dict.shop.pointsSuffix}</p>
       <p className="mt-2 text-lg font-semibold text-[var(--brand-600)]">{pkg.price}</p>
