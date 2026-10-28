@@ -2101,7 +2101,6 @@ select:not(:focus) {
   }
 }
 
-/* Hra na celou obrazovku (FullscreenFrame): obal se roztáhne a canvas se vejde na výšku. */
 /* Hra na celou obrazovku (FullscreenFrame): jako video na YouTube. Plátno vyplní celou plochu, nahoře je
    záhlaví s otázkou, dole ovládání a úvod, vysvětlení i výsledky jsou panel přes plátno. */
 .fs-frame.is-fs {
