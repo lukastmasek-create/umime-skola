@@ -131,7 +131,8 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
   const [reached, setReached] = useState(0);
   const [night, setNight] = useState(true);
   const [pick, setPick] = useState<Weather | "auto">("auto");
-  const [calm, setCalm] = useState(false);
+  const [, setCalm] = useState(false);
+  const [hover, setHover] = useState<number | null>(null);
   // stav sdílený se smyčkou (bez překreslování Reactu)
   const live = useRef({ night: true, pick: "auto" as Weather | "auto", reached: 0, override: null as null | { u: number; t: number }, calm: false });
 
@@ -596,12 +597,16 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
   const go = (i: number) => wrap.current?.dispatchEvent(new CustomEvent("town-go", { detail: i }));
   const dayCls = night ? "" : "town-day";
   const doors = [EX.b1_door, EX.b2_door, EX.b3_door];
+  const tops = [EX.b1_top, EX.b2_top, EX.b3_top];
+  const BUBBLE_W = 0.215;
+  const shifts = [0.012, -0.045, -0.012]; // posun bubliny do strany, aby nezakrývala sopku a nevyčnívala ze scény
+  const tints = ["#8fd0ff", "#c9b8ff", "#ffd24d"];
   const lampList = town.lamps as P[];
 
   return (
     <div>
       <div ref={wrap} className={`relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-3xl border-2 border-white/15 bg-[#0c0a24]/30 shadow-[0_20px_60px_rgba(10,6,40,0.55)] ${dayCls}`}>
-        <div ref={box} className="town-box relative w-full min-w-[760px] will-change-transform" style={{ aspectRatio: String(ASPECT) }}>
+        <div ref={box} className="town-box relative w-full min-w-[760px] will-change-transform [container-type:inline-size]" style={{ aspectRatio: String(ASPECT) }}>
           {/* obloha: noc / den */}
           <div aria-hidden className="town-sky absolute inset-0" />
           <div aria-hidden className="town-stars absolute inset-0" />
@@ -693,11 +698,44 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
               key={i}
               type="button"
               onClick={() => go(i)}
+              onMouseEnter={() => setHover(i)}
+              onMouseLeave={() => setHover(null)}
+              onFocus={() => setHover(i)}
+              onBlur={() => setHover(null)}
               aria-label={steps[i]?.title}
               className="town-hit absolute z-[4] rounded-full"
               style={{ ...at(d), width: "13%", aspectRatio: "1.4 / 1", transform: "translate(-50%,-110%)" }}
             />
           ))}
+          {/* bubliny kroků nad budovami: vyskočí, když k budově hrdina dojde (nebo při najetí) */}
+          {steps.slice(0, 3).map((st, i) => {
+            const on = reached > i;
+            const show = on || hover === i;
+            const left = Math.max(BUBBLE_W / 2 + 0.01, Math.min(1 - BUBBLE_W / 2 - 0.01, tops[i][0] + shifts[i]));
+            const tail = 50 + ((tops[i][0] - left) / BUBBLE_W) * 100;
+            return (
+              <div
+                key={i}
+                className={`town-bubble pointer-events-none absolute z-[7] ${on ? "town-bubble-on" : ""}`}
+                style={{
+                  left: `${left * 100}%`,
+                  top: `${Y(tops[i][1]) * 100}%`,
+                  width: `${BUBBLE_W * 100}%`,
+                  ["--tint" as string]: tints[i],
+                  ["--tail" as string]: `${Math.max(12, Math.min(88, tail))}%`,
+                  opacity: show ? 1 : 0,
+                  transform: `translate(-50%, calc(-100% - 0.9cqw)) scale(${show ? 1 : 0.35})`,
+                  transitionDelay: show && on ? "0.15s" : "0s",
+                }}
+              >
+                <div className="town-bubble-body" style={{ opacity: on ? 1 : 0.82 }}>
+                  <span className="town-bubble-num" aria-hidden>{on ? "✓" : i + 1}</span>
+                  <b className="town-bubble-title">{st.title}</b>
+                  <span className="town-bubble-text">{st.text}</span>
+                </div>
+              </div>
+            );
+          })}
           <canvas ref={cv} aria-hidden className="pointer-events-none absolute inset-0 z-[5] h-full w-full" />
           <div aria-hidden className="town-rain pointer-events-none absolute inset-0 z-[5]" />
           <div aria-hidden className="town-flash pointer-events-none absolute inset-0 z-[6]" />
@@ -726,41 +764,12 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
         </div>
       </div>
 
-      <ol className="mx-auto mt-6 grid max-w-[1280px] gap-4 sm:grid-cols-3">
-        {steps.map((s, i) => {
-          const on = reached > i;
-          return (
-            <li key={s.title}>
-              <button
-                type="button"
-                onClick={() => go(i)}
-                className="relative flex h-full w-full gap-4 rounded-2xl border-2 p-4 text-left transition-all duration-500 sm:p-5"
-                style={{
-                  borderColor: on ? "#ffd24d" : "rgba(255,255,255,0.18)",
-                  background: on ? "rgba(255,210,77,0.12)" : "rgba(10,8,32,0.32)",
-                  boxShadow: on ? "0 0 30px rgba(255,210,77,0.25)" : undefined,
-                  opacity: on || calm ? 1 : 0.66,
-                  transform: on ? "translateY(0)" : "translateY(4px)",
-                }}
-              >
-                <span
-                  aria-hidden
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 text-xl font-extrabold"
-                  style={{ borderColor: on ? "#16132b" : "rgba(255,255,255,0.35)", background: on ? "#ffd24d" : "transparent", color: on ? "#16132b" : "#fff", fontFamily: "var(--font-heading)" }}
-                >
-                  {on ? "✓" : i + 1}
-                </span>
-                <span>
-                  <span className="block font-bold">
-                    <span className="sr-only">{i + 1}. </span>
-                    {s.title}
-                  </span>
-                  <span className="mt-1 block text-sm text-white/80">{s.text}</span>
-                </span>
-              </button>
-            </li>
-          );
-        })}
+      <ol className="sr-only">
+        {steps.map((st, i) => (
+          <li key={st.title}>
+            {i + 1}. {st.title}: {st.text}
+          </li>
+        ))}
       </ol>
     </div>
   );

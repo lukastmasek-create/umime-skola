@@ -217,7 +217,7 @@ def mesto():
         return [round((W / 2 + ppu * x) / W, 5), round((H / 2 - ppu * (y * math.sin(el) + (z - tz) * math.cos(el))) / H, 5)]
 
     meta["extra"] = {
-        "b1_door": meta["b1_door"], "b2_door": meta["b2_door"], "b3_door": meta["b3_door"], "sopka": meta["sopka"],
+        "b1_top": norm(-5.3, 0.8, 3.2), "b2_top": norm(0.45, 1.0, 2.85), "b3_top": norm(5.45, 1.0, 4.5), "b1_door": meta["b1_door"], "b2_door": meta["b2_door"], "b3_door": meta["b3_door"], "sopka": meta["sopka"],
         "knihovnice": norm(-4.15, -0.05), "pekar": norm(-1.35, 0.05), "kluk": norm(-3.55, -1.35), "kocka": norm(2.4, -3.2, 0.24),
         "ovce_a": norm(4.0, -4.2), "ovce_b": norm(6.3, -4.7), "slepice_a": norm(5.2, -3.7), "slepice_b": norm(3.1, -4.9),
         "farmar_a": norm(-3.2, -4.3), "farmar_b": norm(1.4, -3.9), "babicka_a": norm(-0.9, -1.15), "babicka_b": norm(1.7, -0.95),

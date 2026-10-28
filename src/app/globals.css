@@ -2259,3 +2259,80 @@ select:not(:focus) {
     zoom: 1.45;
   }
 }
+
+/* Bubliny kroků ve scéně městečka */
+.town-bubble {
+  transform-origin: 50% 100%;
+  transition: opacity 0.35s ease, transform 0.55s cubic-bezier(0.2, 1.5, 0.4, 1);
+  font-size: clamp(10px, 1.18cqw, 15px);
+}
+.town-bubble-body {
+  position: relative;
+  padding: 0.8em 1em 0.85em 3.1em;
+  border: 2px solid var(--tint);
+  border-radius: 1.1em;
+  background: linear-gradient(160deg, rgba(34, 24, 84, 0.94), rgba(14, 10, 44, 0.94));
+  box-shadow: 0 0.35em 0 rgba(8, 5, 30, 0.55), 0 0 1.8em color-mix(in srgb, var(--tint) 35%, transparent);
+  color: #fff;
+  transition: opacity 0.4s;
+}
+.town-bubble-body::after {
+  content: "";
+  position: absolute;
+  left: var(--tail, 50%);
+  bottom: -0.62em;
+  width: 1em;
+  height: 1em;
+  background: rgba(16, 11, 48, 0.96);
+  border-right: 2px solid var(--tint);
+  border-bottom: 2px solid var(--tint);
+  transform: translateX(-50%) rotate(45deg);
+}
+.town-bubble-num {
+  position: absolute;
+  left: 0.7em;
+  top: 0.75em;
+  display: flex;
+  width: 1.9em;
+  height: 1.9em;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 1.05em;
+}
+.town-bubble-on .town-bubble-num {
+  background: #ffd24d;
+  border-color: #16132b;
+  color: #16132b;
+}
+.town-bubble-on .town-bubble-body {
+  animation: town-bubble-glow 1.8s ease-out 1;
+}
+.town-bubble-title {
+  display: block;
+  font-size: 1.12em;
+  line-height: 1.2;
+}
+.town-bubble-text {
+  display: block;
+  margin-top: 0.25em;
+  font-size: 0.86em;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.82);
+}
+@keyframes town-bubble-glow {
+  0% { box-shadow: 0 0.35em 0 rgba(8, 5, 30, 0.55), 0 0 0 0 var(--tint); }
+  30% { box-shadow: 0 0.35em 0 rgba(8, 5, 30, 0.55), 0 0 3.2em 0.5em var(--tint); }
+  100% { box-shadow: 0 0.35em 0 rgba(8, 5, 30, 0.55), 0 0 1.8em color-mix(in srgb, var(--tint) 35%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .town-bubble {
+    transition: opacity 0.2s;
+  }
+  .town-bubble-on .town-bubble-body {
+    animation: none;
+  }
+}
