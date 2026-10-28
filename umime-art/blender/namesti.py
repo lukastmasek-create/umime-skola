@@ -12,17 +12,104 @@ SIZE_PX = 512
 TAU = math.tau
 
 
+CYAN, VIOLET = "#35d0ff", "#b05cff"
+TECH = {}
+
+
 def island(grass="#6fd06a", rock="#8a6a52", r=1.3):
-    """Létající ostrov: tráva nahoře, zespodu zužující se skála s krystaly a kořínky."""
-    cyl((0, 0, -0.04), r, 0.14, M("is_g", grass, roughness=0.8), verts=64)
-    cyl((0, 0, -0.1), r + 0.04, 0.06, M("is_e", "#3f9a4a", roughness=0.8), verts=64)
-    rk = stone_material("is_r", rock, 10, 0.35, 0.95)
-    cone((0, 0, -0.62), r, 0.55, 1.0, rk, verts=40, smooth=False)
-    cone((0, 0, -1.3), 0.55, 0.12, 0.7, rk, verts=24, smooth=False)
+    """Technoostrov: kovová deska s neonovým okrajem a světelnými segmenty, trávník uprostřed,
+    dole kovový trup s fialovými světelnými prstenci a tryskou. Pohádková scéna je pořád nahoře."""
+    metal, dark = M("is_m", "#2b3560", roughness=0.32, metallic=0.85), M("is_d", "#161b38", roughness=0.4, metallic=0.75)
+    cyl((0, 0, -0.06), r, 0.18, metal, verts=64)
+    TECH["rim"] = glow("is_rim", CYAN, 5.0)
+    torus((0, 0, 0.028), r, 0.022, TECH["rim"])
+    cyl((0, 0, 0.03), r - 0.13, 0.01, M("is_g", grass, roughness=0.8), verts=64)
+    seg_m = glow("is_seg", CYAN, 3.0)
+    TECH["seg"] = seg_m
+    for k in range(18):
+        a = k * TAU / 18
+        box(((r + 0.004) * math.cos(a), (r + 0.004) * math.sin(a), -0.06), (0.16, 0.035, 0.05), seg_m if k % 3 else glow("is_sv", VIOLET, 4.0), rot=(0, 0, a + math.pi / 2), bevel=0.006)
+    cone((0, 0, -0.62), r, 0.55, 1.0, dark, verts=48, smooth=False)
+    for z, rad, c in ((-0.33, 1.13, CYAN), (-0.58, 0.95, VIOLET), (-0.83, 0.77, CYAN)):
+        torus((0, 0, z), rad + 0.012, 0.018, glow("is_t%d" % int(-z * 100), c, 3.5))
+    cone((0, 0, -1.3), 0.55, 0.14, 0.7, metal, verts=24, smooth=False)
+    TECH["thr"] = glow("is_th", "#9be8ff", 8.0)
+    TECH["thruster"] = sphere((0, 0, -1.72), 0.12, TECH["thr"], scale=(1, 1, 1.5), seg=14, rings=10)
     rnd = random.Random(4)
-    for k in range(5):
+    for k in range(4):  # antény / krystaly na hraně
         a = rnd.uniform(0, TAU)
-        cone((0.75 * math.cos(a), 0.75 * math.sin(a), -0.62), 0.07, 0.0, 0.3, glow("is_c%d" % k, ["#7fd6ff", "#c9a8ff"][k % 2], 1.2), verts=5, rot=(0.3 * math.cos(a), 0.3 * math.sin(a), 0))
+        cone(((r - 0.04) * math.cos(a), (r - 0.04) * math.sin(a), 0.05), 0.035, 0.0, 0.22, glow("is_c%d" % k, [CYAN, VIOLET][k % 2], 2.5), verts=5)
+
+
+def robot(x, y, z, body, pants="#2b3560", hair="#ffffff", s=1.0, rot=0.0):
+    """Roboti pomocníci: krabicová postavička s vizírem a anténou; stejné rozhraní jako kid()."""
+    root = empty()
+    root.location = (x, y, z)
+    root.rotation_euler = (0, 0, rot)
+    b, d = M("rb_b" + body, body, roughness=0.3, metallic=0.5), M("rb_d", pants, roughness=0.35, metallic=0.7)
+    for dx in (-0.045, 0.045):
+        child(box((dx * s, 0, 0.065 * s), (0.05 * s, 0.05 * s, 0.13 * s), d, bevel=0.008), root)
+        child(box((dx * s, 0.015 * s, 0.015 * s), (0.07 * s, 0.1 * s, 0.03 * s), d, bevel=0.008), root)
+    child(box((0, 0, 0.22 * s), (0.2 * s, 0.14 * s, 0.2 * s), b, bevel=0.025), root)
+    child(box((0, -0.072 * s, 0.23 * s), (0.1 * s, 0.01 * s, 0.06 * s), glow("rb_pn", VIOLET, 3.0), bevel=0), root)
+    child(box((0, 0, 0.395 * s), (0.17 * s, 0.14 * s, 0.13 * s), b, bevel=0.03), root)
+    child(box((0, -0.072 * s, 0.4 * s), (0.13 * s, 0.01 * s, 0.05 * s), glow("rb_vz", CYAN, 6.0), bevel=0), root)
+    child(bar((0, 0, 0.455 * s), (0, 0, 0.51 * s), 0.006 * s, d, verts=6), root)
+    child(sphere((0, 0, 0.52 * s), 0.016 * s, glow("rb_an", "#ff5ad8", 6.0), seg=8, rings=6), root)
+    arms = []
+    for side in (-1, 1):
+        piv = empty()
+        piv.parent = root
+        piv.location = (side * 0.12 * s, 0, 0.29 * s)
+        a = cyl((0, 0, -0.07 * s), 0.025 * s, 0.14 * s, d, verts=10)
+        a.parent = piv
+        a.location = (0, 0, -0.07 * s)
+        h = sphere((0, 0, -0.15 * s), 0.035 * s, b, seg=8, rings=6)
+        h.parent = piv
+        h.location = (0, 0, -0.15 * s)
+        arms.append(piv)
+    return root, arms[0], arms[1]
+
+
+def tech_extras(cx, cy, cz, orbit=0.9, holo_at=None, color=CYAN):
+    """Dron kroužící nad ostrovem, hologramové prstence, pulzující neon a tryska."""
+    drone = empty()
+    white, dk = M("dr_w", "#e8ecf8", roughness=0.3, metallic=0.4), M("dr_d", "#2b3560", roughness=0.35, metallic=0.7)
+    child(sphere((0, 0, 0), 0.07, white, scale=(1.2, 1.0, 0.7), seg=14, rings=10), drone)
+    child(sphere((0.07, 0, 0.0), 0.028, glow("dr_e", "#ff5ad8", 8.0), seg=8, rings=6), drone)
+    rotors = []
+    for sx, sy in ((1, 1), (-1, 1), (1, -1), (-1, -1)):
+        bar((0, 0, 0), (sx * 0.1, sy * 0.1, 0.03), 0.006, dk, verts=6).parent = drone
+        rot_ = empty()
+        rot_.parent = drone
+        rot_.location = (sx * 0.1, sy * 0.1, 0.04)
+        d = cyl((0, 0, 0), 0.075, 0.004, glow("dr_r", color, 2.0), verts=20)
+        d.parent = rot_
+        rotors.append(rot_)
+    holo = empty()
+    hx, hy, hz = holo_at or (cx, cy, cz)
+    holo.location = (hx, hy, hz)
+    rings = []
+    for k, c in enumerate((CYAN, VIOLET)):
+        t_ = torus((0, 0, 0), 0.38 - 0.09 * k, 0.012, glow("ho_%d" % k, c, 5.0), rot=(math.radians(70 - 40 * k), 0, 0))
+        t_.parent = holo
+        rings.append(t_)
+
+    @anim
+    def _te(t):
+        ph = t * TAU
+        drone.location = (cx + orbit * math.cos(ph), cy + 0.7 * orbit * math.sin(ph), cz + 0.06 * math.sin(2 * ph))
+        drone.rotation_euler = (0.1 * math.sin(ph * 2), 0.08 * math.cos(ph * 2), ph + math.pi / 2)
+        for r_ in rotors:
+            r_.rotation_euler = (0, 0, ph * 12)
+        holo.rotation_euler = (0, 0, ph)
+        for i, r_ in enumerate(rings):
+            r_.rotation_euler = (math.radians(70 - 40 * i) + 0.3 * math.sin(ph + i * 2), 0, 0)
+        set_glow(TECH["rim"], 4.0 + 2.0 * math.sin(ph))
+        set_glow(TECH["seg"], 2.5 + 1.5 * math.sin(2 * ph))
+        s_ = 1.0 + 0.25 * math.sin(6 * ph)
+        TECH["thruster"].scale = (s_, s_, 1.5 * s_)
+        set_glow(TECH["thr"], 7.0 + 3.0 * math.sin(6 * ph))
 
 
 def kid(x, y, z, shirt, pants, hair, s=1.0, rot=0.0):
@@ -63,7 +150,7 @@ def confetti(n, name="cf"):
 
 # ---------------------------------------------------------------- Škola
 def skola():
-    setup("nam_skola", size=SIZE_PX, ortho=4.8, target_z=0.55, world=("#cfe4ff", 0.6))
+    setup("nam_skola", size=SIZE_PX, ortho=5.1, target_z=0.55, world=("#cfe4ff", 0.6))
     island("#74d36c", "#8a6a52")
     wall, roof, wood, trim = M("sk_w", "#fff0cf", roughness=0.7), M("sk_r", "#d9473d", roughness=0.55), M("sk_wd", "#8a5a34", roughness=0.7), M("sk_t", "#ffffff", roughness=0.5)
     win, gold = glow("sk_win", "#ffe9a0", 2.2), M("sk_g", "#ffc933", roughness=0.3, metallic=0.9)
@@ -106,7 +193,7 @@ def skola():
     # děti
     k1, k1a, k1b = kid(-0.3, -0.45, 0.0, "#ff5a7a", "#2f3c6e", "#5a3a22", rot=-0.6)
     k2, k2a, k2b = kid(0.5, -0.38, 0.0, "#3b9bff", "#4a4a6a", "#e8b03a", rot=0.4)
-    k3, k3a, k3b = kid(1.0, -0.65, 0.0, "#7ad06a", "#2f3c6e", "#222222", s=0.9, rot=0.9)
+    k3, k3a, k3b = robot(1.0, -0.65, 0.0, "#35d0ff", s=1.1, rot=0.9)
     # létající knihy a papírové vlaštovky
     bk_cols = ["#e8553f", "#3b7be0", "#f2b93a"]
     books_ = []
@@ -141,12 +228,13 @@ def skola():
             p.place((0.0 + 1.0 * math.cos(a), -0.4 + 0.5 * math.sin(a), 1.7 + 0.1 * math.sin(2 * a)), a + math.pi / 2, 0.0)
         rise(stars, t, 0.0, 0.5, 1.2, 0.6, grow=1.0, drift=0.6)
 
+    tech_extras(-0.05, 0.4, 1.9, orbit=1.0, holo_at=(-0.75, -0.3, 1.0))
     run(lambda t: None, "nam_skola")
 
 
 # ---------------------------------------------------------------- Herna
 def herna():
-    setup("nam_herna", size=SIZE_PX, ortho=4.8, target_z=0.6, world=("#d9d0ff", 0.55))
+    setup("nam_herna", size=SIZE_PX, ortho=5.1, target_z=0.6, world=("#d9d0ff", 0.55))
     island("#a58cf0", "#6a5a8a")
     body, dark, steel = M("hn_b", "#6a3fd0", roughness=0.35), M("hn_d", "#1c1a3a", roughness=0.4), M("hn_s", "#cfd5df", roughness=0.25, metallic=0.9)
     screen = glow("hn_scr", "#5fffd0", 2.4)
@@ -196,7 +284,7 @@ def herna():
     sphere((-0.2, -0.75, 0.38), 0.14, M("hn_pop", "#fff3c4", roughness=0.8), scale=(1.1, 0.8, 0.8), seg=14, rings=10)
     # hráči
     p1, p1a, p1b = kid(-0.45, -0.55, 0.0, "#ff9a3c", "#2f3c6e", "#222222", rot=0.4)
-    p2, p2a, p2b = kid(0.3, -0.5, 0.0, "#4ad0ff", "#4a4a6a", "#a05a2a", s=0.9, rot=-0.3)
+    p2, p2a, p2b = robot(0.3, -0.5, 0.0, "#b05cff", s=1.1, rot=-0.3)
     cf = confetti(18, "hncf")
     rnd = random.Random(8)
     cfp = [(rnd.uniform(-0.9, 0.9), rnd.uniform(-0.6, 0.5), rnd.uniform(0, 6)) for _ in cf]
@@ -229,12 +317,13 @@ def herna():
             s = math.sin(math.pi * min(1.0, q * 1.1))
             c.scale = (0.03 * s, 0.015 * s, 0.003 * s)
 
+    tech_extras(0.0, 0.0, 1.8, orbit=1.0, holo_at=(0.78, -0.35, 1.45))
     run(lambda t: None, "nam_herna")
 
 
 # ---------------------------------------------------------------- Věž únikovek
 def vez():
-    setup("nam_vez", size=SIZE_PX, ortho=4.8, target_z=0.7, world=("#c8d4f5", 0.5))
+    setup("nam_vez", size=SIZE_PX, ortho=5.1, target_z=0.7, world=("#c8d4f5", 0.5))
     island("#5aa660", "#6a6a7a")
     stone = stone_material("vz_s", "#9aa0b8", 16, 0.4, 0.9)
     moss, wood = M("vz_m", "#4c8f4c", roughness=0.9), M("vz_w", "#7a4a26", roughness=0.7)
@@ -298,7 +387,7 @@ def vez():
     child(box((-0.85, -0.3, 0.205), (0.3, 0.2, 0.04), M("vz_ld", "#6a3a1a", roughness=0.7), bevel=0.015), lid)
     gl = glow("vz_gem", "#7fffd6", 2.0)
     sphere((-0.85, -0.3, 0.2), 0.05, gl, seg=10, rings=8)
-    kid1, k1a, k1b = kid(0.4, -0.7, 0.0, "#3b9bff", "#2f3c6e", "#c47a3a", s=0.9, rot=0.3)
+    kid1, k1a, k1b = robot(0.4, -0.7, 0.0, "#35d0ff", s=1.1, rot=0.3)
     sparks = [sphere((0, 0, 0), 0.015, glow("vz_sp%d" % k, "#fff2b0", 6.0), seg=6, rings=4) for k in range(10)]
 
     @anim
@@ -326,12 +415,13 @@ def vez():
         kid1.rotation_euler = (0, 0, 0.3 + 0.2 * math.sin(ph))
         rise(sparks, t, -0.85, -0.3, 0.25, 0.7, grow=1.0, drift=0.1)
 
+    tech_extras(0.0, 0.3, 2.25, orbit=0.9, holo_at=(0.0, 0.3, 2.3), color=VIOLET)
     run(lambda t: None, "nam_vez")
 
 
 # ---------------------------------------------------------------- Síň slávy
 def sin():
-    setup("nam_sin", size=SIZE_PX, ortho=4.8, target_z=0.8, world=("#ffe9c9", 0.5))
+    setup("nam_sin", size=SIZE_PX, ortho=5.1, target_z=0.8, world=("#ffe9c9", 0.5))
     island("#f0c860", "#9a7a52")
     gold, silver, bronze = M("sn_g", "#ffc933", roughness=0.22, metallic=1.0), M("sn_s", "#dfe4ee", roughness=0.25, metallic=1.0), M("sn_b", "#cd7f3a", roughness=0.3, metallic=1.0)
     marble = stone_material("sn_m", "#f4efe4", 14, 0.1, 0.3)
@@ -356,7 +446,7 @@ def sin():
     # vítězové
     w1, w1a, w1b = kid(0.0, 0.2, 0.6, "#ff5a7a", "#2f3c6e", "#5a3a22", s=0.9, rot=0.0)
     w2, w2a, w2b = kid(-0.52, 0.2, 0.4, "#3b9bff", "#4a4a6a", "#e8b03a", s=0.9, rot=0.2)
-    w3, w3a, w3b = kid(0.52, 0.2, 0.28, "#7ad06a", "#2f3c6e", "#222222", s=0.9, rot=-0.2)
+    w3, w3a, w3b = robot(0.52, 0.2, 0.28, "#b05cff", s=1.1, rot=-0.2)
     # medaile na stojanu
     for dx in (-0.1, 0.1):
         bar((-0.95 + dx, -0.3, 0.0), (-0.95 + dx, -0.3, 0.75), 0.015, M("sn_pl", "#4a4f6a", roughness=0.4, metallic=0.7), verts=8)
@@ -428,6 +518,7 @@ def sin():
                 sp.location = (cx + r * math.cos(a), 0.4 + 0.1 * math.sin(a), cz + r * math.sin(a) - 0.1 * q * q)
                 sp.scale = (s, s, s)
 
+    tech_extras(0.0, 0.2, 1.75, orbit=0.8, holo_at=(0.0, 0.2, 1.65))
     run(lambda t: None, "nam_sin")
 
 
