@@ -1805,3 +1805,27 @@ select:not(:focus) {
     animation: none;
   }
 }
+
+/* --- Výstup na horu: konfeta na vrcholu --- */
+.trek-confetti {
+  top: 0;
+  animation: trek-confetti 2.6s ease-out both;
+}
+@keyframes trek-confetti {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), 160px) rotate(calc(var(--rot) * 3));
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .trek-confetti {
+    display: none;
+  }
+}

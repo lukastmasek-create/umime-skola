@@ -4,6 +4,7 @@ import type { SubjectValue } from "@/lib/taxonomy";
 type SubjectText = {
   all: string;
   other: string;
+  worldNote: string;
   labels: Record<SubjectValue, string>;
 };
 
@@ -11,6 +12,7 @@ const texts: Record<Locale, SubjectText> = {
   cs: {
     all: "Všechny předměty",
     other: "Ostatní",
+    worldNote: "Klikni na ostrov a uvidíš kurzy předmětu",
     labels: {
       CESTINA: "Čeština",
       LITERATURA: "Literatura",
@@ -26,6 +28,7 @@ const texts: Record<Locale, SubjectText> = {
   en: {
     all: "All subjects",
     other: "Other",
+    worldNote: "Click an island to see the subject courses",
     labels: {
       CESTINA: "Czech",
       LITERATURA: "Literature",
@@ -41,6 +44,7 @@ const texts: Record<Locale, SubjectText> = {
   de: {
     all: "Alle Fächer",
     other: "Sonstige",
+    worldNote: "Klicke auf eine Insel und sieh dir die Kurse des Fachs an",
     labels: {
       CESTINA: "Tschechisch",
       LITERATURA: "Literatur",
@@ -56,6 +60,7 @@ const texts: Record<Locale, SubjectText> = {
   ru: {
     all: "Все предметы",
     other: "Другое",
+    worldNote: "Нажми на остров, чтобы увидеть курсы предмета",
     labels: {
       CESTINA: "Чешский",
       LITERATURA: "Литература",

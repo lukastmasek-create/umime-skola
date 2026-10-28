@@ -79,6 +79,91 @@ def planet_live():
             print(folder, dest, round(os.path.getsize(path) / 1024), "kB", im.size)
 
 
+def hero():
+    """Hrdina úvodní scény: loď z Blenderu (12 snímků plamene vedle sebe) do public/home/hero."""
+    dest_dir = os.path.join(DEST, "..", "hero")
+    os.makedirs(dest_dir, exist_ok=True)
+    fr = frames("hrdina_lod")
+    w, h = fr[0].size
+    sheet = Image.new("RGBA", (w * len(fr), h), (0, 0, 0, 0))
+    for i, im in enumerate(fr):
+        sheet.paste(im, (i * w, 0))
+    path = os.path.join(dest_dir, "lod-strip.webp")
+    sheet.save(path, format="WEBP", quality=88, method=5, alpha_quality=92)
+    print("lod-strip", len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB", sheet.size)
+
+
+def tech():
+    """Deska plošného spoje a čtyři animované předměty pro TechBoard do public/home/tech (+ polohy do JSON)."""
+    import json
+    dest_dir = os.path.join(DEST, "..", "tech")
+    os.makedirs(dest_dir, exist_ok=True)
+    board = frames("tech_deska")[0]
+    board.save(os.path.join(dest_dir, "deska.webp"), format="WEBP", quality=88, method=5, alpha_quality=92)
+    print("deska", round(os.path.getsize(os.path.join(dest_dir, "deska.webp")) / 1024), "kB", board.size)
+    for name, dest in (("kniha", "kniha"), ("joystick", "joystick"), ("dvere", "dvere"), ("pohar", "pohar")):
+        fr = frames("tech_" + name)
+        w, h = fr[0].size
+        sheet = Image.new("RGBA", (w * len(fr), h), (0, 0, 0, 0))
+        for i, im in enumerate(fr):
+            sheet.paste(im, (i * w, 0))
+        path = os.path.join(dest_dir, dest + ".webp")
+        sheet.save(path, format="WEBP", quality=80, method=5, alpha_quality=85)
+        print(dest, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB", sheet.size)
+    meta = json.load(open(os.path.join(ROOT, "out", "tech_deska", "paths.json")))
+    import math
+    ppu, bw, bh, el, n = meta["ppu"], meta["w"], meta["h"], math.radians(54), 384
+    ped_x, ped_y = [-5.1, -1.7, 1.7, 5.1], -0.55
+    meta["sprites"] = []
+    for px in ped_x:
+        ox, oy = bw / 2 + ppu * px, bh / 2 - ppu * (ped_y * math.sin(el))
+        meta["sprites"].append({"x": (ox - n / 2) / bw, "y": (oy - (n / 2 + ppu * 0.9 * math.cos(el))) / bh, "w": n / bw})
+    json.dump(meta, open(os.path.join(ROOT, "..", "src", "components", "tech-board.json"), "w"))
+
+
+def hry():
+    """Čtyři diorámata stálých her jako pásy snímků do public/home/hry."""
+    dest_dir = os.path.join(DEST, "..", "hry")
+    os.makedirs(dest_dir, exist_ok=True)
+    for name in ("zakladna", "mazlicci", "farma", "mesto"):
+        fr = frames("hra_" + name, (384, 384))
+        sheet = Image.new("RGBA", (384 * len(fr), 384), (0, 0, 0, 0))
+        for i, im in enumerate(fr):
+            sheet.paste(im, (i * 384, 0))
+        path = os.path.join(dest_dir, name + ".webp")
+        sheet.save(path, format="WEBP", quality=78, method=5, alpha_quality=85)
+        fr[0].save(os.path.join(dest_dir, name + "-still.webp"), format="WEBP", quality=84, method=5, alpha_quality=90)
+        print(name, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB", sheet.size)
+
+
+def hory():
+    """Hora se stezkou, turista, oheň a vlajka pro MountainTrek do public/home/hory (+ stezka do JSON)."""
+    import json
+    dest_dir = os.path.join(DEST, "..", "hory")
+    os.makedirs(dest_dir, exist_ok=True)
+    im = frames("hory_hora")[0]
+    path = os.path.join(dest_dir, "hora.webp")
+    im.save(path, format="WEBP", quality=86, method=5, alpha_quality=92)
+    print("hora", round(os.path.getsize(path) / 1024), "kB", im.size)
+    for name, dest in (("hory_turista", "turista"), ("hory_ohen", "ohen"), ("hory_vlajka", "vlajka")):
+        strip(name, "../hory/" + dest + ".webp", frames(name)[0].size, quality=82)
+    shutil_json = os.path.join(ROOT, "out", "hory_hora", "trail.json")
+    json.dump(json.load(open(shutil_json)), open(os.path.join(ROOT, "..", "src", "components", "hory-stezka.json"), "w"))
+
+
+def svet():
+    """Plachetnice (12 snímků) a statické náhledy ostrovů pro CourseWorld do public/home/svet a globe."""
+    dest_dir = os.path.join(DEST, "..", "svet")
+    os.makedirs(dest_dir, exist_ok=True)
+    strip("svet_lod", "../svet/plachetnice.webp", frames("svet_lod")[0].size, quality=84)
+    gdir = os.path.join(DEST, "..", "globe")
+    for subject in ("cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis"):
+        im = frames("znacka_" + subject)[0].resize((320, 320), Image.LANCZOS)
+        path = os.path.join(gdir, "still-" + subject + ".webp")
+        im.save(path, format="WEBP", quality=86, method=5, alpha_quality=90)
+    print("still-*", "9 ostrovů")
+
+
 def globe():
     """Památky předmětů (pás 20 snímků) a školní předměty prstence pro SubjectGlobe do public/home/globe."""
     dest_dir = os.path.join(DEST, "..", "globe")
@@ -106,13 +191,18 @@ def stills():
 
 
 if __name__ == "__main__":
-    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_live", "globe"]
+    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_live", "globe", "hero", "tech", "hory", "svet", "hry"]
     if "icons" in what: icons()
     if "stills" in what: stills()
     # Planeta má hodně jemného detailu: každý druhý snímek a menší rozměr drží soubor pod 1 MB.
     if "planeta" in what: animated("planeta", "planeta.webp", fps=12, quality=55, size=(616, 409), step=2)
     if "planeta_live" in what: planet_live()
     if "globe" in what: globe()
+    if "hero" in what: hero()
+    if "tech" in what: tech()
+    if "hory" in what: hory()
+    if "svet" in what: svet()
+    if "hry" in what: hry()
     if "motyl" in what: animated("motyl", "motyl.webp", fps=24, quality=72)
     if "vlajka" in what: animated("vlajka", "vlajka.webp", fps=24, quality=72)
     if "raketa" in what: animated("raketa", "raketa.webp", fps=24, quality=72)

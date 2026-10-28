@@ -8,8 +8,8 @@ const COLORS = ["#8fd0ff", "#ff8a6b", "#7ee0b0", "#ffc933"];
 // Hra na stejném pořadí jako v texty.games: Základna, Mazlíčci, Farma, Město. null = zatím se chystá.
 const PATHS = ["zakladna", "mazlicci", "farma", "mesto"] as const;
 
-// Ilustrace uprostřed karty ve stejném pořadí jako hry .
-const ART = ["/base/ships/explorer.webp", "/pets/fox-happy.webp", "/farm/animals/cow.webp", "/city/sprites/apartments.png"] as const;
+// Vyrenderovaná diorámata (pás 24 snímků) ve stejném pořadí jako hry.
+const ART = ["zakladna", "mazlicci", "farma", "mesto"] as const;
 
 export default async function IdleGamesPage({
   params,
@@ -34,18 +34,14 @@ export default async function IdleGamesPage({
           const body = (
             <>
               <div
-                className="relative flex h-28 items-end justify-between overflow-hidden rounded-xl border-2 border-[var(--edge)] p-3"
+                className="relative flex h-32 items-end justify-between overflow-hidden rounded-xl border-2 border-[var(--edge)] p-3"
                 style={{ background: COLORS[i % COLORS.length] }}
               >
-                {ART[i] && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={ART[i]}
-                    alt=""
-                    aria-hidden
-                    className="pointer-events-none absolute bottom-1 left-1/2 h-24 w-auto -translate-x-1/2 object-contain drop-shadow-[0_4px_0_rgba(22,19,43,0.25)]"
-                  />
-                )}
+                <div
+                  aria-hidden
+                  className="globe-sprite pointer-events-none absolute bottom-0 left-1/2 h-36 w-36 -translate-x-1/2 drop-shadow-[0_6px_6px_rgba(0,0,0,0.35)]"
+                  style={{ backgroundImage: `url(/home/hry/${ART[i]}.webp)` }}
+                />
                 <span
                   className="relative text-4xl font-extrabold leading-none text-[#16132b]"
                   style={{ fontFamily: "var(--font-heading)" }}

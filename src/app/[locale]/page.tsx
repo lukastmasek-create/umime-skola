@@ -3,12 +3,15 @@ import { CATEGORIES, SUBJECTS } from "@/lib/taxonomy";
 import { HomeProgress } from "@/components/HomeProgress";
 import { DailyChallenges } from "@/components/DailyChallenges";
 import { ArcadeDemo } from "@/components/ArcadeDemo";
-import { ALIEN_ROW, Circuit, HomeArt, Nebula, Rocket, SpriteFrame, TechBus, Wave } from "@/components/SpaceDecor";
-import { CardIcon3D, GearHolo3D, TechBackdrop, type IconKind } from "@/components/TechScenes";
-import { MountainScene } from "@/components/HomeAnim";
+import { Tilt } from "@/components/Tilt";
+import { ALIEN_ROW, Circuit, HomeArt, SpriteFrame, Wave } from "@/components/SpaceDecor";
+import { GearHolo3D, TechBackdrop } from "@/components/TechScenes";
+import { MountainTrek } from "@/components/MountainTrek";
 import { PlanetLive } from "@/components/PlanetLive";
 import { SubjectGlobe } from "@/components/SubjectGlobe";
 import { GlobeSky } from "@/components/GlobeSky";
+import { TechBoard } from "@/components/TechBoard";
+import { HeroSky } from "@/components/HeroSky";
 import { getHomeText } from "@/i18n/home";
 import { getSubjectText } from "@/i18n/subjects";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -34,19 +37,14 @@ export default async function Home({
     games: { href: `/${locale}/kurzy/zakladni`, icon: "funkce-hry", color: "#c9b8ff", kind: "joystick" },
     escape: { href: `/${locale}/unikovky`, icon: "funkce-unikovky", color: "#7ee0b0", kind: "door" },
     boards: { href: `/${locale}/zebricky`, icon: "funkce-zebricky", color: "#ffc933", kind: "trophy" },
-  } as const satisfies Record<string, { href: string; icon: string; color: string; kind: IconKind }>;
+  } as const satisfies Record<string, { href: string; icon: string; color: string; kind: string }>;
   const heading = { fontFamily: "var(--font-heading)" };
 
   return (
     <div className="space-page">
       {/* 1) Vesmír: hrdina a postup */}
       <div className="zone zone-space">
-        <Nebula className="absolute inset-0 -z-10 h-full" />
-        <div aria-hidden className="hero-aurora">
-          <span style={{ left: "-8%", top: "4%", width: 460, height: 460, background: "#7c6cff" }} />
-          <span style={{ right: "6%", top: "28%", width: 380, height: 380, background: "#ff8fd0", animationDelay: "-6s" }} />
-          <span style={{ left: "38%", top: "-6%", width: 320, height: 320, background: "#35d0ff", animationDelay: "-11s" }} />
-        </div>
+        <HeroSky />
         <section className="gradient-hero relative">
           <PlanetLive
             className="absolute -right-20 top-16 -z-10 hidden opacity-95 lg:block"
@@ -71,7 +69,6 @@ export default async function Home({
             className="space-float absolute right-[8%] top-10 hidden md:block"
             style={{ animationDelay: "-2s" }}
           />
-          <Rocket className="bottom-16" />
 
           <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-10 sm:px-6 sm:py-16 lg:grid-cols-[1.15fr_0.85fr] lg:py-24">
             <div className="flex flex-col items-start gap-6">
@@ -102,7 +99,9 @@ export default async function Home({
               </div>
             </div>
             <div className="hero-in-right">
-              <ArcadeDemo />
+              <Tilt max={6}>
+                <ArcadeDemo />
+              </Tilt>
             </div>
           </div>
         </section>
@@ -161,37 +160,16 @@ export default async function Home({
           <p className="mb-8 font-mono text-xs uppercase tracking-[0.3em] text-[#35d0ff]/80">
             <span className="tech-blink">●</span> 01 — 0{h.features.length}
           </p>
-          <TechBus colors={h.features.map((feature) => featureLinks[feature.key].color)} />
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {h.features.map((feature, i) => {
-              const f = featureLinks[feature.key];
-              return (
-                <Link
-                  key={feature.key}
-                  href={f.href}
-                  className="reveal card card-hover tech-card flex flex-col gap-3 p-5"
-                  style={{ borderColor: `${f.color}88`, ["--tc" as string]: f.color, ["--i" as string]: i, ["--glow" as string]: `${f.color}33` }}
-                >
-                  <span aria-hidden className="electric" />
-                  <span className="font-mono text-[11px] tracking-[0.25em]" style={{ color: f.color }}>
-                    {"// 0" + (i + 1)}
-                  </span>
-                  <span
-                    aria-hidden
-                    className="flex h-12 w-12 items-center justify-center rounded-md border-2 text-2xl"
-                    style={{ borderColor: f.color, background: `${f.color}22`, boxShadow: `0 0 18px ${f.color}55` }}
-                  >
-                    <CardIcon3D kind={f.kind} fallback={f.icon} />
-                  </span>
-                  <h3 className="text-lg font-bold">{feature.title}</h3>
-                  <p className="text-sm text-[var(--muted)]">{feature.text}</p>
-                  <span className="mt-auto pt-1 font-mono text-sm font-bold" style={{ color: f.color }}>
-                    {feature.cta} →
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
+          <TechBoard
+            features={h.features.map((feature) => ({
+              key: feature.key,
+              title: feature.title,
+              text: feature.text,
+              cta: feature.cta,
+              href: featureLinks[feature.key].href,
+              color: featureLinks[feature.key].color,
+            }))}
+          />
         </div>
       </section>
 
@@ -200,28 +178,12 @@ export default async function Home({
         <Wave fill="#071427" />
         <HomeArt name="oblak-1" size={120} className="space-float absolute right-[12%] top-20 z-0 hidden h-auto sm:block" />
         <HomeArt name="oblak-2" size={96} className="space-float absolute left-[2%] top-28 z-0 hidden h-auto sm:block" style={{ animationDelay: "-3s" }} />
-        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-48 pt-24 sm:px-6 sm:pb-[26rem]">
+        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-24 pt-24 sm:px-6 sm:pb-32">
           <h2 className="reveal mb-8 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
             🏔️ {h.stepsTitle}
           </h2>
-          <ol className="relative grid gap-8 md:grid-cols-3 md:gap-5">
-            <span aria-hidden className="steps-line absolute left-6 right-6 top-6 hidden md:block" />
-            <span aria-hidden className="steps-runner hidden md:block" />
-            {h.steps.map((step, i) => (
-              <li key={step.title} className="reveal relative flex gap-4 md:flex-col md:items-start">
-                <span className="step-badge relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full shadow-[0_0_22px_rgba(255,210,77,0.6)]" style={{ ["--d" as string]: `${[-0.45, 1.6, 3.65][i]}s` }}>
-                  <HomeArt name={`krok-${i + 1}`} size={56} className="h-14 w-14 max-w-none" />
-                  <span className="sr-only">{i + 1}</span>
-                </span>
-                <div>
-                  <h3 className="font-bold">{step.title}</h3>
-                  <p className="mt-1 text-sm text-white/80">{step.text}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
+          <MountainTrek steps={h.steps} />
         </div>
-        <MountainScene />
       </section>
 
       {/* 5) Zpět do vesmíru: kategorie */}
