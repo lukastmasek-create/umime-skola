@@ -1,6 +1,6 @@
 """Textury živého globusu (SubjectGlobe.tsx) do public/home/globe.
 
-Země se kreslí z reálných hranic (npm balíček world-atlas, 50m): devíti zemím předmětů patří
+Země se kreslí z reálných hranic (npm balíček world-atlas, 50m): deseti zemím předmětů patří
 barva předmětu, ostatní země jsou tlumenější. K tomu pohoří (Himálaj, Alpy, Andy…), pouště,
 deštné lesy a tajga podle oblastí, jezera, hranice všech států a světla velkých měst.
 Vzniká:
@@ -38,6 +38,7 @@ SUBJECTS = [
     ("dejepis", "#c9b8ff", "380"),
     ("zemepis", "#7fdbd8", "524"),
     ("prirodopis", "#b6e36a", "076"),
+    ("fyzika", "#f58fa0", "840"),
 ]
 
 # oblasti: (délka, šířka, poloměr v délce, poloměr v šířce)
@@ -204,6 +205,8 @@ def build_masks(countries):
     for i, (_, _, iso) in enumerate(SUBJECTS, start=1):
         # Francie: bez zámořských území (Guyana, ostrovy), jen evropská pevnina
         skip = (lambda lons: np.mean(lons) < -20 or np.mean(lons) > 30) if iso == "250" else None
+        if iso == "840":  # USA: jen souvislé státy, bez Aljašky a Havaje (ať neleží půl země v Pacifiku)
+            skip = lambda lons: np.mean(lons) < -128 or np.mean(lons) > 0
         draw_geometry(di, by_iso[iso]["geometry"], i * 20, *big, skip=skip)
     return land, ids, greenland, border
 

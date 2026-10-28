@@ -45,7 +45,7 @@ const orbit = (rho: number, incl: number, roll: number, th: number) => {
 type Spot = { lon: number; lat: number };
 
 // Hlavní město (nebo typické místo) země předmětu; pořadí id v mapě zemí (id.png) = pořadí zde.
-const ORDER = ["cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis"] as const;
+const ORDER = ["cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis", "fyzika"] as const;
 const SPOTS: Record<string, Spot> = {
   cestina: { lon: 14.42, lat: 50.09 },
   literatura: { lon: 2.35, lat: 48.86 },
@@ -56,6 +56,7 @@ const SPOTS: Record<string, Spot> = {
   dejepis: { lon: 12.5, lat: 41.9 },
   zemepis: { lon: 86.93, lat: 27.99 },
   prirodopis: { lon: -60.0, lat: -3.1 },
+  fyzika: { lon: -80.6, lat: 28.5 }, // Kennedyho vesmírné středisko, Florida
 };
 const LANDMARK: Record<string, string> = {
   cestina: "cestina",
@@ -67,6 +68,7 @@ const LANDMARK: Record<string, string> = {
   dejepis: "dejepis",
   zemepis: "zemepis",
   prirodopis: "prirodopis",
+  fyzika: "fyzika",
 };
 // Prohlídka jde od východu na západ (jako se otáčí Země), tedy podle klesající zeměpisné délky.
 const TOUR = [...ORDER].sort((a, b) => SPOTS[b].lon - SPOTS[a].lon);

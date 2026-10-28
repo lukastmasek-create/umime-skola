@@ -14,6 +14,11 @@ const SHIP_SRC = "/home/hero/lod-strip.webp";
 const SHIP_FRAMES = 12;
 const SHIP_W = 512;
 const SHIP_H = 256;
+// Kometa z Blenderu (umime-art/blender/kometa_hero.py): 24 snímků vedle sebe, hlava vpravo dole, ohon vlevo nahoře.
+const COMET_SRC = "/home/hero/kometa-strip.webp";
+const COMET_FRAMES = 24;
+const COMET_S = 384;
+const COMET_HEAD = { x: 0.735, y: 0.724 }; // poloha jádra ve snímku (0..1)
 
 const VERT = `#version 300 es
 in vec2 aPos;
@@ -174,8 +179,15 @@ export function HeroSky() {
     const sparks: Spark[] = [];
     const meteors: Meteor[] = [];
     let nextMeteor = 1.2;
-    let comet: { x: number; y: number; vx: number; vy: number } | null = null;
-    let nextComet = 9;
+    let comet: { x: number; y: number; vx: number; vy: number; boost: number; seed: number } | null = null;
+    let nextComet = 4;
+    const cdust: { x: number; y: number; vx: number; vy: number; life: number; max: number; size: number; warm: boolean }[] = [];
+    const cometImg = new Image();
+    let cometReady = false;
+    cometImg.onload = () => {
+      cometReady = true;
+    };
+    cometImg.src = COMET_SRC;
 
     // loď: poloha, rychlost, natočení a cíl
     const ship = { x: 0, y: 0, vx: 0, vy: 0, ang: 0, roll: 0, boost: 0 };
@@ -211,6 +223,16 @@ export function HeroSky() {
       const r = host.getBoundingClientRect();
       const x = e.clientX - r.left, y = e.clientY - r.top;
       if (x < 0 || y < 0 || x > r.width || y > r.height) return;
+      if (comet && Math.hypot(x - comet.x, y - comet.y) < 140) {
+        // kliknutí na kometu: sprška ledových jisker a kometa na chvíli přidá
+        comet.boost = 1.6;
+        for (let i = 0; i < 42; i++) {
+          const a = Math.random() * TAU, v = rnd(60, 420);
+          cdust.push({ x: comet.x, y: comet.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0, max: rnd(0.7, 1.6), size: rnd(1.6, 3.6), warm: Math.random() < 0.35 });
+        }
+        if (!raf) kick();
+        return;
+      }
       const dx = x - ship.x, dy = y - ship.y;
       const d = Math.hypot(dx, dy) || 1;
       ship.vx += (dx / d) * 900;
@@ -307,44 +329,69 @@ export function HeroSky() {
           ctx.fillRect(m.x - 9, m.y - 9, 18, 18);
         }
 
-        // --- kometa: jádro, přímý iontový ohon a zakřivený prachový ohon ---
+        // --- kometa z Blenderu: prolétá z pravého horního rohu doleva dolů, u kurzoru zrychlí ---
         nextComet -= dt;
-        if (!comet && nextComet <= 0) {
-          comet = { x: -80, y: rnd(0.08, 0.3) * H, vx: rnd(55, 80), vy: rnd(12, 24) };
-          nextComet = rnd(28, 45);
+        if (!comet && nextComet <= 0 && cometReady) {
+          comet = { x: W + 260, y: rnd(0.05, 0.22) * H, vx: -rnd(70, 95), vy: rnd(22, 38), boost: 0, seed: Math.random() * 100 };
+          nextComet = rnd(24, 38);
         }
         if (comet) {
-          comet.x += comet.vx * dt;
-          comet.y += comet.vy * dt;
-          if (comet.x > W + 520) comet = null;
+          const near = mouse.inside && fine && Math.hypot(mouse.x - comet.x, mouse.y - comet.y) < 260;
+          comet.boost += ((near ? 1 : 0) - comet.boost) * Math.min(1, dt * (near ? 3 : 0.8));
+          const speed = 1 + 1.7 * comet.boost;
+          comet.x += comet.vx * speed * dt;
+          comet.y += comet.vy * speed * dt;
+          if (comet.x < -420 || comet.y > H + 300) comet = null;
           else {
-            const { x, y } = comet;
-            const ion = ctx.createLinearGradient(x, y, x - 420, y - 40);
-            ion.addColorStop(0, "rgba(160,215,255,0.8)");
-            ion.addColorStop(1, "rgba(100,150,255,0)");
-            ctx.strokeStyle = ion;
-            ctx.lineWidth = 5;
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x - 420, y - 40);
-            ctx.stroke();
-            const dust = ctx.createLinearGradient(x, y, x - 300, y + 90);
-            dust.addColorStop(0, "rgba(255,225,160,0.7)");
-            dust.addColorStop(1, "rgba(255,160,100,0)");
-            ctx.strokeStyle = dust;
-            ctx.lineWidth = 12;
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.quadraticCurveTo(x - 140, y + 10, x - 300, y + 90);
-            ctx.stroke();
-            const coma = ctx.createRadialGradient(x, y, 0, x, y, 34);
-            coma.addColorStop(0, "rgba(255,255,255,1)");
-            coma.addColorStop(0.25, "rgba(200,230,255,0.7)");
-            coma.addColorStop(1, "rgba(120,170,255,0)");
-            ctx.fillStyle = coma;
-            ctx.fillRect(x - 34, y - 34, 68, 68);
+            const scale = (Math.min(1.05, Math.max(0.55, W / 1300)) * (1 + 0.07 * Math.min(1, comet.boost)));
+            // paralaxa: kometa je daleko, kurzor ji posouvá jen jemně
+            const px = comet.x + mouse.sx * 18;
+            const py = comet.y + mouse.sy * 12;
+            const frame = Math.floor((sec * 14) % COMET_FRAMES);
+            const size = COMET_S * scale;
+            // sprite je zrcadlený (hlava vlevo dole), jádro leží v bodě COMET_HEAD
+            const dx = px - (1 - COMET_HEAD.x) * size;
+            const dy = py - COMET_HEAD.y * size;
+            ctx.save();
+            ctx.globalAlpha = Math.min(1, (W + 260 - comet.x) / 160, (comet.x + 420) / 200);
+            ctx.shadowColor = "rgba(150,200,255,0.5)";
+            ctx.shadowBlur = 26;
+            ctx.translate(dx + size, dy);
+            ctx.scale(-1, 1);
+            ctx.drawImage(cometImg, frame * COMET_S, 0, COMET_S, COMET_S, 0, 0, size, size);
+            ctx.restore();
+            // částice z ohonu zůstávají za kometou na obloze a pomalu zhasínají
+            const tailDir = { x: 0.78, y: -0.62 }; // směr ohonu (zrcadlený): doprava nahoru
+            const n = comet.boost > 0.4 ? 3 : 1;
+            for (let i = 0; i < n; i++) {
+              const L = rnd(0.18, 0.9) * size * 0.78;
+              const sp = rnd(-0.12, 0.12) * size * 0.3;
+              cdust.push({ x: px + tailDir.x * L - tailDir.y * sp, y: py + tailDir.y * L + tailDir.x * sp, vx: -comet.vx * 0.12 + rnd(-8, 8), vy: -comet.vy * 0.12 + rnd(-8, 8), life: 0, max: rnd(1.4, 2.8), size: rnd(1, 2.6), warm: Math.random() < 0.3 });
+            }
+            // občas z komety odletí padající hvězda
+            if (Math.random() < dt * 0.35) nextMeteor = Math.min(nextMeteor, 0.05);
           }
         }
+        for (let i = cdust.length - 1; i >= 0; i--) {
+          const d = cdust[i];
+          d.life += dt;
+          if (d.life >= d.max) {
+            cdust.splice(i, 1);
+            continue;
+          }
+          d.x += d.vx * dt;
+          d.y += d.vy * dt;
+          d.vx *= 1 - dt * 0.9;
+          d.vy *= 1 - dt * 0.9;
+          const k = 1 - d.life / d.max;
+          const c = d.warm ? "255,226,170" : "200,228,255";
+          const g = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.size * 3);
+          g.addColorStop(0, `rgba(${c},${0.85 * k})`);
+          g.addColorStop(1, `rgba(${c},0)`);
+          ctx.fillStyle = g;
+          ctx.fillRect(d.x - d.size * 3, d.y - d.size * 3, d.size * 6, d.size * 6);
+        }
+        if (cdust.length > 320) cdust.splice(0, cdust.length - 320);
         ctx.globalCompositeOperation = "source-over";
       }
 
