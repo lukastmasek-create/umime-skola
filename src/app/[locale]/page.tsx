@@ -7,6 +7,7 @@ import { NatureSky } from "@/components/NatureSky";
 import { ALIEN_ROW, Circuit, HomeArt, NatureDecor, Nebula, Planet, Rocket, SpriteFrame, TechBus, Wave } from "@/components/SpaceDecor";
 import { CardIcon3D, GearHolo3D, TechBackdrop, type IconKind } from "@/components/TechScenes";
 import { Liana, MountainScene } from "@/components/HomeAnim";
+import { PlanetLive } from "@/components/PlanetLive";
 import { getHomeText } from "@/i18n/home";
 import { getSubjectText } from "@/i18n/subjects";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -250,7 +251,7 @@ export default async function Home({
       {/* 5) Zpět do vesmíru: kategorie */}
       <section className="zone zone-space">
         <Wave fill="#160a2c" />
-        <Planet className="absolute -bottom-10 -left-12 -z-10 hidden opacity-95 lg:block" size={500} variant="realistic" />
+        <PlanetLive className="absolute -bottom-10 -left-12 -z-10 hidden lg:block" size={520} />
         <SpriteFrame
           sheet="aliens"
           col={1}

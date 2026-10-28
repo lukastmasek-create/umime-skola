@@ -36,3 +36,27 @@ Render běží na CPU (Cycles), celá sada trvá kolem deseti minut.
 Elektřina v obvodech, sběrnice nad kartami, jiskra kolem karty, sníh, polární záře a běžec po cestě kroků jsou čisté SVG/CSS
 (ostré v každé velikosti a reagují na kurzor); jejich styly jsou na konci `src/app/globals.css`.
 Pásy snímků se přehrávají přes CSS `steps()`; při `prefers-reduced-motion` se nic nehýbe.
+
+## Živá planeta (60 a víc fps)
+
+Planeta v dolní části úvodní stránky není animovaný obrázek (ten má jen ~16 snímků za vteřinu), ale `src/components/PlanetLive.tsx`:
+shader ve WebGL položí na kouli rovnoúhlou texturu a otáčí s ní každý snímek displeje, takže je pohyb plynulý (60 až 120 fps)
+a soubory mají dohromady jen ~350 kB. Měsíce obíhají v DOM. Při „omezit pohyb“ nebo bez WebGL se ukáže statický snímek.
+
+Vrstvy renderuje `umime-art/blender/planeta_vrstvy.py` (materiály jsou v `planeta_lib.py`):
+
+```bash
+cd umime-art/blender
+../../.venv-art/bin/python planeta_vrstvy.py            # všechny vrstvy; jedna: albedo stin halo zadni predni mesic1 mesic2
+cd .. && ../.venv-art/bin/python encode.py planeta_live  # public/home/planet-live/*.webp
+```
+
+| Soubor | Co to je |
+|---|---|
+| `albedo.webp` | barva povrchu 2048x1024 (u = délka, v = šířka; vzorec je v `equirect_vector` a ve fragment shaderu) |
+| `stin.webp` | osvětlení bílé koule včetně stínu prstence (násobí se barvou povrchu) |
+| `halo.webp` | atmosférická záře (přidává se přes `screen`) |
+| `prsten-zadni.webp`, `prsten-predni.webp` | prstenec za a před planetou (dělí se podle světové souřadnice y) |
+| `mesic1.webp`, `mesic2.webp` | měsíce, na webu se posouvají po oběžných drahách |
+
+Konstanty záběru (`ORTHO`, rozměry 720x478) musí v `planeta_vrstvy.py` a `PlanetLive.tsx` zůstat stejné.

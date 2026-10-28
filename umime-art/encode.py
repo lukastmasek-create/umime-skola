@@ -63,6 +63,19 @@ def icons():
         print(dest, round(os.path.getsize(path) / 1024), "kB")
 
 
+def planet_live():
+    """Vrstvy planety pro živé vykreslení ve WebGL (PlanetLive.tsx) do public/home/planet-live."""
+    dest_dir = os.path.join(DEST, "..", "planet-live")
+    os.makedirs(dest_dir, exist_ok=True)
+    for name, dest, quality in (("pv_albedo", "albedo.webp", 88), ("pv_stin", "stin.webp", 94), ("pv_halo", "halo.webp", 88),
+                                ("pv_prsten_zadni", "prsten-zadni.webp", 90), ("pv_prsten_predni", "prsten-predni.webp", 90),
+                                ("pv_mesic1", "mesic1.webp", 92), ("pv_mesic2", "mesic2.webp", 92)):
+        im = frames(name)[0]
+        path = os.path.join(dest_dir, dest)
+        im.save(path, format="WEBP", quality=quality, method=5, alpha_quality=96)
+        print(dest, round(os.path.getsize(path) / 1024), "kB", im.size)
+
+
 def stills():
     """První snímek animací jako statický obrázek pro lidi s vypnutými animacemi."""
     for name, dest in (("motyl", "motyl-still.webp"), ("vlajka", "vlajka-still.webp"), ("raketa", "raketa-still.webp")):
@@ -70,14 +83,12 @@ def stills():
 
 
 if __name__ == "__main__":
-    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_realna"]
+    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_live"]
     if "icons" in what: icons()
     if "stills" in what: stills()
     # Planeta má hodně jemného detailu: každý druhý snímek a menší rozměr drží soubor pod 1 MB.
     if "planeta" in what: animated("planeta", "planeta.webp", fps=12, quality=55, size=(616, 409), step=2)
-    if "planeta_realna" in what:
-        animated("planeta_realna", "planeta-realna.webp", fps=16, quality=58, size=(496, 329))
-        still("planeta_realna", "planeta-realna-still.webp", size=(560, 372), quality=88)
+    if "planeta_live" in what: planet_live()
     if "motyl" in what: animated("motyl", "motyl.webp", fps=24, quality=72)
     if "vlajka" in what: animated("vlajka", "vlajka.webp", fps=24, quality=72)
     if "raketa" in what: animated("raketa", "raketa.webp", fps=24, quality=72)

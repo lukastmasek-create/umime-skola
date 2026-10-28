@@ -45,20 +45,7 @@ export function SpriteFrame({
 // Řádek v listu mimozemšťanů: kyklop 0, krab 1, chobotnice 2, ufo 3.
 export const ALIEN_ROW = { kyklop: 0, krab: 1, chobotnice: 2, ufo: 3 } as const;
 
-export function Planet({
-  className = "",
-  size = 420,
-  hue = 0,
-  variant = "stylized",
-}: {
-  className?: string;
-  size?: number;
-  hue?: number;
-  // "realistic" = detailní plynný obr z Blenderu (planeta-realna), "stylized" = hračková planeta
-  variant?: "stylized" | "realistic";
-}) {
-  const src = variant === "realistic" ? "/home/anim/planeta-realna.webp" : "/home/anim/planeta.webp";
-  const still = variant === "realistic" ? "/home/anim/planeta-realna-still.webp" : "/home/planeta.webp";
+export function Planet({ className = "", size = 420, hue = 0 }: { className?: string; size?: number; hue?: number }) {
   return (
     <picture
       className={`pointer-events-none block select-none ${className}`}
@@ -68,8 +55,8 @@ export function Planet({
         filter: `hue-rotate(${hue}deg) drop-shadow(0 0 40px rgba(180,120,255,0.35))`,
       }}
     >
-      <source media="(prefers-reduced-motion: reduce)" srcSet={still} />
-      <img src={src} alt="" width={size} height={size * 0.66} draggable={false} loading={variant === "realistic" ? "lazy" : undefined} className="h-full w-full object-contain" />
+      <source media="(prefers-reduced-motion: reduce)" srcSet="/home/planeta.webp" />
+      <img src="/home/anim/planeta.webp" alt="" width={size} height={size * 0.66} draggable={false} className="h-full w-full object-contain" />
     </picture>
   );
 }
