@@ -10,6 +10,8 @@ import { runWorld } from "@/lib/market-cinema-worlds";
 import { confettiBurst, createEventFx, createWeatherFx, dayPhaseOf, eventForDay, EVENT_SHOT, PHASE_TINT, runShots, weatherForDay, type Handle as ShotHandle, type Shot } from "@/lib/town-scenes";
 import { TownNpcPanel } from "@/components/TownNpcPanel";
 import { MiniGame } from "@/components/TownMini";
+import { TownStory } from "@/components/TownStory";
+import { getTownStoryText } from "@/i18n/town-story";
 import { MINI_IDS, PLAYS_PER_DAY, type MiniId } from "@/lib/town-mini";
 import { getTownMiniText } from "@/i18n/town-mini";
 import { getTownLifeText } from "@/i18n/town-life";
@@ -176,6 +178,8 @@ export function TownHub({ locale }: { locale: Locale }) {
   const [look, setLook] = useState(0);
   const [pickHero, setPickHero] = useState(false);
   const [miniOpen, setMiniOpen] = useState<MiniId | null>(null);
+  const [storyOpen, setStoryOpen] = useState(false);
+  const storyText = getTownStoryText(locale);
   const [miniLeft, setMiniLeft] = useState<Record<MiniId, number>>({ fishing: PLAYS_PER_DAY, harvest: PLAYS_PER_DAY, bakery: PLAYS_PER_DAY });
   const miniText = getTownMiniText(locale);
   const [board, setBoard] = useState(false);
@@ -978,6 +982,10 @@ export function TownHub({ locale }: { locale: Locale }) {
               <span aria-hidden>🎬</span>
               <span className="sr-only">{tl.ui.replay}</span>
             </button>
+            <button type="button" onClick={() => !busyScene && setStoryOpen(true)} disabled={busyScene} title={storyText.button} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110 disabled:opacity-50">
+              <span aria-hidden>📖</span>
+              <span className="sr-only">{storyText.button}</span>
+            </button>
             <button type="button" onClick={() => !busyScene && setPickHero(true)} disabled={busyScene} title={tt.hero.button} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110 disabled:opacity-50">
               <span aria-hidden>🧑‍🎤</span>
               <span className="sr-only">{tt.hero.button}</span>
@@ -1045,6 +1053,11 @@ export function TownHub({ locale }: { locale: Locale }) {
         </div>
       </section>
 
+      {storyOpen && (
+        <Modal title={`📖 ${storyText.title}`} onClose={() => setStoryOpen(false)} closeLabel={m.close}>
+          <TownStory locale={locale} onClose={() => setStoryOpen(false)} />
+        </Modal>
+      )}
       {miniOpen && (
         <Modal title={`${MINI_ICON[miniOpen]} ${miniText.names[miniOpen]}`} onClose={() => setMiniOpen(null)} closeLabel={m.close}>
           <MiniGame key={miniOpen} locale={locale} game={miniOpen} left={miniLeft[miniOpen]} onClose={() => setMiniOpen(null)} onReward={() => {}} />

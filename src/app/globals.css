@@ -3113,3 +3113,9 @@ select:not(:focus) {
 .mini-pop { animation-name: mini-pop-in; }
 @keyframes mini-pop-in { 0% { transform: translateY(14px) scale(0.5); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .mini-float, .mini-bite, .mini-alert, .mini-catch, .mini-pop { animation: none; } }
+
+/* Příběh městečka: dialogové bubliny s portréty. */
+.story-portrait { display: flex; align-items: center; justify-content: center; width: 4.2rem; height: 4.2rem; flex-shrink: 0; border-radius: 1.2rem; border: 2px solid var(--edge); background: var(--surface-muted); font-size: 2.4rem; box-shadow: 0 3px 0 var(--shadow-ink); }
+.story-bubble { position: relative; flex: 1; border-radius: 1.2rem; border: 2px solid var(--edge); background: var(--surface); padding: 0.75rem 1rem; animation: story-in 0.28s ease-out 1; }
+@keyframes story-in { from { transform: translateY(8px) scale(0.97); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .story-bubble { animation: none; } }
