@@ -54,7 +54,8 @@ const MINI_ICON: Record<MiniId, string> = { fishing: "🎣", harvest: "🥕", ba
 
 const SKY = 160; // výška oblohy nad obrázkem městečka (v px obrázku)
 const BOX_H = HUB.h + SKY;
-const FIG = 0.06;
+const K = 16 / ((HUB as unknown as { units?: number }).units ?? 16); // záběr kamery je širší než 16 jednotek
+const FIG = 0.06 * K;
 const Y = (y: number) => (SKY + y * HUB.h) / BOX_H;
 const at = (p: Pt) => ({ left: `${p[0] * 100}%`, top: `${Y(p[1]) * 100}%` });
 const toBox = (p: Pt): Pt => [p[0], Y(p[1])];
@@ -69,6 +70,19 @@ const DEPTH_V = (() => {
 })();
 const V_FRONT = DEPTH_V(3.3);
 const V_BACK = DEPTH_V(9.0);
+
+const nearestNode = (p: Pt): string => {
+  let best = "hub";
+  let bd = Infinity;
+  for (const [k, q] of Object.entries(HUB.graf.nodes)) {
+    const d = Math.hypot((q[0] - p[0]) * HUB.w, (q[1] - p[1]) * HUB.h);
+    if (d < bd) {
+      bd = d;
+      best = k;
+    }
+  }
+  return best;
+};
 
 type WorldKey = "pirate" | "space" | "forest" | "castle" | "sea";
 type PlaceDef = { id: string; icon: string; href?: string; world?: WorldKey };
@@ -228,6 +242,9 @@ export function TownHub({ locale }: { locale: Locale }) {
   const cv = useRef<HTMLCanvasElement>(null);
   const hero = useRef<HTMLDivElement>(null);
   const heroSpr = useRef<HTMLSpanElement>(null);
+  const heroP = useRef<Pt>(HUB.hrdina);
+  const visitRef = useRef<(p: PlaceDef) => void>(() => {});
+  const [near, setNear] = useState<string | null>(null);
   const rocket = useRef<HTMLDivElement>(null);
   const bars = useRef<HTMLDivElement>(null);
   const count = useRef<HTMLDivElement>(null);
@@ -325,7 +342,7 @@ export function TownHub({ locale }: { locale: Locale }) {
       if (!el || !fig) return;
       el.style.left = `${x * 100}%`;
       el.style.top = `${Y(y) * 100}%`;
-      el.style.zIndex = String(11 + Math.round(y * 10));
+      el.style.zIndex = String((y > V_FRONT ? 40 : y > V_BACK ? 25 : 10) + Math.round(y * 4)); // za budovami skryje vrstva hub-a/hub-b
       const f = FOLK.find((c) => c.key === key);
       const s = SPR[f?.k ?? "kluk"];
       fig.style.transform = `translate(-50%, ${-(0.5 + s.tz / s.o) * 100}%) scaleX(${(flip ? -1 : 1) * (f?.flip ? -1 : 1)})`;
@@ -479,6 +496,146 @@ export function TownHub({ locale }: { locale: Locale }) {
       io.disconnect();
     };
   }, [eventId, gen]);
+  useEffect(() => {
+    visitRef.current = visit;
+  });
+  // ovládání z klávesnice: WASD nebo šipky vedou hrdinu po cestách, E / Enter / mezerník vstoupí do budovy u dveří
+  const free = !phase && !cine && !board && !openNpc && !miniOpen && !storyOpen && !pickHero;
+  useEffect(() => {
+    const h = hero.current;
+    const spr = heroSpr.current;
+    if (!free || !h || !spr) return;
+    const nodes = HUB.graf.nodes;
+    const nb: Record<string, string[]> = {};
+    for (const n of Object.keys(nodes)) nb[n] = [];
+    for (const [x, y] of HUB.graf.edges) {
+      nb[x].push(y);
+      nb[y].push(x);
+    }
+    const vec = (a: string, b: string): [number, number, number] => {
+      const dx = (nodes[b][0] - nodes[a][0]) * HUB.w;
+      const dy = (nodes[b][1] - nodes[a][1]) * HUB.h;
+      const L = Math.hypot(dx, dy) || 1;
+      return [dx / L, dy / L, L / HUB.w];
+    };
+    let seg: { a: string; b: string; t: number } | null = null;
+    let node = nearestNode(heroP.current);
+    let flip = 1;
+    let walking = false;
+    let nearId: string | null = null;
+    const apply = () => {
+      h.style.left = `${heroP.current[0] * 100}%`;
+      h.style.top = `${Y(heroP.current[1]) * 100}%`;
+      h.style.opacity = "1";
+      h.style.transform = `translate(-50%, ${-(0.5 + 0.55 / 1.6) * 100}%) scaleX(${flip})`;
+    };
+    const setWalk = (on: boolean) => {
+      if (on === walking) return;
+      walking = on;
+      spr.style.backgroundImage = `url(${heroSpriteUrl(on ? "chuze" : "stoji", getHeroLook())})`;
+      spr.style.animationDuration = on ? "0.7s" : "3s";
+    };
+    const keys = new Set<string>();
+    const MAP: Record<string, string> = { w: "u", arrowup: "u", s: "d", arrowdown: "d", a: "l", arrowleft: "l", d: "r", arrowright: "r" };
+    const typing = (t: EventTarget | null) => t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+    const onDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return;
+      const k = e.key.toLowerCase();
+      if (MAP[k]) {
+        keys.add(MAP[k]);
+        e.preventDefault();
+      } else if ((k === "e" || k === "enter" || k === " ") && nearId && !(e.target instanceof HTMLButtonElement)) {
+        const pl = PLACES.find((q) => q.id === nearId);
+        if (pl) {
+          e.preventDefault();
+          keys.clear();
+          visitRef.current(pl);
+        }
+      }
+    };
+    const onUp = (e: KeyboardEvent) => {
+      const k = MAP[e.key.toLowerCase()];
+      if (k) keys.delete(k);
+    };
+    const onBlur = () => keys.clear();
+    window.addEventListener("keydown", onDown);
+    window.addEventListener("keyup", onUp);
+    window.addEventListener("blur", onBlur);
+    let raf = 0;
+    let last = performance.now();
+    const SPEED = 0.07; // šířky obrázku za sekundu
+    const tick = (now: number) => {
+      raf = requestAnimationFrame(tick);
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      const dx = (keys.has("r") ? 1 : 0) - (keys.has("l") ? 1 : 0);
+      const dy = (keys.has("d") ? 1 : 0) - (keys.has("u") ? 1 : 0);
+      let moved = false;
+      if (dx || dy) {
+        const dl = Math.hypot(dx, dy);
+        const ux = dx / dl;
+        const uy = dy / dl;
+        if (!seg) {
+          let best: string | null = null;
+          let bs = 0.35;
+          for (const m of nb[node]) {
+            const [ex, ey] = vec(node, m);
+            const sc = ex * ux + ey * uy;
+            if (sc > bs) {
+              bs = sc;
+              best = m;
+            }
+          }
+          if (best) seg = { a: node, b: best, t: 0 };
+        }
+        if (seg) {
+          const [ex, ey, L] = vec(seg.a, seg.b);
+          const sc = ex * ux + ey * uy;
+          if (Math.abs(sc) > 0.25) {
+            seg.t += (Math.sign(sc) * SPEED * dt) / L;
+            moved = true;
+            const sx = Math.sign(sc) * ex;
+            if (Math.abs(sx) > 0.2) flip = sx < 0 ? -1 : 1;
+            if (seg.t >= 1 || seg.t <= 0) {
+              node = seg.t >= 1 ? seg.b : seg.a;
+              seg.t = seg.t >= 1 ? 1 : 0;
+              heroP.current = nodes[node];
+              seg = null;
+            }
+          }
+        }
+        if (seg) {
+          const A = nodes[seg.a];
+          const B = nodes[seg.b];
+          heroP.current = [A[0] + (B[0] - A[0]) * seg.t, A[1] + (B[1] - A[1]) * seg.t];
+        }
+        apply();
+      }
+      setWalk(moved);
+      // stojí u dveří?
+      let id: string | null = null;
+      if (!seg) {
+        const q = nodes[node];
+        if (Math.hypot((q[0] - heroP.current[0]) * HUB.w, (q[1] - heroP.current[1]) * HUB.h) < 8 && PLACES.some((p2) => p2.id === node)) id = node;
+      }
+      if (id !== nearId) {
+        nearId = id;
+        setNear(id);
+      }
+    };
+    heroP.current = nodes[node] && Math.hypot((nodes[node][0] - heroP.current[0]) * HUB.w, (nodes[node][1] - heroP.current[1]) * HUB.h) < 8 ? nodes[node] : heroP.current;
+    apply();
+    spr.style.backgroundImage = `url(${heroSpriteUrl("stoji", getHeroLook())})`;
+    spr.style.animationDuration = "3s";
+    raf = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("keydown", onDown);
+      window.removeEventListener("keyup", onUp);
+      window.removeEventListener("blur", onBlur);
+      setNear(null);
+    };
+  }, [free, gen]);
   // hloubka: hrdina je před budovami, mezi řadami domů, nebo za nimi (vrstvy hub-b a hub-a se kreslí nad ním)
   useEffect(() => {
     let raf = 0;
@@ -587,17 +744,25 @@ export function TownHub({ locale }: { locale: Locale }) {
     if (!phase) return;
     const r = { box: box.current, cam: cam.current, sky: sky.current, bgDark: bgDark.current, cv: cv.current, hero: hero.current, heroSpr: heroSpr.current, rocket: rocket.current, bars: bars.current, count: count.current };
     if (!r.box || !r.cam || !r.cv || !r.hero || !r.heroSpr) return;
-    const start = HUB.hrdina;
+    const start = heroP.current;
+    const from = nearestNode(start);
+    const onNode = Math.hypot((HUB.graf.nodes[from][0] - start[0]) * HUB.w, (HUB.graf.nodes[from][1] - start[1]) * HUB.h) < 6;
+    const rt = (to: string) => {
+      const ids = route(from, to);
+      const pts = ids.map((n) => HUB.graf.nodes[n]);
+      return onNode ? pts.slice(1) : pts;
+    };
     const full = (r2: typeof r) => r2 as Parameters<typeof runSpace>[0];
     if (phase.kind === "path" && phase.target) {
       const place = phase.target;
-      const nodes = route("hub", place.id).map((n) => HUB.graf.nodes[n]);
-      const geo = geoFor(nodes.slice(1), start);
+      const walk = rt(place.id);
+      const geo = geoFor(walk, start);
       handle.current = runPath(
         r as Parameters<typeof runPath>[0],
         geo,
         () => {
           const door = HUB.places[place.id]?.door;
+          heroP.current = HUB.graf.nodes[place.id] ?? start;
           const done = () => {
             if (place.href) leave(`/${locale}${place.href}`);
             else {
@@ -613,20 +778,20 @@ export function TownHub({ locale }: { locale: Locale }) {
       );
     } else if (phase.kind === "space") {
       if (!r.sky || !r.bgDark || !r.rocket || !r.bars || !r.count) return;
-      const nodes = route("hub", "stanice").map((n) => HUB.graf.nodes[n]);
+      const nodes = rt("stanice");
       const pad = HUB.places.stanice.raketa ?? HUB.places.stanice.door;
-      const walkEnd = nodes[nodes.length - 1];
-      handle.current = runPath(r as Parameters<typeof runPath>[0], geoFor(nodes.slice(1), start, { rocketW: 0.22 }), () => {
+      const walkEnd = nodes[nodes.length - 1] ?? start;
+      handle.current = runPath(r as Parameters<typeof runPath>[0], geoFor(nodes, start, { rocketW: 0.22 }), () => {
         handle.current = runSpace(full(r), geoFor([], walkEnd, { rocket: pad, rocketW: 0.22 }), () => leave(`/${locale}/uzivatelsky-obchod?svet=space&film=1`));
       }, false);
     } else if (phase.kind === "pirate") {
       if (!r.sky || !r.bgDark || !r.rocket || !r.bars || !r.count) return;
-      const nodes = route("hub", "pristav").map((n) => HUB.graf.nodes[n]);
-      handle.current = runPirate(full(r), geoFor(nodes.slice(1), start), nastup as unknown as Parameters<typeof runPirate>[2], () => leave(`/${locale}/uzivatelsky-obchod?svet=pirate&film=1`));
+      const nodes = rt("pristav");
+      handle.current = runPirate(full(r), geoFor(nodes, start), nastup as unknown as Parameters<typeof runPirate>[2], () => leave(`/${locale}/uzivatelsky-obchod?svet=pirate&film=1`));
     } else {
       const world = phase.target?.world ?? "forest";
-      const nodes = route("hub", phase.id).map((n) => HUB.graf.nodes[n]);
-      handle.current = runWorld(r as Parameters<typeof runWorld>[0], geoFor(nodes.slice(1), start, { door: HUB.places[phase.id]?.door, sub: HUB.places.more.ponorka }), world === "castle" ? "castle" : world === "sea" ? "sea" : "forest", () => leave(`/${locale}/uzivatelsky-obchod?svet=${world}&film=1`), subRef.current);
+      const nodes = rt(phase.id);
+      handle.current = runWorld(r as Parameters<typeof runWorld>[0], geoFor(nodes, start, { door: HUB.places[phase.id]?.door, sub: HUB.places.more.ponorka }), world === "castle" ? "castle" : world === "sea" ? "sea" : "forest", () => leave(`/${locale}/uzivatelsky-obchod?svet=${world}&film=1`), subRef.current);
     }
     return () => handle.current?.stop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -887,12 +1052,12 @@ export function TownHub({ locale }: { locale: Locale }) {
             <HubWater />
             {/* přístavní loď a ponorka v lagunně (pod/nad obrázkem podle polohy) */}
             {HUB.places.pristav.lod && (
-              <div aria-hidden className="pointer-events-none absolute" style={{ ...at(HUB.places.pristav.lod), width: "26%", aspectRatio: "640 / 512", transform: "translate(-50%, -78.1%)" }}>
+              <div aria-hidden className="pointer-events-none absolute" style={{ ...at(HUB.places.pristav.lod), width: `${26 * K}%`, aspectRatio: "640 / 512", transform: "translate(-50%, -78.1%)" }}>
                 <span className="town-sprite block h-full w-full" style={{ backgroundImage: "url(/home/pristav/lod.webp)", ["--n" as string]: 12, animationDuration: "3.6s" }} />
               </div>
             )}
             {HUB.places.more.ponorka && (
-              <div ref={subRef} aria-hidden className="pointer-events-none absolute" style={{ ...at(HUB.places.more.ponorka), width: "16%", aspectRatio: "640 / 384", transform: "translate(-50%, -50%)" }}>
+              <div ref={subRef} aria-hidden className="pointer-events-none absolute" style={{ ...at(HUB.places.more.ponorka), width: `${16 * K}%`, aspectRatio: "640 / 384", transform: "translate(-50%, -50%)" }}>
                 <span className="town-sprite block h-full w-full" style={{ backgroundImage: "url(/home/more/ponorka.webp)", ["--n" as string]: 12, animationDuration: "3.2s" }} />
               </div>
             )}
@@ -904,12 +1069,12 @@ export function TownHub({ locale }: { locale: Locale }) {
               <img key={k} src={`/home/mesto/hub-${k}.webp`} alt="" draggable={false} onError={(e) => (e.currentTarget.style.display = "none")} className="town-hub-img pointer-events-none absolute bottom-0 left-0 w-full" style={{ zIndex: k === "b" ? 20 : 30, filter: dark ? "brightness(0.55) saturate(1.1) hue-rotate(-12deg)" : undefined, transition: "filter 0.8s" }} />
             ))}
             {/* větrný mlýn a komíny */}
-            <div aria-hidden className="town-mill pointer-events-none absolute" style={{ zIndex: 45, ...at(HUB.mlyn), width: "6.2%", aspectRatio: "1 / 1", transform: "translate(-50%,-50%)" }}>
+            <div aria-hidden className="town-mill pointer-events-none absolute" style={{ zIndex: 45, ...at(HUB.mlyn), width: `${6.2 * K}%`, aspectRatio: "1 / 1", transform: "translate(-50%,-50%)" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/home/mesto/mlyn.webp" alt="" draggable={false} className="town-mill-blades block h-full w-full" />
             </div>
             {HUB.kominy.map((p, i) => (
-              <div key={i} aria-hidden className="pointer-events-none absolute" style={{ zIndex: 45, ...at(p), width: "1.4%", aspectRatio: "1 / 1" }}>
+              <div key={i} aria-hidden className="pointer-events-none absolute" style={{ zIndex: 45, ...at(p), width: `${1.4 * K}%`, aspectRatio: "1 / 1" }}>
                 {[0, 1, 2].map((j) => (
                   <i key={j} className="hub-smoke" style={{ animationDelay: `${-(j * 1.6 + i * 0.7)}s` }} />
                 ))}
@@ -917,7 +1082,7 @@ export function TownHub({ locale }: { locale: Locale }) {
             ))}
             {/* raketa na rampě */}
             {HUB.places.stanice.raketa && (
-              <div ref={rocket} aria-hidden className="pointer-events-none absolute" style={{ zIndex: 40, ...at(HUB.places.stanice.raketa), width: "22%", aspectRatio: "640 / 384", transform: "translate(-50%, -62%)" }}>
+              <div ref={rocket} aria-hidden className="pointer-events-none absolute" style={{ zIndex: 40, ...at(HUB.places.stanice.raketa), width: `${22 * K}%`, aspectRatio: "640 / 384", transform: "translate(-50%, -62%)" }}>
                 <span className="town-sprite block h-full w-full" style={{ backgroundImage: "url(/home/kosmicka/raketa.webp)", ["--n" as string]: 12, animationDuration: "3s" }} />
               </div>
             )}
@@ -996,7 +1161,7 @@ export function TownHub({ locale }: { locale: Locale }) {
               if (!pl) return null;
               const locked = p.world && !worldOpen(p.world) && p.world !== "pirate";
               return (
-                <div key={p.id} className={`${labelCls} pointer-events-none ${hover === p.id ? "scale-110" : ""}`} style={{ ...at(pl.sign), width: `${(pl.w / 16) * 100}%`, padding: "0.15cqw 0.2cqw", fontSize: "clamp(8px, 0.95cqw, 15px)" }}>
+                <div key={p.id} className={`${labelCls} pointer-events-none ${hover === p.id ? "scale-110" : ""}`} style={{ ...at(pl.sign), width: `${(pl.w * K / 16) * 100}%`, padding: "0.15cqw 0.2cqw", fontSize: "clamp(8px, 0.95cqw, 15px)" }}>
                   {p.icon} {tt.buildings[p.id].name}
                   {locked && <span className="ml-1 opacity-80">🔒</span>}
                 </div>
@@ -1007,7 +1172,7 @@ export function TownHub({ locale }: { locale: Locale }) {
             {PLACES.map((p) => {
               const pl = HUB.places[p.id];
               if (!pl) return null;
-              const hw = pl.w / 16 + 0.04;
+              const hw = pl.w * K / 16 + 0.04;
               const top = Math.min(pl.sign[1], pl.door[1]) - 0.012;
               const hh = Math.abs(pl.door[1] - pl.sign[1]) + 0.045;
               return (
@@ -1026,6 +1191,12 @@ export function TownHub({ locale }: { locale: Locale }) {
           <div className="pointer-events-none absolute left-3 top-3 z-20 flex items-center gap-2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-sm font-extrabold">
             🎁 {left > 0 ? tt.collect.left.replace("{n}", String(left)) : "✓"}
           </div>
+          <div aria-hidden className="pointer-events-none absolute left-3 top-[6.5rem] z-20 hidden items-center gap-1 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-xs font-extrabold opacity-80 md:flex">⌨ WASD / ←↑↓→</div>
+          {near && free && (
+            <div role="status" className="pointer-events-none absolute bottom-14 left-1/2 z-30 -translate-x-1/2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-2 text-sm font-extrabold shadow-[0_3px_0_var(--shadow-ink)]">
+              <kbd className="rounded-md border-2 border-[var(--edge)] px-1.5">E</kbd> {tt.buildings[near]?.name ?? near}
+            </div>
+          )}
           {note && <div role="status" className="absolute bottom-3 left-1/2 z-30 -translate-x-1/2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-2 text-sm font-bold shadow-[0_3px_0_var(--shadow-ink)]">{note}</div>}
 
           {/* filmové pruhy, titulky a přeskočení cut scény */}
