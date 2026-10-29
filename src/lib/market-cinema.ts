@@ -793,3 +793,102 @@ function drawCurtain(ctx: CanvasRenderingContext2D, w: number, h: number, t: num
   }
   ctx.restore();
 }
+
+// ---------------------------------------------------------------------------------------------- vstup do budovy
+// Hrdina dojde po cestě ke dveřím vybrané budovy, kamera se přiblíží a obraz se rozsvítí do bíla.
+export function runWalk(r: Pick<Refs, "box" | "cam" | "cv" | "hero" | "heroSpr">, g: Geo, target: Pt, onEnd: () => void): Handle {
+  let stopped = false;
+  let raf = 0;
+  const finish = () => {
+    if (stopped) return;
+    stopped = true;
+    cancelAnimationFrame(raf);
+    onEnd();
+  };
+  const { cw, ch, ctx } = setup(r as Refs);
+  r.cam.style.transformOrigin = "0 0";
+  r.cam.style.willChange = "transform";
+  const [su, sv] = g.toBox(g.start);
+  const [tu, tv] = g.toBox(target);
+  const roadPx = g.road.map((p) => g.toBox(p)).map(([u, v]) => ({ x: u * cw, y: v * ch }));
+  const nearest = (x: number, y: number) => {
+    let best = 0;
+    let bd = 1e9;
+    roadPx.forEach((p, i) => {
+      const d = Math.hypot(p.x - x, p.y - y);
+      if (d < bd) {
+        bd = d;
+        best = i;
+      }
+    });
+    return best;
+  };
+  const a = nearest(su * cw, sv * ch);
+  const b = nearest(tu * cw, tv * ch);
+  const path: { x: number; y: number }[] = [{ x: su * cw, y: sv * ch }];
+  if (a <= b) for (let i = a; i <= b; i++) path.push(roadPx[i]);
+  else for (let i = a; i >= b; i--) path.push(roadPx[i]);
+  path.push({ x: tu * cw, y: tv * ch });
+  const cum = [0];
+  for (let i = 1; i < path.length; i++) cum.push(cum[i - 1] + Math.hypot(path[i].x - path[i - 1].x, path[i].y - path[i - 1].y));
+  const total = cum[cum.length - 1];
+  const T = Math.max(1.2, Math.min(3.4, total / (0.22 * cw)));
+  const at = (d: number) => {
+    let i = 1;
+    while (i < cum.length - 1 && cum[i] < d) i++;
+    const k = clamp((d - cum[i - 1]) / Math.max(1e-6, cum[i] - cum[i - 1]));
+    return { x: lerp(path[i - 1].x, path[i].x, k), y: lerp(path[i - 1].y, path[i].y, k), dir: path[i].x - path[i - 1].x };
+  };
+  const heroState = { cur: "idle" };
+  let last = performance.now();
+  const t0 = last;
+  let stepAcc = 0;
+  let flip = false;
+  let zx = 0;
+  let zy = 0;
+  const frame = (now: number) => {
+    raf = 0;
+    if (stopped) return;
+    const t = (now - t0) / 1000;
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    const u = clamp(t / T);
+    const d = at(ease(u) * 0.35 * total + u * 0.65 * total);
+    if (Math.abs(d.dir) > 0.5) flip = d.dir < 0;
+    const walking = t < T;
+    heroSprite(r as Refs, walking ? "walk" : "idle", heroState);
+    setHero(r as Refs, d.x, d.y, flip, 1, 1);
+    if (walking) {
+      stepAcc += dt;
+      if (stepAcc > 0.27) {
+        stepAcc = 0;
+        sfx.step();
+      }
+    }
+    const zoom = 1 + 0.75 * ease(clamp(t / (T + 0.2)));
+    const wantX = clamp(cw / 2 - zoom * d.x, cw - zoom * cw, 0);
+    const wantY = clamp(ch * 0.6 - zoom * d.y, ch - zoom * ch, 0);
+    zx = lerp(zx, wantX, 1 - Math.exp(-6 * dt));
+    zy = lerp(zy, wantY, 1 - Math.exp(-6 * dt));
+    r.cam.style.transform = `translate(${zx}px, ${zy}px) scale(${zoom})`;
+    ctx.clearRect(0, 0, cw, ch);
+    const flash = sm(t, T - 0.1, T + 0.35);
+    if (flash > 0) {
+      ctx.fillStyle = `rgba(255,255,255,${flash})`;
+      ctx.fillRect(0, 0, cw, ch);
+    }
+    if (t >= T + 0.4) {
+      finish();
+      return;
+    }
+    raf = requestAnimationFrame(frame);
+  };
+  raf = requestAnimationFrame(frame);
+  return {
+    stop: () => {
+      stopped = true;
+      cancelAnimationFrame(raf);
+    },
+    skip: finish,
+  };
+}

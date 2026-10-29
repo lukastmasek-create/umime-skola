@@ -14,9 +14,9 @@ import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
 import pirateScene from "./pristav-kotvy.json";
 import spaceScene from "./kosmicka-kotvy.json";
-import { getWorldText, getUnlockText, getTownText } from "@/i18n/market-world";
+import { getWorldText, getUnlockText } from "@/i18n/market-world";
+import { getTownHubText } from "@/i18n/town";
 import { drawSea, wave } from "@/lib/market-scenery";
-import { MarketTown } from "@/components/MarketTown";
 
 // Uživatelský obchod jako prostředí: pirátský přístav a vesmírná stanice z Blenderu (umime-art/blender/pristav*.py,
 // kosmicka*.py). Vrstvy zespodu: moře nebo vesmír (canvas), hlavní předmět (loď, raketa), zadní vrstva (podlaha, stánky),
@@ -288,16 +288,18 @@ function useScenery(stage: React.RefObject<HTMLDivElement | null>, back: React.R
   }, [stage, back, front, nightRef, def, data]);
 }
 
-export function MarketWorld({ locale }: { locale: Locale }) {
+export function MarketWorld({ locale, initialWorld, film = false }: { locale: Locale; initialWorld?: WorldId; film?: boolean }) {
   const t = getShopText(locale);
   const x = getShopExtraText(locale);
   const m = getMarketText(locale);
   const ut = getUnlockText(locale);
-  const town = getTownText(locale);
+  const town = getTownHubText(locale);
   const [state, setState] = useState<State>({ status: "loading" });
-  const [worldId, setWorldId] = useState<WorldId>("pirate");
-  const [inTown, setInTown] = useState(true);
-  const [veil, setVeil] = useState<{ color: string; fade: boolean } | null>(null);
+  const wanted = initialWorld && WORLDS.some((w) => w.id === initialWorld && w.ready) ? initialWorld : undefined;
+  const [worldId, setWorldId] = useState<WorldId>(wanted && wanted === "pirate" ? "pirate" : "pirate");
+  // po filmovém přechodu z městečka obraz zalévá závoj v barvě konce a pomalu se rozplyne
+  const [veil, setVeil] = useState<{ color: string; fade: boolean } | null>(film ? { color: wanted === "space" ? "#9be8ff" : "#cfe8ff", fade: false } : null);
+  const wantedDone = useRef(false);
   const [unlockId, setUnlockId] = useState<WorldId | null>(null);
   const [open, setOpen] = useState<StallKey | null>(null);
   const [hover, setHover] = useState<StallKey | null>(null);
@@ -452,7 +454,7 @@ export function MarketWorld({ locale }: { locale: Locale }) {
   };
 
   const unlocked = (id: WorldId) => id === "pirate" || !!ready?.worlds?.includes(id);
-  function pickWorld(id: WorldId, cinematic = false) {
+  function pickWorld(id: WorldId) {
     const w = WORLDS.find((c) => c.id === id);
     if (!w || !w.ready) return;
     setOpen(null);
@@ -461,13 +463,6 @@ export function MarketWorld({ locale }: { locale: Locale }) {
     setShot(null);
     if (unlocked(id)) {
       setWorldId(id);
-      setInTown(false);
-      if (cinematic) {
-        // závoj v barvě konce přechodu překryje přepnutí scény a pak se rozplyne
-        setVeil({ color: id === "space" ? "#9be8ff" : "#cfe8ff", fade: false });
-        window.setTimeout(() => setVeil((v) => (v ? { ...v, fade: true } : v)), 60);
-        window.setTimeout(() => setVeil(null), 1100);
-      }
     } else setUnlockId(id);
   }
   async function unlockWorld(id: WorldId) {
@@ -475,9 +470,26 @@ export function MarketWorld({ locale }: { locale: Locale }) {
     if (ok) {
       setUnlockId(null);
       setWorldId(id);
-      setInTown(false);
     }
   }
+
+  useEffect(() => {
+    if (!film) return;
+    const a = window.setTimeout(() => setVeil((v) => (v ? { ...v, fade: true } : v)), 80);
+    const b = window.setTimeout(() => setVeil(null), 1200);
+    return () => {
+      window.clearTimeout(a);
+      window.clearTimeout(b);
+    };
+  }, [film]);
+  useEffect(() => {
+    // svět z adresy (?svet=): odemčený se otevře hned, zamčený nabídne odemčení
+    if (!wanted || wantedDone.current || state.status === "loading") return;
+    wantedDone.current = true;
+    const id = window.setTimeout(() => pickWorld(wanted), 0);
+    return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.status, wanted]);
 
   const openDef = open ? world.stalls.find((s) => s.key === open) : null;
   const openItems = open ? stallItems(open) : [];
@@ -509,18 +521,18 @@ export function MarketWorld({ locale }: { locale: Locale }) {
     <div>
       <div className="mb-4">
         <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          🛍️ {inTown ? town.title : wt.title}
+          🛍️ {wt.title}
         </h1>
-        <p className="max-w-3xl text-[var(--muted)]">{inTown ? town.subtitle : wt.subtitle}</p>
+        <p className="max-w-3xl text-[var(--muted)]">{wt.subtitle}</p>
       </div>
 
       <div className="mb-3 flex flex-wrap items-center gap-2" role="tablist" aria-label={m.title}>
-        <button role="tab" aria-selected={inTown} onClick={() => { setInTown(true); setOpen(null); setHover(null); }} className={`btn-bouncy flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold ${inTown ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface)]"}`}>
+        <Link href={`/${locale}/mestecko`} className="btn-bouncy flex items-center gap-1.5 bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
           <span aria-hidden>🏘️</span>
-          {town.tab}
-        </button>
+          {town.nav}
+        </Link>
         {WORLDS.map((w) => {
-          const on = !inTown && w.id === worldId;
+          const on = w.id === worldId;
           const lock = w.ready && !unlocked(w.id);
           return (
             <button
@@ -554,9 +566,8 @@ export function MarketWorld({ locale }: { locale: Locale }) {
       )}
       {state.status === "unavailable" && <p className="mb-3 rounded-xl border-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-2 text-sm text-[var(--muted)]">{t.unavailable}</p>}
 
-      {inTown && <MarketTown locale={locale} unlocked={unlocked} onEnter={pickWorld} />}
       {veil && <div aria-hidden className="pointer-events-none fixed inset-0 z-[60]" style={{ background: veil.color, opacity: veil.fade ? 0 : 1, transition: "opacity 0.9s ease-out" }} />}
-      <div hidden={inTown} className="overflow-x-auto rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)]">
+      <div className="overflow-x-auto overflow-y-hidden rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)]">
         <div ref={stage} data-night={dark ? "" : undefined} data-world={world.id} className="market-stage relative select-none overflow-hidden" style={{ aspectRatio: `${W} / ${H}`, minWidth: 880 }}>
           <canvas ref={back} aria-hidden className="absolute inset-0 h-full w-full" />
           {/* hlavní předmět: loď nebo raketa */}
@@ -712,7 +723,7 @@ export function MarketWorld({ locale }: { locale: Locale }) {
       </div>
 
       {/* rychlá volba stánků (hlavně pro telefony) */}
-      <div hidden={inTown} className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-3 flex flex-wrap gap-2">
         {world.stalls.map((s) => (
           <button key={s.key} type="button" onClick={() => setOpen(s.key)} className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
             {wt.stalls[s.key].name}
