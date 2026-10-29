@@ -24,6 +24,12 @@ export const BANNERS: Record<string, string> = {
     "repeating-linear-gradient(45deg, #ff9ec7 0 14px, #ffffff 14px 28px)",
   "night-city":
     "linear-gradient(180deg, #1b1740 0%, #3b2a6b 60%, #ff7a8a 100%)",
+  "treasure-map":
+    "radial-gradient(circle at 70% 40%, rgba(138,90,52,0.35), transparent 35%), repeating-linear-gradient(0deg, rgba(138,90,52,0.08) 0 3px, transparent 3px 7px), linear-gradient(160deg, #f1dcaa 0%, #d9b873 100%)",
+  "pirate-night":
+    "radial-gradient(circle at 78% 22%, #fff3c4 0 6%, transparent 7%), radial-gradient(1.5px 1.5px at 20% 25%, #fff, transparent), radial-gradient(1.5px 1.5px at 45% 15%, #fff, transparent), linear-gradient(180deg, #0e1a3d 0%, #1d3a7a 62%, #0a2a50 100%)",
+  storm:
+    "radial-gradient(circle at 30% 20%, rgba(255,255,255,0.18), transparent 35%), linear-gradient(170deg, #4a5878 0%, #2a3350 55%, #141b30 100%)",
   snow: "radial-gradient(circle at 25% 25%, #ffffff, transparent 30%), radial-gradient(circle at 70% 60%, #ffffff, transparent 25%), linear-gradient(160deg, #cfe9ff 0%, #8fc3f0 100%)",
 };
 

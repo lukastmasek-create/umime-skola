@@ -27,8 +27,8 @@ import { getShopExtraText } from "@/i18n/shop-extra";
 import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
 
-type Equipped = { avatar: string | null; title: string | null; frame: string | null; banner: string | null };
-type Snapshot = { loggedIn: true; points: number; owned: string[]; equipped: Equipped; day: string; resetAt: string };
+export type Equipped = { avatar: string | null; title: string | null; frame: string | null; banner: string | null };
+export type Snapshot = { loggedIn: true; points: number; owned: string[]; equipped: Equipped; day: string; resetAt: string };
 type Sort = "default" | "asc" | "desc";
 
 const WISHLIST_KEY = "shop-wishlist";
@@ -43,7 +43,7 @@ function formatLeft(ms: number): string {
 }
 
 // Okno nad obsahem stránky: Esc nebo klik mimo ho zavře.
-function Modal({ title, onClose, closeLabel, children }: { title: string; onClose: () => void; closeLabel: string; children: ReactNode }) {
+export function Modal({ title, onClose, closeLabel, children }: { title: string; onClose: () => void; closeLabel: string; children: ReactNode }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
@@ -74,7 +74,7 @@ const CITY_PREVIEW: Record<string, { emoji: string; color: string }> = {
   rocket_pad: { emoji: "🚀", color: "#e3c8ff" },
 };
 
-function Preview({ item, locale, avatar }: { item: ShopItem; locale: Locale; avatar: string | null }) {
+export function Preview({ item, locale, avatar }: { item: ShopItem; locale: Locale; avatar: string | null }) {
   const box = "flex h-28 items-center justify-center rounded-xl border-2 border-[var(--edge)]";
   switch (item.kind) {
     case "avatar":

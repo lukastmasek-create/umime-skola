@@ -2761,3 +2761,111 @@ select:not(:focus) {
     animation: none;
   }
 }
+
+/* Přihlášení a registrace: maskot, plovoucí ikony předmětů a postupný náběh políček */
+.auth-float {
+  animation: auth-float 7s ease-in-out var(--d, 0s) infinite;
+}
+@keyframes auth-float {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 6deg)); }
+  50% { transform: translateY(-18px) rotate(calc(var(--r, 6deg) * -1)); }
+}
+.auth-field {
+  animation: auth-field-in 0.45s ease-out var(--d, 0ms) both;
+}
+@keyframes auth-field-in {
+  from { opacity: 0; transform: translateY(14px); }
+}
+.auth-card {
+  animation: auth-card-in 0.5s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+@keyframes auth-card-in {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+}
+.auth-bubble::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  width: 14px;
+  height: 14px;
+  background: var(--surface);
+  border-right: 2px solid var(--edge);
+  border-bottom: 2px solid var(--edge);
+  transform: translateX(-50%) rotate(45deg);
+}
+.auth-mascot {
+  position: relative;
+}
+.auth-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  width: 55%;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  filter: blur(4px);
+  transform: translateX(-50%);
+}
+.auth-oops {
+  animation: auth-oops 0.7s ease-in-out;
+}
+@keyframes auth-oops {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-10px) rotate(-5deg); }
+  40% { transform: translateX(10px) rotate(5deg); }
+  60% { transform: translateX(-7px) rotate(-3deg); }
+  80% { transform: translateX(7px) rotate(3deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-float,
+  .auth-field,
+  .auth-card,
+  .auth-oops {
+    animation: none;
+  }
+}
+
+/* Uživatelský obchod jako přístav: tlačítka stánků, dopad koupené věci */
+.market-hit {
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+.market-hit-on,
+.market-hit:hover {
+  background: rgba(255, 244, 190, 0.16);
+  box-shadow: 0 0 0 3px rgba(255, 224, 120, 0.85), 0 0 26px rgba(255, 224, 120, 0.55);
+}
+.market-drop {
+  animation: market-drop 0.9s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+  transform-origin: 50% 100%;
+}
+@keyframes market-drop {
+  0% { transform: translate(-50%, -260px) scale(0.4) rotate(-20deg); opacity: 0; }
+  55% { transform: translate(-50%, 0) scale(1.15) rotate(6deg); opacity: 1; }
+  75% { transform: translate(-50%, -18px) scale(1); }
+  100% { transform: translate(-50%, 0) scale(1); }
+}
+.market-spark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin: -3px;
+  border-radius: 50%;
+  background: #ffd76b;
+  animation: market-spark 0.9s ease-out 0.5s both;
+}
+@keyframes market-spark {
+  from { transform: rotate(var(--a)) translateY(0); opacity: 1; }
+  to { transform: rotate(var(--a)) translateY(-48px); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .market-drop,
+  .market-spark {
+    animation: none;
+  }
+}

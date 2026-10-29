@@ -5,6 +5,14 @@ import { useRouter } from "next/navigation";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, type Locale } from "@/i18n/config";
 import { notFound } from "next/navigation";
+import { AuthShell, type AuthMood } from "@/components/AuthShell";
+
+const GREETING: Record<Locale, string> = {
+  cs: "Ahoj, jsem tvůj průvodce! Založ si účet a začneme.",
+  en: "Hi, I'm your guide! Create an account and let's start.",
+  de: "Hallo, ich bin dein Begleiter! Erstelle ein Konto und es geht los.",
+  ru: "Привет, я твой проводник! Создай аккаунт, и начнём.",
+};
 
 export default function RegistracePage({
   params,
@@ -21,6 +29,7 @@ export default function RegistracePage({
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [mood, setMood] = useState<AuthMood>("idle");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,21 +47,25 @@ export default function RegistracePage({
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
       setError(data.error ?? dict.auth.register.genericError);
+      setMood("oops");
+      setTimeout(() => setMood("idle"), 900);
       return;
     }
+    setMood("joy");
+    await new Promise((r) => setTimeout(r, 900)); // maskot se stihne zaradovat
 
     router.push(`/${locale}/prihlaseni`);
   }
 
   return (
-    <div className="gradient-hero flex min-h-[calc(100vh-140px)] items-center justify-center px-4 py-10 sm:px-6 sm:py-16">
-      <div className="card w-full max-w-sm p-8">
+    <AuthShell mood={mood} greeting={GREETING[locale as Locale]}>
+      <div className="card auth-card w-full p-8">
         <h1 className="mb-1 text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
           {dict.auth.register.title}
         </h1>
         <p className="mb-6 text-sm text-[var(--muted)]">{dict.auth.register.subtitle}</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <label className="flex flex-col gap-1 text-sm font-medium">
+          <label className="auth-field flex flex-col gap-1 text-sm font-medium" style={{ ["--d" as string]: "70ms" }}>
             {dict.auth.register.name}
             <input
               type="text"
@@ -61,7 +74,7 @@ export default function RegistracePage({
               className="rounded-lg border border-[var(--border-soft)] px-3 py-2 outline-none focus:border-[var(--brand-500)] focus:ring-2 focus:ring-[var(--brand-100)]"
             />
           </label>
-          <label className="flex flex-col gap-1 text-sm font-medium">
+          <label className="auth-field flex flex-col gap-1 text-sm font-medium" style={{ ["--d" as string]: "140ms" }}>
             {dict.auth.register.email}
             <input
               type="email"
@@ -71,7 +84,7 @@ export default function RegistracePage({
               className="rounded-lg border border-[var(--border-soft)] px-3 py-2 outline-none focus:border-[var(--brand-500)] focus:ring-2 focus:ring-[var(--brand-100)]"
             />
           </label>
-          <label className="flex flex-col gap-1 text-sm font-medium">
+          <label className="auth-field flex flex-col gap-1 text-sm font-medium" style={{ ["--d" as string]: "210ms" }}>
             {dict.auth.register.password}
             <input
               type="password"
@@ -92,6 +105,6 @@ export default function RegistracePage({
           </button>
         </form>
       </div>
-    </div>
+    </AuthShell>
   );
 }

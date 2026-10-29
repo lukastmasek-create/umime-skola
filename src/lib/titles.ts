@@ -31,6 +31,11 @@ export const TITLES: TitleDef[] = [
   // Z obchodu.
   { id: "dreamer", unlock: { event: "shop" }, names: { cs: "Snílek", en: "Dreamer", de: "Träumer", ru: "Мечтатель" } },
   { id: "adventurer", unlock: { event: "shop" }, names: { cs: "Dobrodruh", en: "Adventurer", de: "Abenteurer", ru: "Авантюрист" } },
+  { id: "captain", unlock: { event: "shop" }, names: { cs: "Kapitán", en: "Captain", de: "Kapitän", ru: "Капитан" } },
+  { id: "golden-hook", unlock: { event: "shop" }, names: { cs: "Zlatá ruka", en: "Golden hook", de: "Goldhaken", ru: "Золотой крюк" } },
+  { id: "sea-wolf", unlock: { event: "shop" }, names: { cs: "Mořský vlk", en: "Sea wolf", de: "Seebär", ru: "Морской волк" } },
+  { id: "treasure-keeper", unlock: { event: "shop" }, names: { cs: "Strážce pokladu", en: "Treasure keeper", de: "Schatzhüter", ru: "Хранитель сокровищ" } },
+  { id: "navigator", unlock: { event: "shop" }, names: { cs: "Navigátor", en: "Navigator", de: "Navigator", ru: "Штурман" } },
   { id: "hero", unlock: { event: "shop" }, names: { cs: "Hrdina", en: "Hero", de: "Held", ru: "Герой" } },
 ];
 

@@ -28,6 +28,9 @@ export const SHOP_ITEMS: ShopItem[] = [
   // --- avatary ---
   { id: "avatar-astronaut", kind: "avatar", ref: "astronaut", price: 120, tag: "new", asset3d: "avatar-astronaut", names: n("Astronaut", "Astronaut", "Astronaut", "Астронавт") },
   { id: "avatar-pirate", kind: "avatar", ref: "pirate", price: 150, asset3d: "avatar-pirate", names: n("Pirát", "Pirate", "Pirat", "Пират") },
+  { id: "avatar-captain", kind: "avatar", ref: "captain", price: 220, tag: "new", names: n("Kapitán", "Captain", "Kapitän", "Капитан") },
+  { id: "avatar-sea-wolf", kind: "avatar", ref: "sea-wolf", price: 180, tag: "new", names: n("Mořský vlk", "Sea wolf", "Seebär", "Морской волк") },
+  { id: "avatar-mermaid", kind: "avatar", ref: "mermaid", price: 200, tag: "new", names: n("Mořská panna", "Mermaid", "Meerjungfrau", "Русалка") },
   { id: "avatar-wizard", kind: "avatar", ref: "wizard", price: 200, tag: "popular", asset3d: "avatar-wizard", names: n("Čaroděj", "Wizard", "Zauberer", "Волшебник") },
   { id: "avatar-pumpkin", kind: "avatar", ref: "pumpkin", price: 90, asset3d: "avatar-pumpkin", names: n("Dýně", "Pumpkin", "Kürbis", "Тыква") },
   { id: "avatar-winter", kind: "avatar", ref: "winter", price: 110, names: n("Zimní", "Winter", "Winter", "Зимний") },
@@ -41,6 +44,11 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: "title-legend", kind: "title", ref: "legend", price: 400, tag: "popular", names: n("Legenda", "Legend", "Legende", "Легенда") },
   { id: "title-dreamer", kind: "title", ref: "dreamer", price: 90, tag: "new", names: n("Snílek", "Dreamer", "Träumer", "Мечтатель") },
   { id: "title-adventurer", kind: "title", ref: "adventurer", price: 140, tag: "new", names: n("Dobrodruh", "Adventurer", "Abenteurer", "Авантюрист") },
+  { id: "title-navigator", kind: "title", ref: "navigator", price: 140, tag: "new", names: n("Navigátor", "Navigator", "Navigator", "Штурман") },
+  { id: "title-captain", kind: "title", ref: "captain", price: 160, tag: "new", names: n("Kapitán", "Captain", "Kapitän", "Капитан") },
+  { id: "title-golden-hook", kind: "title", ref: "golden-hook", price: 180, tag: "new", names: n("Zlatá ruka", "Golden hook", "Goldhaken", "Золотой крюк") },
+  { id: "title-sea-wolf", kind: "title", ref: "sea-wolf", price: 200, tag: "new", names: n("Mořský vlk", "Sea wolf", "Seebär", "Морской волк") },
+  { id: "title-treasure-keeper", kind: "title", ref: "treasure-keeper", price: 220, tag: "new", names: n("Strážce pokladu", "Treasure keeper", "Schatzhüter", "Хранитель сокровищ") },
   { id: "title-hero", kind: "title", ref: "hero", price: 300, tag: "new", names: n("Hrdina", "Hero", "Held", "Герой") },
 
   // --- rámečky avataru ---
@@ -58,6 +66,9 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: "banner-candy", kind: "banner", ref: "candy", price: 120, names: n("Bonbóny", "Candy", "Bonbons", "Конфеты") },
   { id: "banner-snow", kind: "banner", ref: "snow", price: 120, names: n("Sníh", "Snow", "Schnee", "Снег") },
   { id: "banner-night-city", kind: "banner", ref: "night-city", price: 160, names: n("Noční město", "Night city", "Nachtstadt", "Ночной город") },
+  { id: "banner-treasure-map", kind: "banner", ref: "treasure-map", price: 130, tag: "new", names: n("Mapa pokladu", "Treasure map", "Schatzkarte", "Карта сокровищ") },
+  { id: "banner-pirate-night", kind: "banner", ref: "pirate-night", price: 160, tag: "new", names: n("Pirátská noc", "Pirate night", "Piratennacht", "Пиратская ночь") },
+  { id: "banner-storm", kind: "banner", ref: "storm", price: 180, tag: "new", names: n("Bouře", "Storm", "Sturm", "Буря") },
   { id: "banner-galaxy", kind: "banner", ref: "galaxy", price: 200, tag: "popular", names: n("Galaxie", "Galaxy", "Galaxie", "Галактика") },
 
   // --- doplňky pro mazlíčky ---
