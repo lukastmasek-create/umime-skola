@@ -366,6 +366,9 @@ def pristav():
         print(dest, round(os.path.getsize(os.path.join(dest_dir, dest)) / 1024), "kB", im.size)
     if glob.glob(os.path.join(ROOT, "out", "pristav_lod", "f_*.png")):
         strip("pristav_lod", "../pristav/lod.webp", (640, 512), quality=80)
+    for layer, dest in (("hull", "lod-trup"), ("sails", "lod-plachty"), ("wind", "lod-vitr")):
+        if len(glob.glob(os.path.join(ROOT, "out", f"pristav_lod_{layer}", "f_*.png"))) >= 12:
+            strip(f"pristav_lod_{layer}", f"../pristav/{dest}.webp", (640, 512), quality=82)
     for src, dest in (("mf_kapitan", "kapitan"), ("mf_kvartyrmistr", "kvartyrmistr"), ("mf_tesar", "tesar"), ("mf_plachtarka", "plachtarka"),
                       ("mf_chovatel", "chovatel"), ("mf_papousek", "papousek"), ("mf_krab", "krab")):
         if glob.glob(os.path.join(ROOT, "out", src, "f_*.png")):

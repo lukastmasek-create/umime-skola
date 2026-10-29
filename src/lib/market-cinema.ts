@@ -819,7 +819,6 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
         // trup, pak plachty: klidné se při rozjezdu plynule mění v plachty naplněné větrem
         ctx.drawImage(ship, frameN * 640, 0, 640, 512, X(320 + shipDX), Y(0), 640 * k, 512 * k);
         const windK = layered ? sm(shipV, 25, 190) : 0;
-        ctx.globalAlpha = 1 - windK;
         if (layered) ctx.drawImage(sailsCalm, frameN * 640, 0, 640, 512, X(320 + shipDX), Y(0), 640 * k, 512 * k);
         if (windK > 0.01) {
           ctx.globalAlpha = windK;
