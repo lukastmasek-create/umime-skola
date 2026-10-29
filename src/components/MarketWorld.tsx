@@ -14,7 +14,8 @@ import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
 import pirateScene from "./pristav-kotvy.json";
 import spaceScene from "./kosmicka-kotvy.json";
-import { getWorldText, getUnlockText } from "@/i18n/market-world";
+import { getWorldText, getUnlockText, getTownText } from "@/i18n/market-world";
+import { MarketTown } from "@/components/MarketTown";
 
 // Uživatelský obchod jako prostředí: pirátský přístav a vesmírná stanice z Blenderu (umime-art/blender/pristav*.py,
 // kosmicka*.py). Vrstvy zespodu: moře nebo vesmír (canvas), hlavní předmět (loď, raketa), zadní vrstva (podlaha, stánky),
@@ -368,8 +369,10 @@ export function MarketWorld({ locale }: { locale: Locale }) {
   const x = getShopExtraText(locale);
   const m = getMarketText(locale);
   const ut = getUnlockText(locale);
+  const town = getTownText(locale);
   const [state, setState] = useState<State>({ status: "loading" });
   const [worldId, setWorldId] = useState<WorldId>("pirate");
+  const [inTown, setInTown] = useState(true);
   const [unlockId, setUnlockId] = useState<WorldId | null>(null);
   const [open, setOpen] = useState<StallKey | null>(null);
   const [hover, setHover] = useState<StallKey | null>(null);
@@ -531,14 +534,17 @@ export function MarketWorld({ locale }: { locale: Locale }) {
     setHover(null);
     setTalk(null);
     setShot(null);
-    if (unlocked(id)) setWorldId(id);
-    else setUnlockId(id);
+    if (unlocked(id)) {
+      setWorldId(id);
+      setInTown(false);
+    } else setUnlockId(id);
   }
   async function unlockWorld(id: WorldId) {
     const ok = await post({ action: "unlockWorld", id }, ut.done, `world-${id}`);
     if (ok) {
       setUnlockId(null);
       setWorldId(id);
+      setInTown(false);
     }
   }
 
@@ -572,14 +578,18 @@ export function MarketWorld({ locale }: { locale: Locale }) {
     <div>
       <div className="mb-4">
         <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          🛍️ {wt.title}
+          🛍️ {inTown ? town.title : wt.title}
         </h1>
-        <p className="max-w-3xl text-[var(--muted)]">{wt.subtitle}</p>
+        <p className="max-w-3xl text-[var(--muted)]">{inTown ? town.subtitle : wt.subtitle}</p>
       </div>
 
       <div className="mb-3 flex flex-wrap items-center gap-2" role="tablist" aria-label={m.title}>
+        <button role="tab" aria-selected={inTown} onClick={() => { setInTown(true); setOpen(null); setHover(null); }} className={`btn-bouncy flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold ${inTown ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface)]"}`}>
+          <span aria-hidden>🏘️</span>
+          {town.tab}
+        </button>
         {WORLDS.map((w) => {
-          const on = w.id === worldId;
+          const on = !inTown && w.id === worldId;
           const lock = w.ready && !unlocked(w.id);
           return (
             <button
@@ -613,7 +623,8 @@ export function MarketWorld({ locale }: { locale: Locale }) {
       )}
       {state.status === "unavailable" && <p className="mb-3 rounded-xl border-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-2 text-sm text-[var(--muted)]">{t.unavailable}</p>}
 
-      <div className="overflow-x-auto rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)]">
+      {inTown && <MarketTown locale={locale} unlocked={unlocked} onEnter={pickWorld} />}
+      <div hidden={inTown} className="overflow-x-auto rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)]">
         <div ref={stage} data-night={dark ? "" : undefined} data-world={world.id} className="market-stage relative select-none overflow-hidden" style={{ aspectRatio: `${W} / ${H}`, minWidth: 880 }}>
           <canvas ref={back} aria-hidden className="absolute inset-0 h-full w-full" />
           {/* hlavní předmět: loď nebo raketa */}
@@ -769,7 +780,7 @@ export function MarketWorld({ locale }: { locale: Locale }) {
       </div>
 
       {/* rychlá volba stánků (hlavně pro telefony) */}
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div hidden={inTown} className="mt-3 flex flex-wrap gap-2">
         {world.stalls.map((s) => (
           <button key={s.key} type="button" onClick={() => setOpen(s.key)} className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
             {wt.stalls[s.key].name}

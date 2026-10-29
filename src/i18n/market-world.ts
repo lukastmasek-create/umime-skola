@@ -114,3 +114,66 @@ export function getWorldText(locale: Locale, world: string): WorldText {
     talk: { papousek: { label: m.parrotLabel, lines: m.parrot } },
   };
 }
+
+export type TownText = { tab: string; title: string; subtitle: string; walking: string; sheet: string; locked: string; talk: Record<string, { label: string; lines: string[] }> };
+const town: Record<Locale, TownText> = {
+  cs: {
+    tab: "Městečko",
+    title: "Městečko",
+    subtitle: "Začni procházkou po městečku. Po schodech dolů je pirátský přístav, na louce stojí raketa na vesmírnou stanici. Klikni na místo, kam chceš jít.",
+    walking: "Jdeme…",
+    sheet: "Raketa na vesmírnou stanici",
+    locked: "zamčeno",
+    talk: {
+      knihovnice: { label: "Promluvit s knihovnicí", lines: ["Kdo čte, ten roste!", "Nové knížky jsou na polici u okna.", "Pšt! V knihovně se šeptá."] },
+      pekar: { label: "Promluvit s pekařem", lines: ["Čerstvé rohlíky, ještě teplé!", "Za učení si zasloužíš koláč.", "Mňam, to voní!"] },
+      kluk: { label: "Promluvit s klukem", lines: ["Hele, v přístavu je pravá loď!", "Až budu velký, poletím na stanici!", "Honem, ať nepromeškáme zábavu."] },
+      kocka: { label: "Pohladit kočku", lines: ["Mňau!", "Prrr…", "Mňau mňau!"] },
+    },
+  },
+  en: {
+    tab: "Town",
+    title: "Town",
+    subtitle: "Start with a walk around town. Down the stairs is the pirate harbour, and on the meadow stands the rocket to the space station. Click where you want to go.",
+    walking: "On our way…",
+    sheet: "Rocket to the space station",
+    locked: "locked",
+    talk: {
+      knihovnice: { label: "Talk to the librarian", lines: ["Who reads, grows!", "New books are on the shelf by the window.", "Shh! We whisper in the library."] },
+      pekar: { label: "Talk to the baker", lines: ["Fresh rolls, still warm!", "You deserve a cake for learning.", "Yum, smells great!"] },
+      kluk: { label: "Talk to the boy", lines: ["Look, there's a real ship in the harbour!", "When I grow up I'll fly to the station!", "Hurry, we'll miss the fun."] },
+      kocka: { label: "Pet the cat", lines: ["Meow!", "Purr…", "Meow meow!"] },
+    },
+  },
+  de: {
+    tab: "Städtchen",
+    title: "Städtchen",
+    subtitle: "Beginne mit einem Spaziergang durchs Städtchen. Die Treppe hinunter liegt der Piratenhafen, auf der Wiese steht die Rakete zur Raumstation. Klicke, wohin du willst.",
+    walking: "Wir gehen…",
+    sheet: "Rakete zur Raumstation",
+    locked: "gesperrt",
+    talk: {
+      knihovnice: { label: "Mit der Bibliothekarin sprechen", lines: ["Wer liest, wächst!", "Neue Bücher stehen im Regal am Fenster.", "Psst! In der Bibliothek flüstert man."] },
+      pekar: { label: "Mit dem Bäcker sprechen", lines: ["Frische Brötchen, noch warm!", "Fürs Lernen verdienst du einen Kuchen.", "Mmm, wie das duftet!"] },
+      kluk: { label: "Mit dem Jungen sprechen", lines: ["Schau, im Hafen liegt ein echtes Schiff!", "Wenn ich groß bin, fliege ich zur Station!", "Schnell, sonst verpassen wir den Spaß."] },
+      kocka: { label: "Katze streicheln", lines: ["Miau!", "Schnurr…", "Miau miau!"] },
+    },
+  },
+  ru: {
+    tab: "Городок",
+    title: "Городок",
+    subtitle: "Начни с прогулки по городку. По лестнице вниз — пиратская гавань, а на лугу стоит ракета на космическую станцию. Нажми, куда хочешь пойти.",
+    walking: "Идём…",
+    sheet: "Ракета на космическую станцию",
+    locked: "закрыто",
+    talk: {
+      knihovnice: { label: "Поговорить с библиотекарем", lines: ["Кто читает, тот растёт!", "Новые книги на полке у окна.", "Тсс! В библиотеке говорят шёпотом."] },
+      pekar: { label: "Поговорить с пекарем", lines: ["Свежие булочки, ещё тёплые!", "За учёбу ты заслужил пирог.", "Ммм, как пахнет!"] },
+      kluk: { label: "Поговорить с мальчиком", lines: ["Смотри, в гавани настоящий корабль!", "Вырасту — полечу на станцию!", "Скорее, а то пропустим веселье."] },
+      kocka: { label: "Погладить кошку", lines: ["Мяу!", "Мур…", "Мяу мяу!"] },
+    },
+  },
+};
+export function getTownText(locale: Locale): TownText {
+  return town[locale];
+}
