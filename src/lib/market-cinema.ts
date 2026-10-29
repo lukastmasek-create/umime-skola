@@ -24,6 +24,7 @@ export type Refs = {
 export type Geo = {
   toBox: (p: Pt) => Pt; // souřadnice scény (0..1) → zlomky boxu (0..1)
   rocket: Pt;
+  sub?: Pt; // poloha ponorky u laguny (mořské město)
   door?: Pt; // vchod do světa (poloha dveří v scéně), kolem něj se kreslí efekty
   start: Pt;
   road?: Pt[]; // cesta od schodů doprava (úvodní městečko)

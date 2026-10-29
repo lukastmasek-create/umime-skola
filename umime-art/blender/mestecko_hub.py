@@ -665,8 +665,72 @@ def build_world():
         pass
     os.makedirs(os.path.join(OUT, "mesto_hub"), exist_ok=True)
     json.dump(out, open(os.path.join(OUT, "mesto_hub", "kotvy.json"), "w"))
+    if "--masks" in sys.argv:
+        render_masks()
+        return
     sys.argv += ["--frame", "1"] if "--frame" not in sys.argv else []
     run(lambda t: None, "mesto_hub")
+
+
+# Hranice hloubky (světové y) mezi první řadou domů (A), druhou řadou (B) a terasou za nimi; web podle toho řadí hrdinu a obyvatele
+# před budovy nebo za ně. Z masky se vyřežou vrstvy z hotového obrázku městečka (viz encode.py hub_vrstvy).
+DEPTH_A, DEPTH_B = 3.3, 9.0
+
+
+def render_masks():
+    """Rychlý plochý snímek (Workbench): R = budovy a stromy přední řady (y < DEPTH_A), G = druhá řada (DEPTH_A až DEPTH_B). Ostatní černě."""
+    import mathutils
+    hist = {}
+
+    def flat(name, rgb):
+        m = bpy.data.materials.new(name)
+        m.use_nodes = True
+        nt = m.node_tree
+        nt.nodes.clear()
+        out = nt.nodes.new("ShaderNodeOutputMaterial")
+        em = nt.nodes.new("ShaderNodeEmission")
+        em.inputs["Color"].default_value = (*rgb, 1.0)
+        em.inputs["Strength"].default_value = 1.0
+        nt.links.new(em.outputs[0], out.inputs[0])
+        return m
+
+    mats = {"none": flat("m_none", (0, 0, 0)), "A": flat("m_A", (1, 0, 0)), "B": flat("m_B", (0, 1, 0))}
+    for o in bpy.data.objects:
+        if o.type != "MESH":
+            continue
+        pts = [o.matrix_world @ mathutils.Vector(c) for c in o.bound_box]
+        zs = [p.z for p in pts]
+        xs = [p.x for p in pts]
+        ys = [p.y for p in pts]
+        height = max(zs)
+        wide = max(xs) - min(xs) > 10 or max(ys) - min(ys) > 10
+        cy = (min(ys) + max(ys)) / 2
+        cls = "none"
+        if height >= 0.7 and not wide:
+            cls = "A" if cy < DEPTH_A else "B" if cy < DEPTH_B else "none"
+            hist[round(cy)] = hist.get(round(cy), 0) + 1
+        if not o.material_slots:
+            o.data.materials.append(mats[cls])
+        for slot in o.material_slots:
+            slot.link = "OBJECT"
+            slot.material = mats[cls]
+    print("HIST", sorted(hist.items()))
+    sc = bpy.context.scene
+    sc.render.engine = "CYCLES"
+    sc.cycles.samples = 16
+    sc.cycles.use_denoising = False
+    sc.cycles.max_bounces = 0
+    sc.view_settings.view_transform = "Standard"
+    sc.view_settings.look = "None"
+    sc.view_settings.exposure = 0.0
+    sc.render.film_transparent = False
+    sc.world.use_nodes = False
+    sc.world.color = (0, 0, 0)
+    sc.render.resolution_x, sc.render.resolution_y = W, H
+    sc.render.resolution_percentage = 100
+    os.makedirs(os.path.join(OUT, "mesto_hub_maska"), exist_ok=True)
+    sc.render.filepath = os.path.join(OUT, "mesto_hub_maska", "f_0001.png")
+    bpy.ops.render.render(write_still=True)
 
 
 build_world()

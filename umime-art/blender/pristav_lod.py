@@ -8,6 +8,10 @@ sys.path.insert(0, os.path.dirname(__file__))
 from znacky_lib import *
 
 PREVIEW = "--preview" in args()
+# vrstvy: all = celá loď, hull = trup bez plachet, sails = jen plachty (klidné), wind = jen plachty naplněné větrem
+_A = args()
+LAYER = _A[_A.index("--layer") + 1] if "--layer" in _A else "all"
+BILLOW = 0.30 if LAYER == "wind" else 0.09
 W, H, N = 640, 512, 12
 PPU = 100.0
 EL = math.radians(26)
@@ -116,7 +120,8 @@ adopt(sphere((2.38, 0, 0.75), 0.13, M("figura", "#ffc933", 0.3, 0.9), scale=(1.3
 sails = []
 
 
-def sail_on(mast_x, z_top, w, h, yaw, mat, billow=0.09, phase=0.0):
+def sail_on(mast_x, z_top, w, h, yaw, mat, billow=None, phase=0.0):
+    billow = BILLOW if billow is None else billow
     piv = empty(ship, (mast_x, 0, z_top))
     piv.rotation_euler = (0, 0, yaw)
     f = Flag((-w / 2, 0, 0), w, h, [mat], lambda u, v: 0, cols=16, rows=10, amp=billow, waves=1.0, droop=0.0, name="plachta")
@@ -173,6 +178,17 @@ for (x, y) in ((0.4, -0.35), (-0.7, 0.3), (1.5, 0.2)):
 adopt(box((0.2, 0.35, 0.92), (0.26, 0.26, 0.2), M("bedna", "#c79256", 0.8), bevel=0.01))
 
 
+# vrstvy: plachty (včetně kosatky) se oddělí od trupu
+sail_objs = [f.obj for f, _ in sails] + [tri]
+if LAYER == "hull":
+    for o in sail_objs:
+        o.hide_render = True
+elif LAYER in ("sails", "wind"):
+    for o in bpy.data.objects:
+        if o.type == "MESH" and o not in sail_objs:
+            o.hide_render = True
+
+
 def update(t):
     ph = t * math.tau
     ship.location.z = 0.05 * math.sin(ph + 0.5)
@@ -182,4 +198,4 @@ def update(t):
     flag.update(t)
 
 
-run(update, "pristav_lod")
+run(update, "pristav_lod" if LAYER == "all" else f"pristav_lod_{LAYER}")
