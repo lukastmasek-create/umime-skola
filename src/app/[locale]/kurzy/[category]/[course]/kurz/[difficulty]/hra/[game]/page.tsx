@@ -86,7 +86,7 @@ export default async function CourseGamePage({
   if (isClassicSlug(game.slug)) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-        <FullscreenFrame locale={locale as Locale}>
+        <FullscreenFrame locale={locale as Locale} backHref={backHref}>
           <ClassicGame locale={locale as Locale} game={game.slug} questions={questions} difficulty={difficulty} backHref={backHref} />
         </FullscreenFrame>
       </div>
@@ -95,7 +95,7 @@ export default async function CourseGamePage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-      <FullscreenFrame locale={locale as Locale}>
+      <FullscreenFrame locale={locale as Locale} backHref={backHref}>
         <SpaceQuizGame
           locale={locale as Locale}
           courseSlug={courseSlug}

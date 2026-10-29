@@ -316,6 +316,35 @@ def globe():
         print("obj-" + name, round(os.path.getsize(path) / 1024), "kB", im.size)
 
 
+def pristav():
+    """Pirátský přístav (uživatelský obchod): vrstvy mola, loď, obchodníci, papoušek a krab do public/home/pristav."""
+    import json, math
+    dest_dir = os.path.join(DEST, "..", "pristav")
+    os.makedirs(dest_dir, exist_ok=True)
+    for src, dest, q in (("pristav_zadni", "zadni.webp", 84), ("pristav_predni", "predni.webp", 84)):
+        im = frames(src)[0]
+        im.save(os.path.join(dest_dir, dest), format="WEBP", quality=q, method=5, alpha_quality=90)
+        print(dest, round(os.path.getsize(os.path.join(dest_dir, dest)) / 1024), "kB", im.size)
+    if glob.glob(os.path.join(ROOT, "out", "pristav_lod", "f_*.png")):
+        strip("pristav_lod", "../pristav/lod.webp", (640, 512), quality=80)
+    for src, dest in (("mf_kapitan", "kapitan"), ("mf_kvartyrmistr", "kvartyrmistr"), ("mf_tesar", "tesar"), ("mf_plachtarka", "plachtarka"),
+                      ("mf_chovatel", "chovatel"), ("mf_papousek", "papousek"), ("mf_krab", "krab")):
+        if glob.glob(os.path.join(ROOT, "out", src, "f_*.png")):
+            strip(src, "../pristav/" + dest + ".webp", (256, 256), quality=80)
+    meta = json.load(open(os.path.join(ROOT, "out", "pristav_zadni", "kotvy.json")))
+    W, H, ppu, el, tz = meta["w"], meta["h"], meta["ppu"], math.radians(26), 1.3
+
+    def norm(x, y, z=0.0):
+        return [round((W / 2 + ppu * x) / W, 5), round((H / 2 - ppu * (y * math.sin(el) + (z - tz) * math.cos(el))) / H, 5)]
+
+    for key, cx in (("avatary", -6.4), ("tituly", -3.2), ("ramecky", 0.0), ("pozadi", 3.2), ("mazlicci", 6.4)):
+        meta["kotvy"][key]["nazev"] = norm(cx, -0.9, 2.78)   # cedule leží na pruhované plachtě stánku
+    meta["lod"] = norm(-1.6, 5.6, 0.0)                      # vodoryska galéry za stánky
+    meta["papousek"] = norm(5.5, 0.35, 1.45)   # bidýlko v zvířecím koutku
+    meta["krab"] = norm(4.6, -1.7, 0.3)         # na prknech před stánky
+    json.dump(meta, open(os.path.join(ROOT, "..", "src", "components", "pristav-kotvy.json"), "w"))
+
+
 def stills():
     """První snímek animací jako statický obrázek pro lidi s vypnutými animacemi."""
     for name, dest in (("motyl", "motyl-still.webp"), ("vlajka", "vlajka-still.webp"), ("raketa", "raketa-still.webp")):
@@ -325,6 +354,7 @@ def stills():
 if __name__ == "__main__":
     what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_live", "globe", "hero", "tech", "hory", "svet", "hry", "unikovky", "namesti", "profil", "obchod"]
     if "icons" in what: icons()
+    if "pristav" in what: pristav()
     if "stills" in what: stills()
     # Planeta má hodně jemného detailu: každý druhý snímek a menší rozměr drží soubor pod 1 MB.
     if "planeta" in what: animated("planeta", "planeta.webp", fps=12, quality=55, size=(616, 409), step=2)

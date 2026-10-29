@@ -1,19 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import type { Locale } from "@/i18n/config";
 
-const TEXT: Record<Locale, { enter: string; exit: string }> = {
-  cs: { enter: "Celá obrazovka", exit: "Zavřít celou obrazovku" },
-  en: { enter: "Full screen", exit: "Exit full screen" },
-  de: { enter: "Vollbild", exit: "Vollbild beenden" },
-  ru: { enter: "На весь экран", exit: "Выйти из полноэкранного режима" },
+const TEXT: Record<Locale, { enter: string; exit: string; back: string }> = {
+  cs: { enter: "Celá obrazovka", exit: "Zavřít celou obrazovku", back: "Zpět na kurz" },
+  en: { enter: "Full screen", exit: "Exit full screen", back: "Back to course" },
+  de: { enter: "Vollbild", exit: "Vollbild beenden", back: "Zurück zum Kurs" },
+  ru: { enter: "На весь экран", exit: "Выйти из полноэкранного режима", back: "Назад к курсу" },
 };
 
 // Obal hry: tlačítko „Celá obrazovka“ roztáhne na celou obrazovku celý obal (hru, ovládací tlačítka,
 // vysvětlení i výsledky), takže všechno zůstane uvnitř. Prohlížeče bez Fullscreen API (iPhone) dostanou
 // záložní režim: obal přes celé okno. Esc ukončí režim v obou případech.
-export function FullscreenFrame({ locale, children }: { locale: Locale; children: React.ReactNode }) {
+export function FullscreenFrame({ locale, children, backHref }: { locale: Locale; children: React.ReactNode; backHref?: string }) {
   const t = TEXT[locale];
   const ref = useRef<HTMLDivElement>(null);
   const [native, setNative] = useState(false);
@@ -67,7 +68,17 @@ export function FullscreenFrame({ locale, children }: { locale: Locale; children
     <div ref={ref} className={`fs-frame ${active ? "is-fs" : ""} ${fallback ? "is-fs-fallback" : ""}`}>
       <div className="fs-inner">
         {/* Ve fullscreenu tlačítko plave nad hrou (nesjede při posouvání a panely ho nepřekryjí). */}
-        <div className={active ? "fs-bar" : "mb-2 flex justify-end"}>
+        <div className={active ? "fs-bar flex gap-2" : "mb-2 flex items-center justify-between gap-2"}>
+          {backHref && (
+            <Link
+              href={backHref}
+              className={`btn-bouncy rounded-full border-2 px-3 py-1.5 text-xs font-semibold ${
+                active ? "border-white/40 bg-black/70 text-white shadow-lg" : "border-[var(--border-soft)] bg-[var(--surface)]"
+              }`}
+            >
+              ← {t.back}
+            </Link>
+          )}
           <button
             type="button"
             onClick={toggle}

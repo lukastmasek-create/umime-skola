@@ -2826,3 +2826,46 @@ select:not(:focus) {
     animation: none;
   }
 }
+
+/* Uživatelský obchod jako přístav: tlačítka stánků, dopad koupené věci */
+.market-hit {
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+.market-hit-on,
+.market-hit:hover {
+  background: rgba(255, 244, 190, 0.16);
+  box-shadow: 0 0 0 3px rgba(255, 224, 120, 0.85), 0 0 26px rgba(255, 224, 120, 0.55);
+}
+.market-drop {
+  animation: market-drop 0.9s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+  transform-origin: 50% 100%;
+}
+@keyframes market-drop {
+  0% { transform: translate(-50%, -260px) scale(0.4) rotate(-20deg); opacity: 0; }
+  55% { transform: translate(-50%, 0) scale(1.15) rotate(6deg); opacity: 1; }
+  75% { transform: translate(-50%, -18px) scale(1); }
+  100% { transform: translate(-50%, 0) scale(1); }
+}
+.market-spark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin: -3px;
+  border-radius: 50%;
+  background: #ffd76b;
+  animation: market-spark 0.9s ease-out 0.5s both;
+}
+@keyframes market-spark {
+  from { transform: rotate(var(--a)) translateY(0); opacity: 1; }
+  to { transform: rotate(var(--a)) translateY(-48px); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .market-drop,
+  .market-spark {
+    animation: none;
+  }
+}
