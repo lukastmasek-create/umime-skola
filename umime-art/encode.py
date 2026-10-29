@@ -263,6 +263,25 @@ def mesto_hrdinove():
                 strip(src, f"../mesto/hrdina-{k}-{act}.webp", (192, 192), quality=80)
 
 
+def hub_vrstvy():
+    """Vrstvy hloubky hubu: z hotového obrázku městečka se vyříznou budovy přední (a) a druhé řady (b) podle masky z Blenderu
+    (mestecko_hub.py --masks). Web je kreslí nad hrdinou, když je za budovou."""
+    from PIL import Image
+    import numpy as np
+    mask_path = os.path.join(ROOT, "out", "mesto_hub_maska", "f_0001.png")
+    hub = Image.open(os.path.join(DEST, "..", "mesto", "hub.webp")).convert("RGBA")
+    m = np.asarray(Image.open(mask_path).convert("RGB").resize(hub.size, Image.BILINEAR), dtype=np.float32) / 255.0
+    base = np.asarray(hub, dtype=np.float32)
+    for name, ch in (("a", 0), ("b", 1)):
+        a = np.clip((m[..., ch] - 0.15) / 0.7, 0, 1)
+        out = base.copy()
+        out[..., 3] = base[..., 3] * a
+        im = Image.fromarray(out.astype(np.uint8), "RGBA")
+        path = os.path.join(DEST, "..", "mesto", f"hub-{name}.webp")
+        im.save(path, format="WEBP", quality=82, method=5, alpha_quality=92)
+        print(f"hub-{name}", round(os.path.getsize(path) / 1024), "kB")
+
+
 def mesto():
     """Městečko (scéna), obyvatelé, zvířata a větrník pro TownLife do public/home/mesto (+ polohy do JSON)."""
     import json, math
@@ -347,6 +366,9 @@ def pristav():
         print(dest, round(os.path.getsize(os.path.join(dest_dir, dest)) / 1024), "kB", im.size)
     if glob.glob(os.path.join(ROOT, "out", "pristav_lod", "f_*.png")):
         strip("pristav_lod", "../pristav/lod.webp", (640, 512), quality=80)
+    for layer, dest in (("hull", "lod-trup"), ("sails", "lod-plachty"), ("wind", "lod-vitr")):
+        if len(glob.glob(os.path.join(ROOT, "out", f"pristav_lod_{layer}", "f_*.png"))) >= 12:
+            strip(f"pristav_lod_{layer}", f"../pristav/{dest}.webp", (640, 512), quality=82)
     for src, dest in (("mf_kapitan", "kapitan"), ("mf_kvartyrmistr", "kvartyrmistr"), ("mf_tesar", "tesar"), ("mf_plachtarka", "plachtarka"),
                       ("mf_chovatel", "chovatel"), ("mf_papousek", "papousek"), ("mf_krab", "krab")):
         if glob.glob(os.path.join(ROOT, "out", src, "f_*.png")):
@@ -468,6 +490,7 @@ if __name__ == "__main__":
     if "mesto" in what: mesto()
     if "mesto_chuze" in what: mesto_chuze()
     if "mesto_hrdinove" in what: mesto_hrdinove()
+    if "hub_vrstvy" in what: hub_vrstvy()
     if "hry" in what: hry()
     if "unikovky" in what: unikovky()
     if "namesti" in what: namesti()

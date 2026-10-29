@@ -57,6 +57,17 @@ const FIG = 0.06;
 const Y = (y: number) => (SKY + y * HUB.h) / BOX_H;
 const at = (p: Pt) => ({ left: `${p[0] * 100}%`, top: `${Y(p[1]) * 100}%` });
 const toBox = (p: Pt): Pt => [p[0], Y(p[1])];
+// Hloubka hrdiny podle svislé polohy v obrázku: svět y = 3,3 (za první řadou domů) a 9 (za druhou řadou). Přímka z uzlů cest.
+const DEPTH_V = (() => {
+  const a = HUB.graf.nodes.m1[1];
+  const b = HUB.graf.nodes.u1[1];
+  const ya = HUB.graf.world.m1[1];
+  const yb = HUB.graf.world.u1[1];
+  const k = (b - a) / (yb - ya);
+  return (wy: number) => a + k * (wy - ya);
+})();
+const V_FRONT = DEPTH_V(3.3);
+const V_BACK = DEPTH_V(9.0);
 
 type WorldKey = "pirate" | "space" | "forest" | "castle" | "sea";
 type PlaceDef = { id: string; icon: string; href?: string; world?: WorldKey };
@@ -179,6 +190,9 @@ export function TownHub({ locale }: { locale: Locale }) {
   const [pickHero, setPickHero] = useState(false);
   const [miniOpen, setMiniOpen] = useState<MiniId | null>(null);
   const [storyOpen, setStoryOpen] = useState(false);
+  const [full, setFull] = useState(false);
+  const wrap = useRef<HTMLDivElement>(null);
+  const subRef = useRef<HTMLDivElement>(null);
   const storyText = getTownStoryText(locale);
   const [miniLeft, setMiniLeft] = useState<Record<MiniId, number>>({ fishing: PLAYS_PER_DAY, harvest: PLAYS_PER_DAY, bakery: PLAYS_PER_DAY });
   const miniText = getTownMiniText(locale);
@@ -455,6 +469,28 @@ export function TownHub({ locale }: { locale: Locale }) {
       io.disconnect();
     };
   }, [eventId, gen]);
+  // hloubka: hrdina je před budovami, mezi řadami domů, nebo za nimi (vrstvy hub-b a hub-a se kreslí nad ním)
+  useEffect(() => {
+    let raf = 0;
+    let zone = -1;
+    const tick = () => {
+      raf = requestAnimationFrame(tick);
+      const h = hero.current;
+      const b = box.current;
+      if (!h || !b) return;
+      const t = h.style.top;
+      const f = t.endsWith("%") ? parseFloat(t) / 100 : parseFloat(t) / Math.max(1, b.clientHeight);
+      if (!Number.isFinite(f)) return;
+      const v = (f * BOX_H - SKY) / HUB.h; // svislá poloha v obrázku městečka (0 až 1)
+      const z = v > V_FRONT ? 2 : v > V_BACK ? 1 : 0;
+      if (z !== zone) {
+        zone = z;
+        h.style.zIndex = String(z === 2 ? 40 : z === 1 ? 25 : 10);
+      }
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [gen]);
   // počasí dne (déšť, sníh, mlha) na samostatném plátně nad městečkem
   useEffect(() => {
     const canvas = wxCv.current;
@@ -577,7 +613,7 @@ export function TownHub({ locale }: { locale: Locale }) {
     } else {
       const world = phase.target?.world ?? "forest";
       const nodes = route("hub", phase.id).map((n) => HUB.graf.nodes[n]);
-      handle.current = runWorld(r as Parameters<typeof runWorld>[0], geoFor(nodes.slice(1), start, { door: HUB.places[phase.id]?.door }), world === "castle" ? "castle" : world === "sea" ? "sea" : "forest", () => leave(`/${locale}/uzivatelsky-obchod?svet=${world}&film=1`));
+      handle.current = runWorld(r as Parameters<typeof runWorld>[0], geoFor(nodes.slice(1), start, { door: HUB.places[phase.id]?.door, sub: HUB.places.more.ponorka }), world === "castle" ? "castle" : world === "sea" ? "sea" : "forest", () => leave(`/${locale}/uzivatelsky-obchod?svet=${world}&film=1`), subRef.current);
     }
     return () => handle.current?.stop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -683,6 +719,18 @@ export function TownHub({ locale }: { locale: Locale }) {
     return () => window.clearTimeout(id);
   }, []);
   useEffect(() => () => shots.current?.stop(), []);
+  useEffect(() => {
+    const onChange = () => {
+      if (!document.fullscreenElement) setFull(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setFull(false);
+    document.addEventListener("fullscreenchange", onChange);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("fullscreenchange", onChange);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, []);
 
   function reduced() {
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -721,6 +769,17 @@ export function TownHub({ locale }: { locale: Locale }) {
         if (d.mini) setMiniLeft({ fishing: d.mini.fishing.left, harvest: d.mini.harvest.left, bakery: d.mini.bakery.left });
       })
       .catch(() => {});
+  }
+  // celá obrazovka: Fullscreen API, jinde překryv přes celé okno; městečko se vždy vejde celé
+  function toggleFull() {
+    if (full) {
+      if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
+      setFull(false);
+      return;
+    }
+    setFull(true);
+    const el = wrap.current;
+    if (el && document.fullscreenEnabled) void el.requestFullscreen().catch(() => {});
   }
   function toggleNight() {
     const next = mode === "auto" ? "day" : mode === "day" ? "night" : "auto";
@@ -780,7 +839,7 @@ export function TownHub({ locale }: { locale: Locale }) {
 
   const spotPos = useCallback((s: CollectSpot): Pt => HUB.sber[s.slot % Math.max(1, HUB.sber.length)] ?? HUB.hrdina, []);
 
-  const labelCls = "absolute z-[4] -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-md border-2 border-[#16132b] bg-[#3a2a1a] text-center font-extrabold leading-tight text-[#ffd76b] shadow-[0_2px_0_rgba(0,0,0,0.45)] transition-transform";
+  const labelCls = "absolute z-[50] -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-md border-2 border-[#16132b] bg-[#3a2a1a] text-center font-extrabold leading-tight text-[#ffd76b] shadow-[0_2px_0_rgba(0,0,0,0.45)] transition-transform";
   const left = COLLECT_COUNT - col.collected.length;
   const dark = night;
   const busyScene = !!phase || !!cine;
@@ -788,8 +847,9 @@ export function TownHub({ locale }: { locale: Locale }) {
 
   return (
     <div>
-      <div className="overflow-x-auto overflow-y-hidden rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)]">
-        <div ref={box} className="relative select-none overflow-hidden [container-type:inline-size]" style={{ aspectRatio: `${HUB.w} / ${BOX_H}`, minWidth: 880, background: "linear-gradient(180deg, #5cb4ff, #cfeaff)" }}>
+      <div ref={wrap} className={full ? "fixed inset-0 z-[60] flex items-center justify-center bg-[#0b0925]" : ""}>
+      <div className={full ? "overflow-hidden" : "overflow-x-auto overflow-y-hidden rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)]"} style={full ? { width: `min(100vw, calc(100vh * ${HUB.w / BOX_H}))` } : undefined}>
+        <div ref={box} className="relative select-none overflow-hidden [container-type:inline-size]" style={{ aspectRatio: `${HUB.w} / ${BOX_H}`, minWidth: full ? 0 : 880, background: "linear-gradient(180deg, #5cb4ff, #cfeaff)" }}>
           {phase && phase.kind !== "path" && <div ref={bgDark} aria-hidden className="absolute inset-0 opacity-0" style={{ background: "linear-gradient(180deg, #02030c 0%, #071040 55%, #1b3a8a 100%)" }} />}
           <div key={gen} ref={cam} className={`${dark ? "" : "town-day"} absolute inset-0 ${busyScene ? "pointer-events-none" : ""}`}>
             <div ref={sky} aria-hidden className="town-sky absolute inset-0" />
@@ -800,7 +860,7 @@ export function TownHub({ locale }: { locale: Locale }) {
                 <div key={i} aria-hidden className="hub-cloud pointer-events-none absolute" style={{ top: `${1 + i * 2.6}%`, width: `${14 + (i % 3) * 5}%`, animationDuration: `${120 + i * 38}s`, animationDelay: `${-i * 31}s` }} />
               ))}
             {[0, 1].map((i) => (
-              <div key={i} ref={(el) => void (birds.current[i] = el)} aria-hidden className="pointer-events-none absolute z-[3]" style={{ width: `${(SPR.ptak.o / 1.6) * FIG * 100 * 0.9}%`, aspectRatio: "1 / 1" }}>
+              <div key={i} ref={(el) => void (birds.current[i] = el)} aria-hidden className="pointer-events-none absolute z-[45]" style={{ width: `${(SPR.ptak.o / 1.6) * FIG * 100 * 0.9}%`, aspectRatio: "1 / 1" }}>
                 <span className="town-sprite block h-full w-full" style={{ backgroundImage: "url(/home/mesto/ptak.webp)", ["--n" as string]: 12, animationDuration: "0.55s", animationDelay: `${-i * 0.2}s` }} />
               </div>
             ))}
@@ -813,19 +873,24 @@ export function TownHub({ locale }: { locale: Locale }) {
               </div>
             )}
             {HUB.places.more.ponorka && (
-              <div aria-hidden className="pointer-events-none absolute" style={{ ...at(HUB.places.more.ponorka), width: "16%", aspectRatio: "640 / 384", transform: "translate(-50%, -50%)" }}>
+              <div ref={subRef} aria-hidden className="pointer-events-none absolute" style={{ ...at(HUB.places.more.ponorka), width: "16%", aspectRatio: "640 / 384", transform: "translate(-50%, -50%)" }}>
                 <span className="town-sprite block h-full w-full" style={{ backgroundImage: "url(/home/more/ponorka.webp)", ["--n" as string]: 12, animationDuration: "3.2s" }} />
               </div>
             )}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/home/mesto/hub.webp" alt="" draggable={false} className="town-hub-img pointer-events-none absolute bottom-0 left-0 w-full" style={{ filter: dark ? "brightness(0.55) saturate(1.1) hue-rotate(-12deg)" : undefined, transition: "filter 0.8s" }} />
+            {/* budovy druhé a přední řady znovu nad hrdinou, když je za nimi (hloubka podle polohy hrdiny) */}
+            {["b", "a"].map((k) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={k} src={`/home/mesto/hub-${k}.webp`} alt="" draggable={false} onError={(e) => (e.currentTarget.style.display = "none")} className="town-hub-img pointer-events-none absolute bottom-0 left-0 w-full" style={{ zIndex: k === "b" ? 20 : 30, filter: dark ? "brightness(0.55) saturate(1.1) hue-rotate(-12deg)" : undefined, transition: "filter 0.8s" }} />
+            ))}
             {/* větrný mlýn a komíny */}
-            <div aria-hidden className="town-mill pointer-events-none absolute" style={{ ...at(HUB.mlyn), width: "6.2%", aspectRatio: "1 / 1", transform: "translate(-50%,-50%)" }}>
+            <div aria-hidden className="town-mill pointer-events-none absolute" style={{ zIndex: 45, ...at(HUB.mlyn), width: "6.2%", aspectRatio: "1 / 1", transform: "translate(-50%,-50%)" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/home/mesto/mlyn.webp" alt="" draggable={false} className="town-mill-blades block h-full w-full" />
             </div>
             {HUB.kominy.map((p, i) => (
-              <div key={i} aria-hidden className="pointer-events-none absolute" style={{ ...at(p), width: "1.4%", aspectRatio: "1 / 1" }}>
+              <div key={i} aria-hidden className="pointer-events-none absolute" style={{ zIndex: 45, ...at(p), width: "1.4%", aspectRatio: "1 / 1" }}>
                 {[0, 1, 2].map((j) => (
                   <i key={j} className="hub-smoke" style={{ animationDelay: `${-(j * 1.6 + i * 0.7)}s` }} />
                 ))}
@@ -833,7 +898,7 @@ export function TownHub({ locale }: { locale: Locale }) {
             ))}
             {/* raketa na rampě */}
             {HUB.places.stanice.raketa && (
-              <div ref={rocket} aria-hidden className="pointer-events-none absolute" style={{ ...at(HUB.places.stanice.raketa), width: "22%", aspectRatio: "640 / 384", transform: "translate(-50%, -62%)" }}>
+              <div ref={rocket} aria-hidden className="pointer-events-none absolute" style={{ zIndex: 40, ...at(HUB.places.stanice.raketa), width: "22%", aspectRatio: "640 / 384", transform: "translate(-50%, -62%)" }}>
                 <span className="town-sprite block h-full w-full" style={{ backgroundImage: "url(/home/kosmicka/raketa.webp)", ["--n" as string]: 12, animationDuration: "3s" }} />
               </div>
             )}
@@ -842,7 +907,7 @@ export function TownHub({ locale }: { locale: Locale }) {
               const s = SPR[f.k];
               const h = hearts(f.key);
               return (
-                <div key={f.key} ref={(el) => void (npcEl.current[f.key] = el)} className="absolute" style={{ ...at(HUB.npc[f.key]), width: 0, height: 0 }}>
+                <div key={f.key} ref={(el) => void (npcEl.current[f.key] = el)} className="absolute" style={{ zIndex: 40, ...at(HUB.npc[f.key]), width: 0, height: 0 }}>
                   <button
                     ref={(el) => void (npcFig.current[f.key] = el)}
                     type="button"
@@ -862,46 +927,46 @@ export function TownHub({ locale }: { locale: Locale }) {
                     </span>
                   )}
                   {bubble?.k === f.key && (
-                    <div className="pointer-events-none absolute z-[2] max-w-[12rem] -translate-x-1/2 whitespace-normal rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-center text-xs font-extrabold" style={{ left: 0, top: `${-(1.05 + s.tz / s.o) * ((s.o / 1.6) * FIG * 100)}cqw`, transform: "translate(-50%, -100%)", width: "max-content" }}>
+                    <div className="pointer-events-none absolute z-[55] max-w-[12rem] -translate-x-1/2 whitespace-normal rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-center text-xs font-extrabold" style={{ left: 0, top: `${-(1.05 + s.tz / s.o) * ((s.o / 1.6) * FIG * 100)}cqw`, transform: "translate(-50%, -100%)", width: "max-content" }}>
                       {bubble.text}
                     </div>
                   )}
                 </div>
               );
             })}
-            <div ref={dog} aria-hidden className="pointer-events-none absolute" style={{ ...at(HUB.npc.pes ?? HUB.hrdina), width: `${(SPR.pes_bezi.o / 1.6) * FIG * 100}%`, aspectRatio: "1 / 1" }}>
+            <div ref={dog} aria-hidden className="pointer-events-none absolute" style={{ zIndex: 40, ...at(HUB.npc.pes ?? HUB.hrdina), width: `${(SPR.pes_bezi.o / 1.6) * FIG * 100}%`, aspectRatio: "1 / 1" }}>
               <span ref={dogSpr} className="town-sprite block h-full w-full" style={{ backgroundImage: "url(/home/mesto/pes-sedi.webp)", ["--n" as string]: 24, animationDuration: "1.8s" }} />
             </div>
             {/* hrdina */}
-            <div ref={hero} className="pointer-events-none absolute z-[5]" style={{ ...at(HUB.hrdina), width: `${FIG * 100}%`, aspectRatio: "1 / 1", transform: `translate(-50%, ${-(0.5 + 0.55 / 1.6) * 100}%)` }}>
+            <div ref={hero} className="pointer-events-none absolute" style={{ zIndex: 40, ...at(HUB.hrdina), width: `${FIG * 100}%`, aspectRatio: "1 / 1", transform: `translate(-50%, ${-(0.5 + 0.55 / 1.6) * 100}%)` }}>
               <span ref={heroSpr} aria-hidden className="town-sprite block h-full w-full" style={{ ["--n" as string]: 24, backgroundImage: `url(${heroSpriteUrl("stoji", look)})`, animationDuration: "3s" }} />
             </div>
             {/* noc: světla lamp */}
             {lampsOn &&
               HUB.lampy.map((p, i) => (
-                <i key={i} aria-hidden className="hub-lamp pointer-events-none absolute" style={{ ...at(p), animationDelay: `${-(i % 5) * 0.6}s` }} />
+                <i key={i} aria-hidden className="hub-lamp pointer-events-none absolute z-[45]" style={{ ...at(p), animationDelay: `${-(i % 5) * 0.6}s` }} />
               ))}
             {/* denní událost a konfety */}
-            <canvas ref={fxCv} aria-hidden className="pointer-events-none absolute inset-0 z-[6] h-full w-full" />
-            <canvas ref={confettiCv} aria-hidden className="pointer-events-none absolute inset-0 z-[8] h-full w-full" />
+            <canvas ref={fxCv} aria-hidden className="pointer-events-none absolute inset-0 z-[60] h-full w-full" />
+            <canvas ref={confettiCv} aria-hidden className="pointer-events-none absolute inset-0 z-[61] h-full w-full" />
 
             {/* minihry: rybaření v laguně, sklizeň na farmě, pekárna */}
             {MINI_IDS.map((id) => {
               const pos: Pt = id === "fishing" ? [HUB.voda.laguna[0], HUB.voda.laguna[1] - 0.004] : id === "harvest" ? [(HUB.npc.farmar?.[0] ?? 0.9) - 0.035, (HUB.npc.farmar?.[1] ?? 0.82) - 0.01] : [(HUB.npc.pekar?.[0] ?? 0.4) + 0.045, (HUB.npc.pekar?.[1] ?? 0.7) - 0.01];
               return (
-                <button key={id} type="button" aria-label={miniText.names[id]} title={miniText.names[id]} onClick={() => openMini(id)} className="town-collect absolute z-[7] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-1.5 py-0.5 leading-none shadow-[0_2px_0_var(--shadow-ink)]" style={{ ...at(pos), fontSize: "clamp(16px, 2.3cqw, 30px)" }}>
+                <button key={id} type="button" aria-label={miniText.names[id]} title={miniText.names[id]} onClick={() => openMini(id)} className="town-collect absolute z-[52] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-1.5 py-0.5 leading-none shadow-[0_2px_0_var(--shadow-ink)]" style={{ ...at(pos), fontSize: "clamp(16px, 2.3cqw, 30px)" }}>
                   {id === "fishing" ? "🎣" : id === "harvest" ? "🥕" : "🥐"}
                 </button>
               );
             })}
             {/* poklady dne */}
             {col.spots.filter((s) => !col.collected.includes(s.idx)).map((s) => (
-              <button key={s.idx} type="button" aria-label={tt.collect.title} onClick={() => collect(s)} className="town-collect absolute z-[7] -translate-x-1/2 -translate-y-1/2 leading-none" style={{ ...at(spotPos(s)), fontSize: "clamp(18px, 2.6cqw, 34px)", animationDelay: `${(s.idx % 4) * -0.5}s` }}>
+              <button key={s.idx} type="button" aria-label={tt.collect.title} onClick={() => collect(s)} className="town-collect absolute z-[52] -translate-x-1/2 -translate-y-1/2 leading-none" style={{ ...at(spotPos(s)), fontSize: "clamp(18px, 2.6cqw, 34px)", animationDelay: `${(s.idx % 4) * -0.5}s` }}>
                 {COLLECT_ICON[s.kind]}
               </button>
             ))}
             {pop && (
-              <div key={pop.n} className="market-boom pointer-events-none absolute z-[9] -translate-x-1/2 text-lg font-black text-[#ffd76b] [text-shadow:0_2px_0_#16132b]" style={{ ...at([pop.p[0], pop.p[1] - 0.03]) }}>
+              <div key={pop.n} className="market-boom pointer-events-none absolute z-[62] -translate-x-1/2 text-lg font-black text-[#ffd76b] [text-shadow:0_2px_0_#16132b]" style={{ ...at([pop.p[0], pop.p[1] - 0.03]) }}>
                 {pop.text}
               </div>
             )}
@@ -927,15 +992,15 @@ export function TownHub({ locale }: { locale: Locale }) {
               const top = Math.min(pl.sign[1], pl.door[1]) - 0.012;
               const hh = Math.abs(pl.door[1] - pl.sign[1]) + 0.045;
               return (
-                <button key={p.id} type="button" aria-label={tt.buildings[p.id].name} title={tt.buildings[p.id].hint} onClick={() => visit(p)} onMouseEnter={() => setHover(p.id)} onMouseLeave={() => setHover(null)} onFocus={() => setHover(p.id)} onBlur={() => setHover(null)} className="market-hit absolute z-10 -translate-x-1/2 rounded-2xl" style={{ left: `${pl.sign[0] * 100}%`, top: `${Y(top) * 100}%`, width: `${hw * 100}%`, height: `${(Y(top + hh) - Y(top)) * 100}%` }} />
+                <button key={p.id} type="button" aria-label={tt.buildings[p.id].name} title={tt.buildings[p.id].hint} onClick={() => visit(p)} onMouseEnter={() => setHover(p.id)} onMouseLeave={() => setHover(null)} onFocus={() => setHover(p.id)} onBlur={() => setHover(null)} className="market-hit absolute z-[53] -translate-x-1/2 rounded-2xl" style={{ left: `${pl.sign[0] * 100}%`, top: `${Y(top) * 100}%`, width: `${hw * 100}%`, height: `${(Y(top + hh) - Y(top)) * 100}%` }} />
               );
             })}
           </div>
 
           {dark && <div aria-hidden className="pointer-events-none absolute inset-0 bg-[#0b0925]/25" />}
           {tint && <div aria-hidden className="pointer-events-none absolute inset-0 z-[12]" style={{ background: tint, transition: "opacity 1s" }} />}
-          <canvas ref={wxCv} aria-hidden className="pointer-events-none absolute inset-0 z-[13] h-full w-full" />
-          <div className="pointer-events-none absolute left-3 top-14 z-20 flex items-center gap-2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-sm font-extrabold">
+          <canvas ref={wxCv} aria-hidden className={`pointer-events-none absolute inset-0 z-[13] h-full w-full ${phase ? "hidden" : ""}`} />
+          <div className={`pointer-events-none absolute left-3 top-14 z-20 flex items-center gap-2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-sm font-extrabold ${busyScene ? "hidden" : ""}`}>
             <span aria-hidden>{{ clear: "☀️", cloudy: "⛅", rain: "🌧️", fog: "🌫️", snow: "❄️" }[weather]}</span>
             {tt.weather[weather]} · {tt.phases[phaseNow]}
           </div>
@@ -982,6 +1047,10 @@ export function TownHub({ locale }: { locale: Locale }) {
               <span aria-hidden>🎬</span>
               <span className="sr-only">{tl.ui.replay}</span>
             </button>
+            <button type="button" onClick={toggleFull} aria-pressed={full} title={full ? tt.fullOff : tt.fullOn} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110">
+              <span aria-hidden>{full ? "🗗" : "⛶"}</span>
+              <span className="sr-only">{full ? tt.fullOff : tt.fullOn}</span>
+            </button>
             <button type="button" onClick={() => !busyScene && setStoryOpen(true)} disabled={busyScene} title={storyText.button} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110 disabled:opacity-50">
               <span aria-hidden>📖</span>
               <span className="sr-only">{storyText.button}</span>
@@ -1016,6 +1085,7 @@ export function TownHub({ locale }: { locale: Locale }) {
             />
           )}
         </div>
+      </div>
       </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">

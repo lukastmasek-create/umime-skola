@@ -13,7 +13,7 @@ export type WorldKind = "forest" | "castle" | "sea";
 type Spark = { x: number; y: number; vx: number; vy: number; age: number; life: number; r: number; kind: number; rot: number };
 type Frame = { ctx: CanvasRenderingContext2D; cw: number; ch: number; t: number; tau: number; dt: number; sx: number; sy: number; K: number; hx: number; hy: number; sparks: Spark[] };
 
-const TE: Record<WorldKind, number> = { forest: 6.0, castle: 6.4, sea: 7.0 };
+const TE: Record<WorldKind, number> = { forest: 6.0, castle: 6.4, sea: 8.4 };
 
 function glow(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rgb: string, a: number) {
   if (a <= 0 || r < 1) return;
@@ -350,14 +350,6 @@ function seaFx(f: Frame, assets: { hero: HTMLImageElement; sub: HTMLImageElement
         fish(ctx, x, y, 1.1 * K * 1.2, dir, 30 + sch * 90 + i * 6, t);
       }
     }
-    // ponorka míjí zprava
-    const sk = clamp((tau - 3.2) / 2.6);
-    if (sk > 0 && sk < 1) {
-      const sw = 0.36 * cw;
-      const sxp = lerp(1.25 * cw, -0.4 * cw, sk);
-      const fr = Math.floor((t / 3.2) * 12) % 12;
-      ctx.drawImage(assets.sub, fr * 640, 0, 640, 384, sxp - sw / 2, 0.18 * ch + Math.sin(t * 2) * 6, sw, sw * 0.6);
-    }
     // podmořské město: kopule s okny vyrůstají odspodu
     if (bottomRise > 0) {
       const base = ch * (1.15 - 0.42 * ease(bottomRise));
@@ -399,18 +391,18 @@ function seaFx(f: Frame, assets: { hero: HTMLImageElement; sub: HTMLImageElement
       }
       ctx.lineCap = "butt";
     }
-    // potápěč: hrdina klesá pod hladinu a pak se vznáší uprostřed záběru
-    const dk = sm(tau, 1.0, 2.5);
-    const hw = 0.3 * ch;
+    // ponorka s hrdinou klesá pod hladinu a pak se vznáší uprostřed záběru
+    const dk = sm(tau, 0.2, 1.8);
+    const sw = 0.34 * cw;
     const dx = cw * 0.5 + Math.sin(tau * 1.3) * 0.03 * cw;
-    const dy = lerp(-0.12 * ch, 0.5 * ch, dk) + Math.sin(tau * 2) * 0.012 * ch;
-    const fr2 = Math.floor(((t % 3) / 3) * 24) % 24;
+    const dy = lerp(-0.1 * ch, 0.46 * ch, dk) + Math.sin(tau * 2) * 0.012 * ch;
+    const fr2 = Math.floor(((t % 3.2) / 3.2) * 12) % 12;
     ctx.save();
     ctx.translate(dx, dy);
-    ctx.rotate(lerp(0.9, 0.18, dk) + Math.sin(tau * 1.7) * 0.05);
-    ctx.drawImage(assets.hero, fr2 * 192, 0, 192, 192, -hw / 2, -0.55 * hw, hw, hw);
+    ctx.rotate(lerp(0.35, 0.05, dk) + Math.sin(tau * 1.7) * 0.03);
+    ctx.drawImage(assets.sub, fr2 * 640, 0, 640, 384, -sw / 2, (-sw * 0.6) / 2, sw, sw * 0.6);
     ctx.restore();
-    if (Math.random() < 0.5) pushSpark(sparks, { x: dx + (Math.random() - 0.5) * 0.05 * cw, y: dy - 0.12 * ch, vx: (Math.random() - 0.5) * 20, vy: -40, life: 1.8, r: (2 + Math.random() * 5) * K, kind: 6 });
+    if (Math.random() < 0.5) pushSpark(sparks, { x: dx - sw * 0.42, y: dy, vx: (Math.random() - 0.5) * 20, vy: -40, life: 1.8, r: (2 + Math.random() * 5) * K, kind: 6 });
     ctx.globalAlpha = 1;
   }
   const wf = sm(tau, 6.0, 6.9);
@@ -420,7 +412,7 @@ function seaFx(f: Frame, assets: { hero: HTMLImageElement; sub: HTMLImageElement
   }
 }
 
-export function runWorld(r: R, g: Geo, kind: WorldKind, onEnd: () => void): Handle {
+export function runWorld(r: R, g: Geo, kind: WorldKind, onEnd: () => void, subEl?: HTMLElement | null): Handle {
   let stopped = false;
   let raf = 0;
   const finish = () => {
@@ -456,6 +448,10 @@ export function runWorld(r: R, g: Geo, kind: WorldKind, onEnd: () => void): Hand
     const node = path[path.length - 1];
     const [au, av] = g.toBox(g.door ?? g.walk?.[g.walk.length - 1] ?? g.start);
     const door = kind === "sea" ? node : { x: au * cw, y: av * ch };
+    // ponorka u laguny: poloha středu v pixelech a věžička (poklop) podle snímku
+    const subC = kind === "sea" && g.sub && subEl ? { x: g.toBox(g.sub)[0] * cw, y: g.toBox(g.sub)[1] * ch } : null;
+    const sps = (0.16 * cw) / 640;
+    const hatch = subC ? { x: subC.x + 20 * sps, y: subC.y - 70 * sps } : { x: 0, y: 0 };
     const heroState = { cur: "idle" };
     const sparks: Spark[] = [];
     let last = performance.now();
@@ -484,7 +480,15 @@ export function runWorld(r: R, g: Geo, kind: WorldKind, onEnd: () => void): Hand
       let op = 1;
       let rot = 0;
       if (!walking) {
-        if (kind === "sea") {
+        if (kind === "sea" && subC) {
+          // nastoupí do ponorky: skok na věžičku, zmenší se v poklopu, ponorka se ponoří
+          const u = clamp(tau / 0.8);
+          hx = lerp(node.x, hatch.x, ease(u));
+          hy = lerp(node.y, hatch.y, u) - Math.sin(u * Math.PI) * 0.07 * ch;
+          const v = clamp((tau - 0.8) / 0.5);
+          sc = 1 - 0.7 * v;
+          op = 1 - v;
+        } else if (kind === "sea") {
           const u = clamp(tau / 0.85);
           hx = node.x + u * 0.03 * cw;
           hy = node.y - Math.sin(u * Math.PI) * 0.12 * ch + u * 0.09 * ch;
@@ -502,6 +506,12 @@ export function runWorld(r: R, g: Geo, kind: WorldKind, onEnd: () => void): Hand
       }
       heroSprite(r as Refs, walking ? "walk" : "idle", heroState);
       setHero(r as Refs, hx, hy, flip, sc, op);
+      if (subEl && subC) {
+        const dd = ease(clamp((tau - 1.3) / 1.0));
+        const off = tau < 1.3 ? Math.sin(t * 3) * 2 : dd * 0.18 * cw * 0.16 * 3;
+        subEl.style.transform = `translate(-50%, calc(-50% + ${off}px)) rotate(${dd * 14}deg)`;
+        subEl.style.opacity = String(walking ? 1 : 1 - sm(tau, 1.9, 2.5));
+      }
       if (rot) r.hero.style.transform = `translate(-50%, -84.4%) rotate(${flip ? -rot : rot}deg) scale(${flip ? -sc : sc}, ${sc})`;
       if (walking) {
         stepAcc += dt;
@@ -561,7 +571,7 @@ export function runWorld(r: R, g: Geo, kind: WorldKind, onEnd: () => void): Hand
           const into = sm(fk, 0.78, 1);
           forestFx(f, { x: lerp(ring.x, cx, into), y: lerp(ring.y, cy, into) });
         } else if (kind === "castle") castleFx(f);
-        else if (heroImg && subImg) seaFx(f, { hero: heroImg, sub: subImg });
+        else if (heroImg && subImg) seaFx({ ...f, tau: tau - (subC ? 1.4 : 0) }, { hero: heroImg, sub: subImg });
         stepSparks(f, kind === "sea" ? 500 : -20);
         bars(ctx, cw, ch, sm(tau, 0, 0.6) * (1 - sm(tau, END - 0.5, END)));
       } else bars(ctx, cw, ch, sm(t, 0.3, 1.0) * 0.5);
