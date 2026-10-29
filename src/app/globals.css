@@ -2677,3 +2677,87 @@ select:not(:focus) {
     animation: none;
   }
 }
+
+/* Hlavička a menu: 3D ikony skupin, karty v nabídkách, kompaktní lišta po rolování, třpyt loga */
+.nav-ico {
+  transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25));
+}
+.nav-group:hover .nav-ico,
+.nav-group:focus-visible .nav-ico,
+[aria-expanded="true"] .nav-ico {
+  animation: nav-wiggle 0.7s ease-in-out;
+  transform: scale(1.15);
+}
+@keyframes nav-wiggle {
+  0% { transform: rotate(0) scale(1); }
+  25% { transform: rotate(-12deg) scale(1.2); }
+  55% { transform: rotate(9deg) scale(1.2); }
+  100% { transform: rotate(0) scale(1.15); }
+}
+.nav-caret {
+  display: inline-block;
+  transition: transform 0.25s;
+}
+.nav-caret-open {
+  transform: rotate(180deg);
+}
+.nav-panel {
+  transform-origin: 20px 0;
+  animation: nav-panel-in 0.22s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+@keyframes nav-panel-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.94); }
+}
+.nav-item {
+  animation: nav-item-in 0.28s ease-out var(--d, 0ms) both;
+  transition: transform 0.15s;
+}
+.nav-item:hover {
+  transform: translateX(4px);
+}
+@keyframes nav-item-in {
+  from { opacity: 0; transform: translateX(-10px); }
+}
+.site-header {
+  transition: background-color 0.25s, box-shadow 0.25s;
+}
+.site-header-in {
+  transition: padding 0.25s;
+}
+.site-header[data-scrolled] {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+.site-header[data-scrolled] .site-header-in {
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+}
+.site-logo {
+  position: relative;
+  display: inline-flex;
+  overflow: hidden;
+  border-radius: 10px;
+}
+.site-logo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.55) 50%, transparent 60%);
+  transform: translateX(-120%);
+  animation: logo-shine 7s ease-in-out 2s infinite;
+  pointer-events: none;
+}
+@keyframes logo-shine {
+  0%, 70% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-group:hover .nav-ico,
+  .nav-panel,
+  .nav-item,
+  .site-logo::after {
+    animation: none;
+  }
+}
