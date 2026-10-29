@@ -21,7 +21,7 @@ export type ClassicText = {
   triesLeft: string;
   gameOver: string;
   rightAnswer: string;
-  games: Record<"osmismerka" | "spojovani" | "pexeso" | "sibenice" | "trideni" | "doplnovani" | "milionar" | "presmycky" | "blesk" | "poklad", { title: string; intro: string }>;
+  games: Record<"osmismerka" | "spojovani" | "pexeso" | "sibenice" | "trideni" | "doplnovani" | "milionar" | "presmycky" | "blesk" | "poklad" | "oblekani", { title: string; intro: string }>;
   quiz: { ready: string; start: string; score: string; correctN: string; timeLeft: string; streak: string; best: string; timeUp: string; wrongAnswer: string; correctWas: string; pickTile: string };
   mil: { points: string; fifty: string; audience: string; skip: string; take: string; safe: string; question: string; reached: string; won: string; lost: string; takeHome: string };
   scramble: { hint: string; clear: string; placeholder: string; letters: string; revealed: string };
@@ -29,6 +29,7 @@ export type ClassicText = {
   sort: { right: string; wrong: string; hint: string; card: string; wasRight: string; wasWrong: string; correctIs: string; review: string };
   fill: { bank: string; check: string; placeholder: string; attemptsLeft: string; revealed: string; correctIs: string; pickWord: string };
   matching: { questions: string; answers: string };
+  dress: { pick: string; start: string; slots: Record<"hair" | "outfit" | "shoes" | "makeup" | "accessory" | "topper", string>; dolls: Record<"princess" | "athlete" | "rocker" | "fairy" | "chef" | "astronaut", string>; yay: string; oops: string; dressed: string; question: string; wearing: string; changed: string };
 };
 
 const cs: ClassicText = {
@@ -62,6 +63,7 @@ const cs: ClassicText = {
     presmycky: { title: "Přesmyčky", intro: "Písmena jsou zamíchaná. Poskládej z nich správnou odpověď na otázku. Klepej na písmena, nebo piš na klávesnici." },
     blesk: { title: "Bleskový kvíz", intro: "Odpovídej, co to jde. Za správnou odpověď bod a série, za špatnou ztratíš pět sekund. Klávesy 1 až 4 vybírají odpověď." },
     poklad: { title: "Hon za pokladem", intro: "Správná odpověď ti odemkne jedno políčko na ostrově. Skrývá se v nich zlato a truhly, ale i lebky, které berou životy." },
+    oblekani: { title: "Obleč panenku", intro: "Panenka stojí jen ve spodním prádle. Za každou správnou odpověď dostane jeden kus oblečení: vlasy, šaty, boty, make-up, doplněk i čepici. Při chybě zesmutní a něco z jejího oblečení se změní." },
   },
   matching: { questions: "Otázky", answers: "Odpovědi" },
   sort: { right: "Správně", wrong: "Špatně", hint: "Přetáhni kartu, nebo ← →", card: "Karta", wasRight: "Správně!", wasWrong: "Chyba.", correctIs: "Správná odpověď", review: "Tady jsi chyboval" },
@@ -70,6 +72,7 @@ const cs: ClassicText = {
   mil: { points: "bodů", fifty: "50:50", audience: "Publikum", skip: "Přeskočit", take: "Vzít body", safe: "jistý bod", question: "Otázka", reached: "Došel jsi na", won: "Vyhráno", lost: "Špatně! Odnášíš si", takeHome: "Odnášíš si" },
   scramble: { hint: "Nápověda", clear: "Smazat", placeholder: "Složená odpověď", letters: "písmen", revealed: "Správně je" },
   treasure: { gold: "Zlato", lives: "Životy", chest: "Truhla", skull: "Lebka", coin: "Mince", openedTiles: "Odkryto", question: "Otázka" },
+  dress: { pick: "Vyber panenku", start: "Obléknout", slots: { hair: "Vlasy", outfit: "Oblečení", shoes: "Boty", makeup: "Make-up", accessory: "Doplněk", topper: "Čepice" }, dolls: { princess: "Princezna", athlete: "Sportovkyně", rocker: "Rockerka", fairy: "Víla", chef: "Kuchařka", astronaut: "Astronautka" }, yay: "Hurá, sluší jí to!", oops: "Ach ne, špatně… a oblečení se změnilo.", dressed: "Panenka je oblečená", question: "Otázka", wearing: "Na řadě", changed: "Změnilo se" },
 };
 
 const en: ClassicText = {
@@ -103,6 +106,7 @@ const en: ClassicText = {
     presmycky: { title: "Anagrams", intro: "The letters are scrambled. Put them together into the right answer to the question. Tap the letters or type on the keyboard." },
     blesk: { title: "Lightning quiz", intro: "Answer as many as you can. A right answer earns a point and a streak, a wrong one costs five seconds. Keys 1 to 4 pick an answer." },
     poklad: { title: "Treasure hunt", intro: "A right answer unlocks one tile on the island. They hide gold and chests, but also skulls that cost lives." },
+    oblekani: { title: "Dress the doll", intro: "The doll stands in her underwear. Every right answer gives her one piece: hair, outfit, shoes, make-up, accessory and a hat. A wrong answer makes her sad and something she wears changes." },
   },
   matching: { questions: "Questions", answers: "Answers" },
   sort: { right: "Right", wrong: "Wrong", hint: "Drag the card, or ← →", card: "Card", wasRight: "Right!", wasWrong: "Mistake.", correctIs: "Right answer", review: "Where you slipped" },
@@ -111,6 +115,7 @@ const en: ClassicText = {
   mil: { points: "points", fifty: "50:50", audience: "Audience", skip: "Skip", take: "Take points", safe: "safe point", question: "Question", reached: "You reached", won: "Won", lost: "Wrong! You take home", takeHome: "You take home" },
   scramble: { hint: "Hint", clear: "Clear", placeholder: "Your answer", letters: "letters", revealed: "The answer is" },
   treasure: { gold: "Gold", lives: "Lives", chest: "Chest", skull: "Skull", coin: "Coin", openedTiles: "Opened", question: "Question" },
+  dress: { pick: "Pick a doll", start: "Dress up", slots: { hair: "Hair", outfit: "Outfit", shoes: "Shoes", makeup: "Make-up", accessory: "Accessory", topper: "Hat" }, dolls: { princess: "Princess", athlete: "Athlete", rocker: "Rocker", fairy: "Fairy", chef: "Chef", astronaut: "Astronaut" }, yay: "Yay, it suits her!", oops: "Oh no, wrong… and her outfit changed.", dressed: "The doll is dressed", question: "Question", wearing: "Up next", changed: "Changed" },
 };
 
 const de: ClassicText = {
@@ -144,6 +149,7 @@ const de: ClassicText = {
     presmycky: { title: "Buchstabensalat", intro: "Die Buchstaben sind durcheinander. Setze daraus die richtige Antwort auf die Frage zusammen. Tippe die Buchstaben an oder schreibe mit der Tastatur." },
     blesk: { title: "Blitzquiz", intro: "Antworte, so schnell du kannst. Für eine richtige Antwort gibt es einen Punkt und eine Serie, für eine falsche verlierst du fünf Sekunden. Die Tasten 1 bis 4 wählen die Antwort." },
     poklad: { title: "Schatzsuche", intro: "Eine richtige Antwort schaltet ein Feld der Insel frei. Darunter liegen Gold und Truhen, aber auch Totenköpfe, die Leben kosten." },
+    oblekani: { title: "Puppe anziehen", intro: "Die Puppe steht in Unterwäsche da. Jede richtige Antwort bringt ihr ein Teil: Haare, Outfit, Schuhe, Make-up, Accessoire und Hut. Bei einer falschen Antwort wird sie traurig und etwas an ihrem Outfit ändert sich." },
   },
   matching: { questions: "Fragen", answers: "Antworten" },
   sort: { right: "Richtig", wrong: "Falsch", hint: "Karte ziehen oder ← →", card: "Karte", wasRight: "Richtig!", wasWrong: "Fehler.", correctIs: "Richtige Antwort", review: "Hier lagst du daneben" },
@@ -152,6 +158,7 @@ const de: ClassicText = {
   mil: { points: "Punkte", fifty: "50:50", audience: "Publikum", skip: "Überspringen", take: "Punkte nehmen", safe: "sicherer Punkt", question: "Frage", reached: "Du hast erreicht", won: "Gewonnen", lost: "Falsch! Du nimmst mit", takeHome: "Du nimmst mit" },
   scramble: { hint: "Tipp", clear: "Löschen", placeholder: "Deine Antwort", letters: "Buchstaben", revealed: "Richtig ist" },
   treasure: { gold: "Gold", lives: "Leben", chest: "Truhe", skull: "Totenkopf", coin: "Münze", openedTiles: "Geöffnet", question: "Frage" },
+  dress: { pick: "Wähle eine Puppe", start: "Anziehen", slots: { hair: "Haare", outfit: "Outfit", shoes: "Schuhe", makeup: "Make-up", accessory: "Accessoire", topper: "Hut" }, dolls: { princess: "Prinzessin", athlete: "Sportlerin", rocker: "Rockerin", fairy: "Fee", chef: "Köchin", astronaut: "Astronautin" }, yay: "Super, es steht ihr!", oops: "Oje, falsch… und ihr Outfit hat sich geändert.", dressed: "Die Puppe ist angezogen", question: "Frage", wearing: "Als Nächstes", changed: "Geändert" },
 };
 
 const ru: ClassicText = {
@@ -185,6 +192,7 @@ const ru: ClassicText = {
     presmycky: { title: "Анаграммы", intro: "Буквы перемешаны. Составь из них правильный ответ на вопрос. Нажимай на буквы или печатай на клавиатуре." },
     blesk: { title: "Блиц-викторина", intro: "Отвечай как можно быстрее. За верный ответ балл и серия, за неверный минус пять секунд. Клавиши 1–4 выбирают ответ." },
     poklad: { title: "Охота за сокровищами", intro: "Верный ответ открывает одну клетку острова. В них золото и сундуки, но и черепа, которые отнимают жизни." },
+    oblekani: { title: "Одень куклу", intro: "Кукла стоит в белье. За каждый верный ответ она получает вещь: причёску, наряд, обувь, макияж, аксессуар и головной убор. При ошибке она грустит, и что-то из её одежды меняется." },
   },
   matching: { questions: "Вопросы", answers: "Ответы" },
   sort: { right: "Верно", wrong: "Неверно", hint: "Перетащи карточку или ← →", card: "Карточка", wasRight: "Верно!", wasWrong: "Ошибка.", correctIs: "Правильный ответ", review: "Где ты ошибся" },
@@ -193,6 +201,7 @@ const ru: ClassicText = {
   mil: { points: "очков", fifty: "50:50", audience: "Зал", skip: "Пропустить", take: "Забрать очки", safe: "надёжный балл", question: "Вопрос", reached: "Ты дошёл до", won: "Выиграно", lost: "Неверно! Ты забираешь", takeHome: "Ты забираешь" },
   scramble: { hint: "Подсказка", clear: "Стереть", placeholder: "Твой ответ", letters: "букв", revealed: "Правильно так" },
   treasure: { gold: "Золото", lives: "Жизни", chest: "Сундук", skull: "Череп", coin: "Монета", openedTiles: "Открыто", question: "Вопрос" },
+  dress: { pick: "Выбери куклу", start: "Одевать", slots: { hair: "Причёска", outfit: "Наряд", shoes: "Обувь", makeup: "Макияж", accessory: "Аксессуар", topper: "Головной убор" }, dolls: { princess: "Принцесса", athlete: "Спортсменка", rocker: "Рокерша", fairy: "Фея", chef: "Повариха", astronaut: "Астронавтка" }, yay: "Ура, ей идёт!", oops: "Ой, неверно… и наряд изменился.", dressed: "Кукла одета", question: "Вопрос", wearing: "Следующее", changed: "Изменилось" },
 };
 
 const texts: Record<Locale, ClassicText> = { cs, en, de, ru };
