@@ -17,15 +17,17 @@ type Island = { slug: string; label: string; color: string; count: number; href:
 
 // Poloha ostrovů v procentech scény: širší rozložení do dvou řad a úzké do tří sloupců.
 const WIDE: Record<string, [number, number]> = {
-  cestina: [11, 36], literatura: [29, 30], anglictina: [47, 38], nemcina: [65, 31], rustina: [83, 37],
-  matematika: [20, 74], dejepis: [38, 70], zemepis: [56, 76], prirodopis: [74, 71],
+  cestina: [10, 34], literatura: [30, 28], anglictina: [50, 36], nemcina: [70, 29], rustina: [90, 35],
+  matematika: [10, 76], dejepis: [30, 70], zemepis: [50, 78], prirodopis: [70, 71], fyzika: [90, 77],
 };
 const NARROW: Record<string, [number, number]> = {
-  cestina: [20, 13], literatura: [50, 10], anglictina: [80, 14],
-  nemcina: [20, 45], rustina: [50, 42], matematika: [80, 46],
-  dejepis: [20, 77], zemepis: [50, 74], prirodopis: [80, 78],
+  cestina: [18, 10], literatura: [50, 7], anglictina: [82, 11],
+  nemcina: [18, 33], rustina: [50, 30], matematika: [82, 34],
+  dejepis: [18, 57], zemepis: [50, 54], prirodopis: [82, 58],
+  fyzika: [50, 80],
 };
-const ORDER = ["cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis"];
+const ORDER = ["cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis", "fyzika"];
+const N = ORDER.length;
 
 const VERT = `#version 300 es
 in vec2 aPos;
@@ -41,7 +43,7 @@ const FRAG = `#version 300 es
 precision highp float;
 uniform vec2 uRes;
 uniform float uTime;
-uniform vec3 uIsl[9];
+uniform vec3 uIsl[10];
 uniform float uSel;
 uniform vec3 uMouse;
 in vec2 vUv;
@@ -77,7 +79,7 @@ void main() {
   float dMin = 9.0;
   float foam = 0.0;
   float sel = 0.0;
-  for (int i = 0; i < 9; i++) {
+  for (int i = 0; i < 10; i++) {
     vec2 c = vec2(uIsl[i].x * asp, uIsl[i].y);
     float d = length((p - c) * vec2(1.0, 1.35));
     float r = uIsl[i].z;
@@ -221,12 +223,12 @@ export function CourseWorld({ locale, islands, allHref, allLabel, noteLabel }: {
       if (disposed) return;
       const sec = (now - t0) / 1000;
       if (gl && glOk) {
-        const arr = new Float32Array(27);
+        const arr = new Float32Array(N * 3);
         ORDER.forEach((slug, i) => {
           const [px, py] = pos(slug);
           arr[i * 3] = px / 100;
           arr[i * 3 + 1] = 1 - (py + 4) / 100;
-          arr[i * 3 + 2] = narrowRef.current ? 0.095 : 0.06;
+          arr[i * 3 + 2] = narrowRef.current ? 0.085 : 0.055;
         });
         gl.uniform3fv(u("uIsl"), arr);
         gl.uniform1f(u("uTime"), reduced ? 3 : sec);
@@ -293,7 +295,7 @@ export function CourseWorld({ locale, islands, allHref, allLabel, noteLabel }: {
       <div
         ref={stage}
         className="relative w-full overflow-hidden rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)]"
-        style={{ aspectRatio: narrow ? "4 / 5" : "16 / 8", background: "linear-gradient(180deg,#1b6fc4,#0a3a7a)" }}
+        style={{ aspectRatio: narrow ? "4 / 6" : "16 / 8", background: "linear-gradient(180deg,#1b6fc4,#0a3a7a)" }}
       >
         <canvas ref={sea} aria-hidden className="absolute inset-0 h-full w-full" />
         <div ref={ship} aria-hidden className="pointer-events-none absolute left-0 top-0 z-[5]" style={{ aspectRatio: "1 / 1", willChange: "transform" }}>
