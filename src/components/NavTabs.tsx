@@ -15,6 +15,7 @@ import { getSocialText } from "@/i18n/social";
 import { getRoomText } from "@/i18n/room";
 import { getReviewText } from "@/i18n/review";
 import { getLiveText } from "@/i18n/live";
+import { getDailyQuizText } from "@/i18n/daily-quiz";
 import { useAccount } from "@/lib/use-account";
 import { locales, localeNames, type Locale } from "@/i18n/config";
 import { setLocaleCookie } from "@/lib/locale-cookie";
@@ -67,6 +68,7 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
       key: "games",
       label: home.groups.games,
       items: [
+        { key: "denni-kviz", href: `/${locale}/denni-kviz`, label: getDailyQuizText(locale).nav },
         { key: "stale-hry", href: `/${locale}/stale-hry`, label: getIdleText(locale).nav },
         { key: "unikovky", href: `/${locale}/unikovky`, label: getEscapeText(locale).nav },
         { key: "hrat-spolecne", href: `/${locale}/hrat-spolecne`, label: live.nav, exact: true },
