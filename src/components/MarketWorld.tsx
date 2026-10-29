@@ -213,6 +213,7 @@ export function MarketWorld({ locale }: { locale: Locale }) {
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
   const [popped, setPopped] = useState<{ id: string; stall: StallKey; n: number } | null>(null);
   const [gift, setGift] = useState<{ id: string; email: string } | null>(null);
+  const seq = useRef(0);
   const stage = useRef<HTMLDivElement>(null);
   const sea = useRef<HTMLCanvasElement>(null);
   const front = useRef<HTMLCanvasElement>(null);
@@ -284,7 +285,7 @@ export function MarketWorld({ locale }: { locale: Locale }) {
     const ok = await post({ action: "buy", id: item.id }, t.bought.replace("{name}", item.names[locale]), item.id);
     if (ok) {
       setOpen(null);
-      setPopped({ id: item.id, stall, n: Date.now() });
+      setPopped({ id: item.id, stall, n: ++seq.current });
       window.setTimeout(() => setPopped((p) => (p && p.id === item.id ? null : p)), 2600);
     }
   }

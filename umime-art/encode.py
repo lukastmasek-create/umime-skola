@@ -339,7 +339,7 @@ def pristav():
 
     for key, cx in (("avatary", -6.4), ("tituly", -3.2), ("ramecky", 0.0), ("pozadi", 3.2), ("mazlicci", 6.4)):
         meta["kotvy"][key]["nazev"] = norm(cx, -0.9, 2.78)   # cedule leží na pruhované plachtě stánku
-    meta["lod"] = norm(-1.6, 5.6, 0.0)                      # vodoryska galéry za stánky
+    meta["lod"] = norm(-1.6, 4.7, 0.0)                      # vodoryska galéry za stánky
     meta["papousek"] = norm(5.5, 0.35, 1.45)   # bidýlko v zvířecím koutku
     meta["krab"] = norm(4.6, -1.7, 0.3)         # na prknech před stánky
     json.dump(meta, open(os.path.join(ROOT, "..", "src", "components", "pristav-kotvy.json"), "w"))
