@@ -347,6 +347,18 @@ def pristav():
     json.dump(meta, open(os.path.join(ROOT, "..", "src", "components", "pristav-kotvy.json"), "w"))
 
 
+def nastup():
+    """Molo a lávka k pirátské galéře (nástup na loď ve filmovém přechodu z městečka)."""
+    import json, shutil
+    dest_dir = os.path.join(DEST, "..", "pristav")
+    os.makedirs(dest_dir, exist_ok=True)
+    for part in ("molo", "lavka"):
+        im = frames("pristav_nastup_" + part)[0]
+        im.save(os.path.join(dest_dir, "nastup-" + part + ".webp"), format="WEBP", quality=84, method=5, alpha_quality=90)
+        print("nastup-" + part, im.size)
+    shutil.copy(os.path.join(ROOT, "out", "pristav_nastup_molo", "kotvy.json"), os.path.join(ROOT, "..", "src", "components", "pristav-nastup.json"))
+
+
 def kosmicka():
     """Vesmírná stanice (uživatelský obchod): vrstvy stanice, raketa a obchodníci do public/home/kosmicka."""
     import json, shutil
@@ -375,6 +387,7 @@ if __name__ == "__main__":
     if "icons" in what: icons()
     if "pristav" in what: pristav()
     if "kosmicka" in what: kosmicka()
+    if "nastup" in what: nastup()
     if "stills" in what: stills()
     # Planeta má hodně jemného detailu: každý druhý snímek a menší rozměr drží soubor pod 1 MB.
     if "planeta" in what: animated("planeta", "planeta.webp", fps=12, quality=55, size=(616, 409), step=2)

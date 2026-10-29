@@ -177,3 +177,12 @@ const town: Record<Locale, TownText> = {
 export function getTownText(locale: Locale): TownText {
   return town[locale];
 }
+
+export function getSkipText(locale: Locale): { skip: string; soundOn: string; soundOff: string } {
+  return {
+    cs: { skip: "Přeskočit", soundOn: "Vypnout zvuky", soundOff: "Zapnout zvuky" },
+    en: { skip: "Skip", soundOn: "Mute sounds", soundOff: "Unmute sounds" },
+    de: { skip: "Überspringen", soundOn: "Ton ausschalten", soundOff: "Ton einschalten" },
+    ru: { skip: "Пропустить", soundOn: "Выключить звук", soundOff: "Включить звук" },
+  }[locale];
+}

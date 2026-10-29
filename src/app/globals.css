@@ -2927,3 +2927,25 @@ select:not(:focus) {
     opacity: 0;
   }
 }
+
+/* --- Filmové přechody v obchodě (MarketTown) --- */
+@keyframes market-count {
+  0% { transform: translate(-50%, -50%) scale(2.4); opacity: 0; }
+  25% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.85; }
+}
+.market-count {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  z-index: 30;
+  font-size: clamp(3rem, 12vw, 8rem);
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 4px 0 #16132b, 0 0 30px rgba(255, 190, 90, 0.9);
+  pointer-events: none;
+}
+.market-vignette {
+  background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+}
