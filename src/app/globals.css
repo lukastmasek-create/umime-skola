@@ -3093,3 +3093,23 @@ select:not(:focus) {
 @keyframes def-shot { from { left: 12%; } to { left: var(--tx); } }
 @keyframes def-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-3%) rotate(-3deg); } 60% { transform: translateX(3%) rotate(3deg); } }
 @media (prefers-reduced-motion: reduce) { .def-foe, .def-mark, .def-castle-hit { animation: none; } .def-foe { transform: translateX(-50%); } }
+
+/* Minihry městečka. */
+.mini-sea { position: relative; height: 9rem; border-radius: 1rem; border: 2px solid var(--edge); background: linear-gradient(180deg, #bfe8ff 0%, #bfe8ff 38%, #4fb4e8 38%, #1f78c0 100%); overflow: hidden; }
+.mini-float { position: absolute; left: 50%; top: 22%; transform: translateX(-50%); font-size: 2.2rem; animation: mini-bob 1.4s ease-in-out infinite alternate; }
+.mini-bite { animation: mini-dip 0.18s ease-in-out infinite alternate; }
+.mini-alert { position: absolute; left: calc(50% + 1.6rem); top: 6%; font-size: 1.8rem; animation: mini-bob 0.3s ease-in-out infinite alternate; }
+.mini-catch { position: absolute; left: 50%; top: 40%; transform: translateX(-50%); font-size: 3rem; animation: mini-jump 0.6s ease-out 1; }
+.mini-bar { position: relative; height: 2rem; border-radius: 999px; background: var(--surface-muted); border: 2px solid var(--edge); overflow: hidden; }
+.mini-zone { position: absolute; top: 0; bottom: 0; background: rgba(110, 220, 140, 0.75); }
+.mini-marker { position: absolute; top: 0; bottom: 0; width: 0.5rem; margin-left: -0.25rem; background: #ff5d73; border-radius: 4px; }
+.mini-hole { height: 5.2rem; border-radius: 1rem; font-size: 2.6rem; background: radial-gradient(ellipse at 50% 70%, #5a3b20 0 55%, #7a5a34 56% 100%); border: 2px solid var(--edge); display: flex; align-items: center; justify-content: center; }
+.mini-pop { animation: mini-jump 0.25s ease-out 1; display: inline-block; }
+.mini-ing { height: 6rem; border-radius: 1.25rem; font-size: 3rem; border: 2px solid var(--edge); background: var(--surface-muted); transition: transform 0.12s, background 0.12s; }
+.mini-ing-lit { background: var(--accent-yellow); transform: scale(1.08); box-shadow: 0 0 18px rgba(255, 210, 63, 0.8); }
+@keyframes mini-bob { from { transform: translateX(-50%) translateY(0); } to { transform: translateX(-50%) translateY(6px); } }
+@keyframes mini-dip { from { transform: translateX(-50%) translateY(0); } to { transform: translateX(-50%) translateY(14px); } }
+@keyframes mini-jump { 0% { transform: translateX(-50%) translateY(14px) scale(0.6); opacity: 0; } 100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; } }
+.mini-pop { animation-name: mini-pop-in; }
+@keyframes mini-pop-in { 0% { transform: translateY(14px) scale(0.5); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .mini-float, .mini-bite, .mini-alert, .mini-catch, .mini-pop { animation: none; } }

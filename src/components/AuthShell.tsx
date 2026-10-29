@@ -1,6 +1,7 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { getHeroLook, heroSpriteUrl } from "@/lib/hero";
 
 // Rámec přihlášení a registrace: vlevo maskot (hrdina z městečka, stejné 3D sprity z Blenderu), kolem plují
 // ikony předmětů, formulář vpravo naběhne políčko po políčku. Maskot se raduje po úspěchu a kroutí hlavou
@@ -11,7 +12,12 @@ export type AuthMood = "idle" | "joy" | "oops";
 const FLOATERS = ["cestina", "matematika", "anglictina", "zemepis", "fyzika", "chemie", "hudebka", "dejepis"];
 
 export function AuthShell({ mood, greeting, children }: { mood: AuthMood; greeting: string; children: ReactNode }) {
-  const sprite = mood === "joy" ? "hrdina-radost" : "hrdina-stoji";
+  const [look, setLook] = useState(0);
+  useEffect(() => {
+    const id = window.setTimeout(() => setLook(getHeroLook()), 0);
+    return () => window.clearTimeout(id);
+  }, []);
+  const sprite = heroSpriteUrl(mood === "joy" ? "radost" : "stoji", look);
   return (
     <div className="gradient-hero auth-stage relative flex min-h-[calc(100vh-140px)] items-center justify-center overflow-hidden px-4 py-10 sm:px-6 sm:py-16">
       <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -34,7 +40,7 @@ export function AuthShell({ mood, greeting, children }: { mood: AuthMood; greeti
             <span
               key={sprite}
               className="town-sprite block h-40 w-40 md:h-60 md:w-60"
-              style={{ ["--n" as string]: 24, backgroundImage: `url(/home/mesto/${sprite}.webp)`, animationDuration: mood === "joy" ? "1.1s" : "3s" }}
+              style={{ ["--n" as string]: 24, backgroundImage: `url(${sprite})`, animationDuration: mood === "joy" ? "1.1s" : "3s" }}
             />
             <span aria-hidden className="auth-shadow" />
           </div>

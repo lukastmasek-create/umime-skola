@@ -1,4 +1,5 @@
 import { sfx } from "@/lib/market-sfx";
+import { currentHeroUrl } from "@/lib/hero";
 import { drawSea } from "@/lib/market-scenery";
 
 // Filmové přechody z městečka do světů obchodu. Kulisy městečka zůstávají v DOMu (ať žijí obyvatelé), kamera je
@@ -89,7 +90,7 @@ export function heroSprite(r: Refs, kind: "walk" | "idle", pending: { cur: strin
   if (pending.cur === kind) return;
   pending.cur = kind;
   r.heroSpr.style.setProperty("--n", kind === "walk" ? "16" : "24");
-  r.heroSpr.style.backgroundImage = `url(/home/mesto/${kind === "walk" ? "hrdina-chuze" : "hrdina-stoji"}.webp)`;
+  r.heroSpr.style.backgroundImage = `url(${currentHeroUrl(kind === "walk" ? "chuze" : "stoji")})`;
   r.heroSpr.style.animationDuration = kind === "walk" ? "0.9s" : "3s";
 }
 
@@ -626,7 +627,7 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
     cancelAnimationFrame(raf);
     onEnd();
   };
-  const imgsP = Promise.all([load("/home/pristav/lod.webp"), load("/home/pristav/nastup-molo.webp"), load("/home/pristav/nastup-lavka.webp"), load("/home/mesto/hrdina-chuze.webp"), load("/home/mesto/hrdina-stoji.webp"), load("/home/mesto/hrdina-radost.webp")]);
+  const imgsP = Promise.all([load("/home/pristav/lod.webp"), load("/home/pristav/nastup-molo.webp"), load("/home/pristav/nastup-lavka.webp"), load(currentHeroUrl("chuze")), load(currentHeroUrl("stoji")), load(currentHeroUrl("radost"))]);
 
   void imgsP.then(([ship, molo, lavka, walkImg, idleImg, joyImg]) => {
     if (stopped) return;

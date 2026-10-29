@@ -252,6 +252,17 @@ def mesto_chuze():
             strip("mf_" + job, "../mesto/" + dest + ".webp", (192, 192), quality=80)
 
 
+def mesto_hrdinove():
+    """Další vzhledy hrdiny (výběr v městečku): hrdina-<k>-chuze/stoji/radost.webp."""
+    dest_dir = os.path.join(DEST, "..", "mesto")
+    os.makedirs(dest_dir, exist_ok=True)
+    for k in range(1, 6):
+        for act in ("chuze", "stoji", "radost"):
+            src = f"mf_hrdina_{k}_{act}"
+            if glob.glob(os.path.join(ROOT, "out", src, "f_*.png")):
+                strip(src, f"../mesto/hrdina-{k}-{act}.webp", (192, 192), quality=80)
+
+
 def mesto():
     """Městečko (scéna), obyvatelé, zvířata a větrník pro TownLife do public/home/mesto (+ polohy do JSON)."""
     import json, math
@@ -456,6 +467,7 @@ if __name__ == "__main__":
     if "svet" in what: svet()
     if "mesto" in what: mesto()
     if "mesto_chuze" in what: mesto_chuze()
+    if "mesto_hrdinove" in what: mesto_hrdinove()
     if "hry" in what: hry()
     if "unikovky" in what: unikovky()
     if "namesti" in what: namesti()
