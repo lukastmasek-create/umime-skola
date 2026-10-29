@@ -70,12 +70,21 @@ export function DressUp({ t, questions, backHref }: { t: ClassicText; questions:
       setPicked(null);
       setTurn((n) => n + 1);
       if (ok) {
-        // správná odpověď: hráč si vybere jednu ze čtyř variant kusu
-        setChoosing(nextSlot);
-        setHoverPick(null);
-        setMood("happy");
-        setEvent({ id: Date.now(), kind: "happy" });
-        setMsg(`${d.yay} ${d.choose.replace("{slot}", d.slots[nextSlot].toLowerCase())}`);
+        const opts = doll ? optionsFor(doll, nextSlot) : [];
+        if (opts.length <= 1) {
+          // panenka má zatím jen jeden tvar kusu: nasadí se rovnou
+          setWorn((w) => ({ ...w, [nextSlot]: opts[0]?.pick ?? { v: 0, h: 0 } }));
+          setMood("happy");
+          setEvent({ id: Date.now(), kind: "dress", slot: nextSlot });
+          setMsg(`${ICON[nextSlot]} ${d.yay}`);
+        } else {
+          // správná odpověď: hráč si vybere jednu ze čtyř variant kusu
+          setChoosing(nextSlot);
+          setHoverPick(null);
+          setMood("happy");
+          setEvent({ id: Date.now(), kind: "happy" });
+          setMsg(`${d.yay} ${d.choose.replace("{slot}", d.slots[nextSlot].toLowerCase())}`);
+        }
       } else {
         setWrongs((n) => n + 1);
         setMood("sad");

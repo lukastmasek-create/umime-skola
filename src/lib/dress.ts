@@ -103,6 +103,8 @@ export const SLOT_COUNT = SLOTS.length;
 // Varianty a jejich náhledové barvy se generují z umime-art/blender/panenky_sets.py do dress-variants.json.
 export type Pick = { v: number; h: number };
 export const VARIANTS = 4;
+// Panenky, jejichž model už má všechny čtyři varianty každého kusu; ostatní mají zatím jen podpisový kus (varianta 0) a nasadí se hned.
+const READY = new Set(["princess", "athlete"]);
 
 type VariantFile = Record<string, Record<Slot, { kind: string; swatch: string }[]>>;
 const DATA = variants as VariantFile;
@@ -111,5 +113,6 @@ export type Option = { pick: Pick; swatch: string; kind: string };
 
 /** Čtyři možnosti pro daný kus panenky (tvar i barva se liší). */
 export function optionsFor(doll: Doll, slot: Slot): Option[] {
-  return (DATA[doll.id]?.[slot] ?? []).map((o, v) => ({ pick: { v, h: 0 }, swatch: o.swatch, kind: o.kind }));
+  const all = (DATA[doll.id]?.[slot] ?? []).map((o, v) => ({ pick: { v, h: 0 }, swatch: o.swatch, kind: o.kind }));
+  return READY.has(doll.id) ? all : all.slice(0, 1);
 }
