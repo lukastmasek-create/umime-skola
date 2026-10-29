@@ -23,6 +23,12 @@ export type MarketText = {
   cancel: string;
   newItem: string;
   boughtToast: string; // {name}
+  night: string;
+  day: string;
+  cannon: string;
+  boom: string;
+  parrotLabel: string;
+  parrot: string[];
 };
 
 const cs: MarketText = {
@@ -54,6 +60,12 @@ const cs: MarketText = {
   cancel: "Zrušit",
   newItem: "Nové",
   boughtToast: "{name} je na pultě!",
+  night: "Zapnout noc",
+  day: "Zapnout den",
+  cannon: "Vystřelit z kanónu",
+  boom: "BUM!",
+  parrotLabel: "Promluvit s papouškem",
+  parrot: ["Arrr! Zlato, zlato!", "Kdo je tu nový? Arrr!", "Pozor na kraby!", "Kapitán má vždycky pravdu!", "Pěkný kousek!"],
 };
 
 const en: MarketText = {
@@ -85,6 +97,12 @@ const en: MarketText = {
   cancel: "Cancel",
   newItem: "New",
   boughtToast: "{name} is on the counter!",
+  night: "Switch to night",
+  day: "Switch to day",
+  cannon: "Fire the cannon",
+  boom: "BOOM!",
+  parrotLabel: "Talk to the parrot",
+  parrot: ["Arrr! Gold, gold!", "Who is new here? Arrr!", "Beware of crabs!", "The captain is always right!", "Nice catch!"],
 };
 
 const de: MarketText = {
@@ -116,6 +134,12 @@ const de: MarketText = {
   cancel: "Abbrechen",
   newItem: "Neu",
   boughtToast: "{name} liegt auf dem Tresen!",
+  night: "Nacht einschalten",
+  day: "Tag einschalten",
+  cannon: "Kanone abfeuern",
+  boom: "BUMM!",
+  parrotLabel: "Mit dem Papagei sprechen",
+  parrot: ["Arrr! Gold, Gold!", "Wer ist neu hier? Arrr!", "Vorsicht vor Krabben!", "Der Kapitän hat immer recht!", "Schönes Stück!"],
 };
 
 const ru: MarketText = {
@@ -147,6 +171,12 @@ const ru: MarketText = {
   cancel: "Отмена",
   newItem: "Новое",
   boughtToast: "{name} на прилавке!",
+  night: "Включить ночь",
+  day: "Включить день",
+  cannon: "Выстрелить из пушки",
+  boom: "БАХ!",
+  parrotLabel: "Поговорить с попугаем",
+  parrot: ["Аррр! Золото, золото!", "Кто тут новенький? Аррр!", "Берегись крабов!", "Капитан всегда прав!", "Отличная вещь!"],
 };
 
 const texts: Record<Locale, MarketText> = { cs, en, de, ru };

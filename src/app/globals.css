@@ -2869,3 +2869,61 @@ select:not(:focus) {
     animation: none;
   }
 }
+
+/* Přístav: noc, výstřel z kanónu */
+.market-lit {
+  transition: filter 0.6s;
+}
+.market-stage[data-night] .market-lit {
+  filter: brightness(0.58) saturate(0.85) hue-rotate(8deg);
+}
+.market-ball {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 14px;
+  height: 14px;
+  margin: -7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #6a6a7a, #16132b);
+  animation: market-ball 1.3s cubic-bezier(0.25, 0.6, 0.5, 1) both;
+}
+@keyframes market-ball {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  60% { transform: translate(calc(var(--dx, -1) * 30vw), -90px) scale(0.6); opacity: 1; }
+  100% { transform: translate(calc(var(--dx, -1) * 48vw), -10px) scale(0.2); opacity: 0; }
+}
+.market-laser {
+  background: radial-gradient(circle at 35% 30%, #fff, #5adcff 55%, #2a7bff);
+  box-shadow: 0 0 14px 4px rgba(90, 220, 255, 0.8);
+}
+.market-puff {
+  position: absolute;
+  left: -30px;
+  top: -30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.95), rgba(190,190,205,0.6) 55%, transparent 70%);
+  animation: market-puff 1.1s ease-out both;
+}
+@keyframes market-puff {
+  from { transform: scale(0.2); opacity: 1; }
+  to { transform: scale(2.4) translate(-12px, -10px); opacity: 0; }
+}
+.market-boom {
+  animation: market-boom 1.1s ease-out both;
+}
+@keyframes market-boom {
+  from { transform: scale(0.4) rotate(-10deg); opacity: 0; }
+  25% { opacity: 1; transform: scale(1.2) rotate(-6deg); }
+  to { transform: scale(1) translateY(-20px); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .market-ball,
+  .market-puff,
+  .market-boom {
+    animation: none;
+    opacity: 0;
+  }
+}

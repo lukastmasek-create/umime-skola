@@ -142,6 +142,26 @@ def person(skin="#ffd5a8", top="#ff5a3c", bottom="#2f3c6e", shoes="#3a2a22", hai
         put(sphere((0, 0, 0), 0.24, hc, scale=(0.75, 1.55, 0.5), seg=24, rings=12), head, (0, 0, 0.26))
         put(sphere((0, 0, 0), 0.17, hc, scale=(1, 1, 0.8), seg=20, rings=10), head, (0, 0, 0.22))
         put(sphere((0, 0, 0), 0.05, M("pirko", "#ffffff", 0.7), scale=(0.7, 2.2, 0.35), seg=10, rings=6), head, (-0.06, 0.2, 0.36))
+    elif hat == "helmet":
+        gm = bpy.data.materials.get("helma_sklo")
+        if gm is None:
+            gm = bpy.data.materials.new("helma_sklo")
+            gm.use_nodes = True
+            gb = gm.node_tree.nodes["Principled BSDF"]
+            gb.inputs["Base Color"].default_value = hex_rgba("#cfeaff")
+            gb.inputs["Roughness"].default_value = 0.05
+            for k_, v_ in (("Transmission Weight", 0.9), ("Alpha", 0.35)):
+                if k_ in gb.inputs:
+                    gb.inputs[k_].default_value = v_
+        put(sphere((0, 0, 0), 0.31, gm, scale=(1.0, 1.0, 1.05), seg=28, rings=18), head, (0, 0, 0.1))
+        put(torus((0, 0, 0), 0.3, 0.03, M("helma_kr" + hat_c, hat_c, 0.35, 0.4), rot=(0, 0, 0)), head, (0, 0, -0.14))
+    elif hat == "antenna":
+        am = M("anten_t" + hat_c, hat_c, 0.5)
+        for sy in (-1, 1):
+            put(bar((0, 0, 0), (0.0, sy * 0.06, 0.2), 0.012, M("anten_k", "#c9ced8", 0.4, 0.6), verts=6), head, (0.0, sy * 0.08, 0.26))
+            put(sphere((0, 0, 0), 0.05, am, seg=10, rings=8), head, (0.0, sy * 0.14, 0.47))
+    elif hat == "visor":
+        put(box((0, 0, 0), (0.1, 0.4, 0.09), M("vizorS" + hat_c, hat_c, 0.2), bevel=0.02), head, (0.17, 0, 0.12))
     if beard:
         bm = M("vous" + beard, beard, 0.8)
         put(sphere((0, 0, 0), 0.13, bm, scale=(0.7, 1.0, 1.1), seg=14, rings=10), head, (0.13, 0, -0.04))
@@ -840,11 +860,151 @@ def job_krab():
     run(u, "mf_krab")
 
 
+
+# ---------------------------------------------------------------- vesmírná stanice (uživatelský obchod)
+def job_admiral():
+    stage("mf_admiral", 24, ortho=1.9, target_z=0.62)
+    P = person(skin="#f2c9a0", top="#f4f6fb", bottom="#d8dde8", shoes="#46d6ff", hair="#8a8aa8", hat="helmet", hat_c="#ff7a3c", coat="#f4f6fb", scale=0.97)
+    pad = box((0, 0, 0), (0.22, 0.03, 0.3), M("tablet", "#16132b", 0.3), bevel=0.01)
+    put(pad, P["arms"][1][2], (0.1, 0, 0.0))
+
+    def u(t):
+        ph = t * math.tau
+        idle(P, t)
+        sh, el, _ = P["arms"][0]
+        w = max(0.0, math.sin(2 * ph))
+        sh.rotation_euler = (0, -0.6 - 1.7 * w, 0)            # salutuje a pozdravuje
+        el.rotation_euler = (0, -0.5 - 0.8 * w, 0)
+        sh1, el1, _ = P["arms"][1]
+        sh1.rotation_euler = (0, -0.7, 0)
+        el1.rotation_euler = (0, -0.8, 0)
+        blink(P, t, 0.4, 1)
+    run(u, "mf_admiral")
+
+
+def job_robot_obch():
+    stage("mf_robot_obch", 24, ortho=1.9, target_z=0.62)
+    P = person(skin="#c9ced8", top="#46d6ff", bottom="#6a7a9a", shoes="#2b3350", hair="#c9ced8", hat="antenna", hat_c="#ff6fd0", scale=0.95, cheeks=False)
+
+    def u(t):
+        ph = t * math.tau
+        idle(P, t)
+        for i, (sh, el, _) in enumerate(P["arms"]):
+            k = math.sin(3 * ph + i * 2.1)
+            sh.rotation_euler = (0, -0.9 - 0.3 * k, 0)
+            el.rotation_euler = (0, -0.7 + 0.25 * k, 0)
+        P["head"].rotation_euler = (0, 0.05, 0.3 * math.sin(ph) * (1 if t < 0.7 else 0.1))
+        blink(P, t, 0.55, 3)
+    run(u, "mf_robot_obch")
+
+
+def job_inzenyr():
+    stage("mf_inzenyr", 24, ortho=1.9, target_z=0.62)
+    P = person(skin="#e0ae80", top="#ff9a3c", bottom="#2c2540", hair="#3a2a22", hat="cap", hat_c="#ffd76b", apron="#c9ced8", scale=0.97)
+    tool = empty(P["arms"][1][2])
+    put(bar((0, 0, 0), (0.0, 0, 0.3), 0.02, M("klic_m", "#9aa6c0", 0.3, 0.8), verts=8), tool, (0.0, 0, -0.04))
+    put(torus((0, 0, 0), 0.06, 0.02, M("klic_m", "#9aa6c0", 0.3, 0.8), rot=(math.radians(90), 0, 0)), tool, (0.0, 0, 0.32))
+
+    def u(t):
+        ph = t * math.tau
+        idle(P, t)
+        sh, el, _ = P["arms"][1]
+        k = math.sin(3 * ph)
+        sh.rotation_euler = (0, -1.2 - 0.2 * k, 0)
+        el.rotation_euler = (0, -0.6 - 0.5 * k, 0)
+        sh0, el0, _ = P["arms"][0]
+        sh0.rotation_euler = (0, -0.8, 0)
+        el0.rotation_euler = (0, -0.7, 0)
+        P["torso"].rotation_euler = (0, 0.1, 0.04 * k)
+        blink(P, t, 0.3, 2)
+    run(u, "mf_inzenyr")
+
+
+def job_mimozemstan():
+    stage("mf_mimozemstan", 24, ortho=1.9, target_z=0.62)
+    P = person(skin="#9be15d", top="#8a3ffc", bottom="#5a2ab8", skirt="#8a3ffc", hair="#6fcf3a", hat="antenna", hat_c="#ffd76b", scale=0.95)
+    cloth = box((0, 0, 0), (0.3, 0.2, 0.02), M("latka_k", "#ff6fd0", 0.8), bevel=0)
+    put(cloth, P["arms"][0][2], (0.1, 0, 0.0))
+
+    def u(t):
+        ph = t * math.tau
+        idle(P, t)
+        sh, el, _ = P["arms"][1]
+        w = 0.5 + 0.5 * math.sin(4 * ph)
+        sh.rotation_euler = (0, -0.9 - 0.2 * w, 0)
+        el.rotation_euler = (0, -0.9 - 0.5 * w, 0)
+        sh0, el0, _ = P["arms"][0]
+        sh0.rotation_euler = (0, -0.85, 0)
+        el0.rotation_euler = (0, -0.8, 0)
+        P["head"].rotation_euler = (0, 0.15, 0.1 * math.sin(ph))
+        blink(P, t, 0.45, 2)
+    run(u, "mf_mimozemstan")
+
+
+def job_biolog():
+    stage("mf_biolog", 24, ortho=1.9, target_z=0.62)
+    P = person(skin="#f6a8d8", top="#7ee0b0", bottom="#2f6a9a", hair="#46d6ff", hat="visor", hat_c="#46d6ff", glasses=False, scale=0.95)
+    jar = cyl((0, 0, 0), 0.09, 0.2, M("sklenice_b", "#bfe8ff", 0.05, 0.1), verts=16)
+    put(jar, P["arms"][1][2], (0.1, 0, -0.02))
+    put(sphere((0, 0, 0), 0.06, M("blobMini", "#7ee0b0", 0.3), seg=10, rings=8), jar, (0, 0, 0.02))
+
+    def u(t):
+        ph = t * math.tau
+        idle(P, t)
+        sh, el, _ = P["arms"][1]
+        h = 0.5 + 0.5 * math.sin(ph)
+        sh.rotation_euler = (0, -0.8 - 0.4 * h, 0)
+        el.rotation_euler = (0, -0.6 - 0.3 * h, 0)
+        sh0, el0, _ = P["arms"][0]
+        sh0.rotation_euler = (0, -0.3, 0)
+        el0.rotation_euler = (0, -0.4, 0)
+        P["head"].rotation_euler = (0, 0.05, 0.12 * math.sin(ph))
+        blink(P, t, 0.7, 2)
+    run(u, "mf_biolog")
+
+
+def job_blob():
+    stage("mf_blob", 24, ortho=0.9, target_z=0.2, el=6)
+    root = empty()
+    body = M("blob_t", "#7ee0b0", 0.25)
+    b = put(sphere((0, 0, 0), 0.2, body, seg=20, rings=14), root, (0, 0, 0.25))
+    for sy in (-1, 1):
+        put(sphere((0, 0, 0), 0.045, M("oko_b", "#ffffff", 0.3), seg=10, rings=8), root, (0.16, sy * 0.07, 0.3))
+        put(sphere((0, 0, 0), 0.025, M("oko_c", "#16132b", 0.3), seg=8, rings=6), root, (0.2, sy * 0.07, 0.3))
+        put(bar((0, 0, 0), (0.0, sy * 0.08, 0.12), 0.012, body, verts=6), root, (0.0, sy * 0.1, 0.42))
+        put(sphere((0, 0, 0), 0.04, M("blob_k", "#ff6fd0", 0.3), seg=8, rings=6), root, (0.0, sy * 0.18, 0.56))
+
+    def u(t):
+        ph = t * math.tau
+        root.location.z = 0.06 * math.sin(ph)
+        sq = 1 + 0.08 * math.sin(2 * ph)
+        b.scale = (1 / sq ** 0.5, 1 / sq ** 0.5, sq)
+        root.rotation_euler = (0, 0.06 * math.sin(ph), 0.2 * math.sin(ph))
+    run(u, "mf_blob")
+
+
+def job_uklizec():
+    stage("mf_uklizec", 24, ortho=0.9, target_z=0.1, el=6)
+    root = empty()
+    put(cyl((0, 0, 0), 0.22, 0.1, M("ukl_t", "#e8edf5", 0.3, 0.3), verts=24), root, (0, 0, 0.08))
+    put(torus((0, 0, 0), 0.22, 0.015, M("ukl_k", "#46d6ff", 0.3), rot=(0, 0, 0)), root, (0, 0, 0.1))
+    led = put(sphere((0, 0, 0), 0.04, M("ukl_l", "#ff6fd0", 0.3), seg=8, rings=6), root, (0.15, 0, 0.14))
+    put(sphere((0, 0, 0), 0.06, M("ukl_o", "#16132b", 0.3), scale=(0.5, 1, 0.6), seg=8, rings=6), root, (0.2, 0, 0.1))
+
+    def u(t):
+        ph = t * math.tau
+        root.location.x = 0.1 * math.sin(ph)
+        root.rotation_euler = (0, 0, 0.5 * math.sin(ph))
+        led.scale = [0.7 + 0.5 * abs(math.sin(2 * ph))] * 3
+    run(u, "mf_uklizec")
+
+
 JOBS = {k[4:]: v for k, v in globals().items() if k.startswith("job_")}
 JOBS = {"hrdina_chuze": job_hrdina_chuze, "hrdina_stoji": job_hrdina_stoji, "hrdina_radost": job_hrdina_radost, "knihovnice": job_knihovnice,
         "pekar": job_pekar, "farmar": job_farmar, "babicka": job_babicka, "kluk": job_kluk, "pes_bezi": job_pes_bezi, "pes_sedi": job_pes_sedi,
         "kocka": job_kocka, "ovce": job_ovce, "slepice": job_slepice, "kralik": job_kralik, "ptak": job_ptak, "ryba": job_ryba, "mlyn": job_mlyn,
-        "kapitan": job_kapitan, "kvartyrmistr": job_kvartyrmistr, "tesar": job_tesar, "plachtarka": job_plachtarka, "chovatel": job_chovatel, "papousek": job_papousek, "krab": job_krab}
+        "kapitan": job_kapitan, "kvartyrmistr": job_kvartyrmistr, "tesar": job_tesar, "plachtarka": job_plachtarka, "chovatel": job_chovatel, "papousek": job_papousek, "krab": job_krab,
+        "admiral": job_admiral, "robot_obch": job_robot_obch, "inzenyr": job_inzenyr, "mimozemstan": job_mimozemstan, "biolog": job_biolog, "blob": job_blob, "uklizec": job_uklizec}
 
 if __name__ == "__main__":
     for w in [a for a in args() if a in JOBS]:

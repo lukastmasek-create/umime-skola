@@ -340,9 +340,28 @@ def pristav():
     for key, cx in (("avatary", -6.4), ("tituly", -3.2), ("ramecky", 0.0), ("pozadi", 3.2), ("mazlicci", 6.4)):
         meta["kotvy"][key]["nazev"] = norm(cx, -0.9, 2.78)   # cedule leží na pruhované plachtě stánku
     meta["lod"] = norm(-1.6, 4.7, 0.0)                      # vodoryska galéry za stánky
+    meta["kanon"] = norm(8.0, -1.35, 0.65)
+    meta["majak"] = norm(7.4, 5.6, 1.12)
     meta["papousek"] = norm(5.5, 0.35, 1.45)   # bidýlko v zvířecím koutku
     meta["krab"] = norm(4.6, -1.7, 0.3)         # na prknech před stánky
     json.dump(meta, open(os.path.join(ROOT, "..", "src", "components", "pristav-kotvy.json"), "w"))
+
+
+def kosmicka():
+    """Vesmírná stanice (uživatelský obchod): vrstvy stanice, raketa a obchodníci do public/home/kosmicka."""
+    import json, shutil
+    dest_dir = os.path.join(DEST, "..", "kosmicka")
+    os.makedirs(dest_dir, exist_ok=True)
+    for src, dest in (("kosmicka_zadni", "zadni.webp"), ("kosmicka_predni", "predni.webp")):
+        im = frames(src)[0]
+        im.save(os.path.join(dest_dir, dest), format="WEBP", quality=84, method=5, alpha_quality=90)
+        print(dest, round(os.path.getsize(os.path.join(dest_dir, dest)) / 1024), "kB", im.size)
+    if glob.glob(os.path.join(ROOT, "out", "kosmicka_raketa", "f_*.png")):
+        strip("kosmicka_raketa", "../kosmicka/raketa.webp", (640, 384), quality=80)
+    for name in ("admiral", "robot_obch", "inzenyr", "mimozemstan", "biolog", "blob", "uklizec"):
+        if glob.glob(os.path.join(ROOT, "out", "mf_" + name, "f_*.png")):
+            strip("mf_" + name, "../kosmicka/" + name + ".webp", (256, 256), quality=80)
+    shutil.copy(os.path.join(ROOT, "out", "kosmicka_zadni", "kotvy.json"), os.path.join(ROOT, "..", "src", "components", "kosmicka-kotvy.json"))
 
 
 def stills():
@@ -355,6 +374,7 @@ if __name__ == "__main__":
     what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_live", "globe", "hero", "tech", "hory", "svet", "hry", "unikovky", "namesti", "profil", "obchod"]
     if "icons" in what: icons()
     if "pristav" in what: pristav()
+    if "kosmicka" in what: kosmicka()
     if "stills" in what: stills()
     # Planeta má hodně jemného detailu: každý druhý snímek a menší rozměr drží soubor pod 1 MB.
     if "planeta" in what: animated("planeta", "planeta.webp", fps=12, quality=55, size=(616, 409), step=2)

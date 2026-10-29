@@ -28,7 +28,7 @@ import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
 
 export type Equipped = { avatar: string | null; title: string | null; frame: string | null; banner: string | null };
-export type Snapshot = { loggedIn: true; points: number; owned: string[]; equipped: Equipped; day: string; resetAt: string };
+export type Snapshot = { loggedIn: true; points: number; owned: string[]; equipped: Equipped; day: string; resetAt: string; level?: number; worlds?: string[] };
 type Sort = "default" | "asc" | "desc";
 
 const WISHLIST_KEY = "shop-wishlist";

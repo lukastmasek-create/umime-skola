@@ -6,45 +6,300 @@ import { Avatar } from "@/components/Avatar";
 import { Modal, Preview, type Snapshot } from "@/components/ShopView";
 import { bannerCss, isFrameId } from "@/lib/cosmetics";
 import { DEAL_DISCOUNT, SHOP_ITEMS, dailyDealIds, dayKey, salePrice, type ShopItem } from "@/lib/shop";
-import { WORLDS, type StallKey, type WorldId } from "@/lib/market-worlds";
+import { WORLDS, type SceneDef, type StallKey, type WorldId } from "@/lib/market-worlds";
 import { getMarketText } from "@/i18n/market";
 import { getShopText } from "@/i18n/shop";
 import { getShopExtraText } from "@/i18n/shop-extra";
 import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
-import scene from "./pristav-kotvy.json";
+import pirateScene from "./pristav-kotvy.json";
+import spaceScene from "./kosmicka-kotvy.json";
+import { getWorldText, getUnlockText, getTownText } from "@/i18n/market-world";
+import { MarketTown } from "@/components/MarketTown";
 
-// Uživatelský obchod jako prostředí: pirátský přístav z Blenderu (umime-art/blender/pristav*.py). Vrstvy zespodu:
-// moře a nebe (canvas), loď, zadní vrstva mola a stánků, obchodníci, přední vrstva (pulty), vlny před lodí,
-// ukazatele, koupené věci na pultech a neviditelná tlačítka stánků. Nákup i nošení věcí jde přes /api/shop a /api/profil.
-
-const DIR = "/home/pristav";
-const W = 2000;
-const H = 900;
-const NPC_W = 11.9; // šířka sprite obchodníka v % šířky scény (256 px při 134,7 px/jednotku, scéna má 125)
-const NPC_FEET = 82.2; // kde mu leží chodidla ve sprite (% výšky)
+// Uživatelský obchod jako prostředí: pirátský přístav a vesmírná stanice z Blenderu (umime-art/blender/pristav*.py,
+// kosmicka*.py). Vrstvy zespodu: moře nebo vesmír (canvas), hlavní předmět (loď, raketa), zadní vrstva (podlaha, stánky),
+// obchodníci, přední vrstva (pulty), přední canvas (vlny, světla), ukazatele, koupené věci a neviditelná tlačítka stánků.
+// Nákup i nošení věcí jde přes /api/shop a /api/profil, odemykání dalších světů přes akci unlockWorld.
 
 type Anchor = { npc: number[]; pult: number[]; strecha: number[]; bublina: number[]; nazev: number[] };
-const K = scene.kotvy as Record<string, Anchor>;
+type SceneData = { w: number; h: number; kotvy: Record<string, Anchor>; lod: number[]; lampy: number[][]; pena: number[][] } & Record<string, unknown>;
+type Dot = { x: number; y: number; ph: number; layer: number; r: number };
+const SCENES: Record<string, SceneData> = { pirate: pirateScene as unknown as SceneData, space: spaceScene as unknown as SceneData };
+
+const W = 2000;
+const H = 900;
+const NPC_W = 11.9; // šířka sprite obchodníka v % šířky scény (256 px při 134,7 px/jednotku, scéna má 16 jednotek)
+const NPC_FEET = 82.2; // kde mu leží chodidla ve sprite (% výšky)
 const STALL_KEYS: StallKey[] = ["avatary", "tituly", "ramecky", "pozadi", "mazlicci"];
 
 type State = { status: "loading" } | { status: "unavailable" } | { status: "guest" } | { status: "ready"; data: Snapshot };
 
-function Sprite({ file, n, dur, delay = 0, className, style }: { file: string; n: number; dur: number; delay?: number; className?: string; style?: React.CSSProperties }) {
+const pt = (d: SceneData, key: string): number[] => (d[key] as number[] | undefined) ?? [0.5, 0.5];
+
+function Sprite({ dir, file, n, dur, delay = 0, className, style }: { dir: string; file: string; n: number; dur: number; delay?: number; className?: string; style?: React.CSSProperties }) {
   return (
     <span
       aria-hidden
       className={`town-sprite block ${className ?? ""}`}
-      style={{ ["--n" as string]: n, backgroundImage: `url(${DIR}/${file}.webp)`, animationDuration: `${dur}s`, animationDelay: `${delay}s`, ...style }}
+      style={{ ["--n" as string]: n, backgroundImage: `url(${dir}/${file}.webp)`, animationDuration: `${dur}s`, animationDelay: `${delay}s`, ...style }}
     />
   );
 }
 
-// Moře, nebe, mraky, racci a pěna kolem pilot; vše v jednom canvasu, pozastaví se mimo obrazovku.
-function useSea(stage: React.RefObject<HTMLDivElement | null>, sea: React.RefObject<HTMLCanvasElement | null>, front: React.RefObject<HTMLCanvasElement | null>) {
+const wave = (x: number, y: number, a: number, t: number, f: number) => y + Math.sin(x * f + t) * a + Math.sin(x * f * 2.3 - t * 1.3) * a * 0.4;
+const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
+
+// Hvězdy s třemi vrstvami pomalého driftu (blíž = rychleji a větší).
+const STARS: Dot[] = Array.from({ length: 160 }, (_, i) => ({
+  x: (Math.sin(i * 91.7) + 1) / 2,
+  y: (Math.sin(i * 47.3 + 2) + 1) / 2,
+  ph: i * 1.7,
+  layer: i % 3,
+  r: 0.7 + (i % 3) * 0.5,
+}));
+
+function drawSea(ctx: CanvasRenderingContext2D, w: number, h: number, t: number, night: boolean) {
+  const sky = ctx.createLinearGradient(0, 0, 0, h * 0.34);
+  sky.addColorStop(0, night ? "#0b1230" : "#6ec6ff");
+  sky.addColorStop(1, night ? "#2a3a7a" : "#d8f1ff");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, w, h);
+  const horizon = h * 0.3;
+  const sea = ctx.createLinearGradient(0, horizon, 0, h);
+  sea.addColorStop(0, night ? "#1d4f8c" : "#3fb8e8");
+  sea.addColorStop(0.5, night ? "#12346a" : "#1f86cf");
+  sea.addColorStop(1, night ? "#0a1f45" : "#14529c");
+  ctx.fillStyle = sea;
+  ctx.fillRect(0, horizon, w, h - horizon);
+  if (night) {
+    for (let i = 0; i < 70; i++) {
+      const sx = ((Math.sin(i * 91.7) + 1) / 2) * w;
+      const sy = ((Math.sin(i * 47.3 + 2) + 1) / 2) * horizon * 0.95;
+      ctx.fillStyle = `rgba(255,255,255,${0.4 + 0.6 * Math.abs(Math.sin(t * 1.3 + i))})`;
+      ctx.fillRect(sx, sy, 1.6, 1.6);
+    }
+  }
+  ctx.fillStyle = night ? "rgba(235,240,255,0.95)" : "rgba(255,244,190,0.95)";
+  ctx.beginPath();
+  ctx.arc(w * 0.86, h * 0.1, h * 0.05, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = night ? "rgba(180,200,255,0.2)" : "rgba(255,244,190,0.25)";
+  ctx.beginPath();
+  ctx.arc(w * 0.86, h * 0.1, h * 0.09, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = night ? "rgba(120,140,200,0.55)" : "rgba(255,255,255,0.92)";
+  for (let ci = 0; ci < 4; ci++) {
+    const x = ((([0.12, 0.38, 0.7, 0.9][ci] + t * (0.004 + ci * 0.0015)) % 1.2) - 0.1) * w;
+    const y = (0.05 + (ci % 2) * 0.07) * h;
+    const r = h * 0.03 * (0.7 + (ci % 3) * 0.25);
+    for (const [dx, dy, k] of [[0, 0, 1], [1.1, 0.2, 0.8], [-1.1, 0.25, 0.75], [0.4, -0.5, 0.8], [-0.5, -0.3, 0.7]] as const) {
+      ctx.beginPath();
+      ctx.arc(x + dx * r, y + dy * r, r * k, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  for (let i = 0; i < 11; i++) {
+    const y0 = horizon + ((i + 1) / 12) * (h - horizon);
+    ctx.strokeStyle = `rgba(255,255,255,${0.1 + i * 0.012})`;
+    ctx.lineWidth = 1 + i * 0.15;
+    ctx.beginPath();
+    for (let x = 0; x <= w; x += 12) {
+      const yy = wave(x, y0, 1.2 + i * 0.5, t * (0.8 + i * 0.05) + i, 0.012 - i * 0.0004);
+      if (x === 0) ctx.moveTo(x, yy);
+      else ctx.lineTo(x, yy);
+    }
+    ctx.stroke();
+  }
+  for (let i = 0; i < 26; i++) {
+    const sx = w * (0.86 + Math.sin(i * 12.9) * 0.07);
+    const sy = horizon + (i / 26) * h * 0.2;
+    const on = (Math.sin(t * 2 + i * 1.7) + 1) / 2;
+    ctx.fillStyle = `rgba(255,255,230,${0.2 + on * 0.5})`;
+    ctx.fillRect(sx - 6 - on * 6, sy, 12 + on * 12, 1.6);
+  }
+  if (!night) {
+    ctx.strokeStyle = "rgba(255,255,255,0.95)";
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    for (let i = 0; i < 3; i++) {
+      const x = (((0.2 + i * 0.3 + t * (0.018 + i * 0.006)) % 1.1) - 0.05) * w;
+      const y = (0.14 + i * 0.05) * h + Math.sin(t * 0.7 + i * 2) * h * 0.012;
+      const flap = Math.sin(t * 6 + i * 2) * 6;
+      ctx.beginPath();
+      ctx.moveTo(x - 12, y + flap * 0.6);
+      ctx.quadraticCurveTo(x - 5, y - 6 - flap, x, y);
+      ctx.quadraticCurveTo(x + 5, y - 6 - flap, x + 12, y + flap * 0.6);
+      ctx.stroke();
+    }
+  }
+}
+
+function drawSeaFront(fctx: CanvasRenderingContext2D, w: number, h: number, t: number, night: boolean, data: SceneData) {
+  const [lx, ly] = data.lod;
+  const baseY = ly * h;
+  const x0 = lx * w - w * 0.15;
+  const x1 = lx * w + w * 0.15;
+  fctx.fillStyle = night ? "rgba(18,64,120,0.95)" : "rgba(34,150,215,0.92)";
+  fctx.beginPath();
+  fctx.moveTo(x0, baseY + h * 0.012);
+  for (let x = x0; x <= x1; x += 8) fctx.lineTo(x, wave(x, baseY - 1, 2.2, t * 1.6, 0.05));
+  fctx.lineTo(x1, baseY + h * 0.012);
+  fctx.closePath();
+  fctx.fill();
+  fctx.strokeStyle = "rgba(255,255,255,0.85)";
+  fctx.lineWidth = 2;
+  fctx.beginPath();
+  for (let x = x0; x <= x1; x += 8) {
+    const yy = wave(x, baseY - 1, 2.2, t * 1.6, 0.05);
+    if (x <= x0 + 1) fctx.moveTo(x, yy);
+    else fctx.lineTo(x, yy);
+  }
+  fctx.stroke();
+  for (const [px, py] of data.pena) {
+    const k = (Math.sin(t * 1.6 + px * 30) + 1) / 2;
+    fctx.strokeStyle = `rgba(255,255,255,${0.35 + k * 0.4})`;
+    fctx.lineWidth = 2;
+    fctx.beginPath();
+    fctx.ellipse(px * w, py * h + h * 0.035, w * (0.012 + k * 0.006), h * 0.006, 0, 0, Math.PI * 2);
+    fctx.stroke();
+  }
+  if (night) {
+    glows(fctx, w, h, t, data.lampy, "255,205,110", 0.65);
+    // paprsek majáku na obzoru
+    const [mx, my] = pt(data, "majak");
+    const bl = w * 0.22 * Math.max(0, Math.cos(t * 0.8));
+    const gr = fctx.createLinearGradient(mx * w, my * h, mx * w - bl, my * h);
+    gr.addColorStop(0, "rgba(255,246,190,0.55)");
+    gr.addColorStop(1, "rgba(255,246,190,0)");
+    fctx.globalCompositeOperation = "lighter";
+    fctx.fillStyle = gr;
+    fctx.beginPath();
+    fctx.moveTo(mx * w, my * h);
+    fctx.lineTo(mx * w - bl, my * h - h * 0.03);
+    fctx.lineTo(mx * w - bl, my * h + h * 0.03);
+    fctx.closePath();
+    fctx.fill();
+    fctx.globalCompositeOperation = "source-over";
+  }
+}
+
+// Zářící lampy (sčítací míchání), v moři jen v noci, ve vesmíru pořád.
+function glows(fctx: CanvasRenderingContext2D, w: number, h: number, t: number, lamps: number[][], rgb: string, strength: number) {
+  fctx.globalCompositeOperation = "lighter";
+  for (const [lx, ly] of lamps) {
+    const flick = 0.85 + 0.15 * Math.sin(t * 7 + lx * 40);
+    const g = fctx.createRadialGradient(lx * w, ly * h, 0, lx * w, ly * h, w * 0.05);
+    g.addColorStop(0, `rgba(${rgb},${strength * flick})`);
+    g.addColorStop(1, `rgba(${rgb},0)`);
+    fctx.fillStyle = g;
+    fctx.fillRect(lx * w - w * 0.05, ly * h - w * 0.05, w * 0.1, w * 0.1);
+  }
+  fctx.globalCompositeOperation = "source-over";
+}
+
+function blob(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rgb: string, a: number) {
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, `rgba(${rgb},${a})`);
+  g.addColorStop(1, `rgba(${rgb},0)`);
+  ctx.fillStyle = g;
+  ctx.fillRect(x - r, y - r, r * 2, r * 2);
+}
+
+function drawSpace(ctx: CanvasRenderingContext2D, w: number, h: number, t: number) {
+  const bg = ctx.createLinearGradient(0, 0, 0, h);
+  bg.addColorStop(0, "#05061a");
+  bg.addColorStop(0.55, "#12123f");
+  bg.addColorStop(1, "#2a1450");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, w, h);
+  // mlhoviny
+  blob(ctx, w * 0.3, h * 0.2, w * 0.28, "120,70,200", 0.28);
+  blob(ctx, w * 0.62, h * 0.12, w * 0.22, "40,150,220", 0.22);
+  blob(ctx, w * 0.8, h * 0.4, w * 0.2, "230,80,160", 0.18);
+  // hvězdy
+  const speed = [0.0025, 0.005, 0.009];
+  for (const s of STARS) {
+    const x = (((s.x + t * speed[s.layer]) % 1) * w);
+    const y = s.y * h * 0.8;
+    ctx.fillStyle = `rgba(255,255,255,${0.35 + 0.65 * Math.abs(Math.sin(t * (0.8 + s.layer * 0.4) + s.ph))})`;
+    ctx.fillRect(x, y, s.r, s.r);
+  }
+  // planeta s prstencem
+  const px = w * 0.86;
+  const py = h * 0.2;
+  const pr = h * 0.1;
+  ctx.save();
+  ctx.translate(px, py);
+  ctx.rotate(-0.35);
+  ctx.strokeStyle = "rgba(255,214,150,0.55)";
+  ctx.lineWidth = pr * 0.12;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, pr * 1.9, pr * 0.5, 0, Math.PI, Math.PI * 2);
+  ctx.stroke();
+  const pg = ctx.createRadialGradient(-pr * 0.35, -pr * 0.35, pr * 0.1, 0, 0, pr);
+  pg.addColorStop(0, "#ffd18a");
+  pg.addColorStop(0.6, "#e8803c");
+  pg.addColorStop(1, "#8a3a1c");
+  ctx.fillStyle = pg;
+  ctx.beginPath();
+  ctx.arc(0, 0, pr, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,214,150,0.55)";
+  ctx.beginPath();
+  ctx.ellipse(0, 0, pr * 1.9, pr * 0.5, 0, 0, Math.PI);
+  ctx.stroke();
+  ctx.restore();
+  // modrá planeta s mraky vlevo
+  const bx = w * 0.07;
+  const by = h * 0.3;
+  const br = h * 0.075;
+  const bgd = ctx.createRadialGradient(bx - br * 0.3, by - br * 0.3, br * 0.1, bx, by, br);
+  bgd.addColorStop(0, "#9ad8ff");
+  bgd.addColorStop(0.7, "#2a78d0");
+  bgd.addColorStop(1, "#143a80");
+  ctx.fillStyle = bgd;
+  ctx.beginPath();
+  ctx.arc(bx, by, br, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(bx, by, br, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.fillStyle = "rgba(255,255,255,0.45)";
+  for (let i = 0; i < 4; i++) {
+    const cx = bx + ((((i * 0.37 + t * 0.02) % 1.4) - 0.7) * br * 2.6);
+    ctx.beginPath();
+    ctx.ellipse(cx, by - br * 0.5 + i * br * 0.35, br * 0.55, br * 0.1, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+  // padající hvězda každých 9 s
+  const p = (t % 9) / 1.1;
+  if (p < 1) {
+    const sx = lerp(w * 0.75, w * 0.35, p);
+    const sy = lerp(h * 0.05, h * 0.3, p);
+    const g = ctx.createLinearGradient(sx, sy, sx + w * 0.08, sy - h * 0.06);
+    g.addColorStop(0, `rgba(255,255,255,${1 - p})`);
+    g.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(sx + w * 0.08, sy - h * 0.06);
+    ctx.stroke();
+  }
+}
+
+function drawSpaceFront(fctx: CanvasRenderingContext2D, w: number, h: number, t: number, data: SceneData) {
+  glows(fctx, w, h, t, data.lampy, "90,220,255", 0.55);
+}
+
+// Pozadí scény (moře nebo vesmír) a přední canvas se světly; vše se kreslí v jednom rAF, mimo obrazovku se zastaví.
+function useScenery(stage: React.RefObject<HTMLDivElement | null>, back: React.RefObject<HTMLCanvasElement | null>, front: React.RefObject<HTMLCanvasElement | null>, nightRef: React.RefObject<boolean>, def: SceneDef, data: SceneData) {
   useEffect(() => {
     const box = stage.current;
-    const cv = sea.current;
+    const cv = back.current;
     const fv = front.current;
     if (!box || !cv || !fv) return;
     const ctx = cv.getContext("2d");
@@ -57,8 +312,6 @@ function useSea(stage: React.RefObject<HTMLDivElement | null>, sea: React.RefObj
     let visible = true;
     let disposed = false;
     const t0 = performance.now();
-    const clouds = [0.12, 0.38, 0.7, 0.9].map((x, i) => ({ x, y: 0.05 + (i % 2) * 0.07, s: 0.7 + (i % 3) * 0.25, v: 0.004 + i * 0.0015 }));
-    const gulls = [0, 1, 2].map((i) => ({ x: 0.2 + i * 0.3, y: 0.14 + i * 0.05, v: 0.018 + i * 0.006, ph: i * 2 }));
     const resize = () => {
       const r = box.getBoundingClientRect();
       w = r.width;
@@ -71,108 +324,18 @@ function useSea(stage: React.RefObject<HTMLDivElement | null>, sea: React.RefObj
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       fctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
-    const wave = (x: number, y: number, a: number, t: number, f: number) => y + Math.sin(x * f + t) * a + Math.sin(x * f * 2.3 - t * 1.3) * a * 0.4;
     const frame = (now: number) => {
       raf = 0;
       if (disposed) return;
       const t = reduced ? 2 : (now - t0) / 1000;
-      // nebe a moře
-      const sky = ctx.createLinearGradient(0, 0, 0, h * 0.34);
-      sky.addColorStop(0, "#6ec6ff");
-      sky.addColorStop(1, "#d8f1ff");
-      ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, w, h);
-      const horizon = h * 0.3;
-      const sea = ctx.createLinearGradient(0, horizon, 0, h);
-      sea.addColorStop(0, "#3fb8e8");
-      sea.addColorStop(0.5, "#1f86cf");
-      sea.addColorStop(1, "#14529c");
-      ctx.fillStyle = sea;
-      ctx.fillRect(0, horizon, w, h - horizon);
-      // slunce
-      ctx.fillStyle = "rgba(255,244,190,0.95)";
-      ctx.beginPath();
-      ctx.arc(w * 0.86, h * 0.1, h * 0.05, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "rgba(255,244,190,0.25)";
-      ctx.beginPath();
-      ctx.arc(w * 0.86, h * 0.1, h * 0.09, 0, Math.PI * 2);
-      ctx.fill();
-      // mraky
-      ctx.fillStyle = "rgba(255,255,255,0.92)";
-      for (const c of clouds) {
-        const x = (((c.x + t * c.v) % 1.2) - 0.1) * w;
-        const y = c.y * h;
-        const r = h * 0.03 * c.s;
-        for (const [dx, dy, k] of [[0, 0, 1], [1.1, 0.2, 0.8], [-1.1, 0.25, 0.75], [0.4, -0.5, 0.8], [-0.5, -0.3, 0.7]] as const) {
-          ctx.beginPath();
-          ctx.arc(x + dx * r, y + dy * r, r * k, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-      // vlny: pásy čar se zpožděním podle hloubky
-      for (let i = 0; i < 11; i++) {
-        const y0 = horizon + ((i + 1) / 12) * (h - horizon);
-        const a = 1.2 + i * 0.5;
-        ctx.strokeStyle = `rgba(255,255,255,${0.1 + i * 0.012})`;
-        ctx.lineWidth = 1 + i * 0.15;
-        ctx.beginPath();
-        for (let x = 0; x <= w; x += 12) {
-          const yy = wave(x, y0, a, t * (0.8 + i * 0.05) + i, 0.012 - i * 0.0004);
-          if (x === 0) ctx.moveTo(x, yy);
-          else ctx.lineTo(x, yy);
-        }
-        ctx.stroke();
-      }
-      // třpyt slunce na vodě
-      for (let i = 0; i < 26; i++) {
-        const sx = w * (0.86 + Math.sin(i * 12.9) * 0.07);
-        const sy = horizon + (i / 26) * h * 0.2;
-        const on = (Math.sin(t * 2 + i * 1.7) + 1) / 2;
-        ctx.fillStyle = `rgba(255,255,230,${0.2 + on * 0.5})`;
-        ctx.fillRect(sx - 6 - on * 6, sy, 12 + on * 12, 1.6);
-      }
-      // racci
-      ctx.strokeStyle = "rgba(255,255,255,0.95)";
-      ctx.lineWidth = 2;
-      ctx.lineCap = "round";
-      for (const g of gulls) {
-        const x = (((g.x + t * g.v) % 1.1) - 0.05) * w;
-        const y = g.y * h + Math.sin(t * 0.7 + g.ph) * h * 0.012;
-        const flap = Math.sin(t * 6 + g.ph) * 6;
-        ctx.beginPath();
-        ctx.moveTo(x - 12, y + flap * 0.6);
-        ctx.quadraticCurveTo(x - 5, y - 6 - flap, x, y);
-        ctx.quadraticCurveTo(x + 5, y - 6 - flap, x + 12, y + flap * 0.6);
-        ctx.stroke();
-      }
-      // přední vlny: lodní kýl a pěna u pilot mola
+      const night = nightRef.current;
       fctx.clearRect(0, 0, w, h);
-      const [lx, ly] = scene.lod as number[];
-      const baseY = ly * h;
-      fctx.fillStyle = "rgba(34,150,215,0.9)";
-      fctx.beginPath();
-      fctx.moveTo(lx * w - w * 0.2, baseY + h * 0.04);
-      for (let x = lx * w - w * 0.2; x <= lx * w + w * 0.2; x += 8) fctx.lineTo(x, wave(x, baseY + 3, 3, t * 1.6, 0.05));
-      fctx.lineTo(lx * w + w * 0.2, baseY + h * 0.04);
-      fctx.closePath();
-      fctx.fill();
-      fctx.strokeStyle = "rgba(255,255,255,0.85)";
-      fctx.lineWidth = 2;
-      fctx.beginPath();
-      for (let x = lx * w - w * 0.2; x <= lx * w + w * 0.2; x += 8) {
-        const yy = wave(x, baseY + 3, 3, t * 1.6, 0.05);
-        if (x <= lx * w - w * 0.2 + 1) fctx.moveTo(x, yy);
-        else fctx.lineTo(x, yy);
-      }
-      fctx.stroke();
-      for (const [px, py] of scene.pena as number[][]) {
-        const k = (Math.sin(t * 1.6 + px * 30) + 1) / 2;
-        fctx.strokeStyle = `rgba(255,255,255,${0.35 + k * 0.4})`;
-        fctx.lineWidth = 2;
-        fctx.beginPath();
-        fctx.ellipse(px * w, py * h + h * 0.035, w * (0.012 + k * 0.006), h * 0.006, 0, 0, Math.PI * 2);
-        fctx.stroke();
+      if (def.scenery === "sea") {
+        drawSea(ctx, w, h, t, night);
+        drawSeaFront(fctx, w, h, t, night, data);
+      } else {
+        drawSpace(ctx, w, h, t);
+        drawSpaceFront(fctx, w, h, t, data);
       }
       if (visible && !reduced) raf = requestAnimationFrame(frame);
     };
@@ -198,28 +361,72 @@ function useSea(stage: React.RefObject<HTMLDivElement | null>, sea: React.RefObj
       ro.disconnect();
       io.disconnect();
     };
-  }, [stage, sea, front]);
+  }, [stage, back, front, nightRef, def, data]);
 }
 
 export function MarketWorld({ locale }: { locale: Locale }) {
   const t = getShopText(locale);
   const x = getShopExtraText(locale);
   const m = getMarketText(locale);
+  const ut = getUnlockText(locale);
+  const town = getTownText(locale);
   const [state, setState] = useState<State>({ status: "loading" });
   const [worldId, setWorldId] = useState<WorldId>("pirate");
+  const [inTown, setInTown] = useState(true);
+  const [unlockId, setUnlockId] = useState<WorldId | null>(null);
   const [open, setOpen] = useState<StallKey | null>(null);
   const [hover, setHover] = useState<StallKey | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
   const [popped, setPopped] = useState<{ id: string; stall: StallKey; n: number } | null>(null);
   const [gift, setGift] = useState<{ id: string; email: string } | null>(null);
-  const seq = useRef(0);
   const stage = useRef<HTMLDivElement>(null);
-  const sea = useRef<HTMLCanvasElement>(null);
+  const back = useRef<HTMLCanvasElement>(null);
   const front = useRef<HTMLCanvasElement>(null);
-  useSea(stage, sea, front);
+  const seq = useRef(0);
+  const [night, setNight] = useState(false);
+  const [shot, setShot] = useState<{ n: number; id: string } | null>(null);
+  const [talk, setTalk] = useState<{ id: string; text: string } | null>(null);
+  const nightRef = useRef(false);
 
   const world = WORLDS.find((w) => w.id === worldId) ?? WORLDS[0];
+  const def = world.scene ?? WORLDS[0].scene!;
+  const data = SCENES[world.id] ?? SCENES.pirate;
+  const wt = getWorldText(locale, world.id);
+  const dir = def.dir;
+  const dark = night && def.night;
+
+  useEffect(() => {
+    nightRef.current = dark;
+  }, [dark]);
+  useEffect(() => {
+    // hráč, který si noc jednou zapnul, ji najde zase zapnutou
+    const id = window.setTimeout(() => {
+      try {
+        if (window.localStorage.getItem("market-night") === "1") setNight(true);
+      } catch {}
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, []);
+  function toggleNight() {
+    setNight((v) => {
+      try {
+        window.localStorage.setItem("market-night", v ? "0" : "1");
+      } catch {}
+      return !v;
+    });
+  }
+  function fire(id: string) {
+    setShot({ n: ++seq.current, id });
+    window.setTimeout(() => setShot(null), 1700);
+  }
+  function say2(id: string) {
+    const lines = wt.talk[id]?.lines ?? [];
+    if (!lines.length) return;
+    setTalk({ id, text: lines[++seq.current % lines.length] });
+    window.setTimeout(() => setTalk(null), 2800);
+  }
+  useScenery(stage, back, front, nightRef, def, data);
 
   const load = useCallback(async () => {
     try {
@@ -319,6 +526,28 @@ export function MarketWorld({ locale }: { locale: Locale }) {
     return { have: list.filter((i) => owned.has(i.id)).length, total: list.length };
   };
 
+  const unlocked = (id: WorldId) => id === "pirate" || !!ready?.worlds?.includes(id);
+  function pickWorld(id: WorldId) {
+    const w = WORLDS.find((c) => c.id === id);
+    if (!w || !w.ready) return;
+    setOpen(null);
+    setHover(null);
+    setTalk(null);
+    setShot(null);
+    if (unlocked(id)) {
+      setWorldId(id);
+      setInTown(false);
+    } else setUnlockId(id);
+  }
+  async function unlockWorld(id: WorldId) {
+    const ok = await post({ action: "unlockWorld", id }, ut.done, `world-${id}`);
+    if (ok) {
+      setUnlockId(null);
+      setWorldId(id);
+      setInTown(false);
+    }
+  }
+
   const openDef = open ? world.stalls.find((s) => s.key === open) : null;
   const openItems = open ? stallItems(open) : [];
 
@@ -349,27 +578,33 @@ export function MarketWorld({ locale }: { locale: Locale }) {
     <div>
       <div className="mb-4">
         <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          🛍️ {m.worlds[worldId]}
+          🛍️ {inTown ? town.title : wt.title}
         </h1>
-        <p className="max-w-3xl text-[var(--muted)]">{m.subtitle}</p>
+        <p className="max-w-3xl text-[var(--muted)]">{inTown ? town.subtitle : wt.subtitle}</p>
       </div>
 
       <div className="mb-3 flex flex-wrap items-center gap-2" role="tablist" aria-label={m.title}>
+        <button role="tab" aria-selected={inTown} onClick={() => { setInTown(true); setOpen(null); setHover(null); }} className={`btn-bouncy flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold ${inTown ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface)]"}`}>
+          <span aria-hidden>🏘️</span>
+          {town.tab}
+        </button>
         {WORLDS.map((w) => {
-          const on = w.id === worldId;
+          const on = !inTown && w.id === worldId;
+          const lock = w.ready && !unlocked(w.id);
           return (
             <button
               key={w.id}
               role="tab"
               aria-selected={on}
               disabled={!w.ready}
-              title={w.ready ? undefined : `${m.soon} · ${m.worldHint.replace("{level}", String(w.unlock.level)).replace("{points}", String(w.unlock.points))}`}
-              onClick={() => w.ready && setWorldId(w.id)}
+              title={w.ready ? (lock ? m.worldHint.replace("{level}", String(w.unlock.level)).replace("{points}", String(w.unlock.points)) : undefined) : `${m.soon} · ${m.worldHint.replace("{level}", String(w.unlock.level)).replace("{points}", String(w.unlock.points))}`}
+              onClick={() => pickWorld(w.id)}
               className={`btn-bouncy flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold ${on ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface)]"} ${w.ready ? "" : "cursor-not-allowed opacity-55"}`}
             >
-              <span aria-hidden>{w.ready ? w.icon : "🔒"}</span>
+              <span aria-hidden>{w.ready && !lock ? w.icon : "🔒"}</span>
               {m.worlds[w.id]}
               {!w.ready && <span className="pill bg-[var(--surface-muted)] px-1.5 text-[10px]">{m.soon}</span>}
+              {lock && <span className="pill bg-[var(--surface-muted)] px-1.5 text-[10px]">{ut.locked}</span>}
             </button>
           );
         })}
@@ -388,40 +623,43 @@ export function MarketWorld({ locale }: { locale: Locale }) {
       )}
       {state.status === "unavailable" && <p className="mb-3 rounded-xl border-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-2 text-sm text-[var(--muted)]">{t.unavailable}</p>}
 
-      <div className="overflow-x-auto rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)]">
-        <div ref={stage} className="relative select-none overflow-hidden" style={{ aspectRatio: `${W} / ${H}`, minWidth: 880 }}>
-          <canvas ref={sea} aria-hidden className="absolute inset-0 h-full w-full" />
-          {/* loď */}
-          <div aria-hidden className="pointer-events-none absolute" style={{ left: `${scene.lod[0] * 100}%`, top: `${scene.lod[1] * 100}%`, width: "32%", aspectRatio: "640 / 512", transform: "translate(-50%, -78.1%)" }}>
-            <Sprite file="lod" n={12} dur={3.6} className="h-full w-full" />
+      {inTown && <MarketTown locale={locale} unlocked={unlocked} onEnter={pickWorld} />}
+      <div hidden={inTown} className="overflow-x-auto rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)]">
+        <div ref={stage} data-night={dark ? "" : undefined} data-world={world.id} className="market-stage relative select-none overflow-hidden" style={{ aspectRatio: `${W} / ${H}`, minWidth: 880 }}>
+          <canvas ref={back} aria-hidden className="absolute inset-0 h-full w-full" />
+          {/* hlavní předmět: loď nebo raketa */}
+          <div aria-hidden className="market-lit pointer-events-none absolute" style={{ left: `${data.lod[0] * 100}%`, top: `${data.lod[1] * 100}%`, width: `${def.prop.width}%`, aspectRatio: def.prop.ratio, transform: `translate(${def.prop.translate[0]}%, ${def.prop.translate[1]}%)` }}>
+            <Sprite dir={dir} file={def.prop.file} n={def.prop.n} dur={def.prop.dur} className="h-full w-full" />
           </div>
-          {/* zadní vrstva mola a stánků */}
+          {/* zadní vrstva podlahy a stánků */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`${DIR}/zadni.webp`} alt="" draggable={false} className="pointer-events-none absolute inset-0 h-full w-full" />
+          <img src={`${dir}/zadni.webp`} alt="" draggable={false} className="market-lit pointer-events-none absolute inset-0 h-full w-full" />
           <canvas ref={front} aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" />
           {/* obchodníci */}
           {world.stalls.filter((s) => s.npc).map((s, i) => {
-            const a = K[s.key];
+            const a = data.kotvy[s.key];
             return (
-              <div key={s.key} aria-hidden className="pointer-events-none absolute" style={{ left: `${a.npc[0] * 100}%`, top: `${a.npc[1] * 100}%`, width: `${NPC_W}%`, aspectRatio: "1 / 1", transform: `translate(-50%, -${NPC_FEET}%)` }}>
-                <Sprite file={s.npc} n={24} dur={3 + (i % 3) * 0.3} delay={-i * 0.7} className="h-full w-full" />
+              <div key={s.key} aria-hidden className="market-lit pointer-events-none absolute" style={{ left: `${a.npc[0] * 100}%`, top: `${a.npc[1] * 100}%`, width: `${NPC_W}%`, aspectRatio: "1 / 1", transform: `translate(-50%, -${NPC_FEET}%)` }}>
+                <Sprite dir={dir} file={s.npc} n={24} dur={3 + (i % 3) * 0.3} delay={-i * 0.7} className="h-full w-full" />
               </div>
             );
           })}
-          {/* papoušek na bidýlku a krab na molu */}
-          <div aria-hidden className="pointer-events-none absolute" style={{ left: `${scene.papousek[0] * 100}%`, top: `${scene.papousek[1] * 100}%`, width: "7.2%", aspectRatio: "1 / 1", transform: "translate(-50%, -63%)" }}>
-            <Sprite file="papousek" n={24} dur={4} className="h-full w-full" />
-          </div>
-          <div aria-hidden className="pointer-events-none absolute" style={{ left: `${scene.krab[0] * 100}%`, top: `${scene.krab[1] * 100}%`, width: "5.6%", aspectRatio: "1 / 1", transform: "translate(-50%, -63%)" }}>
-            <Sprite file="krab" n={24} dur={3.2} className="h-full w-full" />
-          </div>
-          {/* přední vrstva: pulty a sudy */}
+          {/* postavičky a zvířátka ve scéně */}
+          {def.extras.map((e, i) => {
+            const [ex, ey] = pt(data, e.anchor);
+            return (
+              <div key={e.file} aria-hidden className="market-lit pointer-events-none absolute" style={{ left: `${ex * 100}%`, top: `${ey * 100}%`, width: `${e.width}%`, aspectRatio: "1 / 1", transform: `translate(-50%, -${e.feet}%)` }}>
+                <Sprite dir={dir} file={e.file} n={e.n ?? 24} dur={e.dur} delay={-i * 0.9} className="h-full w-full" />
+              </div>
+            );
+          })}
+          {/* přední vrstva: pulty */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`${DIR}/predni.webp`} alt="" draggable={false} className="pointer-events-none absolute inset-0 h-full w-full" />
+          <img src={`${dir}/predni.webp`} alt="" draggable={false} className="market-lit pointer-events-none absolute inset-0 h-full w-full" />
 
           {/* koupené věci na pultech */}
           {STALL_KEYS.map((key) => {
-            const a = K[key];
+            const a = data.kotvy[key];
             const list = counterMinis(key);
             return (
               <div key={`m-${key}`} className="pointer-events-none absolute flex items-end justify-center gap-0.5" style={{ left: `${a.pult[0] * 100}%`, top: `${a.pult[1] * 100}%`, width: "11%", transform: "translate(-50%, -100%)" }}>
@@ -436,31 +674,31 @@ export function MarketWorld({ locale }: { locale: Locale }) {
 
           {/* cedule nad stánky */}
           {STALL_KEYS.map((key) => {
-            const a = K[key];
+            const a = data.kotvy[key];
             const c = countOf(key);
             return (
               <div key={`s-${key}`} className="pointer-events-none absolute z-[3] -translate-x-1/2 whitespace-nowrap rounded-md border-2 border-[#16132b] bg-[#3a2a1a] px-2 py-0.5 text-center text-[10px] font-extrabold leading-tight text-[#ffd76b] shadow-[0_2px_0_rgba(0,0,0,0.4)] sm:text-xs" style={{ left: `${a.nazev[0] * 100}%`, top: `${a.nazev[1] * 100}%` }}>
-                {m.stalls[key].name}
+                {wt.stalls[key].name}
                 <span className="block text-[9px] font-semibold text-white/80 sm:text-[10px]">{c.have}/{c.total}</span>
               </div>
             );
           })}
-          <div className="pointer-events-none absolute z-[3] -translate-x-1/2 whitespace-nowrap rounded-md border-2 border-[#16132b] bg-[#3a2a1a] px-2 py-0.5 text-[10px] font-extrabold text-[#ffd76b] sm:text-xs" style={{ left: `${scene.lod[0] * 100}%`, top: `${scene.lod[1] * 100 - 4}%` }}>
-            ⚓ {m.stalls.lod.name}
+          <div className="pointer-events-none absolute z-[3] -translate-x-1/2 whitespace-nowrap rounded-md border-2 border-[#16132b] bg-[#3a2a1a] px-2 py-0.5 text-[10px] font-extrabold text-[#ffd76b] sm:text-xs" style={{ left: `${data.lod[0] * 100}%`, top: `${data.lod[1] * 100 + def.prop.labelDy}%` }}>
+            ⚓ {wt.stalls.lod.name}
           </div>
 
           {/* bublina obchodníka */}
           {hover && hover !== "lod" && (
-            <div className="pointer-events-none absolute z-[5] max-w-[16rem] -translate-x-1/2 -translate-y-full rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1.5 text-center text-xs font-bold shadow-[0_3px_0_var(--shadow-ink)] sm:text-sm" style={{ left: `${K[hover].bublina[0] * 100}%`, top: `${K[hover].bublina[1] * 100}%` }}>
-              <span className="block text-[10px] font-extrabold text-[var(--brand-600)]">{m.stalls[hover].npc}</span>
-              {m.stalls[hover].hello[0]}
+            <div className="pointer-events-none absolute z-[5] max-w-[16rem] -translate-x-1/2 -translate-y-full rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1.5 text-center text-xs font-bold shadow-[0_3px_0_var(--shadow-ink)] sm:text-sm" style={{ left: `${data.kotvy[hover].bublina[0] * 100}%`, top: `${data.kotvy[hover].bublina[1] * 100}%` }}>
+              <span className="block text-[10px] font-extrabold text-[var(--brand-600)]">{wt.stalls[hover].npc}</span>
+              {wt.stalls[hover].hello[0]}
             </div>
           )}
 
           {/* právě koupená věc dopadne na pult */}
           {popped && (() => {
             const item = SHOP_ITEMS.find((i) => i.id === popped.id);
-            const a = K[popped.stall];
+            const a = data.kotvy[popped.stall];
             if (!item || !a) return null;
             return (
               <div key={popped.n} className="market-drop pointer-events-none absolute z-[6] -translate-x-1/2" style={{ left: `${a.pult[0] * 100}%`, top: `${a.pult[1] * 100}%` }}>
@@ -472,28 +710,67 @@ export function MarketWorld({ locale }: { locale: Locale }) {
             );
           })()}
 
-          {/* neviditelná tlačítka stánků a lodi */}
-          {world.stalls.map((s) => {
-            const a = s.key === "lod" ? null : K[s.key];
+          {/* neviditelná tlačítka stánků a hlavního předmětu */}
+          {[...world.stalls].sort((a, b) => Number(b.key === "lod") - Number(a.key === "lod")).map((s) => {
+            const isProp = s.key === "lod";
+            const a = isProp ? null : data.kotvy[s.key];
+            const [hx, hy, hw, hh] = def.prop.hit;
             const style = a
               ? { left: `${a.pult[0] * 100 - 6.9}%`, top: `${a.strecha[1] * 100 - 4}%`, width: "13.8%", height: `${(a.pult[1] - a.strecha[1]) * 100 + 14}%` }
-              : { left: `${scene.lod[0] * 100 - 13}%`, top: `${scene.lod[1] * 100 - 26}%`, width: "26%", height: "28%" };
+              : { left: `${data.lod[0] * 100 + hx}%`, top: `${data.lod[1] * 100 + hy}%`, width: `${hw}%`, height: `${hh}%` };
             return (
               <button
                 key={s.key}
                 type="button"
-                aria-label={`${m.stalls[s.key].name}: ${m.open}`}
+                aria-label={`${wt.stalls[s.key].name}: ${m.open}`}
                 onClick={() => setOpen(s.key)}
                 onMouseEnter={() => setHover(s.key)}
                 onMouseLeave={() => setHover((h) => (h === s.key ? null : h))}
                 onFocus={() => setHover(s.key)}
                 onBlur={() => setHover((h) => (h === s.key ? null : h))}
-                className={`market-hit absolute z-10 rounded-2xl outline-none focus-visible:ring-4 focus-visible:ring-[var(--accent-yellow)] ${hover === s.key ? "market-hit-on" : ""}`}
+                className={`market-hit absolute ${isProp ? "z-[9]" : "z-10"} rounded-2xl outline-none focus-visible:ring-4 focus-visible:ring-[var(--accent-yellow)] ${hover === s.key ? "market-hit-on" : ""}`}
                 style={style}
               />
             );
           })}
 
+          {def.night && (
+            <button type="button" onClick={toggleNight} aria-pressed={night} title={night ? m.day : m.night} className="absolute right-3 top-3 z-20 flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110">
+              <span aria-hidden>{night ? "☀️" : "🌙"}</span>
+              <span className="sr-only">{night ? m.day : m.night}</span>
+            </button>
+          )}
+          {/* klikací věci: kanón či sonda vystřelí, postavy promluví */}
+          {def.interactive.map((it) => {
+            const [ix, iy] = pt(data, it.anchor);
+            const label = it.kind === "fire" ? wt.fireLabel : wt.talk[it.id]?.label ?? it.id;
+            return (
+              <button key={it.id} type="button" aria-label={label} title={label} onClick={() => (it.kind === "fire" ? fire(it.id) : say2(it.id))} className="market-hit absolute z-10 rounded-full" style={{ left: `${ix * 100 + it.dx}%`, top: `${iy * 100 + it.dy}%`, width: `${it.w}%`, height: `${it.h}%` }} />
+            );
+          })}
+          {shot && (() => {
+            const it = def.interactive.find((c) => c.id === shot.id);
+            if (!it) return null;
+            const [sx, sy] = pt(data, it.anchor);
+            const laser = def.scenery === "space";
+            return (
+              <div key={shot.n} className="pointer-events-none absolute z-[8]" style={{ left: `${sx * 100}%`, top: `${sy * 100}%`, ["--dx" as string]: it.dir ?? -1 }}>
+                <i className="market-puff" />
+                <i className={`market-ball ${laser ? "market-laser" : ""}`} />
+                <span className="market-boom absolute -left-12 -top-10 text-2xl font-black text-[#ffd76b] [text-shadow:0_2px_0_#16132b]">{wt.boom}</span>
+              </div>
+            );
+          })()}
+          {talk && (() => {
+            const it = def.interactive.find((c) => c.id === talk.id);
+            if (!it) return null;
+            const [tx, ty] = pt(data, it.anchor);
+            return (
+              <div className="pointer-events-none absolute z-[7] max-w-[12rem] -translate-x-1/2 -translate-y-full rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-center text-xs font-extrabold" style={{ left: `${tx * 100}%`, top: `${ty * 100 + it.dy}%` }}>
+                {talk.text}
+              </div>
+            );
+          })()}
           {toast && (
             <div role="status" className={`absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full border-2 border-[var(--edge)] px-4 py-2 text-sm font-bold shadow-[0_3px_0_var(--shadow-ink)] ${toast.ok ? "bg-[var(--accent-green)] text-[#16132b]" : "bg-[var(--danger)] text-white"}`}>
               {toast.text}
@@ -503,10 +780,10 @@ export function MarketWorld({ locale }: { locale: Locale }) {
       </div>
 
       {/* rychlá volba stánků (hlavně pro telefony) */}
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div hidden={inTown} className="mt-3 flex flex-wrap gap-2">
         {world.stalls.map((s) => (
           <button key={s.key} type="button" onClick={() => setOpen(s.key)} className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
-            {m.stalls[s.key].name}
+            {wt.stalls[s.key].name}
             <span className="ml-1 text-xs font-semibold text-[var(--muted)]">
               {countOf(s.key).have}/{countOf(s.key).total}
             </span>
@@ -518,8 +795,8 @@ export function MarketWorld({ locale }: { locale: Locale }) {
       </div>
 
       {open && openDef && (
-        <Modal title={`${m.stalls[open].name} · ${m.stalls[open].npc}`} onClose={() => setOpen(null)} closeLabel={m.close}>
-          <p className="mb-3 rounded-xl bg-[var(--surface-muted)] px-3 py-2 text-sm font-semibold">„{m.stalls[open].hello[(open.length + openItems.length) % m.stalls[open].hello.length]}“</p>
+        <Modal title={`${wt.stalls[open].name} · ${wt.stalls[open].npc}`} onClose={() => setOpen(null)} closeLabel={m.close}>
+          <p className="mb-3 rounded-xl bg-[var(--surface-muted)] px-3 py-2 text-sm font-semibold">„{wt.stalls[open].hello[(open.length + openItems.length) % wt.stalls[open].hello.length]}“</p>
           <p className="mb-3 text-xs text-[var(--muted)]">{m.owned.replace("{n}", String(countOf(open).have)).replace("{total}", String(countOf(open).total))} · ⭐ {points}</p>
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {openItems.map((item) => {
@@ -588,6 +865,25 @@ export function MarketWorld({ locale }: { locale: Locale }) {
           </ul>
         </Modal>
       )}
+
+      {unlockId && (() => {
+        const w = WORLDS.find((c) => c.id === unlockId);
+        if (!w) return null;
+        const lvl = ready?.level ?? 0;
+        const needLevel = lvl < w.unlock.level;
+        const missing = w.unlock.points - points;
+        return (
+          <Modal title={`${w.icon} ${ut.title}`} onClose={() => setUnlockId(null)} closeLabel={m.close}>
+            <p className="mb-3 text-sm font-semibold">{ut.text.replace("{name}", m.worlds[w.id]).replace("{level}", String(w.unlock.level)).replace("{points}", String(w.unlock.points))}</p>
+            {!ready && <p className="mb-3 text-sm text-[var(--muted)]">{m.loginHint}</p>}
+            {ready && needLevel && <p className="mb-3 text-sm font-bold text-[var(--danger)]">{ut.needLevel.replace("{level}", String(w.unlock.level))}</p>}
+            {ready && !needLevel && missing > 0 && <p className="mb-3 text-sm font-bold text-[var(--danger)]">{ut.needPoints.replace("{n}", String(missing))}</p>}
+            <button type="button" disabled={!ready || busy !== null || needLevel || missing > 0} onClick={() => unlockWorld(w.id)} className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-45">
+              {ut.button.replace("{points}", String(w.unlock.points))}
+            </button>
+          </Modal>
+        );
+      })()}
 
       {gift && (() => {
         const item = SHOP_ITEMS.find((i) => i.id === gift.id);
