@@ -4,6 +4,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 from panenky_wear2 import *  # noqa: E402,F401,F403
+from panenky_rig import *  # noqa: E402,F401,F403
 import panenky3d as legacy  # noqa: E402
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -78,15 +79,18 @@ def materials(doll):
 def bake_scene_ao():
     """Ambient occlusion do vrcholových barev všech sítí (kontaktní stíny ve švech a pod oblečením)."""
     bpy.context.view_layer.update()
-    skip = ("cornea", "eyeball", "lid", "lash", "makeup_face", "wing", "helmet_glass", "visor", "tulle", "lens")
+    skip = ("cornea", "eyeball", "lid", "lash", "makeup_face", "head_skin", "wing", "helmet_glass", "visor", "tulle", "lens")
     objs = [o for o in bpy.data.objects if o.type == "MESH"]
     tree = bvh_of([o for o in objs if not any(k in o.name for k in ("cornea", "wing", "helmet_glass", "visor", "tulle", "lens", "makeup_face"))])
     import time
     t0 = time.time()
     for o in objs:
         if any(k in o.name for k in skip):
+            col = o.data.color_attributes.new("AO", "FLOAT_COLOR", "POINT")
+            col.data.foreach_set("color", [1.0] * (4 * len(o.data.vertices)))
+            o.data.color_attributes.active_color = col
             continue
-        bake_ao(o, tree, rays=10, dist=0.045, strength=0.62)
+        bake_ao(o, tree, rays=10, dist=0.045, strength=0.5)
     print("AO", round(time.time() - t0, 1), "s")
 
 
@@ -115,9 +119,11 @@ def build(did):
     mk = node("slot_makeup", root)
     head_mesh("makeup_face", mats["makeup"], mk, off=0.0012)
     bake_scene_ao()
+    style = {"princess": "twirl", "athlete": "pump", "rocker": "rock", "fairy": "flutter", "chef": "chef", "astronaut": "astro"}[did]
+    rig_scene(style)
     os.makedirs(OUTDIR, exist_ok=True)
     path = os.path.join(OUTDIR, f"panenka-{did}.glb")
-    kw = dict(filepath=path, export_format="GLB", use_selection=False, export_apply=False, export_yup=True, export_materials="EXPORT", export_morph=True,
+    kw = dict(filepath=path, export_format="GLB", use_selection=False, export_apply=False, export_yup=True, export_materials="EXPORT", export_morph=True, export_skins=True, export_animations=True, export_animation_mode="NLA_TRACKS", export_optimize_animation_size=True,
               export_image_format="JPEG", export_vertex_color="ACTIVE", export_draco_mesh_compression_enable=True, export_draco_mesh_compression_level=7)
     bpy.ops.export_scene.gltf(**kw)
     print("OK", path, os.path.getsize(path))

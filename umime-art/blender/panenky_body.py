@@ -4,11 +4,16 @@ import random
 
 from panenky_lib import *  # noqa: F401,F403
 
-CZ, CY = 1.82, 0.005  # střed hlavy
+CZ0, CY = 1.82, 0.005  # střed hlavy v lokálním (nezvětšeném) souřadnicovém systému
+DZ = 0.075  # posun zvětšené hlavy nahoru, aby brada zůstala nad krkem
+CZ = CZ0 + DZ  # střed hlavy ve výsledné scéně
 HA, HB, HC = 0.098, 0.113, 0.134  # poloosy lebky
-EYE_X, EYE_Z = 0.034, 1.836
-MOUTH_Z, MOUTH_HW = 1.742, 0.027
-HS = 1.14  # zvětšení hlavy kolem jejího středu (půvabnější proporce panenky)
+EYE_X, EYE_Z = 0.041, 1.824
+BROW_Z = 1.874
+EYE_R = 0.0262
+MOUTH_Z, MOUTH_HW = 1.738, 0.022
+HS = 1.42  # zvětšení hlavy kolem jejího středu (styl animovaného filmu)
+HR = HS / 1.14  # poměr vůči původním pevným rozměrům pokrývek hlavy
 EYE_INFO = {}
 S = 1024  # textura obličeje
 TEXW = 0.28
@@ -16,8 +21,8 @@ TEXW = 0.28
 
 # ---------------------------------------------------------------- hlava
 def hs(P):
-    C = np.array([0.0, CY, CZ])
-    return C + (np.asarray(P, dtype=float) - C) * HS
+    C = np.array([0.0, CY, CZ0])
+    return C + (np.asarray(P, dtype=float) - C) * HS + np.array([0.0, 0.0, DZ])
 
 
 def head_points(TH, PH, off=0.0, mood=None):
@@ -26,55 +31,55 @@ def head_points(TH, PH, off=0.0, mood=None):
     dy = -np.cos(PH) * np.cos(TH)
     dz = np.sin(PH)
     t = smooth(0.25, -0.85, dz)
-    sx = 1 - 0.32 * t ** 1.25 + 0.05 * gauss((dz + 0.1) / 0.35)
+    sx = 1 - 0.22 * t ** 1.3 + 0.05 * gauss((dz + 0.1) / 0.35)
     back = smooth(0.0, 0.9, dy)
     x = HA * dx * sx
     y = CY + HB * dy * (1 + 0.07 * back) * (1 - 0.06 * t)
-    z = CZ + HC * dz
+    z = CZ0 + HC * dz
     # brada vpřed, plošší spodek čelisti
     front = smooth(-0.1, -0.55, dy)
-    y -= 0.010 * smooth(-0.35, -0.85, dz) * front
+    y -= 0.004 * smooth(-0.35, -0.85, dz) * front
     fx, fz = x, z
     wf = front
     d = np.zeros_like(x)  # posun po y (záporné = ven)
     # čelo a lícní kosti
-    d -= 0.004 * gauss((fz - 1.775) / 0.03) * gauss((np.abs(fx) - 0.057) / 0.03)
+    d -= 0.010 * gauss((fz - 1.765) / 0.036) * gauss((np.abs(fx) - 0.058) / 0.034)
     # oční důlky
     for s in (-1, 1):
         r = np.sqrt((fx - s * EYE_X) ** 2 + (fz - EYE_Z) ** 2)
-        d += 0.0075 * gauss(r / 0.027)
-    d -= 0.005 * gauss((fz - 1.866) / 0.012) * gauss((np.abs(fx) - 0.04) / 0.035)  # obočí
+        d += 0.0085 * gauss(r / 0.036)
+    d -= 0.004 * gauss((fz - BROW_Z) / 0.012) * gauss((np.abs(fx) - 0.045) / 0.035)  # obočí
     # nos
-    hz = np.interp(fz, [1.70, 1.76, 1.775, 1.788, 1.80, 1.82, 1.84, 1.86], [0, 0.004, 0.015, 0.027, 0.023, 0.015, 0.008, 0.001])
+    hz = 0.55 * np.interp(fz, [1.70, 1.76, 1.775, 1.788, 1.80, 1.82, 1.84, 1.86], [0, 0.004, 0.015, 0.027, 0.023, 0.015, 0.008, 0.001])
     wz = np.interp(fz, [1.77, 1.79, 1.82, 1.85], [0.020, 0.016, 0.010, 0.013])
     d -= hz * gauss(fx / wz)
     for s in (-1, 1):
-        d -= 0.010 * gauss(np.sqrt((fx - s * 0.015) ** 2 + (fz - 1.789) ** 2) / 0.0085)
+        d -= 0.005 * gauss(np.sqrt((fx - s * 0.013) ** 2 + (fz - 1.775) ** 2) / 0.0075)
     # rty
-    d -= 0.0068 * gauss((fz - 1.7485) / 0.0062) * gauss(fx / 0.024)  # horní ret
-    d -= 0.0078 * gauss((fz - 1.7345) / 0.0075) * gauss(fx / 0.022)  # dolní ret
-    d += 0.0030 * gauss((fz - 1.7418) / 0.0017) * gauss(fx / 0.030)  # linie úst
-    d -= 0.006 * gauss((fz - 1.690) / 0.014) * gauss(fx / 0.02)  # brada
-    d += 0.002 * gauss((fz - 1.757) / 0.004) * gauss(fx / 0.006)  # důlek nad rtem
+    d -= 0.0050 * gauss((fz - 1.7445) / 0.0055) * gauss(fx / 0.020)  # horní ret
+    d -= 0.0060 * gauss((fz - 1.731) / 0.0065) * gauss(fx / 0.018)  # dolní ret
+    d += 0.0025 * gauss((fz - 1.7378) / 0.0016) * gauss(fx / 0.026)  # linie úst
+    d -= 0.004 * gauss((fz - 1.685) / 0.014) * gauss(fx / 0.02)  # brada
+    d += 0.0015 * gauss((fz - 1.752) / 0.004) * gauss(fx / 0.006)  # důlek nad rtem
     y = y + d * wf
     # nálady
     dz_m = np.zeros_like(x)
     dx_m = np.zeros_like(x)
     dy_m = np.zeros_like(x)
     if mood == "happy":
-        corner = gauss((np.abs(fx) - 0.027) / 0.011) * gauss((fz - 1.742) / 0.013) * wf
-        dz_m += 0.0125 * corner + 0.004 * gauss((np.abs(fx) - 0.055) / 0.02) * gauss((fz - 1.776) / 0.02) * wf
+        corner = gauss((np.abs(fx) - 0.022) / 0.010) * gauss((fz - MOUTH_Z) / 0.013) * wf
+        dz_m += 0.0125 * corner + 0.004 * gauss((np.abs(fx) - 0.055) / 0.02) * gauss((fz - 1.768) / 0.02) * wf
         dx_m += np.sign(fx) * 0.0045 * corner
-        dy_m += 0.002 * gauss(fx / 0.03) * gauss((fz - 1.74) / 0.012) * wf  # úsměv: ústa se mírně vyboulí
-        dz_m -= 0.002 * gauss(fx / 0.02) * gauss((fz - 1.7345) / 0.008) * wf
-        dz_m += 0.0035 * gauss((np.abs(fx) - 0.045) / 0.02) * gauss((fz - 1.862) / 0.012) * wf  # obočí nahoru
+        dy_m += 0.002 * gauss(fx / 0.03) * gauss((fz - MOUTH_Z) / 0.012) * wf  # úsměv: ústa se mírně vyboulí
+        dz_m -= 0.002 * gauss(fx / 0.02) * gauss((fz - (MOUTH_Z - 0.006)) / 0.008) * wf
+        dz_m += 0.0035 * gauss((np.abs(fx) - 0.045) / 0.02) * gauss((fz - (BROW_Z - 0.004)) / 0.012) * wf  # obočí nahoru
     elif mood == "sad":
-        corner = gauss((np.abs(fx) - 0.027) / 0.011) * gauss((fz - 1.742) / 0.013) * wf
+        corner = gauss((np.abs(fx) - 0.022) / 0.010) * gauss((fz - MOUTH_Z) / 0.013) * wf
         dz_m -= 0.011 * corner
-        dz_m += 0.003 * gauss(fx / 0.02) * gauss((fz - 1.7345) / 0.008) * wf
-        dz_m += 0.0155 * gauss((np.abs(fx) - 0.018) / 0.013) * gauss((fz - 1.868) / 0.013) * wf  # vnitřní obočí nahoru
-        dz_m -= 0.006 * gauss((np.abs(fx) - 0.062) / 0.016) * gauss((fz - 1.866) / 0.013) * wf  # vnější dolů
-        dz_m -= 0.003 * gauss(fx / 0.02) * gauss((fz - 1.69) / 0.012) * wf  # brada se krčí
+        dz_m += 0.003 * gauss(fx / 0.02) * gauss((fz - (MOUTH_Z - 0.006)) / 0.008) * wf
+        dz_m += 0.0155 * gauss((np.abs(fx) - 0.018) / 0.013) * gauss((fz - (BROW_Z + 0.001)) / 0.013) * wf  # vnitřní obočí nahoru
+        dz_m -= 0.006 * gauss((np.abs(fx) - 0.062) / 0.016) * gauss((fz - BROW_Z) / 0.013) * wf  # vnější dolů
+        dz_m -= 0.003 * gauss(fx / 0.02) * gauss((fz - 1.685) / 0.012) * wf  # brada se krčí
     P = np.stack([x + dx_m, y + dy_m, z + dz_m], axis=-1)
     if np.any(off):
         off = np.asarray(off, dtype=float)
@@ -95,7 +100,7 @@ def head_mesh(name, mat, parent, off=0.0, n=80, m=60, moods=("happy", "sad")):
     cap1 = head_points(np.array([0.0]), np.array([math.pi / 2]), off)[0]
     V, F, _ = ring_grid(R, True, cap0=cap0, cap1=cap1)
     # frontální UV (obličej se mapuje jako z fotky zepředu)
-    uv = np.stack([0.5 + V[:, 0] / TEXW, 0.5 + (V[:, 2] - CZ) / TEXW], axis=1)
+    uv = np.stack([0.5 + V[:, 0] / TEXW, 0.5 + (V[:, 2] - CZ0) / TEXW], axis=1)
     loop_uv = []
     for f in F:
         loop_uv += [tuple(uv[i]) for i in f]
@@ -113,7 +118,7 @@ def head_mesh(name, mat, parent, off=0.0, n=80, m=60, moods=("happy", "sad")):
 
 
 def px(x, z):
-    return (0.5 + x / TEXW) * S, (1 - (0.5 + (z - CZ) / TEXW)) * S
+    return (0.5 + x / TEXW) * S, (1 - (0.5 + (z - CZ0) / TEXW)) * S
 
 
 def lip_polygon(scale=1.0):
@@ -146,9 +151,9 @@ def draw_ellipse(layer, cx, cz, rx, rz, fill, blur=6):
 
 def brow_poly(s, thick=1.0):
     ts = np.linspace(0, 1, 14)
-    xs = s * (0.012 + ts * 0.058)
-    zs = 1.867 + 0.013 * np.sin(ts * math.pi * 0.85) - 0.012 * ts ** 2
-    th = (0.0042 - 0.0030 * ts) * thick
+    xs = s * (0.016 + ts * 0.062)
+    zs = BROW_Z + 0.013 * np.sin(ts * math.pi * 0.85) - 0.012 * ts ** 2
+    th = (0.0058 - 0.0040 * ts) * thick
     top = [(x, z + t) for x, z, t in zip(xs, zs, th)]
     bot = [(x, z - t) for x, z, t in zip(xs[::-1], zs[::-1], th[::-1])]
     return top + bot
@@ -158,18 +163,18 @@ def skin_face_texture(skin, hair, name):
     rng = np.random.default_rng(7)
     base = np.array(hex_rgb(skin)) * 255
     nz = noise_field(S, 24, 3) * 0.6 + noise_field(S, 6, 4) * 0.4
-    arr = base[None, None, :] * (0.985 + 0.03 * nz[..., None])
+    arr = base[None, None, :] * (0.995 + 0.01 * nz[..., None])
     img = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)).convert("RGBA")
     sk = np.array(hex_rgb(skin))
     warm = tuple(int(c) for c in np.clip(sk * 255 * np.array([1.0, 0.72, 0.72]), 0, 255))
     # tváře, špička nosu, kruhy pod očima
-    draw_ellipse(img, 0.058, 1.776, 0.026, 0.017, warm + (110,), 11)
-    draw_ellipse(img, -0.058, 1.776, 0.026, 0.017, warm + (110,), 11)
-    draw_ellipse(img, 0.0, 1.790, 0.012, 0.010, warm + (120,), 6)
+    draw_ellipse(img, 0.060, 1.765, 0.030, 0.020, warm + (150,), 12)
+    draw_ellipse(img, -0.060, 1.765, 0.030, 0.020, warm + (150,), 12)
+    draw_ellipse(img, 0.0, 1.778, 0.010, 0.008, warm + (110,), 5)
     dark = tuple(int(c) for c in np.clip(sk * 255 * 0.82, 0, 255))
     for s in (-1, 1):
-        draw_ellipse(img, s * EYE_X, EYE_Z - 0.0155, 0.018, 0.005, dark + (80,), 6)
-        draw_ellipse(img, s * EYE_X, EYE_Z + 0.013, 0.02, 0.004, dark + (70,), 5)  # řasová linie / záhyb víčka
+        draw_ellipse(img, s * EYE_X, EYE_Z - 0.0245, 0.028, 0.006, dark + (60,), 6)
+        draw_ellipse(img, s * EYE_X, EYE_Z + 0.022, 0.030, 0.005, dark + (80,), 5)  # řasová linie / záhyb víčka
     lip = tuple(int(c) for c in np.clip(sk * 255 * np.array([1.0, 0.55, 0.58]) + np.array([10, 0, 5]), 0, 255))
     draw_poly(img, lip_polygon(), lip + (235,), 2)
     ln = tuple(int(c) for c in np.clip(sk * 255 * 0.55, 0, 255))
@@ -189,20 +194,20 @@ def makeup_texture(doll, name):
     bl = tuple(int(c * 255) for c in hex_rgb(blush))
     lp = tuple(int(c * 255) for c in hex_rgb(lips))
     for s in (-1, 1):
-        draw_ellipse(img, s * (EYE_X + 0.002), EYE_Z + 0.010, 0.0235, 0.0105, sh + (165,), 5)
-        draw_ellipse(img, s * (EYE_X + 0.014), EYE_Z + 0.007, 0.012, 0.008, tuple(int(c * 0.65) for c in sh) + (120,), 4)
-        draw_ellipse(img, s * 0.062, 1.774, 0.024, 0.015, bl + (140,), 10)
+        draw_ellipse(img, s * (EYE_X + 0.002), EYE_Z + 0.018, 0.034, 0.014, sh + (165,), 5)
+        draw_ellipse(img, s * (EYE_X + 0.020), EYE_Z + 0.014, 0.016, 0.010, tuple(int(c * 0.65) for c in sh) + (120,), 4)
+        draw_ellipse(img, s * 0.064, 1.762, 0.028, 0.018, bl + (150,), 11)
         # oční linka s křidélkem
-        xs = np.linspace(-0.0185, 0.0215, 16)
-        line = [(s * (EYE_X + x), EYE_Z + 0.0085 + 0.004 * (1 - ((x - 0.002) / 0.0205) ** 2) + max(0, x - 0.016) * 0.9) for x in xs]
+        xs = np.linspace(-0.027, 0.031, 16)
+        line = [(s * (EYE_X + x), EYE_Z + 0.0125 + 0.006 * (1 - ((x - 0.002) / 0.029) ** 2) + max(0, x - 0.023) * 0.9) for x in xs]
         poly = [(x, z + 0.0014) for x, z in line] + [(x, z - 0.0009) for x, z in line[::-1]]
         draw_poly(img, poly, (25, 18, 35, 235), 1.0)
     rnd = random.Random(5)
     d = ImageDraw.Draw(img)
-    for _ in range(16):
+    for _ in range(10):
         sgn = rnd.choice((-1, 1))
-        x = sgn * (EYE_X + rnd.uniform(-0.02, 0.026))
-        z = EYE_Z + rnd.uniform(0.004, 0.022)
+        x = sgn * (EYE_X + rnd.uniform(-0.028, 0.036))
+        z = EYE_Z + rnd.uniform(0.008, 0.034)
         cx, cy = px(x, z)
         d.ellipse([cx - 1.0, cy - 1.0, cx + 1.0, cy + 1.0], fill=(255, 255, 255, 150))
     draw_poly(img, lip_polygon(1.02), lp + (245,), 1.6)
@@ -234,18 +239,30 @@ def eye_texture(iris, name):
     img[:] = sclera
     rad = yy * 2.0  # 0..1 až do rovníku
     streak = 0.75 + 0.25 * np.sin(xx * 2 * math.pi * 38 + rng.random() * 6) * np.sin(xx * 2 * math.pi * 11)
-    iris_mask = (rad < 0.36).astype(np.float32)
-    ring = smooth(0.30, 0.37, rad)
+    iris_mask = (rad < 0.50).astype(np.float32)
+    ring = smooth(0.42, 0.51, rad)
     col = ic[None, None, :] * (0.55 + 0.6 * streak[..., None]) * (1 - 0.65 * ring[..., None]) * (0.7 + 0.5 * smooth(0.05, 0.2, rad)[..., None] * 0.6)
-    pupil = (rad < 0.13).astype(np.float32)
+    pupil = (rad < 0.20).astype(np.float32)
     img = img * (1 - iris_mask[..., None]) + col * iris_mask[..., None]
     img = img * (1 - pupil[..., None]) + 8 * pupil[..., None]
+    img_pil = Image.fromarray(np.clip(img, 0, 255).astype(np.uint8))
     path = os.path.join(TEXDIR, name)
-    Image.fromarray(np.clip(img, 0, 255).astype(np.uint8)).save(path)  # řádek 0 obrázku = v 1 = přední pól
+    img_pil.save(path)  # řádek 0 obrázku = v 1 = přední pól
     return path
 
 
 # ---------------------------------------------------------------- oči, uši, řasy
+def add_blink(o, c, theta):
+    """Shape key mrknutí: víčko se otočí kolem vodorovné osy oka přes oční bulvu."""
+    o.shape_key_add(name="Basis")
+    sk = o.shape_key_add(name="blink")
+    P = np.array([tuple(v.co) for v in o.data.vertices]) - np.asarray(c)
+    y = P[:, 1] * math.cos(theta) - P[:, 2] * math.sin(theta)
+    z = P[:, 1] * math.sin(theta) + P[:, 2] * math.cos(theta)
+    Q = np.stack([P[:, 0], y, z], axis=1) + np.asarray(c)
+    sk.data.foreach_set("co", Q.reshape(-1).tolist())
+
+
 def sphere_axis(center, r, n=40, m=28, axis=(0, -1, 0), a0=0.0, a1=math.pi, b0=0.0, b1=2 * math.pi, closed=True, mat=None, name="sph", parent=None, offr=0.0):
     """Kulový pás s pólem ve směru axis (α od pólu, β kolem osy). v = 1 - α/π (přední pól nahoře v textuře)."""
     ax = np.asarray(axis, dtype=float)
@@ -294,16 +311,18 @@ def build_face_parts(root, doll, mats, tree):
     """Oči (bulbus + rohovka), víčka, řasy a uši. Vrací skupinu uzlů."""
     g = node("face_parts", root)
     for s in (-1, 1):
-        ex, ez = s * EYE_X * HS, CZ + (EYE_Z - CZ) * HS
+        ex, ez = s * EYE_X * HS, float(hs((0.0, CY, EYE_Z))[2])
         ys = head_surface_y(tree, ex, ez)
         EYE_INFO.update(y=ys, z=ez)
-        R = 0.0172 * HS
+        R = EYE_R * HS
         c = (ex, ys + 0.0105 * HS, ez)
         sphere_axis(c, R, n=44, m=30, mat=mats["eye"], name="eyeball", parent=g)
         sphere_axis(c, R, n=44, m=18, a1=1.2, mat=mats["cornea"], name="cornea", parent=g, offr=0.0009)
         lid = R + 0.0014
-        sphere_axis(c, lid, n=26, m=14, a0=0.42, a1=1.62, b0=math.pi + 0.10, b1=2 * math.pi - 0.10, closed=False, mat=mats["lid"], name="lid_up", parent=g)
-        sphere_axis(c, lid, n=26, m=14, a0=0.62, a1=1.62, b0=0.16, b1=math.pi - 0.16, closed=False, mat=mats["lid"], name="lid_dn", parent=g)
+        lu = sphere_axis(c, lid, n=26, m=14, a0=0.42, a1=1.62, b0=math.pi + 0.10, b1=2 * math.pi - 0.10, closed=False, mat=mats["lid"], name="lid_up", parent=g)
+        ld = sphere_axis(c, lid, n=26, m=14, a0=0.62, a1=1.62, b0=0.16, b1=math.pi - 0.16, closed=False, mat=mats["lid"], name="lid_dn", parent=g)
+        add_blink(lu, c, 0.74)
+        add_blink(ld, c, -0.22)
         # řasy: štíhlé zahnuté proužky podél horního víčka (jen z horní poloviny)
         ax = np.array([0, -1.0, 0])
         e1 = np.array([1.0, 0, 0])
@@ -313,12 +332,12 @@ def build_face_parts(root, doll, mats, tree):
             a = 0.43
             d0 = math.cos(a) * ax + math.sin(a) * (math.cos(b) * e1 + math.sin(b) * e2)
             outer = s * math.cos(b) > 0.2  # vnější okraj oka: delší řasy
-            L = (0.0105 if outer else 0.0075) * HS * (0.75 + 0.25 * math.sin(b))
+            L = (0.0105 if outer else 0.0075) * HS * 1.35 * (0.75 + 0.25 * math.sin(b))
             base = np.asarray(c) + lid * d0
             tdir = ax * 0.6 + d0 * 0.55 + e2 * 0.15
             pts = [base + (tdir + e2 * 0.55 * u * u) * L * u for u in np.linspace(0, 1, 5)]
             tube(pts, [0.0011, 0.0010, 0.0008, 0.0005, 0.0001], [0.0004] * 5, n=4, mat=mats["lash"], name="lash", parent=g, cap=False)
-        ellipsoid(hs((s * (HA - 0.003), 0.012, CZ - 0.004)), (0.0078 * HS, 0.016 * HS, 0.025 * HS), rot_z=-s * 0.35, n=20, m=12, mat=mats["skin_body"], name="ear", parent=g)
+        ellipsoid(hs((s * (HA - 0.003), 0.012, CZ0 - 0.004)), (0.0078 * HS, 0.016 * HS, 0.025 * HS), rot_z=-s * 0.35, n=20, m=12, mat=mats["skin_body"], name="ear", parent=g)
     return g
 
 
