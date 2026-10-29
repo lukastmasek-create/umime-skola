@@ -280,20 +280,25 @@ def svet():
     """Plachetnice (12 snímků) a statické náhledy ostrovů pro CourseWorld do public/home/svet a globe."""
     dest_dir = os.path.join(DEST, "..", "svet")
     os.makedirs(dest_dir, exist_ok=True)
-    strip("svet_lod", "../svet/plachetnice.webp", frames("svet_lod")[0].size, quality=84)
+    if glob.glob(os.path.join(ROOT, "out", "svet_lod", "f_*.png")):
+        strip("svet_lod", "../svet/plachetnice.webp", frames("svet_lod")[0].size, quality=84)
     gdir = os.path.join(DEST, "..", "globe")
-    for subject in ("cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis", "fyzika"):
+    for subject in ("cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis", "fyzika", "chemie", "obcanka", "hudebka", "francouzstina"):
+        if not glob.glob(os.path.join(ROOT, "out", "znacka_" + subject, "f_*.png")):
+            continue  # vykresleno jen to, co se právě mění
         im = frames("znacka_" + subject)[0].resize((320, 320), Image.LANCZOS)
         path = os.path.join(gdir, "still-" + subject + ".webp")
         im.save(path, format="WEBP", quality=86, method=5, alpha_quality=90)
-    print("still-*", "9 ostrovů")
+    print("still-*", "ostrovy")
 
 
 def globe():
     """Památky předmětů (pás 20 snímků) a školní předměty prstence pro SubjectGlobe do public/home/globe."""
     dest_dir = os.path.join(DEST, "..", "globe")
     os.makedirs(dest_dir, exist_ok=True)
-    for subject in ("cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis", "fyzika"):
+    for subject in ("cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis", "fyzika", "chemie", "obcanka", "hudebka", "francouzstina"):
+        if not glob.glob(os.path.join(ROOT, "out", "znacka_" + subject, "f_*.png")):
+            continue  # vykresleno jen to, co se právě mění
         fr = frames("znacka_" + subject)
         w, h = fr[0].size
         sheet = Image.new("RGBA", (w * len(fr), h), (0, 0, 0, 0))
@@ -303,6 +308,8 @@ def globe():
         sheet.save(path, format="WEBP", quality=74, method=5, alpha_quality=80)
         print(subject, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB", sheet.size)
     for name in ("kniha", "tuzka", "banka", "atom", "kalkulacka", "pravitko", "cepice", "zarovka", "lupa", "glob", "kostky", "svitek", "letadlo", "raketa", "mikroskop", "kruzitko", "sesit", "dna", "pero", "rostlina"):
+        if not glob.glob(os.path.join(ROOT, "out", "pr_" + name, "f_*.png")):
+            continue
         im = frames("pr_" + name)[0]
         path = os.path.join(dest_dir, "obj-" + name + ".webp")
         im.save(path, format="WEBP", quality=86, method=5, alpha_quality=92)

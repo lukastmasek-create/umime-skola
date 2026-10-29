@@ -26,11 +26,12 @@ os.makedirs(DEST, exist_ok=True)
 
 W, H = 3072, 1536
 SS = 2  # nadvzorkování hran
+ID_STEP = 16  # id předmětu v mapě zemí = index · 16 (14 předmětů se vejde do 8 bitů)
 
 # pořadí = SUBJECTS v src/lib/taxonomy.ts; barva předmětu a kód ISO země
 SUBJECTS = [
     ("cestina", "#ffc933", "203"),
-    ("literatura", "#ff9ec7", "250"),
+    ("literatura", "#ff9ec7", "372"),
     ("anglictina", "#8fd0ff", "826"),
     ("nemcina", "#ffb26b", "276"),
     ("rustina", "#ff8a6b", "643"),
@@ -39,6 +40,10 @@ SUBJECTS = [
     ("zemepis", "#7fdbd8", "524"),
     ("prirodopis", "#b6e36a", "076"),
     ("fyzika", "#f58fa0", "840"),
+    ("chemie", "#d98cff", "156"),
+    ("obcanka", "#7f9bff", "356"),
+    ("hudebka", "#f2e76a", "036"),
+    ("francouzstina", "#ff6f91", "250"),
 ]
 
 # oblasti: (délka, šířka, poloměr v délce, poloměr v šířce)
@@ -207,7 +212,7 @@ def build_masks(countries):
         skip = (lambda lons: np.mean(lons) < -20 or np.mean(lons) > 30) if iso == "250" else None
         if iso == "840":  # USA: jen souvislé státy, bez Aljašky a Havaje (ať neleží půl země v Pacifiku)
             skip = lambda lons: np.mean(lons) < -128 or np.mean(lons) > 0
-        draw_geometry(di, by_iso[iso]["geometry"], i * 20, *big, skip=skip)
+        draw_geometry(di, by_iso[iso]["geometry"], i * ID_STEP, *big, skip=skip)
     return land, ids, greenland, border
 
 
@@ -302,7 +307,7 @@ def main(path):
     # země předmětů: vlastní barva předmětu (s detailem terénu), ostatní tlumenější
     subject_rgb = land_rgb.copy()
     for i, (_, color, _) in enumerate(SUBJECTS, start=1):
-        m = ids == i * 20
+        m = ids == i * ID_STEP
         c = rgb(color)
         shade = (0.8 + 0.3 * n_fine + 0.28 * height + 0.05 * n_micro)[..., None]
         subject_rgb = np.where(m[..., None], np.clip(c * shade, 0, 1), subject_rgb)

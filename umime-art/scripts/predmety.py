@@ -726,6 +726,102 @@ def fyzika():
         sph("elektron", 0.16, (xr, 0.45 * math.sin(t0 + k) * 0.5, zr), elec, seg=32)
 
 
+def chemie():
+    """Erlenmeyerova baňka se svítivým roztokem, bublinami a zkumavkou."""
+    glass = mat("sklo", (0.9, 0.97, 1.0), rough=0.04, coat=1.0, coat_rough=0.02, spec=0.8)
+    gb = glass.node_tree.nodes["Principled BSDF"]
+    for k, v in (("Transmission Weight", 0.9), ("IOR", 1.45)):
+        if k in gb.inputs:
+            gb.inputs[k].default_value = v
+    liq = mat("roztok", (0.35, 0.95, 0.5), rough=0.2, coat=0.6, emit=(0.2, 0.9, 0.35))
+    liq2 = mat("roztok2", (0.9, 0.35, 0.85), rough=0.2, coat=0.6, emit=(0.9, 0.2, 0.8))
+    cork = mat("korek", (0.7, 0.5, 0.3), rough=0.8)
+    lathe("banka", [(0.0, -0.9), (0.9, -0.9), (0.95, -0.82), (0.5, 0.35), (0.22, 0.6), (0.22, 1.05), (0.3, 1.1), (0.3, 1.15), (0.2, 1.15)], (0, 0, 0), glass)
+    lathe("roztok", [(0.0, -0.84), (0.86, -0.84), (0.9, -0.78), (0.62, -0.25), (0.0, -0.25)], (0, 0, 0), liq)
+    cyl("korek", 0.19, 0.2, (0, 0, 1.2), cork, 0.01)
+    for i, (x, y, z, r) in enumerate([(0.15, -0.1, -0.1, 0.12), (-0.2, 0.0, 0.1, 0.09), (0.05, 0.1, 0.35, 0.07), (0.1, -0.05, 0.8, 0.08)]):
+        sph("bublina", r, (x, y - 0.1, z), glass, seg=24)
+    # zkumavka vedle
+    lathe("zkumavka", [(0.0, -0.8), (0.17, -0.8), (0.2, -0.6), (0.2, 0.7), (0.23, 0.74), (0.2, 0.74)], (1.25, -0.1, 0.0), glass)
+    lathe("roztok_z", [(0.0, -0.74), (0.14, -0.74), (0.17, -0.58), (0.17, 0.05), (0.0, 0.05)], (1.25, -0.1, 0.0), liq2)
+
+
+def obcanka():
+    """Volební urna s lístkem, vlajka a váhy spravedlnosti."""
+    blue = mat("urna", (0.2, 0.42, 0.95), rough=0.3, coat=0.6)
+    dark = mat("tmava", (0.08, 0.08, 0.12), rough=0.5)
+    paper = mat("listek", (0.99, 0.97, 0.9), rough=0.7)
+    gold = mat("zlato", (1.0, 0.78, 0.2), rough=0.2, metal=1.0)
+    green = mat("zelena", (0.15, 0.7, 0.3), rough=0.4)
+    red = mat("cervena", (0.85, 0.15, 0.15), rough=0.4)
+    box("urna", (1.3, 1.1, 1.1), (0, 0, 0), blue, 0.05)
+    box("stesbina", (0.8, 0.14, 0.04), (0, 0, 0.56), dark, 0.005)
+    box("listek", (0.55, 0.02, 0.75), (0, -0.05, 0.95), paper, 0.005, rot=(0, math.radians(8), 0))
+    for i in range(3):
+        box("radek", (0.38, 0.005, 0.03), (0, -0.07, 1.15 - i * 0.14), dark, 0.001, rot=(0, math.radians(8), 0))
+    box("zaskrtnuti", (0.14, 0.01, 0.035), (-0.12, -0.075, 0.75), green, 0.002, rot=(0, math.radians(-45), 0))
+    box("zaskrtnuti2", (0.26, 0.01, 0.035), (0.05, -0.075, 0.78), green, 0.002, rot=(0, math.radians(50), 0))
+    box("stitek", (0.5, 0.02, 0.4), (0, -0.56, 0.0), paper, 0.01)
+    sph("hvezda", 0.12, (0, -0.58, 0.02), gold, scale=(1, 0.2, 1), seg=24)
+    # váhy
+    cyl("sloupek", 0.04, 1.5, (1.4, 0, 0.1), gold, 0.005, verts=24)
+    cyl("podstava", 0.28, 0.1, (1.4, 0, -0.65), gold, 0.01, verts=32)
+    box("ramena", (1.1, 0.05, 0.05), (1.4, 0, 0.82), gold, 0.01)
+    for sx in (-1, 1):
+        x = 1.4 + sx * 0.5
+        cyl("miska", 0.22, 0.04, (x, 0, 0.25), gold, 0.005, verts=32)
+        for dx in (-0.14, 0.14):
+            cyl("retizek", 0.008, 0.6, (x + dx * 0.9, 0, 0.55), gold, verts=8, rot=(0, math.radians(dx * 40), 0))
+    sph("kulicka", 0.07, (1.4, 0, 0.9), gold, seg=24)
+
+
+def hudebka():
+    """Dvě spojené osminové noty na notové osnově a zlatý houslový klíč z kruhových oblouků."""
+    gold = mat("zlato", (1.0, 0.78, 0.2), rough=0.2, coat=0.5, metal=1.0)
+    note = mat("nota", (0.1, 0.08, 0.2), rough=0.25, coat=0.9)
+    pink = mat("ruzova", (1.0, 0.4, 0.6), rough=0.3, coat=0.7)
+    paper = mat("osnova", (0.98, 0.96, 0.9), rough=0.7)
+    box("osnova", (3.0, 0.08, 1.5), (0, 0.1, 0), paper, 0.03)
+    for i in range(5):
+        box("linka", (2.8, 0.01, 0.025), (0, 0.04, -0.4 + i * 0.2), note, 0.002)
+    for x in (-0.55, 0.65):
+        sph("hlavicka", 0.19, (x, -0.02, -0.5), note, scale=(1.3, 0.55, 0.95), seg=32)
+        box("nozicka", (0.05, 0.05, 1.3), (x + 0.2, -0.02, 0.1), note, 0.01)
+    box("trambus", (1.35, 0.06, 0.22), (0.22, -0.02, 0.68), note, 0.01, rot=(0, math.radians(-3), 0))
+    # houslový klíč: spirála + svislý tah (trubice po křivce)
+    pts = [(-1.1, -0.1, -0.6), (-1.35, -0.1, -0.35), (-1.15, -0.1, -0.05), (-0.95, -0.1, 0.4), (-1.2, -0.1, 0.7), (-1.4, -0.1, 0.3), (-1.2, -0.1, 0.0), (-0.95, -0.1, 0.1)]
+    curve_tube("klic", pts, 0.05, gold, res=16)
+    sph("klic_hlava", 0.09, (-1.1, -0.1, -0.62), gold, seg=24)
+
+
+def francouzstina():
+    """Baret na bagetě a malá trikolóra."""
+    navy = mat("baret", (0.1, 0.16, 0.45), rough=0.9, sss=0.0)
+    noise_bump(navy, 120, 0.04)
+    crust = mat("kurka", (0.88, 0.62, 0.3), rough=0.6, sss=0.1)
+    noise_bump(crust, 60, 0.03)
+    dark = mat("zarez", (0.62, 0.38, 0.14), rough=0.7)
+    blue = mat("modra", (0.0, 0.25, 0.65), rough=0.45)
+    white = mat("bila", (0.98, 0.98, 1.0), rough=0.45)
+    red = mat("cervena", (0.88, 0.12, 0.18), rough=0.45)
+    # bageta (podlouhlá kapsle) leží vpředu, baret za ní
+    ang = math.radians(-14)
+    bag = sph("bageta", 0.32, (0.0, -0.45, -0.5), crust, scale=(3.6, 1.0, 0.95), seg=48)
+    bag.rotation_euler = (0, 0, ang)
+    for i in range(5):
+        x = -1.0 + i * 0.5
+        o = sph("zarez", 0.17, (x * math.cos(ang), -0.45 + x * math.sin(ang), -0.22), dark, scale=(1.0, 0.2, 0.45), seg=24)
+        o.rotation_euler = (0, 0, ang + math.radians(40))
+    # baret
+    sph("baret", 0.8, (0.35, 0.55, 0.15), navy, scale=(1.0, 1.0, 0.36), seg=48)
+    sph("copanek", 0.06, (0.35, 0.55, 0.42), navy, seg=16)
+    cyl("lem", 0.62, 0.05, (0.35, 0.55, -0.12), mat("lem", (0.07, 0.11, 0.33), rough=0.8), 0.01, verts=48)
+    # vlajka
+    for i, m in enumerate((blue, white, red)):
+        box("pruh", (0.22, 0.03, 0.5), (-1.25 + i * 0.22, -0.7, 0.55), m, 0.005)
+    cyl("tycka", 0.018, 1.0, (-1.38, -0.7, 0.35), mat("tycka", (0.8, 0.82, 0.88), rough=0.25, metal=1.0), verts=12)
+
+
 BUILDERS = {
     "cestina": cestina,
     "literatura": literatura,
@@ -737,8 +833,12 @@ BUILDERS = {
     "zemepis": zemepis,
     "prirodopis": prirodopis,
     "fyzika": fyzika,
+    "chemie": chemie,
+    "obcanka": obcanka,
+    "hudebka": hudebka,
+    "francouzstina": francouzstina,
 }
-CAM = {"fyzika": (-18, 22), "cestina": (-14, 14), "dejepis": (-24, 24), "zemepis": (-20, 14), "prirodopis": (-20, 24), "matematika": (-22, 20), "anglictina": (-14, 10), "rustina": (-16, 8), "nemcina": (-6, 6), "literatura": (-30, 24)}
+CAM = {"fyzika": (-18, 22), "chemie": (-18, 16), "obcanka": (-24, 18), "hudebka": (-14, 14), "francouzstina": (-20, 28), "cestina": (-14, 14), "dejepis": (-24, 24), "zemepis": (-20, 14), "prirodopis": (-20, 24), "matematika": (-22, 20), "anglictina": (-14, 10), "rustina": (-16, 8), "nemcina": (-6, 6), "literatura": (-30, 24)}
 
 
 def render_all(builders, cams, only, out, prefix, size=512):

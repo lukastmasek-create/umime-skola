@@ -24,6 +24,10 @@ const texts: Record<Locale, SubjectText> = {
       ZEMEPIS: "Zeměpis",
       PRIRODOPIS: "Přírodopis",
       FYZIKA: "Fyzika",
+      CHEMIE: "Chemie",
+      OBCANKA: "Občanská výchova",
+      HUDEBKA: "Hudební výchova",
+      FRANCOUZSTINA: "Francouzština",
     },
   },
   en: {
@@ -41,6 +45,10 @@ const texts: Record<Locale, SubjectText> = {
       ZEMEPIS: "Geography",
       PRIRODOPIS: "Biology",
       FYZIKA: "Physics",
+      CHEMIE: "Chemistry",
+      OBCANKA: "Civics",
+      HUDEBKA: "Music",
+      FRANCOUZSTINA: "French",
     },
   },
   de: {
@@ -58,6 +66,10 @@ const texts: Record<Locale, SubjectText> = {
       ZEMEPIS: "Geografie",
       PRIRODOPIS: "Biologie",
       FYZIKA: "Physik",
+      CHEMIE: "Chemie",
+      OBCANKA: "Gesellschaftskunde",
+      HUDEBKA: "Musik",
+      FRANCOUZSTINA: "Französisch",
     },
   },
   ru: {
@@ -75,6 +87,10 @@ const texts: Record<Locale, SubjectText> = {
       ZEMEPIS: "География",
       PRIRODOPIS: "Биология",
       FYZIKA: "Физика",
+      CHEMIE: "Химия",
+      OBCANKA: "Обществознание",
+      HUDEBKA: "Музыка",
+      FRANCOUZSTINA: "Французский",
     },
   },
 };

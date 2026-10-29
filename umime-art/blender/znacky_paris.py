@@ -3,7 +3,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 from znacky_lib import *
 
-sc = setup("znacka_literatura", world=("#e2d4f2", 0.6), ortho=4.8, target_z=1.55)
+sc = setup("znacka_francouzstina", world=("#e2d4f2", 0.6), ortho=4.8, target_z=1.55)
 plinth("#8fd36f", "#ffe3f0")
 
 iron = material("iron", "#8a7766", roughness=0.5, metallic=0.55)
@@ -141,4 +141,4 @@ def update(t):
         b.place((1.5 * math.cos(ang), 1.0 * math.sin(ang), 1.2 + 0.7 * i * 0.5 + 0.18 * math.sin(2 * ang + i)), ang + math.pi / 2, 0.55 + 0.45 * math.sin(ph * 3 + i * 2))
 
 
-run(update, "znacka_literatura")
+run(update, "znacka_francouzstina")
