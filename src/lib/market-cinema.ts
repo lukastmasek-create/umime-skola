@@ -23,6 +23,7 @@ export type Refs = {
 export type Geo = {
   toBox: (p: Pt) => Pt; // souřadnice scény (0..1) → zlomky boxu (0..1)
   rocket: Pt;
+  door?: Pt; // vchod do světa (poloha dveří v scéně), kolem něj se kreslí efekty
   start: Pt;
   road?: Pt[]; // cesta od schodů doprava (úvodní městečko)
   walk?: Pt[]; // celá cesta hrdiny ve scéně (hub), má přednost před `road`
@@ -33,19 +34,19 @@ export type Handle = { stop: () => void; skip: () => void };
 
 type NastupAnchors = { piloty: Pt[]; paluba_start: Pt; lavka_zacatek: Pt; lavka_konec: Pt; paluba_stred: Pt };
 
-const clamp = (x: number, a = 0, b = 1) => Math.min(b, Math.max(a, x));
-const sm = (x: number, a: number, b: number) => {
+export const clamp = (x: number, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+export const sm = (x: number, a: number, b: number) => {
   const t = clamp((x - a) / (b - a));
   return t * t * (3 - 2 * t);
 };
-const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
-const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
-const rnd = (i: number) => {
+export const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+export const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
+export const rnd = (i: number) => {
   const s = Math.sin(i * 127.1 + 311.7) * 43758.5453;
   return s - Math.floor(s);
 };
 
-function load(src: string): Promise<HTMLImageElement> {
+export function load(src: string): Promise<HTMLImageElement> {
   return new Promise((res) => {
     const im = new Image();
     im.onload = () => res(im);
@@ -59,7 +60,7 @@ export function readCam(el: HTMLElement): { x: number; y: number; s: number } {
   return m ? { x: parseFloat(m[1]), y: parseFloat(m[2]), s: parseFloat(m[3]) } : { x: 0, y: 0, s: 1 };
 }
 
-function setup(r: Refs) {
+export function setup(r: Refs) {
   const cw = r.box.clientWidth;
   const ch = r.box.clientHeight;
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -76,7 +77,7 @@ function bars(r: Refs, ch: number, amount: number) {
   (r.bars.children[1] as HTMLElement).style.height = h;
 }
 
-function setHero(r: Refs, x: number, y: number, flip: boolean, sc: number, op: number) {
+export function setHero(r: Refs, x: number, y: number, flip: boolean, sc: number, op: number) {
   r.hero.style.left = `${x}px`;
   r.hero.style.top = `${y}px`;
   r.hero.style.opacity = String(op);
@@ -84,7 +85,7 @@ function setHero(r: Refs, x: number, y: number, flip: boolean, sc: number, op: n
   r.hero.style.transform = `translate(-50%, -84.4%) scale(${flip ? -sc : sc}, ${sc})`;
 }
 
-function heroSprite(r: Refs, kind: "walk" | "idle", pending: { cur: string }) {
+export function heroSprite(r: Refs, kind: "walk" | "idle", pending: { cur: string }) {
   if (pending.cur === kind) return;
   pending.cur = kind;
   r.heroSpr.style.setProperty("--n", kind === "walk" ? "16" : "24");
@@ -92,7 +93,7 @@ function heroSprite(r: Refs, kind: "walk" | "idle", pending: { cur: string }) {
   r.heroSpr.style.animationDuration = kind === "walk" ? "0.9s" : "3s";
 }
 
-function cloud(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, a: number, shade = 1) {
+export function cloud(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, a: number, shade = 1) {
   for (const [dx, dy, k] of [[0, 0, 1], [1.0, 0.15, 0.8], [-1.0, 0.2, 0.75], [0.45, -0.45, 0.8], [-0.5, -0.35, 0.7], [1.7, 0.3, 0.5], [-1.7, 0.35, 0.5]] as const) {
     const g = ctx.createRadialGradient(x + dx * r, y + dy * r, 0, x + dx * r, y + dy * r, r * k);
     const c = Math.round(255 * shade);
@@ -159,17 +160,115 @@ function stepParticles(ps: Particle[], dt: number) {
   }
 }
 
+
+function glow(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rgb: string, a: number) {
+  if (a <= 0 || r < 1) return;
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, `rgba(${rgb},${a})`);
+  g.addColorStop(0.45, `rgba(${rgb},${a * 0.4})`);
+  g.addColorStop(1, `rgba(${rgb},0)`);
+  ctx.fillStyle = g;
+  ctx.fillRect(x - r, y - r, r * 2, r * 2);
+}
+
+// Procedurální kosmická stanice: otáčející se prstenec s okny, náboj se spoji, solární panely a dokovací port.
+function drawStation(ctx: CanvasRenderingContext2D, cx: number, cy: number, R: number, t: number) {
+  const tilt = 0.34;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(-0.12);
+  // solární panely
+  for (const s of [-1, 1]) {
+    for (let k = 0; k < 2; k++) {
+      const px = s * (R * 0.34 + k * R * 0.26);
+      ctx.fillStyle = "#1f3f8c";
+      ctx.fillRect(px - R * 0.1, -R * 0.62, R * 0.2, R * 0.34);
+      ctx.strokeStyle = "rgba(160,200,255,0.55)";
+      ctx.lineWidth = Math.max(0.5, R * 0.006);
+      for (let i = 1; i < 4; i++) {
+        ctx.beginPath();
+        ctx.moveTo(px - R * 0.1 + (i * R * 0.2) / 4, -R * 0.62);
+        ctx.lineTo(px - R * 0.1 + (i * R * 0.2) / 4, -R * 0.28);
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.moveTo(px - R * 0.1, -R * 0.45);
+      ctx.lineTo(px + R * 0.1, -R * 0.45);
+      ctx.stroke();
+      ctx.fillStyle = "#8d96b0";
+      ctx.fillRect(px - R * 0.008, -R * 0.28, R * 0.016, R * 0.28);
+    }
+  }
+  // zadní půlka prstence
+  const ringPath = (from: number, to: number) => {
+    ctx.beginPath();
+    ctx.ellipse(0, 0, R, R * tilt, 0, from, to);
+  };
+  const mg = ctx.createLinearGradient(0, -R * tilt, 0, R * tilt);
+  mg.addColorStop(0, "#d7deef");
+  mg.addColorStop(0.5, "#8b95b4");
+  mg.addColorStop(1, "#4a5275");
+  ctx.strokeStyle = mg;
+  ctx.lineWidth = R * 0.13;
+  ringPath(Math.PI, Math.PI * 2);
+  ctx.stroke();
+  // spoje k náboji
+  ctx.strokeStyle = "#7a84a4";
+  ctx.lineWidth = R * 0.03;
+  for (let i = 0; i < 4; i++) {
+    const a = (i / 4) * Math.PI * 2 + t * 0.05;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(Math.cos(a) * R, Math.sin(a) * R * tilt);
+    ctx.stroke();
+  }
+  // náboj
+  const hg = ctx.createRadialGradient(-R * 0.05, -R * 0.07, R * 0.02, 0, 0, R * 0.22);
+  hg.addColorStop(0, "#f4f6ff");
+  hg.addColorStop(0.6, "#9aa4c6");
+  hg.addColorStop(1, "#4b5478");
+  ctx.fillStyle = hg;
+  ctx.beginPath();
+  ctx.arc(0, 0, R * 0.2, 0, Math.PI * 2);
+  ctx.fill();
+  // přední půlka prstence
+  ctx.strokeStyle = mg;
+  ctx.lineWidth = R * 0.15;
+  ringPath(0, Math.PI);
+  ctx.stroke();
+  // okna po obvodu (rotují)
+  ctx.globalCompositeOperation = "lighter";
+  for (let i = 0; i < 28; i++) {
+    const a = (i / 28) * Math.PI * 2 + t * 0.12;
+    const front = Math.sin(a) > 0;
+    const lit = 0.55 + 0.45 * Math.sin(t * 2 + i * 1.7);
+    glow(ctx, Math.cos(a) * R, Math.sin(a) * R * tilt + (front ? R * 0.03 : -R * 0.01), R * 0.035, i % 5 === 0 ? "255,170,220" : "255,236,160", lit * (front ? 1 : 0.45));
+  }
+  // dokovací port: pulzující azurový kruh na přední straně náboje
+  const pulse = 0.6 + 0.4 * Math.sin(t * 5);
+  glow(ctx, 0, R * 0.2, R * 0.2, "110,225,255", 0.75 * pulse);
+  ctx.globalCompositeOperation = "source-over";
+  ctx.strokeStyle = "rgba(140,240,255,0.9)";
+  ctx.lineWidth = R * 0.015;
+  ctx.beginPath();
+  ctx.arc(0, R * 0.2, R * 0.06, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.restore();
+}
+
 // ---------------------------------------------------------------------------------------------- vesmír
 export function runSpace(r: Refs, g: Geo, onEnd: () => void): Handle {
   let stopped = false;
   let raf = 0;
-  const imgsP = Promise.all([load("/home/kosmicka/zadni.webp"), load("/home/kosmicka/predni.webp")]);
+  const imgsP = Promise.all([load("/home/kosmicka/zadni.webp"), load("/home/kosmicka/predni.webp"), load("/home/kosmicka/raketa.webp")]);
   const T_BOARD = 1.35;
   const T_STAND = 1.95;
   const T_COUNT = [3.0, 3.5, 4.0];
   const T_LIFT = 4.5;
-  const T_IRIS = 7.0;
-  const T_END = 8.5;
+  const T_APP = 6.2; // přílet ke stanici
+  const T_DOCK = 9.4; // dotyk dokovacího portu
+  const T_IRIS = 9.7;
+  const T_END = 11.4;
 
   const finish = () => {
     if (stopped) return;
@@ -178,7 +277,7 @@ export function runSpace(r: Refs, g: Geo, onEnd: () => void): Handle {
     onEnd();
   };
 
-  void imgsP.then(([zadni, predni]) => {
+  void imgsP.then(([zadni, predni, rkt]) => {
     if (stopped) return;
     const { cw, ch, ctx } = setup(r);
     const S = cw / 1100; // měřítko podle šířky (návrh pro 1100 px)
@@ -279,7 +378,7 @@ export function runSpace(r: Refs, g: Geo, onEnd: () => void): Handle {
 
       // ---- kamera
       const shift = Math.max(0, rise - 0.3 * ch);
-      vel = (shift - shiftPrev) / Math.max(dt, 0.001);
+      vel = ((shift - shiftPrev) / Math.max(dt, 0.001)) * (1 - sm(t, T_APP - 0.8, T_APP + 0.6));
       shiftPrev = shift;
       const alt = shift / ch;
       const zoom = 1 + 0.2 * sm(t, T_STAND, T_COUNT[2]) * (1 - sm(t, T_LIFT, T_LIFT + 1.2));
@@ -384,7 +483,8 @@ export function runSpace(r: Refs, g: Geo, onEnd: () => void): Handle {
       drawParticles(ctx, parts, tx, ty, zoom);
 
       // plamen a záře motoru
-      if (t > T_STAND + 0.2 && t < T_END) {
+      r.rocket.style.opacity = String(1 - sm(t, T_APP - 0.2, T_APP + 0.6));
+      if (t > T_STAND + 0.2 && t < T_APP + 0.6) {
         const sx = tx + zoom * tail.x;
         const sy = ty + zoom * (tail.y + 0.015 * fh);
         const flick = 0.85 + Math.random() * 0.3;
@@ -430,6 +530,37 @@ export function runSpace(r: Refs, g: Geo, onEnd: () => void): Handle {
           ctx.moveTo(lx, ly);
           ctx.lineTo(lx, ly + 40 * S + vel * 0.05);
           ctx.stroke();
+        }
+      }
+      // přílet ke stanici: prstenec roste z dálky, raketa zabočí k dokovacímu portu
+      if (t > T_APP) {
+        const ak = clamp((t - T_APP) / (T_DOCK - T_APP));
+        const fadeIn = sm(ak, 0, 0.18);
+        const R = lerp(0.07, 0.62, Math.pow(ease(ak), 1.4)) * cw;
+        const scx = cw * 0.5;
+        const scy = ch * lerp(0.36, 0.46, ak);
+        ctx.save();
+        ctx.globalAlpha = fadeIn * (1 - sm(t, T_DOCK + 0.1, T_IRIS + 0.7));
+        drawStation(ctx, scx, scy, R, t);
+        // raketa letí obloukem zespodu nahoru k přednímu portu
+        const pk = ease(clamp((t - (T_APP + 0.5)) / (T_DOCK - T_APP - 0.5)));
+        const rw = lerp(0.3, 0.075, pk) * cw;
+        const rx = lerp(cw * 0.78, scx, pk) + Math.sin(pk * Math.PI) * 0.06 * cw;
+        const ry = lerp(ch * 1.05, scy + R * 0.2, pk);
+        ctx.translate(rx, ry);
+        ctx.rotate(-Math.PI / 2 + lerp(0.5, 0, pk));
+        const fr = Math.floor((t / 3) * 12) % 12;
+        ctx.globalCompositeOperation = "lighter";
+        glow(ctx, -rw * 0.45, 0, rw * 0.5, "255,170,80", 0.55 * (1 - pk * 0.7));
+        ctx.globalCompositeOperation = "source-over";
+        ctx.drawImage(rkt, fr * 640, 0, 640, 384, -rw * 0.606, -rw * 0.3, rw, rw * 0.6);
+        ctx.restore();
+        // záblesk při zacvaknutí
+        const fl = sm(t, T_DOCK - 0.05, T_DOCK + 0.1) * (1 - sm(t, T_DOCK + 0.1, T_DOCK + 0.6));
+        if (fl > 0) {
+          ctx.globalCompositeOperation = "lighter";
+          glow(ctx, scx, scy + R * 0.2, R * 0.9, "140,235,255", 0.9 * fl);
+          ctx.globalCompositeOperation = "source-over";
         }
       }
       // brána stanice se otevře a pohltí raketu
@@ -741,6 +872,25 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
           sfx.gull();
           fired = 5;
         }
+        // rackové přelétají nad lodí, jakmile se loď rozjede
+        if (tw > T_SAIL - 0.6) {
+          ctx.strokeStyle = "rgba(255,255,255,0.92)";
+          ctx.lineWidth = 2.2 * k;
+          ctx.lineCap = "round";
+          for (let i = 0; i < 4; i++) {
+            const gk = clamp((tw - (T_SAIL - 0.6) - i * 0.35) / 4.2);
+            if (gk <= 0 || gk >= 1) continue;
+            const gx = lerp(-60, 1180, gk) + i * 12;
+            const gy = 120 + i * 38 + Math.sin(gk * 9 + i) * 14;
+            const fl = Math.sin(tw * (9 + i) + i * 2) * 9;
+            ctx.beginPath();
+            ctx.moveTo(X(gx - 15), Y(gy + fl * 0.6));
+            ctx.quadraticCurveTo(X(gx - 6), Y(gy - 6 - fl), X(gx), Y(gy));
+            ctx.quadraticCurveTo(X(gx + 6), Y(gy - 6 - fl), X(gx + 15), Y(gy + fl * 0.6));
+            ctx.stroke();
+          }
+          ctx.lineCap = "butt";
+        }
         // vlna, která odtéká dolů
         if (tb < T_DRAIN) {
           const p = ease(tb / T_DRAIN);
@@ -901,220 +1051,6 @@ export function runPath(r: Pick<Refs, "box" | "cam" | "cv" | "hero" | "heroSpr">
       ctx.fillRect(0, 0, cw, ch);
     }
     if (t >= T + (flash ? 0.4 : 0.05)) {
-      finish();
-      return;
-    }
-    raf = requestAnimationFrame(frame);
-  };
-  raf = requestAnimationFrame(frame);
-  return {
-    stop: () => {
-      stopped = true;
-      cancelAnimationFrame(raf);
-    },
-    skip: finish,
-  };
-}
-
-// ---------------------------------------------------------------------------------------------- vstup do světa
-// Hrdina dojde ke vchodu (zářící dveře lesa, brána hradu, potápěčská věž s lagunou) a obraz se rozplyne v barvě světa:
-// les zazáří a rozsvítí se, hradní brána pohltí obraz tmou, v laguně se hrdina vrhne do vody a obraz zaplaví bubliny.
-export function runPortal(r: Pick<Refs, "box" | "cam" | "cv" | "hero" | "heroSpr">, g: Geo, kind: "forest" | "castle" | "sea", onEnd: () => void): Handle {
-  let stopped = false;
-  let raf = 0;
-  const finish = () => {
-    if (stopped) return;
-    stopped = true;
-    cancelAnimationFrame(raf);
-    onEnd();
-  };
-  const { cw, ch, ctx } = setup(r as Refs);
-  r.cam.style.transformOrigin = "0 0";
-  r.cam.style.willChange = "transform";
-  const cam0 = readCam(r.cam);
-  const [su, sv] = g.toBox(g.start);
-  const path: { x: number; y: number }[] = [{ x: su * cw, y: sv * ch }];
-  for (const p of g.walk ?? []) {
-    const [pu, pv] = g.toBox(p);
-    path.push({ x: pu * cw, y: pv * ch });
-  }
-  const cum = [0];
-  for (let i = 1; i < path.length; i++) cum.push(cum[i - 1] + Math.hypot(path[i].x - path[i - 1].x, path[i].y - path[i - 1].y));
-  const total = Math.max(1, cum[cum.length - 1]);
-  const T = Math.max(1.2, Math.min(4.2, total / (0.2 * cw)));
-  const TE = kind === "sea" ? 2.2 : 1.7;
-  const at = (d: number) => {
-    let i = 1;
-    while (i < cum.length - 1 && cum[i] < d) i++;
-    const k = clamp((d - cum[i - 1]) / Math.max(1e-6, cum[i] - cum[i - 1]));
-    return { x: lerp(path[i - 1].x, path[i].x, k), y: lerp(path[i - 1].y, path[i].y, k), dir: path[i].x - path[i - 1].x };
-  };
-  const door = path[path.length - 1];
-  const heroState = { cur: "idle" };
-  const sparks: { x: number; y: number; vx: number; vy: number; age: number; life: number; r: number }[] = [];
-  let last = performance.now();
-  const t0 = last;
-  let stepAcc = 0;
-  let flip = false;
-  let zx = cam0.x;
-  let zy = cam0.y;
-  let zs = cam0.s;
-  let sfxDone = 0;
-  const frame = (now: number) => {
-    raf = 0;
-    if (stopped) return;
-    const t = (now - t0) / 1000;
-    const dt = Math.min(0.05, (now - last) / 1000);
-    last = now;
-    const walking = t < T;
-    const d = at(Math.min(1, t / T) * total);
-    if (Math.abs(d.dir) > 0.5) flip = d.dir < 0;
-    const tau = Math.max(0, t - T);
-    let hx = d.x;
-    let hy = d.y;
-    let hsc = 1;
-    let hop = 1;
-    if (!walking) {
-      if (kind === "sea") {
-        // skok z věže do laguny: oblouk dopředu a dolů
-        const u = clamp(tau / 0.7);
-        hx = door.x + u * 0.03 * cw;
-        hy = door.y - Math.sin(u * Math.PI) * 0.1 * ch + u * 0.09 * ch;
-        hop = u < 1 ? 1 : 0;
-      } else {
-        const u = clamp(tau / 0.6);
-        hsc = 1 - 0.35 * u;
-        hop = 1 - u;
-        hy = door.y - u * 0.01 * ch;
-      }
-    }
-    heroSprite(r as Refs, walking ? "walk" : "idle", heroState);
-    setHero(r as Refs, hx, hy, flip, hsc, hop);
-    if (walking) {
-      stepAcc += dt;
-      if (stepAcc > 0.27) {
-        stepAcc = 0;
-        sfx.step();
-      }
-    }
-    if (sfxDone === 0 && t > T) {
-      sfxDone = 1;
-      if (kind === "sea") sfx.splash(1.6);
-      else if (kind === "forest") sfx.dock();
-      else sfx.horn();
-    }
-    // kamera: sleduje hrdinu a při vstupu se přiblíží k vchodu
-    const zoom = 1 + 0.9 * ease(clamp(t / (T + 0.3))) + (walking ? 0 : 0.35 * ease(clamp(tau / TE)));
-    const focus = walking ? d : { x: door.x, y: door.y - 0.04 * ch };
-    const wantX = clamp(cw / 2 - zoom * focus.x, cw - zoom * cw, 0);
-    const wantY = clamp(ch * 0.6 - zoom * focus.y, ch - zoom * ch, 0);
-    const k = 1 - Math.exp(-5 * dt);
-    zx = lerp(zx, wantX, k);
-    zy = lerp(zy, wantY, k);
-    zs = lerp(zs, zoom, k);
-    r.cam.style.transform = `translate(${zx}px, ${zy}px) scale(${zs})`;
-    // efekty nad scénou
-    ctx.clearRect(0, 0, cw, ch);
-    const sx = zx + zs * door.x;
-    const sy = zy + zs * (door.y - 0.035 * ch);
-    if (!walking) {
-      const u = clamp(tau / TE);
-      const R = Math.max(cw, ch) * 1.3;
-      if (kind === "forest") {
-        ctx.globalCompositeOperation = "lighter";
-        const gr = ctx.createRadialGradient(sx, sy, 0, sx, sy, Math.max(1, R * ease(u)));
-        gr.addColorStop(0, "rgba(255,250,190,1)");
-        gr.addColorStop(0.5, "rgba(200,255,140,0.8)");
-        gr.addColorStop(1, "rgba(120,220,120,0)");
-        ctx.fillStyle = gr;
-        ctx.fillRect(0, 0, cw, ch);
-        ctx.globalCompositeOperation = "source-over";
-        if (Math.random() < 0.9 && u < 0.8) sparks.push({ x: sx + (Math.random() - 0.5) * 30, y: sy + (Math.random() - 0.5) * 30, vx: (Math.random() - 0.5) * 220, vy: -60 - Math.random() * 200, age: 0, life: 0.9 + Math.random() * 0.7, r: 1.5 + Math.random() * 3 });
-        const fade = sm(u, 0.75, 1);
-        if (fade > 0) {
-          ctx.fillStyle = `rgba(232,255,176,${fade})`;
-          ctx.fillRect(0, 0, cw, ch);
-        }
-      } else if (kind === "castle") {
-        // brána pohltí obraz: od středu se šíří tma, po stranách blikají pochodně
-        ctx.globalCompositeOperation = "lighter";
-        for (const dx of [-0.07, 0.07]) {
-          const fx = sx + dx * cw * zs;
-          const fl = 0.6 + 0.4 * Math.random();
-          const g2 = ctx.createRadialGradient(fx, sy, 0, fx, sy, 80 * zs);
-          g2.addColorStop(0, `rgba(255,170,70,${0.55 * fl * (1 - u)})`);
-          g2.addColorStop(1, "rgba(255,170,70,0)");
-          ctx.fillStyle = g2;
-          ctx.fillRect(fx - 90 * zs, sy - 90 * zs, 180 * zs, 180 * zs);
-        }
-        ctx.globalCompositeOperation = "source-over";
-        const g3 = ctx.createRadialGradient(sx, sy, 0, sx, sy, Math.max(1, R * ease(u)));
-        g3.addColorStop(0, "rgba(20,14,26,1)");
-        g3.addColorStop(0.7, "rgba(20,14,26,0.97)");
-        g3.addColorStop(1, "rgba(20,14,26,0)");
-        ctx.fillStyle = g3;
-        ctx.fillRect(0, 0, cw, ch);
-        const fade = sm(u, 0.8, 1);
-        if (fade > 0) {
-          ctx.fillStyle = `rgba(26,16,32,${fade})`;
-          ctx.fillRect(0, 0, cw, ch);
-        }
-      } else {
-        const wy = door.y + 0.09 * ch;
-        const wx = door.x + 0.03 * cw;
-        const swx = zx + zs * wx;
-        const swy = zy + zs * wy;
-        if (tau > 0.7 && tau < 0.75) {
-          for (let i = 0; i < 40; i++) sparks.push({ x: swx, y: swy, vx: (Math.random() - 0.5) * 360, vy: -150 - Math.random() * 360, age: 0, life: 0.8 + Math.random() * 0.6, r: 2 + Math.random() * 3.5 });
-        }
-        // kruhy na hladině
-        for (let i = 0; i < 3; i++) {
-          const ua = clamp((tau - 0.7 - i * 0.18) / 1.0);
-          if (ua <= 0 || ua >= 1) continue;
-          ctx.strokeStyle = `rgba(255,255,255,${0.8 * (1 - ua)})`;
-          ctx.lineWidth = 3;
-          ctx.beginPath();
-          ctx.ellipse(swx, swy, 20 * zs + ua * 160 * zs, 6 * zs + ua * 40 * zs, 0, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-        // vodní závoj stoupá odspodu
-        const fl = sm(tau, 0.9, 2.1);
-        if (fl > 0) {
-          const gr = ctx.createLinearGradient(0, 0, 0, ch);
-          gr.addColorStop(0, `rgba(95,208,238,${fl})`);
-          gr.addColorStop(1, `rgba(20,110,190,${fl})`);
-          ctx.fillStyle = gr;
-          ctx.fillRect(0, 0, cw, ch);
-          ctx.strokeStyle = `rgba(235,255,255,${0.7 * fl})`;
-          ctx.lineWidth = 1.6;
-          for (let i = 0; i < 26; i++) {
-            const bx = rnd(i + 3) * cw + Math.sin(t * 2 + i) * 6;
-            const by = ch * (1.1 - ((t * (0.25 + rnd(i) * 0.35) + rnd(i + 9)) % 1.2));
-            ctx.beginPath();
-            ctx.arc(bx, by, (3 + rnd(i + 50) * 7) * (cw / 1100), 0, Math.PI * 2);
-            ctx.stroke();
-          }
-        }
-      }
-      // jiskry, kapky
-      for (let i = sparks.length - 1; i >= 0; i--) {
-        const p = sparks[i];
-        p.age += dt;
-        if (p.age > p.life) {
-          sparks.splice(i, 1);
-          continue;
-        }
-        p.x += p.vx * dt;
-        p.y += p.vy * dt;
-        if (kind === "sea") p.vy += 700 * dt;
-        const a = 1 - p.age / p.life;
-        ctx.fillStyle = kind === "sea" ? `rgba(255,255,255,${a})` : `rgba(255,248,170,${a})`;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r * a + 0.5, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-    if (tau >= TE) {
       finish();
       return;
     }

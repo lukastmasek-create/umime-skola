@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DailyChallenges } from "@/components/DailyChallenges";
 import { Modal, type Snapshot } from "@/components/ShopView";
-import { readCam, runPath, runPirate, runPortal, runSpace, type Geo, type Handle, type Pt } from "@/lib/market-cinema";
+import { readCam, runPath, runPirate, runSpace, type Geo, type Handle, type Pt } from "@/lib/market-cinema";
+import { runWorld } from "@/lib/market-cinema-worlds";
 import { confettiBurst, createEventFx, eventForDay, EVENT_SHOT, runShots, type Handle as ShotHandle, type Shot } from "@/lib/town-scenes";
 import { TownNpcPanel } from "@/components/TownNpcPanel";
 import { getTownLifeText } from "@/i18n/town-life";
@@ -521,7 +522,7 @@ export function TownHub({ locale }: { locale: Locale }) {
     } else {
       const world = phase.target?.world ?? "forest";
       const nodes = route("hub", phase.id).map((n) => HUB.graf.nodes[n]);
-      handle.current = runPortal(r as Parameters<typeof runPortal>[0], geoFor(nodes.slice(1), start), world === "castle" ? "castle" : world === "sea" ? "sea" : "forest", () => leave(`/${locale}/uzivatelsky-obchod?svet=${world}&film=1`));
+      handle.current = runWorld(r as Parameters<typeof runWorld>[0], geoFor(nodes.slice(1), start, { door: HUB.places[phase.id]?.door }), world === "castle" ? "castle" : world === "sea" ? "sea" : "forest", () => leave(`/${locale}/uzivatelsky-obchod?svet=${world}&film=1`));
     }
     return () => handle.current?.stop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
