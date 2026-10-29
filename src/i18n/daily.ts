@@ -3,6 +3,7 @@ import type { QuestId, WeeklyId } from "@/lib/gamify";
 
 export type DailyText = {
   title: string;
+  goal: { title: string; progress: string; done: string; levels: [string, string, string]; hint: string };
   streak: string; // {n}
   streakBest: string; // {n}
   streakIdle: string;
@@ -42,6 +43,7 @@ export type DailyText = {
 };
 
 const cs: DailyText = {
+  goal: { title: "Dnešní cíl", progress: "{a} / {b} XP", done: "Cíl splněn! 🎉", levels: ["Pohoda", "Pravidelně", "Výzva"], hint: "Vyber si, kolik XP chceš dnes nasbírat." },
   title: "Denní výzvy",
   nudgeStreak: "Tvoje série {n} dní dnes končí. Stačí jeden krátký test!",
   nudgeOpen: "Pokračovat",
@@ -98,6 +100,7 @@ const cs: DailyText = {
 };
 
 const en: DailyText = {
+  goal: { title: "Today's goal", progress: "{a} / {b} XP", done: "Goal reached! 🎉", levels: ["Easy", "Steady", "Challenge"], hint: "Pick how much XP you want to earn today." },
   title: "Daily challenges",
   nudgeStreak: "Your {n}-day streak ends today. One short test is enough!",
   nudgeOpen: "Continue",
@@ -154,6 +157,7 @@ const en: DailyText = {
 };
 
 const de: DailyText = {
+  goal: { title: "Tagesziel", progress: "{a} / {b} XP", done: "Ziel erreicht! 🎉", levels: ["Entspannt", "Regelmäßig", "Herausforderung"], hint: "Wähle, wie viel XP du heute sammeln willst." },
   title: "Tägliche Aufgaben",
   nudgeStreak: "Deine Serie von {n} Tagen endet heute. Ein kurzer Test genügt!",
   nudgeOpen: "Weiter",
@@ -210,6 +214,7 @@ const de: DailyText = {
 };
 
 const ru: DailyText = {
+  goal: { title: "Цель на сегодня", progress: "{a} / {b} XP", done: "Цель достигнута! 🎉", levels: ["Спокойно", "Регулярно", "Вызов"], hint: "Выбери, сколько XP хочешь набрать сегодня." },
   title: "Ежедневные задания",
   nudgeStreak: "Твоя серия в {n} дн. сегодня закончится. Хватит одного короткого теста!",
   nudgeOpen: "Продолжить",

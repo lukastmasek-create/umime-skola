@@ -1,4 +1,5 @@
 import { sfx } from "@/lib/market-sfx";
+import { currentHeroUrl } from "@/lib/hero";
 import { clamp, ease, heroSprite, lerp, load, readCam, rnd, setHero, setup, sm, type Geo, type Handle, type Refs } from "@/lib/market-cinema";
 
 // Filmové vstupy do tří světů obchodu (městečko zůstává v DOMu, efekty se kreslí do canvasu nad ním):
@@ -428,7 +429,7 @@ export function runWorld(r: R, g: Geo, kind: WorldKind, onEnd: () => void): Hand
     cancelAnimationFrame(raf);
     onEnd();
   };
-  const assetsP = kind === "sea" ? Promise.all([load("/home/mesto/hrdina-stoji.webp"), load("/home/more/ponorka.webp")]) : Promise.resolve([null, null] as const);
+  const assetsP = kind === "sea" ? Promise.all([load(currentHeroUrl("stoji")), load("/home/more/ponorka.webp")]) : Promise.resolve([null, null] as const);
   void assetsP.then(([heroImg, subImg]) => {
     if (stopped) return;
     const { cw, ch, ctx } = setup(r as Refs);

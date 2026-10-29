@@ -1,4 +1,5 @@
 import { sfx } from "@/lib/market-sfx";
+import { currentHeroUrl } from "@/lib/hero";
 import { drawSea } from "@/lib/market-scenery";
 
 // Filmové přechody z městečka do světů obchodu. Kulisy městečka zůstávají v DOMu (ať žijí obyvatelé), kamera je
@@ -89,7 +90,7 @@ export function heroSprite(r: Refs, kind: "walk" | "idle", pending: { cur: strin
   if (pending.cur === kind) return;
   pending.cur = kind;
   r.heroSpr.style.setProperty("--n", kind === "walk" ? "16" : "24");
-  r.heroSpr.style.backgroundImage = `url(/home/mesto/${kind === "walk" ? "hrdina-chuze" : "hrdina-stoji"}.webp)`;
+  r.heroSpr.style.backgroundImage = `url(${currentHeroUrl(kind === "walk" ? "chuze" : "stoji")})`;
   r.heroSpr.style.animationDuration = kind === "walk" ? "0.9s" : "3s";
 }
 
@@ -285,7 +286,7 @@ export function runSpace(r: Refs, g: Geo, onEnd: () => void): Handle {
     const fw = (g.rocketW ?? 0.15) * cw;
     const fh = fw * 0.6;
     const pivot = { x: ru * cw + 0.106 * fw, y: rv * ch - 0.12 * fh };
-    const half = 0.356 * fw;
+    const half = 0.372 * fw;
     const groundY = pivot.y + 0.1 * fh;
     const [su, sv] = g.toBox(g.start);
     const hs = { x: su * cw, y: sv * ch };
@@ -489,7 +490,7 @@ export function runSpace(r: Refs, g: Geo, onEnd: () => void): Handle {
         const sy = ty + zoom * (tail.y + 0.015 * fh);
         const flick = 0.85 + Math.random() * 0.3;
         const L = flameLen * flick * zoom;
-        const Wd = (0.075 + 0.05 * thrust) * fw * zoom;
+        const Wd = (0.088 + 0.05 * thrust) * fw * zoom;
         ctx.globalCompositeOperation = "lighter";
         const glow = ctx.createRadialGradient(sx, sy + L * 0.25, 0, sx, sy + L * 0.25, L * 1.1 + 0.5 * fw);
         glow.addColorStop(0, `rgba(255,170,70,${0.55 * thrust * flick})`);
@@ -626,7 +627,7 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
     cancelAnimationFrame(raf);
     onEnd();
   };
-  const imgsP = Promise.all([load("/home/pristav/lod.webp"), load("/home/pristav/nastup-molo.webp"), load("/home/pristav/nastup-lavka.webp"), load("/home/mesto/hrdina-chuze.webp"), load("/home/mesto/hrdina-stoji.webp"), load("/home/mesto/hrdina-radost.webp")]);
+  const imgsP = Promise.all([load("/home/pristav/lod.webp"), load("/home/pristav/nastup-molo.webp"), load("/home/pristav/nastup-lavka.webp"), load(currentHeroUrl("chuze")), load(currentHeroUrl("stoji")), load(currentHeroUrl("radost"))]);
 
   void imgsP.then(([ship, molo, lavka, walkImg, idleImg, joyImg]) => {
     if (stopped) return;

@@ -1,0 +1,662 @@
+{
+ "princess": {
+  "hair": [
+   {
+    "kind": "hair:long",
+    "swatch": "#f2c94c"
+   },
+   {
+    "kind": "hair:bob",
+    "swatch": "#b5532a"
+   },
+   {
+    "kind": "hair:pony",
+    "swatch": "#3a2418"
+   },
+   {
+    "kind": "hair:curly",
+    "swatch": "#e8a0c4"
+   }
+  ],
+  "outfit": [
+   {
+    "kind": "outfit:gown",
+    "swatch": "#ff7eb6"
+   },
+   {
+    "kind": "outfit:short",
+    "swatch": "#6fb3ff"
+   },
+   {
+    "kind": "outfit:mermaid",
+    "swatch": "#8a4bd0"
+   },
+   {
+    "kind": "outfit:summer",
+    "swatch": "#7ee0b0"
+   }
+  ],
+  "shoes": [
+   {
+    "kind": "shoes:heels",
+    "swatch": "#ff4f9a"
+   },
+   {
+    "kind": "shoes:sneaker",
+    "swatch": "#ffffff"
+   },
+   {
+    "kind": "shoes:boots",
+    "swatch": "#7a4a2a"
+   },
+   {
+    "kind": "shoes:ballet",
+    "swatch": "#d8b8ff"
+   }
+  ],
+  "makeup": [
+   {
+    "kind": "makeup:0",
+    "swatch": "#c8365e"
+   },
+   {
+    "kind": "makeup:1",
+    "swatch": "#c97b72"
+   },
+   {
+    "kind": "makeup:2",
+    "swatch": "#8e1b3a"
+   },
+   {
+    "kind": "makeup:3",
+    "swatch": "#e0608a"
+   }
+  ],
+  "accessory": [
+   {
+    "kind": "accessory:necklace",
+    "swatch": "#ffd23f"
+   },
+   {
+    "kind": "accessory:glasses",
+    "swatch": "#e6b84a"
+   },
+   {
+    "kind": "accessory:bag",
+    "swatch": "#ff7eb6"
+   },
+   {
+    "kind": "accessory:wand",
+    "swatch": "#c9923a"
+   }
+  ],
+  "topper": [
+   {
+    "kind": "topper:crown",
+    "swatch": "#ffd23f"
+   },
+   {
+    "kind": "topper:headband",
+    "swatch": "#ff7eb6"
+   },
+   {
+    "kind": "topper:flowers",
+    "swatch": "#ff7eb6"
+   },
+   {
+    "kind": "topper:hat",
+    "swatch": "#e8c887"
+   }
+  ]
+ },
+ "athlete": {
+  "hair": [
+   {
+    "kind": "hair:pony",
+    "swatch": "#7a4a2a"
+   },
+   {
+    "kind": "hair:bun",
+    "swatch": "#1c1c28"
+   },
+   {
+    "kind": "hair:braids",
+    "swatch": "#c25a2e"
+   },
+   {
+    "kind": "hair:bob",
+    "swatch": "#f0c75e"
+   }
+  ],
+  "outfit": [
+   {
+    "kind": "outfit:sport",
+    "swatch": "#2a8cff"
+   },
+   {
+    "kind": "outfit:short",
+    "swatch": "#ff7a3a"
+   },
+   {
+    "kind": "outfit:fairy",
+    "swatch": "#7ee0b0"
+   },
+   {
+    "kind": "outfit:rock",
+    "swatch": "#1f1b2e"
+   }
+  ],
+  "shoes": [
+   {
+    "kind": "shoes:sneaker",
+    "swatch": "#ffffff"
+   },
+   {
+    "kind": "shoes:heels",
+    "swatch": "#ff7a3a"
+   },
+   {
+    "kind": "shoes:boots",
+    "swatch": "#2a2438"
+   },
+   {
+    "kind": "shoes:ballet",
+    "swatch": "#7ee0b0"
+   }
+  ],
+  "makeup": [
+   {
+    "kind": "makeup:0",
+    "swatch": "#d9695a"
+   },
+   {
+    "kind": "makeup:1",
+    "swatch": "#c97b72"
+   },
+   {
+    "kind": "makeup:2",
+    "swatch": "#b02a3c"
+   },
+   {
+    "kind": "makeup:3",
+    "swatch": "#e0608a"
+   }
+  ],
+  "accessory": [
+   {
+    "kind": "accessory:medal",
+    "swatch": "#ffd23f"
+   },
+   {
+    "kind": "accessory:glasses",
+    "swatch": "#2a8cff"
+   },
+   {
+    "kind": "accessory:bag",
+    "swatch": "#ff7a3a"
+   },
+   {
+    "kind": "accessory:necklace",
+    "swatch": "#ffd23f"
+   }
+  ],
+  "topper": [
+   {
+    "kind": "topper:cap",
+    "swatch": "#ff5d3a"
+   },
+   {
+    "kind": "topper:headband",
+    "swatch": "#2a8cff"
+   },
+   {
+    "kind": "topper:hat",
+    "swatch": "#e8c887"
+   },
+   {
+    "kind": "topper:flowers",
+    "swatch": "#ff7a3a"
+   }
+  ]
+ },
+ "rocker": {
+  "hair": [
+   {
+    "kind": "hair:bob",
+    "swatch": "#2a1f3d"
+   },
+   {
+    "kind": "hair:pony",
+    "swatch": "#d02a8c"
+   },
+   {
+    "kind": "hair:curly",
+    "swatch": "#17131f"
+   },
+   {
+    "kind": "hair:long",
+    "swatch": "#6a3bb0"
+   }
+  ],
+  "outfit": [
+   {
+    "kind": "outfit:rock",
+    "swatch": "#1f1b2e"
+   },
+   {
+    "kind": "outfit:sport",
+    "swatch": "#e8453c"
+   },
+   {
+    "kind": "outfit:mermaid",
+    "swatch": "#2a1f3d"
+   },
+   {
+    "kind": "outfit:fairy",
+    "swatch": "#c43cff"
+   }
+  ],
+  "shoes": [
+   {
+    "kind": "shoes:boots",
+    "swatch": "#2a2438"
+   },
+   {
+    "kind": "shoes:sneaker",
+    "swatch": "#e8453c"
+   },
+   {
+    "kind": "shoes:clog",
+    "swatch": "#1f1b2e"
+   },
+   {
+    "kind": "shoes:heels",
+    "swatch": "#7a1fa8"
+   }
+  ],
+  "makeup": [
+   {
+    "kind": "makeup:0",
+    "swatch": "#7a1fa8"
+   },
+   {
+    "kind": "makeup:1",
+    "swatch": "#8e1b3a"
+   },
+   {
+    "kind": "makeup:2",
+    "swatch": "#d02a8c"
+   },
+   {
+    "kind": "makeup:3",
+    "swatch": "#2a1f3d"
+   }
+  ],
+  "accessory": [
+   {
+    "kind": "accessory:glasses",
+    "swatch": "#1f1b2e"
+   },
+   {
+    "kind": "accessory:necklace",
+    "swatch": "#c9ced8"
+   },
+   {
+    "kind": "accessory:medal",
+    "swatch": "#c43cff"
+   },
+   {
+    "kind": "accessory:bag",
+    "swatch": "#1f1b2e"
+   }
+  ],
+  "topper": [
+   {
+    "kind": "topper:jacket",
+    "swatch": "#2a2438"
+   },
+   {
+    "kind": "topper:cap",
+    "swatch": "#1f1b2e"
+   },
+   {
+    "kind": "topper:headband",
+    "swatch": "#7a1fa8"
+   },
+   {
+    "kind": "topper:hat",
+    "swatch": "#2a2438"
+   }
+  ]
+ },
+ "fairy": {
+  "hair": [
+   {
+    "kind": "hair:curly",
+    "swatch": "#58c27d"
+   },
+   {
+    "kind": "hair:long",
+    "swatch": "#a8e6cf"
+   },
+   {
+    "kind": "hair:braids",
+    "swatch": "#ff9ec4"
+   },
+   {
+    "kind": "hair:bun",
+    "swatch": "#b49cf0"
+   }
+  ],
+  "outfit": [
+   {
+    "kind": "outfit:fairy",
+    "swatch": "#7ee0b0"
+   },
+   {
+    "kind": "outfit:short",
+    "swatch": "#ffb5d6"
+   },
+   {
+    "kind": "outfit:sport",
+    "swatch": "#58c27d"
+   },
+   {
+    "kind": "outfit:rock",
+    "swatch": "#3a2a5c"
+   }
+  ],
+  "shoes": [
+   {
+    "kind": "shoes:ballet",
+    "swatch": "#ffb5d6"
+   },
+   {
+    "kind": "shoes:heels",
+    "swatch": "#7ee0b0"
+   },
+   {
+    "kind": "shoes:sneaker",
+    "swatch": "#58c27d"
+   },
+   {
+    "kind": "shoes:boots",
+    "swatch": "#7a4a2a"
+   }
+  ],
+  "makeup": [
+   {
+    "kind": "makeup:0",
+    "swatch": "#f06b9c"
+   },
+   {
+    "kind": "makeup:1",
+    "swatch": "#e0608a"
+   },
+   {
+    "kind": "makeup:2",
+    "swatch": "#c8365e"
+   },
+   {
+    "kind": "makeup:3",
+    "swatch": "#d890e0"
+   }
+  ],
+  "accessory": [
+   {
+    "kind": "accessory:wand",
+    "swatch": "#c9923a"
+   },
+   {
+    "kind": "accessory:necklace",
+    "swatch": "#7ee0b0"
+   },
+   {
+    "kind": "accessory:bag",
+    "swatch": "#ffb5d6"
+   },
+   {
+    "kind": "accessory:glasses",
+    "swatch": "#ff7eb6"
+   }
+  ],
+  "topper": [
+   {
+    "kind": "topper:flowers",
+    "swatch": "#ff7eb6"
+   },
+   {
+    "kind": "topper:headband",
+    "swatch": "#7ee0b0"
+   },
+   {
+    "kind": "topper:crown",
+    "swatch": "#ffe36e"
+   },
+   {
+    "kind": "topper:hat",
+    "swatch": "#a8e6cf"
+   }
+  ]
+ },
+ "chef": {
+  "hair": [
+   {
+    "kind": "hair:bun",
+    "swatch": "#3b2418"
+   },
+   {
+    "kind": "hair:bob",
+    "swatch": "#c4402a"
+   },
+   {
+    "kind": "hair:braids",
+    "swatch": "#1c1c28"
+   },
+   {
+    "kind": "hair:pony",
+    "swatch": "#e8c060"
+   }
+  ],
+  "outfit": [
+   {
+    "kind": "outfit:chef",
+    "swatch": "#ffffff"
+   },
+   {
+    "kind": "outfit:mermaid",
+    "swatch": "#e8453c"
+   },
+   {
+    "kind": "outfit:sport",
+    "swatch": "#ff9a3c"
+   },
+   {
+    "kind": "outfit:fairy",
+    "swatch": "#ffd1a8"
+   }
+  ],
+  "shoes": [
+   {
+    "kind": "shoes:clog",
+    "swatch": "#ffffff"
+   },
+   {
+    "kind": "shoes:sneaker",
+    "swatch": "#e8453c"
+   },
+   {
+    "kind": "shoes:heels",
+    "swatch": "#ff9a3c"
+   },
+   {
+    "kind": "shoes:boots",
+    "swatch": "#3b2418"
+   }
+  ],
+  "makeup": [
+   {
+    "kind": "makeup:0",
+    "swatch": "#c8453c"
+   },
+   {
+    "kind": "makeup:1",
+    "swatch": "#a83a2a"
+   },
+   {
+    "kind": "makeup:2",
+    "swatch": "#e0608a"
+   },
+   {
+    "kind": "makeup:3",
+    "swatch": "#8e1b3a"
+   }
+  ],
+  "accessory": [
+   {
+    "kind": "accessory:ladle",
+    "swatch": "#b0b6c2"
+   },
+   {
+    "kind": "accessory:bag",
+    "swatch": "#ff6b5b"
+   },
+   {
+    "kind": "accessory:medal",
+    "swatch": "#e8453c"
+   },
+   {
+    "kind": "accessory:necklace",
+    "swatch": "#ffb84d"
+   }
+  ],
+  "topper": [
+   {
+    "kind": "topper:chefhat",
+    "swatch": "#ffffff"
+   },
+   {
+    "kind": "topper:cap",
+    "swatch": "#e8453c"
+   },
+   {
+    "kind": "topper:headband",
+    "swatch": "#ff9a3c"
+   },
+   {
+    "kind": "topper:hat",
+    "swatch": "#e8c887"
+   }
+  ]
+ },
+ "astronaut": {
+  "hair": [
+   {
+    "kind": "hair:braids",
+    "swatch": "#1c1c28"
+   },
+   {
+    "kind": "hair:bun",
+    "swatch": "#5a3a24"
+   },
+   {
+    "kind": "hair:bob",
+    "swatch": "#2a2a3a"
+   },
+   {
+    "kind": "hair:long",
+    "swatch": "#7a3b2a"
+   }
+  ],
+  "outfit": [
+   {
+    "kind": "outfit:astro",
+    "swatch": "#f2f4ff"
+   },
+   {
+    "kind": "outfit:sport",
+    "swatch": "#2e3a6e"
+   },
+   {
+    "kind": "outfit:rock",
+    "swatch": "#3a2a5c"
+   },
+   {
+    "kind": "outfit:short",
+    "swatch": "#59e0ff"
+   }
+  ],
+  "shoes": [
+   {
+    "kind": "shoes:moon",
+    "swatch": "#c9cfe6"
+   },
+   {
+    "kind": "shoes:sneaker",
+    "swatch": "#ffffff"
+   },
+   {
+    "kind": "shoes:boots",
+    "swatch": "#2e3a6e"
+   },
+   {
+    "kind": "shoes:clog",
+    "swatch": "#f2f4ff"
+   }
+  ],
+  "makeup": [
+   {
+    "kind": "makeup:0",
+    "swatch": "#b44a64"
+   },
+   {
+    "kind": "makeup:1",
+    "swatch": "#8e1b3a"
+   },
+   {
+    "kind": "makeup:2",
+    "swatch": "#d0607a"
+   },
+   {
+    "kind": "makeup:3",
+    "swatch": "#6a2a4a"
+   }
+  ],
+  "accessory": [
+   {
+    "kind": "accessory:badge",
+    "swatch": "#ffd23f"
+   },
+   {
+    "kind": "accessory:glasses",
+    "swatch": "#59e0ff"
+   },
+   {
+    "kind": "accessory:medal",
+    "swatch": "#ff5d73"
+   },
+   {
+    "kind": "accessory:necklace",
+    "swatch": "#c9cfe6"
+   }
+  ],
+  "topper": [
+   {
+    "kind": "topper:helmet",
+    "swatch": "#cfe3ff"
+   },
+   {
+    "kind": "topper:cap",
+    "swatch": "#2e3a6e"
+   },
+   {
+    "kind": "topper:hat",
+    "swatch": "#c9cfe6"
+   },
+   {
+    "kind": "topper:headband",
+    "swatch": "#59e0ff"
+   }
+  ]
+ }
+}

@@ -19,7 +19,8 @@ def materials(doll):
     m = {}
     m["skin_body"] = make_mat("body_skin", "#ffffff", 0.55, tex=skin_body_texture(skin), sheen=0.25, sheen_rough=0.6)
     m["skin_face"] = make_mat("face_skin", "#ffffff", 0.5, tex=skin_face_texture(skin, hair, "face_" + doll["id"] + ".jpg"), sheen=0.2, sheen_rough=0.6)
-    m["lid"] = m["skin_body"]
+    m["lid_up"] = make_mat("lid_up", "#ffffff", 0.5, tex=lid_texture(skin, "lid_up_" + doll["id"] + ".png", "up"), sheen=0.2, sheen_rough=0.6)
+    m["lid_dn"] = make_mat("lid_dn", "#ffffff", 0.5, tex=lid_texture(skin, "lid_dn_" + doll["id"] + ".png", "dn"), sheen=0.2, sheen_rough=0.6)
     m["eye"] = make_mat("eye", "#ffffff", 0.3, tex=eye_texture(doll["eye"], "eye_" + doll["id"] + ".png"))
     m["cornea"] = make_mat("cornea", "#ffffff", 0.02, alpha=0.1, spec=1.0, coat=1.0, coat_rough=0.02)
     m["lash"] = make_mat("lash", "#1b1519", 0.45)
@@ -125,21 +126,7 @@ def build(did):
     hg, head, tree = build_head(root, d, mats)
     build_face_parts(root, d, mats, tree)
     underwear(root, mats)
-    if did == "princess":
-        princess_variants(root, d, mats)
-    else:
-        build_hair(root, d, mats, name="slot_hair_v0")
-        parts = {
-            "athlete": (athlete_outfit, athlete_shoes, athlete_accessory, athlete_topper),
-            "rocker": (rocker_outfit, rocker_shoes, rocker_accessory, rocker_topper),
-            "fairy": (fairy_outfit, fairy_shoes, fairy_accessory, fairy_topper),
-            "chef": (chef_outfit, chef_shoes, chef_accessory, chef_topper),
-            "astronaut": (astro_outfit, astro_shoes, astro_accessory, astro_topper),
-        }[did]
-        for fn, slot in zip(parts, ("outfit", "shoes", "accessory", "topper")):
-            fn(root, d, mats, name=f"slot_{slot}_v0")
-        mk = node("slot_makeup_v0", root)
-        head_mesh("makeup_face", mats["makeup"], mk, off=0.0012)
+    build_variants(root, d, mats)
     bake_scene_ao()
     style = {"princess": "twirl", "athlete": "pump", "rocker": "rock", "fairy": "flutter", "chef": "chef", "astronaut": "astro"}[did]
     rig_scene(style)

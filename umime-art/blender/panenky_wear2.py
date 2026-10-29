@@ -261,8 +261,8 @@ def fairy_shoes(root, d, M, name=None):
                 idx = int(np.argmin(np.abs(path[:, 2] - z)))
                 pc = path[idx]
                 a_ = ph0 + u * 7.5
-                pts.append([pc[0] + (wid[idx] + 0.0045) * math.cos(a_), pc[1] + (thk[idx] + 0.0045) * math.sin(a_), z])
-            tube(np.array(pts), 0.0055, 0.0014, n=6, mat=b, name="ribbon", parent=g, cap=True)
+                pts.append([pc[0] + (wid[idx] + 0.0070) * math.cos(a_), pc[1] + (thk[idx] + 0.0070) * math.sin(a_), z])
+            tube(np.array(pts), 0.0085, 0.0030, n=6, mat=b, name="ribbon", parent=g, cap=True)
     return g
 
 

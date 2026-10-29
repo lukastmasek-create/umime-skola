@@ -109,6 +109,7 @@ export function Fill({
           seconds={seconds}
           stats={[{ label: t.mistakes, value: String(mistakes) }]}
           results={results}
+          questions={questions}
           onAgain={restart}
           backHref={backHref}
         />

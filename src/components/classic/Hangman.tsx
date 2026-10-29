@@ -122,6 +122,7 @@ export function Hangman({ t, questions, backHref }: { t: ClassicText; questions:
             { label: t.mistakes, value: String(totalWrong) },
           ]}
           results={results}
+          questions={questions}
           onAgain={restart}
           backHref={backHref}
         />

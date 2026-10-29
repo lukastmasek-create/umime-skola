@@ -150,6 +150,7 @@ export function Scramble({ t, questions, backHref }: { t: ClassicText; questions
             { label: t.mistakes, value: String(mistakes) },
           ]}
           results={results}
+          questions={questions}
           onAgain={restart}
           backHref={backHref}
         />

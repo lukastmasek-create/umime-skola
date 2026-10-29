@@ -23,7 +23,7 @@ type Load = { state: "loading" } | { state: "guest" } | { state: "error" } | { s
 const normalize = (value: string) => value.trim().toLowerCase();
 
 // Opakování otázek, které hráč dřív zkazil: po jedné, s okamžitou kontrolou.
-export function ReviewRunner({ locale }: { locale: Locale }) {
+export function ReviewRunner({ locale, courseId }: { locale: Locale; courseId?: string }) {
   const t = getReviewText(locale);
   const [load, setLoad] = useState<Load>({ state: "loading" });
   const [index, setIndex] = useState(0);
@@ -37,7 +37,7 @@ export function ReviewRunner({ locale }: { locale: Locale }) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/opakovani")
+    fetch(courseId ? `/api/opakovani?course=${encodeURIComponent(courseId)}` : "/api/opakovani")
       .then((r) => r.json())
       .then((d) => {
         if (cancelled) return;
@@ -49,7 +49,7 @@ export function ReviewRunner({ locale }: { locale: Locale }) {
     return () => {
       cancelled = true;
     };
-  }, [round]);
+  }, [round, courseId]);
 
   function restart() {
     setLoad({ state: "loading" });

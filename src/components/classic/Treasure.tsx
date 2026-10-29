@@ -130,6 +130,7 @@ export function Treasure({
             { label: t.treasure.chest, value: `${chestsFound}/3` },
           ]}
           results={results}
+          questions={questions}
           onAgain={restart}
           backHref={backHref}
         />

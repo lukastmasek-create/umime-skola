@@ -77,6 +77,7 @@ export function Matching({ t, questions, backHref }: { t: ClassicText; questions
           seconds={seconds}
           stats={[{ label: t.mistakes, value: String(mistakes) }]}
           results={results}
+          questions={questions}
           onAgain={restart}
           backHref={backHref}
         />

@@ -146,6 +146,7 @@ export function Blitz({
             { label: t.mistakes, value: String(pen) },
           ]}
           results={results}
+          questions={questions}
           onAgain={restart}
           backHref={backHref}
         >

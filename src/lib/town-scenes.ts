@@ -317,3 +317,109 @@ export function confettiBurst(canvas: HTMLCanvasElement, at: Pt, seconds = 3) {
     ctx.clearRect(0, 0, w, h);
   };
 }
+
+
+// ---------------------------------------------------------------------------------------------- denní doba a počasí
+export type DayPhase = "dawn" | "day" | "dusk" | "night";
+
+/** Fáze dne podle místní hodiny (0..24, může být desetinná). */
+export function dayPhaseOf(hour: number): DayPhase {
+  if (hour >= 21 || hour < 5) return "night";
+  if (hour < 8) return "dawn";
+  if (hour >= 18) return "dusk";
+  return "day";
+}
+
+/** Barevný závoj přes městečko pro soumrak a svítání (ve dne a v noci žádný). */
+export const PHASE_TINT: Record<DayPhase, string | null> = {
+  dawn: "linear-gradient(180deg, rgba(255,170,120,0.28), rgba(255,220,170,0.10) 60%, rgba(255,255,255,0))",
+  day: null,
+  dusk: "linear-gradient(180deg, rgba(255,110,70,0.32), rgba(190,80,140,0.18) 60%, rgba(60,40,110,0.10))",
+  night: null,
+};
+
+export type WeatherId = "clear" | "cloudy" | "rain" | "fog" | "snow";
+
+/** Počasí dne se počítá z data (a měsíce), takže ho všichni hráči vidí stejné. Sníh jen v zimě. */
+export function weatherForDay(day: string): WeatherId {
+  let h = 2166136261;
+  for (let i = 0; i < day.length; i++) h = Math.imul(h ^ day.charCodeAt(i), 16777619);
+  const r = ((h >>> 0) % 1000) / 1000;
+  const month = Number(day.slice(5, 7));
+  const winter = month === 12 || month <= 2;
+  if (winter && r < 0.4) return "snow";
+  if (r < 0.52) return "clear";
+  if (r < 0.72) return "cloudy";
+  if (r < 0.88) return "rain";
+  return "fog";
+}
+
+/** Plátno s počasím: déšť s kapkami a vlnkami, sněžení, mlha ve vrstvách. `strength` 0..1. */
+export function createWeatherFx(canvas: HTMLCanvasElement, id: WeatherId) {
+  const hash = (n: number) => {
+    const v = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+    return v - Math.floor(v);
+  };
+  const flakes = Array.from({ length: 150 }, (_, i) => ({ x: hash(i + 1), y: hash(i * 3 + 7), s: 0.4 + hash(i * 5 + 2) * 0.7, w: hash(i * 11 + 3) }));
+  let last = 0;
+  return {
+    draw(now: number, strength: number) {
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      const w = canvas.width;
+      const h = canvas.height;
+      const dt = last ? Math.min(0.05, (now - last) / 1000) : 0.016;
+      last = now;
+      const t = now / 1000;
+      ctx.clearRect(0, 0, w, h);
+      if (id === "clear" || strength <= 0.01) return;
+      const u = h / 700;
+      if (id === "cloudy") {
+        ctx.fillStyle = `rgba(90,105,135,${0.16 * strength})`;
+        ctx.fillRect(0, 0, w, h);
+        return;
+      }
+      if (id === "fog") {
+        for (let k = 0; k < 4; k++) {
+          const y = h * (0.35 + k * 0.17) + Math.sin(t * 0.2 + k * 2) * 12 * u;
+          const g = ctx.createLinearGradient(0, y - 90 * u, 0, y + 90 * u);
+          g.addColorStop(0, "rgba(235,242,250,0)");
+          g.addColorStop(0.5, `rgba(235,242,250,${0.34 * strength})`);
+          g.addColorStop(1, "rgba(235,242,250,0)");
+          ctx.fillStyle = g;
+          ctx.fillRect(((t * 8 * (k + 1)) % 60) - 60, y - 90 * u, w + 120, 180 * u);
+        }
+        return;
+      }
+      if (id === "snow") {
+        ctx.fillStyle = "rgba(255,255,255,0.9)";
+        for (const f of flakes) {
+          f.y += (0.05 + 0.05 * f.s) * dt * 1.4;
+          if (f.y > 1.02) f.y = -0.02;
+          const x = (f.x + Math.sin(t * 0.7 + f.w * 9) * 0.01) * w;
+          ctx.globalAlpha = Math.min(1, strength) * (0.55 + 0.4 * f.s * 0.6);
+          ctx.beginPath();
+          ctx.arc(x, f.y * h, (1.2 + f.s * 1.8) * u, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        return;
+      }
+      // rain
+      ctx.fillStyle = `rgba(40,60,100,${0.12 * strength})`;
+      ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = `rgba(210,230,255,${0.55 * strength})`;
+      ctx.lineWidth = Math.max(1, 1.2 * u);
+      ctx.beginPath();
+      for (const f of flakes) {
+        f.y += (0.9 + 0.5 * f.s) * dt;
+        if (f.y > 1.02) f.y -= 1.05;
+        const x = f.x * w + f.y * 30 * u;
+        const y = f.y * h;
+        ctx.moveTo(x, y);
+        ctx.lineTo(x - 5 * u, y - 16 * u * (0.6 + f.s * 0.5));
+      }
+      ctx.stroke();
+    },
+  };
+}

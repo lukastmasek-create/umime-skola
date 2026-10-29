@@ -9,12 +9,20 @@ export type TownHubText = {
   skip: string;
   night: string;
   day: string;
+  hero: { title: string; button: string; pick: string };
+  auto: string;
+  weather: Record<"clear" | "cloudy" | "rain" | "fog" | "snow", string>;
+  phases: Record<"dawn" | "day" | "dusk" | "night", string>;
   quests: { title: string; open: string; text: string };
   collect: { title: string; text: string; got: string; all: string; login: string; left: string };
   mine: { title: string; text: string; empty: string; open: string };
 };
 
 const cs: TownHubText = {
+  hero: { title: "Vyber si hrdinu", button: "Převléct hrdinu", pick: "Vybrat" },
+  auto: "Denní doba podle hodin",
+  weather: { clear: "Jasno", cloudy: "Oblačno", rain: "Prší", fog: "Mlha", snow: "Sněží" },
+  phases: { dawn: "Svítání", day: "Den", dusk: "Soumrak", night: "Noc" },
   nav: "Městečko",
   title: "Naše městečko",
   subtitle: "Prostředí, odkud se dostaneš všude: do školy na kurzy, do herny, na náměstí do obchodu, k věži s žebříčky i do přístavu a na vesmírnou stanici. Cestou sbírej poklady a plň denní úkoly.",
@@ -42,6 +50,10 @@ const cs: TownHubText = {
   mine: { title: "Moje městečko", text: "Zvláštní stavby z obchodu stojí na tvých pozemcích v městečku.", empty: "Zatím nemáš žádnou speciální stavbu. V obchodě je koupíš a postavíš.", open: "Stavět ve městě" },
 };
 const en: TownHubText = {
+  hero: { title: "Choose your hero", button: "Change hero", pick: "Choose" },
+  auto: "Time of day follows the clock",
+  weather: { clear: "Clear", cloudy: "Cloudy", rain: "Rainy", fog: "Foggy", snow: "Snowy" },
+  phases: { dawn: "Dawn", day: "Day", dusk: "Dusk", night: "Night" },
   nav: "Town",
   title: "Our town",
   subtitle: "A place that leads everywhere: to school for courses, to the arcade, the square with the shop, the tower with leaderboards, and to the harbour and space station. Collect treasures and finish daily tasks on the way.",
@@ -69,6 +81,10 @@ const en: TownHubText = {
   mine: { title: "My town", text: "The special buildings from the shop stand on your plots in town.", empty: "You have no special building yet. Buy and build them in the shop.", open: "Build in the city" },
 };
 const de: TownHubText = {
+  hero: { title: "Wähle deinen Helden", button: "Held wechseln", pick: "Wählen" },
+  auto: "Tageszeit nach der Uhr",
+  weather: { clear: "Klar", cloudy: "Bewölkt", rain: "Regen", fog: "Nebel", snow: "Schnee" },
+  phases: { dawn: "Morgendämmerung", day: "Tag", dusk: "Abenddämmerung", night: "Nacht" },
   nav: "Städtchen",
   title: "Unser Städtchen",
   subtitle: "Ein Ort, von dem man überallhin kommt: zur Schule für Kurse, in die Spielhalle, zum Marktplatz mit dem Shop, zum Turm mit den Ranglisten sowie zum Hafen und zur Raumstation. Sammle unterwegs Schätze und erledige Tagesaufgaben.",
@@ -96,6 +112,10 @@ const de: TownHubText = {
   mine: { title: "Mein Städtchen", text: "Die Spezialgebäude aus dem Shop stehen auf deinen Grundstücken im Städtchen.", empty: "Du hast noch kein Spezialgebäude. Kaufe und baue sie im Shop.", open: "In der Stadt bauen" },
 };
 const ru: TownHubText = {
+  hero: { title: "Выбери героя", button: "Сменить героя", pick: "Выбрать" },
+  auto: "Время суток по часам",
+  weather: { clear: "Ясно", cloudy: "Облачно", rain: "Дождь", fog: "Туман", snow: "Снег" },
+  phases: { dawn: "Рассвет", day: "День", dusk: "Сумерки", night: "Ночь" },
   nav: "Городок",
   title: "Наш городок",
   subtitle: "Место, откуда можно попасть куда угодно: в школу на курсы, в игровой зал, на площадь в магазин, к башне с рейтингами, в гавань и на космическую станцию. По пути собирай сокровища и выполняй задания дня.",

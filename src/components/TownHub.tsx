@@ -7,11 +7,17 @@ import { DailyChallenges } from "@/components/DailyChallenges";
 import { Modal, type Snapshot } from "@/components/ShopView";
 import { readCam, runPath, runPirate, runSpace, type Geo, type Handle, type Pt } from "@/lib/market-cinema";
 import { runWorld } from "@/lib/market-cinema-worlds";
-import { confettiBurst, createEventFx, eventForDay, EVENT_SHOT, runShots, type Handle as ShotHandle, type Shot } from "@/lib/town-scenes";
+import { confettiBurst, createEventFx, createWeatherFx, dayPhaseOf, eventForDay, EVENT_SHOT, PHASE_TINT, runShots, weatherForDay, type Handle as ShotHandle, type Shot } from "@/lib/town-scenes";
 import { TownNpcPanel } from "@/components/TownNpcPanel";
+import { MiniGame } from "@/components/TownMini";
+import { TownStory } from "@/components/TownStory";
+import { getTownStoryText } from "@/i18n/town-story";
+import { MINI_IDS, PLAYS_PER_DAY, type MiniId } from "@/lib/town-mini";
+import { getTownMiniText } from "@/i18n/town-mini";
 import { getTownLifeText } from "@/i18n/town-life";
 import { type NpcKey, type NpcSnapshot } from "@/lib/town-npc";
 import { sfx, sfxEnabled, setSfxEnabled } from "@/lib/market-sfx";
+import { HERO_LOOKS, getHeroLook, heroSpriteUrl, setHeroLook } from "@/lib/hero";
 import { COLLECT_ICON, COLLECT_COUNT, dailySpots, type CollectSpot } from "@/lib/town";
 import { dayKey } from "@/lib/shop";
 import { getMarketText } from "@/i18n/market";
@@ -43,6 +49,7 @@ type Hub = {
   hrdina: Pt;
 };
 const HUB = hubData as unknown as Hub;
+const MINI_ICON: Record<MiniId, string> = { fishing: "🎣", harvest: "🥕", bakery: "🥐" };
 
 const SKY = 160; // výška oblohy nad obrázkem městečka (v px obrázku)
 const BOX_H = HUB.h + SKY;
@@ -166,7 +173,15 @@ export function TownHub({ locale }: { locale: Locale }) {
   const [phase, setPhase] = useState<Phase>(null);
   const [gen, setGen] = useState(0);
   const [sound, setSound] = useState(true);
-  const [night, setNight] = useState(false);
+  const [mode, setMode] = useState<"auto" | "day" | "night">("auto");
+  const [hour, setHour] = useState(12);
+  const [look, setLook] = useState(0);
+  const [pickHero, setPickHero] = useState(false);
+  const [miniOpen, setMiniOpen] = useState<MiniId | null>(null);
+  const [storyOpen, setStoryOpen] = useState(false);
+  const storyText = getTownStoryText(locale);
+  const [miniLeft, setMiniLeft] = useState<Record<MiniId, number>>({ fishing: PLAYS_PER_DAY, harvest: PLAYS_PER_DAY, bakery: PLAYS_PER_DAY });
+  const miniText = getTownMiniText(locale);
   const [board, setBoard] = useState(false);
   const [hover, setHover] = useState<string | null>(null);
   const [shop, setShop] = useState<Snapshot | null>(null);
@@ -207,6 +222,12 @@ export function TownHub({ locale }: { locale: Locale }) {
   const openRef = useRef<NpcKey | null>(null);
   const started = useRef(false);
   const eventId = useMemo(() => eventForDay(dayKey()), []);
+  const weather = useMemo(() => (eventForDay(dayKey()) === "rain" ? "rain" : weatherForDay(dayKey())), []);
+  const wxCv = useRef<HTMLCanvasElement>(null);
+  const phaseNow = dayPhaseOf(hour);
+  const night = mode === "night" || (mode === "auto" && phaseNow === "night");
+  const tint = mode === "auto" ? PHASE_TINT[phaseNow] : null;
+  const lampsOn = night || (mode === "auto" && phaseNow === "dusk");
   const eventText = tl.events.find((e) => e.id === eventId) ?? tl.events[0];
 
   useEffect(() => {
@@ -215,7 +236,12 @@ export function TownHub({ locale }: { locale: Locale }) {
   useEffect(() => {
     const id = window.setTimeout(() => {
       setSound(sfxEnabled());
-      if (ls.get("town-night") === "1") setNight(true);
+      const m = ls.get("town-mode");
+      if (m === "day" || m === "night" || m === "auto") setMode(m);
+      else if (ls.get("town-night") === "1") setMode("night");
+      const d = new Date();
+      setHour(d.getHours() + d.getMinutes() / 60);
+      setLook(getHeroLook());
     }, 0);
     return () => window.clearTimeout(id);
   }, []);
@@ -429,6 +455,35 @@ export function TownHub({ locale }: { locale: Locale }) {
       io.disconnect();
     };
   }, [eventId, gen]);
+  // počasí dne (déšť, sníh, mlha) na samostatném plátně nad městečkem
+  useEffect(() => {
+    const canvas = wxCv.current;
+    const bx = box.current;
+    if (!canvas || !bx || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const fx = createWeatherFx(canvas, weather);
+    const size = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      canvas.width = Math.round(bx.clientWidth * dpr);
+      canvas.height = Math.round(bx.clientHeight * dpr);
+    };
+    size();
+    const ro = new ResizeObserver(size);
+    ro.observe(bx);
+    let raf = 0;
+    let visible = true;
+    const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
+    io.observe(bx);
+    const frame = (now: number) => {
+      raf = requestAnimationFrame(frame);
+      if (visible) fx.draw(now, 0.85);
+    };
+    raf = requestAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      io.disconnect();
+    };
+  }, [weather, gen]);
   useEffect(() => {
     const base = eventId === "fireworks" ? (night ? 0.7 : 0) : (AMBIENT_FX[eventId] ?? 0);
     if (!cine) fxStrength.current = base;
@@ -586,14 +641,14 @@ export function TownHub({ locale }: { locale: Locale }) {
     const hs = heroSpr.current;
     const toRest = () => {
       if (hs) {
-        hs.style.backgroundImage = "url(/home/mesto/hrdina-stoji.webp)";
+        hs.style.backgroundImage = `url(${heroSpriteUrl("stoji", getHeroLook())})`;
         hs.style.animationDuration = "3s";
       }
     };
     playShots("reward", [{ to: toBox(HUB.hrdina), zoom: 2.4, dur: 1.0, hold: 4.2, caption: `${tl.reward.title} ${tl.reward.caption}`, at: () => {
       sfx.horn();
       if (hs) {
-        hs.style.backgroundImage = "url(/home/mesto/hrdina-radost.webp)";
+        hs.style.backgroundImage = `url(${heroSpriteUrl("radost", getHeroLook())})`;
         hs.style.animationDuration = "1.1s";
       }
       if (c) {
@@ -656,11 +711,21 @@ export function TownHub({ locale }: { locale: Locale }) {
     setSound(next);
     setSfxEnabled(next);
   }
+  function openMini(id: MiniId) {
+    if (phase || cine) return;
+    setOpenNpc(null);
+    setMiniOpen(id);
+    fetch("/api/mestecko/minihra")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.mini) setMiniLeft({ fishing: d.mini.fishing.left, harvest: d.mini.harvest.left, bakery: d.mini.bakery.left });
+      })
+      .catch(() => {});
+  }
   function toggleNight() {
-    setNight((v) => {
-      ls.set("town-night", v ? "0" : "1");
-      return !v;
-    });
+    const next = mode === "auto" ? "day" : mode === "day" ? "night" : "auto";
+    setMode(next);
+    ls.set("town-mode", next);
   }
   function talkTo(key: NpcKey) {
     if (phase || cine) return;
@@ -809,10 +874,10 @@ export function TownHub({ locale }: { locale: Locale }) {
             </div>
             {/* hrdina */}
             <div ref={hero} className="pointer-events-none absolute z-[5]" style={{ ...at(HUB.hrdina), width: `${FIG * 100}%`, aspectRatio: "1 / 1", transform: `translate(-50%, ${-(0.5 + 0.55 / 1.6) * 100}%)` }}>
-              <span ref={heroSpr} aria-hidden className="town-sprite block h-full w-full" style={{ ["--n" as string]: 24, backgroundImage: "url(/home/mesto/hrdina-stoji.webp)", animationDuration: "3s" }} />
+              <span ref={heroSpr} aria-hidden className="town-sprite block h-full w-full" style={{ ["--n" as string]: 24, backgroundImage: `url(${heroSpriteUrl("stoji", look)})`, animationDuration: "3s" }} />
             </div>
             {/* noc: světla lamp */}
-            {dark &&
+            {lampsOn &&
               HUB.lampy.map((p, i) => (
                 <i key={i} aria-hidden className="hub-lamp pointer-events-none absolute" style={{ ...at(p), animationDelay: `${-(i % 5) * 0.6}s` }} />
               ))}
@@ -820,6 +885,15 @@ export function TownHub({ locale }: { locale: Locale }) {
             <canvas ref={fxCv} aria-hidden className="pointer-events-none absolute inset-0 z-[6] h-full w-full" />
             <canvas ref={confettiCv} aria-hidden className="pointer-events-none absolute inset-0 z-[8] h-full w-full" />
 
+            {/* minihry: rybaření v laguně, sklizeň na farmě, pekárna */}
+            {MINI_IDS.map((id) => {
+              const pos: Pt = id === "fishing" ? [HUB.voda.laguna[0], HUB.voda.laguna[1] - 0.004] : id === "harvest" ? [(HUB.npc.farmar?.[0] ?? 0.9) - 0.035, (HUB.npc.farmar?.[1] ?? 0.82) - 0.01] : [(HUB.npc.pekar?.[0] ?? 0.4) + 0.045, (HUB.npc.pekar?.[1] ?? 0.7) - 0.01];
+              return (
+                <button key={id} type="button" aria-label={miniText.names[id]} title={miniText.names[id]} onClick={() => openMini(id)} className="town-collect absolute z-[7] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-1.5 py-0.5 leading-none shadow-[0_2px_0_var(--shadow-ink)]" style={{ ...at(pos), fontSize: "clamp(16px, 2.3cqw, 30px)" }}>
+                  {id === "fishing" ? "🎣" : id === "harvest" ? "🥕" : "🥐"}
+                </button>
+              );
+            })}
             {/* poklady dne */}
             {col.spots.filter((s) => !col.collected.includes(s.idx)).map((s) => (
               <button key={s.idx} type="button" aria-label={tt.collect.title} onClick={() => collect(s)} className="town-collect absolute z-[7] -translate-x-1/2 -translate-y-1/2 leading-none" style={{ ...at(spotPos(s)), fontSize: "clamp(18px, 2.6cqw, 34px)", animationDelay: `${(s.idx % 4) * -0.5}s` }}>
@@ -859,6 +933,12 @@ export function TownHub({ locale }: { locale: Locale }) {
           </div>
 
           {dark && <div aria-hidden className="pointer-events-none absolute inset-0 bg-[#0b0925]/25" />}
+          {tint && <div aria-hidden className="pointer-events-none absolute inset-0 z-[12]" style={{ background: tint, transition: "opacity 1s" }} />}
+          <canvas ref={wxCv} aria-hidden className="pointer-events-none absolute inset-0 z-[13] h-full w-full" />
+          <div className="pointer-events-none absolute left-3 top-14 z-20 flex items-center gap-2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-sm font-extrabold">
+            <span aria-hidden>{{ clear: "☀️", cloudy: "⛅", rain: "🌧️", fog: "🌫️", snow: "❄️" }[weather]}</span>
+            {tt.weather[weather]} · {tt.phases[phaseNow]}
+          </div>
           <div className="pointer-events-none absolute left-3 top-3 z-20 flex items-center gap-2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-sm font-extrabold">
             🎁 {left > 0 ? tt.collect.left.replace("{n}", String(left)) : "✓"}
           </div>
@@ -902,9 +982,17 @@ export function TownHub({ locale }: { locale: Locale }) {
               <span aria-hidden>🎬</span>
               <span className="sr-only">{tl.ui.replay}</span>
             </button>
-            <button type="button" onClick={toggleNight} aria-pressed={night} title={night ? tt.day : tt.night} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110">
-              <span aria-hidden>{night ? "☀️" : "🌙"}</span>
-              <span className="sr-only">{night ? tt.day : tt.night}</span>
+            <button type="button" onClick={() => !busyScene && setStoryOpen(true)} disabled={busyScene} title={storyText.button} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110 disabled:opacity-50">
+              <span aria-hidden>📖</span>
+              <span className="sr-only">{storyText.button}</span>
+            </button>
+            <button type="button" onClick={() => !busyScene && setPickHero(true)} disabled={busyScene} title={tt.hero.button} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110 disabled:opacity-50">
+              <span aria-hidden>🧑‍🎤</span>
+              <span className="sr-only">{tt.hero.button}</span>
+            </button>
+            <button type="button" onClick={toggleNight} title={mode === "auto" ? tt.auto : mode === "day" ? tt.day : tt.night} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110">
+              <span aria-hidden>{mode === "auto" ? "🕒" : mode === "day" ? "☀️" : "🌙"}</span>
+              <span className="sr-only">{mode === "auto" ? tt.auto : mode === "day" ? tt.day : tt.night}</span>
             </button>
             <button type="button" onClick={toggleSound} aria-pressed={sound} title={sound ? st.soundOn : st.soundOff} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110">
               <span aria-hidden>{sound ? "🔊" : "🔇"}</span>
@@ -965,6 +1053,41 @@ export function TownHub({ locale }: { locale: Locale }) {
         </div>
       </section>
 
+      {storyOpen && (
+        <Modal title={`📖 ${storyText.title}`} onClose={() => setStoryOpen(false)} closeLabel={m.close}>
+          <TownStory locale={locale} onClose={() => setStoryOpen(false)} />
+        </Modal>
+      )}
+      {miniOpen && (
+        <Modal title={`${MINI_ICON[miniOpen]} ${miniText.names[miniOpen]}`} onClose={() => setMiniOpen(null)} closeLabel={m.close}>
+          <MiniGame key={miniOpen} locale={locale} game={miniOpen} left={miniLeft[miniOpen]} onClose={() => setMiniOpen(null)} onReward={() => {}} />
+        </Modal>
+      )}
+      {pickHero && (
+        <Modal title={`🧑‍🎤 ${tt.hero.title}`} onClose={() => setPickHero(false)} closeLabel={m.close}>
+          <div className="grid grid-cols-3 gap-2">
+            {Array.from({ length: HERO_LOOKS }, (_, k) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => {
+                  setLook(k);
+                  setHeroLook(k);
+                  setPickHero(false);
+                  const hs = heroSpr.current;
+                  if (hs) hs.style.backgroundImage = `url(${heroSpriteUrl("stoji", k)})`;
+                }}
+                aria-pressed={look === k}
+                className="card card-hover flex flex-col items-center gap-1 p-2 text-xs font-bold"
+                style={look === k ? { borderColor: "var(--brand-500)", background: "var(--surface-muted)" } : undefined}
+              >
+                <span aria-hidden className="town-sprite block h-20 w-20" style={{ ["--n" as string]: 24, backgroundImage: `url(${heroSpriteUrl("stoji", k)})`, animationDuration: "3s" }} />
+                {tt.hero.pick}
+              </button>
+            ))}
+          </div>
+        </Modal>
+      )}
       {board && (
         <Modal title={`📋 ${tt.quests.title}`} onClose={closeBoard} closeLabel={m.close}>
           <DailyChallenges locale={locale} />

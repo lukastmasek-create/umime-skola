@@ -1,69 +1,111 @@
-"""Čtyři varianty každého kusu oblečení (vlasy, šaty, boty, make-up, doplněk, čepice). Princezna má různé tvary, ostatní panenky mají
-jedinou variantu (web jim nabídne čtyři barevné odstíny)."""
+"""Čtyři varianty každého kusu oblečení pro každou panenku (vlasy, šaty, boty, make-up, doplněk, čepice).
+Tvary a barvy jsou v panenky_sets.py; tady se z nich staví uzly slot_<slot>_v<k>."""
 from panenky_wear2 import *  # noqa: F401,F403
+import panenky_sets as SETS
 
-SLOT_NAMES = ("hair", "outfit", "shoes", "makeup", "accessory", "topper")
+SLOT_NAMES = SETS.SLOTS
 
-HAIR = [("long", "#f4c542"), ("bob", "#b5532a"), ("pony", "#3a2418"), ("curly", "#e8a0c4")]
-OUTFIT_COLORS = [("#ff7eb6", "#ffd1e8"), ("#6fb3ff", "#ffffff"), ("#8a4bd0", "#e6dcff"), ("#7ee0b0", "#ffe36e")]
-SHOE_COLORS = [("#ff4f9a", "#ffd1e8"), ("#ffffff", "#ff7eb6"), ("#7a4a2a", "#e6b84a"), ("#d8b8ff", "#ffffff")]
-MAKEUP = [
-    dict(makeup=("#e0457b", "#c58bff", "#ff9ab8"), glitter=10, strength=1.0),
-    dict(makeup=("#d98a7a", "#e8c9a0", "#f4b6a0"), glitter=0, strength=0.55),
-    dict(makeup=("#b0102a", "#3a3a4a", "#d98a8a"), glitter=4, strength=1.0),
-    dict(makeup=("#2ec4b6", "#59c3ff", "#b890ff"), glitter=34, strength=1.0),
-]
-TOPPER_COLORS = [None, ("#ff7eb6", "#ffffff"), ("#ff7eb6", "#ffe36e"), ("#e8c887", "#ff7eb6")]
+OUTFIT_FN = {
+    "gown": (lambda *a, **k: princess_outfit(*a, spec=OUTFIT_SPECS[0], **k)),
+    "short": (lambda *a, **k: princess_outfit(*a, spec=OUTFIT_SPECS[1], **k)),
+    "mermaid": (lambda *a, **k: princess_outfit(*a, spec=OUTFIT_SPECS[2], **k)),
+    "summer": (lambda *a, **k: princess_outfit(*a, spec=OUTFIT_SPECS[3], **k)),
+    "sport": athlete_outfit,
+    "rock": rocker_outfit,
+    "fairy": fairy_outfit,
+    "chef": chef_outfit,
+    "astro": astro_outfit,
+}
+SHOES_FN = {"heels": princess_shoes, "sneaker": athlete_shoes, "boots": rocker_shoes, "ballet": fairy_shoes, "clog": chef_shoes, "moon": astro_shoes}
+ACC_FN = {
+    "necklace": princess_accessory, "glasses": rocker_accessory, "bag": princess_bag, "wand": fairy_accessory,
+    "medal": athlete_accessory, "ladle": chef_accessory, "badge": astro_accessory,
+}
+TOP_FN = {
+    "crown": princess_topper, "headband": princess_headband, "hat": princess_hat, "flowers": fairy_topper,
+    "cap": athlete_topper, "jacket": rocker_topper, "chefhat": chef_topper, "helmet": astro_topper,
+}
 
 
 def darker(h, k=0.55):
-    r, g, b = hex_rgb(h)
     return tuple(c * k for c in hex_lin(h)[:3]) + (1.0,)
 
 
-def princess_variants(root, d, M):
+def outfit_mats(Mv, kind, a, b, v):
+    n = f"_v{v}"
+    if kind == "astro":
+        Mv["outfit_a"] = make_mat("outfit_a" + n, a, 0.5, normal=nrm_quilt("suit_n.png"), sheen=0.5)
+    else:
+        Mv["outfit_a"] = make_mat("outfit_a" + n, a, 0.38, normal=nrm_weave(), sheen=1.0, sheen_rough=0.3, coat=0.25, coat_rough=0.25)
+    Mv["outfit_b"] = make_mat("outfit_b" + n, b, 0.4, normal=nrm_weave("weave_b.png", 0.6), sheen=0.8, sheen_rough=0.35, coat=0.15)
+    Mv["tulle"] = make_mat("outfit_tulle" + n, "#ffffff", 0.6, tex=tex_net(), alpha=0.5, sheen=0.6)
+    Mv["outfit_plaid"] = make_mat("outfit_plaid" + n, b, 0.6, tex=tex_plaid_gray("plaid.png"), sheen=0.3)
+    Mv["outfit_check"] = make_mat("outfit_check" + n, b, 0.62, tex=tex_check_gray("check.png"), sheen=0.5)
+    Mv["outfit_leaf"] = make_mat("outfit_leaf" + n, "#4fb06b", 0.45, sheen=0.7)
+
+
+def shoe_mats(Mv, kind, a, b, v):
+    n = f"_v{v}"
+    Mv["shoes_a"] = make_mat("shoes_a" + n, a, 0.45 if kind == "boots" else 0.4, normal=nrm_leather("boot_n.png") if kind == "boots" else None, sheen=0.15, coat=0.25, coat_rough=0.25)
+    Mv["shoes_b"] = make_mat("shoes_b" + n, b, 0.45, sheen=0.4)
+
+
+def acc_mats(Mv, kind, a, b, v):
+    n = f"_v{v}"
+    Mv["accessory_a"] = make_mat("accessory_a" + n, a, 0.3 if kind in ("glasses", "necklace") else 0.4, metal=1.0 if kind in ("glasses",) else 0.0, coat=0.3, coat_rough=0.3)
+    Mv["ribbon"] = make_mat("accessory_ribbon" + n, a, 0.45, sheen=0.8)
+    Mv["lens"] = make_mat("accessory_lens" + n, b, 0.05, alpha=0.5, coat=1.0, coat_rough=0.02, spec=1.0)
+    Mv["gem_blue"] = make_mat("gem_" + n, b, 0.06, coat=1.0, coat_rough=0.02, spec=1.0, emission=b, emission_strength=0.25)
+
+
+def top_mats(Mv, kind, a, b, v):
+    n = f"_v{v}"
+    if kind == "helmet":
+        Mv["topper_a"] = make_mat("topper_a" + n, "#dfeeff", 0.03, alpha=0.14, coat=1.0, coat_rough=0.02, spec=1.0)
+        Mv["topper_b"] = make_mat("topper_b" + n, b, 0.3, metal=0.8)
+    elif kind == "jacket":
+        Mv["topper_a"] = make_mat("topper_a" + n, a, 0.4, normal=nrm_leather("jacket_n.png"), coat=0.35, coat_rough=0.3)
+        Mv["topper_b"] = make_mat("topper_b" + n, b, 0.5, sheen=0.6)
+    elif kind == "chefhat":
+        Mv["topper_a"] = make_mat("topper_a" + n, a, 0.7, normal=nrm_weave("weave_h.png", 0.8), sheen=0.7)
+        Mv["topper_b"] = make_mat("topper_b" + n, b, 0.5, sheen=0.6)
+    else:
+        Mv["topper_a"] = make_mat("topper_a" + n, a, 0.85 if kind == "hat" else 0.55, normal=nrm_weave("weave_t.png", 0.8), sheen=0.8)
+        Mv["topper_b"] = make_mat("topper_b" + n, b, 0.5, sheen=0.6)
+
+
+def build_variants(root, d, M):
+    did = d["id"]
+    S = SETS
     for v in range(4):
         Mv = dict(M)
         # vlasy
-        kind, col = HAIR[v]
+        kind, col = S.HAIR[did][v]
         Mv["hair"] = make_mat(f"hair_a_v{v}", col, 0.36, tex=strand_texture(), sheen=0.5, sheen_rough=0.35, coat=0.15, coat_rough=0.3)
         Mv["hair_root"] = make_mat(f"hair_root_v{v}", darker(col), 0.55)
+        Mv["accessory_a"] = make_mat(f"hair_tie_v{v}", "#ff7eb6" if v % 2 else "#e6b84a", 0.4)
         build_hair(root, dict(d, hair=(kind, col)), Mv, name=f"slot_hair_v{v}")
         # šaty
-        a, b = OUTFIT_COLORS[v]
-        Mv["outfit_a"] = make_mat(f"outfit_a_v{v}", a, 0.38, normal=nrm_weave(), sheen=1.0, sheen_rough=0.3, coat=0.25, coat_rough=0.25)
-        Mv["outfit_b"] = make_mat(f"outfit_b_v{v}", b, 0.4, normal=nrm_weave("weave_b.png", 0.6), sheen=0.8, sheen_rough=0.35, coat=0.15)
-        Mv["tulle"] = make_mat(f"outfit_tulle_v{v}", "#ffffff", 0.6, tex=tex_net(), alpha=0.5, sheen=0.6)
-        princess_outfit(root, d, Mv, name=f"slot_outfit_v{v}", spec=OUTFIT_SPECS[v])
+        kind, a, b = S.OUTFIT[did][v]
+        outfit_mats(Mv, kind, a, b, v)
+        OUTFIT_FN[kind](root, d, Mv, name=f"slot_outfit_v{v}")
         # boty
-        sa, sb = SHOE_COLORS[v]
-        Mv["shoes_a"] = make_mat(f"shoes_a_v{v}", sa, 0.45 if v == 2 else 0.4, normal=nrm_leather("boot_n.png") if v == 2 else None, sheen=0.15, coat=0.25, coat_rough=0.25)
-        Mv["shoes_b"] = make_mat(f"shoes_b_v{v}", sb, 0.45, sheen=0.4)
-        [princess_shoes, athlete_shoes, rocker_shoes, fairy_shoes][v](root, d, Mv, name=f"slot_shoes_v{v}")
+        kind, a, b = S.SHOES[did][v]
+        shoe_mats(Mv, kind, a, b, v)
+        SHOES_FN[kind](root, d, Mv, name=f"slot_shoes_v{v}")
         # doplněk
-        if v == 1:
-            Mv["lens"] = make_mat("accessory_lens_v1", "#ff7eb6", 0.05, alpha=0.5, coat=1.0, coat_rough=0.02, spec=1.0)
-            Mv["accessory_a"] = make_mat("accessory_a_v1", "#e6b84a", 0.3, metal=1.0)
-            rocker_accessory(root, d, Mv, name="slot_accessory_v1")
-        elif v == 2:
-            Mv["accessory_a"] = make_mat("accessory_a_v2", "#ff7eb6", 0.4, coat=0.3, coat_rough=0.3)
-            princess_bag(root, d, Mv, name="slot_accessory_v2")
-        elif v == 3:
-            Mv["accessory_a"] = make_mat("accessory_a_v3", "#c9923a", 0.4)
-            fairy_accessory(root, d, Mv, name="slot_accessory_v3")
-        else:
-            princess_accessory(root, d, Mv, name="slot_accessory_v0")
-        # čepice
-        if v == 0:
-            princess_topper(root, d, Mv, name="slot_topper_v0")
-        else:
-            ta, tb = TOPPER_COLORS[v]
-            Mv["topper_a"] = make_mat(f"topper_a_v{v}", ta, 0.55 if v != 3 else 0.85, sheen=0.6)
-            Mv["topper_b"] = make_mat(f"topper_b_v{v}", tb, 0.5, sheen=0.6)
-            [None, princess_headband, fairy_topper, princess_hat][v](root, d, Mv, name=f"slot_topper_v{v}")
-        # make-up: samostatná překrývací hlava s texturou
-        mk = MAKEUP[v]
-        dm = dict(d, makeup=mk["makeup"])
-        Mv["makeup"] = make_mat(f"makeup_face_v{v}", "#ffffff", 0.45, tex=makeup_texture(dm, f"makeup_{d['id']}_v{v}.png", glitter=mk["glitter"], strength=mk["strength"]), alpha=1.0)
+        kind, a, b = S.ACCESSORY[did][v]
+        acc_mats(Mv, kind, a, b, v)
+        ACC_FN[kind](root, d, Mv, name=f"slot_accessory_v{v}")
+        # čepice, přilba, bunda
+        kind, a, b = S.TOPPER[did][v]
+        top_mats(Mv, kind, a, b, v)
+        TOP_FN[kind](root, d, Mv, name=f"slot_topper_v{v}")
+        # make-up: překrývací hlava s texturou + horní víčka
+        lips, shadow, blush = S.MAKEUP[did][v]
+        dm = dict(d, makeup=(lips, shadow, blush))
+        glitter = (22 if v == 3 else 6 if v == 0 else 0)
+        Mv["makeup"] = make_mat(f"makeup_face_v{v}", "#ffffff", 0.45, tex=makeup_texture(dm, f"makeup_{did}_v{v}.png", glitter=glitter, strength=1.0), alpha=1.0)
         n = node(f"slot_makeup_v{v}", root)
         head_mesh("makeup_face", Mv["makeup"], n, off=0.0012)
+        makeup_lids(n, dm, f"makeup_lid_{did}_v{v}", glitter=glitter)

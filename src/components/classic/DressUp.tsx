@@ -14,6 +14,9 @@ import { QuestionCard } from "./QuestionCard";
 // three.js se stahuje až při hře; bez WebGL se panenka kreslí jako SVG.
 const DollView3D = dynamic(() => import("./DollView3D"), { ssr: false });
 
+// Po dokončení se panenka uklání a pak předvádí přehlídkový krok; stálé id zajistí, že se klip přehraje jen jednou.
+const FINISH_EVENT: DollEvent = { id: 1_000_000, kind: "finish" };
+
 function DollStage({ doll, worn, mood, event, label, className }: { doll: Doll; worn: Worn; mood: Mood; event: DollEvent | null; label: string; className: string }) {
   const [failed, setFailed] = useState(false);
   if (failed) return <DollSvg doll={doll} worn={worn} mood={mood} className="mx-auto h-full w-auto" />;
@@ -67,12 +70,21 @@ export function DressUp({ t, questions, backHref }: { t: ClassicText; questions:
       setPicked(null);
       setTurn((n) => n + 1);
       if (ok) {
-        // správná odpověď: hráč si vybere jednu ze čtyř variant kusu
-        setChoosing(nextSlot);
-        setHoverPick(null);
-        setMood("happy");
-        setEvent({ id: Date.now(), kind: "happy" });
-        setMsg(`${d.yay} ${d.choose.replace("{slot}", d.slots[nextSlot].toLowerCase())}`);
+        const opts = doll ? optionsFor(doll, nextSlot) : [];
+        if (opts.length <= 1) {
+          // panenka má zatím jen jeden tvar kusu: nasadí se rovnou
+          setWorn((w) => ({ ...w, [nextSlot]: opts[0]?.pick ?? { v: 0, h: 0 } }));
+          setMood("happy");
+          setEvent({ id: Date.now(), kind: "dress", slot: nextSlot });
+          setMsg(`${ICON[nextSlot]} ${d.yay}`);
+        } else {
+          // správná odpověď: hráč si vybere jednu ze čtyř variant kusu
+          setChoosing(nextSlot);
+          setHoverPick(null);
+          setMood("happy");
+          setEvent({ id: Date.now(), kind: "happy" });
+          setMsg(`${d.yay} ${d.choose.replace("{slot}", d.slots[nextSlot].toLowerCase())}`);
+        }
       } else {
         setWrongs((n) => n + 1);
         setMood("sad");
@@ -175,6 +187,7 @@ export function DressUp({ t, questions, backHref }: { t: ClassicText; questions:
                   onClick={() => {
                     setDollId(p.id);
                     setMood("neutral");
+                    setEvent({ id: ++eventId.current, kind: "wave" });
                   }}
                 >
                   {d.start}: {name}
@@ -186,7 +199,7 @@ export function DressUp({ t, questions, backHref }: { t: ClassicText; questions:
       ) : over ? (
         <div className="flex flex-col gap-4">
           <div className="mx-auto w-full max-w-xs rounded-2xl border-2 border-[var(--edge)] p-3" style={{ background: `linear-gradient(180deg, ${doll.bg[0]}, ${doll.bg[1]})` }}>
-            <DollStage doll={doll} worn={worn} mood={filled >= SLOT_COUNT ? "happy" : "neutral"} event={event} label={d.dressed} className="h-[32rem] w-full" />
+            <DollStage doll={doll} worn={worn} mood={filled >= SLOT_COUNT ? "happy" : "neutral"} event={FINISH_EVENT} label={d.dressed} className="h-[32rem] w-full" />
           </div>
           <FinishCard
             t={t}
@@ -197,6 +210,7 @@ export function DressUp({ t, questions, backHref }: { t: ClassicText; questions:
               { label: t.mistakes, value: String(wrongs) },
             ]}
             results={results}
+          questions={questions}
             onAgain={restart}
             backHref={backHref}
           />
@@ -235,8 +249,7 @@ export function DressUp({ t, questions, backHref }: { t: ClassicText; questions:
                 <p className="text-lg font-bold">{d.choose.replace("{slot}", d.slots[choosing].toLowerCase())}</p>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {optionsFor(doll, choosing).map((o, i) => {
-                    const names = (d.shapes[doll.id] ?? null)?.[choosing];
-                    const label = names ? names[i] : d.option.replace("{n}", String(i + 1));
+                    const label = d.kinds[o.kind] ?? d.option.replace("{n}", String(i + 1));
                     return (
                       <button
                         key={i}
@@ -248,7 +261,7 @@ export function DressUp({ t, questions, backHref }: { t: ClassicText; questions:
                         onBlur={() => setHoverPick(null)}
                         className="card card-hover flex items-center gap-3 p-3 text-left text-sm font-bold"
                       >
-                        <span aria-hidden className="h-8 w-8 shrink-0 rounded-full border-2 border-[var(--edge)]" style={{ background: o.swatch, filter: o.hue ? `hue-rotate(${o.hue}deg)` : undefined }} />
+                        <span aria-hidden className="h-8 w-8 shrink-0 rounded-full border-2 border-[var(--edge)]" style={{ background: o.swatch }} />
                         {label}
                       </button>
                     );

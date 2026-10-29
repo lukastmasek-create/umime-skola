@@ -21,20 +21,32 @@ def hairline(th):
 
 
 def strand_texture(name="hair_strand.png"):
-    W, H = 64, 256
+    """Hladký pramen z animovaného filmu: jemné proužky, měkký lesklý pás a ztmavení u kořene."""
+    W, H = 128, 256
     rng = np.random.default_rng(4)
-    u = np.arange(W)[None, :] / W
-    v = np.arange(H)[:, None] / H
-    ridges = 0.80 + 0.12 * np.sin(u * 2 * math.pi * 7 + rng.random() * 6) + 0.08 * np.sin(u * 2 * math.pi * 19 + 2)
-    spec = 1.0 + 0.30 * np.exp(-((u - 0.5) / 0.12) ** 2)
-    fade = 0.78 + 0.22 * smooth(0.0, 0.25, v)
-    arr = np.clip(ridges * spec * fade, 0, 1.2) / 1.2 * 255
+    u = (np.arange(W)[None, :] + 0.5) / W
+    v = (np.arange(H)[:, None] + 0.5) / H
+    ridges = 0.93 + 0.045 * np.sin(u * 2 * math.pi * 9 + rng.random() * 6) + 0.025 * np.sin(u * 2 * math.pi * 23 + 2)
+    band = 1.0 + 0.30 * np.exp(-((u - 0.34) / 0.13) ** 2) + 0.10 * np.exp(-((u - 0.74) / 0.10) ** 2)
+    edge = 0.80 + 0.20 * smooth(0.0, 0.18, u) * smooth(1.0, 0.82, u)
+    along = 0.74 + 0.26 * smooth(0.0, 0.30, v) + 0.10 * np.exp(-((v - 0.55) / 0.2) ** 2)
+    arr = np.clip(ridges * band * edge * along, 0, 1.3) / 1.3 * 255
     return save_png(np.stack([arr, arr, arr], axis=-1), name)
 
 
 def avoid_body(P):
     """Posune bod vlasu mimo trup (ramena, hruď, záda) — vlasy leží na těle, ne v něm."""
     P = np.array(P, dtype=float)
+    # nadýchané rukávy (princeznovské šaty) i ramínka: vlasy se jim vyhnou, ať jimi neprorůstají
+    for sx in (-1, 1):
+        c = np.array([sx * 0.176, 0.0, 1.492])
+        rad = np.array([0.078, 0.074, 0.062]) + 0.010
+        d = (P - c) / rad
+        r2 = np.einsum("ij,ij->i", d, d)
+        inside = r2 < 1.0
+        if inside.any():
+            d[inside] /= np.sqrt(r2[inside])[:, None]
+            P[inside] = c + d[inside] * rad * 1.01
     z = P[:, 2]
     low = z < 1.66
     if not low.any():
@@ -55,12 +67,12 @@ def lock(g, path, w, t, mat, n0=None, taper=0.25, wave=0.0, wave_f=2.0, phase=0.
     k = len(P)
     s = np.linspace(0, 1, k)
     wid = w * (1 - (1 - taper) * smooth(0.55, 1.0, s) * 0 ) * (1 - 0.85 * smooth(0.6, 1.0, s))
-    wid = np.maximum(wid, 0.0012)
+    wid = np.maximum(wid * (0.30 + 0.70 * smooth(0.0, 0.22, s)), 0.0012)
     thk = np.maximum(t * (1 - 0.6 * smooth(0.7, 1.0, s)), 0.0008)
     if wave:
         T, N, B = frames(P, n0)
         P = P + N * (wave * np.sin(s * wave_f * 2 * math.pi + phase) * smooth(0.0, 0.4, s))[:, None]
-    return tube(P, wid, thk, n=6, mat=mat, name=name, parent=g, cap=True, power=2.0, n0=n0)
+    return tube(P, wid, thk, n=8, mat=mat, name=name, parent=g, cap=True, power=1.7, n0=n0)
 
 
 def hang_from(E, nrm, length, steps, side_out=0.012, wave=0.0, front_bias=0.0, curl=0.0, z_floor=0.5):
@@ -94,7 +106,7 @@ def build_hair(root, doll, mats, name=None):
     V, F, UV = ring_grid(R, True, cap1=surf(np.array([0.0]), np.array([math.pi / 2]), 0.0045)[0])
     make_mesh("hair_cap", V, F, rootm, UV, g)
     long_kinds = ("long", "bob", "curly")
-    z_end = {"long": 1.02, "bob": 1.60, "curly": 1.36, "pony": 1.20, "bun": 1.7, "braids": 1.0}[kind]
+    z_end = {"long": 1.26, "bob": 1.60, "curly": 1.36, "pony": 1.20, "bun": 1.7, "braids": 1.0}[kind]
     # --- záclona za hlavou (výplň mezi prameny)
     if False:
         zs = np.linspace(1.80, z_end + 0.02, 18)
@@ -113,11 +125,11 @@ def build_hair(root, doll, mats, name=None):
         make_mesh("hair_back", V, F, rootm, UV, g)
     # --- prameny
     streak = hm
-    N = {"long": 150, "bob": 140, "curly": 100, "pony": 110, "bun": 90, "braids": 90}[kind]
+    N = {"long": 170, "bob": 130, "curly": 100, "pony": 100, "bun": 90, "braids": 90}[kind]
     for i in range(N):
         thr = rng.uniform(0, 2 * math.pi)
         fronty = abs(((thr + math.pi) % (2 * math.pi)) - math.pi)  # 0 = vpředu
-        ph0 = rng.uniform(0.55, 1.45) if fronty < 1.4 else rng.uniform(0.2, 1.35)
+        ph0 = math.pi / 2 - 0.09 - rng.uniform(0.0, 0.16)  # všechny prameny vyrůstají z temene (cop), žádné useknuté konce na lebce
         # česání po lebce: vpředu přes čelo na stranu, jinak po poledníku dolů
         side = 1 if math.sin(thr) > 0 else -1
         if rng.random() < 0.0:
@@ -125,12 +137,12 @@ def build_hair(root, doll, mats, name=None):
         th1 = thr
         ph1 = hairline(np.array([thr]))[0] - 0.1
         sw = 0.0
-        if fronty < 1.0:
-            sw = side * rng.uniform(0.7, 1.5) * smooth(1.0, 0.0, fronty) * 1.0
+        if fronty < 1.25:
+            sw = side * (1.30 - fronty + rng.uniform(0.0, 0.35))
             if kind in ("pony", "bun", "braids"):
-                sw = side * rng.uniform(0.3, 0.9) * smooth(1.0, 0.0, fronty)
+                sw = side * (0.55 - 0.3 * fronty + rng.uniform(0.0, 0.3)) if fronty < 0.9 else 0.0
             th1 = thr + sw
-            ph1 = rng.uniform(-0.1, 0.35)
+            ph1 = rng.uniform(0.30, 0.58) if kind not in ("pony", "bun", "braids") else rng.uniform(0.55, 1.0)
         elif kind in ("pony", "bun"):
             ph1 = rng.uniform(0.9, 1.4)  # sbíhají do vrchu
         steps = 13
@@ -138,7 +150,7 @@ def build_hair(root, doll, mats, name=None):
         ease = s ** 1.15
         THp = thr + (th1 - thr) * ease
         PHp = ph0 + (ph1 - ph0) * s
-        off = rng.uniform(0.005, 0.018) * (0.7 + 0.5 * smooth(0.2, 1.3, PHp))
+        off = rng.uniform(0.006, 0.022) * (0.7 + 0.8 * smooth(0.2, 1.3, PHp))
         P = surf(THp, PHp, off)
         nrm = surf_normal(THp, PHp, off)
         end = P[-1]
@@ -159,7 +171,7 @@ def build_hair(root, doll, mats, name=None):
             P = np.concatenate([P[: steps - 3], np.array([P[steps - 3] * 0.4 + tail_anchor * 0.6, tail_anchor])])
             continue
         else:
-            L = {"long": rng.uniform(0.55, 0.78), "bob": rng.uniform(0.17, 0.24), "curly": rng.uniform(0.32, 0.46)}[kind]
+            L = {"long": rng.uniform(0.40, 0.56), "bob": rng.uniform(0.17, 0.24), "curly": rng.uniform(0.32, 0.46)}[kind]
             if fronty < 1.0 and kind != "bob":
                 L *= 0.9
             hang = hang_from(end, n_end, L, 10, side_out=0.02 + 0.028 * rng.random(), front_bias=0.0, curl=0.02 if kind == "bob" else 0.0)
@@ -169,11 +181,13 @@ def build_hair(root, doll, mats, name=None):
                 hang = hang + np.stack([0.016 * np.cos(ang), 0.016 * np.sin(ang), 0.0 * ang], axis=1) * (kk / len(hang))[:, None]
             hang[:, 2] = np.maximum(hang[:, 2], z_end - 0.1)
             hang = avoid_body(hang)
-            P = np.concatenate([P, hang])
+            # jedna hladká křivka: po lebce, přes ohyb u spánku a dolů (žádný ostrý zlom mezi částmi)
+            ctrl = np.concatenate([P[::3], P[-1:] if (len(P) - 1) % 3 else P[:0], hang[::2], hang[-1:]])
+            P = catmull(ctrl, 22)
         T0 = P[1] - P[0]
         n0 = np.cross(T0, nrm[0])
-        w = rng.uniform(0.026, 0.046) * (1.25 if kind == "curly" else 1.0)
-        t = 0.0050 + 0.003 * rng.random()
+        w = rng.uniform(0.032, 0.052) * (1.2 if kind == "curly" else 1.0)
+        t = 0.0060 + 0.004 * rng.random()
         lock(g, P, w, t, streak, n0=n0, wave=rng.uniform(0.0, 0.006 if kind != "curly" else 0.0) * (1 if kind in ("long", "bob") else 0), wave_f=rng.uniform(1.5, 2.8), phase=rng.uniform(0, 6))
     # --- konec: gumička / drdol / copy
     if kind == "pony":

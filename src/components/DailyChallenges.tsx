@@ -25,6 +25,7 @@ export type Snapshot = {
   pet: { name: string; species: string; hunger: number; happy: number } | null;
   cityCoins: number;
   reviewDue: number;
+  todayXp: number;
   weekKey: string;
   weekly: { id: WeeklyId; target: number; bonusXp: number; progress: number; done: boolean; claimed: boolean }[];
   quests: { id: QuestId; target: number; bonusXp: number; progress: number; done: boolean; claimed: boolean }[];
@@ -33,6 +34,55 @@ export type Snapshot = {
 };
 
 type State = "loading" | "guest" | "error" | Snapshot;
+
+const GOALS = [20, 50, 100] as const;
+
+// Osobní denní cíl v XP: kroužek s postupem, tři úrovně náročnosti (volba se pamatuje v prohlížeči).
+function DailyGoal({ t, xp }: { t: ReturnType<typeof getDailyText>; xp: number }) {
+  const [level, setLevel] = useState<0 | 1 | 2>(1);
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      try {
+        const v = Number(window.localStorage.getItem("daily-goal"));
+        if (v === 0 || v === 1 || v === 2) setLevel(v);
+      } catch {}
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, []);
+  function pick(l: 0 | 1 | 2) {
+    setLevel(l);
+    try {
+      window.localStorage.setItem("daily-goal", String(l));
+    } catch {}
+  }
+  const goal = GOALS[level];
+  const pct = Math.min(1, xp / goal);
+  const done = xp >= goal;
+  const R = 26;
+  const C = 2 * Math.PI * R;
+  return (
+    <div className="flex flex-wrap items-center gap-4 rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface-muted)] p-3">
+      <svg width="64" height="64" viewBox="0 0 64 64" role="img" aria-label={`${t.goal.title}: ${Math.round(pct * 100)} %`} className={done ? "goal-done" : undefined}>
+        <circle cx="32" cy="32" r={R} fill="none" stroke="var(--edge)" strokeWidth="7" opacity="0.35" />
+        <circle cx="32" cy="32" r={R} fill="none" stroke={done ? "var(--accent-yellow)" : "var(--brand-500)"} strokeWidth="7" strokeLinecap="round" strokeDasharray={`${C * pct} ${C}`} transform="rotate(-90 32 32)" style={{ transition: "stroke-dasharray 0.6s ease" }} />
+        <text x="32" y="37" textAnchor="middle" fontSize="16" fontWeight="800" fill="var(--foreground)">
+          {done ? "✓" : `${Math.round(pct * 100)}%`}
+        </text>
+      </svg>
+      <div className="min-w-0 flex-1">
+        <p className="font-extrabold">{t.goal.title}</p>
+        <p className="text-sm font-semibold text-[var(--muted)]">{done ? t.goal.done : t.goal.progress.replace("{a}", String(xp)).replace("{b}", String(goal))}</p>
+      </div>
+      <div className="flex gap-1.5" role="group" aria-label={t.goal.hint}>
+        {([0, 1, 2] as const).map((l) => (
+          <button key={l} type="button" onClick={() => pick(l)} aria-pressed={level === l} className="pill px-3 py-1 text-xs font-bold" style={{ background: level === l ? "var(--accent-500)" : "var(--surface)", color: level === l ? "#fff" : undefined }}>
+            {GOALS[l]} · {t.goal.levels[l]}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 // Denní série, výzvy s odměnou a úspěchy. Ukazuje se na úvodní stránce a v profilu.
 export function DailyChallenges({ locale, showAchievements = false }: { locale: Locale; showAchievements?: boolean }) {
@@ -87,7 +137,7 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
   if (state === "guest") return <p className="card p-5 text-sm text-[var(--muted)]">{t.guest}</p>;
   if (state === "error") return <p className="card p-5 text-sm text-[var(--muted)]">{t.error}</p>;
 
-  const { streak, pet, cityCoins, reviewDue, weekKey, quests, weekly, milestones, achievements } = state;
+  const { streak, pet, cityCoins, reviewDue, todayXp, weekKey, quests, weekly, milestones, achievements } = state;
   const heading = { fontFamily: "var(--font-heading)" } as const;
   const claimButton = (id: string, ready: boolean, claimed: boolean) =>
     // Pevná šířka sloupce, ať jsou ukazatele ve všech řádcích stejně dlouhé.
@@ -123,6 +173,8 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
           </p>
         </div>
       </div>
+
+      <DailyGoal t={t} xp={todayXp} />
 
       {(notice || streak.usedProtection || streak.rescuable || (pet && (pet.hunger < 50 || pet.happy < 40)) || cityCoins > 0) && (
         <ul className="flex flex-col gap-1.5 text-sm font-semibold">

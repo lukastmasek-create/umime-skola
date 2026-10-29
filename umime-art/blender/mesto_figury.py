@@ -263,26 +263,39 @@ def idle(P, t, sway=0.012):
         kn.rotation_euler = (0, 0, 0)
 
 
-# --- hrdina: dítě s batohem ---------------------------------------------------------
-def hero():
-    return person(skin="#ffd5a8", top="#3b9bff", bottom="#2f3c6e", shoes="#ff5a3c", hair="#6a3b22", hat=None, scarf="#ff5a3c", pack="#ffc933", scale=0.92)
+# --- hrdina: dítě s batohem (šest vzhledů na výběr, vzhled 0 je původní) --------------------------
+HERO_LOOKS = [
+    dict(skin="#ffd5a8", top="#3b9bff", bottom="#2f3c6e", shoes="#ff5a3c", hair="#6a3b22", hat=None, scarf="#ff5a3c", pack="#ffc933", scale=0.92),
+    dict(skin="#f6cba4", top="#ff7eb6", bottom="#7a4bd0", shoes="#ffffff", hair="#f4c542", hat="bun", hat_c="#ff7eb6", skirt="#7a4bd0", pack="#ff9ac8", scale=0.92),
+    dict(skin="#e8b48e", top="#4fb06b", bottom="#7a5a2e", shoes="#3a2a22", hair="#2a1f1a", hat="cap", hat_c="#ffc933", glasses=True, pack="#ff8a3c", scale=0.92),
+    dict(skin="#c98f66", top="#e8453c", bottom="#ffffff", shoes="#2f3c6e", hair="#17131f", hat=None, scarf="#ffd24d", pack="#2a8cff", scale=0.92),
+    dict(skin="#f1c9a8", top="#7a4bd0", bottom="#2a1f3d", shoes="#ffd24d", hair="#d8d8f0", hat="wizard", hat_c="#4a2a9a", pack="#59c3ff", scale=0.92),
+    dict(skin="#ffd5a8", top="#ffd24d", bottom="#3b6fd8", shoes="#ff7eb6", hair="#a8431f", hat="flower", hat_c="#ff7eb6", scarf="#7ee0b0", pack="#ff7eb6", scale=0.92),
+]
 
 
-def job_hrdina_chuze():
-    stage("mf_hrdina_chuze", 16, ortho=1.6, target_z=0.55)
-    P = hero()
-    run(lambda t: (walk(P, t), blink(P, t, 0.5)), "mf_hrdina_chuze")
+def hero(look=0):
+    return person(**HERO_LOOKS[look])
 
 
-def job_hrdina_stoji():
-    stage("mf_hrdina_stoji", 24, ortho=1.6, target_z=0.55)
-    P = hero()
-    run(lambda t: (idle(P, t), blink(P, t, 0.6, 2)), "mf_hrdina_stoji")
+def job_hrdina_chuze(look=0, tag=""):
+    name = f"mf_hrdina{tag}_chuze"
+    stage(name, 16, ortho=1.6, target_z=0.55)
+    P = hero(look)
+    run(lambda t: (walk(P, t), blink(P, t, 0.5)), name)
 
 
-def job_hrdina_radost():
-    stage("mf_hrdina_radost", 24, ortho=1.9, target_z=0.7)
-    P = hero()
+def job_hrdina_stoji(look=0, tag=""):
+    name = f"mf_hrdina{tag}_stoji"
+    stage(name, 24, ortho=1.6, target_z=0.55)
+    P = hero(look)
+    run(lambda t: (idle(P, t), blink(P, t, 0.6, 2)), name)
+
+
+def job_hrdina_radost(look=0, tag=""):
+    name = f"mf_hrdina{tag}_radost"
+    stage(name, 24, ortho=1.9, target_z=0.7)
+    P = hero(look)
 
     def u(t):
         ph = t * math.tau
@@ -298,7 +311,7 @@ def job_hrdina_radost():
             kn.rotation_euler = (0, 0.55 * j + 0.5 * land, 0)
         P["head"].rotation_euler = (0, -0.15 * j, 0.08 * math.sin(ph))
         P["torso"].rotation_euler = (0, -0.05 * j, 0)
-    run(u, "mf_hrdina_radost")
+    run(u, name)
 
 
 # --- obyvatelé -------------------------------------------------------------------------
@@ -1075,6 +1088,12 @@ JOBS = {"hrdina_chuze": job_hrdina_chuze, "hrdina_stoji": job_hrdina_stoji, "hrd
         "kapitan": job_kapitan, "kvartyrmistr": job_kvartyrmistr, "tesar": job_tesar, "plachtarka": job_plachtarka, "chovatel": job_chovatel, "papousek": job_papousek, "krab": job_krab,
         "admiral": job_admiral, "robot_obch": job_robot_obch, "inzenyr": job_inzenyr, "mimozemstan": job_mimozemstan, "biolog": job_biolog, "blob": job_blob, "uklizec": job_uklizec,
         "knihovnice_chuze": job_knihovnice_chuze, "pekar_chuze": job_pekar_chuze, "kluk_chuze": job_kluk_chuze}
+
+# další vzhledy hrdiny: hrdina_chuze_1 … hrdina_radost_5 (výstup out/mf_hrdina_<k>_<akce>/)
+for _k in range(1, len(HERO_LOOKS)):
+    JOBS[f"hrdina_chuze_{_k}"] = (lambda k=_k: job_hrdina_chuze(k, f"_{k}"))
+    JOBS[f"hrdina_stoji_{_k}"] = (lambda k=_k: job_hrdina_stoji(k, f"_{k}"))
+    JOBS[f"hrdina_radost_{_k}"] = (lambda k=_k: job_hrdina_radost(k, f"_{k}"))
 
 if __name__ == "__main__":
     for w in [a for a in args() if a in JOBS]:
