@@ -236,16 +236,15 @@ export function CourseWorld({ locale, islands, allHref, allLabel, noteLabel }: {
         gl.uniform3f(u("uMouse"), mouse.x, mouse.y, reduced ? -1 : (now - mouse.t) / 1000);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       }
-      // plachetnice pluje po osmičce mezi ostrovy
+      // plachetnice pluje stále zprava doleva (příď má vlevo), za okrajem se vynoří znovu zprava; nikdy se nezrcadlí
       const sh = ship.current;
       if (sh && W > 0) {
-        const t = reduced ? 0.3 : sec * 0.045;
-        const x = 50 + 41 * Math.sin(t * TAU);
-        const y = 52 + (narrowRef.current ? 40 : 14) * Math.sin(t * TAU * 2);
-        const turn = Math.tanh(Math.cos(t * TAU) * 6); // plynulé otočení v krajních bodech, ne skok
+        const t = reduced ? 0.45 : (sec * 0.018) % 1;
         const sz = Math.min(W * (narrowRef.current ? 0.26 : 0.13), 190);
+        const px = (1 - t) * (W + sz * 1.4) - sz * 0.7 - sz / 2;
+        const y = 54 + (narrowRef.current ? 12 : 8) * Math.sin(t * TAU * 2);
         sh.style.width = `${sz}px`;
-        sh.style.transform = `translate3d(${(x / 100) * W - sz / 2}px, ${(y / 100) * H - sz * 0.7 + Math.sin(sec * 2) * 3}px, 0) scaleX(${turn}) rotate(${Math.sin(sec * 1.3) * 2.5}deg)`;
+        sh.style.transform = `translate3d(${px}px, ${(y / 100) * H - sz * 0.7 + Math.sin(sec * 2) * 3}px, 0) rotate(${Math.sin(sec * 1.3) * 2.5}deg)`;
       }
       if (visible && !reduced) raf = requestAnimationFrame(frame);
     };
