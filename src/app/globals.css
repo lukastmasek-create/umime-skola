@@ -2578,3 +2578,20 @@ select:not(:focus) {
     opacity: 0.8;
   }
 }
+
+/* plachetnice na stránce kurzů: pás má 12 snímků (globe-sprite počítá s 24) */
+.ship-sprite {
+  background-repeat: no-repeat;
+  background-size: 1200% 100%;
+  animation: ship-sprite 1.4s steps(12) infinite;
+}
+@keyframes ship-sprite {
+  to {
+    background-position: 109.0909% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ship-sprite {
+    animation: none;
+  }
+}

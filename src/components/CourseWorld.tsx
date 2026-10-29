@@ -300,7 +300,7 @@ export function CourseWorld({ locale, islands, allHref, allLabel, noteLabel }: {
       >
         <canvas ref={sea} aria-hidden className="absolute inset-0 h-full w-full" />
         <div ref={ship} aria-hidden className="pointer-events-none absolute left-0 top-0 z-[5]" style={{ aspectRatio: "1 / 1", willChange: "transform" }}>
-          <span className="globe-sprite block h-full w-full" style={{ backgroundImage: "url(/home/svet/plachetnice.webp)", animationDuration: "1.4s" }} />
+          <span className="ship-sprite block h-full w-full" style={{ backgroundImage: "url(/home/svet/plachetnice.webp)" }} />
         </div>
         {islands.map((isl) => {
           const [x, y] = place[isl.slug] ?? [50, 50];
