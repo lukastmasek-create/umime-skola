@@ -9,14 +9,14 @@ import { DRACO_DECODER_PATH } from "@/lib/avatars3d";
 import { SLOTS, type Slot } from "@/lib/dress";
 import type { Mood, Worn } from "./DollSvg";
 
-export type DollEvent = { id: number; kind: "happy" | "sad" | "dress"; slot?: Slot };
+export type DollEvent = { id: number; kind: "happy" | "sad" | "dress" | "wave" | "finish"; slot?: Slot };
 
 type Apply = (worn: Worn, mood: Mood, ev: DollEvent | null) => void;
 
 // Uzly kusů se jmenují slot_<slot>_v<varianta>[__materiál]; panenky bez variant mají jen v0.
 const VARIANT_NODE = /^slot_([a-z]+)_v(\d+)(?:__|$)/;
 
-// 3D panenka z Blenderu (umime-art/blender/panenky_build.py): kostra a animace (idle, happy, sad, pose_<slot>), kusy oblečení
+// 3D panenka z Blenderu (umime-art/blender/panenky_build.py): kostra a animace (idle, happy, sad, wave, curtsy, runway, pose_<slot>), kusy oblečení
 // jsou samostatné sítě pojmenované slot_<slot>__<materiál>, nálady a mrknutí jsou morph targety. Varianta kusu (po špatné odpovědi)
 // posune odstín jeho materiálů. Tažením se panenka otáčí.
 export default function DollView3D({
@@ -173,7 +173,9 @@ export default function DollView3D({
           if (!name || !actions[name] || reduceMotion) return toIdle();
           const a = actions[name];
           a.reset();
-          a.setLoop(THREE.LoopOnce, 1);
+          // přehlídkový krok se opakuje do konce hry, ostatní klipy se přehrají jednou
+          if (name === "runway") a.setLoop(THREE.LoopRepeat, Infinity);
+          else a.setLoop(THREE.LoopOnce, 1);
           a.clampWhenFinished = true;
           a.play();
           if (current) a.crossFadeFrom(current, 0.18, false);
@@ -210,6 +212,8 @@ export default function DollView3D({
             queue.length = 0;
             if (ev.kind === "dress" && ev.slot) queue.push(`pose_${ev.slot}`);
             else if (ev.kind === "happy") queue.push("happy");
+            else if (ev.kind === "wave") queue.push("wave");
+            else if (ev.kind === "finish") queue.push("curtsy", "runway");
             else queue.push("sad");
             playNext();
           }

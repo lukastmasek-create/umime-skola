@@ -181,6 +181,9 @@ def princess_outfit(root, d, M, name=None, spec=None):
     t = (1.17 - zs3) / (1.17 - hem)
     rx = 0.138 + (R0 - 0.138) * t ** spec["flare"]
     ry = 0.112 + (R1 - 0.112) * t ** spec["flare"]
+    # sukně nesmí zajet do nohou (úzké střihy): dolní mez podle obrysu boků a nohou
+    rx = np.maximum(rx, np.interp(zs3, [0.0, 0.09, 0.535, 0.80, 1.0, 1.06, 1.17], [0.10, 0.105, 0.14, 0.165, 0.18, 0.19, 0.16]) + 0.016)
+    ry = np.maximum(ry, np.interp(zs3, [0.09, 0.535, 1.0, 1.17], [0.06, 0.078, 0.108, 0.108]) + 0.014)
     rows = np.array([ring_path((0, 0.002), rx[j], ry[j], zs3[j], 120) for j in range(mrows)])
     rows = folds(rows, k_f, a_f, 0.4, 1.1, (0, 0.002), 0.12)
     ang = np.arctan2(rows[..., 1], rows[..., 0])

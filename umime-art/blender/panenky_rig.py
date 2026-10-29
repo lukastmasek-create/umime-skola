@@ -322,6 +322,55 @@ def sad(P, t):
     P.set("hand.R", rz=0.0)
 
 
+def runway(P, t):
+    """Přehlídkový krok na místě (smyčka): kříží nohy, kolébá boky, ruka v bok a po půlce otočka dokola."""
+    a = 2 * math.pi * t
+    turn = ease(min(max((t - 0.52) / 0.40, 0.0), 1.0)) * 2 * math.pi
+    P.set("root", rz=turn)
+    P.move("root", z=0.012 * abs(math.sin(a * 2)))
+    P.set("hips", rz=0.16 * math.sin(a), ry=0.05 * math.sin(a * 2))
+    P.set("spine", rz=-0.08 * math.sin(a), rx=0.01)
+    P.set("chest", rz=-0.06 * math.sin(a))
+    P.set("head", rz=0.05 * math.sin(a), rx=-0.04)
+    for s in (1, -1):
+        ph = a if s > 0 else a + math.pi
+        leg_pose(P, s, fwd=0.34 * math.sin(ph), knee=0.55 * max(0.0, -math.sin(ph)), side=0.04)
+        P.set("clavicle." + ("L" if s > 0 else "R"), ry=s * 0.02)
+    # levá ruka v bok, pravá se klidně kývá
+    arm_pose(P, 1, up=0.45, fwd=-0.1, elbow=1.8)
+    arm_pose(P, -1, up=0.12 + 0.05 * math.sin(a), fwd=0.35 * math.sin(a + math.pi), elbow=0.3)
+
+
+def curtsy(P, t):
+    """Úklona na konci hry: noha vzad, kolena dolů, ruce drží sukni, hlava se skloní a zase zvedne."""
+    e = math.sin(math.pi * min(t / 0.85, 1.0)) ** 0.8 if t < 0.85 else 0.0
+    P.move("hips", z=-0.11 * e)
+    P.set("spine", rx=0.20 * e)
+    P.set("head", rx=0.30 * e)
+    leg_pose(P, 1, fwd=-0.55 * e, knee=0.9 * e, side=0.05)
+    leg_pose(P, -1, fwd=0.15 * e, knee=0.9 * e, side=0.05)
+    for s in (1, -1):
+        arm_pose(P, s, up=0.45 * e + 0.08, fwd=0.45 * e, elbow=0.7 * e + 0.14)
+
+
+def wave(P, t):
+    """Zamávání při začátku hry."""
+    e = math.sin(math.pi * t) ** 0.6
+    P.set("head", rz=0.12 * math.sin(t * 10) * e, rx=-0.05 * e)
+    P.set("chest", rz=0.05 * math.sin(t * 5) * e)
+    arm_pose(P, -1, up=1.55 * e + 0.1, fwd=0.1, elbow=0.55 * e + 0.2 + 0.5 * math.sin(t * 28) * e)
+    arm_pose(P, 1, up=0.12, elbow=0.2)
+
+
+def think(P, t):
+    """Přemýšlení nad otázkou: ruka na bradě, hlava mírně nakloněná."""
+    e = math.sin(math.pi * t) ** 0.7
+    P.set("head", rz=0.25 * e, rx=0.06 * e)
+    P.set("chest", rx=0.03 * e)
+    arm_pose(P, -1, up=0.1, fwd=1.3 * e, elbow=2.3 * e)
+    arm_pose(P, 1, up=0.18 * e + 0.08, fwd=0.2 * e, elbow=1.5 * e + 0.14)
+
+
 def pose_gesture(P, t, kind):
     e = math.sin(math.pi * t)
     if kind == "hair":
@@ -363,6 +412,10 @@ def build_actions(arm_obj, style):
         "happy": (44, lambda t: happy(P, t, style), False),
         "sad": (58, lambda t: sad(P, t), False),
     }
+    clips["runway"] = (60, lambda t: runway(P, t), True)
+    clips["curtsy"] = (54, lambda t: curtsy(P, t), False)
+    clips["wave"] = (56, lambda t: wave(P, t), False)
+    clips["think"] = (60, lambda t: think(P, t), False)
     for kind in ("hair", "outfit", "shoes", "makeup", "accessory", "topper"):
         clips["pose_" + kind] = (28, (lambda k: lambda t: pose_gesture(P, t, k))(kind), False)
     ad = arm_obj.animation_data_create()

@@ -1,5 +1,7 @@
 // Panenky pro hru „Obleč panenku“: každá má vlastní styl a šest kusů oblečení, které si vysloužíš správnými odpověďmi.
 
+import variants from "./dress-variants.json";
+
 export const SLOTS = ["hair", "outfit", "shoes", "makeup", "accessory", "topper"] as const;
 export type Slot = (typeof SLOTS)[number];
 
@@ -97,29 +99,17 @@ export function getDoll(id: string): Doll {
 /** Počet kusů oblečení v jedné hře. */
 export const SLOT_COUNT = SLOTS.length;
 
-// Výběr kusu: v = tvar (číslo varianty modelu), h = posun odstínu (0..1). Princezna má čtyři různé tvary každého kusu, ostatní panenky
-// zatím jeden tvar ve čtyřech barvách.
+// Výběr kusu: v = číslo varianty modelu (čtyři tvary a barvy každého kusu), h = posun odstínu (0..1), který se mění po špatné odpovědi.
+// Varianty a jejich náhledové barvy se generují z umime-art/blender/panenky_sets.py do dress-variants.json.
 export type Pick = { v: number; h: number };
-export const SHAPE_VARIANTS: Record<string, number> = { princess: 4 };
-export const HUE_STEPS = [0, 0.25, 0.5, 0.75];
+export const VARIANTS = 4;
 
-const SWATCH: Record<string, Record<Slot, string[]>> = {
-  princess: {
-    hair: ["#f4c542", "#b5532a", "#3a2418", "#e8a0c4"],
-    outfit: ["#ff7eb6", "#6fb3ff", "#8a4bd0", "#7ee0b0"],
-    shoes: ["#ff4f9a", "#ffffff", "#7a4a2a", "#d8b8ff"],
-    makeup: ["#e0457b", "#d98a7a", "#b0102a", "#2ec4b6"],
-    accessory: ["#59c3ff", "#ff7eb6", "#ff7eb6", "#ffe36e"],
-    topper: ["#ffd23f", "#ff7eb6", "#ff9ec8", "#e8c887"],
-  },
-};
+type VariantFile = Record<string, Record<Slot, { kind: string; swatch: string }[]>>;
+const DATA = variants as VariantFile;
 
-export type Option = { pick: Pick; swatch: string; hue: number };
+export type Option = { pick: Pick; swatch: string; kind: string };
 
-/** Čtyři možnosti pro daný kus panenky: tvary (princezna) nebo odstíny (ostatní). */
+/** Čtyři možnosti pro daný kus panenky (tvar i barva se liší). */
 export function optionsFor(doll: Doll, slot: Slot): Option[] {
-  const shapes = SHAPE_VARIANTS[doll.id] ?? 1;
-  if (shapes > 1) return Array.from({ length: shapes }, (_, v) => ({ pick: { v, h: 0 }, swatch: SWATCH[doll.id][slot][v], hue: 0 }));
-  const base: Record<Slot, string> = { hair: doll.hair.c, outfit: doll.outfit.c[0], shoes: doll.shoes.c[0], makeup: doll.makeup.lips, accessory: doll.accessory.c[0], topper: doll.topper.c[0] };
-  return HUE_STEPS.map((h) => ({ pick: { v: 0, h }, swatch: base[slot], hue: h * 360 }));
+  return (DATA[doll.id]?.[slot] ?? []).map((o, v) => ({ pick: { v, h: 0 }, swatch: o.swatch, kind: o.kind }));
 }
