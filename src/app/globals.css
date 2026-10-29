@@ -2595,3 +2595,85 @@ select:not(:focus) {
     animation: none;
   }
 }
+
+/* Medaile předmětů a oslava nové medaile */
+.medal-gold::after {
+  content: "";
+  position: absolute;
+  inset: 8% 8% 8% 8%;
+  border-radius: 50%;
+  background: linear-gradient(110deg, transparent 38%, rgba(255, 255, 255, 0.35) 50%, transparent 62%);
+  background-size: 250% 100%;
+  pointer-events: none;
+  animation: medal-sheen 3.4s ease-in-out infinite;
+}
+@keyframes medal-sheen {
+  from {
+    background-position: 130% 0;
+  }
+  to {
+    background-position: -130% 0;
+  }
+}
+.medal-celebrate {
+  animation: medal-fade 0.25s ease-out both;
+}
+@keyframes medal-fade {
+  from {
+    opacity: 0;
+  }
+}
+.medal-pop {
+  animation: medal-pop 0.9s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+@keyframes medal-pop {
+  0% {
+    transform: scale(0.1) rotate(-25deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15) rotate(6deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+.medal-shine {
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  background: linear-gradient(110deg, transparent 38%, rgba(255, 255, 255, 0.4) 50%, transparent 62%);
+  background-size: 250% 100%;
+  animation: medal-sheen 2.2s ease-in-out 0.6s infinite;
+  pointer-events: none;
+}
+.confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.confetti i {
+  position: absolute;
+  top: -6%;
+  left: calc((var(--i) * 2.83%) + 1%);
+  width: 9px;
+  height: 14px;
+  border-radius: 2px;
+  background: hsl(calc(var(--i) * 47), 90%, 62%);
+  animation: confetti-fall calc(2.4s + (var(--i) % 5) * 0.35s) linear calc((var(--i) % 7) * -0.4s) infinite;
+}
+@keyframes confetti-fall {
+  to {
+    transform: translate3d(calc((var(--i) % 2 - 0.5) * 90px), 110vh, 0) rotate(calc(var(--i) * 140deg));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .medal-gold::after,
+  .medal-shine,
+  .confetti i,
+  .medal-pop {
+    animation: none;
+  }
+}

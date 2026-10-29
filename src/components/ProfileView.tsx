@@ -6,6 +6,7 @@ import { Avatar } from "@/components/Avatar";
 import { LevelBadge } from "@/components/LevelBadge";
 import { ProfileCollection } from "@/components/ProfileCollection";
 import { ProfileShowcase } from "@/components/ProfileShowcase";
+import { SubjectMedals } from "@/components/SubjectMedals";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { AVATARS, getAvatar, isAvatarUnlocked } from "@/lib/avatars";
 import { TITLES, getTitle, isTitleUnlocked } from "@/lib/titles";
@@ -417,6 +418,8 @@ export function ProfileView({ locale }: { locale: Locale }) {
         titles={TITLES.filter((x) => isTitleUnlocked(x, level, unlocks)).length}
         looks={ownedFrames.length + ownedBanners.length}
       />
+
+      <SubjectMedals locale={locale} />
 
       {profile.degraded && <p className="text-sm text-[var(--faint)]">{t.degraded}</p>}
 
