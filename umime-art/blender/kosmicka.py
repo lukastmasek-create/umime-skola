@@ -216,11 +216,11 @@ def build(layer):
         for k in range(2):
             sphere((cx - 0.5 + k * 0.3, -0.75, DECK + 0.75), 0.1, G("kapsleP" + str(k), ["#7ee0b0", "#ff9ad8"][k], 2.0), scale=(1, 1, 1.4), seg=10, rings=8)
     out["kotvy"] = anchors
-    out["lod"] = norm(3.5, 4.5, 0.0)          # kotva rakety před oknem (střed trupu)
+    out["lod"] = [0.72, 0.065]               # raketa letí za horním oknem stanice
     out["lampy"] = [norm(x, -1.45 if abs(x) < 8 else 0.35, DECK + 2.6) for x in (-4.8, -1.6, 1.6, 4.8)]
     out["bot"] = norm(-1.4, -1.5, DECK)        # roboúklízeč na podlaze
     out["pet"] = norm(6.9, 0.2, DECK + 1.5)    # plovoucí mazlíček u kokonu
-    out["sonda"] = norm(-8.1, -0.4, DECK + 0.6)  # interaktivní bod: sonda u levého okraje
+    out["sonda"] = [0.03, 0.66]  # interaktivní bod: sonda u levého okraje
     out["pena"] = []
 
     for lay, objs in GROUPS.items():

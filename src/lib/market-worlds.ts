@@ -75,13 +75,13 @@ export const WORLDS: World[] = [
       dir: "/home/kosmicka",
       scenery: "space",
       night: false,
-      prop: { file: "raketa", n: 12, dur: 3, width: 32, ratio: "640 / 384", translate: [-50, -50], hit: [-13, -20, 26, 40], labelDy: -22 },
+      prop: { file: "raketa", n: 12, dur: 3, width: 12, ratio: "640 / 384", translate: [-50, -50], hit: [-6, -5, 12, 10], labelDy: 6 },
       extras: [
         { file: "blob", anchor: "pet", width: 5.6, feet: 66, dur: 2.4 },
         { file: "uklizec", anchor: "bot", width: 5.6, feet: 58, dur: 3 },
       ],
       interactive: [
-        { id: "sonda", kind: "fire", anchor: "sonda", w: 6, h: 9, dx: -3, dy: -5, dir: 1 },
+        { id: "sonda", kind: "fire", anchor: "sonda", w: 5, h: 9, dx: -2.5, dy: -6, dir: 1 },
         { id: "pet", kind: "talk", anchor: "pet", w: 5, h: 9, dx: -2.5, dy: -8 },
         { id: "bot", kind: "talk", anchor: "bot", w: 5, h: 7, dx: -2.5, dy: -6 },
       ],
