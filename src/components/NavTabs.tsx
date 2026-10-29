@@ -10,6 +10,7 @@ import { getIdleText } from "@/i18n/idle";
 import { getEscapeText } from "@/i18n/escape";
 import { getMaterialsText } from "@/i18n/materials";
 import { getHomeText } from "@/i18n/home";
+import { getTownHubText } from "@/i18n/town";
 import { getSocialText } from "@/i18n/social";
 import { getRoomText } from "@/i18n/room";
 import { getReviewText } from "@/i18n/review";
@@ -23,6 +24,7 @@ type Group = { key: string; label: string; items: Tab[] };
 
 // 3D ikona skupiny z Blenderu (umime-art/blender/menu_ikony.py), po najetí se zhoupne.
 const GROUP_ICON: Record<string, string> = {
+  town: "mestecko",
   courses: "kurzy",
   settings: "nastaveni",
   games: "hry",
@@ -58,6 +60,7 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
   }
   settings.push({ key: "nastaveni", href: `/${locale}/nastaveni`, label: dict.nav.settings });
   const groups: Group[] = [
+    { key: "town", label: getTownHubText(locale).nav, items: [{ key: "mestecko", href: `/${locale}/mestecko`, label: getTownHubText(locale).nav }] },
     { key: "courses", label: home.groups.courses, items: courses },
     { key: "settings", label: home.groups.settings, items: settings },
     {

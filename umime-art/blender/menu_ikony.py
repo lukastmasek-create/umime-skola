@@ -98,7 +98,22 @@ def zebricky():
     sphere((0, -0.4, 1.0), 0.14, M("star", "#fff3a0", roughness=0.3), scale=(1, 0.25, 1), seg=14, rings=8)
 
 
-{"kurzy": kurzy, "nastaveni": nastaveni, "hry": hry, "obchod": obchod, "studium": studium, "extra": extra, "spolu": spolu, "zebricky": zebricky}[KEY]()
+def mestecko():
+    wall = M("wall", "#fff1d6", roughness=0.6)
+    roof = M("roof", "#e8503a", roughness=0.45)
+    box((0, 0, 0.45), (1.1, 0.8, 0.7), wall, bevel=0.04)
+    # sedlová střecha jako hranol
+    prism(-0.62, 0.62, -0.5, 0.5, 0.78, 1.28, roof)
+    box((0.35, 0.15, 1.2), (0.16, 0.16, 0.34), M("chim", "#a85a3c", roughness=0.7), bevel=0.01)
+    box((0, -0.42, 0.32), (0.26, 0.04, 0.46), M("door", "#7b5be0", roughness=0.5), bevel=0.01)
+    for sx in (-0.34, 0.34):
+        box((sx, -0.42, 0.5), (0.2, 0.04, 0.2), M("win", "#9ad8ff", roughness=0.2), bevel=0.01)
+    bar((-0.7, -0.1, 0.0), (-0.7, -0.1, 1.2), 0.02, dark, verts=8)
+    box((-0.52, -0.1, 1.08), (0.34, 0.03, 0.2), M("flag", "#ffc933", roughness=0.4), bevel=0)
+    cyl((0.9, -0.3, 0.2), 0.14, 0.4, M("tree", "#2fae55", roughness=0.6), verts=16)
+
+
+{"mestecko": mestecko, "kurzy": kurzy, "nastaveni": nastaveni, "hry": hry, "obchod": obchod, "studium": studium, "extra": extra, "spolu": spolu, "zebricky": zebricky}[KEY]()
 
 
 def update(t):

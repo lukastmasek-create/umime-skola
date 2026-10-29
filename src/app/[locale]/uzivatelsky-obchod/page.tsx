@@ -8,16 +8,16 @@ export default async function MarketplacePage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ seznam?: string }>;
+  searchParams: Promise<{ seznam?: string; svet?: string; film?: string }>;
 }) {
   const { locale } = await params;
-  const { seznam } = await searchParams;
+  const { seznam, svet, film } = await searchParams;
   if (!isLocale(locale)) notFound();
 
   // Hlavní je prostředí (přístav); klasický seznam zboží zůstává pod odkazem ?seznam=1 pro dárky a balíčky.
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
-      {seznam ? <ShopView locale={locale as Locale} /> : <MarketWorld locale={locale as Locale} />}
+      {seznam ? <ShopView locale={locale as Locale} /> : <MarketWorld locale={locale as Locale} initialWorld={svet === "space" || svet === "pirate" ? svet : undefined} film={film === "1"} />}
     </div>
   );
 }
