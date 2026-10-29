@@ -243,6 +243,15 @@ def hory():
     json.dump(json.load(open(shutil_json)), open(os.path.join(ROOT, "..", "src", "components", "hory-stezka.json"), "w"))
 
 
+def mesto_chuze():
+    """Chůze obyvatel pro hub městečka (úvodní scénu TownLife to nemění)."""
+    dest_dir = os.path.join(DEST, "..", "mesto")
+    os.makedirs(dest_dir, exist_ok=True)
+    for job, dest in (("knihovnice_chuze", "knihovnice-chuze"), ("pekar_chuze", "pekar-chuze"), ("kluk_chuze", "kluk-chuze")):
+        if glob.glob(os.path.join(ROOT, "out", "mf_" + job, "f_*.png")):
+            strip("mf_" + job, "../mesto/" + dest + ".webp", (192, 192), quality=80)
+
+
 def mesto():
     """Městečko (scéna), obyvatelé, zvířata a větrník pro TownLife do public/home/mesto (+ polohy do JSON)."""
     import json, math
@@ -446,6 +455,7 @@ if __name__ == "__main__":
     if "hory" in what: hory()
     if "svet" in what: svet()
     if "mesto" in what: mesto()
+    if "mesto_chuze" in what: mesto_chuze()
     if "hry" in what: hry()
     if "unikovky" in what: unikovky()
     if "namesti" in what: namesti()

@@ -275,17 +275,17 @@ def princess_accessory(root, d, M):
 
 def princess_topper(root, d, M):
     g = node("slot_topper", root)
-    zt = CZ + HC * HS * 0.86
+    zt = CZ + HC * HS * 0.64
     # obruč
-    ringp = ring_path((0, CY + 0.004), 0.124, 0.140, zt, 56)
+    ringp = ring_path((0, CY + 0.004), 0.108 * HR, 0.124 * HR, zt, 56)
     tube(np.vstack([ringp, ringp[:1]]), 0.008, 0.0045, n=8, mat=M["gold"], name="tiara_band", parent=g, cap=False)
     # zuby koruny (zlaté špice s drahokamy)
     for k, a in enumerate(np.linspace(-1.35, 1.35, 9)):
-        base = np.array([0.124 * math.sin(a), CY + 0.004 - 0.140 * math.cos(a), zt])
-        h = 0.050 * (1.0 - 0.45 * abs(a) / 1.35) + (0.012 if k % 2 == 0 else 0)
+        base = np.array([0.108 * HR * math.sin(a), CY + 0.004 - 0.124 * HR * math.cos(a), zt])
+        h = HR * (0.050 * (1.0 - 0.45 * abs(a) / 1.35) + (0.012 if k % 2 == 0 else 0))
         tube([base, base + np.array([0, 0, h * 0.55]), base + np.array([0, 0, h])], [0.012, 0.0075, 0.002], [0.0045, 0.0035, 0.0015], n=8, mat=M["gold"], name="tiara_spike", parent=g, cap=True)
         ellipsoid(base + np.array([0, 0, h + 0.003]), (0.0065, 0.0065, 0.0075), n=12, m=8, mat=M["pearl"] if k % 2 else M["gem_pink"], name="tiara_gem", parent=g)
-    ellipsoid(np.array([0, CY - 0.130, zt + 0.004]), (0.014, 0.008, 0.016), n=14, m=10, mat=M["gem_pink"], name="tiara_centre", parent=g)
+    ellipsoid(np.array([0, CY - 0.115 * HR, zt + 0.004]), (0.014 * HR, 0.008, 0.016 * HR), n=14, m=10, mat=M["gem_pink"], name="tiara_centre", parent=g)
     return g
 
 
@@ -448,14 +448,14 @@ def athlete_topper(root, d, M):
     g = node("slot_topper", root)
     a, b = M["topper_a"], M["topper_b"]
     zr = CZ + HC * HS * 0.40
-    R, rr = 0.1385, 0.1535
+    R, rr = 0.1385 * HR, 0.1535 * HR
     # kšiltovka: kupole ze šesti panelů, vzadu otvor na culík
     rows = []
     for j in range(16):
         t = j / 15
         ph = t * (math.pi / 2 - 0.05)
         r = 1.0 * math.cos(ph)
-        z = zr + 0.125 * math.sin(ph) * 1.0 + 0.0
+        z = zr + 0.125 * HR * math.sin(ph) * 1.0 + 0.0
         rows.append(ring_path((0, CY + 0.004), (R + 0.004) * r + 0.0001, (rr + 0.004) * r + 0.0001, z + 0.0, 72))
     rows = np.array(rows)
     keep = lambda c: not (c[1] > CY + 0.07 and c[2] < zr + 0.055 and abs(c[0]) < 0.06)
@@ -467,11 +467,11 @@ def athlete_topper(root, d, M):
         for j in range(16):
             t = j / 15
             ph = t * (math.pi / 2 - 0.05)
-            pts.append([(R + 0.0055) * math.cos(ph) * math.cos(ang), CY + 0.004 + (rr + 0.0055) * math.cos(ph) * math.sin(ang), zr + 0.125 * math.sin(ph)])
+            pts.append([(R + 0.0055) * math.cos(ph) * math.cos(ang), CY + 0.004 + (rr + 0.0055) * math.cos(ph) * math.sin(ang), zr + 0.125 * HR * math.sin(ph)])
         if math.sin(ang) > 0.9 and False:
             continue
         tube(np.array(pts), 0.0016, 0.0016, n=5, mat=b, name="seam", parent=g, cap=True)
-    ellipsoid((0, CY + 0.004, zr + 0.127), (0.011, 0.011, 0.008), n=12, m=8, mat=b, name="cap_button", parent=g)
+    ellipsoid((0, CY + 0.004, zr + 0.127 * HR), (0.011, 0.011, 0.008), n=12, m=8, mat=b, name="cap_button", parent=g)
     # kšilt
     brim = []
     for k in range(9):
@@ -483,7 +483,7 @@ def athlete_topper(root, d, M):
         row = []
         for t in np.linspace(-0.95, 0.95, 22):
             x = (R + 0.004 + 0.016 * u) * math.sin(t) * (1.0 + 0.10 * u)
-            y = CY - (rr + 0.004 + 0.012 * u) * math.cos(t) - 0.075 * u
+            y = CY - (rr + 0.004 + 0.012 * u) * math.cos(t) - 0.075 * HR * u
             z = zr - 0.004 - 0.030 * u * u + 0.003 * math.cos(t) * u
             row.append([x, y, z])
         rows2.append(row)

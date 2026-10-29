@@ -113,7 +113,7 @@ def build_hair(root, doll, mats):
         make_mesh("hair_back", V, F, rootm, UV, g)
     # --- prameny
     streak = hm
-    N = {"long": 330, "bob": 300, "curly": 220, "pony": 220, "bun": 160, "braids": 160}[kind]
+    N = {"long": 150, "bob": 140, "curly": 100, "pony": 110, "bun": 90, "braids": 90}[kind]
     for i in range(N):
         thr = rng.uniform(0, 2 * math.pi)
         fronty = abs(((thr + math.pi) % (2 * math.pi)) - math.pi)  # 0 = vpředu
@@ -172,13 +172,13 @@ def build_hair(root, doll, mats):
             P = np.concatenate([P, hang])
         T0 = P[1] - P[0]
         n0 = np.cross(T0, nrm[0])
-        w = rng.uniform(0.014, 0.026) * (1.3 if kind == "curly" else 1.0)
-        t = 0.0028 + 0.002 * rng.random()
+        w = rng.uniform(0.026, 0.046) * (1.25 if kind == "curly" else 1.0)
+        t = 0.0050 + 0.003 * rng.random()
         lock(g, P, w, t, streak, n0=n0, wave=rng.uniform(0.0, 0.006 if kind != "curly" else 0.0) * (1 if kind in ("long", "bob") else 0), wave_f=rng.uniform(1.5, 2.8), phase=rng.uniform(0, 6))
     # --- konec: gumička / drdol / copy
     if kind == "pony":
         anchor = np.array([0, CY + 0.092 * HS, CZ + HC * HS * 0.97])
-        ring_t = tube([anchor + np.array([0, 0, 0.012]), anchor + np.array([0, 0, -0.012])], [0.034, 0.034], [0.026, 0.026], n=16, mat=mats["accessory_a"], name="tie", parent=g, cap=True)
+        ring_t = tube([anchor + np.array([0, 0, 0.012]), anchor + np.array([0, 0, -0.012])], [0.034 * HR, 0.034 * HR], [0.026 * HR, 0.026 * HR], n=16, mat=mats["accessory_a"], name="tie", parent=g, cap=True)
     if kind == "bun":
         A = np.array([0.0, CY + 0.012, CZ + HC * HS * 1.10])
         for i in range(90):
@@ -188,11 +188,11 @@ def build_hair(root, doll, mats):
             for k in range(14):
                 u = k / 13
                 a = a0 + turns * 2 * math.pi * u
-                rr = 0.052 * (0.55 + 0.45 * math.sin(u * math.pi)) * rng.uniform(0.9, 1.1)
+                rr = 0.052 * HR * (0.55 + 0.45 * math.sin(u * math.pi)) * rng.uniform(0.9, 1.1)
                 zz = A[2] + 0.04 * math.cos(u * math.pi + a0 * 0.3) * 0.0 + rng.uniform(-0.01, 0.01) + 0.05 * (math.sin(a) * 0.5)
                 pts.append([A[0] + rr * math.cos(a), A[1] + rr * math.sin(a) * 0.9, zz + 0.012 * math.sin(u * math.pi) * 2])
-            lock(g, np.array(pts), rng.uniform(0.012, 0.018), 0.004, streak, n0=np.array([0, 0, 1.0]), taper=0.3)
-        tube([A + np.array([0, 0, -0.03]), A + np.array([0, 0, -0.04])], [0.058, 0.058], [0.052, 0.052], n=20, mat=mats["accessory_a"], name="tie", parent=g, cap=True)
+            lock(g, np.array(pts), rng.uniform(0.020, 0.030), 0.006, streak, n0=np.array([0, 0, 1.0]), taper=0.3)
+        tube([A + np.array([0, 0, -0.03]), A + np.array([0, 0, -0.04])], [0.058 * HR, 0.058 * HR], [0.052 * HR, 0.052 * HR], n=20, mat=mats["accessory_a"], name="tie", parent=g, cap=True)
     if kind == "braids":
         for side in (-1, 1):
             a0 = np.array([side * (0.108 * HS + 0.012), 0.045, 1.70])

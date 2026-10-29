@@ -13,8 +13,11 @@ export type DollEvent = { id: number; kind: "happy" | "sad" };
 
 type Apply = (worn: Worn, mood: Mood, ev: DollEvent | null) => void;
 
-// 3D panenka z Blenderu (umime-art/blender/panenky3d.py): kusy oblečení jsou samostatné uzly, které se zapínají podle `worn`.
-// Varianta kusu (po špatné odpovědi) posune odstín jeho materiálů. Tažením se panenka otáčí.
+const isSlotNode = (name: string, slot: string) => name === `slot_${slot}` || name.startsWith(`slot_${slot}__`);
+
+// 3D panenka z Blenderu (umime-art/blender/panenky_build.py): kostra a animace (idle, happy, sad, pose_<slot>), kusy oblečení
+// jsou samostatné sítě pojmenované slot_<slot>__<materiál>, nálady a mrknutí jsou morph targety. Varianta kusu (po špatné odpovědi)
+// posune odstín jeho materiálů. Tažením se panenka otáčí.
 export default function DollView3D({
   dollId,
   worn,
@@ -74,6 +77,10 @@ export default function DollView3D({
     key.shadow.radius = 6;
     key.shadow.bias = -0.0003;
     key.shadow.normalBias = 0.012;
+    key.shadow.camera.left = -2;
+    key.shadow.camera.right = 2;
+    key.shadow.camera.top = 3;
+    key.shadow.camera.bottom = -1;
     scene.add(key);
     const rim = new THREE.DirectionalLight(0xdfe8ff, 1.3);
     rim.position.set(2, 3, -4);
@@ -89,9 +96,9 @@ export default function DollView3D({
       renderer.setSize(w, h, false);
       camera.aspect = w / Math.max(h, 1);
       // vysoká panenka se musí vejít i do široké a nízké plochy
-      const dist = Math.max(5.4, 0.9 / (Math.tan(THREE.MathUtils.degToRad(14)) * camera.aspect));
-      camera.position.set(0, 1.25, dist);
-      camera.lookAt(0, 1.12, 0);
+      const dist = Math.max(5.9, 1.0 / (Math.tan(THREE.MathUtils.degToRad(14)) * camera.aspect));
+      camera.position.set(0, 1.3, dist);
+      camera.lookAt(0, 1.18, 0);
       camera.updateProjectionMatrix();
     };
     const resizeObserver = new ResizeObserver(resize);
@@ -103,13 +110,15 @@ export default function DollView3D({
     const pivot = new THREE.Group();
     scene.add(pivot);
     let model: THREE.Object3D | null = null;
+    let mixer: THREE.AnimationMixer | null = null;
     let spin = 0; // ručně nastavené natočení
     let dragX: number | null = null;
-    let anim: { kind: "happy" | "sad"; t: number } | null = null;
     let lastEvent = -1;
-    const pops = new Map<THREE.Object3D, number>();
     let moodTarget: Mood = "neutral";
     const morphMeshes: THREE.Mesh[] = [];
+    let blinkAt = 1.5 + Math.random() * 2;
+    let blinkT = -1;
+    let time = 0;
 
     const draco = new DRACOLoader().setDecoderPath(DRACO_DECODER_PATH).setDecoderConfig({ type: "wasm" });
     new GLTFLoader().setDRACOLoader(draco).load(
@@ -123,6 +132,8 @@ export default function DollView3D({
           if (!mesh.isMesh) return;
           mesh.castShadow = true;
           mesh.receiveShadow = true;
+          mesh.frustumCulled = false; // ohraničení se po animaci kostry nepřepočítává
+          if (mesh.morphTargetDictionary) morphMeshes.push(mesh);
           for (const m of [mesh.material].flat() as THREE.MeshStandardMaterial[]) {
             for (const tex of [m.map, m.normalMap]) if (tex) tex.anisotropy = aniso;
             if (m.transparent) m.depthWrite = false;
@@ -130,12 +141,6 @@ export default function DollView3D({
         });
         pivot.add(model);
 
-        const byName = new Map<string, THREE.Object3D>();
-        model.traverse((o) => {
-          if (o.name) byName.set(o.name, o);
-          const mesh = o as THREE.Mesh;
-          if (mesh.isMesh && mesh.morphTargetDictionary) morphMeshes.push(mesh);
-        });
         // původní barvy materiálů kusů, od kterých se počítá posun odstínu
         const mats = new Map<string, { mat: THREE.MeshStandardMaterial; base: THREE.Color }[]>();
         model.traverse((o) => {
@@ -149,20 +154,50 @@ export default function DollView3D({
             mats.set(slot, list);
           }
         });
+
+        // animace: idle ve smyčce, ostatní jednorázově s plynulým přechodem zpět do idle
+        mixer = new THREE.AnimationMixer(model);
+        const actions: Record<string, THREE.AnimationAction> = {};
+        for (const clip of gltf.animations) actions[clip.name] = mixer.clipAction(clip);
+        const idle = actions.idle;
+        let current: THREE.AnimationAction | null = null;
+        const toIdle = () => {
+          if (!idle || reduceMotion) return;
+          idle.reset().play();
+          if (current) idle.crossFadeFrom(current, 0.3, false);
+          current = idle;
+        };
+        const queue: string[] = [];
+        const playNext = () => {
+          const name = queue.shift();
+          if (!name || !actions[name] || reduceMotion) return toIdle();
+          const a = actions[name];
+          a.reset();
+          a.setLoop(THREE.LoopOnce, 1);
+          a.clampWhenFinished = true;
+          a.play();
+          if (current) a.crossFadeFrom(current, 0.18, false);
+          current = a;
+        };
+        mixer.addEventListener("finished", (e) => {
+          if (e.action === current) playNext();
+        });
+        if (idle && !reduceMotion) {
+          idle.play();
+          current = idle;
+        }
+
         const shown = new Set<string>();
         const hsl = { h: 0, s: 0, l: 0 };
         applyRef.current = (w, md, ev) => {
+          const added: string[] = [];
           for (const slot of SLOTS) {
-            const n = byName.get(`slot_${slot}`);
             const v = w[slot];
-            if (n) {
-              n.visible = v !== undefined;
-              if (v !== undefined && !shown.has(slot)) {
-                shown.add(slot);
-                pops.set(n, performance.now());
-              }
-              if (v === undefined) shown.delete(slot);
+            if (v !== undefined && !shown.has(slot)) {
+              shown.add(slot);
+              added.push(slot);
             }
+            if (v === undefined) shown.delete(slot);
             for (const { mat, base } of mats.get(slot) ?? []) {
               if (!v) mat.color.copy(base);
               else {
@@ -171,15 +206,23 @@ export default function DollView3D({
               }
             }
           }
-          const under = byName.get("underwear");
-          if (under) under.visible = w.outfit === undefined;
+          model?.traverse((o) => {
+            for (const slot of SLOTS) if (isSlotNode(o.name, slot)) o.visible = w[slot] !== undefined;
+            if (o.name === "underwear" || o.name.startsWith("underwear__")) o.visible = w.outfit === undefined;
+          });
           moodTarget = md;
           if (ev && ev.id !== lastEvent) {
             lastEvent = ev.id;
-            anim = { kind: ev.kind, t: 0 };
+            queue.length = 0;
+            if (ev.kind === "happy") {
+              if (added[0]) queue.push(`pose_${added[0]}`);
+              queue.push("happy");
+            } else queue.push("sad");
+            playNext();
           }
         };
         applyRef.current(state.current.worn, state.current.mood, state.current.event);
+        mixer.update(0);
         renderer.render(scene, camera);
         handlers.current.onReady?.();
       },
@@ -210,38 +253,23 @@ export default function DollView3D({
     window.addEventListener("pointerup", onUp);
     window.addEventListener("pointercancel", onUp);
 
-    let time = 0;
     const tick = () => {
       const dt = Math.min(clock.getDelta(), 0.1);
       time += dt;
-      let y = 0;
-      let rotY = spin;
-      let rotZ = 0;
+      mixer?.update(dt);
+      // mrkání: krátké zavření očí v náhodných intervalech
       if (!reduceMotion) {
-        rotY += Math.sin(time * 0.7) * 0.16; // jemné pohupování ze strany na stranu
-        y = Math.sin(time * 1.8) * 0.012;
-        if (anim) {
-          anim.t += dt;
-          if (anim.kind === "happy") {
-            const u = Math.min(1, anim.t / 0.9);
-            y += Math.sin(u * Math.PI) * 0.22;
-            rotY += u * Math.PI * 2;
-            if (u >= 1) anim = null;
-          } else {
-            const u = Math.min(1, anim.t / 0.9);
-            rotZ = Math.sin(u * Math.PI * 6) * 0.07 * (1 - u);
-            y -= Math.sin(u * Math.PI) * 0.03;
-            if (u >= 1) anim = null;
+        blinkAt -= dt;
+        if (blinkAt <= 0 && blinkT < 0) blinkT = 0;
+        if (blinkT >= 0) {
+          blinkT += dt;
+          if (blinkT > 0.16) {
+            blinkT = -1;
+            blinkAt = 1.8 + Math.random() * 3.5;
           }
         }
-        const now = performance.now();
-        for (const [n, t0] of pops) {
-          const u = Math.min(1, (now - t0) / 420);
-          const s = u < 1 ? 1 + Math.sin(u * Math.PI) * 0.06 - (1 - u) * 0.1 : 1;
-          n.scale.setScalar(s);
-          if (u >= 1) pops.delete(n);
-        }
-      } else if (anim) anim = null;
+      }
+      const blink = blinkT >= 0 ? Math.sin((blinkT / 0.16) * Math.PI) : 0;
       // plynulý přechod výrazu: úsměv / smutek / klid
       for (const mesh of morphMeshes) {
         const dict = mesh.morphTargetDictionary!;
@@ -252,9 +280,10 @@ export default function DollView3D({
           const target = moodTarget === name ? 1 : 0;
           inf[i] += (target - inf[i]) * Math.min(1, dt * 9);
         }
+        const b = dict.blink;
+        if (b !== undefined) inf[b] = blink;
       }
-      pivot.position.y = y;
-      pivot.rotation.set(0, rotY, rotZ);
+      pivot.rotation.y = spin;
       renderer.render(scene, camera);
     };
     const visibility = new IntersectionObserver(([entry]) => {
@@ -273,6 +302,8 @@ export default function DollView3D({
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
       window.removeEventListener("pointercancel", onUp);
+      mixer?.stopAllAction();
+      if (model) mixer?.uncacheRoot(model);
       scene.traverse((o) => {
         const mesh = o as THREE.Mesh;
         if (!mesh.isMesh) return;

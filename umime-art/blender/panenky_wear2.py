@@ -6,7 +6,7 @@ Z = np.array([0, 0, 1.0])
 
 
 def eye_center(s):
-    ex, ez = s * EYE_X * HS, CZ + (EYE_Z - CZ) * HS
+    ex, ez = s * EYE_X * HS, float(hs((0.0, CY, EYE_Z))[2])
     return ex, ez
 
 
@@ -138,12 +138,12 @@ def rocker_accessory(root, d, M):
         ex, ez = eye_center(s)
         ys = EYE_INFO["y"]
         c = np.array([ex, ys - 0.004, ez])
-        ellipsoid(c, (0.0285, 0.003, 0.0275), n=30, m=14, mat=lens, name="lens", parent=g)
+        ellipsoid(c, (0.056, 0.004, 0.054), n=30, m=14, mat=lens, name="lens", parent=g)
         pts = ring_path((c[0], c[1]), 0.0292, 0.0, c[2] - 0.0292 * 0, 28)
-        ring = np.array([[c[0] + 0.0295 * math.cos(t), c[1] - 0.001, c[2] + 0.0285 * math.sin(t)] for t in np.linspace(0, 2 * math.pi, 40)])
-        tube(ring, 0.0030, 0.0030, n=6, mat=M["accessory_a"], name="frame", parent=g, cap=False)
-        tube([np.array([c[0] + s * 0.029, c[1], c[2] + 0.003]), np.array([s * (HA * HS + 0.002), c[1] + 0.07, c[2] + 0.004]), np.array([s * (HA * HS + 0.004), c[1] + 0.125, c[2] - 0.004])], 0.0024, 0.0024, n=6, mat=M["accessory_a"], name="temple", parent=g, cap=True)
-    tube([np.array([-0.0035, EYE_INFO["y"] - 0.0055, EYE_INFO["z"] + 0.005]), np.array([0.0035, EYE_INFO["y"] - 0.0055, EYE_INFO["z"] + 0.005])], 0.0024, 0.0024, n=6, mat=M["accessory_a"], name="bridge", parent=g, cap=True)
+        ring = np.array([[c[0] + 0.058 * math.cos(t), c[1] - 0.001, c[2] + 0.056 * math.sin(t)] for t in np.linspace(0, 2 * math.pi, 40)])
+        tube(ring, 0.0050, 0.0050, n=6, mat=M["accessory_a"], name="frame", parent=g, cap=False)
+        tube([np.array([c[0] + s * 0.058, c[1], c[2] + 0.003]), np.array([s * (HA * HS + 0.002), c[1] + 0.09, c[2] + 0.004]), np.array([s * (HA * HS + 0.004), c[1] + 0.16, c[2] - 0.004])], 0.0040, 0.0040, n=6, mat=M["accessory_a"], name="temple", parent=g, cap=True)
+    tube([np.array([-0.012, EYE_INFO["y"] - 0.0055, EYE_INFO["z"] + 0.006]), np.array([0.012, EYE_INFO["y"] - 0.0055, EYE_INFO["z"] + 0.006])], 0.0042, 0.0042, n=6, mat=M["accessory_a"], name="bridge", parent=g, cap=True)
     return g
 
 
@@ -289,12 +289,12 @@ def fairy_topper(root, d, M):
     zt = CZ + HC * HS * 0.80
     leaf = M["outfit_leaf"]
     for k, ang_ in enumerate(np.linspace(-2.2, 2.2, 11)):
-        r_x, r_y = 0.122, 0.138
+        r_x, r_y = 0.122 * HR, 0.138 * HR
         c = np.array([r_x * math.sin(ang_), CY + 0.004 - r_y * math.cos(ang_), zt + 0.012 * math.cos(ang_)])
         nrm_ = np.array([math.sin(ang_), -math.cos(ang_), 0.0])
         for lf in (-1, 1):
             ellipsoid(c + np.array([lf * 0.02 * math.cos(ang_), lf * 0.02 * math.sin(ang_), -0.004]), (0.012, 0.004, 0.0045), rot_z=ang_ + lf * 0.6, n=10, m=6, mat=leaf, name="leaf", parent=g)
-        size = 0.0225 if k % 2 == 0 else 0.0185
+        size = (0.0225 if k % 2 == 0 else 0.0185) * HR
         petal_mat = a if k % 2 == 0 else M["white"]
         for p_ in range(6):
             pa = p_ * math.tau / 6
@@ -377,9 +377,9 @@ def chef_topper(root, d, M):
     g = node("slot_topper", root)
     a, b = M["topper_a"], M["topper_b"]
     z0 = CZ + HC * HS * 0.58
-    zs = np.linspace(z0, z0 + 0.34, 46)
-    t = (zs - z0) / 0.34
-    prof = 0.123 + 0.02 * smooth(0.05, 0.5, t) + 0.045 * np.sin(np.clip((t - 0.35) / 0.65, 0, 1) * math.pi) ** 1.2 - 0.03 * smooth(0.9, 1.0, t)
+    zs = np.linspace(z0, z0 + 0.34 * HR, 46)
+    t = (zs - z0) / (0.34 * HR)
+    prof = HR * (0.123 + 0.02 * smooth(0.05, 0.5, t) + 0.045 * np.sin(np.clip((t - 0.35) / 0.65, 0, 1) * math.pi) ** 1.2 - 0.03 * smooth(0.9, 1.0, t))
     rows = []
     for j in range(len(zs)):
         ring = ring_path((0, CY + 0.004), prof[j], prof[j] * 1.1, zs[j], 112)
@@ -390,8 +390,8 @@ def chef_topper(root, d, M):
         rows.append(ring)
     ring_mesh(np.array(rows), True, None, (0.15, 0.15), "toque", a, g)
     # spodní pás a vršek
-    tube([np.array([0, CY + 0.004, z0 - 0.012]), np.array([0, CY + 0.004, z0 + 0.04])], [0.128, 0.128], [0.141, 0.141], n=40, mat=b, name="hat_band", parent=g, cap=True)
-    ellipsoid((0, CY + 0.004, z0 + 0.335), (0.108, 0.118, 0.012), n=36, m=8, mat=a, name="hat_top", parent=g)
+    tube([np.array([0, CY + 0.004, z0 - 0.012]), np.array([0, CY + 0.004, z0 + 0.04])], [0.128 * HR, 0.128 * HR], [0.141 * HR, 0.141 * HR], n=40, mat=b, name="hat_band", parent=g, cap=True)
+    ellipsoid((0, CY + 0.004, z0 + 0.335 * HR), (0.108 * HR, 0.118 * HR, 0.012), n=36, m=8, mat=a, name="hat_top", parent=g)
     return g
 
 
@@ -459,12 +459,12 @@ def astro_topper(root, d, M):
     g = node("slot_topper", root)
     glass, b = M["topper_a"], M["topper_b"]
     C = np.array([0.0, CY + 0.008, CZ + 0.012])
-    ellipsoid(C, (0.205, 0.215, 0.215), n=56, m=32, mat=glass, name="helmet_glass", parent=g)
+    ellipsoid(C, (0.205 * HR, 0.215 * HR, 0.215 * HR), n=56, m=32, mat=glass, name="helmet_glass", parent=g)
     # zlatý odrazivý štít v horní polovině přední strany
-    sphere_axis(C, 0.2065, n=36, m=14, a0=0.0, a1=1.0, mat=M["visor"], name="visor", parent=g)
+    sphere_axis(C, 0.2065 * HR * 1.003, n=36, m=14, a0=0.0, a1=1.0, mat=M["visor"], name="visor", parent=g)
     ring_pts = ring_path((0, CY + 0.012), 0.098, 0.100, 1.620, 44)
     closed_tube(g, ring_pts, 0.018, b, 8, "helmet_ring")
     for s in (-1, 1):
-        ellipsoid((s * 0.200, CY + 0.012, CZ + 0.02), (0.030, 0.040, 0.030), n=14, m=10, mat=b, name="helmet_lamp", parent=g)
-        ellipsoid((s * 0.226, CY + 0.012, CZ + 0.02), (0.008, 0.026, 0.026), n=14, m=10, mat=M["screen"], name="helmet_light", parent=g)
+        ellipsoid((s * 0.200 * HR, CY + 0.012, CZ + 0.02), (0.030 * HR, 0.040 * HR, 0.030 * HR), n=14, m=10, mat=b, name="helmet_lamp", parent=g)
+        ellipsoid((s * 0.226 * HR, CY + 0.012, CZ + 0.02), (0.008, 0.026 * HR, 0.026 * HR), n=14, m=10, mat=M["screen"], name="helmet_light", parent=g)
     return g
