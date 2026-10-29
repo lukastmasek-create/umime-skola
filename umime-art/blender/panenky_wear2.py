@@ -73,8 +73,8 @@ def tex_flag(name="flag.png"):
 
 
 # ---------------------------------------------------------------- rockerka
-def rocker_outfit(root, d, M):
-    g = node("slot_outfit", root)
+def rocker_outfit(root, d, M, name=None):
+    g = node(name or "slot_outfit", root)
     a, b = M["outfit_a"], M["outfit_b"]
     # černé tričko s krátkým rukávem a hvězdou
     zs = np.linspace(1.12, 1.58, 96)
@@ -113,8 +113,8 @@ def rocker_outfit(root, d, M):
     return g
 
 
-def rocker_shoes(root, d, M):
-    g = node("slot_shoes", root)
+def rocker_shoes(root, d, M, name=None):
+    g = node(name or "slot_shoes", root)
     a, b = M["shoes_a"], M["shoes_b"]
     for s in (-1, 1):
         info = foot_shell(g, s, "boots", M)
@@ -131,8 +131,8 @@ def rocker_shoes(root, d, M):
     return g
 
 
-def rocker_accessory(root, d, M):
-    g = node("slot_accessory", root)
+def rocker_accessory(root, d, M, name=None):
+    g = node(name or "slot_accessory", root)
     lens = M["lens"]
     for s in (-1, 1):
         ex, ez = eye_center(s)
@@ -147,8 +147,8 @@ def rocker_accessory(root, d, M):
     return g
 
 
-def rocker_topper(root, d, M):
-    g = node("slot_topper", root)
+def rocker_topper(root, d, M, name=None):
+    g = node(name or "slot_topper", root)
     a, b = M["topper_a"], M["topper_b"]
     # kožená bunda: otevřená vpředu, límec, zip diagonálně, cvočky
     zs = np.linspace(0.98, 1.585, 110)
@@ -189,8 +189,8 @@ def rocker_topper(root, d, M):
 
 
 # ---------------------------------------------------------------- víla
-def fairy_outfit(root, d, M):
-    g = node("slot_outfit", root)
+def fairy_outfit(root, d, M, name=None):
+    g = node(name or "slot_outfit", root)
     a, b = M["outfit_a"], M["outfit_b"]
     zs = np.linspace(1.15, 1.50, 80)
     R = torso_rows(zs, 0.006)
@@ -244,8 +244,8 @@ def fairy_outfit(root, d, M):
     return g
 
 
-def fairy_shoes(root, d, M):
-    g = node("slot_shoes", root)
+def fairy_shoes(root, d, M, name=None):
+    g = node(name or "slot_shoes", root)
     b = M["shoes_b"]
     for s in (-1, 1):
         info = foot_shell(g, s, "ballet", M)
@@ -266,8 +266,8 @@ def fairy_shoes(root, d, M):
     return g
 
 
-def fairy_accessory(root, d, M):
-    g = node("slot_accessory", root)
+def fairy_accessory(root, d, M, name=None):
+    g = node(name or "slot_accessory", root)
     hp, dd = hand_point(1)
     tip = np.array([hp[0] + 0.035, hp[1] - 0.26, hp[2] + 0.26])
     handle = [hp + np.array([0, 0.02, -0.04]), hp, tip]
@@ -283,8 +283,8 @@ def fairy_accessory(root, d, M):
     return g
 
 
-def fairy_topper(root, d, M):
-    g = node("slot_topper", root)
+def fairy_topper(root, d, M, name=None):
+    g = node(name or "slot_topper", root)
     a, b = M["topper_a"], M["topper_b"]
     zt = CZ + HC * HS * 0.80
     leaf = M["outfit_leaf"]
@@ -305,8 +305,8 @@ def fairy_topper(root, d, M):
 
 
 # ---------------------------------------------------------------- kuchařka
-def chef_outfit(root, d, M):
-    g = node("slot_outfit", root)
+def chef_outfit(root, d, M, name=None):
+    g = node(name or "slot_outfit", root)
     a, b = M["outfit_a"], M["outfit_b"]
     # kalhoty (kostičky)
     for s in (-1, 1):
@@ -351,8 +351,8 @@ def chef_outfit(root, d, M):
     return g
 
 
-def chef_shoes(root, d, M):
-    g = node("slot_shoes", root)
+def chef_shoes(root, d, M, name=None):
+    g = node(name or "slot_shoes", root)
     b = M["shoes_b"]
     for s in (-1, 1):
         info = foot_shell(g, s, "clog", M)
@@ -362,8 +362,8 @@ def chef_shoes(root, d, M):
     return g
 
 
-def chef_accessory(root, d, M):
-    g = node("slot_accessory", root)
+def chef_accessory(root, d, M, name=None):
+    g = node(name or "slot_accessory", root)
     hp, dd = hand_point(1)
     tip = hp + np.array([0.03, -0.20, 0.22])
     tube(catmull([hp + np.array([0, 0.02, -0.05]), hp, tip], 10), 0.0085, 0.0075, n=10, mat=M["wood"], name="ladle_handle", parent=g, cap=True)
@@ -373,8 +373,8 @@ def chef_accessory(root, d, M):
     return g
 
 
-def chef_topper(root, d, M):
-    g = node("slot_topper", root)
+def chef_topper(root, d, M, name=None):
+    g = node(name or "slot_topper", root)
     a, b = M["topper_a"], M["topper_b"]
     z0 = CZ + HC * HS * 0.58
     zs = np.linspace(z0, z0 + 0.34 * HR, 46)
@@ -396,8 +396,8 @@ def chef_topper(root, d, M):
 
 
 # ---------------------------------------------------------------- astronautka
-def astro_outfit(root, d, M):
-    g = node("slot_outfit", root)
+def astro_outfit(root, d, M, name=None):
+    g = node(name or "slot_outfit", root)
     a, b = M["outfit_a"], M["outfit_b"]
     zs = np.linspace(0.90, 1.58, 90)
     R = torso_rows(zs, 0.024)
@@ -435,8 +435,8 @@ def astro_outfit(root, d, M):
     return g
 
 
-def astro_shoes(root, d, M):
-    g = node("slot_shoes", root)
+def astro_shoes(root, d, M, name=None):
+    g = node(name or "slot_shoes", root)
     b = M["shoes_b"]
     for s in (-1, 1):
         info = foot_shell(g, s, "moon", M)
@@ -446,8 +446,8 @@ def astro_shoes(root, d, M):
     return g
 
 
-def astro_accessory(root, d, M):
-    g = node("slot_accessory", root)
+def astro_accessory(root, d, M, name=None):
+    g = node(name or "slot_accessory", root)
     c = np.array([-0.075, -0.1065 - 0.018, 1.405])
     ellipsoid(c, (0.036, 0.004, 0.036), n=26, m=12, mat=M["gold"], name="patch", parent=g)
     ellipsoid(c + np.array([0, -0.003, 0]), (0.030, 0.0025, 0.030), n=26, m=10, mat=M["accessory_a"], name="patch_in", parent=g)
@@ -455,8 +455,8 @@ def astro_accessory(root, d, M):
     return g
 
 
-def astro_topper(root, d, M):
-    g = node("slot_topper", root)
+def astro_topper(root, d, M, name=None):
+    g = node(name or "slot_topper", root)
     glass, b = M["topper_a"], M["topper_b"]
     C = np.array([0.0, CY + 0.008, CZ + 0.012])
     ellipsoid(C, (0.205 * HR, 0.215 * HR, 0.215 * HR), n=56, m=32, mat=glass, name="helmet_glass", parent=g)
@@ -467,4 +467,58 @@ def astro_topper(root, d, M):
     for s in (-1, 1):
         ellipsoid((s * 0.200 * HR, CY + 0.012, CZ + 0.02), (0.030 * HR, 0.040 * HR, 0.030 * HR), n=14, m=10, mat=b, name="helmet_lamp", parent=g)
         ellipsoid((s * 0.226 * HR, CY + 0.012, CZ + 0.02), (0.008, 0.026 * HR, 0.026 * HR), n=14, m=10, mat=M["screen"], name="helmet_light", parent=g)
+    return g
+
+
+# ---------------------------------------------------------------- princezna: další doplňky a pokrývky hlavy
+def princess_bag(root, d, M, name=None):
+    g = node(name or "slot_accessory", root)
+    a, b = M["accessory_a"], M["gold"]
+    hp, dd = hand_point(-1)
+    c = hp + np.array([0.0, -0.01, -0.13])
+    ellipsoid(c, (0.092, 0.040, 0.068), n=26, m=16, mat=a, name="bag_body", parent=g)
+    ellipsoid(c + np.array([0, -0.030, 0.034]), (0.086, 0.020, 0.036), n=26, m=12, mat=a, name="bag_flap", parent=g)
+    ellipsoid(c + np.array([0, -0.046, 0.008]), (0.014, 0.006, 0.014), n=12, m=8, mat=b, name="bag_clasp", parent=g)
+    arc = [c + np.array([-0.055, 0.0, 0.050]), c + np.array([-0.035, 0.0, 0.135]), hp + np.array([0.0, 0.0, 0.015]), c + np.array([0.035, 0.0, 0.135]), c + np.array([0.055, 0.0, 0.050])]
+    tube(catmull(arc, 18), 0.0075, 0.0075, n=8, mat=b, name="bag_handle", parent=g, cap=True)
+    bow(g, c + np.array([0.06, -0.044, 0.045]), 0.022, M["outfit_b"], facing=(0, -1.0, 0))
+    return g
+
+
+def princess_headband(root, d, M, name=None):
+    g = node(name or "slot_topper", root)
+    a, b = M["topper_a"], M["topper_b"]
+    pts = []
+    rx, rz = 0.162 * HR / 1.245 * 1.1, 0.20
+    for k in np.linspace(-1.42, 1.42, 30):
+        pts.append([rx * 1.0 * math.sin(k) * 1.12, CY - 0.012 - 0.03 * math.cos(k), CZ + 0.02 + rz * math.cos(k) * 0.95 + 0.012])
+    tube(np.array(pts), 0.0075, 0.0045, n=8, mat=a, name="headband", parent=g, cap=True, n0=np.array([0, 1.0, 0]))
+    bow(g, np.array([-0.10, CY - 0.07, CZ + 0.185]), 0.075, b, knot_mat=a, facing=(-0.45, -1.0, 0.25))
+    return g
+
+
+def princess_hat(root, d, M, name=None):
+    g = node(name or "slot_topper", root)
+    a, b = M["topper_a"], M["topper_b"]
+    z0 = CZ + HC * HS * 0.34
+    r0 = 0.142 * HR / 1.1
+    # koruna klobouku
+    rows = []
+    for u in np.linspace(0, 1, 18):
+        ph = u * (math.pi / 2 - 0.12)
+        r = r0 * (0.98 + 0.05 * math.sin(u * 2)) * math.cos(ph) ** 0.55
+        rows.append(ring_path((0, CY + 0.004), r, r * 1.08, z0 + 0.12 * math.sin(ph) * 1.3, 64))
+    ring_mesh(np.array(rows), True, None, (0.1, 0.1), "hat_crown", a, g)
+    # široká krempa mírně svěšená a zvlněná
+    rows = []
+    for u in np.linspace(0, 1, 14):
+        r_x = r0 + (0.33 - 0.14) * HR / 1.1 * u
+        row = ring_path((0, CY + 0.004), r_x, r_x * 1.06, z0 - 0.045 * u ** 2 + 0.0, 96)
+        ang = np.arctan2(row[:, 1] - CY, row[:, 0])
+        row[:, 2] += 0.012 * u * np.sin(3 * ang + 0.6)
+        rows.append(row)
+    ring_mesh(np.array(rows), True, None, (0.1, 0.1), "hat_brim", a, g)
+    band = ring_path((0, CY + 0.004), r0 * 1.02, r0 * 1.1, z0 + 0.012, 64)
+    closed_tube(g, band, 0.012, b, 8, "hat_band")
+    bow(g, np.array([0.13, CY - 0.11, z0 + 0.03]), 0.05, b, facing=(0.5, -1.0, 0))
     return g

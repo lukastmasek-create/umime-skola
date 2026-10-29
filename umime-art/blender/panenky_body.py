@@ -187,7 +187,7 @@ def skin_face_texture(skin, hair, name):
     return path
 
 
-def makeup_texture(doll, name):
+def makeup_texture(doll, name, glitter=10, strength=1.0):
     lips, shadow, blush = doll["makeup"]
     img = Image.new("RGBA", (S, S), (0, 0, 0, 0))
     sh = tuple(int(c * 255) for c in hex_rgb(shadow))
@@ -204,7 +204,7 @@ def makeup_texture(doll, name):
         draw_poly(img, poly, (25, 18, 35, 235), 1.0)
     rnd = random.Random(5)
     d = ImageDraw.Draw(img)
-    for _ in range(10):
+    for _ in range(glitter):
         sgn = rnd.choice((-1, 1))
         x = sgn * (EYE_X + rnd.uniform(-0.028, 0.036))
         z = EYE_Z + rnd.uniform(0.008, 0.034)
@@ -214,6 +214,10 @@ def makeup_texture(doll, name):
     hl = Image.new("RGBA", (S, S), (0, 0, 0, 0))
     draw_ellipse(hl, 0.0, MOUTH_Z - 0.0075, 0.012, 0.0022, (255, 255, 255, 120), 3)
     img.alpha_composite(hl)
+    if strength != 1.0:
+        arr = np.array(img)
+        arr[..., 3] = (arr[..., 3] * strength).astype(np.uint8)
+        img = Image.fromarray(arr, "RGBA")
     path = os.path.join(TEXDIR, name)
     img.save(path)
     return path

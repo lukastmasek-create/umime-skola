@@ -135,62 +135,79 @@ def bow(g, c, size, mat, knot_mat=None, tilt=0.0, facing=(0, 1.0, 0)):
 
 
 # ---------------------------------------------------------------- princezna
-def princess_outfit(root, d, M):
-    g = node("slot_outfit", root)
+# čtyři střihy šatů princezny: bálový, koktejlové, večerní s mořskou vílou a letní
+OUTFIT_SPECS = [
+    dict(hem=0.115, R=(0.60, 0.538), flare=0.88, tulle=True, sleeves="puff", neck="heart", bow=True, pearls=True, folds=(17, 0.052)),
+    dict(hem=0.60, R=(0.36, 0.33), flare=0.9, tulle=True, sleeves="puff", neck="round", bow=True, pearls=True, folds=(15, 0.06)),
+    dict(hem=0.13, R=(0.27, 0.24), flare=1.9, tulle=False, sleeves="none", neck="heart", bow=False, pearls=True, folds=(11, 0.035)),
+    dict(hem=0.50, R=(0.31, 0.285), flare=0.85, tulle=False, sleeves="none", neck="straps", bow=True, pearls=False, folds=(13, 0.05)),
+]
+
+
+def princess_outfit(root, d, M, name=None, spec=None):
+    spec = spec or OUTFIT_SPECS[0]
+    g = node(name or "slot_outfit", root)
     a, b, tul = M["outfit_a"], M["outfit_b"], M["tulle"]
-    # korzet se srdíčkovým výstřihem
+    # korzet s výstřihem
     zs = np.linspace(1.14, 1.50, 72)
     R = torso_rows(zs, 0.006)
 
     def zcut(x, y):
         front = y < 0.0
-        return np.where(front, 1.445 - 0.030 * gauss(x / 0.05) + 0.020 * (np.abs(x) / 0.14) ** 2, 1.455)
+        if spec["neck"] == "heart":
+            fz = 1.445 - 0.030 * gauss(x / 0.05) + 0.020 * (np.abs(x) / 0.14) ** 2
+        elif spec["neck"] == "round":
+            fz = 1.470 - 0.045 * gauss(x / 0.075)
+        else:
+            fz = 1.455 - 0.035 * gauss(x / 0.07)
+        return np.where(front, fz, 1.455)
 
     keep = lambda c: c[2] < zcut(c[0], c[1])
     ring_mesh(R, True, keep, (0.12, 0.12), "bodice", a, g)
     edge = edge_points(R, keep)
     closed_tube(g, edge + np.array([0, 0, 0.002]), 0.0042, b, name="neckline_trim")
-    # krajka (perličky) na hraně výstřihu
-    pearls(g, edge[::3] + np.array([0, -0.002, 0.004]), 0.0042, M["pearl"], n=6, m=4)
-    # švy korzetu (kostice)
-    for k in range(7):
-        i = int(k * len(edge) / 7)
-        pass
-    # pás
-    zs2 = np.linspace(1.15, 1.215, 6)
-    ring_mesh(torso_rows(zs2, 0.013), True, None, (0.1, 0.1), "sash", b, g)
-    # sukně: rozšiřující se zvon se záhyby, lem s vlnkami
+    if spec["pearls"]:
+        pearls(g, edge[::3] + np.array([0, -0.002, 0.004]), 0.0042, M["pearl"], n=6, m=4)
+    if spec["neck"] == "straps":
+        for s in (-1, 1):
+            tube(strap_path(s * 0.075, 1.46, 1.44, 0.008), 0.0085, 0.003, n=8, mat=b, name="strap", parent=g, cap=True, n0=np.array([1.0, 0, 0]))
+    ring_mesh(torso_rows(np.linspace(1.15, 1.215, 6), 0.013), True, None, (0.1, 0.1), "sash", b, g)
+    # sukně: zvon se záhyby a vlnkami na lemu
+    hem = spec["hem"]
+    R0, R1 = spec["R"]
+    k_f, a_f = spec["folds"]
     mrows = 44
-    zs3 = np.linspace(1.17, 0.115, mrows)
-    t = (1.17 - zs3) / (1.17 - 0.115)
-    rx = 0.138 + 0.470 * t ** 0.88
-    ry = 0.112 + 0.420 * t ** 0.88
+    zs3 = np.linspace(1.17, hem, mrows)
+    t = (1.17 - zs3) / (1.17 - hem)
+    rx = 0.138 + (R0 - 0.138) * t ** spec["flare"]
+    ry = 0.112 + (R1 - 0.112) * t ** spec["flare"]
     rows = np.array([ring_path((0, 0.002), rx[j], ry[j], zs3[j], 120) for j in range(mrows)])
-    rows = folds(rows, 17, 0.052, 0.4, 1.1, (0, 0.002), 0.12)
+    rows = folds(rows, k_f, a_f, 0.4, 1.1, (0, 0.002), 0.12)
     ang = np.arctan2(rows[..., 1], rows[..., 0])
-    rows[:, :, 2] += (0.012 * np.cos(34 * ang) * smooth(0.82, 1.0, t)[:, None])
+    rows[:, :, 2] += 0.012 * np.cos(2 * k_f * ang) * smooth(0.82, 1.0, t)[:, None]
     ring_mesh(rows, True, None, (0.12, 0.12), "skirt", a, g)
-    # tylová nadsukně: průhledná, jemnější záhyby
-    zs4 = np.linspace(1.15, 0.165, 40)
-    t4 = (1.15 - zs4) / (1.15 - 0.165)
-    rx4 = 0.148 + 0.500 * t4 ** 0.9
-    ry4 = 0.122 + 0.445 * t4 ** 0.9
-    rows4 = np.array([ring_path((0, 0.002), rx4[j], ry4[j], zs4[j], 120) for j in range(40)])
-    rows4 = folds(rows4, 29, 0.030, 1.3, 1.2, (0, 0.002), 0.1)
-    ring_mesh(rows4, True, None, (0.12, 0.12), "tulle", tul, g)
-    # perličkový lem
-    hem = ring_path((0, 0.002), 0.600, 0.538, 0.128, 90)
-    hem = folds(np.array([hem, hem]), 17, 0.052, 0.4, 1.1, (0, 0.002), 0.0)[0]
-    ang = np.arctan2(hem[:, 1], hem[:, 0])
-    hem[:, 2] += 0.012 * np.cos(34 * ang)
-    closed_tube(g, hem, 0.011, b, 8, "hem_trim")
-    pearls(g, hem[::2] + np.array([0, 0, 0.0]), 0.0095, M["pearl"], n=8, m=6)
-    # nabrané rukávky přes ramena
-    for s in (-1, 1):
-        ellipsoid((s * 0.172, 0.0, 1.50), (0.066, 0.060, 0.050), rot_z=0, n=22, m=14, mat=a, name="puff", parent=g)
-        ellipsoid((s * 0.178, 0.0, 1.47), (0.060, 0.056, 0.034), n=22, m=12, mat=b, name="puff_trim", parent=g)
-    # mašle vzadu na pásu
-    bow(g, np.array([0.0, 0.118, 1.185]), 0.050, b, facing=(0, 1.0, 0))
+    if spec["tulle"]:
+        zs4 = np.linspace(1.15, hem + 0.05, 40)
+        t4 = (1.15 - zs4) / (1.15 - hem - 0.05)
+        rx4 = 0.148 + (R0 * 1.08 - 0.148) * t4 ** (spec["flare"] + 0.02)
+        ry4 = 0.122 + (R1 * 1.08 - 0.122) * t4 ** (spec["flare"] + 0.02)
+        rows4 = np.array([ring_path((0, 0.002), rx4[j], ry4[j], zs4[j], 120) for j in range(40)])
+        rows4 = folds(rows4, 29, 0.030, 1.3, 1.2, (0, 0.002), 0.1)
+        ring_mesh(rows4, True, None, (0.12, 0.12), "tulle", tul, g)
+    # lem
+    hr = ring_path((0, 0.002), R0, R1, hem + 0.013, 90)
+    hr = folds(np.array([hr, hr]), k_f, a_f, 0.4, 1.1, (0, 0.002), 0.0)[0]
+    ang = np.arctan2(hr[:, 1], hr[:, 0])
+    hr[:, 2] += 0.012 * np.cos(2 * k_f * ang)
+    closed_tube(g, hr, 0.011, b, 8, "hem_trim")
+    if spec["pearls"]:
+        pearls(g, hr[::2], 0.0095, M["pearl"], n=8, m=6)
+    if spec["sleeves"] == "puff":
+        for s in (-1, 1):
+            ellipsoid((s * 0.172, 0.0, 1.50), (0.066, 0.060, 0.050), rot_z=0, n=22, m=14, mat=a, name="puff", parent=g)
+            ellipsoid((s * 0.178, 0.0, 1.47), (0.060, 0.056, 0.034), n=22, m=12, mat=b, name="puff_trim", parent=g)
+    if spec["bow"]:
+        bow(g, np.array([0.0, 0.118, 1.185]), 0.050, b, facing=(0, 1.0, 0))
     return g
 
 
@@ -240,8 +257,8 @@ def foot_shell(g, s, kind, mats):
     return dict(ctr=ctr, vrad=vrad, hrad=hrad, off=off)
 
 
-def princess_shoes(root, d, M):
-    g = node("slot_shoes", root)
+def princess_shoes(root, d, M, name=None):
+    g = node(name or "slot_shoes", root)
     for s in (-1, 1):
         foot_shell(g, s, "flat", M)
         # pásek přes nárt a mašlička
@@ -252,8 +269,8 @@ def princess_shoes(root, d, M):
     return g
 
 
-def princess_accessory(root, d, M):
-    g = node("slot_accessory", root)
+def princess_accessory(root, d, M, name=None):
+    g = node(name or "slot_accessory", root)
     # řetízek kolem krku s přívěskem
     # přední závěs
     chain = []
@@ -273,8 +290,8 @@ def princess_accessory(root, d, M):
     return g
 
 
-def princess_topper(root, d, M):
-    g = node("slot_topper", root)
+def princess_topper(root, d, M, name=None):
+    g = node(name or "slot_topper", root)
     zt = CZ + HC * HS * 0.64
     # obruč
     ringp = ring_path((0, CY + 0.004), 0.108 * HR, 0.124 * HR, zt, 56)
@@ -352,8 +369,8 @@ def leg_sleeve(g, s, i0, i1, off, mat, name="legwear", n=26, uscale=7.0, vlen=No
 
 
 # ---------------------------------------------------------------- sportovkyně
-def athlete_outfit(root, d, M):
-    g = node("slot_outfit", root)
+def athlete_outfit(root, d, M, name=None):
+    g = node(name or "slot_outfit", root)
     a, b = M["outfit_a"], M["outfit_b"]
     # top: úzká sportovní halenka s lemem a bílým pruhem
     zs = np.linspace(1.185, 1.50, 64)
@@ -383,8 +400,8 @@ def athlete_outfit(root, d, M):
     return g
 
 
-def athlete_shoes(root, d, M):
-    g = node("slot_shoes", root)
+def athlete_shoes(root, d, M, name=None):
+    g = node(name or "slot_shoes", root)
     a, b = M["shoes_a"], M["shoes_b"]
     for s in (-1, 1):
         info = foot_shell(g, s, "sneaker", M)
@@ -407,8 +424,8 @@ def athlete_shoes(root, d, M):
     return g
 
 
-def athlete_accessory(root, d, M):
-    g = node("slot_accessory", root)
+def athlete_accessory(root, d, M, name=None):
+    g = node(name or "slot_accessory", root)
     # medaile na pruhované stuze
     for s in (-1, 1):
         tube([np.array([s * 0.034, -0.050, 1.595]), np.array([s * 0.042, -0.078, 1.545]), np.array([s * 0.014, -0.112, 1.455]), np.array([0, -0.122, 1.430])], 0.0085, 0.0014, n=8, mat=M["ribbon"], name="ribbon", parent=g, cap=True)
@@ -444,8 +461,8 @@ def star(g, c, r, mat, depth=0.004, name="star"):
     return make_mesh(name, allv, faces, mat, None, g, shade=False)
 
 
-def athlete_topper(root, d, M):
-    g = node("slot_topper", root)
+def athlete_topper(root, d, M, name=None):
+    g = node(name or "slot_topper", root)
     a, b = M["topper_a"], M["topper_b"]
     zr = CZ + HC * HS * 0.40
     R, rr = 0.1385 * HR, 0.1535 * HR

@@ -76,9 +76,9 @@ def hang_from(E, nrm, length, steps, side_out=0.012, wave=0.0, front_bias=0.0, c
     return np.array(pts)
 
 
-def build_hair(root, doll, mats):
+def build_hair(root, doll, mats, name=None):
     kind, color = doll["hair"]
-    g = node("slot_hair", root)
+    g = node(name or "slot_hair", root)
     hm, rootm = mats["hair"], mats["hair_root"]
     rng = np.random.default_rng(abs(hash(doll["id"])) % 1000)
     # --- lebeční čepice
