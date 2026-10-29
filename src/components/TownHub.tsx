@@ -179,6 +179,8 @@ export function TownHub({ locale }: { locale: Locale }) {
   const [pickHero, setPickHero] = useState(false);
   const [miniOpen, setMiniOpen] = useState<MiniId | null>(null);
   const [storyOpen, setStoryOpen] = useState(false);
+  const [full, setFull] = useState(false);
+  const wrap = useRef<HTMLDivElement>(null);
   const storyText = getTownStoryText(locale);
   const [miniLeft, setMiniLeft] = useState<Record<MiniId, number>>({ fishing: PLAYS_PER_DAY, harvest: PLAYS_PER_DAY, bakery: PLAYS_PER_DAY });
   const miniText = getTownMiniText(locale);
@@ -683,6 +685,18 @@ export function TownHub({ locale }: { locale: Locale }) {
     return () => window.clearTimeout(id);
   }, []);
   useEffect(() => () => shots.current?.stop(), []);
+  useEffect(() => {
+    const onChange = () => {
+      if (!document.fullscreenElement) setFull(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setFull(false);
+    document.addEventListener("fullscreenchange", onChange);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("fullscreenchange", onChange);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, []);
 
   function reduced() {
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -721,6 +735,17 @@ export function TownHub({ locale }: { locale: Locale }) {
         if (d.mini) setMiniLeft({ fishing: d.mini.fishing.left, harvest: d.mini.harvest.left, bakery: d.mini.bakery.left });
       })
       .catch(() => {});
+  }
+  // celá obrazovka: Fullscreen API, jinde překryv přes celé okno; městečko se vždy vejde celé
+  function toggleFull() {
+    if (full) {
+      if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
+      setFull(false);
+      return;
+    }
+    setFull(true);
+    const el = wrap.current;
+    if (el && document.fullscreenEnabled) void el.requestFullscreen().catch(() => {});
   }
   function toggleNight() {
     const next = mode === "auto" ? "day" : mode === "day" ? "night" : "auto";
@@ -788,8 +813,9 @@ export function TownHub({ locale }: { locale: Locale }) {
 
   return (
     <div>
-      <div className="overflow-x-auto overflow-y-hidden rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)]">
-        <div ref={box} className="relative select-none overflow-hidden [container-type:inline-size]" style={{ aspectRatio: `${HUB.w} / ${BOX_H}`, minWidth: 880, background: "linear-gradient(180deg, #5cb4ff, #cfeaff)" }}>
+      <div ref={wrap} className={full ? "fixed inset-0 z-[60] flex items-center justify-center bg-[#0b0925]" : ""}>
+      <div className={full ? "overflow-hidden" : "overflow-x-auto overflow-y-hidden rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)]"} style={full ? { width: `min(100vw, calc(100vh * ${HUB.w / BOX_H}))` } : undefined}>
+        <div ref={box} className="relative select-none overflow-hidden [container-type:inline-size]" style={{ aspectRatio: `${HUB.w} / ${BOX_H}`, minWidth: full ? 0 : 880, background: "linear-gradient(180deg, #5cb4ff, #cfeaff)" }}>
           {phase && phase.kind !== "path" && <div ref={bgDark} aria-hidden className="absolute inset-0 opacity-0" style={{ background: "linear-gradient(180deg, #02030c 0%, #071040 55%, #1b3a8a 100%)" }} />}
           <div key={gen} ref={cam} className={`${dark ? "" : "town-day"} absolute inset-0 ${busyScene ? "pointer-events-none" : ""}`}>
             <div ref={sky} aria-hidden className="town-sky absolute inset-0" />
@@ -982,6 +1008,10 @@ export function TownHub({ locale }: { locale: Locale }) {
               <span aria-hidden>🎬</span>
               <span className="sr-only">{tl.ui.replay}</span>
             </button>
+            <button type="button" onClick={toggleFull} aria-pressed={full} title={full ? tt.fullOff : tt.fullOn} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110">
+              <span aria-hidden>{full ? "🗗" : "⛶"}</span>
+              <span className="sr-only">{full ? tt.fullOff : tt.fullOn}</span>
+            </button>
             <button type="button" onClick={() => !busyScene && setStoryOpen(true)} disabled={busyScene} title={storyText.button} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110 disabled:opacity-50">
               <span aria-hidden>📖</span>
               <span className="sr-only">{storyText.button}</span>
@@ -1016,6 +1046,7 @@ export function TownHub({ locale }: { locale: Locale }) {
             />
           )}
         </div>
+      </div>
       </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">

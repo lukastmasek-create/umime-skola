@@ -9,6 +9,8 @@ export type TownHubText = {
   skip: string;
   night: string;
   day: string;
+  fullOn: string;
+  fullOff: string;
   hero: { title: string; button: string; pick: string };
   auto: string;
   weather: Record<"clear" | "cloudy" | "rain" | "fog" | "snow", string>;
@@ -19,6 +21,7 @@ export type TownHubText = {
 };
 
 const cs: TownHubText = {
+  fullOn: "Celá obrazovka", fullOff: "Zpět do okna",
   hero: { title: "Vyber si hrdinu", button: "Převléct hrdinu", pick: "Vybrat" },
   auto: "Denní doba podle hodin",
   weather: { clear: "Jasno", cloudy: "Oblačno", rain: "Prší", fog: "Mlha", snow: "Sněží" },
@@ -50,6 +53,7 @@ const cs: TownHubText = {
   mine: { title: "Moje městečko", text: "Zvláštní stavby z obchodu stojí na tvých pozemcích v městečku.", empty: "Zatím nemáš žádnou speciální stavbu. V obchodě je koupíš a postavíš.", open: "Stavět ve městě" },
 };
 const en: TownHubText = {
+  fullOn: "Full screen", fullOff: "Back to window",
   hero: { title: "Choose your hero", button: "Change hero", pick: "Choose" },
   auto: "Time of day follows the clock",
   weather: { clear: "Clear", cloudy: "Cloudy", rain: "Rainy", fog: "Foggy", snow: "Snowy" },
@@ -81,6 +85,7 @@ const en: TownHubText = {
   mine: { title: "My town", text: "The special buildings from the shop stand on your plots in town.", empty: "You have no special building yet. Buy and build them in the shop.", open: "Build in the city" },
 };
 const de: TownHubText = {
+  fullOn: "Vollbild", fullOff: "Zurück zum Fenster",
   hero: { title: "Wähle deinen Helden", button: "Held wechseln", pick: "Wählen" },
   auto: "Tageszeit nach der Uhr",
   weather: { clear: "Klar", cloudy: "Bewölkt", rain: "Regen", fog: "Nebel", snow: "Schnee" },
@@ -112,6 +117,7 @@ const de: TownHubText = {
   mine: { title: "Mein Städtchen", text: "Die Spezialgebäude aus dem Shop stehen auf deinen Grundstücken im Städtchen.", empty: "Du hast noch kein Spezialgebäude. Kaufe und baue sie im Shop.", open: "In der Stadt bauen" },
 };
 const ru: TownHubText = {
+  fullOn: "На весь экран", fullOff: "Вернуть в окно",
   hero: { title: "Выбери героя", button: "Сменить героя", pick: "Выбрать" },
   auto: "Время суток по часам",
   weather: { clear: "Ясно", cloudy: "Облачно", rain: "Дождь", fog: "Туман", snow: "Снег" },
