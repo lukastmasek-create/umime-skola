@@ -12,6 +12,7 @@ import { Matching } from "./classic/Matching";
 import { Memory } from "./classic/Memory";
 import { Millionaire } from "./classic/Millionaire";
 import { Scramble } from "./classic/Scramble";
+import { Defense } from "./classic/Defense";
 import { Sorting } from "./classic/Sorting";
 import { Treasure } from "./classic/Treasure";
 import { WordSearch } from "./classic/WordSearch";
@@ -54,5 +55,7 @@ export function ClassicGameInner({
       return <Treasure t={t} questions={questions} difficulty={difficulty} backHref={backHref} />;
     case "oblekani":
       return <DressUp t={t} questions={questions} backHref={backHref} />;
+    case "obrana":
+      return <Defense t={t} questions={questions} backHref={backHref} />;
   }
 }

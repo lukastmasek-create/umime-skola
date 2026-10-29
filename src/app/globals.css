@@ -3072,3 +3072,24 @@ select:not(:focus) {
 @keyframes goal-done-pop { 0% { transform: scale(1); } 40% { transform: scale(1.18) rotate(-6deg); } 100% { transform: scale(1); } }
 .goal-done { animation: goal-done-pop 0.7s ease-out 1; }
 @media (prefers-reduced-motion: reduce) { .goal-done { animation: none; } }
+
+/* Obrana města: scéna s hradem vlevo a nepřáteli, kteří jdou po cestě. */
+.def-scene { position: relative; container-type: inline-size; overflow: hidden; aspect-ratio: 16 / 6.5; border-radius: 1.25rem; border: 2px solid var(--edge); background: linear-gradient(180deg, #7cc4ff 0%, #cfeaff 62%, #bfe8a6 62%); }
+.def-hills { position: absolute; left: 0; right: 0; bottom: 36%; height: 22%; background: radial-gradient(ellipse 22% 100% at 18% 100%, #86c98a 98%, transparent 100%), radial-gradient(ellipse 30% 100% at 55% 100%, #74bd7e 98%, transparent 100%), radial-gradient(ellipse 20% 100% at 88% 100%, #86c98a 98%, transparent 100%); opacity: 0.9; }
+.def-ground { position: absolute; left: 0; right: 0; bottom: 0; height: 40%; background: linear-gradient(180deg, #8fd070 0%, #6dbb58 100%); }
+.def-ground::after { content: ""; position: absolute; left: 0; right: 0; top: 34%; height: 26%; background: repeating-linear-gradient(90deg, #e2c68d 0 7%, #d6b778 7% 8%); border-radius: 999px; }
+.def-castle { position: absolute; left: 0.5%; bottom: 27%; font-size: 11cqw; line-height: 1; filter: drop-shadow(0 6px 4px rgba(0, 0, 0, 0.25)); }
+.def-castle-hit { animation: def-shake 0.5s ease-out 1; }
+.def-hearts { position: absolute; left: 1.5%; top: 6%; font-size: 3cqw; letter-spacing: 0.1em; }
+.def-foe { position: absolute; bottom: 29%; transform: translateX(-50%); font-size: 6.4cqw; line-height: 1; animation: def-walk 0.5s ease-in-out infinite alternate; filter: drop-shadow(0 4px 3px rgba(0, 0, 0, 0.3)); transition: none; }
+.def-foe-active { filter: drop-shadow(0 0 8px #ffd23f) drop-shadow(0 4px 3px rgba(0, 0, 0, 0.3)); z-index: 2; }
+.def-foe-dying { animation: def-boom 0.42s ease-out forwards; }
+.def-mark { position: absolute; left: 50%; top: -48%; transform: translateX(-50%); font-size: 2.6cqw; color: #ff5d73; animation: def-bob 0.6s ease-in-out infinite alternate; }
+.def-shot { position: absolute; left: 12%; bottom: 40%; font-size: 3.6cqw; animation: def-shot 0.3s linear forwards; z-index: 3; }
+.def-banner { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 3.6cqw; color: #fff; background: rgba(20, 20, 60, 0.35); text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5); text-align: center; padding: 0 6%; }
+@keyframes def-walk { from { transform: translateX(-50%) translateY(0) rotate(-4deg); } to { transform: translateX(-50%) translateY(-5%) rotate(4deg); } }
+@keyframes def-bob { from { transform: translateX(-50%) translateY(0); } to { transform: translateX(-50%) translateY(-18%); } }
+@keyframes def-boom { 0% { transform: translateX(-50%) scale(0.8); opacity: 1; } 60% { transform: translateX(-50%) scale(1.5); opacity: 1; } 100% { transform: translateX(-50%) scale(1.9); opacity: 0; } }
+@keyframes def-shot { from { left: 12%; } to { left: var(--tx); } }
+@keyframes def-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-3%) rotate(-3deg); } 60% { transform: translateX(3%) rotate(3deg); } }
+@media (prefers-reduced-motion: reduce) { .def-foe, .def-mark, .def-castle-hit { animation: none; } .def-foe { transform: translateX(-50%); } }

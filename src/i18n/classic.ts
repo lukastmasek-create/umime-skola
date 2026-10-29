@@ -22,7 +22,7 @@ export type ClassicText = {
   triesLeft: string;
   gameOver: string;
   rightAnswer: string;
-  games: Record<"osmismerka" | "spojovani" | "pexeso" | "sibenice" | "trideni" | "doplnovani" | "milionar" | "presmycky" | "blesk" | "poklad" | "oblekani", { title: string; intro: string }>;
+  games: Record<"osmismerka" | "spojovani" | "pexeso" | "sibenice" | "trideni" | "doplnovani" | "milionar" | "presmycky" | "blesk" | "poklad" | "oblekani" | "obrana", { title: string; intro: string }>;
   quiz: { ready: string; start: string; score: string; correctN: string; timeLeft: string; streak: string; best: string; timeUp: string; wrongAnswer: string; correctWas: string; pickTile: string };
   mil: { points: string; fifty: string; audience: string; skip: string; take: string; safe: string; question: string; reached: string; won: string; lost: string; takeHome: string };
   scramble: { hint: string; clear: string; placeholder: string; letters: string; revealed: string };
@@ -30,10 +30,12 @@ export type ClassicText = {
   sort: { right: string; wrong: string; hint: string; card: string; wasRight: string; wasWrong: string; correctIs: string; review: string };
   fill: { bank: string; check: string; placeholder: string; attemptsLeft: string; revealed: string; correctIs: string; pickWord: string };
   matching: { questions: string; answers: string };
+  defense: { wave: string; hearts: string; gold: string; kills: string; ready: string; waveClear: string; shop: string; heal: string; slow: string; next: string; win: string; lose: string; waiting: string };
   dress: { pick: string; start: string; slots: Record<"hair" | "outfit" | "shoes" | "makeup" | "accessory" | "topper", string>; dolls: Record<"princess" | "athlete" | "rocker" | "fairy" | "chef" | "astronaut", string>; yay: string; oops: string; dressed: string; question: string; wearing: string; changed: string; choose: string; option: string; kinds: Record<string, string> };
 };
 
 const cs: ClassicText = {
+  defense: { wave: "Vlna", hearts: "Hrad", gold: "Zlato", kills: "Sestřeleno", ready: "Hrad se připravuje k obraně…", waveClear: "Vlna {n} odražena!", shop: "Mezi vlnami si můžeš nakoupit:", heal: "Opravit hradby (+1 srdce)", slow: "Kouzlo zpomalení další vlny", next: "Další vlna", win: "Hrad ubráněn! 🏰🎉", lose: "Hrad padl… zkus to znovu!", waiting: "Další nepřítel se blíží…" },
   back: "← Zpět na kurz",
   again: "Hrát znovu",
   time: "Čas",
@@ -66,6 +68,7 @@ const cs: ClassicText = {
     blesk: { title: "Bleskový kvíz", intro: "Odpovídej, co to jde. Za správnou odpověď bod a série, za špatnou ztratíš pět sekund. Klávesy 1 až 4 vybírají odpověď." },
     poklad: { title: "Hon za pokladem", intro: "Správná odpověď ti odemkne jedno políčko na ostrově. Skrývá se v nich zlato a truhly, ale i lebky, které berou životy." },
     oblekani: { title: "Obleč panenku", intro: "Panenka stojí jen ve spodním prádle. Za každou správnou odpověď dostane jeden kus oblečení: vlasy, šaty, boty, make-up, doplněk i čepici. Při chybě zesmutní a něco z jejího oblečení se změní." },
+    obrana: { title: "Obrana města", intro: "Nepřátelé se blíží k hradu a nejbližší nese otázku. Správná odpověď ho sestřelí, špatná ho pošle blíž. Přežij pět vln a mezi nimi si za zlato oprav hradby!" },
   },
   matching: { questions: "Otázky", answers: "Odpovědi" },
   sort: { right: "Správně", wrong: "Špatně", hint: "Přetáhni kartu, nebo ← →", card: "Karta", wasRight: "Správně!", wasWrong: "Chyba.", correctIs: "Správná odpověď", review: "Tady jsi chyboval" },
@@ -78,6 +81,7 @@ const cs: ClassicText = {
 };
 
 const en: ClassicText = {
+  defense: { wave: "Wave", hearts: "Castle", gold: "Gold", kills: "Defeated", ready: "The castle is getting ready…", waveClear: "Wave {n} beaten!", shop: "Between waves you can buy:", heal: "Repair walls (+1 heart)", slow: "Slow spell for the next wave", next: "Next wave", win: "Castle defended! 🏰🎉", lose: "The castle fell… try again!", waiting: "The next monster is coming…" },
   back: "← Back to the course",
   again: "Play again",
   time: "Time",
@@ -110,6 +114,7 @@ const en: ClassicText = {
     blesk: { title: "Lightning quiz", intro: "Answer as many as you can. A right answer earns a point and a streak, a wrong one costs five seconds. Keys 1 to 4 pick an answer." },
     poklad: { title: "Treasure hunt", intro: "A right answer unlocks one tile on the island. They hide gold and chests, but also skulls that cost lives." },
     oblekani: { title: "Dress the doll", intro: "The doll stands in her underwear. Every right answer gives her one piece: hair, outfit, shoes, make-up, accessory and a hat. A wrong answer makes her sad and something she wears changes." },
+    obrana: { title: "Castle Defence", intro: "Monsters march on the castle and the nearest one carries a question. A right answer blasts it, a wrong one pushes it closer. Survive five waves and repair the walls with gold in between!" },
   },
   matching: { questions: "Questions", answers: "Answers" },
   sort: { right: "Right", wrong: "Wrong", hint: "Drag the card, or ← →", card: "Card", wasRight: "Right!", wasWrong: "Mistake.", correctIs: "Right answer", review: "Where you slipped" },
@@ -122,6 +127,7 @@ const en: ClassicText = {
 };
 
 const de: ClassicText = {
+  defense: { wave: "Welle", hearts: "Burg", gold: "Gold", kills: "Besiegt", ready: "Die Burg macht sich bereit…", waveClear: "Welle {n} abgewehrt!", shop: "Zwischen den Wellen kannst du kaufen:", heal: "Mauern reparieren (+1 Herz)", slow: "Verlangsamungszauber für die nächste Welle", next: "Nächste Welle", win: "Burg verteidigt! 🏰🎉", lose: "Die Burg ist gefallen… versuch es nochmal!", waiting: "Das nächste Monster naht…" },
   back: "← Zurück zum Kurs",
   again: "Nochmal spielen",
   time: "Zeit",
@@ -154,6 +160,7 @@ const de: ClassicText = {
     blesk: { title: "Blitzquiz", intro: "Antworte, so schnell du kannst. Für eine richtige Antwort gibt es einen Punkt und eine Serie, für eine falsche verlierst du fünf Sekunden. Die Tasten 1 bis 4 wählen die Antwort." },
     poklad: { title: "Schatzsuche", intro: "Eine richtige Antwort schaltet ein Feld der Insel frei. Darunter liegen Gold und Truhen, aber auch Totenköpfe, die Leben kosten." },
     oblekani: { title: "Puppe anziehen", intro: "Die Puppe steht in Unterwäsche da. Jede richtige Antwort bringt ihr ein Teil: Haare, Outfit, Schuhe, Make-up, Accessoire und Hut. Bei einer falschen Antwort wird sie traurig und etwas an ihrem Outfit ändert sich." },
+    obrana: { title: "Burgverteidigung", intro: "Monster marschieren auf die Burg zu, das vorderste trägt eine Frage. Eine richtige Antwort schießt es ab, eine falsche schiebt es näher. Überstehe fünf Wellen und repariere dazwischen die Mauern mit Gold!" },
   },
   matching: { questions: "Fragen", answers: "Antworten" },
   sort: { right: "Richtig", wrong: "Falsch", hint: "Karte ziehen oder ← →", card: "Karte", wasRight: "Richtig!", wasWrong: "Fehler.", correctIs: "Richtige Antwort", review: "Hier lagst du daneben" },
@@ -166,6 +173,7 @@ const de: ClassicText = {
 };
 
 const ru: ClassicText = {
+  defense: { wave: "Волна", hearts: "Замок", gold: "Золото", kills: "Сбито", ready: "Замок готовится к обороне…", waveClear: "Волна {n} отбита!", shop: "Между волнами можно купить:", heal: "Починить стены (+1 сердце)", slow: "Заклинание замедления на следующую волну", next: "Следующая волна", win: "Замок защищён! 🏰🎉", lose: "Замок пал… попробуй снова!", waiting: "Приближается следующий враг…" },
   back: "← Назад к курсу",
   again: "Играть снова",
   time: "Время",
@@ -198,6 +206,7 @@ const ru: ClassicText = {
     blesk: { title: "Блиц-викторина", intro: "Отвечай как можно быстрее. За верный ответ балл и серия, за неверный минус пять секунд. Клавиши 1–4 выбирают ответ." },
     poklad: { title: "Охота за сокровищами", intro: "Верный ответ открывает одну клетку острова. В них золото и сундуки, но и черепа, которые отнимают жизни." },
     oblekani: { title: "Одень куклу", intro: "Кукла стоит в белье. За каждый верный ответ она получает вещь: причёску, наряд, обувь, макияж, аксессуар и головной убор. При ошибке она грустит, и что-то из её одежды меняется." },
+    obrana: { title: "Оборона города", intro: "Враги идут к замку, и ближайший несёт вопрос. Верный ответ сбивает его, неверный подталкивает ближе. Переживи пять волн и между ними чини стены за золото!" },
   },
   matching: { questions: "Вопросы", answers: "Ответы" },
   sort: { right: "Верно", wrong: "Неверно", hint: "Перетащи карточку или ← →", card: "Карточка", wasRight: "Верно!", wasWrong: "Ошибка.", correctIs: "Правильный ответ", review: "Где ты ошибся" },
