@@ -21,6 +21,25 @@ import { setLocaleCookie } from "@/lib/locale-cookie";
 type Tab = { key: string; href: string; label: string; exact?: boolean; noActive?: boolean };
 type Group = { key: string; label: string; items: Tab[] };
 
+// 3D ikona skupiny z Blenderu (umime-art/blender/menu_ikony.py), po najetí se zhoupne.
+const GROUP_ICON: Record<string, string> = {
+  courses: "kurzy",
+  settings: "nastaveni",
+  games: "hry",
+  shop: "obchod",
+  study: "studium",
+  extras: "extra",
+  together: "spolu",
+  boards: "zebricky",
+};
+
+function GroupIcon({ id, size }: { id: string; size: number }) {
+  const name = GROUP_ICON[id];
+  if (!name) return null;
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={`/brand/menu/${name}.webp`} alt="" aria-hidden width={size} height={size} draggable={false} className="nav-ico shrink-0" style={{ width: size, height: size }} />;
+}
+
 function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
   const community = getCommunityText(locale);
   const home = getHomeText(locale);
@@ -174,23 +193,31 @@ export function NavTabs({ locale, dict }: { locale: Locale; dict: Dictionary }) 
               aria-expanded={open}
               aria-haspopup="true"
               onClick={() => setOpenKey(open ? null : group.key)}
-              className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg border-2 px-2.5 py-1.5 text-sm font-semibold ${
+              className={`nav-group flex items-center gap-1.5 whitespace-nowrap rounded-lg border-2 px-2.5 py-1.5 text-sm font-semibold ${
                 active || open
                   ? "border-[var(--edge)] bg-[var(--accent-yellow)] text-[#16132b]"
                   : "border-transparent text-[var(--muted)] hover:border-[var(--edge)] hover:text-[var(--foreground)]"
               }`}
             >
+              <GroupIcon id={group.key} size={22} />
               {group.label}
-              <span aria-hidden className="text-xs">▾</span>
+              <span aria-hidden className={`nav-caret text-xs ${open ? "nav-caret-open" : ""}`}>▾</span>
             </button>
             {open && (
-              <div className="absolute left-0 top-full z-50 mt-1 flex min-w-52 flex-col gap-1 rounded-xl border-2 border-[var(--edge)] bg-[var(--surface)] p-2 shadow-[0_6px_0_var(--shadow-ink)]">
-                {group.items.map((tab) => (
+              <div className="nav-panel absolute left-0 top-full z-50 mt-1 flex min-w-60 flex-col gap-1 rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] p-2 shadow-[0_6px_0_var(--shadow-ink)]">
+                <div className="mb-1 flex items-center gap-3 rounded-xl bg-[var(--surface-muted)] px-3 py-2">
+                  <GroupIcon id={group.key} size={44} />
+                  <span className="text-base font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
+                    {group.label}
+                  </span>
+                </div>
+                {group.items.map((tab, i) => (
                   <Link
                     key={tab.key}
                     href={tab.href}
                     aria-current={isActiveTab(pathname, tab) ? "page" : undefined}
-                    className={itemClass(isActiveTab(pathname, tab))}
+                    className={`nav-item ${itemClass(isActiveTab(pathname, tab))}`}
+                    style={{ ["--d" as string]: `${i * 45}ms` }}
                   >
                     {tab.label}
                   </Link>
@@ -266,8 +293,9 @@ export function MobileMenu({ locale, dict }: { locale: Locale; dict: Dictionary 
                       active ? "border-[var(--edge)] bg-[var(--accent-yellow)] text-[#16132b]" : "border-[var(--edge)] bg-[var(--surface)]"
                     }`}
                   >
-                    <span className="flex items-center gap-2">
-                              {group.label}
+                    <span className="nav-group flex items-center gap-2">
+                      <GroupIcon id={group.key} size={28} />
+                      {group.label}
                     </span>
                     <span aria-hidden>{expanded ? "▴" : "▾"}</span>
                   </button>

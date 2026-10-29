@@ -7,6 +7,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { HeaderAccount } from "@/components/HeaderAccount";
 import { ReturnNudge } from "@/components/ReturnNudge";
 import { SiteLogo } from "@/components/SiteLogo";
+import { HeaderScroll } from "@/components/HeaderScroll";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, locales, type Locale } from "@/i18n/config";
 import { notFound } from "next/navigation";
@@ -66,10 +67,11 @@ export default async function LocaleLayout({
         className="min-h-full flex flex-col text-[var(--foreground)]"
         style={{ fontFamily: "var(--font-body), var(--font-sans)" }}
       >
-        <header className="sticky top-0 z-40 border-b-2 border-[var(--edge)] bg-[var(--surface)]">
-          <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-2.5 sm:px-6">
+        <header className="site-header sticky top-0 z-40 border-b-2 border-[var(--edge)] bg-[var(--surface)]">
+          <HeaderScroll />
+          <div className="site-header-in mx-auto flex max-w-6xl flex-col gap-2 px-4 py-2.5 sm:px-6">
             <div className="flex items-center justify-between gap-3">
-              <Link href={`/${locale}`} className="shrink-0">
+              <Link href={`/${locale}`} className="site-logo shrink-0">
                 <SiteLogo />
               </Link>
               <div className="flex items-center justify-end gap-1.5 text-sm">
