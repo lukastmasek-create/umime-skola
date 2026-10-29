@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from znacky_lib import *
 
 PREVIEW = "--preview" in args()
-W, H = (1000, 450) if PREVIEW else (2000, 900)
+W, H = (1300, 585) if PREVIEW else (2600, 1170)
 UNITS = 16.0
 PPU = W / UNITS
 EL = math.radians(26)
@@ -304,8 +304,101 @@ def build(layer):
     with grp("zadni"):
         for cx in (-7.6, -4.8, -1.6, 1.6, 4.8, 7.6):
             lantern(cx, -1.2, deck_z + 1.95)
+
+    # ------------------------------------------------------------ další detaily (kulisy, dálka, lana)
+    import random
+    rnd = random.Random(21)
+    pennant_cols = ["#d6362b", "#ffc933", "#2f6fd8", "#ffffff", "#2fa070", "#ff7a3c"]
+    with grp("zadni"):
+        # girlandy praporků mezi stánky (nad zadní stěnou, mezi sloupky markýz)
+        for a_x, b_x in ((-7.6, -4.8), (-4.8, -1.6), (-1.6, 1.6), (1.6, 4.8), (4.8, 7.6)):
+            n = 9
+            pts = []
+            for k in range(n + 1):
+                u = k / n
+                pts.append((a_x + (b_x - a_x) * u, -1.28, deck_z + 2.2 - 0.18 * math.sin(math.pi * u)))
+            for p0, p1 in zip(pts, pts[1:]):
+                bar(p0, p1, 0.008, M("lanko", "#d8b878", 0.9), verts=5)
+            for k, (px_, py_, pz_) in enumerate(pts[:-1]):
+                mesh_obj("praporek", [(px_ + 0.03, py_, pz_), (px_ + 0.21, py_, pz_), (px_ + 0.12, py_, pz_ - 0.22)], [(0, 1, 2)], M("prap" + pennant_cols[k % 6], pennant_cols[k % 6], 0.7))
+        # jeřábek na levém konci mola s bednou na laně
+        bar((-8.2, 0.3, deck_z), (-8.2, 0.3, deck_z + 2.3), 0.09, M("jerab", WOOD_D, 0.8), verts=10)
+        bar((-8.2, 0.3, deck_z + 2.3), (-7.0, 0.3, deck_z + 2.0), 0.06, M("jerab", WOOD_D, 0.8), verts=8)
+        bar((-8.2, 0.3, deck_z + 1.4), (-7.55, 0.3, deck_z + 2.1), 0.035, M("jerab", WOOD_D, 0.8), verts=8)
+        bar((-7.05, 0.3, deck_z + 2.0), (-7.05, 0.3, deck_z + 1.1), 0.01, M("lano", "#d8b878", 0.9), verts=5)
+        crate(-7.05, 0.3, 0.8, z=deck_z + 0.85)
+        # vzdálené ostrovy a maják na obzoru (web je kreslí nad mořem, proto malé a daleko od mola)
+        for (ix, iy, sc_, col) in ((7.3, 5.6, 0.62, "#4a8a5a"), (3.9, 6.3, 0.4, "#3f7a52"), (-7.2, 5.9, 0.5, "#54925f")):
+            sphere((ix, iy, 0.0), 1.1 * sc_, M("ostrov" + str(ix), col, 0.9), scale=(1.8, 0.9, 0.55), seg=16, rings=10)
+        for k in range(5):
+            cyl((7.4, 5.6, 0.3 + 0.17 * k), 0.085 - 0.007 * k, 0.17, M("majak" + str(k % 2), "#d6362b" if k % 2 else "#ffffff", 0.5), verts=14)
+        cone((7.4, 5.6, 1.2), 0.1, 0.0, 0.12, M("majak_s", "#2c2540", 0.6), verts=14)
+        sphere((7.4, 5.6, 1.12), 0.05, G("majak_svetlo", "#fff1a8", 6.0), seg=10, rings=8)
+        # plachetnice na obzoru
+        for (bx_, by_, bs) in ((1.6, 6.5, 0.6), (-3.4, 6.7, 0.45)):
+            box((bx_, by_, 0.1), (0.5 * bs, 0.12, 0.12), M("lodka", "#8a5a34", 0.8), bevel=0.01)
+            mesh_obj("plachtaH", [(bx_, by_, 0.16), (bx_, by_, 0.75 * bs + 0.1), (bx_ + 0.3 * bs, by_, 0.16)], [(0, 1, 2)], M("plachtaH", "#ffffff", 0.7))
+        # veslice u mola
+        boat_c = (-4.4, -3.2, -0.12)
+        sphere(boat_c, 0.5, M("veslice", "#2f6fd8", 0.6), scale=(1.8, 0.6, 0.35), seg=18, rings=10)
+        sphere((boat_c[0], boat_c[1], boat_c[2] + 0.08), 0.42, M("veslice_v", "#c79256", 0.8), scale=(1.55, 0.48, 0.18), seg=14, rings=8)
+        for sx in (-1, 1):
+            bar((boat_c[0] + sx * 0.25, boat_c[1], boat_c[2] + 0.3), (boat_c[0] + sx * 0.7, boat_c[1] - 0.55, boat_c[2] - 0.05), 0.02, M("vesla", WOOD_L, 0.8), verts=6)
+        bar((boat_c[0] + 0.7, boat_c[1] + 0.2, boat_c[2] + 0.2), (-4.1, -1.95, deck_z - 0.05), 0.01, M("lano", "#d8b878", 0.9), verts=5)
+        # sítě a plováky u levého konce
+        for k in range(6):
+            bar((-8.55, -0.9 + k * 0.15, deck_z + 0.9), (-8.55, -0.9 + k * 0.15, deck_z + 0.2 + 0.05 * (k % 2)), 0.006, M("sit", "#d8b878", 0.9), verts=4)
+        for k in range(7):
+            bar((-8.55, -0.95, deck_z + 0.85 - k * 0.1), (-8.55, -0.0, deck_z + 0.85 - k * 0.1), 0.006, M("sit", "#d8b878", 0.9), verts=4)
+        for k in range(4):
+            sphere((-8.55, -0.9 + k * 0.28, deck_z + 0.95), 0.05, M("plavak", "#ff6f5c" if k % 2 else "#ffffff", 0.6), seg=8, rings=6)
+        # závěsné cedule a ukazatel
+        bar((-8.0, -1.6, deck_z), (-8.0, -1.6, deck_z + 1.1), 0.04, M("sloupek", WOOD_D, 0.8), verts=8)
+        for k, (yy, ww) in enumerate(((0.85, 0.6), (0.62, 0.5))):
+            box((-8.0 + 0.3 * (-1) ** k, -1.62, deck_z + yy), (ww, 0.04, 0.16), M("sipka", WOOD_L, 0.8), bevel=0.01)
+        # pyramida dělových koulí a bedny s ovocem
+        for k, (cxx, cyy) in enumerate(((7.9, -0.9), (8.08, -0.9), (7.99, -0.9))):
+            sphere((cxx, cyy, deck_z + 0.1 + (0.15 if k == 2 else 0.0)), 0.09, M("koule", "#2c2c38", 0.4, 0.7), seg=10, rings=8)
+        # rybí kosti a hvězdice na prknech
+        for (sxx, syy) in ((2.0, -1.7), (-1.4, -1.65), (5.3, -1.75)):
+            sphere((sxx, syy, deck_z + 0.07), 0.07, M("hvezdice", "#ff8a5c", 0.7), scale=(1, 1, 0.25), seg=8, rings=6)
+        # zábradlí v pravé části zadního okraje
+        for k in range(8):
+            bar((5.3 + k * 0.4, 0.58, deck_z), (5.3 + k * 0.4, 0.58, deck_z + 0.45), 0.025, M("zabr", WOOD_D, 0.8), verts=8)
+        bar((5.3, 0.58, deck_z + 0.45), (8.4, 0.58, deck_z + 0.45), 0.03, M("zabr", WOOD_D, 0.8), verts=8)
+        # pytle a hrnce se zlatem u truhly lodní kanceláře
+        sphere((-4.6, 0.0, deck_z + 0.2), 0.2, M("pytel", "#c9a66b", 0.95), scale=(1, 1, 1.1), seg=12, rings=8)
+        cyl((-4.2, 0.1, deck_z + 0.12), 0.14, 0.24, M("hrnec", "#2c2c38", 0.4, 0.8), verts=14)
+        gold_pile(-4.2, 0.1, deck_z + 0.2, n=10, seed=4)
+        # mapa na stojanu u mazlíčků
+        bar((8.2, 0.3, deck_z), (8.2, 0.3, deck_z + 1.2), 0.03, M("sloupek", WOOD_D, 0.8), verts=8)
+    with grp("predni"):
+        # lano se sloupky podél předního okraje mola
+        bol = [-8.0 + k * 2.0 for k in range(9)]
+        for bx_ in bol:
+            cyl((bx_, -1.95, deck_z + 0.2), 0.07, 0.4, M("pacholek", "#3a3a48", 0.5, 0.6), verts=12)
+            sphere((bx_, -1.95, deck_z + 0.42), 0.09, M("pacholek", "#3a3a48", 0.5, 0.6), seg=10, rings=8)
+        for b0, b1 in zip(bol, bol[1:]):
+            pts = [(b0 + (b1 - b0) * u / 8, -1.97, deck_z + 0.38 - 0.1 * math.sin(math.pi * u / 8)) for u in range(9)]
+            for q0, q1 in zip(pts, pts[1:]):
+                bar(q0, q1, 0.018, M("lano", "#d8b878", 0.9), verts=6)
+        # kočka spící na bedně
+        crate(1.7, -1.7, 0.8)
+        sphere((1.7, -1.7, deck_z + 0.46), 0.14, M("kocka", "#e58a3c", 0.8), scale=(1.5, 1.0, 0.8), seg=12, rings=8)
+        sphere((1.9, -1.72, deck_z + 0.52), 0.08, M("kocka", "#e58a3c", 0.8), seg=10, rings=8)
+        for sy in (-1, 1):
+            cone((1.93, -1.72 + sy * 0.05, deck_z + 0.6), 0.03, 0.0, 0.06, M("kocka", "#e58a3c", 0.8), verts=6)
+        # sud s rumem a korbele
+        barrel(-2.0, -1.6, 0.8)
+        cyl((-1.7, -1.6, deck_z + 0.35), 0.06, 0.1, M("korbel", "#2fa070", 0.3), verts=10)
+        # visící ryby u zvířecího koutu
+        bar((5.2, -1.2, deck_z + 1.9), (6.0, -1.2, deck_z + 1.9), 0.012, M("lano", "#d8b878", 0.9), verts=5)
+        for k in range(3):
+            sphere((5.35 + k * 0.25, -1.2, deck_z + 1.72), 0.07, M("ryba" + str(k), "#9fb8c9", 0.4), scale=(0.5, 0.3, 1.4), seg=8, rings=6)
     out["kotvy"] = anchors
     out["lod"] = norm(-2.2, 3.6, 0.0)
+    out["kanon"] = norm(8.0, -1.35, deck_z + 0.35)
+    out["majak"] = norm(7.4, 5.6, 1.12)
     out["lavka"] = [norm(-4.6, 0.6, deck_z + 0.1), norm(-3.6, 2.6, 0.5)]
     out["racci"] = [norm(-8.2, -0.3, 1.2), norm(8.4, -0.6, 1.2)]
     out["pena"] = [norm(x, y, 0.0) for x in [-8.4 + k * 1.4 for k in range(13)] for y in (-1.95,)]

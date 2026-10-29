@@ -3,6 +3,9 @@ import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { STYLE_GAME, normalizeStyle } from "@/lib/cosmetics";
+import { getXp } from "@/lib/xp";
+import { levelProgress } from "@/lib/progression";
+import { WORLDS } from "@/lib/market-worlds";
 import { SHOP_ITEMS, bundlePrice, dayKey, getBundle, getShopItem, nextDealReset, salePrice, unlockKey } from "@/lib/shop";
 
 class AlreadyOwned extends Error {}
@@ -25,16 +28,21 @@ function ownedItems(keys: string[]): string[] {
 }
 
 async function snapshot(userId: string) {
-  const [user, unlocks, styleRow] = await Promise.all([
+  const [user, unlocks, styleRow, xp] = await Promise.all([
     prisma.user.findUnique({ where: { id: userId }, select: { points: true, avatar: true, title: true } }),
     prisma.unlock.findMany({ where: { userId }, select: { key: true } }),
     prisma.idleState.findUnique({ where: { userId_game: { userId, game: STYLE_GAME } } }),
+    getXp(userId),
   ]);
+  const have = new Set(unlocks.map((u) => u.key));
   const style = normalizeStyle(styleRow?.data);
   return {
     loggedIn: true as const,
     points: user?.points ?? 0,
     owned: ownedItems(unlocks.map((u) => u.key)),
+    level: levelProgress(xp).level,
+    // Světy uživatelského obchodu: první je zdarma, další se odemykají úrovní a body (klíč "world:<id>").
+    worlds: WORLDS.filter((w) => w.unlock.points === 0 || have.has(`world:${w.id}`)).map((w) => w.id),
     day: dayKey(),
     resetAt: nextDealReset().toISOString(),
     equipped: { avatar: user?.avatar ?? null, title: user?.title ?? null, frame: style.frame, banner: style.banner },
@@ -102,6 +110,17 @@ export async function POST(request: Request) {
       await prisma.$transaction(async (t) => {
         if (await t.unlock.findUnique({ where: { userId_key: { userId, key } } })) throw new AlreadyOwned();
         await pay(t, userId, salePrice(item, day), `shop:buy:${item.id}`);
+        await t.unlock.create({ data: { userId, key } });
+      }, tx);
+    } else if (body.action === "unlockWorld") {
+      const world = WORLDS.find((w) => w.id === id);
+      if (!world || !world.ready || world.unlock.points === 0) return NextResponse.json({ error: "unknown-item" }, { status: 400 });
+      const level = levelProgress(await getXp(userId)).level;
+      if (level < world.unlock.level) return NextResponse.json({ error: "locked", detail: `level ${world.unlock.level}` }, { status: 400 });
+      const key = `world:${world.id}`;
+      await prisma.$transaction(async (t) => {
+        if (await t.unlock.findUnique({ where: { userId_key: { userId, key } } })) throw new AlreadyOwned();
+        await pay(t, userId, world.unlock.points, `shop:world:${world.id}`);
         await t.unlock.create({ data: { userId, key } });
       }, tx);
     } else if (body.action === "buyBundle") {
