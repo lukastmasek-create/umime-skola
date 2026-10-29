@@ -3067,3 +3067,8 @@ select:not(:focus) {
 @keyframes finish-star-pop { 0% { transform: scale(0.2) rotate(-25deg); opacity: 0; } 70% { transform: scale(1.25) rotate(6deg); } 100% { transform: scale(1) rotate(0); } }
 .finish-star { display: inline-block; animation: finish-star-pop 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
 @media (prefers-reduced-motion: reduce) { .finish-star { animation: none; } }
+
+/* Splněný denní cíl: kroužek se jednou zhoupne. */
+@keyframes goal-done-pop { 0% { transform: scale(1); } 40% { transform: scale(1.18) rotate(-6deg); } 100% { transform: scale(1); } }
+.goal-done { animation: goal-done-pop 0.7s ease-out 1; }
+@media (prefers-reduced-motion: reduce) { .goal-done { animation: none; } }

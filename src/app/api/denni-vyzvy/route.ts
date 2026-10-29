@@ -160,6 +160,7 @@ async function snapshot(userId: string) {
     pet,
     cityCoins,
     reviewDue: dueIds(normalizeReview(idleData(REVIEW_GAME)), now).length,
+    todayXp,
     weekKey: dayKey(weekStart),
     weekly: WEEKLY_QUESTS.map((q) => ({
       id: q.id,

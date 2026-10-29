@@ -1,6 +1,7 @@
 import type { Locale } from "./config";
 
 export type ReviewText = {
+  weak: { title: string; subtitle: string; empty: string; count: string; due: string; practice: string; best: string };
   reviewNav: string;
   mapNav: string;
   reviewTitle: string;
@@ -37,6 +38,7 @@ export type ReviewText = {
 };
 
 const cs: ReviewText = {
+  weak: { title: "Slabá místa", subtitle: "Tady ti to nejvíc klouže. Procvič si jen tyto otázky.", empty: "Zatím žádná slabá místa. Skvělé!", count: "{n} otázek k procvičení", due: "{n} dnes", practice: "Procvičit", best: "Nejlepší test {n} %" },
   reviewNav: "Opakování",
   mapNav: "Moje mapa",
   reviewTitle: "Opakování chyb",
@@ -73,6 +75,7 @@ const cs: ReviewText = {
 };
 
 const en: ReviewText = {
+  weak: { title: "Weak spots", subtitle: "These are the topics you slip on most. Practise just these questions.", empty: "No weak spots yet. Great!", count: "{n} questions to practise", due: "{n} today", practice: "Practise", best: "Best test {n} %" },
   reviewNav: "Review",
   mapNav: "My map",
   reviewTitle: "Mistake review",
@@ -109,6 +112,7 @@ const en: ReviewText = {
 };
 
 const de: ReviewText = {
+  weak: { title: "Schwachstellen", subtitle: "Hier rutschst du am häufigsten aus. Übe nur diese Fragen.", empty: "Noch keine Schwachstellen. Super!", count: "{n} Fragen zum Üben", due: "{n} heute", practice: "Üben", best: "Bester Test {n} %" },
   reviewNav: "Wiederholen",
   mapNav: "Meine Karte",
   reviewTitle: "Fehler wiederholen",
@@ -145,6 +149,7 @@ const de: ReviewText = {
 };
 
 const ru: ReviewText = {
+  weak: { title: "Слабые места", subtitle: "Здесь ты чаще всего ошибаешься. Потренируй только эти вопросы.", empty: "Слабых мест пока нет. Отлично!", count: "{n} вопросов для тренировки", due: "{n} сегодня", practice: "Тренироваться", best: "Лучший тест {n} %" },
   reviewNav: "Повторение",
   mapNav: "Моя карта",
   reviewTitle: "Повторение ошибок",
