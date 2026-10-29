@@ -16,7 +16,7 @@ import type { Locale } from "@/i18n/config";
 
 const DIR = "/home/globe";
 const BASE_R = 0.26; // poloměr globu v zlomku šířky plátna při zoomu 1
-const DWELL_MS = 3400;
+const DWELL_MS = 3000;
 const CANVAS_SCALE = 1.5; // velikost plátna s globem vůči scéně
 const MIN_ZOOM = 0.7;
 const MAX_ZOOM = 2.4;
@@ -45,10 +45,10 @@ const orbit = (rho: number, incl: number, roll: number, th: number) => {
 type Spot = { lon: number; lat: number };
 
 // Hlavní město (nebo typické místo) země předmětu; pořadí id v mapě zemí (id.png) = pořadí zde.
-const ORDER = ["cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis", "fyzika"] as const;
+const ORDER = ["cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis", "fyzika", "chemie", "obcanka", "hudebka", "francouzstina"] as const;
 const SPOTS: Record<string, Spot> = {
   cestina: { lon: 14.42, lat: 50.09 },
-  literatura: { lon: 2.35, lat: 48.86 },
+  literatura: { lon: -6.26, lat: 53.35 }, // Dublin
   anglictina: { lon: -0.13, lat: 51.5 },
   nemcina: { lon: 13.38, lat: 52.52 },
   rustina: { lon: 37.62, lat: 55.75 },
@@ -57,6 +57,10 @@ const SPOTS: Record<string, Spot> = {
   zemepis: { lon: 86.93, lat: 27.99 },
   prirodopis: { lon: -60.0, lat: -3.1 },
   fyzika: { lon: -80.6, lat: 28.5 }, // Kennedyho vesmírné středisko, Florida
+  chemie: { lon: 116.4, lat: 39.9 }, // Peking
+  obcanka: { lon: 77.2, lat: 28.6 }, // Dillí
+  hudebka: { lon: 151.2, lat: -33.87 }, // Sydney
+  francouzstina: { lon: 2.35, lat: 48.86 }, // Paříž
 };
 const LANDMARK: Record<string, string> = {
   cestina: "cestina",
@@ -69,6 +73,10 @@ const LANDMARK: Record<string, string> = {
   zemepis: "zemepis",
   prirodopis: "prirodopis",
   fyzika: "fyzika",
+  chemie: "chemie",
+  obcanka: "obcanka",
+  hudebka: "hudebka",
+  francouzstina: "francouzstina",
 };
 // Prohlídka jde od východu na západ (jako se otáčí Země), tedy podle klesající zeměpisné délky.
 const TOUR = [...ORDER].sort((a, b) => SPOTS[b].lon - SPOTS[a].lon);
@@ -151,14 +159,14 @@ void main() {
   col = mix(col, vec3(0.97, 0.98, 1.0) * (0.3 + 0.85 * lit), cl * 0.9);
 
   // země předmětů: světlý obrys, vybraná navíc pulzuje
-  float idx = floor(textureLod(uId, vec2(u, v), 0.0).r * 255.0 / 20.0 + 0.5);
+  float idx = floor(textureLod(uId, vec2(u, v), 0.0).r * 255.0 / 16.0 + 0.5);
   if (idx > 0.5) {
     vec2 px = vec2(1.0 / 3072.0, 1.0 / 1536.0) * 1.3;
     float edge = 0.0;
-    edge += step(0.5, abs(floor(textureLod(uId, vec2(u + px.x, v), 0.0).r * 255.0 / 20.0 + 0.5) - idx));
-    edge += step(0.5, abs(floor(textureLod(uId, vec2(u - px.x, v), 0.0).r * 255.0 / 20.0 + 0.5) - idx));
-    edge += step(0.5, abs(floor(textureLod(uId, vec2(u, v + px.y), 0.0).r * 255.0 / 20.0 + 0.5) - idx));
-    edge += step(0.5, abs(floor(textureLod(uId, vec2(u, v - px.y), 0.0).r * 255.0 / 20.0 + 0.5) - idx));
+    edge += step(0.5, abs(floor(textureLod(uId, vec2(u + px.x, v), 0.0).r * 255.0 / 16.0 + 0.5) - idx));
+    edge += step(0.5, abs(floor(textureLod(uId, vec2(u - px.x, v), 0.0).r * 255.0 / 16.0 + 0.5) - idx));
+    edge += step(0.5, abs(floor(textureLod(uId, vec2(u, v + px.y), 0.0).r * 255.0 / 16.0 + 0.5) - idx));
+    edge += step(0.5, abs(floor(textureLod(uId, vec2(u, v - px.y), 0.0).r * 255.0 / 16.0 + 0.5) - idx));
     edge = clamp(edge, 0.0, 1.0);
     float sel = 1.0 - step(0.5, abs(idx - uSel));
     float pulse = 0.65 + 0.35 * sin(uTime * 4.0);
@@ -548,7 +556,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
           const showPin = !isActive && facing > 0.12;
           hide.style.opacity = showPin ? String(Math.min(1, (facing - 0.12) * 4)) : "0";
           hide.style.pointerEvents = showPin ? "auto" : "none";
-          hide.style.transform = `translate3d(${x - 15}px, ${y - 15}px, 0)`;
+          hide.style.transform = `translate3d(${x - 13}px, ${y - 13}px, 0)`;
         }
         if (isActive && el) {
           const f = Math.max(0, Math.min(1, (facing - 0.1) * 3));
@@ -833,11 +841,11 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
                   onMouseEnter={() => pin(slug)}
                   onFocus={() => pin(slug)}
                   onClick={() => pin(slug)}
-                  className="absolute left-0 top-0 z-10 flex h-[30px] w-[30px] items-center justify-center rounded-full border-2 border-[#16132b] bg-white/85 opacity-0 shadow-[0_3px_0_rgba(0,0,0,0.35)] transition-[opacity] hover:scale-110"
+                  className="absolute left-0 top-0 z-10 flex h-[26px] w-[26px] items-center justify-center rounded-full border-2 border-[#16132b] bg-white/85 opacity-0 shadow-[0_3px_0_rgba(0,0,0,0.35)] transition-[opacity] hover:scale-110"
                   style={{ background: s.color, willChange: "transform" }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={`/home/predmet-${slug}.webp`} alt="" width={20} height={20} draggable={false} className="h-5 w-5 object-contain" />
+                  <img src={`/home/predmet-${slug}.webp`} alt="" width={20} height={20} draggable={false} className="h-[18px] w-[18px] object-contain" />
                 </button>
               );
             })}
@@ -892,12 +900,12 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
 
       <div className="relative z-10 flex flex-col gap-4">
         <p className="text-sm text-[var(--muted)]">{t.hint}</p>
-        <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+        <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {subjects.map((s) => {
             const sum = data?.[s.slug];
             const pct = sum && sum.total > 0 ? (sum.done / sum.total) * 100 : 0;
             const isActive = s.slug === active;
-            // Předměty bez vlastní země na globu (Fyzika) jsou jen odkaz; globus se kvůli nim nezastavuje.
+            // Předměty bez vlastní země na globu jsou jen odkaz; globus se kvůli nim nezastavuje.
             const onGlobe = (ORDER as readonly string[]).includes(s.slug);
             return (
               <li key={s.slug}>
@@ -908,13 +916,13 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
                   onFocus={() => onGlobe && pin(s.slug)}
                   onBlur={() => onGlobe && pin(null)}
                   aria-current={isActive ? "true" : undefined}
-                  className={`card card-hover relative flex h-full flex-col gap-1.5 p-2.5 text-[#1b1830] ${isActive ? "ring-4 ring-white/80" : ""}`}
+                  className={`card card-hover relative flex h-full flex-col gap-1 p-2 text-[#1b1830] ${isActive ? "ring-4 ring-white/80" : ""}`}
                   style={{ background: s.color, borderColor: "#16132b" }}
                 >
                   <span className="flex items-center gap-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`/home/predmet-${s.slug}.webp`} alt="" width={36} height={36} draggable={false} className="h-9 w-9 shrink-0 object-contain" />
-                    <span className="text-sm font-bold leading-tight">{s.label}</span>
+                    <img src={`/home/predmet-${s.slug}.webp`} alt="" width={32} height={32} draggable={false} className="h-8 w-8 shrink-0 object-contain" />
+                    <span className="text-[13px] font-bold leading-tight">{s.label}</span>
                   </span>
                   <span className="h-1.5 overflow-hidden rounded-full bg-black/15" aria-hidden>
                     <span className="block h-full rounded-full bg-[#16132b]/70" style={{ width: `${pct}%`, transition: "width 0.6s ease" }} />

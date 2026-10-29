@@ -59,7 +59,11 @@ export type SubjectValue =
   | "DEJEPIS"
   | "ZEMEPIS"
   | "PRIRODOPIS"
-  | "FYZIKA";
+  | "FYZIKA"
+  | "CHEMIE"
+  | "OBCANKA"
+  | "HUDEBKA"
+  | "FRANCOUZSTINA";
 
 export const SUBJECTS: { slug: string; value: SubjectValue; emoji: string; color: string }[] = [
   { slug: "cestina", value: "CESTINA", emoji: "📝", color: "#ffc933" },
@@ -72,6 +76,10 @@ export const SUBJECTS: { slug: string; value: SubjectValue; emoji: string; color
   { slug: "zemepis", value: "ZEMEPIS", emoji: "🌍", color: "#7fdbd8" },
   { slug: "prirodopis", value: "PRIRODOPIS", emoji: "🦎", color: "#b6e36a" },
   { slug: "fyzika", value: "FYZIKA", emoji: "⚛️", color: "#f58fa0" },
+  { slug: "chemie", value: "CHEMIE", emoji: "🧪", color: "#d98cff" },
+  { slug: "obcanka", value: "OBCANKA", emoji: "🏛️", color: "#7f9bff" },
+  { slug: "hudebka", value: "HUDEBKA", emoji: "🎵", color: "#f2e76a" },
+  { slug: "francouzstina", value: "FRANCOUZSTINA", emoji: "🥐", color: "#ff6f91" },
 ];
 
 export function getSubjectBySlug(slug: string | undefined) {

@@ -35,7 +35,7 @@ const cs: HomeText = {
   languages: "Jazyky",
   index: "Sbírka karet",
   subjectsTitle: "Vyber si předmět",
-  subjectsHint: "Devět předmětů od 1. do 9. třídy, každý s kurzy od nejsnazších po nejtěžší.",
+  subjectsHint: "Čtrnáct předmětů od 1. do 9. třídy, každý s kurzy od nejsnazších po nejtěžší.",
   allCourses: "Všechny kurzy",
   featuresTitle: "Co tu najdeš",
   features: [
@@ -69,7 +69,7 @@ const en: HomeText = {
   languages: "Languages",
   index: "Card collection",
   subjectsTitle: "Pick a subject",
-  subjectsHint: "Nine subjects from grade 1 to 9, each with courses from the easiest to the hardest.",
+  subjectsHint: "Fourteen subjects from grade 1 to 9, each with courses from the easiest to the hardest.",
   allCourses: "All courses",
   featuresTitle: "What you'll find here",
   features: [
@@ -103,7 +103,7 @@ const de: HomeText = {
   languages: "Sprachen",
   index: "Kartensammlung",
   subjectsTitle: "Wähle ein Fach",
-  subjectsHint: "Neun Fächer von der 1. bis zur 9. Klasse, jedes mit Kursen vom leichtesten bis zum schwersten.",
+  subjectsHint: "Vierzehn Fächer von der 1. bis zur 9. Klasse, jedes mit Kursen vom leichtesten bis zum schwersten.",
   allCourses: "Alle Kurse",
   featuresTitle: "Das findest du hier",
   features: [
@@ -137,7 +137,7 @@ const ru: HomeText = {
   languages: "Языки",
   index: "Коллекция карточек",
   subjectsTitle: "Выбери предмет",
-  subjectsHint: "Девять предметов с 1 по 9 класс, в каждом курсы от самых лёгких до самых сложных.",
+  subjectsHint: "Четырнадцать предметов с 1 по 9 класс, в каждом курсы от самых лёгких до самых сложных.",
   allCourses: "Все курсы",
   featuresTitle: "Что здесь есть",
   features: [
