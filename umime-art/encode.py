@@ -435,10 +435,34 @@ def svet(name, dirname, npcs, prop, prop_size):
     shutil.copy(os.path.join(ROOT, "out", name + "_zadni", "kotvy.json"), os.path.join(ROOT, "..", "src", "components", name + "-kotvy.json"))
 
 
+def _zalep_cerne(im):
+    """Zalepí čistě černé pixely (sloučené plochy křižujících se cest) průměrem okolních barev."""
+    import numpy as np
+    a = np.array(im.convert("RGBA")).astype(np.float32)
+    bad = (a[..., :3].sum(2) < 12) & (a[..., 3] > 200)
+    for _ in range(80):
+        if not bad.any():
+            break
+        ok = ~bad
+        acc = np.zeros_like(a[..., :3])
+        cnt = np.zeros(bad.shape, np.float32)
+        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, -1), (1, -1), (-1, 1)):
+            sh = np.roll(np.roll(a[..., :3] * ok[..., None], dy, 0), dx, 1)
+            sm = np.roll(np.roll(ok.astype(np.float32), dy, 0), dx, 1)
+            acc += sh
+            cnt += sm
+        fill = bad & (cnt > 0)
+        a[..., :3][fill] = acc[fill] / cnt[fill][:, None]
+        bad = bad & ~fill
+    from PIL import Image
+    return Image.fromarray(a.clip(0, 255).astype(np.uint8), "RGBA")
+
+
 def hub():
     """Městečko jako hub (stránka /mestecko): obrázek scény do public/home/mesto/hub.webp a kotvy do src/components."""
     import json, shutil
     im = frames("mesto_hub")[0]
+    im = _zalep_cerne(im)
     path = os.path.join(DEST, "..", "mesto", "hub.webp")
     im.save(path, format="WEBP", quality=84, method=5, alpha_quality=90)
     print("hub.webp", round(os.path.getsize(path) / 1024), "kB", im.size)

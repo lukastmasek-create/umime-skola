@@ -8,6 +8,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 from mestecko import *
 
+UNITS = 18.0   # širší záběr, aby se vešla laguna vlevo dole i rampa rakety vpravo
 W, H = (1000, 1050) if PREVIEW else (2000, 2100)
 PPU = W / UNITS
 
@@ -60,7 +61,7 @@ def build_world():
     add_sun((math.radians(52), math.radians(8), math.radians(-40)), energy=4.2, color="#fff0d8", angle=0.2)
     add_area((-6, -10, 8), (0, 0, 1), energy=900, size=12, color="#bcd4ff")
     add_area((8, 4, 10), (0, 0, 1), energy=300, size=10, color="#ffe8c0")
-    out = {"w": W, "h": H, "ppu": PPU, "tz": TZ}
+    out = {"w": W, "h": H, "ppu": PPU, "tz": TZ, "units": UNITS}
     out["places"] = {}
     places = out["places"]
 
@@ -86,8 +87,9 @@ def build_world():
     # zátoka vlevo dole (přístav) a její kamenná hráz
     box((-7.5, -8.6, -0.12), (11, 5.2, 0.12), water, bevel=0)
     box((-7.5, -8.6, -0.5), (11, 5.2, 0.6), M("dno", "#3a6a9a"), bevel=0)
-    box((-2.0, -8.6, -0.15), (0.3, 5.2, 0.3), stone_m, bevel=0.02)
-    box((-7.5, -6.0, -0.15), (11, 0.3, 0.3), stone_m, bevel=0.02)
+    hraz = M("hraz", "#a79fb4", roughness=0.8)
+    box((-2.0, -8.6, -0.1), (0.3, 5.2, 0.3), hraz, bevel=0.02)
+    box((-7.5, -6.0, -0.1), (11, 0.3, 0.3), hraz, bevel=0.02)
     # terasa nahoře s vchody do lesa a hradu, schody k ní
     box((0, 12.2, 0.4), (26, 3.2, 0.8), grass2, bevel=0.02)
     box((0, 15.4, 0.9), (26, 3.2, 1.8), grass, bevel=0.02)
@@ -207,14 +209,14 @@ def build_world():
     node("t2", 3.6, 11.3)
     node("s2", 3.6, 8.2)
     node("les", -6.0, 11.2)
-    node("hrad", 5.8, 11.2)
+    node("hrad", 5.8, 11.75)
     link("u2", "s1", "t1", "les")
     link("u4", "s2", "t2", "hrad")
     link("t1", "t2")
     trail([(-3.6, 4.9), (-3.6, 8.2), (-3.6, 11.3)], 0.55)
     trail([(3.6, 4.9), (3.6, 8.2), (3.6, 11.3)], 0.55)
     trail([(-3.6, 11.3), (-6.0, 11.2)], 0.5, z=0.82)
-    trail([(3.6, 11.3), (5.8, 11.2)], 0.5, z=0.82)
+    trail([(3.6, 11.3), (4.5, 11.05), (5.3, 11.1), (5.8, 11.5), (5.8, 11.75)], 0.62, z=0.82)
     trail([(-3.6, 11.3), (3.6, 11.3)], 0.5, z=0.82)
     # nástěnka s úkoly u rozcestí
     node("ukoly", -3.7, -1.25)
@@ -225,15 +227,15 @@ def build_world():
     node("l2", -2.0, -6.8)
     node("pristav", -2.6, -8.3)
     node("molo", -5.4, -8.3)
-    node("l3", 3.0, -6.6)
-    node("stanice", 6.0, -7.1)
-    node("more", 0.2, -7.4)
+    node("l3", 3.4, -6.5)
+    node("stanice", 7.0, -7.1)
+    node("more", 1.5, -7.4)
     link("hub", "most", "l1", "l2", "pristav", "molo")
     link("l1", "l3", "stanice")
     link("l1", "more")
-    trail([(0.4, -0.15), (0.4, -1.3), (0.4, -2.2), (0.4, -3.2), (0.4, -4.3), (-0.8, -5.6), (-2.0, -6.8), (-2.6, -8.3), (-5.4, -8.3)], 0.55)
-    trail([(0.4, -4.3), (1.5, -5.6), (3.0, -6.6), (6.0, -7.1)], 0.5)
-    trail([(0.4, -4.3), (0.3, -5.8), (0.2, -7.4)], 0.5)
+    trail([(0.4, -0.15), (0.4, -1.3), (0.4, -2.2), (0.4, -3.2), (0.4, -4.3), (0.0, -5.0), (-0.8, -5.6), (-2.0, -6.8), (-2.6, -8.3), (-5.4, -8.3)], 0.55)
+    trail([(0.4, -4.3), (1.0, -4.95), (1.8, -5.5), (3.4, -6.5), (7.0, -7.1)], 0.5, z=0.016)
+    trail([(0.4, -4.3), (0.65, -5.1), (0.9, -5.9), (1.5, -7.4)], 0.5, z=0.022)
     for k in range(9):  # prkna mostu
         u = k / 8
         yy = -2.95 + 0.9 * u
@@ -542,11 +544,46 @@ def build_world():
         sphere((fx_ + dx, fy_ - 1.6 - 0.2 * (k % 2), 1.4), 0.24, M("klobouk_h" + c, c, 0.45), scale=(1, 1, 0.6), seg=14, rings=8)
     places["les"] = {"door": norm(fx_, fy_ - 1.5, 0.9), "sign": sign(fx_, fy_ - 1.15, 2.7, w=1.7, h=0.4, color="#2f7a3a"), "w": 1.7}
 
-    cx_, cy_ = 6.0, 12.9   # hrad
-    box((cx_, cy_, 1.8), (5.4, 1.1, 2.0), stone_material("hrad_zed", "#b8b0a4", scale=22, strength=0.4, roughness=0.9), bevel=0.03)
+    # ---- les: hustší koruna, kůra, schodiště kolem kmene, okna, lucerny, kapradí, houby a mechové kameny
+    bark = stone_material("kura_h2", "#5a3d28", scale=46, strength=0.75)
+    greens = ["#2a7a45", "#2f9a52", "#3fb060", "#4fc070", "#2a6a3a", "#58cc78"]
+    for k in range(18):
+        a_ = k * 2.399
+        rr_ = 0.7 + 0.55 * ((k * 7) % 5) / 5
+        dd_ = 0.8 + 1.0 * ((k * 3) % 4) / 4
+        sphere((fx_ + dd_ * math.cos(a_), fy_ + 0.2 + 0.6 * math.sin(a_), 3.7 + 0.32 * (k % 5) + 0.35 * ((k * 5) % 3)), rr_, M("kor2_" + str(k % 6), greens[k % 6], 0.65), seg=20, rings=12)
+    for k in range(9):  # kůra: svislé žlábky na kmeni
+        a_ = -0.3 - k * 0.38
+        bar((fx_ + 1.17 * math.cos(a_ + 1.5), fy_ + 1.17 * math.sin(a_ + 1.5) - 0.0, 1.2), (fx_ + 1.12 * math.cos(a_ + 1.5), fy_ + 1.12 * math.sin(a_ + 1.5), 3.5), 0.035, bark, verts=6)
+    for k in range(11):  # schodiště kolem kmene
+        a_ = math.pi * 1.15 - k * 0.38
+        box((fx_ + 1.35 * math.cos(a_), fy_ + 1.35 * math.sin(a_), 0.95 + 0.16 * k), (0.55, 0.3, 0.06), M("schod_les", "#8a6038", 0.8), rot=(0, 0, a_ + math.pi / 2), bevel=0.01)
+    for sx_ in (-0.55, 0.55):  # kulatá okénka
+        cyl((fx_ + sx_, fy_ - 1.02, 3.05), 0.2, 0.05, G("okno_les", "#ffe58a", 4.0), verts=18, rot=(math.pi / 2, 0, 0))
+        torus((fx_ + sx_, fy_ - 1.03, 3.05), 0.21, 0.03, M("okno_ram", "#4a3020", 0.8), rot=(math.pi / 2, 0, 0))
+    for k in range(5):  # girlanda světýlek přes vchod
+        t_ = k / 4
+        sphere((fx_ - 1.3 + 2.6 * t_, fy_ - 1.3, 2.7 - 0.3 * math.sin(t_ * math.pi)), 0.05, G("girl_les", ["#ffd98a", "#ff9ec4", "#9ee8ff", "#c8ff7a", "#ffd98a"][k], 6.0), seg=8, rings=6)
+    for fx2, fy2, ss in ((-8.0, 11.6, 1.0), (-7.4, 13.8, 0.9), (-4.4, 13.6, 0.9), (-4.5, 11.9, 0.7), (-8.4, 12.8, 0.8)):  # kapradiny
+        for k in range(7):
+            a_ = k * math.tau / 7
+            cone((fx2 + 0.18 * ss * math.cos(a_), fy2 + 0.18 * ss * math.sin(a_), 0.82), 0.1 * ss, 0.0, 0.5 * ss, M("kapradi", "#3aa05a", 0.7), verts=5, rot=(math.sin(a_) * 0.9, -math.cos(a_) * 0.9, 0))
+    for rx_, ry_, rs_ in ((-7.7, 11.5, 0.45), (-4.5, 12.6, 0.35), (-8.6, 13.4, 0.55), (-3.9, 13.3, 0.3)):  # mechové kameny
+        sphere((rx_, ry_, 0.85), rs_, stone_material("kamen_les", "#7d8a78", scale=18, strength=0.5), scale=(1.2, 1, 0.7), seg=14, rings=10)
+        sphere((rx_, ry_, 0.85 + rs_ * 0.45), rs_ * 0.8, M("mech", "#4f8a3a", 0.95), scale=(1.1, 0.9, 0.35), seg=12, rings=8)
+    for k in range(9):  # další houby v kruhu
+        a_ = k * math.tau / 9
+        hx_, hy_ = fx_ + 2.6 * math.cos(a_), fy_ - 1.5 + 0.9 * math.sin(a_)
+        cyl((hx_, hy_, 0.85), 0.03, 0.14 + 0.04 * (k % 3), M("noha_h", "#f4ecd8", 0.6), verts=8)
+        sphere((hx_, hy_, 1.0 + 0.04 * (k % 3)), 0.1 + 0.02 * (k % 3), M("klobouk_m" + str(k % 3), ["#e0453a", "#ff9a3c", "#c43cff"][k % 3], 0.45), scale=(1, 1, 0.6), seg=10, rings=6)
+    for k in range(10):  # světlušky
+        sphere((fx_ - 3.2 + 6.4 * ((k * 37) % 10) / 10, fy_ - 2.6 + 2.6 * ((k * 53) % 10) / 10, 1.3 + 1.2 * ((k * 17) % 7) / 7), 0.035, G("sv_les", "#c8ff7a", 8.0), seg=8, rings=6)
+
+    cx_, cy_ = 5.8, 12.9   # hrad
+    box((cx_, cy_, 1.8), (4.4, 1.1, 2.0), stone_material("hrad_zed", "#b8b0a4", scale=22, strength=0.4, roughness=0.9), bevel=0.03)
     for k in range(9):
-        box((cx_ - 2.4 + k * 0.6, cy_ - 0.1, 3.0), (0.38, 0.6, 0.4), stone_material("hrad_zed", "#b8b0a4", scale=22, strength=0.4, roughness=0.9), bevel=0.02)
-    for tx_, rc_ in ((cx_ - 2.9, "#c0392b"), (cx_ + 2.9, "#2f6fd8")):
+        box((cx_ - 2.0 + k * 0.5, cy_ - 0.1, 3.0), (0.38, 0.6, 0.4), stone_material("hrad_zed", "#b8b0a4", scale=22, strength=0.4, roughness=0.9), bevel=0.02)
+    for tx_, rc_ in ((cx_ - 2.4, "#c0392b"), (cx_ + 2.4, "#2f6fd8")):
         cyl((tx_, cy_, 2.3), 0.75, 3.0, stone_material("hrad_zed", "#b8b0a4", scale=22, strength=0.4, roughness=0.9), verts=24)
         cyl((tx_, cy_, 3.9), 0.9, 0.25, stone_material("hrad_zed2", "#a8a094", scale=22, strength=0.4, roughness=0.9), verts=24)
         cone((tx_, cy_, 4.8), 0.95, 0.0, 1.4, M("vez_s" + rc_, rc_, 0.45), verts=24)
@@ -558,12 +595,151 @@ def build_world():
     box((cx_, cy_ - 0.55, 0.9), (1.6, 0.2, 1.1), M("brana_h", "#2c2438", 0.7), bevel=0.02)
     for k in range(7):
         bar((cx_ - 0.7 + k * 0.23, cy_ - 0.68, 0.4), (cx_ - 0.7 + k * 0.23, cy_ - 0.68, 2.0), 0.03, M("mrize", "#3a3a48", 0.4, 0.7), verts=6)
-    box((cx_, cy_ - 1.5, 0.5), (1.4, 1.6, 0.1), M("most_h", "#9a6a3e", 0.8), rot=(0.25, 0, 0), bevel=0.01)
+    wood_h = M("most_h", "#9a6a3e", 0.8)
+    for k in range(9):  # prkna padacího mostu přes příkop
+        box((cx_, 10.75 + 0.19 * k, 0.9 + 0.012 * k), (1.3, 0.17, 0.06), M("most_h" + str(k % 2), ["#9a6a3e", "#85592f"][k % 2], 0.8), bevel=0.008)
     for sx_ in (-1, 1):
-        bar((cx_ + sx_ * 0.68, cy_ - 0.8, 1.7), (cx_ + sx_ * 0.68, cy_ - 2.2, 0.8), 0.02, M("retez", "#4a4a58", 0.4, 0.7), verts=5)
+        bar((cx_ + sx_ * 0.68, 12.3, 1.75), (cx_ + sx_ * 0.68, 11.0, 1.0), 0.02, M("retez", "#4a4a58", 0.4, 0.7), verts=5)
+        bar((cx_ + sx_ * 0.68, 10.75, 0.85), (cx_ + sx_ * 0.68, 12.4, 0.95), 0.025, wood_h, verts=6)
+        for k in range(4):
+            bar((cx_ + sx_ * 0.68, 10.9 + 0.5 * k, 0.88), (cx_ + sx_ * 0.68, 10.9 + 0.5 * k, 1.12), 0.025, wood_h, verts=6)
+    # příkop před hradbami s kamennými obrubami
+    moat = G("prikop", "#4aa8e0", 0.7)
+    box((cx_, 11.95, 0.82), (5.6, 0.7, 0.05), moat, bevel=0)
+    for yy_ in (11.58, 12.32):
+        box((cx_, yy_, 0.86), (5.7, 0.14, 0.14), stone_material("hrad_obruba", "#a8a094", scale=26, strength=0.45), bevel=0.02)
     for sx_ in (-1.5, 1.5):
         box((cx_ + sx_, cy_ - 0.58, 2.5), (0.5, 0.03, 0.9), M("erb_h", ["#d6362b", "#ffc933"][int(sx_ > 0)], 0.5), bevel=0)
-    places["hrad"] = {"door": norm(cx_, cy_ - 1.6, 0.9), "sign": sign(cx_, cy_ - 0.62, 2.55, w=1.7, h=0.4, color="#7a4a8a"), "w": 1.7}
+    brick = stone_material("hrad_cihla", "#a89e90", scale=34, strength=0.55, roughness=0.95)
+    wall_m = stone_material("hrad_zed", "#b8b0a4", scale=22, strength=0.4, roughness=0.9)
+    mort = M("spara_h", "#7d746a", 0.95)
+    for k in range(8):  # spáry cihel na čelní zdi a na věžích
+        zz_ = 1.0 + 0.22 * k
+        box((cx_, cy_ - 0.56, zz_), (4.3, 0.012, 0.012), mort, bevel=0)
+        for tx_ in (cx_ - 2.4, cx_ + 2.4):
+            torus((tx_, cy_, zz_ + 0.15), 0.755, 0.008, mort)
+    # hlavní věž (donjon) za hradbami s oblouky oken a střechou
+    kx_, ky_ = cx_, cy_ + 0.7
+    box((kx_, ky_, 3.4), (2.3, 1.9, 4.6), brick, bevel=0.03)
+    for k in range(10):
+        box((kx_ + (-1.0 + 0.222 * k), ky_ - 0.97, 5.85), (0.14, 0.14, 0.22), wall_m, bevel=0.01)
+        box((kx_ + (-1.0 + 0.222 * k), ky_ + 0.97, 5.85), (0.14, 0.14, 0.22), wall_m, bevel=0.01)
+    box((kx_, ky_, 5.7), (2.5, 2.1, 0.16), M("donjon_p", "#a8a094", 0.85), bevel=0.02)
+    cone((kx_, ky_, 6.95), 1.3, 0.0, 1.9, M("donjon_s", "#8a3a9a", 0.4), verts=28)
+    for k in range(7):
+        torus((kx_, ky_, 6.15 + 0.22 * k), 1.3 * (1 - (0.15 + 0.22 * k) / 1.9) + 0.01, 0.012, M("donjon_pas", "#6a2a7a", 0.5))
+    bar((kx_, ky_, 7.8), (kx_, ky_, 8.7), 0.02, M("tyc", "#5a3c24", 0.8), verts=6)
+    box((kx_ + 0.4, ky_, 8.45), (0.75, 0.02, 0.4), M("prap_d", "#ffc933", 0.5), bevel=0)
+    for zw, dxw in ((4.0, -0.5), (4.0, 0.5), (4.9, 0.0)):
+        box((kx_ + dxw, ky_ - 0.96, zw), (0.26, 0.04, 0.46), G("okno_d", "#ffd98a", 3.0), bevel=0)
+        cyl((kx_ + dxw, ky_ - 0.96, zw + 0.23), 0.13, 0.04, G("okno_d", "#ffd98a", 3.0), verts=14, rot=(math.pi / 2, 0, 0))
+        box((kx_ + dxw, ky_ - 0.985, zw - 0.27), (0.4, 0.05, 0.05), wall_m, bevel=0.005)
+    # cimbuří na věžích
+    for tx_ in (cx_ - 2.4, cx_ + 2.4):
+        for k in range(10):
+            a2_ = k * math.tau / 10
+            box((tx_ + 0.84 * math.cos(a2_), cy_ + 0.84 * math.sin(a2_), 4.14), (0.22, 0.2, 0.26), wall_m, rot=(0, 0, a2_), bevel=0.01)
+        box((tx_ + 0.0, cy_ - 0.77, 3.3), (0.3, 0.04, 0.5), G("okno_v", "#ffd98a", 2.5), bevel=0)
+    # oblouk brány z kamene, pochodně a břečťan
+    torus((cx_, cy_ - 0.68, 1.45), 0.88, 0.1, wall_m, rot=(math.pi / 2, 0, 0))
+    for sx_ in (-1, 1):
+        box((cx_ + sx_ * 0.95, cy_ - 0.66, 0.95), (0.2, 0.2, 1.3), wall_m, bevel=0.02)
+        bar((cx_ + sx_ * 1.25, cy_ - 0.7, 1.6), (cx_ + sx_ * 1.25, cy_ - 0.9, 1.6), 0.015, M("tyc", "#5a3c24", 0.8), verts=6)
+        sphere((cx_ + sx_ * 1.25, cy_ - 0.95, 1.7), 0.09, G("pochoden", "#ff9a3c", 9.0), seg=10, rings=8)
+        cone((cx_ + sx_ * 1.25, cy_ - 0.95, 1.6), 0.06, 0.02, 0.12, M("tyc", "#5a3c24", 0.8), verts=8)
+    ivy = M("brecta", "#3f8a3a", 0.85)
+    for k in range(14):
+        sphere((cx_ - 1.8 + 0.1 * k + 0.3 * math.sin(k * 1.7), cy_ - 0.62, 1.1 + 0.55 * ((k * 5) % 4) / 1.5), 0.12 + 0.05 * (k % 3), ivy, scale=(1, 0.5, 1), seg=8, rings=6)
+    for tx_ in (cx_ + 2.4,):
+        for k in range(10):
+            sphere((tx_ + 0.62 * math.cos(1.0 + k * 0.35), cy_ - 0.52 - 0.12 * (k % 2), 0.95 + 0.25 * k), 0.14, ivy, seg=8, rings=6)
+    places["hrad"] = {"door": norm(cx_, cy_ - 1.15, 0.9), "sign": sign(cx_, cy_ - 0.62, 2.55, w=1.7, h=0.4, color="#7a4a8a"), "w": 1.7}
+
+
+    # ---------------------------------------------------------- mezi lesem a hradem: rybníček s vodopádem, lávka, studna a tábor
+    rock_m = stone_material("kamen_mezi", "#8f8a98", scale=16, strength=0.5)
+    px2, py2 = -0.4, 12.75
+    cyl((px2, py2, 0.8), 1.55, 0.05, G("rybnik", "#59b8ff", 0.8), verts=44)
+    for k in range(16):  # obruba z balvanů
+        a_ = k * math.tau / 16
+        sphere((px2 + 1.62 * math.cos(a_) * 1.0, py2 + 1.62 * math.sin(a_) * 0.95, 0.88), 0.2 + 0.07 * (k % 3), rock_m, scale=(1.2, 1, 0.75), seg=12, rings=8)
+    box((px2, 13.7, 1.3), (1.0, 0.12, 1.05), G("vodopad", "#bfe8ff", 2.2), bevel=0)
+    for k in range(6):  # pruhy pěny ve vodopádu
+        box((px2 - 0.38 + 0.15 * k, 13.64, 1.3 + 0.1 * ((k * 3) % 4)), (0.03, 0.03, 0.55), G("pena", "#ffffff", 3.0), bevel=0)
+    for dx_ in (-0.7, 0.7):
+        sphere((px2 + dx_, 13.7, 1.15), 0.4, rock_m, scale=(1, 0.8, 1.4), seg=12, rings=8)
+    sphere((px2, 13.3, 0.9), 0.35, M("pena", "#ffffff", 0.3), scale=(2.2, 0.7, 0.3), seg=12, rings=8)
+    for k in range(5):  # lekníny
+        sphere((px2 - 0.9 + 0.5 * k + 0.2 * math.sin(k * 3), py2 - 0.3 + 0.4 * math.sin(k * 2), 0.85), 0.14, M("leknin", "#3fa05a", 0.6), scale=(1, 1, 0.12), seg=12, rings=6)
+        if k % 2 == 0:
+            sphere((px2 - 0.9 + 0.5 * k + 0.2 * math.sin(k * 3), py2 - 0.3 + 0.4 * math.sin(k * 2), 0.9), 0.05, M("leknin_k", "#ff9ec4", 0.5), seg=8, rings=6)
+    for k in range(7):  # kamenná lávka přes rybníček
+        u_ = k / 6
+        box((px2 - 0.9 + 1.8 * u_, py2 - 0.05, 0.86 + 0.14 * math.sin(u_ * math.pi)), (0.3, 0.7, 0.07), rock_m, bevel=0.015)
+    for sx_ in (-1, 1):
+        bar((px2 - 0.95 * sx_, py2 - 0.4, 0.86), (px2 - 0.95 * sx_, py2 - 0.4, 1.15), 0.025, M("zabr_l", "#7a4a2e", 0.8), verts=6)
+    # studna přání
+    wx_, wy_ = 1.7, 12.4
+    cyl((wx_, wy_, 1.0), 0.42, 0.45, stone_material("studna_k", "#a79fb4", scale=26, strength=0.4), verts=24)
+    cyl((wx_, wy_, 1.25), 0.32, 0.04, G("studna_v", "#59b8ff", 0.8), verts=20)
+    for sx_ in (-1, 1):
+        bar((wx_ + sx_ * 0.4, wy_, 1.2), (wx_ + sx_ * 0.4, wy_, 1.95), 0.03, M("zabr_l", "#7a4a2e", 0.8), verts=6)
+    box((wx_ - 0.22, wy_, 2.0), (0.6, 0.78, 0.04), M("stresni_s", "#c0392b", 0.5), rot=(0, 0.6, 0), bevel=0.01)
+    box((wx_ + 0.22, wy_, 2.0), (0.6, 0.78, 0.04), M("stresni_s", "#c0392b", 0.5), rot=(0, -0.6, 0), bevel=0.01)
+    bar((wx_, wy_, 1.82), (wx_, wy_, 1.4), 0.008, M("provaz", "#d8c8a0", 0.9), verts=4)
+    cyl((wx_, wy_, 1.33), 0.07, 0.1, M("vedro", "#8a6038", 0.8), verts=10)
+    # rozcestník
+    sx0_, sy0_ = -2.5, 11.9
+    bar((sx0_, sy0_, 0.8), (sx0_, sy0_, 1.7), 0.04, M("zabr_l", "#7a4a2e", 0.8), verts=6)
+    for k, (zz_, rot_, cc_) in enumerate(((1.55, 0.12, "#2f7a3a"), (1.32, -0.1, "#7a4a8a"), (1.1, 0.08, "#2f6fd8"))):
+        box((sx0_ + (0.28 if k != 1 else -0.28), sy0_, zz_), (0.62, 0.05, 0.17), M("sipka" + str(k), cc_, 0.6), rot=(0, 0, rot_), bevel=0.01)
+    # rytířský tábor: dva stany, ohniště, praporky
+    for tx3, ty3, tc_ in ((-3.3, 13.6, "#c0392b"), (-2.4, 14.4, "#2f6fd8")):
+        cone((tx3, ty3, 0.8), 0.7, 0.0, 1.1, M("stan" + tc_, tc_, 0.7), verts=4, rot=(0, 0, math.pi / 4))
+        box((tx3, ty3 - 0.5, 1.0), (0.3, 0.02, 0.5), M("stan_v", "#2c2438", 0.8), rot=(0.3, 0, 0), bevel=0)
+        bar((tx3, ty3, 1.85), (tx3, ty3, 2.2), 0.012, M("tyc", "#5a3c24", 0.8), verts=5)
+        box((tx3 + 0.15, ty3, 2.1), (0.3, 0.015, 0.16), M("prapor" + tc_, "#ffc933", 0.5), bevel=0)
+    fx3, fy3 = -3.0, 12.5
+    for k in range(7):
+        a_ = k * math.tau / 7
+        sphere((fx3 + 0.22 * math.cos(a_), fy3 + 0.22 * math.sin(a_), 0.86), 0.07, rock_m, seg=8, rings=6)
+    for k in range(3):
+        bar((fx3 - 0.12 + 0.12 * k, fy3 - 0.1, 0.84), (fx3 - 0.02 + 0.04 * k, fy3 + 0.06, 0.98), 0.025, M("poleno", "#5a3c24", 0.9), verts=6)
+    sphere((fx3, fy3, 1.0), 0.12, G("ohen", "#ff8a2a", 12.0), scale=(1, 1, 1.5), seg=10, rings=8)
+    # lucerny podél cesty po terase a trs květin
+    for lx4, ly4 in ((-2.2, 11.05), (2.2, 11.05), (4.5, 10.8), (-4.8, 10.95)):
+        bar((lx4, ly4, 0.8), (lx4, ly4, 1.35), 0.014, M("lampa", "#3b3a4a", 0.4, 0.7), verts=8)
+        sphere((lx4, ly4, 1.42), 0.05, G("lampa_sv", "#ffd98a", 6.0), seg=10, rings=8)
+    for fx4, fy4, cols in ((-1.5, 11.75, ["#ff7eb6", "#ffe36e"]), (2.8, 11.75, ["#ffffff", "#9a4de0"]), (-2.4, 12.6, ["#ff9a3c", "#ff7eb6"]), (1.0, 14.0, ["#ffe36e", "#9ee8ff"])):
+        for k in range(9):
+            a_ = k * 2.4
+            ex_, ey_ = fx4 + 0.3 * math.cos(a_) * (0.4 + (k % 3) * 0.3), fy4 + 0.22 * math.sin(a_) * (0.4 + (k % 3) * 0.3)
+            bar((ex_, ey_, 0.8), (ex_, ey_, 0.93), 0.008, M("stonek", "#3f8a3a", 0.8), verts=4)
+            sphere((ex_, ey_, 0.95), 0.032, M("kvet" + cols[k % 2], cols[k % 2], 0.5), seg=8, rings=6)
+
+
+    # ---------------------------------------------------------- kulisy za hradem a lesem: kopce, hory a hustý les
+    def ptree(x, y, z0, sc, kind, leaf):
+        bar((x, y, z0), (x, y, z0 + 0.5 * sc), 0.06 * sc, M("kmen_k", "#5a3c24", 0.9), verts=6)
+        if kind == "p":
+            for j in range(3):
+                cone((x, y, z0 + (0.35 + 0.42 * j) * sc), (0.62 - 0.14 * j) * sc, 0.0, 0.85 * sc, M("jehl" + leaf, leaf, 0.7), verts=10)
+        else:
+            sphere((x, y, z0 + 0.95 * sc), 0.55 * sc, M("kor_k" + leaf, leaf, 0.65), seg=14, rings=9)
+            sphere((x + 0.3 * sc, y, z0 + 0.75 * sc), 0.38 * sc, M("kor_k" + leaf, leaf, 0.65), seg=12, rings=8)
+    for k, (hx, hy, hr, hc) in enumerate(((-9.0, 18.5, 4.2, "#5aa56a"), (-1.0, 19.5, 5.0, "#4f9a62"), (7.5, 18.8, 4.4, "#5aa56a"), (-5.0, 21.5, 5.5, "#7ab88a"), (4.0, 22.0, 6.0, "#86c196"))):
+        sphere((hx, hy, 0.8), hr, M("kopec" + str(k), hc, 0.9), scale=(1.5, 1, 0.45), seg=28, rings=16)
+    for k, (mx, my, mr, mh) in enumerate(((-7.0, 24.0, 3.2, 5.0), (0.5, 25.5, 3.8, 6.4), (8.0, 24.5, 3.0, 4.6))):
+        cone((mx, my, 1.0), mr, 0.0, mh, M("hora" + str(k), "#8fa3c4", 0.85), verts=7)
+        cone((mx, my, 1.0 + mh * 0.72), mr * 0.28, 0.0, mh * 0.3, M("snih_h", "#f4f8ff", 0.6), verts=7)
+    for i in range(34):
+        x = -12 + i * 0.72 + 0.3 * math.sin(i * 3)
+        y = 14.6 + 1.6 * ((i * 7) % 5) / 5 + (0.7 if i % 2 else 0)
+        if -2.5 < x < 3.5 and y < 15.4:
+            continue
+        ptree(x, y, 1.8, 1.0 + 0.4 * ((i * 3) % 4) / 4, "p" if i % 3 else "r", ["#2a6a4a", "#2f7a5a", "#3a8a60", "#4fb560"][i % 4])
+    # klikatá pěšinka z hradu do kopců
+    trail([(5.8, 13.5), (4.6, 14.6), (5.6, 16.0), (4.2, 17.8)], 0.5, z=1.82)
 
     # ---------------------------------------------------------- přístav v zátoce (vlevo dole)
     for k in range(18):  # molo
@@ -581,7 +757,7 @@ def build_world():
     places["pristav"] = {"door": norm(-2.0, -8.3, 0.2), "sign": sign(-0.5, -8.18, 1.55, w=1.2, h=0.3, color="#3b6fd8"), "w": 1.2, "lod": norm(-6.6, -9.4, 0.0)}
 
     # ---------------------------------------------------------- raketová rampa (vpravo dole)
-    px_, py_ = 6.0, -8.0
+    px_, py_ = 7.0, -8.2
     cyl((px_, py_, 0.08), 2.0, 0.16, stone_material("rampa", "#9aa0b0", scale=20, strength=0.3), verts=40)
     cyl((px_, py_, 0.17), 1.5, 0.02, M("rampa_k", "#3b3a4a", 0.5), verts=40)
     for k in range(16):
@@ -594,13 +770,13 @@ def build_world():
     box((px_ + 1.45, py_ + 0.7, 3.0), (1.0, 0.1, 0.1), M("vez_r", "#c9ced8", 0.4, 0.5), bevel=0.01)
     for k in range(6):
         bar((px_ + 1.9, py_ + 0.7, 0.5 + k * 0.5), (px_ + 2.3, py_ + 0.7, 0.75 + k * 0.5), 0.02, M("vez_r", "#c9ced8", 0.4, 0.5), verts=6)
-    house(3.4, -8.8, 1.3, 1.0, 0.8, "#d8e0f0", "#e0453a", rh=0.4, along="x", chim=None, wins=1, door_x=-0.25, shutter="#46d6ff", name="ridici")
-    cyl((3.4, -8.8, 1.4), 0.04, 1.2, M("anten", "#9aa6c0", 0.4, 0.6), verts=8)
-    sphere((3.4, -8.8, 2.05), 0.07, G("antenS", "#ff6fd0", 6.0), seg=8, rings=6)
-    places["stanice"] = {"door": norm(px_, py_ - 1.2, 0.2), "sign": sign(3.4, -9.33, 1.15, w=1.2, h=0.3, color="#e0453a"), "w": 1.2, "raketa": norm(px_, py_, 0.45)}
+    house(10.2, -9.9, 1.3, 1.0, 0.8, "#d8e0f0", "#e0453a", rh=0.4, along="x", chim=None, wins=1, door_x=-0.25, shutter="#46d6ff", name="ridici")
+    cyl((10.2, -9.9, 1.4), 0.04, 1.2, M("anten", "#9aa6c0", 0.4, 0.6), verts=8)
+    sphere((10.2, -9.9, 2.05), 0.07, G("antenS", "#ff6fd0", 6.0), seg=8, rings=6)
+    places["stanice"] = {"door": norm(px_, py_ - 1.2, 0.2), "sign": sign(10.2, -10.43, 1.15, w=1.2, h=0.3, color="#e0453a"), "w": 1.2, "raketa": norm(px_, py_, 0.45)}
 
     # ---------------------------------------------------------- laguna s potápěčskou věží (podmořské město)
-    lx_, ly_ = 0.9, -9.2
+    lx_, ly_ = 2.7, -8.8
     cyl((lx_, ly_, -0.02), 2.4, 0.06, M("breh_l", "#e8d6a8", 0.9), verts=40, rot=(0, 0, 0))
     cyl((lx_, ly_, 0.03), 2.2, 0.05, water, verts=40)
     for k in range(10):
@@ -655,7 +831,7 @@ def build_world():
     out["voda"] = {
         "zatoka": [norm(-13, -6.0)[0], norm(-13, -6.0)[1], norm(-2.0, -14.5)[0], norm(-2.0, -14.5)[1]],
         "reka": [norm(-8, -2.2)[0], norm(-8, -2.2)[1], norm(8, -2.9)[0], norm(8, -2.9)[1]],
-        "laguna": norm(0.9, -10.6) + [2.2 / 16, 2.2 * math.sin(EL) / (H / PPU)],
+        "laguna": norm(2.7, -10.2) + [2.2 / UNITS, 2.2 * math.sin(EL) / (H / PPU)],
     }
     out["sber"] = [norm(x, y) for x, y in ((-6.2, -1.0), (-4.6, -1.8), (-1.8, -0.3), (1.0, -1.5), (3.2, -0.2), (5.0, 0.9), (2.0, 5.0), (-5.5, 5.6), (-0.5, 5.9),
                                             (5.4, 5.4), (-3.6, 9.0), (3.8, 9.0), (-2.0, -5.2), (1.2, -6.8), (4.8, -6.2), (-4.6, -7.4), (-1.0, 11.6), (1.5, 11.8))]

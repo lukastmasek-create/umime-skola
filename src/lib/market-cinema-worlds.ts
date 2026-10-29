@@ -10,12 +10,12 @@ import { clamp, ease, heroSprite, lerp, load, readCam, rnd, setHero, setup, sm, 
 
 type R = Pick<Refs, "box" | "cam" | "cv" | "hero" | "heroSpr">;
 export type WorldKind = "forest" | "castle" | "sea";
-type Spark = { x: number; y: number; vx: number; vy: number; age: number; life: number; r: number; kind: number; rot: number };
-type Frame = { ctx: CanvasRenderingContext2D; cw: number; ch: number; t: number; tau: number; dt: number; sx: number; sy: number; K: number; hx: number; hy: number; sparks: Spark[] };
+export type Spark = { x: number; y: number; vx: number; vy: number; age: number; life: number; r: number; kind: number; rot: number };
+export type Frame = { ctx: CanvasRenderingContext2D; cw: number; ch: number; t: number; tau: number; dt: number; sx: number; sy: number; K: number; hx: number; hy: number; sparks: Spark[] };
 
 const TE: Record<WorldKind, number> = { forest: 6.0, castle: 6.4, sea: 8.4 };
 
-function glow(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rgb: string, a: number) {
+export function glow(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rgb: string, a: number) {
   if (a <= 0 || r < 1) return;
   const g = ctx.createRadialGradient(x, y, 0, x, y, r);
   g.addColorStop(0, `rgba(${rgb},${a})`);
@@ -25,19 +25,19 @@ function glow(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rg
   ctx.fillRect(x - r, y - r, r * 2, r * 2);
 }
 
-function bars(ctx: CanvasRenderingContext2D, cw: number, ch: number, k: number) {
+export function bars(ctx: CanvasRenderingContext2D, cw: number, ch: number, k: number) {
   ctx.fillStyle = "#000";
   const h = ch * 0.075 * k;
   ctx.fillRect(0, 0, cw, h);
   ctx.fillRect(0, ch - h, cw, h);
 }
 
-function pushSpark(list: Spark[], s: Partial<Spark> & { x: number; y: number }) {
+export function pushSpark(list: Spark[], s: Partial<Spark> & { x: number; y: number }) {
   list.push({ vx: 0, vy: 0, age: 0, life: 1, r: 2, kind: 0, rot: 0, ...s });
 }
 
 // kind: 0 jiskra, 1 list, 2 okvětní plátek, 3 ohnivý uhlík, 4 prach, 5 kapka, 6 bublina
-function stepSparks(f: Frame, grav: number) {
+export function stepSparks(f: Frame, grav: number) {
   const { ctx, sparks, dt } = f;
   for (let i = sparks.length - 1; i >= 0; i--) {
     const p = sparks[i];
@@ -412,6 +412,37 @@ function seaFx(f: Frame, assets: { hero: HTMLImageElement; sub: HTMLImageElement
   }
 }
 
+// Paprsky světla a rázové vlny ze vchodu (les, hrad): `open` 0 až 1 podle otevření.
+function beams(f: Frame, cx: number, cy: number, open: number, rgb: string, count = 16) {
+  if (open <= 0.01) return;
+  const { ctx, t, K, tau } = f;
+  ctx.globalCompositeOperation = "lighter";
+  for (let i = 0; i < count; i++) {
+    const a0 = (i / count) * Math.PI * 2 + t * 0.3;
+    const len = (190 + 90 * Math.sin(t * 2.6 + i * 1.9)) * K * open;
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, len);
+    g.addColorStop(0, `rgba(${rgb},${0.36 * open})`);
+    g.addColorStop(1, `rgba(${rgb},0)`);
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, len, a0 - 0.05, a0 + 0.05);
+    ctx.closePath();
+    ctx.fill();
+  }
+  for (let i = 0; i < 3; i++) {
+    const u = clamp((tau - 0.1 - i * 0.3) / 1.1);
+    if (u > 0 && u < 1) {
+      ctx.strokeStyle = `rgba(${rgb},${0.5 * (1 - u)})`;
+      ctx.lineWidth = (6 - 4 * u) * K;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, (24 + 230 * ease(u)) * K, (18 + 170 * ease(u)) * K, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+  ctx.globalCompositeOperation = "source-over";
+}
+
 export function runWorld(r: R, g: Geo, kind: WorldKind, onEnd: () => void, subEl?: HTMLElement | null): Handle {
   let stopped = false;
   let raf = 0;
@@ -428,6 +459,7 @@ export function runWorld(r: R, g: Geo, kind: WorldKind, onEnd: () => void, subEl
     r.cam.style.transformOrigin = "0 0";
     r.cam.style.willChange = "transform";
     const cam0 = readCam(r.cam);
+    r.hero.style.zIndex = "90"; // hrdina nad efekty vstupu
     const [su, sv] = g.toBox(g.start);
     const path: { x: number; y: number }[] = [{ x: su * cw, y: sv * ch }];
     for (const p of g.walk ?? []) {
@@ -569,8 +601,12 @@ export function runWorld(r: R, g: Geo, kind: WorldKind, onEnd: () => void, subEl
           const cy = f.sy - 50 * K;
           const ring = { x: f.hx + Math.cos(a) * rr, y: f.hy - 54 * K + Math.sin(a * 1.3) * rr * 0.55 };
           const into = sm(fk, 0.78, 1);
+          beams(f, cx, cy, sm(tau, 0.2, 1.4), "230,255,150");
           forestFx(f, { x: lerp(ring.x, cx, into), y: lerp(ring.y, cy, into) });
-        } else if (kind === "castle") castleFx(f);
+        } else if (kind === "castle") {
+          beams(f, f.sx + 10 * K, f.sy - 70 * K, sm(tau, 0.6, 1.8), "255,196,100", 12);
+          castleFx(f);
+        }
         else if (heroImg && subImg) seaFx({ ...f, tau: tau - (subC ? 1.4 : 0) }, { hero: heroImg, sub: subImg });
         stepSparks(f, kind === "sea" ? 500 : -20);
         bars(ctx, cw, ch, sm(tau, 0, 0.6) * (1 - sm(tau, END - 0.5, END)));
