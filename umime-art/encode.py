@@ -197,6 +197,37 @@ def profil():
     print("vitrina", round(os.path.getsize(path) / 1024), "kB", vit.size)
 
 
+def obchod():
+    """Pouťové kolo štěstí (stojan, disk, popředí se žárovkami) a stánky trhu do public/home/obchod."""
+    import shutil
+    dest_dir = os.path.join(DEST, "..", "obchod")
+    os.makedirs(dest_dir, exist_ok=True)
+    for src, dest, q in (("obchod_kolo_stojan", "kolo-stojan.webp", 88), ("obchod_kolo_disk", "kolo-disk.webp", 90)):
+        im = frames(src)[0]
+        path = os.path.join(dest_dir, dest)
+        im.save(path, format="WEBP", quality=q, method=5, alpha_quality=92)
+        print(dest, round(os.path.getsize(path) / 1024), "kB", im.size)
+    shutil.copy(os.path.join(ROOT, "out", "obchod_kolo_stojan", "layout.json"), os.path.join(ROOT, "..", "src", "components", "kolo-stojan.json"))
+    fr = frames("obchod_kolo_predni", (384, 384))
+    sheet = Image.new("RGBA", (384 * len(fr), 384), (0, 0, 0, 0))
+    for i, im in enumerate(fr):
+        sheet.paste(im, (i * 384, 0))
+    path = os.path.join(dest_dir, "kolo-predni.webp")
+    sheet.save(path, format="WEBP", quality=80, method=5, alpha_quality=88)
+    print("kolo-predni", len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB")
+    for name in STANKY:
+        fr = frames("obchod_stanek_" + name, (384, 384))
+        sheet = Image.new("RGBA", (384 * len(fr), 384), (0, 0, 0, 0))
+        for i, im in enumerate(fr):
+            sheet.paste(im, (i * 384, 0))
+        path = os.path.join(dest_dir, "stanek-" + name + ".webp")
+        sheet.save(path, format="WEBP", quality=78, method=5, alpha_quality=85)
+        print("stanek", name, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB")
+
+
+STANKY = ("mince", "truhla", "poklad")
+
+
 def hory():
     """Hora se stezkou, turista, oheň a vlajka pro MountainTrek do public/home/hory (+ stezka do JSON)."""
     import json
@@ -285,7 +316,7 @@ def stills():
 
 
 if __name__ == "__main__":
-    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_live", "globe", "hero", "tech", "hory", "svet", "hry", "unikovky", "namesti", "profil"]
+    what = sys.argv[1:] or ["planeta", "motyl", "vlajka", "raketa", "liana", "kvetina", "hory", "stills", "icons", "planeta_live", "globe", "hero", "tech", "hory", "svet", "hry", "unikovky", "namesti", "profil", "obchod"]
     if "icons" in what: icons()
     if "stills" in what: stills()
     # Planeta má hodně jemného detailu: každý druhý snímek a menší rozměr drží soubor pod 1 MB.
@@ -306,6 +337,7 @@ if __name__ == "__main__":
     if "unikovky" in what: unikovky()
     if "namesti" in what: namesti()
     if "profil" in what: profil()
+    if "obchod" in what: obchod()
     if "motyl" in what: animated("motyl", "motyl.webp", fps=24, quality=72)
     if "vlajka" in what: animated("vlajka", "vlajka.webp", fps=24, quality=72)
     if "raketa" in what: animated("raketa", "raketa.webp", fps=24, quality=72)
