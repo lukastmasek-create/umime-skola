@@ -104,6 +104,8 @@ def hero():
     path = os.path.join(dest_dir, "lod-strip.webp")
     sheet.save(path, format="WEBP", quality=88, method=5, alpha_quality=92)
     print("lod-strip", len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB", sheet.size)
+    if glob.glob(os.path.join(ROOT, "out", "kometa_let", "f_*.png")):
+        strip("kometa_let", "../hero/kometa-strip.webp", (384, 384), quality=74)
 
 
 def tech():
@@ -280,7 +282,7 @@ def svet():
     os.makedirs(dest_dir, exist_ok=True)
     strip("svet_lod", "../svet/plachetnice.webp", frames("svet_lod")[0].size, quality=84)
     gdir = os.path.join(DEST, "..", "globe")
-    for subject in ("cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis"):
+    for subject in ("cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis", "fyzika"):
         im = frames("znacka_" + subject)[0].resize((320, 320), Image.LANCZOS)
         path = os.path.join(gdir, "still-" + subject + ".webp")
         im.save(path, format="WEBP", quality=86, method=5, alpha_quality=90)
@@ -291,7 +293,7 @@ def globe():
     """Památky předmětů (pás 20 snímků) a školní předměty prstence pro SubjectGlobe do public/home/globe."""
     dest_dir = os.path.join(DEST, "..", "globe")
     os.makedirs(dest_dir, exist_ok=True)
-    for subject in ("cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis"):
+    for subject in ("cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis", "fyzika"):
         fr = frames("znacka_" + subject)
         w, h = fr[0].size
         sheet = Image.new("RGBA", (w * len(fr), h), (0, 0, 0, 0))
