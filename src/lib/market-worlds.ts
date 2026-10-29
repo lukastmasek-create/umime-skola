@@ -77,8 +77,8 @@ export const WORLDS: World[] = [
       night: false,
       prop: { file: "raketa", n: 12, dur: 3, width: 12, ratio: "640 / 384", translate: [-50, -50], hit: [-6, -5, 12, 10], labelDy: 6 },
       extras: [
-        { file: "blob", anchor: "pet", width: 5.6, feet: 66, dur: 2.4 },
-        { file: "uklizec", anchor: "bot", width: 5.6, feet: 58, dur: 3 },
+        { file: "blob", anchor: "pet", width: 7.5, feet: 66, dur: 2.4 },
+        { file: "uklizec", anchor: "bot", width: 8.5, feet: 58, dur: 3 },
       ],
       interactive: [
         { id: "sonda", kind: "fire", anchor: "sonda", w: 5, h: 9, dx: -2.5, dy: -6, dir: 1, shot: "laser" },
