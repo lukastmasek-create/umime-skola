@@ -3119,3 +3119,7 @@ select:not(:focus) {
 .story-bubble { position: relative; flex: 1; border-radius: 1.2rem; border: 2px solid var(--edge); background: var(--surface); padding: 0.75rem 1rem; animation: story-in 0.28s ease-out 1; }
 @keyframes story-in { from { transform: translateY(8px) scale(0.97); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .story-bubble { animation: none; } }
+
+/* Městečko v režimu přes celé okno: hlavička a patička pryč, ať je vidět všechno. */
+html.town-full body { overflow: hidden; }
+html.town-full .site-header, html.town-full body > footer { display: none; }

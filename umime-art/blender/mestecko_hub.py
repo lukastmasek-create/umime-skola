@@ -225,15 +225,15 @@ def build_world():
     node("l2", -2.0, -6.8)
     node("pristav", -2.6, -8.3)
     node("molo", -5.4, -8.3)
-    node("l3", 3.0, -6.6)
-    node("stanice", 6.0, -7.1)
-    node("more", 0.2, -7.4)
+    node("l3", 3.4, -6.5)
+    node("stanice", 7.0, -7.1)
+    node("more", 1.5, -7.4)
     link("hub", "most", "l1", "l2", "pristav", "molo")
     link("l1", "l3", "stanice")
     link("l1", "more")
     trail([(0.4, -0.15), (0.4, -1.3), (0.4, -2.2), (0.4, -3.2), (0.4, -4.3), (-0.8, -5.6), (-2.0, -6.8), (-2.6, -8.3), (-5.4, -8.3)], 0.55)
-    trail([(0.4, -4.3), (1.5, -5.6), (3.0, -6.6), (6.0, -7.1)], 0.5)
-    trail([(0.4, -4.3), (0.3, -5.8), (0.2, -7.4)], 0.5)
+    trail([(0.4, -4.3), (1.8, -5.5), (3.4, -6.5), (7.0, -7.1)], 0.5)
+    trail([(0.4, -4.3), (0.9, -5.9), (1.5, -7.4)], 0.5)
     for k in range(9):  # prkna mostu
         u = k / 8
         yy = -2.95 + 0.9 * u
@@ -581,7 +581,7 @@ def build_world():
     places["pristav"] = {"door": norm(-2.0, -8.3, 0.2), "sign": sign(-0.5, -8.18, 1.55, w=1.2, h=0.3, color="#3b6fd8"), "w": 1.2, "lod": norm(-6.6, -9.4, 0.0)}
 
     # ---------------------------------------------------------- raketová rampa (vpravo dole)
-    px_, py_ = 6.0, -8.0
+    px_, py_ = 7.0, -8.2
     cyl((px_, py_, 0.08), 2.0, 0.16, stone_material("rampa", "#9aa0b0", scale=20, strength=0.3), verts=40)
     cyl((px_, py_, 0.17), 1.5, 0.02, M("rampa_k", "#3b3a4a", 0.5), verts=40)
     for k in range(16):
@@ -594,13 +594,13 @@ def build_world():
     box((px_ + 1.45, py_ + 0.7, 3.0), (1.0, 0.1, 0.1), M("vez_r", "#c9ced8", 0.4, 0.5), bevel=0.01)
     for k in range(6):
         bar((px_ + 1.9, py_ + 0.7, 0.5 + k * 0.5), (px_ + 2.3, py_ + 0.7, 0.75 + k * 0.5), 0.02, M("vez_r", "#c9ced8", 0.4, 0.5), verts=6)
-    house(3.4, -8.8, 1.3, 1.0, 0.8, "#d8e0f0", "#e0453a", rh=0.4, along="x", chim=None, wins=1, door_x=-0.25, shutter="#46d6ff", name="ridici")
-    cyl((3.4, -8.8, 1.4), 0.04, 1.2, M("anten", "#9aa6c0", 0.4, 0.6), verts=8)
-    sphere((3.4, -8.8, 2.05), 0.07, G("antenS", "#ff6fd0", 6.0), seg=8, rings=6)
-    places["stanice"] = {"door": norm(px_, py_ - 1.2, 0.2), "sign": sign(3.4, -9.33, 1.15, w=1.2, h=0.3, color="#e0453a"), "w": 1.2, "raketa": norm(px_, py_, 0.45)}
+    house(10.2, -9.9, 1.3, 1.0, 0.8, "#d8e0f0", "#e0453a", rh=0.4, along="x", chim=None, wins=1, door_x=-0.25, shutter="#46d6ff", name="ridici")
+    cyl((10.2, -9.9, 1.4), 0.04, 1.2, M("anten", "#9aa6c0", 0.4, 0.6), verts=8)
+    sphere((10.2, -9.9, 2.05), 0.07, G("antenS", "#ff6fd0", 6.0), seg=8, rings=6)
+    places["stanice"] = {"door": norm(px_, py_ - 1.2, 0.2), "sign": sign(10.2, -10.43, 1.15, w=1.2, h=0.3, color="#e0453a"), "w": 1.2, "raketa": norm(px_, py_, 0.45)}
 
     # ---------------------------------------------------------- laguna s potápěčskou věží (podmořské město)
-    lx_, ly_ = 0.9, -9.2
+    lx_, ly_ = 2.7, -8.8
     cyl((lx_, ly_, -0.02), 2.4, 0.06, M("breh_l", "#e8d6a8", 0.9), verts=40, rot=(0, 0, 0))
     cyl((lx_, ly_, 0.03), 2.2, 0.05, water, verts=40)
     for k in range(10):
@@ -655,7 +655,7 @@ def build_world():
     out["voda"] = {
         "zatoka": [norm(-13, -6.0)[0], norm(-13, -6.0)[1], norm(-2.0, -14.5)[0], norm(-2.0, -14.5)[1]],
         "reka": [norm(-8, -2.2)[0], norm(-8, -2.2)[1], norm(8, -2.9)[0], norm(8, -2.9)[1]],
-        "laguna": norm(0.9, -10.6) + [2.2 / 16, 2.2 * math.sin(EL) / (H / PPU)],
+        "laguna": norm(2.7, -10.2) + [2.2 / 16, 2.2 * math.sin(EL) / (H / PPU)],
     }
     out["sber"] = [norm(x, y) for x, y in ((-6.2, -1.0), (-4.6, -1.8), (-1.8, -0.3), (1.0, -1.5), (3.2, -0.2), (5.0, 0.9), (2.0, 5.0), (-5.5, 5.6), (-0.5, 5.9),
                                             (5.4, 5.4), (-3.6, 9.0), (3.8, 9.0), (-2.0, -5.2), (1.2, -6.8), (4.8, -6.2), (-4.6, -7.4), (-1.0, 11.6), (1.5, 11.8))]

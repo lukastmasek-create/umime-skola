@@ -10,12 +10,12 @@ import { clamp, ease, heroSprite, lerp, load, readCam, rnd, setHero, setup, sm, 
 
 type R = Pick<Refs, "box" | "cam" | "cv" | "hero" | "heroSpr">;
 export type WorldKind = "forest" | "castle" | "sea";
-type Spark = { x: number; y: number; vx: number; vy: number; age: number; life: number; r: number; kind: number; rot: number };
-type Frame = { ctx: CanvasRenderingContext2D; cw: number; ch: number; t: number; tau: number; dt: number; sx: number; sy: number; K: number; hx: number; hy: number; sparks: Spark[] };
+export type Spark = { x: number; y: number; vx: number; vy: number; age: number; life: number; r: number; kind: number; rot: number };
+export type Frame = { ctx: CanvasRenderingContext2D; cw: number; ch: number; t: number; tau: number; dt: number; sx: number; sy: number; K: number; hx: number; hy: number; sparks: Spark[] };
 
 const TE: Record<WorldKind, number> = { forest: 6.0, castle: 6.4, sea: 8.4 };
 
-function glow(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rgb: string, a: number) {
+export function glow(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rgb: string, a: number) {
   if (a <= 0 || r < 1) return;
   const g = ctx.createRadialGradient(x, y, 0, x, y, r);
   g.addColorStop(0, `rgba(${rgb},${a})`);
@@ -25,19 +25,19 @@ function glow(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, rg
   ctx.fillRect(x - r, y - r, r * 2, r * 2);
 }
 
-function bars(ctx: CanvasRenderingContext2D, cw: number, ch: number, k: number) {
+export function bars(ctx: CanvasRenderingContext2D, cw: number, ch: number, k: number) {
   ctx.fillStyle = "#000";
   const h = ch * 0.075 * k;
   ctx.fillRect(0, 0, cw, h);
   ctx.fillRect(0, ch - h, cw, h);
 }
 
-function pushSpark(list: Spark[], s: Partial<Spark> & { x: number; y: number }) {
+export function pushSpark(list: Spark[], s: Partial<Spark> & { x: number; y: number }) {
   list.push({ vx: 0, vy: 0, age: 0, life: 1, r: 2, kind: 0, rot: 0, ...s });
 }
 
 // kind: 0 jiskra, 1 list, 2 okvětní plátek, 3 ohnivý uhlík, 4 prach, 5 kapka, 6 bublina
-function stepSparks(f: Frame, grav: number) {
+export function stepSparks(f: Frame, grav: number) {
   const { ctx, sparks, dt } = f;
   for (let i = sparks.length - 1; i >= 0; i--) {
     const p = sparks[i];

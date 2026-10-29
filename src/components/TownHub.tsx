@@ -7,6 +7,7 @@ import { DailyChallenges } from "@/components/DailyChallenges";
 import { Modal, type Snapshot } from "@/components/ShopView";
 import { readCam, runPath, runPirate, runSpace, type Geo, type Handle, type Pt } from "@/lib/market-cinema";
 import { runWorld } from "@/lib/market-cinema-worlds";
+import { runEnter, type DoorKind } from "@/lib/market-cinema-doors";
 import { confettiBurst, createEventFx, createWeatherFx, dayPhaseOf, eventForDay, EVENT_SHOT, PHASE_TINT, runShots, weatherForDay, type Handle as ShotHandle, type Shot } from "@/lib/town-scenes";
 import { TownNpcPanel } from "@/components/TownNpcPanel";
 import { MiniGame } from "@/components/TownMini";
@@ -192,6 +193,13 @@ export function TownHub({ locale }: { locale: Locale }) {
   const [storyOpen, setStoryOpen] = useState(false);
   const [full, setFull] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
+  const fullRef = useRef(false);
+  useEffect(() => {
+    fullRef.current = full;
+    // v režimu přes celé okno se schová hlavička a patička stránky (viz .town-full v globals.css)
+    document.documentElement.classList.toggle("town-full", full);
+    return () => document.documentElement.classList.remove("town-full");
+  }, [full]);
   const subRef = useRef<HTMLDivElement>(null);
   const storyText = getTownStoryText(locale);
   const [miniLeft, setMiniLeft] = useState<Record<MiniId, number>>({ fishing: PLAYS_PER_DAY, harvest: PLAYS_PER_DAY, bakery: PLAYS_PER_DAY });
@@ -253,6 +261,8 @@ export function TownHub({ locale }: { locale: Locale }) {
       const m = ls.get("town-mode");
       if (m === "day" || m === "night" || m === "auto") setMode(m);
       else if (ls.get("town-night") === "1") setMode("night");
+      // městečko se vždy ukáže celé (výchozí režim přes celé okno), vypnout lze tlačítkem
+      if (ls.get("town-full") !== "0") setFull(true);
       const d = new Date();
       setHour(d.getHours() + d.getMinutes() / 60);
       setLook(getHeroLook());
@@ -587,14 +597,17 @@ export function TownHub({ locale }: { locale: Locale }) {
         r as Parameters<typeof runPath>[0],
         geo,
         () => {
-          enterDoor(() => {
+          const door = HUB.places[place.id]?.door;
+          const done = () => {
             if (place.href) leave(`/${locale}${place.href}`);
             else {
               setPhase(null);
               setGen((g) => g + 1);
               setBoard(true);
             }
-          });
+          };
+          if (door) handle.current = runEnter(r as Parameters<typeof runEnter>[0], toBox(door), place.id as DoorKind, done);
+          else enterDoor(done);
         },
         false,
       );
@@ -720,15 +733,19 @@ export function TownHub({ locale }: { locale: Locale }) {
   }, []);
   useEffect(() => () => shots.current?.stop(), []);
   useEffect(() => {
-    const onChange = () => {
-      if (!document.fullscreenElement) setFull(false);
+    // první dotek nebo klik v režimu přes celé okno zapne i skutečnou celou obrazovku (prohlížeč to dovolí jen z gesta)
+    const onFirst = () => {
+      const el = wrap.current;
+      if (fullRef.current && el && document.fullscreenEnabled && !document.fullscreenElement) void el.requestFullscreen().catch(() => {});
     };
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setFull(false);
+    window.addEventListener("pointerdown", onFirst, { once: true });
+    const onChange = () => {
+      if (!document.fullscreenElement && fullRef.current && ls.get("town-full") === "0") setFull(false);
+    };
     document.addEventListener("fullscreenchange", onChange);
-    window.addEventListener("keydown", onKey);
     return () => {
+      window.removeEventListener("pointerdown", onFirst);
       document.removeEventListener("fullscreenchange", onChange);
-      window.removeEventListener("keydown", onKey);
     };
   }, []);
 
@@ -775,8 +792,10 @@ export function TownHub({ locale }: { locale: Locale }) {
     if (full) {
       if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
       setFull(false);
+      ls.set("town-full", "0");
       return;
     }
+    ls.set("town-full", "1");
     setFull(true);
     const el = wrap.current;
     if (el && document.fullscreenEnabled) void el.requestFullscreen().catch(() => {});
@@ -847,7 +866,7 @@ export function TownHub({ locale }: { locale: Locale }) {
 
   return (
     <div>
-      <div ref={wrap} className={full ? "fixed inset-0 z-[60] flex items-center justify-center bg-[#0b0925]" : ""}>
+      <div ref={wrap} className={full ? "fixed inset-0 z-[200] flex items-center justify-center bg-[linear-gradient(180deg,#4aa8ff_0%,#bfe6ff_28%,#7ccf64_46%,#58b24a_100%)]" : ""}>
       <div className={full ? "overflow-hidden" : "overflow-x-auto overflow-y-hidden rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)]"} style={full ? { width: `min(100vw, calc(100vh * ${HUB.w / BOX_H}))` } : undefined}>
         <div ref={box} className="relative select-none overflow-hidden [container-type:inline-size]" style={{ aspectRatio: `${HUB.w} / ${BOX_H}`, minWidth: full ? 0 : 880, background: "linear-gradient(180deg, #5cb4ff, #cfeaff)" }}>
           {phase && phase.kind !== "path" && <div ref={bgDark} aria-hidden className="absolute inset-0 opacity-0" style={{ background: "linear-gradient(180deg, #02030c 0%, #071040 55%, #1b3a8a 100%)" }} />}
@@ -1086,43 +1105,6 @@ export function TownHub({ locale }: { locale: Locale }) {
           )}
         </div>
       </div>
-      </div>
-
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <section className="card p-4">
-          <h2 className="mb-1 text-lg font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
-            📋 {tt.quests.title}
-          </h2>
-          <p className="mb-3 text-sm text-[var(--muted)]">{tt.quests.text}</p>
-          <button type="button" onClick={() => setBoard(true)} className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white">
-            {tt.quests.open}
-          </button>
-        </section>
-        <section className="card p-4">
-          <h2 className="mb-1 text-lg font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
-            🎁 {tt.collect.title}
-          </h2>
-          <p className="mb-2 text-sm text-[var(--muted)]">{col.loggedIn ? tt.collect.text : tt.collect.login}</p>
-          <p className="text-sm font-bold">
-            {col.collected.length}/{COLLECT_COUNT} {col.bonus && "✓"}
-          </p>
-        </section>
-      </div>
-      <section className="card mt-4 p-4">
-        <h2 className="mb-1 text-lg font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
-          🏡 {tt.mine.title}
-        </h2>
-        <p className="mb-3 text-sm text-[var(--muted)]">{tt.mine.text}</p>
-        <div className="flex flex-wrap gap-2">
-          <Link href={`/${locale}/stale-hry/mesto`} className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white">
-            {tt.mine.open}
-          </Link>
-          <Link href={`/${locale}/uzivatelsky-obchod`} className="btn-bouncy bg-[var(--surface)] px-4 py-2 text-sm font-bold">
-            {m.title}
-          </Link>
-        </div>
-      </section>
-
       {storyOpen && (
         <Modal title={`📖 ${storyText.title}`} onClose={() => setStoryOpen(false)} closeLabel={m.close}>
           <TownStory locale={locale} onClose={() => setStoryOpen(false)} />
@@ -1163,6 +1145,43 @@ export function TownHub({ locale }: { locale: Locale }) {
           <DailyChallenges locale={locale} />
         </Modal>
       )}
+      </div>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <section className="card p-4">
+          <h2 className="mb-1 text-lg font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
+            📋 {tt.quests.title}
+          </h2>
+          <p className="mb-3 text-sm text-[var(--muted)]">{tt.quests.text}</p>
+          <button type="button" onClick={() => setBoard(true)} className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white">
+            {tt.quests.open}
+          </button>
+        </section>
+        <section className="card p-4">
+          <h2 className="mb-1 text-lg font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
+            🎁 {tt.collect.title}
+          </h2>
+          <p className="mb-2 text-sm text-[var(--muted)]">{col.loggedIn ? tt.collect.text : tt.collect.login}</p>
+          <p className="text-sm font-bold">
+            {col.collected.length}/{COLLECT_COUNT} {col.bonus && "✓"}
+          </p>
+        </section>
+      </div>
+      <section className="card mt-4 p-4">
+        <h2 className="mb-1 text-lg font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
+          🏡 {tt.mine.title}
+        </h2>
+        <p className="mb-3 text-sm text-[var(--muted)]">{tt.mine.text}</p>
+        <div className="flex flex-wrap gap-2">
+          <Link href={`/${locale}/stale-hry/mesto`} className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white">
+            {tt.mine.open}
+          </Link>
+          <Link href={`/${locale}/uzivatelsky-obchod`} className="btn-bouncy bg-[var(--surface)] px-4 py-2 text-sm font-bold">
+            {m.title}
+          </Link>
+        </div>
+      </section>
+
     </div>
   );
 }
