@@ -122,6 +122,7 @@ export function Sorting({
           seconds={seconds}
           stats={[{ label: t.mistakes, value: String(mistakes.length) }]}
           results={results}
+          questions={questions}
           onAgain={restart}
           backHref={backHref}
         >

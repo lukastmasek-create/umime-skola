@@ -13,6 +13,7 @@ export type ClassicText = {
   noData: string;
   doneTitle: string;
   reviewHint: string;
+  end: { accuracy: string; streak: string; mistakesTitle: string; correct: string; yours: string; why: string; share: string; copied: string; stars: [string, string, string, string]; shareText: string };
   xpLabel: string;
   letters: string;
   showAnswer: string;
@@ -44,6 +45,7 @@ const cs: ClassicText = {
   noData: "Z tohoto kurzu se tahle hra zatím nedá sestavit (chybí vhodné odpovědi). Zkus jinou hru nebo jiný kurz.",
   doneTitle: "Hotovo! 🎉",
   reviewHint: "Chybné otázky se zapsaly do opakování.",
+  end: { accuracy: "Přesnost", streak: "Nejdelší série správných", mistakesTitle: "Kde ses spletl", correct: "Správně", yours: "Tvoje odpověď", why: "Proč", share: "Sdílet výsledek", copied: "Zkopírováno!", stars: ["Příště to vyjde!", "Dobrý začátek", "Skvělé!", "Bezchybné!"], shareText: "Zahrál jsem si na Učíme se hrou: {score}. Zkus to taky!" },
   xpLabel: "XP",
   letters: "písmen",
   showAnswer: "Správná odpověď",
@@ -87,6 +89,7 @@ const en: ClassicText = {
   noData: "This game can't be built from this course yet (no suitable answers). Try another game or course.",
   doneTitle: "Done! 🎉",
   reviewHint: "Questions you missed were added to your review.",
+  end: { accuracy: "Accuracy", streak: "Longest streak", mistakesTitle: "Where you slipped", correct: "Correct", yours: "Your answer", why: "Why", share: "Share result", copied: "Copied!", stars: ["Next time!", "Good start", "Great!", "Flawless!"], shareText: "I just played on Learn by Play: {score}. Give it a go!" },
   xpLabel: "XP",
   letters: "letters",
   showAnswer: "Right answer",
@@ -130,6 +133,7 @@ const de: ClassicText = {
   noData: "Aus diesem Kurs lässt sich das Spiel noch nicht bauen (keine passenden Antworten). Probier ein anderes Spiel oder einen anderen Kurs.",
   doneTitle: "Geschafft! 🎉",
   reviewHint: "Verpasste Fragen wurden zur Wiederholung gespeichert.",
+  end: { accuracy: "Genauigkeit", streak: "Längste Serie", mistakesTitle: "Hier lagst du falsch", correct: "Richtig", yours: "Deine Antwort", why: "Warum", share: "Ergebnis teilen", copied: "Kopiert!", stars: ["Nächstes Mal!", "Guter Start", "Super!", "Fehlerfrei!"], shareText: "Ich habe gerade gespielt: {score}. Probier es auch!" },
   xpLabel: "XP",
   letters: "Buchstaben",
   showAnswer: "Richtige Antwort",
@@ -173,6 +177,7 @@ const ru: ClassicText = {
   noData: "Из этого курса пока нельзя собрать игру (нет подходящих ответов). Попробуй другую игру или курс.",
   doneTitle: "Готово! 🎉",
   reviewHint: "Вопросы с ошибками добавлены в повторение.",
+  end: { accuracy: "Точность", streak: "Лучшая серия верных", mistakesTitle: "Где ты ошибся", correct: "Верно", yours: "Твой ответ", why: "Почему", share: "Поделиться", copied: "Скопировано!", stars: ["В следующий раз!", "Хорошее начало", "Отлично!", "Без ошибок!"], shareText: "Я только что сыграл: {score}. Попробуй и ты!" },
   xpLabel: "XP",
   letters: "букв",
   showAnswer: "Правильный ответ",

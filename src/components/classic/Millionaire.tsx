@@ -143,6 +143,7 @@ export function Millionaire({
             { label: end.kind === "won" ? t.mil.won : t.mil.takeHome, value: `${reachedPoints} ${t.mil.points}` },
           ]}
           results={results}
+          questions={questions}
           onAgain={restart}
           backHref={backHref}
         >

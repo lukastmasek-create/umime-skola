@@ -201,6 +201,7 @@ export function DressUp({ t, questions, backHref }: { t: ClassicText; questions:
               { label: t.mistakes, value: String(wrongs) },
             ]}
             results={results}
+          questions={questions}
             onAgain={restart}
             backHref={backHref}
           />

@@ -122,6 +122,7 @@ export function Memory({
             { label: t.mistakes, value: String(mistakes) },
           ]}
           results={results}
+          questions={questions}
           onAgain={restart}
           backHref={backHref}
         />
