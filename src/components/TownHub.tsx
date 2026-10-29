@@ -935,7 +935,7 @@ export function TownHub({ locale }: { locale: Locale }) {
           {dark && <div aria-hidden className="pointer-events-none absolute inset-0 bg-[#0b0925]/25" />}
           {tint && <div aria-hidden className="pointer-events-none absolute inset-0 z-[12]" style={{ background: tint, transition: "opacity 1s" }} />}
           <canvas ref={wxCv} aria-hidden className="pointer-events-none absolute inset-0 z-[13] h-full w-full" />
-          <div className="pointer-events-none absolute left-3 top-14 z-20 flex items-center gap-2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-sm font-extrabold">
+          <div className={`pointer-events-none absolute left-3 top-14 z-20 flex items-center gap-2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-sm font-extrabold ${busyScene ? "hidden" : ""}`}>
             <span aria-hidden>{{ clear: "☀️", cloudy: "⛅", rain: "🌧️", fog: "🌫️", snow: "❄️" }[weather]}</span>
             {tt.weather[weather]} · {tt.phases[phaseNow]}
           </div>

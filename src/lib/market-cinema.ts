@@ -683,8 +683,48 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
     const pTotal = pcum[pcum.length - 1];
     const T_WALK = pTotal / WALK;
     const T_JOY = 1.0;
-    const T_SAIL = T_WALK + T_JOY + 0.3;
+    const T_STROLL = 1.9; // po palubě k přídi
+    const T_SAIL = T_WALK + T_JOY + T_STROLL + 0.5;
+    const BOW_X = 470; // poloha hrdiny na přídi (v souřadnicích sprite lodi)
     const T_BEND = T_SAIL + 3.2;
+    // Houpání lodi podle skutečných snímků: spodní okraj trupu v několika sloupcích, hrdina se o něj opírá
+    const COLS = Array.from({ length: 10 }, (_, i) => 100 + i * 50);
+    const bottoms: number[][] = [];
+    {
+      const oc = document.createElement("canvas");
+      oc.width = ship.naturalWidth || 7680;
+      oc.height = 512;
+      const octx = oc.getContext("2d", { willReadFrequently: true });
+      if (octx) {
+        octx.drawImage(ship, 0, 0);
+        for (let f = 0; f < 12; f++) {
+          bottoms.push(
+            COLS.map((cx) => {
+              const col = octx.getImageData(f * 640 + cx, 0, 1, 512).data;
+              for (let y = 511; y >= 0; y--) if (col[y * 4 + 3] > 128) return y;
+              return 0;
+            }),
+          );
+        }
+      }
+    }
+    const refBottom = COLS.map((_, c) => (bottoms.length ? bottoms.reduce((a, b) => a + b[c], 0) / bottoms.length : 0));
+    // posun paluby v daném snímku (kladný = dolů) na místním x lodi
+    const deckSway = (frame: number, lx: number) => {
+      if (!bottoms.length) return 0;
+      const u = clamp((lx - COLS[0]) / (COLS[COLS.length - 1] - COLS[0])) * (COLS.length - 1);
+      const c0 = Math.min(COLS.length - 2, Math.floor(u));
+      const kk = u - c0;
+      const row = bottoms[frame % 12];
+      return lerp(row[c0] - refBottom[c0], row[c0 + 1] - refBottom[c0 + 1], kk);
+    };
+    // výška palubní roviny podle místního x (zepředu dozadu stoupá k přídi)
+    const deckLine = (lx: number) => {
+      const ptsL: [number, number][] = [[185, 336], [290, 319], [380, 316], [470, 313], [520, 308]];
+      if (lx <= ptsL[0][0]) return ptsL[0][1];
+      for (let i = 1; i < ptsL.length; i++) if (lx <= ptsL[i][0]) return lerp(ptsL[i - 1][1], ptsL[i][1], (lx - ptsL[i - 1][0]) / (ptsL[i][0] - ptsL[i - 1][0]));
+      return ptsL[ptsL.length - 1][1];
+    };
     const alongArt = (d: number) => {
       let i = 1;
       while (i < pcum.length - 1 && pcum[i] < d) i++;
@@ -823,19 +863,29 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
         }
         // lávka se zvedne s odplutím
         const pull = sm(tw, T_SAIL - 0.2, T_SAIL + 0.7);
+        // lávka se otočí kolem závěsu u mola, loď ji táhne a ona se zvedá a mizí
+        const hx0 = anchors.lavka_zacatek[0] * 1280;
+        const hy0 = anchors.lavka_zacatek[1] * 512;
         ctx.save();
-        ctx.globalAlpha = 1 - pull;
-        ctx.translate(X(0) + 0, Y(0) - pull * 30 * k);
-        ctx.drawImage(lavka, 0, 0, 1280 * k, 512 * k);
+        ctx.globalAlpha = 1 - pull * 0.92;
+        ctx.translate(X(hx0), Y(hy0));
+        ctx.rotate(-pull * 0.55);
+        ctx.drawImage(lavka, -hx0 * k, -hy0 * k, 1280 * k, 512 * k);
         ctx.restore();
-        // hrdina
+        // hrdina: po lávce na palubu, radost, procházka na příď, na odjezdu mává
+        const shipX0 = 320 + shipDX; // počátek sprite lodi v souřadnicích scény
         let feet: { x: number; y: number };
         let img: HTMLImageElement;
         let n: number;
         let dur: number;
         if (tw < T_WALK) {
           const a = alongArt(tw * WALK);
-          feet = { x: a.x, y: a.y };
+          const d = tw * WALK;
+          // poslední úsek (lávka → paluba) má malý krok nahoru
+          const hopU = clamp((d - pcum[pcum.length - 2]) / Math.max(1, pcum[pcum.length - 1] - pcum[pcum.length - 2]));
+          const hop = Math.sin(Math.PI * hopU) * 7;
+          const lx = a.x - shipX0;
+          feet = { x: a.x, y: a.y - hop + (lx > 150 ? deckSway(frameN, lx) : 0) };
           img = walkImg;
           n = 16;
           dur = 0.9;
@@ -845,17 +895,31 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
             sfx.step();
           }
         } else if (tw < T_WALK + T_JOY) {
-          feet = { x: pts[pts.length - 1].x, y: pts[pts.length - 1].y };
+          const lx = pts[pts.length - 1].x - 320;
+          feet = { x: shipX0 + lx, y: deckLine(lx) + deckSway(frameN, lx) };
           img = joyImg;
           n = 24;
           dur = 1.1;
+        } else if (tw < T_WALK + T_JOY + T_STROLL) {
+          const u = ease((tw - T_WALK - T_JOY) / T_STROLL);
+          const lx = lerp(pts[pts.length - 1].x - 320, BOW_X, u);
+          feet = { x: shipX0 + lx, y: deckLine(lx) + deckSway(frameN, lx) };
+          img = walkImg;
+          n = 16;
+          dur = 0.9;
+          stepAcc += dt;
+          if (stepAcc > 0.3) {
+            stepAcc = 0;
+            sfx.step();
+          }
         } else {
-          feet = { x: pts[pts.length - 1].x + shipDX, y: pts[pts.length - 1].y - bob * 0.0 };
-          img = idleImg;
+          const lx = BOW_X;
+          feet = { x: shipX0 + lx, y: deckLine(lx) + deckSway(frameN, lx) };
+          // při odrazu od mola zamává (radost), pak se dívá na moře
+          img = tw >= T_SAIL && tw < T_SAIL + 1.1 ? joyImg : idleImg;
           n = 24;
-          dur = 3;
+          dur = img === joyImg ? 1.1 : 3;
         }
-        if (tw >= T_WALK) feet = { x: feet.x, y: feet.y - Math.sin(2 * Math.PI * (frameN / 12) + 0.5) * 5 };
         const hw = 160 * k;
         const fr = Math.floor(((tw % dur) / dur) * n) % n;
         ctx.drawImage(img, fr * 192, 0, 192, 192, X(feet.x) - hw / 2, Y(feet.y) - 0.844 * hw, hw, hw);
