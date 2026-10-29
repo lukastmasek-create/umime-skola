@@ -7,7 +7,7 @@ import type { FrameId } from "@/lib/cosmetics";
 // přesahovat přes okraj kolečka.
 // Rámeček z Blenderu (obrázek 1,2× větší než avatar); když se nenačte, vykreslí se SVG.
 // Doba jedné otáčky rámečku v sekundách: těžší ozdoby se točí pomaleji.
-const SPIN_SECONDS: Record<FrameId, number> = { gold: 26, rainbow: 10, neon: 18, leaf: 22, stars: 14, fire: 12 };
+const SPIN_SECONDS: Record<FrameId, number> = { gold: 26, rainbow: 10, neon: 18, leaf: 22, stars: 14, fire: 12, vine: 24, royal: 28, coral: 20 };
 
 export function AvatarFrame({ id, size }: { id: FrameId; size: number }) {
   const [failed, setFailed] = useState(false);
@@ -99,6 +99,39 @@ function FrameSvg({ id, size }: { id: FrameId; size: number }) {
           <circle cx="32" cy="32" r="31" fill="none" stroke="#b8b0ff" strokeWidth="1.4" strokeDasharray="2 6" />
           {[[32, -2, 6], [66, 32, 5], [32, 66, 6], [-2, 32, 5], [55, 9, 4], [9, 55, 4]].map(([x, y, r], i) => (
             <polygon key={i} points={star(x, y, r)} fill="#ffd24d" stroke="#b9831a" strokeWidth="1" />
+          ))}
+        </>
+      )}
+      {id === "vine" && (
+        <>
+          <circle cx="32" cy="32" r="31" fill="none" stroke="#6b4a2a" strokeWidth="3.5" />
+          {[0, 40, 80, 120, 160, 200, 240, 280, 320].map((deg) => (
+            <g key={deg} transform={`rotate(${deg} 32 32)`}>
+              <ellipse cx="32" cy="-1" rx="4" ry="7.5" fill={deg % 80 ? "#69cf72" : "#3fb060"} stroke="#2f7a3a" strokeWidth="1" />
+            </g>
+          ))}
+          {[20, 140, 260].map((deg) => (
+            <circle key={deg} cx={32 + 33 * Math.cos((deg * Math.PI) / 180)} cy={32 + 33 * Math.sin((deg * Math.PI) / 180)} r="3.2" fill="#ff8ad0" stroke="#fff" strokeWidth="1" />
+          ))}
+        </>
+      )}
+      {id === "royal" && (
+        <>
+          <circle cx="32" cy="32" r="31" fill="none" stroke="#d99a10" strokeWidth="5.5" />
+          <circle cx="32" cy="32" r="31" fill="none" stroke="#ffe58a" strokeWidth="1.6" strokeDasharray="26 10" />
+          {[0, 90, 180, 270].map((deg, i) => (
+            <circle key={deg} cx={32 + 31 * Math.cos((deg * Math.PI) / 180)} cy={32 + 31 * Math.sin((deg * Math.PI) / 180)} r="3.4" fill={["#e0453a", "#46a6ff", "#3fe08a", "#e0453a"][i]} stroke="#fff6c8" strokeWidth="1" />
+          ))}
+        </>
+      )}
+      {id === "coral" && (
+        <>
+          <circle cx="32" cy="32" r="31" fill="none" stroke="#ff7aa8" strokeWidth="4.5" />
+          {[0, 50, 100, 150, 200, 250, 300].map((deg, i) => (
+            <g key={deg} transform={`rotate(${deg} 32 32)`}>
+              <line x1="32" y1="1" x2="32" y2={-5 - (i % 3) * 2} stroke={["#ffb347", "#9a6aff", "#3fe0b0"][i % 3]} strokeWidth="2.6" strokeLinecap="round" />
+              <circle cx="32" cy={-5 - (i % 3) * 2} r="2" fill="#fff" />
+            </g>
           ))}
         </>
       )}

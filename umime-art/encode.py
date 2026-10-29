@@ -376,6 +376,45 @@ def kosmicka():
     shutil.copy(os.path.join(ROOT, "out", "kosmicka_zadni", "kotvy.json"), os.path.join(ROOT, "..", "src", "components", "kosmicka-kotvy.json"))
 
 
+def svet(name, dirname, npcs, prop, prop_size):
+    """Svět uživatelského obchodu (les, hrad, moře): vrstvy scény, rekvizita a obchodníci do public/home/<dirname>."""
+    import json, shutil
+    dest_dir = os.path.join(DEST, "..", dirname)
+    os.makedirs(dest_dir, exist_ok=True)
+    for lay in ("zadni", "predni"):
+        im = frames(f"{name}_{lay}")[0]
+        im.save(os.path.join(dest_dir, lay + ".webp"), format="WEBP", quality=84, method=5, alpha_quality=90)
+        print(name, lay, round(os.path.getsize(os.path.join(dest_dir, lay + ".webp")) / 1024), "kB", im.size)
+    if glob.glob(os.path.join(ROOT, "out", "svet_" + prop[0], "f_*.png")):
+        strip("svet_" + prop[0], f"../{dirname}/{prop[1]}.webp", prop_size, quality=80)
+    for n in npcs:
+        if glob.glob(os.path.join(ROOT, "out", "mf_" + n, "f_*.png")):
+            strip("mf_" + n, f"../{dirname}/{n}.webp", (256, 256), quality=80)
+    shutil.copy(os.path.join(ROOT, "out", name + "_zadni", "kotvy.json"), os.path.join(ROOT, "..", "src", "components", name + "-kotvy.json"))
+
+
+def hub():
+    """Městečko jako hub (stránka /mestecko): obrázek scény do public/home/mesto/hub.webp a kotvy do src/components."""
+    import json, shutil
+    im = frames("mesto_hub")[0]
+    path = os.path.join(DEST, "..", "mesto", "hub.webp")
+    im.save(path, format="WEBP", quality=84, method=5, alpha_quality=90)
+    print("hub.webp", round(os.path.getsize(path) / 1024), "kB", im.size)
+    shutil.copy(os.path.join(ROOT, "out", "mesto_hub", "kotvy.json"), os.path.join(ROOT, "..", "src", "components", "mesto-hub-kotvy.json"))
+
+
+def les():
+    svet("les", "les", ["vila", "hajny", "rezbar", "malirka", "bylinkarka"], ("domek", "domek"), (640, 704))
+
+
+def hrad():
+    svet("hrad", "hrad", ["krejci", "kral", "kovar", "tkadlena", "sokolnik"], ("vez", "vez"), (512, 800))
+
+
+def more():
+    svet("more", "more", ["perla", "potapec", "perlar", "mag", "delfinka"], ("ponorka", "ponorka"), (640, 384))
+
+
 def stills():
     """První snímek animací jako statický obrázek pro lidi s vypnutými animacemi."""
     for name, dest in (("motyl", "motyl-still.webp"), ("vlajka", "vlajka-still.webp"), ("raketa", "raketa-still.webp")):
@@ -388,6 +427,10 @@ if __name__ == "__main__":
     if "pristav" in what: pristav()
     if "kosmicka" in what: kosmicka()
     if "nastup" in what: nastup()
+    if "hub" in what: hub()
+    if "les" in what: les()
+    if "hrad" in what: hrad()
+    if "more" in what: more()
     if "stills" in what: stills()
     # Planeta má hodně jemného detailu: každý druhý snímek a menší rozměr drží soubor pod 1 MB.
     if "planeta" in what: animated("planeta", "planeta.webp", fps=12, quality=55, size=(616, 409), step=2)

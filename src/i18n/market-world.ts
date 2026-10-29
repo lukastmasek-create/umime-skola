@@ -91,6 +91,232 @@ const space: Record<Locale, WorldText> = {
   },
 };
 
+
+const forest: Record<Locale, WorldText> = {
+  cs: {
+    title: "Pohádkový les",
+    subtitle: "Mýtina plná světlušek: víly, hajní a lesní řemeslníci ti prodají kouzelné zboží za body z učení.",
+    stalls: {
+      avatary: { name: "Lesní krejčovna", npc: "Víla Lupínka", hello: ["Listové šaty ti sednou jako ulité!", "Pojď, ušiju ti něco z mechu a lupínků."] },
+      tituly: { name: "Hájenka", npc: "Hajný Mechomil", hello: ["Zapíšu ti titul do lesní kroniky.", "Kdo se učí, toho les ctí."] },
+      ramecky: { name: "Řezbářská dílna", npc: "Řezbář Šiška", hello: ["Rámeček z větvičky, vyřezávaný ručně!", "Dřevo voní, jen si přivoň."] },
+      pozadi: { name: "Světluščí galerie", npc: "Malířka Světluška", hello: ["Namaluji ti pozadí zářící jako světlušky.", "Vyber si barvy lesa."] },
+      mazlicci: { name: "Bylinkářství", npc: "Bylinkářka Meduňka", hello: ["Pro mazlíčka mám bylinky i ozdoby.", "Ten králíček je můj nejlepší zákazník."] },
+      lod: { name: "Domek v koruně", npc: "Domek", hello: ["Stavby pro tvé město vznikají v domku na stromě."] },
+    },
+    fireLabel: "Mávnout kouzelnou hůlkou",
+    boom: "ŠIM!",
+    talk: {
+      kralik: { label: "Pohladit králíčka", lines: ["Čich, čich… mrkev?", "Hop hop!", "Tady je krásně, že?"] },
+      kocka: { label: "Pohladit kočku", lines: ["Mňau!", "Prrr… škrábej za uchem.", "Mňau mňau!"] },
+    },
+  },
+  en: {
+    title: "Fairy forest",
+    subtitle: "A glade full of fireflies: fairies, rangers and forest crafters sell you magical goods for learning points.",
+    stalls: {
+      avatary: { name: "Forest tailor", npc: "Fairy Petal", hello: ["Leaf dresses fit like a dream!", "Come, I'll sew you something from moss and petals."] },
+      tituly: { name: "Ranger's lodge", npc: "Ranger Mossy", hello: ["I'll write your title in the forest chronicle.", "The forest honours those who learn."] },
+      ramecky: { name: "Carver's workshop", npc: "Carver Pinecone", hello: ["A twig frame, carved by hand!", "Smell the wood, it's lovely."] },
+      pozadi: { name: "Firefly gallery", npc: "Painter Glimmer", hello: ["I'll paint you a background that glows like fireflies.", "Pick the colours of the forest."] },
+      mazlicci: { name: "Herbalist", npc: "Herbalist Melissa", hello: ["I have herbs and trinkets for your pet.", "This bunny is my best customer."] },
+      lod: { name: "Treehouse", npc: "Treehouse", hello: ["Buildings for your city are made in the treehouse."] },
+    },
+    fireLabel: "Wave the magic wand",
+    boom: "SHIM!",
+    talk: {
+      kralik: { label: "Pet the bunny", lines: ["Sniff, sniff… carrot?", "Hop hop!", "It's lovely here, isn't it?"] },
+      kocka: { label: "Pet the cat", lines: ["Meow!", "Purr… scratch behind my ear.", "Meow meow!"] },
+    },
+  },
+  de: {
+    title: "Märchenwald",
+    subtitle: "Eine Lichtung voller Glühwürmchen: Feen, Förster und Waldhandwerker verkaufen dir Zauberwaren für deine Lernpunkte.",
+    stalls: {
+      avatary: { name: "Waldschneiderei", npc: "Fee Blütenblatt", hello: ["Blätterkleider sitzen wie angegossen!", "Komm, ich nähe dir etwas aus Moos und Blüten."] },
+      tituly: { name: "Försterhaus", npc: "Förster Moosmann", hello: ["Ich schreibe deinen Titel in die Waldchronik.", "Der Wald ehrt, wer lernt."] },
+      ramecky: { name: "Schnitzwerkstatt", npc: "Schnitzer Zapfen", hello: ["Ein Zweigrahmen, von Hand geschnitzt!", "Riech mal am Holz, wie das duftet."] },
+      pozadi: { name: "Glühwürmchen-Galerie", npc: "Malerin Glimmer", hello: ["Ich male dir einen Hintergrund, der wie Glühwürmchen leuchtet.", "Such dir die Farben des Waldes aus."] },
+      mazlicci: { name: "Kräuterladen", npc: "Kräuterfrau Melisse", hello: ["Für dein Haustier habe ich Kräuter und Schmuck.", "Dieses Häschen ist mein bester Kunde."] },
+      lod: { name: "Baumhaus", npc: "Baumhaus", hello: ["Gebäude für deine Stadt entstehen im Baumhaus."] },
+    },
+    fireLabel: "Zauberstab schwingen",
+    boom: "SCHIMM!",
+    talk: {
+      kralik: { label: "Häschen streicheln", lines: ["Schnuppern… Karotte?", "Hopp hopp!", "Hier ist es schön, oder?"] },
+      kocka: { label: "Katze streicheln", lines: ["Miau!", "Schnurr… kraul mich hinterm Ohr.", "Miau miau!"] },
+    },
+  },
+  ru: {
+    title: "Сказочный лес",
+    subtitle: "Поляна, полная светлячков: феи, лесники и лесные мастера продают волшебные товары за баллы.",
+    stalls: {
+      avatary: { name: "Лесная швейная", npc: "Фея Лепесток", hello: ["Платья из листьев сидят как влитые!", "Иди, сошью тебе что-нибудь из мха и лепестков."] },
+      tituly: { name: "Сторожка", npc: "Лесник Мшистый", hello: ["Запишу звание в лесную летопись.", "Лес чтит тех, кто учится."] },
+      ramecky: { name: "Резная мастерская", npc: "Резчик Шишка", hello: ["Рамка из веточки, вырезана вручную!", "Понюхай, как пахнет дерево."] },
+      pozadi: { name: "Галерея светлячков", npc: "Художница Светлячок", hello: ["Нарисую фон, который светится, как светлячки.", "Выбери краски леса."] },
+      mazlicci: { name: "Травница", npc: "Травница Мелисса", hello: ["Для питомца у меня есть травы и украшения.", "Этот кролик — мой лучший покупатель."] },
+      lod: { name: "Домик на дереве", npc: "Домик", hello: ["Постройки для твоего города делают в домике на дереве."] },
+    },
+    fireLabel: "Взмахнуть волшебной палочкой",
+    boom: "ШИМ!",
+    talk: {
+      kralik: { label: "Погладить кролика", lines: ["Ню-ню… морковка?", "Прыг-скок!", "Здесь красиво, правда?"] },
+      kocka: { label: "Погладить кошку", lines: ["Мяу!", "Мур… почеши за ушком.", "Мяу мяу!"] },
+    },
+  },
+};
+
+const castle: Record<Locale, WorldText> = {
+  cs: {
+    title: "Hrad a tržiště",
+    subtitle: "Středověké tržiště pod hradbami: krejčí, král, kovář i sokolník prodávají zboží za body z učení.",
+    stalls: {
+      avatary: { name: "Krejčovství", npc: "Krejčí Jehlička", hello: ["Kostým pro rytíře i princeznu, jak si přeješ!", "Změřím tě a ušiju do zítřka."] },
+      tituly: { name: "Královská kancelář", npc: "Král Koruna", hello: ["Jménem koruny ti propůjčuji titul!", "Kdo se učí, toho si král váží."] },
+      ramecky: { name: "Kovárna", npc: "Kovář Důlek", hello: ["Rámeček z oceli, vykutý v ohni!", "Bum, bum! Tohle vydrží i dračí dech."] },
+      pozadi: { name: "Tkalcovna", npc: "Tkadlena Příze", hello: ["Utkám ti pozadí z nejlepších nití.", "Prohlédni si moje gobelíny."] },
+      mazlicci: { name: "Sokolna", npc: "Sokolník Pírko", hello: ["Pro mazlíčka mám ozdoby jako pro šlechtice.", "Sokol nesmí na ruku každému."] },
+      lod: { name: "Hradní věž", npc: "Věž", hello: ["Stavby pro tvé město vznikají v hradní huti."] },
+    },
+    fireLabel: "Vystřelit z katapultu",
+    boom: "BUM!",
+    talk: {
+      pes: { label: "Pohladit psa", lines: ["Haf haf!", "Hlídám tržiště!", "Máš pro mě kost?"] },
+      slepice: { label: "Promluvit se slepicí", lines: ["Kokodák!", "Dnes snesu zlaté vejce.", "Kdák kdák!"] },
+    },
+  },
+  en: {
+    title: "Castle and market",
+    subtitle: "A medieval market under the castle walls: the tailor, the king, the blacksmith and the falconer sell goods for learning points.",
+    stalls: {
+      avatary: { name: "Tailor", npc: "Tailor Needle", hello: ["A costume for a knight or a princess, as you wish!", "I'll measure you and sew it by tomorrow."] },
+      tituly: { name: "Royal office", npc: "King Crown", hello: ["By the crown I grant you this title!", "The king values those who learn."] },
+      ramecky: { name: "Smithy", npc: "Smith Dent", hello: ["A steel frame, forged in fire!", "Bang, bang! It even survives dragon breath."] },
+      pozadi: { name: "Weaver", npc: "Weaver Thread", hello: ["I'll weave you a background from the finest threads.", "Have a look at my tapestries."] },
+      mazlicci: { name: "Falconry", npc: "Falconer Feather", hello: ["I have noble trinkets for your pet.", "The falcon doesn't land on everyone's hand."] },
+      lod: { name: "Castle tower", npc: "Tower", hello: ["Buildings for your city are made in the castle works."] },
+    },
+    fireLabel: "Fire the catapult",
+    boom: "BOOM!",
+    talk: {
+      pes: { label: "Pet the dog", lines: ["Woof woof!", "I guard the market!", "Got a bone for me?"] },
+      slepice: { label: "Talk to the hen", lines: ["Bawk!", "Today I lay a golden egg.", "Cluck cluck!"] },
+    },
+  },
+  de: {
+    title: "Burg und Markt",
+    subtitle: "Ein mittelalterlicher Markt unter den Burgmauern: Schneider, König, Schmied und Falkner verkaufen Waren für deine Lernpunkte.",
+    stalls: {
+      avatary: { name: "Schneiderei", npc: "Schneider Nadel", hello: ["Ein Kostüm für Ritter oder Prinzessin, wie du willst!", "Ich messe dich aus und nähe es bis morgen."] },
+      tituly: { name: "Königliches Büro", npc: "König Krone", hello: ["Im Namen der Krone verleihe ich dir diesen Titel!", "Der König schätzt, wer lernt."] },
+      ramecky: { name: "Schmiede", npc: "Schmied Beule", hello: ["Ein Stahlrahmen, im Feuer geschmiedet!", "Bumm, bumm! Hält sogar Drachenatem aus."] },
+      pozadi: { name: "Weberei", npc: "Weberin Faden", hello: ["Ich webe dir einen Hintergrund aus feinsten Fäden.", "Sieh dir meine Wandteppiche an."] },
+      mazlicci: { name: "Falknerei", npc: "Falkner Feder", hello: ["Für dein Haustier habe ich edlen Schmuck.", "Der Falke setzt sich nicht auf jede Hand."] },
+      lod: { name: "Burgturm", npc: "Turm", hello: ["Gebäude für deine Stadt entstehen in der Burghütte."] },
+    },
+    fireLabel: "Katapult abfeuern",
+    boom: "BUMM!",
+    talk: {
+      pes: { label: "Hund streicheln", lines: ["Wau wau!", "Ich bewache den Markt!", "Hast du einen Knochen für mich?"] },
+      slepice: { label: "Mit dem Huhn reden", lines: ["Gack!", "Heute lege ich ein goldenes Ei.", "Gack gack!"] },
+    },
+  },
+  ru: {
+    title: "Замок и рынок",
+    subtitle: "Средневековый рынок под стенами замка: портной, король, кузнец и сокольник продают товары за баллы.",
+    stalls: {
+      avatary: { name: "Портняжная", npc: "Портной Иголка", hello: ["Костюм для рыцаря или принцессы — как пожелаешь!", "Сниму мерки и сошью к завтрашнему дню."] },
+      tituly: { name: "Королевская канцелярия", npc: "Король Корона", hello: ["Именем короны жалую тебе звание!", "Король ценит тех, кто учится."] },
+      ramecky: { name: "Кузница", npc: "Кузнец Вмятина", hello: ["Стальная рамка, выкованная в огне!", "Бум, бум! Выдержит даже дыхание дракона."] },
+      pozadi: { name: "Ткацкая", npc: "Ткачиха Пряжа", hello: ["Выткаю тебе фон из лучших нитей.", "Взгляни на мои гобелены."] },
+      mazlicci: { name: "Соколиный двор", npc: "Сокольник Перо", hello: ["Для питомца у меня благородные украшения.", "Сокол садится не на каждую руку."] },
+      lod: { name: "Башня замка", npc: "Башня", hello: ["Постройки для твоего города делают в замковой мастерской."] },
+    },
+    fireLabel: "Выстрелить из катапульты",
+    boom: "БУМ!",
+    talk: {
+      pes: { label: "Погладить пса", lines: ["Гав-гав!", "Я охраняю рынок!", "Косточка для меня есть?"] },
+      slepice: { label: "Поговорить с курицей", lines: ["Ко-ко!", "Сегодня снесу золотое яйцо.", "Куд-кудах!"] },
+    },
+  },
+};
+
+const sea: Record<Locale, WorldText> = {
+  cs: {
+    title: "Podmořské město",
+    subtitle: "Perleťové město na mořském dně: mořské panny, potápěči a mágové ti prodají mořské zboží za body z učení.",
+    stalls: {
+      avatary: { name: "Mušlová převlékárna", npc: "Mořská panna Perla", hello: ["Ploutve nebo skafandr? Vyber si!", "Mušle ti sluší, věř mi."] },
+      tituly: { name: "Perlová kancelář", npc: "Kapitán Hlubina", hello: ["Zapíšu ti titul do lodního deníku hlubin.", "Bublinky, bublinky… hotovo!"] },
+      ramecky: { name: "Korálová dílna", npc: "Perlař Perlík", hello: ["Rámeček z korálu a perel, jedinečný!", "Perla k perle se skvěle hodí."] },
+      pozadi: { name: "Galerie medúz", npc: "Mág Mušle", hello: ["Vyčaruji ti pozadí z mořských světel.", "Medúzy tě rády osvětlí."] },
+      mazlicci: { name: "Akvárium", npc: "Delfínka", hello: ["Pro tvého mazlíčka mám ozdoby z moře.", "Ryby jsou moje nejlepší kamarádky."] },
+      lod: { name: "Ponorka", npc: "Ponorka", hello: ["Stavby pro tvé město se vyrábějí v ponorkovém doku."] },
+    },
+    fireLabel: "Vypustit bublinu",
+    boom: "BLUB!",
+    talk: {
+      ryba: { label: "Promluvit s rybkou", lines: ["Bublub!", "Plav se mnou!", "Mám hlad, máš krmení?"] },
+      krab: { label: "Promluvit s krabem", lines: ["Klap klap!", "Bokem se jde nejlíp.", "Pozor na mé kleště!"] },
+    },
+  },
+  en: {
+    title: "Underwater city",
+    subtitle: "A pearly city on the seabed: mermaids, divers and mages sell sea goods for your learning points.",
+    stalls: {
+      avatary: { name: "Shell dressing room", npc: "Mermaid Pearl", hello: ["Fins or a diving suit? Your pick!", "Shells suit you, trust me."] },
+      tituly: { name: "Pearl office", npc: "Captain Deep", hello: ["I'll write your title in the deep-sea logbook.", "Bubbles, bubbles… done!"] },
+      ramecky: { name: "Coral workshop", npc: "Pearl smith Perlie", hello: ["A frame of coral and pearls, one of a kind!", "Pearl to pearl, a perfect match."] },
+      pozadi: { name: "Jellyfish gallery", npc: "Mage Mussel", hello: ["I'll conjure a background from sea lights.", "The jellyfish love to light you up."] },
+      mazlicci: { name: "Aquarium", npc: "Dolphina", hello: ["I have sea trinkets for your pet.", "Fish are my best friends."] },
+      lod: { name: "Submarine", npc: "Submarine", hello: ["Buildings for your city are made in the submarine dock."] },
+    },
+    fireLabel: "Release a bubble",
+    boom: "BLUB!",
+    talk: {
+      ryba: { label: "Talk to the fish", lines: ["Blubble!", "Swim with me!", "I'm hungry, got any food?"] },
+      krab: { label: "Talk to the crab", lines: ["Click clack!", "Sideways is the best way.", "Mind my claws!"] },
+    },
+  },
+  de: {
+    title: "Unterwasserstadt",
+    subtitle: "Eine perlmuttfarbene Stadt auf dem Meeresgrund: Meerjungfrauen, Taucher und Magier verkaufen dir Meereswaren für deine Lernpunkte.",
+    stalls: {
+      avatary: { name: "Muschel-Umkleide", npc: "Meerjungfrau Perle", hello: ["Flossen oder Taucheranzug? Such dir was aus!", "Muscheln stehen dir, glaub mir."] },
+      tituly: { name: "Perlenbüro", npc: "Kapitän Tiefe", hello: ["Ich trage deinen Titel ins Tiefsee-Logbuch ein.", "Blubb, blubb… fertig!"] },
+      ramecky: { name: "Korallenwerkstatt", npc: "Perlmeister Perli", hello: ["Ein Rahmen aus Koralle und Perlen, ein Unikat!", "Perle zu Perle, passt perfekt."] },
+      pozadi: { name: "Quallen-Galerie", npc: "Magier Muschel", hello: ["Ich zaubere dir einen Hintergrund aus Meereslichtern.", "Die Quallen leuchten dich gern an."] },
+      mazlicci: { name: "Aquarium", npc: "Delfina", hello: ["Für dein Haustier habe ich Meeresschmuck.", "Fische sind meine besten Freunde."] },
+      lod: { name: "U-Boot", npc: "U-Boot", hello: ["Gebäude für deine Stadt entstehen im U-Boot-Dock."] },
+    },
+    fireLabel: "Blase aufsteigen lassen",
+    boom: "BLUBB!",
+    talk: {
+      ryba: { label: "Mit dem Fisch reden", lines: ["Blubber!", "Schwimm mit mir!", "Ich habe Hunger, hast du Futter?"] },
+      krab: { label: "Mit der Krabbe reden", lines: ["Klack klack!", "Seitwärts geht es am besten.", "Vorsicht, meine Scheren!"] },
+    },
+  },
+  ru: {
+    title: "Подводный город",
+    subtitle: "Жемчужный город на морском дне: русалки, водолазы и маги продают морские товары за баллы.",
+    stalls: {
+      avatary: { name: "Раковинная раздевалка", npc: "Русалка Жемчужинка", hello: ["Плавники или скафандр? Выбирай!", "Ракушки тебе к лицу, поверь."] },
+      tituly: { name: "Жемчужная канцелярия", npc: "Капитан Глубина", hello: ["Запишу звание в судовой журнал глубин.", "Пузырьки, пузырьки… готово!"] },
+      ramecky: { name: "Коралловая мастерская", npc: "Жемчужник Перлик", hello: ["Рамка из кораллов и жемчуга, единственная!", "Жемчужинка к жемчужинке — идеально."] },
+      pozadi: { name: "Галерея медуз", npc: "Маг Ракушка", hello: ["Наколдую фон из морских огней.", "Медузы с радостью тебя осветят."] },
+      mazlicci: { name: "Аквариум", npc: "Дельфинка", hello: ["Для питомца у меня морские украшения.", "Рыбки — мои лучшие подружки."] },
+      lod: { name: "Подлодка", npc: "Подлодка", hello: ["Постройки для твоего города делают в доке подлодок."] },
+    },
+    fireLabel: "Выпустить пузырь",
+    boom: "БУЛЬК!",
+    talk: {
+      ryba: { label: "Поговорить с рыбкой", lines: ["Бульк-бульк!", "Плыви со мной!", "Я голодна, есть корм?"] },
+      krab: { label: "Поговорить с крабом", lines: ["Клац-клац!", "Боком ходить лучше всего.", "Осторожно, мои клешни!"] },
+    },
+  },
+};
+
 const unlock: Record<Locale, UnlockText> = {
   cs: { title: "Odemknout svět", text: "Svět „{name}“ se odemkne na úrovni {level} a stojí {points} bodů.", button: "Odemknout za {points} ⭐", needLevel: "Chybí ti úroveň {level}", needPoints: "Chybí ti {n} bodů", done: "Svět je odemčený!", locked: "Zamčeno" },
   en: { title: "Unlock world", text: "The world “{name}” unlocks at level {level} and costs {points} points.", button: "Unlock for {points} ⭐", needLevel: "You need level {level}", needPoints: "You need {n} more points", done: "World unlocked!", locked: "Locked" },
@@ -104,6 +330,9 @@ export function getUnlockText(locale: Locale): UnlockText {
 
 export function getWorldText(locale: Locale, world: string): WorldText {
   if (world === "space") return space[locale];
+  if (world === "forest") return forest[locale];
+  if (world === "castle") return castle[locale];
+  if (world === "sea") return sea[locale];
   const m = getMarketText(locale);
   return {
     title: m.title,

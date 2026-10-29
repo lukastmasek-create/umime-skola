@@ -38,6 +38,12 @@ export const AVATARS: AvatarDef[] = [
   { id: "sea-wolf", bg: "#3b7be0", skin: "#e0b48a", head: "round", ears: "band", eyes: "goggles", mouth: "flat", unlock: { event: "shop" }, names: { cs: "Mořský vlk", en: "Sea wolf", de: "Seebär", ru: "Морской волк" } },
   { id: "mermaid", bg: "#7ee0d0", skin: "#ffd5a8", head: "round", ears: "hair", eyes: "big", mouth: "smile", unlock: { event: "shop" }, names: { cs: "Mořská panna", en: "Mermaid", de: "Meerjungfrau", ru: "Русалка" } },
   { id: "wizard", bg: "#7a5cff", skin: "#ffd5a8", head: "round", ears: "horns", eyes: "big", mouth: "open", unlock: { event: "shop" }, names: { cs: "Čaroděj", en: "Wizard", de: "Zauberer", ru: "Волшебник" } },
+  { id: "fairy", bg: "#e6c8ff", skin: "#ffe0c8", head: "round", ears: "hair", eyes: "big", mouth: "smile", unlock: { event: "shop" }, names: { cs: "Víla", en: "Fairy", de: "Fee", ru: "Фея" } },
+  { id: "ranger", bg: "#b8e3a6", skin: "#e8c8a0", head: "round", ears: "band", eyes: "dots", mouth: "smile", unlock: { event: "shop" }, names: { cs: "Hajný", en: "Ranger", de: "Förster", ru: "Лесник" } },
+  { id: "knight", bg: "#c9ced8", skin: "#ffd5a8", head: "box", ears: "none", eyes: "visor", mouth: "flat", unlock: { event: "shop" }, names: { cs: "Rytíř", en: "Knight", de: "Ritter", ru: "Рыцарь" } },
+  { id: "princess", bg: "#ffc2e0", skin: "#ffe0c8", head: "round", ears: "crown", eyes: "big", mouth: "smile", unlock: { event: "shop" }, names: { cs: "Princezna", en: "Princess", de: "Prinzessin", ru: "Принцесса" } },
+  { id: "diver", bg: "#7fd0e8", skin: "#ffd5a8", head: "round", ears: "none", eyes: "goggles", mouth: "open", unlock: { event: "shop" }, names: { cs: "Potápěč", en: "Diver", de: "Taucher", ru: "Водолаз" } },
+  { id: "octopus", bg: "#d6a8ff", skin: "#a86ad8", head: "ghost", ears: "none", eyes: "big", mouth: "open", unlock: { event: "shop" }, names: { cs: "Chobotnice", en: "Octopus", de: "Krake", ru: "Осьминог" } },
   { id: "pumpkin", bg: "#ffb259", skin: "#ff8a1f", head: "round", ears: "none", eyes: "dots", mouth: "teeth", unlock: { event: "shop" }, names: { cs: "Dýně", en: "Pumpkin", de: "Kürbis", ru: "Тыква" } },
 
   // --- zvířata ---

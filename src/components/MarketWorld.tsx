@@ -14,9 +14,12 @@ import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
 import pirateScene from "./pristav-kotvy.json";
 import spaceScene from "./kosmicka-kotvy.json";
+import forestScene from "./les-kotvy.json";
+import castleScene from "./hrad-kotvy.json";
+import seaScene from "./more-kotvy.json";
 import { getWorldText, getUnlockText } from "@/i18n/market-world";
 import { getTownHubText } from "@/i18n/town";
-import { drawSea, wave } from "@/lib/market-scenery";
+import { drawSea, drawForest, drawForestFront, drawCastle, drawCastleFront, drawDeep, drawDeepFront, wave } from "@/lib/market-scenery";
 
 // Uživatelský obchod jako prostředí: pirátský přístav a vesmírná stanice z Blenderu (umime-art/blender/pristav*.py,
 // kosmicka*.py). Vrstvy zespodu: moře nebo vesmír (canvas), hlavní předmět (loď, raketa), zadní vrstva (podlaha, stánky),
@@ -26,7 +29,7 @@ import { drawSea, wave } from "@/lib/market-scenery";
 type Anchor = { npc: number[]; pult: number[]; strecha: number[]; bublina: number[]; nazev: number[] };
 type SceneData = { w: number; h: number; kotvy: Record<string, Anchor>; lod: number[]; lampy: number[][]; pena: number[][] } & Record<string, unknown>;
 type Dot = { x: number; y: number; ph: number; layer: number; r: number };
-const SCENES: Record<string, SceneData> = { pirate: pirateScene as unknown as SceneData, space: spaceScene as unknown as SceneData };
+const SCENES: Record<string, SceneData> = { pirate: pirateScene as unknown as SceneData, space: spaceScene as unknown as SceneData, forest: forestScene as unknown as SceneData, castle: castleScene as unknown as SceneData, sea: seaScene as unknown as SceneData };
 
 const W = 2000;
 const H = 900;
@@ -257,6 +260,15 @@ function useScenery(stage: React.RefObject<HTMLDivElement | null>, back: React.R
       if (def.scenery === "sea") {
         drawSea(ctx, w, h, t, night);
         drawSeaFront(fctx, w, h, t, night, data);
+      } else if (def.scenery === "forest") {
+        drawForest(ctx, w, h, t, night);
+        drawForestFront(fctx, w, h, t, night, data.lampy);
+      } else if (def.scenery === "castle") {
+        drawCastle(ctx, w, h, t, night);
+        drawCastleFront(fctx, w, h, t, night, data.lampy);
+      } else if (def.scenery === "deep") {
+        drawDeep(ctx, w, h, t);
+        drawDeepFront(fctx, w, h, t, data.lampy);
       } else {
         drawSpace(ctx, w, h, t);
         drawSpaceFront(fctx, w, h, t, data);
@@ -288,6 +300,8 @@ function useScenery(stage: React.RefObject<HTMLDivElement | null>, back: React.R
   }, [stage, back, front, nightRef, def, data]);
 }
 
+const VEIL: Record<string, string> = { pirate: "#cfe8ff", space: "#9be8ff", forest: "#e8ffb0", castle: "#1a1020", sea: "#5fd0ee" };
+
 export function MarketWorld({ locale, initialWorld, film = false }: { locale: Locale; initialWorld?: WorldId; film?: boolean }) {
   const t = getShopText(locale);
   const x = getShopExtraText(locale);
@@ -296,9 +310,9 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
   const town = getTownHubText(locale);
   const [state, setState] = useState<State>({ status: "loading" });
   const wanted = initialWorld && WORLDS.some((w) => w.id === initialWorld && w.ready) ? initialWorld : undefined;
-  const [worldId, setWorldId] = useState<WorldId>(wanted && wanted === "pirate" ? "pirate" : "pirate");
+  const [worldId, setWorldId] = useState<WorldId>(film && wanted ? wanted : "pirate");
   // po filmovém přechodu z městečka obraz zalévá závoj v barvě konce a pomalu se rozplyne
-  const [veil, setVeil] = useState<{ color: string; fade: boolean } | null>(film ? { color: wanted === "space" ? "#9be8ff" : "#cfe8ff", fade: false } : null);
+  const [veil, setVeil] = useState<{ color: string; fade: boolean } | null>(film ? { color: VEIL[wanted ?? "pirate"] ?? "#cfe8ff", fade: false } : null);
   const wantedDone = useRef(false);
   const [unlockId, setUnlockId] = useState<WorldId | null>(null);
   const [open, setOpen] = useState<StallKey | null>(null);
@@ -475,13 +489,15 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
 
   useEffect(() => {
     if (!film) return;
-    const a = window.setTimeout(() => setVeil((v) => (v ? { ...v, fade: true } : v)), 80);
-    const b = window.setTimeout(() => setVeil(null), 1200);
+    // závoj se rozplyne, až se načte účet (a tím i obrázky světa), nejpozději po necelých dvou vteřinách
+    const wait = state.status !== "loading" ? 250 : 1800;
+    const a = window.setTimeout(() => setVeil((v) => (v ? { ...v, fade: true } : v)), wait);
+    const b = window.setTimeout(() => setVeil(null), wait + 1100);
     return () => {
       window.clearTimeout(a);
       window.clearTimeout(b);
     };
-  }, [film]);
+  }, [film, state.status]);
   useEffect(() => {
     // svět z adresy (?svet=): odemčený se otevře hned, zamčený nabídne odemčení
     if (!wanted || wantedDone.current || state.status === "loading") return;
@@ -592,7 +608,7 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
             const [ex, ey] = pt(data, e.anchor);
             return (
               <div key={e.file} aria-hidden className="market-lit pointer-events-none absolute" style={{ left: `${ex * 100}%`, top: `${ey * 100}%`, width: `${e.width}%`, aspectRatio: "1 / 1", transform: `translate(-50%, -${e.feet}%)` }}>
-                <Sprite dir={dir} file={e.file} n={e.n ?? 24} dur={e.dur} delay={-i * 0.9} className="h-full w-full" />
+                <Sprite dir={e.dir ?? dir} file={e.file} n={e.n ?? 24} dur={e.dur} delay={-i * 0.9} className="h-full w-full" />
               </div>
             );
           })}
@@ -695,11 +711,11 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
             const it = def.interactive.find((c) => c.id === shot.id);
             if (!it) return null;
             const [sx, sy] = pt(data, it.anchor);
-            const laser = def.scenery === "space";
+            const shotCls = it.shot ?? "ball";
             return (
               <div key={shot.n} className="pointer-events-none absolute z-[8]" style={{ left: `${sx * 100}%`, top: `${sy * 100}%`, ["--dx" as string]: it.dir ?? -1 }}>
                 <i className="market-puff" />
-                <i className={`market-ball ${laser ? "market-laser" : ""}`} />
+                <i className={shotCls === "bubble" ? "market-bubbleUp" : `market-ball ${shotCls === "laser" ? "market-laser" : shotCls === "magic" ? "market-magic" : ""}`} />
                 <span className="market-boom absolute -left-12 -top-10 text-2xl font-black text-[#ffd76b] [text-shadow:0_2px_0_#16132b]">{wt.boom}</span>
               </div>
             );
