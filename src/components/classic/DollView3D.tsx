@@ -70,9 +70,10 @@ export default function DollView3D({
     const key = new THREE.DirectionalLight(0xfff1dc, 2.4);
     key.position.set(-2.5, 4, 4);
     key.castShadow = true;
-    key.shadow.mapSize.set(1024, 1024);
+    key.shadow.mapSize.set(2048, 2048);
     key.shadow.radius = 6;
-    key.shadow.bias = -0.0005;
+    key.shadow.bias = -0.0003;
+    key.shadow.normalBias = 0.012;
     scene.add(key);
     const rim = new THREE.DirectionalLight(0xdfe8ff, 1.3);
     rim.position.set(2, 3, -4);
@@ -88,7 +89,7 @@ export default function DollView3D({
       renderer.setSize(w, h, false);
       camera.aspect = w / Math.max(h, 1);
       // vysoká panenka se musí vejít i do široké a nízké plochy
-      const dist = Math.max(4.9, 0.8 / (Math.tan(THREE.MathUtils.degToRad(14)) * camera.aspect));
+      const dist = Math.max(5.4, 0.9 / (Math.tan(THREE.MathUtils.degToRad(14)) * camera.aspect));
       camera.position.set(0, 1.25, dist);
       camera.lookAt(0, 1.12, 0);
       camera.updateProjectionMatrix();
@@ -107,6 +108,8 @@ export default function DollView3D({
     let anim: { kind: "happy" | "sad"; t: number } | null = null;
     let lastEvent = -1;
     const pops = new Map<THREE.Object3D, number>();
+    let moodTarget: Mood = "neutral";
+    const morphMeshes: THREE.Mesh[] = [];
 
     const draco = new DRACOLoader().setDecoderPath(DRACO_DECODER_PATH).setDecoderConfig({ type: "wasm" });
     new GLTFLoader().setDRACOLoader(draco).load(
@@ -114,14 +117,24 @@ export default function DollView3D({
       (gltf) => {
         if (disposed) return;
         model = gltf.scene;
+        const aniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
         model.traverse((o) => {
-          if ((o as THREE.Mesh).isMesh) o.castShadow = true;
+          const mesh = o as THREE.Mesh;
+          if (!mesh.isMesh) return;
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+          for (const m of [mesh.material].flat() as THREE.MeshStandardMaterial[]) {
+            for (const tex of [m.map, m.normalMap]) if (tex) tex.anisotropy = aniso;
+            if (m.transparent) m.depthWrite = false;
+          }
         });
         pivot.add(model);
 
         const byName = new Map<string, THREE.Object3D>();
         model.traverse((o) => {
           if (o.name) byName.set(o.name, o);
+          const mesh = o as THREE.Mesh;
+          if (mesh.isMesh && mesh.morphTargetDictionary) morphMeshes.push(mesh);
         });
         // původní barvy materiálů kusů, od kterých se počítá posun odstínu
         const mats = new Map<string, { mat: THREE.MeshStandardMaterial; base: THREE.Color }[]>();
@@ -160,12 +173,7 @@ export default function DollView3D({
           }
           const under = byName.get("underwear");
           if (under) under.visible = w.outfit === undefined;
-          for (const m of ["happy", "sad", "neutral"] as const) {
-            const f = byName.get(`face_${m}`);
-            if (f) f.visible = m === md;
-            const l = byName.get(`lips_${m}`);
-            if (l) l.visible = m === md;
-          }
+          moodTarget = md;
           if (ev && ev.id !== lastEvent) {
             lastEvent = ev.id;
             anim = { kind: ev.kind, t: 0 };
@@ -234,6 +242,17 @@ export default function DollView3D({
           if (u >= 1) pops.delete(n);
         }
       } else if (anim) anim = null;
+      // plynulý přechod výrazu: úsměv / smutek / klid
+      for (const mesh of morphMeshes) {
+        const dict = mesh.morphTargetDictionary!;
+        const inf = mesh.morphTargetInfluences!;
+        for (const name of ["happy", "sad"] as const) {
+          const i = dict[name];
+          if (i === undefined) continue;
+          const target = moodTarget === name ? 1 : 0;
+          inf[i] += (target - inf[i]) * Math.min(1, dt * 9);
+        }
+      }
       pivot.position.y = y;
       pivot.rotation.set(0, rotY, rotZ);
       renderer.render(scene, camera);
