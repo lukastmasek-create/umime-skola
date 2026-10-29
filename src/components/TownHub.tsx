@@ -1191,7 +1191,7 @@ export function TownHub({ locale }: { locale: Locale }) {
           <div className="pointer-events-none absolute left-3 top-3 z-20 flex items-center gap-2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-sm font-extrabold">
             🎁 {left > 0 ? tt.collect.left.replace("{n}", String(left)) : "✓"}
           </div>
-          <div aria-hidden className="pointer-events-none absolute left-3 top-[6.5rem] z-20 hidden items-center gap-1 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-xs font-extrabold opacity-80 md:flex">⌨ WASD / ←↑↓→</div>
+          <div aria-hidden className={`pointer-events-none absolute left-3 top-[6.5rem] z-20 hidden items-center gap-1 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-xs font-extrabold opacity-80 ${free ? "md:flex" : ""}`}>⌨ WASD / ←↑↓→</div>
           {near && free && (
             <div role="status" className="pointer-events-none absolute bottom-14 left-1/2 z-30 -translate-x-1/2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-2 text-sm font-extrabold shadow-[0_3px_0_var(--shadow-ink)]">
               <kbd className="rounded-md border-2 border-[var(--edge)] px-1.5">E</kbd> {tt.buildings[near]?.name ?? near}

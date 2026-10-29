@@ -364,11 +364,27 @@ def pristav():
         im = frames(src)[0]
         im.save(os.path.join(dest_dir, dest), format="WEBP", quality=q, method=5, alpha_quality=90)
         print(dest, round(os.path.getsize(os.path.join(dest_dir, dest)) / 1024), "kB", im.size)
-    if glob.glob(os.path.join(ROOT, "out", "pristav_lod", "f_*.png")):
-        strip("pristav_lod", "../pristav/lod.webp", (640, 512), quality=80)
-    for layer, dest in (("hull", "lod-trup"), ("sails", "lod-plachty"), ("wind", "lod-vitr")):
-        if len(glob.glob(os.path.join(ROOT, "out", f"pristav_lod_{layer}", "f_*.png"))) >= 12:
-            strip(f"pristav_lod_{layer}", f"../pristav/{dest}.webp", (640, 512), quality=82)
+    def lod_strip(name, dest, size, crop, quality):
+        """Loď se renderuje 1024 × 1010 (nahoře 190 px rezerva pro stěžně): do pásu v původním měřítku (640 × 512) se ořízne rezerva a zmenší."""
+        fr = []
+        for f in sorted(glob.glob(os.path.join(ROOT, "out", name, "f_*.png"))):
+            im = Image.open(f).convert("RGBA")
+            if crop:
+                im = im.crop((0, 190, im.size[0], im.size[1]))
+            fr.append(im.resize(size, Image.LANCZOS) if size != im.size else im)
+        sheet = Image.new("RGBA", (size[0] * len(fr), size[1]), (0, 0, 0, 0))
+        for i, im in enumerate(fr):
+            sheet.paste(im, (i * size[0], 0))
+        path = os.path.join(DEST, "..", "pristav", dest)
+        sheet.save(path, format="WEBP", quality=quality, method=5, alpha_quality=85)
+        print(dest, len(fr), "snímků", round(os.path.getsize(path) / 1024), "kB", sheet.size)
+
+    for layer, dest, hi in (("all", "lod", None), ("hull", "lod-trup", "lod-hi-trup"), ("sails", "lod-plachty", "lod-hi-plachty"), ("wind", "lod-vitr", "lod-hi-vitr")):
+        name = "pristav_lod" if layer == "all" else f"pristav_lod_{layer}"
+        if len(glob.glob(os.path.join(ROOT, "out", name, "f_*.png"))) >= 12:
+            lod_strip(name, dest + ".webp", (640, 512), True, 80)
+            if hi:
+                lod_strip(name, hi + ".webp", (1024, 1010), False, 82)
     for src, dest in (("mf_kapitan", "kapitan"), ("mf_kvartyrmistr", "kvartyrmistr"), ("mf_tesar", "tesar"), ("mf_plachtarka", "plachtarka"),
                       ("mf_chovatel", "chovatel"), ("mf_papousek", "papousek"), ("mf_krab", "krab")):
         if glob.glob(os.path.join(ROOT, "out", src, "f_*.png")):

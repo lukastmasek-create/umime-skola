@@ -174,6 +174,22 @@ export const sfx = {
     if (!c) return;
     sweepNoise(c, c.currentTime, dur, 0.15, 500, 900, 0.4, "lowpass", dur * 0.4);
   },
+  // kotevní řetěz: krátké kovové cvaknutí rumpálu
+  chain() {
+    const c = audio();
+    if (!c) return;
+    const t = c.currentTime;
+    tone(c, t, 0.06, 0.1, 1900 + Math.random() * 400, 1100, "square", 0.002);
+    sweepNoise(c, t, 0.05, 0.08, 4000, 2500, 2, "highpass", 0.002);
+  },
+  // kotva zaklapne do úchytu: hluboká rána do dřeva
+  clunk() {
+    const c = audio();
+    if (!c) return;
+    const t = c.currentTime;
+    tone(c, t, 0.3, 0.3, 170, 62, "triangle", 0.004);
+    sweepNoise(c, t, 0.14, 0.14, 900, 300, 0.8, "lowpass", 0.004);
+  },
   // bublina zprávy
   pop() {
     const c = audio();
