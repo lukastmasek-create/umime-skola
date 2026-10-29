@@ -1,10 +1,12 @@
 """Sestavení realistické panenky (krok 1: tělo, hlava, oči). Spuštění: python panenky_build.py -- <id>"""
 import os
+import re
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 from panenky_wear2 import *  # noqa: E402,F401,F403
 from panenky_rig import *  # noqa: E402,F401,F403
+from panenky_variants import *  # noqa: E402,F401,F403
 import panenky3d as legacy  # noqa: E402
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -76,21 +78,39 @@ def materials(doll):
     return m
 
 
+def variant_of(o):
+    p = o
+    while p is not None:
+        m_ = re.match(r".*_v(\d+)$", p.name)
+        if m_ and p.name.startswith("slot_"):
+            return int(m_.group(1))
+        p = p.parent
+    return None
+
+
 def bake_scene_ao():
-    """Ambient occlusion do vrcholových barev všech sítí (kontaktní stíny ve švech a pod oblečením)."""
+    """Ambient occlusion do vrcholových barev (kontaktní stíny ve švech a pod oblečením); každá varianta se stíní jen s tělem a sebou."""
+    import time
     bpy.context.view_layer.update()
     skip = ("cornea", "eyeball", "lid", "lash", "makeup_face", "head_skin", "wing", "helmet_glass", "visor", "tulle", "lens")
+    occl = ("cornea", "wing", "helmet_glass", "visor", "tulle", "lens", "makeup_face")
     objs = [o for o in bpy.data.objects if o.type == "MESH"]
-    tree = bvh_of([o for o in objs if not any(k in o.name for k in ("cornea", "wing", "helmet_glass", "visor", "tulle", "lens", "makeup_face"))])
-    import time
+    vmax = max([variant_of(o) or 0 for o in objs] + [0])
     t0 = time.time()
-    for o in objs:
-        if any(k in o.name for k in skip):
-            col = o.data.color_attributes.new("AO", "FLOAT_COLOR", "POINT")
-            col.data.foreach_set("color", [1.0] * (4 * len(o.data.vertices)))
-            o.data.color_attributes.active_color = col
-            continue
-        bake_ao(o, tree, rays=10, dist=0.045, strength=0.5)
+    for k in range(vmax + 1):
+        tree = bvh_of([o for o in objs if variant_of(o) in (None, k) and not any(x in o.name for x in occl)])
+        for o in objs:
+            vo = variant_of(o)
+            if vo is not None and vo != k:
+                continue
+            if vo is None and k > 0:
+                continue
+            if any(x in o.name for x in skip):
+                col = o.data.color_attributes.new("AO", "FLOAT_COLOR", "POINT")
+                col.data.foreach_set("color", [1.0] * (4 * len(o.data.vertices)))
+                o.data.color_attributes.active_color = col
+                continue
+            bake_ao(o, tree, rays=10, dist=0.045, strength=0.5)
     print("AO", round(time.time() - t0, 1), "s")
 
 
@@ -104,20 +124,22 @@ def build(did):
     body = build_body(root, d, mats)
     hg, head, tree = build_head(root, d, mats)
     build_face_parts(root, d, mats, tree)
-    build_hair(root, d, mats)
     underwear(root, mats)
-    parts = {
-        "princess": (princess_outfit, princess_shoes, princess_accessory, princess_topper),
-        "athlete": (athlete_outfit, athlete_shoes, athlete_accessory, athlete_topper),
-        "rocker": (rocker_outfit, rocker_shoes, rocker_accessory, rocker_topper),
-        "fairy": (fairy_outfit, fairy_shoes, fairy_accessory, fairy_topper),
-        "chef": (chef_outfit, chef_shoes, chef_accessory, chef_topper),
-        "astronaut": (astro_outfit, astro_shoes, astro_accessory, astro_topper),
-    }[did]
-    for fn in parts:
-        fn(root, d, mats)
-    mk = node("slot_makeup", root)
-    head_mesh("makeup_face", mats["makeup"], mk, off=0.0012)
+    if did == "princess":
+        princess_variants(root, d, mats)
+    else:
+        build_hair(root, d, mats, name="slot_hair_v0")
+        parts = {
+            "athlete": (athlete_outfit, athlete_shoes, athlete_accessory, athlete_topper),
+            "rocker": (rocker_outfit, rocker_shoes, rocker_accessory, rocker_topper),
+            "fairy": (fairy_outfit, fairy_shoes, fairy_accessory, fairy_topper),
+            "chef": (chef_outfit, chef_shoes, chef_accessory, chef_topper),
+            "astronaut": (astro_outfit, astro_shoes, astro_accessory, astro_topper),
+        }[did]
+        for fn, slot in zip(parts, ("outfit", "shoes", "accessory", "topper")):
+            fn(root, d, mats, name=f"slot_{slot}_v0")
+        mk = node("slot_makeup_v0", root)
+        head_mesh("makeup_face", mats["makeup"], mk, off=0.0012)
     bake_scene_ao()
     style = {"princess": "twirl", "athlete": "pump", "rocker": "rock", "fairy": "flutter", "chef": "chef", "astronaut": "astro"}[did]
     rig_scene(style)

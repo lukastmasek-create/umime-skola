@@ -1,10 +1,10 @@
 "use client";
 
 import type { ReactNode } from "react";
-import type { Doll, Slot } from "@/lib/dress";
+import type { Doll, Pick, Slot } from "@/lib/dress";
 
 export type Mood = "happy" | "sad" | "neutral";
-export type Worn = Partial<Record<Slot, number>>;
+export type Worn = Partial<Record<Slot, Pick>>;
 
 const GREY = "#9aa0ac";
 const GREY_DARK = "#7d8391";
@@ -12,10 +12,11 @@ const INK = "#2b2236";
 
 // Varianta 0 je „správný“ kus. Další varianty (po špatné odpovědi) mění barvu, takže oblečení vypadá jinak.
 function Piece({ slot, worn, children }: { slot: Slot; worn: Worn; children: ReactNode }) {
-  const v = worn[slot];
-  if (v === undefined) return null;
+  const pick = worn[slot];
+  if (pick === undefined) return null;
+  const deg = pick.h * 360 + pick.v * 70;
   return (
-    <g key={`${slot}-${v}`} className="doll-pop" style={v ? { filter: `hue-rotate(${v * 110}deg) saturate(1.15)` } : undefined}>
+    <g key={`${slot}-${pick.v}-${pick.h}`} className="doll-pop" style={deg ? { filter: `hue-rotate(${deg}deg) saturate(1.15)` } : undefined}>
       {children}
     </g>
   );
@@ -362,7 +363,7 @@ function Topper({ kind, c }: { kind: Doll["topper"]["kind"]; c: [string, string]
 export function DollSvg({ doll, worn, mood, className }: { doll: Doll; worn: Worn; mood: Mood; className?: string }) {
   const hasMakeup = worn.makeup !== undefined;
   const mouth = mood === "sad" ? "M91 91 Q100 83 109 91" : mood === "happy" ? "M90 85 Q100 97 110 85" : "M92 88 Q100 92 108 88";
-  const lipHue = worn.makeup ? { filter: `hue-rotate(${worn.makeup * 110}deg)` } : undefined;
+  const lipHue = worn.makeup ? { filter: `hue-rotate(${worn.makeup.h * 360 + worn.makeup.v * 70}deg)` } : undefined;
   return (
     <svg viewBox="0 0 200 400" className={className} role="img" aria-hidden>
       <ellipse cx="100" cy="384" rx="60" ry="9" fill="rgba(0,0,0,0.16)" />

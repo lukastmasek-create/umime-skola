@@ -3,6 +3,7 @@
 Animace (NLA stopy → glTF animace): idle (smyčka), happy (tanec podle panenky), sad, pose_hair/outfit/shoes/makeup/accessory/topper.
 """
 import math
+import re
 
 from mathutils import Matrix, Quaternion, Vector
 
@@ -66,10 +67,12 @@ LOWER_SET = ("hips", "spine", "thigh.L", "thigh.R")
 HAIR_SET = ("head", "neck", "chest", "spine", "clavicle.L", "clavicle.R")
 FOOT_SET = ("foot.L", "foot.R", "shin.L", "shin.R")
 CHEST_SET = ("chest", "neck", "spine", "head")
-HAND_R = ("hand.R", "forearm.R", "upperarm.R")
+HAND_R = ("hand.L", "forearm.L", "upperarm.L")  # strana x > 0 (kde je hůlka a vařečka)
+HAND_NEG = ("hand.R", "forearm.R", "upperarm.R")  # strana x < 0 (kabelka)
 
 
 def bone_set_for(group, name):
+    group = re.sub(r"_v\d+$", "", group)
     n = name.lower()
     if group in ("face_parts", "slot_makeup"):
         return HEAD_ONLY
@@ -88,6 +91,8 @@ def bone_set_for(group, name):
             return HEAD_ONLY
         if any(k in n for k in ("wand", "ladle", "twist", "star")):
             return HAND_R
+        if "bag" in n:
+            return HAND_NEG
         return CHEST_SET
     return BODY_ALL
 
@@ -134,13 +139,14 @@ def join_and_skin(arm_obj):
         sets = bone_set_for(key[0], o.name)
         n_ = o.name.lower()
         legwear = any(k in n_ for k in ("trouser", "sock", "leg", "ankle", "boot", "knee", "shaft", "fishnet", "glove", "ribbon", "strap", "sleeve", "cuff", "joint", "ring"))
-        if key[0] in ("slot_outfit", "underwear", "slot_topper") and not legwear and sets == BODY_ALL:
+        g0 = re.sub(r"_v\d+$", "", key[0])
+        if g0 in ("slot_outfit", "underwear", "slot_topper") and not legwear and sets == BODY_ALL:
             zmean = float(np.mean([v.co.z for v in o.data.vertices])) if len(o.data.vertices) else 1.0
             if zmean < 1.05:
                 sets = LOWER_SET
             else:
                 sets = GARMENT_SET
-        if key[0] == "body":
+        if g0 == "body":
             if any(k in n_ for k in ("arm", "palm", "finger", "thumb", "deltoid")):
                 sets = ARM_SET
             elif any(k in n_ for k in ("leg", "foot")):
@@ -149,7 +155,7 @@ def join_and_skin(arm_obj):
                 sets = ("neck", "head", "chest")
             else:
                 sets = TORSO_SET
-        if key[0] in ("slot_outfit", "underwear", "slot_topper") and any(k in n_ for k in ("sleeve", "cuff", "joint", "puff", "shoulder", "deltoid", "tee_", "glove")):
+        if g0 in ("slot_outfit", "underwear", "slot_topper") and any(k in n_ for k in ("sleeve", "cuff", "joint", "puff", "shoulder", "deltoid", "tee_", "glove")):
             sets = BODY_ALL
         groups.setdefault((key, sets), []).append(o)
     joined = []

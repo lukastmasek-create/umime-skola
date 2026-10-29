@@ -6,14 +6,15 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { DRACO_DECODER_PATH } from "@/lib/avatars3d";
-import { SLOTS } from "@/lib/dress";
+import { SLOTS, type Slot } from "@/lib/dress";
 import type { Mood, Worn } from "./DollSvg";
 
-export type DollEvent = { id: number; kind: "happy" | "sad" };
+export type DollEvent = { id: number; kind: "happy" | "sad" | "dress"; slot?: Slot };
 
 type Apply = (worn: Worn, mood: Mood, ev: DollEvent | null) => void;
 
-const isSlotNode = (name: string, slot: string) => name === `slot_${slot}` || name.startsWith(`slot_${slot}__`);
+// Uzly kusů se jmenují slot_<slot>_v<varianta>[__materiál]; panenky bez variant mají jen v0.
+const VARIANT_NODE = /^slot_([a-z]+)_v(\d+)(?:__|$)/;
 
 // 3D panenka z Blenderu (umime-art/blender/panenky_build.py): kostra a animace (idle, happy, sad, pose_<slot>), kusy oblečení
 // jsou samostatné sítě pojmenované slot_<slot>__<materiál>, nálady a mrknutí jsou morph targety. Varianta kusu (po špatné odpovědi)
@@ -118,7 +119,6 @@ export default function DollView3D({
     const morphMeshes: THREE.Mesh[] = [];
     let blinkAt = 1.5 + Math.random() * 2;
     let blinkT = -1;
-    let time = 0;
 
     const draco = new DRACOLoader().setDecoderPath(DRACO_DECODER_PATH).setDecoderConfig({ type: "wasm" });
     new GLTFLoader().setDRACOLoader(draco).load(
@@ -187,37 +187,30 @@ export default function DollView3D({
           current = idle;
         }
 
-        const shown = new Set<string>();
         const hsl = { h: 0, s: 0, l: 0 };
         applyRef.current = (w, md, ev) => {
-          const added: string[] = [];
           for (const slot of SLOTS) {
-            const v = w[slot];
-            if (v !== undefined && !shown.has(slot)) {
-              shown.add(slot);
-              added.push(slot);
-            }
-            if (v === undefined) shown.delete(slot);
+            const pick = w[slot];
             for (const { mat, base } of mats.get(slot) ?? []) {
-              if (!v) mat.color.copy(base);
+              if (!pick || !pick.h) mat.color.copy(base);
               else {
                 base.getHSL(hsl);
-                mat.color.setHSL((hsl.h + v * 0.31) % 1, Math.min(1, hsl.s * 1.1), hsl.l);
+                mat.color.setHSL((hsl.h + pick.h) % 1, Math.min(1, hsl.s * 1.1), hsl.l);
               }
             }
           }
           model?.traverse((o) => {
-            for (const slot of SLOTS) if (isSlotNode(o.name, slot)) o.visible = w[slot] !== undefined;
+            const m = VARIANT_NODE.exec(o.name);
+            if (m) o.visible = w[m[1] as Slot]?.v === Number(m[2]);
             if (o.name === "underwear" || o.name.startsWith("underwear__")) o.visible = w.outfit === undefined;
           });
           moodTarget = md;
           if (ev && ev.id !== lastEvent) {
             lastEvent = ev.id;
             queue.length = 0;
-            if (ev.kind === "happy") {
-              if (added[0]) queue.push(`pose_${added[0]}`);
-              queue.push("happy");
-            } else queue.push("sad");
+            if (ev.kind === "dress" && ev.slot) queue.push(`pose_${ev.slot}`);
+            else if (ev.kind === "happy") queue.push("happy");
+            else queue.push("sad");
             playNext();
           }
         };
@@ -255,7 +248,6 @@ export default function DollView3D({
 
     const tick = () => {
       const dt = Math.min(clock.getDelta(), 0.1);
-      time += dt;
       mixer?.update(dt);
       // mrkání: krátké zavření očí v náhodných intervalech
       if (!reduceMotion) {
