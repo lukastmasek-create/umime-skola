@@ -286,7 +286,7 @@ export function runSpace(r: Refs, g: Geo, onEnd: () => void): Handle {
     const fw = (g.rocketW ?? 0.15) * cw;
     const fh = fw * 0.6;
     const pivot = { x: ru * cw + 0.106 * fw, y: rv * ch - 0.12 * fh };
-    const half = 0.356 * fw;
+    const half = 0.372 * fw;
     const groundY = pivot.y + 0.1 * fh;
     const [su, sv] = g.toBox(g.start);
     const hs = { x: su * cw, y: sv * ch };
@@ -490,7 +490,7 @@ export function runSpace(r: Refs, g: Geo, onEnd: () => void): Handle {
         const sy = ty + zoom * (tail.y + 0.015 * fh);
         const flick = 0.85 + Math.random() * 0.3;
         const L = flameLen * flick * zoom;
-        const Wd = (0.075 + 0.05 * thrust) * fw * zoom;
+        const Wd = (0.088 + 0.05 * thrust) * fw * zoom;
         ctx.globalCompositeOperation = "lighter";
         const glow = ctx.createRadialGradient(sx, sy + L * 0.25, 0, sx, sy + L * 0.25, L * 1.1 + 0.5 * fw);
         glow.addColorStop(0, `rgba(255,170,70,${0.55 * thrust * flick})`);

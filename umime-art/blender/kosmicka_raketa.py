@@ -64,17 +64,25 @@ LN = XT - XB
 rho = (R * R + LN * LN) / (2 * R)
 nose = [(XB + LN * k / 14, math.sqrt(max(0.0, rho * rho - (LN * k / 14) ** 2)) + R - rho) for k in range(15)]
 nose[-1] = (XT, 0.0)
-tail = [(XN - 0.1, 0.34), (XN, 0.36), (XN + 0.18, 0.43), (XN + 0.45, 0.5)]
 body_mat, nose_mat = M("trup", "#f4f6fb", 0.28, 0.25), M("nos", "#e03a2c", 0.3, 0.15)
-lathe([(x, R) for x in (-1.1, -0.6, 0.0, 0.5)] + nose[:1], "trup", body_mat)
+metal_mat = M("tryska", "#a3adc8", 0.3, 0.35)
+dark_mat = M("tryska_tm", "#232942", 0.4, 0.6)
+# trup: válec, na zádi se zužuje do sukně; špička vpředu je ogiva
+lathe([(-1.30, 0.40), (-1.10, 0.45), (-0.70, R)] + [(x, R) for x in (-0.6, 0.0, 0.5)] + nose[:1], "trup", body_mat)
 lathe(nose, "nos", body_mat)
-# červená špička (horních 38 %) a pásy: každý je tenká obálka kolem trupu
 cap = [(x, r * 1.012) for x, r in nose if x > XT - 0.42] + [(XT, 0.0)]
 lathe(cap, "spicka", nose_mat)
 for x0, x1, col in ((-0.35, -0.2, "#e03a2c"), (0.28, 0.4, "#2f4a8a")):
     lathe([(x0, R * 1.012), (x1, R * 1.012)], "pas", M("pas" + col, col, 0.35, 0.1))
-lathe([(XN - 0.1, 0.34), (XN, 0.36), (XN + 0.18, 0.43), (XN + 0.45, 0.5)], "tryskovy", M("tryska", "#434b6a", 0.3, 0.8))
-lathe([(XN - 0.12, 0.30), (XN - 0.12, 0.34), (XN, 0.38)], "ret", M("ret", "#2a2f48", 0.4, 0.7))
+# tryska: zvonovitý nástavec navazuje přímo na záď (žádná mezera), uvnitř zavřený tmavý disk se žhavým středem
+NZ0, NZ1 = -1.30, -1.92
+nozzle_out = [(NZ0, 0.40), (-1.42, 0.37), (-1.58, 0.37), (-1.76, 0.43), (NZ1, 0.52)]
+nozzle_in = [(NZ1, 0.47), (-1.76, 0.38), (-1.58, 0.32), (-1.45, 0.30)]
+lathe(nozzle_out + nozzle_in, "tryska", metal_mat)
+lathe([(-1.45, 0.30), (-1.45, 0.0)], "tryska_dno", dark_mat)
+lathe([(-1.5, 0.22), (-1.5, 0.0)], "tryska_zar", glow("zar_tryska", "#ff9a3c", 6.0))
+# prstenec na ústí trysky
+lathe([(NZ1, 0.47), (NZ1, 0.535), (NZ1 + 0.05, 0.535), (NZ1 + 0.05, 0.47)], "tryska_okraj", M("okraj", "#b9c2d8", 0.25, 0.9))
 part(sphere((0.65, -0.43, 0.06), 0.26, M("okno_r", "#46d6ff", 0.06, 0.1), scale=(1, 0.42, 1), seg=24, rings=14))
 part(torus((0.65, -0.465, 0.06), 0.27, 0.045, M("okno_k", "#aab4cc", 0.25, 0.7), rot=(math.pi / 2, 0, 0)))
 part(sphere((-0.3, -0.48, 0.04), 0.13, M("okno_m", "#46d6ff", 0.06, 0.1), scale=(1, 0.4, 1), seg=20, rings=12))
@@ -108,8 +116,14 @@ def fin(angle):
 
 for k in range(3):
     fin(math.radians(90 + 120 * k - 90))
-flame = part(cone((XN - 0.45, 0, 0), 0.34, 0.0, 0.9, glow("plamen", "#ffb347", 8.0), verts=24, rot=(0, math.radians(90), 0)))
-core = part(cone((XN - 0.3, 0, 0), 0.18, 0.0, 0.55, glow("plamenJ", "#fff1a8", 12.0), verts=16, rot=(0, math.radians(90), 0)))
+# plamen: dvě vnořené kapky, začínají přesně na ústí trysky
+def flame_profile(length, r0):
+    return [(-length * k, r0 * w) for k, w in ((0.0, 1.0), (0.12, 0.98), (0.32, 0.82), (0.58, 0.55), (0.82, 0.25), (1.0, 0.0))]
+
+
+flame = part(lathe(flame_profile(1.05, 0.46), "plamen", glow("plamen", "#ff6a14", 3.6)))
+core = part(lathe(flame_profile(0.7, 0.30), "plamenJ", glow("plamenJ", "#ffc83a", 6.5)))
+flame.location = core.location = (NZ1 + 0.03, 0, 0)
 beacon = part(sphere((0.2, 0, 0.55), 0.06, glow("maják", "#ff6fd0", 8.0), seg=10, rings=8))
 root.rotation_euler = (0, 0, math.radians(-8))
 
