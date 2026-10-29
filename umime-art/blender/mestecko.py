@@ -89,8 +89,8 @@ def door(x, y, z0, w=0.34, h=0.55, color="#8a5a34", trim="#fff6e6", arch=True, k
     box((x, y - 0.005, z0 + h / 2), (w + 0.1, 0.05, h + 0.06), M("dvr", trim, roughness=0.5), bevel=0.01)
     box((x, y - 0.025, z0 + h / 2), (w, 0.03, h), M("dv" + color, color, roughness=0.6), bevel=0.01)
     if arch:
-        cyl((x, y - 0.025, z0 + h), w / 2, 0.03, M("dv" + color, color, roughness=0.6), verts=20, rot=(math.radians(90), 0, 0), smooth=False)
-        cyl((x, y - 0.012, z0 + h), w / 2 + 0.05, 0.05, M("dvr", trim, roughness=0.5), verts=20, rot=(math.radians(90), 0, 0), smooth=False)
+        cyl((x, y - 0.0262, z0 + h), w / 2, 0.0324, M("dv" + color, color, roughness=0.6), verts=20, rot=(math.radians(90), 0, 0), smooth=False)
+        cyl((x, y - 0.0115, z0 + h), w / 2 + 0.05, 0.051, M("dvr", trim, roughness=0.5), verts=20, rot=(math.radians(90), 0, 0), smooth=False)
     sphere((x + w * 0.32, y - 0.05, z0 + h * 0.48), 0.022, M("kl", knob, roughness=0.3, metallic=0.6), seg=8, rings=6)
     box((x, y - 0.06, z0 + 0.01), (w + 0.2, 0.18, 0.03), M("pra", "#c9c2d6", roughness=0.8), bevel=0.006)
 
