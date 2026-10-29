@@ -32,7 +32,7 @@ def G(name, color, strength=4.0):
     return _M[name]
 
 
-sc = reset(W, H, N, samples=24 if PREVIEW else 96, name="pristav_lod", world=("#cfe8ff", 0.9), view="AgX", look="AgX - Punchy")
+sc = reset(W, H, N, samples=24 if PREVIEW else 96, name="pristav_lod" if LAYER == "all" else f"pristav_lod_{LAYER}", world=("#cfe8ff", 0.9), view="AgX", look="AgX - Punchy")
 sc.view_settings.exposure = 0.35
 sc.render.film_transparent = True
 add_camera((0, -60 * math.cos(EL), 60 * math.sin(EL) + TZ), (0, 0, TZ), ortho_scale=W / PPU)

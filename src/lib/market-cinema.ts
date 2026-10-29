@@ -628,9 +628,12 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
     cancelAnimationFrame(raf);
     onEnd();
   };
-  const imgsP = Promise.all([load("/home/pristav/lod.webp"), load("/home/pristav/nastup-molo.webp"), load("/home/pristav/nastup-lavka.webp"), load(currentHeroUrl("chuze")), load(currentHeroUrl("stoji")), load(currentHeroUrl("radost"))]);
+  const imgsP = Promise.all([load("/home/pristav/lod-trup.webp"), load("/home/pristav/lod-plachty.webp"), load("/home/pristav/lod-vitr.webp"), load("/home/pristav/lod.webp"), load("/home/pristav/nastup-molo.webp"), load("/home/pristav/nastup-lavka.webp"), load(currentHeroUrl("chuze")), load(currentHeroUrl("stoji")), load(currentHeroUrl("radost"))]);
 
-  void imgsP.then(([ship, molo, lavka, walkImg, idleImg, joyImg]) => {
+  void imgsP.then(([hullImg, sailsCalm, sailsWind, wholeShip, molo, lavka, walkImg, idleImg, joyImg]) => {
+    // bez vrstev (chybí obrázky) se použije celá loď
+    const layered = hullImg.naturalWidth > 0 && sailsCalm.naturalWidth > 0 && sailsWind.naturalWidth > 0;
+    const ship = layered ? hullImg : wholeShip;
     if (stopped) return;
     const { cw, ch, ctx } = setup(r);
     const S = cw / 1100;
@@ -813,7 +816,16 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
         // loď
         const frameN = Math.floor((tb / 3.6) * 12) % 12;
         const bob = Math.sin(2 * Math.PI * (frameN / 12) + 0.5) * 5;
+        // trup, pak plachty: klidné se při rozjezdu plynule mění v plachty naplněné větrem
         ctx.drawImage(ship, frameN * 640, 0, 640, 512, X(320 + shipDX), Y(0), 640 * k, 512 * k);
+        const windK = layered ? sm(shipV, 25, 190) : 0;
+        ctx.globalAlpha = 1 - windK;
+        if (layered) ctx.drawImage(sailsCalm, frameN * 640, 0, 640, 512, X(320 + shipDX), Y(0), 640 * k, 512 * k);
+        if (windK > 0.01) {
+          ctx.globalAlpha = windK;
+          ctx.drawImage(sailsWind, frameN * 640, 0, 640, 512, X(320 + shipDX), Y(0), 640 * k, 512 * k);
+        }
+        ctx.globalAlpha = 1;
         // pěna a stříkance za lodí
         if (shipV > 8) {
           for (let i = 0; i < 1; i++) {
