@@ -75,6 +75,21 @@ def materials(doll):
     return m
 
 
+def bake_scene_ao():
+    """Ambient occlusion do vrcholových barev všech sítí (kontaktní stíny ve švech a pod oblečením)."""
+    bpy.context.view_layer.update()
+    skip = ("cornea", "eyeball", "lid", "lash", "makeup_face", "wing", "helmet_glass", "visor", "tulle", "lens")
+    objs = [o for o in bpy.data.objects if o.type == "MESH"]
+    tree = bvh_of([o for o in objs if not any(k in o.name for k in ("cornea", "wing", "helmet_glass", "visor", "tulle", "lens", "makeup_face"))])
+    import time
+    t0 = time.time()
+    for o in objs:
+        if any(k in o.name for k in skip):
+            continue
+        bake_ao(o, tree, rays=10, dist=0.045, strength=0.62)
+    print("AO", round(time.time() - t0, 1), "s")
+
+
 def build(did):
     d = dict(legacy.DOLLS[did])
     d["id"] = did
@@ -99,6 +114,7 @@ def build(did):
         fn(root, d, mats)
     mk = node("slot_makeup", root)
     head_mesh("makeup_face", mats["makeup"], mk, off=0.0012)
+    bake_scene_ao()
     os.makedirs(OUTDIR, exist_ok=True)
     path = os.path.join(OUTDIR, f"panenka-{did}.glb")
     kw = dict(filepath=path, export_format="GLB", use_selection=False, export_apply=False, export_yup=True, export_materials="EXPORT", export_morph=True,

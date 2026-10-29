@@ -23,7 +23,7 @@ def nrm_weave(name="weave_n.png", scale=1.0):
     S2 = 256
     y, x = np.mgrid[0:S2, 0:S2] / S2
     h = np.sin(x * 2 * math.pi * 24) * 0.5 + np.sin(y * 2 * math.pi * 24) * 0.5
-    return save_png(normal_from_height(h * 1.0, 0.7 * scale), name)
+    return save_png(normal_from_height(h * 1.0, 0.3 * scale), name)
 
 
 def nrm_ribs(name="ribs_n.png"):

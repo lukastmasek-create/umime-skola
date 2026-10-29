@@ -137,15 +137,25 @@ def build_world():
                 t = k / 8
                 r.append(tuple(0.5 * ((2 * p1[j]) + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t * t + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t ** 3) for j in range(2)))
         r.append(pts[-1])
-        for i in range(len(r) - 1):
-            (x0, y0), (x1, y1) = r[i], r[i + 1]
-            L = math.hypot(x1 - x0, y1 - y0)
-            if L < 1e-4:
-                continue
-            ang = math.atan2(y1 - y0, x1 - x0)
-            cx_p, cy_p = (x0 + x1) / 2, (y0 + y1) / 2
-            box((cx_p, cy_p, z + 0.004), (L + 0.12, width + 0.12, 0.02), M("cesta_o", "#a08c70", roughness=0.95), rot=(0, 0, ang), bevel=0)
-            box((cx_p, cy_p, z + 0.012), (L + 0.1, width, 0.02), M("cesta_s", "#d8c49c", roughness=0.9), rot=(0, 0, ang), bevel=0)
+        # souvislé pásky (obrys a povrch) s jednotnou orientací ploch
+        def ribbon(w, zz, mat, name):
+            pts_ = [r[0]] + [q for k, q in enumerate(r[1:], 1) if math.hypot(q[0] - r[k - 1][0], q[1] - r[k - 1][1]) > 1e-4]
+            left, right = [], []
+            for i, (x, y) in enumerate(pts_):
+                a_ = pts_[max(i - 1, 0)]
+                b_ = pts_[min(i + 1, len(pts_) - 1)]
+                tx, ty = b_[0] - a_[0], b_[1] - a_[1]
+                ln = math.hypot(tx, ty) or 1.0
+                nx, ny = -ty / ln, tx / ln
+                left.append((x + nx * w / 2, y + ny * w / 2, zz))
+                right.append((x - nx * w / 2, y - ny * w / 2, zz))
+            verts = left + right
+            n_ = len(pts_)
+            faces = [(i, n_ + i, n_ + i + 1, i + 1) for i in range(n_ - 1)]
+            return mesh_obj(name, verts, faces, mat, smooth=False)
+
+        ribbon(width + 0.12, z + 0.014, M("cesta_o", "#a08c70", roughness=0.95), "trail_o")
+        ribbon(width, z + 0.022, M("cesta_s", "#d8c49c", roughness=0.9), "trail_s")
         return r
 
     # hlavní ulice (jako na úvodní stránce) a uzly před budovami

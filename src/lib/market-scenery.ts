@@ -300,6 +300,28 @@ export function drawCastle(ctx: CanvasRenderingContext2D, w: number, h: number, 
     ctx.lineTo(dx - 20, dy);
     ctx.fill();
   }
+  // dlážděné nádvoří až do spodního okraje (pod vrstvou Blenderu)
+  const fy = h * 0.78;
+  const floor = ctx.createLinearGradient(0, fy, 0, h);
+  floor.addColorStop(0, night ? "#3a3640" : "#b4a891");
+  floor.addColorStop(1, night ? "#25222c" : "#7d7260");
+  ctx.fillStyle = floor;
+  ctx.fillRect(0, fy, w, h - fy);
+  ctx.strokeStyle = night ? "rgba(10,8,16,0.35)" : "rgba(60,50,38,0.28)";
+  ctx.lineWidth = 1.5;
+  for (let r = 0; r < 6; r++) {
+    const y = fy + (h - fy) * (r / 6) ** 0.9;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(w, y);
+    ctx.stroke();
+    for (let x = (r % 2) * 40; x < w; x += 80 + r * 12) {
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, fy + (h - fy) * ((r + 1) / 6) ** 0.9);
+      ctx.stroke();
+    }
+  }
 }
 
 const lerpN = (a: number, b: number, k: number) => a + (b - a) * k;
