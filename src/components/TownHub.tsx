@@ -7,7 +7,7 @@ import { DailyChallenges } from "@/components/DailyChallenges";
 import { Modal, type Snapshot } from "@/components/ShopView";
 import { readCam, runPath, runPirate, runSpace, type Geo, type Handle, type Pt } from "@/lib/market-cinema";
 import { runWorld } from "@/lib/market-cinema-worlds";
-import { confettiBurst, createEventFx, eventForDay, EVENT_SHOT, runShots, type Handle as ShotHandle, type Shot } from "@/lib/town-scenes";
+import { confettiBurst, createEventFx, createWeatherFx, dayPhaseOf, eventForDay, EVENT_SHOT, PHASE_TINT, runShots, weatherForDay, type Handle as ShotHandle, type Shot } from "@/lib/town-scenes";
 import { TownNpcPanel } from "@/components/TownNpcPanel";
 import { getTownLifeText } from "@/i18n/town-life";
 import { type NpcKey, type NpcSnapshot } from "@/lib/town-npc";
@@ -166,7 +166,8 @@ export function TownHub({ locale }: { locale: Locale }) {
   const [phase, setPhase] = useState<Phase>(null);
   const [gen, setGen] = useState(0);
   const [sound, setSound] = useState(true);
-  const [night, setNight] = useState(false);
+  const [mode, setMode] = useState<"auto" | "day" | "night">("auto");
+  const [hour, setHour] = useState(12);
   const [board, setBoard] = useState(false);
   const [hover, setHover] = useState<string | null>(null);
   const [shop, setShop] = useState<Snapshot | null>(null);
@@ -207,6 +208,12 @@ export function TownHub({ locale }: { locale: Locale }) {
   const openRef = useRef<NpcKey | null>(null);
   const started = useRef(false);
   const eventId = useMemo(() => eventForDay(dayKey()), []);
+  const weather = useMemo(() => (eventForDay(dayKey()) === "rain" ? "rain" : weatherForDay(dayKey())), []);
+  const wxCv = useRef<HTMLCanvasElement>(null);
+  const phaseNow = dayPhaseOf(hour);
+  const night = mode === "night" || (mode === "auto" && phaseNow === "night");
+  const tint = mode === "auto" ? PHASE_TINT[phaseNow] : null;
+  const lampsOn = night || (mode === "auto" && phaseNow === "dusk");
   const eventText = tl.events.find((e) => e.id === eventId) ?? tl.events[0];
 
   useEffect(() => {
@@ -215,7 +222,11 @@ export function TownHub({ locale }: { locale: Locale }) {
   useEffect(() => {
     const id = window.setTimeout(() => {
       setSound(sfxEnabled());
-      if (ls.get("town-night") === "1") setNight(true);
+      const m = ls.get("town-mode");
+      if (m === "day" || m === "night" || m === "auto") setMode(m);
+      else if (ls.get("town-night") === "1") setMode("night");
+      const d = new Date();
+      setHour(d.getHours() + d.getMinutes() / 60);
     }, 0);
     return () => window.clearTimeout(id);
   }, []);
@@ -429,6 +440,35 @@ export function TownHub({ locale }: { locale: Locale }) {
       io.disconnect();
     };
   }, [eventId, gen]);
+  // počasí dne (déšť, sníh, mlha) na samostatném plátně nad městečkem
+  useEffect(() => {
+    const canvas = wxCv.current;
+    const bx = box.current;
+    if (!canvas || !bx || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const fx = createWeatherFx(canvas, weather);
+    const size = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      canvas.width = Math.round(bx.clientWidth * dpr);
+      canvas.height = Math.round(bx.clientHeight * dpr);
+    };
+    size();
+    const ro = new ResizeObserver(size);
+    ro.observe(bx);
+    let raf = 0;
+    let visible = true;
+    const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
+    io.observe(bx);
+    const frame = (now: number) => {
+      raf = requestAnimationFrame(frame);
+      if (visible) fx.draw(now, 0.85);
+    };
+    raf = requestAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      io.disconnect();
+    };
+  }, [weather, gen]);
   useEffect(() => {
     const base = eventId === "fireworks" ? (night ? 0.7 : 0) : (AMBIENT_FX[eventId] ?? 0);
     if (!cine) fxStrength.current = base;
@@ -657,10 +697,9 @@ export function TownHub({ locale }: { locale: Locale }) {
     setSfxEnabled(next);
   }
   function toggleNight() {
-    setNight((v) => {
-      ls.set("town-night", v ? "0" : "1");
-      return !v;
-    });
+    const next = mode === "auto" ? "day" : mode === "day" ? "night" : "auto";
+    setMode(next);
+    ls.set("town-mode", next);
   }
   function talkTo(key: NpcKey) {
     if (phase || cine) return;
@@ -812,7 +851,7 @@ export function TownHub({ locale }: { locale: Locale }) {
               <span ref={heroSpr} aria-hidden className="town-sprite block h-full w-full" style={{ ["--n" as string]: 24, backgroundImage: "url(/home/mesto/hrdina-stoji.webp)", animationDuration: "3s" }} />
             </div>
             {/* noc: světla lamp */}
-            {dark &&
+            {lampsOn &&
               HUB.lampy.map((p, i) => (
                 <i key={i} aria-hidden className="hub-lamp pointer-events-none absolute" style={{ ...at(p), animationDelay: `${-(i % 5) * 0.6}s` }} />
               ))}
@@ -859,6 +898,12 @@ export function TownHub({ locale }: { locale: Locale }) {
           </div>
 
           {dark && <div aria-hidden className="pointer-events-none absolute inset-0 bg-[#0b0925]/25" />}
+          {tint && <div aria-hidden className="pointer-events-none absolute inset-0 z-[12]" style={{ background: tint, transition: "opacity 1s" }} />}
+          <canvas ref={wxCv} aria-hidden className="pointer-events-none absolute inset-0 z-[13] h-full w-full" />
+          <div className="pointer-events-none absolute left-3 top-14 z-20 flex items-center gap-2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-sm font-extrabold">
+            <span aria-hidden>{{ clear: "☀️", cloudy: "⛅", rain: "🌧️", fog: "🌫️", snow: "❄️" }[weather]}</span>
+            {tt.weather[weather]} · {tt.phases[phaseNow]}
+          </div>
           <div className="pointer-events-none absolute left-3 top-3 z-20 flex items-center gap-2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-sm font-extrabold">
             🎁 {left > 0 ? tt.collect.left.replace("{n}", String(left)) : "✓"}
           </div>
@@ -902,9 +947,9 @@ export function TownHub({ locale }: { locale: Locale }) {
               <span aria-hidden>🎬</span>
               <span className="sr-only">{tl.ui.replay}</span>
             </button>
-            <button type="button" onClick={toggleNight} aria-pressed={night} title={night ? tt.day : tt.night} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110">
-              <span aria-hidden>{night ? "☀️" : "🌙"}</span>
-              <span className="sr-only">{night ? tt.day : tt.night}</span>
+            <button type="button" onClick={toggleNight} title={mode === "auto" ? tt.auto : mode === "day" ? tt.day : tt.night} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110">
+              <span aria-hidden>{mode === "auto" ? "🕒" : mode === "day" ? "☀️" : "🌙"}</span>
+              <span className="sr-only">{mode === "auto" ? tt.auto : mode === "day" ? tt.day : tt.night}</span>
             </button>
             <button type="button" onClick={toggleSound} aria-pressed={sound} title={sound ? st.soundOn : st.soundOff} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110">
               <span aria-hidden>{sound ? "🔊" : "🔇"}</span>
