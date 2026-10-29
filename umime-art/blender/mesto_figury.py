@@ -107,7 +107,7 @@ def person(skin="#ffd5a8", top="#ff5a3c", bottom="#2f3c6e", shoes="#3a2a22", hai
     put(sphere((0, 0, 0), 0.03, M("usta", "#b8383a", 0.5), scale=(0.3, 1.2, 0.4), seg=10, rings=8), head, (0.19, 0, 0.0))
     # vlasy / klobouky
     hm = M("vlasy" + hair, hair, 0.7)
-    if hat is None or hat in ("cap", "bun", "kerchief", "tricorn", "captain"):
+    if hat is None or hat in ("cap", "bun", "kerchief", "tricorn", "captain", "crown", "wizard", "diver", "flower"):
         put(sphere((0, 0, 0), 0.205, hm, scale=(1.0, 1.0, 0.8), seg=24, rings=14), head, (-0.06, 0, 0.17))
         put(sphere((0, 0, 0), 0.19, hm, scale=(0.7, 1.0, 0.9), seg=16, rings=10), head, (-0.14, 0, 0.05))
     if hat == "cap":
@@ -160,6 +160,38 @@ def person(skin="#ffd5a8", top="#ff5a3c", bottom="#2f3c6e", shoes="#3a2a22", hai
         for sy in (-1, 1):
             put(bar((0, 0, 0), (0.0, sy * 0.06, 0.2), 0.012, M("anten_k", "#c9ced8", 0.4, 0.6), verts=6), head, (0.0, sy * 0.08, 0.26))
             put(sphere((0, 0, 0), 0.05, am, seg=10, rings=8), head, (0.0, sy * 0.14, 0.47))
+    elif hat == "wizard":
+        hc = M("kouzelnik" + hat_c, hat_c, 0.55)
+        put(cyl((0, 0, 0), 0.3, 0.03, hc, verts=28), head, (0, 0, 0.2))
+        put(cone((0, 0, 0), 0.2, 0.0, 0.55, hc, verts=24), head, (-0.02, 0, 0.5))
+        put(torus((0, 0, 0), 0.2, 0.014, M("kouzelnik_p", "#ffd24d", 0.3, 0.8)), head, (0, 0, 0.24))
+        put(sphere((0, 0, 0), 0.05, glow("kouzelnik_h", "#ffe58a", 4.0), seg=8, rings=6), head, (0.05, 0, 0.36))
+    elif hat == "crown":
+        gm = M("koruna", "#ffc933", 0.25, 0.9)
+        put(torus((0, 0, 0), 0.17, 0.035, gm), head, (0, 0, 0.27))
+        for k in range(5):
+            a = k * math.tau / 5
+            put(cone((0, 0, 0), 0.04, 0.0, 0.11, gm, verts=8), head, (0.17 * math.cos(a), 0.17 * math.sin(a), 0.34))
+            put(sphere((0, 0, 0), 0.022, M("koruna_k" + str(k % 2), ["#e0453a", "#46a6ff"][k % 2], 0.2), seg=8, rings=6), head, (0.17 * math.cos(a), 0.17 * math.sin(a), 0.4))
+    elif hat == "diver":
+        gm = bpy.data.materials.get("helma_sklo")
+        if gm is None:
+            gm = bpy.data.materials.new("helma_sklo")
+            gm.use_nodes = True
+            gb = gm.node_tree.nodes["Principled BSDF"]
+            gb.inputs["Base Color"].default_value = hex_rgba("#cfeaff")
+            gb.inputs["Roughness"].default_value = 0.05
+            for k_, v_ in (("Transmission Weight", 0.9), ("Alpha", 0.3)):
+                if k_ in gb.inputs:
+                    gb.inputs[k_].default_value = v_
+        put(sphere((0, 0, 0), 0.33, gm, scale=(1.0, 1.0, 1.05), seg=28, rings=18), head, (0, 0, 0.1))
+        put(torus((0, 0, 0), 0.31, 0.04, M("potapec_k" + hat_c, hat_c, 0.35, 0.7), rot=(0, 0, 0)), head, (0, 0, -0.16))
+        put(sphere((0, 0, 0), 0.05, M("potapec_v", "#c9a23a", 0.3, 0.8), seg=8, rings=6), head, (-0.3, 0, 0.0))
+    elif hat == "flower":
+        for k in range(5):
+            a = k * math.tau / 5
+            put(sphere((0, 0, 0), 0.055, M("kvetH" + str(k % 2), [hat_c, "#ffffff"][k % 2], 0.5), scale=(1, 1, 0.5), seg=8, rings=6), head, (-0.05 + 0.1 * math.cos(a), 0.1 * math.sin(a), 0.3))
+        put(sphere((0, 0, 0), 0.04, M("kvetS", "#ffd24d", 0.5), seg=8, rings=6), head, (-0.05, 0, 0.31))
     elif hat == "visor":
         put(box((0, 0, 0), (0.1, 0.4, 0.09), M("vizorS" + hat_c, hat_c, 0.2), bevel=0.02), head, (0.17, 0, 0.12))
     if beard:

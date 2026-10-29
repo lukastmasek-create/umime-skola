@@ -5,7 +5,7 @@ import { TITLES } from "@/lib/titles";
 // Ozdoby profilu, které se kupují v obchodě: rámečky kolem avataru a pozadí profilu.
 // Nové ozdoby přidává vývojář tady a v src/lib/shop.ts (cena a názvy).
 
-export const FRAME_IDS = ["gold", "rainbow", "neon", "leaf", "stars", "fire"] as const;
+export const FRAME_IDS = ["gold", "rainbow", "neon", "leaf", "stars", "fire", "vine", "royal", "coral"] as const;
 export type FrameId = (typeof FRAME_IDS)[number];
 
 export function isFrameId(value: unknown): value is FrameId {
@@ -30,6 +30,16 @@ export const BANNERS: Record<string, string> = {
     "radial-gradient(circle at 78% 22%, #fff3c4 0 6%, transparent 7%), radial-gradient(1.5px 1.5px at 20% 25%, #fff, transparent), radial-gradient(1.5px 1.5px at 45% 15%, #fff, transparent), linear-gradient(180deg, #0e1a3d 0%, #1d3a7a 62%, #0a2a50 100%)",
   storm:
     "radial-gradient(circle at 30% 20%, rgba(255,255,255,0.18), transparent 35%), linear-gradient(170deg, #4a5878 0%, #2a3350 55%, #141b30 100%)",
+  "forest-glade":
+    "radial-gradient(circle at 30% 20%, rgba(255,244,170,0.55), transparent 35%), radial-gradient(circle at 70% 70%, rgba(200,255,120,0.35), transparent 30%), repeating-linear-gradient(100deg, rgba(10,60,30,0.28) 0 12px, transparent 12px 40px), linear-gradient(180deg, #7fd98a 0%, #2f8f55 55%, #0f3d2a 100%)",
+  "castle-day":
+    "radial-gradient(circle at 80% 18%, #fff4c0 0 5%, transparent 6%), linear-gradient(180deg, #7cc2ff 0%, #cfe8ff 45%, #8fb87a 46%, #5a9a58 100%), #8fb87a",
+  "castle-night":
+    "radial-gradient(circle at 20% 20%, #fff3c4 0 5%, transparent 6%), radial-gradient(1.5px 1.5px at 60% 18%, #fff, transparent), radial-gradient(1.5px 1.5px at 85% 30%, #fff, transparent), linear-gradient(180deg, #121a44 0%, #2a2f66 55%, #3a2a3a 56%, #1c1424 100%)",
+  "deep-sea":
+    "radial-gradient(ellipse at 30% 0%, rgba(210,250,255,0.55), transparent 45%), radial-gradient(circle at 75% 60%, rgba(255,255,255,0.18), transparent 12%), linear-gradient(180deg, #5fd0ee 0%, #1f8ccc 45%, #0a2c6a 100%)",
+  jellyfish:
+    "radial-gradient(circle at 30% 40%, rgba(255,150,230,0.7), transparent 22%), radial-gradient(circle at 70% 30%, rgba(120,240,255,0.65), transparent 20%), radial-gradient(circle at 55% 75%, rgba(255,230,120,0.5), transparent 18%), linear-gradient(180deg, #0d2a5a 0%, #06122e 100%)",
   snow: "radial-gradient(circle at 25% 25%, #ffffff, transparent 30%), radial-gradient(circle at 70% 60%, #ffffff, transparent 25%), linear-gradient(160deg, #cfe9ff 0%, #8fc3f0 100%)",
 };
 

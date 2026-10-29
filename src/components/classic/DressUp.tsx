@@ -130,7 +130,7 @@ export function DressUp({ t, questions, backHref }: { t: ClassicText; questions:
                   <button type="button" aria-label="‹" onClick={() => setPreview((n) => (n + DOLLS.length - 1) % DOLLS.length)} className="btn-bouncy btn-secondary h-12 w-12 shrink-0 text-2xl">
                     ‹
                   </button>
-                  <div className="h-96 flex-1 rounded-2xl border-2 border-[var(--edge)]" style={{ background: `linear-gradient(180deg, ${p.bg[0]}, ${p.bg[1]})` }}>
+                  <div className="h-[32rem] flex-1 rounded-2xl border-2 border-[var(--edge)]" style={{ background: `linear-gradient(180deg, ${p.bg[0]}, ${p.bg[1]})` }}>
                     <DollStage key={p.id} doll={p} worn={{}} mood="neutral" event={null} label={name} className="h-full w-full" />
                   </div>
                   <button type="button" aria-label="›" onClick={() => setPreview((n) => (n + 1) % DOLLS.length)} className="btn-bouncy btn-secondary h-12 w-12 shrink-0 text-2xl">
@@ -167,7 +167,7 @@ export function DressUp({ t, questions, backHref }: { t: ClassicText; questions:
       ) : over ? (
         <div className="flex flex-col gap-4">
           <div className="mx-auto w-full max-w-xs rounded-2xl border-2 border-[var(--edge)] p-3" style={{ background: `linear-gradient(180deg, ${doll.bg[0]}, ${doll.bg[1]})` }}>
-            <DollStage doll={doll} worn={worn} mood={filled >= SLOT_COUNT ? "happy" : "neutral"} event={event} label={d.dressed} className="h-96 w-full" />
+            <DollStage doll={doll} worn={worn} mood={filled >= SLOT_COUNT ? "happy" : "neutral"} event={event} label={d.dressed} className="h-[32rem] w-full" />
           </div>
           <FinishCard
             t={t}
@@ -183,10 +183,10 @@ export function DressUp({ t, questions, backHref }: { t: ClassicText; questions:
           />
         </div>
       ) : (
-        <div className="grid gap-5 md:grid-cols-[minmax(0,15rem)_minmax(0,1fr)]">
+        <div className="grid gap-5 md:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
           <div className="flex flex-col gap-2">
             <div className="rounded-2xl border-2 border-[var(--edge)] p-2" style={{ background: `linear-gradient(180deg, ${doll.bg[0]}, ${doll.bg[1]})` }}>
-              <DollStage doll={doll} worn={worn} mood={mood} event={event} label={d.dressed} className="h-80 w-full" />
+              <DollStage doll={doll} worn={worn} mood={mood} event={event} label={d.dressed} className="h-[30rem] w-full" />
             </div>
             <ul className="flex flex-wrap justify-center gap-1.5" aria-label={d.dressed}>
               {SLOTS.map((s) => (

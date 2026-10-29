@@ -24,8 +24,10 @@ export type Geo = {
   toBox: (p: Pt) => Pt; // souřadnice scény (0..1) → zlomky boxu (0..1)
   rocket: Pt;
   start: Pt;
-  road: Pt[]; // cesta od schodů doprava
-  fig: number; // šířka snímku hrdiny v zlomku šířky boxu
+  road?: Pt[]; // cesta od schodů doprava (úvodní městečko)
+  walk?: Pt[]; // celá cesta hrdiny ve scéně (hub), má přednost před `road`
+  rocketW?: number; // šířka sprite rakety jako zlomek šířky boxu (výchozí 0,15)
+  fig?: number; // šířka snímku hrdiny v zlomku šířky boxu
 };
 export type Handle = { stop: () => void; skip: () => void };
 
@@ -50,6 +52,11 @@ function load(src: string): Promise<HTMLImageElement> {
     im.onerror = () => res(im);
     im.src = src;
   });
+}
+
+export function readCam(el: HTMLElement): { x: number; y: number; s: number } {
+  const m = /translate\(\s*(-?[\d.]+)px,\s*(-?[\d.]+)px\)\s*scale\(\s*(-?[\d.]+)\)/.exec(el.style.transform || "");
+  return m ? { x: parseFloat(m[1]), y: parseFloat(m[2]), s: parseFloat(m[3]) } : { x: 0, y: 0, s: 1 };
 }
 
 function setup(r: Refs) {
@@ -176,7 +183,7 @@ export function runSpace(r: Refs, g: Geo, onEnd: () => void): Handle {
     const { cw, ch, ctx } = setup(r);
     const S = cw / 1100; // měřítko podle šířky (návrh pro 1100 px)
     const [ru, rv] = g.toBox(g.rocket);
-    const fw = 0.15 * cw;
+    const fw = (g.rocketW ?? 0.15) * cw;
     const fh = fw * 0.6;
     const pivot = { x: ru * cw + 0.106 * fw, y: rv * ch - 0.12 * fh };
     const half = 0.356 * fw;
@@ -193,6 +200,7 @@ export function runSpace(r: Refs, g: Geo, onEnd: () => void): Handle {
     r.cam.style.willChange = "transform";
     r.hero.style.transition = "none";
     bars(r, ch, 0);
+    const cam0 = readCam(r.cam);
     let fired = 0;
     let last = performance.now();
     const t0 = last;
@@ -279,7 +287,8 @@ export function runSpace(r: Refs, g: Geo, onEnd: () => void): Handle {
       const py = groundY;
       const tx = (1 - zoom) * px + jx * 0.5;
       const ty = (1 - zoom) * py + shift + jy * 0.5;
-      r.cam.style.transform = `translate(${tx}px, ${ty}px) scale(${zoom})`;
+      const bl = ease(clamp(t / 0.8));
+      r.cam.style.transform = `translate(${lerp(cam0.x, tx, bl)}px, ${lerp(cam0.y, ty, bl)}px) scale(${lerp(cam0.s, zoom, bl)})`;
       r.sky.style.opacity = String(1 - sm(alt, 0.5, 1.9));
       r.bgDark.style.opacity = String(sm(alt, 0.45, 2.7));
       bars(r, ch, sm(t, 0, 0.6) * (1 - sm(t, T_END - 0.4, T_END)));
@@ -498,7 +507,7 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
     bars(r, ch, 0);
     // ---- fáze A: cesta po městečku ke schodům
     const [su, sv] = g.toBox(g.start);
-    const roadPx = g.road.map((p) => g.toBox(p)).map(([u, v]) => ({ x: u * cw, y: v * ch }));
+    const roadPx = (g.road ?? []).map((p) => g.toBox(p)).map(([u, v]) => ({ x: u * cw, y: v * ch }));
     let ci = 0;
     let bd = 1e9;
     roadPx.forEach((p, i) => {
@@ -509,9 +518,16 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
       }
     });
     const path: { x: number; y: number }[] = [{ x: su * cw, y: sv * ch }];
-    for (let i = ci; i >= 0; i--) path.push(roadPx[i]);
-    const endP = roadPx[0];
-    path.push({ x: endP.x - 0.012 * cw, y: endP.y + 0.05 * ch });
+    if (g.walk && g.walk.length) {
+      for (const p of g.walk) {
+        const [pu, pv] = g.toBox(p);
+        path.push({ x: pu * cw, y: pv * ch });
+      }
+    } else {
+      for (let i = ci; i >= 0; i--) path.push(roadPx[i]);
+      const endP = roadPx[0];
+      path.push({ x: endP.x - 0.012 * cw, y: endP.y + 0.05 * ch });
+    }
     const cum = [0];
     for (let i = 1; i < path.length; i++) cum.push(cum[i - 1] + Math.hypot(path[i].x - path[i - 1].x, path[i].y - path[i - 1].y));
     const total = cum[cum.length - 1];
@@ -796,7 +812,7 @@ function drawCurtain(ctx: CanvasRenderingContext2D, w: number, h: number, t: num
 
 // ---------------------------------------------------------------------------------------------- vstup do budovy
 // Hrdina dojde po cestě ke dveřím vybrané budovy, kamera se přiblíží a obraz se rozsvítí do bíla.
-export function runWalk(r: Pick<Refs, "box" | "cam" | "cv" | "hero" | "heroSpr">, g: Geo, target: Pt, onEnd: () => void): Handle {
+export function runPath(r: Pick<Refs, "box" | "cam" | "cv" | "hero" | "heroSpr">, g: Geo, onEnd: () => void, flash = true): Handle {
   let stopped = false;
   let raf = 0;
   const finish = () => {
@@ -809,8 +825,8 @@ export function runWalk(r: Pick<Refs, "box" | "cam" | "cv" | "hero" | "heroSpr">
   r.cam.style.transformOrigin = "0 0";
   r.cam.style.willChange = "transform";
   const [su, sv] = g.toBox(g.start);
-  const [tu, tv] = g.toBox(target);
-  const roadPx = g.road.map((p) => g.toBox(p)).map(([u, v]) => ({ x: u * cw, y: v * ch }));
+  const [tu, tv] = g.toBox(g.walk && g.walk.length ? g.walk[g.walk.length - 1] : g.start);
+  const roadPx = (g.road ?? []).map((p) => g.toBox(p)).map(([u, v]) => ({ x: u * cw, y: v * ch }));
   const nearest = (x: number, y: number) => {
     let best = 0;
     let bd = 1e9;
@@ -823,12 +839,19 @@ export function runWalk(r: Pick<Refs, "box" | "cam" | "cv" | "hero" | "heroSpr">
     });
     return best;
   };
-  const a = nearest(su * cw, sv * ch);
-  const b = nearest(tu * cw, tv * ch);
   const path: { x: number; y: number }[] = [{ x: su * cw, y: sv * ch }];
-  if (a <= b) for (let i = a; i <= b; i++) path.push(roadPx[i]);
-  else for (let i = a; i >= b; i--) path.push(roadPx[i]);
-  path.push({ x: tu * cw, y: tv * ch });
+  if (g.walk && g.walk.length) {
+    for (const p of g.walk) {
+      const [pu, pv] = g.toBox(p);
+      path.push({ x: pu * cw, y: pv * ch });
+    }
+  } else {
+    const a = nearest(su * cw, sv * ch);
+    const b = nearest(tu * cw, tv * ch);
+    if (a <= b) for (let i = a; i <= b; i++) path.push(roadPx[i]);
+    else for (let i = a; i >= b; i--) path.push(roadPx[i]);
+    path.push({ x: tu * cw, y: tv * ch });
+  }
   const cum = [0];
   for (let i = 1; i < path.length; i++) cum.push(cum[i - 1] + Math.hypot(path[i].x - path[i - 1].x, path[i].y - path[i - 1].y));
   const total = cum[cum.length - 1];
@@ -872,12 +895,226 @@ export function runWalk(r: Pick<Refs, "box" | "cam" | "cv" | "hero" | "heroSpr">
     zy = lerp(zy, wantY, 1 - Math.exp(-6 * dt));
     r.cam.style.transform = `translate(${zx}px, ${zy}px) scale(${zoom})`;
     ctx.clearRect(0, 0, cw, ch);
-    const flash = sm(t, T - 0.1, T + 0.35);
-    if (flash > 0) {
-      ctx.fillStyle = `rgba(255,255,255,${flash})`;
+    const fl = flash ? sm(t, T - 0.1, T + 0.35) : 0;
+    if (fl > 0) {
+      ctx.fillStyle = `rgba(255,255,255,${fl})`;
       ctx.fillRect(0, 0, cw, ch);
     }
-    if (t >= T + 0.4) {
+    if (t >= T + (flash ? 0.4 : 0.05)) {
+      finish();
+      return;
+    }
+    raf = requestAnimationFrame(frame);
+  };
+  raf = requestAnimationFrame(frame);
+  return {
+    stop: () => {
+      stopped = true;
+      cancelAnimationFrame(raf);
+    },
+    skip: finish,
+  };
+}
+
+// ---------------------------------------------------------------------------------------------- vstup do světa
+// Hrdina dojde ke vchodu (zářící dveře lesa, brána hradu, potápěčská věž s lagunou) a obraz se rozplyne v barvě světa:
+// les zazáří a rozsvítí se, hradní brána pohltí obraz tmou, v laguně se hrdina vrhne do vody a obraz zaplaví bubliny.
+export function runPortal(r: Pick<Refs, "box" | "cam" | "cv" | "hero" | "heroSpr">, g: Geo, kind: "forest" | "castle" | "sea", onEnd: () => void): Handle {
+  let stopped = false;
+  let raf = 0;
+  const finish = () => {
+    if (stopped) return;
+    stopped = true;
+    cancelAnimationFrame(raf);
+    onEnd();
+  };
+  const { cw, ch, ctx } = setup(r as Refs);
+  r.cam.style.transformOrigin = "0 0";
+  r.cam.style.willChange = "transform";
+  const cam0 = readCam(r.cam);
+  const [su, sv] = g.toBox(g.start);
+  const path: { x: number; y: number }[] = [{ x: su * cw, y: sv * ch }];
+  for (const p of g.walk ?? []) {
+    const [pu, pv] = g.toBox(p);
+    path.push({ x: pu * cw, y: pv * ch });
+  }
+  const cum = [0];
+  for (let i = 1; i < path.length; i++) cum.push(cum[i - 1] + Math.hypot(path[i].x - path[i - 1].x, path[i].y - path[i - 1].y));
+  const total = Math.max(1, cum[cum.length - 1]);
+  const T = Math.max(1.2, Math.min(4.2, total / (0.2 * cw)));
+  const TE = kind === "sea" ? 2.2 : 1.7;
+  const at = (d: number) => {
+    let i = 1;
+    while (i < cum.length - 1 && cum[i] < d) i++;
+    const k = clamp((d - cum[i - 1]) / Math.max(1e-6, cum[i] - cum[i - 1]));
+    return { x: lerp(path[i - 1].x, path[i].x, k), y: lerp(path[i - 1].y, path[i].y, k), dir: path[i].x - path[i - 1].x };
+  };
+  const door = path[path.length - 1];
+  const heroState = { cur: "idle" };
+  const sparks: { x: number; y: number; vx: number; vy: number; age: number; life: number; r: number }[] = [];
+  let last = performance.now();
+  const t0 = last;
+  let stepAcc = 0;
+  let flip = false;
+  let zx = cam0.x;
+  let zy = cam0.y;
+  let zs = cam0.s;
+  let sfxDone = 0;
+  const frame = (now: number) => {
+    raf = 0;
+    if (stopped) return;
+    const t = (now - t0) / 1000;
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    const walking = t < T;
+    const d = at(Math.min(1, t / T) * total);
+    if (Math.abs(d.dir) > 0.5) flip = d.dir < 0;
+    const tau = Math.max(0, t - T);
+    let hx = d.x;
+    let hy = d.y;
+    let hsc = 1;
+    let hop = 1;
+    if (!walking) {
+      if (kind === "sea") {
+        // skok z věže do laguny: oblouk dopředu a dolů
+        const u = clamp(tau / 0.7);
+        hx = door.x + u * 0.03 * cw;
+        hy = door.y - Math.sin(u * Math.PI) * 0.1 * ch + u * 0.09 * ch;
+        hop = u < 1 ? 1 : 0;
+      } else {
+        const u = clamp(tau / 0.6);
+        hsc = 1 - 0.35 * u;
+        hop = 1 - u;
+        hy = door.y - u * 0.01 * ch;
+      }
+    }
+    heroSprite(r as Refs, walking ? "walk" : "idle", heroState);
+    setHero(r as Refs, hx, hy, flip, hsc, hop);
+    if (walking) {
+      stepAcc += dt;
+      if (stepAcc > 0.27) {
+        stepAcc = 0;
+        sfx.step();
+      }
+    }
+    if (sfxDone === 0 && t > T) {
+      sfxDone = 1;
+      if (kind === "sea") sfx.splash(1.6);
+      else if (kind === "forest") sfx.dock();
+      else sfx.horn();
+    }
+    // kamera: sleduje hrdinu a při vstupu se přiblíží k vchodu
+    const zoom = 1 + 0.9 * ease(clamp(t / (T + 0.3))) + (walking ? 0 : 0.35 * ease(clamp(tau / TE)));
+    const focus = walking ? d : { x: door.x, y: door.y - 0.04 * ch };
+    const wantX = clamp(cw / 2 - zoom * focus.x, cw - zoom * cw, 0);
+    const wantY = clamp(ch * 0.6 - zoom * focus.y, ch - zoom * ch, 0);
+    const k = 1 - Math.exp(-5 * dt);
+    zx = lerp(zx, wantX, k);
+    zy = lerp(zy, wantY, k);
+    zs = lerp(zs, zoom, k);
+    r.cam.style.transform = `translate(${zx}px, ${zy}px) scale(${zs})`;
+    // efekty nad scénou
+    ctx.clearRect(0, 0, cw, ch);
+    const sx = zx + zs * door.x;
+    const sy = zy + zs * (door.y - 0.035 * ch);
+    if (!walking) {
+      const u = clamp(tau / TE);
+      const R = Math.max(cw, ch) * 1.3;
+      if (kind === "forest") {
+        ctx.globalCompositeOperation = "lighter";
+        const gr = ctx.createRadialGradient(sx, sy, 0, sx, sy, Math.max(1, R * ease(u)));
+        gr.addColorStop(0, "rgba(255,250,190,1)");
+        gr.addColorStop(0.5, "rgba(200,255,140,0.8)");
+        gr.addColorStop(1, "rgba(120,220,120,0)");
+        ctx.fillStyle = gr;
+        ctx.fillRect(0, 0, cw, ch);
+        ctx.globalCompositeOperation = "source-over";
+        if (Math.random() < 0.9 && u < 0.8) sparks.push({ x: sx + (Math.random() - 0.5) * 30, y: sy + (Math.random() - 0.5) * 30, vx: (Math.random() - 0.5) * 220, vy: -60 - Math.random() * 200, age: 0, life: 0.9 + Math.random() * 0.7, r: 1.5 + Math.random() * 3 });
+        const fade = sm(u, 0.75, 1);
+        if (fade > 0) {
+          ctx.fillStyle = `rgba(232,255,176,${fade})`;
+          ctx.fillRect(0, 0, cw, ch);
+        }
+      } else if (kind === "castle") {
+        // brána pohltí obraz: od středu se šíří tma, po stranách blikají pochodně
+        ctx.globalCompositeOperation = "lighter";
+        for (const dx of [-0.07, 0.07]) {
+          const fx = sx + dx * cw * zs;
+          const fl = 0.6 + 0.4 * Math.random();
+          const g2 = ctx.createRadialGradient(fx, sy, 0, fx, sy, 80 * zs);
+          g2.addColorStop(0, `rgba(255,170,70,${0.55 * fl * (1 - u)})`);
+          g2.addColorStop(1, "rgba(255,170,70,0)");
+          ctx.fillStyle = g2;
+          ctx.fillRect(fx - 90 * zs, sy - 90 * zs, 180 * zs, 180 * zs);
+        }
+        ctx.globalCompositeOperation = "source-over";
+        const g3 = ctx.createRadialGradient(sx, sy, 0, sx, sy, Math.max(1, R * ease(u)));
+        g3.addColorStop(0, "rgba(20,14,26,1)");
+        g3.addColorStop(0.7, "rgba(20,14,26,0.97)");
+        g3.addColorStop(1, "rgba(20,14,26,0)");
+        ctx.fillStyle = g3;
+        ctx.fillRect(0, 0, cw, ch);
+        const fade = sm(u, 0.8, 1);
+        if (fade > 0) {
+          ctx.fillStyle = `rgba(26,16,32,${fade})`;
+          ctx.fillRect(0, 0, cw, ch);
+        }
+      } else {
+        const wy = door.y + 0.09 * ch;
+        const wx = door.x + 0.03 * cw;
+        const swx = zx + zs * wx;
+        const swy = zy + zs * wy;
+        if (tau > 0.7 && tau < 0.75) {
+          for (let i = 0; i < 40; i++) sparks.push({ x: swx, y: swy, vx: (Math.random() - 0.5) * 360, vy: -150 - Math.random() * 360, age: 0, life: 0.8 + Math.random() * 0.6, r: 2 + Math.random() * 3.5 });
+        }
+        // kruhy na hladině
+        for (let i = 0; i < 3; i++) {
+          const ua = clamp((tau - 0.7 - i * 0.18) / 1.0);
+          if (ua <= 0 || ua >= 1) continue;
+          ctx.strokeStyle = `rgba(255,255,255,${0.8 * (1 - ua)})`;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.ellipse(swx, swy, 20 * zs + ua * 160 * zs, 6 * zs + ua * 40 * zs, 0, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        // vodní závoj stoupá odspodu
+        const fl = sm(tau, 0.9, 2.1);
+        if (fl > 0) {
+          const gr = ctx.createLinearGradient(0, 0, 0, ch);
+          gr.addColorStop(0, `rgba(95,208,238,${fl})`);
+          gr.addColorStop(1, `rgba(20,110,190,${fl})`);
+          ctx.fillStyle = gr;
+          ctx.fillRect(0, 0, cw, ch);
+          ctx.strokeStyle = `rgba(235,255,255,${0.7 * fl})`;
+          ctx.lineWidth = 1.6;
+          for (let i = 0; i < 26; i++) {
+            const bx = rnd(i + 3) * cw + Math.sin(t * 2 + i) * 6;
+            const by = ch * (1.1 - ((t * (0.25 + rnd(i) * 0.35) + rnd(i + 9)) % 1.2));
+            ctx.beginPath();
+            ctx.arc(bx, by, (3 + rnd(i + 50) * 7) * (cw / 1100), 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        }
+      }
+      // jiskry, kapky
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const p = sparks[i];
+        p.age += dt;
+        if (p.age > p.life) {
+          sparks.splice(i, 1);
+          continue;
+        }
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        if (kind === "sea") p.vy += 700 * dt;
+        const a = 1 - p.age / p.life;
+        ctx.fillStyle = kind === "sea" ? `rgba(255,255,255,${a})` : `rgba(255,248,170,${a})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r * a + 0.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    if (tau >= TE) {
       finish();
       return;
     }
