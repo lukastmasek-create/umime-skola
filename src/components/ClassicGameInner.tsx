@@ -5,6 +5,7 @@ import type { Locale } from "@/i18n/config";
 import type { GameQuestion } from "@/i18n/game";
 import type { ClassicSlug } from "@/lib/games";
 import { Blitz } from "./classic/Blitz";
+import { DressUp } from "./classic/DressUp";
 import { Fill } from "./classic/Fill";
 import { Hangman } from "./classic/Hangman";
 import { Matching } from "./classic/Matching";
@@ -51,5 +52,7 @@ export function ClassicGameInner({
       return <Blitz t={t} questions={questions} difficulty={difficulty} backHref={backHref} />;
     case "poklad":
       return <Treasure t={t} questions={questions} difficulty={difficulty} backHref={backHref} />;
+    case "oblekani":
+      return <DressUp t={t} questions={questions} backHref={backHref} />;
   }
 }
