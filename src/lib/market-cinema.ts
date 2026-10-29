@@ -187,7 +187,7 @@ export function runSpace(r: Refs, g: Geo, onEnd: () => void): Handle {
     const heroState = { cur: "idle" };
     const parts: Particle[] = [];
     const stars = Array.from({ length: 260 }, (_, i) => ({ x: rnd(i * 3 + 1), y: rnd(i * 7 + 2), par: 0.2 + rnd(i * 5 + 3) * 0.8, size: 0.6 + rnd(i) * 1.6, ph: rnd(i + 9) * 6 }));
-    const clouds = Array.from({ length: 34 }, (_, i) => ({ x: rnd(i * 11 + 4) * 1.2 - 0.1, y: -(0.15 + rnd(i * 13 + 5) * 1.9), r: (60 + rnd(i * 17 + 6) * 130) * S, par: 0.9 + rnd(i * 19) * 0.5 }));
+    const clouds = Array.from({ length: 34 }, (_, i) => ({ x: rnd(i * 11 + 4) * 1.2 - 0.1, y: -(0.15 + rnd(i * 13 + 5) * 1.9), r: (40 + rnd(i * 17 + 6) * 90) * S, par: 0.9 + rnd(i * 19) * 0.5 }));
     r.rocket.style.transformOrigin = "60.6% 50%";
     r.cam.style.transformOrigin = "0 0";
     r.cam.style.willChange = "transform";
@@ -327,7 +327,7 @@ export function runSpace(r: Refs, g: Geo, onEnd: () => void): Handle {
           const sy = (((s.y * ch + shift * s.par * 0.55) % ch) + ch) % ch;
           const sx = s.x * cw;
           const tw = 0.5 + 0.5 * Math.sin(t * 2 + s.ph);
-          const len = Math.min(120 * S, vel * s.par * 0.045);
+          const len = Math.min(48 * S, vel * s.par * 0.02);
           ctx.strokeStyle = `rgba(255,255,255,${night * (0.35 + tw * 0.5) * (0.5 + s.par * 0.5)})`;
           ctx.lineWidth = s.size;
           ctx.beginPath();
@@ -369,7 +369,7 @@ export function runSpace(r: Refs, g: Geo, onEnd: () => void): Handle {
         for (const c of clouds) {
           const sy = c.y * ch + shift * c.par;
           if (sy < -c.r * 2 || sy > ch + c.r * 2) continue;
-          cloud(ctx, c.x * cw, sy, c.r, 0.85 * cloudFade, 0.95);
+          cloud(ctx, c.x * cw, sy, c.r, 0.55 * cloudFade, 0.95);
         }
       }
       drawParticles(ctx, parts, tx, ty, zoom);
@@ -411,7 +411,7 @@ export function runSpace(r: Refs, g: Geo, onEnd: () => void): Handle {
       }
       // rychlostní čáry při stoupání
       if (vel > 200) {
-        const a = clamp((vel - 200) / 900) * 0.5;
+        const a = clamp((vel - 200) / 900) * 0.22;
         ctx.strokeStyle = `rgba(255,255,255,${a})`;
         ctx.lineWidth = 1.4;
         for (let i = 0; i < 26; i++) {
@@ -627,9 +627,9 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
         ctx.drawImage(ship, frameN * 640, 0, 640, 512, X(320 + shipDX), Y(0), 640 * k, 512 * k);
         // pěna a stříkance za lodí
         if (shipV > 8) {
-          for (let i = 0; i < 2; i++) {
-            const fx = 640 + shipDX - 220 + Math.random() * 520;
-            foam.push({ x: fx, y: 402 + Math.random() * 16, age: 0, life: 2.2 + Math.random(), w: 18 + Math.random() * 28 });
+          for (let i = 0; i < 1; i++) {
+            const fx = 640 + shipDX - 250 - Math.random() * 120;
+            foam.push({ x: fx, y: 404 + Math.random() * 12, age: 0, life: 1.8 + Math.random(), w: 10 + Math.random() * 16 });
           }
           if (Math.random() < shipV / 200) spray.push({ x: 640 + shipDX + 300, y: 405, vx: 60 + Math.random() * 90, vy: -(80 + Math.random() * 120), age: 0, life: 0.7 });
         }
@@ -640,7 +640,7 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
             foam.splice(i, 1);
             continue;
           }
-          const a = (1 - f.age / f.life) * 0.7;
+          const a = (1 - f.age / f.life) * 0.45;
           ctx.strokeStyle = `rgba(255,255,255,${a})`;
           ctx.lineWidth = 2 * k;
           ctx.beginPath();
