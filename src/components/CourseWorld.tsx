@@ -242,10 +242,10 @@ export function CourseWorld({ locale, islands, allHref, allLabel, noteLabel }: {
         const t = reduced ? 0.3 : sec * 0.045;
         const x = 50 + 41 * Math.sin(t * TAU);
         const y = 52 + (narrowRef.current ? 40 : 14) * Math.sin(t * TAU * 2);
-        const dx = 41 * Math.cos(t * TAU) * TAU * 0.045;
+        const turn = Math.tanh(Math.cos(t * TAU) * 6); // plynulé otočení v krajních bodech, ne skok
         const sz = Math.min(W * (narrowRef.current ? 0.26 : 0.13), 190);
         sh.style.width = `${sz}px`;
-        sh.style.transform = `translate3d(${(x / 100) * W - sz / 2}px, ${(y / 100) * H - sz * 0.7 + Math.sin(sec * 2) * 3}px, 0) scaleX(${dx >= 0 ? 1 : -1}) rotate(${Math.sin(sec * 1.3) * 2.5}deg)`;
+        sh.style.transform = `translate3d(${(x / 100) * W - sz / 2}px, ${(y / 100) * H - sz * 0.7 + Math.sin(sec * 2) * 3}px, 0) scaleX(${turn}) rotate(${Math.sin(sec * 1.3) * 2.5}deg)`;
       }
       if (visible && !reduced) raf = requestAnimationFrame(frame);
     };
