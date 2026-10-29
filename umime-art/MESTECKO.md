@@ -67,3 +67,16 @@ Tohle je zadání pro novou session. Cíl: nahradit sekci **Jak to funguje** na 
 ## Související rozpracované věci (neřešit, jen vědět)
 - Únikovky: 9 diorámat (`unikovky.py`, render do `umime-art/out/uni_*`, encode `python3 umime-art/encode.py unikovky`, stránka `src/app/[locale]/unikovky/page.tsx` už čte `/home/unikovky/<id>.webp`). Hrad a laboratoř se renderovaly naposledy.
 - Další grafická kola (vybráno vlastníkem): profil+pokoj+odměny, obchod+kolo štěstí, žebříčky+podium.
+
+## Panenky (hra Obleč panenku) a život v hubu
+
+```
+cd umime-art/blender
+../../.venv-art/bin/python panenky_build.py -- princess   # athlete rocker fairy chef astronaut → public/dolls/panenka-<id>.glb
+```
+Panenky jsou stylizované (velká hlava a oči), mají kostru a animace (idle, happy, sad, pose_<slot>), nálady a mrknutí jsou morph targety.
+Moduly: `panenky_lib.py` (tvarování, textury, AO), `panenky_body.py` (tělo, hlava, oči), `panenky_hair.py` (prameny), `panenky_wear.py` a
+`panenky_wear2.py` (oblečení), `panenky_rig.py` (kostra, váhy, animace). Web: `src/components/classic/DollView3D.tsx`.
+
+Hub městečka: chůze obyvatel (`mesto_figury.py -- knihovnice_chuze pekar_chuze kluk_chuze`, `encode.py mesto_chuze`), cut scény a efekty událostí
+(`src/lib/town-scenes.ts`), rozhovory, úkoly, dárky a přátelství (`src/components/TownNpcPanel.tsx`, `api/mestecko/npc`, texty `src/i18n/town-life.ts`).

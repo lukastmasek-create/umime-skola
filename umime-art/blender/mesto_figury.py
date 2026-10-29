@@ -1031,12 +1031,50 @@ def job_uklizec():
     run(u, "mf_uklizec")
 
 
+
+# --- chůze obyvatel po městečku (hub): stejné postavy jako stojící, ale s krokem
+def job_knihovnice_chuze():
+    stage("mf_knihovnice_chuze", 16, ortho=1.7, target_z=0.62)
+    P = person(skin="#ffd5a8", top="#a45ad6", bottom="#7a3aa0", skirt="#7a3aa0", hair="#8a8aa8", hat="bun", glasses=True, scale=0.95)
+    book = box((0, 0, 0), (0.24, 0.05, 0.3), M("kniha_r", "#d6453a", 0.5), bevel=0.012)
+    put(book, P["arms"][1][2], (0.08, 0, -0.02))
+
+    def u(t):
+        walk(P, t, swing=0.38, arms_swing=0.3, lean=0.05)
+        P["arms"][1][0].rotation_euler = (0, -0.9, 0)
+        P["arms"][1][1].rotation_euler = (0, -1.1, 0)
+    run(u, "mf_knihovnice_chuze")
+
+
+def job_pekar_chuze():
+    stage("mf_pekar_chuze", 16, ortho=1.9, target_z=0.62)
+    P = person(skin="#ffd5a8", top="#ffffff", bottom="#8a6a4a", hat="chef", apron="#f3e6c8", scale=0.95, hair="#4a2a1a")
+    loaf = sphere((0, 0, 0), 0.07, M("bochnik", "#d8944a", 0.5), scale=(1.6, 1, 0.8), seg=10, rings=8)
+    put(loaf, P["arms"][1][2], (0.0, 0, -0.04))
+
+    def u(t):
+        walk(P, t, swing=0.4, arms_swing=0.3)
+        P["arms"][1][0].rotation_euler = (0, -0.6, 0)
+        P["arms"][1][1].rotation_euler = (0, -0.9, 0)
+    run(u, "mf_pekar_chuze")
+
+
+def job_kluk_chuze():
+    stage("mf_kluk_chuze", 16, ortho=1.7, target_z=0.55)
+    P = person(skin="#f2c9a0", top="#ffd24d", bottom="#3b6fd8", hat="cap", hat_c="#d6453a", hair="#3a2a22", scale=0.78)
+
+    def u(t):
+        walk(P, t, swing=0.65, arms_swing=0.6, bob=0.05, lean=0.1)
+    run(u, "mf_kluk_chuze")
+
+
 JOBS = {k[4:]: v for k, v in globals().items() if k.startswith("job_")}
 JOBS = {"hrdina_chuze": job_hrdina_chuze, "hrdina_stoji": job_hrdina_stoji, "hrdina_radost": job_hrdina_radost, "knihovnice": job_knihovnice,
         "pekar": job_pekar, "farmar": job_farmar, "babicka": job_babicka, "kluk": job_kluk, "pes_bezi": job_pes_bezi, "pes_sedi": job_pes_sedi,
         "kocka": job_kocka, "ovce": job_ovce, "slepice": job_slepice, "kralik": job_kralik, "ptak": job_ptak, "ryba": job_ryba, "mlyn": job_mlyn,
         "kapitan": job_kapitan, "kvartyrmistr": job_kvartyrmistr, "tesar": job_tesar, "plachtarka": job_plachtarka, "chovatel": job_chovatel, "papousek": job_papousek, "krab": job_krab,
-        "admiral": job_admiral, "robot_obch": job_robot_obch, "inzenyr": job_inzenyr, "mimozemstan": job_mimozemstan, "biolog": job_biolog, "blob": job_blob, "uklizec": job_uklizec}
+        "admiral": job_admiral, "robot_obch": job_robot_obch, "inzenyr": job_inzenyr, "mimozemstan": job_mimozemstan, "biolog": job_biolog, "blob": job_blob, "uklizec": job_uklizec,
+        "knihovnice_chuze": job_knihovnice_chuze, "pekar_chuze": job_pekar_chuze, "kluk_chuze": job_kluk_chuze}
 
 if __name__ == "__main__":
     for w in [a for a in args() if a in JOBS]:

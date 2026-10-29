@@ -5,12 +5,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DailyChallenges } from "@/components/DailyChallenges";
 import { Modal, type Snapshot } from "@/components/ShopView";
-import { runPath, runPirate, runPortal, runSpace, type Geo, type Handle, type Pt } from "@/lib/market-cinema";
+import { readCam, runPath, runPirate, runPortal, runSpace, type Geo, type Handle, type Pt } from "@/lib/market-cinema";
+import { confettiBurst, createEventFx, eventForDay, EVENT_SHOT, runShots, type Handle as ShotHandle, type Shot } from "@/lib/town-scenes";
+import { TownNpcPanel } from "@/components/TownNpcPanel";
+import { getTownLifeText } from "@/i18n/town-life";
+import { type NpcKey, type NpcSnapshot } from "@/lib/town-npc";
 import { sfx, sfxEnabled, setSfxEnabled } from "@/lib/market-sfx";
 import { COLLECT_ICON, COLLECT_COUNT, dailySpots, type CollectSpot } from "@/lib/town";
 import { dayKey } from "@/lib/shop";
 import { getMarketText } from "@/i18n/market";
-import { getSkipText, getTownText } from "@/i18n/market-world";
+import { getSkipText } from "@/i18n/market-world";
 import { getTownHubText } from "@/i18n/town";
 import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
@@ -77,31 +81,35 @@ const SPR = {
   pes_sedi: { f: "pes-sedi", n: 24, o: 1.3, tz: 0.3, dur: 1.8 },
   pes_bezi: { f: "pes-bezi", n: 16, o: 1.3, tz: 0.28, dur: 0.6 },
   ptak: { f: "ptak", n: 12, o: 1.0, tz: 0.0, dur: 0.55 },
+  knihovnice_w: { f: "knihovnice-chuze", n: 16, o: 1.7, tz: 0.62, dur: 0.9 },
+  pekar_w: { f: "pekar-chuze", n: 16, o: 1.9, tz: 0.62, dur: 0.9 },
+  kluk_w: { f: "kluk-chuze", n: 16, o: 1.7, tz: 0.55, dur: 0.7 },
 } satisfies Record<string, Spr>;
 type SK = keyof typeof SPR;
 
-const FOLK: { k: SK; key: string; flip?: boolean; talk?: string }[] = [
-  { k: "knihovnice", key: "knihovnice", talk: "knihovnice" },
-  { k: "pekar", key: "pekar", talk: "pekar" },
-  { k: "kluk", key: "kluk", talk: "kluk" },
-  { k: "kocka", key: "kocka", talk: "kocka" },
+const FOLK: { k: SK; key: NpcKey; flip?: boolean }[] = [
+  { k: "knihovnice", key: "knihovnice" },
+  { k: "pekar", key: "pekar" },
+  { k: "kluk", key: "kluk" },
+  { k: "kocka", key: "kocka" },
   { k: "babicka", key: "babicka", flip: true },
   { k: "ovce", key: "ovce", flip: true },
   { k: "slepice", key: "slepice" },
   { k: "farmar", key: "farmar" },
 ];
 
+// Kdo se po městečku prochází: trasa po uzlech grafu cest, rychlost (šířky obrázku za sekundu) a sprity pro chůzi a stání.
+const WALKERS: Partial<Record<NpcKey, { nodes: string[]; speed: number; walk: SK; idle?: SK }>> = {
+  knihovnice: { nodes: ["m2", "m3", "m4"], speed: 0.022, walk: "knihovnice_w", idle: "knihovnice" },
+  pekar: { nodes: ["m5", "hub", "m7"], speed: 0.024, walk: "pekar_w", idle: "pekar" },
+  kluk: { nodes: ["m4", "m5", "hub", "most", "l1"], speed: 0.034, walk: "kluk_w", idle: "kluk" },
+  babicka: { nodes: ["most_z", "m1", "m2", "kurzy"], speed: 0.016, walk: "babicka" },
+  farmar: { nodes: ["l3", "stanice"], speed: 0.018, walk: "farmar" },
+};
+type WalkerState = { pts: Pt[]; cum: number[]; total: number; dist: number; dir: 1 | -1; wait: number; moving: boolean; mode: string };
+
 type Phase = { kind: "path" | "space" | "pirate" | "portal"; id: string; target?: PlaceDef } | null;
 type Collect = { loggedIn: boolean; day: string; spots: CollectSpot[]; collected: number[]; bonus: boolean };
-
-function Sprite({ k, p, flip = false, delay = 0, scale = 1, style, cls = "" }: { k: SK; p: Pt; flip?: boolean; delay?: number; scale?: number; style?: React.CSSProperties; cls?: string }) {
-  const s = SPR[k];
-  return (
-    <div aria-hidden className={`pointer-events-none absolute ${cls}`} style={{ ...at(p), width: `${(s.o / 1.6) * FIG * 100 * scale}%`, aspectRatio: "1 / 1", transform: `translate(-50%, ${-(0.5 + s.tz / s.o) * 100}%) scaleX(${flip ? -1 : 1})`, ...style }}>
-      <span className="town-sprite block h-full w-full" style={{ backgroundImage: `url(/home/mesto/${s.f}.webp)`, ["--n" as string]: s.n, animationDuration: `${s.dur}s`, animationDelay: `${-delay}s` }} />
-    </div>
-  );
-}
 
 // nejkratší cesta po grafu cest (Dijkstra podle vzdálenosti ve světových souřadnicích)
 function route(from: string, to: string): string[] {
@@ -132,11 +140,27 @@ function route(from: string, to: string): string[] {
   return out;
 }
 
+const AMBIENT_FX: Record<string, number> = { festival: 0.55, fireworks: 0, rain: 0.45, balloons: 0.55, market: 0.7 };
+const ls = {
+  get(k: string) {
+    try {
+      return window.localStorage.getItem(k);
+    } catch {
+      return null;
+    }
+  },
+  set(k: string, v: string) {
+    try {
+      window.localStorage.setItem(k, v);
+    } catch {}
+  },
+};
+
 export function TownHub({ locale }: { locale: Locale }) {
   const tt = getTownHubText(locale);
   const m = getMarketText(locale);
   const st = getSkipText(locale);
-  const tw = getTownText(locale);
+  const tl = getTownLifeText(locale);
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>(null);
   const [gen, setGen] = useState(0);
@@ -148,8 +172,15 @@ export function TownHub({ locale }: { locale: Locale }) {
   const [col, setCol] = useState<Collect>({ loggedIn: false, day: dayKey(), spots: dailySpots(dayKey()), collected: [], bonus: false });
   const [pop, setPop] = useState<{ n: number; text: string; p: Pt } | null>(null);
   const [note, setNote] = useState<string | null>(null);
-  const [talk, setTalk] = useState<{ k: string; text: string } | null>(null);
+  const [bubble, setBubble] = useState<{ k: string; text: string } | null>(null);
+  const [openNpc, setOpenNpc] = useState<NpcKey | null>(null);
+  const [npcSnap, setNpcSnap] = useState<NpcSnapshot | null>(null);
+  const [npcPoints, setNpcPoints] = useState(0);
+  const [cine, setCine] = useState<"intro" | "event" | "reward" | "enter" | null>(null);
+  const [caption, setCaption] = useState<string | null>(null);
+  const [fade, setFade] = useState(false);
   const handle = useRef<Handle | null>(null);
+  const shots = useRef<ShotHandle | null>(null);
   const seq = useRef(0);
   const busy = useRef(false);
   const box = useRef<HTMLDivElement>(null);
@@ -165,13 +196,25 @@ export function TownHub({ locale }: { locale: Locale }) {
   const dog = useRef<HTMLDivElement>(null);
   const dogSpr = useRef<HTMLSpanElement>(null);
   const birds = useRef<(HTMLDivElement | null)[]>([]);
+  const npcEl = useRef<Record<string, HTMLDivElement | null>>({});
+  const npcFig = useRef<Record<string, HTMLButtonElement | null>>({});
+  const npcSpr = useRef<Record<string, HTMLSpanElement | null>>({});
+  const fxCv = useRef<HTMLCanvasElement>(null);
+  const confettiCv = useRef<HTMLCanvasElement>(null);
+  const cineBars = useRef<HTMLDivElement>(null);
+  const fxStrength = useRef(0);
+  const openRef = useRef<NpcKey | null>(null);
+  const started = useRef(false);
+  const eventId = useMemo(() => eventForDay(dayKey()), []);
+  const eventText = tl.events.find((e) => e.id === eventId) ?? tl.events[0];
 
+  useEffect(() => {
+    openRef.current = openNpc;
+  }, [openNpc]);
   useEffect(() => {
     const id = window.setTimeout(() => {
       setSound(sfxEnabled());
-      try {
-        if (window.localStorage.getItem("town-night") === "1") setNight(true);
-      } catch {}
+      if (ls.get("town-night") === "1") setNight(true);
     }, 0);
     return () => window.clearTimeout(id);
   }, []);
@@ -185,6 +228,14 @@ export function TownHub({ locale }: { locale: Locale }) {
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => !off && j && !j.error && setCol(j))
       .catch(() => {});
+    fetch("/api/mestecko/npc")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (off || !j || j.error) return;
+        setNpcSnap(j.npc);
+        setNpcPoints(j.points ?? 0);
+      })
+      .catch(() => {});
     return () => {
       off = true;
     };
@@ -192,31 +243,79 @@ export function TownHub({ locale }: { locale: Locale }) {
 
   const worldOpen = (id: WorldKey) => id === "pirate" || !!shop?.worlds?.includes(id === "sea" ? "sea" : id);
 
-  // oživení: ptáci přelétají oblohu, pes pobíhá po hlavní ulici
+  // obyvatelé: po cestách chodí knihovnice, pekař, kluk, babička a farmář; s kým si hráč povídá, ten stojí
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) return;
-    const street = ["m1", "m2", "m3", "m4", "m5", "hub", "m7", "obchod", "m8", "m9"].map((n) => HUB.graf.nodes[n]);
-    const cum = [0];
-    for (let i = 1; i < street.length; i++) cum.push(cum[i - 1] + Math.hypot(street[i][0] - street[i - 1][0], (street[i][1] - street[i - 1][1]) * (HUB.h / HUB.w)));
-    const total = cum[cum.length - 1];
+    const ratio = HUB.h / HUB.w;
+    const states: Record<string, WalkerState> = {};
+    const poly = (nodes: string[]) => {
+      const out: Pt[] = [];
+      for (let i = 0; i < nodes.length - 1; i++) {
+        const seg = route(nodes[i], nodes[i + 1]).map((n) => HUB.graf.nodes[n]);
+        out.push(...(i === 0 ? seg : seg.slice(1)));
+      }
+      return out;
+    };
+    for (const [key, cfg] of Object.entries(WALKERS)) {
+      const pts = poly(cfg.nodes);
+      const cum = [0];
+      for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], (pts[i][1] - pts[i - 1][1]) * ratio));
+      states[key] = { pts, cum, total: cum[cum.length - 1], dist: Math.random() * cum[cum.length - 1], dir: Math.random() < 0.5 ? 1 : -1, wait: Math.random() * 5, moving: false, mode: "" };
+    }
+    const home: Record<string, Pt> = HUB.npc as Record<string, Pt>;
     let raf = 0;
-    const t0 = performance.now();
+    let last = performance.now();
     let visible = true;
     const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
     if (box.current) io.observe(box.current);
+    const place = (key: string, x: number, y: number, flip: boolean) => {
+      const el = npcEl.current[key];
+      const fig = npcFig.current[key];
+      if (!el || !fig) return;
+      el.style.left = `${x * 100}%`;
+      el.style.top = `${Y(y) * 100}%`;
+      el.style.zIndex = String(11 + Math.round(y * 10));
+      const f = FOLK.find((c) => c.key === key);
+      const s = SPR[f?.k ?? "kluk"];
+      fig.style.transform = `translate(-50%, ${-(0.5 + s.tz / s.o) * 100}%) scaleX(${(flip ? -1 : 1) * (f?.flip ? -1 : 1)})`;
+    };
+    const setSprite = (key: string, sk: SK, moving: boolean) => {
+      const sp = npcSpr.current[key];
+      if (!sp) return;
+      const spr = SPR[sk];
+      const mode = `${sk}:${moving}`;
+      if (sp.dataset.mode !== mode) {
+        sp.dataset.mode = mode;
+        sp.style.backgroundImage = `url(/home/mesto/${spr.f}.webp)`;
+        sp.style.setProperty("--n", String(spr.n));
+        sp.style.animationDuration = `${spr.dur}s`;
+      }
+      sp.style.animationPlayState = moving || WALKERS[key as NpcKey]?.idle || !WALKERS[key as NpcKey] ? "running" : "paused";
+    };
+    // výchozí polohy (než se rozjede animace, nebo při omezeném pohybu)
+    for (const f of FOLK) place(f.key, home[f.key][0], home[f.key][1], false);
+    if (reduced) {
+      return () => io.disconnect();
+    }
+    const street = ["m1", "m2", "m3", "m4", "m5", "hub", "m7", "obchod", "m8", "m9"].map((n) => HUB.graf.nodes[n]);
+    const cumS = [0];
+    for (let i = 1; i < street.length; i++) cumS.push(cumS[i - 1] + Math.hypot(street[i][0] - street[i - 1][0], (street[i][1] - street[i - 1][1]) * ratio));
+    const totalS = cumS[cumS.length - 1];
+    const t0 = performance.now();
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame);
       if (!visible) return;
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
       const t = (now - t0) / 1000;
       // pes: tam a zpět s pauzou
       const cyc = (t % 36) / 36;
       const run = cyc < 0.45 ? cyc / 0.45 : cyc < 0.5 ? 1 : cyc < 0.95 ? 1 - (cyc - 0.5) / 0.45 : 0;
       const dir = cyc < 0.45 ? 1 : cyc < 0.5 ? 0 : cyc < 0.95 ? -1 : 0;
-      const d = Math.max(0, Math.min(1, run)) * total;
+      const d = Math.max(0, Math.min(1, run)) * totalS;
       let i = 1;
-      while (i < cum.length - 1 && cum[i] < d) i++;
-      const k = (d - cum[i - 1]) / Math.max(1e-6, cum[i] - cum[i - 1]);
+      while (i < cumS.length - 1 && cumS[i] < d) i++;
+      const k = (d - cumS[i - 1]) / Math.max(1e-6, cumS[i] - cumS[i - 1]);
       const px = street[i - 1][0] + (street[i][0] - street[i - 1][0]) * Math.max(0, Math.min(1, k));
       const py = street[i - 1][1] + (street[i][1] - street[i - 1][1]) * Math.max(0, Math.min(1, k)) + 0.012;
       const el = dog.current;
@@ -226,11 +325,10 @@ export function TownHub({ locale }: { locale: Locale }) {
         el.style.top = `${Y(py) * 100}%`;
         el.style.transform = `translate(-50%, ${-(0.5 + SPR.pes_bezi.tz / SPR.pes_bezi.o) * 100}%) scaleX(${dir < 0 ? -1 : 1})`;
         const running = dir !== 0;
-        sp.style.animationPlayState = running ? "running" : "paused";
+        sp.style.animationPlayState = "running";
         sp.style.backgroundImage = `url(/home/mesto/${running ? "pes-bezi" : "pes-sedi"}.webp)`;
         sp.style.setProperty("--n", running ? "16" : "24");
         sp.style.animationDuration = running ? "0.6s" : "1.8s";
-        sp.style.animationPlayState = "running";
       }
       birds.current.forEach((b, bi) => {
         if (!b) return;
@@ -238,6 +336,38 @@ export function TownHub({ locale }: { locale: Locale }) {
         b.style.left = `${p * 100}%`;
         b.style.top = `${(0.01 + bi * 0.035 + Math.sin(t * 0.7 + bi) * 0.008) * 100}%`;
       });
+      // obyvatelé
+      for (const [key, w] of Object.entries(states)) {
+        const cfg = WALKERS[key as NpcKey]!;
+        const talking = openRef.current === key;
+        if (talking) {
+          setSprite(key, cfg.idle ?? cfg.walk, false);
+          continue;
+        }
+        if (w.wait > 0) {
+          w.wait -= dt;
+          w.moving = false;
+          if (w.wait <= 0) w.moving = true;
+        } else {
+          w.moving = true;
+          w.dist += w.dir * cfg.speed * dt;
+          if (w.dist >= w.total || w.dist <= 0) {
+            w.dist = Math.max(0, Math.min(w.total, w.dist));
+            w.dir = w.dir === 1 ? -1 : 1;
+            w.wait = 4 + Math.random() * 6;
+            w.moving = false;
+          }
+        }
+        let j = 1;
+        while (j < w.cum.length - 1 && w.cum[j] < w.dist) j++;
+        const kk = (w.dist - w.cum[j - 1]) / Math.max(1e-6, w.cum[j] - w.cum[j - 1]);
+        const q = Math.max(0, Math.min(1, kk));
+        const x = w.pts[j - 1][0] + (w.pts[j][0] - w.pts[j - 1][0]) * q;
+        const y = w.pts[j - 1][1] + (w.pts[j][1] - w.pts[j - 1][1]) * q + 0.01;
+        const faceRight = w.pts[j][0] - w.pts[j - 1][0] >= 0 ? w.dir === 1 : w.dir !== 1;
+        place(key, x, y, !faceRight);
+        setSprite(key, w.moving ? cfg.walk : (cfg.idle ?? cfg.walk), w.moving);
+      }
     };
     raf = requestAnimationFrame(frame);
     return () => {
@@ -245,6 +375,63 @@ export function TownHub({ locale }: { locale: Locale }) {
       io.disconnect();
     };
   }, []);
+
+  // obyvatelé občas něco prohodí (bublina nad hlavou)
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let t1 = 0;
+    let t2 = 0;
+    const schedule = () => {
+      t1 = window.setTimeout(() => {
+        if (!openRef.current && !document.hidden) {
+          const f = FOLK[Math.floor(Math.random() * FOLK.length)];
+          const lines = Math.random() < 0.5 ? tl.ambient : tl.npc[f.key].chat;
+          setBubble({ k: f.key, text: lines[Math.floor(Math.random() * lines.length)] });
+          t2 = window.setTimeout(() => setBubble((c) => (c?.k === f.key ? null : c)), 3200);
+        }
+        schedule();
+      }, 14000 + Math.random() * 12000);
+    };
+    schedule();
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, [tl]);
+
+  // efekty denní události na plátně přes celé městečko
+  useEffect(() => {
+    const canvas = fxCv.current;
+    const bx = box.current;
+    if (!canvas || !bx || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const fx = createEventFx(canvas, eventId);
+    const size = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      canvas.width = Math.round(bx.clientWidth * dpr);
+      canvas.height = Math.round(bx.clientHeight * dpr);
+    };
+    size();
+    const ro = new ResizeObserver(size);
+    ro.observe(bx);
+    let raf = 0;
+    let visible = true;
+    const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
+    io.observe(bx);
+    const frame = (now: number) => {
+      raf = requestAnimationFrame(frame);
+      if (visible) fx.draw(now, fxStrength.current);
+    };
+    raf = requestAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+      io.disconnect();
+    };
+  }, [eventId, gen]);
+  useEffect(() => {
+    const base = eventId === "fireworks" ? (night ? 0.7 : 0) : (AMBIENT_FX[eventId] ?? 0);
+    if (!cine) fxStrength.current = base;
+  }, [eventId, night, cine]);
 
   const leave = useCallback(
     (href: string) => {
@@ -254,6 +441,45 @@ export function TownHub({ locale }: { locale: Locale }) {
   );
 
   const geoFor = useCallback((walk: Pt[], start: Pt, extra?: Partial<Geo>): Geo => ({ toBox, rocket: HUB.places.stanice.raketa ?? HUB.places.stanice.door, start, walk, ...extra }), []);
+
+  // vstup do budovy: kamera najede na dveře, hrdina se zmenší a zmizí uvnitř
+  const enterDoor = useCallback((onEnd: () => void) => {
+    const c = cam.current;
+    const b = box.current;
+    const h = hero.current;
+    if (!c || !b || !h) return onEnd();
+    setCine("enter");
+    const cw = b.clientWidth;
+    const chh = b.clientHeight;
+    const hx = parseFloat(h.style.left) || cw / 2;
+    const hy = parseFloat(h.style.top) || chh / 2;
+    const flipped = h.style.transform.includes("scale(-");
+    const z0 = readCam(c).s;
+    sfx.creak();
+    const t0 = performance.now();
+    let raf = 0;
+    const frame = (now: number) => {
+      const k = Math.min(1, (now - t0) / 780);
+      const e = k * k * (3 - 2 * k);
+      const z = z0 + 1.0 * e;
+      const tx = Math.min(0, Math.max(cw - cw * z, cw / 2 - z * hx));
+      const ty = Math.min(0, Math.max(chh - chh * z, chh * 0.55 - z * hy));
+      c.style.transform = `translate(${tx}px, ${ty}px) scale(${z})`;
+      h.style.opacity = String(1 - e);
+      h.style.transform = `translate(-50%, -84.4%) scale(${(flipped ? -1 : 1) * (1 - 0.45 * e)}, ${1 - 0.45 * e})`;
+      if (k < 1) raf = requestAnimationFrame(frame);
+      else {
+        setFade(true);
+        window.setTimeout(() => {
+          setCine(null);
+          setFade(false);
+          onEnd();
+        }, 230);
+      }
+    };
+    raf = requestAnimationFrame(frame);
+    handle.current = { stop: () => cancelAnimationFrame(raf), skip: () => cancelAnimationFrame(raf) } as Handle;
+  }, []);
 
   useEffect(() => {
     if (!phase) return;
@@ -265,14 +491,21 @@ export function TownHub({ locale }: { locale: Locale }) {
       const place = phase.target;
       const nodes = route("hub", place.id).map((n) => HUB.graf.nodes[n]);
       const geo = geoFor(nodes.slice(1), start);
-      handle.current = runPath(r as Parameters<typeof runPath>[0], geo, () => {
-        if (place.href) leave(`/${locale}${place.href}`);
-        else {
-          setPhase(null);
-          setGen((g) => g + 1);
-          setBoard(true);
-        }
-      });
+      handle.current = runPath(
+        r as Parameters<typeof runPath>[0],
+        geo,
+        () => {
+          enterDoor(() => {
+            if (place.href) leave(`/${locale}${place.href}`);
+            else {
+              setPhase(null);
+              setGen((g) => g + 1);
+              setBoard(true);
+            }
+          });
+        },
+        false,
+      );
     } else if (phase.kind === "space") {
       if (!r.sky || !r.bgDark || !r.rocket || !r.bars || !r.count) return;
       const nodes = route("hub", "stanice").map((n) => HUB.graf.nodes[n]);
@@ -294,12 +527,113 @@ export function TownHub({ locale }: { locale: Locale }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
+  // ------------------------------------------------------------------------------------------ cut scény
+  const bars2 = useCallback((k: number) => {
+    const el = cineBars.current;
+    if (!el) return;
+    const [top, bottom] = [el.children[0] as HTMLElement, el.children[1] as HTMLElement];
+    top.style.height = `${k * 9}%`;
+    bottom.style.height = `${k * 9}%`;
+  }, []);
+  const playShots = useCallback(
+    (kind: "intro" | "event" | "reward", list: Shot[], after?: () => void) => {
+      const b = box.current;
+      const c = cam.current;
+      if (!b || !c) return;
+      shots.current?.stop();
+      setCine(kind);
+      shots.current = runShots({ box: b, cam: c }, list, { onCaption: (txt) => setCaption(txt), onBars: bars2, onEnd: () => {
+        setCine(null);
+        setCaption(null);
+        shots.current = null;
+        after?.();
+      } });
+    },
+    [bars2, setCine, setCaption],
+  );
+  const placeShot = useCallback((id: string, dy = 0): Pt => {
+    const pl = HUB.places[id];
+    const d = pl ? pl.door : HUB.hrdina;
+    return toBox([d[0], d[1] + dy]);
+  }, []);
+  const playEvent = useCallback(
+    (after?: () => void) => {
+      const e = EVENT_SHOT[eventId];
+      fxStrength.current = 1;
+      playShots("event", [{ to: e.to, zoom: e.zoom, dur: 2.4, hold: 3.6, caption: `${eventText.title} · ${eventText.caption}`, at: () => sfx.horn() }], () => {
+        ls.set("town-event-day", dayKey());
+        after?.();
+      });
+    },
+    [eventId, eventText, playShots],
+  );
+  const playIntro = useCallback(
+    (after?: () => void) => {
+      const list: Shot[] = [
+        { to: placeShot("pristav", -0.02), zoom: 2.1, dur: 2.6, hold: 2.0, caption: `${tl.intro[0]} ${tl.intro[1]}`, at: () => sfx.gull() },
+        { to: placeShot("kurzy", -0.01), zoom: 2.2, dur: 2.4, hold: 1.8, caption: tl.intro[2] },
+        { to: placeShot("zebricky", -0.01), zoom: 2.2, dur: 2.4, hold: 1.8, caption: tl.intro[3] },
+        { to: placeShot("les", 0.02), zoom: 1.9, dur: 2.6, hold: 2.0, caption: tl.intro[4] },
+        { to: toBox(HUB.hrdina), zoom: 1.7, dur: 2.4, hold: 2.2, caption: tl.intro[5] },
+      ];
+      playShots("intro", list, after);
+    },
+    [placeShot, playShots, tl],
+  );
+  const playReward = useCallback(() => {
+    const c = confettiCv.current;
+    const hs = heroSpr.current;
+    const toRest = () => {
+      if (hs) {
+        hs.style.backgroundImage = "url(/home/mesto/hrdina-stoji.webp)";
+        hs.style.animationDuration = "3s";
+      }
+    };
+    playShots("reward", [{ to: toBox(HUB.hrdina), zoom: 2.4, dur: 1.0, hold: 4.2, caption: `${tl.reward.title} ${tl.reward.caption}`, at: () => {
+      sfx.horn();
+      if (hs) {
+        hs.style.backgroundImage = "url(/home/mesto/hrdina-radost.webp)";
+        hs.style.animationDuration = "1.1s";
+      }
+      if (c) {
+        const b = box.current;
+        if (b) {
+          c.width = b.clientWidth;
+          c.height = b.clientHeight;
+        }
+        confettiBurst(c, [HUB.hrdina[0], Y(HUB.hrdina[1]) - 0.1], 4);
+      }
+    } }], toRest);
+  }, [playShots, tl]);
+  const skipScene = () => shots.current?.skip();
+
+  // první návštěva: projížďka městečkem; jinak jednou denně uvede dnešní událost
+  const scenes = useRef({ playIntro, playEvent });
+  useEffect(() => {
+    scenes.current = { playIntro, playEvent };
+  });
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = window.setTimeout(() => {
+      if (started.current) return;
+      started.current = true;
+      const first = ls.get("town-intro-seen") !== "1";
+      const eventDue = ls.get("town-event-day") !== dayKey();
+      if (first) {
+        ls.set("town-intro-seen", "1");
+        scenes.current.playIntro(() => eventDue && scenes.current.playEvent());
+      } else if (eventDue) scenes.current.playEvent();
+    }, 900);
+    return () => window.clearTimeout(id);
+  }, []);
+  useEffect(() => () => shots.current?.stop(), []);
+
   function reduced() {
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
   function visit(place: PlaceDef) {
-    if (phase) return;
-    setTalk(null);
+    if (phase || cine) return;
+    setOpenNpc(null);
     if (place.world) {
       const w = place.world;
       if (reduced() || !worldOpen(w)) {
@@ -323,20 +657,18 @@ export function TownHub({ locale }: { locale: Locale }) {
   }
   function toggleNight() {
     setNight((v) => {
-      try {
-        window.localStorage.setItem("town-night", v ? "0" : "1");
-      } catch {}
+      ls.set("town-night", v ? "0" : "1");
       return !v;
     });
   }
-  function chat(key: string, lines?: string[]) {
-    if (!lines?.length) return;
-    setTalk({ k: key, text: lines[++seq.current % lines.length] });
+  function talkTo(key: NpcKey) {
+    if (phase || cine) return;
+    setBubble(null);
+    setOpenNpc(key);
     sfx.pop();
-    window.setTimeout(() => setTalk((c) => (c?.k === key ? null : c)), 2800);
   }
   async function collect(spot: CollectSpot) {
-    if (busy.current || phase) return;
+    if (busy.current || phase || cine) return;
     if (!col.loggedIn) {
       setNote(tt.collect.login);
       window.setTimeout(() => setNote(null), 3000);
@@ -354,6 +686,10 @@ export function TownHub({ locale }: { locale: Locale }) {
         if (json.bonus && json.collected.length >= COLLECT_COUNT) {
           setNote(tt.collect.all);
           window.setTimeout(() => setNote(null), 3500);
+          if (!reduced() && ls.get(`town-reward-${json.day ?? dayKey()}`) !== "1") {
+            ls.set(`town-reward-${json.day ?? dayKey()}`, "1");
+            window.setTimeout(playReward, 900);
+          }
         }
         notifyAccountChanged();
       } else if (json.error === "owned") {
@@ -363,20 +699,33 @@ export function TownHub({ locale }: { locale: Locale }) {
       busy.current = false;
     }
   }
+  // po zavření nástěnky: když jsou všechny denní úkoly splněné, přijde oslava
+  async function closeBoard() {
+    setBoard(false);
+    if (reduced() || ls.get(`town-reward-q-${dayKey()}`) === "1") return;
+    try {
+      const j = await fetch("/api/denni-vyzvy").then((r) => (r.ok ? r.json() : null));
+      if (j?.quests?.length && j.quests.every((q: { done: boolean }) => q.done)) {
+        ls.set(`town-reward-q-${dayKey()}`, "1");
+        window.setTimeout(playReward, 500);
+      }
+    } catch {}
+  }
 
-    const spotPos = useCallback((s: CollectSpot): Pt => HUB.sber[s.slot % Math.max(1, HUB.sber.length)] ?? HUB.hrdina, []);
+  const spotPos = useCallback((s: CollectSpot): Pt => HUB.sber[s.slot % Math.max(1, HUB.sber.length)] ?? HUB.hrdina, []);
 
   const labelCls = "absolute z-[4] -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-md border-2 border-[#16132b] bg-[#3a2a1a] text-center font-extrabold leading-tight text-[#ffd76b] shadow-[0_2px_0_rgba(0,0,0,0.45)] transition-transform";
   const left = COLLECT_COUNT - col.collected.length;
   const dark = night;
-  const folk = useMemo(() => FOLK.filter((f) => HUB.npc[f.key]), []);
+  const busyScene = !!phase || !!cine;
+  const hearts = (k: NpcKey) => npcSnap?.[k]?.hearts ?? 0;
 
   return (
     <div>
       <div className="overflow-x-auto overflow-y-hidden rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)]">
         <div ref={box} className="relative select-none overflow-hidden [container-type:inline-size]" style={{ aspectRatio: `${HUB.w} / ${BOX_H}`, minWidth: 880, background: "linear-gradient(180deg, #5cb4ff, #cfeaff)" }}>
           {phase && phase.kind !== "path" && <div ref={bgDark} aria-hidden className="absolute inset-0 opacity-0" style={{ background: "linear-gradient(180deg, #02030c 0%, #071040 55%, #1b3a8a 100%)" }} />}
-          <div key={gen} ref={cam} className={`${dark ? "" : "town-day"} absolute inset-0 ${phase ? "pointer-events-none" : ""}`}>
+          <div key={gen} ref={cam} className={`${dark ? "" : "town-day"} absolute inset-0 ${busyScene ? "pointer-events-none" : ""}`}>
             <div ref={sky} aria-hidden className="town-sky absolute inset-0" />
             {dark && <div aria-hidden className="town-stars absolute inset-x-0 top-0 h-[40%]" />}
             {/* oblaka a ptáci */}
@@ -422,10 +771,38 @@ export function TownHub({ locale }: { locale: Locale }) {
                 <span className="town-sprite block h-full w-full" style={{ backgroundImage: "url(/home/kosmicka/raketa.webp)", ["--n" as string]: 12, animationDuration: "3s" }} />
               </div>
             )}
-            {/* obyvatelé a zvířata */}
-            {folk.map((f, i) => (
-              <Sprite key={f.key} k={f.k} p={HUB.npc[f.key]} flip={f.flip} delay={i * 0.7} />
-            ))}
+            {/* obyvatelé a zvířata: chodí po cestách, kliknutím se otevře rozhovor */}
+            {FOLK.map((f, i) => {
+              const s = SPR[f.k];
+              const h = hearts(f.key);
+              return (
+                <div key={f.key} ref={(el) => void (npcEl.current[f.key] = el)} className="absolute" style={{ ...at(HUB.npc[f.key]), width: 0, height: 0 }}>
+                  <button
+                    ref={(el) => void (npcFig.current[f.key] = el)}
+                    type="button"
+                    aria-label={tl.npc[f.key].name}
+                    title={`${tl.npc[f.key].name} · ${tl.npc[f.key].role}`}
+                    onClick={() => talkTo(f.key)}
+                    className="market-hit absolute rounded-full"
+                    style={{ left: 0, top: 0, width: `${(s.o / 1.6) * FIG * 100 * 0}cqw`, minWidth: 0, cursor: "pointer" }}
+                  >
+                    <span aria-hidden className="pointer-events-none block" style={{ width: `${(s.o / 1.6) * FIG * 100}cqw`, aspectRatio: "1 / 1" }}>
+                      <span ref={(el) => void (npcSpr.current[f.key] = el)} className="town-sprite block h-full w-full" style={{ backgroundImage: `url(/home/mesto/${s.f}.webp)`, ["--n" as string]: s.n, animationDuration: `${s.dur}s`, animationDelay: `${-i * 0.7}s` }} />
+                    </span>
+                  </button>
+                  {h > 0 && openNpc !== f.key && (
+                    <span aria-hidden className="pointer-events-none absolute -translate-x-1/2 text-[clamp(8px,0.9cqw,13px)] leading-none" style={{ left: 0, top: `${-(0.5 + s.tz / s.o + 0.4) * ((s.o / 1.6) * FIG * 100)}cqw` }}>
+                      {"❤️".repeat(Math.min(h, 3))}
+                    </span>
+                  )}
+                  {bubble?.k === f.key && (
+                    <div className="pointer-events-none absolute z-[2] max-w-[12rem] -translate-x-1/2 whitespace-normal rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-center text-xs font-extrabold" style={{ left: 0, top: `${-(1.05 + s.tz / s.o) * ((s.o / 1.6) * FIG * 100)}cqw`, transform: "translate(-50%, -100%)", width: "max-content" }}>
+                      {bubble.text}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
             <div ref={dog} aria-hidden className="pointer-events-none absolute" style={{ ...at(HUB.npc.pes ?? HUB.hrdina), width: `${(SPR.pes_bezi.o / 1.6) * FIG * 100}%`, aspectRatio: "1 / 1" }}>
               <span ref={dogSpr} className="town-sprite block h-full w-full" style={{ backgroundImage: "url(/home/mesto/pes-sedi.webp)", ["--n" as string]: 24, animationDuration: "1.8s" }} />
             </div>
@@ -438,6 +815,9 @@ export function TownHub({ locale }: { locale: Locale }) {
               HUB.lampy.map((p, i) => (
                 <i key={i} aria-hidden className="hub-lamp pointer-events-none absolute" style={{ ...at(p), animationDelay: `${-(i % 5) * 0.6}s` }} />
               ))}
+            {/* denní událost a konfety */}
+            <canvas ref={fxCv} aria-hidden className="pointer-events-none absolute inset-0 z-[6] h-full w-full" />
+            <canvas ref={confettiCv} aria-hidden className="pointer-events-none absolute inset-0 z-[8] h-full w-full" />
 
             {/* poklady dne */}
             {col.spots.filter((s) => !col.collected.includes(s.idx)).map((s) => (
@@ -450,16 +830,6 @@ export function TownHub({ locale }: { locale: Locale }) {
                 {pop.text}
               </div>
             )}
-            {talk && (() => {
-              const f = FOLK.find((c) => c.key === talk.k);
-              const p = f ? HUB.npc[f.key] : null;
-              if (!p) return null;
-              return (
-                <div className="pointer-events-none absolute z-[8] max-w-[12rem] -translate-x-1/2 -translate-y-full rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-center text-xs font-extrabold" style={{ ...at([p[0], p[1] - 0.05]) }}>
-                  {talk.text}
-                </div>
-              );
-            })()}
 
             {/* cedule přímo na budovách */}
             {PLACES.map((p) => {
@@ -485,11 +855,6 @@ export function TownHub({ locale }: { locale: Locale }) {
                 <button key={p.id} type="button" aria-label={tt.buildings[p.id].name} title={tt.buildings[p.id].hint} onClick={() => visit(p)} onMouseEnter={() => setHover(p.id)} onMouseLeave={() => setHover(null)} onFocus={() => setHover(p.id)} onBlur={() => setHover(null)} className="market-hit absolute z-10 -translate-x-1/2 rounded-2xl" style={{ left: `${pl.sign[0] * 100}%`, top: `${Y(top) * 100}%`, width: `${hw * 100}%`, height: `${(Y(top + hh) - Y(top)) * 100}%` }} />
               );
             })}
-            {folk.filter((f) => f.talk).map((f) => {
-              const p = HUB.npc[f.key];
-              const lines = (tw.talk as Record<string, { label: string; lines: string[] }>)[f.talk as string];
-              return <button key={`t-${f.key}`} type="button" aria-label={lines?.label ?? f.key} title={lines?.label} onClick={() => chat(f.key, lines?.lines)} className="market-hit absolute z-[9] -translate-x-1/2 rounded-full" style={{ left: `${p[0] * 100}%`, top: `${Y(p[1] - 0.05) * 100}%`, width: "4%", height: `${(Y(p[1] + 0.01) - Y(p[1] - 0.05)) * 100}%` }} />;
-            })}
           </div>
 
           {dark && <div aria-hidden className="pointer-events-none absolute inset-0 bg-[#0b0925]/25" />}
@@ -497,6 +862,23 @@ export function TownHub({ locale }: { locale: Locale }) {
             🎁 {left > 0 ? tt.collect.left.replace("{n}", String(left)) : "✓"}
           </div>
           {note && <div role="status" className="absolute bottom-3 left-1/2 z-30 -translate-x-1/2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-2 text-sm font-bold shadow-[0_3px_0_var(--shadow-ink)]">{note}</div>}
+
+          {/* filmové pruhy, titulky a přeskočení cut scény */}
+          <div ref={cineBars} aria-hidden className="pointer-events-none absolute inset-0 z-[24]">
+            <div className="absolute left-0 right-0 top-0 bg-black" style={{ height: 0 }} />
+            <div className="absolute bottom-0 left-0 right-0 bg-black" style={{ height: 0 }} />
+          </div>
+          {caption && (
+            <div role="status" className="pointer-events-none absolute inset-x-0 bottom-[11%] z-[26] flex justify-center px-4">
+              <p className="market-boom max-w-[44rem] rounded-2xl bg-black/70 px-4 py-2 text-center text-[clamp(13px,1.9cqw,26px)] font-extrabold leading-snug text-white">{caption}</p>
+            </div>
+          )}
+          {cine && cine !== "enter" && (
+            <button type="button" onClick={skipScene} className="btn-bouncy absolute bottom-3 right-3 z-30 bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
+              ⏭ {st.skip}
+            </button>
+          )}
+          <div aria-hidden className="pointer-events-none absolute inset-0 z-[27] bg-white transition-opacity duration-200" style={{ opacity: fade ? 1 : 0 }} />
 
           {phase && (
             <>
@@ -507,12 +889,18 @@ export function TownHub({ locale }: { locale: Locale }) {
                 <div className="absolute bottom-0 left-0 right-0 bg-black" style={{ height: 0 }} />
               </div>
               <div ref={count} aria-hidden className="market-count" />
-              <button type="button" onClick={() => handle.current?.skip()} className="btn-bouncy absolute bottom-3 right-3 z-30 bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
-                ⏭ {st.skip}
-              </button>
+              {phase.kind !== "path" && (
+                <button type="button" onClick={() => handle.current?.skip()} className="btn-bouncy absolute bottom-3 right-3 z-30 bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
+                  ⏭ {st.skip}
+                </button>
+              )}
             </>
           )}
           <div className="absolute right-3 top-3 z-30 flex gap-2">
+            <button type="button" onClick={() => !busyScene && playIntro()} disabled={busyScene} title={tl.ui.replay} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110 disabled:opacity-50">
+              <span aria-hidden>🎬</span>
+              <span className="sr-only">{tl.ui.replay}</span>
+            </button>
             <button type="button" onClick={toggleNight} aria-pressed={night} title={night ? tt.day : tt.night} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110">
               <span aria-hidden>{night ? "☀️" : "🌙"}</span>
               <span className="sr-only">{night ? tt.day : tt.night}</span>
@@ -522,6 +910,22 @@ export function TownHub({ locale }: { locale: Locale }) {
               <span className="sr-only">{sound ? st.soundOn : st.soundOff}</span>
             </button>
           </div>
+          {openNpc && !busyScene && (
+            <TownNpcPanel
+              key={openNpc}
+              locale={locale}
+              npc={openNpc}
+              art={{ f: SPR[FOLK.find((f) => f.key === openNpc)!.k].f, n: SPR[FOLK.find((f) => f.key === openNpc)!.k].n }}
+              loggedIn={col.loggedIn}
+              snap={npcSnap}
+              points={npcPoints}
+              onClose={() => setOpenNpc(null)}
+              onUpdate={(snap, points) => {
+                setNpcSnap(snap);
+                setNpcPoints(points);
+              }}
+            />
+          )}
         </div>
       </div>
 
@@ -561,7 +965,7 @@ export function TownHub({ locale }: { locale: Locale }) {
       </section>
 
       {board && (
-        <Modal title={`📋 ${tt.quests.title}`} onClose={() => setBoard(false)} closeLabel={m.close}>
+        <Modal title={`📋 ${tt.quests.title}`} onClose={closeBoard} closeLabel={m.close}>
           <DailyChallenges locale={locale} />
         </Modal>
       )}
