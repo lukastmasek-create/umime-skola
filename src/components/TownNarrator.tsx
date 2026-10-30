@@ -33,15 +33,21 @@ export function useTypewriter(text: string, cps = 42) {
   return { text: text.slice(0, shown), done: shown >= text.length, finish: () => setShown(text.length) };
 }
 
-/** Animovaný portrét z pásu snímků (stejné sprity jako postavy v městečku). */
+/** Portrét mluvící postavy: obrázek 3D postavy (n = 1), nebo animovaný pás snímků. */
 export function Portrait({ art, talking, className = "" }: { art: Art; talking?: boolean; className?: string }) {
+  const src = art.f.startsWith("/") ? art.f : `/home/mesto/${art.f}.webp`;
   return (
     <span aria-hidden className={`block overflow-hidden rounded-2xl border-2 border-[var(--edge)] bg-[radial-gradient(circle_at_50%_35%,#fff7da,#ffd98a)] ${className}`}>
       <span className={`block h-full w-full ${talking ? "town-talk" : ""}`}>
-        <span
-          className="town-sprite block h-full w-full"
-          style={{ transform: "scale(1.6)", transformOrigin: "50% 28%", backgroundImage: `url(${art.f.startsWith("/") ? art.f : `/home/mesto/${art.f}.webp`})`, ["--n" as string]: art.n, animationDuration: `${art.dur ?? 2}s` }}
-        />
+        {art.n === 1 ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={src} alt="" className="block h-full w-full object-cover" draggable={false} />
+        ) : (
+          <span
+            className="town-sprite block h-full w-full"
+            style={{ transform: "scale(1.6)", transformOrigin: "50% 28%", backgroundImage: `url(${src})`, ["--n" as string]: art.n, animationDuration: `${art.dur ?? 2}s` }}
+          />
+        )}
       </span>
     </span>
   );

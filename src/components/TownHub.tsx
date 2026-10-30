@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DailyChallenges } from "@/components/DailyChallenges";
 import { Modal, type Snapshot } from "@/components/ShopView";
-import { readCam, runPath, runPirate, runSpace, type Geo, type Handle, type Pt } from "@/lib/market-cinema";
+import { readCam, runPath, runPirate, type Geo, type Handle, type Pt } from "@/lib/market-cinema";
 import { runWorld } from "@/lib/market-cinema-worlds";
 import { runEnter, type DoorKind } from "@/lib/market-cinema-doors";
 import { camTransform, confettiBurst, createEventFx, createWeatherFx, dayPhaseOf, eventForDay, EVENT_SHOT, PHASE_TINT, resetCam, tweenCam, weatherForDay } from "@/lib/town-scenes";
@@ -262,6 +262,7 @@ export function TownHub({ locale }: { locale: Locale }) {
   const focus = useRef<(() => Pt | null) | null>(null); // co má být uprostřed obrazovky (px v rámečku), jinak hrdina
   const focusY = useRef(0.55);
   const view = useRef<HTMLDivElement>(null);
+  const space3d = useRef<HTMLDivElement>(null);
   const heroBubble = useRef<HTMLDivElement>(null);
   const talkRef = useRef<NpcKey | null>(null); // s kým hrdina mluví nebo ke komu jde (ten stojí a dívá se na něj)
   const face = useRef<Partial<Record<NpcKey, boolean>>>({});
@@ -297,6 +298,10 @@ export function TownHub({ locale }: { locale: Locale }) {
   const wxCv = useRef<HTMLCanvasElement>(null);
   const phaseNow = dayPhaseOf(hour);
   const night = mode === "night" || (mode === "auto" && phaseNow === "night");
+  const nightRef = useRef(night);
+  useEffect(() => {
+    nightRef.current = night;
+  }, [night]);
   const tint = mode === "auto" ? PHASE_TINT[phaseNow] : null;
   const lampsOn = night || (mode === "auto" && phaseNow === "dusk");
   const eventText = tl.events.find((e) => e.id === eventId) ?? tl.events[0];
@@ -483,6 +488,30 @@ export function TownHub({ locale }: { locale: Locale }) {
     return () => {
       cancelAnimationFrame(raf);
       io.disconnect();
+    };
+  }, []);
+
+  // 3D postavy: do obyvatel, psa i hrdiny se místo pásů snímků kreslí jejich 3D modely z Blenderu (three.js se načte až teď)
+  useEffect(() => {
+    let off = false;
+    let h: { stop: () => void } | null = null;
+    const id = window.setTimeout(() => {
+      void import("@/lib/town3d/folk").then(({ startFolk3D }) => {
+        if (off) return;
+        h = startFolk3D(
+          () => [
+            ...FOLK.map((f) => npcSpr.current[f.key]),
+            dogSpr.current,
+            heroSpr.current,
+          ],
+          { night: () => nightRef.current },
+        );
+      });
+    }, 300);
+    return () => {
+      off = true;
+      window.clearTimeout(id);
+      h?.stop();
     };
   }, []);
 
@@ -901,7 +930,7 @@ export function TownHub({ locale }: { locale: Locale }) {
       const pts = ids.map((n) => HUB.graf.nodes[n]);
       return onNode ? pts.slice(1) : pts;
     };
-    const full = (r2: typeof r) => r2 as Parameters<typeof runSpace>[0];
+    const full = (r2: typeof r) => r2 as Parameters<typeof runPirate>[0];
     if (phase.kind === "path" && phase.target) {
       const place = phase.target;
       const walk = rt(place.id);
@@ -926,13 +955,20 @@ export function TownHub({ locale }: { locale: Locale }) {
         false,
       );
     } else if (phase.kind === "space") {
-      if (!r.sky || !r.bgDark || !r.rocket || !r.bars || !r.count) return;
-      const nodes = rt("stanice");
-      const pad = HUB.places.stanice.raketa ?? HUB.places.stanice.door;
-      const walkEnd = nodes[nodes.length - 1] ?? start;
-      handle.current = runPath(r as Parameters<typeof runPath>[0], geoFor(nodes, start, { rocketW: 0.22 }), () => {
-        handle.current = runSpace(full(r), geoFor([], walkEnd, { rocket: pad, rocketW: 0.22 }), () => leave(`/${locale}/uzivatelsky-obchod?svet=space&film=1`));
+      // hrdina dojde k rampě, pak se obraz prolne do 3D letu na stanici (three.js se načítá už během chůze)
+      let alive = true;
+      const mod = import("@/lib/town3d/space");
+      handle.current = runPath(r as Parameters<typeof runPath>[0], geoFor(rt("stanice"), start), () => {
+        void mod.then(({ runSpace3D }) => {
+          const el = space3d.current;
+          if (!alive || !el) return;
+          handle.current = runSpace3D(el, { look: getHeroLook(), onEnd: () => leave(`/${locale}/uzivatelsky-obchod?svet=space&film=1`) });
+        });
       }, false);
+      return () => {
+        alive = false;
+        handle.current?.stop();
+      };
     } else if (phase.kind === "pirate") {
       if (!r.sky || !r.bgDark || !r.rocket || !r.bars || !r.count) return;
       const nodes = rt("pristav");
@@ -1615,6 +1651,7 @@ export function TownHub({ locale }: { locale: Locale }) {
               <div className="absolute bottom-0 left-0 right-0 bg-black" style={{ height: 0 }} />
             </div>
             <div ref={count} aria-hidden className="market-count" />
+            {phase.kind === "space" && <div ref={space3d} className="absolute inset-0" />}
             {phase.kind !== "path" && (
               <button type="button" onClick={() => handle.current?.skip()} className="btn-bouncy pointer-events-auto absolute bottom-3 right-3 bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
                 ⏭ {st.skip}
