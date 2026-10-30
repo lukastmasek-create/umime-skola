@@ -2634,6 +2634,13 @@ select:not(:focus) {
   }
 }
 
+/* Dotyková tlačítka her jen na zařízeních s dotykem; na počítači se hraje klávesnicí a myší. */
+@media not (any-pointer: coarse) {
+  .fs-pad {
+    display: none !important;
+  }
+}
+
 /* plachetnice na stránce kurzů: pás má 12 snímků (globe-sprite počítá s 24) */
 .ship-sprite {
   background-repeat: no-repeat;
@@ -3183,4 +3190,55 @@ html.town-full .site-header, html.town-full body > footer { display: none; }
 .town3d {
   background-image: none !important;
   animation: none !important;
+}
+
+/* Hry v kurzech: úvodní obrazovka, pravda/lež, bingo, seznam her */
+.game-intro-emoji {
+  animation: game-intro-bob 2.4s ease-in-out infinite;
+}
+@keyframes game-intro-bob {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-6px) rotate(3deg); }
+}
+.tf-card {
+  animation: tf-in 0.22s ease-out;
+}
+@keyframes tf-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+.tf-bonus {
+  animation: tf-bonus 1.2s ease-out forwards;
+}
+@keyframes tf-bonus {
+  0% { opacity: 0; transform: scale(0.6); }
+  20% { opacity: 1; transform: scale(1.15); }
+  80% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: translateY(-12px); }
+}
+.bingo-pop {
+  animation: bingo-pop 1.4s ease-out forwards;
+}
+@keyframes bingo-pop {
+  0% { opacity: 0; transform: translateY(-50%) scale(0.4) rotate(-8deg); }
+  25% { opacity: 1; transform: translateY(-50%) scale(1.2) rotate(4deg); }
+  70% { opacity: 1; transform: translateY(-50%) scale(1) rotate(0); }
+  100% { opacity: 0; transform: translateY(-80%) scale(1); }
+}
+.game-tile-emoji {
+  transition: transform 0.25s ease;
+}
+.game-tile:hover .game-tile-emoji {
+  transform: scale(1.15) rotate(-6deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-intro-emoji,
+  .tf-card,
+  .tf-bonus,
+  .bingo-pop {
+    animation: none;
+  }
+  .game-tile-emoji {
+    transition: none;
+  }
 }

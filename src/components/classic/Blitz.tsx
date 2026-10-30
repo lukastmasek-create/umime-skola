@@ -51,6 +51,14 @@ export function Blitz({
     return () => window.clearInterval(id);
   }, [phase]);
 
+  // Úvodní obrazovku (jak hrát, start) obstará ClassicGameInner, takže čas běží hned.
+  useEffect(() => {
+    if (phase !== "ready") return;
+    deadline.current = Date.now() + total * 1000;
+    setLeft(total); // eslint-disable-line react-hooks/set-state-in-effect
+    setPhase("play");
+  }, [phase, total]);
+
   const q = deck[index];
 
   const pickRef = useRef<(i: number) => void>(() => {});
@@ -94,12 +102,6 @@ export function Blitz({
   }, []);
 
   if (deck.length < 12) return <p className="card p-6">{t.noData}</p>;
-
-  function start() {
-    deadline.current = Date.now() + total * 1000;
-    setLeft(total);
-    setPhase("play");
-  }
 
   function restart() {
     setRound((n) => n + 1);
@@ -162,17 +164,6 @@ export function Blitz({
             </ul>
           )}
         </FinishCard>
-      ) : phase === "ready" ? (
-        <div className="card flex flex-col items-center gap-4 p-8 text-center">
-          <p className="text-5xl">⚡</p>
-          <p className="text-xl font-bold">{t.quiz.ready}</p>
-          <p className="text-sm text-[var(--muted)]">
-            {total} s · −{PENALTY} s
-          </p>
-          <button type="button" onClick={start} className="btn-bouncy btn-primary btn-lg">
-            {t.quiz.start}
-          </button>
-        </div>
       ) : (
         <div className="card flex flex-col gap-4 p-5">
           <div className="h-3 overflow-hidden rounded-full bg-[var(--surface-muted)]" aria-hidden>

@@ -3,18 +3,18 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { SpaceEngine, GAME_HEIGHT, GAME_WIDTH, type EngineConfig } from "@/lib/space-engine";
-import { MarioEngine } from "@/lib/mario-engine";
 import { PacmanEngine } from "@/lib/pacman-engine";
 import { SnakeEngine } from "@/lib/snake-engine";
 import { BreakoutEngine } from "@/lib/breakout-engine";
 import { TetrisEngine } from "@/lib/tetris-engine";
 import { KongEngine } from "@/lib/kong-engine";
-import { CentipedeEngine } from "@/lib/centipede-engine";
 import { FlappyEngine } from "@/lib/flappy-engine";
 import { MoleEngine } from "@/lib/mole-engine";
 import { NinjaEngine } from "@/lib/ninja-engine";
 import type { HeldKey } from "@/lib/arcade-base";
-import { GAMES, type GameSlug } from "@/lib/games";
+import { GAMES, runLength, type GameSlug } from "@/lib/games";
+import { readBest, saveBest, starsFor, type Best } from "@/lib/game-best";
+import { getGamesUiText } from "@/i18n/games-meta";
 import { getArcadeText, isArcadeSlug } from "@/i18n/arcade";
 import { getGameText, type GameQuestion, type GameText } from "@/i18n/game";
 import { DailyRecap } from "@/components/DailyChallenges";
@@ -36,7 +36,6 @@ type UpgradeKey = "fire" | "life" | "slow";
 type Upgrades = Record<UpgradeKey, number>;
 type Resolved = { kind: "correct" | "wrong" | "missed"; pts?: number };
 
-const QUESTIONS_PER_RUN = 8;
 // Jak dlouho zůstane vysvětlení na obrazovce, než hra sama pokračuje.
 const AUTO_CONTINUE_MS = { correct: 4500, other: 7000 };
 const BASE_FIRE_COOLDOWN = 0.35;
@@ -66,7 +65,6 @@ const PADS: Partial<Record<GameSlug, PadSpec>> = {
   breakout: { keys: ["left", "right", "fire"] },
   tetris: { keys: ["left", "right", "up", "down", "fire"], up: "⟳", down: "▼" },
   kong: { keys: ["left", "right", "up", "down", "fire"] },
-  stonozka: { keys: ["left", "right", "up", "down", "fire"] },
   flappy: { keys: ["fire"] },
   mole: { keys: ["left", "right", "fire"] },
   ninja: { keys: ["left", "right", "up", "down", "fire"] },
@@ -81,7 +79,7 @@ function shuffle<T>(items: T[]): T[] {
   return copy;
 }
 
-function prepareRun(questions: GameQuestion[], count = QUESTIONS_PER_RUN): GameQuestion[] {
+function prepareRun(questions: GameQuestion[], count: number): GameQuestion[] {
   return shuffle(questions)
     .slice(0, count)
     .map((q) => {
@@ -116,6 +114,18 @@ function HoldButton({
     >
       {children}
     </button>
+  );
+}
+
+function ResultStars({ stars }: { stars: number }) {
+  return (
+    <div className="flex gap-1 text-3xl leading-none" aria-label={`${stars}/3`}>
+      {[0, 1, 2].map((i) => (
+        <span key={i} className="finish-star" style={{ animationDelay: `${i * 0.18}s`, opacity: i < stars ? 1 : 0.2, filter: i < stars ? undefined : "grayscale(1)" }} aria-hidden>
+          ⭐
+        </span>
+      ))}
+    </div>
   );
 }
 
@@ -202,6 +212,7 @@ export function SpaceQuizGame({
   backHref,
   questions,
   game = "space-invaders",
+  level = 3,
 }: {
   locale: Locale;
   courseSlug: string;
@@ -209,33 +220,26 @@ export function SpaceQuizGame({
   backHref: string;
   questions?: GameQuestion[];
   game?: GameSlug;
+  // Obtížnost kurzu 1–5: určuje délku kola.
+  level?: number;
 }) {
   const base = getGameText(locale);
-  const mario = game === "super-mario";
+  const ui = getGamesUiText(locale);
   // Had je nekonečná hra: otázky se opakují, dokud hráč nepřijde o všechny životy.
   const endless = game === "snake";
   const arcade = isArcadeSlug(game) ? getArcadeText(game, locale) : null;
-  const emoji = game === "space-invaders" ? "🚀" : (GAMES.find((g) => g.slug === game)?.emoji ?? "🎮");
+  const emoji = GAMES.find((g) => g.slug === game)?.emoji ?? "🎮";
   const pad = PADS[game];
-  const t: GameText = mario
+  const t: GameText = arcade
     ? {
         ...base,
-        title: base.mario.title,
-        intro: base.mario.intro,
-        controls: base.mario.controls,
-        fire: base.mario.jump,
-        upgradeFire: base.mario.upgradeJump,
+        title: arcade.title,
+        intro: arcade.intro,
+        controls: arcade.controls,
+        fire: arcade.action,
+        upgradeFire: arcade.upgradeAction,
       }
-    : arcade
-      ? {
-          ...base,
-          title: arcade.title,
-          intro: arcade.intro,
-          controls: arcade.controls,
-          fire: arcade.action,
-          upgradeFire: arcade.upgradeAction,
-        }
-      : base;
+    : base;
   const storageKey = `game:${courseSlug}`;
   const hasCourseQuestions = !!questions && questions.length > 0;
   const source = hasCourseQuestions ? questions : t.questions;
@@ -271,6 +275,9 @@ export function SpaceQuizGame({
   const [flash, setFlash] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [completed, setCompleted] = useState(false);
+  // Osobní rekord pro tuhle hru, kurz a obtížnost; `newBest` po kole, které ho překonalo.
+  const [best, setBest] = useState<Best | null>(null);
+  const [newBest, setNewBest] = useState(false);
   const [xpGained, setXpGained] = useState(0);
   const [muted, setMutedState] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -298,8 +305,9 @@ export function SpaceQuizGame({
     } catch {
       // localStorage unavailable or corrupted — start fresh.
     }
+    setBest(readBest(game, courseSlug, level));
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, [storageKey]);
+  }, [storageKey, game, courseSlug, level]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -310,9 +318,7 @@ export function SpaceQuizGame({
       onDamage: () => handlersRef.current.onDamage(),
     };
     const engine: QuizEngine =
-      game === "super-mario"
-        ? new MarioEngine(canvas, callbacks)
-        : game === "pac-man"
+      game === "pac-man"
           ? new PacmanEngine(canvas, callbacks)
           : game === "snake"
             ? new SnakeEngine(canvas, callbacks)
@@ -322,9 +328,7 @@ export function SpaceQuizGame({
                 ? new TetrisEngine(canvas, callbacks)
                 : game === "kong"
                   ? new KongEngine(canvas, callbacks)
-                  : game === "stonozka"
-                    ? new CentipedeEngine(canvas, callbacks)
-                    : game === "flappy"
+                  : game === "flappy"
                       ? new FlappyEngine(canvas, callbacks)
                       : game === "mole"
                         ? new MoleEngine(canvas, callbacks)
@@ -383,7 +387,6 @@ export function SpaceQuizGame({
         round: index,
         boss: total >= 4 && index === total - 1,
       },
-      mario ? q.prompt : undefined,
     );
   }
 
@@ -407,7 +410,7 @@ export function SpaceQuizGame({
     const pool = only && only.length > 0 ? only : source;
     const newRun = endless
       ? Array.from({ length: 6 }, () => prepareRun(pool, pool.length)).flat()
-      : prepareRun(pool, Math.min(QUESTIONS_PER_RUN, pool.length));
+      : prepareRun(pool, Math.min(only && only.length > 0 ? only.length : runLength(level), pool.length));
     setMistakes([]);
     setAsked(0);
     repeatsLeftRef.current = 2;
@@ -469,6 +472,16 @@ export function SpaceQuizGame({
     setCoins(nextCoins);
     persist(nextCoins, upgrades);
     claimXp(score + comboBonus);
+    if (!endless) {
+      const right = Math.max(0, asked - mistakes.length);
+      const result = { stars: survived ? starsFor(right, Math.max(1, asked)) : 0, score: score + comboBonus };
+      const improved = saveBest(game, courseSlug, level, result);
+      setNewBest(improved);
+      if (improved) setBest(result);
+    } else if (saveBest(game, courseSlug, level, { stars: 0, score: score + comboBonus })) {
+      setNewBest(true);
+      setBest({ stars: 0, score: score + comboBonus });
+    } else setNewBest(false);
     setCompleted(survived);
     setPhase("result");
   }
@@ -615,10 +628,10 @@ export function SpaceQuizGame({
     return () => window.removeEventListener("keydown", onKey);
   }, [phase, paused]);
 
-  // Space Invaders jede po sobě: po vysvětlení se sama načte další otázka,
+  // Akční hry jedou po sobě: po vysvětlení se sama načte další otázka,
   // dokud hráč hru nepozastaví. U posledního kola nebo po prohře se nepokračuje.
   useEffect(() => {
-    if (mario || phase !== "explain" || paused || !resolved) return;
+    if (phase !== "explain" || paused || !resolved) return;
     if (lives <= 0 || qIndex + 1 >= run.length) return;
     const delay = resolved.kind === "correct" ? AUTO_CONTINUE_MS.correct : AUTO_CONTINUE_MS.other;
     const id = window.setInterval(() => {
@@ -630,7 +643,7 @@ export function SpaceQuizGame({
       }
     }, 100);
     return () => window.clearInterval(id);
-  }, [mario, phase, paused, resolved, lives, qIndex, run.length]);
+  }, [phase, paused, resolved, lives, qIndex, run.length]);
 
   // Pauza klávesou P nebo Esc a automaticky, když hráč přepne na jinou záložku.
   useEffect(() => {
@@ -654,7 +667,7 @@ export function SpaceQuizGame({
   const question = run[qIndex];
   const showExplanation = phase === "explain" && question && resolved;
   const lastQuestion = qIndex + 1 >= run.length;
-  const autoContinuing = !mario && lives > 0 && !lastQuestion;
+  const autoContinuing = lives > 0 && !lastQuestion;
   const autoDelay = resolved?.kind === "correct" ? AUTO_CONTINUE_MS.correct : AUTO_CONTINUE_MS.other;
 
   function setHeld(key: HeldKey, down: boolean) {
@@ -666,7 +679,7 @@ export function SpaceQuizGame({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="fs-title">
           <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-            {mario ? "🍄" : emoji} {t.title}
+            {emoji} {t.title}
           </h1>
           <p className="text-sm text-[var(--muted)]">{courseTitle}</p>
         </div>
@@ -719,7 +732,7 @@ export function SpaceQuizGame({
         </div>
       </div>
 
-      {(phase === "playing" || phase === "explain") && question && !mario && (
+      {(phase === "playing" || phase === "explain") && question && (
         <p className="rounded-xl bg-[var(--brand-50)] px-4 py-3 text-lg font-bold text-[var(--brand-700)]">
           {question.prompt}
         </p>
@@ -794,6 +807,19 @@ export function SpaceQuizGame({
         <div className="fs-panel flex flex-col gap-4">
           <p className="text-sm text-[var(--muted)]">{t.intro}</p>
           <p className="text-xs text-[var(--faint)]">⌨️ {t.controls}</p>
+          <div className="flex flex-wrap gap-2 text-xs font-semibold">
+            {!endless && (
+              <span className="pill bg-[var(--surface-muted)] px-3 py-1.5">
+                {ui.length}: {Math.min(runLength(level), source.length)} {ui.questions}
+              </span>
+            )}
+            {best && (
+              <span className="pill bg-[var(--surface-muted)] px-3 py-1.5">
+                🏆 {ui.bestSoFar}: {!endless ? `${"⭐".repeat(best.stars) || "–"} · ` : ""}
+                {best.score}
+              </span>
+            )}
+          </div>
           {game === "space-invaders" && <p className="text-xs text-[var(--faint)]">💡 {t.tipDodge}</p>}
           <DifficultyPicker t={t} value={difficulty} onChange={setDifficulty} />
           <UpgradeShop t={t} coins={coins} upgrades={upgrades} onBuy={buy} />
@@ -873,7 +899,7 @@ export function SpaceQuizGame({
             onHold={(down) => setHeld("fire", down)}
             className="btn-bouncy h-14 flex-1 select-none rounded-2xl bg-[var(--accent-500)] text-sm font-bold text-white sm:max-w-xs"
           >
-            {mario ? "🦘" : "🔫"} {t.fire}
+            🔫 {t.fire}
           </HoldButton>
           <HoldButton
             onHold={(down) => setHeld("right", down)}
@@ -949,6 +975,16 @@ export function SpaceQuizGame({
           <p className="text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
             {completed ? t.runComplete : `${t.gameOver} 💥`}
           </p>
+          {!endless && asked > 0 && (
+            <ResultStars stars={completed ? starsFor(Math.max(0, asked - mistakes.length), asked) : 0} />
+          )}
+          {(newBest || best) && (
+            <p className={`pill self-start px-3 py-1.5 text-sm font-semibold ${newBest ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface-muted)]"}`}>
+              🏆 {newBest ? ui.newBest : ui.bestSoFar}
+              {best && !endless ? ` · ${"⭐".repeat(best.stars) || "–"}` : ""}
+              {best ? ` · ${best.score} ${t.score.toLowerCase()}` : ""}
+            </p>
+          )}
           <p className="text-sm">
             {t.earned}: <span className="font-bold text-[var(--brand-600)]">+{score}</span>
             {bestCombo > 1 && (
