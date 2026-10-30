@@ -1,20 +1,20 @@
-// Cut scény městečka: jednoduchý režisér kamery (plynulé přejezdy mezi záběry s titulky) a efekty denních událostí na plátně.
-// Souřadnice záběrů jsou v poměru k rámečku městečka (x 0..1, y 0..1 včetně oblohy), stejně jako polohy v TownHub.
+// Cut scény městečka: kamera (plynulé přejezdy a přiblížení) a efekty denních událostí na plátně.
+// Souřadnice jsou v poměru k rámečku městečka (x 0..1, y 0..1 včetně oblohy), stejně jako polohy v TownHub.
+// Scény samotné (vypravěč, chůze hrdiny) skládá TownHub z těchto kroků.
 
 export type Pt = [number, number];
-export type Shot = { to: Pt; zoom: number; dur: number; hold?: number; caption?: string; at?: () => void };
-export type Handle = { skip: () => void; stop: () => void };
 
 const ease = (t: number) => t * t * (3 - 2 * t);
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
-function applyCam(cam: HTMLElement, box: HTMLElement, p: Pt, zoom: number) {
+/** Kamera nad vrstvou `cam`: bod `p` (zlomky rámečku) se snaží dostat doprostřed, `zoom` ≥ 1 přibližuje. */
+export function camTransform(box: HTMLElement, p: Pt, zoom: number) {
   const W = box.clientWidth;
   const H = box.clientHeight;
-  const tx = clamp(W / 2 - p[0] * W * zoom, W - W * zoom, 0);
-  const ty = clamp(H / 2 - p[1] * H * zoom, H - H * zoom, 0);
-  cam.style.transformOrigin = "0 0";
-  cam.style.transform = `translate(${tx}px, ${ty}px) scale(${zoom})`;
+  const z = Math.max(1, zoom);
+  const tx = clamp(W / 2 - p[0] * W * z, W - W * z, 0);
+  const ty = clamp(H / 2 - p[1] * H * z, H - H * z, 0);
+  return { tx, ty, z, css: `translate(${tx}px, ${ty}px) scale(${z})` };
 }
 
 export function resetCam(cam: HTMLElement | null) {
@@ -23,63 +23,37 @@ export function resetCam(cam: HTMLElement | null) {
   cam.style.transformOrigin = "";
 }
 
-/** Přehraje záběry po sobě; mezi záběry se kamera plynule přesouvá a přibližuje. `bars` (0..1) řídí černé pruhy. */
-export function runShots(
-  r: { box: HTMLElement; cam: HTMLElement },
-  shots: Shot[],
-  hooks: { onCaption: (text: string | null, index: number) => void; onBars: (k: number) => void; onEnd: () => void },
-  from: { to: Pt; zoom: number } = { to: [0.5, 0.5], zoom: 1 },
-): Handle {
-  let raf = 0;
-  let done = false;
-  const t0 = performance.now();
-  const spans: { start: number; move: number; hold: number }[] = [];
-  let acc = 0;
-  for (const s of shots) {
-    spans.push({ start: acc, move: s.dur, hold: s.hold ?? 1.6 });
-    acc += s.dur + (s.hold ?? 1.6);
-  }
-  const total = acc;
-  let fired = -1;
-  const finish = () => {
-    if (done) return;
-    done = true;
-    cancelAnimationFrame(raf);
-    hooks.onCaption(null, -1);
-    hooks.onBars(0);
-    resetCam(r.cam);
-    hooks.onEnd();
-  };
-  const frame = (now: number) => {
-    if (done) return;
-    const t = (now - t0) / 1000;
-    if (t >= total) return finish();
-    let i = spans.findIndex((s, k) => t < s.start + s.move + s.hold || k === spans.length - 1);
-    if (i < 0) i = spans.length - 1;
-    const sp = spans[i];
-    const prev = i === 0 ? from : { to: shots[i - 1].to, zoom: shots[i - 1].zoom };
-    const k = ease(clamp((t - sp.start) / Math.max(sp.move, 0.001), 0, 1));
-    const p: Pt = [prev.to[0] + (shots[i].to[0] - prev.to[0]) * k, prev.to[1] + (shots[i].to[1] - prev.to[1]) * k];
-    applyCam(r.cam, r.box, p, prev.zoom + (shots[i].zoom - prev.zoom) * k);
-    if (fired < i) {
-      fired = i;
-      shots[i].at?.();
-      hooks.onCaption(shots[i].caption ?? null, i);
+/** Plynulý přejezd kamery; vrátí se po doběhnutí, nebo hned při zrušení signálem. */
+export function tweenCam(
+  from: { p: Pt; z: number },
+  to: { p: Pt; z: number },
+  dur: number,
+  apply: (p: Pt, z: number) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  return new Promise((resolve) => {
+    if (dur <= 0 || signal?.aborted) {
+      if (!signal?.aborted) apply(to.p, to.z);
+      return resolve();
     }
-    hooks.onBars(clamp(Math.min(t / 0.6, (total - t) / 0.6), 0, 1));
-    raf = requestAnimationFrame(frame);
-  };
-  raf = requestAnimationFrame(frame);
-  return {
-    skip: finish,
-    stop: () => {
-      done = true;
+    const t0 = performance.now();
+    let raf = 0;
+    const onAbort = () => {
       cancelAnimationFrame(raf);
-      hooks.onCaption(null, -1);
-      hooks.onBars(0);
-      resetCam(r.cam);
-    },
-  };
+      resolve();
+    };
+    signal?.addEventListener("abort", onAbort, { once: true });
+    const frame = (now: number) => {
+      const k = ease(clamp((now - t0) / (dur * 1000), 0, 1));
+      apply([from.p[0] + (to.p[0] - from.p[0]) * k, from.p[1] + (to.p[1] - from.p[1]) * k], from.z + (to.z - from.z) * k);
+      if (k < 1) raf = requestAnimationFrame(frame);
+      else {
+        signal?.removeEventListener("abort", onAbort);
+        resolve();
+      }
+    };
+    raf = requestAnimationFrame(frame);
+  });
 }
 
 // ---------------------------------------------------------------------------------------------- denní události
@@ -93,13 +67,13 @@ export function eventForDay(day: string): EventId {
   return EVENT_IDS[((h >>> 0) % EVENT_IDS.length + EVENT_IDS.length) % EVENT_IDS.length];
 }
 
-/** Kam se kamera dívá, když událost uvádí cut scéna. */
-export const EVENT_SHOT: Record<EventId, { to: Pt; zoom: number }> = {
-  festival: { to: [0.5, 0.62], zoom: 1.9 },
-  fireworks: { to: [0.55, 0.3], zoom: 1.5 },
-  rain: { to: [0.5, 0.3], zoom: 1.5 },
-  balloons: { to: [0.35, 0.5], zoom: 1.6 },
-  market: { to: [0.7, 0.66], zoom: 2.0 },
+/** Kam se kamera dívá, když událost uvádí cut scéna, a kdo ji ohlásí. */
+export const EVENT_SHOT: Record<EventId, { to: Pt; zoom: number; host: "babicka" | "kluk" | "farmar" | "pekar" | "knihovnice" }> = {
+  festival: { to: [0.5, 0.62], zoom: 1.4, host: "babicka" },
+  fireworks: { to: [0.55, 0.3], zoom: 1.2, host: "kluk" },
+  rain: { to: [0.5, 0.3], zoom: 1.2, host: "farmar" },
+  balloons: { to: [0.35, 0.5], zoom: 1.3, host: "kluk" },
+  market: { to: [0.7, 0.66], zoom: 1.5, host: "pekar" },
 };
 
 type Particle = { x: number; y: number; vx: number; vy: number; life: number; max: number; c: string; r: number };
@@ -122,26 +96,46 @@ export function createEventFx(canvas: HTMLCanvasElement, id: EventId) {
       last = now;
       const t = now / 1000;
       ctx.clearRect(0, 0, w, h);
+      // odumřelé částice pryč (jinak by jich přibývalo donekonečna)
+      for (let i = parts.length - 1; i >= 0; i--) if (parts[i].life > parts[i].max || parts[i].y < -h * 0.1) parts.splice(i, 1);
+      if (bursts.length > 8) bursts.splice(0, bursts.length - 8);
       if (strength <= 0.01) return;
       ctx.globalAlpha = Math.min(1, strength);
       const u = h / 700;
       if (id === "festival") {
-        // lampiony stoupají s mihotavým světlem
-        if (parts.length < 26 * strength + 6 && rnd() < dt * 6 * strength) parts.push({ x: rnd() * w, y: h * (0.95 + rnd() * 0.1), vx: (rnd() - 0.5) * 12 * u, vy: -(18 + rnd() * 26) * u, life: 0, max: 14 + rnd() * 8, c: LANTERN[Math.floor(rnd() * LANTERN.length)], r: (7 + rnd() * 6) * u });
+        // papírové lampiony stoupají a mihotavě svítí
+        if (parts.length < 22 * strength + 4 && rnd() < dt * 4 * strength) parts.push({ x: rnd() * w, y: h * (0.95 + rnd() * 0.1), vx: (rnd() - 0.5) * 10 * u, vy: -(16 + rnd() * 22) * u, life: 0, max: 16 + rnd() * 8, c: LANTERN[Math.floor(rnd() * LANTERN.length)], r: (5 + rnd() * 4) * u });
         for (const p of parts) {
           p.life += dt;
           p.x += (p.vx + Math.sin(t * 1.3 + p.max) * 8 * u) * dt;
           p.y += p.vy * dt;
-          const a = Math.min(1, p.life / 1.5) * Math.min(1, (p.max - p.life) / 2);
-          const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 3.2);
-          g.addColorStop(0, "rgba(255,226,150,0.55)");
-          g.addColorStop(1, "rgba(255,200,100,0)");
+          const a = clamp(p.life / 1.5, 0, 1) * clamp((p.max - p.life) / 2, 0, 1);
+          if (a <= 0) continue;
+          const flick = 0.85 + 0.15 * Math.sin(t * 9 + p.max * 3);
+          const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 3.4);
+          g.addColorStop(0, `rgba(255,214,120,${0.5 * flick})`);
+          g.addColorStop(1, "rgba(255,190,90,0)");
           ctx.globalAlpha = a * strength;
           ctx.fillStyle = g;
-          ctx.fillRect(p.x - p.r * 3.2, p.y - p.r * 3.2, p.r * 6.4, p.r * 6.4);
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r * 3.4, 0, Math.PI * 2);
+          ctx.fill();
+          // tělo lampionu: ovál s žebry, tmavá víčka a plamínek uvnitř
           ctx.fillStyle = p.c;
           ctx.beginPath();
-          ctx.roundRect(p.x - p.r * 0.7, p.y - p.r, p.r * 1.4, p.r * 1.8, p.r * 0.5);
+          ctx.ellipse(p.x, p.y, p.r * 0.8, p.r, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "rgba(90,30,10,0.35)";
+          ctx.lineWidth = Math.max(0.6, p.r * 0.1);
+          ctx.beginPath();
+          ctx.ellipse(p.x, p.y, p.r * 0.35, p.r * 0.97, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.fillStyle = "#4a2a14";
+          ctx.fillRect(p.x - p.r * 0.45, p.y - p.r * 1.12, p.r * 0.9, p.r * 0.22);
+          ctx.fillRect(p.x - p.r * 0.45, p.y + p.r * 0.9, p.r * 0.9, p.r * 0.22);
+          ctx.fillStyle = `rgba(255,248,200,${0.75 * flick})`;
+          ctx.beginPath();
+          ctx.ellipse(p.x, p.y + p.r * 0.15, p.r * 0.25, p.r * 0.38, 0, 0, Math.PI * 2);
           ctx.fill();
         }
       } else if (id === "fireworks") {

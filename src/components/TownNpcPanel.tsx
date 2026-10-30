@@ -5,11 +5,11 @@ import { getTownLifeText } from "@/i18n/town-life";
 import { ASKS_PER_DAY, GIFTS, HEART_AT, MAX_HEARTS, NPC_DEF, type GiftId, type NpcKey, type NpcSnapshot } from "@/lib/town-npc";
 import { notifyAccountChanged } from "@/lib/account-events";
 import { sfx } from "@/lib/market-sfx";
+import { Portrait, useTypewriter, type Art } from "@/components/TownNarrator";
 import type { Locale } from "@/i18n/config";
 
 const pickLine = (lines: string[]) => lines[Math.floor(Math.random() * lines.length)];
 
-type Art = { f: string; n: number };
 type View = "menu" | "gift" | "question" | "answer";
 type Question = { prompt: string; options: string[] };
 type Answer = { correct: boolean; correctIndex: number; explanation: string; choice: number };
@@ -24,6 +24,7 @@ export function TownNpcPanel({
   points,
   onClose,
   onUpdate,
+  onTalking,
 }: {
   locale: Locale;
   npc: NpcKey;
@@ -33,6 +34,7 @@ export function TownNpcPanel({
   points: number;
   onClose: () => void;
   onUpdate: (snap: NpcSnapshot, points: number, levelUp: boolean) => void;
+  onTalking?: (talking: boolean) => void; // figurka v městečku poskakuje, dokud mluví
 }) {
   const t = getTownLifeText(locale);
   const text = t.npc[npc];
@@ -51,7 +53,9 @@ export function TownNpcPanel({
     const id = window.setTimeout(() => {
       const h = new Date().getHours();
       const base = pickLine(text.greet);
-      setLine(h < 11 ? `${t.morning} ${base}` : h >= 18 ? `${t.evening} ${base}` : base);
+      const hello = h < 11 ? t.morning : h >= 18 ? t.evening : "";
+      // „Dobré ráno!“ jen tehdy, když ho pozdrav už neobsahuje
+      setLine(hello && !base.toLowerCase().includes(hello.toLowerCase().replace(/[!.]/g, "")) ? `${hello} ${base}` : base);
     }, 0);
     return () => window.clearTimeout(id);
   }, [npc, text, t]);
@@ -146,6 +150,10 @@ export function TownNpcPanel({
     sfx.dock();
   }
 
+  const typed = useTypewriter(line, 48);
+  useEffect(() => {
+    onTalking?.(!typed.done);
+  }, [typed.done, onTalking]);
   const next = hearts < MAX_HEARTS ? HEART_AT[hearts + 1] : null;
   const fp = state?.fp ?? 0;
   const from = HEART_AT[hearts];
@@ -153,12 +161,10 @@ export function TownNpcPanel({
   const btn = "btn-bouncy bg-[var(--surface)] px-3 py-2 text-sm font-bold disabled:opacity-50";
 
   return (
-    <div role="dialog" aria-label={text.name} className="absolute inset-x-2 bottom-2 z-40 sm:inset-x-8">
+    <div role="dialog" aria-label={text.name} className="town-panel-in pointer-events-auto absolute inset-x-2 bottom-2 z-[80] sm:inset-x-8">
       <div className="mx-auto flex max-w-3xl gap-3 rounded-3xl border-2 border-[var(--edge)] bg-[var(--surface)] p-3 shadow-[0_6px_0_var(--shadow-ink)] sm:p-4">
         <div className="flex shrink-0 flex-col items-center gap-1">
-          <div aria-hidden className="h-20 w-20 overflow-hidden rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface-muted)] sm:h-24 sm:w-24">
-            <span className="block h-full w-full" style={{ backgroundImage: `url(/home/mesto/${art.f}.webp)`, backgroundSize: `${art.n * 100}% 100%`, backgroundPosition: "0 0" }} />
-          </div>
+          <Portrait art={art} talking={!typed.done} className="h-20 w-20 sm:h-24 sm:w-24" />
           <div className="text-center text-[11px] font-extrabold leading-tight">
             <div>{text.name}</div>
             <div className="font-semibold text-[var(--muted)]">{text.role}</div>
@@ -180,8 +186,9 @@ export function TownNpcPanel({
               ×
             </button>
           </div>
-          <p className="mb-2 min-h-[2.6rem] rounded-2xl bg-[var(--surface-muted)] px-3 py-2 text-sm font-semibold" aria-live="polite">
-            {line}
+          <p onClick={typed.finish} className="relative mb-2 min-h-[2.6rem] rounded-2xl bg-[var(--surface-muted)] px-3 py-2 text-sm font-semibold sm:text-base" aria-live="polite">
+            {typed.text}
+            {!typed.done && <span className="town-caret" aria-hidden />}
           </p>
           {note && (
             <p role="status" className="mb-2 text-xs font-bold text-[var(--brand-500)]">
@@ -195,7 +202,7 @@ export function TownNpcPanel({
               </button>
               {def.asks && (
                 <button type="button" className={btn} onClick={ask} disabled={busy || (state ? state.asksLeft <= 0 : false)}>
-                  ❓ {t.ui.ask.replace("{name}", text.name.split(" ")[0])}
+                  ❓ {t.ui.ask}
                   {loggedIn && state ? ` (${state.asksLeft}/${ASKS_PER_DAY})` : ""}
                 </button>
               )}

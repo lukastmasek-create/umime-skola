@@ -34,7 +34,10 @@ export type TownLifeText = {
     nextQuestion: string;
   };
   gifts: Record<GiftId, string>;
-  intro: string[];
+  // úvodní prohlídka: vypravěčka provede hrdinu městečkem
+  tour: { hello: string; top: string; you: string; heroHi: string; npcs: string; school: string; harbor: string; rocket: string; controls: string };
+  locked: string;
+  next: string;
   events: EventText[];
   reward: { title: string; caption: string };
   ambient: string[];
@@ -55,7 +58,7 @@ const cs: TownLifeText = {
   },
   ui: {
     talk: "Popovídat si",
-    ask: "Otázka od {name}",
+    ask: "Otázka z učiva",
     gift: "Dát dárek",
     close: "Zavřít",
     friendship: "Přátelství",
@@ -81,7 +84,9 @@ const cs: TownLifeText = {
     nextQuestion: "Další otázka",
   },
   gifts: { flower: "Kytička", book: "Kniha", cake: "Koláč" },
-  intro: ["Vítej v našem městečku!", "V přístavu začíná každé dobrodružství.", "Ve škole se učí a v herně hraje.", "Na věži slávy sídlí nejlepší hráči.", "Nahoře čeká pohádkový les a starý hrad.", "Kam se vydáš nejdřív?"],
+  tour: { hello: "Vítej v našem městečku! Jsem knihovnice Lenka a provedu tě.", top: "Nahoře na kopci je pohádkový les a starý hrad. Brány se otevřou, až je odemkneš.", you: "A tohle jsi ty! Pojďme se seznámit se sousedy.", heroHi: "Ahoj!", npcs: "Na obyvatele klikni a popovídej si. Ptají se na učivo, a když jim pomůžeš nebo dáš dárek, získáš srdíčka.", school: "Ve škole najdeš kurzy, v herně hry a na nástěnce úkoly na každý den.", harbor: "Z přístavu vyplouvá pirátská loď do obchodu s odměnami.", rocket: "A raketa tě vezme až do vesmíru!", controls: "Chodíš šipkami nebo WASD, do budov vejdeš klávesou E nebo kliknutím. A hledej poklady dne!" },
+  locked: "Sem se zatím nedostaneš: {name} se odemyká v obchodě. Pojďme se tam podívat!",
+  next: "Dál",
   events: [
     { id: "festival", title: "Slavnost lampionů", caption: "Dnes je v městečku slavnost lampionů!" },
     { id: "fireworks", title: "Ohňostroj", caption: "Pozor, nad městečkem vzlétají rakety ohňostroje!" },
@@ -108,7 +113,7 @@ const en: TownLifeText = {
   },
   ui: {
     talk: "Have a chat",
-    ask: "Question from {name}",
+    ask: "School question",
     gift: "Give a gift",
     close: "Close",
     friendship: "Friendship",
@@ -134,7 +139,9 @@ const en: TownLifeText = {
     nextQuestion: "Next question",
   },
   gifts: { flower: "Flower", book: "Book", cake: "Pie" },
-  intro: ["Welcome to our little town!", "Every adventure starts at the harbour.", "School is for learning, the arcade for playing.", "The best players live in the tower of fame.", "Up north wait a fairy forest and an old castle.", "Where will you go first?"],
+  tour: { hello: "Welcome to our little town! I'm Lenka the librarian and I'll show you around.", top: "Up on the hill are the fairy forest and the old castle. Their gates open once you unlock them.", you: "And this is you! Let's meet the neighbours.", heroHi: "Hi!", npcs: "Click a resident to chat. They ask about school topics, and helping them or giving gifts earns you hearts.", school: "The school has courses, the arcade has games and the board has daily quests.", harbor: "From the harbour a pirate ship sails to the reward shop.", rocket: "And the rocket takes you all the way to space!", controls: "Walk with the arrow keys or WASD, enter buildings with E or a click. And look for today's treasures!" },
+  locked: "You can't go here yet: {name} is unlocked in the shop. Let's take a look there!",
+  next: "Next",
   events: [
     { id: "festival", title: "Lantern festival", caption: "Today is the lantern festival in town!" },
     { id: "fireworks", title: "Fireworks", caption: "Look out, fireworks are flying over the town!" },
@@ -161,7 +168,7 @@ const de: TownLifeText = {
   },
   ui: {
     talk: "Plaudern",
-    ask: "Frage von {name}",
+    ask: "Lernfrage",
     gift: "Geschenk machen",
     close: "Schließen",
     friendship: "Freundschaft",
@@ -187,7 +194,9 @@ const de: TownLifeText = {
     nextQuestion: "Nächste Frage",
   },
   gifts: { flower: "Blume", book: "Buch", cake: "Kuchen" },
-  intro: ["Willkommen in unserem Städtchen!", "Im Hafen beginnt jedes Abenteuer.", "In der Schule wird gelernt, in der Spielhalle gespielt.", "Im Ruhmesturm wohnen die besten Spieler.", "Oben warten ein Märchenwald und eine alte Burg.", "Wohin gehst du zuerst?"],
+  tour: { hello: "Willkommen in unserem Städtchen! Ich bin Lena, die Bibliothekarin, und zeige dir alles.", top: "Oben auf dem Hügel liegen der Märchenwald und die alte Burg. Ihre Tore öffnen sich, sobald du sie freischaltest.", you: "Und das bist du! Lass uns die Nachbarn kennenlernen.", heroHi: "Hallo!", npcs: "Klick auf die Bewohner und plaudere mit ihnen. Sie stellen Fragen zum Lernstoff, und für Hilfe oder Geschenke bekommst du Herzen.", school: "In der Schule findest du Kurse, in der Spielhalle Spiele und am Brett die Tagesaufgaben.", harbor: "Vom Hafen segelt ein Piratenschiff zum Belohnungsladen.", rocket: "Und die Rakete bringt dich bis ins All!", controls: "Laufe mit den Pfeiltasten oder WASD, betritt Gebäude mit E oder per Klick. Und such die Schätze des Tages!" },
+  locked: "Hier kommst du noch nicht hin: {name} wird im Laden freigeschaltet. Schauen wir mal hin!",
+  next: "Weiter",
   events: [
     { id: "festival", title: "Laternenfest", caption: "Heute ist Laternenfest im Städtchen!" },
     { id: "fireworks", title: "Feuerwerk", caption: "Achtung, über dem Städtchen steigen Feuerwerksraketen auf!" },
@@ -214,7 +223,7 @@ const ru: TownLifeText = {
   },
   ui: {
     talk: "Поболтать",
-    ask: "Вопрос от {name}",
+    ask: "Вопрос по учёбе",
     gift: "Подарить подарок",
     close: "Закрыть",
     friendship: "Дружба",
@@ -240,7 +249,9 @@ const ru: TownLifeText = {
     nextQuestion: "Следующий вопрос",
   },
   gifts: { flower: "Цветок", book: "Книга", cake: "Пирожное" },
-  intro: ["Добро пожаловать в наш городок!", "В порту начинается каждое приключение.", "В школе учатся, а в игровом зале играют.", "В башне славы живут лучшие игроки.", "Наверху ждут сказочный лес и старый замок.", "Куда пойдёшь сначала?"],
+  tour: { hello: "Добро пожаловать в наш городок! Я библиотекарь Лена и всё тебе покажу.", top: "На холме — сказочный лес и старый замок. Их ворота откроются, когда ты их разблокируешь.", you: "А это ты! Давай познакомимся с соседями.", heroHi: "Привет!", npcs: "Нажми на жителя и поболтай с ним. Они задают вопросы по учёбе, а за помощь и подарки ты получишь сердечки.", school: "В школе — курсы, в игровом зале — игры, а на доске — задания на каждый день.", harbor: "Из гавани в магазин наград отплывает пиратский корабль.", rocket: "А ракета унесёт тебя прямо в космос!", controls: "Ходи стрелками или WASD, в здания заходи клавишей E или кликом. И ищи сокровища дня!" },
+  locked: "Сюда пока нельзя: {name} открывается в магазине. Давай заглянем туда!",
+  next: "Дальше",
   events: [
     { id: "festival", title: "Праздник фонариков", caption: "Сегодня в городке праздник фонариков!" },
     { id: "fireworks", title: "Фейерверк", caption: "Внимание, над городком взлетают ракеты фейерверка!" },

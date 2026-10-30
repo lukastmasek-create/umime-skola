@@ -2026,6 +2026,61 @@ select:not(:focus) {
   0%, 96% { opacity: 1; }
   100% { opacity: 0; }
 }
+/* Městečko: dialogy a vypravěč cut scén */
+.town-panel-in {
+  animation: town-panel-in 0.35s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+@keyframes town-panel-in {
+  from { transform: translateY(40px) scale(0.96); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+/* mluvící postava (obal portrétu i figurky v městečku) poskakuje */
+.town-talk {
+  animation: town-talk 0.32s ease-in-out infinite;
+}
+@keyframes town-talk {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -4%; }
+}
+.town-caret {
+  display: inline-block;
+  width: 0.5em;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -0.12em;
+  background: currentColor;
+  opacity: 0.5;
+  animation: town-caret 0.8s steps(1) infinite;
+}
+@keyframes town-caret {
+  50% { opacity: 0; }
+}
+.town-next {
+  animation: town-next 1s ease-in-out infinite;
+}
+@keyframes town-next {
+  50% { transform: translateX(4px); }
+}
+.town-say {
+  animation: town-say 0.3s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+@keyframes town-say {
+  from { transform: translate(-50%, -80%) scale(0.4); opacity: 0; }
+  to { transform: translate(-50%, -100%) scale(1); opacity: 1; }
+}
+.town-cine-bar {
+  transition: height 0.6s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .town-panel-in,
+  .town-talk,
+  .town-caret,
+  .town-next,
+  .town-say {
+    animation: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .town-sprite,
   .town-stars,
