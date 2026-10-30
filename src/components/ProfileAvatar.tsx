@@ -17,6 +17,7 @@ export function ProfileAvatar({
   frame,
   custom,
   onParts,
+  snapshotRef,
   className = "h-[190px] w-[150px]",
   svgSize = 104,
 }: {
@@ -25,6 +26,7 @@ export function ProfileAvatar({
   frame?: FrameId | null;
   custom?: AvatarCustom;
   onParts?: (parts: AvatarParts) => void;
+  snapshotRef?: { current: (() => string | null) | null };
   className?: string;
   svgSize?: number;
 }) {
@@ -52,6 +54,7 @@ export function ProfileAvatar({
           label={label}
           custom={custom}
           onParts={onParts}
+          snapshotRef={snapshotRef}
           onReady={() => setState({ model, status: "ready" })}
           onError={() => setState({ model, status: "failed" })}
         />

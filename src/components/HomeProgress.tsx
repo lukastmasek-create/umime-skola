@@ -42,7 +42,7 @@ export function HomeProgress({ locale, registerLabel }: { locale: Locale; regist
   return (
     <div className="card flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
       <div className="flex items-center gap-4">
-        <Avatar id={account.avatar} size={64} />
+        <Avatar id={account.avatar} icon={account.icon} size={64} />
         <div className="min-w-0">
           <p className="truncate text-lg font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
             {account.name ?? p.anonymous}

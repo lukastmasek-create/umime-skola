@@ -7,6 +7,7 @@ import { LevelBadge } from "@/components/LevelBadge";
 import { ProfileCollection } from "@/components/ProfileCollection";
 import { ProfileShowcase } from "@/components/ProfileShowcase";
 import { SubjectMedals } from "@/components/SubjectMedals";
+import { DailyChallenges } from "@/components/DailyChallenges";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { AVATARS, getAvatar, isAvatarUnlocked } from "@/lib/avatars";
 import { TITLES, getTitle, isTitleUnlocked } from "@/lib/titles";
@@ -16,9 +17,11 @@ import { SHOP_ITEMS } from "@/lib/shop";
 import {
   EMPTY_CUSTOM,
   PALETTE,
+  PALETTE_ROWS,
   PATTERNS,
   SLOTS,
   TOGGLES,
+  isHex,
   normalizeCustom,
   type AvatarCustom,
   type AvatarParts,
@@ -27,6 +30,7 @@ import {
 } from "@/lib/avatar-custom";
 import { fill, getProfileText } from "@/i18n/profile";
 import { getCustomText } from "@/i18n/avatar-custom";
+import { getProfileTabsText } from "@/i18n/profile-tabs";
 import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
 
@@ -39,6 +43,7 @@ type Profile = {
   frame?: string | null;
   banner?: string | null;
   custom?: Record<string, AvatarCustom>;
+  icon?: string | null;
   favorites?: Favorites;
   unlocks?: string[];
   points?: number;
@@ -55,6 +60,11 @@ type Profile = {
 };
 
 type Tab = "look" | "avatars" | "titles" | "frames" | "banners";
+type MainTab = "overview" | "collection" | "wardrobe" | "tasks";
+const MAIN_TABS: MainTab[] = ["overview", "collection", "wardrobe", "tasks"];
+const MAIN_ICONS: Record<MainTab, string> = { overview: "🏠", collection: "🏆", wardrobe: "👕", tasks: "✅" };
+
+const HASH: Record<MainTab, string> = { overview: "prehled", collection: "sbirka", wardrobe: "satnik", tasks: "ukoly" };
 
 const DEFAULT_BANNER = "linear-gradient(135deg, #5a6cff 0%, #7a5cff 55%, #ff6f91 100%)";
 
@@ -97,6 +107,66 @@ function XpRing({ level, percent, label }: { level: number; percent: number; lab
   );
 }
 
+// Výběr barvy: tři řady odstínů (světlé, syté, tmavé), návrat k původní barvě a vlastní barva z kapátka.
+function ColorPicker({
+  value,
+  onPick,
+  resetLabel,
+  customLabel,
+  shades,
+  compact = false,
+}: {
+  value: string | undefined;
+  onPick: (hex: string | null) => void;
+  resetLabel: string;
+  customLabel: string;
+  shades: Record<"light" | "bright" | "dark", string>;
+  compact?: boolean;
+}) {
+  const size = compact ? "h-7 w-7" : "h-9 w-9";
+  const ring = "outline outline-[3px] outline-offset-2 outline-[var(--brand-500)]";
+  const inPalette = !!value && PALETTE.includes(value);
+  return (
+    <div className="flex flex-col gap-2">
+      {PALETTE_ROWS.map((row) => (
+        <div key={row.id} className="flex flex-wrap items-center gap-1.5" role="group" aria-label={shades[row.id]}>
+          {!compact && <span className="w-14 shrink-0 text-xs font-semibold text-[var(--faint)]">{shades[row.id]}</span>}
+          {row.colors.map((hex) => (
+            <button
+              key={hex}
+              type="button"
+              onClick={() => onPick(hex)}
+              aria-label={hex}
+              aria-pressed={value === hex}
+              style={{ background: hex }}
+              className={`${size} rounded-full border-2 border-[var(--edge)] shadow-sm transition-transform hover:scale-110 ${value === hex ? ring : ""}`}
+            />
+          ))}
+        </div>
+      ))}
+      <div className="flex flex-wrap items-center gap-2 pt-1">
+        <button
+          type="button"
+          onClick={() => onPick(null)}
+          className={`btn-bouncy flex items-center gap-1.5 bg-[var(--surface-muted)] px-3 py-1.5 text-xs font-bold ${!value ? ring : ""}`}
+        >
+          ↺ {resetLabel}
+        </button>
+        <label className={`btn-bouncy flex cursor-pointer items-center gap-2 bg-[var(--surface-muted)] px-3 py-1.5 text-xs font-bold ${value && !inPalette ? ring : ""}`}>
+          <span aria-hidden className="h-5 w-5 rounded-full border-2 border-[var(--edge)]" style={{ background: value && !inPalette ? value : "conic-gradient(#ff5d73, #ffd24d, #3ddc97, #3fc1ff, #a87bff, #ff5d73)" }} />
+          🎨 {customLabel}
+          <input
+            type="color"
+            className="sr-only"
+            value={value ?? "#ffffff"}
+            onChange={(e) => isHex(e.target.value) && onPick(e.target.value.toLowerCase())}
+          />
+        </label>
+      </div>
+    </div>
+  );
+}
+
 function itemName(kind: "frame" | "banner", ref: string, locale: Locale) {
   return SHOP_ITEMS.find((i) => i.kind === kind && i.ref === ref)?.names[locale] ?? ref;
 }
@@ -104,6 +174,9 @@ function itemName(kind: "frame" | "banner", ref: string, locale: Locale) {
 export function ProfileView({ locale }: { locale: Locale }) {
   const t = getProfileText(locale);
   const c = getCustomText(locale);
+  const pt = getProfileTabsText(locale);
+  const [mainTab, setMainTabState] = useState<MainTab>("overview");
+  const [slot, setSlot] = useState<Slot | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState(false);
   const [saving, setSaving] = useState<string | null>(null);
@@ -111,6 +184,24 @@ export function ProfileView({ locale }: { locale: Locale }) {
   const [parts, setParts] = useState<{ avatar: string; parts: AvatarParts } | null>(null);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const snapshotRef = useRef<(() => string | null) | null>(null);
+
+  // Záložka se pamatuje v adrese (#satnik apod.), takže na ni jde odkázat a přežije obnovení stránky.
+  useEffect(() => {
+    const fromHash = () => {
+      const h = window.location.hash.replace("#", "");
+      const found = MAIN_TABS.find((x) => x === h || HASH[x] === h);
+      if (found) setMainTabState(found);
+    };
+    fromHash();
+    window.addEventListener("hashchange", fromHash);
+    return () => window.removeEventListener("hashchange", fromHash);
+  }, []);
+
+  function setMainTab(x: MainTab) {
+    setMainTabState(x);
+    window.history.replaceState(null, "", `#${HASH[x]}`);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -187,13 +278,26 @@ export function ProfileView({ locale }: { locale: Locale }) {
         setSaveState("saving");
         saveTimer.current = setTimeout(async () => {
           try {
+            // Malá ikonka přebarvené postavy pro hlavičku a žebříčky; bez úprav se ikonka smaže.
+            const changed = Object.keys(next.colors).length > 0 || next.pattern !== "none" || next.hidden.length > 0;
+            let icon: string | null = null;
+            if (changed) {
+              try {
+                icon = snapshotRef.current?.() ?? null;
+              } catch {
+                icon = null;
+              }
+            }
             const res = await fetch("/api/profil", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ customFor: id, custom: next }),
+              body: JSON.stringify({ customFor: id, custom: next, ...(changed && !icon ? {} : { icon }) }),
             });
             if (!res.ok) throw new Error();
             setSaveState("saved");
+            notifyAccountChanged();
+            const fresh = await fetch("/api/profil").then((r) => r.json()).catch(() => null);
+            if (fresh && "icon" in fresh) setProfile((p) => (p ? { ...p, icon: fresh.icon } : p));
           } catch {
             setSaveState("idle");
             setError(true);
@@ -234,6 +338,30 @@ export function ProfileView({ locale }: { locale: Locale }) {
     ownedFrames.length +
     ownedBanners.length;
   const currentParts = parts?.avatar === avatarId ? parts.parts : null;
+  // Nejbližší postavy a tituly, které se odemknou za úroveň.
+  const nextUnlocks = [
+    ...AVATARS.filter((a) => "level" in a.unlock && a.unlock.level > level).map((a) => ({
+      key: `a-${a.id}`,
+      level: (a.unlock as { level: number }).level,
+      name: a.names[locale],
+      preview: <Avatar id={a.id} size={56} />,
+    })),
+    ...TITLES.filter((x) => "level" in x.unlock && x.unlock.level > level).map((x) => ({
+      key: `t-${x.id}`,
+      level: (x.unlock as { level: number }).level,
+      name: x.names[locale],
+      preview: <span className="flex h-14 items-center text-3xl">🏷️</span>,
+    })),
+  ]
+    .sort((a, b) => a.level - b.level)
+    .slice(0, 4);
+  const collection: { id: keyof typeof pt.kinds; icon: string; have: number; total: number; tab: Tab }[] = [
+    { id: "avatars", icon: "🧑‍🚀", have: AVATARS.filter((a) => isAvatarUnlocked(a, level, unlocks)).length, total: AVATARS.length, tab: "avatars" },
+    { id: "titles", icon: "🏷️", have: TITLES.filter((x) => isTitleUnlocked(x, level, unlocks)).length, total: TITLES.length, tab: "titles" },
+    { id: "frames", icon: "🖼️", have: ownedFrames.length, total: FRAME_IDS.length, tab: "frames" },
+    { id: "banners", icon: "🌅", have: ownedBanners.length, total: Object.keys(BANNERS).length, tab: "banners" },
+  ];
+  const activeSlot: Slot | null = currentParts ? (slot && currentParts.slots.includes(slot) ? slot : (currentParts.slots[0] ?? null)) : null;
   const heading = { fontFamily: "var(--font-heading)" };
 
   const tabs: { id: Tab; label: string }[] = [
@@ -254,34 +382,6 @@ export function ProfileView({ locale }: { locale: Locale }) {
     }));
   }
 
-  const swatchRow = (value: string | undefined, onPick: (hex: string | null) => void, label: string) => (
-    <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={label}>
-      <button
-        type="button"
-        onClick={() => onPick(null)}
-        aria-label={c.reset}
-        title={c.reset}
-        className={`h-7 w-7 rounded-full border-2 border-[var(--edge)] bg-[var(--surface-muted)] text-xs font-bold leading-none ${
-          !value ? "outline outline-2 outline-offset-2 outline-[var(--brand-500)]" : ""
-        }`}
-      >
-        ↺
-      </button>
-      {PALETTE.map((hex) => (
-        <button
-          key={hex}
-          type="button"
-          onClick={() => onPick(hex)}
-          aria-label={hex}
-          style={{ background: hex }}
-          className={`h-7 w-7 rounded-full border-2 border-[var(--edge)] transition-transform hover:scale-110 ${
-            value === hex ? "outline outline-2 outline-offset-2 outline-[var(--brand-500)]" : ""
-          }`}
-        />
-      ))}
-    </div>
-  );
-
   return (
     <div className="flex flex-col gap-6">
       {/* Herní karta */}
@@ -295,7 +395,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
 
           <div className="relative flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3 rounded-2xl bg-black/35 px-3 py-2 text-white backdrop-blur-sm">
-              <Avatar id={avatarId} size={44} frame={frame} />
+              <Avatar id={avatarId} icon={profile.icon} size={44} frame={frame} />
               <div className="min-w-0">
                 <h1 className="truncate text-xl font-bold leading-tight" style={heading}>
                   {profile.name || t.anonymous}
@@ -354,6 +454,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
                   frame={frame}
                   custom={custom}
                   onParts={(p) => setParts({ avatar: avatarId, parts: p })}
+                  snapshotRef={snapshotRef}
                   className="h-[320px] w-[250px] sm:h-[400px] sm:w-[300px]"
                   svgSize={170}
                 />
@@ -409,21 +510,124 @@ export function ProfileView({ locale }: { locale: Locale }) {
         </div>
       </section>
 
-      <ProfileShowcase
-        locale={locale}
-        level={level}
-        rank={profile.rank ?? null}
-        points={profile.points ?? 0}
-        avatars={AVATARS.filter((a) => isAvatarUnlocked(a, level, unlocks)).length}
-        titles={TITLES.filter((x) => isTitleUnlocked(x, level, unlocks)).length}
-        looks={ownedFrames.length + ownedBanners.length}
-      />
-
-      <SubjectMedals locale={locale} />
-
       {profile.degraded && <p className="text-sm text-[var(--faint)]">{t.degraded}</p>}
 
-      {/* Úpravy */}
+      <nav className="flex flex-wrap items-center gap-2" role="tablist" aria-label={t.shop}>
+        {MAIN_TABS.map((x) => (
+          <button
+            key={x}
+            type="button"
+            role="tab"
+            aria-selected={mainTab === x}
+            onClick={() => setMainTab(x)}
+            className={`btn-bouncy flex items-center gap-2 px-5 py-2.5 text-sm font-extrabold sm:text-base ${
+              mainTab === x ? "bg-[var(--brand-500)] text-white" : "bg-[var(--surface)]"
+            }`}
+          >
+            <span aria-hidden>{MAIN_ICONS[x]}</span> {pt.tabs[x]}
+          </button>
+        ))}
+        <Link href={`/${locale}/obchod`} className="btn-bouncy ml-auto bg-[var(--accent-yellow)] px-4 py-2.5 text-sm font-bold text-[#16132b]">
+          🛍️ {t.shop} →
+        </Link>
+      </nav>
+
+      {mainTab === "overview" && (
+        <div className="flex flex-col gap-6">
+          <div className="grid gap-4 md:grid-cols-[2fr_1fr]">
+            <section className="card p-5">
+              <h2 className="text-xl font-bold" style={heading}>
+                🔓 {pt.nextUnlocks}
+              </h2>
+              <p className="mb-4 text-sm text-[var(--muted)]">{pt.nextUnlocksHint}</p>
+              {nextUnlocks.length === 0 ? (
+                <p className="text-sm font-semibold">{pt.allUnlocked}</p>
+              ) : (
+                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {nextUnlocks.map((u) => (
+                    <li key={u.key} className="flex flex-col items-center gap-2 rounded-2xl bg-[var(--surface-muted)] p-3 text-center">
+                      {u.preview}
+                      <span className="text-sm font-bold leading-tight">{u.name}</span>
+                      <span className="pill bg-[var(--surface)] px-2 py-0.5 text-xs font-semibold">{pt.atLevel.replace("{n}", String(u.level))}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+            <section className="card flex flex-col gap-2 p-5">
+              <h2 className="mb-1 text-xl font-bold" style={heading}>
+                ⚡ {pt.quick}
+              </h2>
+              {(
+                [
+                  ["courses", "/kurzy", "📚"],
+                  ["review", "/opakovani", "🔁"],
+                  ["town", "/mestecko", "🏘️"],
+                  ["shop", "/obchod", "🛍️"],
+                ] as const
+              ).map(([k, href, icon]) => (
+                <Link key={k} href={`/${locale}${href}`} className="card-hover flex items-center gap-3 rounded-2xl bg-[var(--surface-muted)] px-4 py-3 font-bold">
+                  <span className="text-xl" aria-hidden>
+                    {icon}
+                  </span>
+                  {pt.quickLinks[k]}
+                  <span className="ml-auto text-[var(--faint)]">→</span>
+                </Link>
+              ))}
+            </section>
+          </div>
+          <ProfileShowcase
+            locale={locale}
+            level={level}
+            rank={profile.rank ?? null}
+            points={profile.points ?? 0}
+            avatars={AVATARS.filter((a) => isAvatarUnlocked(a, level, unlocks)).length}
+            titles={TITLES.filter((x) => isTitleUnlocked(x, level, unlocks)).length}
+            looks={ownedFrames.length + ownedBanners.length}
+          />
+        </div>
+      )}
+
+      {mainTab === "collection" && (
+        <div className="flex flex-col gap-6">
+          <section className="card p-5">
+            <h2 className="text-xl font-bold" style={heading}>
+              🎒 {pt.collectionTitle}
+            </h2>
+            <p className="mb-4 text-sm text-[var(--muted)]">{pt.collectionHint}</p>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+              {collection.map((k) => (
+                <button
+                  key={k.id}
+                  type="button"
+                  onClick={() => {
+                    setTab(k.tab);
+                    setMainTab("wardrobe");
+                  }}
+                  className="card-hover flex flex-col gap-2 rounded-2xl bg-[var(--surface-muted)] p-4 text-left"
+                >
+                  <span className="text-sm font-bold">
+                    {k.icon} {pt.kinds[k.id]}
+                  </span>
+                  <span className="text-2xl font-extrabold tabular-nums" style={heading}>
+                    {k.have}
+                    <span className="text-base text-[var(--faint)]"> / {k.total}</span>
+                  </span>
+                  <span className="h-2 overflow-hidden rounded-full bg-[var(--surface)]" aria-hidden>
+                    <span className="block h-full rounded-full bg-[var(--brand-500)]" style={{ width: `${Math.round((k.have / Math.max(1, k.total)) * 100)}%` }} />
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
+          <SubjectMedals locale={locale} />
+        </div>
+      )}
+
+      {mainTab === "tasks" && <DailyChallenges locale={locale} showAchievements />}
+
+      {/* Šatník */}
+      {mainTab === "wardrobe" && (
       <section>
         <div className="mb-4 flex flex-wrap gap-2" role="tablist">
           {tabs.map((x) => (
@@ -439,9 +643,6 @@ export function ProfileView({ locale }: { locale: Locale }) {
               {x.label}
             </button>
           ))}
-          <Link href={`/${locale}/obchod`} className="btn-bouncy ml-auto bg-[var(--accent-yellow)] px-4 py-2 text-sm font-bold text-[#16132b]">
-            {t.shop} →
-          </Link>
         </div>
 
         {tab === "look" && (
@@ -472,23 +673,53 @@ export function ProfileView({ locale }: { locale: Locale }) {
             {currentParts && currentParts.slots.length > 0 && (
               <div className="grid gap-5 md:grid-cols-2">
                 <div className="flex flex-col gap-4">
-                  <h3 className="text-sm font-bold uppercase tracking-wide text-[var(--muted)]">{c.colors}</h3>
-                  {SLOTS.filter((s) => currentParts.slots.includes(s)).map((slot: Slot) => (
-                    <div key={slot} className="flex flex-col gap-1.5">
-                      <span className="text-sm font-semibold">{c.slots[slot]}</span>
-                      {swatchRow(
-                        custom.colors[slot],
-                        (hex) =>
+                  <h3 className="text-sm font-bold uppercase tracking-wide text-[var(--muted)]">{pt.pickPart}</h3>
+                  <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={c.colors}>
+                    {SLOTS.filter((s) => currentParts.slots.includes(s)).map((s: Slot) => {
+                      const on = activeSlot === s;
+                      const color = custom.colors[s];
+                      return (
+                        <button
+                          key={s}
+                          type="button"
+                          role="radio"
+                          aria-checked={on}
+                          onClick={() => setSlot(s)}
+                          className={`btn-bouncy flex items-center gap-2 border-2 px-3 py-2 text-sm font-bold ${
+                            on ? "border-[var(--brand-500)] bg-[var(--brand-50)]" : "border-transparent bg-[var(--surface-muted)]"
+                          }`}
+                        >
+                          <span
+                            aria-hidden
+                            className="h-5 w-5 rounded-full border-2 border-[var(--edge)]"
+                            style={{ background: color ?? "conic-gradient(#ff5d73, #ffd24d, #3ddc97, #3fc1ff, #a87bff, #ff5d73)" }}
+                          />
+                          {c.slots[s]}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {activeSlot && (
+                    <>
+                      <h3 className="mt-1 text-sm font-bold uppercase tracking-wide text-[var(--muted)]">
+                        {pt.pickColor} · {c.slots[activeSlot]}
+                      </h3>
+                      <ColorPicker
+                        value={custom.colors[activeSlot]}
+                        resetLabel={c.reset}
+                        customLabel={pt.custom}
+                        shades={pt.shades}
+                        onPick={(hex) =>
                           updateCustom((cur) => {
                             const colors = { ...cur.colors };
-                            if (hex) colors[slot] = hex;
-                            else delete colors[slot];
+                            if (hex) colors[activeSlot] = hex;
+                            else delete colors[activeSlot];
                             return { ...cur, colors };
-                          }),
-                        c.slots[slot],
-                      )}
-                    </div>
-                  ))}
+                          })
+                        }
+                      />
+                    </>
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-4">
@@ -509,11 +740,14 @@ export function ProfileView({ locale }: { locale: Locale }) {
                   {custom.pattern !== "none" && (
                     <div className="flex flex-col gap-1.5">
                       <span className="text-sm font-semibold">{c.patternColor}</span>
-                      {swatchRow(
-                        custom.patternColor === "#ffffff" ? undefined : custom.patternColor,
-                        (hex) => updateCustom((cur) => ({ ...cur, patternColor: hex ?? "#ffffff" })),
-                        c.patternColor,
-                      )}
+                      <ColorPicker
+                        value={custom.patternColor === "#ffffff" ? undefined : custom.patternColor}
+                        resetLabel={c.reset}
+                        customLabel={pt.custom}
+                        shades={pt.shades}
+                        compact
+                        onPick={(hex) => updateCustom((cur) => ({ ...cur, patternColor: hex ?? "#ffffff" }))}
+                      />
                     </div>
                   )}
 
@@ -620,7 +854,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
                     !frame ? "outline outline-4 outline-offset-2 outline-[var(--brand-500)]" : ""
                   }`}
                 >
-                  <Avatar id={avatarId} size={72} />
+                  <Avatar id={avatarId} icon={profile.icon} size={72} />
                   <span className="text-sm font-bold">{t.none}</span>
                 </button>
               }
@@ -631,7 +865,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
                   name: itemName("frame", f, locale),
                   unlocked: owned,
                   current: frame === f,
-                  preview: <Avatar id={avatarId} size={72} frame={f} locked={!owned} />,
+                  preview: <Avatar id={avatarId} icon={profile.icon} size={72} frame={f} locked={!owned} />,
                   hint: owned ? null : unlockHint("frame", f, locale),
                 };
               })}
@@ -685,8 +919,9 @@ export function ProfileView({ locale }: { locale: Locale }) {
           </>
         )}
 
-        {error && <p className="mt-4 text-sm text-[var(--danger)]">{t.error}</p>}
       </section>
+      )}
+      {error && <p className="text-sm text-[var(--danger)]">{t.error}</p>}
     </div>
   );
 }

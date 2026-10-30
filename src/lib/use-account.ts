@@ -10,6 +10,8 @@ export type Account =
       degraded?: boolean;
       name: string | null;
       avatar: string;
+      // Adresa vlastní ikonky (přebarvený avatar), jinak null.
+      icon?: string | null;
       frame?: string | null;
       banner?: string | null;
       favorites?: Favorites;

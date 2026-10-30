@@ -117,7 +117,7 @@ export function HeaderAccount({
         aria-label={t.nav}
         className="flex items-center gap-2 rounded-xl border-2 border-[var(--edge)] bg-[var(--surface)] py-0.5 pl-0.5 pr-3 text-sm font-bold hover:bg-[var(--surface-muted)]"
       >
-        <Avatar id={account.avatar} size={30} frame={isFrameId(account.frame) ? account.frame : null} />
+        <Avatar id={account.avatar} icon={account.icon} size={30} frame={isFrameId(account.frame) ? account.frame : null} />
         <span>
           {t.level} {account.level}
         </span>
@@ -136,7 +136,7 @@ export function HeaderAccount({
             }`}
             style={isBannerId(account.banner) ? { background: bannerCss(account.banner) } : undefined}
           >
-            <Avatar id={account.avatar} size={64} frame={isFrameId(account.frame) ? account.frame : null} />
+            <Avatar id={account.avatar} icon={account.icon} size={64} frame={isFrameId(account.frame) ? account.frame : null} />
             <div className="min-w-0">
               <p className="truncate text-lg font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
                 {account.name ?? t.anonymous}
@@ -268,7 +268,7 @@ export function HeaderAccount({
                     aria-label={f}
                     className={`rounded-xl border-2 p-1.5 hover:bg-[var(--surface-muted)] ${account.frame === f ? "border-[var(--accent-500)]" : "border-transparent"}`}
                   >
-                    <Avatar id={account.avatar} size={32} frame={isFrameId(f) ? f : null} />
+                    <Avatar id={account.avatar} icon={account.icon} size={32} frame={isFrameId(f) ? f : null} />
                   </button>
                 ))}
               </div>

@@ -7,7 +7,7 @@ import { fill } from "@/i18n/profile";
 import { getSocialText } from "@/i18n/social";
 import type { Locale } from "@/i18n/config";
 
-type Person = { id: string; name: string | null; avatar: string | null };
+type Person = { id: string; name: string | null; avatar: string | null; icon?: string | null };
 type Group = {
   id: string;
   name: string;
@@ -159,7 +159,7 @@ export function SocialView({ locale }: { locale: Locale }) {
                   }`}
                 >
                   <span className="w-6 text-sm font-bold">{i + 1}.</span>
-                  <Avatar id={row.avatar} size={28} />
+                  <Avatar id={row.avatar} icon={row.icon} size={28} />
                   <span className="min-w-0 flex-1 truncate text-sm font-semibold">{personName(row)}</span>
                   <span className="text-sm font-bold">{row.xp} XP</span>
                 </div>
@@ -229,7 +229,7 @@ export function SocialView({ locale }: { locale: Locale }) {
             <ul className="grid gap-1.5 sm:grid-cols-2">
               {g.members.map((m) => (
                 <li key={m.id} className="flex items-center gap-2 rounded-xl border-2 border-[var(--border-soft)] px-2.5 py-1.5">
-                  <Avatar id={m.avatar} size={26} />
+                  <Avatar id={m.avatar} icon={m.icon} size={26} />
                   <span className="min-w-0 flex-1 truncate text-sm font-semibold">
                     {m.id === parta.userId ? t.you : personName(m)}
                   </span>
@@ -260,7 +260,7 @@ export function SocialView({ locale }: { locale: Locale }) {
         {parta.duels.length === 0 && <p className="text-sm text-[var(--muted)]">{teammates.size === 0 ? t.groupsHint : t.noDuels}</p>}
         {parta.duels.map((d) => (
           <div key={d.id} className="card flex flex-wrap items-center gap-3 p-4">
-            <Avatar id={d.other.avatar} size={36} />
+            <Avatar id={d.other.avatar} icon={d.other.icon} size={36} />
             <div className="min-w-0 flex-1">
               <p className="truncate font-bold">{personName(d.other)}</p>
               {d.status === "pending" ? (

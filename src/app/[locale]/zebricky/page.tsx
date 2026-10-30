@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getCommunityText } from "@/i18n/community";
 import { isLocale, type Locale } from "@/i18n/config";
 import { Avatar } from "@/components/Avatar";
+import { avatarIcons } from "@/lib/avatar-icon";
 import { Podium } from "@/components/Podium";
 import { LeaderboardStage } from "@/components/LeaderboardStage";
 import { RewardImage } from "@/components/RewardImage";
@@ -180,6 +181,9 @@ export default async function LeaderboardPage({
     failed = true;
   }
 
+  // Vlastní ikonky přebarvených avatarů (jen čísla verzí, obrázky se načtou samy).
+  const icons = await avatarIcons([...top.map((p) => p.id), ...escapeRows.map((r) => r.id)]);
+
   const base = `/${locale}/zebricky`;
   const chip = (active: boolean) =>
     `pill px-4 py-2 text-sm ${
@@ -205,7 +209,7 @@ export default async function LeaderboardPage({
             }`}
           >
             <RankBadge position={i + 1} />
-            <Avatar id={player.avatar} size={36} />
+            <Avatar id={player.avatar} icon={icons[player.id]} size={36} />
             <span className="flex-1 truncate font-semibold">{player.name || t.anonymous}</span>
             <span className="font-bold tabular-nums">{player.points}</span>
           </li>
@@ -256,7 +260,7 @@ export default async function LeaderboardPage({
               }`}
             >
               <RankBadge position={i + 1} />
-              <Avatar id={row.avatar} size={36} />
+              <Avatar id={row.avatar} icon={icons[row.id]} size={36} />
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-semibold">{row.name || t.anonymous}</span>
                 {row.school && (
