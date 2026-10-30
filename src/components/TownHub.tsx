@@ -8,8 +8,9 @@ import { Modal, type Snapshot } from "@/components/ShopView";
 import { readCam, runPath, runPirate, runSpace, type Geo, type Handle, type Pt } from "@/lib/market-cinema";
 import { runWorld } from "@/lib/market-cinema-worlds";
 import { runEnter, type DoorKind } from "@/lib/market-cinema-doors";
-import { confettiBurst, createEventFx, createWeatherFx, dayPhaseOf, eventForDay, EVENT_SHOT, PHASE_TINT, runShots, weatherForDay, type Handle as ShotHandle, type Shot } from "@/lib/town-scenes";
+import { camTransform, confettiBurst, createEventFx, createWeatherFx, dayPhaseOf, eventForDay, EVENT_SHOT, PHASE_TINT, resetCam, tweenCam, weatherForDay } from "@/lib/town-scenes";
 import { TownNpcPanel } from "@/components/TownNpcPanel";
+import { TownNarrator, type Art } from "@/components/TownNarrator";
 import { MiniGame } from "@/components/TownMini";
 import { TownStory } from "@/components/TownStory";
 import { getTownStoryText } from "@/i18n/town-story";
@@ -59,6 +60,23 @@ const FIG = 0.06 * K;
 const Y = (y: number) => (SKY + y * HUB.h) / BOX_H;
 const at = (p: Pt) => ({ left: `${p[0] * 100}%`, top: `${Y(p[1]) * 100}%` });
 const toBox = (p: Pt): Pt => [p[0], Y(p[1])];
+const fromBoxY = (f: number) => (f * BOX_H - SKY) / HUB.h; // zlomek výšky rámečku → svislá poloha v obrázku městečka
+const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
+const wait = (ms: number, signal: AbortSignal) =>
+  new Promise<void>((res, rej) => {
+    if (signal.aborted) return rej(new DOMException("skip", "AbortError"));
+    const id = window.setTimeout(res, ms);
+    signal.addEventListener("abort", () => {
+      window.clearTimeout(id);
+      rej(new DOMException("skip", "AbortError"));
+    }, { once: true });
+  });
+// Cedule a klikací plocha: raketa má ceduli mimo obrázek, proto stojí nad rampou; ostatní cedule se drží uvnitř rámečku.
+const signOf = (id: string): Pt => {
+  const pl = HUB.places[id];
+  if (id === "stanice" && pl.raketa) return [pl.raketa[0], pl.raketa[1] - 0.05];
+  return [clamp(pl.sign[0], 0.06, 0.94), pl.sign[1]];
+};
 // Hloubka hrdiny podle svislé polohy v obrázku: svět y = 3,3 (za první řadou domů) a 9 (za druhou řadou). Přímka z uzlů cest.
 const DEPTH_V = (() => {
   const a = HUB.graf.nodes.m1[1];
@@ -138,7 +156,7 @@ const WALKERS: Partial<Record<NpcKey, { nodes: string[]; speed: number; walk: SK
   pekar: { nodes: ["m5", "hub", "m7"], speed: 0.024, walk: "pekar_w", idle: "pekar" },
   kluk: { nodes: ["m4", "m5", "hub", "most", "l1"], speed: 0.034, walk: "kluk_w", idle: "kluk" },
   babicka: { nodes: ["most_z", "m1", "m2", "kurzy"], speed: 0.016, walk: "babicka" },
-  farmar: { nodes: ["l3", "stanice"], speed: 0.018, walk: "farmar" },
+  farmar: { nodes: ["l1", "l3"], speed: 0.018, walk: "farmar" }, // jen po dolní cestě, ne přes raketovou rampu
 };
 type WalkerState = { pts: Pt[]; cum: number[]; total: number; dist: number; dir: 1 | -1; wait: number; moving: boolean; mode: string };
 
@@ -208,8 +226,10 @@ export function TownHub({ locale }: { locale: Locale }) {
   const [full, setFull] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
   const fullRef = useRef(false);
+  const panSnap = useRef(true); // po přepnutí celé obrazovky skočí kamera rovnou na hrdinu
   useEffect(() => {
     fullRef.current = full;
+    panSnap.current = true;
     // v režimu přes celé okno se schová hlavička a patička stránky (viz .town-full v globals.css)
     document.documentElement.classList.toggle("town-full", full);
     return () => document.documentElement.classList.remove("town-full");
@@ -228,11 +248,24 @@ export function TownHub({ locale }: { locale: Locale }) {
   const [openNpc, setOpenNpc] = useState<NpcKey | null>(null);
   const [npcSnap, setNpcSnap] = useState<NpcSnapshot | null>(null);
   const [npcPoints, setNpcPoints] = useState(0);
-  const [cine, setCine] = useState<"intro" | "event" | "reward" | "enter" | null>(null);
-  const [caption, setCaption] = useState<string | null>(null);
+  const [cine, setCine] = useState<"intro" | "event" | "reward" | "enter" | "talk" | "locked" | null>(null);
+  // vypravěč cut scény (portrét, jméno a postupně vypisovaný text); narrNext posune scénu dál
+  const [narr, setNarr] = useState<{ who: NpcKey; text: string; title?: string; n: number } | null>(null);
+  const narrNext = useRef<(() => void) | null>(null);
+  const [heroSay, setHeroSay] = useState<string | null>(null);
+  const [talking, setTalking] = useState(false);
+  const [barsOn, setBarsOn] = useState(false);
   const [fade, setFade] = useState(false);
   const handle = useRef<Handle | null>(null);
-  const shots = useRef<ShotHandle | null>(null);
+  const scene = useRef<AbortController | null>(null);
+  const camNow = useRef<{ p: Pt; z: number } | null>(null); // kamera cut scény nebo rozhovoru (null = volná hra)
+  const focus = useRef<(() => Pt | null) | null>(null); // co má být uprostřed obrazovky (px v rámečku), jinak hrdina
+  const focusY = useRef(0.55);
+  const view = useRef<HTMLDivElement>(null);
+  const heroBubble = useRef<HTMLDivElement>(null);
+  const talkRef = useRef<NpcKey | null>(null); // s kým hrdina mluví nebo ke komu jde (ten stojí a dívá se na něj)
+  const face = useRef<Partial<Record<NpcKey, boolean>>>({});
+  const closeNpcRef = useRef<() => void>(() => {});
   const seq = useRef(0);
   const busy = useRef(false);
   const box = useRef<HTMLDivElement>(null);
@@ -256,7 +289,6 @@ export function TownHub({ locale }: { locale: Locale }) {
   const npcSpr = useRef<Record<string, HTMLSpanElement | null>>({});
   const fxCv = useRef<HTMLCanvasElement>(null);
   const confettiCv = useRef<HTMLCanvasElement>(null);
-  const cineBars = useRef<HTMLDivElement>(null);
   const fxStrength = useRef(0);
   const openRef = useRef<NpcKey | null>(null);
   const started = useRef(false);
@@ -343,9 +375,17 @@ export function TownHub({ locale }: { locale: Locale }) {
       el.style.left = `${x * 100}%`;
       el.style.top = `${Y(y) * 100}%`;
       el.style.zIndex = String((y > V_FRONT ? 40 : y > V_BACK ? 25 : 10) + Math.round(y * 4)); // za budovami skryje vrstva hub-a/hub-b
+      orient(key, flip);
+    };
+    // otočení figurky; při rozhovoru se obyvatel dívá na hrdinu
+    const orient = (key: string, flip: boolean) => {
+      const fig = npcFig.current[key];
+      if (!fig) return;
       const f = FOLK.find((c) => c.key === key);
       const s = SPR[f?.k ?? "kluk"];
-      fig.style.transform = `translate(-50%, ${-(0.5 + s.tz / s.o) * 100}%) scaleX(${(flip ? -1 : 1) * (f?.flip ? -1 : 1)})`;
+      const fc = face.current[key as NpcKey];
+      const fl = (fc === undefined ? (flip ? -1 : 1) : fc ? -1 : 1) * (f?.flip ? -1 : 1);
+      fig.style.transform = `translate(-50%, ${-(0.5 + s.tz / s.o) * 100}%) scaleX(${fl})`;
     };
     const setSprite = (key: string, sk: SK, moving: boolean) => {
       const sp = npcSpr.current[key];
@@ -404,12 +444,14 @@ export function TownHub({ locale }: { locale: Locale }) {
         b.style.left = `${p * 100}%`;
         b.style.top = `${(0.01 + bi * 0.035 + Math.sin(t * 0.7 + bi) * 0.008) * 100}%`;
       });
-      // obyvatelé
+      // obyvatelé (kdo právě mluví s hrdinou, stojí a dívá se na něj)
+      const tk = talkRef.current;
+      if (tk && !WALKERS[tk]) orient(tk, false);
       for (const [key, w] of Object.entries(states)) {
         const cfg = WALKERS[key as NpcKey]!;
-        const talking = openRef.current === key;
-        if (talking) {
+        if (tk === key) {
           setSprite(key, cfg.idle ?? cfg.walk, false);
+          orient(key, false);
           continue;
         }
         if (w.wait > 0) {
@@ -451,7 +493,7 @@ export function TownHub({ locale }: { locale: Locale }) {
     let t2 = 0;
     const schedule = () => {
       t1 = window.setTimeout(() => {
-        if (!openRef.current && !document.hidden) {
+        if (!openRef.current && !talkRef.current && !scene.current && !document.hidden) {
           const f = FOLK[Math.floor(Math.random() * FOLK.length)];
           const lines = Math.random() < 0.5 ? tl.ambient : tl.npc[f.key].chat;
           setBubble({ k: f.key, text: lines[Math.floor(Math.random() * lines.length)] });
@@ -496,10 +538,18 @@ export function TownHub({ locale }: { locale: Locale }) {
       io.disconnect();
     };
   }, [eventId, gen]);
+  // během rozhovoru šipky / WASD rozhovor zavřou a hrdina může hned jít dál
   useEffect(() => {
-    visitRef.current = visit;
-  });
-  // ovládání z klávesnice: WASD nebo šipky vedou hrdinu po cestách, E / Enter / mezerník vstoupí do budovy u dveří
+    if (!openNpc) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (/^(arrow(up|down|left|right)|[wasd])$/.test(e.key.toLowerCase()) && !(e.target instanceof HTMLInputElement)) closeNpcRef.current();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [openNpc]);
+  // ovládání z klávesnice: WASD nebo šipky vedou hrdinu po cestách, E / Enter / mezerník vstoupí do budovy u dveří.
+  // Když cesta zvoleným směrem z místa nevede, hrdina dojde po ulici k nejbližší odbočce tím směrem (nezasekne se).
   const free = !phase && !cine && !board && !openNpc && !miniOpen && !storyOpen && !pickHero;
   useEffect(() => {
     const h = hero.current;
@@ -512,39 +562,105 @@ export function TownHub({ locale }: { locale: Locale }) {
       nb[x].push(y);
       nb[y].push(x);
     }
-    const vec = (a: string, b: string): [number, number, number] => {
-      const dx = (nodes[b][0] - nodes[a][0]) * HUB.w;
-      const dy = (nodes[b][1] - nodes[a][1]) * HUB.h;
+    const dirOf = (a: Pt, b: Pt): [number, number, number] => {
+      const dx = (b[0] - a[0]) * HUB.w;
+      const dy = (b[1] - a[1]) * HUB.h;
       const L = Math.hypot(dx, dy) || 1;
       return [dx / L, dy / L, L / HUB.w];
     };
-    let seg: { a: string; b: string; t: number } | null = null;
-    let node = nearestNode(heroP.current);
-    let flip = 1;
+    const dist = (a: Pt, b: Pt) => Math.hypot((a[0] - b[0]) * HUB.w, (a[1] - b[1]) * HUB.h);
+    // úsek, po kterém hrdina jde: z bodu A (uzel nebo místo, kde stál u obyvatele) do uzlu `to`
+    let seg: { A: Pt; from: string | null; to: string; t: number; steer?: boolean } | null = null;
+    let steering = false; // jde se k odbočce: neotáčet se zpět, odkud jsme přišli
+    let node: string | null = null;
+    let prev: string | null = null;
+    {
+      const n = nearestNode(heroP.current);
+      if (dist(nodes[n], heroP.current) < 8) {
+        node = n;
+        heroP.current = nodes[n];
+      } else seg = { A: heroP.current, from: null, to: n, t: 0 };
+    }
+    let flip = h.style.transform.includes("scaleX(-1)") || h.style.transform.includes("scale(-") ? -1 : 1;
     let walking = false;
     let nearId: string | null = null;
     const apply = () => {
       h.style.left = `${heroP.current[0] * 100}%`;
       h.style.top = `${Y(heroP.current[1]) * 100}%`;
       h.style.opacity = "1";
+      h.style.transformOrigin = "";
       h.style.transform = `translate(-50%, ${-(0.5 + 0.55 / 1.6) * 100}%) scaleX(${flip})`;
     };
     const setWalk = (on: boolean) => {
       if (on === walking) return;
       walking = on;
+      spr.style.setProperty("--n", on ? "16" : "24");
       spr.style.backgroundImage = `url(${heroSpriteUrl(on ? "chuze" : "stoji", getHeroLook())})`;
       spr.style.animationDuration = on ? "0.7s" : "3s";
     };
+    // první krok z uzlu `from` směrem (ux, uy): přímá cesta, nebo cesta k nejbližší odbočce, která tím směrem vede
+    const pickStep = (from: string, ux: number, uy: number): { to: string; steer: boolean } | null => {
+      let best: string | null = null;
+      let bs = 0.3;
+      for (const m of nb[from]) {
+        if (steering && m === prev) continue;
+        const [ex, ey] = dirOf(nodes[from], nodes[m]);
+        const sc = ex * ux + ey * uy;
+        if (sc > bs) {
+          bs = sc;
+          best = m;
+        }
+      }
+      if (best) return { to: best, steer: false };
+      const score = (u: string, m: string) => {
+        const [ex, ey] = dirOf(nodes[u], nodes[m]);
+        return ex * ux + ey * uy;
+      };
+      if (nb[from].length < 2 && score(from, nb[from][0]) < -0.5) return null; // u dveří na konci cesty: směrem do budovy se nejde
+      const d: Record<string, number> = { [from]: 0 };
+      const par: Record<string, string> = {};
+      const done = new Set<string>();
+      const todo = [from];
+      let goal: string | null = null;
+      while (todo.length) {
+        todo.sort((x, y) => d[x] - d[y]);
+        const u = todo.shift()!;
+        if (done.has(u)) continue;
+        done.add(u);
+        if (d[u] > 0.45) break;
+        if (u !== from && nb[u].some((m) => m !== par[u] && score(u, m) > 0.6)) {
+          goal = u;
+          break;
+        }
+        for (const m of nb[u]) {
+          if (steering && u === from && m === prev) continue; // necouvat, odkud jsme přišli
+          const nd = d[u] + dirOf(nodes[u], nodes[m])[2];
+          if (d[m] === undefined || nd < d[m]) {
+            d[m] = nd;
+            par[m] = u;
+            todo.push(m);
+          }
+        }
+      }
+      if (!goal) return null;
+      let g = goal;
+      while (par[g] !== from) g = par[g];
+      return { to: g, steer: true };
+    };
     const keys = new Set<string>();
     const MAP: Record<string, string> = { w: "u", arrowup: "u", s: "d", arrowdown: "d", a: "l", arrowleft: "l", d: "r", arrowright: "r" };
+    const CODE: Record<string, string> = { KeyW: "u", KeyS: "d", KeyA: "l", KeyD: "r" };
     const typing = (t: EventTarget | null) => t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+    const keyOf = (e: KeyboardEvent) => MAP[e.key.toLowerCase()] ?? CODE[e.code];
     const onDown = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) return;
       const k = e.key.toLowerCase();
-      if (MAP[k]) {
-        keys.add(MAP[k]);
+      const dir = keyOf(e);
+      if (dir) {
+        keys.add(dir);
         e.preventDefault();
-      } else if ((k === "e" || k === "enter" || k === " ") && nearId && !(e.target instanceof HTMLButtonElement)) {
+        if (e.target instanceof HTMLElement && e.target !== document.body) e.target.blur(); // šipky nemají posouvat fokus
+      } else if ((k === "e" || e.code === "KeyE" || k === "enter" || k === " ") && nearId && !(e.target instanceof HTMLButtonElement)) {
         const pl = PLACES.find((q) => q.id === nearId);
         if (pl) {
           e.preventDefault();
@@ -554,7 +670,7 @@ export function TownHub({ locale }: { locale: Locale }) {
       }
     };
     const onUp = (e: KeyboardEvent) => {
-      const k = MAP[e.key.toLowerCase()];
+      const k = keyOf(e);
       if (k) keys.delete(k);
     };
     const onBlur = () => keys.clear();
@@ -563,7 +679,7 @@ export function TownHub({ locale }: { locale: Locale }) {
     window.addEventListener("blur", onBlur);
     let raf = 0;
     let last = performance.now();
-    const SPEED = 0.07; // šířky obrázku za sekundu
+    const SPEED = 0.085; // šířky obrázku za sekundu
     const tick = (now: number) => {
       raf = requestAnimationFrame(tick);
       const dt = Math.min(0.05, (now - last) / 1000);
@@ -575,56 +691,46 @@ export function TownHub({ locale }: { locale: Locale }) {
         const dl = Math.hypot(dx, dy);
         const ux = dx / dl;
         const uy = dy / dl;
-        if (!seg) {
-          let best: string | null = null;
-          let bs = 0.35;
-          for (const m of nb[node]) {
-            const [ex, ey] = vec(node, m);
-            const sc = ex * ux + ey * uy;
-            if (sc > bs) {
-              bs = sc;
-              best = m;
-            }
-          }
-          if (best) seg = { a: node, b: best, t: 0 };
+        if (!seg && node) {
+          const step = pickStep(node, ux, uy);
+          if (step) seg = { A: nodes[node], from: node, to: step.to, t: 0, steer: step.steer };
+          steering = !!step?.steer;
         }
         if (seg) {
-          const [ex, ey, L] = vec(seg.a, seg.b);
+          const B = nodes[seg.to];
+          const [ex, ey, L] = dirOf(seg.A, B);
           const sc = ex * ux + ey * uy;
-          if (Math.abs(sc) > 0.25) {
-            seg.t += (Math.sign(sc) * SPEED * dt) / L;
-            moved = true;
-            const sx = Math.sign(sc) * ex;
-            if (Math.abs(sx) > 0.2) flip = sx < 0 ? -1 : 1;
-            if (seg.t >= 1 || seg.t <= 0) {
-              node = seg.t >= 1 ? seg.b : seg.a;
-              seg.t = seg.t >= 1 ? 1 : 0;
-              heroP.current = nodes[node];
-              seg = null;
-            }
+          // proti směru úseku: otočit se (zpět k výchozímu uzlu); kolmo: pokračovat k odbočce
+          if (sc < -0.3 && seg.from && !seg.steer) seg = { A: B, from: seg.to, to: seg.from, t: 1 - seg.t };
+          const [fx] = dirOf(seg.A, nodes[seg.to]);
+          seg.t += (SPEED * dt) / Math.max(1e-4, L);
+          moved = true;
+          if (Math.abs(fx) > 0.2) flip = fx < 0 ? -1 : 1;
+          if (seg.t >= 1) {
+            prev = seg.from;
+            node = seg.to;
+            heroP.current = nodes[node];
+            seg = null;
+          } else {
+            const A = seg.A;
+            const C = nodes[seg.to];
+            heroP.current = [A[0] + (C[0] - A[0]) * seg.t, A[1] + (C[1] - A[1]) * seg.t];
+            node = null;
           }
-        }
-        if (seg) {
-          const A = nodes[seg.a];
-          const B = nodes[seg.b];
-          heroP.current = [A[0] + (B[0] - A[0]) * seg.t, A[1] + (B[1] - A[1]) * seg.t];
         }
         apply();
-      }
+      } else steering = false;
       setWalk(moved);
       // stojí u dveří?
       let id: string | null = null;
-      if (!seg) {
-        const q = nodes[node];
-        if (Math.hypot((q[0] - heroP.current[0]) * HUB.w, (q[1] - heroP.current[1]) * HUB.h) < 8 && PLACES.some((p2) => p2.id === node)) id = node;
-      }
+      if (!seg && node && PLACES.some((p2) => p2.id === node)) id = node;
       if (id !== nearId) {
         nearId = id;
         setNear(id);
       }
     };
-    heroP.current = nodes[node] && Math.hypot((nodes[node][0] - heroP.current[0]) * HUB.w, (nodes[node][1] - heroP.current[1]) * HUB.h) < 8 ? nodes[node] : heroP.current;
     apply();
+    spr.style.setProperty("--n", "24");
     spr.style.backgroundImage = `url(${heroSpriteUrl("stoji", getHeroLook())})`;
     spr.style.animationDuration = "3s";
     raf = requestAnimationFrame(tick);
@@ -658,6 +764,44 @@ export function TownHub({ locale }: { locale: Locale }) {
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [gen]);
+  // městečko vyplní okno (na celé obrazovce i v rámečku na stránce) a kamera plynule sleduje hrdinu, v cut scéně bod, na který se díváme.
+  // Bublina hrdiny se přilepí nad jeho hlavu (hrdina je zrcadlený, proto bublina není uvnitř něj).
+  useEffect(() => {
+    let raf = 0;
+    let last = performance.now();
+    let x = 0;
+    let y = 0;
+    const tick = (now: number) => {
+      raf = requestAnimationFrame(tick);
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      const b = box.current;
+      const v = view.current;
+      const h = hero.current;
+      if (!b || !v) return;
+      const br = b.getBoundingClientRect();
+      const hr = h?.getBoundingClientRect();
+      const heroAt: Pt | null = hr && hr.width ? [hr.left + hr.width / 2 - br.left, hr.top + hr.height * 0.62 - br.top] : null;
+      const bub = heroBubble.current;
+      if (bub && hr) {
+        bub.style.left = `${hr.left + hr.width / 2 - br.left}px`;
+        bub.style.top = `${hr.top + hr.height * 0.2 - br.top}px`;
+      }
+      const f = focus.current?.() ?? heroAt;
+      if (!f) return;
+      const vw = v.clientWidth;
+      const vh = v.clientHeight;
+      const tx = clamp(vw / 2 - f[0], Math.min(0, vw - b.offsetWidth), 0);
+      const ty = clamp(vh * focusY.current - f[1], Math.min(0, vh - b.offsetHeight), 0);
+      const k = panSnap.current ? 1 : 1 - Math.exp(-5 * dt);
+      panSnap.current = false;
+      x += (tx - x) * k;
+      y += (ty - y) * k;
+      b.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
   // počasí dne (déšť, sníh, mlha) na samostatném plátně nad městečkem
   useEffect(() => {
     const canvas = wxCv.current;
@@ -692,6 +836,11 @@ export function TownHub({ locale }: { locale: Locale }) {
     if (!cine) fxStrength.current = base;
   }, [eventId, night, cine]);
 
+  // budovy a obchod se načtou dopředu, ať po vstupu dveřmi nečeká prázdná obrazovka
+  useEffect(() => {
+    for (const p of PLACES) if (p.href) router.prefetch(`/${locale}${p.href}`);
+    router.prefetch(`/${locale}/uzivatelsky-obchod`);
+  }, [router, locale]);
   const leave = useCallback(
     (href: string) => {
       router.push(href);
@@ -798,105 +947,279 @@ export function TownHub({ locale }: { locale: Locale }) {
   }, [phase]);
 
   // ------------------------------------------------------------------------------------------ cut scény
-  const bars2 = useCallback((k: number) => {
-    const el = cineBars.current;
-    if (!el) return;
-    const [top, bottom] = [el.children[0] as HTMLElement, el.children[1] as HTMLElement];
-    top.style.height = `${k * 9}%`;
-    bottom.style.height = `${k * 9}%`;
-  }, []);
-  const playShots = useCallback(
-    (kind: "intro" | "event" | "reward", list: Shot[], after?: () => void) => {
-      const b = box.current;
-      const c = cam.current;
-      if (!b || !c) return;
-      shots.current?.stop();
+  // Scéna je asynchronní skript z kroků: kamera, chůze hrdiny, vypravěč s portrétem a bubliny nad postavami.
+  // Přeskočení zruší signál; úklid vrátí kameru, hrdinu i obyvatele do volné hry.
+  const artOf = (k: NpcKey): Art => {
+    const sp = SPR[FOLK.find((f) => f.key === k)!.k];
+    return { f: sp.f, n: sp.n, dur: sp.dur };
+  };
+  const setCamera = (p: Pt, z: number) => {
+    const b = box.current;
+    const c = cam.current;
+    if (!b || !c) return;
+    c.style.transformOrigin = "0 0";
+    c.style.transform = camTransform(b, p, z).css;
+    camNow.current = { p, z };
+    // na celé obrazovce se okno posune tak, aby byl bod kamery uprostřed
+    focus.current = () => {
+      const bb = box.current;
+      const cn = camNow.current;
+      if (!bb || !cn) return null;
+      const t = camTransform(bb, cn.p, cn.z);
+      return [t.tx + cn.p[0] * bb.clientWidth * t.z, t.ty + cn.p[1] * bb.clientHeight * t.z];
+    };
+  };
+  const camTo = (p: Pt, z: number, dur: number, signal?: AbortSignal) => tweenCam(camNow.current ?? { p: toBox(heroP.current), z: 1 }, { p, z }, dur, setCamera, signal);
+  const releaseCam = async (dur: number) => {
+      if (camNow.current) await camTo(camNow.current.p, 1, dur);
+      camNow.current = null;
+      focus.current = null;
+      focusY.current = 0.55;
+      resetCam(cam.current);
+    };
+  const heroPose = (kind: "stoji" | "chuze" | "radost") => {
+    const s = heroSpr.current;
+    if (!s) return;
+    s.style.setProperty("--n", kind === "chuze" ? "16" : "24");
+    s.style.backgroundImage = `url(${heroSpriteUrl(kind, getHeroLook())})`;
+    s.style.animationDuration = kind === "chuze" ? "0.7s" : kind === "radost" ? "1.1s" : "3s";
+  };
+  const heroFace = (flip: number) => {
+    const h = hero.current;
+    if (!h) return;
+    h.style.transformOrigin = "";
+    h.style.transform = `translate(-50%, ${-(0.5 + 0.55 / 1.6) * 100}%) scaleX(${flip})`;
+  };
+  // hrdina dojde po bodech (souřadnice obrázku městečka); `zoom` = kamera jde s ním
+  const walkHero = (pts: Pt[], signal: AbortSignal, zoom?: number, speed = 0.1) =>
+      new Promise<void>((resolve, reject) => {
+        const h = hero.current;
+        if (!h) return resolve();
+        const path: Pt[] = [heroP.current, ...pts];
+        const ratio = HUB.h / HUB.w;
+        const cum = [0];
+        for (let i = 1; i < path.length; i++) cum.push(cum[i - 1] + Math.hypot(path[i][0] - path[i - 1][0], (path[i][1] - path[i - 1][1]) * ratio));
+        const total = cum[cum.length - 1];
+        if (total < 1e-4) return resolve();
+        let d = 0;
+        let last = performance.now();
+        let stepAcc = 0;
+        let flip = 1;
+        heroPose("chuze");
+        let raf = 0;
+        const onAbort = () => {
+          cancelAnimationFrame(raf);
+          heroPose("stoji");
+          reject(new DOMException("skip", "AbortError"));
+        };
+        if (signal.aborted) return onAbort();
+        signal.addEventListener("abort", onAbort, { once: true });
+        const frame = (now: number) => {
+          const dt = Math.min(0.05, (now - last) / 1000);
+          last = now;
+          d = Math.min(total, d + speed * dt);
+          let i = 1;
+          while (i < cum.length - 1 && cum[i] < d) i++;
+          const k = clamp((d - cum[i - 1]) / Math.max(1e-6, cum[i] - cum[i - 1]), 0, 1);
+          const A = path[i - 1];
+          const B = path[i];
+          const p: Pt = [A[0] + (B[0] - A[0]) * k, A[1] + (B[1] - A[1]) * k];
+          heroP.current = p;
+          if (Math.abs(B[0] - A[0]) > 1e-4) flip = B[0] < A[0] ? -1 : 1;
+          h.style.left = `${p[0] * 100}%`;
+          h.style.top = `${Y(p[1]) * 100}%`;
+          h.style.opacity = "1";
+          heroFace(flip);
+          stepAcc += dt;
+          if (stepAcc > 0.3) {
+            stepAcc = 0;
+            sfx.step();
+          }
+          if (zoom) setCamera(toBox(p), zoom);
+          if (d >= total) {
+            signal.removeEventListener("abort", onAbort);
+            heroPose("stoji");
+            resolve();
+          } else raf = requestAnimationFrame(frame);
+        };
+        raf = requestAnimationFrame(frame);
+      });
+  const say = (who: NpcKey, text: string, signal: AbortSignal, title?: string) =>
+      new Promise<void>((resolve, reject) => {
+        if (signal.aborted) return reject(new DOMException("skip", "AbortError"));
+        const onAbort = () => {
+          narrNext.current = null;
+          reject(new DOMException("skip", "AbortError"));
+        };
+        signal.addEventListener("abort", onAbort, { once: true });
+        narrNext.current = () => {
+          narrNext.current = null;
+          signal.removeEventListener("abort", onAbort);
+          resolve();
+        };
+        setNarr({ who, text, title, n: ++seq.current });
+      });
+  const heroLine = (text: string, ms: number) => {
+    setHeroSay(text);
+    window.setTimeout(() => setHeroSay((c) => (c === text ? null : c)), ms);
+  };
+  const npcLine = (k: NpcKey, text: string, ms: number) => {
+    setBubble({ k, text });
+    window.setTimeout(() => setBubble((c) => (c?.k === k && c.text === text ? null : c)), ms);
+  };
+  // kde právě stojí obyvatel (souřadnice obrázku městečka)
+  const npcPos = (k: NpcKey): Pt => {
+    const el = npcEl.current[k];
+    const x = el ? parseFloat(el.style.left) / 100 : NaN;
+    const yb = el ? parseFloat(el.style.top) / 100 : NaN;
+    return Number.isFinite(x) && Number.isFinite(yb) ? [x, fromBoxY(yb)] : HUB.npc[k];
+  };
+  // hrdina dojde k obyvateli, ten se zastaví a oba se na sebe otočí; kamera se přiblíží na oba
+  const approach = async (k: NpcKey, signal: AbortSignal, zoom = 1.5) => {
+      talkRef.current = k;
+      const np = npcPos(k);
+      const nodes = HUB.graf.nodes;
+      const pts = route(nearestNode(heroP.current), nearestNode(np)).map((n) => nodes[n]);
+      const proj = (P: Pt, A: Pt, B: Pt) => {
+        const ax = (B[0] - A[0]) * HUB.w;
+        const ay = (B[1] - A[1]) * HUB.h;
+        return (((P[0] - A[0]) * HUB.w) * ax + ((P[1] - A[1]) * HUB.h) * ay) / Math.max(1e-6, ax * ax + ay * ay);
+      };
+      // nechodit zbytečně k uzlu za hrdinou ani za obyvatelem
+      if (pts.length >= 2 && proj(heroP.current, pts[0], pts[1]) > 0) pts.shift();
+      if (pts.length >= 2 && clamp(proj(np, pts[pts.length - 2], pts[pts.length - 1]), 0, 1) < 1) pts.pop();
+      const fromPt = pts.length ? pts[pts.length - 1] : heroP.current;
+      const side = fromPt[0] <= np[0] ? -1 : 1;
+      const spot: Pt = [np[0] + side * 0.042, np[1]];
+      face.current[k] = side < 0; // obyvatel se otočí k hrdinovi
+      await walkHero([...pts, spot], signal, zoom, 0.14);
+      heroFace(side < 0 ? 1 : -1);
+      await camTo(toBox([(spot[0] + np[0]) / 2, np[1] - 0.01]), zoom, 0.5, signal);
+    };
+  const runScene = async (kind: "intro" | "event" | "reward" | "talk" | "locked", script: (signal: AbortSignal) => Promise<void>, opt: { bars?: boolean; keepCam?: boolean } = {}) => {
+      scene.current?.abort();
+      const ac = new AbortController();
+      scene.current = ac;
       setCine(kind);
-      shots.current = runShots({ box: b, cam: c }, list, { onCaption: (txt) => setCaption(txt), onBars: bars2, onEnd: () => {
-        setCine(null);
-        setCaption(null);
-        shots.current = null;
-        after?.();
-      } });
-    },
-    [bars2, setCine, setCaption],
-  );
-  const placeShot = useCallback((id: string, dy = 0): Pt => {
+      setOpenNpc(null);
+      if (opt.bars !== false) setBarsOn(true);
+      let ok = true;
+      try {
+        await script(ac.signal);
+      } catch (e) {
+        ok = false;
+        if (!(e instanceof DOMException && e.name === "AbortError")) console.error(e);
+      }
+      if (scene.current !== ac) return false; // mezitím začala jiná scéna, ta si uklidí sama
+      scene.current = null;
+      setNarr(null);
+      narrNext.current = null;
+      setBarsOn(false);
+      setHeroSay(null);
+      heroPose("stoji");
+      if (!ok || !opt.keepCam) {
+        talkRef.current = null;
+        face.current = {};
+        await releaseCam(ok ? 0.8 : 0.35);
+      }
+      setCine(null);
+      return ok;
+    };
+  const placeShot = (id: string, dy = 0): Pt => {
     const pl = HUB.places[id];
     const d = pl ? pl.door : HUB.hrdina;
     return toBox([d[0], d[1] + dy]);
-  }, []);
-  const playEvent = useCallback(
-    (after?: () => void) => {
-      const e = EVENT_SHOT[eventId];
-      fxStrength.current = 1;
-      playShots("event", [{ to: e.to, zoom: e.zoom, dur: 2.4, hold: 3.6, caption: `${eventText.title} · ${eventText.caption}`, at: () => sfx.horn() }], () => {
-        ls.set("town-event-day", dayKey());
-        after?.();
-      });
-    },
-    [eventId, eventText, playShots],
-  );
-  const playIntro = useCallback(
-    (after?: () => void) => {
-      const list: Shot[] = [
-        { to: placeShot("pristav", -0.02), zoom: 2.1, dur: 2.6, hold: 2.0, caption: `${tl.intro[0]} ${tl.intro[1]}`, at: () => sfx.gull() },
-        { to: placeShot("kurzy", -0.01), zoom: 2.2, dur: 2.4, hold: 1.8, caption: tl.intro[2] },
-        { to: placeShot("zebricky", -0.01), zoom: 2.2, dur: 2.4, hold: 1.8, caption: tl.intro[3] },
-        { to: placeShot("les", 0.02), zoom: 1.9, dur: 2.6, hold: 2.0, caption: tl.intro[4] },
-        { to: toBox(HUB.hrdina), zoom: 1.7, dur: 2.4, hold: 2.2, caption: tl.intro[5] },
-      ];
-      playShots("intro", list, after);
-    },
-    [placeShot, playShots, tl],
-  );
-  const playReward = useCallback(() => {
-    const c = confettiCv.current;
-    const hs = heroSpr.current;
-    const toRest = () => {
-      if (hs) {
-        hs.style.backgroundImage = `url(${heroSpriteUrl("stoji", getHeroLook())})`;
-        hs.style.animationDuration = "3s";
-      }
+  };
+  const cheer = (ms: number) => {
+      heroPose("radost");
+      window.setTimeout(() => heroPose("stoji"), ms);
     };
-    playShots("reward", [{ to: toBox(HUB.hrdina), zoom: 2.4, dur: 1.0, hold: 4.2, caption: `${tl.reward.title} ${tl.reward.caption}`, at: () => {
+  const playEvent = () => {
+    const e = EVENT_SHOT[eventId];
+    ls.set("town-event-day", dayKey());
+    return runScene("event", async (sig) => {
+      fxStrength.current = 1;
       sfx.horn();
-      if (hs) {
-        hs.style.backgroundImage = `url(${heroSpriteUrl("radost", getHeroLook())})`;
-        hs.style.animationDuration = "1.1s";
+      await camTo(e.to, e.zoom, 2.2, sig);
+      npcLine(e.host, eventText.title + "!", 2500);
+      await say(e.host, eventText.caption, sig, eventText.title);
+    });
+  };
+  // úvodní prohlídka: knihovnice provede hrdinu městečkem, hrdina dojde za pekařem a ke škole
+  const playIntro = () => {
+    const T = tl.tour;
+    const guide: NpcKey = "knihovnice";
+    const nodes = HUB.graf.nodes;
+    return runScene("intro", async (sig) => {
+      setCamera(placeShot("les", 0.04), 1.15);
+      await wait(400, sig);
+      await say(guide, T.hello, sig);
+      const pan = camTo(placeShot("hrad", 0.04), 1.15, 3.2, sig);
+      await say(guide, T.top, sig);
+      await pan;
+      await camTo(toBox([heroP.current[0], heroP.current[1] - 0.01]), 1.5, 2.2, sig);
+      cheer(1500);
+      await say(guide, T.you, sig);
+      await approach("pekar", sig, 1.5);
+      heroLine(T.heroHi, 1600);
+      sfx.pop();
+      await wait(700, sig);
+      npcLine("pekar", tl.npc.pekar.greet[0], 2800);
+      await wait(900, sig);
+      await say(guide, T.npcs, sig);
+      talkRef.current = null;
+      face.current = {};
+      await walkHero(route(nearestNode(heroP.current), "kurzy").map((n) => nodes[n]), sig, 1.4);
+      await say(guide, T.school, sig);
+      sfx.gull();
+      await camTo(placeShot("pristav", -0.03), 1.35, 2.4, sig);
+      await say(guide, T.harbor, sig);
+      await camTo(toBox(HUB.places.stanice.raketa ?? HUB.places.stanice.door), 1.35, 2.0, sig);
+      await say(guide, T.rocket, sig);
+      await camTo(toBox(heroP.current), 1.2, 2.0, sig);
+      cheer(1600);
+      await say(guide, T.controls, sig);
+    });
+  };
+  const playReward = () => {
+    return runScene("reward", async (sig) => {
+      await camTo(toBox([heroP.current[0], heroP.current[1] - 0.01]), 1.7, 1.0, sig);
+      sfx.horn();
+      cheer(4200);
+      const c = confettiCv.current;
+      const b = box.current;
+      if (c && b) {
+        c.width = b.clientWidth;
+        c.height = b.clientHeight;
+        const hp = toBox(heroP.current);
+        confettiBurst(c, [hp[0], hp[1] - 0.06], 4);
       }
-      if (c) {
-        const b = box.current;
-        if (b) {
-          c.width = b.clientWidth;
-          c.height = b.clientHeight;
-        }
-        confettiBurst(c, [HUB.hrdina[0], Y(HUB.hrdina[1]) - 0.1], 4);
-      }
-    } }], toRest);
-  }, [playShots, tl]);
-  const skipScene = () => shots.current?.skip();
+      await say("babicka", tl.reward.caption, sig, tl.reward.title);
+    });
+  };
+  const skipScene = () => scene.current?.abort();
 
-  // první návštěva: projížďka městečkem; jinak jednou denně uvede dnešní událost
+  // první návštěva: prohlídka městečka; jinak jednou denně uvede dnešní událost
   const scenes = useRef({ playIntro, playEvent });
   useEffect(() => {
     scenes.current = { playIntro, playEvent };
   });
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const id = window.setTimeout(() => {
+    const id = window.setTimeout(async () => {
       if (started.current) return;
       started.current = true;
       const first = ls.get("town-intro-seen") !== "1";
       const eventDue = ls.get("town-event-day") !== dayKey();
       if (first) {
         ls.set("town-intro-seen", "1");
-        scenes.current.playIntro(() => eventDue && scenes.current.playEvent());
-      } else if (eventDue) scenes.current.playEvent();
+        const ok = await scenes.current.playIntro();
+        if (ok && eventDue) void scenes.current.playEvent();
+      } else if (eventDue) void scenes.current.playEvent();
     }, 900);
     return () => window.clearTimeout(id);
   }, []);
-  useEffect(() => () => shots.current?.stop(), []);
+  useEffect(() => () => scene.current?.abort(), []);
   useEffect(() => {
     // první dotek nebo klik v režimu přes celé okno zapne i skutečnou celou obrazovku (prohlížeč to dovolí jen z gesta)
     const onFirst = () => {
@@ -918,12 +1241,20 @@ export function TownHub({ locale }: { locale: Locale }) {
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
   function visit(place: PlaceDef) {
-    if (phase || cine) return;
-    setOpenNpc(null);
+    if (phase || (cine && cine !== "talk") || scene.current) return;
+    if (openNpc || talkRef.current) closeNpc(0);
     if (place.world) {
       const w = place.world;
-      if (reduced() || !worldOpen(w)) {
+      if (reduced()) {
         leave(`/${locale}/uzivatelsky-obchod?svet=${w}`);
+        return;
+      }
+      // zamčený svět: hrdina dojde k bráně a vypravěčka vysvětlí, kde se odemyká
+      if (!worldOpen(w)) {
+        void runScene("locked", async (sig) => {
+          await walkHero(route(nearestNode(heroP.current), place.id).map((n) => HUB.graf.nodes[n]), sig, 1.5);
+          await say("knihovnice", tl.locked.replace("{name}", tt.buildings[place.id].name), sig);
+        }).then((ok) => ok && leave(`/${locale}/uzivatelsky-obchod?svet=${w}`));
         return;
       }
       setPhase({ kind: w === "space" ? "space" : w === "pirate" ? "pirate" : "portal", id: place.id, target: place });
@@ -942,8 +1273,8 @@ export function TownHub({ locale }: { locale: Locale }) {
     setSfxEnabled(next);
   }
   function openMini(id: MiniId) {
-    if (phase || cine) return;
-    setOpenNpc(null);
+    if (phase || cine || scene.current) return;
+    if (openNpc || talkRef.current) closeNpc(0);
     setMiniOpen(id);
     fetch("/api/mestecko/minihra")
       .then((r) => r.json())
@@ -970,11 +1301,39 @@ export function TownHub({ locale }: { locale: Locale }) {
     setMode(next);
     ls.set("town-mode", next);
   }
+  // klik na obyvatele: hrdina k němu dojde, pozdraví a otevře se rozhovor (kamera zůstane přiblížená na oba)
   function talkTo(key: NpcKey) {
-    if (phase || cine) return;
+    if (phase || scene.current || (cine && cine !== "talk")) return;
+    if (openNpc === key) return;
     setBubble(null);
-    setOpenNpc(key);
-    sfx.pop();
+    if (reduced()) {
+      talkRef.current = key;
+      setOpenNpc(key);
+      sfx.pop();
+      return;
+    }
+    setOpenNpc(null);
+    void runScene(
+      "talk",
+      async (sig) => {
+        await approach(key, sig);
+        heroLine(tl.tour.heroHi, 1300);
+        sfx.pop();
+        await wait(500, sig);
+      },
+      { bars: false, keepCam: true },
+    ).then((ok) => {
+      if (!ok) return;
+      focusY.current = 0.36; // postavy nad panelem rozhovoru
+      setOpenNpc(key);
+    });
+  }
+  function closeNpc(dur = 0.6) {
+    setOpenNpc(null);
+    setTalking(false);
+    talkRef.current = null;
+    face.current = {};
+    if (camNow.current) void releaseCam(dur);
   }
   async function collect(spot: CollectSpot) {
     if (busy.current || phase || cine) return;
@@ -1021,6 +1380,11 @@ export function TownHub({ locale }: { locale: Locale }) {
     } catch {}
   }
 
+  useEffect(() => {
+    visitRef.current = visit;
+    closeNpcRef.current = closeNpc;
+  });
+
   const spotPos = useCallback((s: CollectSpot): Pt => HUB.sber[s.slot % Math.max(1, HUB.sber.length)] ?? HUB.hrdina, []);
 
   const labelCls = "absolute z-[50] -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-md border-2 border-[#16132b] bg-[#3a2a1a] text-center font-extrabold leading-tight text-[#ffd76b] shadow-[0_2px_0_rgba(0,0,0,0.45)] transition-transform";
@@ -1031,9 +1395,11 @@ export function TownHub({ locale }: { locale: Locale }) {
 
   return (
     <div>
-      <div ref={wrap} className={full ? "fixed inset-0 z-[200] flex items-center justify-center bg-[linear-gradient(180deg,#4aa8ff_0%,#bfe6ff_28%,#7ccf64_46%,#58b24a_100%)]" : ""}>
-      <div className={full ? "overflow-hidden" : "overflow-x-auto overflow-y-hidden rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)]"} style={full ? { width: `min(100vw, calc(100vh * ${HUB.w / BOX_H}))` } : undefined}>
-        <div ref={box} className="relative select-none overflow-hidden [container-type:inline-size]" style={{ aspectRatio: `${HUB.w} / ${BOX_H}`, minWidth: full ? 0 : 880, background: "linear-gradient(180deg, #5cb4ff, #cfeaff)" }}>
+      <div ref={wrap} className={full ? "fixed inset-0 z-[200] bg-[#58b24a]" : ""}>
+      {/* okno do městečka: na celé obrazovce ho městečko celé vyplní a kamera jde za hrdinou; ovládání leží nad ním */}
+      <div className={`relative w-full overflow-hidden [container-type:inline-size] ${full ? "h-full" : "rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)]"}`} style={full ? undefined : { aspectRatio: `${HUB.w} / ${BOX_H}`, maxHeight: "78dvh", minHeight: 420 }}>
+      <div ref={view} className="absolute inset-0 overflow-hidden">
+        <div ref={box} className="absolute left-0 top-0 select-none overflow-hidden will-change-transform [container-type:inline-size]" style={{ aspectRatio: `${HUB.w} / ${BOX_H}`, width: full ? `max(100%, calc(100dvh * ${HUB.w / BOX_H}))` : "max(100%, 880px)", background: "linear-gradient(180deg, #5cb4ff, #cfeaff)" }}>
           {phase && phase.kind !== "path" && <div ref={bgDark} aria-hidden className="absolute inset-0 opacity-0" style={{ background: "linear-gradient(180deg, #02030c 0%, #071040 55%, #1b3a8a 100%)" }} />}
           <div key={gen} ref={cam} className={`${dark ? "" : "town-day"} absolute inset-0 ${busyScene ? "pointer-events-none" : ""}`}>
             <div ref={sky} aria-hidden className="town-sky absolute inset-0" />
@@ -1099,9 +1465,9 @@ export function TownHub({ locale }: { locale: Locale }) {
                     title={`${tl.npc[f.key].name} · ${tl.npc[f.key].role}`}
                     onClick={() => talkTo(f.key)}
                     className="market-hit absolute rounded-full"
-                    style={{ left: 0, top: 0, width: `${(s.o / 1.6) * FIG * 100 * 0}cqw`, minWidth: 0, cursor: "pointer" }}
+                    style={{ left: 0, top: 0, width: `${(s.o / 1.6) * FIG * 100}cqw`, minWidth: 0, cursor: "pointer" }}
                   >
-                    <span aria-hidden className="pointer-events-none block" style={{ width: `${(s.o / 1.6) * FIG * 100}cqw`, aspectRatio: "1 / 1" }}>
+                    <span aria-hidden className={`pointer-events-none block ${talking && openNpc === f.key ? "town-talk" : ""}`} style={{ width: `${(s.o / 1.6) * FIG * 100}cqw`, aspectRatio: "1 / 1" }}>
                       <span ref={(el) => void (npcSpr.current[f.key] = el)} className="town-sprite block h-full w-full" style={{ backgroundImage: `url(/home/mesto/${s.f}.webp)`, ["--n" as string]: s.n, animationDuration: `${s.dur}s`, animationDelay: `${-i * 0.7}s` }} />
                     </span>
                   </button>
@@ -1111,7 +1477,7 @@ export function TownHub({ locale }: { locale: Locale }) {
                     </span>
                   )}
                   {bubble?.k === f.key && (
-                    <div className="pointer-events-none absolute z-[55] max-w-[12rem] -translate-x-1/2 whitespace-normal rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-center text-xs font-extrabold" style={{ left: 0, top: `${-(1.05 + s.tz / s.o) * ((s.o / 1.6) * FIG * 100)}cqw`, transform: "translate(-50%, -100%)", width: "max-content" }}>
+                    <div key={bubble.text} className="town-say pointer-events-none absolute z-[55] max-w-[12rem] whitespace-normal rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-center text-xs font-extrabold shadow-[0_3px_0_var(--shadow-ink)]" style={{ left: 0, top: `${-(1.05 + s.tz / s.o) * ((s.o / 1.6) * FIG * 100)}cqw`, transform: "translate(-50%, -100%)", width: "max-content" }}>
                       {bubble.text}
                     </div>
                   )}
@@ -1161,7 +1527,7 @@ export function TownHub({ locale }: { locale: Locale }) {
               if (!pl) return null;
               const locked = p.world && !worldOpen(p.world) && p.world !== "pirate";
               return (
-                <div key={p.id} className={`${labelCls} pointer-events-none ${hover === p.id ? "scale-110" : ""}`} style={{ ...at(pl.sign), width: `${(pl.w * K / 16) * 100}%`, padding: "0.15cqw 0.2cqw", fontSize: "clamp(8px, 0.95cqw, 15px)" }}>
+                <div key={p.id} className={`${labelCls} pointer-events-none ${hover === p.id || near === p.id ? "scale-110" : ""}`} style={{ ...at(signOf(p.id)), minWidth: `${(pl.w * K / 16) * 100}%`, padding: "0.15cqw 0.5cqw", fontSize: "clamp(9px, 0.95cqw, 15px)" }}>
                   {p.icon} {tt.buildings[p.id].name}
                   {locked && <span className="ml-1 opacity-80">🔒</span>}
                 </div>
@@ -1172,11 +1538,14 @@ export function TownHub({ locale }: { locale: Locale }) {
             {PLACES.map((p) => {
               const pl = HUB.places[p.id];
               if (!pl) return null;
-              const hw = pl.w * K / 16 + 0.04;
-              const top = Math.min(pl.sign[1], pl.door[1]) - 0.012;
-              const hh = Math.abs(pl.door[1] - pl.sign[1]) + 0.045;
+              // klikací plocha od cedule po dveře (u rakety celá raketa na rampě); pod obyvateli, ať jdou oslovit i před budovou
+              const sg = signOf(p.id);
+              const bottom = p.id === "stanice" && pl.raketa ? pl.raketa[1] + 0.03 : pl.door[1];
+              const hw = p.id === "stanice" ? 0.2 * K : pl.w * K / 16 + 0.04;
+              const top = Math.min(sg[1], bottom) - 0.012;
+              const hh = Math.abs(bottom - sg[1]) + 0.045;
               return (
-                <button key={p.id} type="button" aria-label={tt.buildings[p.id].name} title={tt.buildings[p.id].hint} onClick={() => visit(p)} onMouseEnter={() => setHover(p.id)} onMouseLeave={() => setHover(null)} onFocus={() => setHover(p.id)} onBlur={() => setHover(null)} className="market-hit absolute z-[53] -translate-x-1/2 rounded-2xl" style={{ left: `${pl.sign[0] * 100}%`, top: `${Y(top) * 100}%`, width: `${hw * 100}%`, height: `${(Y(top + hh) - Y(top)) * 100}%` }} />
+                <button key={p.id} type="button" aria-label={tt.buildings[p.id].name} title={tt.buildings[p.id].hint} onClick={() => visit(p)} onMouseEnter={() => setHover(p.id)} onMouseLeave={() => setHover(null)} onFocus={() => setHover(p.id)} onBlur={() => setHover(null)} className="market-hit absolute z-[35] -translate-x-1/2 rounded-2xl" style={{ left: `${sg[0] * 100}%`, top: `${Y(top) * 100}%`, width: `${hw * 100}%`, height: `${(Y(top + hh) - Y(top)) * 100}%` }} />
               );
             })}
           </div>
@@ -1184,97 +1553,123 @@ export function TownHub({ locale }: { locale: Locale }) {
           {dark && <div aria-hidden className="pointer-events-none absolute inset-0 bg-[#0b0925]/25" />}
           {tint && <div aria-hidden className="pointer-events-none absolute inset-0 z-[12]" style={{ background: tint, transition: "opacity 1s" }} />}
           <canvas ref={wxCv} aria-hidden className={`pointer-events-none absolute inset-0 z-[13] h-full w-full ${phase ? "hidden" : ""}`} />
-          <div className={`pointer-events-none absolute left-3 top-14 z-20 flex items-center gap-2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-sm font-extrabold ${busyScene ? "hidden" : ""}`}>
+          {phase && <canvas ref={cv} aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" />}
+          {/* bublina hrdiny (poloha se nastavuje každý snímek podle hrdiny) */}
+          <div ref={heroBubble} aria-hidden={!heroSay} className="pointer-events-none absolute z-[56]" style={{ left: 0, top: 0 }}>
+            {heroSay && (
+              <div key={heroSay} className="town-say absolute left-0 top-0 w-max max-w-[12rem] rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-center text-sm font-extrabold shadow-[0_3px_0_var(--shadow-ink)]" style={{ transform: "translate(-50%, -100%)" }}>
+                {heroSay}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ovládání nad městečkem (drží se okna, ne obrázku) */}
+      <div className="pointer-events-none absolute inset-0 z-[70]">
+        <div className={`absolute left-3 top-3 flex flex-col items-start gap-2 transition-opacity ${busyScene ? "opacity-0" : ""}`}>
+          <div className="flex items-center gap-2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-sm font-extrabold shadow-[0_2px_0_var(--shadow-ink)]">
+            🎁 {left > 0 ? tt.collect.left.replace("{n}", String(left)) : "✓"}
+          </div>
+          <div className="flex items-center gap-2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-sm font-extrabold shadow-[0_2px_0_var(--shadow-ink)]">
             <span aria-hidden>{{ clear: "☀️", cloudy: "⛅", rain: "🌧️", fog: "🌫️", snow: "❄️" }[weather]}</span>
             {tt.weather[weather]} · {tt.phases[phaseNow]}
           </div>
-          <div className="pointer-events-none absolute left-3 top-3 z-20 flex items-center gap-2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-sm font-extrabold">
-            🎁 {left > 0 ? tt.collect.left.replace("{n}", String(left)) : "✓"}
+          <div aria-hidden className={`hidden items-center gap-1 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-xs font-extrabold opacity-80 ${free ? "md:flex" : ""}`}>⌨ WASD / ←↑↓→ · E</div>
+        </div>
+        {near && free && (
+          <div role="status" className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-2 text-sm font-extrabold shadow-[0_3px_0_var(--shadow-ink)]">
+            <kbd className="rounded-md border-2 border-[var(--edge)] px-1.5">E</kbd> {tt.buildings[near]?.name ?? near}
           </div>
-          <div aria-hidden className={`pointer-events-none absolute left-3 top-[6.5rem] z-20 hidden items-center gap-1 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-xs font-extrabold opacity-80 ${free ? "md:flex" : ""}`}>⌨ WASD / ←↑↓→</div>
-          {near && free && (
-            <div role="status" className="pointer-events-none absolute bottom-14 left-1/2 z-30 -translate-x-1/2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-2 text-sm font-extrabold shadow-[0_3px_0_var(--shadow-ink)]">
-              <kbd className="rounded-md border-2 border-[var(--edge)] px-1.5">E</kbd> {tt.buildings[near]?.name ?? near}
-            </div>
-          )}
-          {note && <div role="status" className="absolute bottom-3 left-1/2 z-30 -translate-x-1/2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-2 text-sm font-bold shadow-[0_3px_0_var(--shadow-ink)]">{note}</div>}
+        )}
+        {note && <div role="status" className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-2 text-sm font-bold shadow-[0_3px_0_var(--shadow-ink)]">{note}</div>}
 
-          {/* filmové pruhy, titulky a přeskočení cut scény */}
-          <div ref={cineBars} aria-hidden className="pointer-events-none absolute inset-0 z-[24]">
-            <div className="absolute left-0 right-0 top-0 bg-black" style={{ height: 0 }} />
-            <div className="absolute bottom-0 left-0 right-0 bg-black" style={{ height: 0 }} />
-          </div>
-          {caption && (
-            <div role="status" className="pointer-events-none absolute inset-x-0 bottom-[11%] z-[26] flex justify-center px-4">
-              <p className="market-boom max-w-[44rem] rounded-2xl bg-black/70 px-4 py-2 text-center text-[clamp(13px,1.9cqw,26px)] font-extrabold leading-snug text-white">{caption}</p>
-            </div>
-          )}
-          {cine && cine !== "enter" && (
-            <button type="button" onClick={skipScene} className="btn-bouncy absolute bottom-3 right-3 z-30 bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
-              ⏭ {st.skip}
-            </button>
-          )}
-          <div aria-hidden className="pointer-events-none absolute inset-0 z-[27] bg-white transition-opacity duration-200" style={{ opacity: fade ? 1 : 0 }} />
+        {/* filmové pruhy, vypravěč a přeskočení cut scény */}
+        <div aria-hidden className="town-cine-bar absolute left-0 right-0 top-0 bg-black" style={{ height: barsOn ? "9%" : 0 }} />
+        <div aria-hidden className="town-cine-bar absolute bottom-0 left-0 right-0 bg-black" style={{ height: barsOn ? "9%" : 0 }} />
+        {narr && (
+          <TownNarrator
+            key={narr.n}
+            name={tl.npc[narr.who].name}
+            art={artOf(narr.who)}
+            title={narr.title}
+            text={narr.text}
+            next={tl.next}
+            skip={st.skip}
+            onNext={() => narrNext.current?.()}
+            onSkip={skipScene}
+          />
+        )}
+        {cine && cine !== "enter" && !narr && (
+          <button type="button" onClick={skipScene} className="btn-bouncy pointer-events-auto absolute bottom-3 right-3 bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
+            ⏭ {st.skip}
+          </button>
+        )}
+        <div aria-hidden className="absolute inset-0 bg-white transition-opacity duration-200" style={{ opacity: fade ? 1 : 0 }} />
 
-          {phase && (
+        {phase && (
+          <>
+            <div aria-hidden className="market-vignette absolute inset-0" />
+            <div ref={bars} aria-hidden className="absolute inset-0">
+              <div className="absolute left-0 right-0 top-0 bg-black" style={{ height: 0 }} />
+              <div className="absolute bottom-0 left-0 right-0 bg-black" style={{ height: 0 }} />
+            </div>
+            <div ref={count} aria-hidden className="market-count" />
+            {phase.kind !== "path" && (
+              <button type="button" onClick={() => handle.current?.skip()} className="btn-bouncy pointer-events-auto absolute bottom-3 right-3 bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
+                ⏭ {st.skip}
+              </button>
+            )}
+          </>
+        )}
+        <div className="pointer-events-auto absolute right-3 top-3 flex max-w-[calc(100%-11rem)] flex-wrap justify-end gap-2">
+          {!busyScene && (
             <>
-              <canvas ref={cv} aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" />
-              <div aria-hidden className="market-vignette pointer-events-none absolute inset-0" />
-              <div ref={bars} aria-hidden className="pointer-events-none absolute inset-0 z-20">
-                <div className="absolute left-0 right-0 top-0 bg-black" style={{ height: 0 }} />
-                <div className="absolute bottom-0 left-0 right-0 bg-black" style={{ height: 0 }} />
-              </div>
-              <div ref={count} aria-hidden className="market-count" />
-              {phase.kind !== "path" && (
-                <button type="button" onClick={() => handle.current?.skip()} className="btn-bouncy absolute bottom-3 right-3 z-30 bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
-                  ⏭ {st.skip}
-                </button>
-              )}
+              <button type="button" onClick={() => playIntro()} title={tl.ui.replay} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110">
+                <span aria-hidden>🎬</span>
+                <span className="sr-only">{tl.ui.replay}</span>
+              </button>
+              <button type="button" onClick={() => setStoryOpen(true)} title={storyText.button} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110">
+                <span aria-hidden>📖</span>
+                <span className="sr-only">{storyText.button}</span>
+              </button>
+              <button type="button" onClick={() => setPickHero(true)} title={tt.hero.button} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110">
+                <span aria-hidden>🧑‍🎤</span>
+                <span className="sr-only">{tt.hero.button}</span>
+              </button>
+              <button type="button" onClick={toggleNight} title={mode === "auto" ? tt.auto : mode === "day" ? tt.day : tt.night} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110">
+                <span aria-hidden>{mode === "auto" ? "🕒" : mode === "day" ? "☀️" : "🌙"}</span>
+                <span className="sr-only">{mode === "auto" ? tt.auto : mode === "day" ? tt.day : tt.night}</span>
+              </button>
             </>
           )}
-          <div className="absolute right-3 top-3 z-30 flex gap-2">
-            <button type="button" onClick={() => !busyScene && playIntro()} disabled={busyScene} title={tl.ui.replay} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110 disabled:opacity-50">
-              <span aria-hidden>🎬</span>
-              <span className="sr-only">{tl.ui.replay}</span>
-            </button>
-            <button type="button" onClick={toggleFull} aria-pressed={full} title={full ? tt.fullOff : tt.fullOn} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110">
-              <span aria-hidden>{full ? "🗗" : "⛶"}</span>
-              <span className="sr-only">{full ? tt.fullOff : tt.fullOn}</span>
-            </button>
-            <button type="button" onClick={() => !busyScene && setStoryOpen(true)} disabled={busyScene} title={storyText.button} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110 disabled:opacity-50">
-              <span aria-hidden>📖</span>
-              <span className="sr-only">{storyText.button}</span>
-            </button>
-            <button type="button" onClick={() => !busyScene && setPickHero(true)} disabled={busyScene} title={tt.hero.button} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110 disabled:opacity-50">
-              <span aria-hidden>🧑‍🎤</span>
-              <span className="sr-only">{tt.hero.button}</span>
-            </button>
-            <button type="button" onClick={toggleNight} title={mode === "auto" ? tt.auto : mode === "day" ? tt.day : tt.night} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110">
-              <span aria-hidden>{mode === "auto" ? "🕒" : mode === "day" ? "☀️" : "🌙"}</span>
-              <span className="sr-only">{mode === "auto" ? tt.auto : mode === "day" ? tt.day : tt.night}</span>
-            </button>
-            <button type="button" onClick={toggleSound} aria-pressed={sound} title={sound ? st.soundOn : st.soundOff} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110">
-              <span aria-hidden>{sound ? "🔊" : "🔇"}</span>
-              <span className="sr-only">{sound ? st.soundOn : st.soundOff}</span>
-            </button>
-          </div>
-          {openNpc && !busyScene && (
-            <TownNpcPanel
-              key={openNpc}
-              locale={locale}
-              npc={openNpc}
-              art={{ f: SPR[FOLK.find((f) => f.key === openNpc)!.k].f, n: SPR[FOLK.find((f) => f.key === openNpc)!.k].n }}
-              loggedIn={col.loggedIn}
-              snap={npcSnap}
-              points={npcPoints}
-              onClose={() => setOpenNpc(null)}
-              onUpdate={(snap, points) => {
-                setNpcSnap(snap);
-                setNpcPoints(points);
-              }}
-            />
-          )}
+          <button type="button" onClick={toggleFull} aria-pressed={full} title={full ? tt.fullOff : tt.fullOn} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110">
+            <span aria-hidden>{full ? "🗗" : "⛶"}</span>
+            <span className="sr-only">{full ? tt.fullOff : tt.fullOn}</span>
+          </button>
+          <button type="button" onClick={toggleSound} aria-pressed={sound} title={sound ? st.soundOn : st.soundOff} className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-xl shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:scale-110">
+            <span aria-hidden>{sound ? "🔊" : "🔇"}</span>
+            <span className="sr-only">{sound ? st.soundOn : st.soundOff}</span>
+          </button>
         </div>
+        {openNpc && !busyScene && (
+          <TownNpcPanel
+            key={openNpc}
+            locale={locale}
+            npc={openNpc}
+            art={artOf(openNpc)}
+            loggedIn={col.loggedIn}
+            snap={npcSnap}
+            points={npcPoints}
+            onClose={() => closeNpc()}
+            onTalking={setTalking}
+            onUpdate={(snap, points) => {
+              setNpcSnap(snap);
+              setNpcPoints(points);
+            }}
+          />
+        )}
+      </div>
       </div>
       {storyOpen && (
         <Modal title={`📖 ${storyText.title}`} onClose={() => setStoryOpen(false)} closeLabel={m.close}>
