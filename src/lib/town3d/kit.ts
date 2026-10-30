@@ -71,6 +71,39 @@ export async function makeHero(look: number): Promise<Figure> {
   };
 }
 
+/** Postava nebo předmět z public/home/mesto3d se smyčkou animace (kapitán, papoušek…); `speed` násobí rychlost. */
+export async function makeLoop(name: string, speed = 1): Promise<{ root: THREE.Object3D; update: (dt: number) => void }> {
+  const g = await loadGltf(figureUrl(name));
+  const root = g.scene.clone(true);
+  root.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (m.isMesh) {
+      m.castShadow = true;
+      m.userData.shared = true;
+    }
+  });
+  const mixer = new THREE.AnimationMixer(root);
+  const tracks = g.animations.flatMap((a) => a.tracks);
+  if (tracks.length) mixer.clipAction(new THREE.AnimationClip(name, -1, tracks)).play();
+  mixer.timeScale = speed;
+  return { root, update: (dt) => mixer.update(dt) };
+}
+
+/** Statický model z public/home/mesto3d (loď, molo…), vlastní kopie geometrie tam, kde se deformuje. */
+export async function makeModel(name: string): Promise<THREE.Object3D> {
+  const g = await loadGltf(figureUrl(name));
+  const root = g.scene.clone(true);
+  root.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (m.isMesh) {
+      m.castShadow = true;
+      m.receiveShadow = true;
+      m.userData.shared = true;
+    }
+  });
+  return root;
+}
+
 // ---------------------------------------------------------------------------------------------- 3D cut scény
 export type Stage = {
   renderer: THREE.WebGLRenderer;

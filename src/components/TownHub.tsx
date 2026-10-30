@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DailyChallenges } from "@/components/DailyChallenges";
 import { Modal, type Snapshot } from "@/components/ShopView";
-import { readCam, runPath, runPirate, type Geo, type Handle, type Pt } from "@/lib/market-cinema";
+import { readCam, runPath, type Geo, type Handle, type Pt } from "@/lib/market-cinema";
 import { runWorld } from "@/lib/market-cinema-worlds";
 import { runEnter, type DoorKind } from "@/lib/market-cinema-doors";
 import { camTransform, confettiBurst, createEventFx, createWeatherFx, dayPhaseOf, eventForDay, EVENT_SHOT, PHASE_TINT, resetCam, tweenCam, weatherForDay } from "@/lib/town-scenes";
@@ -28,7 +28,6 @@ import { getTownHubText } from "@/i18n/town";
 import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
 import hubData from "./mesto-hub-kotvy.json";
-import nastup from "./pristav-nastup.json";
 
 // Městečko jako hub (stránka /mestecko): velké denní městečko z Blenderu (umime-art/blender/mestecko_hub.py) se čtyřmi řadami:
 // louka s přístavem, lagunou a raketovou rampou, hlavní ulice, druhá řada s parkem a terasa s vchodem do lesa a do hradu.
@@ -930,7 +929,6 @@ export function TownHub({ locale }: { locale: Locale }) {
       const pts = ids.map((n) => HUB.graf.nodes[n]);
       return onNode ? pts.slice(1) : pts;
     };
-    const full = (r2: typeof r) => r2 as Parameters<typeof runPirate>[0];
     if (phase.kind === "path" && phase.target) {
       const place = phase.target;
       const walk = rt(place.id);
@@ -970,9 +968,20 @@ export function TownHub({ locale }: { locale: Locale }) {
         handle.current?.stop();
       };
     } else if (phase.kind === "pirate") {
-      if (!r.sky || !r.bgDark || !r.rocket || !r.bars || !r.count) return;
-      const nodes = rt("pristav");
-      handle.current = runPirate(full(r), geoFor(nodes, start), nastup as unknown as Parameters<typeof runPirate>[2], () => leave(`/${locale}/uzivatelsky-obchod?svet=pirate&film=1`));
+      // hrdina dojde k přístavu, pak se obraz prolne do 3D vyplutí galéry (three.js se načítá už během chůze)
+      let alive = true;
+      const mod = import("@/lib/town3d/pirate");
+      handle.current = runPath(r as Parameters<typeof runPath>[0], geoFor(rt("pristav"), start), () => {
+        void mod.then(({ runPirate3D }) => {
+          const el = space3d.current;
+          if (!alive || !el) return;
+          handle.current = runPirate3D(el, { look: getHeroLook(), onEnd: () => leave(`/${locale}/uzivatelsky-obchod?svet=pirate&film=1`) });
+        });
+      }, false);
+      return () => {
+        alive = false;
+        handle.current?.stop();
+      };
     } else {
       const world = phase.target?.world ?? "forest";
       const nodes = rt(phase.id);
@@ -1651,7 +1660,7 @@ export function TownHub({ locale }: { locale: Locale }) {
               <div className="absolute bottom-0 left-0 right-0 bg-black" style={{ height: 0 }} />
             </div>
             <div ref={count} aria-hidden className="market-count" />
-            {phase.kind === "space" && <div ref={space3d} className="absolute inset-0" />}
+            {(phase.kind === "space" || phase.kind === "pirate") && <div ref={space3d} className="absolute inset-0" />}
             {phase.kind !== "path" && (
               <button type="button" onClick={() => handle.current?.skip()} className="btn-bouncy pointer-events-auto absolute bottom-3 right-3 bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
                 ⏭ {st.skip}
