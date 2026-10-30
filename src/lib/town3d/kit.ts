@@ -7,13 +7,7 @@ import { DRACO_DECODER_PATH } from "@/lib/avatars3d";
 // Společný základ 3D městečka: načtení postav z Blenderu (public/avatars-3d, animace „klid“ a „radost“),
 // procedurální chůze (pohupování, náklon, mávání rukama) a pomocníci pro 3D cut scény (plátno, překryv, úklid).
 
-export type Rig = {
-  root: THREE.Group; // poloha a otočení postavy ve scéně (chodidla v počátku)
-  height: number;
-  /** walk 0..1 = jak rychle jde; vrací se pohupování, aby šlo přidat stín */
-  update: (dt: number, walk: number) => void;
-  joy: () => void;
-};
+export const figureUrl = (name: string) => `/home/mesto3d/${name}.glb`;
 
 let loader: GLTFLoader | null = null;
 const cache = new Map<string, Promise<GLTF>>();
@@ -32,82 +26,50 @@ export function loadGltf(url: string): Promise<GLTF> {
   return p;
 }
 
-const modelUrl = (id: string) => `/avatars-3d/${id}.glb`;
+export type Pose = "chuze" | "stoji" | "radost";
+export type Figure = {
+  root: THREE.Group; // chodidla v počátku, postava hledí k +x (jako v Blenderu, natočená o 18° ke kameře)
+  pose: (p: Pose) => void;
+  update: (dt: number) => void;
+};
 
-/** Postava z profilu jako loutka: výška `height` (jednotky scény), chodidla v počátku, obličej k +z. */
-export async function makeRig(id: string, height: number): Promise<Rig> {
-  const gltf = await loadGltf(modelUrl(id));
-  const model = gltf.scene.clone(true);
-  model.traverse((o) => {
-    const m = o as THREE.Mesh;
-    if (m.isMesh) {
-      m.castShadow = true;
-      m.frustumCulled = false;
-      m.userData.shared = true; // geometrie a materiály patří modelu v mezipaměti, úklid scény je nemaže
-    }
-  });
-  const box = new THREE.Box3().setFromObject(model);
-  const size = box.getSize(new THREE.Vector3());
-  const k = height / Math.max(size.y, 1e-3);
-  const inner = new THREE.Group();
-  inner.scale.setScalar(k);
-  model.position.set(-(box.min.x + size.x / 2), -box.min.y, -(box.min.z + size.z / 2));
-  inner.add(model);
+/** Hrdina městečka jako 3D loutka se třemi pohyby (vzhled 0..5, soubory hrdina[_k]_<pohyb>.glb). */
+export async function makeHero(look: number): Promise<Figure> {
+  const tag = look ? `_${look}` : "";
+  const poses: Pose[] = ["chuze", "stoji", "radost"];
+  const gltfs = await Promise.all(poses.map((p) => loadGltf(figureUrl(`hrdina${tag}_${p}`))));
   const root = new THREE.Group();
-  root.add(inner);
-
-  const mixer = new THREE.AnimationMixer(model);
-  const clip = (n: string) => gltf.animations.find((c) => c.name === n);
-  const idleClip = clip("klid");
-  const joyClip = clip("radost");
-  const idle = idleClip ? mixer.clipAction(idleClip) : null;
-  const joyA = joyClip ? mixer.clipAction(joyClip) : null;
-  idle?.play();
-  if (joyA) {
-    joyA.setLoop(THREE.LoopOnce, 1);
-    joyA.clampWhenFinished = false;
-    mixer.addEventListener("finished", (e) => {
-      if (e.action === joyA && idle) {
-        idle.reset().play();
-        idle.crossFadeFrom(joyA, 0.25, false);
+  const parts = gltfs.map((g, i) => {
+    const scene = g.scene.clone(true);
+    scene.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (m.isMesh) {
+        m.castShadow = true;
+        m.userData.shared = true; // geometrie a materiály patří modelu v mezipaměti, úklid scény je nemaže
       }
     });
-  }
-  // ramena (uzly *_rameno_leva / *_rameno_prava) pro mávání při chůzi
-  let armL: THREE.Object3D | null = null;
-  let armR: THREE.Object3D | null = null;
-  model.traverse((o) => {
-    if (/_rameno_leva$/.test(o.name)) armL = o;
-    if (/_rameno_prava$/.test(o.name)) armR = o;
+    scene.visible = i === 1;
+    root.add(scene);
+    const mixer = new THREE.AnimationMixer(scene);
+    const tracks = g.animations.flatMap((a) => a.tracks);
+    if (tracks.length) mixer.clipAction(new THREE.AnimationClip(poses[i], -1, tracks)).play();
+    return { scene, mixer };
   });
-  let phase = Math.random() * 6;
-  let w = 0;
+  let cur = 1;
   return {
     root,
-    height,
-    update(dt, walk) {
-      mixer.update(dt);
-      w += (walk - w) * Math.min(1, dt * 8);
-      phase += dt * (6 + 5 * w);
-      const s = Math.sin(phase);
-      inner.position.y = Math.abs(s) * 0.07 * height * w;
-      inner.rotation.z = s * 0.07 * w;
-      inner.rotation.x = 0.12 * w;
-      // mávání přičtené k animaci klidu (ta se každý snímek přepíše mixerem)
-      const a = armL as THREE.Object3D | null;
-      const b = armR as THREE.Object3D | null;
-      if (a) a.rotation.x += s * 0.7 * w;
-      if (b) b.rotation.x -= s * 0.7 * w;
+    pose(p) {
+      const i = poses.indexOf(p);
+      if (i === cur) return;
+      parts[cur].scene.visible = false;
+      parts[i].scene.visible = true;
+      cur = i;
     },
-    joy() {
-      if (!joyA) return;
-      joyA.reset().play();
-      if (idle?.isRunning()) joyA.crossFadeFrom(idle, 0.12, false);
+    update(dt) {
+      parts[cur].mixer.update(dt);
     },
   };
 }
-
-export { NPC_MODEL, HERO_MODELS } from "./models";
 
 // ---------------------------------------------------------------------------------------------- 3D cut scény
 export type Stage = {
