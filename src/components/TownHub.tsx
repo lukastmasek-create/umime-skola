@@ -243,6 +243,7 @@ export function TownHub({ locale }: { locale: Locale }) {
   const hero = useRef<HTMLDivElement>(null);
   const heroSpr = useRef<HTMLSpanElement>(null);
   const heroP = useRef<Pt>(HUB.hrdina);
+  const padKeys = useRef(new Set<string>()); // směry z klávesnice a z dotykových šipek
   const visitRef = useRef<(p: PlaceDef) => void>(() => {});
   const [near, setNear] = useState<string | null>(null);
   const rocket = useRef<HTMLDivElement>(null);
@@ -535,7 +536,8 @@ export function TownHub({ locale }: { locale: Locale }) {
       spr.style.backgroundImage = `url(${heroSpriteUrl(on ? "chuze" : "stoji", getHeroLook())})`;
       spr.style.animationDuration = on ? "0.7s" : "3s";
     };
-    const keys = new Set<string>();
+    const keys = padKeys.current;
+    keys.clear();
     const MAP: Record<string, string> = { w: "u", arrowup: "u", s: "d", arrowdown: "d", a: "l", arrowleft: "l", d: "r", arrowright: "r" };
     const typing = (t: EventTarget | null) => t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
     const onDown = (e: KeyboardEvent) => {
@@ -563,7 +565,7 @@ export function TownHub({ locale }: { locale: Locale }) {
     window.addEventListener("blur", onBlur);
     let raf = 0;
     let last = performance.now();
-    const SPEED = 0.07; // šířky obrázku za sekundu
+    const SPEED = 0.13; // šířky obrázku za sekundu
     const tick = (now: number) => {
       raf = requestAnimationFrame(tick);
       const dt = Math.min(0.05, (now - last) / 1000);
@@ -577,7 +579,7 @@ export function TownHub({ locale }: { locale: Locale }) {
         const uy = dy / dl;
         if (!seg) {
           let best: string | null = null;
-          let bs = 0.35;
+          let bs = 0.2;
           for (const m of nb[node]) {
             const [ex, ey] = vec(node, m);
             const sc = ex * ux + ey * uy;
@@ -591,7 +593,7 @@ export function TownHub({ locale }: { locale: Locale }) {
         if (seg) {
           const [ex, ey, L] = vec(seg.a, seg.b);
           const sc = ex * ux + ey * uy;
-          if (Math.abs(sc) > 0.25) {
+          if (Math.abs(sc) > 0.2) {
             seg.t += (Math.sign(sc) * SPEED * dt) / L;
             moved = true;
             const sx = Math.sign(sc) * ex;
@@ -1192,6 +1194,33 @@ export function TownHub({ locale }: { locale: Locale }) {
             🎁 {left > 0 ? tt.collect.left.replace("{n}", String(left)) : "✓"}
           </div>
           <div aria-hidden className={`pointer-events-none absolute left-3 top-[6.5rem] z-20 hidden items-center gap-1 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1 text-xs font-extrabold opacity-80 ${free ? "md:flex" : ""}`}>⌨ WASD / ←↑↓→</div>
+          {free && (
+            <div className="absolute bottom-3 left-3 z-30 grid grid-cols-3 gap-1 [@media(pointer:fine)]:hidden" aria-hidden>
+              {([["", "u", ""], ["l", "d", "r"]] as const).flatMap((row, ri) =>
+                row.map((d, ci) =>
+                  d ? (
+                    <button
+                      key={`${ri}${ci}`}
+                      type="button"
+                      tabIndex={-1}
+                      onPointerDown={(e) => {
+                        e.preventDefault();
+                        (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+                        padKeys.current.add(d);
+                      }}
+                      onPointerUp={() => padKeys.current.delete(d)}
+                      onPointerCancel={() => padKeys.current.delete(d)}
+                      onLostPointerCapture={() => padKeys.current.delete(d)}
+                      className="h-12 w-12 touch-none select-none rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] text-xl font-extrabold opacity-80 active:opacity-100"
+                      style={{ gridColumn: ci + 1, gridRow: ri + 1 }}
+                    >
+                      {{ u: "▲", d: "▼", l: "◀", r: "▶" }[d]}
+                    </button>
+                  ) : null,
+                ),
+              )}
+            </div>
+          )}
           {near && free && (
             <div role="status" className="pointer-events-none absolute bottom-14 left-1/2 z-30 -translate-x-1/2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-2 text-sm font-extrabold shadow-[0_3px_0_var(--shadow-ink)]">
               <kbd className="rounded-md border-2 border-[var(--edge)] px-1.5">E</kbd> {tt.buildings[near]?.name ?? near}
