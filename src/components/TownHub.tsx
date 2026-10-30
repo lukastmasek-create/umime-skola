@@ -409,7 +409,7 @@ export function TownHub({ locale }: { locale: Locale }) {
     if (reduced) {
       return () => io.disconnect();
     }
-    const street = ["m1", "m2", "m3", "m4", "m5", "hub", "m7", "obchod", "m8", "m9"].map((n) => HUB.graf.nodes[n]);
+    const street = poly(["m1", "m2", "m3", "m4", "m5", "hub", "m7", "obchod", "m8", "m9"]); // pes běhá po hlavní ulici přesně po cestě
     const cumS = [0];
     for (let i = 1; i < street.length; i++) cumS.push(cumS[i - 1] + Math.hypot(street[i][0] - street[i - 1][0], (street[i][1] - street[i - 1][1]) * ratio));
     const totalS = cumS[cumS.length - 1];
@@ -719,27 +719,34 @@ export function TownHub({ locale }: { locale: Locale }) {
         const dl = Math.hypot(dx, dy);
         const ux = dx / dl;
         const uy = dy / dl;
-        if (!seg && node) {
-          const step = pickStep(node, ux, uy);
-          if (step) seg = { A: nodes[node], from: node, to: step.to, t: 0, steer: step.steer };
-          steering = !!step?.steer;
-        }
-        if (seg) {
+        // krok za snímek se rozloží do více krátkých úseků (graf je hustý, uzly leží kousek od sebe)
+        let budget = SPEED * dt;
+        for (let guard = 0; budget > 1e-6 && guard < 40; guard++) {
+          if (!seg && node) {
+            const step = pickStep(node, ux, uy);
+            if (step) seg = { A: nodes[node], from: node, to: step.to, t: 0, steer: step.steer };
+            steering = !!step?.steer;
+          }
+          if (!seg) break;
           const B = nodes[seg.to];
           const [ex, ey, L] = dirOf(seg.A, B);
           const sc = ex * ux + ey * uy;
           // proti směru úseku: otočit se (zpět k výchozímu uzlu); kolmo: pokračovat k odbočce
           if (sc < -0.3 && seg.from && !seg.steer) seg = { A: B, from: seg.to, to: seg.from, t: 1 - seg.t };
           const [fx] = dirOf(seg.A, nodes[seg.to]);
-          seg.t += (SPEED * dt) / Math.max(1e-4, L);
+          const len = Math.max(1e-4, L);
+          seg.t += budget / len;
           moved = true;
           if (Math.abs(fx) > 0.2) flip = fx < 0 ? -1 : 1;
           if (seg.t >= 1) {
+            budget = (seg.t - 1) * len;
             prev = seg.from;
             node = seg.to;
             heroP.current = nodes[node];
             seg = null;
+            if (PLACES.some((p2) => p2.id === node)) break; // u dveří se zastaví
           } else {
+            budget = 0;
             const A = seg.A;
             const C = nodes[seg.to];
             heroP.current = [A[0] + (C[0] - A[0]) * seg.t, A[1] + (C[1] - A[1]) * seg.t];
@@ -1185,7 +1192,7 @@ export function TownHub({ locale }: { locale: Locale }) {
     return runScene("event", async (sig) => {
       fxStrength.current = 1;
       sfx.horn();
-      await camTo(e.to, e.zoom, 2.2, sig);
+      await camTo(toBox(e.to), e.zoom, 2.2, sig);
       npcLine(e.host, eventText.title + "!", 2500);
       await say(e.host, eventText.caption, sig, eventText.title);
     });

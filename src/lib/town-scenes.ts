@@ -67,13 +67,13 @@ export function eventForDay(day: string): EventId {
   return EVENT_IDS[((h >>> 0) % EVENT_IDS.length + EVENT_IDS.length) % EVENT_IDS.length];
 }
 
-/** Kam se kamera dívá, když událost uvádí cut scéna, a kdo ji ohlásí. */
+/** Kam se kamera dívá (souřadnice obrázku městečka, bez oblohy), když událost uvádí cut scéna, a kdo ji ohlásí. */
 export const EVENT_SHOT: Record<EventId, { to: Pt; zoom: number; host: "babicka" | "kluk" | "farmar" | "pekar" | "knihovnice" }> = {
-  festival: { to: [0.5, 0.62], zoom: 1.4, host: "babicka" },
-  fireworks: { to: [0.55, 0.3], zoom: 1.2, host: "kluk" },
-  rain: { to: [0.5, 0.3], zoom: 1.2, host: "farmar" },
-  balloons: { to: [0.35, 0.5], zoom: 1.3, host: "kluk" },
-  market: { to: [0.7, 0.66], zoom: 1.5, host: "pekar" },
+  festival: { to: [0.5, 0.68], zoom: 1.4, host: "babicka" },
+  fireworks: { to: [0.55, 0.22], zoom: 1.2, host: "kluk" },
+  rain: { to: [0.5, 0.45], zoom: 1.2, host: "farmar" },
+  balloons: { to: [0.35, 0.55], zoom: 1.3, host: "kluk" },
+  market: { to: [0.62, 0.71], zoom: 1.5, host: "pekar" },
 };
 
 type Particle = { x: number; y: number; vx: number; vy: number; life: number; max: number; c: string; r: number };

@@ -24,7 +24,7 @@ const FRAME: Record<string, [number, number]> = {
 const K = 1.5; // plátno je větší než čtverec spritu (skok radosti, zvednuté ruce)
 const BELOW = 0.12; // kolik plátna (v šířkách záběru) je pod spodkem čtverce
 const N = 320; // největší výřez v pixelech
-const EL = (9 * Math.PI) / 180; // náklon kamery jako v Blenderu
+const EL = (16 * Math.PI) / 180; // mírný nadhled (městečko je snímané shora pod 38°)
 
 type Model = { root: THREE.Object3D; action: THREE.AnimationAction | null; mixer: THREE.AnimationMixer; dur: number };
 type State = { canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D; models: Map<string, Model | "loading" | "failed">; shown: string | null };
@@ -139,11 +139,13 @@ export function startFolk3D(get: () => (HTMLElement | null)[], opt: { night: () 
         st.canvas.height = px;
       }
       for (const s2 of states.values()) for (const m of s2.models.values()) if (typeof m === "object") m.root.visible = m === cur;
-      const bottom = tz - o / 2 - BELOW * o;
+      // chodidla musí zůstat na stejném místě plátna jako u pásu snímků: kamera míří na (0, tz, 0) a chodidla
+      // jsou při náklonu EL o tz·cos(EL) pod středem
+      const feetToBottom = o / 2 - tz + BELOW * o;
       cam.left = (-K * o) / 2;
       cam.right = (K * o) / 2;
-      cam.bottom = bottom - tz;
-      cam.top = bottom + K * o - tz;
+      cam.bottom = -tz * Math.cos(EL) - feetToBottom;
+      cam.top = cam.bottom + K * o;
       cam.position.set(0, tz + 12 * Math.sin(EL), 12 * Math.cos(EL));
       cam.lookAt(0, tz, 0);
       cam.updateProjectionMatrix();
