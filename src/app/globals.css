@@ -3178,3 +3178,9 @@ select:not(:focus) {
 /* Městečko v režimu přes celé okno: hlavička a patička pryč, ať je vidět všechno. */
 html.town-full body { overflow: hidden; }
 html.town-full .site-header, html.town-full body > footer { display: none; }
+
+/* Městečko: postava vykreslená 3D modelem (src/lib/town3d/folk.ts) místo pásu snímků */
+.town3d {
+  background-image: none !important;
+  animation: none !important;
+}

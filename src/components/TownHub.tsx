@@ -11,6 +11,7 @@ import { runEnter, type DoorKind } from "@/lib/market-cinema-doors";
 import { camTransform, confettiBurst, createEventFx, createWeatherFx, dayPhaseOf, eventForDay, EVENT_SHOT, PHASE_TINT, resetCam, tweenCam, weatherForDay } from "@/lib/town-scenes";
 import { TownNpcPanel } from "@/components/TownNpcPanel";
 import { TownNarrator, type Art } from "@/components/TownNarrator";
+import { figureOf, HERO_MODELS, NPC_MODEL, portraitOf } from "@/lib/town3d/models";
 import { MiniGame } from "@/components/TownMini";
 import { TownStory } from "@/components/TownStory";
 import { getTownStoryText } from "@/i18n/town-story";
@@ -149,6 +150,9 @@ const FOLK: { k: SK; key: NpcKey; flip?: boolean }[] = [
   { k: "slepice", key: "slepice" },
   { k: "farmar", key: "farmar" },
 ];
+
+// výška 3D postavy jako zlomek čtverce spritu (zvířata jsou menší)
+const FOLK_H: Partial<Record<NpcKey, number>> = { kocka: 0.6, ovce: 0.7, slepice: 0.55 };
 
 // Kdo se po městečku prochází: trasa po uzlech grafu cest, rychlost (šířky obrázku za sekundu) a sprity pro chůzi a stání.
 const WALKERS: Partial<Record<NpcKey, { nodes: string[]; speed: number; walk: SK; idle?: SK }>> = {
@@ -297,6 +301,11 @@ export function TownHub({ locale }: { locale: Locale }) {
   const wxCv = useRef<HTMLCanvasElement>(null);
   const phaseNow = dayPhaseOf(hour);
   const night = mode === "night" || (mode === "auto" && phaseNow === "night");
+  const nightRef = useRef(night);
+  const lookRef = useRef(0);
+  useEffect(() => {
+    nightRef.current = night;
+  }, [night]);
   const tint = mode === "auto" ? PHASE_TINT[phaseNow] : null;
   const lampsOn = night || (mode === "auto" && phaseNow === "dusk");
   const eventText = tl.events.find((e) => e.id === eventId) ?? tl.events[0];
@@ -315,6 +324,7 @@ export function TownHub({ locale }: { locale: Locale }) {
       const d = new Date();
       setHour(d.getHours() + d.getMinutes() / 60);
       setLook(getHeroLook());
+      lookRef.current = getHeroLook();
     }, 0);
     return () => window.clearTimeout(id);
   }, []);
@@ -483,6 +493,30 @@ export function TownHub({ locale }: { locale: Locale }) {
     return () => {
       cancelAnimationFrame(raf);
       io.disconnect();
+    };
+  }, []);
+
+  // 3D postavy: do obyvatel, psa i hrdiny se místo pásů snímků kreslí jejich 3D modely (three.js se načte až teď)
+  useEffect(() => {
+    let off = false;
+    let h: { stop: () => void } | null = null;
+    const id = window.setTimeout(() => {
+      void import("@/lib/town3d/folk").then(({ startFolk3D }) => {
+        if (off) return;
+        h = startFolk3D(
+          () => [
+            ...FOLK.map((f) => ({ el: npcSpr.current[f.key], model: NPC_MODEL[f.key], h: FOLK_H[f.key] ?? 1.05, feet: 0.5 + SPR[f.k].tz / SPR[f.k].o })),
+            { el: dogSpr.current, model: NPC_MODEL.pes, h: 0.62, feet: 0.5 + SPR.pes_bezi.tz / SPR.pes_bezi.o },
+            { el: heroSpr.current, model: HERO_MODELS[lookRef.current] ?? HERO_MODELS[0], h: 1.05, feet: 0.5 + 0.55 / 1.6 },
+          ],
+          { night: () => nightRef.current },
+        );
+      });
+    }, 300);
+    return () => {
+      off = true;
+      window.clearTimeout(id);
+      h?.stop();
     };
   }, []);
 
@@ -949,10 +983,7 @@ export function TownHub({ locale }: { locale: Locale }) {
   // ------------------------------------------------------------------------------------------ cut scény
   // Scéna je asynchronní skript z kroků: kamera, chůze hrdiny, vypravěč s portrétem a bubliny nad postavami.
   // Přeskočení zruší signál; úklid vrátí kameru, hrdinu i obyvatele do volné hry.
-  const artOf = (k: NpcKey): Art => {
-    const sp = SPR[FOLK.find((f) => f.key === k)!.k];
-    return { f: sp.f, n: sp.n, dur: sp.dur };
-  };
+  const artOf = (k: NpcKey): Art => ({ f: portraitOf(NPC_MODEL[k]), n: 1 });
   const setCamera = (p: Pt, z: number) => {
     const b = box.current;
     const c = cam.current;
@@ -1691,6 +1722,7 @@ export function TownHub({ locale }: { locale: Locale }) {
                 onClick={() => {
                   setLook(k);
                   setHeroLook(k);
+                  lookRef.current = k;
                   setPickHero(false);
                   const hs = heroSpr.current;
                   if (hs) hs.style.backgroundImage = `url(${heroSpriteUrl("stoji", k)})`;
@@ -1699,7 +1731,8 @@ export function TownHub({ locale }: { locale: Locale }) {
                 className="card card-hover flex flex-col items-center gap-1 p-2 text-xs font-bold"
                 style={look === k ? { borderColor: "var(--brand-500)", background: "var(--surface-muted)" } : undefined}
               >
-                <span aria-hidden className="town-sprite block h-20 w-20" style={{ ["--n" as string]: 24, backgroundImage: `url(${heroSpriteUrl("stoji", k)})`, animationDuration: "3s" }} />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={figureOf(HERO_MODELS[k])} alt="" aria-hidden className="h-24 w-24 object-contain" />
                 {tt.hero.pick}
               </button>
             ))}
