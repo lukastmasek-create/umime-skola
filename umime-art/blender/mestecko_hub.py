@@ -9,7 +9,9 @@ sys.path.insert(0, os.path.dirname(__file__))
 from mestecko import *
 
 UNITS = 18.0   # širší záběr, aby se vešla laguna vlevo dole i rampa rakety vpravo
-W, H = (1000, 1050) if PREVIEW else (2000, 2100)
+QUICK = "--quick" in sys.argv  # rychlý náhled rozložení (malý, málo vzorků)
+W, H = (500, 625) if QUICK else (1000, 1250) if PREVIEW else (2000, 2500)
+EL = math.radians(38)  # vyšší nadhled než úvodní městečko: ulice mezi řadami domů jsou vidět a nikdo nechodí „po střechách“
 PPU = W / UNITS
 
 
@@ -22,7 +24,7 @@ def norm(x, y, z=0.0):
     return [round(px / W, 5), round(py / H, 5)]
 
 
-TZ = 3.7   # střed záběru: hlavní ulice uprostřed, louka s přístavem dole, terasa s vchody nahoře
+TZ = 5.52   # střed záběru: spodní okraj obrázku je u zátoky (y = -11,2), nahoře terasa s lesem a hradem
 
 
 _orig_house = house
@@ -53,11 +55,12 @@ def sign(x, y, z, w=1.1, h=0.34, rot=0.0, color="#7a4a2e", face=-1):
 
 
 def build_world():
-    sc = reset(W, H, 1, samples=24 if PREVIEW else 96, name="mesto_hub", world=("#cfe3ff", 1.0), view="AgX", look="AgX - Punchy")
+    sc = reset(W, H, 1, samples=8 if QUICK else 24 if PREVIEW else 40, name="mesto_hub", world=("#cfe3ff", 1.0), view="AgX", look="AgX - Punchy")
     sc.view_settings.exposure = 0.55
     sc.cycles.max_bounces = 4
     sc.render.film_transparent = True
-    add_camera((0, -CAM_D * math.cos(EL), CAM_D * math.sin(EL) + TZ), (0, 0, TZ), ortho_scale=UNITS)
+    cam = add_camera((0, -CAM_D * math.cos(EL), CAM_D * math.sin(EL) + TZ), (0, 0, TZ), ortho_scale=UNITS)
+    cam.data.sensor_fit = "HORIZONTAL"  # šířka záběru = UNITS i u obrázku na výšku (jinak kotvy nesedí na render)
     add_sun((math.radians(52), math.radians(8), math.radians(-40)), energy=4.2, color="#fff0d8", angle=0.2)
     add_area((-6, -10, 8), (0, 0, 1), energy=900, size=12, color="#bcd4ff")
     add_area((8, 4, 10), (0, 0, 1), energy=300, size=10, color="#ffe8c0")
@@ -120,17 +123,37 @@ def build_world():
         bar((bx + sx * 0.36, -2.95, 0.23), (bx + sx * 0.36, -2.05, 0.23), 0.014, M("mostr", "#7a4a2e"), verts=6)
     out["bridge"] = norm(bx, -2.5, 0.3)
     # ---------------------------------------------------------- cesty a mosty (graf pro hrdinu na webu)
-    graph = {"nodes": {}, "edges": []}
+    # Graf vzniká přímo z vykreslených cestiček: každý vzorek křivky je uzel, takže hrdina i obyvatelé chodí
+    # přesně po cestě a nikdy přes domy, ploty nebo vodu. Pojmenované uzly (dveře, rozcestí) leží na řídicích
+    # bodech cest; cesty se potkávají ve stejném bodě, a tím se propojí.
+    graph = {"nodes": {}, "edges": [], "world": {}}
+    at_xy = {}
 
     def node(name, x, y, z=0.0):
         graph["nodes"][name] = norm(x, y, z)
-        graph.setdefault("world", {})[name] = [x, y]
+        graph["world"][name] = [x, y]
+        at_xy[(round(x, 3), round(y, 3))] = name
+        return (x, y)
 
-    def link(*names):
-        for a, b in zip(names, names[1:]):
+    def nid(x, y, z):
+        key = (round(x, 3), round(y, 3))
+        if key not in at_xy:
+            node("w%d" % len(at_xy), x, y, z)
+        return at_xy[key]
+
+    def link(a, b):
+        if a != b and [a, b] not in graph["edges"] and [b, a] not in graph["edges"]:
             graph["edges"].append([a, b])
 
-    def trail(pts, width=0.5, z=0.01):
+    def walk(pts):
+        """Neviditelná část cesty (schody, lávky): uzly s výškou (x, y, z)."""
+        ids = [nid(x, y, z) for x, y, z in pts]
+        for a, b in zip(ids, ids[1:]):
+            link(a, b)
+
+    lift_ = [0]
+
+    def trail(pts, width=0.5, z=0.01, walkable=True):
         P = [pts[0]] + list(pts) + [pts[-1]]
         r = []
         for i in range(1, len(P) - 2):
@@ -138,7 +161,7 @@ def build_world():
             for k in range(8):
                 t = k / 8
                 r.append(tuple(0.5 * ((2 * p1[j]) + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t * t + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t ** 3) for j in range(2)))
-        r.append(pts[-1])
+        r.append(tuple(pts[-1]))
         # souvislé pásky (obrys a povrch) s jednotnou orientací ploch
         def ribbon(w, zz, mat, name):
             pts_ = [r[0]] + [q for k, q in enumerate(r[1:], 1) if math.hypot(q[0] - r[k - 1][0], q[1] - r[k - 1][1]) > 1e-4]
@@ -156,86 +179,95 @@ def build_world():
             faces = [(i, n_ + i, n_ + i + 1, i + 1) for i in range(n_ - 1)]
             return mesh_obj(name, verts, faces, mat, smooth=False)
 
-        ribbon(width + 0.12, z + 0.014, M("cesta_o", "#a08c70", roughness=0.95), "trail_o")
-        ribbon(width, z + 0.022, M("cesta_s", "#d8c49c", roughness=0.9), "trail_s")
+        # každá další cesta o kousek výš, ať se na křižovatkách plochy nepřekrývají ve stejné výšce (černé skvrny)
+        lift_[0] += 1
+        dz = 0.0025 * lift_[0]
+        ribbon(width + 0.12, z + 0.014 + dz, M("cesta_o", "#a08c70", roughness=0.95), "trail_o")
+        ribbon(width, z + 0.016 + dz + 0.0012, M("cesta_s", "#d8c49c", roughness=0.9), "trail_s")
+        if walkable:
+            # řídicí body přesně (kvůli pojmenovaným uzlům), mezi nimi vzorky křivky
+            ids = [nid(x, y, z) for x, y in r]
+            for a, b in zip(ids, ids[1:]):
+                link(a, b)
         return r
 
-    # hlavní ulice (jako na úvodní stránce) a uzly před budovami
-    node("most_z", -6.9, -2.2)
-    node("m1", -6.4, -1.3)
-    node("m2", -5.3, -0.75)
-    node("kurzy", -5.3, 0.15)
-    node("m3", -3.9, -0.95)
-    node("m4", -2.6, -1.35)
-    node("m5", -1.2, -0.95)
-    node("hub", 0.4, -0.15)
-    node("hry", 0.45, 0.45)
-    node("m7", 2.0, -0.8)
-    node("obchod", 2.65, -0.85)
-    node("m8", 3.6, -0.8)
-    node("m9", 5.3, -0.25)
-    node("zebricky", 5.45, 0.2)
-    node("c1", 4.05, -0.5)
-    link("most_z", "m1", "m2", "m3", "m4", "m5", "hub", "m7", "obchod", "m8", "m9")
-    link("m2", "kurzy")
-    link("hub", "hry")
-    link("m9", "zebricky")
-    link("m8", "c1")
-    trail([(-6.9, -2.9), (-6.9, -2.0), (-6.4, -1.3), (-5.3, -0.75), (-3.9, -0.95), (-2.6, -1.35), (-1.2, -0.95), (0.4, -0.15), (2.0, -0.8), (3.6, -0.8), (5.3, -0.25), (6.2, 0.3)], 0.62)
-    # horní ulice za domy, schody na terasu
-    node("c2", 4.05, 3.9)
-    node("u4", 4.05, 4.9)
-    node("u3", 0.2, 5.1)
-    node("u2", -3.6, 4.9)
-    node("u1", -6.6, 4.9)
-    node("u5", 7.0, 4.7)
-    link("c1", "c2", "u4", "u3", "u2", "u1")
-    link("u4", "u5")
-    trail([(4.05, -0.5), (4.05, 1.5), (4.05, 3.9), (4.05, 4.9)], 0.5)
-    trail([(-7.2, 4.8), (-6.6, 4.9), (-3.6, 4.9), (0.2, 5.1), (4.05, 4.9), (7.4, 4.7)], 0.55)
+    # pojmenované uzly (web je používá pro dveře, trasy obyvatel a start hrdiny)
+    most_j = node("most_j", -6.9, -2.9)
+    most_z = node("most_z", -6.9, -2.0)
+    m1 = node("m1", -6.4, -1.3)
+    m2 = node("m2", -5.3, -0.75)
+    kurzy = node("kurzy", -5.3, 0.15)
+    m3 = node("m3", -3.9, -0.95)
+    ukoly = node("ukoly", -4.35, -0.62)
+    m4 = node("m4", -2.6, -1.35)
+    m5 = node("m5", -1.2, -0.95)
+    hub = node("hub", 0.4, -0.15)
+    hry = node("hry", 0.45, 0.45)
+    m7 = node("m7", 2.0, -0.8)
+    obchod = node("obchod", 2.65, -0.85)
+    m8 = node("m8", 3.6, -0.8)
+    c1 = node("c1", 4.05, -0.66)
+    m9 = node("m9", 5.3, -0.25)
+    zebricky = node("zebricky", 5.45, 0.2)
+    c2 = node("c2", 4.05, 3.9)
+    u1 = node("u1", -6.6, 4.9)
+    u2 = node("u2", -3.6, 4.9)
+    u3 = node("u3", 0.2, 5.1)
+    u6 = node("u6", 3.6, 4.93)
+    u4 = node("u4", 4.05, 4.9)
+    u5 = node("u5", 7.0, 4.72)
+    uceni = node("uceni", -5.0, 6.5)
+    pokoj = node("pokoj", -1.7, 6.3)
+    profil = node("profil", 7.4, 6.6)
+    s1 = node("s1", -3.6, 9.3)
+    s2 = node("s2", 3.6, 9.3)
+    node("t1", -3.6, 11.3, 0.82)
+    node("t2", 3.6, 11.3, 0.82)
+    node("les", -6.0, 11.2, 0.82)
+    node("hrad", 5.8, 11.75, 0.82)
+    most = node("most", 0.4, -2.55)
+    l1 = node("l1", 0.4, -4.3)
+    l4 = node("l4", -0.8, -5.6)
+    pj = node("pj", -1.75, -8.3)
+    pristav = node("pristav", -2.6, -8.3)
+    molo = node("molo", -5.4, -8.3)
+    l3 = node("l3", 3.4, -6.5)
+    stanice = node("stanice", 7.0, -7.1)
+    lj = node("lj", 1.05, -6.6)
+    node("more", 1.2, -8.1, 0.12)
+
+    # hlavní ulice od mostu přes náměstí k věži slávy, odbočky ke dveřím
+    trail([most_j, most_z, m1, m2, m3, m4, m5, hub, m7, obchod, m8, c1, m9, (6.2, 0.3)], 0.62)
+    trail([m2, kurzy], 0.42)
+    trail([hub, hry], 0.45)
+    trail([m9, zebricky], 0.42)
+    trail([m3, ukoly], 0.4)
+    # ulička mezi náměstím a věží k horní ulici; horní ulice za první řadou domů
+    trail([c1, (4.05, 1.5), c2, u4], 0.5)
+    trail([(-7.2, 4.8), u1, u2, u3, u6, u4, u5, (7.4, 4.7)], 0.55)
     # druhá řada: observatoř (studovna), pokojík, domek na stromě
-    node("uceni", -5.0, 6.5)
-    node("pokoj", -1.7, 6.3)
-    node("profil", 7.4, 6.6)
-    link("u1", "uceni")
-    link("u3", "pokoj")
-    link("u5", "profil")
-    trail([(-6.6, 4.9), (-5.9, 5.6), (-5.0, 6.5)], 0.45)
-    trail([(0.2, 5.1), (-0.6, 5.7), (-1.7, 6.3)], 0.45)
-    trail([(7.0, 4.7), (7.3, 5.6), (7.4, 6.6)], 0.45)
-    # schody na terasu a vchody do lesa a hradu
-    node("s1", -3.6, 8.2)
-    node("t1", -3.6, 11.3)
-    node("t2", 3.6, 11.3)
-    node("s2", 3.6, 8.2)
-    node("les", -6.0, 11.2)
-    node("hrad", 5.8, 11.75)
-    link("u2", "s1", "t1", "les")
-    link("u4", "s2", "t2", "hrad")
-    link("t1", "t2")
-    trail([(-3.6, 4.9), (-3.6, 8.2), (-3.6, 11.3)], 0.55)
-    trail([(3.6, 4.9), (3.6, 8.2), (3.6, 11.3)], 0.55)
+    trail([u1, (-5.9, 5.6), uceni], 0.45)
+    trail([u3, (-0.6, 5.7), pokoj], 0.45)
+    trail([u5, (7.3, 5.6), profil], 0.45)
+    # k oběma schodištím na terasu; po schodech se jde neviditelnou částí grafu (s výškou)
+    trail([u2, (-3.6, 7.0), s1], 0.55)
+    trail([u6, (3.6, 7.0), s2], 0.55)
+    walk([(-3.6, 9.3, 0.0), (-3.6, 9.9, 0.25), (-3.6, 10.5, 0.55), (-3.6, 10.85, 0.82), (-3.6, 11.3, 0.82)])
+    walk([(3.6, 9.3, 0.0), (3.6, 9.9, 0.25), (3.6, 10.5, 0.55), (3.6, 10.85, 0.82), (3.6, 11.3, 0.82)])
+    # terasa: vchody do lesa a hradu
     trail([(-3.6, 11.3), (-6.0, 11.2)], 0.5, z=0.82)
     trail([(3.6, 11.3), (4.5, 11.05), (5.3, 11.1), (5.8, 11.5), (5.8, 11.75)], 0.62, z=0.82)
     trail([(-3.6, 11.3), (3.6, 11.3)], 0.5, z=0.82)
-    # nástěnka s úkoly u rozcestí
-    node("ukoly", -3.7, -1.25)
-    link("m3", "ukoly")
-    # druhý most k louce dole, přístav, laguna a raketová rampa
-    node("most", 0.4, -2.55)
-    node("l1", 0.4, -4.3)
-    node("l2", -2.0, -6.8)
-    node("pristav", -2.6, -8.3)
-    node("molo", -5.4, -8.3)
-    node("l3", 3.4, -6.5)
-    node("stanice", 7.0, -7.1)
-    node("more", 1.5, -7.4)
-    link("hub", "most", "l1", "l2", "pristav", "molo")
-    link("l1", "l3", "stanice")
-    link("l1", "more")
-    trail([(0.4, -0.15), (0.4, -1.3), (0.4, -2.2), (0.4, -3.2), (0.4, -4.3), (0.0, -5.0), (-0.8, -5.6), (-2.0, -6.8), (-2.6, -8.3), (-5.4, -8.3)], 0.55)
-    trail([(0.4, -4.3), (1.0, -4.95), (1.8, -5.5), (3.4, -6.5), (7.0, -7.1)], 0.5, z=0.016)
-    trail([(0.4, -4.3), (0.65, -5.1), (0.9, -5.9), (1.5, -7.4)], 0.5, z=0.022)
+    # druhý most k louce dole, přístav s molem, laguna, raketová rampa a cesta od levého mostu
+    trail([hub, (0.4, -1.3), most, (0.4, -3.6), l1, (0.0, -5.0), l4, (-1.6, -6.6), (-1.6, -7.7), pj, pristav, molo], 0.55)
+    trail([l1, (1.0, -4.95), (1.8, -5.5), l3, stanice], 0.5, z=0.016)
+    trail([l1, (0.65, -5.1), (0.9, -5.9), lj], 0.5, z=0.022)
+    trail([most_j, (-6.7, -3.8), (-5.6, -4.9), (-3.6, -5.3), (-2.2, -5.45), l4], 0.5, z=0.018)
+    # lávka k potápěčské věži v laguně (prkna, po nich se chodí)
+    walk([(1.05, -6.6, 0.0), (1.1, -7.3, 0.12), (1.2, -8.1, 0.12)])
+    for k in range(9):
+        u_ = k / 8
+        box((1.05 + 0.15 * u_, -6.45 - 1.65 * u_, 0.1), (0.62, 0.2, 0.05), M("most", "#9a6a3e", roughness=0.8), bevel=0.006)
     for k in range(9):  # prkna mostu
         u = k / 8
         yy = -2.95 + 0.9 * u
@@ -246,6 +278,18 @@ def build_world():
             yy = -2.95 + 0.9 * u
             bar((0.4 + sx * 0.42, yy, 0.05 + 0.2 * math.sin(u * math.pi)), (0.4 + sx * 0.42, yy, 0.28 + 0.2 * math.sin(u * math.pi)), 0.014, M("mostr", "#7a4a2e"), verts=6)
         bar((0.4 + sx * 0.42, -2.95, 0.28), (0.4 + sx * 0.42, -2.05, 0.28), 0.014, M("mostr", "#7a4a2e"), verts=6)
+    # kontrola: graf musí být souvislý
+    comp = {n: n for n in graph["nodes"]}
+
+    def root_(n):
+        while comp[n] != n:
+            comp[n] = comp[comp[n]]
+            n = comp[n]
+        return n
+    for a, b in graph["edges"]:
+        comp[root_(a)] = root_(b)
+    roots = {root_(n) for n in graph["nodes"]}
+    print("GRAF", len(graph["nodes"]), "uzlů,", len(graph["edges"]), "hran, komponent:", len(roots), flush=True)
     out["graf"] = graph
 
     # ---------------------------------------------------------- budova 1: škola a knihovna
@@ -367,7 +411,7 @@ def build_world():
     for k in range(4):
         box((tx, ty - 1.0 - k * 0.0, 0.07 + k * 0.0), (0.1, 0.1, 0.01), M("kam", "#8a8494"), bevel=0)
     for k in range(3):
-        px_ = tx - 1.55 + k * 0.38
+        px_ = tx + 0.75 + k * 0.36  # vpravo od věže, ať nestojí v uličce k horní ulici
         py_ = ty - 1.3
         cyl((px_, py_, 0.07), 0.11 - 0.0, 0.14, M("kvetn", "#d8744a", roughness=0.7), verts=14)
         n = k + 1
@@ -450,23 +494,25 @@ def build_world():
             sphere((sx_ - 0.22 + i * 0.22, sy_ - 0.02, 0.4), 0.07, M("ovoce%d%d" % (k, i), ["#ff5a3c", "#ffd24d", "#7ee0b0"][(i + k) % 3], roughness=0.4), seg=10, rings=8)
     # sudy a bedny
     cyl((1.55, -0.55, 0.14), 0.13, 0.28, M("sud", "#8a5a34", roughness=0.7), verts=16)
-    box((3.85, -0.5, 0.1), (0.22, 0.22, 0.2), M("bedna", "#c79a5e"), rot=(0, 0, 0.3))
+    box((1.25, -0.4, 0.1), (0.22, 0.22, 0.2), M("bedna", "#c79a5e"), rot=(0, 0, 0.3))
     # ====================================================================== nové části městečka
     # ---------------------------------------------------------- cedule hlavních budov (kotvy pro popisky)
     places["kurzy"] = {"door": norm(sx0, sy0 - 0.85, 0.3), "sign": norm(sx0, sy0 - 0.9, 1.18), "w": 0.8}
     places["hry"] = {"door": norm(ax, ay - 0.8, 0.3), "sign": norm(ax, ay - 0.83, 1.16), "w": 1.4}
     places["zebricky"] = {"door": norm(tx, ty - 0.8, 0.3), "sign": sign(tx, ty - 0.8, 1.2, w=1.0, h=0.28, color="#7a4a8a"), "w": 1.0}
     # obchod: stánky a sloup s cedulí
-    bar((2.65, -1.15, 0), (2.65, -1.15, 1.15), 0.035, M("rozc", "#7a4a2e"), verts=8)
-    places["obchod"] = {"door": norm(2.65, -0.85, 0.2), "sign": sign(2.65, -1.15, 1.1, w=1.3, h=0.34, color="#c0392b"), "w": 1.3}
+    bar((2.65, -0.02, 0), (2.65, -0.02, 1.15), 0.035, M("rozc", "#7a4a2e"), verts=8)
+    places["obchod"] = {"door": norm(2.65, -0.85, 0.2), "sign": sign(2.65, -0.02, 1.1, w=1.3, h=0.34, color="#c0392b"), "w": 1.3}
     # nástěnka s úkoly
+    # nástěnka stojí u ulice mezi školou a fontánou, čelem k ulici (dřív stála přímo na cestě)
+    nbx, nby = -4.4, -0.22
     for sx_ in (-1, 1):
-        bar((-3.7 + sx_ * 0.62, -1.35, 0), (-3.7 + sx_ * 0.62, -1.35, 1.25), 0.04, M("rozc", "#7a4a2e"), verts=8)
-    box((-3.7, -1.38, 0.82), (1.4, 0.06, 0.8), M("nastenka", "#b07d48", 0.8), bevel=0.02)
+        bar((nbx + sx_ * 0.62, nby, 0), (nbx + sx_ * 0.62, nby, 1.25), 0.04, M("rozc", "#7a4a2e"), verts=8)
+    box((nbx, nby - 0.03, 0.82), (1.4, 0.06, 0.8), M("nastenka", "#b07d48", 0.8), bevel=0.02)
     for k, (c, dx, dz, r_) in enumerate((("#fff6e0", -0.4, 0.88, 0.1), ("#ffd24d", 0.0, 0.82, -0.08), ("#ff9ac0", 0.4, 0.86, 0.06), ("#9ad8ff", -0.2, 0.62, -0.05), ("#b8f0b0", 0.25, 0.64, 0.1))):
-        box((-3.7 + dx, -1.43, dz - 0.1), (0.3, 0.015, 0.34), M("papir" + c, c, 0.8), rot=(0, r_, 0), bevel=0)
-        sphere((-3.7 + dx, -1.45, dz + 0.06), 0.022, M("napich", "#e0453a", 0.4), seg=6, rings=4)
-    places["ukoly"] = {"door": norm(-3.7, -1.2, 0.3), "sign": sign(-3.7, -1.38, 1.38, w=1.1, h=0.3, color="#ffc933"), "w": 1.1}
+        box((nbx + dx, nby - 0.08, dz - 0.1), (0.3, 0.015, 0.34), M("papir" + c, c, 0.8), rot=(0, r_, 0), bevel=0)
+        sphere((nbx + dx, nby - 0.1, dz + 0.06), 0.022, M("napich", "#e0453a", 0.4), seg=6, rings=4)
+    places["ukoly"] = {"door": norm(-4.35, -0.62, 0.3), "sign": sign(nbx, nby - 0.03, 1.38, w=1.1, h=0.3, color="#ffc933"), "w": 1.1}
 
     # ---------------------------------------------------------- druhá řada: observatoř, pokojík, domek na stromě, domky
     ox, oy = -5.0, 7.6
@@ -504,12 +550,12 @@ def build_world():
 
     for (hx, hy, hw, hd, hh, wc, rc, rh, al, ch, nw) in [
         (-8.0, 7.2, 1.3, 1.0, 0.8, "#f7d0a0", "#b8453a", 0.5, "x", (0.3, 0.1), 2),
-        (4.2, 7.0, 1.5, 1.1, 0.85, "#cfe8a8", "#7a4a8a", 0.55, "x", (-0.3, 0.1), 2),
-        (-3.4, 9.2, 1.4, 1.0, 0.8, "#b8d8f7", "#3b6fd8", 0.55, "y", (0.3, 0.0), 2),
+        (5.6, 7.2, 1.5, 1.1, 0.85, "#cfe8a8", "#7a4a8a", 0.55, "x", (-0.3, 0.1), 2),
+        (-5.4, 9.8, 1.4, 1.0, 0.8, "#b8d8f7", "#3b6fd8", 0.55, "y", (0.3, 0.0), 2),
         (0.3, 9.6, 1.6, 1.1, 0.9, "#ffe6a8", "#d6453a", 0.55, "x", (0.4, 0.1), 2),
         (6.4, 9.6, 1.3, 1.0, 0.8, "#f7a8a0", "#b8453a", 0.5, "x", None, 2),
         (-7.0, 9.8, 1.2, 0.95, 0.7, "#e6c8f7", "#5b3fc8", 0.5, "x", (0.2, 0.0), 2),
-        (2.8, 6.2, 1.1, 0.9, 0.65, "#ffd1b8", "#c95a3a", 0.45, "x", (0.25, 0.0), 1),
+        (2.4, 6.4, 1.1, 0.9, 0.65, "#ffd1b8", "#c95a3a", 0.45, "x", (0.25, 0.0), 1),
     ]:
         r2 = house(hx, hy, hw, hd, hh, wc, rc, rh=rh, along=al, chim=ch, wins=nw, shutter="#5fb0c9")
     # park s rybníčkem a lavičkami
@@ -518,11 +564,11 @@ def build_world():
     for bx_, by_, bro in ((0.0, 8.0, 0.0), (3.0, 8.0, math.pi)):
         box((bx_, by_, 0.17), (0.7, 0.22, 0.05), M("lavicka", "#9a6a3c", 0.8), rot=(0, 0, bro), bevel=0.01)
         box((bx_, by_ + (0.1 if bro == 0 else -0.1), 0.32), (0.7, 0.04, 0.2), M("lavicka", "#9a6a3c", 0.8), bevel=0.01)
-    for (x, y, kind) in ((-0.5, 8.6, "r"), (3.6, 8.7, "p"), (-9.0, 8.5, "r"), (8.8, 8.8, "p"), (-9.2, 5.6, "p"), (9.0, 5.4, "r"), (5.4, 5.7, "r")):
+    for (x, y, kind) in ((-0.5, 8.6, "r"), (4.8, 8.9, "p"), (-9.0, 8.5, "r"), (8.8, 8.8, "p"), (-9.2, 5.6, "p"), (9.0, 5.4, "r"), (5.4, 5.75, "r")):
         (roundtree if kind == "r" else pine)(x, y, 1.1)
-    for (x, y) in ((-6.5, 6.4), (3.6, 6.4), (7.0, 5.7), (-2.8, 7.9), (5.4, 8.4)):
+    for (x, y) in ((-6.5, 6.4), (2.9, 7.2), (6.4, 5.9), (-2.8, 7.9), (5.9, 8.4)):
         bush(x, y, 1.4)
-    for (lx, ly) in ((-6.0, 5.2), (-2.4, 5.3), (1.8, 5.4), (5.6, 5.1)):
+    for (lx, ly) in ((-4.7, 5.35), (-2.4, 5.35), (1.8, 5.45), (5.6, 5.2)):
         lamp(lx, ly)
 
     # ---------------------------------------------------------- terasa: vchod do pohádkového lesa a do hradu
@@ -707,7 +753,7 @@ def build_world():
         bar((fx3 - 0.12 + 0.12 * k, fy3 - 0.1, 0.84), (fx3 - 0.02 + 0.04 * k, fy3 + 0.06, 0.98), 0.025, M("poleno", "#5a3c24", 0.9), verts=6)
     sphere((fx3, fy3, 1.0), 0.12, G("ohen", "#ff8a2a", 12.0), scale=(1, 1, 1.5), seg=10, rings=8)
     # lucerny podél cesty po terase a trs květin
-    for lx4, ly4 in ((-2.2, 11.05), (2.2, 11.05), (4.5, 10.8), (-4.8, 10.95)):
+    for lx4, ly4 in ((-2.2, 10.85), (2.2, 10.85), (4.7, 10.7), (-4.8, 10.85)):
         bar((lx4, ly4, 0.8), (lx4, ly4, 1.35), 0.014, M("lampa", "#3b3a4a", 0.4, 0.7), verts=8)
         sphere((lx4, ly4, 1.42), 0.05, G("lampa_sv", "#ffd98a", 6.0), seg=10, rings=8)
     for fx4, fy4, cols in ((-1.5, 11.75, ["#ff7eb6", "#ffe36e"]), (2.8, 11.75, ["#ffffff", "#9a4de0"]), (-2.4, 12.6, ["#ff9a3c", "#ff7eb6"]), (1.0, 14.0, ["#ffe36e", "#9ee8ff"])):
@@ -739,7 +785,7 @@ def build_world():
             continue
         ptree(x, y, 1.8, 1.0 + 0.4 * ((i * 3) % 4) / 4, "p" if i % 3 else "r", ["#2a6a4a", "#2f7a5a", "#3a8a60", "#4fb560"][i % 4])
     # klikatá pěšinka z hradu do kopců
-    trail([(5.8, 13.5), (4.6, 14.6), (5.6, 16.0), (4.2, 17.8)], 0.5, z=1.82)
+    trail([(5.8, 13.5), (4.6, 14.6), (5.6, 16.0), (4.2, 17.8)], 0.5, z=1.82, walkable=False)
 
     # ---------------------------------------------------------- přístav v zátoce (vlevo dole)
     for k in range(18):  # molo
@@ -753,8 +799,8 @@ def build_world():
     cyl((-5.0, -7.8, 0.28), 0.2, 0.4, M("sud", "#8a5a34", 0.7), verts=14)
     cyl((-3.4, -9.2, 1.0), 0.04, 1.8, M("lampa", "#3b3a4a", 0.4, 0.7), verts=8)
     sphere((-3.4, -9.2, 1.95), 0.13, G("lampa_sv", "#ffd98a", 5.0), seg=10, rings=8)
-    house(-0.5, -7.6, 1.6, 1.1, 0.9, "#f0e0c0", "#3b6fd8", rh=0.5, along="x", chim=(0.45, 0.1), wins=1, door_x=-0.35, shutter="#5fb0c9", name="pristav_d")
-    places["pristav"] = {"door": norm(-2.0, -8.3, 0.2), "sign": sign(-0.5, -8.18, 1.55, w=1.2, h=0.3, color="#3b6fd8"), "w": 1.2, "lod": norm(-6.6, -9.4, 0.0)}
+    house(-0.2, -7.6, 1.6, 1.1, 0.9, "#f0e0c0", "#3b6fd8", rh=0.5, along="x", chim=(0.45, 0.1), wins=1, door_x=-0.35, shutter="#5fb0c9", name="pristav_d")
+    places["pristav"] = {"door": norm(-2.0, -8.3, 0.2), "sign": sign(-0.2, -8.18, 1.55, w=1.2, h=0.3, color="#3b6fd8"), "w": 1.2, "lod": norm(-6.6, -9.4, 0.0)}
 
     # ---------------------------------------------------------- raketová rampa (vpravo dole)
     px_, py_ = 7.0, -8.2
@@ -765,11 +811,6 @@ def build_world():
         sphere((px_ + 1.75 * math.cos(a_), py_ + 1.75 * math.sin(a_) * 0.9, 0.2), 0.05, G("rampa_sv", ["#ff5fa2", "#35d0ff"][k % 2], 6.0), seg=8, rings=6)
     for sx_ in (-1, 1):  # kolébka pro raketu
         box((px_ + sx_ * 0.9, py_, 0.42), (0.14, 0.7, 0.55), M("kolebka", "#e0453a", 0.5), bevel=0.02)
-    for sx_ in (-1, 1):  # věž
-        box((px_ + sx_ * 1.9, py_ + 0.7, 1.9), (0.16, 0.16, 3.6), M("vez_r", "#c9ced8", 0.4, 0.5), bevel=0.01)
-    box((px_ + 1.45, py_ + 0.7, 3.0), (1.0, 0.1, 0.1), M("vez_r", "#c9ced8", 0.4, 0.5), bevel=0.01)
-    for k in range(6):
-        bar((px_ + 1.9, py_ + 0.7, 0.5 + k * 0.5), (px_ + 2.3, py_ + 0.7, 0.75 + k * 0.5), 0.02, M("vez_r", "#c9ced8", 0.4, 0.5), verts=6)
     house(10.2, -9.9, 1.3, 1.0, 0.8, "#d8e0f0", "#e0453a", rh=0.4, along="x", chim=None, wins=1, door_x=-0.25, shutter="#46d6ff", name="ridici")
     cyl((10.2, -9.9, 1.4), 0.04, 1.2, M("anten", "#9aa6c0", 0.4, 0.6), verts=8)
     sphere((10.2, -9.9, 2.05), 0.07, G("antenS", "#ff6fd0", 6.0), seg=8, rings=6)
@@ -791,7 +832,7 @@ def build_world():
         box((lx_ - 1.5, ly_ + 0.4, 0.15 + k * 0.14), (0.14, 0.5, 0.03), M("zebrik", "#7a5636", 0.8), bevel=0)
     for k in range(5):
         sphere((lx_ + 1.1 + 0.12 * (k % 2), ly_ - 0.3 + 0.1 * k, 0.1 + 0.15 * k), 0.09, M("bublina_l", "#e8fbff", 0.1), seg=8, rings=6)
-    places["more"] = {"door": norm(lx_ - 1.5, ly_ - 0.3, 0.1), "sign": sign(lx_ - 0.9, ly_ + 0.4 - 0.0, 1.95, w=1.5, h=0.34, color="#1f8ccc"), "w": 1.5, "ponorka": norm(lx_ + 0.9, ly_ - 0.4, 0.2)}
+    places["more"] = {"door": norm(1.2, -8.1, 0.12), "sign": sign(lx_ - 0.9, ly_ + 0.4 - 0.0, 1.95, w=1.5, h=0.34, color="#1f8ccc"), "w": 1.5, "ponorka": norm(lx_ + 0.9, ly_ - 0.4, 0.2)}
 
     # ---------------------------------------------------------- zahrádky, ohrady a louka dole
     fence(2.4, -3.3, 7.4, -3.3)
@@ -806,18 +847,18 @@ def build_world():
             sphere((-4.62 + k * 0.36 + j * 0.08, -4.4, 0.13), 0.04, M("zel", "#4fb560"), seg=8, rings=6)
     for (x, y, kind) in ((-9.0, -4.2, "r"), (9.2, -6.0, "r"), (9.0, -10.0, "p"), (-9.3, -5.0, "p"), (7.5, -10.8, "r"), (3.2, -10.9, "p"), (-0.6, -11.0, "r"), (10.0, -8.0, "p")):
         (roundtree if kind == "r" else pine)(x, y, 1.2)
-    for (x, y) in ((-1.5, -4.5), (4.0, -6.2), (-1.0, -6.0), (8.4, -7.0), (2.4, -10.6)):
+    for (x, y) in ((-1.5, -4.5), (4.3, -5.75), (0.3, -6.4), (8.4, -7.0), (2.4, -10.6)):
         bush(x, y, 1.4)
     flowers(-1.5, -4.0, 3.0, 0.6, 12, seed=11)
-    flowers(2.6, -7.3, 3.0, 0.5, 12, seed=12)
+    flowers(5.6, -5.9, 2.0, 0.4, 12, seed=12)
     flowers(8.4, -9.6, 2.0, 0.5, 10, seed=13)
     rocks(-8.8, -3.4, 4, 1.2, seed=5)
     rocks(9.0, -4.2, 3, 1.0, seed=6)
-    for (lx2, ly2) in ((0.9, -3.6), (-1.6, -6.2), (3.2, -6.0), (5.0, -7.2), (-2.4, -7.2)):
+    for (lx2, ly2) in ((0.9, -3.6), (-2.4, -5.85), (3.2, -5.75), (5.0, -7.5), (-1.0, -6.7)):
         lamp(lx2, ly2)
 
     # hlavní ulice: lampy a komín školy
-    for (lx3, ly3) in ((-6.3, -0.8), (-4.0, -1.5), (-1.6, -1.55), (1.2, -0.9), (3.0, -1.35), (4.5, -0.9), (6.5, 0.0)):
+    for (lx3, ly3) in ((-6.3, -0.8), (-4.0, -1.5), (-1.6, -1.55), (1.2, -0.9), (3.0, -1.35), (4.6, -1.2), (6.5, 0.0)):
         lamp(lx3, ly3)
     KOMINY.append(norm(sx0 + 1.05, sy0 + 0.1, 1.95))
 
@@ -833,8 +874,9 @@ def build_world():
         "reka": [norm(-8, -2.2)[0], norm(-8, -2.2)[1], norm(8, -2.9)[0], norm(8, -2.9)[1]],
         "laguna": norm(2.7, -10.2) + [2.2 / UNITS, 2.2 * math.sin(EL) / (H / PPU)],
     }
-    out["sber"] = [norm(x, y) for x, y in ((-6.2, -1.0), (-4.6, -1.8), (-1.8, -0.3), (1.0, -1.5), (3.2, -0.2), (5.0, 0.9), (2.0, 5.0), (-5.5, 5.6), (-0.5, 5.9),
-                                            (5.4, 5.4), (-3.6, 9.0), (3.8, 9.0), (-2.0, -5.2), (1.2, -6.8), (4.8, -6.2), (-4.6, -7.4), (-1.0, 11.6), (1.5, 11.8))]
+    # místa pokladů dne: vždy na cestě nebo vedle ní (ne ve vodě, v domě ani na stánku)
+    out["sber"] = [norm(x, y) for x, y in ((-6.2, -1.0), (-4.6, -1.8), (-1.8, -0.3), (1.0, -1.5), (3.3, 0.35), (6.7, -0.4), (2.0, 5.0), (-5.5, 5.6), (-0.5, 5.9),
+                                            (5.4, 5.4), (-3.9, 8.6), (3.9, 8.6), (-2.0, -5.2), (1.6, -6.4), (4.8, -6.2), (-4.6, -5.6), (-1.0, 11.6), (1.5, 11.8))]
     out["hrdina"] = norm(0.45, -0.35, 0.0)
 
     for lay in ():

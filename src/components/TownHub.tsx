@@ -409,7 +409,7 @@ export function TownHub({ locale }: { locale: Locale }) {
     if (reduced) {
       return () => io.disconnect();
     }
-    const street = ["m1", "m2", "m3", "m4", "m5", "hub", "m7", "obchod", "m8", "m9"].map((n) => HUB.graf.nodes[n]);
+    const street = poly(["m1", "m2", "m3", "m4", "m5", "hub", "m7", "obchod", "m8", "m9"]); // pes běhá po hlavní ulici přesně po cestě
     const cumS = [0];
     for (let i = 1; i < street.length; i++) cumS.push(cumS[i - 1] + Math.hypot(street[i][0] - street[i - 1][0], (street[i][1] - street[i - 1][1]) * ratio));
     const totalS = cumS[cumS.length - 1];
@@ -1185,7 +1185,7 @@ export function TownHub({ locale }: { locale: Locale }) {
     return runScene("event", async (sig) => {
       fxStrength.current = 1;
       sfx.horn();
-      await camTo(e.to, e.zoom, 2.2, sig);
+      await camTo(toBox(e.to), e.zoom, 2.2, sig);
       npcLine(e.host, eventText.title + "!", 2500);
       await say(e.host, eventText.caption, sig, eventText.title);
     });
