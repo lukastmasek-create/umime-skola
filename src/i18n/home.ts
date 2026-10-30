@@ -40,7 +40,7 @@ const cs: HomeText = {
   featuresTitle: "Co tu najdeš",
   features: [
     { key: "courses", title: "Kurzy a testy", text: "Procvičuj po tématech a ověř se v testu jako ve škole, s vysvětlením každé odpovědi.", cta: "Prohlédnout kurzy" },
-    { key: "games", title: "Hry za body", text: "Kosmičtí vetřelci, Pac-Man, Tetris i klasiky jako osmisměrka, spojování a pexeso. Za správné odpovědi sbíráš body.", cta: "Vyzkoušet" },
+    { key: "games", title: "Hry za body", text: "Obrana galaxie, Labyrint duchů, Pád bloků i klasiky jako křížovka, osmisměrka a pexeso. Za správné odpovědi sbíráš body.", cta: "Vyzkoušet" },
     { key: "escape", title: "Únikovky", text: "Vyřeš hádanky, najdi předměty a uteč z laboratoře dřív, než dojde čas.", cta: "Do únikovky" },
     { key: "boards", title: "Žebříčky", text: "Porovnej se spolužáky, svou školou i ostatními školami v celé zemi.", cta: "Žebříčky" },
   ],
@@ -74,7 +74,7 @@ const en: HomeText = {
   featuresTitle: "What you'll find here",
   features: [
     { key: "courses", title: "Courses and tests", text: "Practise by topic and check yourself in a school-style test, with an explanation for every answer.", cta: "Browse courses" },
-    { key: "games", title: "Games for points", text: "Space invaders, Pac-Man, Tetris and classics like word search, matching and memory. Right answers earn you points.", cta: "Try it" },
+    { key: "games", title: "Games for points", text: "Galaxy Defence, Ghost Labyrinth, Falling Blocks and classics like crosswords, word search and memory. Right answers earn you points.", cta: "Try it" },
     { key: "escape", title: "Escape rooms", text: "Solve puzzles, find items and escape the lab before time runs out.", cta: "Enter" },
     { key: "boards", title: "Leaderboards", text: "Compare yourself with classmates, your school and other schools across the country.", cta: "Leaderboards" },
   ],
@@ -108,7 +108,7 @@ const de: HomeText = {
   featuresTitle: "Das findest du hier",
   features: [
     { key: "courses", title: "Kurse und Tests", text: "Übe nach Themen und teste dich wie in der Schule, mit Erklärung zu jeder Antwort.", cta: "Kurse ansehen" },
-    { key: "games", title: "Spiele für Punkte", text: "Space Invaders, Pac-Man, Tetris und Klassiker wie Wortsuche, Zuordnen und Memory. Für richtige Antworten gibt es Punkte.", cta: "Ausprobieren" },
+    { key: "games", title: "Spiele für Punkte", text: "Galaxie-Abwehr, Geisterlabyrinth, Fallende Blöcke und Klassiker wie Kreuzworträtsel, Wortsuche und Memory. Für richtige Antworten gibt es Punkte.", cta: "Ausprobieren" },
     { key: "escape", title: "Escape Rooms", text: "Löse Rätsel, finde Gegenstände und entkomme dem Labor, bevor die Zeit abläuft.", cta: "Zum Escape Room" },
     { key: "boards", title: "Bestenlisten", text: "Vergleiche dich mit Mitschülern, deiner Schule und anderen Schulen im ganzen Land.", cta: "Bestenlisten" },
   ],
@@ -142,7 +142,7 @@ const ru: HomeText = {
   featuresTitle: "Что здесь есть",
   features: [
     { key: "courses", title: "Курсы и тесты", text: "Тренируйся по темам и проверяй себя в тесте как в школе, с объяснением каждого ответа.", cta: "Смотреть курсы" },
-    { key: "games", title: "Игры за баллы", text: "Космические захватчики и Марио с черепахами, где нужно попадать в правильные ответы.", cta: "Попробовать" },
+    { key: "games", title: "Игры за баллы", text: "Защита галактики, Лабиринт призраков, Падающие блоки и классика: кроссворд, филворд и мемори. За верные ответы — баллы.", cta: "Попробовать" },
     { key: "escape", title: "Квесты", text: "Решай загадки, ищи предметы и выбирайся из лаборатории, пока не вышло время.", cta: "В квест" },
     { key: "boards", title: "Рейтинги", text: "Сравнивай себя с одноклассниками, своей школой и другими школами страны.", cta: "Рейтинги" },
   ],

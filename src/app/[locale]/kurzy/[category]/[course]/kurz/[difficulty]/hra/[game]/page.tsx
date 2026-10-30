@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
+import { loadGameQuestions } from "@/lib/game-questions";
 import { getCategoryBySlug } from "@/lib/taxonomy";
 import { getGame, isClassicSlug } from "@/lib/games";
 import { isLocale, type Locale } from "@/i18n/config";
@@ -11,7 +11,8 @@ import { ClassicGame } from "@/components/ClassicGame";
 
 export const revalidate = 0;
 
-const POOL_SIZE = 12;
+// Akční hry: až 12 otázek na nejdelší kolo, k tomu rezerva na míchání.
+const POOL_SIZE = 20;
 // Klasické hry potřebují z kurzu víc otázek na výběr (slova do osmisměrky, dvojice).
 const CLASSIC_POOL_SIZE = 40;
 
@@ -52,30 +53,10 @@ export default async function CourseGamePage({
   let title: string | null = null;
   let questions: GameQuestion[] = [];
   try {
-    const course = await prisma.course.findFirst({
-      where: { slug: courseSlug, category: category.value, published: true },
-      select: {
-        title: true,
-        questions: {
-          select: { id: true, prompt: true, options: true, correctIndex: true, explanation: true, difficulty: true },
-        },
-      },
-    });
-    if (course) {
-      title = `${course.title} · ${getTestText(locale as Locale).difficulties[difficulty - 1]}`;
-      // Na jednu úroveň připadá v kurzu jen pár otázek, takže kolo doplníme
-      // z nejbližších obtížností (nejdřív stejná, pak sousední), ať je dost na výběr.
-      questions = course.questions
-        .filter((q) => q.options.length === 4 && q.correctIndex >= 0 && q.correctIndex < 4)
-        .sort((a, b) => Math.abs(a.difficulty - difficulty) - Math.abs(b.difficulty - difficulty))
-        .slice(0, isClassicSlug(game.slug) ? CLASSIC_POOL_SIZE : POOL_SIZE)
-        .map((q) => ({
-          id: q.id,
-          prompt: q.prompt.replaceAll("___", "…"),
-          options: q.options as GameQuestion["options"],
-          correctIndex: q.correctIndex,
-          explanation: q.explanation,
-        }));
+    const data = await loadGameQuestions(courseSlug, category.value, difficulty, isClassicSlug(game.slug) ? CLASSIC_POOL_SIZE : POOL_SIZE);
+    if (data) {
+      title = `${data.title} · ${getTestText(locale as Locale).difficulties[difficulty - 1]}`;
+      questions = data.questions;
     }
   } catch {
     title = null;
@@ -87,7 +68,7 @@ export default async function CourseGamePage({
     return (
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
         <FullscreenFrame locale={locale as Locale} backHref={backHref}>
-          <ClassicGame locale={locale as Locale} game={game.slug} questions={questions} difficulty={difficulty} backHref={backHref} />
+          <ClassicGame locale={locale as Locale} game={game.slug} questions={questions} difficulty={difficulty} courseSlug={courseSlug} backHref={backHref} />
         </FullscreenFrame>
       </div>
     );
@@ -103,6 +84,7 @@ export default async function CourseGamePage({
           backHref={backHref}
           questions={questions}
           game={game.slug}
+          level={difficulty}
         />
       </FullscreenFrame>
     </div>

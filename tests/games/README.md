@@ -1,6 +1,6 @@
 # Testy her
 
-Automatické testy všech 11 kvízových her. Hry se spouští v pravém prohlížeči (Playwright), bez databáze:
+Automatické testy všech arkádových kvízových her. Hry se spouští v pravém prohlížeči (Playwright), bez databáze:
 stránka `main.tsx` vloží `SpaceQuizGame` s ukázkovými otázkami.
 
 ## Postup
@@ -10,7 +10,7 @@ npm i -D playwright esbuild      # jednorázově (nejsou v package.json)
 bash tests/games/run.sh          # v jednom terminálu: sestaví a spustí stránku na :8770
 
 # v druhém terminálu:
-node tests/games/play.js space-invaders,super-mario,pac-man easy 300
+node tests/games/play.js space-invaders,pac-man,snake easy 300
 node tests/games/fuzz.js snake,tetris,kong hard 25
 ```
 

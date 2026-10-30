@@ -23,32 +23,6 @@
     e.setInput({ left: dodge ? dodge < 0 : dx < -8, right: dodge ? dodge > 0 : dx > 8, fire: Math.abs(dx) < 16 });
   };
 
-  // ---- Mario: přeskakovat špatné želvy a dopadnout na správnou ----
-  bots["super-mario"] = (e, st) => {
-    const t = e.turtles.find((x) => x.correct && x.alive);
-    if (!t || e.countdown > 0) return;
-    const dir = Math.sign(t.cx - e.px) || 1;
-    const dxT = t.cx - e.px;
-    // nejbližší živá želva před Mariem ve směru k cíli (kromě cíle)
-    const ahead = e.turtles.filter((x) => x.alive && !x.correct && Math.sign(x.cx - e.px) === dir && Math.abs(x.cx - e.px) < 150).sort((a, b) => Math.abs(a.cx - e.px) - Math.abs(b.cx - e.px))[0];
-    const want = { left: false, right: false, fire: false };
-    if (e.onGround) {
-      want.left = dir < 0 && Math.abs(dxT) > 6;
-      want.right = dir > 0 && Math.abs(dxT) > 6;
-      const dNear = ahead ? Math.abs(ahead.cx - e.px) : 999;
-      const dTarget = Math.abs(dxT);
-      // skok: přes špatnou želvu nebo na cíl
-      if ((dNear < 95 && dNear > 40) || (dTarget < 100 && dTarget > 30 && dNear > 70)) want.fire = true;
-    } else {
-      // ve vzduchu pokračovat ke směru cíle, držet skok, dokud stoupáme
-      want.left = dir < 0;
-      want.right = dir > 0;
-      want.fire = e.vy < 0;
-      if (Math.abs(dxT) < 14) { want.left = false; want.right = false; }
-    }
-    e.setInput(want);
-  };
-
   // ---- Pac-Man: nejlevnější cesta k správné odpovědi, políčka u duchů jsou drahá ----
   bots["pac-man"] = (e) => {
     const target = e.answers.find((a) => a.correct && a.alive);
@@ -214,18 +188,6 @@
       }
     }
     e.setInput(want);
-  };
-
-  // ---- Stonožka: pod správný článek a střílet ----
-  bots["stonozka"] = (e) => {
-    let tx = null;
-    for (const chain of e.chains) {
-      const i = chain.segs.findIndex((s) => s.correct);
-      if (i >= 0) tx = e.posAt(chain, chain.headD - i * 84).x + chain.dir * 18;
-    }
-    if (tx === null) return;
-    const dx = tx - e.px;
-    e.setInput({ left: dx < -6, right: dx > 6, fire: Math.abs(dx) < 26 && !(e.spider && Math.abs(e.spider.x - e.px) < 70), up: false, down: false });
   };
 
   // ---- Flappy: držet výšku středu průletu se správnou odpovědí ----

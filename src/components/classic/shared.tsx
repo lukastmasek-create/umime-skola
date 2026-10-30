@@ -1,9 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { ClassicText } from "@/i18n/classic";
 import { formatTime } from "@/lib/classic-games";
+import { saveBest, readBest, starsFor, type Best } from "@/lib/game-best";
+
+// Která hra, kurz a obtížnost se hraje: FinishCard podle toho ukládá osobní rekord.
+export type ClassicSession = { game: string; course: string; level: number; newBestLabel: string; bestLabel: string };
+export const ClassicSessionContext = createContext<ClassicSession | null>(null);
 
 export type AnswerResult = { id: string; correct: boolean };
 export type ReviewQuestion = { id?: string; prompt: string; options: string[]; correctIndex: number; explanation: string };
@@ -113,6 +118,16 @@ export function FinishCard({
   const total = results.length;
   const right = results.filter((r) => r.correct).length;
   const pct = total ? Math.round((right / total) * 100) : 0;
+  const session = useContext(ClassicSessionContext);
+  const [record, setRecord] = useState<{ best: Best | null; isNew: boolean }>({ best: null, isNew: false });
+  const savedRef = useRef(false);
+  useEffect(() => {
+    if (!session || savedRef.current) return;
+    savedRef.current = true;
+    const result = { stars: starsFor(right, total), score: xp };
+    const isNew = saveBest(session.game, session.course, session.level, result);
+    setRecord({ best: isNew ? result : readBest(session.game, session.course, session.level), isNew });
+  }, [session, right, total, xp]);
   let streak = 0;
   let run = 0;
   for (const r of results) {
@@ -178,6 +193,11 @@ export function FinishCard({
         {streak > 1 && (
           <span className="pill bg-[var(--surface-muted)] px-3 py-1.5 text-sm font-semibold">
             {t.end.streak}: <span className="tabular-nums">{streak}</span> 🔥
+          </span>
+        )}
+        {session && record.best && (
+          <span className={`pill px-3 py-1.5 text-sm font-semibold ${record.isNew ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface-muted)]"}`}>
+            🏆 {record.isNew ? session.newBestLabel : session.bestLabel}: {"⭐".repeat(record.best.stars) || "–"}
           </span>
         )}
         {gained > 0 && (

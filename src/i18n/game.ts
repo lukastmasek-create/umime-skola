@@ -66,13 +66,12 @@ export type GameText = {
   repeatLater: string;
   damage: string;
   tipDodge: string;
-  mario: { title: string; intro: string; controls: string; jump: string; upgradeJump: string };
   questions: GameQuestion[];
 };
 
 const cs: GameText = {
   play: "Hrát",
-  title: "Vesmírný kvíz",
+  title: "Obrana galaxie",
   intro: "Nad hlavou se objeví otázka a mimozemšťané nesou odpovědi. Sestřel tu správnou!",
   controls: "← → nebo A D pohyb, mezerník střelba, na telefonu táhni prstem po hře",
   start: "Spustit hru",
@@ -128,7 +127,6 @@ const cs: GameText = {
   repeatLater: "Tuhle otázku dostaneš ještě jednou na konci.",
   damage: "Zásah! −1 život",
   tipDodge: "Sbírej bonusy 🛡️ ⚡ 🐌 a uhýbej červeným střelám. Poslední otázka je BOSS.",
-  mario: { title: "Mario kvíz", intro: "Želvy nesou odpovědi a pořád se hýbou. Naskoč shora na tu správnou!", controls: "← → nebo A D pohyb, mezerník / ↑ skok (držíš = výš), na telefonu táhni prstem a klepni", jump: "Skok", upgradeJump: "Výška skoku" },
   questions: [
     {
       prompt: "Kolik je 7 × 8?",
@@ -165,7 +163,7 @@ const cs: GameText = {
 
 const en: GameText = {
   play: "Play",
-  title: "Space Quiz",
+  title: "Galaxy Defence",
   intro: "A question appears up top and the aliens carry the answers. Shoot the right one!",
   controls: "← → or A D to move, space to shoot, on a phone drag your finger on the game",
   start: "Start game",
@@ -221,7 +219,6 @@ const en: GameText = {
   repeatLater: "You will get this question once more at the end.",
   damage: "Hit! −1 life",
   tipDodge: "Grab power-ups 🛡️ ⚡ 🐌 and dodge the red shots. The last question is the BOSS.",
-  mario: { title: "Mario Quiz", intro: "Turtles carry the answers and keep moving. Jump on the right one from above!", controls: "← → or A D to move, space / ↑ to jump (hold = higher), on a phone drag and tap", jump: "Jump", upgradeJump: "Jump height" },
   questions: [
     {
       prompt: "What is 7 × 8?",
@@ -258,7 +255,7 @@ const en: GameText = {
 
 const de: GameText = {
   play: "Spielen",
-  title: "Weltraum-Quiz",
+  title: "Galaxie-Abwehr",
   intro: "Oben erscheint eine Frage und die Aliens tragen die Antworten. Schieß die richtige ab!",
   controls: "← → oder A D zum Bewegen, Leertaste zum Schießen, am Handy mit dem Finger ziehen",
   start: "Spiel starten",
@@ -314,7 +311,6 @@ const de: GameText = {
   repeatLater: "Diese Frage kommt am Ende noch einmal.",
   damage: "Treffer! −1 Leben",
   tipDodge: "Sammle Boni 🛡️ ⚡ 🐌 und weiche den roten Schüssen aus. Die letzte Frage ist der BOSS.",
-  mario: { title: "Mario-Quiz", intro: "Schildkröten tragen die Antworten und bewegen sich ständig. Spring von oben auf die richtige!", controls: "← → oder A D bewegen, Leertaste / ↑ springen (halten = höher), am Handy ziehen und tippen", jump: "Springen", upgradeJump: "Sprunghöhe" },
   questions: [
     {
       prompt: "Wie viel ist 7 × 8?",
@@ -351,7 +347,7 @@ const de: GameText = {
 
 const ru: GameText = {
   play: "Играть",
-  title: "Космический квиз",
+  title: "Защита галактики",
   intro: "Вверху появляется вопрос, а пришельцы несут ответы. Сбей правильный!",
   controls: "← → или A D — движение, пробел — выстрел, на телефоне води пальцем по игре",
   start: "Начать игру",
@@ -407,7 +403,6 @@ const ru: GameText = {
   repeatLater: "Этот вопрос ещё раз встретится в конце.",
   damage: "Попадание! −1 жизнь",
   tipDodge: "Собирай бонусы 🛡️ ⚡ 🐌 и уворачивайся от красных выстрелов. Последний вопрос — БОСС.",
-  mario: { title: "Квиз с Марио", intro: "Черепахи несут ответы и всё время двигаются. Запрыгни сверху на правильную!", controls: "← → или A D — движение, пробел / ↑ — прыжок (дольше = выше), на телефоне води пальцем и касайся", jump: "Прыжок", upgradeJump: "Высота прыжка" },
   questions: [
     {
       prompt: "Сколько будет 7 × 8?",

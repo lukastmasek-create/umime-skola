@@ -242,3 +242,101 @@ export function toScrambles(questions: GameQuestion[], count: number): Scramble[
   }
   return out;
 }
+
+export type CrossEntry = { num: number; dir: "across" | "down"; row: number; col: number; word: string; clue: string; id?: string };
+export type Crossword = { rows: number; cols: number; letters: (string | null)[][]; nums: (number | null)[][]; entries: CrossEntry[] };
+
+// Křížovka ze slov: slova se kříží na stejném písmenu, nesmí se dotýkat bokem. Zkusí několik pořadí
+// a nechá tu s nejvíc slovy a nejmenší plochou.
+export function buildCrossword(words: WordItem[], tries = 30): Crossword | null {
+  const SIZE = 40;
+  type Placement = { item: WordItem; row: number; col: number; dir: "across" | "down" };
+  let best: { placed: Placement[]; area: number; rows: number; cols: number } | null = null;
+
+  for (let attempt = 0; attempt < tries; attempt++) {
+    const order = attempt === 0 ? [...words].sort((a, b) => b.word.length - a.word.length) : shuffle(words).sort((a, b) => b.word.length - a.word.length + (Math.random() - 0.5) * 4);
+    const grid: (string | null)[][] = Array.from({ length: SIZE }, () => Array<string | null>(SIZE).fill(null));
+    const placed: Placement[] = [];
+    const at = (r: number, c: number) => (r >= 0 && c >= 0 && r < SIZE && c < SIZE ? grid[r][c] : null);
+
+    const fits = (w: string, r: number, c: number, dir: "across" | "down"): number => {
+      const dr = dir === "down" ? 1 : 0;
+      const dc = dir === "across" ? 1 : 0;
+      if (r < 1 || c < 1 || r + dr * w.length >= SIZE - 1 || c + dc * w.length >= SIZE - 1) return -1;
+      if (at(r - dr, c - dc) || at(r + dr * w.length, c + dc * w.length)) return -1;
+      let crossings = 0;
+      for (let i = 0; i < w.length; i++) {
+        const rr = r + dr * i;
+        const cc = c + dc * i;
+        const cur = grid[rr][cc];
+        if (cur) {
+          if (cur !== w[i]) return -1;
+          crossings++;
+        } else if (at(rr + dc, cc + dr) || at(rr - dc, cc - dr)) return -1; // soused bokem
+      }
+      return crossings;
+    };
+    const put = (p: Placement) => {
+      const dr = p.dir === "down" ? 1 : 0;
+      const dc = p.dir === "across" ? 1 : 0;
+      for (let i = 0; i < p.item.word.length; i++) grid[p.row + dr * i][p.col + dc * i] = p.item.word[i];
+      placed.push(p);
+    };
+
+    for (const item of order) {
+      const w = item.word;
+      if (placed.length === 0) {
+        put({ item, row: Math.floor(SIZE / 2), col: Math.floor((SIZE - w.length) / 2), dir: "across" });
+        continue;
+      }
+      let choice: { p: Placement; score: number } | null = null;
+      for (const p of placed) {
+        const pdr = p.dir === "down" ? 1 : 0;
+        const pdc = p.dir === "across" ? 1 : 0;
+        const dir = p.dir === "across" ? "down" : "across";
+        for (let i = 0; i < p.item.word.length; i++) {
+          for (let j = 0; j < w.length; j++) {
+            if (p.item.word[i] !== w[j]) continue;
+            const r = p.row + pdr * i - (dir === "down" ? j : 0);
+            const c = p.col + pdc * i - (dir === "across" ? j : 0);
+            const crossings = fits(w, r, c, dir);
+            if (crossings <= 0) continue;
+            const score = crossings * 10 + Math.random();
+            if (!choice || score > choice.score) choice = { p: { item, row: r, col: c, dir }, score };
+          }
+        }
+      }
+      if (choice) put(choice.p);
+    }
+
+    let r0 = SIZE, c0 = SIZE, r1 = 0, c1 = 0;
+    for (const p of placed) {
+      const len = p.item.word.length;
+      r0 = Math.min(r0, p.row);
+      c0 = Math.min(c0, p.col);
+      r1 = Math.max(r1, p.dir === "down" ? p.row + len - 1 : p.row);
+      c1 = Math.max(c1, p.dir === "across" ? p.col + len - 1 : p.col);
+    }
+    const area = (r1 - r0 + 1) * (c1 - c0 + 1);
+    if (!best || placed.length > best.placed.length || (placed.length === best.placed.length && area < best.area)) {
+      best = { placed: placed.map((p) => ({ ...p, row: p.row - r0, col: p.col - c0 })), area, rows: r1 - r0 + 1, cols: c1 - c0 + 1 };
+    }
+    if (best.placed.length === words.length && attempt > 8) break;
+  }
+  if (!best || best.placed.length < 2) return null;
+  const { rows, cols } = best;
+  const letters: (string | null)[][] = Array.from({ length: rows }, () => Array<string | null>(cols).fill(null));
+  const nums: (number | null)[][] = Array.from({ length: rows }, () => Array<number | null>(cols).fill(null));
+  // Čísla po řádcích zleva doprava, jako v novinové křížovce.
+  const starts = [...best.placed].sort((a, b) => a.row - b.row || a.col - b.col);
+  let n = 0;
+  const entries: CrossEntry[] = [];
+  for (const p of starts) {
+    if (nums[p.row][p.col] === null) nums[p.row][p.col] = ++n;
+    entries.push({ num: nums[p.row][p.col] as number, dir: p.dir, row: p.row, col: p.col, word: p.item.word, clue: p.item.clue, id: p.item.id });
+    const dr = p.dir === "down" ? 1 : 0;
+    const dc = p.dir === "across" ? 1 : 0;
+    for (let i = 0; i < p.item.word.length; i++) letters[p.row + dr * i][p.col + dc * i] = p.item.word[i];
+  }
+  return { rows, cols, letters, nums, entries };
+}

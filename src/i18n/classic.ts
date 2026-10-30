@@ -1,4 +1,5 @@
 import type { Locale } from "./config";
+import type { ClassicSlug } from "@/lib/games";
 
 // Texty klasických her (osmisměrka, spojování, pexeso, šibenice).
 export type ClassicText = {
@@ -22,7 +23,11 @@ export type ClassicText = {
   triesLeft: string;
   gameOver: string;
   rightAnswer: string;
-  games: Record<"osmismerka" | "spojovani" | "pexeso" | "sibenice" | "trideni" | "doplnovani" | "milionar" | "presmycky" | "blesk" | "poklad" | "oblekani" | "obrana", { title: string; intro: string }>;
+  games: Record<ClassicSlug, { title: string; intro: string }>;
+  cross: { across: string; down: string; check: string; reveal: string; giveUp: string; hintsLeft: string; wrongCells: string; allRight: string };
+  tf: { truth: string; lie: string; keys: string; question: string; claim: string; combo: string; wasTrue: string; wasLie: string };
+  ttt: { you: string; bot: string; pick: string; answer: string; botTurn: string; win: string; lose: string; draw: string; inRow: string; lost: string; won: string };
+  bingo: { card: string; find: string; lines: string; bingo: string; full: string; lives: string; wrong: string; again: string };
   quiz: { ready: string; start: string; score: string; correctN: string; timeLeft: string; streak: string; best: string; timeUp: string; wrongAnswer: string; correctWas: string; pickTile: string };
   mil: { points: string; fifty: string; audience: string; skip: string; take: string; safe: string; question: string; reached: string; won: string; lost: string; takeHome: string };
   scramble: { hint: string; clear: string; placeholder: string; letters: string; revealed: string };
@@ -63,14 +68,22 @@ const cs: ClassicText = {
     sibenice: { title: "Šibenice", intro: "Z otázky poznej odpověď a hádej ji písmeno po písmenu. Šest chyb a oběšenec je hotový." },
     trideni: { title: "Třídění", intro: "Roztřiď tvrzení na správná a špatná. Kartu přetáhni doprava (správně) nebo doleva (špatně), nebo použij tlačítka či šipky." },
     doplnovani: { title: "Doplňování", intro: "Doplň správná slova do vět. Na lehčí úrovni je vybíráš z nabídky, na těžší je píšeš sám." },
-    milionar: { title: "Chceš být milionářem?", intro: "Odpovídej na otázky po žebříčku bodů. Pomůže ti 50:50, hlas publika a přeskočení. Špatná odpověď tě vrátí na poslední jistý bod, nebo si můžeš body vzít a skončit." },
+    milionar: { title: "Výstup na vrchol", intro: "Odpovídej na otázky a stoupej po žebříčku bodů až na vrchol. Pomůže ti 50:50, hlas publika a přeskočení. Špatná odpověď tě vrátí na poslední jistý bod, nebo si můžeš body vzít a skončit." },
     presmycky: { title: "Přesmyčky", intro: "Písmena jsou zamíchaná. Poskládej z nich správnou odpověď na otázku. Klepej na písmena, nebo piš na klávesnici." },
     blesk: { title: "Bleskový kvíz", intro: "Odpovídej, co to jde. Za správnou odpověď bod a série, za špatnou ztratíš pět sekund. Klávesy 1 až 4 vybírají odpověď." },
     poklad: { title: "Hon za pokladem", intro: "Správná odpověď ti odemkne jedno políčko na ostrově. Skrývá se v nich zlato a truhly, ale i lebky, které berou životy." },
     oblekani: { title: "Obleč panenku", intro: "Panenka stojí jen ve spodním prádle. Za každou správnou odpověď dostane jeden kus oblečení: vlasy, šaty, boty, make-up, doplněk i čepici. Při chybě zesmutní a něco z jejího oblečení se změní." },
     obrana: { title: "Obrana města", intro: "Nepřátelé se blíží k hradu a nejbližší nese otázku. Správná odpověď ho sestřelí, špatná ho pošle blíž. Přežij pět vln a mezi nimi si za zlato oprav hradby!" },
+    krizovka: { title: "Křížovka", intro: "Vyplň křížovku odpověďmi na otázky. Klikni na políčko (nebo na otázku) a piš na klávesnici, šipkami se pohybuješ. Když si nevíš rady, odkryj písmeno, ale stojí to body." },
+    pravda: { title: "Pravda, nebo lež", intro: "U každé otázky uvidíš odpověď. Rozhodni co nejrychleji, jestli je správná: šipka → nebo tlačítko Pravda, šipka ← nebo Lež. Za sérii správných rozhodnutí dostaneš bonusový čas." },
+    piskvorky: { title: "Kvízové piškvorky", intro: "Hraješ proti počítači. Vyber políčko a odpověz na otázku: správně a políčko je tvoje, špatně a tah propadá. Vyhrává, kdo první složí řadu (vodorovně, svisle nebo úhlopříčně)." },
+    bingo: { title: "Bingo", intro: "Na kartě máš odpovědi. Přečti si otázku a klikni na správnou odpověď na kartě. Slož celou řadu, sloupec nebo úhlopříčku a máš BINGO! Pozor, za tři chyby hra končí." },
   },
   matching: { questions: "Otázky", answers: "Odpovědi" },
+  cross: { across: "Vodorovně", down: "Svisle", check: "Zkontrolovat", reveal: "Odkrýt písmeno", giveUp: "Ukázat řešení", hintsLeft: "Nápovědy", wrongCells: "Špatná políčka jsou červeně, oprav je.", allRight: "Všechno sedí!" },
+  tf: { truth: "Pravda", lie: "Lež", keys: "← lež · pravda →", question: "Otázka", claim: "Odpověď", combo: "Série", wasTrue: "Byla to pravda", wasLie: "Byla to lež" },
+  ttt: { you: "Ty", bot: "Počítač", pick: "Vyber si políčko", answer: "Odpověz správně a políčko je tvoje", botTurn: "Počítač přemýšlí…", win: "Vyhrál jsi! 🎉", lose: "Počítač tě porazil.", draw: "Remíza!", inRow: "{n} v řadě vyhrává", lost: "Špatně, tah propadá počítači.", won: "Správně, políčko je tvoje!" },
+  bingo: { card: "Tvoje karta", find: "Najdi na kartě odpověď na otázku:", lines: "Řady", bingo: "BINGO!", full: "Plná karta! 🎉", lives: "Životy", wrong: "Tohle není ono.", again: "Další otázka" },
   sort: { right: "Správně", wrong: "Špatně", hint: "Přetáhni kartu, nebo ← →", card: "Karta", wasRight: "Správně!", wasWrong: "Chyba.", correctIs: "Správná odpověď", review: "Tady jsi chyboval" },
   fill: { bank: "Slova k doplnění", check: "Zkontrolovat", placeholder: "Doplň…", attemptsLeft: "pokusů", revealed: "Správně je", correctIs: "Správně", pickWord: "Vyber slovo a klepni na mezeru" },
   quiz: { ready: "Připraven?", start: "Start", score: "Skóre", correctN: "Správně", timeLeft: "Zbývá", streak: "Série", best: "Nejlepší série", timeUp: "Čas vypršel!", wrongAnswer: "Špatně", correctWas: "Správně bylo", pickTile: "Vyber políčko k odkopání" },
@@ -109,14 +122,22 @@ const en: ClassicText = {
     sibenice: { title: "Hangman", intro: "Work out the answer from the question and guess it letter by letter. Six mistakes and the hangman is complete." },
     trideni: { title: "Sorting", intro: "Sort the statements into right and wrong. Drag a card right (true) or left (false), or use the buttons or arrow keys." },
     doplnovani: { title: "Fill in the blanks", intro: "Fill the right words into the sentences. On easier levels you pick them from a list, on harder ones you type them." },
-    milionar: { title: "Who wants to be a millionaire?", intro: "Answer the questions up the points ladder. 50:50, ask the audience and skip can help. A wrong answer drops you to the last safe point, or you can take your points and stop." },
+    milionar: { title: "Summit Climb", intro: "Answer the questions and climb the points ladder to the summit. 50:50, ask the audience and skip can help. A wrong answer drops you to the last safe point, or you can take your points and stop." },
     presmycky: { title: "Anagrams", intro: "The letters are scrambled. Put them together into the right answer to the question. Tap the letters or type on the keyboard." },
     blesk: { title: "Lightning quiz", intro: "Answer as many as you can. A right answer earns a point and a streak, a wrong one costs five seconds. Keys 1 to 4 pick an answer." },
     poklad: { title: "Treasure hunt", intro: "A right answer unlocks one tile on the island. They hide gold and chests, but also skulls that cost lives." },
     oblekani: { title: "Dress the doll", intro: "The doll stands in her underwear. Every right answer gives her one piece: hair, outfit, shoes, make-up, accessory and a hat. A wrong answer makes her sad and something she wears changes." },
     obrana: { title: "Castle Defence", intro: "Monsters march on the castle and the nearest one carries a question. A right answer blasts it, a wrong one pushes it closer. Survive five waves and repair the walls with gold in between!" },
+    krizovka: { title: "Crossword", intro: "Fill the crossword with the answers. Click a square (or a clue) and type; move with the arrow keys. Stuck? Reveal a letter, but it costs points." },
+    pravda: { title: "True or False", intro: "Each question comes with an answer. Decide as fast as you can whether it is right: → or True, ← or False. A streak of right calls earns bonus time." },
+    piskvorky: { title: "Quiz Tic-Tac-Toe", intro: "You play against the computer. Pick a square and answer the question: right and the square is yours, wrong and you lose your turn. First to complete a line (across, down or diagonal) wins." },
+    bingo: { title: "Bingo", intro: "Your card is full of answers. Read the question and click the right answer on your card. Complete a row, column or diagonal for BINGO! Careful, three mistakes end the game." },
   },
   matching: { questions: "Questions", answers: "Answers" },
+  cross: { across: "Across", down: "Down", check: "Check", reveal: "Reveal a letter", giveUp: "Show solution", hintsLeft: "Hints", wrongCells: "Wrong squares are red, fix them.", allRight: "All correct!" },
+  tf: { truth: "True", lie: "False", keys: "← false · true →", question: "Question", claim: "Answer", combo: "Streak", wasTrue: "It was true", wasLie: "It was false" },
+  ttt: { you: "You", bot: "Computer", pick: "Pick a square", answer: "Answer right and the square is yours", botTurn: "The computer is thinking…", win: "You won! 🎉", lose: "The computer beat you.", draw: "Draw!", inRow: "{n} in a row wins", lost: "Wrong, the computer gets the turn.", won: "Right, the square is yours!" },
+  bingo: { card: "Your card", find: "Find the answer on your card:", lines: "Lines", bingo: "BINGO!", full: "Full card! 🎉", lives: "Lives", wrong: "Not that one.", again: "Next question" },
   sort: { right: "Right", wrong: "Wrong", hint: "Drag the card, or ← →", card: "Card", wasRight: "Right!", wasWrong: "Mistake.", correctIs: "Right answer", review: "Where you slipped" },
   fill: { bank: "Words to fill in", check: "Check", placeholder: "Fill in…", attemptsLeft: "tries", revealed: "The answer is", correctIs: "Correct", pickWord: "Pick a word, then tap a blank" },
   quiz: { ready: "Ready?", start: "Start", score: "Score", correctN: "Correct", timeLeft: "Left", streak: "Streak", best: "Best streak", timeUp: "Time's up!", wrongAnswer: "Wrong", correctWas: "The answer was", pickTile: "Pick a tile to dig" },
@@ -155,14 +176,22 @@ const de: ClassicText = {
     sibenice: { title: "Galgenmännchen", intro: "Erkenne die Antwort an der Frage und rate sie Buchstabe für Buchstabe. Sechs Fehler und der Galgen ist fertig." },
     trideni: { title: "Sortieren", intro: "Sortiere die Aussagen in richtig und falsch. Zieh die Karte nach rechts (richtig) oder links (falsch) oder nutze die Tasten oder Pfeile." },
     doplnovani: { title: "Lückentext", intro: "Setze die richtigen Wörter in die Sätze ein. Auf leichten Stufen wählst du sie aus einer Liste, auf schweren tippst du sie selbst." },
-    milionar: { title: "Wer wird Millionär?", intro: "Beantworte die Fragen auf der Punkteleiter. 50:50, Publikum und Überspringen helfen dir. Eine falsche Antwort wirft dich auf den letzten sicheren Punkt zurück, oder du nimmst deine Punkte und hörst auf." },
+    milionar: { title: "Gipfelsturm", intro: "Beantworte die Fragen und steig die Punkteleiter bis zum Gipfel hinauf. 50:50, Publikum und Überspringen helfen. Eine falsche Antwort wirft dich auf den letzten sicheren Punkt zurück, oder du nimmst deine Punkte und hörst auf." },
     presmycky: { title: "Buchstabensalat", intro: "Die Buchstaben sind durcheinander. Setze daraus die richtige Antwort auf die Frage zusammen. Tippe die Buchstaben an oder schreibe mit der Tastatur." },
     blesk: { title: "Blitzquiz", intro: "Antworte, so schnell du kannst. Für eine richtige Antwort gibt es einen Punkt und eine Serie, für eine falsche verlierst du fünf Sekunden. Die Tasten 1 bis 4 wählen die Antwort." },
     poklad: { title: "Schatzsuche", intro: "Eine richtige Antwort schaltet ein Feld der Insel frei. Darunter liegen Gold und Truhen, aber auch Totenköpfe, die Leben kosten." },
     oblekani: { title: "Puppe anziehen", intro: "Die Puppe steht in Unterwäsche da. Jede richtige Antwort bringt ihr ein Teil: Haare, Outfit, Schuhe, Make-up, Accessoire und Hut. Bei einer falschen Antwort wird sie traurig und etwas an ihrem Outfit ändert sich." },
     obrana: { title: "Burgverteidigung", intro: "Monster marschieren auf die Burg zu, das vorderste trägt eine Frage. Eine richtige Antwort schießt es ab, eine falsche schiebt es näher. Überstehe fünf Wellen und repariere dazwischen die Mauern mit Gold!" },
+    krizovka: { title: "Kreuzworträtsel", intro: "Füll das Rätsel mit den Antworten aus. Klick ein Feld (oder eine Frage) an und tippe; mit den Pfeiltasten bewegst du dich. Kommst du nicht weiter, deck einen Buchstaben auf, das kostet aber Punkte." },
+    pravda: { title: "Wahr oder falsch", intro: "Zu jeder Frage siehst du eine Antwort. Entscheide schnell, ob sie stimmt: → oder Wahr, ← oder Falsch. Für eine Serie richtiger Entscheidungen gibt es Bonuszeit." },
+    piskvorky: { title: "Quiz-Tic-Tac-Toe", intro: "Du spielst gegen den Computer. Wähl ein Feld und beantworte die Frage: richtig und das Feld gehört dir, falsch und dein Zug verfällt. Wer zuerst eine Reihe hat (waagerecht, senkrecht, diagonal), gewinnt." },
+    bingo: { title: "Bingo", intro: "Auf deiner Karte stehen Antworten. Lies die Frage und klick die richtige Antwort an. Mach eine Reihe, Spalte oder Diagonale voll und du hast BINGO! Achtung, drei Fehler beenden das Spiel." },
   },
   matching: { questions: "Fragen", answers: "Antworten" },
+  cross: { across: "Waagerecht", down: "Senkrecht", check: "Prüfen", reveal: "Buchstabe aufdecken", giveUp: "Lösung zeigen", hintsLeft: "Hilfen", wrongCells: "Falsche Felder sind rot, korrigiere sie.", allRight: "Alles richtig!" },
+  tf: { truth: "Wahr", lie: "Falsch", keys: "← falsch · wahr →", question: "Frage", claim: "Antwort", combo: "Serie", wasTrue: "Es war wahr", wasLie: "Es war falsch" },
+  ttt: { you: "Du", bot: "Computer", pick: "Wähl ein Feld", answer: "Antworte richtig und das Feld gehört dir", botTurn: "Der Computer überlegt…", win: "Gewonnen! 🎉", lose: "Der Computer hat gewonnen.", draw: "Unentschieden!", inRow: "{n} in einer Reihe gewinnt", lost: "Falsch, der Computer ist dran.", won: "Richtig, das Feld gehört dir!" },
+  bingo: { card: "Deine Karte", find: "Finde die Antwort auf deiner Karte:", lines: "Reihen", bingo: "BINGO!", full: "Volle Karte! 🎉", lives: "Leben", wrong: "Das ist es nicht.", again: "Nächste Frage" },
   sort: { right: "Richtig", wrong: "Falsch", hint: "Karte ziehen oder ← →", card: "Karte", wasRight: "Richtig!", wasWrong: "Fehler.", correctIs: "Richtige Antwort", review: "Hier lagst du daneben" },
   fill: { bank: "Wörter zum Einsetzen", check: "Prüfen", placeholder: "Ergänze…", attemptsLeft: "Versuche", revealed: "Richtig ist", correctIs: "Richtig", pickWord: "Wort wählen, dann Lücke antippen" },
   quiz: { ready: "Bereit?", start: "Start", score: "Punkte", correctN: "Richtig", timeLeft: "Übrig", streak: "Serie", best: "Beste Serie", timeUp: "Zeit abgelaufen!", wrongAnswer: "Falsch", correctWas: "Richtig war", pickTile: "Wähle ein Feld zum Graben" },
@@ -201,14 +230,22 @@ const ru: ClassicText = {
     sibenice: { title: "Виселица", intro: "Пойми ответ по вопросу и угадывай его по буквам. Шесть ошибок — и виселица готова." },
     trideni: { title: "Сортировка", intro: "Рассортируй утверждения на верные и неверные. Перетащи карточку вправо (верно) или влево (неверно) либо используй кнопки или стрелки." },
     doplnovani: { title: "Вставь слова", intro: "Вставь нужные слова в предложения. На лёгких уровнях выбираешь их из списка, на сложных вводишь сам." },
-    milionar: { title: "Кто хочет стать миллионером?", intro: "Отвечай на вопросы по лестнице очков. Помогут 50:50, помощь зала и пропуск. Неверный ответ вернёт на последний надёжный балл, либо можно забрать очки и закончить." },
+    milionar: { title: "Восхождение на вершину", intro: "Отвечай на вопросы и поднимайся по лестнице очков к вершине. Помогут 50:50, помощь зала и пропуск. Неверный ответ вернёт тебя на последнюю несгораемую сумму, или можно забрать очки и закончить." },
     presmycky: { title: "Анаграммы", intro: "Буквы перемешаны. Составь из них правильный ответ на вопрос. Нажимай на буквы или печатай на клавиатуре." },
     blesk: { title: "Блиц-викторина", intro: "Отвечай как можно быстрее. За верный ответ балл и серия, за неверный минус пять секунд. Клавиши 1–4 выбирают ответ." },
     poklad: { title: "Охота за сокровищами", intro: "Верный ответ открывает одну клетку острова. В них золото и сундуки, но и черепа, которые отнимают жизни." },
     oblekani: { title: "Одень куклу", intro: "Кукла стоит в белье. За каждый верный ответ она получает вещь: причёску, наряд, обувь, макияж, аксессуар и головной убор. При ошибке она грустит, и что-то из её одежды меняется." },
     obrana: { title: "Оборона города", intro: "Враги идут к замку, и ближайший несёт вопрос. Верный ответ сбивает его, неверный подталкивает ближе. Переживи пять волн и между ними чини стены за золото!" },
+    krizovka: { title: "Кроссворд", intro: "Заполни кроссворд ответами. Нажми на клетку (или на вопрос) и печатай, стрелками перемещайся. Если не знаешь, открой букву, но это стоит очков." },
+    pravda: { title: "Правда или ложь", intro: "К каждому вопросу показан ответ. Быстро реши, верный ли он: → или «Правда», ← или «Ложь». За серию верных решений — бонусное время." },
+    piskvorky: { title: "Крестики-нолики", intro: "Ты играешь против компьютера. Выбери клетку и ответь на вопрос: верно — клетка твоя, неверно — ход переходит. Побеждает тот, кто первым соберёт ряд (по горизонтали, вертикали или диагонали)." },
+    bingo: { title: "Бинго", intro: "На карточке — ответы. Прочитай вопрос и нажми на верный ответ. Собери ряд, столбец или диагональ — и у тебя БИНГО! Осторожно, три ошибки — конец игры." },
   },
   matching: { questions: "Вопросы", answers: "Ответы" },
+  cross: { across: "По горизонтали", down: "По вертикали", check: "Проверить", reveal: "Открыть букву", giveUp: "Показать решение", hintsLeft: "Подсказки", wrongCells: "Неверные клетки красные, исправь их.", allRight: "Всё верно!" },
+  tf: { truth: "Правда", lie: "Ложь", keys: "← ложь · правда →", question: "Вопрос", claim: "Ответ", combo: "Серия", wasTrue: "Это была правда", wasLie: "Это была ложь" },
+  ttt: { you: "Ты", bot: "Компьютер", pick: "Выбери клетку", answer: "Ответь верно — и клетка твоя", botTurn: "Компьютер думает…", win: "Ты победил! 🎉", lose: "Компьютер победил.", draw: "Ничья!", inRow: "{n} в ряд побеждает", lost: "Неверно, ход переходит компьютеру.", won: "Верно, клетка твоя!" },
+  bingo: { card: "Твоя карточка", find: "Найди на карточке ответ на вопрос:", lines: "Ряды", bingo: "БИНГО!", full: "Полная карточка! 🎉", lives: "Жизни", wrong: "Не то.", again: "Следующий вопрос" },
   sort: { right: "Верно", wrong: "Неверно", hint: "Перетащи карточку или ← →", card: "Карточка", wasRight: "Верно!", wasWrong: "Ошибка.", correctIs: "Правильный ответ", review: "Где ты ошибся" },
   fill: { bank: "Слова для вставки", check: "Проверить", placeholder: "Вставь…", attemptsLeft: "попыток", revealed: "Правильно так", correctIs: "Верно", pickWord: "Выбери слово и коснись пропуска" },
   quiz: { ready: "Готов?", start: "Старт", score: "Очки", correctN: "Верно", timeLeft: "Осталось", streak: "Серия", best: "Лучшая серия", timeUp: "Время вышло!", wrongAnswer: "Неверно", correctWas: "Правильно было", pickTile: "Выбери клетку, чтобы копать" },
