@@ -628,12 +628,21 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
     cancelAnimationFrame(raf);
     onEnd();
   };
-  const imgsP = Promise.all([load("/home/pristav/lod-trup.webp"), load("/home/pristav/lod-plachty.webp"), load("/home/pristav/lod-vitr.webp"), load("/home/pristav/lod.webp"), load("/home/pristav/nastup-molo.webp"), load("/home/pristav/nastup-lavka.webp"), load(currentHeroUrl("chuze")), load(currentHeroUrl("stoji")), load(currentHeroUrl("radost"))]);
+  const imgsP = Promise.all([load("/home/pristav/lod-hi-trup.webp"), load("/home/pristav/lod-hi-plachty.webp"), load("/home/pristav/lod-hi-vitr.webp"), load("/home/pristav/lod-trup.webp"), load("/home/pristav/lod-plachty.webp"), load("/home/pristav/lod-vitr.webp"), load("/home/pristav/lod.webp"), load("/home/pristav/nastup-molo.webp"), load("/home/pristav/nastup-lavka.webp"), load(currentHeroUrl("chuze")), load(currentHeroUrl("stoji")), load(currentHeroUrl("radost"))]);
 
-  void imgsP.then(([hullImg, sailsCalm, sailsWind, wholeShip, molo, lavka, walkImg, idleImg, joyImg]) => {
-    // bez vrstev (chybí obrázky) se použije celá loď
-    const layered = hullImg.naturalWidth > 0 && sailsCalm.naturalWidth > 0 && sailsWind.naturalWidth > 0;
+  void imgsP.then(([hiHull, hiSails, hiWind, loHull, loSails, loWind, wholeShip, molo, lavka, walkImg, idleImg, joyImg]) => {
+    // loď ve vysokém rozlišení (1024 × 1010 na snímek, kreslí se v měřítku 0,625); bez ní vrstvy v původním měřítku, nebo celá loď
+    const hi = hiHull.naturalWidth > 0 && hiSails.naturalWidth > 0 && hiWind.naturalWidth > 0;
+    const lo = loHull.naturalWidth > 0 && loSails.naturalWidth > 0 && loWind.naturalWidth > 0;
+    const layered = hi || lo;
+    const hullImg = hi ? hiHull : loHull;
+    const sailsCalm = hi ? hiSails : loSails;
+    const sailsWind = hi ? hiWind : loWind;
     const ship = layered ? hullImg : wholeShip;
+    const FW = hi ? 1024 : 640; // šířka a výška snímku v pásu, měřítko vůči scéně a rezerva nad stěžněm
+    const FH = hi ? 1010 : 512;
+    const SC = hi ? 1.6 : 1;
+    const TOPPAD = hi ? 190 / 1.6 : 0;
     if (stopped) return;
     const { cw, ch, ctx } = setup(r);
     const S = cw / 1100;
@@ -679,33 +688,44 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
     const T_DRAIN = 0.7;
     const T_B = T_A + T_COVER; // tady začíná scéna B (pod vlnou)
     // ---- fáze B: molo, lávka, loď
-    const WALK = 215;
+    const WALK = 150;
+    const HW = 104; // šířka sprite hrdiny ve scéně B; loď je proti hrdinovi větší a plachty jsou vysoko nad palubou
     const toArt = (a: Pt) => ({ x: a[0] * 1280, y: a[1] * 512 });
     const pts = [{ x: -40, y: toArt(anchors.paluba_start).y }, toArt(anchors.paluba_start), toArt(anchors.lavka_zacatek), toArt(anchors.lavka_konec), toArt(anchors.paluba_stred)];
     const pcum = [0];
     for (let i = 1; i < pts.length; i++) pcum.push(pcum[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y));
     const pTotal = pcum[pcum.length - 1];
     const T_WALK = pTotal / WALK;
-    const T_JOY = 1.0;
-    const T_STROLL = 1.9; // po palubě k přídi
-    const T_SAIL = T_WALK + T_JOY + T_STROLL + 0.5;
-    const BOW_X = 470; // poloha hrdiny na přídi (v souřadnicích sprite lodi)
-    const T_BEND = T_SAIL + 3.2;
+    const T_JOY = 0.9;
+    const T_TOCAP = 2.1; // k rumplu na přídi
+    const T_PULL = 3.6; // otáčení rumplem a zdvih kotvy
+    const T_TOHELM = 2.7; // zpátky ke kormidlu
+    const tC0 = T_WALK + T_JOY;
+    const tP0 = tC0 + T_TOCAP;
+    const tH0 = tP0 + T_PULL;
+    const T_SAIL = tH0 + T_TOHELM + 0.7; // odplutí
+    const T_BEND = T_SAIL + 4.2;
+    const LX_LAND = pts[pts.length - 1].x - 320; // místo dopadu na palubu (v souřadnicích sprite lodi, 100 px na jednotku)
+    const LX_CAP = 435; // rumpál (svět x = 1,15)
+    const R_CAP = 55;
+    const LX_HELM = 118; // hrdina u kormidla
+    const LX_WHEEL = 158;
+    const LX_HAWSE = 520; // příď, kudy jde řetěz přes bok
     // Houpání lodi podle skutečných snímků: spodní okraj trupu v několika sloupcích, hrdina se o něj opírá
     const COLS = Array.from({ length: 10 }, (_, i) => 100 + i * 50);
     const bottoms: number[][] = [];
     {
       const oc = document.createElement("canvas");
-      oc.width = ship.naturalWidth || 7680;
-      oc.height = 512;
+      oc.width = ship.naturalWidth || FW * 12;
+      oc.height = FH;
       const octx = oc.getContext("2d", { willReadFrequently: true });
       if (octx) {
         octx.drawImage(ship, 0, 0);
         for (let f = 0; f < 12; f++) {
           bottoms.push(
             COLS.map((cx) => {
-              const col = octx.getImageData(f * 640 + cx, 0, 1, 512).data;
-              for (let y = 511; y >= 0; y--) if (col[y * 4 + 3] > 128) return y;
+              const col = octx.getImageData(f * FW + Math.round(cx * SC), 0, 1, FH).data;
+              for (let y = FH - 1; y >= 0; y--) if (col[y * 4 + 3] > 128) return y / SC;
               return 0;
             }),
           );
@@ -719,7 +739,7 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
       const u = clamp((lx - COLS[0]) / (COLS[COLS.length - 1] - COLS[0])) * (COLS.length - 1);
       const c0 = Math.min(COLS.length - 2, Math.floor(u));
       const kk = u - c0;
-      const row = bottoms[frame % 12];
+      const row = bottoms[((frame % 12) + 12) % 12];
       return lerp(row[c0] - refBottom[c0], row[c0 + 1] - refBottom[c0 + 1], kk);
     };
     // výška palubní roviny podle místního x (zepředu dozadu stoupá k přídi)
@@ -735,6 +755,12 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
       const k = (d - pcum[i - 1]) / Math.max(1e-6, pcum[i] - pcum[i - 1]);
       return { x: lerp(pts[i - 1].x, pts[i].x, k), y: lerp(pts[i - 1].y, pts[i].y, k) };
     };
+    // kotva: z = výška oka kotvy nad hladinou (v jednotkách lodi), dole -0,7, zavěšená na nosníku 0,78
+    const Z_DOWN = -0.7;
+    const Z_UP = 0.78;
+    const anchorProgress = (tw: number) => ease(clamp((tw - tP0 - 0.35) / (T_PULL - 0.9)));
+    // jeden otáčkový cyklus rumpálu v době zdvihu kotvy (hrdina jde kolem dokola)
+    const capAngle = (tw: number) => Math.PI + 2 * Math.PI * ease(clamp((tw - tP0 - 0.2) / (T_PULL - 0.5)));
     const foam: { x: number; y: number; age: number; life: number; w: number }[] = [];
     const spray: { x: number; y: number; vx: number; vy: number; age: number; life: number }[] = [];
     const total_t = T_B + T_DRAIN + T_BEND;
@@ -746,6 +772,10 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
     let stepAcc = 0;
     let camXs = 500;
     let acc = 0;
+    const ev = { horn: false, gull: false, gull2: false, creak: false, splash: false, clunk: false, creak2: false };
+    let chainAcc = 0;
+    let dripAcc = 0;
+    const drips: { x: number; y: number; vy: number; age: number }[] = [];
 
     const frame = (now: number) => {
       raf = 0;
@@ -787,22 +817,96 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
           fired = 2;
           sfx.waves(5);
         }
-        const tb = t - T_B - T_DRAIN * 0.0;
+        const tb = t - T_B;
         const tw = Math.max(0, tb - T_DRAIN);
         // pohyb lodi
         const tsail = Math.max(0, tw - T_SAIL);
-        const acc2 = 55;
-        shipV = Math.min(240, acc2 * tsail);
+        shipV = Math.min(240, 55 * tsail);
         acc += shipV * dt;
         shipDX = acc;
-        const k = (cw / 1000) * (1 + 0.14 * sm(tw, T_SAIL + 1, T_BEND));
-        const wl = ch * 0.8;
-        // kamera: nejdřív za hrdinou po molu, pak za lodí
+        const shipX0 = 320 + shipDX; // počátek sprite lodi ve scéně (100 px na jednotku)
+        const phase = (tb / 3.6) * 12; // plynulá fáze smyčky: snímky se prolínají, takže loď nehupká po krocích
+        const frameN = Math.floor(phase) % 12;
+        const frameB = (frameN + 1) % 12;
+        const frameK = phase - Math.floor(phase);
+        const swayAt = (lx: number) => lerp(deckSway(frameN, lx), deckSway(frameB, lx), frameK);
+        const ground = (lx: number) => deckLine(lx) + swayAt(lx);
+
+        // ---- kde je hrdina a co dělá
+        const hop = (d: number) => Math.sin(Math.PI * clamp((d - pcum[pcum.length - 2]) / Math.max(1, pcum[pcum.length - 1] - pcum[pcum.length - 2]))) * 7;
+        let hx: number;
+        let hy: number;
+        let himg = walkImg;
+        let hn = 16;
+        let hdur = 0.9;
+        let hflip = false;
+        let heroBehind = false;
+        let stepping = true;
+        if (tw < T_WALK) {
+          const d = tw * WALK;
+          const a = alongArt(d);
+          const lx = a.x - shipX0;
+          hx = a.x;
+          hy = a.y - hop(d) + (lx > 150 ? swayAt(lx) : 0);
+        } else if (tw < tC0) {
+          hx = shipX0 + LX_LAND;
+          hy = ground(LX_LAND);
+          himg = joyImg;
+          hn = 24;
+          hdur = 1.1;
+          stepping = false;
+        } else if (tw < tP0) {
+          const lx = lerp(LX_LAND, LX_CAP - R_CAP, ease((tw - tC0) / T_TOCAP));
+          hx = shipX0 + lx;
+          hy = ground(lx);
+        } else if (tw < tH0) {
+          const th = capAngle(tw);
+          const sp = capAngle(tw + 0.06) - capAngle(tw - 0.06);
+          hx = shipX0 + LX_CAP + R_CAP * Math.cos(th);
+          hy = ground(LX_CAP) - R_CAP * 0.45 * Math.sin(th);
+          heroBehind = Math.sin(th) > 0.05;
+          hflip = Math.sin(th) > 0;
+          if (sp < 0.07) {
+            himg = idleImg;
+            hn = 24;
+            hdur = 3;
+            stepping = false;
+          }
+        } else if (tw < tH0 + T_TOHELM) {
+          const lx = lerp(LX_CAP - R_CAP, LX_HELM, ease((tw - tH0) / T_TOHELM));
+          hx = shipX0 + lx;
+          hy = ground(lx);
+          hflip = true;
+        } else {
+          hx = shipX0 + LX_HELM;
+          hy = ground(LX_HELM);
+          himg = idleImg;
+          hn = 24;
+          hdur = 3;
+          stepping = false;
+        }
+        if (stepping) {
+          stepAcc += dt;
+          if (stepAcc > 0.28) {
+            stepAcc = 0;
+            if (hx > 0) sfx.step();
+          }
+        }
+
+        // ---- kamera: nejdřív za hrdinou po molu a palubě, při plavbě za lodí; při nástupu se přiblíží
+        const zoomIn = sm(tw, T_WALK - 0.4, T_WALK + 1.1);
+        const k = (cw / 1000) * (1 + 0.36 * zoomIn + 0.05 * sm(tw, T_SAIL + 1, T_BEND));
+        const wl = ch * (0.8 + 0.05 * zoomIn);
         const hp = alongArt(Math.min(pTotal, Math.max(0, tw) * WALK));
-        const targetX = tw < T_WALK + T_JOY ? clamp(hp.x + 130, 500, 760) : 760 + shipDX * 0.95;
-        camXs = lerp(camXs, targetX, 1 - Math.exp(-3 * dt));
+        let targetX: number;
+        if (tw < T_WALK + T_JOY) targetX = clamp(hp.x + 110, 500, 700);
+        else if (tw < T_SAIL) targetX = clamp(hx + 110, shipX0 + 250, shipX0 + 560);
+        else targetX = 660 + shipDX * 0.95;
+        camXs = lerp(camXs, targetX, 1 - Math.exp(-2.6 * dt));
         const X = (ax: number) => cw / 2 + (ax - camXs) * k;
         const Y = (ay: number) => wl + (ay - 400) * k;
+        const worldY = (wy: number, wz: number) => 400 - 100 * (wy * 0.4384 + wz * 0.8988);
+
         // moře a obloha z obchodního canvasu (horizont je na 30 %)
         drawSea(ctx, cw, ch, tb, false);
         // ostrůvky na horizontu
@@ -813,18 +917,21 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
           ctx.ellipse(ix, ch * 0.3 + 2, (60 + i * 25) * S, (11 + i * 4) * S, 0, Math.PI, Math.PI * 2);
           ctx.fill();
         }
-        // loď
-        const frameN = Math.floor((tb / 3.6) * 12) % 12;
-        const bob = Math.sin(2 * Math.PI * (frameN / 12) + 0.5) * 5;
-        // trup, pak plachty: klidné se při rozjezdu plynule mění v plachty naplněné větrem
-        ctx.drawImage(ship, frameN * 640, 0, 640, 512, X(320 + shipDX), Y(0), 640 * k, 512 * k);
-        const windK = layered ? sm(shipV, 25, 190) : 0;
-        if (layered) ctx.drawImage(sailsCalm, frameN * 640, 0, 640, 512, X(320 + shipDX), Y(0), 640 * k, 512 * k);
-        if (windK > 0.01) {
-          ctx.globalAlpha = windK;
-          ctx.drawImage(sailsWind, frameN * 640, 0, 640, 512, X(320 + shipDX), Y(0), 640 * k, 512 * k);
-        }
-        ctx.globalAlpha = 1;
+        // loď: trup (prolnuté snímky smyčky)
+        const dx0 = X(shipX0);
+        const dy0 = Y(-TOPPAD);
+        const dw = 640 * k;
+        const dh = (FH / SC) * k;
+        const layer = (img: HTMLImageElement, a: number) => {
+          ctx.globalAlpha = a;
+          ctx.drawImage(img, frameN * FW, 0, FW, FH, dx0, dy0, dw, dh);
+          if (frameK > 0.02) {
+            ctx.globalAlpha = a * frameK;
+            ctx.drawImage(img, frameB * FW, 0, FW, FH, dx0, dy0, dw, dh);
+          }
+          ctx.globalAlpha = 1;
+        };
+        layer(ship, 1);
         // pěna a stříkance za lodí
         if (shipV > 8) {
           for (let i = 0; i < 1; i++) {
@@ -862,6 +969,253 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
           ctx.arc(X(s.x), Y(s.y), 2.2 * k, 0, Math.PI * 2);
           ctx.fill();
         }
+
+        // ---- výbava paluby: kotva s řetězem, kormidlo, rumpál a hrdina ve správném pořadí
+        const IRON = "#2b2e3a";
+        const IRON_L = "#8d96ab";
+        const aP = anchorProgress(tw);
+        const zA = lerp(Z_DOWN, Z_UP, aP);
+        const swHawse = swayAt(LX_HAWSE);
+        const ringX = shipX0 + LX_HAWSE + 2;
+        const ringY = worldY(-0.66, zA) + swHawse;
+        const edgeX = shipX0 + LX_HAWSE;
+        const edgeY = worldY(-0.45, 0.95) + swHawse;
+        const waterY = worldY(-0.66, 0) + swHawse; // hladina u přídě
+        const gC = ground(LX_CAP);
+        const cxS = shipX0 + LX_CAP;
+        const th = capAngle(tw);
+        const drumX = cxS + 17;
+        const drumY = gC - 26;
+        const slack = aP > 0.97 ? 15 : 3;
+        const pulled = (zA - Z_DOWN) * 90; // kolik řetězu už rumpál navinul (v px)
+        const link = (lx: number, ly: number, ang: number, flat: boolean) => {
+          ctx.save();
+          ctx.translate(X(lx), Y(ly));
+          ctx.rotate(ang);
+          ctx.scale(k, k);
+          ctx.beginPath();
+          ctx.ellipse(0, 0, flat ? 3.6 : 1.8, 2.3, 0, 0, Math.PI * 2);
+          ctx.fillStyle = IRON;
+          ctx.fill();
+          ctx.lineWidth = 1.1;
+          ctx.strokeStyle = IRON_L;
+          ctx.stroke();
+          ctx.restore();
+        };
+        const drawAnchorGroup = () => {
+          // řetěz po palubě od rumpálu k hraně a pak dolů po boku k oku kotvy
+          const mx = (drumX + edgeX) / 2;
+          const my = (drumY + edgeY) / 2 + slack;
+          const NL = 14;
+          for (let i = 0; i < NL; i++) {
+            const u = (i + ((pulled / 6) % 1)) / NL;
+            if (u > 1) continue;
+            const bx = (1 - u) * (1 - u) * drumX + 2 * (1 - u) * u * mx + u * u * edgeX;
+            const by = (1 - u) * (1 - u) * drumY + 2 * (1 - u) * u * my + u * u * edgeY;
+            const ang = Math.atan2(edgeY - drumY, edgeX - drumX);
+            link(bx, by, ang, i % 2 === 0);
+          }
+          const len = Math.max(0, ringY - edgeY);
+          for (let i = 0; i * 6 < len; i++) link(lerp(edgeX, ringX, (i * 6) / Math.max(1, len)), edgeY + i * 6, Math.PI / 2, i % 2 === 0);
+          // kotva: oko, příčka (stock), dřík, oblouk s rameny a ploutvemi
+          ctx.save();
+          ctx.translate(X(ringX), Y(ringY));
+          ctx.rotate(Math.sin(tb * 1.6) * 0.05 * (1 - aP * 0.7));
+          ctx.scale(k * 0.9, k * 0.9);
+          ctx.lineCap = "round";
+          for (const [col, off, w] of [[IRON, 0, 5.2], [IRON_L, -1.1, 1.6]] as const) {
+            ctx.strokeStyle = col;
+            ctx.fillStyle = col;
+            ctx.lineWidth = w;
+            ctx.beginPath();
+            ctx.arc(off, 5 + off, 5, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(off, 10 + off);
+            ctx.lineTo(off, 52 + off);
+            ctx.moveTo(-15 + off, 16 + off);
+            ctx.lineTo(15 + off, 16 + off);
+            ctx.moveTo(-25 + off, 38 + off);
+            ctx.quadraticCurveTo(-23 + off, 56 + off, off, 56 + off);
+            ctx.quadraticCurveTo(23 + off, 56 + off, 25 + off, 38 + off);
+            ctx.stroke();
+            if (col === IRON) {
+              for (const sx of [-1, 1]) {
+                ctx.beginPath();
+                ctx.moveTo(sx * 25, 38);
+                ctx.lineTo(sx * 33, 33);
+                ctx.lineTo(sx * 21, 28);
+                ctx.closePath();
+                ctx.fill();
+              }
+            }
+          }
+          ctx.restore();
+        };
+        // pod hladinou je kotva i řetěz průsvitné
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, cw, Y(waterY));
+        ctx.clip();
+        drawAnchorGroup();
+        ctx.restore();
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, Y(waterY), cw, ch);
+        ctx.clip();
+        ctx.globalAlpha = 0.45;
+        drawAnchorGroup();
+        ctx.restore();
+        // stříkance a kapky z vynořené kotvy
+        if (!ev.splash && aP > 0.8) {
+          ev.splash = true;
+          sfx.splash(0.6);
+          for (let i = 0; i < 12; i++) spray.push({ x: ringX + (Math.random() - 0.5) * 24, y: waterY, vx: (Math.random() - 0.5) * 70, vy: -(70 + Math.random() * 90), age: 0, life: 0.8 });
+        }
+        if (aP > 0.8 && aP < 0.995) {
+          dripAcc += dt;
+          while (dripAcc > 0.07) {
+            dripAcc -= 0.07;
+            drips.push({ x: ringX + (Math.random() - 0.5) * 30, y: ringY + 50 + Math.random() * 8, vy: 20, age: 0 });
+          }
+        }
+        for (let i = drips.length - 1; i >= 0; i--) {
+          const d = drips[i];
+          d.age += dt;
+          d.vy += 520 * dt;
+          d.y += d.vy * dt;
+          if (d.y > waterY || d.age > 1.2) {
+            drips.splice(i, 1);
+            continue;
+          }
+          ctx.fillStyle = "rgba(190,225,255,0.85)";
+          ctx.beginPath();
+          ctx.ellipse(X(d.x), Y(d.y), 1.6 * k, 2.6 * k, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // kormidlo: sloup, věnec s paprsky a rukojeťmi (osa míří po lodi, proto je věnec zúžený)
+        {
+          const gW = ground(LX_WHEEL) - 9;
+          const wx = shipX0 + LX_WHEEL;
+          const wy = gW - 44;
+          const Rw = 27;
+          const tau = Math.max(0, tw - (tH0 + T_TOHELM - 0.4));
+          const psi = 1.25 * Math.sin(1.15 * tau) * sm(tau, 0, 0.6);
+          ctx.save();
+          ctx.translate(X(wx), Y(wy));
+          ctx.scale(k, k);
+          ctx.lineCap = "round";
+          // sloupek a podstavec
+          ctx.fillStyle = "#6b4526";
+          ctx.fillRect(-4, 0, 8, gW - wy);
+          ctx.fillStyle = "#4a2f18";
+          ctx.fillRect(-9, gW - wy - 5, 18, 7);
+          for (let i = 0; i < 8; i++) {
+            const a = psi + (i * Math.PI) / 4;
+            const ex = Math.cos(a) * Rw * 0.5;
+            const ey = Math.sin(a) * Rw;
+            ctx.strokeStyle = "#8a5a34";
+            ctx.lineWidth = 3.2;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(ex * 1.38, ey * 1.38);
+            ctx.stroke();
+            ctx.fillStyle = "#c79256";
+            ctx.beginPath();
+            ctx.arc(ex * 1.38, ey * 1.38, 3, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.strokeStyle = "#6b4526";
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.ellipse(0, 0, Rw * 0.5, Rw, 0, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.strokeStyle = "rgba(255,225,170,0.55)";
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.ellipse(-1, -1, Rw * 0.5, Rw, 0, Math.PI * 1.05, Math.PI * 1.65);
+          ctx.stroke();
+          ctx.fillStyle = "#e6b84a";
+          ctx.beginPath();
+          ctx.arc(0, 0, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+        const drawHero = () => {
+          const hw = HW * k;
+          const fr = Math.floor(((tw % hdur) / hdur) * hn) % hn;
+          ctx.save();
+          ctx.translate(X(hx), 0);
+          if (hflip) ctx.scale(-1, 1);
+          ctx.drawImage(himg, fr * 192, 0, 192, 192, -hw / 2, Y(hy) - 0.844 * hw, hw, hw);
+          ctx.restore();
+        };
+        const onDeck = tw >= T_WALK;
+        const drawBars = (behind: boolean) => {
+          for (let i = 0; i < 4; i++) {
+            const a = th + (i * Math.PI) / 2;
+            const sn = Math.sin(a);
+            if ((sn > 0) !== behind) continue;
+            const L = 64;
+            const ex = cxS + L * Math.cos(a);
+            const ey = gC - 36 - L * 0.45 * sn;
+            ctx.lineCap = "round";
+            ctx.strokeStyle = "#5a3a22";
+            ctx.lineWidth = 6.4 * k;
+            ctx.beginPath();
+            ctx.moveTo(X(cxS), Y(gC - 36));
+            ctx.lineTo(X(ex), Y(ey));
+            ctx.stroke();
+            ctx.strokeStyle = "#a06f3f";
+            ctx.lineWidth = 3.4 * k;
+            ctx.beginPath();
+            ctx.moveTo(X(cxS), Y(gC - 37));
+            ctx.lineTo(X(ex), Y(ey - 0.8));
+            ctx.stroke();
+          }
+        };
+        drawBars(true);
+        if (onDeck && heroBehind) drawHero();
+        // rumpál: válec s hlavou a objímkou řetězu
+        {
+          ctx.save();
+          ctx.translate(X(cxS), Y(gC));
+          ctx.scale(k, k);
+          const gr = ctx.createLinearGradient(-18, 0, 18, 0);
+          gr.addColorStop(0, "#4a2f18");
+          gr.addColorStop(0.45, "#a06f3f");
+          gr.addColorStop(1, "#5a3a22");
+          ctx.fillStyle = gr;
+          ctx.beginPath();
+          ctx.moveTo(-18, -30);
+          ctx.lineTo(-18, 0);
+          ctx.ellipse(0, 0, 18, 8, 0, Math.PI, 0, true);
+          ctx.lineTo(18, -30);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = "#3a3a46";
+          ctx.fillRect(-18, -22, 36, 4);
+          ctx.fillRect(-18, -9, 36, 3);
+          ctx.fillStyle = "#c79256";
+          ctx.beginPath();
+          ctx.ellipse(0, -34, 22, 9.6, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#6b4526";
+          ctx.beginPath();
+          ctx.ellipse(0, -36, 16, 6.6, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#e6b84a";
+          ctx.beginPath();
+          ctx.arc(0, -36, 3.2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+        drawBars(false);
+        if (onDeck && !heroBehind) drawHero();
+        // plachty: klidné se při rozjezdu plynule mění v plachty naplněné větrem
+        const windK = layered ? sm(shipV, 25, 190) : 0;
+        if (layered) layer(sailsCalm, 1);
+        if (windK > 0.01) layer(sailsWind, windK);
         // molo před lodí, pěna u pilot
         ctx.drawImage(molo, X(0), Y(0), 1280 * k, 512 * k);
         const pil = (anchors.piloty ?? []) as Pt[];
@@ -873,9 +1227,8 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
           ctx.ellipse(X(pu * 1280), Y(pv * 512) + 3 * k, (20 + kk * 8) * k, 4.5 * k, 0, 0, Math.PI * 2);
           ctx.stroke();
         }
-        // lávka se zvedne s odplutím
-        const pull = sm(tw, T_SAIL - 0.2, T_SAIL + 0.7);
         // lávka se otočí kolem závěsu u mola, loď ji táhne a ona se zvedá a mizí
+        const pull = sm(tw, T_SAIL - 0.2, T_SAIL + 0.7);
         const hx0 = anchors.lavka_zacatek[0] * 1280;
         const hy0 = anchors.lavka_zacatek[1] * 512;
         ctx.save();
@@ -884,70 +1237,36 @@ export function runPirate(r: Refs, g: Geo, anchors: NastupAnchors, onEnd: () => 
         ctx.rotate(-pull * 0.55);
         ctx.drawImage(lavka, -hx0 * k, -hy0 * k, 1280 * k, 512 * k);
         ctx.restore();
-        // hrdina: po lávce na palubu, radost, procházka na příď, na odjezdu mává
-        const shipX0 = 320 + shipDX; // počátek sprite lodi v souřadnicích scény
-        let feet: { x: number; y: number };
-        let img: HTMLImageElement;
-        let n: number;
-        let dur: number;
-        if (tw < T_WALK) {
-          const a = alongArt(tw * WALK);
-          const d = tw * WALK;
-          // poslední úsek (lávka → paluba) má malý krok nahoru
-          const hopU = clamp((d - pcum[pcum.length - 2]) / Math.max(1, pcum[pcum.length - 1] - pcum[pcum.length - 2]));
-          const hop = Math.sin(Math.PI * hopU) * 7;
-          const lx = a.x - shipX0;
-          feet = { x: a.x, y: a.y - hop + (lx > 150 ? deckSway(frameN, lx) : 0) };
-          img = walkImg;
-          n = 16;
-          dur = 0.9;
-          stepAcc += dt;
-          if (stepAcc > 0.27 && a.x > 0) {
-            stepAcc = 0;
-            sfx.step();
-          }
-        } else if (tw < T_WALK + T_JOY) {
-          const lx = pts[pts.length - 1].x - 320;
-          feet = { x: shipX0 + lx, y: deckLine(lx) + deckSway(frameN, lx) };
-          img = joyImg;
-          n = 24;
-          dur = 1.1;
-        } else if (tw < T_WALK + T_JOY + T_STROLL) {
-          const u = ease((tw - T_WALK - T_JOY) / T_STROLL);
-          const lx = lerp(pts[pts.length - 1].x - 320, BOW_X, u);
-          feet = { x: shipX0 + lx, y: deckLine(lx) + deckSway(frameN, lx) };
-          img = walkImg;
-          n = 16;
-          dur = 0.9;
-          stepAcc += dt;
-          if (stepAcc > 0.3) {
-            stepAcc = 0;
-            sfx.step();
-          }
-        } else {
-          const lx = BOW_X;
-          feet = { x: shipX0 + lx, y: deckLine(lx) + deckSway(frameN, lx) };
-          // při odrazu od mola zamává (radost), pak se dívá na moře
-          img = tw >= T_SAIL && tw < T_SAIL + 1.1 ? joyImg : idleImg;
-          n = 24;
-          dur = img === joyImg ? 1.1 : 3;
-        }
-        const hw = 160 * k;
-        const fr = Math.floor(((tw % dur) / dur) * n) % n;
-        ctx.drawImage(img, fr * 192, 0, 192, 192, X(feet.x) - hw / 2, Y(feet.y) - 0.844 * hw, hw, hw);
+        if (!onDeck) drawHero();
         // zvuky
-        if (fired === 2 && tw > T_WALK + 0.2) {
+        if (!ev.horn && tw > T_WALK + 0.2) {
+          ev.horn = true;
           sfx.horn();
-          fired = 3;
         }
-        if (fired === 3 && tw > T_SAIL + 0.3) {
+        if (tw > tP0 + 0.25 && tw < tP0 + T_PULL - 0.5) {
+          chainAcc += dt;
+          if (chainAcc > 0.2) {
+            chainAcc = 0;
+            sfx.chain();
+          }
+        }
+        if (!ev.clunk && aP > 0.985) {
+          ev.clunk = true;
+          sfx.clunk();
+          sfx.creak();
+        }
+        if (!ev.creak && tw > tH0 + T_TOHELM + 0.1) {
+          ev.creak = true;
+          sfx.creak();
+        }
+        if (!ev.gull && tw > T_SAIL + 0.3) {
+          ev.gull = true;
           sfx.gull();
           sfx.creak();
-          fired = 4;
         }
-        if (fired === 4 && tw > T_SAIL + 1.6) {
+        if (!ev.gull2 && tw > T_SAIL + 1.6) {
+          ev.gull2 = true;
           sfx.gull();
-          fired = 5;
         }
         // rackové přelétají nad lodí, jakmile se loď rozjede
         if (tw > T_SAIL - 0.6) {
