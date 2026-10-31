@@ -9,7 +9,7 @@ rnd = random.Random(79)
 
 
 def build():
-    K.setup([(0.0, "#fff0c8"), (0.5, "#ffd0a0"), (1.0, "#a0d0c0")], ambient="#fff4e0", ambient_strength=0.7, sun_rot=(1.0, 0.2, 0.8), sun_strength=2.4, sun_color="#ffe0b0")
+    K.setup([(0.0, "#7cc8e8"), (0.5, "#ffe0b0"), (1.0, "#ffd0a0")], ambient="#fff4e0", ambient_strength=0.7, sun_rot=(1.0, 0.2, 0.8), sun_strength=2.4, sun_color="#ffe0b0")
     C.cone((-9.0, 34, -1.8), 4.6, 0.8, 5.6, K.lit("#8a6a5a"), verts=9)
     puffs = [(C.sphere((-9.0, 35, 1.2), 0.7, K.lit("#c8c0c0"), seg=12), k / 5) for k in range(5)]
     K.hill(0, 30, -5.0, 30, 2.6, K.lit("#7ab060"))

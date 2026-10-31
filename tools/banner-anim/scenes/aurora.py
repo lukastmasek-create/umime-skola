@@ -15,8 +15,9 @@ def build():
     st = K.stars(90, rnd, zmin=-1, zmax=5)
     # Pásy záře: síť po délce x, horní řada bodů se v každém snímku vlní.
     bands = []
-    N = 90
-    for (z0, col, ph) in [(2.2, "#3dff9a", 0.0), (2.9, "#3ad8ff", 0.3), (1.5, "#b06bff", 0.6)]:
+    N = 160
+    # každý pás v jiné hloubce: průhledné plochy ve stejné rovině dělají v Cycles střepy
+    for (z0, col, ph, dy) in [(2.2, "#3dff9a", 0.0, 0.0), (2.9, "#3ad8ff", 0.3, 0.8), (1.5, "#b06bff", 0.6, 1.6)]:
         verts = []
         for k in range(N):
             x = -16 + 32 * k / (N - 1)
@@ -27,7 +28,7 @@ def build():
         me.update()
         o = bpy.data.objects.new("aurora", me)
         bpy.context.collection.objects.link(o)
-        o.location = (0, 45, z0)
+        o.location = (0, 45 + dy, z0)
         o.data.materials.append(C.alpha_mat(col, 1.8, 0.4))
         bands.append((o, z0, ph))
     snow = K.lit("#e8f0ff", 0.8)

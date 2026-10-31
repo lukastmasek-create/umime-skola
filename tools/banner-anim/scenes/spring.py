@@ -9,7 +9,7 @@ rnd = random.Random(71)
 
 
 def build():
-    K.setup([(0.0, "#fff4fa"), (0.5, "#ffe0f0"), (1.0, "#b8e4ff")], ambient="#fff0f6", ambient_strength=0.75)
+    K.setup([(0.0, "#7cc4ff"), (0.45, "#c4e4ff"), (1.0, "#ffe0f0")], ambient="#fff0f6", ambient_strength=0.75)
     cm = K.lit("#ffffff", 0.9)
     clouds, per = K.drifting_clouds(cm, [(3.8, 0.9, -5.0), (3.0, 0.6, 10.0)], period=30.0, y=45)
     K.hill(-8, 30, -5.0, 16, 3.0, K.lit("#a8e08a"))

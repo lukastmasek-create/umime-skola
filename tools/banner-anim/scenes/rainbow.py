@@ -9,7 +9,7 @@ rnd = random.Random(80)
 
 
 def build():
-    K.setup([(0.0, "#fff8ff"), (0.5, "#e0f0ff"), (1.0, "#a8d8ff")], ambient="#ffffff", ambient_strength=0.8)
+    K.setup([(0.0, "#62b8ff"), (0.5, "#b0deff"), (1.0, "#e8f6ff")], ambient="#ffffff", ambient_strength=0.8)
     cols = ["#ff5d73", "#ff9f43", "#ffd24d", "#3ddc97", "#3fc1ff", "#5a6cff", "#a87bff"]
     arcs = []
     for i, col in enumerate(cols):
