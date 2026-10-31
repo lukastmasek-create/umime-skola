@@ -1,4 +1,4 @@
-import type { ChestOutcome, LiveMode, LiveQuestion, LiveSettings, LiveStatus, StoredStatus } from "./types";
+import type { ChestOutcome, LiveMode, LiveQuestion, SetQuestion, LiveSettings, LiveStatus, StoredStatus } from "./types";
 
 export const MODES: LiveMode[] = ["QUIZ", "RACE", "GOLD", "STREAK", "SURVIVAL", "TEAMS"];
 
@@ -55,6 +55,34 @@ export function cleanQuestion(raw: unknown): LiveQuestion | null {
 export function cleanQuestions(raw: unknown): LiveQuestion[] {
   if (!Array.isArray(raw)) return [];
   return raw.map(cleanQuestion).filter((q): q is LiveQuestion => q !== null).slice(0, LIMITS.questions[1]);
+}
+
+/** Nejvíc znaků data URL jednoho obrázku (~150 kB po zmenšení v prohlížeči). */
+export const MAX_IMAGE_CHARS = 200_000;
+const IMAGE_RE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/]+=*$/;
+
+export function cleanImage(raw: unknown): string | undefined {
+  return typeof raw === "string" && raw.length <= MAX_IMAGE_CHARS && IMAGE_RE.test(raw) ? raw : undefined;
+}
+
+/** Otázky vlastní sady: stejné jako `cleanQuestions`, ale zachová obrázek. */
+export function cleanSetQuestions(raw: unknown): SetQuestion[] {
+  if (!Array.isArray(raw)) return [];
+  const out: SetQuestion[] = [];
+  for (const item of raw) {
+    const q = cleanQuestion(item);
+    if (!q) continue;
+    const image = cleanImage((item as Record<string, unknown>).image);
+    out.push(image ? { ...q, image } : q);
+    if (out.length >= LIMITS.questions[1]) break;
+  }
+  return out;
+}
+
+/** Součet všech obrázků sady (aby tělo požadavku zůstalo v rozumné velikosti). */
+export const MAX_SET_IMAGE_CHARS = 3_000_000;
+export function imagesFit(questions: SetQuestion[]): boolean {
+  return questions.reduce((sum, q) => sum + (q.image?.length ?? 0), 0) <= MAX_SET_IMAGE_CHARS;
 }
 
 export function generatePin(rnd: () => number = Math.random): string {
