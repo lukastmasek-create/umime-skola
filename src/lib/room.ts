@@ -24,7 +24,29 @@ export const FURNITURE: FurnitureDef[] = [
 
 export const ROOM_SLOTS = 12;
 
-export type RoomState = { owned: string[]; placed: (string | null)[] };
+export type RoomState = { owned: string[]; placed: (string | null)[]; used: Record<string, string> };
+
+// Co nábytek v pokoji dělá (počítá se jen postavený): XP navíc v testech a hrách (%), rychlejší nekonečné hry
+// (podíl), denní body za interakci (nakrmit rybičky, zalít květinu…) a odkaz na část webu.
+export type RoomPerk = { xpTest?: number; xpGame?: number; endless?: number; daily?: number; link?: string };
+export const ROOM_PERKS: Record<string, RoomPerk> = {
+  desk: { xpTest: 3, link: "/kurzy" },
+  bookshelf: { xpGame: 2, link: "/materialy" },
+  trophy: { xpTest: 1, xpGame: 1, link: "/zebricky" },
+  arcade: { endless: 0.05, link: "/stale-hry" },
+  globe: { link: "/mapa" },
+  aquarium: { daily: 6 },
+  plant: { daily: 3 },
+  rocketbed: { daily: 5 },
+  guitar: { daily: 3 },
+  piano: { daily: 4 },
+  telescope: { daily: 4 },
+  sofa: { daily: 2 },
+};
+export const roomPlaced = (s: RoomState) => s.placed.filter((x): x is string => !!x);
+export const roomXpBonus = (s: RoomState, source: "test" | "game" | string) =>
+  roomPlaced(s).reduce((sum, id) => sum + ((source === "test" ? ROOM_PERKS[id]?.xpTest : source === "game" ? ROOM_PERKS[id]?.xpGame : 0) ?? 0), 0);
+export const roomEndlessBonus = (s: RoomState) => roomPlaced(s).reduce((sum, id) => sum + (ROOM_PERKS[id]?.endless ?? 0), 0);
 
 export function normalizeRoom(raw: unknown): RoomState {
   const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
@@ -36,7 +58,9 @@ export function normalizeRoom(raw: unknown): RoomState {
   });
   // Každý kus nábytku stojí jen jednou.
   const seen = new Set<string>();
-  return { owned, placed: placed.map((v) => (v && !seen.has(v) ? (seen.add(v), v) : null)) };
+  const used: Record<string, string> = {};
+  if (r.used && typeof r.used === "object") for (const [k, v] of Object.entries(r.used as Record<string, unknown>)) if (known.has(k) && typeof v === "string") used[k] = v;
+  return { owned, placed: placed.map((v) => (v && !seen.has(v) ? (seen.add(v), v) : null)), used };
 }
 
 // Izometrický pokoj z Blenderu (umime-art/scripts/room_iso.py). Rozložení (polohy slotů, velikost a kotva
