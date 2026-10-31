@@ -32,6 +32,8 @@ import {
 import { fill, getProfileText } from "@/i18n/profile";
 import { getCustomText } from "@/i18n/avatar-custom";
 import { getProfileTabsText } from "@/i18n/profile-tabs";
+import { getCraftText } from "@/i18n/craft";
+import { CraftPanel } from "@/components/CraftPanel";
 import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
 
@@ -61,11 +63,11 @@ type Profile = {
 };
 
 type Tab = "look" | "avatars" | "titles" | "frames" | "banners";
-type MainTab = "overview" | "collection" | "wardrobe" | "tasks";
-const MAIN_TABS: MainTab[] = ["overview", "collection", "wardrobe", "tasks"];
-const MAIN_ICONS: Record<MainTab, string> = { overview: "🏠", collection: "🏆", wardrobe: "👕", tasks: "✅" };
+type MainTab = "overview" | "collection" | "wardrobe" | "craft" | "tasks";
+const MAIN_TABS: MainTab[] = ["overview", "collection", "wardrobe", "craft", "tasks"];
+const MAIN_ICONS: Record<MainTab, string> = { overview: "🏠", collection: "🏆", wardrobe: "👕", craft: "⚒️", tasks: "✅" };
 
-const HASH: Record<MainTab, string> = { overview: "prehled", collection: "sbirka", wardrobe: "satnik", tasks: "ukoly" };
+const HASH: Record<MainTab, string> = { overview: "prehled", collection: "sbirka", wardrobe: "satnik", craft: "craftovani", tasks: "ukoly" };
 
 const DEFAULT_BANNER = "linear-gradient(135deg, #5a6cff 0%, #7a5cff 55%, #ff6f91 100%)";
 
@@ -204,6 +206,9 @@ export function ProfileView({ locale }: { locale: Locale }) {
     window.history.replaceState(null, "", `#${HASH[x]}`);
   }
 
+  // Po vyrobení avataru, titulu nebo pozadí v Craftování se profil načte znovu, ať je věc hned v Šatníku.
+  const [profileVersion, setProfileVersion] = useState(0);
+
   useEffect(() => {
     let cancelled = false;
     async function load() {
@@ -221,6 +226,20 @@ export function ProfileView({ locale }: { locale: Locale }) {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (profileVersion === 0) return;
+    let cancelled = false;
+    fetch("/api/profil")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) setProfile(data);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [profileVersion]);
 
   async function post(key: string, body: unknown, apply: (p: Profile) => Profile) {
     setError(false);
@@ -525,7 +544,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
               mainTab === x ? "bg-[var(--brand-500)] text-white" : "bg-[var(--surface)]"
             }`}
           >
-            <span aria-hidden>{MAIN_ICONS[x]}</span> {pt.tabs[x]}
+            <span aria-hidden>{MAIN_ICONS[x]}</span> {x === "craft" ? getCraftText(locale).tab : pt.tabs[x]}
           </button>
         ))}
         <Link href={`/${locale}/obchod`} className="btn-bouncy ml-auto bg-[var(--accent-yellow)] px-4 py-2.5 text-sm font-bold text-[#16132b]">
@@ -626,6 +645,8 @@ export function ProfileView({ locale }: { locale: Locale }) {
       )}
 
       {mainTab === "tasks" && <DailyChallenges locale={locale} showAchievements />}
+
+      {mainTab === "craft" && <CraftPanel locale={locale} onUnlocked={() => setProfileVersion((v) => v + 1)} onWardrobe={() => setMainTab("wardrobe")} />}
 
       {/* Šatník */}
       {mainTab === "wardrobe" && (

@@ -58,6 +58,12 @@ export const TITLES: TitleDef[] = [
   { id: "treasure-keeper", unlock: { event: "shop" }, names: { cs: "Strážce pokladu", en: "Treasure keeper", de: "Schatzhüter", ru: "Хранитель сокровищ" } },
   { id: "navigator", unlock: { event: "shop" }, names: { cs: "Navigátor", en: "Navigator", de: "Navigator", ru: "Штурман" } },
   { id: "hero", unlock: { event: "shop" }, names: { cs: "Hrdina", en: "Hero", de: "Held", ru: "Герой" } },
+  // Jen z craftování (profil → Craftování).
+  { id: "comet-maker", unlock: { event: "craft" }, names: { cs: "Strůjce komet", en: "Comet maker", de: "Kometenschmied", ru: "Творец комет" } },
+  { id: "tide-master", unlock: { event: "craft" }, names: { cs: "Pán přílivu", en: "Master of tides", de: "Herr der Gezeiten", ru: "Повелитель приливов" } },
+  { id: "forest-voice", unlock: { event: "craft" }, names: { cs: "Hlas lesa", en: "Voice of the forest", de: "Stimme des Waldes", ru: "Голос леса" } },
+  { id: "master-smith", unlock: { event: "craft" }, names: { cs: "Mistr kovář", en: "Master smith", de: "Schmiedemeister", ru: "Мастер-кузнец" } },
+  { id: "alchemist", unlock: { event: "craft" }, names: { cs: "Alchymista", en: "Alchemist", de: "Alchemist", ru: "Алхимик" } },
 ];
 
 export function getTitle(id: string | null | undefined) {

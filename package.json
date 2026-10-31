@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --import ./tests/ts-resolve.mjs --test src/lib/escape/rooms.test.ts src/lib/live/logic.test.ts src/lib/idle/hub.test.ts src/lib/idle/links.test.ts src/lib/idle/content.test.ts src/lib/idle/events.test.ts src/lib/idle/challenge.test.ts",
+    "test": "node --experimental-strip-types --import ./tests/ts-resolve.mjs --test src/lib/escape/rooms.test.ts src/lib/live/logic.test.ts src/lib/idle/hub.test.ts src/lib/idle/links.test.ts src/lib/idle/content.test.ts src/lib/idle/events.test.ts src/lib/idle/challenge.test.ts src/lib/contact.test.ts src/lib/craft.test.ts",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio"

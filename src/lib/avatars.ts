@@ -89,6 +89,12 @@ export const AVATARS: AvatarDef[] = [
   { id: "princ", bg: "#c8d8ff", skin: "#ffd5a8", head: "round", ears: "crown", eyes: "dots", mouth: "smile", unlock: { event: "shop" }, names: { cs: "Princ", en: "Prince", de: "Prinz", ru: "Принц" } },
   { id: "carodejnice", bg: "#e3c8ff", skin: "#ffe0c8", head: "round", ears: "hair", eyes: "big", mouth: "smile", unlock: { event: "shop" }, names: { cs: "Čarodějnice", en: "Witch", de: "Hexe", ru: "Ведьма" } },
   { id: "zralok", bg: "#bfe6ff", skin: "#7a8ca8", head: "round", ears: "none", eyes: "big", mouth: "teeth", unlock: { event: "shop" }, names: { cs: "Žralok", en: "Shark", de: "Hai", ru: "Акула" } },
+  // Jen z craftování (profil → Craftování), každý z materiálů svého světa. 3D model zatím není, kreslí se jako SVG.
+  { id: "star-wanderer", bg: "#2b2d6e", skin: "#c9d6ff", head: "round", ears: "antenna", eyes: "big", mouth: "smile", unlock: { event: "craft" }, names: { cs: "Hvězdný poutník", en: "Star wanderer", de: "Sternenwanderer", ru: "Звёздный странник" } },
+  { id: "coral-guardian", bg: "#3fc1ff", skin: "#ff8a7a", head: "round", ears: "horns", eyes: "goggles", mouth: "smile", unlock: { event: "craft" }, names: { cs: "Korálový strážce", en: "Coral guardian", de: "Korallenwächter", ru: "Коралловый страж" } },
+  { id: "forest-spirit", bg: "#6ee7a8", skin: "#a7d36b", head: "ghost", ears: "none", eyes: "sleepy", mouth: "smile", unlock: { event: "craft" }, names: { cs: "Lesní duch", en: "Forest spirit", de: "Waldgeist", ru: "Лесной дух" } },
+  { id: "blacksmith", bg: "#c9a27a", skin: "#ffd5a8", head: "box", ears: "band", eyes: "dots", mouth: "teeth", unlock: { event: "craft" }, names: { cs: "Hradní kovář", en: "Castle blacksmith", de: "Burgschmied", ru: "Замковый кузнец" } },
+  { id: "moon-witch", bg: "#7c3aed", skin: "#e7dcff", head: "round", ears: "hair", eyes: "big", mouth: "cat", unlock: { event: "craft" }, names: { cs: "Měsíční čarodějka", en: "Moon witch", de: "Mondhexe", ru: "Лунная колдунья" } },
 ];
 
 export const DEFAULT_AVATAR = "robot";

@@ -89,3 +89,21 @@ Předmět Fyzika je nová hodnota enumu `Subject`, proto se v databázi spoušt�
 
 Farma, Město a Základna mají panel Výzvy (`src/components/idle/ChallengePanel.tsx`, API `src/app/api/stale-hry/vyzvy/route.ts`,
 logika `src/lib/idle/challenge.ts`, testy v `challenge.test.ts`). Stav je v `IdleState` pod klíčem `vyzvy`, nové tabulky nejsou potřeba.
+
+## Kontakt
+
+Stránka `/kontakt` (odkaz v menu Nastavení, v patičce a u výběru školy): formulář s kategoriemi Podpora (chyba v učivu, chyba ve stránce, chyba s účtem), Partnerství (partnerská škola, influenceři, učebnice pro materiály) a Přidání školy. Odkaz `/kontakt?tema=add-school` (nebo jiné id tématu či kategorie) formulář rovnou předvyplní.
+
+- Před nasazením jednou spusť `prisma/sql/contact.sql` v databázi (nová tabulka `ContactMessage`).
+- Zprávy se ukládají do `ContactMessage` (stav `new`), čtou se zatím přímo v databázi (např. `npm run db:studio`).
+- Témata a kontrola dat: `src/lib/contact.ts` (testy v `npm test`), API: `src/app/api/kontakt/`, texty: `src/i18n/contact.ts`.
+
+## Craftování
+
+Záložka **Craftování** v profilu (`/profil#craftovani`): Bonusy, Avatary, Doplňky a Materiály.
+
+- 24 materiálů: 6 světů (obecné, vesmír, moře, les, hrad, kouzla) × 4 vzácnosti (běžný, neobvyklý, vzácný, epický). Věc se vyrábí jen z materiálů svého světa, bonusy z obecných.
+- Materiály se získávají učením (každých 10 XP, kromě kola štěstí; světové padají do zvoleného světa), za vybrané odměny ve stálých hrách, nákupem za body (jen běžné a neobvyklé, 10 denně) a zušlechtěním 3 → 1.
+- Bonusy: XP navíc (strop +50 %), zrychlení stálých her (strop +50 %), body, otočka kola, štít série v kvízech.
+- Avatary, tituly a pozadí jsou jen z craftování a fungují hned. Doplňky (avatar, mazlíčci, pokoj) jsou zatím jen pojmenované a čekají na 3D modely (`CRAFT_ASSETS.md`).
+- Logika a recepty: `src/lib/craft.ts` (testy v `npm test`), server: `src/lib/craft-server.ts`, `src/app/api/craft/`, obrazovka: `src/components/CraftPanel.tsx`, texty: `src/i18n/craft.ts`. Stav je v `IdleState` (hra `craft`), takže není potřeba měnit databázi.
