@@ -10,7 +10,7 @@ import type { MarketSpot } from "@/lib/town3d/market3d";
 import { getPlayerMarketText } from "@/i18n/player-market";
 import { bannerCss, isFrameId } from "@/lib/cosmetics";
 import { BUNDLE_DISCOUNT, DEAL_DISCOUNT, SHOP_BUNDLES, SHOP_ITEMS, bundlePrice, dailyDealIds, dayKey, salePrice, type ShopItem } from "@/lib/shop";
-import { WORLDS, type SceneDef, type StallKey, type WorldId } from "@/lib/market-worlds";
+import { WORLDS, inWorld, type SceneDef, type StallKey, type WorldId } from "@/lib/market-worlds";
 import { getMarketText } from "@/i18n/market";
 import { getShopText } from "@/i18n/shop";
 import { getShopExtraText } from "@/i18n/shop-extra";
@@ -436,7 +436,7 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
   const points = ready?.points ?? 0;
   const stallItems = (key: StallKey) => {
     const def = world.stalls.find((s) => s.key === key);
-    return def ? SHOP_ITEMS.filter((i) => def.kinds.includes(i.kind)) : [];
+    return def ? SHOP_ITEMS.filter((i) => def.kinds.includes(i.kind) && inWorld(i.id, world.id)) : [];
   };
 
   async function buy(item: ShopItem, stall: StallKey) {

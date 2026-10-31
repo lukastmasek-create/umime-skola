@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import type { StallKey, WorldId } from "@/lib/market-worlds";
-import { canvasTex, createStage, makeLoop, makeModel, softDot, std, type Figure } from "./kit";
+import { clone as cloneSkinned } from "three/addons/utils/SkeletonUtils.js";
+import { canvasTex, createStage, loadGltf, makeLoop, makeModel, softDot, std, type Figure } from "./kit";
 import { forestTrees, glowSprite, gradientSky, ground, hero, noiseTex, placeModel, rand, sparklePoints, sunLight, waterMat } from "./scenery";
 
 // Uživatelský obchod jako živá 3D scéna: náměstíčko s pěti tematickými stánky do oblouku (modely stanek-<svět>
@@ -24,14 +25,32 @@ const ARC = [-68, -34, 0, 34, 68, 104, -104].map((d) => (d * Math.PI) / 180);
 const RADIUS = 9.5;
 const HOME = new THREE.Vector3(0, 0, 4.5);
 const SPEED = 5.5;
-// obchodníci (postavy z městečka) za pulty v každém světě
+// Obchodníci podle světa: postavy z avatarů (public/avatars-3d) – piráti v přístavu, mimozemšťané a roboti na
+// stanici, víly a elfové v lese, rytíři a král na hradě, mořská panna a chobotnice pod vodou. Poslední (nástěnka
+// trhu) je zvířátko z městečka na pultu.
 const SELLERS: Record<WorldId, string[]> = {
-  pirate: ["kapitan", "pekar", "farmar", "knihovnice", "babicka", "kluk", "papousek"],
-  space: ["knihovnice", "kluk", "kapitan", "pekar", "farmar", "babicka", "kocka"],
-  forest: ["babicka", "farmar", "pekar", "knihovnice", "kluk", "kapitan", "kocka"],
-  castle: ["knihovnice", "kapitan", "farmar", "babicka", "pekar", "kluk", "pes_sedi"],
-  sea: ["kapitan", "knihovnice", "kluk", "babicka", "farmar", "pekar", "papousek"],
+  pirate: ["pirate", "sailor", "explorer", "chef", "archaeologist", "penguin", "town:papousek"],
+  space: ["alien", "astronaut", "robot", "cosmic", "robot-dino", "pilot", "inventor"],
+  forest: ["fairy", "elf", "ranger", "owl", "fox", "unicorn", "town:kocka"],
+  castle: ["knight", "king", "dwarf", "wizard", "dragon", "founder", "town:pes_sedi"],
+  sea: ["mermaid", "octopus", "frog", "penguin", "capybara", "sailor", "town:papousek"],
 };
+
+async function makeSeller(name: string): Promise<{ root: THREE.Object3D; update: (dt: number) => void; pet: boolean }> {
+  if (name.startsWith("town:")) return { ...(await makeLoop(name.slice(5))), pet: true };
+  const g = await loadGltf(`/avatars-3d/${name}.glb`);
+  const root = cloneSkinned(g.scene);
+  root.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (!m.isMesh) return;
+    m.castShadow = true;
+    m.userData.shared = true;
+  });
+  const mixer = new THREE.AnimationMixer(root);
+  const idle = g.animations.find((c) => c.name === "klid");
+  if (idle) mixer.clipAction(idle).play();
+  return { root, update: (dt) => mixer.update(dt), pet: false };
+}
 
 function fit(obj: THREE.Object3D, h: number) {
   const size = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
@@ -368,14 +387,19 @@ export function createMarket3D(container: HTMLElement, opts: MarketOpts): Market
     front.set(key, new THREE.Vector3(x, 0, z).multiplyScalar((RADIUS - 2.3) / RADIUS));
     loads.push(placeModel(`stanek-${opts.world}`).then((m) => g.add(m)).catch(() => {}));
     loads.push(
-      makeLoop(SELLERS[opts.world][i], 0.8 + i * 0.07)
+      makeSeller(SELLERS[opts.world][i])
         .then((s) => {
-          // zvířátko sedí na pultu, lidé stojí za ním (+Y v Blenderu = -z); postavy z městečka hledí k +x
-          const pet = ["papousek", "kocka", "pes_sedi"].includes(SELLERS[opts.world][i]);
-          fit(s.root, pet ? 0.6 : 1.62);
-          if (pet) s.root.position.set(0.8, 1.08, -0.25);
-          else s.root.position.set(0, 0, -0.75);
-          s.root.rotation.y = -Math.PI / 2;
+          // zvířátko z městečka sedí na pultu (hledí k +x), avatar stojí u stánku čelem k náměstí
+          if (s.pet) {
+            fit(s.root, 0.6);
+            s.root.position.set(0.8, 1.08, -0.25);
+            s.root.rotation.y = -Math.PI / 2;
+          } else {
+            // vedle pultu, ať je obchodník celý vidět
+            fit(s.root, 1.9);
+            s.root.position.set(-2.25, 0, 0.15);
+            s.root.rotation.y = 0.25;
+          }
           g.add(s.root);
           loops.push(s);
         })
