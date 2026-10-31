@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ART_ROOMS } from "@/lib/escape/art";
 import { LabScene } from "./LabScene";
 import { RoomScene } from "./RoomScene";
 import { PuzzleModal } from "./PuzzleModal";
-import { getRoom } from "@/lib/escape/rewards";
+import { getEscape } from "@/lib/escape/rewards";
 import { computeStars, DANGER_PER_MISTAKE, DANGER_PER_MISTAKE_RELAXED } from "@/lib/escape/score";
 import type { Hotspot, Puzzle } from "@/lib/escape/types";
 import { getEscapeText } from "@/i18n/escape";
@@ -15,7 +15,8 @@ import { getTitle } from "@/lib/titles";
 import { DailyRecap } from "@/components/DailyChallenges";
 import type { Locale } from "@/i18n/config";
 
-type Phase = "mode" | "playing" | "won" | "lost";
+// "between" = místnost je hotová a hráč ještě nevstoupil do další (časomíra stojí).
+type Phase = "mode" | "playing" | "between" | "won" | "lost";
 type SaveState = "idle" | "saving" | "saved" | "login" | "error";
 
 function shuffleIndices(length: number): number[] {
@@ -32,12 +33,18 @@ const mmss = (total: number) => {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 };
 
+const fill = (template: string, values: Record<string, string | number>) =>
+  template.replace(/\{(\w+)\}/g, (_, k) => String(values[k] ?? ""));
+
 export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string }) {
-  const room = getRoom(roomId, locale)!;
+  const escape = useMemo(() => getEscape(roomId, locale)!, [roomId, locale]);
   const ui = getEscapeText(locale).ui;
   const listHref = `/${locale}/unikovky`;
+  const limitSeconds = escape.timeLimitSeconds;
 
   const [phase, setPhase] = useState<Phase>("mode");
+  const [stage, setStage] = useState(0);
+  const [stageTimes, setStageTimes] = useState<number[]>([]);
   const [relaxed, setRelaxed] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [inventory, setInventory] = useState<string[]>([]);
@@ -66,11 +73,25 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
     };
   }, []);
 
+  const room = escape.rooms[stage];
+  const lastStage = stage === escape.rooms.length - 1;
+  // Grafika z Blenderu existuje jen pro první místnosti, další kreslí RoomScene.
+  const hasItemArt = stage === 0 && (roomId === "lab" || ART_ROOMS.includes(roomId));
+
   const itemById = (id: string) => room.items.find((i) => i.id === id);
 
   function stopTimer() {
     if (timerRef.current) window.clearInterval(timerRef.current);
     timerRef.current = null;
+  }
+
+  function runTimer(relaxedMode: boolean) {
+    stopTimer();
+    timerRef.current = window.setInterval(() => {
+      secondsRef.current += 1;
+      setSeconds(secondsRef.current);
+      if (!relaxedMode && secondsRef.current >= limitSeconds) lose("time");
+    }, 1000);
   }
 
   function flash(text: string) {
@@ -83,30 +104,39 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
     setInventory((inv) => [...inv, ...ids.filter((id) => !inv.includes(id))]);
   }
 
-  function startGame(relaxedMode: boolean) {
-    setRelaxed(relaxedMode);
-    setSeconds(0);
-    secondsRef.current = 0;
+  // Vyčistí všechno, co patří jen jedné místnosti (předměty, vyřešené hádanky, nápovědy k nim).
+  function resetRoomState() {
     setInventory([]);
     setSolved([]);
     setOpened([]);
     setUsed([]);
     setSelected(null);
-    setDanger(0);
-    setMistakes(0);
-    setHints(0);
     setPuzzleHints({});
     setActive(null);
     setMessage(null);
+  }
+
+  function startGame(relaxedMode: boolean) {
+    setRelaxed(relaxedMode);
+    setStage(0);
+    setStageTimes([]);
+    setSeconds(0);
+    secondsRef.current = 0;
+    resetRoomState();
+    setDanger(0);
+    setMistakes(0);
+    setHints(0);
     setSaveState("idle");
     setSaved(null);
     setPhase("playing");
-    stopTimer();
-    timerRef.current = window.setInterval(() => {
-      secondsRef.current += 1;
-      setSeconds(secondsRef.current);
-      if (!relaxedMode && secondsRef.current >= room.timeLimitSeconds) lose("time");
-    }, 1000);
+    runTimer(relaxedMode);
+  }
+
+  function enterNextRoom() {
+    resetRoomState();
+    setStage((s) => s + 1);
+    setPhase("playing");
+    runTimer(relaxed);
   }
 
   function lose(reason: "time" | "danger") {
@@ -137,10 +167,15 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
     }
   }
 
-  function win() {
+  function finishStage() {
     stopTimer();
-    setPhase("won");
-    saveResult(secondsRef.current, mistakes, hints);
+    setStageTimes((t) => [...t, secondsRef.current]);
+    if (lastStage) {
+      setPhase("won");
+      saveResult(secondsRef.current, mistakes, hints);
+    } else {
+      setPhase("between");
+    }
   }
 
   function openPuzzle(id: string) {
@@ -155,6 +190,25 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
     setActive({ puzzle, layout });
   }
 
+  // Robot Atom poradí k první nevyřešené hádance v pořadí místnosti.
+  function askAtom() {
+    if (phase !== "playing" || active) return;
+    const nextId = room.order.find((id) => !solved.includes(id));
+    const puzzle = nextId ? room.puzzles.find((p) => p.id === nextId) : undefined;
+    if (!nextId || !puzzle) {
+      flash(`${ui.atomLabel}: ${ui.atomDone}`);
+      return;
+    }
+    const level = puzzleHints[nextId] ?? 0;
+    if (level >= 3) {
+      flash(`${ui.atomLabel}: ${puzzle.hints[2]}`);
+      return;
+    }
+    setPuzzleHints((prev) => ({ ...prev, [nextId]: level + 1 }));
+    setHints((n) => n + 1);
+    flash(`${ui.atomLabel}: ${puzzle.hints[level]}`);
+  }
+
   function handleHotspot(h: Hotspot) {
     if (phase !== "playing" || active) return;
 
@@ -164,20 +218,7 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
     }
 
     if (h.kind === "robot") {
-      const nextId = room.order.find((id) => !solved.includes(id));
-      const puzzle = nextId ? room.puzzles.find((p) => p.id === nextId) : undefined;
-      if (!nextId || !puzzle) {
-        flash(`${ui.atomLabel}: ${ui.atomDone}`);
-        return;
-      }
-      const level = puzzleHints[nextId] ?? 0;
-      if (level >= 3) {
-        flash(`${ui.atomLabel}: ${puzzle.hints[2]}`);
-        return;
-      }
-      setPuzzleHints((prev) => ({ ...prev, [nextId]: level + 1 }));
-      setHints((n) => n + 1);
-      flash(`${ui.atomLabel}: ${puzzle.hints[level]}`);
+      askAtom();
       return;
     }
 
@@ -231,7 +272,7 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
     flash(
       `${puzzle.rewardMessage}${reward.length ? ` ${ui.gotItems}: ${reward.map((id) => itemById(id)?.name).join(", ")}.` : ""}`,
     );
-    if (puzzle.id === "door") win();
+    if (puzzle.id === "door") finishStage();
   }
 
   function handleWrong() {
@@ -273,37 +314,52 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
     }
   }
 
-  const stars = computeStars({
-    seconds,
-    mistakes,
-    hints,
-    relaxed,
-    limitSeconds: room.timeLimitSeconds,
-  });
-
+  const stars = computeStars({ seconds, mistakes, hints, relaxed, limitSeconds });
   const notes = inventory.map((id) => itemById(id)).filter((i) => i?.note);
+  const progressLabel = (n: number) => fill(ui.roomProgress, { n, total: escape.rooms.length });
+
+  // Řada teček s místnostmi: hotové, aktuální a zbývající.
+  const stepper = (
+    <ol className="flex items-center gap-1.5" aria-label={progressLabel(stage + 1)}>
+      {escape.rooms.map((r, i) => {
+        const done = i < stage || (i === stage && (phase === "between" || phase === "won"));
+        const current = i === stage && phase === "playing";
+        return (
+          <li
+            key={r.id}
+            title={progressLabel(i + 1)}
+            className={`grid h-7 w-7 place-items-center rounded-full border-2 border-[var(--edge)] text-xs font-bold ${
+              done ? "bg-[var(--accent-green)] text-[#16132b]" : current ? "bg-[var(--brand-500)] text-white" : "bg-[var(--surface-muted)] text-[var(--faint)]"
+            }`}
+          >
+            {done ? "✓" : i + 1}
+          </li>
+        );
+      })}
+    </ol>
+  );
 
   if (phase === "mode") {
     return (
-      <div className="card flex flex-col gap-6 p-6">
-        <p className="max-w-2xl text-[var(--muted)]">{room.intro}</p>
+      <div className="card grid gap-6 p-6 md:grid-cols-[1fr_minmax(0,22rem)]">
+        <div className="flex flex-col gap-4">
+          <p className="max-w-2xl text-[var(--muted)]">{escape.rooms[0].intro}</p>
+          <div className="flex items-center gap-3 text-sm font-semibold text-[var(--muted)]">
+            {stepper}
+            <span>{fill(getEscapeText(locale).list.roomsCount, { n: escape.rooms.length })}</span>
+          </div>
+        </div>
         <div>
           <h2 className="mb-3 text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>
             {ui.modeTitle}
           </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <button
-              onClick={() => startGame(false)}
-              className="card card-hover p-5 text-left"
-            >
-              <span className="block text-lg font-bold">{ui.timed}</span>
-              <span className="text-sm text-[var(--muted)]">{ui.timedDesc}</span>
+          <div className="grid gap-3">
+            <button onClick={() => startGame(false)} className="card card-hover p-4 text-left">
+              <span className="block text-lg font-bold">⏱ {ui.timed}</span>
+              <span className="text-sm text-[var(--muted)]">{fill(ui.timedDesc, { min: Math.round(limitSeconds / 60) })}</span>
             </button>
-            <button
-              onClick={() => startGame(true)}
-              className="card card-hover p-5 text-left"
-            >
-              <span className="block text-lg font-bold">{ui.relaxed}</span>
+            <button onClick={() => startGame(true)} className="card card-hover p-4 text-left">
+              <span className="block text-lg font-bold">🌿 {ui.relaxed}</span>
               <span className="text-sm text-[var(--muted)]">{ui.relaxedDesc}</span>
             </button>
           </div>
@@ -312,10 +368,43 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
     );
   }
 
+  if (phase === "between") {
+    const next = escape.rooms[stage + 1];
+    return (
+      <div className="card flex flex-col items-start gap-5 p-6">
+        {stepper}
+        <h2 className="text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+          {fill(ui.roomDone, { n: stage + 1 })}
+        </h2>
+        <div className="flex flex-wrap gap-2 text-sm font-semibold">
+          <span className="pill bg-[var(--surface-muted)] px-3 py-1.5">
+            {ui.timeUsed}: {mmss(seconds)}
+          </span>
+          <span className="pill bg-[var(--surface-muted)] px-3 py-1.5">
+            {ui.mistakes}: {mistakes}
+          </span>
+          <span className="pill bg-[var(--surface-muted)] px-3 py-1.5">
+            {ui.hintsUsed}: {hints}
+          </span>
+        </div>
+        <div className="w-full rounded-xl border-2 border-[var(--edge)] p-4" style={{ background: next.theme?.wall }}>
+          <p className="mb-1 text-xs font-bold uppercase tracking-wide text-[#16132b]/70">{progressLabel(stage + 2)}</p>
+          <h3 className="mb-2 text-xl font-bold text-[#16132b]">{next.theme?.title}</h3>
+          <p className="max-w-2xl rounded-lg bg-[var(--surface)]/90 px-3 py-2 text-sm text-[var(--foreground)]">{next.intro}</p>
+        </div>
+        <p className="text-sm text-[var(--faint)]">{ui.nextRoomNote}</p>
+        <button onClick={enterNextRoom} className="btn-bouncy bg-[var(--brand-500)] px-6 py-3 text-sm font-bold text-white">
+          {ui.nextRoom} →
+        </button>
+      </div>
+    );
+  }
+
   if (phase === "won" || phase === "lost") {
     const won = phase === "won";
     return (
       <div className="card flex flex-col items-start gap-5 p-6">
+        {stepper}
         <h2 className="text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
           {won ? ui.winTitle : loseReason === "time" ? ui.loseTime : ui.loseDanger}
         </h2>
@@ -336,6 +425,11 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
               <span className="pill bg-[var(--surface-muted)] px-3 py-1.5">
                 {ui.timeUsed}: {mmss(seconds)}
               </span>
+              {stageTimes.map((t, i) => (
+                <span key={i} className="pill bg-[var(--surface)] px-3 py-1.5 font-medium text-[var(--muted)]">
+                  {progressLabel(i + 1)}: {mmss(t - (stageTimes[i - 1] ?? 0))}
+                </span>
+              ))}
               <span className="pill bg-[var(--surface-muted)] px-3 py-1.5">
                 {ui.mistakes}: {mistakes}
               </span>
@@ -389,15 +483,30 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
     );
   }
 
-  const remaining = room.timeLimitSeconds - seconds;
+  const remaining = limitSeconds - seconds;
+  const solvedHere = solved.length;
+  const puzzlesHere = room.puzzles.length;
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-4">
-        <div className="pill bg-[var(--surface)] px-3 py-1.5 text-sm">
-          {relaxed ? ui.elapsed : ui.time}: <span className="ml-1 font-bold tabular-nums">{mmss(relaxed ? seconds : remaining)}</span>
+      <div className="card flex flex-wrap items-center gap-x-5 gap-y-3 px-4 py-3">
+        <div className="flex items-center gap-3">
+          {stepper}
+          <div className="leading-tight">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[var(--faint)]">{progressLabel(stage + 1)}</p>
+            <p className="text-sm font-bold">{room.theme?.title ?? ""}</p>
+          </div>
         </div>
-        <div className="flex min-w-48 flex-1 items-center gap-3 text-sm font-semibold">
+        <div className="pill bg-[var(--surface-muted)] px-3 py-1.5 text-sm" aria-live="off">
+          {relaxed ? ui.elapsed : ui.time}:{" "}
+          <span className={`ml-1 font-bold tabular-nums ${!relaxed && remaining <= 60 ? "text-[var(--danger)]" : ""}`}>
+            {mmss(relaxed ? seconds : remaining)}
+          </span>
+        </div>
+        <div className="pill bg-[var(--surface-muted)] px-3 py-1.5 text-sm">
+          {ui.solvedCount}: <span className="ml-1 font-bold tabular-nums">{solvedHere}/{puzzlesHere}</span>
+        </div>
+        <div className="flex min-w-40 flex-1 items-center gap-3 text-sm font-semibold">
           <span>{ui.danger}</span>
           <div className="h-3 flex-1 overflow-hidden rounded-full border-2 border-[var(--edge)] bg-[var(--surface-muted)]">
             <div
@@ -409,14 +518,21 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
             />
           </div>
         </div>
+        <button
+          onClick={askAtom}
+          className="btn-bouncy bg-[var(--accent-yellow)] px-4 py-2 text-sm font-bold text-[#16132b]"
+        >
+          🤖 {ui.askAtom}
+        </button>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
+      <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
         <div className="flex flex-col gap-3">
           <div className="card overflow-hidden p-0">
             {room.theme ? (
               <RoomScene
-                roomId={roomId}
+                key={room.id}
+                roomId={room.id}
                 theme={room.theme}
                 hotspots={room.hotspots}
                 solved={solved}
@@ -449,7 +565,7 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
             {inventory.length === 0 ? (
               <p className="text-sm text-[var(--faint)]">{ui.inventoryEmpty}</p>
             ) : (
-              <ul className="flex flex-col gap-2">
+              <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-1">
                 {inventory.map((id) => {
                   const item = itemById(id);
                   if (!item) return null;
@@ -459,18 +575,19 @@ export function EscapeRoom({ locale, roomId }: { locale: Locale; roomId: string 
                       <button
                         onClick={() => handleInventory(id)}
                         title={item.description}
+                        aria-pressed={isSelected}
                         className={`flex w-full items-center gap-3 rounded-lg border-2 px-3 py-2 text-left text-sm font-semibold ${
                           isSelected
                             ? "border-[var(--brand-500)] bg-[var(--brand-50)]"
                             : "border-[var(--edge)] bg-[var(--surface)] hover:bg-[var(--surface-muted)]"
                         }`}
                       >
-                        {roomId === "lab" || ART_ROOMS.includes(roomId) ? (
+                        {hasItemArt ? (
                           // Ikony předmětů jsou vyrenderované v Blenderu (umime-art/scripts/).
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={`/escape/${roomId}/items/${item.id}.webp`} alt="" width={36} height={36} className="h-9 w-9 shrink-0" />
                         ) : (
-                          <span className="text-xl">{item.symbol}</span>
+                          <span className="grid h-9 w-9 shrink-0 place-items-center text-xl">{item.symbol}</span>
                         )}
                         <span className="flex-1">{item.name}</span>
                         {isSelected && <span className="text-xs text-[var(--brand-600)]">{ui.selected}</span>}

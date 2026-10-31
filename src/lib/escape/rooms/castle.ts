@@ -38,7 +38,7 @@ export const CASTLE_KIT: RoomKit = {
   useMessage: "Hákem na laně jsi z vysokého výklenku vytáhl/a královskou pečeť a lísteček s poznámkou.",
   a: {
     title: "Erb na zdi",
-    prompt: "Pod erbem stojí: „Hrad Karlštejn nechal postavit císař Karel ___.“ Doplň, kolikátý Karel to byl, arabskou číslicí.",
+    prompt: "Pod erbem stojí: „Hrad Karlštejn nechal postavit český král a pozdější císař Karel ___.“ Doplň, kolikátý Karel to byl, arabskou číslicí.",
     answers: ["4", "iv", "ctvrty", "čtvrtý"],
     placeholder: "číslice",
     hints: ["Karel IV. byl český král a římský císař ve 14. století.", "Číslo je zapsané římsky jako IV.", "Odpověď je 4."],

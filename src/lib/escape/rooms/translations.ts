@@ -540,7 +540,7 @@ const castle: Kits = {
     useMessage: "With the hook on a rope you pulled a royal seal and a note out of the high alcove.",
     a: {
       title: "Coat of arms",
-      prompt: "Under the coat of arms it says: \"Karlštejn Castle was built by Emperor Charles ___.\" Fill in which Charles it was, with an Arabic numeral.",
+      prompt: "Under the coat of arms it says: \"Karlštejn Castle was built by the Czech king and later emperor Charles ___.\" Fill in which Charles it was, with an Arabic numeral.",
       answers: ["4", "iv"],
       placeholder: "number",
       hints: ["Charles IV was a Czech king and Roman emperor in the 14th century.", "The number is written in Roman numerals as IV.", "The answer is 4."],
@@ -620,7 +620,7 @@ const castle: Kits = {
     useMessage: "Mit dem Haken am Seil hast du ein königliches Siegel und einen Zettel aus der hohen Nische geholt.",
     a: {
       title: "Wappen",
-      prompt: "Unter dem Wappen steht: „Die Burg Karlštejn ließ Kaiser Karl ___ bauen.“ Ergänze, der Wievielte es war, mit einer arabischen Ziffer.",
+      prompt: "Unter dem Wappen steht: „Die Burg Karlštejn ließ der böhmische König und spätere Kaiser Karl ___ bauen.“ Ergänze, der Wievielte es war, mit einer arabischen Ziffer.",
       answers: ["4", "iv"],
       placeholder: "Zahl",
       hints: ["Karl IV. war im 14. Jahrhundert böhmischer König und römischer Kaiser.", "Die Zahl wird römisch als IV geschrieben.", "Die Antwort ist 4."],
@@ -700,7 +700,7 @@ const castle: Kits = {
     useMessage: "Крюком на верёвке ты достал из высокой ниши королевскую печать и записку.",
     a: {
       title: "Герб",
-      prompt: "Под гербом написано: «Замок Карлштейн построил император Карл ___». Допиши, какой по счёту это был Карл, арабской цифрой.",
+      prompt: "Под гербом написано: «Замок Карлштейн построил чешский король и будущий император Карл ___». Допиши, какой по счёту это был Карл, арабской цифрой.",
       answers: ["4", "iv", "iv."],
       placeholder: "цифра",
       hints: ["Карл IV был чешским королём и римским императором в XIV веке.", "Число записывается римской цифрой IV.", "Ответ — 4."],
