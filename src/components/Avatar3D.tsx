@@ -6,7 +6,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { DRACO_DECODER_PATH } from "@/lib/avatars3d";
-import { AVATAR_IDLE_GESTURES, AVATAR_REACTIONS, resetMotion, type Gesture, type Motion } from "@/components/motion-gestures";
+import { AVATAR_IDLE_GESTURES, AVATAR_REACTIONS, bodySway, resetMotion, type Gesture, type Motion } from "@/components/motion-gestures";
 import {
   PATTERNS,
   SLOTS,
@@ -183,6 +183,8 @@ export default function Avatar3D({
     pivot.position.y = PIVOT_Y;
     scene.add(pivot);
     const motion: Motion = { y: 0, rotX: 0, rotY: 0, rotZ: 0, sx: 1, sy: 1 };
+    // Výsledný pohyb, který se vykresluje: plynule doběhne za cílem gesta, takže žádný přechod nepůsobí skokem.
+    const shown: Motion = { y: 0, rotX: 0, rotY: 0, rotZ: 0, sx: 1, sy: 1 };
     let gesture: { t: number; g: Gesture } | null = null;
     let untilIdle = 3 + Math.random() * 3;
     let reaction = Math.floor(Math.random() * AVATAR_REACTIONS.length);
@@ -378,6 +380,12 @@ export default function Avatar3D({
     window.addEventListener("pointerup", onUp);
     window.addEventListener("pointercancel", onCancel);
 
+    // Úhel se vyhlazuje po nejkratší cestě, takže otočka o 2π nezpůsobí zpětné otáčení.
+    const TAU = Math.PI * 2;
+    const angleTo = (cur: number, target: number, a: number) => {
+      const d = ((((target - cur) % TAU) + 3 * Math.PI) % TAU) - Math.PI;
+      return cur + d * a;
+    };
     // Mimo obrazovku se nevykresluje (šetří baterii na telefonech).
     const tick = () => {
       const dt = Math.min(clock.getDelta(), 0.1);
@@ -398,16 +406,26 @@ export default function Avatar3D({
         motion.rotY += look * 0.28;
         // dýchání a mrkání
         time += dt;
-        motion.sy *= 1 + 0.012 * Math.sin(time * 2.1);
-        motion.sx *= 1 - 0.006 * Math.sin(time * 2.1);
+        motion.sy *= 1 + 0.014 * Math.sin(time * 2.1);
+        motion.sx *= 1 - 0.007 * Math.sin(time * 2.1);
+        // pohyb těla v klidu: přenášení váhy a jemné houpání
+        bodySway(time, motion);
         nextBlink -= dt;
         const blink = nextBlink < 0 ? Math.max(0, 1 - Math.abs(nextBlink + 0.07) / 0.07) : 0;
         if (nextBlink < -0.14) nextBlink = 2.5 + Math.random() * 3.5;
         for (const e of eyes) e.o.scale.y = e.sy * (1 - 0.88 * blink);
       }
-      pivot.position.y = PIVOT_Y + motion.y;
-      pivot.rotation.set(motion.rotX, motion.rotY, motion.rotZ);
-      pivot.scale.set(motion.sx, motion.sy, motion.sx);
+      // vyhlazení: každý kanál doběhne za cílovou hodnotou (exponenciálně), gesta na sebe navazují
+      const a = 1 - Math.exp(-dt * 20);
+      shown.y += (motion.y - shown.y) * a;
+      shown.rotX = angleTo(shown.rotX, motion.rotX, a);
+      shown.rotY = angleTo(shown.rotY, motion.rotY, a);
+      shown.rotZ += (motion.rotZ - shown.rotZ) * a;
+      shown.sx += (motion.sx - shown.sx) * a;
+      shown.sy += (motion.sy - shown.sy) * a;
+      pivot.position.y = PIVOT_Y + shown.y;
+      pivot.rotation.set(shown.rotX, shown.rotY, shown.rotZ);
+      pivot.scale.set(shown.sx, shown.sy, shown.sx);
       renderer.render(scene, camera);
     };
     const visibility = new IntersectionObserver(([entry]) => {

@@ -32,12 +32,20 @@ const land = (u: number, from: number, m: Motion) => {
   m.sx *= 1 + 0.07 * s;
 };
 
+// Příprava na skok: postava se nejdřív lehce přikrčí (anticipace), skok pak doběhne do dopadu.
+const crouch = (u: number, until: number, m: Motion, k = 1) => {
+  const c = u < until ? Math.sin((u / until) * (Math.PI / 2)) : Math.max(0, 1 - (u - until) / 0.12);
+  m.sy *= 1 - 0.08 * k * c;
+  m.sx *= 1 + 0.05 * k * c;
+};
+
 export const GESTURES: Record<string, Gesture> = {
   hop: {
-    duration: 0.8,
+    duration: 0.9,
     run: (u, m) => {
-      m.y = 0.22 * arc(Math.min(1, u / 0.75));
-      land(u, 0.72, m);
+      crouch(u, 0.14, m);
+      m.y = 0.24 * arc(clamp01((u - 0.14) / 0.6));
+      land(u, 0.74, m);
     },
   },
   wiggle: { duration: 1.4, run: (u, m) => (m.rotZ = 0.12 * Math.sin(u * Math.PI * 4) * (1 - u)) },
@@ -55,11 +63,12 @@ export const GESTURES: Record<string, Gesture> = {
     },
   },
   backflip: {
-    duration: 1.1,
+    duration: 1.2,
     run: (u, m) => {
-      m.rotX = -smooth(u) * Math.PI * 2;
-      m.y = 0.55 * arc(u);
-      m.sy = 1 - 0.1 * Math.max(0, 1 - u * 8);
+      crouch(u, 0.2, m, 1.4);
+      m.rotX = -smooth(clamp01((u - 0.12) / 0.88)) * Math.PI * 2;
+      m.y = 0.55 * arc(clamp01((u - 0.12) / 0.88));
+      land(u, 0.9, m);
     },
   },
   bow: { duration: 1.5, run: (u, m) => (m.rotX = 0.55 * arc(clamp01(u * 1.15)) * (u < 0.85 ? 1 : 1 - (u - 0.85) / 0.15)) },
@@ -75,10 +84,34 @@ export const GESTURES: Record<string, Gesture> = {
   cheer: {
     duration: 1.6,
     run: (u, m) => {
-      const k = (u * 3) % 1;
-      m.y = 0.2 * arc(k);
+      // Plynulé poskakování: výška a stlačení jdou spojitě, bez skoků na začátku každého odrazu.
+      const b = Math.abs(Math.sin(u * Math.PI * 3));
+      const env = Math.sin(u * Math.PI); // na začátku a na konci bez stlačení, ať navazuje na klid
+      m.y = 0.2 * b;
+      m.sy *= 1 - 0.05 * (1 - b) * env;
+      m.sx *= 1 + 0.025 * (1 - b) * env;
       m.rotZ = 0.1 * Math.sin(u * Math.PI * 3);
-      land(k, 0.75, m);
+    },
+  },
+  // nové: přeskakování (dvě odrazy s předklonem) a kroucení boky do rytmu
+  skip: {
+    duration: 1.6,
+    run: (u, m) => {
+      const k = (u * 2) % 1;
+      const a = arc(k);
+      m.y = 0.18 * a;
+      m.rotX = 0.07 * a;
+      m.rotZ = 0.08 * Math.sin(u * Math.PI * 4);
+      m.sy *= 1 - 0.06 * Math.pow(1 - a, 4) * Math.sin(u * Math.PI);
+    },
+  },
+  groove: {
+    duration: 2,
+    run: (u, m) => {
+      m.rotZ = 0.09 * Math.sin(u * Math.PI * 4);
+      m.rotY = 0.2 * Math.sin(u * Math.PI * 2);
+      m.y = 0.05 * Math.abs(Math.sin(u * Math.PI * 4));
+      m.sy *= 1 - 0.03 * Math.abs(Math.sin(u * Math.PI * 4));
     },
   },
   sway: { duration: 2.6, run: (u, m) => ((m.rotZ = 0.09 * Math.sin(u * Math.PI * 2)), (m.rotY = 0.12 * Math.sin(u * Math.PI * 2 + 0.6))) },
@@ -121,6 +154,24 @@ export const GESTURES: Record<string, Gesture> = {
 };
 
 export const IDLE_GESTURES = [GESTURES.hop, GESTURES.wiggle, GESTURES.spin, GESTURES.lookAround, GESTURES.stretch, GESTURES.nod];
-export const AVATAR_IDLE_GESTURES = [...IDLE_GESTURES, GESTURES.bow, GESTURES.dance, GESTURES.sway, GESTURES.peek, GESTURES.sleepy, GESTURES.shake];
+export const AVATAR_IDLE_GESTURES = [
+  ...IDLE_GESTURES,
+  GESTURES.bow,
+  GESTURES.dance,
+  GESTURES.sway,
+  GESTURES.peek,
+  GESTURES.sleepy,
+  GESTURES.shake,
+  GESTURES.skip,
+  GESTURES.groove,
+];
 // Kliknutí postupně střídá reakce, aby postava nedělala pořád to samé.
-export const AVATAR_REACTIONS = [GESTURES.jumpSpin, GESTURES.cheer, GESTURES.backflip, GESTURES.twirl, GESTURES.dance, GESTURES.bow, GESTURES.victory];
+export const AVATAR_REACTIONS = [GESTURES.jumpSpin, GESTURES.cheer, GESTURES.backflip, GESTURES.twirl, GESTURES.dance, GESTURES.bow, GESTURES.victory, GESTURES.skip];
+
+// Pohyb těla i v klidu: jemné přenášení váhy a nadechnutí, aby postava nikdy nestála jako socha.
+export const bodySway = (t: number, m: Motion) => {
+  m.rotZ += 0.018 * Math.sin(t * 1.3);
+  m.rotY += 0.03 * Math.sin(t * 0.61 + 1.2);
+  m.rotX += 0.012 * Math.sin(t * 0.9 + 0.5);
+  m.y += 0.006 * (1 + Math.sin(t * 2.6));
+};
