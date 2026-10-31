@@ -41,6 +41,18 @@ src/app/
    npm run dev
    ```
 
+### Školy pro výběr v Nastavení
+
+Žáci si školu mohou přidat sami, ale je lepší naplnit tabulku `School` skutečnými školami
+z Rejstříku škol MŠMT (open data) nebo z vlastního CSV (`název;obec`):
+
+```
+node prisma/import-schools.cjs vrejcelk.xml
+node prisma/import-schools.cjs skoly.csv
+```
+
+U XML lze názvy tagů změnit parametry `--record-tag`, `--name-tag` a `--city-tag`. Duplicity se přeskočí.
+
 ## Deploy (Vercel nebo Render)
 
 1. Push repozitáře na GitHub.

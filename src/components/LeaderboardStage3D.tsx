@@ -9,6 +9,7 @@ import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.j
 import { clone as cloneModel } from "three/addons/utils/SkeletonUtils.js";
 import { DRACO_DECODER_PATH, getAvatarModel } from "@/lib/avatars3d";
 import { AVATAR_REACTIONS, GESTURES, resetMotion, smooth, type Gesture, type Motion } from "@/components/motion-gestures";
+import { prefersReducedMotion } from "@/lib/motion";
 
 export type StageEntry = { id: string; name: string; avatar: string | null; value: string };
 
@@ -410,7 +411,7 @@ export default function LeaderboardStage3D({
     renderer.domElement.style.touchAction = "pan-y";
     el.appendChild(renderer.domElement);
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduceMotion = prefersReducedMotion();
     const scene = new THREE.Scene();
     const pmrem = new THREE.PMREMGenerator(renderer);
     const env = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;

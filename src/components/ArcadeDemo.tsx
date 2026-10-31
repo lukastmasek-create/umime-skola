@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { Sprites } from "@/lib/sprites";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // Ukázka hry na úvodní stránce: stejné sprity jako ve hře, ale jen přehrávaná smyčka.
 // Loď doletí k správnému mimozemšťanovi, vystřelí a slovo se doplní.
@@ -44,7 +45,7 @@ export function ArcadeDemo() {
     canvas.height = H * dpr;
     const ctx = canvas.getContext("2d")!;
     const sp = new Sprites("space");
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce = prefersReducedMotion();
     const stars = Array.from({ length: 40 }, () => ({ x: Math.random() * W, y: Math.random() * H, s: 1 + Math.random() * 1.6 }));
     let raf = 0;
     let visible = true;

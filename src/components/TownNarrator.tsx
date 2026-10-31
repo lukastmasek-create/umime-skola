@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // Vypravěč cut scén městečka: portrét mluvící postavy (animovaný sprite), jméno a text, který se postupně vypisuje.
 // Klik nebo mezerník text dopíše, další klik pokračuje. Po dopsání se scéna sama posune dál (podle délky textu).
@@ -16,7 +17,7 @@ export function useTypewriter(text: string, cps = 42) {
     setShown(0);
   }
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (prefersReducedMotion()) {
       const id = window.setTimeout(() => setShown(text.length), 0);
       return () => window.clearTimeout(id);
     }

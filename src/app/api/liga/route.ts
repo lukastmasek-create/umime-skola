@@ -1,3 +1,4 @@
+import { avatarIcons } from "@/lib/avatar-icon";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -61,6 +62,7 @@ export async function GET() {
       select: { id: true, name: true, avatar: true },
     });
     const byId = new Map(users.map((u) => [u.id, u]));
+    const icons = await avatarIcons(cohort);
     const rank = ranked.findIndex((r) => r.userId === userId);
     return NextResponse.json({
       loggedIn: true,
@@ -77,6 +79,7 @@ export async function GET() {
         xp: r.xp,
         name: byId.get(r.userId)?.name ?? null,
         avatar: byId.get(r.userId)?.avatar ?? null,
+        icon: icons[r.userId] ?? null,
       })),
     });
   } catch {

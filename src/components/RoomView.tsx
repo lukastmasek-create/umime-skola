@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { fill } from "@/i18n/profile";
 import { getRoomText } from "@/i18n/room";
-import { FURNITURE, ROOM_LAYOUT, ROOM_SLOTS, ROOM_SLOT_POS, furnitureSprite } from "@/lib/room";
+import { FURNITURE, ROOM_LAYOUT, ROOM_SLOTS, ROOM_SLOT_POS, furnitureSprite, type RoomState } from "@/lib/room";
+import { Room3DView } from "@/components/Room3DView";
+import { getRoom3dText } from "@/i18n/room3d";
 import { CARDS, type Rarity } from "@/lib/collection";
 import type { Locale } from "@/i18n/config";
 
-type Data = { loggedIn: true; points: number; room: { owned: string[]; placed: (string | null)[] }; cards: Record<string, number> };
+type Data = { loggedIn: true; points: number; day: string; room: RoomState; cards: Record<string, number> };
 
 const RARITY_STYLE: Record<Rarity, string> = {
   common: "var(--border-soft)",
@@ -74,6 +76,9 @@ export function RoomView({ locale, initialTab = "room" }: { locale: Locale; init
   const [selected, setSelected] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // 3D pokoj je výchozí, izometrický obrázek zůstává jako jednodušší pohled a záloha bez WebGL
+  const [view3d, setView3d] = useState(true);
+  const t3 = getRoom3dText(locale);
 
   useEffect(() => {
     fetch("/api/pokoj")
@@ -96,6 +101,21 @@ export function RoomView({ locale, initialTab = "room" }: { locale: Locale; init
       else setMessage(next.error === "not-enough-points" ? t.notEnough : t.actionError);
     } catch {
       setMessage(t.actionError);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function use(id: string): Promise<number | null> {
+    setBusy(true);
+    try {
+      const res = await fetch("/api/pokoj", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "use", id }) });
+      const next = await res.json();
+      if (!res.ok) return null;
+      setData(next);
+      return next.gained ?? null;
+    } catch {
+      return null;
     } finally {
       setBusy(false);
     }
@@ -128,14 +148,20 @@ export function RoomView({ locale, initialTab = "room" }: { locale: Locale; init
         <button className={tabClass(tab === "cards")} onClick={() => setTab("cards")}>
           🃏 {t.cardsTab}
         </button>
+        {tab === "room" && (
+          <button type="button" className={tabClass(false)} onClick={() => setView3d((v) => !v)}>
+            {view3d ? t3.view2d : t3.view3d}
+          </button>
+        )}
         <span className="pill ml-auto bg-[var(--surface-muted)] px-3 py-1.5 text-sm font-bold">{fill(t.points, data.points)}</span>
       </div>
       {message && <p className="text-sm font-semibold text-[var(--danger)]">{message}</p>}
 
+      {tab === "room" && view3d && <Room3DView locale={locale} room={data.room} day={data.day} busy={busy} onUse={use} onFail={() => setView3d(false)} />}
       {tab === "room" && (
         <>
-          <p className="text-sm text-[var(--muted)]">{t.pickSlot}</p>
-          <div className="room-stage relative mx-auto w-full max-w-4xl" style={{ aspectRatio: ROOM_LAYOUT.aspect }}>
+          {!view3d && <p className="text-sm text-[var(--muted)]">{t.pickSlot}</p>}
+          <div className={`${view3d ? "hidden" : ""} room-stage relative mx-auto w-full max-w-4xl`} style={{ aspectRatio: ROOM_LAYOUT.aspect }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/room/iso.webp" alt="" aria-hidden draggable={false} className="pointer-events-none absolute inset-0 h-full w-full select-none drop-shadow-[0_26px_30px_rgba(0,0,0,0.45)]" />
             <RoomAmbient />
@@ -195,7 +221,14 @@ export function RoomView({ locale, initialTab = "room" }: { locale: Locale; init
                     <button
                       type="button"
                       disabled={busy}
-                      onClick={() => (placed ? post({ action: "place", slot: data.room.placed.indexOf(f.id), id: null }) : setSelected(selected === f.id ? null : f.id))}
+                      onClick={() =>
+                        placed
+                          ? post({ action: "place", slot: data.room.placed.indexOf(f.id), id: null })
+                          : view3d
+                            ? // ve 3D má každý kus své místo: obsadí slot podle pořadí v katalogu
+                              post({ action: "place", slot: FURNITURE.indexOf(f), id: f.id })
+                            : setSelected(selected === f.id ? null : f.id)
+                      }
                       className={`btn-bouncy px-3 py-1.5 text-xs font-bold ${selected === f.id ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface)]"}`}
                     >
                       {placed ? t.remove : t.place}

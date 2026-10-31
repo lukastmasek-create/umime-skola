@@ -1,5 +1,5 @@
 import { NPC_KEYS, type NpcKey } from "@/lib/town-npc";
-import { MINI_IDS } from "@/lib/town-mini";
+import { CLASSIC_MINI_IDS } from "@/lib/town-mini";
 
 // Příběh městečka: pět kapitol „Hvězdná mapa“. Každá kapitola má cíl, který se dá ověřit ze stavu hry na serveru
 // (přátelství s obyvateli a minihry), a odměnu v bodech. Texty a dialogy jsou v src/i18n/town-story.ts.
@@ -31,7 +31,7 @@ export function progressOf(chapter: number, facts: StoryFacts): ObjectiveProgres
   return def.objectives.map((o) => {
     if (o.kind === "talked") return { kind: o.kind, have: Math.min(o.need, fps.filter((f) => f >= 1).length), need: o.need };
     if (o.kind === "hearts") return { kind: o.kind, have: Math.min(o.need, fps.filter((f) => f >= HEART_FP[o.hearts]).length), need: o.need, hearts: o.hearts };
-    if (o.kind === "minis") return { kind: o.kind, have: MINI_IDS.filter((m) => (facts.miniBest[m] ?? 0) > 0).length, need: MINI_IDS.length };
+    if (o.kind === "minis") return { kind: o.kind, have: CLASSIC_MINI_IDS.filter((m) => (facts.miniBest[m] ?? 0) > 0).length, need: CLASSIC_MINI_IDS.length };
     return { kind: o.kind, have: Math.min(o.need, fps.reduce((a, b) => a + b, 0)), need: o.need };
   });
 }

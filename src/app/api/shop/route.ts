@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { buildingLevel } from "@/lib/town-progress-server";
+import { CASHBACK_PER_LEVEL } from "@/lib/town-progress";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -7,6 +9,7 @@ import { getXp } from "@/lib/xp";
 import { levelProgress } from "@/lib/progression";
 import { WORLDS } from "@/lib/market-worlds";
 import { SHOP_ITEMS, bundlePrice, dayKey, getBundle, getShopItem, nextDealReset, salePrice, unlockKey } from "@/lib/shop";
+import { shopBlocked } from "@/lib/parental";
 
 class AlreadyOwned extends Error {}
 class NotEnoughPoints extends Error {}
@@ -82,6 +85,14 @@ export async function GET(request: Request) {
 // Do historie nákupů se zapisuje do PointTransaction s důvodem "shop:<druh>:<id>[:<kdo>]".
 async function pay(tx: Prisma.TransactionClient, userId: string, price: number, reason: string) {
   const paid = await tx.user.updateMany({ where: { id: userId, points: { gte: price } }, data: { points: { decrement: price } } });
+  if (paid.count > 0) {
+    // vylepšený obchod v městečku vrací část bodů
+    const back = Math.floor((price * CASHBACK_PER_LEVEL * (await buildingLevel(userId, "obchod", tx))) / 100);
+    if (back > 0) {
+      await tx.user.update({ where: { id: userId }, data: { points: { increment: back } } });
+      await tx.pointTransaction.create({ data: { userId, amount: back, reason: "Městečko: vrácení z obchodu" } });
+    }
+  }
   if (paid.count === 0) throw new NotEnoughPoints();
   await tx.pointTransaction.create({ data: { userId, amount: -price, reason } });
 }
@@ -96,6 +107,8 @@ export async function POST(request: Request) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: "login-required" }, { status: 401 });
+  // rodičovská kontrola může nákupy zakázat
+  if (await shopBlocked(userId)) return NextResponse.json({ error: "parental" }, { status: 403 });
 
   const body = (await request.json().catch(() => ({}))) as { action?: unknown; id?: unknown; email?: unknown };
   const id = typeof body.id === "string" ? body.id : "";

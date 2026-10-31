@@ -41,10 +41,13 @@ export type AvatarCustom = {
 
 export const EMPTY_CUSTOM: AvatarCustom = { colors: {}, hidden: [], pattern: "none", patternColor: "#ffffff" };
 
-export const PALETTE = [
-  "#ff5d73", "#ff9f43", "#ffd24d", "#7ee0b0", "#3ddc97", "#3fc1ff",
-  "#5a6cff", "#a87bff", "#ff8fd0", "#8b5a2b", "#f4f1ea", "#9aa4b8", "#3a3f55", "#16132b",
+// Paleta po řadách: světlé, syté a tmavé odstíny (8 barev v každé). Vlastní barvu jde zadat i mimo paletu.
+export const PALETTE_ROWS: { id: "light" | "bright" | "dark"; colors: string[] }[] = [
+  { id: "light", colors: ["#ffc2cc", "#ffd8b0", "#fff0a8", "#c8f5d8", "#bfe9ff", "#d4ccff", "#ffd0ec", "#f4f1ea"] },
+  { id: "bright", colors: ["#ff5d73", "#ff9f43", "#ffd24d", "#3ddc97", "#3fc1ff", "#5a6cff", "#a87bff", "#ff8fd0"] },
+  { id: "dark", colors: ["#b3263e", "#c25e12", "#b88a00", "#1f8f5c", "#1a6fa8", "#2e3a9e", "#5b2fa0", "#16132b"] },
 ];
+export const PALETTE = [...PALETTE_ROWS.flatMap((r) => r.colors), "#8b5a2b", "#9aa4b8", "#3a3f55"];
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
 

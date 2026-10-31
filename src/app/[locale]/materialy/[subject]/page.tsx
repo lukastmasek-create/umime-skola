@@ -1,29 +1,27 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getTopics } from "@/lib/materials";
-import { getSubjectBySlug } from "@/lib/taxonomy";
+import { getMaterialSubject, getTopics, materialSubjectLabel } from "@/lib/materials";
 import { getMaterialsText } from "@/i18n/materials";
-import { getSubjectText } from "@/i18n/subjects";
 import { isLocale, type Locale } from "@/i18n/config";
 
 type Params = { locale: string; subject: string };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { locale, subject: slug } = await params;
-  const subject = getSubjectBySlug(slug);
+  const subject = getMaterialSubject(slug);
   if (!isLocale(locale) || !subject) return {};
-  return { title: `${getSubjectText(locale).labels[subject.value]} – ${getMaterialsText(locale).title}` };
+  return { title: `${materialSubjectLabel(subject, locale)} – ${getMaterialsText(locale).title}` };
 }
 
 export default async function MaterialsSubjectPage({ params }: { params: Promise<Params> }) {
   const { locale, subject: slug } = await params;
   if (!isLocale(locale)) notFound();
-  const subject = getSubjectBySlug(slug);
+  const subject = getMaterialSubject(slug);
   const topics = getTopics(slug);
   if (!subject || topics.length === 0) notFound();
   const t = getMaterialsText(locale as Locale);
-  const label = getSubjectText(locale as Locale).labels[subject.value];
+  const label = materialSubjectLabel(subject, locale as Locale);
   const levels = ([1, 2, 3, 4] as const).filter((level) => topics.some((x) => x.level === level));
 
   return (

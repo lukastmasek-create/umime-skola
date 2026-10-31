@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { buildingLevel, buildingLevels } from "@/lib/town-progress-server";
+import { EXTRA_PLAYS_PER_LEVEL, MINI_BUILDING } from "@/lib/town-progress";
 import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -23,11 +25,12 @@ function parse(data: unknown): Store {
   return out;
 }
 
-function snapshot(store: Store, day: string): MiniSnapshot {
+function snapshot(store: Store, day: string, levels: Partial<Record<string, number>> = {}): MiniSnapshot {
   const out = {} as MiniSnapshot;
   for (const k of MINI_IDS) {
     const e = store[k];
-    out[k] = { left: e?.day === day ? Math.max(0, PLAYS_PER_DAY - e.plays) : PLAYS_PER_DAY, best: e?.best ?? 0 };
+    const total = PLAYS_PER_DAY + (MINI_BUILDING[k] ? EXTRA_PLAYS_PER_LEVEL * (levels[MINI_BUILDING[k]] ?? 0) : 0);
+    out[k] = { left: e?.day === day ? Math.max(0, total - e.plays) : total, best: e?.best ?? 0 };
   }
   return out;
 }
@@ -37,8 +40,11 @@ export async function GET() {
   const day = dayKey();
   if (!session?.user?.id) return NextResponse.json({ loggedIn: false, day, mini: snapshot({}, day) });
   try {
-    const row = await prisma.idleState.findUnique({ where: { userId_game: { userId: session.user.id, game: GAME } } });
-    return NextResponse.json({ loggedIn: true, day, mini: snapshot(parse(row?.data), day) });
+    const [row, levels] = await Promise.all([
+      prisma.idleState.findUnique({ where: { userId_game: { userId: session.user.id, game: GAME } } }),
+      buildingLevels(session.user.id),
+    ]);
+    return NextResponse.json({ loggedIn: true, day, mini: snapshot(parse(row?.data), day, levels) });
   } catch {
     return NextResponse.json({ error: "unavailable" }, { status: 503 });
   }
@@ -62,7 +68,9 @@ export async function POST(request: Request) {
       const row = await tx.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } });
       const store = parse(row?.data);
       const cur: Entry = store[game]?.day === day ? (store[game] as Entry) : { day, plays: 0, best: store[game]?.best ?? 0 };
-      if (cur.plays >= PLAYS_PER_DAY) return { error: "limit" };
+      // vylepšená budova (pekárna, květinářství…) přidává kola navíc
+      const extra = MINI_BUILDING[game] ? EXTRA_PLAYS_PER_LEVEL * (await buildingLevel(userId, MINI_BUILDING[game], tx)) : 0;
+      if (cur.plays >= PLAYS_PER_DAY + extra) return { error: "limit" };
       cur.plays += 1;
       cur.best = Math.max(cur.best, score);
       store[game] = cur;

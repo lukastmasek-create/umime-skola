@@ -158,3 +158,36 @@ export const WORLDS: World[] = [
     },
   },
 ];
+
+// Zboží podle tématu světa: v přístavu pirátské věci, na stanici vesmírné, v lese lesní a kouzelné, na hradě
+// rytířské a dračí, v podmořském městě mořské. Věci bez tématu (zlatý rámeček, doplňky mazlíčků, stavby…) jsou všude.
+const THEMED: Record<WorldId, string[]> = {
+  pirate: [
+    "avatar-pirate", "avatar-captain", "avatar-sea-wolf", "frame-pirate", "banner-treasure-map", "banner-pirate-night", "banner-storm",
+    "banner-town-pirate", "banner-ocean", "banner-sunset", "title-treasure-hunter", "title-star-sailor",
+  ],
+  space: [
+    "avatar-astronaut", "frame-space", "frame-stars", "frame-neon", "banner-galaxy", "banner-town-space", "banner-night-city", "banner-aurora",
+    "title-rocket-scientist", "title-planet-explorer", "title-time-traveler",
+  ],
+  forest: [
+    "avatar-fairy", "avatar-ranger", "avatar-pumpkin", "frame-leaf", "frame-vine", "banner-forest", "banner-forest-glade", "banner-town-forest",
+    "banner-spring", "banner-autumn", "banner-halloween", "title-forest-guardian", "title-fairy-friend", "title-firefly", "title-mushroom-wizard",
+  ],
+  castle: [
+    "avatar-knight", "avatar-princess", "avatar-wizard", "frame-royal", "frame-fire", "frame-dragon", "banner-castle-day", "banner-castle-night",
+    "banner-town-castle", "banner-volcano", "banner-dino", "title-knight", "title-court-scholar", "title-castle-lord", "title-dragon-tamer", "title-royal-architect",
+  ],
+  sea: [
+    "avatar-mermaid", "avatar-diver", "avatar-octopus", "frame-coral", "banner-deep-sea", "banner-jellyfish", "banner-town-sea",
+    "title-sea-sage", "title-pearl-hunter", "title-deep-diver", "title-coral-keeper",
+  ],
+};
+const ITEM_WORLD = new Map<string, WorldId>(Object.entries(THEMED).flatMap(([w, ids]) => ids.map((id) => [id, w as WorldId] as const)));
+
+/** Patří věc do tohoto světa? (tematická jen do svého, ostatní do všech) */
+export const inWorld = (itemId: string, world: WorldId) => {
+  const w = ITEM_WORLD.get(itemId);
+  return !w || w === world;
+};
+export const itemWorld = (itemId: string): WorldId | null => ITEM_WORLD.get(itemId) ?? null;

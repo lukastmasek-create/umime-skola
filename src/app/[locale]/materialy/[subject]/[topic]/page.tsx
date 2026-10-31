@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getTopic } from "@/lib/materials";
+import { getMaterialSubject, getTopic, materialSubjectLabel } from "@/lib/materials";
 import type { Block } from "@/lib/materials/types";
-import { getSubjectBySlug } from "@/lib/taxonomy";
 import { getMaterialsText } from "@/i18n/materials";
-import { getSubjectText } from "@/i18n/subjects";
 import { isLocale, type Locale } from "@/i18n/config";
+import { CardsBlock, QuizBlock, TopicPractice, type InteractiveLabels } from "@/components/MaterialInteractive";
+import { topicPractice } from "@/lib/materials/practice";
+import { relatedCourses } from "@/lib/materials/courses";
 
 type Params = { locale: string; subject: string; topic: string };
 
@@ -16,8 +17,12 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   return found ? { title: found.topic.title, description: found.topic.intro } : {};
 }
 
-function BlockView({ block, labels }: { block: Block; labels: { examples: string; tip: string } }) {
+function BlockView({ block, labels, live }: { block: Block; labels: { examples: string; tip: string }; live: InteractiveLabels }) {
   switch (block.type) {
+    case "quiz":
+      return <QuizBlock question={block.question} options={block.options} answer={block.answer} why={block.why} labels={live} />;
+    case "cards":
+      return <CardsBlock items={block.items} labels={live} />;
     case "p":
       return <p className="leading-relaxed">{block.text}</p>;
     case "list": {
@@ -81,13 +86,15 @@ function BlockView({ block, labels }: { block: Block; labels: { examples: string
 export default async function MaterialTopicPage({ params }: { params: Promise<Params> }) {
   const { locale, subject: slug, topic: topicSlug } = await params;
   if (!isLocale(locale)) notFound();
-  const subject = getSubjectBySlug(slug);
+  const subject = getMaterialSubject(slug);
   const found = getTopic(slug, topicSlug);
   if (!subject || !found) notFound();
   const { topic, prev, next } = found;
   const t = getMaterialsText(locale as Locale);
-  const label = getSubjectText(locale as Locale).labels[subject.value];
+  const label = materialSubjectLabel(subject, locale as Locale);
   const practiceHref = `/${locale}/kurzy/${topic.level === 4 ? "prijimacky" : "zakladni"}?predmet=${slug}`;
+  const practice = topicPractice(topic);
+  const courses = await relatedCourses(subject.value, topic);
 
   return (
     <article data-world={subject.slug} className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
@@ -123,7 +130,7 @@ export default async function MaterialTopicPage({ params }: { params: Promise<Pa
             </h2>
             <div className="flex flex-col gap-4">
               {section.blocks.map((block, j) => (
-                <BlockView key={j} block={block} labels={t} />
+                <BlockView key={j} block={block} labels={t} live={t.interactive} />
               ))}
             </div>
           </section>
@@ -139,12 +146,23 @@ export default async function MaterialTopicPage({ params }: { params: Promise<Pa
         </ul>
       </aside>
 
-      <div className="mt-8 flex flex-col items-start gap-2 rounded-2xl border-2 border-[var(--edge)] bg-[var(--brand-50)] p-5">
-        <p className="text-sm text-[var(--muted)]">{t.practiceHint}</p>
-        <Link href={practiceHref} className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white">
-          {t.practice} →
-        </Link>
-      </div>
+      <TopicPractice cards={practice.cards} questions={practice.questions} labels={t.interactive} />
+
+      {subject.value && (
+        <div className="mt-8 flex flex-col items-start gap-3 rounded-2xl border-2 border-[var(--edge)] bg-[var(--brand-50)] p-5">
+          <p className="text-sm text-[var(--muted)]">{t.practiceHint}</p>
+          <div className="flex flex-wrap gap-2">
+            {courses.map((c) => (
+              <Link key={c.slug} href={`/${locale}/kurzy/${c.category}/${c.slug}`} className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white">
+                🎮 {c.title}
+              </Link>
+            ))}
+            <Link href={practiceHref} className={`btn-bouncy px-4 py-2 text-sm font-bold ${courses.length ? "bg-[var(--surface)]" : "bg-[var(--brand-500)] text-white"}`}>
+              {courses.length ? t.allCourses : t.practice} →
+            </Link>
+          </div>
+        </div>
+      )}
 
       <div className="mt-8 grid gap-3 sm:grid-cols-2">
         {prev ? (

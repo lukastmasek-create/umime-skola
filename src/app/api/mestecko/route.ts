@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { dayKey } from "@/lib/shop";
 import { COLLECT_BONUS, COLLECT_COUNT, COLLECT_VALUE, bonusReason, collectReason, dailySpots } from "@/lib/town";
+import { COLLECT_BONUS_PER_LEVEL, TREASURE_SETS, type TreasureSet } from "@/lib/town-progress";
+import { buildingLevel, maybeTreasure } from "@/lib/town-progress-server";
 
 async function snapshot(userId: string, day: string) {
   const since = new Date(day + "T00:00:00Z");
@@ -44,7 +46,8 @@ export async function POST(request: Request) {
       const reason = collectReason(day, idx);
       const done = await tx.pointTransaction.findFirst({ where: { userId, reason, createdAt: { gte: since } }, select: { id: true } });
       if (done) return null;
-      let amount = COLLECT_VALUE[spot.kind];
+      // vylepšené náměstí přidává body za každou sebranou věc
+      let amount = COLLECT_VALUE[spot.kind] + COLLECT_BONUS_PER_LEVEL * (await buildingLevel(userId, "namesti", tx));
       await tx.pointTransaction.create({ data: { userId, amount, reason } });
       const count = await tx.pointTransaction.count({ where: { userId, reason: { startsWith: `Městečko: sběr ${day} #` }, createdAt: { gte: since } } });
       if (count >= COLLECT_COUNT) {
@@ -52,10 +55,13 @@ export async function POST(request: Request) {
         amount += COLLECT_BONUS;
       }
       await tx.user.update({ where: { id: userId }, data: { points: { increment: amount } } });
-      return amount;
+      const piece = await maybeTreasure(userId, day, idx, tx);
+      return { amount, piece };
     });
     if (gained === null) return NextResponse.json({ error: "owned" }, { status: 409 });
-    return NextResponse.json({ gained, ...(await snapshot(userId, day)) });
+    const [set, i] = (gained.piece ?? "").split(":");
+    const treasure = gained.piece ? TREASURE_SETS[set as TreasureSet]?.[Number(i)] ?? null : null;
+    return NextResponse.json({ gained: gained.amount, treasure, ...(await snapshot(userId, day)) });
   } catch {
     return NextResponse.json({ error: "unavailable" }, { status: 503 });
   }

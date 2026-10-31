@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimArt } from "@/components/SpaceDecor";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // Liána, která zaroste roh, jakmile se objeví na obrazovce (pás snímků z Blenderu, viz globals.css).
 export function Liana({ className = "", flip = false }: { className?: string; flip?: boolean }) {
@@ -50,7 +51,7 @@ export function MountainScene() {
 
   useEffect(() => {
     const scene = ref.current;
-    if (!scene || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!scene || prefersReducedMotion()) return;
     const zone = scene.closest(".zone") as HTMLElement | null;
     let frame = 0;
     let mx = 0;

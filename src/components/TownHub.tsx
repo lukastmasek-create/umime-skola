@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { DailyChallenges } from "@/components/DailyChallenges";
 import { Modal, type Snapshot } from "@/components/ShopView";
 import { readCam, runPath, type Geo, type Handle, type Pt } from "@/lib/market-cinema";
-import { runWorld } from "@/lib/market-cinema-worlds";
 import { runEnter, type DoorKind } from "@/lib/market-cinema-doors";
 import { camTransform, confettiBurst, createEventFx, createWeatherFx, dayPhaseOf, eventForDay, EVENT_SHOT, PHASE_TINT, resetCam, tweenCam, weatherForDay } from "@/lib/town-scenes";
 import { TownNpcPanel } from "@/components/TownNpcPanel";
@@ -14,7 +13,7 @@ import { TownNarrator, type Art } from "@/components/TownNarrator";
 import { MiniGame } from "@/components/TownMini";
 import { TownStory } from "@/components/TownStory";
 import { getTownStoryText } from "@/i18n/town-story";
-import { MINI_IDS, PLAYS_PER_DAY, type MiniId } from "@/lib/town-mini";
+import { CLASSIC_MINI_IDS, MINI, MINI_IDS, PLAYS_PER_DAY, type MiniId } from "@/lib/town-mini";
 import { getTownMiniText } from "@/i18n/town-mini";
 import { getTownLifeText } from "@/i18n/town-life";
 import { type NpcKey, type NpcSnapshot } from "@/lib/town-npc";
@@ -28,6 +27,7 @@ import { getTownHubText } from "@/i18n/town";
 import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
 import hubData from "./mesto-hub-kotvy.json";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // Městečko jako hub (stránka /mestecko): velké denní městečko z Blenderu (umime-art/blender/mestecko_hub.py) se čtyřmi řadami:
 // louka s přístavem, lagunou a raketovou rampou, hlavní ulice, druhá řada s parkem a terasa s vchodem do lesa a do hradu.
@@ -50,7 +50,6 @@ type Hub = {
   hrdina: Pt;
 };
 const HUB = hubData as unknown as Hub;
-const MINI_ICON: Record<MiniId, string> = { fishing: "🎣", harvest: "🥕", bakery: "🥐" };
 
 const SKY = 160; // výška oblohy nad obrázkem městečka (v px obrázku)
 const BOX_H = HUB.h + SKY;
@@ -235,7 +234,7 @@ export function TownHub({ locale }: { locale: Locale }) {
   }, [full]);
   const subRef = useRef<HTMLDivElement>(null);
   const storyText = getTownStoryText(locale);
-  const [miniLeft, setMiniLeft] = useState<Record<MiniId, number>>({ fishing: PLAYS_PER_DAY, harvest: PLAYS_PER_DAY, bakery: PLAYS_PER_DAY });
+  const [miniLeft, setMiniLeft] = useState<Record<MiniId, number>>(() => Object.fromEntries(MINI_IDS.map((id) => [id, PLAYS_PER_DAY])) as Record<MiniId, number>);
   const miniText = getTownMiniText(locale);
   const [board, setBoard] = useState(false);
   const [hover, setHover] = useState<string | null>(null);
@@ -349,7 +348,7 @@ export function TownHub({ locale }: { locale: Locale }) {
 
   // obyvatelé: po cestách chodí knihovnice, pekař, kluk, babička a farmář; s kým si hráč povídá, ten stojí
   useEffect(() => {
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = prefersReducedMotion();
     const ratio = HUB.h / HUB.w;
     const states: Record<string, WalkerState> = {};
     const poly = (nodes: string[]) => {
@@ -516,7 +515,7 @@ export function TownHub({ locale }: { locale: Locale }) {
 
   // obyvatelé občas něco prohodí (bublina nad hlavou)
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (prefersReducedMotion()) return;
     let t1 = 0;
     let t2 = 0;
     const schedule = () => {
@@ -541,7 +540,7 @@ export function TownHub({ locale }: { locale: Locale }) {
   useEffect(() => {
     const canvas = fxCv.current;
     const bx = box.current;
-    if (!canvas || !bx || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!canvas || !bx || prefersReducedMotion()) return;
     const fx = createEventFx(canvas, eventId);
     const size = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -841,7 +840,7 @@ export function TownHub({ locale }: { locale: Locale }) {
   useEffect(() => {
     const canvas = wxCv.current;
     const bx = box.current;
-    if (!canvas || !bx || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!canvas || !bx || prefersReducedMotion()) return;
     const fx = createWeatherFx(canvas, weather);
     const size = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -990,9 +989,22 @@ export function TownHub({ locale }: { locale: Locale }) {
         handle.current?.stop();
       };
     } else {
+      // les, hrad a moře: hrdina dojde k místu, pak 3D cut scéna z town3d/films (three.js se načítá už během chůze)
       const world = phase.target?.world ?? "forest";
-      const nodes = rt(phase.id);
-      handle.current = runWorld(r as Parameters<typeof runWorld>[0], geoFor(nodes, start, { door: HUB.places[phase.id]?.door, sub: HUB.places.more.ponorka }), world === "castle" ? "castle" : world === "sea" ? "sea" : "forest", () => leave(`/${locale}/uzivatelsky-obchod?svet=${world}&film=1`), subRef.current);
+      let alive = true;
+      const mod = import("@/lib/town3d/films");
+      handle.current = runPath(r as Parameters<typeof runPath>[0], geoFor(rt(phase.id), start), () => {
+        void mod.then((films) => {
+          const el = space3d.current;
+          if (!alive || !el) return;
+          const run = world === "castle" ? films.runCastle3D : world === "sea" ? films.runSea3D : films.runForest3D;
+          handle.current = run(el, { look: getHeroLook(), onEnd: () => leave(`/${locale}/uzivatelsky-obchod?svet=${world}&film=1`) });
+        });
+      }, false);
+      return () => {
+        alive = false;
+        handle.current?.stop();
+      };
     }
     return () => handle.current?.stop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1257,7 +1269,7 @@ export function TownHub({ locale }: { locale: Locale }) {
     scenes.current = { playIntro, playEvent };
   });
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (prefersReducedMotion()) return;
     const id = window.setTimeout(async () => {
       if (started.current) return;
       started.current = true;
@@ -1290,7 +1302,7 @@ export function TownHub({ locale }: { locale: Locale }) {
   }, []);
 
   function reduced() {
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    return prefersReducedMotion();
   }
   function visit(place: PlaceDef) {
     if (phase || (cine && cine !== "talk") || scene.current) return;
@@ -1331,7 +1343,7 @@ export function TownHub({ locale }: { locale: Locale }) {
     fetch("/api/mestecko/minihra")
       .then((r) => r.json())
       .then((d) => {
-        if (d.mini) setMiniLeft({ fishing: d.mini.fishing.left, harvest: d.mini.harvest.left, bakery: d.mini.bakery.left });
+        if (d.mini) setMiniLeft(Object.fromEntries(MINI_IDS.map((id) => [id, d.mini[id]?.left ?? PLAYS_PER_DAY])) as Record<MiniId, number>);
       })
       .catch(() => {});
   }
@@ -1553,7 +1565,7 @@ export function TownHub({ locale }: { locale: Locale }) {
             <canvas ref={confettiCv} aria-hidden className="pointer-events-none absolute inset-0 z-[61] h-full w-full" />
 
             {/* minihry: rybaření v laguně, sklizeň na farmě, pekárna */}
-            {MINI_IDS.map((id) => {
+            {CLASSIC_MINI_IDS.map((id) => {
               const pos: Pt = id === "fishing" ? [HUB.voda.laguna[0], HUB.voda.laguna[1] - 0.004] : id === "harvest" ? [(HUB.npc.farmar?.[0] ?? 0.9) - 0.035, (HUB.npc.farmar?.[1] ?? 0.82) - 0.01] : [(HUB.npc.pekar?.[0] ?? 0.4) + 0.045, (HUB.npc.pekar?.[1] ?? 0.7) - 0.01];
               return (
                 <button key={id} type="button" aria-label={miniText.names[id]} title={miniText.names[id]} onClick={() => openMini(id)} className="town-collect absolute z-[52] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-1.5 py-0.5 leading-none shadow-[0_2px_0_var(--shadow-ink)]" style={{ ...at(pos), fontSize: "clamp(16px, 2.3cqw, 30px)" }}>
@@ -1667,7 +1679,7 @@ export function TownHub({ locale }: { locale: Locale }) {
               <div className="absolute bottom-0 left-0 right-0 bg-black" style={{ height: 0 }} />
             </div>
             <div ref={count} aria-hidden className="market-count" />
-            {(phase.kind === "space" || phase.kind === "pirate") && <div ref={space3d} className="absolute inset-0" />}
+            {(phase.kind === "space" || phase.kind === "pirate" || phase.kind === "portal") && <div ref={space3d} className="absolute inset-0" />}
             {phase.kind !== "path" && (
               <button type="button" onClick={() => handle.current?.skip()} className="btn-bouncy pointer-events-auto absolute bottom-3 right-3 bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
                 ⏭ {st.skip}
@@ -1730,7 +1742,7 @@ export function TownHub({ locale }: { locale: Locale }) {
         </Modal>
       )}
       {miniOpen && (
-        <Modal title={`${MINI_ICON[miniOpen]} ${miniText.names[miniOpen]}`} onClose={() => setMiniOpen(null)} closeLabel={m.close}>
+        <Modal title={`${MINI[miniOpen].icon} ${miniText.names[miniOpen]}`} onClose={() => setMiniOpen(null)} closeLabel={m.close}>
           <MiniGame key={miniOpen} locale={locale} game={miniOpen} left={miniLeft[miniOpen]} onClose={() => setMiniOpen(null)} onReward={() => {}} />
         </Modal>
       )}

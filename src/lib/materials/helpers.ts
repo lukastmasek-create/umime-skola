@@ -8,6 +8,9 @@ export const table = (head: string[], ...rows: string[][]): Block => ({ type: "t
 export const ex = (...items: string[]): Block => ({ type: "examples", items });
 export const tip = (text: string): Block => ({ type: "tip", text });
 export const sec = (heading: string, ...blocks: Block[]): Section => ({ heading, blocks });
+// Mini kvíz: první možnost je správná, na stránce se možnosti zamíchají.
+export const quiz = (question: string, right: string, wrong: string[], why?: string): Block => ({ type: "quiz", question, options: [right, ...wrong], answer: 0, why });
+export const cards = (...items: [string, string][]): Block => ({ type: "cards", items });
 
 export function topic(
   slug: string,

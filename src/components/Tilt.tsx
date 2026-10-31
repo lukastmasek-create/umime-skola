@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // Karta se za kurzorem naklání v prostoru (perspektiva) a po povrchu jí běží odlesk.
 // Bez myši nebo při omezení animací zůstane rovná.
@@ -14,7 +15,7 @@ export function Tilt({ children, max = 7, className = "" }: { children: React.Re
     const card = inner.current;
     const shine = glare.current;
     if (!box || !card || !shine) return;
-    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches || prefersReducedMotion()) return;
     let raf = 0;
     let tx = 0, ty = 0, cx = 0, cy = 0, hover = 0, chover = 0;
     const loop = () => {

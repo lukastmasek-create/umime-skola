@@ -1,4 +1,4 @@
-import { topic, sec, p, ul, ol, table, ex, tip } from "./helpers";
+import { topic, sec, p, ul, ol, table, ex, tip, quiz, cards } from "./helpers";
 import type { Topic } from "./types";
 
 export const obcanka: Topic[] = [
@@ -92,4 +92,54 @@ export const obcanka: Topic[] = [
       ),
     ],
     ["ČR je v NATO od 1999 a v EU od 2004.", "EU má 27 států, sídlo OSN je v New Yorku.", "Klimatickou změnu způsobují hlavně emise CO₂."]),
+  topic("lidska-prava", "Lidská práva a tolerance", 2,
+    "Jaká práva máme všichni, práva dětí a respekt k odlišnostem.",
+    [
+      sec("Lidská práva",
+        ul("Lidská práva má každý od narození bez ohledu na pohlaví, barvu pleti, náboženství nebo původ.", "Patří k nim právo na život, svobodu, vzdělání, svobodu projevu a víry.", "Všeobecnou deklaraci lidských práv přijala OSN v roce 1948.", "V ČR je chrání Listina základních práv a svobod."),
+        quiz("Kdy byla přijata Všeobecná deklarace lidských práv?", "1948", ["1918", "1989", "2004"]),
+      ),
+      sec("Práva dítěte a tolerance",
+        ul("Úmluva o právech dítěte: právo na ochranu, péči, vzdělání, hru a vyjádření názoru.", "S právy jdou i povinnosti a respekt k právům druhých.", "Tolerance je respekt k lidem, kteří jsou jiní než my.", "Diskriminace je nespravedlivé znevýhodnění kvůli odlišnosti."),
+        tip("Když vidíš někoho, komu se ubližuje, řekni to dospělému. Mlčení pomáhá agresorovi."),
+      ),
+    ],
+    ["Lidská práva má každý od narození.", "Listina základních práv a svobod chrání práva v ČR.", "Tolerance = respekt k odlišnostem."]),
+  topic("obec-a-kraj", "Obec, kraj a samospráva", 2,
+    "Kdo spravuje obec a kraj, co dělá starosta a zastupitelstvo.",
+    [
+      sec("Obec",
+        ul("Občané volí každé 4 roky zastupitelstvo obce.", "Zastupitelstvo volí starostu (ve městě primátora).", "Obec se stará o školy, silnice, odpady, veřejné osvětlení a parky.", "Peníze má z daní, poplatků a dotací."),
+        quiz("Kdo volí starostu obce?", "zastupitelstvo obce", ["prezident", "všichni občané přímo", "vláda"]),
+      ),
+      sec("Kraje",
+        p("Česká republika má 14 krajů (včetně hlavního města Prahy). V čele kraje je hejtman, kraj spravuje střední školy, nemocnice a silnice 2. a 3. třídy."),
+        cards(["obec", "starosta"], ["statutární město", "primátor"], ["kraj", "hejtman"], ["stát", "prezident a vláda"]),
+      ),
+    ],
+    ["Zastupitelstvo se volí na 4 roky.", "ČR má 14 krajů.", "V čele kraje je hejtman."]),
+  topic("media-a-informace", "Média a informace", 2,
+    "Druhy médií, reklama, dezinformace a jak si ověřit zprávu.",
+    [
+      sec("Média",
+        ul("Tisk (noviny, časopisy), rozhlas, televize, internet a sociální sítě.", "Veřejnoprávní média (Česká televize, Český rozhlas) mají být nezávislá a objektivní.", "Reklama chce prodat; vždy se ptej, kdo za ní stojí."),
+      ),
+      sec("Jak poznat dezinformaci",
+        ol("Kdo zprávu napsal a odkud je?", "Píšou o tom i jiné důvěryhodné zdroje?", "Není titulek jen šokující lákadlo?", "Kdy zpráva vznikla, není stará?", "Nesnaží se mě hlavně rozzlobit nebo vystrašit?"),
+        quiz("Co je nejlepší první krok, když narazíš na šokující zprávu?", "ověřit ji v dalších důvěryhodných zdrojích", ["hned ji sdílet", "věřit jí, když má hodně lajků", "napsat komentář"]),
+      ),
+    ],
+    ["Zprávu si ověř ve více zdrojích.", "Reklama chce prodat.", "Šokující titulek ještě není pravda."]),
+  topic("prace-a-povolani", "Práce a volba povolání", 3,
+    "Jak si vybrat školu a povolání, pracovní smlouva a mzda.",
+    [
+      sec("Volba povolání",
+        ul("Zvaž, co tě baví, co ti jde a jaké jsou možnosti uplatnění.", "Po 9. třídě: gymnázium, střední odborná škola s maturitou, učiliště s výučním listem.", "Pomůže výchovný poradce, dny otevřených dveří a testy zájmů."),
+      ),
+      sec("Práce a mzda",
+        table(["Pojem", "Význam"], ["pracovní smlouva", "dohoda zaměstnance a zaměstnavatele o práci a mzdě"], ["hrubá mzda", "mzda před odečtením daní a pojištění"], ["čistá mzda", "co dostaneme vyplaceno"], ["živnostník", "podniká na vlastní účet"], ["minimální mzda", "nejnižší mzda, kterou zákon dovoluje"]),
+        quiz("Jak se jmenuje mzda, kterou opravdu dostaneme na účet?", "čistá mzda", ["hrubá mzda", "minimální mzda", "superhrubá mzda"]),
+      ),
+    ],
+    ["Po 9. třídě: gymnázium, SOŠ, učiliště.", "Čistá mzda = hrubá mzda po odečtení daní a pojištění.", "Pracovní smlouva musí být písemná."]),
 ];

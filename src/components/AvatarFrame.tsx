@@ -7,24 +7,70 @@ import type { FrameId } from "@/lib/cosmetics";
 // přesahovat přes okraj kolečka.
 // Rámeček z Blenderu (obrázek 1,2× větší než avatar); když se nenačte, vykreslí se SVG.
 // Doba jedné otáčky rámečku v sekundách: těžší ozdoby se točí pomaleji.
-const SPIN_SECONDS: Record<FrameId, number> = { gold: 26, rainbow: 10, neon: 18, leaf: 22, stars: 14, fire: 12, vine: 24, royal: 28, coral: 20 };
+const SPIN_SECONDS: Record<FrameId, number> = { gold: 26, rainbow: 10, neon: 18, leaf: 22, stars: 14, fire: 12, vine: 24, royal: 28, coral: 20, pirate: 30, space: 16, ice: 24, candy: 14, dragon: 20 };
+
+// Efekty podle tématu rámečku (styly .frame-fx v globals.css): lesk přejíždí po zlatu, plamen plápolá a
+// vylétají jiskry, hvězdy se třpytí, korály pouštějí bublinky… Částice jen u větších avatarů.
+const PARTICLES: Partial<Record<FrameId, { kind: "spark" | "ember" | "bubble" | "leaf"; n: number }>> = {
+  stars: { kind: "spark", n: 6 },
+  fire: { kind: "ember", n: 7 },
+  coral: { kind: "bubble", n: 6 },
+  leaf: { kind: "leaf", n: 3 },
+  vine: { kind: "leaf", n: 2 },
+  royal: { kind: "spark", n: 4 },
+  gold: { kind: "spark", n: 3 },
+  space: { kind: "spark", n: 6 },
+  ice: { kind: "spark", n: 4 },
+  candy: { kind: "spark", n: 4 },
+  dragon: { kind: "ember", n: 5 },
+};
+const SHINE: FrameId[] = ["gold", "royal", "rainbow", "neon", "ice", "space"];
 
 export function AvatarFrame({ id, size }: { id: FrameId; size: number }) {
   const [failed, setFailed] = useState(false);
   if (failed) return <FrameSvg id={id} size={size} />;
+  const box = size * 1.2;
+  const src = `/cosmetics/frames/${id}.webp`;
+  const parts = size >= 48 ? PARTICLES[id] : undefined;
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={`/cosmetics/frames/${id}.webp`}
-      alt=""
+    <span
       aria-hidden
-      width={size * 1.2}
-      height={size * 1.2}
-      onError={() => setFailed(true)}
       data-frame={id}
-      className="frame-spin pointer-events-none absolute max-w-none"
-      style={{ left: -size * 0.1, top: -size * 0.1, width: size * 1.2, height: size * 1.2, animationDuration: `${SPIN_SECONDS[id]}s` }}
-    />
+      className="frame-fx pointer-events-none absolute"
+      style={{ left: -size * 0.1, top: -size * 0.1, width: box, height: box, ["--fs" as string]: `${size}px` }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt=""
+        width={box}
+        height={box}
+        onError={() => setFailed(true)}
+        data-frame={id}
+        className="frame-spin absolute inset-0 h-full w-full max-w-none"
+        style={{ animationDuration: `${SPIN_SECONDS[id]}s` }}
+      />
+      {SHINE.includes(id) && (
+        <span className="frame-shine absolute inset-0" style={{ WebkitMaskImage: `url(${src})`, maskImage: `url(${src})` }} />
+      )}
+      {parts &&
+        Array.from({ length: parts.n }, (_, i) => {
+          const a = (i / parts.n) * Math.PI * 2 + (id === "fire" ? Math.PI / 2 : 0.4);
+          const r = 0.47;
+          return (
+            <span
+              key={i}
+              className={`frame-p frame-p-${parts.kind}`}
+              style={{
+                left: `${50 + Math.cos(a) * r * 100}%`,
+                top: `${50 + Math.sin(a) * r * 100}%`,
+                animationDelay: `${(i * 0.53) % 2.4}s`,
+                animationDuration: `${1.8 + (i % 3) * 0.5}s`,
+              }}
+            />
+          );
+        })}
+    </span>
   );
 }
 
@@ -134,6 +180,17 @@ function FrameSvg({ id, size }: { id: FrameId; size: number }) {
             </g>
           ))}
         </>
+      )}
+      {(id === "pirate" || id === "space" || id === "ice" || id === "candy" || id === "dragon") && (
+        <circle
+          cx="32"
+          cy="32"
+          r="31"
+          fill="none"
+          stroke={{ pirate: "#c8a060", space: "#4fd8ff", ice: "#bfe8ff", candy: "#ff2d55", dragon: "#3fb070" }[id]}
+          strokeWidth="5"
+          strokeDasharray={id === "candy" ? "6 6" : undefined}
+        />
       )}
       {id === "fire" && (
         <>

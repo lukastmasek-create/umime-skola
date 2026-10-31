@@ -7,6 +7,8 @@ import { AVATARS, DEFAULT_AVATAR, isAvatarUnlocked } from "@/lib/avatars";
 import { TITLES, isTitleUnlocked } from "@/lib/titles";
 import { MAX_FAVORITES, STYLE_GAME, isBannerId, isFavoriteTarget, isFrameId, normalizeStyle } from "@/lib/cosmetics";
 import { normalizeCustom } from "@/lib/avatar-custom";
+import { avatarIconVersions, isIconData, saveAvatarIcon } from "@/lib/avatar-icon";
+import { avatarIconUrl } from "@/lib/avatar-icon-url";
 import { normalizeState as normalizePets, levelInfo } from "@/lib/idle/pets";
 import { computeCity, normalizeCity } from "@/lib/idle/city";
 import type { Prisma } from "@prisma/client";
@@ -33,11 +35,12 @@ export async function GET() {
     const style = normalizeStyle(styleRow?.data);
     // Doplňky profilu: pozice v žebříčku, mazlíčci a město. Když něco selže, prostě chybí.
     const now = Date.now();
-    const [ahead, total, petRow, cityRow] = await Promise.all([
+    const [ahead, total, petRow, cityRow, iconVersions] = await Promise.all([
       prisma.user.count({ where: { points: { gt: user?.points ?? 0 } } }).catch(() => null),
       prisma.user.count().catch(() => null),
       prisma.idleState.findUnique({ where: { userId_game: { userId, game: "mazlicci" } } }).catch(() => null),
       prisma.idleState.findUnique({ where: { userId_game: { userId, game: "mesto" } } }).catch(() => null),
+      avatarIconVersions([userId]),
     ]);
     let pets: { owned: number; active: string | null; name: string; level: number } | null = null;
     try {
@@ -65,6 +68,8 @@ export async function GET() {
       banner: style.banner,
       custom: style.custom,
       favorites: style.favorites,
+      icon: avatarIconUrl(userId, iconVersions[userId]),
+      userId,
       name: user?.name ?? session.user.name ?? null,
       avatar: user?.avatar ?? DEFAULT_AVATAR,
       title: user?.title ?? null,
@@ -158,6 +163,8 @@ export async function POST(request: Request) {
       const prev = normalizeStyle(row?.data);
       const custom = normalizeCustom(body.custom);
       const next = { ...prev, custom: { ...prev.custom, [body.customFor]: custom } };
+      // Snímek přebarvené postavy pro malé ikonky (null = původní vzhled, ikonka se smaže).
+      if (body.icon === null || isIconData(body.icon)) await saveAvatarIcon(userId, body.customFor, body.icon ?? null);
       const data = next as unknown as Prisma.InputJsonValue;
       await prisma.idleState.upsert({
         where: { userId_game: { userId, game: STYLE_GAME } },

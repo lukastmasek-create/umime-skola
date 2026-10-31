@@ -1,3 +1,4 @@
+import { avatarIcons } from "@/lib/avatar-icon";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -51,6 +52,10 @@ async function snapshot(userId: string) {
       })
     : [];
   const claimed = new Set(claimedRows.map((r) => r.source));
+  const icons = await avatarIcons([
+    ...memberships.flatMap(({ group }) => group.members.map((m) => m.userId)),
+    ...duels.flatMap((d) => [d.challengerId, d.opponentId]),
+  ]);
 
   return {
     loggedIn: true as const,
@@ -58,7 +63,7 @@ async function snapshot(userId: string) {
     limits: { maxGroups: MAX_GROUPS_PER_USER },
     groups: memberships.map(({ group }) => {
       const members = group.members
-        .map((m) => ({ id: m.userId, name: m.user.name, avatar: m.user.avatar, xp: weekXp.get(m.userId) ?? 0 }))
+        .map((m) => ({ id: m.userId, name: m.user.name, avatar: m.user.avatar, icon: icons[m.userId] ?? null, xp: weekXp.get(m.userId) ?? 0 }))
         .sort((a, b) => b.xp - a.xp);
       const target = GROUP_WEEKLY_XP_PER_MEMBER * members.length;
       const total = members.reduce((sum, m) => sum + m.xp, 0);
@@ -86,7 +91,10 @@ async function snapshot(userId: string) {
         ended,
         me: mine,
         them: theirs,
-        other: d.challengerId === userId ? d.opponent : d.challenger,
+        other: (() => {
+          const o = d.challengerId === userId ? d.opponent : d.challenger;
+          return { ...o, icon: icons[o.id] ?? null };
+        })(),
         won: ended && mine > theirs,
         tied: ended && mine === theirs && mine > 0,
         claimed: claimed.has(`duel:${d.id}`),

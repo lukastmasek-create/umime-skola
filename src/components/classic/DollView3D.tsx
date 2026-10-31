@@ -8,6 +8,7 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { DRACO_DECODER_PATH } from "@/lib/avatars3d";
 import { SLOTS, type Slot } from "@/lib/dress";
 import type { Mood, Worn } from "./DollSvg";
+import { prefersReducedMotion } from "@/lib/motion";
 
 export type DollEvent = { id: number; kind: "happy" | "sad" | "dress" | "wave" | "finish"; slot?: Slot };
 
@@ -106,7 +107,7 @@ export default function DollView3D({
     resizeObserver.observe(el);
     resize();
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduceMotion = prefersReducedMotion();
     const clock = new THREE.Clock();
     const pivot = new THREE.Group();
     scene.add(pivot);

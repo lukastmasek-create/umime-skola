@@ -11,13 +11,29 @@ function AvatarBase({
   id,
   size = 40,
   locked = false,
+  icon,
 }: {
   id: string | null | undefined;
   size?: number;
   locked?: boolean;
+  icon?: string | null;
 }) {
   const a = getAvatar(id);
   const filter = locked ? "grayscale(1) opacity(0.45)" : undefined;
+
+  // Vlastní ikonka: snímek přebarvené postavy (src/lib/avatar-icon.ts).
+  if (icon) {
+    return (
+      <span
+        aria-hidden
+        className="inline-block shrink-0 overflow-hidden rounded-full"
+        style={{ width: size, height: size, background: a.bg, border: `${Math.max(1, size / 32)}px solid ${INK}`, filter }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={icon} alt="" width={size} height={size} className="block h-full w-full" loading="lazy" />
+      </span>
+    );
+  }
 
   // Avatary s 3D postavou mají portrét vyrenderovaný z modelu; kolečko, barva a obrys zůstávají.
   const stills = getAvatarStills(a.id);
@@ -267,6 +283,7 @@ export function Avatar({
   size?: number;
   locked?: boolean;
   frame?: FrameId | null;
+  icon?: string | null;
 }) {
   if (!frame) return <AvatarBase {...props} />;
   const size = props.size ?? 40;

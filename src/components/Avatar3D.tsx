@@ -16,8 +16,44 @@ import {
   type AvatarCustom,
   type AvatarParts,
 } from "@/lib/avatar-custom";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // Vzory se kreslí přímo do materiálu podle polohy na těle (modely nemají UV souřadnice).
+// Šedá kopie textury pro přebarvení: jas se natáhne tak, aby světlá místa byla skoro bílá
+// a vlastní barva vyšla sytá. Kopie se ukládá k původní textuře, počítá se jen jednou.
+function grayMap(tex: THREE.Texture): THREE.Texture {
+  const cached = tex.userData.grayMap as THREE.Texture | undefined;
+  if (cached) return cached;
+  const img = tex.image as CanvasImageSource & { width: number; height: number };
+  if (!img?.width) return tex;
+  const canvas = document.createElement("canvas");
+  canvas.width = img.width;
+  canvas.height = img.height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return tex;
+  ctx.drawImage(img, 0, 0);
+  const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const px = data.data;
+  const lum = new Float32Array(px.length / 4);
+  for (let i = 0; i < lum.length; i++) lum[i] = 0.2126 * px[i * 4] + 0.7152 * px[i * 4 + 1] + 0.0722 * px[i * 4 + 2];
+  const sorted = Float32Array.from(lum).sort();
+  const top = Math.max(1, sorted[Math.floor(sorted.length * 0.92)]);
+  for (let i = 0; i < lum.length; i++) {
+    const v = Math.min(255, (lum[i] / top) * 240);
+    px[i * 4] = px[i * 4 + 1] = px[i * 4 + 2] = v;
+  }
+  ctx.putImageData(data, 0, 0);
+  const gray = new THREE.CanvasTexture(canvas);
+  gray.flipY = tex.flipY;
+  gray.colorSpace = tex.colorSpace;
+  gray.wrapS = tex.wrapS;
+  gray.wrapT = tex.wrapT;
+  gray.channel = tex.channel;
+  gray.needsUpdate = true;
+  tex.userData.grayMap = gray;
+  return gray;
+}
+
 function addPattern(mat: THREE.Material) {
   const m = mat as THREE.MeshStandardMaterial;
   const uniforms = { uPat: { value: 0 }, uCol2: { value: new THREE.Color("#ffffff") } };
@@ -55,6 +91,7 @@ export default function Avatar3D({
   onError,
   custom,
   onParts,
+  snapshotRef,
 }: {
   src: string;
   label: string;
@@ -62,6 +99,8 @@ export default function Avatar3D({
   onError: () => void;
   custom?: AvatarCustom;
   onParts?: (parts: AvatarParts) => void;
+  // Sem se po načtení modelu vloží funkce, která vyfotí portrét postavy (data URL) pro malé ikonky.
+  snapshotRef?: { current: (() => string | null) | null };
 }) {
   const box = useRef<HTMLDivElement>(null);
   // Callbacky v refu, aby se scéna nestavěla znovu při každém renderu rodiče.
@@ -133,7 +172,7 @@ export default function Avatar3D({
     resizeObserver.observe(el);
     resize();
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduceMotion = prefersReducedMotion();
     const clock = new THREE.Clock();
     let mixer: THREE.AnimationMixer | null = null;
     let model: THREE.Object3D | null = null;
@@ -150,6 +189,9 @@ export default function Avatar3D({
     let look = 0; // plynule sledovaný náklon za kurzorem
     let lookTarget = 0;
     let dragging = false;
+    let eyes: { o: THREE.Object3D; sy: number }[] = [];
+    let time = 0;
+    let nextBlink = 2 + Math.random() * 3;
 
     const draco = new DRACOLoader().setDecoderPath(DRACO_DECODER_PATH).setDecoderConfig({ type: "wasm" });
     const loader = new GLTFLoader().setDRACOLoader(draco);
@@ -166,7 +208,7 @@ export default function Avatar3D({
 
         // Zjistí, co jde na modelu upravit, a uloží si původní vzhled.
         const slotMats: Record<string, THREE.MeshStandardMaterial[]> = {};
-        const original = new Map<THREE.MeshStandardMaterial, THREE.Color>();
+        const original = new Map<THREE.MeshStandardMaterial, { color: THREE.Color; map: THREE.Texture | null; emissive: THREE.Color }>();
         const toggleNodes: Record<string, THREE.Object3D[]> = {};
         const patternMats: THREE.Material[] = [];
         model.traverse((o) => {
@@ -176,7 +218,7 @@ export default function Avatar3D({
               for (const slot of SLOTS) {
                 if (SLOT_MATERIAL[slot].test(mat.name) && !(slotMats[slot] ??= []).includes(mat)) {
                   slotMats[slot].push(mat);
-                  original.set(mat, mat.color.clone());
+                  original.set(mat, { color: mat.color.clone(), map: mat.map, emissive: mat.emissive.clone() });
                   if ((slot === "body" || slot === "head") && !mat.userData.patternUniforms) {
                     addPattern(mat);
                     patternMats.push(mat);
@@ -195,8 +237,21 @@ export default function Avatar3D({
           for (const slot of SLOTS) {
             for (const mat of slotMats[slot] ?? []) {
               const hex = c?.colors[slot];
+              const orig = original.get(mat)!;
+              // Barva je v modelu zapečená v textuře: pro vlastní barvu se textura nahradí šedou verzí
+              // (zachová stínování a detaily), jinak by se nová barva s původní smíchala do špinavého odstínu.
+              const map = hex && orig.map ? grayMap(orig.map) : orig.map;
+              if (mat.map !== map) {
+                mat.map = map;
+                mat.needsUpdate = true;
+              }
               if (hex) mat.color.set(hex);
-              else mat.color.copy(original.get(mat)!);
+              else mat.color.copy(orig.color);
+              // Svítící části (svit, oči robota) mění i barvu záře.
+              if (orig.emissive.getHex() !== 0) {
+                if (hex) mat.emissive.set(hex);
+                else mat.emissive.copy(orig.emissive);
+              }
             }
           }
           for (const t of TOGGLES) for (const n of toggleNodes[t] ?? []) n.visible = !c?.hidden.includes(t);
@@ -209,6 +264,44 @@ export default function Avatar3D({
         };
         applyRef.current(customRef.current);
         handlers.current.onParts?.(parts);
+        if (snapshotRef) {
+          // Portrét (hlava a ramena) na chvíli vykreslený do plátna v malé velikosti, pak se vše vrátí.
+          snapshotRef.current = () => {
+            if (!model) return null;
+            const SIZE = 160;
+            const saved = { pos: pivot.position.clone(), rot: pivot.rotation.clone(), scale: pivot.scale.clone(), ratio: renderer.getPixelRatio() };
+            pivot.position.set(0, PIVOT_Y, 0);
+            pivot.rotation.set(0, 0, 0);
+            pivot.scale.set(1, 1, 1);
+            pivot.updateMatrixWorld(true);
+            const bounds = new THREE.Box3().setFromObject(model);
+            const height = bounds.max.y - bounds.min.y;
+            const lookY = bounds.max.y - height * 0.3;
+            const viewH = height * 0.68;
+            const cam = new THREE.PerspectiveCamera(24, 1, 0.1, 30);
+            cam.position.set(0, lookY + height * 0.04, viewH / 2 / Math.tan((12 * Math.PI) / 180));
+            cam.lookAt(0, lookY, 0);
+            ground.visible = false;
+            renderer.setPixelRatio(1);
+            renderer.setSize(SIZE, SIZE, false);
+            renderer.render(scene, cam);
+            let url = renderer.domElement.toDataURL("image/webp", 0.86);
+            if (!url.startsWith("data:image/webp")) url = renderer.domElement.toDataURL("image/png");
+            ground.visible = true;
+            pivot.position.copy(saved.pos);
+            pivot.rotation.copy(saved.rot);
+            pivot.scale.copy(saved.scale);
+            renderer.setPixelRatio(saved.ratio);
+            resize();
+            renderer.render(scene, camera);
+            return url;
+          };
+        }
+        // oči a jejich odlesky na mrkání: uzly „…_oko_…“, „…_odlesk_…“ bez varianty pro radost
+        eyes = [];
+        model.traverse((o) => {
+          if (/_(oko|odlesk\d?)_/.test(o.name) && !/radost/.test(o.name)) eyes.push({ o, sy: o.scale.y });
+        });
         mixer = new THREE.AnimationMixer(model);
         const clip = (name: string) => gltf.animations.find((c) => c.name === name);
         const idleClip = clip("klid");
@@ -303,6 +396,14 @@ export default function Avatar3D({
         }
         look += (lookTarget - look) * Math.min(1, dt * 4);
         motion.rotY += look * 0.28;
+        // dýchání a mrkání
+        time += dt;
+        motion.sy *= 1 + 0.012 * Math.sin(time * 2.1);
+        motion.sx *= 1 - 0.006 * Math.sin(time * 2.1);
+        nextBlink -= dt;
+        const blink = nextBlink < 0 ? Math.max(0, 1 - Math.abs(nextBlink + 0.07) / 0.07) : 0;
+        if (nextBlink < -0.14) nextBlink = 2.5 + Math.random() * 3.5;
+        for (const e of eyes) e.o.scale.y = e.sy * (1 - 0.88 * blink);
       }
       pivot.position.y = PIVOT_Y + motion.y;
       pivot.rotation.set(motion.rotX, motion.rotY, motion.rotZ);
@@ -340,7 +441,7 @@ export default function Avatar3D({
       renderer.dispose();
       canvas.remove();
     };
-  }, [src]);
+  }, [src, snapshotRef]);
 
   return <div ref={box} role="img" aria-label={label} title={label} className="absolute inset-0 cursor-grab" />;
 }

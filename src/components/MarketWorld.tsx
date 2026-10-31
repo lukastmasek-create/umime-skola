@@ -4,9 +4,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { Modal, Preview, type Snapshot } from "@/components/ShopView";
+import { PlayerMarket } from "@/components/PlayerMarket";
+import { Market3DView } from "@/components/Market3DView";
+import type { MarketSpot } from "@/lib/town3d/market3d";
+import { getPlayerMarketText } from "@/i18n/player-market";
 import { bannerCss, isFrameId } from "@/lib/cosmetics";
-import { DEAL_DISCOUNT, SHOP_ITEMS, dailyDealIds, dayKey, salePrice, type ShopItem } from "@/lib/shop";
-import { WORLDS, type SceneDef, type StallKey, type WorldId } from "@/lib/market-worlds";
+import { BUNDLE_DISCOUNT, DEAL_DISCOUNT, SHOP_BUNDLES, SHOP_ITEMS, bundlePrice, dailyDealIds, dayKey, salePrice, type ShopItem } from "@/lib/shop";
+import { WORLDS, inWorld, type SceneDef, type StallKey, type WorldId } from "@/lib/market-worlds";
 import { getMarketText } from "@/i18n/market";
 import { getShopText } from "@/i18n/shop";
 import { getShopExtraText } from "@/i18n/shop-extra";
@@ -20,6 +24,7 @@ import seaScene from "./more-kotvy.json";
 import { getWorldText, getUnlockText } from "@/i18n/market-world";
 import { getTownHubText } from "@/i18n/town";
 import { drawSea, drawForest, drawForestFront, drawCastle, drawCastleFront, drawDeep, drawDeepFront, wave } from "@/lib/market-scenery";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // Uživatelský obchod jako prostředí: pirátský přístav a vesmírná stanice z Blenderu (umime-art/blender/pristav*.py,
 // kosmicka*.py). Vrstvy zespodu: moře nebo vesmír (canvas), hlavní předmět (loď, raketa), zadní vrstva (podlaha, stánky),
@@ -232,7 +237,7 @@ function useScenery(stage: React.RefObject<HTMLDivElement | null>, back: React.R
     const ctx = cv.getContext("2d");
     const fctx = fv.getContext("2d");
     if (!ctx || !fctx) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = prefersReducedMotion();
     let w = 0;
     let h = 0;
     let raf = 0;
@@ -328,6 +333,12 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
   const [night, setNight] = useState(false);
   const [shot, setShot] = useState<{ n: number; id: string } | null>(null);
   const [talk, setTalk] = useState<{ id: string; text: string } | null>(null);
+  const [trade, setTrade] = useState(false);
+  // 3D scéna je výchozí; 2D vrstvy zůstávají jako jednodušší pohled a záloha bez WebGL
+  const [view3d, setView3d] = useState(true);
+  const [bundles, setBundles] = useState(false);
+  const [hover3d, setHover3d] = useState<MarketSpot | null>(null);
+  const pm = getPlayerMarketText(locale);
   const nightRef = useRef(false);
 
   const world = WORLDS.find((w) => w.id === worldId) ?? WORLDS[0];
@@ -426,7 +437,7 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
   const points = ready?.points ?? 0;
   const stallItems = (key: StallKey) => {
     const def = world.stalls.find((s) => s.key === key);
-    return def ? SHOP_ITEMS.filter((i) => def.kinds.includes(i.kind)) : [];
+    return def ? SHOP_ITEMS.filter((i) => def.kinds.includes(i.kind) && inWorld(i.id, world.id)) : [];
   };
 
   async function buy(item: ShopItem, stall: StallKey) {
@@ -583,7 +594,26 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
       {state.status === "unavailable" && <p className="mb-3 rounded-xl border-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-2 text-sm text-[var(--muted)]">{t.unavailable}</p>}
 
       {veil && <div aria-hidden className="pointer-events-none fixed inset-0 z-[60]" style={{ background: veil.color, opacity: veil.fade ? 0 : 1, transition: "opacity 0.9s ease-out" }} />}
-      <div className="overflow-x-auto overflow-y-hidden rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)]">
+      {view3d && (
+        <Market3DView
+          key={world.id}
+          world={world.id}
+          signs={{
+            ...Object.fromEntries(STALL_KEYS.map((k) => [k, { name: wt.stalls[k].name, count: `${countOf(k).have}/${countOf(k).total}` }])),
+            sady: { name: `🎒 ${x.bundlesTitle}`, count: `-${Math.round(BUNDLE_DISCOUNT * 100)} %` },
+            trh: { name: pm.open, count: "" },
+          }}
+          hover={hover3d}
+          hello={(k) => (k === "sady" ? { npc: x.bundlesTitle, text: x.bundlesHint } : k === "trh" ? { npc: pm.title, text: pm.intro } : { npc: wt.stalls[k].npc, text: wt.stalls[k].hello[0] })}
+          onOpen={(k) => (k === "sady" ? setBundles(true) : k === "trh" ? setTrade(true) : setOpen(k))}
+          onHover={(k) => {
+            setHover3d(k);
+            setHover(k === "sady" || k === "trh" ? null : k);
+          }}
+          onFail={() => setView3d(false)}
+        />
+      )}
+      <div className={`overflow-x-auto overflow-y-hidden rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)] ${view3d ? "hidden" : ""}`}>
         <div ref={stage} data-night={dark ? "" : undefined} data-world={world.id} className="market-stage relative select-none overflow-hidden" style={{ aspectRatio: `${W} / ${H}`, minWidth: 880 }}>
           <canvas ref={back} aria-hidden className="absolute inset-0 h-full w-full" />
           {/* hlavní předmět: loď nebo raketa */}
@@ -748,10 +778,55 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
             </span>
           </button>
         ))}
+        <button type="button" onClick={() => setView3d((v) => !v)} className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-sm font-bold" aria-pressed={view3d}>
+          {view3d ? "🖼️ 2D" : "🧊 3D"}
+        </button>
+        <button type="button" onClick={() => setTrade(true)} className="btn-bouncy bg-[var(--accent-yellow)] px-3 py-1.5 text-sm font-bold text-[#16132b]">
+          {pm.open}
+        </button>
         <Link href={`/${locale}/uzivatelsky-obchod?seznam=1`} className="ml-auto self-center text-sm font-semibold text-[var(--muted)] underline hover:text-[var(--foreground)]">
           {m.classic}
         </Link>
       </div>
+
+      {bundles && (
+        <Modal title={`🎒 ${x.bundlesTitle}`} onClose={() => setBundles(false)} closeLabel={m.close}>
+          <p className="mb-3 text-sm text-[var(--muted)]">{x.bundlesHint}</p>
+          <div className="grid grid-cols-1 gap-3">
+            {SHOP_BUNDLES.map((bundle) => {
+              const { price, full, missing } = bundlePrice(bundle, owned);
+              const done = missing.length === 0;
+              return (
+                <article key={bundle.id} className="card flex flex-col gap-2 p-3" style={{ borderColor: bundle.color }}>
+                  <h3 className="font-bold">{bundle.names[locale]}</h3>
+                  <ul className="flex flex-wrap gap-1.5 text-xs">
+                    {bundle.itemIds.map((id) => (
+                      <li key={id} className={`rounded-lg border-2 px-2 py-0.5 ${owned.has(id) ? "border-[var(--accent-green)] text-[var(--accent-green)]" : "border-[var(--edge)]"}`}>
+                        {owned.has(id) ? "✓ " : ""}
+                        {SHOP_ITEMS.find((i) => i.id === id)?.names[locale]}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button"
+                    disabled={done || busy !== null || points < price}
+                    onClick={() => void post({ action: "buyBundle", id: bundle.id }, x.bundleBought.replace("{name}", bundle.names[locale]), `bundle-${bundle.id}`)}
+                    className="btn-bouncy bg-[var(--brand-500)] px-3 py-1.5 text-sm font-bold text-white disabled:opacity-45"
+                  >
+                    {done ? x.bundleOwned : `⭐ ${price} (${full}) · ${x.bundleBuy}`}
+                  </button>
+                </article>
+              );
+            })}
+          </div>
+        </Modal>
+      )}
+
+      {trade && (
+        <Modal title={pm.title} onClose={() => setTrade(false)} closeLabel={m.close}>
+          <PlayerMarket locale={locale} onChange={() => void load()} />
+        </Modal>
+      )}
 
       {open && openDef && (
         <Modal title={`${wt.stalls[open].name} · ${wt.stalls[open].npc}`} onClose={() => setOpen(null)} closeLabel={m.close}>

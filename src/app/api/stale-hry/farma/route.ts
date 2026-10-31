@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { eventBonusFor } from "@/lib/idle/events";
+import { roomEndless } from "@/lib/room-server";
 import { challengeBoost } from "@/lib/idle/challenge-server";
 import { getItem as getCityItem, normalizeCity } from "@/lib/idle/city";
 import { levelFromGrowth, normalizeState as normalizePets } from "@/lib/idle/pets";
@@ -47,12 +48,15 @@ class NotEnoughPoints extends Error {}
 
 // Zrychlení farmy = učení + aktivní mazlíček + velikost města; každý díl má vlastní strop (viz lib/idle/farm.ts).
 async function speedBonusFor(userId: string, now: number) {
-  const [sum, pets, city, boost] = await Promise.all([
+  const [sum, pets, city, challenge, room] = await Promise.all([
     prisma.xpEvent.aggregate({ where: { userId, createdAt: { gte: new Date(now - DAY_MS) } }, _sum: { amount: true } }),
     prisma.idleState.findUnique({ where: { userId_game: { userId, game: "mazlicci" } }, select: { data: true } }),
     prisma.idleState.findUnique({ where: { userId_game: { userId, game: "mesto" } }, select: { data: true } }),
     challengeBoost(prisma, userId, "farm", now),
+    roomEndless(prisma, userId),
   ]);
+  // herní automat v pokoji zrychluje nekonečné hry
+  const boost = challenge + room;
   let petLevel: number | null = null;
   if (pets) {
     const state = normalizePets(pets.data, now);
