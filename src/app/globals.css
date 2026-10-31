@@ -3377,3 +3377,105 @@ html.town-full .site-header, html.town-full body > footer { display: none; }
     transition: none;
   }
 }
+
+/* Živé 3D městečko (/mestecko/nove) */
+.town3d-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 14px;
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #f7f4ff;
+  background: rgba(27, 23, 66, 0.82);
+  backdrop-filter: blur(8px);
+  cursor: default;
+}
+button.town3d-chip, a.town3d-chip { cursor: pointer; }
+button.town3d-chip[aria-pressed="true"] { background: #ffd24d; color: #1b1840; }
+.town3d-panel {
+  color: #f7f4ff;
+  background: rgba(27, 23, 66, 0.86);
+  backdrop-filter: blur(8px);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(10, 8, 40, 0.3);
+}
+.town3d-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  border: 0;
+  border-radius: 10px;
+  padding: 6px 2px;
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(247, 244, 255, 0.7);
+  background: transparent;
+  cursor: pointer;
+}
+.town3d-tab span { font-size: 17px; }
+.town3d-tab[aria-selected="true"] { background: rgba(255, 255, 255, 0.12); color: #f7f4ff; }
+.town3d-h { margin: 8px 4px 2px; font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(247, 244, 255, 0.6); }
+.town3d-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 12px;
+  padding: 7px 10px;
+  font-size: 13px;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+}
+.town3d-row:hover, .town3d-row.is-on { background: rgba(255, 210, 77, 0.2); }
+.town3d-card { border-radius: 12px; padding: 10px; background: rgba(255, 255, 255, 0.07); }
+.town3d-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #1b1840;
+  background: #7ee0b0;
+  cursor: pointer;
+}
+.town3d-btn-gold { background: #ffd24d; }
+.town3d-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: auto;
+  border: 0;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  color: #fff;
+  background: rgba(23, 20, 58, 0.82);
+  cursor: pointer;
+  will-change: transform;
+}
+.town3d-label-world { background: #ffd24d; color: #1b1840; font-size: 13px; }
+.town3d-label-home { font-size: 11px; }
+.town3d-label-plot { background: #7ee0b0; color: #10382a; }
+.town3d-toast {
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight: 800;
+  color: #1b1840;
+  background: #ffd24d;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  animation: tf-bonus 2.6s ease-out forwards;
+}
+@media (max-width: 767px) {
+  .town3d-label-home, .town3d-label-plot { display: none !important; }
+}

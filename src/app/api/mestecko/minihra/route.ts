@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { buildingLevel } from "@/lib/town-progress-server";
+import { EXTRA_PLAYS_PER_LEVEL, MINI_BUILDING } from "@/lib/town-progress";
 import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -62,7 +64,9 @@ export async function POST(request: Request) {
       const row = await tx.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } });
       const store = parse(row?.data);
       const cur: Entry = store[game]?.day === day ? (store[game] as Entry) : { day, plays: 0, best: store[game]?.best ?? 0 };
-      if (cur.plays >= PLAYS_PER_DAY) return { error: "limit" };
+      // vylepšená budova (pekárna, květinářství…) přidává kola navíc
+      const extra = MINI_BUILDING[game] ? EXTRA_PLAYS_PER_LEVEL * (await buildingLevel(userId, MINI_BUILDING[game], tx)) : 0;
+      if (cur.plays >= PLAYS_PER_DAY + extra) return { error: "limit" };
       cur.plays += 1;
       cur.best = Math.max(cur.best, score);
       store[game] = cur;
