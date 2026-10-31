@@ -8,6 +8,7 @@ import { ProfileCollection } from "@/components/ProfileCollection";
 import { ProfileShowcase } from "@/components/ProfileShowcase";
 import { SubjectMedals } from "@/components/SubjectMedals";
 import { DailyChallenges } from "@/components/DailyChallenges";
+import { pedestalUrl } from "@/lib/avatar-pedestal";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
 import { AVATARS, getAvatar, isAvatarUnlocked } from "@/lib/avatars";
 import { TITLES, getTitle, isTitleUnlocked } from "@/lib/titles";
@@ -446,7 +447,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
                 <span
                   aria-hidden
                   className="globe-sprite pointer-events-none absolute -bottom-[34%] left-1/2 h-[125%] w-[165%] -translate-x-1/2 drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)]"
-                  style={{ backgroundImage: "url(/home/profil/podstavec.webp)" }}
+                  style={{ backgroundImage: `url(${pedestalUrl(profile.avatar)})` }}
                 />
                 <ProfileAvatar
                   id={profile.avatar}

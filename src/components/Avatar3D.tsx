@@ -188,6 +188,9 @@ export default function Avatar3D({
     let look = 0; // plynule sledovaný náklon za kurzorem
     let lookTarget = 0;
     let dragging = false;
+    let eyes: { o: THREE.Object3D; sy: number }[] = [];
+    let time = 0;
+    let nextBlink = 2 + Math.random() * 3;
 
     const draco = new DRACOLoader().setDecoderPath(DRACO_DECODER_PATH).setDecoderConfig({ type: "wasm" });
     const loader = new GLTFLoader().setDRACOLoader(draco);
@@ -293,6 +296,11 @@ export default function Avatar3D({
             return url;
           };
         }
+        // oči a jejich odlesky na mrkání: uzly „…_oko_…“, „…_odlesk_…“ bez varianty pro radost
+        eyes = [];
+        model.traverse((o) => {
+          if (/_(oko|odlesk\d?)_/.test(o.name) && !/radost/.test(o.name)) eyes.push({ o, sy: o.scale.y });
+        });
         mixer = new THREE.AnimationMixer(model);
         const clip = (name: string) => gltf.animations.find((c) => c.name === name);
         const idleClip = clip("klid");
@@ -387,6 +395,14 @@ export default function Avatar3D({
         }
         look += (lookTarget - look) * Math.min(1, dt * 4);
         motion.rotY += look * 0.28;
+        // dýchání a mrkání
+        time += dt;
+        motion.sy *= 1 + 0.012 * Math.sin(time * 2.1);
+        motion.sx *= 1 - 0.006 * Math.sin(time * 2.1);
+        nextBlink -= dt;
+        const blink = nextBlink < 0 ? Math.max(0, 1 - Math.abs(nextBlink + 0.07) / 0.07) : 0;
+        if (nextBlink < -0.14) nextBlink = 2.5 + Math.random() * 3.5;
+        for (const e of eyes) e.o.scale.y = e.sy * (1 - 0.88 * blink);
       }
       pivot.position.y = PIVOT_Y + motion.y;
       pivot.rotation.set(motion.rotX, motion.rotY, motion.rotZ);
