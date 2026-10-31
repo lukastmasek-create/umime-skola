@@ -28,7 +28,7 @@ def camel(s):
 
 
 def build():
-    K.setup([(0.0, "#58b0ec"), (0.45, "#a8dcf4"), (1.0, "#ffe0a0")], ambient="#fff4e0", ambient_strength=0.75, sun_rot=(0.8, 0.1, 0.6), sun_strength=3.0, sun_color="#fff0d0")
+    K.setup([(0.0, "#ffe0a0"), (0.5, "#9ad4f0"), (1.0, "#3a9ae0")], ambient="#fff4e0", ambient_strength=0.75, sun_rot=(0.8, 0.1, 0.6), sun_strength=3.0, sun_color="#fff0d0")
     sun = C.sphere((-10.5, 55, 3.4), 1.5, C.mat("#fffbe0", emit=4.0), seg=32)
     sand = K.lit("#f0c878", 0.95)
     K.hill(-6, 34, -5.0, 16, 2.4, K.lit("#e8b868"))
