@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { Modal, Preview, type Snapshot } from "@/components/ShopView";
+import { PlayerMarket } from "@/components/PlayerMarket";
+import { getPlayerMarketText } from "@/i18n/player-market";
 import { bannerCss, isFrameId } from "@/lib/cosmetics";
 import { DEAL_DISCOUNT, SHOP_ITEMS, dailyDealIds, dayKey, salePrice, type ShopItem } from "@/lib/shop";
 import { WORLDS, type SceneDef, type StallKey, type WorldId } from "@/lib/market-worlds";
@@ -328,6 +330,8 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
   const [night, setNight] = useState(false);
   const [shot, setShot] = useState<{ n: number; id: string } | null>(null);
   const [talk, setTalk] = useState<{ id: string; text: string } | null>(null);
+  const [trade, setTrade] = useState(false);
+  const pm = getPlayerMarketText(locale);
   const nightRef = useRef(false);
 
   const world = WORLDS.find((w) => w.id === worldId) ?? WORLDS[0];
@@ -748,10 +752,19 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
             </span>
           </button>
         ))}
+        <button type="button" onClick={() => setTrade(true)} className="btn-bouncy bg-[var(--accent-yellow)] px-3 py-1.5 text-sm font-bold text-[#16132b]">
+          {pm.open}
+        </button>
         <Link href={`/${locale}/uzivatelsky-obchod?seznam=1`} className="ml-auto self-center text-sm font-semibold text-[var(--muted)] underline hover:text-[var(--foreground)]">
           {m.classic}
         </Link>
       </div>
+
+      {trade && (
+        <Modal title={pm.title} onClose={() => setTrade(false)} closeLabel={m.close}>
+          <PlayerMarket locale={locale} onChange={() => void load()} />
+        </Modal>
+      )}
 
       {open && openDef && (
         <Modal title={`${wt.stalls[open].name} · ${wt.stalls[open].npc}`} onClose={() => setOpen(null)} closeLabel={m.close}>
