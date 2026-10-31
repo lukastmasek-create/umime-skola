@@ -79,6 +79,16 @@ export const AVATARS: AvatarDef[] = [
   { id: "robot-dino", bg: "#b8f0d0", skin: "#58c48a", head: "box", ears: "horns", eyes: "visor", mouth: "teeth", unlock: { level: 66 }, names: { cs: "Robodinosaurus", en: "Robo-dino", de: "Robo-Dino", ru: "Робо-динозавр" } },
   { id: "phoenix", bg: "#ffc29a", skin: "#ff6a3d", head: "round", ears: "crown", eyes: "big", mouth: "open", unlock: { level: 75 }, names: { cs: "Fénix", en: "Phoenix", de: "Phönix", ru: "Феникс" } },
   { id: "cosmic", bg: "#3a2b7a", skin: "#a98bff", head: "ghost", ears: "antenna", eyes: "visor", mouth: "smile", unlock: { level: 90 }, names: { cs: "Kosmický", en: "Cosmic", de: "Kosmisch", ru: "Космический" } },
+
+  // --- nové z generátoru avatarů (umime-art/blender/avatary3d.py), v obchodě podle světů ---
+  { id: "piratka", bg: "#7fd0e8", skin: "#f0c8a0", head: "round", ears: "band", eyes: "one", mouth: "smile", unlock: { event: "shop" }, names: { cs: "Pirátka", en: "Pirate girl", de: "Piratin", ru: "Пиратка" } },
+  { id: "kosmonautka", bg: "#243b7a", skin: "#ffd5a8", head: "round", ears: "antenna", eyes: "big", mouth: "smile", unlock: { event: "shop" }, names: { cs: "Kosmonautka", en: "Cosmonaut", de: "Kosmonautin", ru: "Космонавтка" } },
+  { id: "robopes", bg: "#9fd2ff", skin: "#c8d0dc", head: "box", ears: "antenna", eyes: "visor", mouth: "flat", unlock: { event: "shop" }, names: { cs: "Robopes", en: "Robo-dog", de: "Roboterhund", ru: "Робопёс" } },
+  { id: "skritek", bg: "#c9f0a8", skin: "#ffd5a8", head: "round", ears: "band", eyes: "dots", mouth: "smile", unlock: { event: "shop" }, names: { cs: "Skřítek", en: "Gnome", de: "Wichtel", ru: "Гномик" } },
+  { id: "veverka", bg: "#ffe0b8", skin: "#d8843a", head: "round", ears: "fox", eyes: "big", mouth: "cat", unlock: { event: "shop" }, names: { cs: "Veverka", en: "Squirrel", de: "Eichhörnchen", ru: "Белка" } },
+  { id: "princ", bg: "#c8d8ff", skin: "#ffd5a8", head: "round", ears: "crown", eyes: "dots", mouth: "smile", unlock: { event: "shop" }, names: { cs: "Princ", en: "Prince", de: "Prinz", ru: "Принц" } },
+  { id: "carodejnice", bg: "#e3c8ff", skin: "#ffe0c8", head: "round", ears: "hair", eyes: "big", mouth: "smile", unlock: { event: "shop" }, names: { cs: "Čarodějnice", en: "Witch", de: "Hexe", ru: "Ведьма" } },
+  { id: "zralok", bg: "#bfe6ff", skin: "#7a8ca8", head: "round", ears: "none", eyes: "big", mouth: "teeth", unlock: { event: "shop" }, names: { cs: "Žralok", en: "Shark", de: "Hai", ru: "Акула" } },
 ];
 
 export const DEFAULT_AVATAR = "robot";

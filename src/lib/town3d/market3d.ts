@@ -29,11 +29,11 @@ const SPEED = 5.5;
 // stanici, víly a elfové v lese, rytíři a král na hradě, mořská panna a chobotnice pod vodou. Poslední (nástěnka
 // trhu) je zvířátko z městečka na pultu.
 const SELLERS: Record<WorldId, string[]> = {
-  pirate: ["pirate", "sailor", "explorer", "chef", "archaeologist", "penguin", "town:papousek"],
-  space: ["alien", "astronaut", "robot", "cosmic", "robot-dino", "pilot", "inventor"],
-  forest: ["fairy", "elf", "ranger", "owl", "fox", "unicorn", "town:kocka"],
-  castle: ["knight", "king", "dwarf", "wizard", "dragon", "founder", "town:pes_sedi"],
-  sea: ["mermaid", "octopus", "frog", "penguin", "capybara", "sailor", "town:papousek"],
+  pirate: ["pirate", "piratka", "captain", "sea-wolf", "sailor", "explorer", "town:papousek"],
+  space: ["alien", "kosmonautka", "robopes", "astronaut", "robot", "cosmic", "inventor"],
+  forest: ["fairy", "skritek", "veverka", "elf", "ranger", "owl", "town:kocka"],
+  castle: ["knight", "princ", "princess", "carodejnice", "king", "dragon", "town:pes_sedi"],
+  sea: ["mermaid", "zralok", "diver", "octopus", "frog", "penguin", "town:papousek"],
 };
 
 async function makeSeller(name: string): Promise<{ root: THREE.Object3D; update: (dt: number) => void; pet: boolean }> {
