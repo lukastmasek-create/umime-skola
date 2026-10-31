@@ -14,9 +14,29 @@ import { Modal } from "@/components/ShopView";
 import { MiniGame } from "@/components/TownMini";
 import { getTownMiniText } from "@/i18n/town-mini";
 import { MINI, PLAYS_PER_DAY, type MiniId } from "@/lib/town-mini";
-import { BUILDINGS, BUILDING_IDS, MAX_BUILDING_LEVEL, SET_REWARD, TREASURE_SETS, TREASURE_SET_IDS, type BuildingId, type QuestSnapshot, type TreasureSet } from "@/lib/town-progress";
+import {
+  BUILDINGS,
+  BUILDING_IDS,
+  MAX_BUILDING_LEVEL,
+  PLOT_BUILDING,
+  PLOT_BUILDINGS,
+  PLOT_ROAD,
+  ROAD_COST,
+  ROAD_IDS,
+  SET_REWARD,
+  TREASURE_SETS,
+  TREASURE_SET_IDS,
+  isPlotId,
+  type BuildingId,
+  type PlotBuilding,
+  type PlotId,
+  type QuestSnapshot,
+  type RoadId,
+  type TreasureSet,
+} from "@/lib/town-progress";
 
 type Tab = "places" | "quests" | "build" | "treasures";
+type Plots = { roads: RoadId[]; plots: Partial<Record<PlotId, PlotBuilding>>; income: number; incomeClaimed: boolean };
 type Spots = { spots: { idx: number; slot: number; kind: string }[]; collected: number[] } | null;
 const WORLD_OF_SET: Record<TreasureSet, string> = { pirati: "pristav", les: "les", vesmir: "stanice", hrad: "hrad", more: "more" };
 // Kdo zadává úkol → nad kterým místem svítí vykřičník.
@@ -55,6 +75,8 @@ export function TownWorld({ locale }: { locale: Locale }) {
   const [treasures, setTreasures] = useState<{ pieces: Record<string, number>; claimed: TreasureSet[] }>({ pieces: {}, claimed: [] });
   const [toast, setToast] = useState<string | null>(null);
   const [miniOpen, setMiniOpen] = useState<MiniId | null>(null);
+  const [plots, setPlots] = useState<Plots>({ roads: [], plots: {}, income: 0, incomeClaimed: false });
+  const labelEls = useRef(new Map<string, HTMLButtonElement>());
   const [miniLeft, setMiniLeft] = useState<Partial<Record<MiniId, number>>>({});
   const miniText = getTownMiniText(locale);
   const router = useRouter();
@@ -71,13 +93,15 @@ export function TownWorld({ locale }: { locale: Locale }) {
 
   // načtení stavu ze serveru
   const refresh = useCallback(async () => {
-    const [s, q, b, t, m] = await Promise.all([
+    const [s, q, b, t, m, pl] = await Promise.all([
       fetch("/api/mestecko").then((r) => (r.ok ? r.json() : null)).catch(() => null),
       fetch("/api/mestecko/ukoly").then((r) => (r.ok ? r.json() : null)).catch(() => null),
       fetch("/api/mestecko/budovy").then((r) => (r.ok ? r.json() : null)).catch(() => null),
       fetch("/api/mestecko/poklady").then((r) => (r.ok ? r.json() : null)).catch(() => null),
       fetch("/api/mestecko/minihra").then((r) => (r.ok ? r.json() : null)).catch(() => null),
+      fetch("/api/mestecko/parcely").then((r) => (r.ok ? r.json() : null)).catch(() => null),
     ]);
+    if (pl?.roads) setPlots({ roads: pl.roads, plots: pl.plots ?? {}, income: pl.income ?? 0, incomeClaimed: !!pl.incomeClaimed });
     if (m?.mini) setMiniLeft(Object.fromEntries(Object.entries(m.mini as Record<MiniId, { left: number }>).map(([k, v]) => [k, v.left])));
     if (s?.spots) setSpots({ spots: s.spots, collected: s.collected ?? [] });
     if (q?.quests) setQuests(q.quests);
@@ -95,10 +119,24 @@ export function TownWorld({ locale }: { locale: Locale }) {
     world.current?.setCollectibles(spots.spots.map((s) => ({ slot: s.slot, kind: s.kind, taken: spots.collected.includes(s.idx) })));
   }, [spots, state]);
 
+  // kdo zadává úkol → místo (vlastní budovy stojí na parcele, kterou si hráč vybral)
+  const questPlace = useCallback(
+    (giver: string) => QUEST_PLACE[giver] ?? (Object.entries(plots.plots).find(([, b]) => b === giver)?.[0] as string | undefined),
+    [plots.plots],
+  );
   useEffect(() => {
-    const ids = quests.filter((q) => !q.claimed).map((q) => QUEST_PLACE[q.giver]).filter(Boolean);
+    world.current?.setRoads(plots.roads);
+    world.current?.setPlots(plots.plots);
+    for (const id of Object.keys(plots.plots) as PlotId[]) {
+      const b = plots.plots[id];
+      const el = labelEls.current.get(id);
+      if (b && el) el.textContent = `${PLOT_BUILDING[b].icon} ${ui.plotBuildings[b]?.name ?? b}`;
+    }
+  }, [plots, state, ui.plotBuildings]);
+  useEffect(() => {
+    const ids = quests.filter((q) => !q.claimed).map((q) => questPlace(q.giver)).filter(Boolean) as string[];
     world.current?.setQuestMarks([...new Set(ids)]);
-  }, [quests, state]);
+  }, [quests, state, questPlace]);
 
   // engine
   useEffect(() => {
@@ -131,9 +169,12 @@ export function TownWorld({ locale }: { locale: Locale }) {
         return;
       }
       world.current = handle;
+      // pro testy ve vývoji (kamera, chůze bez čekání na animaci)
+      if (process.env.NODE_ENV !== "production") (window as unknown as { __town3d?: WorldHandle }).__town3d = handle;
       // popisky: prvky se vytvoří jednou, engine je každý snímek posune
       const layer = labelsRef.current;
-      const els = new Map<string, HTMLButtonElement>();
+      const els = labelEls.current;
+      els.clear();
       if (layer) {
         for (const p of PLACES) {
           const b = document.createElement("button");
@@ -215,6 +256,19 @@ export function TownWorld({ locale }: { locale: Locale }) {
       say(`${BUILDINGS[id].icon} ${names[id]?.name ?? id}: ${ui.level} ${data.levels[id]}`);
     }
   }
+  async function plotAction(body: object, done: (d: Plots & { gained?: number }) => string) {
+    const res = await fetch("/api/mestecko/parcely", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).catch(() => null);
+    const data = res ? await res.json().catch(() => null) : null;
+    if (data?.ok) {
+      setPlots({ roads: data.roads, plots: data.plots, income: data.income, incomeClaimed: data.incomeClaimed });
+      notifyAccountChanged();
+      say(done(data));
+      void refresh();
+    } else if (data?.error === "not-enough") say(ui.notEnough);
+  }
+  const buildRoad = (id: RoadId) => plotAction({ road: id }, () => `🛤️ ${ui.roadNames[id]}`);
+  const buildPlot = (plot: PlotId, b: PlotBuilding) => plotAction({ plot, building: b }, () => `${PLOT_BUILDING[b].icon} ${ui.plotBuildings[b]?.name ?? b}`);
+  const claimIncome = () => plotAction({ income: true }, (d) => `+${d.gained ?? 0} 🪙`);
   async function claimSet(set: TreasureSet) {
     const res = await fetch("/api/mestecko/poklady", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ claim: set }) }).catch(() => null);
     const data = res?.ok ? await res.json() : null;
@@ -234,7 +288,14 @@ export function TownWorld({ locale }: { locale: Locale }) {
 
   const sel = PLACES.find((p) => p.id === selected) ?? PLACES[0];
   const selText = names[sel.id];
+  const selPlot = isPlotId(sel.id) ? plots.plots[sel.id] : undefined;
   const points = account && account.loggedIn ? account.points : null;
+  const plotSub = (id: string) => {
+    if (!isPlotId(id)) return undefined;
+    const b = plots.plots[id];
+    if (b) return `${PLOT_BUILDING[b].icon} ${ui.plotBuildings[b]?.name ?? b}`;
+    return plots.roads.includes(PLOT_ROAD[id]) ? ui.chooseBuilding : ui.roadFirst;
+  };
   const placeRow = (id: string, sub?: string, right?: React.ReactNode) => {
     const p = PLACES.find((x) => x.id === id)!;
     return (
@@ -332,11 +393,12 @@ export function TownWorld({ locale }: { locale: Locale }) {
               {!loggedIn && <p className="p-2 text-sm opacity-80">{ui.questsEmpty}</p>}
               {quests.map((q) => {
                 const done = q.progress >= q.target;
-                const place = QUEST_PLACE[q.giver];
+                const place = questPlace(q.giver);
+                const giverName = (PLOT_BUILDINGS as readonly string[]).includes(q.giver) ? ui.plotBuildings[q.giver]?.name : place ? names[place]?.name : "";
                 return (
                   <div key={q.id} className="town3d-card">
                     <p className="text-sm font-bold">{ui.quest[q.kind].replace("{n}", String(q.target))}</p>
-                    <p className="text-xs opacity-70">{place ? names[place]?.name : ""}</p>
+                    <p className="text-xs opacity-70">{giverName}</p>
                     <div className="my-1.5 h-2 overflow-hidden rounded-full bg-white/15">
                       <div className="h-full rounded-full bg-[#7ee0b0]" style={{ width: `${(q.progress / q.target) * 100}%` }} />
                     </div>
@@ -399,8 +461,32 @@ export function TownWorld({ locale }: { locale: Locale }) {
                   </div>
                 );
               })}
-              <h3 className="town3d-h">{ui.plots}</h3>
-              {PLACES.filter((p) => p.kind === "plot").map((p) => placeRow(p.id, ui.soon))}
+              <h3 className="town3d-h">{ui.roadsAndPlots}</h3>
+              {ROAD_IDS.map((id) => (
+                <div key={id} className="town3d-card flex items-center justify-between gap-2">
+                  <span className="text-sm font-bold">🛤️ {ui.roadNames[id]}</span>
+                  {plots.roads.includes(id) ? (
+                    <span className="text-xs font-bold text-[#7ee0b0]">✓</span>
+                  ) : (
+                    <button type="button" disabled={!loggedIn || (points ?? 0) < ROAD_COST[id]} onClick={() => buildRoad(id)} className="town3d-btn disabled:opacity-40">
+                      {ui.buildRoad} · {ROAD_COST[id]} 🪙
+                    </button>
+                  )}
+                </div>
+              ))}
+              {plots.income > 0 && (
+                <div className="town3d-card flex items-center justify-between gap-2">
+                  <span className="text-sm font-bold">{ui.income}</span>
+                  {plots.incomeClaimed ? (
+                    <span className="text-xs opacity-70">{ui.incomeDone}</span>
+                  ) : (
+                    <button type="button" onClick={claimIncome} className="town3d-btn town3d-btn-gold">
+                      {ui.incomeClaim.replace("{n}", String(plots.income))}
+                    </button>
+                  )}
+                </div>
+              )}
+              {PLACES.filter((p) => p.kind === "plot").map((p) => placeRow(p.id, plotSub(p.id)))}
             </>
           )}
           {tab === "treasures" &&
@@ -441,9 +527,33 @@ export function TownWorld({ locale }: { locale: Locale }) {
       {/* vybrané místo */}
       <section className="town3d-panel absolute bottom-3 left-3 w-[min(440px,calc(100%-320px))] min-w-[260px] p-4 max-md:bottom-[calc(44%+20px)] max-md:right-3 max-md:w-auto" aria-live="polite">
         <h2 className="text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          {sel.icon} {selText?.name}
+          {selPlot ? `${PLOT_BUILDING[selPlot].icon} ${ui.plotBuildings[selPlot]?.name}` : `${sel.icon} ${selText?.name}`}
         </h2>
-        <p className="mt-1 text-sm opacity-80">{sel.kind === "plot" ? ui.plotDesc : selText?.desc}</p>
+        <p className="mt-1 text-sm opacity-80">
+          {selPlot ? `${ui.plotBuildings[selPlot]?.desc} ${ui.perDay.replace("{n}", String(PLOT_BUILDING[selPlot].income))}` : sel.kind === "plot" ? ui.plotDesc : selText?.desc}
+        </p>
+        {isPlotId(sel.id) && !selPlot && loggedIn && (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {!plots.roads.includes(PLOT_ROAD[sel.id]) ? (
+              <button type="button" disabled={(points ?? 0) < ROAD_COST[PLOT_ROAD[sel.id]]} onClick={() => buildRoad(PLOT_ROAD[sel.id as PlotId])} className="town3d-btn town3d-btn-gold disabled:opacity-40">
+                🛤️ {ui.buildRoad} ({ui.roadNames[PLOT_ROAD[sel.id]]}) · {ROAD_COST[PLOT_ROAD[sel.id]]} 🪙
+              </button>
+            ) : (
+              PLOT_BUILDINGS.filter((b) => !Object.values(plots.plots).includes(b)).map((b) => (
+                <button
+                  key={b}
+                  type="button"
+                  disabled={(points ?? 0) < PLOT_BUILDING[b].cost}
+                  onClick={() => buildPlot(sel.id as PlotId, b)}
+                  title={`${ui.plotBuildings[b]?.desc} ${ui.perDay.replace("{n}", String(PLOT_BUILDING[b].income))}`}
+                  className="town3d-btn disabled:opacity-40"
+                >
+                  {PLOT_BUILDING[b].icon} {ui.plotBuildings[b]?.name} · {PLOT_BUILDING[b].cost} 🪙
+                </button>
+              ))
+            )}
+          </div>
+        )}
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" className="town3d-btn" onClick={() => world.current?.walkTo(sel.id)}>
             🚶 {ui.go}

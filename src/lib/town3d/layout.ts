@@ -4,7 +4,7 @@
 // v public/mestecko3d/<model>.glb s dveřmi k +z; `ry` je natočení kolem osy y.
 
 export type Pt = [number, number];
-export type Road = { a: Pt; b: Pt; w: number; planned?: boolean; drive?: boolean };
+export type Road = { a: Pt; b: Pt; w: number; planned?: boolean; drive?: boolean; id?: string };
 export type PlaceKind = "place" | "world" | "home" | "plot";
 
 export type Place = {
@@ -45,9 +45,9 @@ export const MAIN_ROADS: Road[] = [
   { a: [0, 28], b: [0, 31.5], w: ROAD_W },
   { a: [46, 28], b: [50, 33], w: ROAD_W },
   // plánované cesty k parcelám (dostaví se za body)
-  { a: [-38, 0], b: [-58, 0], w: ROAD_W, planned: true },
-  { a: [38, 0], b: [58, 0], w: ROAD_W, planned: true },
-  { a: [-46, 28], b: [-60, 20], w: ROAD_W, planned: true },
+  { a: [-38, 0], b: [-58, 0], w: ROAD_W, planned: true, id: "zapad" },
+  { a: [38, 0], b: [58, 0], w: ROAD_W, planned: true, id: "vychod" },
+  { a: [-46, 28], b: [-60, 20], w: ROAD_W, planned: true, id: "severozapad" },
 ];
 
 export const RIVER_Z = 14;
@@ -118,9 +118,9 @@ export function distToRoad(x: number, z: number, r: Road): number {
   return nearestOnRoad(x, z, r).d;
 }
 
-// Všechny cesty včetně příjezdů od dveří budov k nejbližší ulici.
-export function buildRoads(): Road[] {
-  const roads = [...MAIN_ROADS];
+// Všechny cesty včetně příjezdů od dveří budov k nejbližší ulici; `built` = dostavěné plánované cesty (podle id).
+export function buildRoads(built: readonly string[] = []): Road[] {
+  const roads = MAIN_ROADS.map((r) => (r.planned && r.id && built.includes(r.id) ? { ...r, planned: false } : r));
   for (const p of PLACES) {
     if (!p.door) continue;
     const [fx, fz] = doorPoint(p);

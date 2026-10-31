@@ -6,7 +6,8 @@ import type { NpcKey } from "./town-npc";
 // ------------------------------------------------------------------------------------------- úkoly
 // Úkol se plní běžnou aktivitou na webu; server ho ověří z XP, bodů a stavu miniher.
 export type QuestKind = "xp" | "games" | "test" | "collect" | "mini" | "npc" | "escape";
-export type QuestDef = { id: string; kind: QuestKind; target: number; reward: number; giver: NpcKey; href?: string };
+export type QuestGiver = NpcKey | "kavarna" | "dilna" | "sklenik" | "mlyn" | "muzeum";
+export type QuestDef = { id: string; kind: QuestKind; target: number; reward: number; giver: QuestGiver; href?: string };
 
 export const QUEST_POOL: QuestDef[] = [
   { id: "xp30", kind: "xp", target: 30, reward: 15, giver: "knihovnice", href: "/kurzy" },
@@ -29,8 +30,8 @@ function hash(s: string): number {
   return h >>> 0;
 }
 
-// Tři úkoly na den: různé druhy, pořadí podle dne a hráče (každý má jiné).
-export function dailyQuests(day: string, userId: string): QuestDef[] {
+// Tři úkoly na den: různé druhy, pořadí podle dne a hráče (každý má jiné); vlastní budovy na parcelách přidají své.
+export function dailyQuests(day: string, userId: string, built: readonly PlotBuilding[] = []): QuestDef[] {
   const order = [...QUEST_POOL].sort((a, b) => hash(day + userId + a.id) - hash(day + userId + b.id));
   const out: QuestDef[] = [];
   for (const q of order) {
@@ -38,11 +39,12 @@ export function dailyQuests(day: string, userId: string): QuestDef[] {
     out.push(q);
     if (out.length >= QUESTS_PER_DAY) break;
   }
+  for (const b of PLOT_BUILDINGS) if (built.includes(b)) out.push(PLOT_QUESTS[b]);
   return out;
 }
 
 export const questReason = (day: string, id: string) => `Městečko: úkol ${day} ${id}`;
-export type QuestSnapshot = { id: string; kind: QuestKind; giver: NpcKey; target: number; progress: number; reward: number; claimed: boolean; href?: string }[];
+export type QuestSnapshot = { id: string; kind: QuestKind; giver: QuestGiver; target: number; progress: number; reward: number; claimed: boolean; href?: string }[];
 
 // ------------------------------------------------------------------------------------------ budovy
 // Každá budova má 3 úrovně za body; úroveň dává bonus (popis v i18n/town-progress.ts).
@@ -120,3 +122,57 @@ export function normalizeTreasures(raw: unknown): TreasureStore {
 export function setComplete(store: TreasureStore, set: TreasureSet): boolean {
   return TREASURE_SETS[set].every((_, i) => (store.pieces[`${set}:${i}`] ?? 0) > 0);
 }
+
+// ------------------------------------------------------------------------------------ parcely a cesty
+// Ke každé parcele vede plánovaná cesta (lib/town3d/layout: MAIN_ROADS s `planned`, ve stejném pořadí jako ROAD_IDS).
+// Až je cesta dostavěná, dá se na parcele postavit jedna z vlastních budov. Každá vydělává body za den
+// a její obyvatel dává jeden úkol navíc.
+export const ROAD_IDS = ["zapad", "vychod", "severozapad"] as const;
+export type RoadId = (typeof ROAD_IDS)[number];
+export const isRoadId = (v: unknown): v is RoadId => typeof v === "string" && (ROAD_IDS as readonly string[]).includes(v);
+export const ROAD_COST: Record<RoadId, number> = { zapad: 150, vychod: 150, severozapad: 220 };
+
+export const PLOT_IDS = ["parcela1", "parcela2", "parcela3", "parcela4", "parcela5"] as const;
+export type PlotId = (typeof PLOT_IDS)[number];
+export const isPlotId = (v: unknown): v is PlotId => typeof v === "string" && (PLOT_IDS as readonly string[]).includes(v);
+export const PLOT_ROAD: Record<PlotId, RoadId> = { parcela1: "zapad", parcela3: "zapad", parcela2: "vychod", parcela4: "vychod", parcela5: "severozapad" };
+
+export const PLOT_BUILDINGS = ["kavarna", "dilna", "sklenik", "mlyn", "muzeum"] as const;
+export type PlotBuilding = (typeof PLOT_BUILDINGS)[number];
+export const isPlotBuilding = (v: unknown): v is PlotBuilding => typeof v === "string" && (PLOT_BUILDINGS as readonly string[]).includes(v);
+export const PLOT_BUILDING: Record<PlotBuilding, { icon: string; cost: number; income: number }> = {
+  kavarna: { icon: "☕", cost: 300, income: 6 },
+  dilna: { icon: "🔨", cost: 300, income: 6 },
+  sklenik: { icon: "🌱", cost: 350, income: 7 },
+  mlyn: { icon: "🌾", cost: 400, income: 8 },
+  muzeum: { icon: "🏛️", cost: 500, income: 10 },
+};
+// úkol navíc od obyvatele vlastní budovy (giver = budova)
+export const PLOT_QUESTS: Record<PlotBuilding, Omit<QuestDef, "giver"> & { giver: PlotBuilding }> = {
+  kavarna: { id: "plot-kavarna", kind: "mini", target: 2, reward: 16, giver: "kavarna" },
+  dilna: { id: "plot-dilna", kind: "games", target: 3, reward: 18, giver: "dilna", href: "/kurzy" },
+  sklenik: { id: "plot-sklenik", kind: "collect", target: 6, reward: 16, giver: "sklenik" },
+  mlyn: { id: "plot-mlyn", kind: "xp", target: 45, reward: 20, giver: "mlyn", href: "/kurzy" },
+  muzeum: { id: "plot-muzeum", kind: "test", target: 1, reward: 20, giver: "muzeum", href: "/kurzy" },
+};
+
+export type PlotState = { roads: RoadId[]; plots: Partial<Record<PlotId, PlotBuilding>>; incomeDay: string | null };
+export function normalizePlots(raw: unknown): PlotState {
+  const r = (raw && typeof raw === "object" ? raw : {}) as { roads?: unknown; plots?: unknown; incomeDay?: unknown };
+  const roads = Array.isArray(r.roads) ? ROAD_IDS.filter((id) => (r.roads as unknown[]).includes(id)) : [];
+  const plots: PlotState["plots"] = {};
+  const used = new Set<string>();
+  const src = (r.plots && typeof r.plots === "object" ? r.plots : {}) as Record<string, unknown>;
+  for (const p of PLOT_IDS) {
+    const b = src[p];
+    if (isPlotBuilding(b) && !used.has(b) && roads.includes(PLOT_ROAD[p])) {
+      plots[p] = b;
+      used.add(b);
+    }
+  }
+  return { roads, plots, incomeDay: typeof r.incomeDay === "string" ? r.incomeDay : null };
+}
+export const plotIncome = (s: PlotState) => Object.values(s.plots).reduce((sum, b) => sum + (b ? PLOT_BUILDING[b].income : 0), 0);
+export const roadReason = (id: RoadId) => `Městečko: cesta ${id}`;
+export const plotReason = (plot: PlotId, b: PlotBuilding) => `Městečko: stavba ${b} na ${plot}`;
+export const incomeReason = (day: string) => `Městečko: příjem z budov ${day}`;

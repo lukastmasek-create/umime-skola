@@ -42,6 +42,8 @@ export type WorldHandle = {
   setQuestMarks: (ids: string[]) => void;
   labels: (cb: (items: { id: string; x: number; y: number; visible: boolean }[]) => void) => void;
   setPaused: (paused: boolean) => void; // během cut scény se městečko nevykresluje
+  setRoads: (built: string[]) => void; // dostavěné plánované cesty (id z layout MAIN_ROADS)
+  setPlots: (plots: Partial<Record<string, string>>) => void; // parcela → model stavby
   dispose: () => void;
 };
 
@@ -197,13 +199,18 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
   }
 
   // ------------------------------------------------------------------------------------------ ulice
-  const roads = buildRoads();
-  const graph = buildGraph(roads);
+  let roads = buildRoads();
+  let graph = buildGraph(roads);
+  const roadGroup = add(new THREE.Group());
   const roadTop = std("#f2e2bf", { roughness: 0.95 });
   const roadEdge = std("#d9c49a", { roughness: 0.95 });
   const planMat = new THREE.MeshStandardMaterial({ color: "#7ee0b0", transparent: true, opacity: 0.0, roughness: 0.9 });
   const planned: THREE.Mesh[] = [];
   const stoneMat = std("#e8d6b0", { roughness: 0.95 });
+  const addRoad = <T extends THREE.Object3D>(o: T) => {
+    roadGroup.add(o);
+    return o;
+  };
   function drawRoad(rd: Road) {
     const [x1, z1] = rd.a;
     const [x2, z2] = rd.b;
@@ -213,27 +220,27 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
       const n = Math.floor(len / 2.2);
       for (let i = 0; i < n; i++) {
         const k = (i + 0.5) / n;
-        const m = add(new THREE.Mesh(new THREE.BoxGeometry(rd.w, 0.08, 1.1), planMat));
+        const m = addRoad(new THREE.Mesh(new THREE.BoxGeometry(rd.w, 0.08, 1.1), planMat));
         m.position.set(x1 + (x2 - x1) * k, 0.05, z1 + (z2 - z1) * k);
         m.rotation.y = ang;
         planned.push(m);
       }
       return;
     }
-    const edge = add(new THREE.Mesh(new THREE.BoxGeometry(rd.w + 0.5, 0.08, len), roadEdge));
+    const edge = addRoad(new THREE.Mesh(new THREE.BoxGeometry(rd.w + 0.5, 0.08, len), roadEdge));
     edge.position.set((x1 + x2) / 2, 0.04, (z1 + z2) / 2);
     edge.rotation.y = ang;
     edge.receiveShadow = true;
-    const top = add(new THREE.Mesh(new THREE.BoxGeometry(rd.w, 0.1, len), roadTop));
+    const top = addRoad(new THREE.Mesh(new THREE.BoxGeometry(rd.w, 0.1, len), roadTop));
     top.position.set((x1 + x2) / 2, 0.06, (z1 + z2) / 2);
     top.rotation.y = ang;
     top.receiveShadow = true;
     // kulaté spoje na koncích (křižovatky nemají zubaté rohy)
     for (const [x, z] of [rd.a, rd.b]) {
-      const c = add(new THREE.Mesh(new THREE.CylinderGeometry(rd.w / 2 + 0.25, rd.w / 2 + 0.25, 0.08, 20), roadEdge));
+      const c = addRoad(new THREE.Mesh(new THREE.CylinderGeometry(rd.w / 2 + 0.25, rd.w / 2 + 0.25, 0.08, 20), roadEdge));
       c.position.set(x, 0.04, z);
       c.receiveShadow = true;
-      const c2 = add(new THREE.Mesh(new THREE.CylinderGeometry(rd.w / 2, rd.w / 2, 0.1, 20), roadTop));
+      const c2 = addRoad(new THREE.Mesh(new THREE.CylinderGeometry(rd.w / 2, rd.w / 2, 0.1, 20), roadTop));
       c2.position.set(x, 0.06, z);
       c2.receiveShadow = true;
     }
@@ -244,7 +251,7 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
       for (let i = 0; i < n; i++) {
         if (rr() < 0.55) continue;
         const k = (i + 0.5) / n;
-        const s = add(new THREE.Mesh(new THREE.BoxGeometry(0.5 + rr() * 0.3, 0.04, 0.4), stoneMat));
+        const s = addRoad(new THREE.Mesh(new THREE.BoxGeometry(0.5 + rr() * 0.3, 0.04, 0.4), stoneMat));
         const off = (rr() - 0.5) * (rd.w - 0.8);
         s.position.set(x1 + (x2 - x1) * k + Math.cos(ang) * off, 0.12, z1 + (z2 - z1) * k - Math.sin(ang) * off);
         s.rotation.y = ang + (rr() - 0.5) * 0.4;
@@ -253,6 +260,20 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
     }
   }
   roads.forEach(drawRoad);
+  let builtRoads = "";
+  function setRoads(built: string[]) {
+    const key = [...built].sort().join(",");
+    if (key === builtRoads) return;
+    builtRoads = key;
+    roads = buildRoads(built);
+    graph = buildGraph(roads);
+    for (const o of [...roadGroup.children]) {
+      roadGroup.remove(o);
+      (o as THREE.Mesh).geometry?.dispose();
+    }
+    planned.length = 0;
+    roads.forEach(drawRoad);
+  }
   // náměstí
   const plaza = add(new THREE.Mesh(new THREE.CylinderGeometry(9.5, 9.5, 0.12, 48), std("#efdcb4", { roughness: 0.95 })));
   plaza.position.y = 0.08;
@@ -333,6 +354,8 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
     loads.push(
       loadGltf(url)
         .then((gltf) => {
+          // parcelu mezitím mohla nahradit stavba (setPlots)
+          if (p.kind === "plot" && (plotModel.get(p.id) ?? p.model) !== p.model) return;
           const root = gltf.scene.clone(true);
           prepModel(root);
           if (p.model === "molo") {
@@ -346,6 +369,40 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
         .catch(() => {}),
     );
   }
+  // vlastní stavby na parcelách (mlýn má zvlášť lopatky, které se točí)
+  const plotModel = new Map<string, string>();
+  const sails: THREE.Object3D[] = [];
+  function setPlots(plots: Partial<Record<string, string>>) {
+    for (const p of PLACES) {
+      if (p.kind !== "plot") continue;
+      const want = plots[p.id] ?? "parcela";
+      if ((plotModel.get(p.id) ?? "parcela") === want) continue;
+      plotModel.set(p.id, want);
+      const g = placeObj.get(p.id);
+      if (!g) continue;
+      loadGltf(MODEL(want))
+        .then(async (gltf) => {
+          if (plotModel.get(p.id) !== want) return;
+          const root = gltf.scene.clone(true);
+          prepModel(root);
+          for (const o of [...g.children]) {
+            const i = sails.indexOf(o);
+            if (i >= 0) sails.splice(i, 1);
+            g.remove(o);
+          }
+          g.add(root);
+          if (want === "mlyn") {
+            const blades = (await loadGltf(MODEL("mlyn-lopatky"))).scene.clone(true);
+            prepModel(blades);
+            blades.position.set(0, 7.2, 2.15);
+            g.add(blades);
+            sails.push(blades);
+          }
+        })
+        .catch(() => {});
+    }
+  }
+
   // mosty, lampy, stánky
   for (const x of BRIDGES_X) {
     loads.push(
@@ -827,6 +884,7 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
     last = now;
     if (!document.hidden && !paused) {
       step(reduce ? dt * 0.5 : dt);
+      for (const sl of sails) sl.rotation.z -= dt * 0.6;
       renderer.render(scene, camera);
       if (labelCb) {
         const rect = el.getBoundingClientRect();
@@ -866,6 +924,8 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
     setPaused(p) {
       paused = p;
     },
+    setRoads,
+    setPlots,
     setCollectibles(slots) {
       collectibles.forEach((c) => scene.remove(c.mesh));
       collectibles = slots

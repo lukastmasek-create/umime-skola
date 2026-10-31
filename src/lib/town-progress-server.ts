@@ -4,11 +4,13 @@ import { ACTIVITY_SOURCES } from "@/lib/gamify";
 import {
   BUILDING_IDS,
   isBuildingId,
+  normalizePlots,
   normalizeTreasures,
   questReason,
   treasureFor,
   type BuildingId,
   type BuildingLevels,
+  type PlotState,
   type QuestDef,
   type QuestKind,
   type TreasureStore,
@@ -17,6 +19,7 @@ import {
 // Serverové pomůcky pro postup v městečku (budovy, úkoly, poklady). Stav je v IdleState pod těmito hrami.
 export const BUILD_GAME = "mestecko-budovy";
 export const TREASURE_GAME = "mestecko-poklady";
+export const PLOT_GAME = "mestecko-parcely";
 const MINI_GAME = "mestecko-mini";
 
 type Db = Prisma.TransactionClient | typeof prisma;
@@ -98,4 +101,14 @@ export async function maybeTreasure(userId: string, day: string, spotIdx: number
   store.pieces[piece] = (store.pieces[piece] ?? 0) + 1;
   await writeTreasures(userId, store, db);
   return piece;
+}
+
+export async function readPlots(userId: string, db: Db = prisma): Promise<PlotState> {
+  const row = await db.idleState.findUnique({ where: { userId_game: { userId, game: PLOT_GAME } } });
+  return normalizePlots(row?.data);
+}
+
+export async function writePlots(userId: string, state: PlotState, db: Db = prisma) {
+  const data = state as unknown as Prisma.InputJsonValue;
+  await db.idleState.upsert({ where: { userId_game: { userId, game: PLOT_GAME } }, create: { userId, game: PLOT_GAME, data }, update: { data } });
 }

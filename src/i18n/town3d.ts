@@ -34,6 +34,18 @@ type UiText = {
   login: string;
   arrived: string;
   plotDesc: string;
+  roadNames: Record<string, string>;
+  buildRoad: string;
+  roadFirst: string;
+  chooseBuilding: string;
+  buildHere: string;
+  perDay: string; // {n}
+  income: string;
+  incomeClaim: string; // {n}
+  incomeDone: string;
+  notEnough: string;
+  roadsAndPlots: string;
+  plotBuildings: Record<string, { name: string; desc: string }>;
   buildBonus: Record<string, string>;
   quest: Record<string, string>;
 };
@@ -186,7 +198,19 @@ const UI: Record<Locale, UiText> = {
     claimSet: "Vyzvednout odměnu",
     login: "Přihlas se, ať se ti postup ukládá.",
     arrived: "Jsi u místa",
-    plotDesc: "Volná parcela pro vlastní stavbu. Nejdřív se za body dostaví cesta, pak si tu postavíš budovu s vlastními úkoly. Stavění parcel připravujeme.",
+    plotDesc: "Volná parcela pro vlastní stavbu. Nejdřív sem za body dostav cestu, pak si vyber budovu: každá vydělává body každý den a její obyvatel ti dá úkol navíc.",
+    roadNames: { zapad: "Západní ulice", vychod: "Východní ulice", severozapad: "Pobřežní ulice" },
+    buildRoad: "Postavit cestu",
+    roadFirst: "Nejdřív sem postav cestu.",
+    chooseBuilding: "Co tu postavíš?",
+    buildHere: "Postavit",
+    perDay: "+{n} 🪙 denně",
+    income: "Příjem z vlastních budov",
+    incomeClaim: "Vybrat +{n} 🪙",
+    incomeDone: "Dnešní příjem vybrán, zítra zase.",
+    notEnough: "Na to nemáš dost bodů.",
+    roadsAndPlots: "Cesty a parcely",
+    plotBuildings: { kavarna: { name: "Kavárna", desc: "Terasa se slunečníky. Kavárnice ti každý den zadá minihry." }, dilna: { name: "Truhlářská dílna", desc: "Ponk, koza a hromady prken. Truhlář chce, abys hrál/a hry v kurzech." }, sklenik: { name: "Skleník", desc: "Rostliny pod sklem a záhonky. Zahradnice tě pošle sbírat věci po městě." }, mlyn: { name: "Větrný mlýn", desc: "Lopatky se točí a mlýn mele. Mlynář chce, abys sbíral/a XP." }, muzeum: { name: "Muzeum", desc: "Sloupy, kupole a glóbus. Kurátor ti dá test z kurzů." } },
     buildBonus: { skola: "+5 % XP za testy / úroveň", herna: "+5 % XP ve hrách / úroveň", obchod: "3 % bodů zpět z nákupů / úroveň", namesti: "+1 bod za sebranou věc / úroveň", pekarna: "+1 kolo minihry / úroveň", knihovna: "+1 kolo minihry / úroveň", hvezdarna: "+1 kolo minihry / úroveň", kvetinarstvi: "+1 kolo minihry / úroveň" },
     quest: { xp: "Získej {n} XP v testech a hrách", games: "Zahraj si {n}× hru v kurzech", test: "Dokonči test", collect: "Seber {n} věcí po městě", mini: "Zahraj si {n}× minihru v městečku", npc: "Odpověz obyvateli na otázku", escape: "Vyřeš únikovku" },
   },
@@ -221,7 +245,19 @@ const UI: Record<Locale, UiText> = {
     claimSet: "Claim reward",
     login: "Log in to save your progress.",
     arrived: "You're here",
-    plotDesc: "A free plot for your own building. First pay to finish the road, then build something with its own quests. Plot building is coming soon.",
+    plotDesc: "A free plot for your own building. First pay to finish the road, then pick a building: each one earns points every day and its resident gives you an extra quest.",
+    roadNames: { zapad: "West Street", vychod: "East Street", severozapad: "Seaside Street" },
+    buildRoad: "Build the road",
+    roadFirst: "Build a road here first.",
+    chooseBuilding: "What will you build?",
+    buildHere: "Build",
+    perDay: "+{n} 🪙 a day",
+    income: "Income from your buildings",
+    incomeClaim: "Collect +{n} 🪙",
+    incomeDone: "Today's income collected, come back tomorrow.",
+    notEnough: "You don't have enough points.",
+    roadsAndPlots: "Roads and plots",
+    plotBuildings: { kavarna: { name: "Café", desc: "A terrace with parasols. The café owner gives you minigames every day." }, dilna: { name: "Carpenter's workshop", desc: "A workbench, a sawhorse and stacks of planks. The carpenter wants you to play course games." }, sklenik: { name: "Greenhouse", desc: "Plants under glass and garden beds. The gardener sends you collecting around town." }, mlyn: { name: "Windmill", desc: "The sails turn and the mill grinds. The miller wants you to earn XP." }, muzeum: { name: "Museum", desc: "Columns, a dome and a globe. The curator gives you a course test." } },
     buildBonus: { skola: "+5% XP for tests / level", herna: "+5% XP in games / level", obchod: "3% of points back / level", namesti: "+1 point per item / level", pekarna: "+1 minigame round / level", knihovna: "+1 minigame round / level", hvezdarna: "+1 minigame round / level", kvetinarstvi: "+1 minigame round / level" },
     quest: { xp: "Earn {n} XP in tests and games", games: "Play {n} course games", test: "Finish a test", collect: "Collect {n} items in town", mini: "Play {n} town minigames", npc: "Answer a resident's question", escape: "Solve an escape room" },
   },
@@ -256,7 +292,19 @@ const UI: Record<Locale, UiText> = {
     claimSet: "Belohnung abholen",
     login: "Melde dich an, damit dein Fortschritt gespeichert wird.",
     arrived: "Du bist da",
-    plotDesc: "Ein freies Grundstück für ein eigenes Gebäude. Zuerst wird der Weg für Punkte fertig gebaut, dann baust du hier etwas mit eigenen Aufgaben. Kommt bald.",
+    plotDesc: "Ein freies Grundstück für dein eigenes Gebäude. Bezahle zuerst die Straße, dann wähle ein Gebäude: Jedes bringt täglich Punkte und sein Bewohner gibt dir eine Extra-Aufgabe.",
+    roadNames: { zapad: "Weststraße", vychod: "Oststraße", severozapad: "Küstenstraße" },
+    buildRoad: "Straße bauen",
+    roadFirst: "Bau zuerst eine Straße hierher.",
+    chooseBuilding: "Was baust du hier?",
+    buildHere: "Bauen",
+    perDay: "+{n} 🪙 pro Tag",
+    income: "Einnahmen deiner Gebäude",
+    incomeClaim: "+{n} 🪙 abholen",
+    incomeDone: "Heutige Einnahmen abgeholt, morgen wieder.",
+    notEnough: "Dafür hast du nicht genug Punkte.",
+    roadsAndPlots: "Straßen und Grundstücke",
+    plotBuildings: { kavarna: { name: "Café", desc: "Eine Terrasse mit Sonnenschirmen. Die Cafébesitzerin gibt dir täglich Minispiele." }, dilna: { name: "Tischlerei", desc: "Hobelbank, Sägebock und Bretterstapel. Der Tischler will, dass du Kursspiele spielst." }, sklenik: { name: "Gewächshaus", desc: "Pflanzen unter Glas und Beete. Die Gärtnerin schickt dich zum Sammeln durchs Städtchen." }, mlyn: { name: "Windmühle", desc: "Die Flügel drehen sich und die Mühle mahlt. Der Müller will, dass du XP sammelst." }, muzeum: { name: "Museum", desc: "Säulen, Kuppel und Globus. Der Kurator gibt dir einen Kurstest." } },
     buildBonus: { skola: "+5 % XP für Tests / Stufe", herna: "+5 % XP in Spielen / Stufe", obchod: "3 % Punkte zurück / Stufe", namesti: "+1 Punkt pro Fund / Stufe", pekarna: "+1 Runde Minispiel / Stufe", knihovna: "+1 Runde Minispiel / Stufe", hvezdarna: "+1 Runde Minispiel / Stufe", kvetinarstvi: "+1 Runde Minispiel / Stufe" },
     quest: { xp: "Sammle {n} XP in Tests und Spielen", games: "Spiel {n} Kursspiele", test: "Schließ einen Test ab", collect: "Sammle {n} Dinge im Städtchen", mini: "Spiel {n} Minispiele im Städtchen", npc: "Beantworte eine Frage eines Bewohners", escape: "Löse einen Escape-Room" },
   },
@@ -291,7 +339,19 @@ const UI: Record<Locale, UiText> = {
     claimSet: "Забрать награду",
     login: "Войди, чтобы прогресс сохранялся.",
     arrived: "Ты на месте",
-    plotDesc: "Свободный участок для своей постройки. Сначала за баллы достраивается дорога, потом здесь можно построить здание со своими заданиями. Скоро.",
+    plotDesc: "Свободный участок для своей постройки. Сначала дострой за баллы дорогу, потом выбери здание: каждое приносит баллы каждый день, а его житель даёт дополнительное задание.",
+    roadNames: { zapad: "Западная улица", vychod: "Восточная улица", severozapad: "Береговая улица" },
+    buildRoad: "Построить дорогу",
+    roadFirst: "Сначала построй сюда дорогу.",
+    chooseBuilding: "Что ты здесь построишь?",
+    buildHere: "Построить",
+    perDay: "+{n} 🪙 в день",
+    income: "Доход от твоих зданий",
+    incomeClaim: "Забрать +{n} 🪙",
+    incomeDone: "Доход за сегодня получен, приходи завтра.",
+    notEnough: "Тебе не хватает баллов.",
+    roadsAndPlots: "Дороги и участки",
+    plotBuildings: { kavarna: { name: "Кафе", desc: "Терраса с зонтиками. Хозяйка кафе каждый день даёт мини-игры." }, dilna: { name: "Столярная мастерская", desc: "Верстак, козлы и штабеля досок. Столяр хочет, чтобы ты играл в игры курсов." }, sklenik: { name: "Теплица", desc: "Растения под стеклом и грядки. Садовница отправит тебя собирать вещи по городку." }, mlyn: { name: "Ветряная мельница", desc: "Крылья крутятся, мельница мелет. Мельник хочет, чтобы ты набирал XP." }, muzeum: { name: "Музей", desc: "Колонны, купол и глобус. Хранитель даст тебе тест из курсов." } },
     buildBonus: { skola: "+5 % XP за тесты / уровень", herna: "+5 % XP в играх / уровень", obchod: "3 % баллов назад / уровень", namesti: "+1 балл за находку / уровень", pekarna: "+1 раунд мини-игры / уровень", knihovna: "+1 раунд мини-игры / уровень", hvezdarna: "+1 раунд мини-игры / уровень", kvetinarstvi: "+1 раунд мини-игры / уровень" },
     quest: { xp: "Набери {n} XP в тестах и играх", games: "Сыграй {n} игр в курсах", test: "Пройди тест", collect: "Собери {n} предметов в городке", mini: "Сыграй {n} мини-игр в городке", npc: "Ответь жителю на вопрос", escape: "Пройди квест-комнату" },
   },

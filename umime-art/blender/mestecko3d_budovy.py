@@ -570,6 +570,295 @@ def build_lampa():
     lamp_post(0, 0, 2.6)
 
 
+# ------------------------------------------------------------------ vlastní budovy na parcelách (8 × 7 m)
+def build_kavarna():
+    """Kavárna s terasou, slunečníky a cedulí s hrnkem."""
+    w, d = 5.6, 4.2
+    cottage(w, d, 3.2, "#fff4e0", "#7a4a2a", shutters="#2e8a6a", wins=2, chim=True)
+    for k in range(8):
+        box((-w / 2 + 0.35 + k * 0.7, -d / 2 - 0.55, 0.35 + 2.45), (0.7, 1.15, 0.07), mat(["#2e8a6a", WHITE][k % 2], 0.6), 0.01, rot=(math.radians(-20), 0, 0))
+
+    def cup(x, y, z):
+        cyl((x, y - 0.05, z - 0.02), 0.16, 0.28, mat(WHITE, 0.4), verts=14, rot=(math.pi / 2, 0, 0))
+        torus((x + 0.2, y - 0.05, z - 0.02), 0.08, 0.025, mat(WHITE, 0.4), rot=(math.pi / 2, 0, 0))
+        for k in range(3):
+            sphere((x - 0.06 + k * 0.06, y - 0.06, z + 0.2 + k * 0.08), 0.05, mat("#f4ead8", 0.6), seg=6)
+    sign_board(0, -d / 2 - 0.08, 0.35 + 3.0, 1.2, 0.55, face="#fff4e0", icon=cup)
+    # terasa: dlažba, stolky, židle a slunečníky
+    box((0, -d / 2 - 1.3, 0.04), (w + 1.6, 2.4, 0.08), mat("#d8c8a8", 0.9), 0.01)
+    for (x, c) in [(-2.4, "#ff5d73"), (0.0, "#ffd24d"), (2.4, "#3fc1ff")]:
+        y = -d / 2 - 1.5
+        cyl((x, y, 0.75), 0.45, 0.06, mat(WHITE, 0.5), verts=20)
+        cyl((x, y, 0.4), 0.05, 0.7, mat("#3a3f55", 0.4, 0.6), verts=8)
+        cyl((x, y, 0.1), 0.25, 0.04, mat("#3a3f55", 0.4, 0.6), verts=12)
+        cyl((x, y, 1.6), 0.03, 1.7, mat("#f4ead8", 0.6), verts=6)
+        cone((x, y, 2.35), 1.0, 0.45, mat(c, 0.6), verts=10)
+        sphere((x, y, 2.6), 0.06, mat(c, 0.6), seg=6)
+        cyl((x + 0.15, y, 0.82), 0.06, 0.1, mat(WHITE, 0.4), verts=10)
+        for s in (-1, 1):
+            cx = x + s * 0.7
+            box((cx, y, 0.45), (0.42, 0.42, 0.06), mat("#8a5a34", 0.7), 0.02)
+            box((cx + s * 0.19, y, 0.72), (0.05, 0.42, 0.5), mat("#8a5a34", 0.7), 0.01)
+            for dx in (-0.17, 0.17):
+                for dy in (-0.17, 0.17):
+                    box((cx + dx, y + dy, 0.22), (0.04, 0.04, 0.44), mat("#3a3f55", 0.5, 0.5), 0)
+    # tabule s nabídkou a truhlíky
+    for s in (-1, 1):
+        box((3.6, -d / 2 - 0.7 + s * 0.15, 0.55), (0.7, 0.04, 1.0), mat("#2a2a32", 0.8), 0.01, rot=(s * 0.25, 0, 0))
+    for k in range(3):
+        box((3.6 - 0.2, -d / 2 - 0.86, 0.75 - k * 0.2), (0.35, 0.01, 0.04), mat(WHITE, 0.6), 0)
+    for x in (-3.4, 3.4):
+        box((x, 0.5, 0.3), (0.5, 2.6, 0.5), mat("#8a5a34", 0.7), 0.03)
+        for k in range(5):
+            sphere((x, -0.6 + k * 0.55, 0.65), 0.17, mat(["#ff5d73", "#ffd24d", "#a87bff"][k % 3], 0.5), seg=8)
+
+
+def build_dilna():
+    """Truhlářská dílna: dřevěná stodola s velkými vraty, ponk s nářadím, koza s kládou, prkna a kolečko."""
+    w, d, h = 6.4, 4.6, 3.2
+    foundation(w, d)
+    z0 = 0.35
+    plank = mat("#a8744a", 0.85)
+    box((0, 0, z0 + h / 2), (w, d, h), plank, 0.02)
+    for k in range(int(w / 0.4) + 1):
+        for y in (-d / 2 - 0.02, d / 2 + 0.02):
+            box((-w / 2 + k * 0.4, y, z0 + h / 2), (0.05, 0.04, h), mat("#7a4a2a", 0.9), 0)
+    for k in range(int(d / 0.4) + 1):
+        for x in (-w / 2 - 0.02, w / 2 + 0.02):
+            box((x, -d / 2 + k * 0.4, z0 + h / 2), (0.04, 0.05, h), mat("#7a4a2a", 0.9), 0)
+    corner_posts(w, d, z0, h, "#5a3a20")
+    trim(w, d, z0 + h, "#5a3a20")
+    rh = 2.0
+    gable_wall(0, 0, z0 + h, w, d, rh, plank, along="x")
+    prism_roof(0, 0, z0 + h, w, d, rh, mat("#5a5f6a", 0.7), over=0.4, along="x")
+    tiles(0, 0, z0 + h, w, d, rh, mat("#4a4f5a", 0.7), over=0.4, rows=7, along="x")
+    # velká vrata s křížem
+    for s in (-1, 1):
+        x = s * 0.75
+        box((x, -d / 2 - 0.05, z0 + 1.25), (1.45, 0.08, 2.5), mat("#8a5a34", 0.8), 0.01)
+        for a in (0.95, -0.95):
+            box((x, -d / 2 - 0.1, z0 + 1.25), (0.1, 0.04, 2.7), mat("#5a3a20", 0.8), 0, rot=(0, a * s * 0.55, 0))
+        for z in (0.2, 2.3):
+            box((x, -d / 2 - 0.1, z0 + z), (1.45, 0.04, 0.12), mat("#5a3a20", 0.8), 0)
+        sphere((s * 0.12, -d / 2 - 0.14, z0 + 1.2), 0.06, mat("#3a3f55", 0.4, 0.7), seg=6)
+    box((0, -d / 2 - 0.08, z0 + 2.6), (3.2, 0.1, 0.16), mat("#5a3a20", 0.8), 0)
+    for x in (-2.4, 2.4):
+        window(x, -d / 2, z0 + 1.7, 0.8, 0.8, frame="#5a3a20", shutters="#c0582a")
+    for y in (-0.8, 0.9):
+        window(-w / 2, y, z0 + 1.7, 0.8, 0.8, face="-x", frame="#5a3a20")
+        window(w / 2, y, z0 + 1.7, 0.8, 0.8, face="+x", frame="#5a3a20")
+    window(0, d / 2, z0 + 1.7, 1.2, 0.8, face="+y", frame="#5a3a20")
+    chimney(w * 0.3, d * 0.15, z0 + h + rh * 0.5, 1.2, "#7a7f8a")
+
+    def hammer(x, y, z):
+        box((x, y - 0.05, z - 0.05), (0.06, 0.04, 0.4), mat("#a8744a", 0.7), 0)
+        box((x, y - 0.06, z + 0.17), (0.3, 0.06, 0.12), mat("#4a4e5c", 0.4, 0.7), 0.01)
+    sign_board(0, -d / 2 - 0.08, z0 + 3.0, 1.0, 0.5, face="#ffd24d", icon=hammer)
+    # ponk s nářadím
+    wood = mat("#8a5a34", 0.8)
+    box((-2.4, -d / 2 - 1.2, 0.9), (2.0, 0.7, 0.12), wood, 0.02)
+    for dx in (-0.9, 0.9):
+        for dy in (-0.28, 0.28):
+            box((-2.4 + dx, -d / 2 - 1.2 + dy, 0.42), (0.1, 0.1, 0.84), wood, 0)
+    box((-2.4, -d / 2 - 1.2, 0.3), (1.9, 0.6, 0.05), wood, 0)
+    box((-3.0, -d / 2 - 1.2, 1.02), (0.5, 0.06, 0.1), mat("#4a4e5c", 0.4, 0.7), 0.01)
+    box((-2.0, -d / 2 - 1.15, 0.98), (0.6, 0.03, 0.14), mat("#c8ccd4", 0.3, 0.8), 0)
+    box((-1.65, -d / 2 - 1.15, 1.0), (0.14, 0.06, 0.14), mat("#a8744a", 0.6), 0.01)
+    cyl((-2.6, -d / 2 - 1.3, 1.0), 0.06, 0.12, mat("#c0392b", 0.5), verts=10)
+    # koza s kládou a pila
+    for s in (-1, 1):
+        box((2.2 + s * 0.5, -d / 2 - 1.3, 0.35), (0.08, 0.6, 0.7), wood, 0, rot=(0, s * 0.3, 0))
+    cyl((2.2, -d / 2 - 1.3, 0.75), 0.22, 2.2, mat("#94643c", 0.85), verts=12, rot=(0, math.pi / 2, 0))
+    for s in (-1, 1):
+        cyl((2.2 + s * 1.1, -d / 2 - 1.3, 0.75), 0.2, 0.02, mat("#e8c890", 0.8), verts=12, rot=(0, math.pi / 2, 0))
+    # prkna a kolečko
+    for k in range(5):
+        box((-w / 2 - 0.6, 0.2, 0.08 + k * 0.08), (0.4, 3.0, 0.07), mat(["#c8945a", "#b8844a"][k % 2], 0.8), 0.01)
+    box((w / 2 + 0.7, -0.6, 0.55), (0.7, 1.0, 0.35), mat("#3f9a4a", 0.6), 0.03)
+    torus((w / 2 + 0.7, -1.25, 0.25), 0.22, 0.06, mat("#2a2a32", 0.8), rot=(0, math.pi / 2, 0))
+    for s in (-1, 1):
+        box((w / 2 + 0.7 + s * 0.25, 0.1, 0.5), (0.05, 0.9, 0.05), wood, 0)
+    cyl((w / 2 + 0.6, 1.4, 0.45), 0.32, 0.9, wood, verts=14)
+
+
+def build_sklenik():
+    """Skleník: cihlová podezdívka, prosklené stěny a střecha v bílém rámu, uvnitř stoly s květináči."""
+    w, d, h = 6.6, 4.6, 2.6
+    brick = mat("#b8574a", 0.85)
+    box((0, 0, 0.3), (w, d, 0.6), brick, 0.02)
+    for k in range(int(w / 0.5)):
+        for y in (-d / 2 - 0.01, d / 2 + 0.01):
+            box((-w / 2 + 0.25 + k * 0.5, y, 0.3), (0.02, 0.02, 0.6), mat("#d8d0c0", 0.9), 0)
+    glass = mat("#cfefff", 0.05, alpha=0.35)
+    frame = mat(WHITE, 0.5)
+    z0 = 0.6
+    box((0, 0, z0 + h / 2), (w - 0.1, d - 0.1, h), glass, 0)
+    for k in range(int(w / 0.8) + 1):
+        x = -w / 2 + k * (w / int(w / 0.8))
+        for y in (-d / 2, d / 2):
+            box((x, y, z0 + h / 2), (0.08, 0.08, h), frame, 0)
+    for k in range(int(d / 0.8) + 1):
+        y = -d / 2 + k * (d / int(d / 0.8))
+        for x in (-w / 2, w / 2):
+            box((x, y, z0 + h / 2), (0.08, 0.08, h), frame, 0)
+    for z in (z0 + 0.02, z0 + h / 2, z0 + h):
+        trim(w, d, z, WHITE, 0.08)
+    rh = 1.4
+    prism_roof(0, 0, z0 + h, w, d, rh, glass, over=0.05, thick=0.04, along="x")
+    gable_wall(0, 0, z0 + h, w - 0.1, d - 0.1, rh, glass, along="x")
+    ang = math.atan2(rh, d / 2)
+    ln = math.hypot(rh, d / 2)
+    for k in range(int(w / 0.8) + 1):
+        x = -w / 2 + k * (w / int(w / 0.8))
+        for s in (-1, 1):
+            box((x, s * d / 4, z0 + h + rh / 2), (0.07, ln, 0.07), frame, 0, rot=(-s * ang, 0, 0))
+    box((0, 0, z0 + h + rh), (w + 0.1, 0.1, 0.1), frame, 0)
+    # dveře
+    door(0, -d / 2, z0 - 0.05, 1.0, 2.0, color="#cfefff", frame=WHITE)
+    # uvnitř: stoly, květináče, rostliny
+    rnd = random.Random(7)
+    for y in (-1.0, 1.1):
+        box((0, y, z0 + 0.8), (w - 1.2, 0.8, 0.08), mat("#8a5a34", 0.7), 0.01)
+        for x in (-w / 2 + 0.8, w / 2 - 0.8):
+            box((x, y, z0 + 0.4), (0.08, 0.7, 0.8), mat("#8a5a34", 0.7), 0)
+        for k in range(8):
+            x = -w / 2 + 1.0 + k * ((w - 2.0) / 7)
+            cyl((x, y, z0 + 0.98), 0.17, 0.28, mat("#c8743a", 0.8), verts=10, r2=0.13)
+            sphere((x, y, z0 + 1.28), rnd.uniform(0.18, 0.3), mat(rnd.choice(["#3f9a4a", "#4eaa58", "#2f8a42"]), 0.7), seg=8)
+            if k % 2:
+                sphere((x + 0.06, y - 0.08, z0 + 1.45), 0.08, mat(rnd.choice(["#ff5d73", "#ffd24d", "#a87bff", WHITE]), 0.5), seg=6)
+    cyl((w / 2 - 0.9, 0, z0 + 0.3), 0.3, 0.6, mat("#c8743a", 0.8), verts=12)
+    cyl((w / 2 - 0.9, 0, z0 + 1.1), 0.06, 1.0, mat("#7a4a2a", 0.9), verts=6)
+    sphere((w / 2 - 0.9, 0, z0 + 1.8), 0.55, mat("#3f9a4a", 0.7), seg=10)
+    for k in range(4):
+        sphere((w / 2 - 0.9 + math.cos(k) * 0.4, math.sin(k) * 0.4, z0 + 1.8 + (k % 2) * 0.2), 0.08, mat("#ff9f43", 0.5), seg=6)
+    # venku: záhonky se zeleninou, konev a pytle
+    for x in (-2.2, 2.2):
+        box((x, -d / 2 - 1.3, 0.2), (2.4, 1.0, 0.4), mat("#8a5a34", 0.8), 0.02)
+        box((x, -d / 2 - 1.3, 0.38), (2.3, 0.9, 0.06), mat("#5a3a20", 1.0), 0)
+        for k in range(5):
+            px = x - 0.9 + k * 0.45
+            if x < 0:
+                cone((px, -d / 2 - 1.3, 0.55), 0.12, 0.3, mat("#3f9a4a", 0.7), verts=5)
+                cone((px, -d / 2 - 1.3, 0.38), 0.07, 0.18, mat("#ff8a3a", 0.6), verts=6, rot=(math.pi, 0, 0))
+            else:
+                sphere((px, -d / 2 - 1.3, 0.55), 0.17, mat("#7ac85a", 0.7), seg=8)
+    cyl((-w / 2 - 0.6, 0.6, 0.25), 0.2, 0.5, mat("#3fc1ff", 0.4, 0.3), verts=12)
+    cyl((-w / 2 - 0.85, 0.6, 0.4), 0.03, 0.5, mat("#3fc1ff", 0.4, 0.3), verts=6, rot=(0, -0.9, 0))
+    for k in range(2):
+        sphere((-w / 2 - 0.6, -0.6 - k * 0.6, 0.3), 0.3, mat("#d8c8a0", 0.9), seg=8, scale=(1, 0.8, 1.2))
+
+
+def build_mlyn():
+    """Větrný mlýn: osmiboká věž, ochoz se zábradlím, kuželová střecha. Lopatky jsou zvlášť (mlyn-lopatky)."""
+    stone = mat("#f4ecdc", 0.85)
+    cyl((0, 0, 0.25), 2.7, 0.5, mat("#b8b0a8", 0.9), verts=8)
+    cyl((0, 0, 3.8), 2.1, 6.6, stone, verts=8, r2=1.5)
+    for k in range(8):
+        a = k * TAU / 8 + TAU / 16
+        # žebro kopíruje zúžení věže (z poloměru 2,1 na 1,5)
+        box((math.cos(a) * 1.82, math.sin(a) * 1.82, 3.8), (0.14, 0.14, 6.62), mat("#c8b8a0", 0.8), 0, rot=(0, -math.atan2(0.6, 6.6), a))
+    # ochoz
+    cyl((0, 0, 3.3), 2.6, 0.18, mat("#8a5a34", 0.8), verts=24)
+    for k in range(24):
+        a = k * TAU / 24
+        cyl((math.cos(a) * 2.5, math.sin(a) * 2.5, 3.75), 0.04, 0.8, mat("#5a3a20", 0.8), verts=5)
+    torus((0, 0, 4.15), 2.5, 0.05, mat("#5a3a20", 0.8), seg=32)
+    # střecha a osa lopatek
+    cone((0, 0, 8.1), 1.85, 2.2, mat("#7a4a2a", 0.75), verts=12)
+    cyl((0, 0, 7.15), 1.75, 0.3, mat("#5a3a20", 0.8), verts=12)
+    sphere((0, 0, 9.25), 0.18, mat("#ffd24d", 0.3, 0.7), seg=8)
+    cyl((0, -1.6, 7.2), 0.22, 0.9, mat("#5a3a20", 0.8), verts=10, rot=(math.pi / 2, 0, 0))
+    door(0, -2.05, 0.5, 1.0, 1.9, color="#7a4a2a", steps=1)
+    for (z, a) in [(5.2, 0), (2.4, math.pi / 2), (5.4, math.pi), (2.4, -math.pi / 2)]:
+        r = 1.95 - (z - 0.5) / 6.6 * 0.6
+        x, y = math.sin(a) * r, -math.cos(a) * r
+        face = {0: "-y", 1: "+x", 2: "+y", 3: "-x"}[round(a / (math.pi / 2)) % 4]
+        window(x, y, z, 0.6, 0.8, face=face, frame="#7a4a2a", shutters="#3f9a4a")
+    # pytle s moukou a vozík
+    for k in range(4):
+        sphere((-2.4 + (k % 2) * 0.55, -2.6 - (k // 2) * 0.1, 0.3 + (k // 2) * 0.45), 0.32, mat("#f4ead8", 0.9), seg=10, scale=(1, 0.8, 1.2))
+    box((2.6, -1.9, 0.6), (1.4, 0.9, 0.35), mat("#8a5a34", 0.8), 0.03)
+    for s in (-1, 1):
+        torus((2.6 + s * 0.45, -1.9 - 0.5, 0.35), 0.3, 0.05, mat("#5a3a20", 0.8), rot=(math.pi / 2, 0, 0))
+    box((3.5, -1.9, 0.6), (0.9, 0.06, 0.06), mat("#5a3a20", 0.8), 0)
+    sphere((2.5, -1.9, 0.95), 0.28, mat("#e8c890", 0.9), seg=8, scale=(1.2, 0.8, 0.8))
+    # obilí kolem
+    rnd = random.Random(11)
+    for k in range(40):
+        x, y = rnd.uniform(-3.8, 3.8), rnd.uniform(1.0, 3.3)
+        cyl((x, y, 0.35), 0.03, 0.7, mat("#d8b04a", 0.8), verts=4)
+        sphere((x, y, 0.75), 0.07, mat("#e8c050", 0.7), seg=6, scale=(0.7, 0.7, 1.6))
+
+
+def build_mlyn_lopatky():
+    """Čtyři lopatky mlýna kolem středu (osa otáčení = Y v Blenderu, v three.js Z)."""
+    wood = mat("#7a4a2a", 0.8)
+    cloth = mat("#fff4e0", 0.9)
+    cyl((0, 0, 0), 0.3, 0.3, mat("#5a3a20", 0.8), verts=12, rot=(math.pi / 2, 0, 0))
+    for k in range(4):
+        a = k * TAU / 4 + 0.3
+        ca, sa = math.cos(a), math.sin(a)
+        box((ca * 2.1, 0, sa * 2.1), (4.2, 0.1, 0.14), wood, 0.01, rot=(0, -a, 0))
+        # rám plachty a plachta
+        for j in range(6):
+            r = 1.0 + j * 0.6
+            box((ca * r - sa * 0.45, 0.02, sa * r + ca * 0.45), (0.06, 0.06, 0.9), wood, 0, rot=(0, -a, 0))
+        box((ca * 2.5 - sa * 0.45, 0.06, sa * 2.5 + ca * 0.45), (3.0, 0.03, 0.85), cloth, 0, rot=(0, -a, 0))
+        box((ca * 2.5 - sa * 0.9, 0.0, sa * 2.5 + ca * 0.9), (3.0, 0.08, 0.06), wood, 0, rot=(0, -a, 0))
+
+
+def build_muzeum():
+    """Muzeum: schodiště, šest sloupů, tympanon s glóbusem, kupole a socha glóbusu před vchodem."""
+    w, d, h = 7.0, 5.0, 3.8
+    for k in range(4):
+        box((0, -0.2 * k, 0.12 + 0.12 * k), (w + 1.2 - 0.3 * k, d + 1.4 - 0.4 * k, 0.24), mat("#e0d8c8", 0.9), 0.02)
+    z0 = 0.96
+    marble = mat("#f4efe4", 0.6)
+    box((0, 0.5, z0 + h / 2), (w - 0.4, d - 1.0, h), mat("#e8dcc4", 0.8), 0.03)
+    for k in range(6):
+        x = -w / 2 + 0.55 + k * (w - 1.1) / 5
+        cyl((x, -d / 2 + 0.2, z0 + h / 2), 0.25, h - 0.3, marble, verts=16)
+        for j in range(8):
+            a = j * TAU / 8
+            box((x + math.cos(a) * 0.24, -d / 2 + 0.2 + math.sin(a) * 0.24, z0 + h / 2), (0.03, 0.03, h - 0.4), mat("#ddd6c8", 0.7), 0)
+        box((x, -d / 2 + 0.2, z0 + 0.1), (0.66, 0.66, 0.2), marble, 0.02)
+        box((x, -d / 2 + 0.2, z0 + h - 0.1), (0.66, 0.66, 0.2), marble, 0.02)
+    box((0, 0, z0 + h + 0.2), (w + 0.3, d + 0.2, 0.4), marble, 0.03)
+    rh = 1.4
+    gable_wall(0, 0, z0 + h + 0.4, w, d, rh, marble, along="y")
+    prism_roof(0, 0, z0 + h + 0.4, w, d, rh, mat("#5a7a9a", 0.6), over=0.25, along="y")
+    mesh([(-w / 2 + 0.4, -d / 2 - 0.12, z0 + h + 0.45), (w / 2 - 0.4, -d / 2 - 0.12, z0 + h + 0.45), (0, -d / 2 - 0.12, z0 + h + 0.4 + rh - 0.1)], [(0, 1, 2)], mat("#e8dcc4", 0.6), "tympanon")
+    sphere((0, -d / 2 - 0.2, z0 + h + 0.95), 0.32, mat("#3fa0e8", 0.4), seg=14)
+    torus((0, -d / 2 - 0.2, z0 + h + 0.95), 0.42, 0.03, mat("#ffd24d", 0.3, 0.7), rot=(math.pi / 2, 0.4, 0))
+    # kupole
+    cyl((0, 0.6, z0 + h + 1.6), 1.3, 0.6, marble, verts=24)
+    for k in range(12):
+        a = k * TAU / 12
+        window(math.cos(a) * 1.3, 0.6 + math.sin(a) * 1.3, z0 + h + 1.6, 0.25, 0.35, face="-y") if abs(a - 3 * math.pi / 2) < 0.6 else None
+    dome((0, 0.6, z0 + h + 1.9), 1.35, mat("#5a9a8a", 0.5, 0.3), seg=24)
+    cyl((0, 0.6, z0 + h + 3.35), 0.06, 0.5, mat("#ffd24d", 0.3, 0.7), verts=8)
+    sphere((0, 0.6, z0 + h + 3.65), 0.14, mat("#ffd24d", 0.3, 0.7), seg=10)
+    door(0, -d / 2 + 1.0, z0, 1.4, 2.5, color="#5a3a20", steps=0, arch=False)
+    for x in (-2.2, 2.2):
+        window(x, -d / 2 + 1.0, z0 + 1.9, 0.9, 1.5, arch=True)
+    # prapory výstav mezi sloupy
+    for x, c in [(-1.65, "#e5484d"), (1.65, "#7a3aa8")]:
+        box((x, -d / 2 + 0.9, z0 + 2.4), (0.7, 0.04, 1.6), mat(c, 0.6), 0.01)
+        sphere((x, -d / 2 + 0.85, z0 + 2.6), 0.15, mat("#ffd24d", 0.5), seg=8)
+    for y in (0, 1.6):
+        window(-w / 2 + 0.2, y, z0 + 2.0, 0.9, 1.5, face="-x", arch=True)
+        window(w / 2 - 0.2, y, z0 + 2.0, 0.9, 1.5, face="+x", arch=True)
+    # socha glóbusu a lampy
+    box((-3.3, -d / 2 - 1.2, 0.5), (0.8, 0.8, 1.0), marble, 0.03)
+    sphere((-3.3, -d / 2 - 1.2, 1.5), 0.45, mat("#3fa0e8", 0.4), seg=16)
+    for (x, y) in [(-0.1, 0.2), (0.2, -0.15), (-0.2, -0.25)]:
+        sphere((-3.3 + x, -d / 2 - 1.2 - 0.3, 1.5 + y), 0.15, mat("#5ab85e", 0.6), seg=8, scale=(1, 0.5, 1))
+    torus((-3.3, -d / 2 - 1.2, 1.5), 0.58, 0.035, mat("#ffd24d", 0.3, 0.7), rot=(0.4, 0.3, 0))
+    for x in (2.8, 3.8):
+        lamp_post(x, -d / 2 - 1.3, 2.2)
+
+
 BUILDERS = {
     "skola": build_skola,
     "knihovna": build_knihovna,
@@ -590,6 +879,12 @@ BUILDERS = {
     "most": build_most,
     "parcela": build_parcela,
     "lampa": build_lampa,
+    "kavarna": build_kavarna,
+    "dilna": build_dilna,
+    "sklenik": build_sklenik,
+    "mlyn": build_mlyn,
+    "mlyn-lopatky": build_mlyn_lopatky,
+    "muzeum": build_muzeum,
 }
 for i in range(6):
     BUILDERS[f"domek{i + 1}"] = (lambda v: (lambda: build_domek(v)))(i)
