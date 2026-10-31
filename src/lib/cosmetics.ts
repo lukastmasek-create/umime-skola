@@ -58,6 +58,17 @@ export const BANNERS: Record<string, string> = {
   aurora: "radial-gradient(ellipse at 50% 20%, rgba(61,255,154,0.55), transparent 45%), radial-gradient(ellipse at 30% 30%, rgba(176,107,255,0.45), transparent 40%), linear-gradient(180deg, #050a1e 0%, #0e1e3e 60%, #e8f0ff 100%)",
   dino: "linear-gradient(180deg, #a0d0c0 0%, #ffd0a0 55%, #7ab060 56%, #6aa050 100%)",
   rainbow: "radial-gradient(circle at 50% 110%, transparent 0 34%, #a87bff 34% 37%, #5a6cff 37% 40%, #3fc1ff 40% 43%, #3ddc97 43% 46%, #ffd24d 46% 49%, #ff9f43 49% 52%, #ff5d73 52% 55%, transparent 55%), linear-gradient(180deg, #a8d8ff 0%, #f0f8ff 100%)",
+  // Jen z craftování; obrázek z Blenderu zatím není, ukazuje se CSS přechod.
+  "craft-nebula":
+    "radial-gradient(ellipse at 30% 40%, rgba(255,106,213,0.55), transparent 45%), radial-gradient(ellipse at 70% 60%, rgba(80,170,255,0.5), transparent 45%), radial-gradient(1.5px 1.5px at 15% 20%, #fff, transparent), radial-gradient(1.5px 1.5px at 82% 30%, #fff, transparent), radial-gradient(1px 1px at 55% 80%, #fff, transparent), #0a0624",
+  "craft-reef":
+    "radial-gradient(circle at 20% 85%, #ff7a8a 0 7%, transparent 8%), radial-gradient(circle at 75% 90%, #ffb25c 0 6%, transparent 7%), radial-gradient(circle at 50% 95%, #c86bff 0 5%, transparent 6%), linear-gradient(180deg, #7fe3ff 0%, #1aa3d6 55%, #0b5f8a 100%)",
+  "craft-grove":
+    "radial-gradient(ellipse at 50% 0%, rgba(255,240,160,0.55), transparent 50%), repeating-linear-gradient(90deg, rgba(40,90,40,0.25) 0 10px, transparent 10px 46px), linear-gradient(180deg, #a8e6a0 0%, #3f9a52 60%, #1e5a2e 100%)",
+  "craft-forge":
+    "radial-gradient(circle at 50% 90%, #ffd24d 0 6%, #ff7a1a 7% 16%, transparent 30%), linear-gradient(180deg, #2a2230 0%, #4a3a3a 55%, #7a4a2a 100%)",
+  "craft-moonlight":
+    "radial-gradient(circle at 75% 25%, #fffbe0 0 7%, rgba(255,251,224,0.25) 8% 14%, transparent 15%), radial-gradient(1.5px 1.5px at 20% 30%, #fff, transparent), radial-gradient(1.5px 1.5px at 40% 15%, #fff, transparent), linear-gradient(180deg, #1a1050 0%, #4a2a8a 60%, #8a5acf 100%)",
 };
 
 // Pozadí je obrázek z Blenderu; CSS přechod pod ním je záloha, kdyby se obrázek nenačetl.

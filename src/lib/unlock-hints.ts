@@ -4,6 +4,8 @@ import { SHOP_ITEMS, type ShopKind } from "@/lib/shop";
 import { getProfileText } from "@/i18n/profile";
 import { getEscapeText } from "@/i18n/escape";
 import type { Locale } from "@/i18n/config";
+import { getCraftText } from "@/i18n/craft";
+import { RECIPES } from "@/lib/craft";
 
 export type UnlockKind = Extract<ShopKind, "avatar" | "title" | "frame" | "banner">;
 export type UnlockHint = { text: string; href?: string };
@@ -16,6 +18,9 @@ export function unlockHint(kind: UnlockKind, id: string, locale: Locale): Unlock
     shop
       ? { text: t.hintShop.replace("{n}", String(shop.price)), href: `/${locale}/obchod` }
       : { text: t.hintShopGeneric, href: `/${locale}/obchod` };
+
+  // Věci jen z craftování (avatary, tituly, pozadí) se vyrábějí v profilu.
+  if (RECIPES.some((r) => r.output === kind && r.ref === id)) return { text: getCraftText(locale).hintCraft, href: `/${locale}/profil#craft` };
 
   const def = kind === "avatar" ? AVATARS.find((a) => a.id === id) : kind === "title" ? TITLES.find((x) => x.id === id) : null;
   if (def) {

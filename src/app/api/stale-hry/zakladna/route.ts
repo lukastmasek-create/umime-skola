@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { eventBonusFor } from "@/lib/idle/events";
 import { challengeBoost } from "@/lib/idle/challenge-server";
 import { roomEndless } from "@/lib/room-server";
+import { craftEndlessBoost } from "@/lib/craft-server";
 import { getXp } from "@/lib/xp";
 import { levelFromXp } from "@/lib/progression";
 import {
@@ -46,13 +47,14 @@ type Db = Pick<typeof prisma, "xpEvent" | "idleState">;
 
 // Bonusy z učení a z ostatních Stálých her. Všechny mají strop v lib/idle/base.ts.
 async function bonuses(db: Db, userId: string, now: number): Promise<{ bonus: Bonus; level: number }> {
-  const [sum, xp, pets, city, boost, room] = await Promise.all([
+  const [sum, xp, pets, city, boost, room, crafted] = await Promise.all([
     db.xpEvent.aggregate({ where: { userId, createdAt: { gte: new Date(now - DAY_MS) } }, _sum: { amount: true } }),
     getXp(userId),
     db.idleState.findUnique({ where: { userId_game: { userId, game: "mazlicci" } }, select: { data: true } }),
     db.idleState.findUnique({ where: { userId_game: { userId, game: "mesto" } }, select: { data: true } }),
     challengeBoost(db, userId, "base", now),
     roomEndless(db, userId),
+    craftEndlessBoost(db, userId),
   ]);
   let petLevel: number | null = null;
   if (pets) {
@@ -66,7 +68,7 @@ async function bonuses(db: Db, userId: string, now: number): Promise<{ bonus: Bo
       learning: learningBonusFromXp(sum._sum.amount ?? 0),
       pet: petBonusFromLevel(petLevel),
       city: cityBonusFromBuildings(buildings),
-      event: eventBonusFor("base", now).total + boost + room,
+      event: eventBonusFor("base", now).total + boost + room + crafted,
     },
     level: levelFromXp(xp),
   };

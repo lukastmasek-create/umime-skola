@@ -79,6 +79,12 @@ export const AVATARS: AvatarDef[] = [
   { id: "robot-dino", bg: "#b8f0d0", skin: "#58c48a", head: "box", ears: "horns", eyes: "visor", mouth: "teeth", unlock: { level: 66 }, names: { cs: "Robodinosaurus", en: "Robo-dino", de: "Robo-Dino", ru: "Робо-динозавр" } },
   { id: "phoenix", bg: "#ffc29a", skin: "#ff6a3d", head: "round", ears: "crown", eyes: "big", mouth: "open", unlock: { level: 75 }, names: { cs: "Fénix", en: "Phoenix", de: "Phönix", ru: "Феникс" } },
   { id: "cosmic", bg: "#3a2b7a", skin: "#a98bff", head: "ghost", ears: "antenna", eyes: "visor", mouth: "smile", unlock: { level: 90 }, names: { cs: "Kosmický", en: "Cosmic", de: "Kosmisch", ru: "Космический" } },
+  // Jen z craftování (profil → Craftování), každý z materiálů svého světa. 3D model zatím není, kreslí se jako SVG.
+  { id: "star-wanderer", bg: "#2b2d6e", skin: "#c9d6ff", head: "round", ears: "antenna", eyes: "big", mouth: "smile", unlock: { event: "craft" }, names: { cs: "Hvězdný poutník", en: "Star wanderer", de: "Sternenwanderer", ru: "Звёздный странник" } },
+  { id: "coral-guardian", bg: "#3fc1ff", skin: "#ff8a7a", head: "round", ears: "horns", eyes: "goggles", mouth: "smile", unlock: { event: "craft" }, names: { cs: "Korálový strážce", en: "Coral guardian", de: "Korallenwächter", ru: "Коралловый страж" } },
+  { id: "forest-spirit", bg: "#6ee7a8", skin: "#a7d36b", head: "ghost", ears: "none", eyes: "sleepy", mouth: "smile", unlock: { event: "craft" }, names: { cs: "Lesní duch", en: "Forest spirit", de: "Waldgeist", ru: "Лесной дух" } },
+  { id: "blacksmith", bg: "#c9a27a", skin: "#ffd5a8", head: "box", ears: "band", eyes: "dots", mouth: "teeth", unlock: { event: "craft" }, names: { cs: "Hradní kovář", en: "Castle blacksmith", de: "Burgschmied", ru: "Замковый кузнец" } },
+  { id: "moon-witch", bg: "#7c3aed", skin: "#e7dcff", head: "round", ears: "hair", eyes: "big", mouth: "cat", unlock: { event: "craft" }, names: { cs: "Měsíční čarodějka", en: "Moon witch", de: "Mondhexe", ru: "Лунная колдунья" } },
 ];
 
 export const DEFAULT_AVATAR = "robot";
