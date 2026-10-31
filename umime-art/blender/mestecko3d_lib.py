@@ -224,6 +224,19 @@ def window(x, y, z, w, h, face="-y", frame="#ffffff", glass="#ffd98a", shutters=
         box((xx + sx * d / 2, y, z), (d * 0.8, 0.05, h), fm, 0)
         box((xx + sx * d / 2, y, z), (d * 0.8, w, 0.05), fm, 0)
         box((xx + sx * 0.1, y, z - h / 2 - 0.07), (0.18, w + 0.2, 0.06), fm, 0.01)
+        if shutters:
+            sm = mat(shutters, 0.6)
+            for s in (-1, 1):
+                box((xx + sx * 0.05, y + s * (w / 2 + w * 0.27), z), (0.05, w * 0.5, h + 0.06), sm, 0.01)
+                for k in (-1, 0, 1):
+                    box((xx + sx * 0.08, y + s * (w / 2 + w * 0.27), z + k * h * 0.3), (0.02, w * 0.42, 0.04), mat("#16132b", 0.6), 0)
+        if box_flowers:
+            box((xx + sx * 0.18, y, z - h / 2 - 0.2), (0.22, w + 0.1, 0.2), mat("#8a5a34", 0.7), 0.02)
+            rnd = random.Random(int(y * 13 + z * 7 + x))
+            for k in range(5):
+                c = rnd.choice(["#ff5d73", "#ffd24d", "#ffffff", "#a87bff", "#ff9f43"])
+                sphere((xx + sx * 0.2, y - w / 2 + (k + 0.5) * w / 5, z - h / 2 - 0.05), 0.09, mat(c, 0.6), seg=8)
+                sphere((xx + sx * 0.22, y - w / 2 + (k + 0.5) * w / 5, z - h / 2 - 0.12), 0.08, mat("#3f9a4a", 0.7), seg=6)
 
 
 def door(x, y, z0, w, h, color="#8a5a34", frame="#ffffff", face="-y", arch=False, steps=1, knob="#ffd24d"):
@@ -373,7 +386,7 @@ def render_preview(name, obj):
     cam.ortho_scale = size * 1.35
     co = bpy.data.objects.new("c", cam)
     sc.collection.objects.link(co)
-    a = math.radians(-35)
+    a = math.radians(float(os.environ.get("PREVIEW_ANGLE", "-35")))
     co.location = (math.sin(a) * 30, -math.cos(a) * 30, cz + 17)
     d = Vector((0, 0, cz)) - co.location
     co.rotation_euler = d.to_track_quat("-Z", "Y").to_euler()
@@ -387,7 +400,7 @@ def render_preview(name, obj):
     bpy.ops.mesh.primitive_plane_add(size=size * 4)
     bpy.context.object.data.materials.append(mat("#8fd07a", 0.9))
     os.makedirs("/tmp/claude-0/sp/budovy", exist_ok=True)
-    sc.render.filepath = f"/tmp/claude-0/sp/budovy/{name}.png"
+    sc.render.filepath = f"/tmp/claude-0/sp/budovy/{name}{os.environ.get('PREVIEW_TAG', '')}.png"
     bpy.ops.render.render(write_still=True)
 
 

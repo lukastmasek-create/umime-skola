@@ -40,9 +40,26 @@ def cottage(w, d, h, wall, roof, accent="#5a3a20", shutters=None, wins=2, floors
             if f == 0 and abs(x) < 0.6:
                 continue
             window(x, -d / 2, zc, 0.7, 0.8, shutters=shutters, box_flowers=flowers and f == 0)
-        window(-w / 2, 0, zc, 0.7, 0.8, face="-x")
-        window(w / 2, 0, zc, 0.7, 0.8, face="+x")
-        window(0, d / 2, zc, 0.7, 0.8, face="+y")
+        window(-w / 2, 0, zc, 0.7, 0.8, face="-x", shutters=shutters, box_flowers=flowers and f == 0)
+        window(w / 2, 0, zc, 0.7, 0.8, face="+x", shutters=shutters, box_flowers=flowers and f == 0)
+        for x in (-w * 0.3, w * 0.3):
+            window(x, d / 2, zc, 0.7, 0.8, face="+y", shutters=shutters, box_flowers=flowers and f == 0)
+    # kamenný sokl a dřevěné obložení pod okny
+    stone = mat("#a8a094", 0.9)
+    rnd = random.Random(int(w * 100 + d * 10))
+    for side in (-1, 1):
+        for k in range(int(w / 0.55)):
+            box((-w / 2 + 0.3 + k * 0.55, side * (d / 2 + 0.03), z0 + 0.14 + rnd.uniform(-0.02, 0.02)), (0.48, 0.06, 0.24), stone, 0.02)
+        for k in range(int(d / 0.55)):
+            box((side * (w / 2 + 0.03), -d / 2 + 0.3 + k * 0.55, z0 + 0.14 + rnd.uniform(-0.02, 0.02)), (0.06, 0.48, 0.24), stone, 0.02)
+    # střešní okénko na zadní straně
+    ang = math.atan2(rh, d / 2 + 0.35)
+    sy = d * 0.22
+    sz = z0 + h + rh * (1 - sy / (d / 2 + 0.35)) + 0.16
+    box((-w * 0.2, sy, sz), (0.8, 0.7, 0.1), mat(WHITE, 0.5), 0.01, rot=(ang, 0, 0))
+    box((-w * 0.2, sy + 0.02, sz + 0.05), (0.62, 0.52, 0.04), glow("#ffd98a", 0.6), 0, rot=(ang, 0, 0))
+    # zadní dvířka
+    door(w * 0.05, d / 2, z0, 0.75, 1.5, color=door_color, face="+y")
     door(0, -d / 2, z0, 0.9, 1.7, color=door_color)
     # stříška nad dveřmi
     box((0, -d / 2 - 0.35, z0 + 2.05), (1.5, 0.75, 0.08), mat(roof, 0.7), 0.02, rot=(math.radians(-14), 0, 0))
@@ -72,6 +89,15 @@ def build_domek(variant):
     fence(2.6, -2.4, 2.6, 2.4)
     bush(-1.9, -2.6, 0.7, "#4ea844")
     flowers_bed(1.0 if variant % 2 else -1.0, 2.6, 2.2, 0.6, 10, variant)
+    # dvorek: sud na dešťovku a hranice dřeva (na straně bez záhonu)
+    o = -1 if variant % 2 else 1
+    cyl((o * 2.1, 2.4, 0.45), 0.3, 0.9, mat("#8a5a34", 0.75), verts=14)
+    for z in (0.15, 0.75):
+        torus((o * 2.1, 2.4, z), 0.31, 0.025, mat("#4a4a52", 0.4, 0.6), seg=16)
+    cyl((o * 2.1, 2.4, 0.91), 0.26, 0.02, mat("#5ab8e8", 0.2), verts=14)
+    for i in range(3):
+        for j in range(4 - i):
+            cyl((o * 1.3 + (j - (3 - i) / 2) * 0.24, 2.75, 0.12 + i * 0.21), 0.11, 0.8, mat("#a8744a" if (i + j) % 2 else "#94643c", 0.85), verts=8, rot=(math.pi / 2, 0, 0))
 
 
 def build_skola():

@@ -9,6 +9,10 @@ import { useAccount } from "@/lib/use-account";
 import { notifyAccountChanged } from "@/lib/account-events";
 import { PLACES } from "@/lib/town3d/layout";
 import type { WorldHandle } from "@/lib/town3d/world";
+import { Modal } from "@/components/ShopView";
+import { MiniGame } from "@/components/TownMini";
+import { getTownMiniText } from "@/i18n/town-mini";
+import { MINI, PLAYS_PER_DAY, type MiniId } from "@/lib/town-mini";
 import { BUILDINGS, BUILDING_IDS, MAX_BUILDING_LEVEL, SET_REWARD, TREASURE_SETS, TREASURE_SET_IDS, type BuildingId, type QuestSnapshot, type TreasureSet } from "@/lib/town-progress";
 
 type Tab = "places" | "quests" | "build" | "treasures";
@@ -16,6 +20,8 @@ type Spots = { spots: { idx: number; slot: number; kind: string }[]; collected: 
 const WORLD_OF_SET: Record<TreasureSet, string> = { pirati: "pristav", les: "les", vesmir: "stanice", hrad: "hrad", more: "more" };
 // Kdo zadává úkol → nad kterým místem svítí vykřičník.
 const QUEST_PLACE: Record<string, string> = { babicka: "babicka", farmar: "farmar", kluk: "kluk", pekar: "pekarna", knihovnice: "knihovna" };
+// Minihry, které se hrají v budově nebo u obyvatele.
+const PLACE_MINI: Record<string, MiniId[]> = { pekarna: ["cashier", "bakery"], knihovna: ["library"], hvezdarna: ["stars"], kvetinarstvi: ["flowers"], farmar: ["harvest"], rybar: ["fishing"] };
 
 // Živé 3D městečko jako hra ve stránce: engine (lib/town3d/world.ts) + popisky, panel a info o místě.
 export function TownWorld({ locale }: { locale: Locale }) {
@@ -35,6 +41,9 @@ export function TownWorld({ locale }: { locale: Locale }) {
   const [levels, setLevels] = useState<Partial<Record<BuildingId, number>>>({});
   const [treasures, setTreasures] = useState<{ pieces: Record<string, number>; claimed: TreasureSet[] }>({ pieces: {}, claimed: [] });
   const [toast, setToast] = useState<string | null>(null);
+  const [miniOpen, setMiniOpen] = useState<MiniId | null>(null);
+  const [miniLeft, setMiniLeft] = useState<Partial<Record<MiniId, number>>>({});
+  const miniText = getTownMiniText(locale);
   const spotsRef = useRef<Spots>(null);
   const loggedIn = !!account && account.loggedIn;
 
@@ -45,12 +54,14 @@ export function TownWorld({ locale }: { locale: Locale }) {
 
   // načtení stavu ze serveru
   const refresh = useCallback(async () => {
-    const [s, q, b, t] = await Promise.all([
+    const [s, q, b, t, m] = await Promise.all([
       fetch("/api/mestecko").then((r) => (r.ok ? r.json() : null)).catch(() => null),
       fetch("/api/mestecko/ukoly").then((r) => (r.ok ? r.json() : null)).catch(() => null),
       fetch("/api/mestecko/budovy").then((r) => (r.ok ? r.json() : null)).catch(() => null),
       fetch("/api/mestecko/poklady").then((r) => (r.ok ? r.json() : null)).catch(() => null),
+      fetch("/api/mestecko/minihra").then((r) => (r.ok ? r.json() : null)).catch(() => null),
     ]);
+    if (m?.mini) setMiniLeft(Object.fromEntries(Object.entries(m.mini as Record<MiniId, { left: number }>).map(([k, v]) => [k, v.left])));
     if (s?.spots) setSpots({ spots: s.spots, collected: s.collected ?? [] });
     if (q?.quests) setQuests(q.quests);
     if (b?.levels) setLevels(b.levels);
@@ -124,8 +135,10 @@ export function TownWorld({ locale }: { locale: Locale }) {
         for (const it of items) {
           const b = els.get(it.id);
           if (!b) continue;
-          b.style.display = it.visible ? "" : "none";
-          if (it.visible) b.style.transform = `translate(${it.x}px, ${it.y}px) translate(-50%, -100%)`;
+          // pod horní lištou s tlačítky popisky nezobrazujeme
+          const show = it.visible && it.y > 70;
+          b.style.display = show ? "" : "none";
+          if (show) b.style.transform = `translate(${it.x}px, ${it.y}px) translate(-50%, -100%)`;
         }
       });
     });
@@ -401,11 +414,22 @@ export function TownWorld({ locale }: { locale: Locale }) {
             <Link href={`/${locale}${sel.href}`} className="town3d-btn town3d-btn-gold">
               🚪 {ui.enter}
             </Link>
-          ) : sel.kind === "place" && sel.id !== "namesti" ? (
+          ) : sel.kind === "place" && sel.id !== "namesti" && !PLACE_MINI[sel.id] ? (
             <span className="town3d-btn opacity-60">⏳ {ui.soon}</span>
           ) : null}
+          {(PLACE_MINI[sel.id] ?? []).map((id) => (
+            <button key={id} type="button" className="town3d-btn" onClick={() => setMiniOpen(id)} title={miniText.intro[id]}>
+              {MINI[id].icon} {miniText.names[id]} <span className="opacity-70">· {miniLeft[id] ?? PLAYS_PER_DAY}×</span>
+            </button>
+          ))}
         </div>
       </section>
+
+      {miniOpen && (
+        <Modal title={`${MINI[miniOpen].icon} ${miniText.names[miniOpen]}`} onClose={() => setMiniOpen(null)} closeLabel={miniText.close}>
+          <MiniGame key={miniOpen} locale={locale} game={miniOpen} left={miniLeft[miniOpen] ?? PLAYS_PER_DAY} onClose={() => setMiniOpen(null)} onReward={() => void refresh()} />
+        </Modal>
+      )}
 
       <p className="pointer-events-none absolute left-1/2 top-14 hidden -translate-x-1/2 rounded-full bg-[#1b1840]/70 px-3 py-1 text-xs text-white md:block">{ui.hint}</p>
       {toast && <div className="town3d-toast absolute left-1/2 top-24 -translate-x-1/2">{toast}</div>}

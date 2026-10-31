@@ -3,11 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getTownMiniText } from "@/i18n/town-mini";
 import { MINI, type MiniId } from "@/lib/town-mini";
+import { Cashier, Flowers, Library, Stars } from "@/components/TownMiniLearn";
 import { notifyAccountChanged } from "@/lib/account-events";
 import { sfx } from "@/lib/market-sfx";
 import type { Locale } from "@/i18n/config";
 
-// Tři minihry městečka. Každá je krátká hra na dovednost; po konci se skóre pošle serveru (api/mestecko/minihra), který odměnu omezí.
+// Minihry městečka (naučné jsou v TownMiniLearn). Každá je krátká hra na dovednost; po konci se skóre pošle serveru (api/mestecko/minihra), který odměnu omezí.
 
 type Done = (score: number) => void;
 
@@ -327,6 +328,10 @@ export function MiniGame({ locale, game, left, onClose, onReward }: { locale: Lo
       {game === "fishing" && <Fishing {...common} />}
       {game === "harvest" && <Harvest {...common} />}
       {game === "bakery" && <Bakery {...common} />}
+      {game === "cashier" && <Cashier locale={locale} onDone={done} />}
+      {game === "library" && <Library locale={locale} onDone={done} />}
+      {game === "stars" && <Stars locale={locale} onDone={done} />}
+      {game === "flowers" && <Flowers locale={locale} onDone={done} />}
     </div>
   );
 }

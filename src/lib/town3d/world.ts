@@ -14,6 +14,7 @@ import {
   distToRoad,
   doorPoint,
   findPath,
+  FOUNTAIN,
   nearestNode,
   type Place,
   type Pt,
@@ -677,7 +678,9 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
   window.addEventListener("keydown", onKey);
   window.addEventListener("keyup", onKey);
 
-  const onRoad = (x: number, z: number) => roads.some((rd) => !rd.planned && distToRoad(x, z, rd) < rd.w / 2 + 0.1) || Math.hypot(x, z) < 9.2;
+  const onRoad = (x: number, z: number) =>
+    Math.hypot(x - FOUNTAIN.x, z - FOUNTAIN.z) > FOUNTAIN.r &&
+    (roads.some((rd) => !rd.planned && distToRoad(x, z, rd) < rd.w / 2 + 0.1) || Math.hypot(x, z) < 9.2);
 
   // ------------------------------------------------------------------------------------------ smyčka
   let night = false;

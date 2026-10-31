@@ -14,7 +14,7 @@ import { TownNarrator, type Art } from "@/components/TownNarrator";
 import { MiniGame } from "@/components/TownMini";
 import { TownStory } from "@/components/TownStory";
 import { getTownStoryText } from "@/i18n/town-story";
-import { MINI_IDS, PLAYS_PER_DAY, type MiniId } from "@/lib/town-mini";
+import { CLASSIC_MINI_IDS, MINI, MINI_IDS, PLAYS_PER_DAY, type MiniId } from "@/lib/town-mini";
 import { getTownMiniText } from "@/i18n/town-mini";
 import { getTownLifeText } from "@/i18n/town-life";
 import { type NpcKey, type NpcSnapshot } from "@/lib/town-npc";
@@ -50,7 +50,6 @@ type Hub = {
   hrdina: Pt;
 };
 const HUB = hubData as unknown as Hub;
-const MINI_ICON: Record<MiniId, string> = { fishing: "🎣", harvest: "🥕", bakery: "🥐" };
 
 const SKY = 160; // výška oblohy nad obrázkem městečka (v px obrázku)
 const BOX_H = HUB.h + SKY;
@@ -235,7 +234,7 @@ export function TownHub({ locale }: { locale: Locale }) {
   }, [full]);
   const subRef = useRef<HTMLDivElement>(null);
   const storyText = getTownStoryText(locale);
-  const [miniLeft, setMiniLeft] = useState<Record<MiniId, number>>({ fishing: PLAYS_PER_DAY, harvest: PLAYS_PER_DAY, bakery: PLAYS_PER_DAY });
+  const [miniLeft, setMiniLeft] = useState<Record<MiniId, number>>(() => Object.fromEntries(MINI_IDS.map((id) => [id, PLAYS_PER_DAY])) as Record<MiniId, number>);
   const miniText = getTownMiniText(locale);
   const [board, setBoard] = useState(false);
   const [hover, setHover] = useState<string | null>(null);
@@ -1324,7 +1323,7 @@ export function TownHub({ locale }: { locale: Locale }) {
     fetch("/api/mestecko/minihra")
       .then((r) => r.json())
       .then((d) => {
-        if (d.mini) setMiniLeft({ fishing: d.mini.fishing.left, harvest: d.mini.harvest.left, bakery: d.mini.bakery.left });
+        if (d.mini) setMiniLeft(Object.fromEntries(MINI_IDS.map((id) => [id, d.mini[id]?.left ?? PLAYS_PER_DAY])) as Record<MiniId, number>);
       })
       .catch(() => {});
   }
@@ -1546,7 +1545,7 @@ export function TownHub({ locale }: { locale: Locale }) {
             <canvas ref={confettiCv} aria-hidden className="pointer-events-none absolute inset-0 z-[61] h-full w-full" />
 
             {/* minihry: rybaření v laguně, sklizeň na farmě, pekárna */}
-            {MINI_IDS.map((id) => {
+            {CLASSIC_MINI_IDS.map((id) => {
               const pos: Pt = id === "fishing" ? [HUB.voda.laguna[0], HUB.voda.laguna[1] - 0.004] : id === "harvest" ? [(HUB.npc.farmar?.[0] ?? 0.9) - 0.035, (HUB.npc.farmar?.[1] ?? 0.82) - 0.01] : [(HUB.npc.pekar?.[0] ?? 0.4) + 0.045, (HUB.npc.pekar?.[1] ?? 0.7) - 0.01];
               return (
                 <button key={id} type="button" aria-label={miniText.names[id]} title={miniText.names[id]} onClick={() => openMini(id)} className="town-collect absolute z-[52] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] px-1.5 py-0.5 leading-none shadow-[0_2px_0_var(--shadow-ink)]" style={{ ...at(pos), fontSize: "clamp(16px, 2.3cqw, 30px)" }}>
@@ -1723,7 +1722,7 @@ export function TownHub({ locale }: { locale: Locale }) {
         </Modal>
       )}
       {miniOpen && (
-        <Modal title={`${MINI_ICON[miniOpen]} ${miniText.names[miniOpen]}`} onClose={() => setMiniOpen(null)} closeLabel={m.close}>
+        <Modal title={`${MINI[miniOpen].icon} ${miniText.names[miniOpen]}`} onClose={() => setMiniOpen(null)} closeLabel={m.close}>
           <MiniGame key={miniOpen} locale={locale} game={miniOpen} left={miniLeft[miniOpen]} onClose={() => setMiniOpen(null)} onReward={() => {}} />
         </Modal>
       )}

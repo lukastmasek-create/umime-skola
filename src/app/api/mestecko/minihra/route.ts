@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { buildingLevel } from "@/lib/town-progress-server";
+import { buildingLevel, buildingLevels } from "@/lib/town-progress-server";
 import { EXTRA_PLAYS_PER_LEVEL, MINI_BUILDING } from "@/lib/town-progress";
 import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
@@ -25,11 +25,12 @@ function parse(data: unknown): Store {
   return out;
 }
 
-function snapshot(store: Store, day: string): MiniSnapshot {
+function snapshot(store: Store, day: string, levels: Partial<Record<string, number>> = {}): MiniSnapshot {
   const out = {} as MiniSnapshot;
   for (const k of MINI_IDS) {
     const e = store[k];
-    out[k] = { left: e?.day === day ? Math.max(0, PLAYS_PER_DAY - e.plays) : PLAYS_PER_DAY, best: e?.best ?? 0 };
+    const total = PLAYS_PER_DAY + (MINI_BUILDING[k] ? EXTRA_PLAYS_PER_LEVEL * (levels[MINI_BUILDING[k]] ?? 0) : 0);
+    out[k] = { left: e?.day === day ? Math.max(0, total - e.plays) : total, best: e?.best ?? 0 };
   }
   return out;
 }
@@ -39,8 +40,11 @@ export async function GET() {
   const day = dayKey();
   if (!session?.user?.id) return NextResponse.json({ loggedIn: false, day, mini: snapshot({}, day) });
   try {
-    const row = await prisma.idleState.findUnique({ where: { userId_game: { userId: session.user.id, game: GAME } } });
-    return NextResponse.json({ loggedIn: true, day, mini: snapshot(parse(row?.data), day) });
+    const [row, levels] = await Promise.all([
+      prisma.idleState.findUnique({ where: { userId_game: { userId: session.user.id, game: GAME } } }),
+      buildingLevels(session.user.id),
+    ]);
+    return NextResponse.json({ loggedIn: true, day, mini: snapshot(parse(row?.data), day, levels) });
   } catch {
     return NextResponse.json({ error: "unavailable" }, { status: 503 });
   }

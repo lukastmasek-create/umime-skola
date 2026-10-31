@@ -51,6 +51,8 @@ export const MAIN_ROADS: Road[] = [
 ];
 
 export const RIVER_Z = 14;
+// kašna uprostřed náměstí: ulice ji obcházejí po kruhu
+export const FOUNTAIN = { x: 0, z: 0, r: 4.1, ring: 5.3 };
 export const BRIDGES_X = [-30, 0, 30];
 export const LAGOON = { x: 0, z: 45, r: 12 };
 export const SEA = { x: -64, z: 48, w: 36, d: 30 };
@@ -199,6 +201,25 @@ export function buildGraph(roads: Road[]): Graph {
     list.sort((x, y) => x.k - y.k);
     for (let i = 0; i + 1 < list.length; i++) link(idOf(list[i].p), idOf(list[i + 1].p));
   });
+  // uzel v kašně nahradí kruh kolem ní
+  const center = nodes.findIndex((n) => Math.hypot(n[0] - FOUNTAIN.x, n[1] - FOUNTAIN.z) < FOUNTAIN.r);
+  if (center >= 0) {
+    const ring: number[] = [];
+    for (let k = 0; k < 12; k++) {
+      const a = (k / 12) * Math.PI * 2;
+      nodes.push([FOUNTAIN.x + Math.cos(a) * FOUNTAIN.ring, FOUNTAIN.z + Math.sin(a) * FOUNTAIN.ring]);
+      ring.push(nodes.length - 1);
+    }
+    const out = edges.get(center) ?? [];
+    edges.delete(center);
+    for (const [, list] of edges) list.splice(0, list.length, ...list.filter((e) => e.to !== center));
+    ring.forEach((r, k) => link(r, ring[(k + 1) % ring.length]));
+    for (const e of out) {
+      const a = Math.atan2(nodes[e.to][1] - FOUNTAIN.z, nodes[e.to][0] - FOUNTAIN.x);
+      const k = ((Math.round((a / (Math.PI * 2)) * 12) % 12) + 12) % 12;
+      link(e.to, ring[k]);
+    }
+  }
   return { nodes, edges };
 }
 
@@ -219,6 +240,7 @@ export function nearestNode(g: Graph, x: number, z: number): number {
   let best = 0;
   let bd = Infinity;
   g.nodes.forEach((n, i) => {
+    if (!g.edges.get(i)?.length) return;
     const d = Math.hypot(n[0] - x, n[1] - z);
     if (d < bd) {
       bd = d;
