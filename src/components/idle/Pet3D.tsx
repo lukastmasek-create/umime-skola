@@ -11,6 +11,7 @@ import type { PetMood } from "@/components/idle/PetArt";
 import { makeBall, makeFeedingProp, makeHeart, makeStar, setOpacity } from "@/components/idle/pet-props";
 import { IDLE_GESTURES, clamp01, easeOutBack, resetMotion, type Gesture, type Motion } from "@/components/motion-gestures";
 import type { SpeciesId } from "@/lib/idle/pets";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // Velikost podle fáze růstu, stejně jako u 2D mazlíčků.
 const STAGE_SCALE = { 1: 0.78, 2: 0.9, 3: 1 } as const;
@@ -120,7 +121,7 @@ export default function Pet3D({ species, stage, mood, accessory, action, label, 
     resizeObserver.observe(el);
     resize();
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduceMotion = prefersReducedMotion();
     const clock = new THREE.Clock();
     let mixer: THREE.AnimationMixer | null = null;
     let model: THREE.Object3D | null = null;

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import town from "./mesto-scena.json";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // „Jak to funguje“ jako živé městečko. Městečko, obyvatelé a zvířata jsou z Blenderu
 // (umime-art/blender/mestecko.py a mesto_figury.py), pohoří a sopka jsou vrstvy za ním.
@@ -148,7 +149,7 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
     const hr = hero.current;
     if (!wr || !bx || !canvas || !hr) return;
     const ctx = canvas.getContext("2d")!;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = prefersReducedMotion();
     if (reduced) {
       live.current.calm = true;
     }

@@ -38,7 +38,7 @@ export type ShopExtraText = {
   historyGift: string; // {name} {who}
   historyReceived: string; // {name}
   historyUnknown: string;
-  errors: Record<"recipient-unavailable" | "self-gift" | "bad-email", string>;
+  errors: Record<"recipient-unavailable" | "self-gift" | "bad-email" | "parental", string>;
 };
 
 const cs: ShopExtraText = {
@@ -80,6 +80,7 @@ const cs: ShopExtraText = {
   historyReceived: "Dostal/a jsi dárek: {name}",
   historyUnknown: "Starší zboží",
   errors: {
+    parental: "Nákupy zakázal rodič v nastavení (rodičovská kontrola).",
     "recipient-unavailable": "Tomuto účtu se dárek poslat nedá. Zkontroluj e-mail, nebo to zboží už možná má.",
     "self-gift": "Sám sobě darovat nemůžeš, kup si to rovnou.",
     "bad-email": "Zadej platný e-mail.",
@@ -125,6 +126,7 @@ const en: ShopExtraText = {
   historyReceived: "You received a gift: {name}",
   historyUnknown: "Older item",
   errors: {
+    parental: "A parent has blocked purchases in settings (parental controls).",
     "recipient-unavailable": "This account can't receive the gift. Check the email, or they may already own the item.",
     "self-gift": "You can't gift to yourself, just buy it.",
     "bad-email": "Enter a valid email.",
@@ -170,6 +172,7 @@ const de: ShopExtraText = {
   historyReceived: "Du hast ein Geschenk bekommen: {name}",
   historyUnknown: "Älterer Artikel",
   errors: {
+    parental: "Käufe wurden von den Eltern gesperrt (Elternkontrolle).",
     "recipient-unavailable": "Dieses Konto kann das Geschenk nicht erhalten. Prüfe die E-Mail, oder der Artikel ist schon vorhanden.",
     "self-gift": "Du kannst dir nichts selbst schenken, kauf es einfach.",
     "bad-email": "Gib eine gültige E-Mail ein.",
@@ -215,6 +218,7 @@ const ru: ShopExtraText = {
   historyReceived: "Тебе подарили: {name}",
   historyUnknown: "Старый товар",
   errors: {
+    parental: "Покупки запрещены родителем в настройках (родительский контроль).",
     "recipient-unavailable": "Этот аккаунт не может получить подарок. Проверь e-mail, возможно, вещь уже есть.",
     "self-gift": "Нельзя дарить себе, просто купи.",
     "bad-email": "Введи корректный e-mail.",

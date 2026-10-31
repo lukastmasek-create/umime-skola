@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // Planeta se vykresluje živě ve WebGL (plynulých 60 a víc snímků za vteřinu podle displeje).
 // Z Blenderu (umime-art/blender/planeta_vrstvy.py) pocházejí vrstvy: rovnoúhlá textura povrchu,
@@ -117,7 +118,7 @@ export function PlanetLive({
     let cleanup = () => {};
     let visible = true;
     let disposed = false;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = prefersReducedMotion();
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     cv.width = Math.round(size * dpr);

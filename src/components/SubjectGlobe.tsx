@@ -7,6 +7,7 @@ import { fmt } from "@/i18n/live";
 import { useAccount } from "@/lib/use-account";
 import type { SubjectSummary } from "@/app/api/predmety/route";
 import type { Locale } from "@/i18n/config";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // Výběr předmětu jako otáčející se globus. Zemi kreslí živě ve WebGL fragment shader: z Blenderu
 // (umime-art/blender/znacky_*.py) jsou animované památky předmětů, textury globusu vznikají
@@ -273,7 +274,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
       setFallback(true);
       return;
     }
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = prefersReducedMotion();
     let disposed = false;
     let raf = 0;
     let visible = true;

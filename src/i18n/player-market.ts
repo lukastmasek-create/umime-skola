@@ -40,7 +40,7 @@ const cs: PlayerMarketText = {
   fee: "Trh si bere {p} %.",
   owned: "Už máš",
   login: "Pro trh se přihlas.",
-  errors: { "not-enough-points": "Nemáš dost bodů.", owned: "Tuhle věc už máš.", gone: "Nabídka už není k mání.", equipped: "Nošenou věc nejde prodat.", "too-many": "Víc nabídek najednou mít nemůžeš.", "bad-price": "Takovou cenu nejde nastavit.", x: "Něco se nepovedlo, zkus to znovu." },
+  errors: { parental: "Nákupy zakázal rodič v nastavení.", "not-enough-points": "Nemáš dost bodů.", owned: "Tuhle věc už máš.", gone: "Nabídka už není k mání.", equipped: "Nošenou věc nejde prodat.", "too-many": "Víc nabídek najednou mít nemůžeš.", "bad-price": "Takovou cenu nejde nastavit.", x: "Něco se nepovedlo, zkus to znovu." },
   done: { list: "Věc je ve výloze.", cancel: "Věc je zpátky u tebe.", buy: "Koupeno!" },
   limit: "Najednou můžeš mít nejvýš {n} nabídek.",
 };
@@ -61,7 +61,7 @@ const en: PlayerMarketText = {
   fee: "The market keeps {p}%.",
   owned: "Owned",
   login: "Log in to use the market.",
-  errors: { "not-enough-points": "Not enough points.", owned: "You already have this.", gone: "That offer is gone.", equipped: "You can't sell an item you're wearing.", "too-many": "You can't have more offers at once.", "bad-price": "That price isn't allowed.", x: "Something went wrong, try again." },
+  errors: { parental: "A parent has blocked purchases in settings.", "not-enough-points": "Not enough points.", owned: "You already have this.", gone: "That offer is gone.", equipped: "You can't sell an item you're wearing.", "too-many": "You can't have more offers at once.", "bad-price": "That price isn't allowed.", x: "Something went wrong, try again." },
   done: { list: "Your item is in the window.", cancel: "The item is back with you.", buy: "Bought!" },
   limit: "You can have at most {n} offers at once.",
 };
@@ -82,7 +82,7 @@ const de: PlayerMarketText = {
   fee: "Der Markt behält {p} %.",
   owned: "Schon da",
   login: "Melde dich für den Markt an.",
-  errors: { "not-enough-points": "Nicht genug Punkte.", owned: "Das hast du schon.", gone: "Das Angebot ist weg.", equipped: "Getragene Dinge kann man nicht verkaufen.", "too-many": "Mehr Angebote gleichzeitig gehen nicht.", "bad-price": "Dieser Preis ist nicht erlaubt.", x: "Etwas ist schiefgegangen, versuch es nochmal." },
+  errors: { parental: "Käufe wurden von den Eltern gesperrt.", "not-enough-points": "Nicht genug Punkte.", owned: "Das hast du schon.", gone: "Das Angebot ist weg.", equipped: "Getragene Dinge kann man nicht verkaufen.", "too-many": "Mehr Angebote gleichzeitig gehen nicht.", "bad-price": "Dieser Preis ist nicht erlaubt.", x: "Etwas ist schiefgegangen, versuch es nochmal." },
   done: { list: "Dein Gegenstand liegt im Schaufenster.", cancel: "Der Gegenstand ist wieder bei dir.", buy: "Gekauft!" },
   limit: "Du kannst höchstens {n} Angebote gleichzeitig haben.",
 };
@@ -103,7 +103,7 @@ const ru: PlayerMarketText = {
   fee: "Рынок берёт {p} %.",
   owned: "Уже есть",
   login: "Войди, чтобы пользоваться рынком.",
-  errors: { "not-enough-points": "Не хватает баллов.", owned: "У тебя это уже есть.", gone: "Предложение уже недоступно.", equipped: "Надетую вещь продать нельзя.", "too-many": "Больше предложений одновременно нельзя.", "bad-price": "Такую цену поставить нельзя.", x: "Что-то пошло не так, попробуй ещё раз." },
+  errors: { parental: "Покупки запрещены родителем.", "not-enough-points": "Не хватает баллов.", owned: "У тебя это уже есть.", gone: "Предложение уже недоступно.", equipped: "Надетую вещь продать нельзя.", "too-many": "Больше предложений одновременно нельзя.", "bad-price": "Такую цену поставить нельзя.", x: "Что-то пошло не так, попробуй ещё раз." },
   done: { list: "Вещь на витрине.", cancel: "Вещь снова у тебя.", buy: "Куплено!" },
   limit: "Одновременно можно иметь не больше {n} предложений.",
 };

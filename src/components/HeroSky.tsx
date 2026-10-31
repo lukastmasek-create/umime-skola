@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Nebula } from "@/components/SpaceDecor";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // Živé pozadí úvodní scény. Mlhovina se počítá ve WebGL (fraktální šum s deformací, pomalu se
 // vlní a posouvá se za kurzorem); nad ní je 2D vrstva s hvězdami v několika hloubkách, padajícími
@@ -113,7 +114,7 @@ export function HeroSky() {
     const shipCv = ship$.current;
     const host = glCv?.parentElement;
     if (!glCv || !fxCv || !shipCv || !host) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = prefersReducedMotion();
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     let disposed = false;
     let raf = 0;

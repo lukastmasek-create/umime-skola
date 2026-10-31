@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // Živý 3D motýl (three.js): tělo z koulí, tykadla, dvě křídla s vlastní texturou a skutečným mácháním.
 // Než se scéna načte (nebo když WebGL není, nebo má člověk omezený pohyb), zůstává 3D render z Blenderu.
@@ -10,7 +11,7 @@ export function Butterfly3D({ size = 84, className = "" }: { size?: number; clas
 
   useEffect(() => {
     const host = box.current;
-    if (!host || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!host || prefersReducedMotion()) return;
     let stop = false;
     let cleanup = () => {};
 

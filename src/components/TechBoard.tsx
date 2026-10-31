@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import board from "./tech-board.json";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // Sekce „Co tu najdeš“ jako diorama: deska plošného spoje s procesorem a čtyřmi podstavci
 // (umime-art/blender/tech_deska.py). Na podstavcích stojí animované předměty (kniha, joystick,
@@ -47,7 +48,7 @@ export function TechBoard({ features }: { features: TechFeature[] }) {
     const canvas = cv.current;
     if (!box || !canvas) return;
     const ctx = canvas.getContext("2d")!;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = prefersReducedMotion();
     const paths = board.paths.map(buildPath);
     let W = 0, H = 0, dpr = 1;
     let raf = 0;

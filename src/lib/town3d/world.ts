@@ -20,6 +20,7 @@ import {
   type Pt,
   type Road,
 } from "./layout";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // Živé 3D městečko: terén, ulice, voda, detailní budovy z Blenderu (public/mestecko3d), hrdina chodí
 // po ulicích (klik = cesta k místu, WASD = volná chůze po cestách), obyvatelé, zvířata, den a noc.
@@ -747,7 +748,7 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
   let raf = 0;
   let last = performance.now();
   let labelCb: ((items: { id: string; x: number; y: number; visible: boolean }[]) => void) | null = null;
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reduce = prefersReducedMotion();
   const v = new THREE.Vector3();
   let time = 0;
   let paused = false;

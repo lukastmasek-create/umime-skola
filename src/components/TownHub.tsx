@@ -27,6 +27,7 @@ import { getTownHubText } from "@/i18n/town";
 import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
 import hubData from "./mesto-hub-kotvy.json";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // Městečko jako hub (stránka /mestecko): velké denní městečko z Blenderu (umime-art/blender/mestecko_hub.py) se čtyřmi řadami:
 // louka s přístavem, lagunou a raketovou rampou, hlavní ulice, druhá řada s parkem a terasa s vchodem do lesa a do hradu.
@@ -347,7 +348,7 @@ export function TownHub({ locale }: { locale: Locale }) {
 
   // obyvatelé: po cestách chodí knihovnice, pekař, kluk, babička a farmář; s kým si hráč povídá, ten stojí
   useEffect(() => {
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = prefersReducedMotion();
     const ratio = HUB.h / HUB.w;
     const states: Record<string, WalkerState> = {};
     const poly = (nodes: string[]) => {
@@ -514,7 +515,7 @@ export function TownHub({ locale }: { locale: Locale }) {
 
   // obyvatelé občas něco prohodí (bublina nad hlavou)
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (prefersReducedMotion()) return;
     let t1 = 0;
     let t2 = 0;
     const schedule = () => {
@@ -539,7 +540,7 @@ export function TownHub({ locale }: { locale: Locale }) {
   useEffect(() => {
     const canvas = fxCv.current;
     const bx = box.current;
-    if (!canvas || !bx || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!canvas || !bx || prefersReducedMotion()) return;
     const fx = createEventFx(canvas, eventId);
     const size = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -832,7 +833,7 @@ export function TownHub({ locale }: { locale: Locale }) {
   useEffect(() => {
     const canvas = wxCv.current;
     const bx = box.current;
-    if (!canvas || !bx || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!canvas || !bx || prefersReducedMotion()) return;
     const fx = createWeatherFx(canvas, weather);
     const size = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -1261,7 +1262,7 @@ export function TownHub({ locale }: { locale: Locale }) {
     scenes.current = { playIntro, playEvent };
   });
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (prefersReducedMotion()) return;
     const id = window.setTimeout(async () => {
       if (started.current) return;
       started.current = true;
@@ -1294,7 +1295,7 @@ export function TownHub({ locale }: { locale: Locale }) {
   }, []);
 
   function reduced() {
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    return prefersReducedMotion();
   }
   function visit(place: PlaceDef) {
     if (phase || (cine && cine !== "talk") || scene.current) return;

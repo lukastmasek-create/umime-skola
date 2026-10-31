@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { HomeArt } from "@/components/SpaceDecor";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // Živé 3D scény pro sekci „Co tu najdeš“ (three.js se načítá až na klientovi a až když je sekce vidět).
 // Bez WebGL, při omezeném pohybu a na úzkých displejích zůstává původní grafika.
@@ -19,7 +20,7 @@ function useScene(host: React.RefObject<HTMLElement | null>, setup: Setup, minWi
   });
   useEffect(() => {
     const el = host.current;
-    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches || window.innerWidth < minWidth) return;
+    if (!el || prefersReducedMotion() || window.innerWidth < minWidth) return;
     let stop = false;
     let cleanup = () => {};
     import("three")

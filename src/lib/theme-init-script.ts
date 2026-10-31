@@ -10,5 +10,6 @@ export const THEME_INIT_SCRIPT = `(function(){
     if (font === 'classic') root.setAttribute('data-font', font);
     var fontSize = localStorage.getItem('fontSize');
     if (fontSize === 'small' || fontSize === 'large') root.setAttribute('data-font-size', fontSize);
+    if (localStorage.getItem('motion') === 'off') root.setAttribute('data-motion', 'off');
   } catch (e) {}
 })();`;

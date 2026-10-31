@@ -16,6 +16,7 @@ import {
   type AvatarCustom,
   type AvatarParts,
 } from "@/lib/avatar-custom";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // Vzory se kreslí přímo do materiálu podle polohy na těle (modely nemají UV souřadnice).
 // Šedá kopie textury pro přebarvení: jas se natáhne tak, aby světlá místa byla skoro bílá
@@ -171,7 +172,7 @@ export default function Avatar3D({
     resizeObserver.observe(el);
     resize();
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduceMotion = prefersReducedMotion();
     const clock = new THREE.Clock();
     let mixer: THREE.AnimationMixer | null = null;
     let model: THREE.Object3D | null = null;

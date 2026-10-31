@@ -6,6 +6,7 @@ import type { Dictionary } from "@/i18n/dictionaries";
 import { locales, localeNames, localeFlags, type Locale } from "@/i18n/config";
 import { setLocaleCookie } from "@/lib/locale-cookie";
 import { SchoolPicker } from "@/components/SchoolPicker";
+import { AccountSettings } from "@/components/AccountSettings";
 
 type Theme = "light" | "dark" | "system";
 type FontStyle = "playful" | "classic";
@@ -183,6 +184,8 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
       </section>
 
       <SchoolPicker locale={locale} />
+
+      <AccountSettings locale={locale} />
 
       <p
         className={`text-sm font-medium text-[var(--brand-600)] transition-opacity ${

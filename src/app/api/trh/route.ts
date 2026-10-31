@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { STYLE_GAME, normalizeStyle } from "@/lib/cosmetics";
 import { unlockKey } from "@/lib/shop";
 import { MARKET_GAME, MAX_LISTINGS, MIN_PRICE, maxPrice, normalizeListings, sellerGets, tradable, type Listing, type MarketOffer } from "@/lib/player-market";
+import { shopBlocked } from "@/lib/parental";
 
 // Trh mezi hráči: GET = všechny nabídky, POST { action: "list" | "cancel" | "buy" }.
 type Tx = Prisma.TransactionClient;
@@ -46,6 +47,7 @@ export async function POST(request: Request) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: "login" }, { status: 401 });
+  if (await shopBlocked(userId)) return NextResponse.json({ error: "parental" }, { status: 403 });
   const body = (await request.json().catch(() => ({}))) as { action?: unknown; itemId?: unknown; price?: unknown; id?: unknown; seller?: unknown };
   try {
     await prisma.$transaction(

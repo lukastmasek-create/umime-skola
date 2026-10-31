@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useAccount } from "@/lib/use-account";
 import type { SubjectSummary } from "@/app/api/predmety/route";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // Kurzy jako souostroví: každý předmět je ostrov s památkou z Blenderu (stejné jako na globusu),
 // moře se vlní ve WebGL (vlny, třpyt, pěna kolem pobřeží, kruhy od kurzoru a od vybraného ostrova),
@@ -176,7 +177,7 @@ export function CourseWorld({ locale, islands, allHref, allLabel, noteLabel }: {
     const box = stage.current;
     const cv = sea.current;
     if (!box || !cv) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = prefersReducedMotion();
     const gl = cv.getContext("webgl2", { alpha: false, antialias: false, powerPreference: "low-power" });
     let glOk = false;
     let u: (n: string) => WebGLUniformLocation | null = () => null;

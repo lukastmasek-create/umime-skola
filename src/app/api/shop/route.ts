@@ -9,6 +9,7 @@ import { getXp } from "@/lib/xp";
 import { levelProgress } from "@/lib/progression";
 import { WORLDS } from "@/lib/market-worlds";
 import { SHOP_ITEMS, bundlePrice, dayKey, getBundle, getShopItem, nextDealReset, salePrice, unlockKey } from "@/lib/shop";
+import { shopBlocked } from "@/lib/parental";
 
 class AlreadyOwned extends Error {}
 class NotEnoughPoints extends Error {}
@@ -106,6 +107,8 @@ export async function POST(request: Request) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: "login-required" }, { status: 401 });
+  // rodičovská kontrola může nákupy zakázat
+  if (await shopBlocked(userId)) return NextResponse.json({ error: "parental" }, { status: 403 });
 
   const body = (await request.json().catch(() => ({}))) as { action?: unknown; id?: unknown; email?: unknown };
   const id = typeof body.id === "string" ? body.id : "";

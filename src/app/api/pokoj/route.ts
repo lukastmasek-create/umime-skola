@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { FURNITURE, ROOM_PERKS, ROOM_SLOTS, normalizeRoom } from "@/lib/room";
 import { dayKey } from "@/lib/shop";
 import { normalizeCards } from "@/lib/collection";
+import { shopBlocked } from "@/lib/parental";
 
 const GAME = "room";
 
@@ -55,6 +56,7 @@ export async function POST(request: Request) {
     };
 
     if (body.action === "buy") {
+      if (await shopBlocked(userId)) return fail("parental", 403);
       const item = FURNITURE.find((f) => f.id === body.id);
       if (!item) return fail("unknown-item");
       if (room.owned.includes(item.id)) return fail("owned", 409);

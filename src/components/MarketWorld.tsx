@@ -24,6 +24,7 @@ import seaScene from "./more-kotvy.json";
 import { getWorldText, getUnlockText } from "@/i18n/market-world";
 import { getTownHubText } from "@/i18n/town";
 import { drawSea, drawForest, drawForestFront, drawCastle, drawCastleFront, drawDeep, drawDeepFront, wave } from "@/lib/market-scenery";
+import { prefersReducedMotion } from "@/lib/motion";
 
 // Uživatelský obchod jako prostředí: pirátský přístav a vesmírná stanice z Blenderu (umime-art/blender/pristav*.py,
 // kosmicka*.py). Vrstvy zespodu: moře nebo vesmír (canvas), hlavní předmět (loď, raketa), zadní vrstva (podlaha, stánky),
@@ -236,7 +237,7 @@ function useScenery(stage: React.RefObject<HTMLDivElement | null>, back: React.R
     const ctx = cv.getContext("2d");
     const fctx = fv.getContext("2d");
     if (!ctx || !fctx) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = prefersReducedMotion();
     let w = 0;
     let h = 0;
     let raf = 0;
