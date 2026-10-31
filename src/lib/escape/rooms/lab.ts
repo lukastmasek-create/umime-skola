@@ -34,7 +34,7 @@ export const LAB_ROOM: Room = {
       name: "Poznámka 4",
       symbol: "📄",
       description: "Papír s číslem 4.",
-      note: "Čtvrtá číslice kódu: kolik skupenství látek znáš ze školy (pevné, kapalné, plynné…)?",
+      note: "Čtvrtá číslice kódu: kolik je základních skupenství látek, která se učíš ve škole (pevné, kapalné, plynné)?",
     },
     { id: "acid", name: "Kyselina chlorovodíková (HCl)", symbol: "🧪", description: "Opatrně s ní. Reaguje s kovy." },
     { id: "zinc", name: "Zinkový plíšek (Zn)", symbol: "🔩", description: "Lesklý kovový plíšek." },

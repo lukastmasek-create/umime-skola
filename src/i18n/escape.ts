@@ -8,6 +8,18 @@ export type EscapeText = {
     play: string;
     soon: string;
     note: string;
+    sortLabel: string;
+    sort: { default: string; easiest: string; hardest: string; subject: string };
+    subjectLabel: string;
+    allSubjects: string;
+    difficulty: string;
+    // Názvy obtížností 1–5.
+    levels: [string, string, string, string, string];
+    // {n} = počet místností, {min} = minut na časomíře.
+    roomsCount: string;
+    minutes: string;
+    best: string;
+    shown: string;
     rooms: { id: string; name: string; subject: string; description: string; available: boolean }[];
   };
   ui: {
@@ -55,6 +67,12 @@ export type EscapeText = {
     saveError: string;
     playAgain: string;
     backToRooms: string;
+    // {n} = číslo místnosti, {total} = počet místností.
+    roomProgress: string;
+    roomDone: string;
+    nextRoom: string;
+    nextRoomNote: string;
+    solvedCount: string;
   };
 };
 
@@ -66,6 +84,16 @@ const cs: EscapeText = {
     play: "Vstoupit",
     soon: "Brzy",
     note: "Na dalších místnostech pracujeme. Hádanky jsou přeložené do všech jazyků webu.",
+    sortLabel: "Řadit",
+    sort: { default: "Doporučené", easiest: "Od nejlehčí", hardest: "Od nejtěžší", subject: "Podle předmětu" },
+    subjectLabel: "Předmět",
+    allSubjects: "Všechny",
+    difficulty: "Obtížnost",
+    levels: ["Velmi lehká", "Lehká", "Střední", "Těžká", "Velmi těžká"],
+    roomsCount: "{n} místnosti",
+    minutes: "{min} min",
+    best: "Tvůj rekord",
+    shown: "Únikovek: {n}",
     rooms: [
       { id: "lab", name: "Laboratoř doktora Atoma", subject: "Chemie", description: "Reaktor se rozjíždí a dveře jsou zamčené. Najdi vodítka, namíchej správné látky a otevři kód.", available: true },
       { id: "museum", name: "Zamčené muzeum", subject: "Dějepis", description: "Vitríny, časová osa a hádanky o významných událostech.", available: true },
@@ -82,7 +110,7 @@ const cs: EscapeText = {
     start: "Začít",
     modeTitle: "Vyber režim",
     timed: "S časomírou",
-    timedDesc: "20 minut a ukazatel nebezpečí. Víc hvězdiček.",
+    timedDesc: "{min} minut na všechny místnosti a ukazatel nebezpečí. Víc hvězdiček.",
     relaxed: "Bez časomíry",
     relaxedDesc: "Žádný spěch a nebezpečí tě nevyřadí. Nejvýš 2 hvězdičky.",
     time: "Čas",
@@ -101,7 +129,7 @@ const cs: EscapeText = {
     askAtom: "Zeptat se robota Atoma",
     atomLabel: "Atom",
     atomDone: "Už ti nemám co poradit. Zkus dveře.",
-    wrong: "To není správně. Reaktor se rozjel rychleji!",
+    wrong: "To není správně. Nebezpečí roste!",
     solved: "Vyřešeno!",
     cantCombine: "Tyhle dvě věci se spolu nespojí.",
     nothingHere: "Tady ti to teď nepomůže.",
@@ -111,7 +139,7 @@ const cs: EscapeText = {
     gotItems: "Získal/a jsi",
     winTitle: "Utekl/a jsi!",
     loseTime: "Čas vypršel",
-    loseDanger: "Laboratoř přetížila",
+    loseDanger: "Nebezpečí přerostlo přes hlavu",
     loseText: "Zkus to znovu, tentokrát ti to půjde líp.",
     stars: "Hodnocení",
     timeUsed: "Čas",
@@ -123,6 +151,11 @@ const cs: EscapeText = {
     saveError: "Výsledek se nepodařilo uložit.",
     playAgain: "Hrát znovu",
     backToRooms: "Zpět na únikovky",
+    roomProgress: "Místnost {n} z {total}",
+    roomDone: "Místnost {n} je za tebou!",
+    nextRoom: "Vstoupit do další místnosti",
+    nextRoomNote: "Časomíra stojí, dokud nevstoupíš. Nebezpečí, chyby a nápovědy se počítají dál.",
+    solvedCount: "Vyřešeno",
   },
 };
 
@@ -134,6 +167,16 @@ const en: EscapeText = {
     play: "Enter",
     soon: "Soon",
     note: "We're working on more rooms. The puzzles are translated into all languages of the site.",
+    sortLabel: "Sort",
+    sort: { default: "Recommended", easiest: "Easiest first", hardest: "Hardest first", subject: "By subject" },
+    subjectLabel: "Subject",
+    allSubjects: "All",
+    difficulty: "Difficulty",
+    levels: ["Very easy", "Easy", "Medium", "Hard", "Very hard"],
+    roomsCount: "{n} rooms",
+    minutes: "{min} min",
+    best: "Your best",
+    shown: "Escape rooms: {n}",
     rooms: [
       { id: "lab", name: "Doctor Atom's laboratory", subject: "Chemistry", description: "The reactor is spinning up and the door is locked. Find clues, mix the right substances and crack the code.", available: true },
       { id: "museum", name: "The locked museum", subject: "History", description: "Display cases, a timeline and puzzles about important events.", available: true },
@@ -150,7 +193,7 @@ const en: EscapeText = {
     start: "Start",
     modeTitle: "Pick a mode",
     timed: "Timed",
-    timedDesc: "20 minutes and a danger meter. More stars.",
+    timedDesc: "{min} minutes for all the rooms and a danger meter. More stars.",
     relaxed: "No timer",
     relaxedDesc: "No rush and danger can't knock you out. Up to 2 stars.",
     time: "Time",
@@ -169,7 +212,7 @@ const en: EscapeText = {
     askAtom: "Ask robot Atom",
     atomLabel: "Atom",
     atomDone: "I have no more advice. Try the door.",
-    wrong: "That's not right. The reactor sped up!",
+    wrong: "That's not right. The danger is rising!",
     solved: "Solved!",
     cantCombine: "Those two don't combine.",
     nothingHere: "That won't help here right now.",
@@ -179,7 +222,7 @@ const en: EscapeText = {
     gotItems: "You got",
     winTitle: "You escaped!",
     loseTime: "Time's up",
-    loseDanger: "The lab overloaded",
+    loseDanger: "The danger got too high",
     loseText: "Try again, you'll do better this time.",
     stars: "Rating",
     timeUsed: "Time",
@@ -191,6 +234,11 @@ const en: EscapeText = {
     saveError: "The result couldn't be saved.",
     playAgain: "Play again",
     backToRooms: "Back to escape rooms",
+    roomProgress: "Room {n} of {total}",
+    roomDone: "Room {n} complete!",
+    nextRoom: "Enter the next room",
+    nextRoomNote: "The clock is paused until you go in. Danger, mistakes and hints carry over.",
+    solvedCount: "Solved",
   },
 };
 
@@ -202,6 +250,16 @@ const de: EscapeText = {
     play: "Betreten",
     soon: "Bald",
     note: "An weiteren Räumen wird gearbeitet. Die Rätsel sind in alle Sprachen der Seite übersetzt.",
+    sortLabel: "Sortieren",
+    sort: { default: "Empfohlen", easiest: "Leichteste zuerst", hardest: "Schwerste zuerst", subject: "Nach Fach" },
+    subjectLabel: "Fach",
+    allSubjects: "Alle",
+    difficulty: "Schwierigkeit",
+    levels: ["Sehr leicht", "Leicht", "Mittel", "Schwer", "Sehr schwer"],
+    roomsCount: "{n} Räume",
+    minutes: "{min} Min.",
+    best: "Dein Rekord",
+    shown: "Escape Rooms: {n}",
     rooms: [
       { id: "lab", name: "Labor von Doktor Atom", subject: "Chemie", description: "Der Reaktor fährt hoch und die Tür ist verschlossen. Finde Hinweise, mische die richtigen Stoffe und knacke den Code.", available: true },
       { id: "museum", name: "Das verschlossene Museum", subject: "Geschichte", description: "Vitrinen, ein Zeitstrahl und Rätsel zu wichtigen Ereignissen.", available: true },
@@ -218,7 +276,7 @@ const de: EscapeText = {
     start: "Starten",
     modeTitle: "Modus wählen",
     timed: "Mit Zeitlimit",
-    timedDesc: "20 Minuten und eine Gefahrenanzeige. Mehr Sterne.",
+    timedDesc: "{min} Minuten für alle Räume und eine Gefahrenanzeige. Mehr Sterne.",
     relaxed: "Ohne Zeitlimit",
     relaxedDesc: "Keine Eile, und die Gefahr wirft dich nicht raus. Höchstens 2 Sterne.",
     time: "Zeit",
@@ -237,7 +295,7 @@ const de: EscapeText = {
     askAtom: "Roboter Atom fragen",
     atomLabel: "Atom",
     atomDone: "Ich habe keinen Rat mehr. Versuch die Tür.",
-    wrong: "Das stimmt nicht. Der Reaktor wurde schneller!",
+    wrong: "Das stimmt nicht. Die Gefahr steigt!",
     solved: "Gelöst!",
     cantCombine: "Diese beiden passen nicht zusammen.",
     nothingHere: "Das hilft hier gerade nicht.",
@@ -247,7 +305,7 @@ const de: EscapeText = {
     gotItems: "Du hast erhalten",
     winTitle: "Du bist entkommen!",
     loseTime: "Die Zeit ist um",
-    loseDanger: "Das Labor ist überlastet",
+    loseDanger: "Die Gefahr wurde zu groß",
     loseText: "Versuch es nochmal, diesmal klappt es besser.",
     stars: "Bewertung",
     timeUsed: "Zeit",
@@ -259,6 +317,11 @@ const de: EscapeText = {
     saveError: "Das Ergebnis konnte nicht gespeichert werden.",
     playAgain: "Nochmal spielen",
     backToRooms: "Zurück zu den Escape Rooms",
+    roomProgress: "Raum {n} von {total}",
+    roomDone: "Raum {n} geschafft!",
+    nextRoom: "Den nächsten Raum betreten",
+    nextRoomNote: "Die Uhr steht, bis du hineingehst. Gefahr, Fehler und Hinweise zählen weiter.",
+    solvedCount: "Gelöst",
   },
 };
 
@@ -270,6 +333,16 @@ const ru: EscapeText = {
     play: "Войти",
     soon: "Скоро",
     note: "Мы работаем над новыми комнатами. Загадки переведены на все языки сайта.",
+    sortLabel: "Сортировать",
+    sort: { default: "Рекомендуемые", easiest: "Сначала лёгкие", hardest: "Сначала сложные", subject: "По предмету" },
+    subjectLabel: "Предмет",
+    allSubjects: "Все",
+    difficulty: "Сложность",
+    levels: ["Очень лёгкая", "Лёгкая", "Средняя", "Сложная", "Очень сложная"],
+    roomsCount: "{n} комнаты",
+    minutes: "{min} мин",
+    best: "Твой рекорд",
+    shown: "Квестов: {n}",
     rooms: [
       { id: "lab", name: "Лаборатория доктора Атома", subject: "Химия", description: "Реактор разгоняется, а дверь заперта. Найди подсказки, смешай нужные вещества и подбери код.", available: true },
       { id: "museum", name: "Запертый музей", subject: "История", description: "Витрины, лента времени и загадки о важных событиях.", available: true },
@@ -286,7 +359,7 @@ const ru: EscapeText = {
     start: "Начать",
     modeTitle: "Выбери режим",
     timed: "С таймером",
-    timedDesc: "20 минут и шкала опасности. Больше звёзд.",
+    timedDesc: "{min} минут на все комнаты и шкала опасности. Больше звёзд.",
     relaxed: "Без таймера",
     relaxedDesc: "Не торопись, опасность не выбьет тебя из игры. Максимум 2 звезды.",
     time: "Время",
@@ -305,7 +378,7 @@ const ru: EscapeText = {
     askAtom: "Спросить робота Атома",
     atomLabel: "Атом",
     atomDone: "Больше советовать нечего. Попробуй дверь.",
-    wrong: "Это неверно. Реактор ускорился!",
+    wrong: "Это неверно. Опасность растёт!",
     solved: "Решено!",
     cantCombine: "Эти два предмета не соединяются.",
     nothingHere: "Здесь это сейчас не поможет.",
@@ -315,7 +388,7 @@ const ru: EscapeText = {
     gotItems: "Ты получил(а)",
     winTitle: "Ты выбрался!",
     loseTime: "Время вышло",
-    loseDanger: "Лаборатория перегрузилась",
+    loseDanger: "Опасность стала слишком большой",
     loseText: "Попробуй ещё раз, в этот раз получится лучше.",
     stars: "Оценка",
     timeUsed: "Время",
@@ -327,6 +400,11 @@ const ru: EscapeText = {
     saveError: "Не удалось сохранить результат.",
     playAgain: "Играть снова",
     backToRooms: "Назад к квестам",
+    roomProgress: "Комната {n} из {total}",
+    roomDone: "Комната {n} пройдена!",
+    nextRoom: "Войти в следующую комнату",
+    nextRoomNote: "Время стоит, пока ты не войдёшь. Опасность, ошибки и подсказки сохраняются.",
+    solvedCount: "Решено",
   },
 };
 

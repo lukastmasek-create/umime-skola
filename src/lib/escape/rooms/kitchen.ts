@@ -17,7 +17,7 @@ export const KITCHEN_KIT: RoomKit = {
     key: { name: "Klíč od spižírny", symbol: "🗝", description: "Malý klíč s kuchařskou čepicí na ouzku." },
     partB: { name: "Vařečka", symbol: "🥄", description: "Dlouhá dřevěná vařečka." },
     partC: { name: "Vidlička", symbol: "🍴", description: "Velká kuchyňská vidlice." },
-    tool: { name: "Chňapka", symbol: "🥢", description: "Vařečka s vidličkou. Dosáhne na horní polici." },
+    tool: { name: "Kuchyňský chňapák", symbol: "🥢", description: "Vařečka s vidličkou. Dosáhne na horní polici." },
     card: { name: "Karta šéfkuchaře", symbol: "🪪", description: "Karta, která zapne digitální troubu." },
   },
   recipeMessage: "Vařečku jsi připevnil/a na vidličku. Máš pomůcku, která dosáhne na horní polici!",
@@ -35,7 +35,7 @@ export const KITCHEN_KIT: RoomKit = {
   lockedD: "Na horní polici je něco užitečného, ale je vysoko. Potřebuješ něco dlouhého.",
   lockedE: "Trouba chce kartu šéfkuchaře. Vyber ji v inventáři a klikni na troubu.",
   lockedDoor: "Dveře jsou zamčené. Nejdřív musíš vyřešit úlohu s troubou.",
-  useMessage: "Chňapkou jsi z horní police stáhl/a kartu šéfkuchaře a lísteček s poznámkou.",
+  useMessage: "Chňapákem jsi z horní police stáhl/a kartu šéfkuchaře a lísteček s poznámkou.",
   a: {
     title: "Recept na zdi",
     prompt: "Na receptu stojí: „250 g mouky je polovina dávky.“ Kolik gramů mouky potřebuješ na celou dávku?",

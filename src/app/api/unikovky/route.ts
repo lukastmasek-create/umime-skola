@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ROOMS, ROOM_REWARDS, MIN_ESCAPE_SECONDS, ESCAPE_MASTER_UNLOCK } from "@/lib/escape/rewards";
+import { ROOMS, ROOM_REWARDS, MIN_ESCAPE_SECONDS, ESCAPE_MASTER_UNLOCK, escapeTimeLimit } from "@/lib/escape/rewards";
 import { computeStars } from "@/lib/escape/score";
 
 const int = (value: unknown) => Math.floor(Number(value));
@@ -37,7 +37,8 @@ export async function POST(request: Request) {
     mistakes,
     hints,
     relaxed,
-    limitSeconds: room.timeLimitSeconds,
+    // Limit celé únikovky (všechny místnosti), stejný jako na klientovi.
+    limitSeconds: escapeTimeLimit(roomId),
   });
 
   try {
