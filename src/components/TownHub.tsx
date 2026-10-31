@@ -29,7 +29,7 @@ import type { Locale } from "@/i18n/config";
 import hubData from "./mesto-hub-kotvy.json";
 import { prefersReducedMotion } from "@/lib/motion";
 
-// Městečko jako hub (stránka /mestecko): velké denní městečko z Blenderu (umime-art/blender/mestecko_hub.py) se čtyřmi řadami:
+// Původní městečko jako hub (stránka /mestecko/puvodni): velké denní městečko z Blenderu (umime-art/blender/mestecko_hub.py) se čtyřmi řadami:
 // louka s přístavem, lagunou a raketovou rampou, hlavní ulice, druhá řada s parkem a terasa s vchodem do lesa a do hradu.
 // Názvy sekcí jsou cedule přímo na budovách, hrdina k nim dojde po cestách (graf z Blenderu). Filmové přechody do světů obchodu
 // jsou v src/lib/market-cinema.ts. Každý den se v městečku schová osm pokladů (api/mestecko). Úvodní TownLife se nemění.
