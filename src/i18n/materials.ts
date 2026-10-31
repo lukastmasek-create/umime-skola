@@ -13,6 +13,8 @@ type MaterialsText = {
   practiceHint: string;
   prev: string;
   next: string;
+  allCourses: string;
+  interactive: { check: string; right: string; wrong: string; cards: string; flip: string; practice: string; again: string; score: string };
   back: string;
   allSubjects: string;
   examples: string;
@@ -38,6 +40,8 @@ const texts: Record<Locale, MaterialsText> = {
     practiceHint: "Máš to přečtené? Vyzkoušej si látku v testech.",
     prev: "Předchozí téma",
     next: "Další téma",
+    allCourses: "Všechny kurzy předmětu",
+    interactive: { check: "Ověř si", right: "Správně!", wrong: "Vedle, správně je:", cards: "Kartičky – klikni a otoč", flip: "Otočit kartičku", practice: "Procvič si téma", again: "Znovu", score: "Hotovo! Správně {a} z {b}." },
     back: "Zpět na přehled předmětu",
     allSubjects: "Všechny předměty",
     examples: "Příklady",
@@ -61,6 +65,8 @@ const texts: Record<Locale, MaterialsText> = {
     practiceHint: "Done reading? Test yourself in the quizzes.",
     prev: "Previous topic",
     next: "Next topic",
+    allCourses: "All courses in this subject",
+    interactive: { check: "Check yourself", right: "Correct!", wrong: "Not quite, the answer is:", cards: "Flashcards – click to flip", flip: "Flip the card", practice: "Practise this topic", again: "Again", score: "Done! {a} of {b} correct." },
     back: "Back to subject overview",
     allSubjects: "All subjects",
     examples: "Examples",
@@ -84,6 +90,8 @@ const texts: Record<Locale, MaterialsText> = {
     practiceHint: "Fertig gelesen? Teste dich in den Quizzen.",
     prev: "Vorheriges Thema",
     next: "Nächstes Thema",
+    allCourses: "Alle Kurse des Fachs",
+    interactive: { check: "Teste dich", right: "Richtig!", wrong: "Leider nicht, richtig ist:", cards: "Karteikarten – klicken zum Umdrehen", flip: "Karte umdrehen", practice: "Thema üben", again: "Nochmal", score: "Fertig! {a} von {b} richtig." },
     back: "Zurück zur Fachübersicht",
     allSubjects: "Alle Fächer",
     examples: "Beispiele",
@@ -107,6 +115,8 @@ const texts: Record<Locale, MaterialsText> = {
     practiceHint: "Прочитал? Проверь себя в тестах.",
     prev: "Предыдущая тема",
     next: "Следующая тема",
+    allCourses: "Все курсы предмета",
+    interactive: { check: "Проверь себя", right: "Верно!", wrong: "Не совсем, правильно:", cards: "Карточки – нажми, чтобы перевернуть", flip: "Перевернуть карточку", practice: "Потренируйся", again: "Ещё раз", score: "Готово! Верно {a} из {b}." },
     back: "Назад к обзору предмета",
     allSubjects: "Все предметы",
     examples: "Примеры",

@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getMaterialSubjects, getTopics } from "@/lib/materials";
+import { getMaterialSubjects, getTopics, materialSubjectLabel } from "@/lib/materials";
 import { getMaterialsText } from "@/i18n/materials";
-import { getSubjectText } from "@/i18n/subjects";
 import { isLocale, type Locale } from "@/i18n/config";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -16,7 +15,6 @@ export default async function MaterialsIndexPage({ params }: { params: Promise<{
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const t = getMaterialsText(locale as Locale);
-  const subjectText = getSubjectText(locale as Locale);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
@@ -47,7 +45,7 @@ export default async function MaterialsIndexPage({ params }: { params: Promise<{
                   {subject.emoji}
                 </span>
                 <div>
-                  <h2 className="text-lg font-semibold">{subjectText.labels[subject.value]}</h2>
+                  <h2 className="text-lg font-semibold">{materialSubjectLabel(subject, locale as Locale)}</h2>
                   <p className="text-sm text-[var(--muted)]">
                     {t.topics}: {topics.length}
                   </p>

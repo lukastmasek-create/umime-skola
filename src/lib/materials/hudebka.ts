@@ -1,4 +1,4 @@
-import { topic, sec, p, ul, table, tip } from "./helpers";
+import { topic, sec, p, ul, table, ex, tip, quiz, cards } from "./helpers";
 import type { Topic } from "./types";
 
 export const hudebka: Topic[] = [
@@ -88,4 +88,37 @@ export const hudebka: Topic[] = [
       ),
     ],
     ["Velká tercie = dur, malá = moll.", "G dur má 1 křížek, F dur 1 béčko.", "Kvintakord má tři tóny."]),
+  topic("lidova-pisen", "Lidová píseň a tanec", 1,
+    "České lidové písně, tance a zvyky.",
+    [
+      sec("Lidová píseň",
+        ul("Lidové písně vznikaly mezi lidmi, autor není znám, předávaly se zpěvem.", "Zpívalo se při práci, svátcích i ukolébavkách.", "Sběratelé lidových písní: Karel Jaromír Erben, František Sušil."),
+        ex("Pec nám spadla", "Skákal pes přes oves", "Kočka leze dírou", "Holka modrooká"),
+      ),
+      sec("Lidové tance",
+        table(["Tanec", "Takt", "Znak"], ["polka", "2/4", "rychlé poskoky, česká specialita"], ["valčík", "3/4", "kolébavé otáčení"], ["mazurka", "3/4", "polský původ"], ["sousedská", "3/4", "pomalá, otáčivá"]),
+        quiz("Ve kterém taktu je valčík?", "3/4", ["2/4", "4/4", "6/8"]),
+      ),
+    ],
+    ["Lidová píseň nemá známého autora.", "Polka je ve 2/4, valčík ve 3/4.", "K. J. Erben sbíral písně a pohádky."]),
+  topic("hudebni-zanry", "Hudební žánry", 2,
+    "Vážná hudba, jazz, rock, pop a další styly.",
+    [
+      sec("Přehled žánrů",
+        table(["Žánr", "Znaky", "Příklad"], ["vážná (klasická) hudba", "orchestr, opery, symfonie", "Mozart, Dvořák"], ["jazz", "improvizace, swing, saxofon", "Louis Armstrong"], ["blues", "smutné texty, kytara", "B. B. King"], ["rock", "elektrická kytara, bicí", "The Beatles, Queen"], ["pop", "chytlavé melodie, rádia", "Michael Jackson"], ["hip hop", "rap, rytmus, samply", "rapové skupiny"], ["elektronická hudba", "syntezátory, počítače", "taneční hudba"]),
+        cards(["improvizace", "jazz"], ["symfonie", "vážná hudba"], ["rap", "hip hop"], ["elektrická kytara", "rock"]),
+        quiz("Pro který žánr je typická improvizace?", "jazz", ["lidová píseň", "gregoriánský chorál", "polka"]),
+      ),
+    ],
+    ["Jazz = improvizace.", "Rock = elektrické kytary a bicí.", "Vážná hudba = orchestr, symfonie, opera."]),
+  topic("cesti-skladatele", "Čeští skladatelé", 3,
+    "Smetana, Dvořák, Janáček, Martinů a jejich nejznámější díla.",
+    [
+      sec("Skladatelé a díla",
+        table(["Skladatel", "Dílo", "Zajímavost"], ["Bedřich Smetana", "Má vlast (Vltava), Prodaná nevěsta", "na konci života ohluchl"], ["Antonín Dvořák", "Novosvětská symfonie, Rusalka", "působil v Americe"], ["Leoš Janáček", "Její pastorkyňa, Liška Bystrouška", "inspirace nápěvky řeči"], ["Bohuslav Martinů", "Otvírání studánek", "žil v Paříži a USA"], ["Jaroslav Ježek", "písně Osvobozeného divadla", "jazz a swing"]),
+        quiz("Kdo složil symfonickou báseň Vltava?", "Bedřich Smetana", ["Antonín Dvořák", "Leoš Janáček", "W. A. Mozart"]),
+        quiz("Který skladatel napsal operu Rusalka?", "Antonín Dvořák", ["Bedřich Smetana", "Bohuslav Martinů", "Jaroslav Ježek"]),
+      ),
+    ],
+    ["Smetana: Má vlast, Prodaná nevěsta.", "Dvořák: Novosvětská, Rusalka.", "Janáček: Liška Bystrouška."]),
 ];

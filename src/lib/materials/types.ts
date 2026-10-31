@@ -8,7 +8,10 @@ export type Block =
   | { type: "list"; items: string[]; ordered?: boolean }
   | { type: "table"; head: string[]; rows: string[][] }
   | { type: "examples"; items: string[] }
-  | { type: "tip"; text: string };
+  | { type: "tip"; text: string }
+  // interaktivní: otázka s možnostmi (answer = index správné) a kartičky k opakování (přední / zadní strana)
+  | { type: "quiz"; question: string; options: string[]; answer: number; why?: string }
+  | { type: "cards"; items: [string, string][] };
 
 export type Section = { heading: string; blocks: Block[] };
 

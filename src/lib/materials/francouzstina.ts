@@ -1,4 +1,4 @@
-import { topic, sec, p, ul, table, ex, tip } from "./helpers";
+import { topic, sec, p, ul, table, ex, tip, quiz, cards } from "./helpers";
 import type { Topic } from "./types";
 
 export const francouzstina: Topic[] = [
@@ -93,4 +93,42 @@ export const francouzstina: Topic[] = [
       ),
     ],
     ["Je voudrais… = chtěl bych…", "À gauche, à droite, tout droit.", "Paříž leží na Seině, svátek je 14. července."]),
+  topic("dny-mesice-cas", "Dny, měsíce a čas", 2,
+    "Dny v týdnu, měsíce a jak říct, kolik je hodin.",
+    [
+      sec("Dny a měsíce",
+        table(["Česky", "Francouzsky"], ["pondělí", "lundi"], ["úterý", "mardi"], ["středa", "mercredi"], ["čtvrtek", "jeudi"], ["pátek", "vendredi"], ["sobota", "samedi"], ["neděle", "dimanche"]),
+        p("Měsíce: janvier, février, mars, avril, mai, juin, juillet, août, septembre, octobre, novembre, décembre. Dny i měsíce se píšou malým písmenem."),
+        quiz("Jak se francouzsky řekne středa?", "mercredi", ["mardi", "jeudi", "samedi"]),
+      ),
+      sec("Kolik je hodin?",
+        ex("Quelle heure est-il ? – Kolik je hodin?", "Il est trois heures. – Jsou tři hodiny.", "Il est huit heures et demie. – Je půl deváté (8:30).", "Il est midi / minuit. – Je poledne / půlnoc."),
+      ),
+    ],
+    ["Dny a měsíce píšeme malým písmenem.", "Il est … heures = Je … hodin.", "et demie = a půl."]),
+  topic("jidlo-a-nakupovani", "Jídlo a nakupování", 2,
+    "Slovíčka jídla, v kavárně a v obchodě.",
+    [
+      sec("Jídlo",
+        cards(["le pain", "chléb"], ["le fromage", "sýr"], ["la pomme", "jablko"], ["le lait", "mléko"], ["l'eau", "voda"], ["le poulet", "kuře"]),
+      ),
+      sec("V kavárně a v obchodě",
+        ex("Je voudrais un croissant, s'il vous plaît. – Chtěl/a bych croissant, prosím.", "Combien ça coûte ? – Kolik to stojí?", "L'addition, s'il vous plaît. – Účet, prosím.", "C'est tout, merci. – To je vše, děkuji."),
+        quiz("Jak řekneš v obchodě „Kolik to stojí?“", "Combien ça coûte ?", ["Quelle heure est-il ?", "Comment ça va ?", "Où est la gare ?"]),
+      ),
+    ],
+    ["Je voudrais… = Chtěl/a bych…", "Combien ça coûte ? = Kolik to stojí?", "L'addition = účet."]),
+  topic("passe-compose", "Minulý čas passé composé", 3,
+    "Jak tvořit minulý čas s avoir a être.",
+    [
+      sec("Tvoření",
+        p("Passé composé = přítomný čas slovesa avoir nebo être + příčestí minulé."),
+        table(["Sloveso", "Příčestí", "Příklad"], ["parler", "parlé", "J'ai parlé. – Mluvil/a jsem."], ["finir", "fini", "Tu as fini. – Dokončil/a jsi."], ["faire", "fait", "Il a fait. – Udělal."], ["aller", "allé(e)", "Je suis allé(e). – Šel/šla jsem."]),
+      ),
+      sec("Avoir, nebo être?",
+        ul("Většina sloves tvoří minulý čas s avoir.", "Slovesa pohybu a změny stavu (aller, venir, partir, arriver, naître, mourir…) a zvratná slovesa mají être.", "S être se příčestí shoduje s podmětem: elle est allée, ils sont allés."),
+        quiz("Jak správně: „Šla do kina.“", "Elle est allée au cinéma.", ["Elle a allé au cinéma.", "Elle est allé au cinéma.", "Elle va au cinéma."]),
+      ),
+    ],
+    ["Passé composé = avoir/être + příčestí.", "Slovesa pohybu mají être.", "S être se příčestí shoduje."]),
 ];
