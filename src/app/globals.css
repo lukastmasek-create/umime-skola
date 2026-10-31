@@ -981,6 +981,19 @@ select:not(:focus) {
 .frame-spin[data-frame="coral"] {
   animation: frame-bob 3.2s ease-in-out infinite;
 }
+.frame-spin[data-frame="pirate"] {
+  animation: frame-sway 5.5s ease-in-out infinite;
+}
+.frame-spin[data-frame="space"] {
+  animation: frame-spin 16s linear infinite, frame-glow 2.4s ease-in-out infinite alternate;
+}
+.frame-spin[data-frame="ice"],
+.frame-spin[data-frame="candy"] {
+  animation: frame-spin 20s linear infinite;
+}
+.frame-spin[data-frame="dragon"] {
+  animation: frame-spin 20s linear infinite, frame-fire 1.4s ease-in-out infinite alternate;
+}
 .frame-spin[data-frame="gold"],
 .frame-spin[data-frame="royal"] {
   animation: frame-spin 26s linear infinite, frame-warm 2.6s ease-in-out infinite alternate;

@@ -7,27 +7,30 @@ import { forestTrees, glowSprite, gradientSky, ground, hero, noiseTex, placeMode
 // z Blenderu), obchodníci za pulty, velká dominanta vzadu (loď, stanice, strom, hrad, kopule) a okolí podle světa.
 // Klik na stánek: hrdina k němu dojde a otevře se nabídka (onOpen). Popisky stánků kreslí React přes labels().
 
+// Místo ve scéně: stánky se zbožím, „lod“ = dominanta (stavby do městečka), „sady“ = obchodník se sadami,
+// „trh“ = nástěnka trhu mezi hráči.
+export type MarketSpot = StallKey | "sady" | "trh";
 export type MarketOpts = {
   world: WorldId;
   look: number;
-  onOpen: (key: StallKey) => void;
-  onHover: (key: StallKey | null) => void;
+  onOpen: (key: MarketSpot) => void;
+  onHover: (key: MarketSpot | null) => void;
 };
-export type MarketLabel = { key: StallKey; x: number; y: number; visible: boolean };
-export type MarketHandle = { labels: (cb: (items: MarketLabel[]) => void) => void; open: (key: StallKey) => void; dispose: () => void };
+export type MarketLabel = { key: MarketSpot; x: number; y: number; visible: boolean };
+export type MarketHandle = { labels: (cb: (items: MarketLabel[]) => void) => void; open: (key: MarketSpot) => void; dispose: () => void };
 
-const STALLS: StallKey[] = ["avatary", "tituly", "ramecky", "pozadi", "mazlicci"];
-const ARC = [-68, -34, 0, 34, 68].map((d) => (d * Math.PI) / 180);
+const STALLS: MarketSpot[] = ["avatary", "tituly", "ramecky", "pozadi", "mazlicci", "sady", "trh"];
+const ARC = [-68, -34, 0, 34, 68, 104, -104].map((d) => (d * Math.PI) / 180);
 const RADIUS = 9.5;
 const HOME = new THREE.Vector3(0, 0, 4.5);
 const SPEED = 5.5;
 // obchodníci (postavy z městečka) za pulty v každém světě
 const SELLERS: Record<WorldId, string[]> = {
-  pirate: ["kapitan", "pekar", "farmar", "knihovnice", "babicka"],
-  space: ["knihovnice", "kluk", "kapitan", "pekar", "farmar"],
-  forest: ["babicka", "farmar", "pekar", "knihovnice", "kluk"],
-  castle: ["knihovnice", "kapitan", "farmar", "babicka", "pekar"],
-  sea: ["kapitan", "knihovnice", "kluk", "babicka", "farmar"],
+  pirate: ["kapitan", "pekar", "farmar", "knihovnice", "babicka", "kluk", "papousek"],
+  space: ["knihovnice", "kluk", "kapitan", "pekar", "farmar", "babicka", "kocka"],
+  forest: ["babicka", "farmar", "pekar", "knihovnice", "kluk", "kapitan", "kocka"],
+  castle: ["knihovnice", "kapitan", "farmar", "babicka", "pekar", "kluk", "pes_sedi"],
+  sea: ["kapitan", "knihovnice", "kluk", "babicka", "farmar", "pekar", "papousek"],
 };
 
 function fit(obj: THREE.Object3D, h: number) {
@@ -348,8 +351,8 @@ export function createMarket3D(container: HTMLElement, opts: MarketOpts): Market
 
   const env = buildEnv(opts.world, scene);
   const sky = scene.children.find((c) => c.renderOrder === -10) ?? null;
-  const stallObj = new Map<StallKey, THREE.Group>();
-  const front = new Map<StallKey, THREE.Vector3>();
+  const stallObj = new Map<MarketSpot, THREE.Group>();
+  const front = new Map<MarketSpot, THREE.Vector3>();
   const loops: { update: (dt: number) => void }[] = [];
   const loads: Promise<unknown>[] = [];
   STALLS.forEach((key, i) => {
@@ -367,9 +370,11 @@ export function createMarket3D(container: HTMLElement, opts: MarketOpts): Market
     loads.push(
       makeLoop(SELLERS[opts.world][i], 0.8 + i * 0.07)
         .then((s) => {
-          fit(s.root, 1.62);
-          // za pultem (+Y v Blenderu = -z), tváří k náměstí; postavy z městečka hledí k +x
-          s.root.position.set(0, 0, -0.75);
+          // zvířátko sedí na pultu, lidé stojí za ním (+Y v Blenderu = -z); postavy z městečka hledí k +x
+          const pet = ["papousek", "kocka", "pes_sedi"].includes(SELLERS[opts.world][i]);
+          fit(s.root, pet ? 0.6 : 1.62);
+          if (pet) s.root.position.set(0.8, 1.08, -0.25);
+          else s.root.position.set(0, 0, -0.75);
           s.root.rotation.y = -Math.PI / 2;
           g.add(s.root);
           loops.push(s);
@@ -401,8 +406,8 @@ export function createMarket3D(container: HTMLElement, opts: MarketOpts): Market
 
   // ---- chůze k stánku a otevření
   let path: THREE.Vector3[] = [];
-  let arrive: StallKey | null = null;
-  function open(key: StallKey) {
+  let arrive: MarketSpot | null = null;
+  function open(key: MarketSpot) {
     if (key === "lod") {
       opts.onOpen(key);
       return;
@@ -423,7 +428,7 @@ export function createMarket3D(container: HTMLElement, opts: MarketOpts): Market
   const ray = new THREE.Raycaster();
   const ndc = new THREE.Vector2();
   const el = renderer.domElement;
-  const pick = (e: PointerEvent): StallKey | null => {
+  const pick = (e: PointerEvent): MarketSpot | null => {
     const r = el.getBoundingClientRect();
     ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     ray.setFromCamera(ndc, camera);
@@ -432,12 +437,12 @@ export function createMarket3D(container: HTMLElement, opts: MarketOpts): Market
     for (const h of ray.intersectObjects(targets, true)) {
       let o: THREE.Object3D | null = h.object;
       while (o && !o.userData.stall) o = o.parent;
-      if (o) return o.userData.stall as StallKey;
+      if (o) return o.userData.stall as MarketSpot;
     }
     return null;
   };
   let drag: { x: number; y: number; moved: number } | null = null;
-  let hovered: StallKey | null = null;
+  let hovered: MarketSpot | null = null;
   const onDown = (e: PointerEvent) => {
     drag = { x: e.clientX, y: e.clientY, moved: 0 };
     el.setPointerCapture(e.pointerId);

@@ -7,7 +7,7 @@ import type { FrameId } from "@/lib/cosmetics";
 // přesahovat přes okraj kolečka.
 // Rámeček z Blenderu (obrázek 1,2× větší než avatar); když se nenačte, vykreslí se SVG.
 // Doba jedné otáčky rámečku v sekundách: těžší ozdoby se točí pomaleji.
-const SPIN_SECONDS: Record<FrameId, number> = { gold: 26, rainbow: 10, neon: 18, leaf: 22, stars: 14, fire: 12, vine: 24, royal: 28, coral: 20 };
+const SPIN_SECONDS: Record<FrameId, number> = { gold: 26, rainbow: 10, neon: 18, leaf: 22, stars: 14, fire: 12, vine: 24, royal: 28, coral: 20, pirate: 30, space: 16, ice: 24, candy: 14, dragon: 20 };
 
 // Efekty podle tématu rámečku (styly .frame-fx v globals.css): lesk přejíždí po zlatu, plamen plápolá a
 // vylétají jiskry, hvězdy se třpytí, korály pouštějí bublinky… Částice jen u větších avatarů.
@@ -19,8 +19,12 @@ const PARTICLES: Partial<Record<FrameId, { kind: "spark" | "ember" | "bubble" | 
   vine: { kind: "leaf", n: 2 },
   royal: { kind: "spark", n: 4 },
   gold: { kind: "spark", n: 3 },
+  space: { kind: "spark", n: 6 },
+  ice: { kind: "spark", n: 4 },
+  candy: { kind: "spark", n: 4 },
+  dragon: { kind: "ember", n: 5 },
 };
-const SHINE: FrameId[] = ["gold", "royal", "rainbow", "neon"];
+const SHINE: FrameId[] = ["gold", "royal", "rainbow", "neon", "ice", "space"];
 
 export function AvatarFrame({ id, size }: { id: FrameId; size: number }) {
   const [failed, setFailed] = useState(false);
@@ -176,6 +180,17 @@ function FrameSvg({ id, size }: { id: FrameId; size: number }) {
             </g>
           ))}
         </>
+      )}
+      {(id === "pirate" || id === "space" || id === "ice" || id === "candy" || id === "dragon") && (
+        <circle
+          cx="32"
+          cy="32"
+          r="31"
+          fill="none"
+          stroke={{ pirate: "#c8a060", space: "#4fd8ff", ice: "#bfe8ff", candy: "#ff2d55", dragon: "#3fb070" }[id]}
+          strokeWidth="5"
+          strokeDasharray={id === "candy" ? "6 6" : undefined}
+        />
       )}
       {id === "fire" && (
         <>

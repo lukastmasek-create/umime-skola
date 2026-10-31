@@ -6,9 +6,10 @@ import { Avatar } from "@/components/Avatar";
 import { Modal, Preview, type Snapshot } from "@/components/ShopView";
 import { PlayerMarket } from "@/components/PlayerMarket";
 import { Market3DView } from "@/components/Market3DView";
+import type { MarketSpot } from "@/lib/town3d/market3d";
 import { getPlayerMarketText } from "@/i18n/player-market";
 import { bannerCss, isFrameId } from "@/lib/cosmetics";
-import { DEAL_DISCOUNT, SHOP_ITEMS, dailyDealIds, dayKey, salePrice, type ShopItem } from "@/lib/shop";
+import { BUNDLE_DISCOUNT, DEAL_DISCOUNT, SHOP_BUNDLES, SHOP_ITEMS, bundlePrice, dailyDealIds, dayKey, salePrice, type ShopItem } from "@/lib/shop";
 import { WORLDS, type SceneDef, type StallKey, type WorldId } from "@/lib/market-worlds";
 import { getMarketText } from "@/i18n/market";
 import { getShopText } from "@/i18n/shop";
@@ -334,6 +335,8 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
   const [trade, setTrade] = useState(false);
   // 3D scéna je výchozí; 2D vrstvy zůstávají jako jednodušší pohled a záloha bez WebGL
   const [view3d, setView3d] = useState(true);
+  const [bundles, setBundles] = useState(false);
+  const [hover3d, setHover3d] = useState<MarketSpot | null>(null);
   const pm = getPlayerMarketText(locale);
   const nightRef = useRef(false);
 
@@ -594,11 +597,18 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
         <Market3DView
           key={world.id}
           world={world.id}
-          signs={Object.fromEntries(STALL_KEYS.map((k) => [k, { name: wt.stalls[k].name, count: `${countOf(k).have}/${countOf(k).total}` }]))}
-          hover={hover}
-          hello={(k) => ({ npc: wt.stalls[k].npc, text: wt.stalls[k].hello[0] })}
-          onOpen={(k) => setOpen(k)}
-          onHover={setHover}
+          signs={{
+            ...Object.fromEntries(STALL_KEYS.map((k) => [k, { name: wt.stalls[k].name, count: `${countOf(k).have}/${countOf(k).total}` }])),
+            sady: { name: `🎒 ${x.bundlesTitle}`, count: `-${Math.round(BUNDLE_DISCOUNT * 100)} %` },
+            trh: { name: pm.open, count: "" },
+          }}
+          hover={hover3d}
+          hello={(k) => (k === "sady" ? { npc: x.bundlesTitle, text: x.bundlesHint } : k === "trh" ? { npc: pm.title, text: pm.intro } : { npc: wt.stalls[k].npc, text: wt.stalls[k].hello[0] })}
+          onOpen={(k) => (k === "sady" ? setBundles(true) : k === "trh" ? setTrade(true) : setOpen(k))}
+          onHover={(k) => {
+            setHover3d(k);
+            setHover(k === "sady" || k === "trh" ? null : k);
+          }}
           onFail={() => setView3d(false)}
         />
       )}
@@ -777,6 +787,39 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
           {m.classic}
         </Link>
       </div>
+
+      {bundles && (
+        <Modal title={`🎒 ${x.bundlesTitle}`} onClose={() => setBundles(false)} closeLabel={m.close}>
+          <p className="mb-3 text-sm text-[var(--muted)]">{x.bundlesHint}</p>
+          <div className="grid grid-cols-1 gap-3">
+            {SHOP_BUNDLES.map((bundle) => {
+              const { price, full, missing } = bundlePrice(bundle, owned);
+              const done = missing.length === 0;
+              return (
+                <article key={bundle.id} className="card flex flex-col gap-2 p-3" style={{ borderColor: bundle.color }}>
+                  <h3 className="font-bold">{bundle.names[locale]}</h3>
+                  <ul className="flex flex-wrap gap-1.5 text-xs">
+                    {bundle.itemIds.map((id) => (
+                      <li key={id} className={`rounded-lg border-2 px-2 py-0.5 ${owned.has(id) ? "border-[var(--accent-green)] text-[var(--accent-green)]" : "border-[var(--edge)]"}`}>
+                        {owned.has(id) ? "✓ " : ""}
+                        {SHOP_ITEMS.find((i) => i.id === id)?.names[locale]}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button"
+                    disabled={done || busy !== null || points < price}
+                    onClick={() => void post({ action: "buyBundle", id: bundle.id }, x.bundleBought.replace("{name}", bundle.names[locale]), `bundle-${bundle.id}`)}
+                    className="btn-bouncy bg-[var(--brand-500)] px-3 py-1.5 text-sm font-bold text-white disabled:opacity-45"
+                  >
+                    {done ? x.bundleOwned : `⭐ ${price} (${full}) · ${x.bundleBuy}`}
+                  </button>
+                </article>
+              );
+            })}
+          </div>
+        </Modal>
+      )}
 
       {trade && (
         <Modal title={pm.title} onClose={() => setTrade(false)} closeLabel={m.close}>

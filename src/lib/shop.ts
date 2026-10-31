@@ -45,6 +45,18 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: "title-scholar", kind: "title", ref: "scholar", price: 80, names: n("Učenec", "Scholar", "Gelehrter", "Учёный") },
   { id: "title-bookworm", kind: "title", ref: "bookworm", price: 80, names: n("Knihomol", "Bookworm", "Bücherwurm", "Книголюб") },
   { id: "title-mathematician", kind: "title", ref: "mathematician", price: 100, names: n("Matematik", "Mathematician", "Mathematiker", "Математик") },
+  { id: "title-star-sailor", kind: "title", ref: "star-sailor", price: 120, tag: "new", names: n("Hvězdný mořeplavec", "Star sailor", "Sternensegler", "Звёздный мореход") },
+  { id: "title-treasure-hunter", kind: "title", ref: "treasure-hunter", price: 110, tag: "new", names: n("Lovec pokladů", "Treasure hunter", "Schatzjäger", "Охотник за сокровищами") },
+  { id: "title-rocket-scientist", kind: "title", ref: "rocket-scientist", price: 140, tag: "new", names: n("Raketový vědec", "Rocket scientist", "Raketenforscher", "Ракетный учёный") },
+  { id: "title-planet-explorer", kind: "title", ref: "planet-explorer", price: 130, tag: "new", names: n("Objevitel planet", "Planet explorer", "Planetenentdecker", "Исследователь планет") },
+  { id: "title-mushroom-wizard", kind: "title", ref: "mushroom-wizard", price: 120, tag: "new", names: n("Houbový čaroděj", "Mushroom wizard", "Pilzzauberer", "Грибной волшебник") },
+  { id: "title-dragon-tamer", kind: "title", ref: "dragon-tamer", price: 180, tag: "new", names: n("Krotitel draků", "Dragon tamer", "Drachenzähmer", "Укротитель драконов") },
+  { id: "title-royal-architect", kind: "title", ref: "royal-architect", price: 160, tag: "new", names: n("Královský architekt", "Royal architect", "Königlicher Baumeister", "Королевский зодчий") },
+  { id: "title-coral-keeper", kind: "title", ref: "coral-keeper", price: 120, tag: "new", names: n("Strážce korálů", "Coral keeper", "Korallenhüter", "Хранитель кораллов") },
+  { id: "title-quiz-champion", kind: "title", ref: "quiz-champion", price: 150, tag: "new", names: n("Šampion kvízů", "Quiz champion", "Quiz-Champion", "Чемпион викторин") },
+  { id: "title-word-magician", kind: "title", ref: "word-magician", price: 130, tag: "new", names: n("Kouzelník slov", "Word magician", "Wortzauberer", "Волшебник слов") },
+  { id: "title-number-ninja", kind: "title", ref: "number-ninja", price: 130, tag: "new", names: n("Nindža čísel", "Number ninja", "Zahlen-Ninja", "Ниндзя чисел") },
+  { id: "title-time-traveler", kind: "title", ref: "time-traveler", price: 170, tag: "new", names: n("Cestovatel časem", "Time traveler", "Zeitreisender", "Путешественник во времени") },
   { id: "title-builder", kind: "title", ref: "builder", price: 120, names: n("Stavitel", "Builder", "Baumeister", "Строитель") },
   { id: "title-forest-guardian", kind: "title", ref: "forest-guardian", price: 120, tag: "new", names: n("Strážce lesa", "Forest guardian", "Waldwächter", "Страж леса") },
   { id: "title-fairy-friend", kind: "title", ref: "fairy-friend", price: 100, tag: "new", names: n("Přítel víl", "Fairy friend", "Feenfreund", "Друг фей") },
@@ -76,6 +88,11 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: "frame-royal", kind: "frame", ref: "royal", price: 320, tag: "new", names: n("Královský rámeček", "Royal frame", "Königsrahmen", "Королевская рамка") },
   { id: "frame-coral", kind: "frame", ref: "coral", price: 260, tag: "new", names: n("Korálový věnec", "Coral wreath", "Korallenkranz", "Коралловый венок") },
   { id: "frame-fire", kind: "frame", ref: "fire", price: 350, tag: "popular", names: n("Ohnivý rámeček", "Fire frame", "Feuerrahmen", "Огненная рамка") },
+  { id: "frame-pirate", kind: "frame", ref: "pirate", price: 240, tag: "new", names: n("Pirátské lano", "Pirate rope", "Piratentau", "Пиратский канат") },
+  { id: "frame-space", kind: "frame", ref: "space", price: 300, tag: "new", names: n("Planetární prstenec", "Planet ring", "Planetenring", "Планетное кольцо") },
+  { id: "frame-ice", kind: "frame", ref: "ice", price: 260, tag: "new", names: n("Ledové krystaly", "Ice crystals", "Eiskristalle", "Ледяные кристаллы") },
+  { id: "frame-candy", kind: "frame", ref: "candy", price: 200, tag: "new", names: n("Cukrová hůl", "Candy cane", "Zuckerstange", "Леденцовая трость") },
+  { id: "frame-dragon", kind: "frame", ref: "dragon", price: 380, tag: "new", names: n("Dračí šupiny", "Dragon scales", "Drachenschuppen", "Драконья чешуя") },
 
   // --- pozadí profilu ---
   { id: "banner-sunset", kind: "banner", ref: "sunset", price: 80, names: n("Západ slunce", "Sunset", "Sonnenuntergang", "Закат") },
@@ -198,6 +215,12 @@ export const SHOP_BUNDLES: ShopBundle[] = [
   { id: "castle", itemIds: ["avatar-knight", "frame-royal", "banner-castle-day", "title-knight"], color: "#d6a84a", names: n("Hradní sada", "Castle set", "Burg-Set", "Замковый набор") },
   { id: "sea", itemIds: ["avatar-diver", "frame-coral", "banner-deep-sea", "title-sea-sage"], color: "#5fd0ee", names: n("Podmořská sada", "Underwater set", "Unterwasser-Set", "Подводный набор") },
   { id: "magic", itemIds: ["avatar-wizard", "frame-neon", "pet-party", "title-scholar"], color: "#c9a8ff", names: n("Kouzelná sada", "Magic set", "Zauber-Set", "Волшебный набор") },
+  { id: "treasure", itemIds: ["avatar-captain", "frame-pirate", "banner-treasure-map", "title-treasure-hunter"], color: "#e8b860", names: n("Sada lovce pokladů", "Treasure hunter set", "Schatzjäger-Set", "Набор охотника за сокровищами") },
+  { id: "planets", itemIds: ["frame-space", "banner-town-space", "title-planet-explorer", "title-rocket-scientist"], color: "#6fa8ff", names: n("Planetární sada", "Planet set", "Planeten-Set", "Планетный набор") },
+  { id: "dragon", itemIds: ["frame-dragon", "banner-volcano", "title-dragon-tamer", "pet-crown"], color: "#5ad08a", names: n("Dračí sada", "Dragon set", "Drachen-Set", "Драконий набор") },
+  { id: "frost", itemIds: ["frame-ice", "banner-aurora", "banner-christmas", "avatar-winter"], color: "#bfe8ff", names: n("Mrazivá sada", "Frost set", "Frost-Set", "Морозный набор") },
+  { id: "sweet", itemIds: ["frame-candy", "banner-candy", "banner-rainbow", "pet-bow"], color: "#ff9fd0", names: n("Sladká sada", "Sweet set", "Süßes Set", "Сладкий набор") },
+  { id: "brainy", itemIds: ["title-quiz-champion", "title-word-magician", "title-number-ninja", "title-time-traveler"], color: "#ffd24d", names: n("Sada chytrých hlav", "Brainy set", "Schlaukopf-Set", "Набор умников") },
 ];
 
 export function getBundle(id: string): ShopBundle | undefined {

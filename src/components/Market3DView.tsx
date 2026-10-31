@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { getHeroLook } from "@/lib/hero";
-import type { StallKey, WorldId } from "@/lib/market-worlds";
-import type { MarketHandle } from "@/lib/town3d/market3d";
+import type { WorldId } from "@/lib/market-worlds";
+import type { MarketHandle, MarketSpot } from "@/lib/town3d/market3d";
 
 // Živá 3D scéna světa uživatelského obchodu; cedule stánků jsou HTML prvky, které engine každý snímek posune.
 export function Market3DView({
@@ -17,10 +17,10 @@ export function Market3DView({
 }: {
   world: WorldId;
   signs: Record<string, { name: string; count: string }>;
-  hover: StallKey | null;
-  hello: (key: StallKey) => { npc: string; text: string } | null;
-  onOpen: (key: StallKey) => void;
-  onHover: (key: StallKey | null) => void;
+  hover: MarketSpot | null;
+  hello: (key: MarketSpot) => { npc: string; text: string } | null;
+  onOpen: (key: MarketSpot) => void;
+  onHover: (key: MarketSpot | null) => void;
   onFail: () => void;
 }) {
   const box = useRef<HTMLDivElement>(null);
@@ -63,7 +63,7 @@ export function Market3DView({
           d.dataset.sign = key;
           d.className = "market3d-sign";
           d.innerHTML = `${s.name}<span class="block text-[10px] font-semibold text-white/80">${s.count}</span>`;
-          d.addEventListener("click", () => handle?.open(key as StallKey));
+          d.addEventListener("click", () => handle?.open(key as MarketSpot));
           lay.appendChild(d);
           els.set(key, d);
         }

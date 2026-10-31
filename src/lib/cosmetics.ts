@@ -5,7 +5,7 @@ import { TITLES } from "@/lib/titles";
 // Ozdoby profilu, které se kupují v obchodě: rámečky kolem avataru a pozadí profilu.
 // Nové ozdoby přidává vývojář tady a v src/lib/shop.ts (cena a názvy).
 
-export const FRAME_IDS = ["gold", "rainbow", "neon", "leaf", "stars", "fire", "vine", "royal", "coral"] as const;
+export const FRAME_IDS = ["gold", "rainbow", "neon", "leaf", "stars", "fire", "vine", "royal", "coral", "pirate", "space", "ice", "candy", "dragon"] as const;
 export type FrameId = (typeof FRAME_IDS)[number];
 
 export function isFrameId(value: unknown): value is FrameId {
