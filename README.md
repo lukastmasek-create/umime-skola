@@ -89,3 +89,11 @@ Předmět Fyzika je nová hodnota enumu `Subject`, proto se v databázi spoušt�
 
 Farma, Město a Základna mají panel Výzvy (`src/components/idle/ChallengePanel.tsx`, API `src/app/api/stale-hry/vyzvy/route.ts`,
 logika `src/lib/idle/challenge.ts`, testy v `challenge.test.ts`). Stav je v `IdleState` pod klíčem `vyzvy`, nové tabulky nejsou potřeba.
+
+## Kontakt
+
+Stránka `/kontakt` (odkaz v menu Nastavení, v patičce a u výběru školy): formulář s kategoriemi Podpora (chyba v učivu, chyba ve stránce, chyba s účtem), Partnerství (partnerská škola, influenceři, učebnice pro materiály) a Přidání školy. Odkaz `/kontakt?tema=add-school` (nebo jiné id tématu či kategorie) formulář rovnou předvyplní.
+
+- Před nasazením jednou spusť `prisma/sql/contact.sql` v databázi (nová tabulka `ContactMessage`).
+- Zprávy se ukládají do `ContactMessage` (stav `new`), čtou se zatím přímo v databázi (např. `npm run db:studio`).
+- Témata a kontrola dat: `src/lib/contact.ts` (testy v `npm test`), API: `src/app/api/kontakt/`, texty: `src/i18n/contact.ts`.

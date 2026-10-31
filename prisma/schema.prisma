@@ -44,6 +44,7 @@ model User {
   questionSets QuestionSet[]
   hostedRooms  LiveRoom[]
   livePlayers  LivePlayer[]
+  contactMessages ContactMessage[]
 
   accounts Account[]
   sessions Session[]
@@ -481,4 +482,26 @@ model LiveAnswer {
 
   @@unique([playerId, seq])
   @@index([roomId, qIndex])
+}
+
+// --- Kontaktní formulář ---
+// Zpráva z /kontakt. category: support | partner | school, topic: viz src/lib/contact.ts.
+// details = doplňující pole tématu (např. název školy, odkaz na stránku). status: new | done.
+model ContactMessage {
+  id        String   @id @default(cuid())
+  category  String
+  topic     String
+  name      String
+  email     String
+  message   String
+  details   Json     @default("{}")
+  locale    String   @default("cs")
+  status    String   @default("new")
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+
+  @@index([status, createdAt])
+  @@index([email, createdAt])
+  @@index([userId, createdAt])
 }

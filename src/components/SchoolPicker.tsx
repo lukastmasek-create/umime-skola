@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { getContactText } from "@/i18n/contact";
 import { getCommunityText } from "@/i18n/community";
 import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
@@ -100,7 +101,12 @@ export function SchoolPicker({ locale }: { locale: Locale }) {
       <h2 className="mb-1 text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>
         {t.title}
       </h2>
-      <p className="mb-4 text-sm text-[var(--muted)]">{t.hint}</p>
+      <p className="mb-4 text-sm text-[var(--muted)]">
+        {t.hint}{" "}
+        <Link href={`/${locale}/kontakt?tema=add-school`} className="font-semibold text-[var(--brand-600)] hover:underline">
+          {getContactText(locale).missingSchool}
+        </Link>
+      </p>
 
       {loading ? null : !loggedIn ? (
         <p className="text-sm text-[var(--muted)]">

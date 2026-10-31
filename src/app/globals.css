@@ -131,6 +131,13 @@ select:not(:focus) {
   border-color: var(--field-border);
 }
 
+/* Pole s chybou (aria-invalid) má červený okraj i mimo fokus. */
+input[aria-invalid="true"],
+textarea[aria-invalid="true"],
+select[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
 ::selection {
   background: var(--accent-yellow);
   color: #16132b;

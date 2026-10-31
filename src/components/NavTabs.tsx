@@ -16,6 +16,7 @@ import { getRoomText } from "@/i18n/room";
 import { getReviewText } from "@/i18n/review";
 import { getLiveText } from "@/i18n/live";
 import { getDailyQuizText } from "@/i18n/daily-quiz";
+import { getContactText } from "@/i18n/contact";
 import { useAccount } from "@/lib/use-account";
 import { locales, localeNames, type Locale } from "@/i18n/config";
 import { setLocaleCookie } from "@/lib/locale-cookie";
@@ -60,6 +61,7 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
     settings.push({ key: "registrace", href: `/${locale}/registrace`, label: dict.nav.register });
   }
   settings.push({ key: "nastaveni", href: `/${locale}/nastaveni`, label: dict.nav.settings });
+  settings.push({ key: "kontakt", href: `/${locale}/kontakt`, label: getContactText(locale).nav });
   const groups: Group[] = [
     { key: "town", label: getTownHubText(locale).nav, items: [{ key: "mestecko", href: `/${locale}/mestecko`, label: getTownHubText(locale).nav }] },
     { key: "courses", label: home.groups.courses, items: courses },
