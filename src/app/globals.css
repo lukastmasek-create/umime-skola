@@ -3510,3 +3510,7 @@ button.town3d-chip[aria-pressed="true"] { background: #ffd24d; color: #1b1840; }
 /* 3D svět uživatelského obchodu: cedule nad stánky */
 .market3d-sign { position: absolute; left: 0; top: 0; pointer-events: auto; white-space: nowrap; border: 2px solid #16132b; border-radius: 0.4rem; background: #3a2a1a; color: #ffd76b; padding: 0.15rem 0.5rem; font-size: 0.75rem; font-weight: 800; line-height: 1.15; text-align: center; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4); cursor: pointer; }
 .market3d-sign:hover { background: #4a3a24; }
+
+/* 3D knihovna materiálů: cedulky nad knihovnami */
+.library-sign { position: absolute; left: 0; top: 0; pointer-events: auto; white-space: nowrap; border: 2px solid; border-radius: 0.5rem; background: #3a2a1a; color: #ffe8b8; padding: 0.15rem 0.55rem; font-size: 0.75rem; font-weight: 800; line-height: 1.15; text-align: center; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.45); }
+.library-sign:hover { background: #4a3a24; }
