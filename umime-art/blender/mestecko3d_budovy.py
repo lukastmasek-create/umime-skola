@@ -859,6 +859,143 @@ def build_muzeum():
         lamp_post(x, -d / 2 - 1.3, 2.2)
 
 
+# ------------------------------------------------------------- stánky 3D světů uživatelského obchodu (pult k -Y)
+def build_stanek_svet(theme):
+    """Tematický stánek (3,2 × 2,2 m): pult vpředu, obchodník stojí za ním (+Y), cedule nad střechou je v HTML."""
+    rnd = random.Random(len(theme))
+    if theme == "pirate":
+        wood, dark = mat("#9a6a3a", 0.85), mat("#5a3a20", 0.9)
+        for k, x in enumerate((-1.0, 0.0, 1.0)):
+            box((x, -0.2, 0.5), (0.96, 1.0, 1.0), wood, 0.03)
+            for z in (0.15, 0.85):
+                box((x, -0.71, z), (0.98, 0.04, 0.08), dark, 0)
+            box((x, -0.71, 0.5), (0.08, 0.04, 0.9), dark, 0)
+        box((0, -0.2, 1.04), (3.1, 1.1, 0.08), mat("#b8844a", 0.8), 0.01)
+        for sx in (-1, 1):
+            for sy in (-1, 1):
+                cyl((sx * 1.45, sy * 0.85, 1.35), 0.09, 2.7, dark, verts=8)
+        # plachta jako stříška: prohnutá ve třech dílech
+        sail = mat("#f4ead0", 0.9)
+        for k, (y, z, a) in enumerate([(-0.75, 2.55, 0.35), (0.0, 2.7, 0.0), (0.75, 2.55, -0.35)]):
+            box((0, y, z), (3.2, 0.82, 0.05), sail, 0.01, rot=(a, 0, 0))
+        for x in (-1.6, 1.6):
+            cyl((x, 0, 2.62), 0.025, 2.0, mat("#c8a870", 0.8), verts=5, rot=(math.pi / 2, 0, 0))
+        # truhla s mincemi, lucerna, sud a lano
+        box((0.6, -0.3, 1.25), (0.6, 0.4, 0.34), mat("#7a4a2a", 0.7), 0.02)
+        box((0.6, -0.42, 1.45), (0.62, 0.3, 0.06), mat("#7a4a2a", 0.7), 0.02, rot=(-0.9, 0, 0))
+        for k in range(6):
+            sphere((0.42 + (k % 3) * 0.17, -0.3 + (k // 3) * 0.1, 1.44), 0.06, mat("#ffd24d", 0.3, 0.8), seg=8, scale=(1, 1, 0.4))
+        box((0.6, -0.51, 1.25), (0.62, 0.02, 0.05), mat("#ffd24d", 0.3, 0.8), 0)
+        cyl((-1.25, -0.75, 2.2), 0.02, 0.3, dark, verts=5)
+        box((-1.25, -0.75, 1.92), (0.22, 0.22, 0.3), mat("#3a3f55", 0.4, 0.6), 0.02)
+        sphere((-1.25, -0.75, 1.92), 0.09, glow("#ffc46b", 3.0), seg=8)
+        cyl((1.95, -0.4, 0.5), 0.38, 1.0, wood, verts=14)
+        for z in (0.15, 0.85):
+            torus((1.95, -0.4, z), 0.39, 0.03, mat("#4a4e5c", 0.4, 0.7), seg=16)
+        torus((-1.9, -0.6, 0.08), 0.28, 0.06, mat("#c8a870", 0.8), seg=16)
+        torus((-1.9, -0.6, 0.18), 0.22, 0.06, mat("#c8a870", 0.8), seg=16)
+    elif theme == "space":
+        white, metal = mat("#eef2f8", 0.35, 0.2), mat("#8a92a8", 0.3, 0.8)
+        box((0, -0.2, 0.5), (3.0, 1.0, 1.0), white, 0.08)
+        box((0, -0.71, 0.75), (2.9, 0.03, 0.08), glow("#4fd8ff", 3.0), 0)
+        box((0, -0.71, 0.25), (2.9, 0.03, 0.04), glow("#b06bff", 2.0), 0)
+        box((0, -0.2, 1.03), (3.1, 1.1, 0.06), metal, 0.02)
+        for sx in (-1, 1):
+            cyl((sx * 1.45, 0.75, 1.4), 0.07, 2.8, metal, verts=10)
+            cyl((sx * 1.45, -0.75, 1.9), 0.05, 1.8, metal, verts=10)
+        # zakřivená střecha s neonovým okrajem
+        box((0, 0, 2.85), (3.3, 2.0, 0.12), mat("#2a2f45", 0.4, 0.5), 0.03)
+        cyl((0, 0, 2.95), 0.55, 3.0, mat("#3a4060", 0.4, 0.5), verts=20, rot=(0, math.pi / 2, 0))
+        box((0, -1.0, 2.8), (3.3, 0.05, 0.06), glow("#4fd8ff", 3.0), 0)
+        box((0, 1.0, 2.8), (3.3, 0.05, 0.06), glow("#b06bff", 3.0), 0)
+        # holo obrazovka a anténa
+        box((0, -0.05, 1.75), (1.4, 0.04, 0.8), glow("#6fe8ff", 1.2), 0.01)
+        box((0, -0.03, 1.75), (1.5, 0.03, 0.9), metal, 0.01)
+        cyl((1.2, 0.4, 3.35), 0.02, 0.9, metal, verts=6)
+        sphere((1.2, 0.4, 3.83), 0.08, glow("#ff5d73", 4.0), seg=8)
+        for k in range(3):
+            box((-1.0 + k * 0.4, -0.35, 1.2), (0.28, 0.28, 0.28), white, 0.04)
+            box((-1.0 + k * 0.4, -0.5, 1.2), (0.2, 0.02, 0.04), glow(["#4fd8ff", "#b06bff", "#7ee0b0"][k], 2.5), 0)
+    elif theme == "forest":
+        bark, ring = mat("#7a4a2a", 0.9), mat("#d8b080", 0.8)
+        cyl((0, -0.2, 0.5), 1.0, 1.0, bark, verts=16)
+        for k in range(8):
+            a = k * TAU / 8
+            box((math.cos(a) * 1.0, -0.2 + math.sin(a) * 1.0, 0.5), (0.08, 0.08, 1.0), mat("#5a3a20", 0.9), 0, rot=(0, 0, a))
+        cyl((0, -0.2, 1.01), 0.98, 0.04, ring, verts=24)
+        for r in (0.3, 0.55, 0.8):
+            torus((0, -0.2, 1.035), r, 0.012, mat("#a8784a", 0.8), seg=24)
+        for (x, y) in [(-1.5, 0.6), (1.5, 0.6), (-1.3, -0.9), (1.3, -0.9)]:
+            cyl((x, y, 1.3), 0.08, 2.6, bark, verts=7, rot=(rnd.uniform(-0.08, 0.08), rnd.uniform(-0.08, 0.08), 0))
+        # střecha jako klobouk muchomůrky
+        dome((0, 0, 2.5), 2.0, mat("#e5484d", 0.5), seg=24)
+        cyl((0, 0, 2.5), 2.0, 0.08, mat("#f4ead8", 0.7), verts=24)
+        for k in range(12):
+            a, r = k * TAU / 12 + 0.3, 1.2 + (k % 3) * 0.25
+            sphere((math.cos(a) * r, math.sin(a) * r, 2.5 + math.sqrt(max(0.1, 4 - r * r)) * 0.95), 0.16, mat("#ffffff", 0.6), seg=8, scale=(1, 1, 0.5))
+        for k in range(6):
+            a = k * TAU / 6
+            cyl((math.cos(a) * 1.9, math.sin(a) * 1.9, 2.25), 0.01, 0.4, mat("#3a3a3a", 0.8), verts=4)
+            sphere((math.cos(a) * 1.9, math.sin(a) * 1.9, 2.02), 0.07, glow(["#fff59a", "#ffb8f0", "#a8f0ff"][k % 3], 4.0), seg=8)
+        for k in range(3):
+            cyl((-0.5 + k * 0.5, -0.4, 1.12), 0.1, 0.16, mat("#c8743a", 0.8), verts=10)
+            sphere((-0.5 + k * 0.5, -0.4, 1.28), 0.12, mat(["#ff5d73", "#a87bff", "#ffd24d"][k], 0.5), seg=8)
+    elif theme == "castle":
+        wood = mat("#8a5a34", 0.8)
+        box((0, -0.2, 0.95), (3.0, 1.1, 0.1), wood, 0.02)
+        for sx in (-1, 1):
+            for sy in (-1, 1):
+                box((sx * 1.35, -0.2 + sy * 0.45, 0.45), (0.1, 0.1, 0.9), wood, 0)
+        drape = mat("#7a3aa8", 0.7)
+        box((0, -0.77, 0.7), (3.04, 0.04, 0.55), drape, 0.01)
+        for k in range(7):
+            box((-1.3 + k * 0.43, -0.79, 0.42), (0.25, 0.02, 0.06), mat("#ffd24d", 0.5), 0)
+        for sx in (-1, 1):
+            for sy in (-1, 1):
+                cyl((sx * 1.5, sy * 1.0, 1.25), 0.06, 2.5, wood, verts=8)
+                cone((sx * 1.5, sy * 1.0, 2.6), 0.08, 0.25, mat("#c8ccd4", 0.3, 0.8), verts=6)
+        # pruhovaný stan
+        cols = ["#c0392b", "#f4ead8"]
+        for k in range(8):
+            a = k * TAU / 8 + TAU / 16
+            mesh([(0, 0, 4.0), (math.cos(a) * 2.1, math.sin(a) * 1.5, 2.45), (math.cos(a + TAU / 8) * 2.1, math.sin(a + TAU / 8) * 1.5, 2.45)], [(0, 1, 2)], mat(cols[k % 2], 0.7), "stan")
+        for k in range(16):
+            a = k * TAU / 16
+            cone((math.cos(a) * 2.1, math.sin(a) * 1.5, 2.33), 0.14, 0.24, mat(cols[k % 2], 0.7), verts=4, rot=(math.pi, 0, a))
+        cyl((0, 0, 4.4), 0.03, 0.8, mat("#5a4a3a", 0.6), verts=6)
+        box((0.25, 0, 4.65), (0.5, 0.02, 0.28), mat("#ffd24d", 0.6), 0.01)
+        # štít s erbem a džbán
+        cyl((-1.1, -0.82, 1.6), 0.32, 0.06, mat("#2e5aa8", 0.5), verts=6, rot=(math.pi / 2, 0, 0))
+        box((-1.1, -0.86, 1.6), (0.06, 0.02, 0.4), mat("#ffd24d", 0.4, 0.6), 0)
+        box((-1.1, -0.86, 1.65), (0.3, 0.02, 0.06), mat("#ffd24d", 0.4, 0.6), 0)
+        cyl((1.0, -0.3, 1.15), 0.12, 0.3, mat("#b8574a", 0.7), verts=12, r2=0.08)
+    elif theme == "sea":
+        corals = ["#ff6f91", "#ffb347", "#c08cff", "#6fe0c0"]
+        for k in range(9):
+            sphere((-1.2 + (k % 5) * 0.6, -0.2 + (k // 5) * 0.4, 0.45 + rnd.uniform(-0.1, 0.1)), 0.5, mat(corals[k % 4], 0.8), seg=10)
+        box((0, -0.2, 1.02), (3.0, 1.1, 0.08), mat("#f4ead8", 0.4), 0.04)
+        for sx in (-1, 1):
+            for k in range(6):
+                cyl((sx * 1.45 + math.sin(k) * 0.06, 0.6, 0.25 + k * 0.45), 0.08, 0.46, mat("#3f9a4a", 0.7), verts=8)
+        # mušle jako střecha s perlou
+        shell = mat("#ffd8e8", 0.4)
+        dome((0, 0.3, 2.6), 1.45, shell, seg=24)
+        for r in (0.6, 1.05, 1.35):
+            torus((0, 0.3, 2.6 + math.sqrt(1.45 ** 2 - r * r)), r, 0.04, mat("#ffb8d0", 0.4), seg=32)
+        for k in range(10):
+            a = k * TAU / 10
+            cyl((math.cos(a) * 1.45, 0.3 + math.sin(a) * 1.45, 2.62), 0.08, 0.06, mat("#ffb8d0", 0.4), verts=8)
+        sphere((0, -0.4, 1.3), 0.14, glow("#f4f0ff", 1.5), seg=12)
+        cyl((0, -0.4, 1.12), 0.24, 0.06, shell, verts=14)
+        # hvězdice a bubliny
+        for (x, z, c) in [(-1.0, 1.15, "#ff8a3a"), (1.1, 1.1, "#ff5d73")]:
+            for k in range(5):
+                a = k * TAU / 5
+                cone((x + math.cos(a) * 0.12, -0.5, z + math.sin(a) * 0.12), 0.06, 0.24, mat(c, 0.6), verts=4, rot=(math.pi / 2, 0, -a + math.pi / 2))
+        for k in range(6):
+            sphere((1.6 + rnd.uniform(-0.2, 0.2), -0.6, 1.4 + k * 0.4), 0.06 + k * 0.015, mat("#dff8ff", 0.05, alpha=0.4), seg=8)
+
+
 BUILDERS = {
     "skola": build_skola,
     "knihovna": build_knihovna,
@@ -886,6 +1023,8 @@ BUILDERS = {
     "mlyn-lopatky": build_mlyn_lopatky,
     "muzeum": build_muzeum,
 }
+for _t in ("pirate", "space", "forest", "castle", "sea"):
+    BUILDERS[f"stanek-{_t}"] = (lambda t: (lambda: build_stanek_svet(t)))(_t)
 for i in range(6):
     BUILDERS[f"domek{i + 1}"] = (lambda v: (lambda: build_domek(v)))(i)
 

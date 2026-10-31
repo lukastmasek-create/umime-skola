@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { Modal, Preview, type Snapshot } from "@/components/ShopView";
 import { PlayerMarket } from "@/components/PlayerMarket";
+import { Market3DView } from "@/components/Market3DView";
 import { getPlayerMarketText } from "@/i18n/player-market";
 import { bannerCss, isFrameId } from "@/lib/cosmetics";
 import { DEAL_DISCOUNT, SHOP_ITEMS, dailyDealIds, dayKey, salePrice, type ShopItem } from "@/lib/shop";
@@ -331,6 +332,8 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
   const [shot, setShot] = useState<{ n: number; id: string } | null>(null);
   const [talk, setTalk] = useState<{ id: string; text: string } | null>(null);
   const [trade, setTrade] = useState(false);
+  // 3D scéna je výchozí; 2D vrstvy zůstávají jako jednodušší pohled a záloha bez WebGL
+  const [view3d, setView3d] = useState(true);
   const pm = getPlayerMarketText(locale);
   const nightRef = useRef(false);
 
@@ -587,7 +590,19 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
       {state.status === "unavailable" && <p className="mb-3 rounded-xl border-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-2 text-sm text-[var(--muted)]">{t.unavailable}</p>}
 
       {veil && <div aria-hidden className="pointer-events-none fixed inset-0 z-[60]" style={{ background: veil.color, opacity: veil.fade ? 0 : 1, transition: "opacity 0.9s ease-out" }} />}
-      <div className="overflow-x-auto overflow-y-hidden rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)]">
+      {view3d && (
+        <Market3DView
+          key={world.id}
+          world={world.id}
+          signs={Object.fromEntries(STALL_KEYS.map((k) => [k, { name: wt.stalls[k].name, count: `${countOf(k).have}/${countOf(k).total}` }]))}
+          hover={hover}
+          hello={(k) => ({ npc: wt.stalls[k].npc, text: wt.stalls[k].hello[0] })}
+          onOpen={(k) => setOpen(k)}
+          onHover={setHover}
+          onFail={() => setView3d(false)}
+        />
+      )}
+      <div className={`overflow-x-auto overflow-y-hidden rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)] ${view3d ? "hidden" : ""}`}>
         <div ref={stage} data-night={dark ? "" : undefined} data-world={world.id} className="market-stage relative select-none overflow-hidden" style={{ aspectRatio: `${W} / ${H}`, minWidth: 880 }}>
           <canvas ref={back} aria-hidden className="absolute inset-0 h-full w-full" />
           {/* hlavní předmět: loď nebo raketa */}
@@ -752,6 +767,9 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
             </span>
           </button>
         ))}
+        <button type="button" onClick={() => setView3d((v) => !v)} className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-sm font-bold" aria-pressed={view3d}>
+          {view3d ? "🖼️ 2D" : "🧊 3D"}
+        </button>
         <button type="button" onClick={() => setTrade(true)} className="btn-bouncy bg-[var(--accent-yellow)] px-3 py-1.5 text-sm font-bold text-[#16132b]">
           {pm.open}
         </button>
