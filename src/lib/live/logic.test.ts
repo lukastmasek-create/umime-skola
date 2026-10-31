@@ -97,3 +97,17 @@ test("týmy se střídají a řízené režimy se poznají", () => {
   assert.equal(effectiveStatus({ ...base, mode: "SURVIVAL", answered: 2, players: 2 }), "REVEAL");
   assert.equal(effectiveStatus({ ...base, mode: "STREAK", endsAt: 500, now: 1000 }), "ENDED");
 });
+
+test("cleanSetQuestions zachová platný obrázek a zahodí podvržený", async () => {
+  const { cleanSetQuestions, cleanQuestions, imagesFit } = await import("./logic.ts");
+  const base = { prompt: "Q", options: ["a", "b", "c", "d"], correctIndex: 1 };
+  const good = "data:image/jpeg;base64,/9j/4AAQSkZJRg==";
+  const [a, b] = cleanSetQuestions([
+    { ...base, image: good },
+    { ...base, image: "javascript:alert(1)" },
+  ]);
+  assert.equal(a.image, good);
+  assert.equal(b.image, undefined);
+  assert.equal(cleanQuestions([{ ...base, image: good }])[0].image, undefined);
+  assert.equal(imagesFit([a]), true);
+});

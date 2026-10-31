@@ -209,7 +209,7 @@ export function normalizeAnswer(s: string): string {
   return stripDiacritics(s).toLowerCase().replace(/[.,;:!?'"„“]/g, "").replace(/\s+/g, " ").trim();
 }
 
-export type Shuffled = { id?: string; prompt: string; options: string[]; correct: number; explanation: string };
+export type Shuffled = { id?: string; prompt: string; options: string[]; correct: number; explanation: string; image?: string };
 
 // Otázka s náhodně zamíchanými možnostmi (správná odpověď nezůstává na stejném místě).
 export function shuffleQuestion(q: GameQuestion): Shuffled {
@@ -220,6 +220,7 @@ export function shuffleQuestion(q: GameQuestion): Shuffled {
     options: order.map((i) => q.options[i]),
     correct: order.indexOf(q.correctIndex),
     explanation: q.explanation,
+    ...(q.image ? { image: q.image } : {}),
   };
 }
 

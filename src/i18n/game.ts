@@ -6,6 +6,8 @@ export type GameQuestion = {
   options: [string, string, string, string];
   correctIndex: number;
   explanation: string;
+  /** Obrázek k otázce (jen ve vlastních sadách), data URL. */
+  image?: string;
 };
 
 export type GameText = {

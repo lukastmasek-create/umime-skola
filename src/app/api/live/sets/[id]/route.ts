@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { handle, readJson } from "@/lib/live/http";
-import { cleanQuestions } from "@/lib/live/logic";
+import { cleanSetQuestions, imagesFit } from "@/lib/live/logic";
 import { LiveError } from "@/lib/live/service";
 
 export const dynamic = "force-dynamic";
@@ -21,8 +21,9 @@ export async function PUT(request: Request, ctx: RouteContext<"/api/live/sets/[i
     await ownedSet(id);
     const body = await readJson(request);
     const title = typeof body.title === "string" ? body.title.trim().slice(0, 80) : "";
-    const questions = cleanQuestions(body.questions);
+    const questions = cleanSetQuestions(body.questions);
     if (!title || questions.length === 0) throw new LiveError("invalid-set");
+    if (!imagesFit(questions)) throw new LiveError("images-too-large", 413);
     await prisma.questionSet.update({ where: { id }, data: { title, questions } });
     return { ok: true };
   });

@@ -10,6 +10,9 @@ export type LiveQuestion = {
   explanation?: string;
 };
 
+/** Otázka ve vlastní sadě: navíc může mít obrázek (zmenšený JPEG/PNG/WebP jako data URL). Do živých her se obrázek nekopíruje. */
+export type SetQuestion = LiveQuestion & { image?: string };
+
 export type LiveSettings = {
   /** Čas na otázku v klasickém kvízu (sekundy). */
   seconds: number;
