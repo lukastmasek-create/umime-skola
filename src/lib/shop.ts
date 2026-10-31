@@ -40,6 +40,14 @@ export const SHOP_ITEMS: ShopItem[] = [
   { id: "avatar-wizard", kind: "avatar", ref: "wizard", price: 200, tag: "popular", asset3d: "avatar-wizard", names: n("Čaroděj", "Wizard", "Zauberer", "Волшебник") },
   { id: "avatar-pumpkin", kind: "avatar", ref: "pumpkin", price: 90, asset3d: "avatar-pumpkin", names: n("Dýně", "Pumpkin", "Kürbis", "Тыква") },
   { id: "avatar-winter", kind: "avatar", ref: "winter", price: 110, names: n("Zimní", "Winter", "Winter", "Зимний") },
+  { id: "avatar-piratka", kind: "avatar", ref: "piratka", price: 190, tag: "new", names: n("Pirátka", "Pirate girl", "Piratin", "Пиратка") },
+  { id: "avatar-kosmonautka", kind: "avatar", ref: "kosmonautka", price: 200, tag: "new", names: n("Kosmonautka", "Cosmonaut", "Kosmonautin", "Космонавтка") },
+  { id: "avatar-robopes", kind: "avatar", ref: "robopes", price: 220, tag: "new", names: n("Robopes", "Robo-dog", "Roboterhund", "Робопёс") },
+  { id: "avatar-skritek", kind: "avatar", ref: "skritek", price: 170, tag: "new", names: n("Skřítek", "Gnome", "Wichtel", "Гномик") },
+  { id: "avatar-veverka", kind: "avatar", ref: "veverka", price: 180, tag: "new", names: n("Veverka", "Squirrel", "Eichhörnchen", "Белка") },
+  { id: "avatar-princ", kind: "avatar", ref: "princ", price: 230, tag: "new", names: n("Princ", "Prince", "Prinz", "Принц") },
+  { id: "avatar-carodejnice", kind: "avatar", ref: "carodejnice", price: 220, tag: "new", names: n("Čarodějnice", "Witch", "Hexe", "Ведьма") },
+  { id: "avatar-zralok", kind: "avatar", ref: "zralok", price: 200, tag: "new", names: n("Žralok", "Shark", "Hai", "Акула") },
 
   // --- tituly ---
   { id: "title-scholar", kind: "title", ref: "scholar", price: 80, names: n("Učenec", "Scholar", "Gelehrter", "Учёный") },

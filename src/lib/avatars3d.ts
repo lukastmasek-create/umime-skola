@@ -50,6 +50,19 @@ const MODELS: Record<string, { file: string; figureWidth: number }> = {
   "robot-dino": { file: "robot-dino", figureWidth: 159 },
   phoenix: { file: "phoenix", figureWidth: 146 },
   cosmic: { file: "cosmic", figureWidth: 162 },
+  // z generátoru umime-art/blender/avatary3d.py
+  captain: { file: "captain", figureWidth: 131 },
+  "sea-wolf": { file: "sea-wolf", figureWidth: 124 },
+  princess: { file: "princess", figureWidth: 131 },
+  diver: { file: "diver", figureWidth: 165 },
+  piratka: { file: "piratka", figureWidth: 137 },
+  kosmonautka: { file: "kosmonautka", figureWidth: 150 },
+  robopes: { file: "robopes", figureWidth: 122 },
+  skritek: { file: "skritek", figureWidth: 116 },
+  veverka: { file: "veverka", figureWidth: 117 },
+  princ: { file: "princ", figureWidth: 125 },
+  carodejnice: { file: "carodejnice", figureWidth: 159 },
+  zralok: { file: "zralok", figureWidth: 128 },
 };
 
 export function getAvatarModel(id: string | null | undefined): string | null {
