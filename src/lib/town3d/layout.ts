@@ -1,4 +1,4 @@
-// Rozložení živého 3D městečka (/mestecko/nove). Nejdřív síť ulic, budovy až podle ní: každá budova
+// Rozložení živého 3D městečka (/mestecko). Nejdřív síť ulic, budovy až podle ní: každá budova
 // stojí dveřmi k ulici a k dveřím vede příjezdová cesta (doplní se automaticky v `buildRoads`).
 // Souřadnice jsou v metrech: x doprava (východ), z dolů na mapě (jih), y nahoru. Modely jsou
 // v public/mestecko3d/<model>.glb s dveřmi k +z; `ry` je natočení kolem osy y.

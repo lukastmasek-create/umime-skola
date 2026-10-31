@@ -330,7 +330,7 @@ export function TownWorld({ locale }: { locale: Locale }) {
           {state === "failed" ? (
             <div className="max-w-sm rounded-2xl bg-white p-6 text-center shadow">
               <p className="mb-3">{ui.noWebgl}</p>
-              <Link href={`/${locale}/mestecko`} className="btn-bouncy btn-primary">
+              <Link href={`/${locale}/mestecko/puvodni`} className="btn-bouncy btn-primary">
                 {ui.oldTown}
               </Link>
             </div>
@@ -362,7 +362,7 @@ export function TownWorld({ locale }: { locale: Locale }) {
         <button type="button" className="town3d-chip pointer-events-auto" onClick={fullscreen}>
           ⛶ {ui.fullscreen}
         </button>
-        <Link href={`/${locale}/mestecko`} className="town3d-chip pointer-events-auto">
+        <Link href={`/${locale}/mestecko/puvodni`} className="town3d-chip pointer-events-auto">
           ↩ {ui.oldTown}
         </Link>
       </div>

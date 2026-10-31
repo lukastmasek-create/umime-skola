@@ -1,6 +1,6 @@
 import type { Locale } from "./config";
 
-// Texty živého 3D městečka (/mestecko/nove): názvy a popisy míst a ovládací prvky.
+// Texty živého 3D městečka (/mestecko): názvy a popisy míst a ovládací prvky.
 type PlaceText = { name: string; desc: string };
 type UiText = {
   title: string;
