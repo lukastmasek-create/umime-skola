@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { DailyChallenges } from "@/components/DailyChallenges";
 import { Modal, type Snapshot } from "@/components/ShopView";
 import { readCam, runPath, type Geo, type Handle, type Pt } from "@/lib/market-cinema";
-import { runWorld } from "@/lib/market-cinema-worlds";
 import { runEnter, type DoorKind } from "@/lib/market-cinema-doors";
 import { camTransform, confettiBurst, createEventFx, createWeatherFx, dayPhaseOf, eventForDay, EVENT_SHOT, PHASE_TINT, resetCam, tweenCam, weatherForDay } from "@/lib/town-scenes";
 import { TownNpcPanel } from "@/components/TownNpcPanel";
@@ -982,9 +981,22 @@ export function TownHub({ locale }: { locale: Locale }) {
         handle.current?.stop();
       };
     } else {
+      // les, hrad a moře: hrdina dojde k místu, pak 3D cut scéna z town3d/films (three.js se načítá už během chůze)
       const world = phase.target?.world ?? "forest";
-      const nodes = rt(phase.id);
-      handle.current = runWorld(r as Parameters<typeof runWorld>[0], geoFor(nodes, start, { door: HUB.places[phase.id]?.door, sub: HUB.places.more.ponorka }), world === "castle" ? "castle" : world === "sea" ? "sea" : "forest", () => leave(`/${locale}/uzivatelsky-obchod?svet=${world}&film=1`), subRef.current);
+      let alive = true;
+      const mod = import("@/lib/town3d/films");
+      handle.current = runPath(r as Parameters<typeof runPath>[0], geoFor(rt(phase.id), start), () => {
+        void mod.then((films) => {
+          const el = space3d.current;
+          if (!alive || !el) return;
+          const run = world === "castle" ? films.runCastle3D : world === "sea" ? films.runSea3D : films.runForest3D;
+          handle.current = run(el, { look: getHeroLook(), onEnd: () => leave(`/${locale}/uzivatelsky-obchod?svet=${world}&film=1`) });
+        });
+      }, false);
+      return () => {
+        alive = false;
+        handle.current?.stop();
+      };
     }
     return () => handle.current?.stop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1659,7 +1671,7 @@ export function TownHub({ locale }: { locale: Locale }) {
               <div className="absolute bottom-0 left-0 right-0 bg-black" style={{ height: 0 }} />
             </div>
             <div ref={count} aria-hidden className="market-count" />
-            {(phase.kind === "space" || phase.kind === "pirate") && <div ref={space3d} className="absolute inset-0" />}
+            {(phase.kind === "space" || phase.kind === "pirate" || phase.kind === "portal") && <div ref={space3d} className="absolute inset-0" />}
             {phase.kind !== "path" && (
               <button type="button" onClick={() => handle.current?.skip()} className="btn-bouncy pointer-events-auto absolute bottom-3 right-3 bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
                 ⏭ {st.skip}

@@ -41,6 +41,7 @@ export type WorldHandle = {
   setCollectibles: (slots: { slot: number; kind: string; taken: boolean }[]) => void;
   setQuestMarks: (ids: string[]) => void;
   labels: (cb: (items: { id: string; x: number; y: number; visible: boolean }[]) => void) => void;
+  setPaused: (paused: boolean) => void; // během cut scény se městečko nevykresluje
   dispose: () => void;
 };
 
@@ -692,6 +693,7 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const v = new THREE.Vector3();
   let time = 0;
+  let paused = false;
 
   function resize() {
     const w = container.clientWidth;
@@ -823,7 +825,7 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
   function frame(now: number) {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
-    if (!document.hidden) {
+    if (!document.hidden && !paused) {
       step(reduce ? dt * 0.5 : dt);
       renderer.render(scene, camera);
       if (labelCb) {
@@ -860,6 +862,9 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
     },
     setBuildMode(on) {
       buildMode = on;
+    },
+    setPaused(p) {
+      paused = p;
     },
     setCollectibles(slots) {
       collectibles.forEach((c) => scene.remove(c.mesh));

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Locale } from "@/i18n/config";
 import { getTown3dText } from "@/i18n/town3d";
@@ -20,6 +21,18 @@ type Spots = { spots: { idx: number; slot: number; kind: string }[]; collected: 
 const WORLD_OF_SET: Record<TreasureSet, string> = { pirati: "pristav", les: "les", vesmir: "stanice", hrad: "hrad", more: "more" };
 // Kdo zadává úkol → nad kterým místem svítí vykřičník.
 const QUEST_PLACE: Record<string, string> = { babicka: "babicka", farmar: "farmar", kluk: "kluk", pekar: "pekarna", knihovnice: "knihovna" };
+// 3D cut scéna při vstupu do světa (les, hrad, moře z films.ts, přístav a stanice mají vlastní moduly).
+type FilmHandle = { stop: () => void; skip: () => void };
+async function startFilm(id: string, el: HTMLElement, look: number, onEnd: () => void): Promise<FilmHandle | null> {
+  const opts = { look, onEnd };
+  if (id === "pristav") return (await import("@/lib/town3d/pirate")).runPirate3D(el, opts);
+  if (id === "stanice") return (await import("@/lib/town3d/space")).runSpace3D(el, opts);
+  const films = await import("@/lib/town3d/films");
+  if (id === "les") return films.runForest3D(el, opts);
+  if (id === "hrad") return films.runCastle3D(el, opts);
+  if (id === "more") return films.runSea3D(el, opts);
+  return null;
+}
 // Minihry, které se hrají v budově nebo u obyvatele.
 const PLACE_MINI: Record<string, MiniId[]> = { pekarna: ["cashier", "bakery"], knihovna: ["library"], hvezdarna: ["stars"], kvetinarstvi: ["flowers"], farmar: ["harvest"], rybar: ["fishing"] };
 
@@ -44,6 +57,10 @@ export function TownWorld({ locale }: { locale: Locale }) {
   const [miniOpen, setMiniOpen] = useState<MiniId | null>(null);
   const [miniLeft, setMiniLeft] = useState<Partial<Record<MiniId, number>>>({});
   const miniText = getTownMiniText(locale);
+  const router = useRouter();
+  const filmBox = useRef<HTMLDivElement>(null);
+  const filmHandle = useRef<FilmHandle | null>(null);
+  const [film, setFilm] = useState<string | null>(null);
   const spotsRef = useRef<Spots>(null);
   const loggedIn = !!account && account.loggedIn;
 
@@ -149,6 +166,27 @@ export function TownWorld({ locale }: { locale: Locale }) {
       if (labelsRef.current) labelsRef.current.innerHTML = ""; // eslint-disable-line react-hooks/exhaustive-deps
     };
   }, [names, say, refresh, ui.arrived]);
+
+  // cut scéna světa: městečko se mezitím zastaví, na konci se jde do světa
+  useEffect(() => {
+    const el = filmBox.current;
+    const place = PLACES.find((p) => p.id === film);
+    if (!film || !el || !place?.href) return;
+    let alive = true;
+    const href = `/${locale}${place.href}${place.href.includes("?") ? "&" : "?"}film=1`;
+    world.current?.setPaused(true);
+    void startFilm(film, el, getHeroLook(), () => router.push(href)).then((h) => {
+      if (!alive) h?.stop();
+      else if (!h) router.push(href);
+      else filmHandle.current = h;
+    });
+    return () => {
+      alive = false;
+      filmHandle.current?.stop();
+      filmHandle.current = null;
+      world.current?.setPaused(false);
+    };
+  }, [film, locale, router]);
 
   // noc podle hodin (večer a v noci), dá se přepnout
   useEffect(() => {
@@ -410,7 +448,11 @@ export function TownWorld({ locale }: { locale: Locale }) {
           <button type="button" className="town3d-btn" onClick={() => world.current?.walkTo(sel.id)}>
             🚶 {ui.go}
           </button>
-          {sel.href ? (
+          {sel.href && sel.kind === "world" ? (
+            <button type="button" className="town3d-btn town3d-btn-gold" onClick={() => setFilm(sel.id)}>
+              🚪 {ui.enter}
+            </button>
+          ) : sel.href ? (
             <Link href={`/${locale}${sel.href}`} className="town3d-btn town3d-btn-gold">
               🚪 {ui.enter}
             </Link>
@@ -424,6 +466,15 @@ export function TownWorld({ locale }: { locale: Locale }) {
           ))}
         </div>
       </section>
+
+      {film && (
+        <div className="absolute inset-0 z-[70] bg-black">
+          <div ref={filmBox} className="absolute inset-0" />
+          <button type="button" className="town3d-btn absolute bottom-4 right-4 z-[2]" onClick={() => filmHandle.current?.skip()}>
+            ⏭ {ui.skip}
+          </button>
+        </div>
+      )}
 
       {miniOpen && (
         <Modal title={`${MINI[miniOpen].icon} ${miniText.names[miniOpen]}`} onClose={() => setMiniOpen(null)} closeLabel={miniText.close}>

@@ -15,6 +15,7 @@ type UiText = {
   go: string;
   enter: string;
   soon: string;
+  skip: string;
   day: string;
   night: string;
   buildMode: string;
@@ -167,6 +168,7 @@ const UI: Record<Locale, UiText> = {
     go: "Jít tam",
     enter: "Vstoupit",
     soon: "Brzy",
+    skip: "Přeskočit",
     day: "Den",
     night: "Noc",
     buildMode: "Stavění",
@@ -201,6 +203,7 @@ const UI: Record<Locale, UiText> = {
     go: "Go there",
     enter: "Enter",
     soon: "Soon",
+    skip: "Skip",
     day: "Day",
     night: "Night",
     buildMode: "Building",
@@ -235,6 +238,7 @@ const UI: Record<Locale, UiText> = {
     go: "Hingehen",
     enter: "Betreten",
     soon: "Bald",
+    skip: "Überspringen",
     day: "Tag",
     night: "Nacht",
     buildMode: "Bauen",
@@ -269,6 +273,7 @@ const UI: Record<Locale, UiText> = {
     go: "Пойти",
     enter: "Войти",
     soon: "Скоро",
+    skip: "Пропустить",
     day: "День",
     night: "Ночь",
     buildMode: "Стройка",

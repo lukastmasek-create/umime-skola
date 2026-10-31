@@ -380,7 +380,8 @@ def build_strom():
         dome((x, y, 0.6), 0.65, glow(["#ff6fd8", "#6ff0ff", "#b88cff"][k % 3], 0.8), seg=14)
 
 
-def build_hrad():
+def build_hrad(film=False):
+    """Hrad; `film` vynechá padací most a mříž, ty v cut scéně (town3d/films.ts) animuje three.js."""
     stone = mat("#d8d2c4", 0.9)
     stone2 = mat("#cfc8b8", 0.9)
     w, d, h = 16, 10, 6
@@ -409,6 +410,10 @@ def build_hrad():
     box((0, -d / 2 - 0.1, 2.2), (3.6, 0.5, 4.4), mat("#bcb4a4", 0.9), 0.03)
     cyl((0, -d / 2 - 0.1, 4.4), 1.8, 0.5, mat("#bcb4a4", 0.9), verts=24, rot=(math.pi / 2, 0, 0))
     box((0, -d / 2 - 0.4, 1.9), (2.6, 0.1, 3.8), mat("#3a2a1a", 0.7), 0)
+    if film:
+        for x in (-3.2, 3.2):
+            lamp_post(x, -d / 2 - 1.6, 2.6)
+        return
     for k in range(7):
         box((-1.2 + k * 0.4, -d / 2 - 0.47, 1.9), (0.08, 0.06, 3.6), mat("#5a5a6a", 0.4, 0.7), 0)
     for k in range(5):
@@ -577,6 +582,7 @@ BUILDERS = {
     "pokoj": lambda: build_shop("pokoj"),
     "strom": build_strom,
     "hrad": build_hrad,
+    "hrad-scena": lambda: build_hrad(film=True),
     "stanek": build_stanek,
     "stanice": build_stanice,
     "podmorske": build_podmorske,
