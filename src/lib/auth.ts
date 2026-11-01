@@ -1,3 +1,4 @@
+import { grantFullAccessOnce, hasFullAccessEmail } from "@/lib/full-access";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
@@ -50,6 +51,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub as string;
+        // Účty s plným přístupem dostanou všechna odemčení (jednou za běh serveru).
+        if (token.sub && hasFullAccessEmail(token.email)) await grantFullAccessOnce(token.sub);
         (session.user as { role?: string }).role = token.role as string | undefined;
       }
       return session;
