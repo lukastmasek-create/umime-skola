@@ -270,7 +270,7 @@ def craft_reef():
 
 def craft_lagoon():
     reset(48)
-    B.sky(18, 200, strength=1.0, dust=1.5)
+    B.sky(18, 200, strength=0.04, dust=1.5, sun_intensity=0.1)
     look((0, -14, 1.6), (0, 0, 1.6), 30)
     # moře
     sea = ground(300, B.wave_material("#0aa8a8", "#5fe0d0", 0.03), z=0.0, subdiv=300, strength=0.12, scale=2.5)
@@ -300,7 +300,7 @@ def _trees(rnd, cols, n, xr, yr, hr):
 def craft_grove():
     reset(48)
     rnd = random.Random(11)
-    B.sky(9, 180, strength=1.0, dust=4.0)
+    B.sky(9, 180, strength=0.06, dust=4.0, sun_intensity=0.15)
     B.haze(0.004, "#fff2c0", 0.5)
     look((0, -14, 2.4), (0, 0, 2.6), 30)
     ground(200, mat("#2f8f55", rough=0.95), z=0.0, subdiv=200, strength=0.5, scale=6)
@@ -321,7 +321,7 @@ def craft_grove():
 def craft_amber_forest():
     reset(48)
     rnd = random.Random(21)
-    B.sky(6, 200, strength=0.9, dust=7.0)
+    B.sky(6, 200, strength=0.05, dust=7.0, sun_intensity=0.15)
     B.haze(0.006, "#ffcf80", 0.5)
     look((0, -14, 2.4), (0, 0, 2.6), 30)
     ground(200, mat("#9a6a2a", rough=0.95), z=0.0, subdiv=200, strength=0.5, scale=6)
