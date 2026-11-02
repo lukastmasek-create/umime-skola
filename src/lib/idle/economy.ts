@@ -217,25 +217,91 @@ export const isNegativeEvent = (def: EventDef) => def.mult < 1 || def.wageMult >
 
 // --- Investice ---
 
-export type AssetId = "stocks" | "metal" | "crypto" | "bonds" | "realestate";
+// Kategorie investic. Každá má několik konkrétních položek s vlastním rizikem a výnosem.
+export type AssetCategoryId = "crypto" | "realestate" | "stocks" | "metals" | "bonds" | "funds" | "startups";
+export const ASSET_CATEGORIES: AssetCategoryId[] = ["crypto", "realestate", "stocks", "metals", "bonds", "funds", "startups"];
+
+export type AssetId =
+  | "coin" | "altcoin" | "stablecoin" | "memecoin" | "defi"
+  | "flat" | "house" | "land" | "office"
+  | "technology" | "energy" | "bank" | "consumer" | "biotech"
+  | "gold" | "silver" | "copper"
+  | "state" | "corporate" | "junk"
+  | "index" | "dividend" | "theme"
+  | "startup_it" | "startup_fintech" | "startup_green";
+
 export type AssetDef = {
   id: AssetId;
+  cat: AssetCategoryId;
+  // klíč pro náhodné vlny ceny. U položek převzatých z dřívějších obecných aktiv zůstává původní,
+  // takže jejich cena i držby zůstanou přesně stejné.
+  seed: string;
   base: number;
   // výkyv ceny kolem základní hodnoty (0,15 = ±15 %)
   vol: number;
-  // pravidelný výnos za hodinu jako podíl z ceny (nájem / úrok)
+  // pravidelný výnos za hodinu jako podíl z ceny (nájem / úrok / dividenda)
   yield: number;
   // dlouhodobý růst ceny za hodinu
   drift: number;
   crypto?: boolean;
 };
+
+const asset = (
+  id: AssetId,
+  cat: AssetCategoryId,
+  base: number,
+  vol: number,
+  yieldRate: number,
+  drift: number,
+  extra: { seed?: string; crypto?: boolean } = {},
+): AssetDef => ({ id, cat, seed: extra.seed ?? id, base, vol, yield: yieldRate, drift, ...(extra.crypto ? { crypto: true } : {}) });
+
 export const ASSETS: AssetDef[] = [
-  { id: "bonds", base: 1_000, vol: 0.01, yield: 0.0015, drift: 0 },
-  { id: "metal", base: 2_000, vol: 0.07, yield: 0, drift: 0.00005 },
-  { id: "stocks", base: 100, vol: 0.18, yield: 0, drift: 0.00015 },
-  { id: "realestate", base: 50_000, vol: 0.04, yield: 0.005, drift: 0.00008 },
-  { id: "crypto", base: 500, vol: 0.5, yield: 0, drift: 0, crypto: true },
+  // kryptoměny (odemknuté až v éře s kryptem)
+  asset("coin", "crypto", 500, 0.5, 0, 0, { seed: "crypto", crypto: true }),
+  asset("altcoin", "crypto", 120, 0.8, 0, 0.0001, { crypto: true }),
+  asset("stablecoin", "crypto", 10, 0.005, 0.0003, 0, { crypto: true }),
+  asset("memecoin", "crypto", 5, 1.2, 0, 0, { crypto: true }),
+  asset("defi", "crypto", 80, 0.6, 0.0002, 0.00005, { crypto: true }),
+  // pozemky a nemovitosti (výnos násobí nájem ve městě)
+  asset("flat", "realestate", 50_000, 0.04, 0.005, 0.00008, { seed: "realestate" }),
+  asset("house", "realestate", 120_000, 0.05, 0.004, 0.00006),
+  asset("land", "realestate", 20_000, 0.03, 0, 0.0001),
+  asset("office", "realestate", 200_000, 0.06, 0.006, 0.00004),
+  // akcie
+  asset("technology", "stocks", 100, 0.18, 0, 0.00015, { seed: "stocks" }),
+  asset("energy", "stocks", 80, 0.08, 0.0003, 0.00003),
+  asset("bank", "stocks", 60, 0.12, 0.0004, 0.00005),
+  asset("consumer", "stocks", 40, 0.1, 0.0002, 0.00004),
+  asset("biotech", "stocks", 150, 0.35, 0, 0.0001),
+  // kovy
+  asset("gold", "metals", 2_000, 0.07, 0, 0.00005, { seed: "metal" }),
+  asset("silver", "metals", 30, 0.1, 0, 0.00003),
+  asset("copper", "metals", 150, 0.12, 0, 0.00002),
+  // dluhopisy
+  asset("state", "bonds", 1_000, 0.01, 0.0015, 0, { seed: "bonds" }),
+  asset("corporate", "bonds", 1_000, 0.03, 0.0022, 0),
+  asset("junk", "bonds", 1_000, 0.12, 0.004, 0),
+  // fondy
+  asset("index", "funds", 300, 0.03, 0.0008, 0.00003, { seed: "fund" }),
+  asset("dividend", "funds", 200, 0.02, 0.0012, 0.00001),
+  asset("theme", "funds", 250, 0.08, 0.0002, 0.00008),
+  // startupy: vysoké riziko, bez výnosu, nejvyšší očekávaný růst
+  asset("startup_it", "startups", 200, 0.4, 0, 0.0002, { seed: "startup" }),
+  asset("startup_fintech", "startups", 150, 0.5, 0, 0.00025),
+  asset("startup_green", "startups", 120, 0.3, 0, 0.00015),
 ];
+
+// Staré obecné názvy držeb -> výchozí položka. Při načtení se držby přesunou (viz normalizeState).
+const LEGACY_ASSET: Partial<Record<AssetId, string>> = {
+  coin: "crypto",
+  flat: "realestate",
+  technology: "stocks",
+  gold: "metal",
+  state: "bonds",
+  index: "fund",
+  startup_it: "startup",
+};
 
 function hash32(s: string): number {
   let h = 2166136261;
@@ -248,12 +314,12 @@ function hash32(s: string): number {
 
 // Cena je čistá funkce času: dvě vlny (perioda zhruba 3 hodiny a 45 minut) a malý šum po minutě. Server i prohlížeč vidí totéž.
 export function assetPrice(id: AssetId, now: number): number {
-  const def = ASSETS.find((a) => a.id === id)!;
-  const phaseA = hash32(`${id}:a`) * Math.PI * 2;
-  const phaseB = hash32(`${id}:b`) * Math.PI * 2;
+  const def = assetDef(id);
+  const phaseA = hash32(`${def.seed}:a`) * Math.PI * 2;
+  const phaseB = hash32(`${def.seed}:b`) * Math.PI * 2;
   const hours = now / H;
   const wave = 0.6 * Math.sin(hours / 0.5 + phaseA) + 0.4 * Math.sin(hours / 0.12 + phaseB);
-  const noise = (hash32(`${id}:${Math.floor(now / 60_000)}`) - 0.5) * 0.3;
+  const noise = (hash32(`${def.seed}:${Math.floor(now / 60_000)}`) - 0.5) * 0.3;
   const trend = 1 + def.drift * (hours % 5_000);
   return Math.max(1, def.base * trend * (1 + def.vol * (wave + noise)));
 }
@@ -414,13 +480,21 @@ export function normalizeState(raw: unknown, now: number): EconomyState {
     const resp = (r.responses as Record<string, unknown> | undefined)?.[def.id];
     if (n > 0 && typeof resp === "number" && Number.isFinite(resp) && resp <= win) responses[def.id] = Math.floor(resp);
   }
+  const hIn = (r.holdings ?? {}) as Record<string, unknown>;
+  const cIn = (r.cost ?? {}) as Record<string, unknown>;
   const holdings: EconomyState["holdings"] = {};
   const cost: EconomyState["cost"] = {};
   for (const a of ASSETS) {
-    const q = finite((r.holdings as Record<string, unknown> | undefined)?.[a.id], 0, 0, 1e9);
+    const old = LEGACY_ASSET[a.id];
+    const qNew = finite(hIn[a.id], 0, 0, 1e9);
+    const qOld = old ? finite(hIn[old], 0, 0, 1e9) : 0;
+    const q = qNew + qOld;
     if (q > 0) {
+      const cNew = finite(cIn[a.id], a.base, 0, 1e12);
+      const cOld = old ? finite(cIn[old], a.base, 0, 1e12) : cNew;
       holdings[a.id] = q;
-      cost[a.id] = finite((r.cost as Record<string, unknown> | undefined)?.[a.id], a.base, 0, 1e12);
+      // nákupní cena na kus: vážený průměr, pokud se stará a nová držba slily
+      cost[a.id] = (qNew * cNew + qOld * cOld) / q;
     }
   }
   const hustle: EconomyState["hustle"] = {};
@@ -552,7 +626,7 @@ export function rates(state: EconomyState, now: number, learning = 0): Rates {
   for (const a of ASSETS) {
     if (!a.yield) continue;
     const qty = state.holdings[a.id] ?? 0;
-    if (qty > 0) passive += qty * assetPrice(a.id, now) * a.yield * (a.id === "realestate" ? city.rent : 1);
+    if (qty > 0) passive += qty * assetPrice(a.id, now) * a.yield * (a.cat === "realestate" ? city.rent : 1);
   }
   // Životní náklady jsou malé, ale rostou s tím, jak jsi na tom líp (aby hráč nebyl zadarmo bohatý).
   const living = (6 * country.living * city.living * family.living) * (1 + Math.log10(1 + (state.cash + 0) / 1000) * 0.5);
