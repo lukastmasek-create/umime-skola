@@ -122,7 +122,7 @@ const cs: EconomyText = {
   cities: { village: "Vesnice", town: "Malé město", city: "Velké město", metropolis: "Metropole" },
   eras: { "1990": "90. léta", "2010": "2010", "2025": "Dnes", "2050": "Budoucnost" },
   families: { poor: "Chudá rodina", middle: "Střední třída", rich: "Bohatá rodina", business: "Podnikatelská rodina" },
-  jobs: { warehouse: "Skladník", seller: "Prodejce", cook: "Kuchař", police: "Policista", vet: "Zvěrolékař", programmer: "Programátor", banker: "Bankéř" },
+  jobs: { warehouse: "Skladník", seller: "Prodejce", cook: "Kuchař", police: "Policista", vet: "Zvěrolékař", programmer: "Programátor", farmer: "Farmář", firefighter: "Hasič", teacher: "Učitel", journalist: "Novinář", architect: "Architekt", pilot: "Pilot", doctor: "Lékař", banker: "Bankéř" },
   companies: {
     shoes: "Boty",
     clothes: "Oblečení",
@@ -244,7 +244,7 @@ const en: EconomyText = {
   cities: { village: "Village", town: "Small town", city: "Big city", metropolis: "Metropolis" },
   eras: { "1990": "The 90s", "2010": "2010", "2025": "Today", "2050": "The future" },
   families: { poor: "Poor family", middle: "Middle class", rich: "Rich family", business: "Business family" },
-  jobs: { warehouse: "Warehouse worker", seller: "Salesperson", cook: "Cook", police: "Police officer", vet: "Veterinarian", programmer: "Programmer", banker: "Banker" },
+  jobs: { warehouse: "Warehouse worker", seller: "Salesperson", cook: "Cook", police: "Police officer", vet: "Veterinarian", programmer: "Programmer", farmer: "Farmer", firefighter: "Firefighter", teacher: "Teacher", journalist: "Journalist", architect: "Architect", pilot: "Pilot", doctor: "Doctor", banker: "Banker" },
   companies: {
     shoes: "Shoes",
     clothes: "Clothing",
@@ -366,7 +366,7 @@ const de: EconomyText = {
   cities: { village: "Dorf", town: "Kleinstadt", city: "Großstadt", metropolis: "Metropole" },
   eras: { "1990": "Die 90er", "2010": "2010", "2025": "Heute", "2050": "Zukunft" },
   families: { poor: "Arme Familie", middle: "Mittelschicht", rich: "Reiche Familie", business: "Unternehmerfamilie" },
-  jobs: { warehouse: "Lagerarbeiter", seller: "Verkäufer", cook: "Koch", police: "Polizist", vet: "Tierarzt", programmer: "Programmierer", banker: "Banker" },
+  jobs: { warehouse: "Lagerarbeiter", seller: "Verkäufer", cook: "Koch", police: "Polizist", vet: "Tierarzt", programmer: "Programmierer", farmer: "Landwirt", firefighter: "Feuerwehrmann", teacher: "Lehrer", journalist: "Journalist", architect: "Architekt", pilot: "Pilot", doctor: "Arzt", banker: "Banker" },
   companies: {
     shoes: "Schuhe",
     clothes: "Kleidung",
@@ -488,7 +488,7 @@ const ru: EconomyText = {
   cities: { village: "Деревня", town: "Небольшой город", city: "Большой город", metropolis: "Мегаполис" },
   eras: { "1990": "90-е", "2010": "2010", "2025": "Сегодня", "2050": "Будущее" },
   families: { poor: "Бедная семья", middle: "Средний класс", rich: "Богатая семья", business: "Семья предпринимателей" },
-  jobs: { warehouse: "Кладовщик", seller: "Продавец", cook: "Повар", police: "Полицейский", vet: "Ветеринар", programmer: "Программист", banker: "Банкир" },
+  jobs: { warehouse: "Кладовщик", seller: "Продавец", cook: "Повар", police: "Полицейский", vet: "Ветеринар", programmer: "Программист", farmer: "Фермер", firefighter: "Пожарный", teacher: "Учитель", journalist: "Журналист", architect: "Архитектор", pilot: "Пилот", doctor: "Врач", banker: "Банкир" },
   companies: {
     shoes: "Обувь",
     clothes: "Одежда",

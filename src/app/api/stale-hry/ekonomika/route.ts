@@ -9,20 +9,29 @@ import {
   assetPrice,
   buyAsset,
   buyCompany,
+  chooseShift,
   collectHustle,
   createCharacter,
   eduCost,
   emptyState,
+  fireStaff,
+  hireStaff,
   investEdu,
   learningBonusFromXp,
+  negotiateRaise,
   netWorth,
   normalizeState,
   quitJob,
   rates,
+  rest,
+  requestPromotion,
   restart,
   sellAsset,
+  setLead,
   settle,
   startHustle,
+  startShift,
+  startVacation,
   takeJob,
   ASSETS,
   type ActionResult,
@@ -65,9 +74,11 @@ type Body = {
   city?: unknown;
   era?: unknown;
   family?: unknown;
+  index?: unknown;
+  on?: unknown;
 };
 
-function applyAction(state: EconomyState, body: Body, now: number): ActionResult {
+function applyAction(state: EconomyState, body: Body, now: number, learning: number): ActionResult {
   switch (body.action) {
     case "create":
       return createCharacter(state, body, now);
@@ -77,6 +88,24 @@ function applyAction(state: EconomyState, body: Body, now: number): ActionResult
       return takeJob(state, body.id, now);
     case "quitJob":
       return quitJob(state, now);
+    case "startShift":
+      return startShift(state, now);
+    case "chooseShift":
+      return chooseShift(state, body.index, now, learning);
+    case "rest":
+      return rest(state, now);
+    case "requestPromotion":
+      return requestPromotion(state, now);
+    case "negotiateRaise":
+      return negotiateRaise(state, now);
+    case "setLead":
+      return setLead(state, body.on, now);
+    case "startVacation":
+      return startVacation(state, now);
+    case "hireStaff":
+      return hireStaff(state, body.id, now);
+    case "fireStaff":
+      return fireStaff(state, body.id, now);
     case "buyCompany":
       return buyCompany(state, body.id, now);
     case "buyAsset":
@@ -139,7 +168,7 @@ export async function POST(request: Request) {
         const points = user?.points ?? 0;
 
         const current = settle(row ? normalizeState(row.data, now) : emptyState(now), now, learning);
-        const outcome = applyAction(current, body, now);
+        const outcome = applyAction(current, body, now, learning);
         if (!outcome.ok) return { outcome, points };
 
         const cost = outcome.pointsSpent ?? 0;
@@ -161,7 +190,11 @@ export async function POST(request: Request) {
     );
 
     if (!result.outcome.ok) return NextResponse.json({ error: result.outcome.error }, { status: 400 });
-    return NextResponse.json({ ...payload(result.outcome.state, result.points, learning, now), gained: result.outcome.gained ?? null });
+    return NextResponse.json({
+      ...payload(result.outcome.state, result.points, learning, now),
+      gained: result.outcome.gained ?? null,
+      event: result.outcome.event ?? null,
+    });
   } catch (error) {
     if (error instanceof NotEnoughPoints) return NextResponse.json({ error: "not-enough-points" }, { status: 400 });
     if (error instanceof Conflict || (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")) {
