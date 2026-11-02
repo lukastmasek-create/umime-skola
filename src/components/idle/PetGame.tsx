@@ -28,6 +28,7 @@ import { notifyAccountChanged } from "@/lib/account-events";
 import { EventPill, type EventInfo } from "@/components/idle/EventPill";
 import { cropDef, isCrop, itemPrice, productDef, type ItemId } from "@/lib/idle/farm";
 import { SHOP_ITEMS } from "@/lib/shop";
+import { RECIPES, petAccessoryRef } from "@/lib/craft";
 import { ChallengePanel } from "@/components/idle/ChallengePanel";
 import type { Locale } from "@/i18n/config";
 
@@ -461,7 +462,7 @@ export function PetGame({ locale }: { locale: Locale }) {
         </h2>
         <div className="flex flex-wrap gap-2">
           {[null, ...data.accessories].map((ref) => {
-            const item = ref ? SHOP_ITEMS.find((i) => i.kind === "pet" && i.ref === ref) : null;
+            const item = ref ? SHOP_ITEMS.find((i) => i.kind === "pet" && i.ref === ref) ?? RECIPES.find((r) => r.category === "pet-acc" && petAccessoryRef(r) === ref) : null;
             const active = (stats.accessory ?? null) === ref;
             return (
               <button

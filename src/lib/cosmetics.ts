@@ -69,6 +69,16 @@ export const BANNERS: Record<string, string> = {
     "radial-gradient(circle at 50% 90%, #ffd24d 0 6%, #ff7a1a 7% 16%, transparent 30%), linear-gradient(180deg, #2a2230 0%, #4a3a3a 55%, #7a4a2a 100%)",
   "craft-moonlight":
     "radial-gradient(circle at 75% 25%, #fffbe0 0 7%, rgba(255,251,224,0.25) 8% 14%, transparent 15%), radial-gradient(1.5px 1.5px at 20% 30%, #fff, transparent), radial-gradient(1.5px 1.5px at 40% 15%, #fff, transparent), linear-gradient(180deg, #1a1050 0%, #4a2a8a 60%, #8a5acf 100%)",
+  "craft-comet-trail":
+    "linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.55) 31%, rgba(120,200,255,0.35) 40%, transparent 55%), radial-gradient(1.5px 1.5px at 15% 25%, #fff, transparent), radial-gradient(1.5px 1.5px at 70% 20%, #fff, transparent), radial-gradient(1px 1px at 45% 80%, #fff, transparent), linear-gradient(180deg, #050a2a 0%, #1a2a7a 100%)",
+  "craft-lagoon":
+    "radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.5), transparent 45%), repeating-linear-gradient(0deg, rgba(255,255,255,0.12) 0 2px, transparent 2px 14px), linear-gradient(180deg, #9ff3e8 0%, #2fc4c9 55%, #f2dfa8 56%, #e8cf8a 100%)",
+  "craft-amber-forest":
+    "radial-gradient(circle at 25% 30%, rgba(255,190,70,0.6), transparent 30%), radial-gradient(circle at 75% 60%, rgba(255,160,40,0.45), transparent 28%), repeating-linear-gradient(95deg, rgba(60,30,10,0.3) 0 9px, transparent 9px 38px), linear-gradient(180deg, #f2c56a 0%, #9a6a2a 60%, #3a2410 100%)",
+  "craft-throne":
+    "radial-gradient(circle at 50% 35%, rgba(255,230,140,0.55), transparent 35%), repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0 6px, transparent 6px 60px), linear-gradient(180deg, #7a1c2e 0%, #4a1020 100%)",
+  "craft-dragon-lair":
+    "radial-gradient(circle at 70% 70%, #ffd24d 0 5%, rgba(255,122,26,0.6) 6% 18%, transparent 35%), radial-gradient(circle at 20% 30%, rgba(176,107,255,0.4), transparent 35%), linear-gradient(180deg, #1a0a2a 0%, #4a1a3a 60%, #8a2a2a 100%)",
 };
 
 // Pozadí je obrázek z Blenderu; CSS přechod pod ním je záloha, kdyby se obrázek nenačetl.

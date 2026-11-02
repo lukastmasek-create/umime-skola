@@ -22,6 +22,8 @@ import {
   PATTERNS,
   SLOTS,
   TOGGLES,
+  ACCESSORIES,
+  MAX_WORN,
   isHex,
   normalizeCustom,
   type AvatarCustom,
@@ -33,6 +35,7 @@ import { fill, getProfileText } from "@/i18n/profile";
 import { getCustomText } from "@/i18n/avatar-custom";
 import { getProfileTabsText } from "@/i18n/profile-tabs";
 import { getCraftText } from "@/i18n/craft";
+import { RECIPES } from "@/lib/craft";
 import { CraftPanel } from "@/components/CraftPanel";
 import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
@@ -772,6 +775,39 @@ export function ProfileView({ locale }: { locale: Locale }) {
                       />
                     </div>
                   )}
+
+                  {(() => {
+                    const mine = ACCESSORIES.filter((a) => unlocks.includes(`acc:${a.id}`));
+                    if (mine.length === 0) return null;
+                    const ct = getCraftText(locale);
+                    return (
+                      <>
+                        <h3 className="mt-2 text-sm font-bold uppercase tracking-wide text-[var(--muted)]">{ct.sections["avatar-acc"].title}</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {mine.map((a) => {
+                            const on = custom.worn.includes(a.id);
+                            const rec = RECIPES.find((r) => r.ref === a.id && r.category === "avatar-acc");
+                            return (
+                              <button
+                                key={a.id}
+                                role="switch"
+                                aria-checked={on}
+                                onClick={() =>
+                                  updateCustom((cur) => ({
+                                    ...cur,
+                                    worn: on ? cur.worn.filter((w) => w !== a.id) : [...cur.worn, a.id].slice(-MAX_WORN),
+                                  }))
+                                }
+                                className={`btn-bouncy px-3 py-1.5 text-sm font-semibold ${on ? "bg-[var(--brand-500)] text-white" : "bg-[var(--surface-muted)]"}`}
+                              >
+                                {rec?.icon} {rec?.names[locale] ?? a.id}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    );
+                  })()}
 
                   {currentParts.toggles.length > 0 && (
                     <>

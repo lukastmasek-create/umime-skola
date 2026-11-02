@@ -33,4 +33,10 @@ export const PET_ACCESSORY_ANCHOR: Record<string, string> = {
   flower: "kotva_ucho",
   glasses: "kotva_oci",
   scarf: "kotva_krk",
+  // z craftování
+  spacesuit: "kotva_hlava",
+  "acorn-cap": "kotva_hlava",
+  "sailor-collar": "kotva_krk",
+  "knight-cape": "kotva_krk",
+  "star-collar": "kotva_krk",
 };

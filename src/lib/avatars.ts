@@ -95,6 +95,11 @@ export const AVATARS: AvatarDef[] = [
   { id: "forest-spirit", bg: "#6ee7a8", skin: "#a7d36b", head: "ghost", ears: "none", eyes: "sleepy", mouth: "smile", unlock: { event: "craft" }, names: { cs: "Lesní duch", en: "Forest spirit", de: "Waldgeist", ru: "Лесной дух" } },
   { id: "blacksmith", bg: "#c9a27a", skin: "#ffd5a8", head: "box", ears: "band", eyes: "dots", mouth: "teeth", unlock: { event: "craft" }, names: { cs: "Hradní kovář", en: "Castle blacksmith", de: "Burgschmied", ru: "Замковый кузнец" } },
   { id: "moon-witch", bg: "#7c3aed", skin: "#e7dcff", head: "round", ears: "hair", eyes: "big", mouth: "cat", unlock: { event: "craft" }, names: { cs: "Měsíční čarodějka", en: "Moon witch", de: "Mondhexe", ru: "Лунная колдунья" } },
+  { id: "comet-rider", bg: "#1c2a6e", skin: "#ffd0a8", head: "round", ears: "antenna", eyes: "visor", mouth: "smile", unlock: { event: "craft" }, names: { cs: "Jezdec komet", en: "Comet rider", de: "Kometenreiter", ru: "Наездник комет" } },
+  { id: "pearl-diver", bg: "#6fe0e8", skin: "#ffd9c4", head: "round", ears: "hair", eyes: "goggles", mouth: "smile", unlock: { event: "craft" }, names: { cs: "Lovkyně perel", en: "Pearl diver", de: "Perlentaucherin", ru: "Ловица жемчуга" } },
+  { id: "amber-druid", bg: "#e8c870", skin: "#c8e08a", head: "ghost", ears: "horns", eyes: "sleepy", mouth: "flat", unlock: { event: "craft" }, names: { cs: "Jantarový druid", en: "Amber druid", de: "Bernsteindruide", ru: "Янтарный друид" } },
+  { id: "royal-guard", bg: "#b8c4e8", skin: "#ffd5a8", head: "box", ears: "crown", eyes: "visor", mouth: "flat", unlock: { event: "craft" }, names: { cs: "Královský strážce", en: "Royal guard", de: "Königswache", ru: "Королевский страж" } },
+  { id: "dragon-mage", bg: "#9a4cff", skin: "#6fd08a", head: "round", ears: "horns", eyes: "big", mouth: "teeth", unlock: { event: "craft" }, names: { cs: "Dračí mág", en: "Dragon mage", de: "Drachenmagier", ru: "Драконий маг" } },
 ];
 
 export const DEFAULT_AVATAR = "robot";
