@@ -172,6 +172,11 @@ export const RECIPES: Recipe[] = [
   unlock("avatar-forest-spirit", "avatar", "les", "avatar", "forest-spirit", "🌳", worldCost("les", 6, 3, 1), n("Lesní duch", "Forest spirit", "Waldgeist", "Лесной дух"), "avatar-craft-forest-spirit"),
   unlock("avatar-blacksmith", "avatar", "hrad", "avatar", "blacksmith", "⚒️", worldCost("hrad", 6, 3, 1), n("Hradní kovář", "Castle blacksmith", "Burgschmied", "Замковый кузнец"), "avatar-craft-blacksmith"),
   unlock("avatar-moon-witch", "avatar", "kouzla", "avatar", "moon-witch", "🧙", worldCost("kouzla", 6, 3, 1), n("Měsíční čarodějka", "Moon witch", "Mondhexe", "Лунная колдунья"), "avatar-craft-moon-witch"),
+  unlock("avatar-comet-rider", "avatar", "vesmir", "avatar", "comet-rider", "☄️", worldCost("vesmir", 4, 4, 2, 1), n("Jezdec komet", "Comet rider", "Kometenreiter", "Наездник комет"), "avatar-craft-comet-rider"),
+  unlock("avatar-pearl-diver", "avatar", "more", "avatar", "pearl-diver", "🤿", worldCost("more", 4, 4, 2, 1), n("Lovkyně perel", "Pearl diver", "Perlentaucherin", "Ловица жемчуга"), "avatar-craft-pearl-diver"),
+  unlock("avatar-amber-druid", "avatar", "les", "avatar", "amber-druid", "🧝", worldCost("les", 4, 4, 2, 1), n("Jantarový druid", "Amber druid", "Bernsteindruide", "Янтарный друид"), "avatar-craft-amber-druid"),
+  unlock("avatar-royal-guard", "avatar", "hrad", "avatar", "royal-guard", "💂", worldCost("hrad", 4, 4, 2, 1), n("Královský strážce", "Royal guard", "Königswache", "Королевский страж"), "avatar-craft-royal-guard"),
+  unlock("avatar-dragon-mage", "avatar", "kouzla", "avatar", "dragon-mage", "🐲", worldCost("kouzla", 4, 4, 2, 1), n("Dračí mág", "Dragon mage", "Drachenmagier", "Драконий маг"), "avatar-craft-dragon-mage"),
 
   // --- Ozdoby profilu (tituly a pozadí fungují hned) ---
   unlock("title-comet-maker", "profile", "vesmir", "title", "comet-maker", "🏷️", worldCost("vesmir", 3, 1), n("Titul: Strůjce komet", "Title: Comet maker", "Titel: Kometenschmied", "Титул: Творец комет")),
@@ -179,11 +184,21 @@ export const RECIPES: Recipe[] = [
   unlock("title-forest-voice", "profile", "les", "title", "forest-voice", "🏷️", worldCost("les", 3, 1), n("Titul: Hlas lesa", "Title: Voice of the forest", "Titel: Stimme des Waldes", "Титул: Голос леса")),
   unlock("title-master-smith", "profile", "hrad", "title", "master-smith", "🏷️", worldCost("hrad", 3, 1), n("Titul: Mistr kovář", "Title: Master smith", "Titel: Schmiedemeister", "Титул: Мастер-кузнец")),
   unlock("title-alchemist", "profile", "kouzla", "title", "alchemist", "🏷️", worldCost("kouzla", 3, 1), n("Titul: Alchymista", "Title: Alchemist", "Titel: Alchemist", "Титул: Алхимик")),
+  unlock("title-cartographer", "profile", "vesmir", "title", "cartographer", "🏷️", worldCost("vesmir", 3, 2), n("Titul: Hvězdný kartograf", "Title: Star cartographer", "Titel: Sternenkartograf", "Титул: Звёздный картограф")),
+  unlock("title-reef-singer", "profile", "more", "title", "reef-singer", "🏷️", worldCost("more", 3, 2), n("Titul: Zpěvák útesu", "Title: Reef singer", "Titel: Riffsänger", "Титул: Певец рифа")),
+  unlock("title-druid", "profile", "les", "title", "druid", "🏷️", worldCost("les", 3, 2), n("Titul: Druid", "Title: Druid", "Titel: Druide", "Титул: Друид")),
+  unlock("title-steward", "profile", "hrad", "title", "steward", "🏷️", worldCost("hrad", 3, 2), n("Titul: Správce hradu", "Title: Castle steward", "Titel: Burgverwalter", "Титул: Управитель замка")),
+  unlock("title-dragon-whisperer", "profile", "kouzla", "title", "dragon-whisperer", "🏷️", worldCost("kouzla", 3, 2), n("Titul: Šeptač draků", "Title: Dragon whisperer", "Titel: Drachenflüsterer", "Титул: Шепчущий с драконами")),
   unlock("banner-craft-nebula", "profile", "vesmir", "banner", "craft-nebula", "🖼️", worldCost("vesmir", 4, 2), n("Pozadí: Mlhovina", "Banner: Nebula", "Hintergrund: Nebel", "Фон: Туманность"), "banner-craft-nebula"),
   unlock("banner-craft-reef", "profile", "more", "banner", "craft-reef", "🖼️", worldCost("more", 4, 2), n("Pozadí: Korálový útes", "Banner: Coral reef", "Hintergrund: Korallenriff", "Фон: Коралловый риф"), "banner-craft-reef"),
   unlock("banner-craft-grove", "profile", "les", "banner", "craft-grove", "🖼️", worldCost("les", 4, 2), n("Pozadí: Prastarý háj", "Banner: Ancient grove", "Hintergrund: Uralter Hain", "Фон: Древняя роща"), "banner-craft-grove"),
   unlock("banner-craft-forge", "profile", "hrad", "banner", "craft-forge", "🖼️", worldCost("hrad", 4, 2), n("Pozadí: Kovárna", "Banner: Forge", "Hintergrund: Schmiede", "Фон: Кузница"), "banner-craft-forge"),
   unlock("banner-craft-moonlight", "profile", "kouzla", "banner", "craft-moonlight", "🖼️", worldCost("kouzla", 4, 2), n("Pozadí: Měsíční svit", "Banner: Moonlight", "Hintergrund: Mondschein", "Фон: Лунный свет"), "banner-craft-moonlight"),
+  unlock("banner-craft-comet-trail", "profile", "vesmir", "banner", "craft-comet-trail", "🖼️", worldCost("vesmir", 4, 3, 1), n("Pozadí: Stopa komety", "Banner: Comet trail", "Hintergrund: Kometenspur", "Фон: След кометы"), "banner-craft-comet-trail"),
+  unlock("banner-craft-lagoon", "profile", "more", "banner", "craft-lagoon", "🖼️", worldCost("more", 4, 3, 1), n("Pozadí: Laguna", "Banner: Lagoon", "Hintergrund: Lagune", "Фон: Лагуна"), "banner-craft-lagoon"),
+  unlock("banner-craft-amber-forest", "profile", "les", "banner", "craft-amber-forest", "🖼️", worldCost("les", 4, 3, 1), n("Pozadí: Jantarový les", "Banner: Amber forest", "Hintergrund: Bernsteinwald", "Фон: Янтарный лес"), "banner-craft-amber-forest"),
+  unlock("banner-craft-throne", "profile", "hrad", "banner", "craft-throne", "🖼️", worldCost("hrad", 4, 3, 1), n("Pozadí: Trůnní sál", "Banner: Throne room", "Hintergrund: Thronsaal", "Фон: Тронный зал"), "banner-craft-throne"),
+  unlock("banner-craft-dragon-lair", "profile", "kouzla", "banner", "craft-dragon-lair", "🖼️", worldCost("kouzla", 4, 3, 1), n("Pozadí: Dračí doupě", "Banner: Dragon lair", "Hintergrund: Drachenhöhle", "Фон: Логово дракона"), "banner-craft-dragon-lair"),
 
   // --- Doplňky na avatara (zatím jen pojmenované, čekají na 3D model) ---
   named("antenna-helmet", "avatar-acc", "vesmir", "🪖", worldCost("vesmir", 4, 2, 1), n("Helma s anténkou", "Antenna helmet", "Antennenhelm", "Шлем с антенной")),

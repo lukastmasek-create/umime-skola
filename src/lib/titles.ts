@@ -64,6 +64,11 @@ export const TITLES: TitleDef[] = [
   { id: "forest-voice", unlock: { event: "craft" }, names: { cs: "Hlas lesa", en: "Voice of the forest", de: "Stimme des Waldes", ru: "Голос леса" } },
   { id: "master-smith", unlock: { event: "craft" }, names: { cs: "Mistr kovář", en: "Master smith", de: "Schmiedemeister", ru: "Мастер-кузнец" } },
   { id: "alchemist", unlock: { event: "craft" }, names: { cs: "Alchymista", en: "Alchemist", de: "Alchemist", ru: "Алхимик" } },
+  { id: "cartographer", unlock: { event: "craft" }, names: { cs: "Hvězdný kartograf", en: "Star cartographer", de: "Sternenkartograf", ru: "Звёздный картограф" } },
+  { id: "reef-singer", unlock: { event: "craft" }, names: { cs: "Zpěvák útesu", en: "Reef singer", de: "Riffsänger", ru: "Певец рифа" } },
+  { id: "druid", unlock: { event: "craft" }, names: { cs: "Druid", en: "Druid", de: "Druide", ru: "Друид" } },
+  { id: "steward", unlock: { event: "craft" }, names: { cs: "Správce hradu", en: "Castle steward", de: "Burgverwalter", ru: "Управитель замка" } },
+  { id: "dragon-whisperer", unlock: { event: "craft" }, names: { cs: "Šeptač draků", en: "Dragon whisperer", de: "Drachenflüsterer", ru: "Шепчущий с драконами" } },
 ];
 
 export function getTitle(id: string | null | undefined) {

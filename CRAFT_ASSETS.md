@@ -22,6 +22,11 @@ Pravidlo receptů: každá věc se vyrábí jen z materiálů **svého světa** 
 | `avatar-craft-forest-spirit` | Lesní duch | Les | funguje už teď (SVG / CSS), model je vylepšení |
 | `avatar-craft-blacksmith` | Hradní kovář | Hrad | funguje už teď (SVG / CSS), model je vylepšení |
 | `avatar-craft-moon-witch` | Měsíční čarodějka | Kouzla | funguje už teď (SVG / CSS), model je vylepšení |
+| `avatar-craft-comet-rider` | Jezdec komet | Vesmír | funguje už teď (SVG / CSS), model je vylepšení |
+| `avatar-craft-pearl-diver` | Lovkyně perel | Moře | funguje už teď (SVG / CSS), model je vylepšení |
+| `avatar-craft-amber-druid` | Jantarový druid | Les | funguje už teď (SVG / CSS), model je vylepšení |
+| `avatar-craft-royal-guard` | Královský strážce | Hrad | funguje už teď (SVG / CSS), model je vylepšení |
+| `avatar-craft-dragon-mage` | Dračí mág | Kouzla | funguje už teď (SVG / CSS), model je vylepšení |
 
 ### Doplňky na avatara
 
@@ -54,6 +59,11 @@ Pravidlo receptů: každá věc se vyrábí jen z materiálů **svého světa** 
 | `banner-craft-grove` | Pozadí: Prastarý háj | Les | funguje už teď (SVG / CSS), model je vylepšení |
 | `banner-craft-forge` | Pozadí: Kovárna | Hrad | funguje už teď (SVG / CSS), model je vylepšení |
 | `banner-craft-moonlight` | Pozadí: Měsíční svit | Kouzla | funguje už teď (SVG / CSS), model je vylepšení |
+| `banner-craft-comet-trail` | Pozadí: Stopa komety | Vesmír | funguje už teď (SVG / CSS), model je vylepšení |
+| `banner-craft-lagoon` | Pozadí: Laguna | Moře | funguje už teď (SVG / CSS), model je vylepšení |
+| `banner-craft-amber-forest` | Pozadí: Jantarový les | Les | funguje už teď (SVG / CSS), model je vylepšení |
+| `banner-craft-throne` | Pozadí: Trůnní sál | Hrad | funguje už teď (SVG / CSS), model je vylepšení |
+| `banner-craft-dragon-lair` | Pozadí: Dračí doupě | Kouzla | funguje už teď (SVG / CSS), model je vylepšení |
 
 ### Do pokoje
 

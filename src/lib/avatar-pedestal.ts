@@ -6,7 +6,7 @@ const THEME: Record<string, PedestalTheme> = {
   pirate: "more", captain: "more", "sea-wolf": "more", mermaid: "more", diver: "more", octopus: "more", sailor: "more", penguin: "more", piratka: "more", zralok: "more",
   fox: "les", owl: "les", frog: "les", ranger: "les", fairy: "les", elf: "les", koala: "les", panda: "les", capybara: "les", llama: "les", explorer: "les", archaeologist: "les", skritek: "les", veverka: "les",
   king: "hrad", knight: "hrad", princess: "hrad", dwarf: "hrad", founder: "hrad", dragon: "hrad", princ: "hrad", carodejnice: "kouzla",
-  "star-wanderer": "vesmir", "coral-guardian": "more", "forest-spirit": "les", blacksmith: "hrad", "moon-witch": "kouzla",
+  "star-wanderer": "vesmir", "coral-guardian": "more", "forest-spirit": "les", blacksmith: "hrad", "moon-witch": "kouzla", "comet-rider": "vesmir", "pearl-diver": "more", "amber-druid": "les", "royal-guard": "hrad", "dragon-mage": "kouzla",
   wizard: "kouzla", unicorn: "kouzla", phoenix: "kouzla", ghost: "kouzla", vampire: "kouzla", mummy: "kouzla", pumpkin: "kouzla", winter: "kouzla", yeti: "kouzla", ninja: "kouzla",
 };
 
