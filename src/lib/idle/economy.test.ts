@@ -10,10 +10,12 @@ import {
   assetPrice,
   buyAsset,
   buyCompany,
+  cashOutHustle,
   collectHustle,
   companyIncome,
   createCharacter,
   emptyState,
+  hustleOffer,
   investEdu,
   netWorth,
   normalizeState,
@@ -24,6 +26,7 @@ import {
   settle,
   startHustle,
   takeJob,
+  topUpHustle,
   type EconomyState,
 } from "./economy.ts";
 
@@ -166,6 +169,51 @@ test("hustle: kapitál se zablokuje, výsledek je v rozsahu a vybrat jde až po 
   assert.deepEqual(collectHustle(s, "reselling", NOW), { ok: false, error: "nothing" });
 });
 
+test("hustle: vklad a riziko volí hráč, dokoupení zvětší výplatu ve stejném poměru", () => {
+  const s = { ...start("rich"), cash: 100_000 };
+  // Vklad 10 000 (libovolná částka), riziko 50 %: střed výplaty zůstává na 1,55×.
+  const r = startHustle(s, "carflip", NOW, () => 0.5, { stake: 10_000, risk: 50 });
+  ok(r);
+  assert.equal(r.state.cash, 90_000);
+  assert.equal(r.state.hustle.carflip!.stake, 10_000);
+  // Riziko 10 % má užší rozsah než 100 %: při nejnižším výsledku je ztráta mírnější.
+  const safe = startHustle(s, "carflip", NOW, () => 0, { stake: 10_000, risk: 10 });
+  const risky = startHustle(s, "carflip", NOW, () => 0, { stake: 10_000, risk: 100 });
+  ok(safe);
+  ok(risky);
+  assert.ok(safe.state.hustle.carflip!.payout > risky.state.hustle.carflip!.payout);
+  // Neplatné hodnoty: nulový či neceločíselný vklad, riziko mimo 1–100.
+  assert.deepEqual(startHustle(s, "carflip", NOW, Math.random, { stake: 0 }), { ok: false, error: "bad-request" });
+  assert.deepEqual(startHustle(s, "carflip", NOW, Math.random, { stake: 10.5 }), { ok: false, error: "bad-request" });
+  assert.deepEqual(startHustle(s, "carflip", NOW, Math.random, { stake: 1000, risk: 0 }), { ok: false, error: "bad-request" });
+  assert.deepEqual(startHustle(s, "carflip", NOW, Math.random, { stake: 1000, risk: 101 }), { ok: false, error: "bad-request" });
+  // Dokoupení 5 000: vklad 10 000 → 15 000, výplata se zvětší ve stejném poměru.
+  const before = r.state.hustle.carflip!;
+  const top = topUpHustle(r.state, "carflip", NOW + 60_000, 5_000);
+  ok(top);
+  assert.equal(top.state.hustle.carflip!.stake, 15_000);
+  assert.equal(top.state.hustle.carflip!.payout, before.payout + Math.round((before.payout / before.stake) * 5_000));
+  assert.deepEqual(topUpHustle(top.state, "carflip", NOW, 1_000_000), { ok: false, error: "not-enough-cash" });
+  assert.deepEqual(topUpHustle(r.state, "carflip", NOW + 5 * 60_000, 5_000), { ok: false, error: "ready" });
+});
+
+test("hustle: průběžné rozhodování – prodej teď dává nabídku minus poplatek, po čase už jen výběr", () => {
+  const s = { ...start("rich"), cash: 10_000 };
+  const r = startHustle(s, "carflip", NOW, () => 0.999999);
+  ok(r);
+  const slot = r.state;
+  assert.equal(slot.cash, 5000);
+  // Na začátku je nabídka rovna vkladu, takže prodej hned znamená ztrátu poplatku (5 %).
+  const early = cashOutHustle(slot, "carflip", NOW);
+  assert.ok(early.ok && early.state.cash === 5000 + Math.round(5000 * 0.95) && !early.state.hustle.carflip);
+  // V půlce je nabídka mezi vkladem a výplatou.
+  const mid = hustleOffer(slot.hustle.carflip!, "carflip", NOW + 150_000);
+  assert.ok(mid > 5000 && mid < 5000 * 1.55);
+  // Po uplynutí času už se prodává jen přes sběr výsledku.
+  assert.deepEqual(cashOutHustle(slot, "carflip", NOW + 5 * 60_000), { ok: false, error: "ready" });
+  assert.deepEqual(cashOutHustle(s, "carflip", NOW), { ok: false, error: "nothing" });
+});
+
 test("vzdělání: body se utrácejí, bonus roste a má strop", () => {
   let s = start();
   const r = investEdu(s, NOW);
@@ -221,7 +269,7 @@ test("normalizeState: poškozená data se opraví bez pádu", () => {
   assert.equal("ghost" in bad.companies, false);
   assert.equal(bad.holdings.stocks, undefined);
   assert.equal(bad.holdings.metal, 2);
-  assert.ok(bad.hustle.carflip!.startedAt <= NOW && bad.hustle.carflip!.payout <= 5000 * 1.55);
+  assert.ok(bad.hustle.carflip!.startedAt <= NOW && bad.hustle.carflip!.payout <= 5000 * 5 * 1.55);
   assert.equal(bad.edu, 25);
   const round = normalizeState(JSON.parse(JSON.stringify(start("rich"))), NOW);
   assert.equal(round.character?.name, "Eva");

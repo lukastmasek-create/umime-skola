@@ -82,6 +82,15 @@ export type EconomyText = {
   hustleReady: string;
   hustleRunning: string;
   hustleCollect: string;
+  hustlePanel: string;
+  hustleOffer: string;
+  hustleCashOut: string;
+  hustleNone: string;
+  hustleStake: string;
+  hustleRisk: string;
+  riskHint: string;
+  hustleAll: string;
+  hustleTopUp: string;
   minutes: string;
   hours: string;
   boardHint: string;
@@ -135,7 +144,7 @@ const cs: EconomyText = {
     factory: "Fabrika",
   },
   assets: { bonds: "Cenné papíry", metal: "Kovy", stocks: "Akcie", realestate: "Nemovitosti", crypto: "Kryptoměny" },
-  hustles: { reselling: "Reselling", carflip: "Flipování aut", houseflip: "Flipování domů" },
+  hustles: { lemonade: "Limonádový stánek", reselling: "Reselling", carflip: "Flipování aut", houseflip: "Flipování domů", startup: "Startup" },
   cash: "Hotovost",
   netWorth: "Jmění",
   perHour: "{n} za hodinu",
@@ -185,6 +194,15 @@ const cs: EconomyText = {
   hustleReady: "Hotovo!",
   hustleRunning: "Zbývá {t}",
   hustleCollect: "Vybrat výsledek",
+  hustlePanel: "Rozjeté hustly – rozhoduj průběžně",
+  hustleOffer: "Nabídka: {n}",
+  hustleCashOut: "Prodat teď (−5 %)",
+  hustleNone: "Žádný hustl neběží.",
+  hustleStake: "Vklad",
+  hustleRisk: "Riziko",
+  riskHint: "Vyšší riziko = širší rozsah výsledků: víc zisku i ztráty. 1 % je téměř jistý výsledek.",
+  hustleAll: "Vše",
+  hustleTopUp: "Dokoupit {n}",
   minutes: "{n} min",
   hours: "{n} h",
   boardHint: "Pořadí podle nejvyššího jmění, kterého kdy hráč dosáhl.",
@@ -257,7 +275,7 @@ const en: EconomyText = {
     factory: "Factory",
   },
   assets: { bonds: "Securities", metal: "Metals", stocks: "Stocks", realestate: "Real estate", crypto: "Crypto" },
-  hustles: { reselling: "Reselling", carflip: "Car flipping", houseflip: "House flipping" },
+  hustles: { lemonade: "Lemonade stand", reselling: "Reselling", carflip: "Car flipping", houseflip: "House flipping", startup: "Startup" },
   cash: "Cash",
   netWorth: "Net worth",
   perHour: "{n} per hour",
@@ -307,6 +325,15 @@ const en: EconomyText = {
   hustleReady: "Done!",
   hustleRunning: "{t} left",
   hustleCollect: "Collect result",
+  hustlePanel: "Running hustles – decide as you go",
+  hustleOffer: "Offer: {n}",
+  hustleCashOut: "Sell now (−5%)",
+  hustleNone: "No hustle is running.",
+  hustleStake: "Stake",
+  hustleRisk: "Risk",
+  riskHint: "Higher risk = wider range of results: more profit and more loss. 1% is almost a sure result.",
+  hustleAll: "All",
+  hustleTopUp: "Add {n}",
   minutes: "{n} min",
   hours: "{n} h",
   boardHint: "Ranked by the highest net worth a player has ever reached.",
@@ -379,7 +406,7 @@ const de: EconomyText = {
     factory: "Fabrik",
   },
   assets: { bonds: "Wertpapiere", metal: "Metalle", stocks: "Aktien", realestate: "Immobilien", crypto: "Kryptowährungen" },
-  hustles: { reselling: "Reselling", carflip: "Autos flippen", houseflip: "Häuser flippen" },
+  hustles: { lemonade: "Limonadenstand", reselling: "Reselling", carflip: "Autos flippen", houseflip: "Häuser flippen", startup: "Startup" },
   cash: "Bargeld",
   netWorth: "Vermögen",
   perHour: "{n} pro Stunde",
@@ -429,6 +456,15 @@ const de: EconomyText = {
   hustleReady: "Fertig!",
   hustleRunning: "Noch {t}",
   hustleCollect: "Ergebnis abholen",
+  hustlePanel: "Laufende Hustles – entscheide unterwegs",
+  hustleOffer: "Angebot: {n}",
+  hustleCashOut: "Jetzt verkaufen (−5 %)",
+  hustleNone: "Kein Hustle läuft.",
+  hustleStake: "Einsatz",
+  hustleRisk: "Risiko",
+  riskHint: "Höheres Risiko = breitere Ergebnisse: mehr Gewinn und mehr Verlust. 1 % ist fast ein sicheres Ergebnis.",
+  hustleAll: "Alles",
+  hustleTopUp: "Nachlegen {n}",
   minutes: "{n} Min.",
   hours: "{n} Std.",
   boardHint: "Sortiert nach dem höchsten Vermögen, das ein Spieler je erreicht hat.",
@@ -501,7 +537,7 @@ const ru: EconomyText = {
     factory: "Фабрика",
   },
   assets: { bonds: "Ценные бумаги", metal: "Металлы", stocks: "Акции", realestate: "Недвижимость", crypto: "Криптовалюты" },
-  hustles: { reselling: "Перепродажа", carflip: "Флип автомобилей", houseflip: "Флип домов" },
+  hustles: { lemonade: "Лимонадный стенд", reselling: "Перепродажа", carflip: "Флип автомобилей", houseflip: "Флип домов", startup: "Стартап" },
   cash: "Наличные",
   netWorth: "Состояние",
   perHour: "{n} в час",
@@ -551,6 +587,15 @@ const ru: EconomyText = {
   hustleReady: "Готово!",
   hustleRunning: "Осталось {t}",
   hustleCollect: "Забрать результат",
+  hustlePanel: "Текущие подработки — решай по ходу",
+  hustleOffer: "Предложение: {n}",
+  hustleCashOut: "Продать сейчас (−5%)",
+  hustleNone: "Сейчас ничего не запущено.",
+  hustleStake: "Вклад",
+  hustleRisk: "Риск",
+  riskHint: "Выше риск — шире диапазон результатов: больше и прибыли, и убытка. 1 % — почти гарантированный результат.",
+  hustleAll: "Всё",
+  hustleTopUp: "Докупить {n}",
   minutes: "{n} мин",
   hours: "{n} ч",
   boardHint: "Порядок по самому высокому состоянию, которого когда-либо достиг игрок.",
