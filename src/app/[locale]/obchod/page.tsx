@@ -6,6 +6,7 @@ import { isLocale, type Locale } from "@/i18n/config";
 import { Wheel } from "@/components/Wheel";
 import { BuyPointsCard } from "@/components/BuyPointsCard";
 import { LimitedShop, MaterialShop, ProCard, ShopTabs } from "@/components/ShopSections";
+import { getPlayerMarketText } from "@/i18n/player-market";
 
 export const revalidate = 0;
 
@@ -25,6 +26,7 @@ export default async function ShopPage({
   if (!isLocale(locale)) notFound();
   const dict = getDictionary(locale as Locale);
 
+  const pm = getPlayerMarketText(locale as Locale);
   const session = await auth();
   const userId = session?.user?.id;
 
@@ -81,6 +83,18 @@ export default async function ShopPage({
           ),
         }}
       />
+
+      <a
+        href={`/${locale}/trziste`}
+        className="card card-hover mt-12 flex items-center gap-4 p-6"
+      >
+        <span aria-hidden className="text-5xl">🤝</span>
+        <span className="flex-1">
+          <span className="block text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>{pm.title}</span>
+          <span className="block text-sm text-[var(--muted)]">{pm.intro}</span>
+        </span>
+        <span className="btn-bouncy rounded-full bg-[var(--brand-500)] px-4 py-2 text-sm font-semibold text-white">{pm.open}</span>
+      </a>
     </div>
   );
 }

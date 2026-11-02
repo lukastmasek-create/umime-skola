@@ -221,6 +221,7 @@ export function TicTacToe({
           questions={questions}
           onAgain={restart}
           backHref={backHref}
+          outcome={winner === "X" ? "won" : winner === "O" ? "lost" : undefined}
         >
           <p className="text-xl font-bold">{winner === "X" ? t.ttt.win : winner === "O" ? t.ttt.lose : t.ttt.draw}</p>
         </FinishCard>

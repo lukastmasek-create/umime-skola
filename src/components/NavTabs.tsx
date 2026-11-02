@@ -17,6 +17,7 @@ import { getReviewText } from "@/i18n/review";
 import { getLiveText } from "@/i18n/live";
 import { getDailyQuizText } from "@/i18n/daily-quiz";
 import { getContactText } from "@/i18n/contact";
+import { getPlayerMarketText } from "@/i18n/player-market";
 import { useAccount } from "@/lib/use-account";
 import { locales, localeNames, type Locale } from "@/i18n/config";
 import { setLocaleCookie } from "@/lib/locale-cookie";
@@ -82,6 +83,7 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
       items: [
         { key: "obchod", href: `/${locale}/obchod`, label: dict.nav.shop },
         { key: "uzivatelsky-obchod", href: `/${locale}/uzivatelsky-obchod`, label: community.navMarketplace },
+        { key: "trziste", href: `/${locale}/trziste`, label: getPlayerMarketText(locale).title },
       ],
     },
     {

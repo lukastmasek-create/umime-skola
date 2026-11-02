@@ -20,6 +20,7 @@ export function ProfileAvatar({
   snapshotRef,
   className = "h-[190px] w-[150px]",
   svgSize = 104,
+  mood,
 }: {
   id: string | undefined;
   label: string;
@@ -29,6 +30,7 @@ export function ProfileAvatar({
   snapshotRef?: { current: (() => string | null) | null };
   className?: string;
   svgSize?: number;
+  mood?: "sad" | "happy";
 }) {
   const model = getAvatarModel(id);
   const [state, setState] = useState<{ model: string | null; status: "loading" | "ready" | "failed" }>({
@@ -55,6 +57,7 @@ export function ProfileAvatar({
           custom={custom}
           onParts={onParts}
           snapshotRef={snapshotRef}
+          mood={mood}
           onReady={() => setState({ model, status: "ready" })}
           onError={() => setState({ model, status: "failed" })}
         />

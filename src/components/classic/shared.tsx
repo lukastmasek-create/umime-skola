@@ -5,6 +5,9 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import type { ClassicText } from "@/i18n/classic";
 import { formatTime } from "@/lib/classic-games";
 import { saveBest, readBest, starsFor, type Best } from "@/lib/game-best";
+import { ProfileAvatar } from "@/components/ProfileAvatar";
+import { getAvatarModel } from "@/lib/avatars3d";
+import { useAccount } from "@/lib/use-account";
 
 // Která hra, kurz a obtížnost se hraje: FinishCard podle toho ukládá osobní rekord.
 export type ClassicSession = { game: string; course: string; level: number; newBestLabel: string; bestLabel: string };
@@ -74,6 +77,7 @@ export function FinishCard({
   questions,
   onAgain,
   backHref,
+  outcome,
   children,
 }: {
   t: ClassicText;
@@ -84,6 +88,8 @@ export function FinishCard({
   questions?: ReviewQuestion[];
   onAgain: () => void;
   backHref: string;
+  // Výsledek hry, když ho hra zná (prohra, výhra); jinak se odhadne z úspěšnosti odpovědí.
+  outcome?: "won" | "lost";
   children?: ReactNode;
 }) {
   const [gained, setGained] = useState(0);
@@ -113,6 +119,7 @@ export function FinishCard({
     }
   }, [xp, results]);
 
+  const [account] = useAccount();
   const [copied, setCopied] = useState(false);
   const hadMistakes = results.some((r) => !r.correct);
   const total = results.length;
@@ -135,6 +142,10 @@ export function FinishCard({
     streak = Math.max(streak, run);
   }
   const level: 0 | 1 | 2 | 3 = pct === 100 ? 3 : pct >= 75 ? 2 : pct >= 40 ? 1 : 0;
+  // Nálada avatara hráče: prohra = smutek, výhra (nebo všechno správně) = radost; remíza a průměr bez reakce.
+  const mood: "sad" | "happy" | undefined = outcome ? (outcome === "lost" ? "sad" : "happy") : total > 0 ? (level === 0 ? "sad" : level === 3 ? "happy" : undefined) : undefined;
+  const myAvatar = account?.loggedIn ? account.avatar : null;
+  const showAvatar = !!myAvatar && !!getAvatarModel(myAvatar) && !!mood;
   const byId = new Map((questions ?? []).filter((q) => q.id).map((q) => [q.id as string, q]));
   const misses: { q: ReviewQuestion; yours?: string }[] = [];
   const seen = new Set<string>();
@@ -161,9 +172,12 @@ export function FinishCard({
   }
   return (
     <div className="card flex flex-col items-start gap-3 p-6">
-      <h2 className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        {t.doneTitle}
-      </h2>
+      <div className="flex w-full items-center justify-between gap-4">
+        <h2 className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+          {t.doneTitle}
+        </h2>
+        {showAvatar && <ProfileAvatar id={myAvatar ?? undefined} label={t.doneTitle} mood={mood} className="h-[170px] w-[130px]" svgSize={72} />}
+      </div>
       {total > 0 && (
         <div className="flex items-center gap-3" aria-label={t.end.stars[level]}>
           <div className="flex gap-1 text-3xl leading-none" aria-hidden>

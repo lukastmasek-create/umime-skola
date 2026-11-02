@@ -146,6 +146,7 @@ export function Millionaire({
           questions={questions}
           onAgain={restart}
           backHref={backHref}
+          outcome={end.kind === "lost" ? "lost" : end.kind === "won" ? "won" : undefined}
         >
           {end.kind === "lost" && q && (
             <div className="w-full rounded-xl bg-[var(--surface-muted)] p-4 text-sm">
