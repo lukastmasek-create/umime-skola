@@ -226,8 +226,9 @@ function drawSpaceFront(fctx: CanvasRenderingContext2D, w: number, h: number, t:
 }
 
 // Pozadí scény (moře nebo vesmír) a přední canvas se světly; vše se kreslí v jednom rAF, mimo obrazovku se zastaví.
-function useScenery(stage: React.RefObject<HTMLDivElement | null>, back: React.RefObject<HTMLCanvasElement | null>, front: React.RefObject<HTMLCanvasElement | null>, nightRef: React.RefObject<boolean>, def: SceneDef, data: SceneData) {
+function useScenery(stage: React.RefObject<HTMLDivElement | null>, back: React.RefObject<HTMLCanvasElement | null>, front: React.RefObject<HTMLCanvasElement | null>, nightRef: React.RefObject<boolean>, def: SceneDef, data: SceneData, enabled: boolean) {
   useEffect(() => {
+    if (!enabled) return;
     const box = stage.current;
     const cv = back.current;
     const fv = front.current;
@@ -300,7 +301,7 @@ function useScenery(stage: React.RefObject<HTMLDivElement | null>, back: React.R
       ro.disconnect();
       io.disconnect();
     };
-  }, [stage, back, front, nightRef, def, data]);
+  }, [stage, back, front, nightRef, def, data, enabled]);
 }
 
 const VEIL: Record<string, string> = { pirate: "#cfe8ff", space: "#9be8ff", forest: "#e8ffb0", castle: "#1a1020", sea: "#5fd0ee" };
@@ -374,7 +375,7 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
     setTalk({ id, text: lines[++seq.current % lines.length] });
     window.setTimeout(() => setTalk(null), 2800);
   }
-  useScenery(stage, back, front, nightRef, def, data);
+  useScenery(stage, back, front, nightRef, def, data, !view3d);
 
   const load = useCallback(async () => {
     try {
@@ -608,7 +609,9 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
           onFail={() => setView3d(false)}
         />
       )}
-      <div className={`overflow-x-auto overflow-y-hidden rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)] ${view3d ? "hidden" : ""}`}>
+      {/* 2D pohled se vykresluje jen když je zapnutý; skrytý by dál stahoval obrázky a držel plátna */}
+      {!view3d && (
+      <div className="overflow-x-auto overflow-y-hidden rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--shadow-ink)]">
         <div ref={stage} data-night={dark ? "" : undefined} data-world={world.id} className="market-stage relative select-none overflow-hidden" style={{ aspectRatio: `${W} / ${H}`, minWidth: 880 }}>
           <canvas ref={back} aria-hidden className="absolute inset-0 h-full w-full" />
           {/* hlavní předmět: loď nebo raketa */}
@@ -762,6 +765,7 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
           )}
         </div>
       </div>
+      )}
 
       {/* rychlá volba stánků (hlavně pro telefony) */}
       <div className="mt-3 flex flex-wrap gap-2">
