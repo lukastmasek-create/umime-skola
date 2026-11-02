@@ -139,7 +139,7 @@ export function Wheel({
               return (
                 <div key={i} className="absolute inset-0" style={{ transform: `rotate(${angle}deg)` }}>
                   <span
-                    className="absolute left-1/2 text-lg font-extrabold text-white sm:text-xl"
+                    className={`absolute left-1/2 font-extrabold text-white ${prize.item ? "text-3xl sm:text-4xl" : "text-xl sm:text-2xl"}`}
                     style={{
                       top: LABEL_TOP,
                       transform: `translate(-50%, -50%) rotate(${-angle}deg)`,
