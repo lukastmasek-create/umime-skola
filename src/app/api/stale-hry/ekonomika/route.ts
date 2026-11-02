@@ -12,8 +12,11 @@ import {
   cashOutHustle,
   collectHustle,
   createCharacter,
+  currentEvent,
   eduCost,
   emptyState,
+  fundResponse,
+  hireStaff,
   investEdu,
   learningBonusFromXp,
   netWorth,
@@ -21,11 +24,14 @@ import {
   quitJob,
   rates,
   restart,
+  runCampaign,
   sellAsset,
+  setCompanySetting,
   settle,
   startHustle,
   takeJob,
   topUpHustle,
+  upgradeCompany,
   ASSETS,
   type ActionResult,
   type EconomyState,
@@ -44,6 +50,7 @@ async function learningFor(userId: string, now: number): Promise<number> {
 
 function payload(state: EconomyState, points: number, learning: number, now: number) {
   const rate = rates(state, now, learning);
+  const event = currentEvent(now);
   return {
     state,
     points,
@@ -54,6 +61,7 @@ function payload(state: EconomyState, points: number, learning: number, now: num
     prices: Object.fromEntries(ASSETS.map((a) => [a.id, assetPrice(a.id, now)])),
     arbitrage: { spread: arbitrageSpread(now), limit: arbitrageLimit(state) },
     eduCost: eduCost(state.edu),
+    event: event ? { id: event.def.id, window: event.window, endsAt: event.endsAt } : null,
   };
 }
 
@@ -69,6 +77,9 @@ type Body = {
   family?: unknown;
   stake?: unknown;
   risk?: unknown;
+  field?: unknown;
+  value?: unknown;
+  delta?: unknown;
 };
 
 function applyAction(state: EconomyState, body: Body, now: number): ActionResult {
@@ -83,6 +94,16 @@ function applyAction(state: EconomyState, body: Body, now: number): ActionResult
       return quitJob(state, now);
     case "buyCompany":
       return buyCompany(state, body.id, now);
+    case "upgradeCompany":
+      return upgradeCompany(state, body.id, now);
+    case "hireStaff":
+      return hireStaff(state, body.id, body.delta, now);
+    case "setCompanySetting":
+      return setCompanySetting(state, body.id, body.field, body.value, now);
+    case "runCampaign":
+      return runCampaign(state, body.id, now);
+    case "fundResponse":
+      return fundResponse(state, body.id, now);
     case "buyAsset":
       return buyAsset(state, body.id, body.amount, now);
     case "sellAsset":

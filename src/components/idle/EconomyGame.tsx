@@ -8,7 +8,6 @@ import {
   ARB_FEE,
   ASSETS,
   CITIES,
-  COMPANIES,
   COUNTRIES,
   COUNTRY_DEF,
   ERAS,
@@ -21,8 +20,6 @@ import {
   MAX_EDU,
   MAX_JOB_RANK,
   assetPrice,
-  companyIncome,
-  companyPrice,
   HUSTLE_RISK_DEFAULT,
   hustleOffer,
   hustleReady,
@@ -32,30 +29,17 @@ import {
   type HustleId,
   type CityId,
   type CountryId,
-  type EconomyState,
   type EraId,
   type FamilyId,
-  type Rates,
 } from "@/lib/idle/economy";
+import { CompanyTab, fill, formatLeft, type Payload } from "./CompanyPanel";
 import type { Locale } from "@/i18n/config";
 
-type Payload = {
-  state: EconomyState;
-  points: number;
-  now: number;
-  learning: number;
-  rates: Rates;
-  netWorth: number;
-  arbitrage: { spread: number; limit: number };
-  eduCost: number;
-  gained?: { cash?: number; profit?: number } | null;
-};
 type View = { data: Payload; receivedAt: number };
 type Load = "loading" | "login" | "unavailable" | "ready";
 type Tab = "overview" | "work" | "companies" | "invest" | "hustle" | "board";
 type Board = { top: { rank: number; name: string; country: string | null; best: number; runs: number; me: boolean }[]; me: { rank: number; best: number } | null };
 
-const fill = (text: string, vars: Record<string, string | number>) => text.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ""));
 
 function money(n: number, currency: string, locale: Locale): string {
   const { numberLocale: loc, units } = getEconomyText(locale);
@@ -71,15 +55,10 @@ function money(n: number, currency: string, locale: Locale): string {
 const EMOJI: Record<string, string> = {
   warehouse: "📦", seller: "🛒", cook: "🍳", police: "👮", vet: "🐾", programmer: "💻", banker: "🏦",
   shoes: "👟", clothes: "👕", tech: "📱", delivery: "🛵", supermarket: "🏬", digi: "🎮", software: "🧩", hardware: "🖥️", factory: "🏭",
+  bakery: "🥖", carwash: "🚿", eshop: "🛍️", printshop: "🖨️", streaming: "📺",
   bonds: "📜", metal: "🥇", stocks: "📈", realestate: "🏠", crypto: "🪙",
   reselling: "🔁", carflip: "🚗", houseflip: "🏚️", lemonade: "🍋", startup: "🚀",
 };
-
-function formatLeft(ms: number, t: ReturnType<typeof getEconomyText>): string {
-  const m = Math.max(1, Math.ceil(ms / 60_000));
-  if (m < 60) return fill(t.minutes, { n: m });
-  return `${fill(t.hours, { n: Math.floor(m / 60) })} ${String(m % 60).padStart(2, "0")} min`;
-}
 
 export function EconomyGame({ locale }: { locale: Locale }) {
   const t = getEconomyText(locale);
@@ -303,6 +282,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
             <Row label={`💼 ${t.salary}`} value={`+${m(r.salary * r.multiplier)}`} />
             <Row label={`🏭 ${t.businessIncome}`} value={`+${m(r.companies * r.multiplier)}`} />
             <Row label={`🏠 ${t.passiveIncome}`} value={`+${m(r.passive * r.multiplier)}`} />
+            <Row label={`🧾 ${t.detail.costs}`} value={`−${m(r.companyCosts)}`} />
             <Row label={`🍞 ${t.living}`} value={`−${m(r.living)}`} />
             <Row label={`✖️ ${t.multiplier}`} value={`×${r.multiplier.toFixed(2)}`} />
             {data.learning > 0 && <Row label={`📚 ${t.learning}`} value={`+${Math.round(data.learning * 100)} %`} />}
@@ -384,34 +364,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
       )}
 
       {tab === "companies" && (
-        <section>
-          <p className="mb-3 text-sm text-[var(--muted)]">{t.companiesHint}</p>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {COMPANIES.map((c) => {
-              const owned = state.companies[c.id] ?? 0;
-              const locked = isLocked(state, "company", c.id);
-              const price = companyPrice(state, c.id);
-              return (
-                <article key={c.id} className={`card flex flex-col gap-2 p-4 ${locked ? "opacity-55" : ""}`}>
-                  <h3 className="font-bold">
-                    {EMOJI[c.id]} {t.companies[c.id]}
-                  </h3>
-                  <p className="text-sm text-[var(--muted)]">
-                    {fill(t.owned, { n: owned })} · {fill(t.earns, { n: m(companyIncome(c.id) * INCOME_SPEED * r.multiplier) })}
-                  </p>
-                  <button
-                    type="button"
-                    disabled={busy || locked || liveCash < price}
-                    onClick={() => void act({ action: "buyCompany", id: c.id }, () => t.toast.bought)}
-                    className="btn-bouncy mt-auto bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
-                  >
-                    {locked ? `🔒 ${t.locked1990}` : fill(t.buy, { n: m(price) })}
-                  </button>
-                </article>
-              );
-            })}
-          </div>
-        </section>
+        <CompanyTab state={state} clock={clock} multiplier={r.multiplier} t={t} m={m} busy={busy} liveCash={liveCash} act={act} />
       )}
 
       {tab === "invest" && (

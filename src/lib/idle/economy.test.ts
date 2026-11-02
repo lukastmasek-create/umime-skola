@@ -4,6 +4,8 @@ import {
   ARB_COOLDOWN_MS,
   ASSETS,
   COMPANIES,
+  EVENT_DURATION_MS,
+  EVENT_WINDOW_MS,
   HUSTLES,
   JOBS,
   arbitrage,
@@ -13,20 +15,29 @@ import {
   cashOutHustle,
   collectHustle,
   companyIncome,
+  companyYield,
   createCharacter,
+  currentEvent,
   emptyState,
   hustleOffer,
+  eventAffects,
+  fundResponse,
+  hireStaff,
   investEdu,
+  isNegativeEvent,
   netWorth,
   normalizeState,
   quitJob,
   rates,
   restart,
+  runCampaign,
   sellAsset,
+  setCompanySetting,
   settle,
   startHustle,
   takeJob,
   topUpHustle,
+  upgradeCompany,
   type EconomyState,
 } from "./economy.ts";
 
@@ -97,7 +108,8 @@ test("příjem: peníze plynou v čase, offline má strop, bez postavy nic", () 
   s = bought.ok ? bought.state : s;
   const minute = settle(s, NOW + 60_000);
   const gain = minute.cash - s.cash;
-  assert.ok(gain > 5 && gain < 12, `za minutu ${gain}`);
+  // Sazba se bere z poloviny úseku (viz settle); mimořádná událost ji může měnit, proto porovnáváme s ní.
+  assert.ok(Math.abs(gain - rates(s, NOW + 30_000).net / 60) < 1e-6, `za minutu ${gain}`);
   const week = settle(s, NOW + 7 * 24 * H);
   const capped = settle(s, NOW + 15 * 60_000);
   assert.ok(Math.abs(week.cash - capped.cash) < 1e-6, "offline má strop 15 min");
@@ -273,4 +285,83 @@ test("normalizeState: poškozená data se opraví bez pádu", () => {
   assert.equal(bad.edu, 25);
   const round = normalizeState(JSON.parse(JSON.stringify(start("rich"))), NOW);
   assert.equal(round.character?.name, "Eva");
+});
+
+test("firma: vylepšení, zaměstnanci, cena a výroba mění výnos; jde to jen u vlastněné firmy", () => {
+  const base = { ...start("rich"), cash: 1e6 };
+  assert.deepEqual(upgradeCompany(base, "shoes", NOW), { ok: false, error: "nothing" });
+  const bought = buyCompany(base, "shoes", NOW);
+  ok(bought);
+  let s = bought.ok ? bought.state : base;
+  const plain = companyYield(s, "shoes", NOW).gross;
+
+  const up = upgradeCompany(s, "shoes", NOW);
+  ok(up);
+  s = up.ok ? up.state : s;
+  assert.ok(companyYield(s, "shoes", NOW).gross > plain, "vylepšení zvedne výnos");
+  assert.deepEqual(upgradeCompany(s, "shoes", NOW), { ok: false, error: "max" });
+
+  const hired = hireStaff(s, "shoes", 1, NOW);
+  ok(hired);
+  s = hired.ok ? hired.state : s;
+  assert.equal(s.setup.shoes?.staff, 1);
+  assert.ok(companyYield(s, "shoes", NOW).costs > 0, "zaměstnanec stojí mzdu");
+  assert.deepEqual(hireStaff(s, "shoes", 0, NOW), { ok: false, error: "bad-request" });
+  assert.deepEqual(hireStaff({ ...s, companies: { shoes: 1 }, setup: { shoes: { ...s.setup.shoes!, staff: 3 } } }, "shoes", 1, NOW), { ok: false, error: "max" });
+  assert.deepEqual(hireStaff({ ...s, cash: 0 }, "shoes", 1, NOW), { ok: false, error: "not-enough-cash" });
+  const fired = hireStaff(s, "shoes", -1, NOW);
+  ok(fired);
+  assert.equal(fired.ok ? fired.state.setup.shoes?.staff : -1, 0);
+
+  const cheap = setCompanySetting(s, "shoes", "output", 1.4, NOW);
+  ok(cheap);
+  assert.equal(cheap.ok ? cheap.state.setup.shoes?.output : -1, 1.4);
+  const clamped = setCompanySetting(s, "shoes", "risk", 7, NOW);
+  assert.equal(clamped.ok ? clamped.state.setup.shoes?.risk : -1, 1);
+  assert.deepEqual(setCompanySetting(s, "shoes", "price", "extreme", NOW), { ok: false, error: "bad-request" });
+  assert.deepEqual(setCompanySetting(s, "shoes", "owner", 1, NOW), { ok: false, error: "bad-request" });
+  assert.deepEqual(setCompanySetting(s, "clothes", "price", 1.5, NOW), { ok: false, error: "nothing" });
+});
+
+test("firma: marketingová kampaň běží půl hodiny a nedá se spustit znovu", () => {
+  const bought = buyCompany({ ...start("rich"), cash: 1e6 }, "tech", NOW);
+  ok(bought);
+  const s = bought.ok ? bought.state : emptyState(NOW);
+  const boosted = runCampaign(s, "tech", NOW);
+  ok(boosted);
+  if (!boosted.ok) return;
+  assert.ok(boosted.state.cash < s.cash);
+  assert.deepEqual(runCampaign(boosted.state, "tech", NOW + 60_000), { ok: false, error: "busy" });
+  assert.ok(companyYield(boosted.state, "tech", NOW + 60_000).gross > companyYield(s, "tech", NOW + 60_000).gross);
+  const later = NOW + 31 * 60_000;
+  assert.ok(runCampaign(boosted.state, "tech", later).ok, "po půl hodině jde znovu");
+});
+
+test("události: každé okno má jednu událost, která trvá půl hodiny", () => {
+  assert.ok(currentEvent(NOW), "na začátku okna běží událost");
+  assert.equal(currentEvent(NOW + EVENT_DURATION_MS), null, "po půl hodině je klid");
+  assert.equal(currentEvent(NOW + EVENT_WINDOW_MS)?.window, currentEvent(NOW)!.window + 1);
+  assert.equal(currentEvent(NOW + EVENT_WINDOW_MS)?.endsAt, NOW + EVENT_WINDOW_MS + EVENT_DURATION_MS);
+});
+
+test("události: krizový fond zmírní ztrátu jen jednou a jen u zasažené firmy", () => {
+  const s = { ...start("rich"), cash: 1e6 };
+  const bought = buyCompany(s, "shoes", NOW);
+  ok(bought);
+  const owned = bought.ok ? bought.state : s;
+  let t: number | null = null;
+  for (let i = 0; i < 400 && t === null; i++) {
+    const at = NOW + i * EVENT_WINDOW_MS;
+    const ev = currentEvent(at);
+    if (ev && isNegativeEvent(ev.def) && eventAffects(ev.def, "shoes")) t = at;
+  }
+  assert.ok(t !== null, "za pár oken přijde ztrátová událost pro obuv");
+  const before = companyYield(owned, "shoes", t!).gross;
+  const fund = fundResponse(owned, "shoes", t!);
+  ok(fund);
+  if (!fund.ok) return;
+  assert.ok(fund.state.cash < owned.cash);
+  assert.ok(companyYield(fund.state, "shoes", t!).gross > before, "fond zvedne výnos oproti bezbrannému stavu");
+  assert.deepEqual(fundResponse(fund.state, "shoes", t!), { ok: false, error: "busy" });
+  assert.deepEqual(fundResponse(owned, "shoes", NOW + EVENT_DURATION_MS + 1), { ok: false, error: "nothing" });
 });

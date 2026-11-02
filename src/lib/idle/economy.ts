@@ -91,25 +91,129 @@ export const JOBS: JobDef[] = [
 
 // --- Firmy ---
 
-export type CompanyId = "shoes" | "clothes" | "tech" | "delivery" | "supermarket" | "digi" | "software" | "hardware" | "factory";
-export type CompanyDef = { id: CompanyId; cost: number; digital: boolean };
+export type CompanyId =
+  | "shoes"
+  | "clothes"
+  | "bakery"
+  | "tech"
+  | "carwash"
+  | "delivery"
+  | "eshop"
+  | "supermarket"
+  | "printshop"
+  | "digi"
+  | "software"
+  | "streaming"
+  | "hardware"
+  | "factory";
+// payback = návratnost v hodinách (zisk za hodinu na jeden kus = cena / návratnost)
+export type CompanyDef = { id: CompanyId; cost: number; digital: boolean; payback: number };
 export const COMPANIES: CompanyDef[] = [
-  { id: "shoes", cost: 150, digital: false },
-  { id: "clothes", cost: 600, digital: false },
-  { id: "tech", cost: 2_500, digital: false },
-  { id: "delivery", cost: 8_000, digital: true },
-  { id: "supermarket", cost: 25_000, digital: false },
-  { id: "digi", cost: 80_000, digital: true },
-  { id: "software", cost: 250_000, digital: true },
-  { id: "hardware", cost: 800_000, digital: false },
-  { id: "factory", cost: 3_000_000, digital: false },
+  { id: "shoes", cost: 150, digital: false, payback: 5 },
+  { id: "clothes", cost: 600, digital: false, payback: 6 },
+  { id: "bakery", cost: 1_200, digital: false, payback: 6.5 },
+  { id: "tech", cost: 2_500, digital: false, payback: 7 },
+  { id: "carwash", cost: 5_000, digital: false, payback: 7.5 },
+  { id: "delivery", cost: 8_000, digital: true, payback: 8 },
+  { id: "eshop", cost: 18_000, digital: true, payback: 8.5 },
+  { id: "supermarket", cost: 25_000, digital: false, payback: 9 },
+  { id: "printshop", cost: 40_000, digital: false, payback: 9.5 },
+  { id: "digi", cost: 80_000, digital: true, payback: 10 },
+  { id: "software", cost: 250_000, digital: true, payback: 11 },
+  { id: "streaming", cost: 400_000, digital: true, payback: 11.5 },
+  { id: "hardware", cost: 800_000, digital: false, payback: 12 },
+  { id: "factory", cost: 3_000_000, digital: false, payback: 13 },
 ];
-// Zisk firmy za hodinu: čím dál dražší obor, tím delší návratnost (5 h u první, 13 h u poslední).
+// Zisk firmy za hodinu na jeden kus, bez úprav (ty přidává nastavení firmy).
 export const companyIncome = (id: CompanyId): number => {
-  const idx = COMPANIES.findIndex((c) => c.id === id);
-  return Math.round(COMPANIES[idx].cost / (5 + idx));
+  const def = COMPANIES.find((c) => c.id === id)!;
+  return def.cost / def.payback;
 };
 export const COMPANY_GROWTH = 1.15;
+
+// Nastavení jedné firmy (typu) z detailu. Hráč si hodnoty nastaví sám posuvníkem; všechno se počítá
+// z času a stavu, takže server i prohlížeč vidí totéž.
+// price = násobek ceny produktu (víc na kus, víc citlivé na krize)
+// output = násobek výroby (víc zboží, víc provozních nákladů)
+// risk = 0 bezpečně … 1 riskantně (vyšší riziko = vyšší výnos z výroby i silnější dopad událostí)
+export const SETTING_RANGE = {
+  price: { min: 0.5, max: 2, step: 0.05 },
+  output: { min: 0.5, max: 1.5, step: 0.05 },
+  risk: { min: 0, max: 1, step: 0.05 },
+} as const;
+export type SettingKey = keyof typeof SETTING_RANGE;
+export type CompanySetup = {
+  upgraded: boolean; // jednorázové vylepšení celého oboru
+  staff: number; // zaměstnanci celkem (max MAX_STAFF_PER_UNIT na kus)
+  price: number;
+  output: number;
+  risk: number;
+  marketingUntil: number; // do kdy běží marketingová kampaň
+};
+export const DEFAULT_SETUP: CompanySetup = { upgraded: false, staff: 0, price: 1, output: 1, risk: 0.3, marketingUntil: 0 };
+export const clampSetting = (key: SettingKey, v: number) => {
+  const r = SETTING_RANGE[key];
+  const snapped = Math.round(v / r.step) * r.step;
+  return Math.min(r.max, Math.max(r.min, Number(snapped.toFixed(2))));
+};
+// Výnos z rizika: bezpečná firma vyrábí o trochu míň, riskantní o něco víc.
+export const riskOutput = (risk: number) => 0.85 + 0.6 * risk;
+// Citlivost na události: bezpečná firma má nárazník, riskantní je vystavená víc.
+export const riskExposure = (risk: number) => 0.3 + 1.5 * risk;
+// Provozní náklady výroby v násobku zisku kusu (výroba nad 0,5× něco stojí).
+export const upkeepShare = (output: number) => Math.max(0, (output - 0.5) * 0.3);
+export const MAX_STAFF_PER_UNIT = 3;
+export const STAFF_OUTPUT = 0.12; // zvýšení výroby na jednoho zaměstnance (na celou firmu přepočteno)
+export const STAFF_WAGE = 0.08; // hodinová mzda jednoho zaměstnance v násobku zisku kusu
+export const STAFF_HIRE_HOURS = 24; // nábor stojí den mzdy
+export const UPGRADE_BONUS = 0.3;
+export const UPGRADE_COST_MULT = 2;
+export const MARKETING_MINUTES = 30;
+export const MARKETING_BONUS = 1.3;
+export const MARKETING_COST = 0.1; // kampaň stojí podíl ceny firem
+export const FUND_COST = 0.1; // krizový fond stojí podíl ceny firem
+export const FUND_SAVES = 0.65; // jaký díl ztráty z události fond zachrání
+
+// --- Mimořádné události ---
+// Každé dvě hodiny přijde jedna událost a trvá půl hodiny. Vybírá se podle času (stejné na serveru i v prohlížeči).
+export const EVENT_WINDOW_MS = 2 * H;
+export const EVENT_DURATION_MS = 30 * 60_000;
+export type EventId = "crash" | "hyper" | "shortage" | "outage" | "boom" | "viral" | "strike" | "fashion" | "subsidy" | "breach";
+export type EventDef = {
+  id: EventId;
+  // "all" = celý trh, "digital" / "physical" = obor podle typu, nebo seznam konkrétních oborů
+  affects: "all" | "digital" | "physical" | CompanyId[];
+  mult: number; // změna zisku (<1 je ztráta, >1 zisk), za stabilní směr
+  wageMult: number; // změna mezd zaměstnanců
+};
+export const EVENTS: EventDef[] = [
+  { id: "crash", affects: "all", mult: 0.6, wageMult: 1 },
+  { id: "hyper", affects: "all", mult: 0.9, wageMult: 2 },
+  { id: "shortage", affects: ["shoes", "clothes", "bakery", "supermarket", "printshop", "factory", "hardware"], mult: 0.6, wageMult: 1 },
+  { id: "outage", affects: ["digi", "software", "streaming", "eshop", "delivery"], mult: 0.5, wageMult: 1 },
+  { id: "boom", affects: "all", mult: 1.4, wageMult: 1 },
+  { id: "viral", affects: ["digi", "streaming", "eshop"], mult: 1.6, wageMult: 1 },
+  { id: "strike", affects: ["factory", "hardware", "printshop", "bakery"], mult: 0.7, wageMult: 1.5 },
+  { id: "fashion", affects: ["clothes", "shoes"], mult: 1.5, wageMult: 1 },
+  { id: "subsidy", affects: "physical", mult: 1.2, wageMult: 0.8 },
+  { id: "breach", affects: "digital", mult: 0.7, wageMult: 1 },
+];
+export type ActiveEvent = { def: EventDef; window: number; endsAt: number };
+export const eventWindow = (now: number) => Math.floor(now / EVENT_WINDOW_MS);
+export function currentEvent(now: number): ActiveEvent | null {
+  const window = eventWindow(now);
+  const offset = now - window * EVENT_WINDOW_MS;
+  if (offset >= EVENT_DURATION_MS) return null;
+  const def = EVENTS[Math.floor(hash32(`event:${window}`) * EVENTS.length)];
+  return { def, window, endsAt: window * EVENT_WINDOW_MS + EVENT_DURATION_MS };
+}
+export const eventAffects = (def: EventDef, id: CompanyId): boolean => {
+  if (def.affects === "all") return true;
+  if (def.affects === "digital" || def.affects === "physical") return companyDef(id).digital === (def.affects === "digital");
+  return def.affects.includes(id);
+};
+// Ztrátová událost jde zmírnit krizovým fondem; zisková ne.
+export const isNegativeEvent = (def: EventDef) => def.mult < 1 || def.wageMult > 1;
 
 // --- Investice ---
 
@@ -199,6 +303,10 @@ export type EconomyState = {
   lastSeen: number;
   job: { id: JobId; hours: number } | null;
   companies: Partial<Record<CompanyId, number>>;
+  // nastavení firem (jen pro obory, které hráč vlastní)
+  setup: Partial<Record<CompanyId, CompanySetup>>;
+  // na kterou událost (číslo okna) hráč u firmy zareagoval
+  responses: Partial<Record<CompanyId, number>>;
   holdings: Partial<Record<AssetId, number>>;
   // průměrná nákupní cena držených kusů (jen pro zobrazení zisku)
   cost: Partial<Record<AssetId, number>>;
@@ -221,7 +329,8 @@ export type ErrorCode =
   | "busy"
   | "not-ready"
   | "no-spread"
-  | "cooldown";
+  | "cooldown"
+  | "ready";
 
 export type ActionResult =
   | { ok: true; state: EconomyState; pointsSpent?: number; gained?: { cash?: number; profit?: number } }
@@ -254,6 +363,8 @@ export function emptyState(now: number, runs = 0, best = 0): EconomyState {
     lastSeen: now,
     job: null,
     companies: {},
+    setup: {},
+    responses: {},
     holdings: {},
     cost: {},
     hustle: {},
@@ -283,9 +394,25 @@ export function normalizeState(raw: unknown, now: number): EconomyState {
       : null;
 
   const companies: EconomyState["companies"] = {};
+  const setup: EconomyState["setup"] = {};
+  const responses: EconomyState["responses"] = {};
+  const win = eventWindow(now);
   for (const def of COMPANIES) {
     const n = Math.floor(finite((r.companies as Record<string, unknown> | undefined)?.[def.id], 0, 0, MAX_COMPANY_UNITS));
     if (n > 0) companies[def.id] = n;
+    const s = (r.setup as Record<string, Partial<Record<keyof CompanySetup, unknown>>> | undefined)?.[def.id];
+    if (n > 0 && s && typeof s === "object") {
+      setup[def.id] = {
+        upgraded: s.upgraded === true,
+        staff: Math.floor(finite(s.staff, 0, 0, n * MAX_STAFF_PER_UNIT)),
+        price: clampSetting("price", finite(s.price, 1, SETTING_RANGE.price.min, SETTING_RANGE.price.max)),
+        output: clampSetting("output", finite(s.output, 1, SETTING_RANGE.output.min, SETTING_RANGE.output.max)),
+        risk: clampSetting("risk", finite(s.risk, 0.3, SETTING_RANGE.risk.min, SETTING_RANGE.risk.max)),
+        marketingUntil: finite(s.marketingUntil, 0, 0, now + EVENT_WINDOW_MS),
+      };
+    }
+    const resp = (r.responses as Record<string, unknown> | undefined)?.[def.id];
+    if (n > 0 && typeof resp === "number" && Number.isFinite(resp) && resp <= win) responses[def.id] = Math.floor(resp);
   }
   const holdings: EconomyState["holdings"] = {};
   const cost: EconomyState["cost"] = {};
@@ -320,6 +447,8 @@ export function normalizeState(raw: unknown, now: number): EconomyState {
     lastSeen: finite(r.lastSeen, now, 0, now),
     job,
     companies,
+    setup,
+    responses,
     holdings,
     cost,
     hustle,
@@ -351,15 +480,59 @@ export type Rates = {
   companies: number;
   passive: number;
   living: number;
+  // provoz a mzdy firem (výdaje, nenásobí se bonusy)
+  companyCosts: number;
   // všechny příjmy se násobí multiplier (vzdělání + učení + rozšíření)
   multiplier: number;
   // čistý příjem za hodinu
   net: number;
 };
 
+export const setupOf = (state: EconomyState, id: CompanyId): CompanySetup => state.setup[id] ?? DEFAULT_SETUP;
+const familyCompany = (state: EconomyState) => (state.character ? FAMILY_DEF[state.character.family].company : 1);
+export const upgradePrice = (state: EconomyState, id: CompanyId) => Math.round(companyDef(id).cost * UPGRADE_COST_MULT * familyCompany(state));
+export const hireCost = (id: CompanyId) => Math.round(companyIncome(id) * STAFF_WAGE * INCOME_SPEED * STAFF_HIRE_HOURS);
+export const campaignPrice = (state: EconomyState, id: CompanyId) => Math.round(companyDef(id).cost * (state.companies[id] ?? 0) * MARKETING_COST * familyCompany(state));
+export const fundPrice = (state: EconomyState, id: CompanyId) => Math.round(companyDef(id).cost * (state.companies[id] ?? 0) * FUND_COST * familyCompany(state));
+
+// Účinek právě běžící události na jednu firmu (jen když ji hráč nezmírnil krizovým fondem).
+export function eventEffect(state: EconomyState, id: CompanyId, now: number): { mult: number; wageMult: number } {
+  const ev = currentEvent(now);
+  if (!ev || !eventAffects(ev.def, id)) return { mult: 1, wageMult: 1 };
+  const s = setupOf(state, id);
+  // Cena i riziko zvyšují citlivost na událost.
+  const exposure = riskExposure(s.risk) * s.price;
+  const saved = state.responses[id] === ev.window ? 1 - FUND_SAVES : 1;
+  const d = ev.def;
+  const mult = d.mult < 1 ? Math.max(0.05, 1 - (1 - d.mult) * exposure * saved) : 1 + (d.mult - 1) * exposure;
+  return { mult, wageMult: 1 + (d.wageMult - 1) * saved };
+}
+
+// Výnos jedné firmy za hodinu (na jeden kus = companyIncome) a její provozní výdaje.
+export function companyYield(state: EconomyState, id: CompanyId, now: number): { gross: number; costs: number } {
+  const n = state.companies[id] ?? 0;
+  if (n <= 0) return { gross: 0, costs: 0 };
+  const s = setupOf(state, id);
+  const effect = eventEffect(state, id, now);
+  const base = n * companyIncome(id);
+  const staffMult = 1 + STAFF_OUTPUT * (s.staff / n);
+  const boost =
+    (s.upgraded ? 1 + UPGRADE_BONUS : 1) *
+    s.price *
+    s.output *
+    riskOutput(s.risk) *
+    (now < s.marketingUntil ? MARKETING_BONUS : 1) *
+    staffMult *
+    effect.mult;
+  return {
+    gross: base * boost,
+    costs: base * upkeepShare(s.output) + s.staff * companyIncome(id) * STAFF_WAGE * effect.wageMult,
+  };
+}
+
 export function rates(state: EconomyState, now: number, learning = 0): Rates {
   const ch = state.character;
-  if (!ch) return { salary: 0, companies: 0, passive: 0, living: 0, multiplier: 1, net: 0 };
+  if (!ch) return { salary: 0, companies: 0, passive: 0, living: 0, companyCosts: 0, multiplier: 1, net: 0 };
   const country = COUNTRY_DEF[ch.country];
   const city = CITY_DEF[ch.city];
   const family = FAMILY_DEF[ch.family];
@@ -369,7 +542,12 @@ export function rates(state: EconomyState, now: number, learning = 0): Rates {
     ? jobDef(state.job.id).salary * (1 + JOB_RANK_BONUS * (jobRank(state.job.hours) - 1)) * country.salary * city.salary
     : 0;
   let companies = 0;
-  for (const c of COMPANIES) companies += (state.companies[c.id] ?? 0) * companyIncome(c.id);
+  let companyCosts = 0;
+  for (const c of COMPANIES) {
+    const y = companyYield(state, c.id, now);
+    companies += y.gross;
+    companyCosts += y.costs;
+  }
   let passive = 0;
   for (const a of ASSETS) {
     if (!a.yield) continue;
@@ -379,7 +557,15 @@ export function rates(state: EconomyState, now: number, learning = 0): Rates {
   // Životní náklady jsou malé, ale rostou s tím, jak jsi na tom líp (aby hráč nebyl zadarmo bohatý).
   const living = (6 * country.living * city.living * family.living) * (1 + Math.log10(1 + (state.cash + 0) / 1000) * 0.5);
   const gross = (salary + companies + passive) * multiplier * INCOME_SPEED;
-  return { salary: salary * INCOME_SPEED, companies: companies * INCOME_SPEED, passive: passive * INCOME_SPEED, living: living * INCOME_SPEED, multiplier, net: gross - living * INCOME_SPEED };
+  return {
+    salary: salary * INCOME_SPEED,
+    companies: companies * INCOME_SPEED,
+    passive: passive * INCOME_SPEED,
+    living: living * INCOME_SPEED,
+    companyCosts: companyCosts * INCOME_SPEED,
+    multiplier,
+    net: gross - (living + companyCosts) * INCOME_SPEED,
+  };
 }
 
 // Jmění = hotovost + hodnota investic + cena firem + rozjeté hustle.
@@ -460,6 +646,79 @@ export function buyCompany(state: EconomyState, id: unknown, now: number): Actio
   const price = companyPrice(state, id);
   if (state.cash < price) return fail("not-enough-cash");
   return done({ ...state, cash: state.cash - price, companies: { ...state.companies, [id]: owned + 1 } }, now);
+}
+
+// Akce v detailu firmy. Všechny vyžadují, že firmu vlastníš.
+function ownedCompany(state: EconomyState, id: unknown): { id: CompanyId; error?: ErrorCode } {
+  if (!state.character) return { id: "shoes", error: "no-character" };
+  if (!isCompany(id)) return { id: "shoes", error: "bad-request" };
+  if ((state.companies[id] ?? 0) <= 0) return { id, error: "nothing" };
+  return { id };
+}
+
+const withSetup = (state: EconomyState, id: CompanyId, patch: Partial<CompanySetup>): EconomyState["setup"] => ({
+  ...state.setup,
+  [id]: { ...setupOf(state, id), ...patch },
+});
+
+export function upgradeCompany(state: EconomyState, id: unknown, now: number): ActionResult {
+  const o = ownedCompany(state, id);
+  if (o.error) return fail(o.error);
+  if (setupOf(state, o.id).upgraded) return fail("max");
+  const price = upgradePrice(state, o.id);
+  if (state.cash < price) return fail("not-enough-cash");
+  return done({ ...state, cash: state.cash - price, setup: withSetup(state, o.id, { upgraded: true }) }, now);
+}
+
+export function hireStaff(state: EconomyState, id: unknown, delta: unknown, now: number): ActionResult {
+  const o = ownedCompany(state, id);
+  if (o.error) return fail(o.error);
+  if (delta !== 1 && delta !== -1) return fail("bad-request");
+  const s = setupOf(state, o.id);
+  const n = state.companies[o.id] ?? 0;
+  if (delta === -1) {
+    if (s.staff <= 0) return fail("nothing");
+    return done({ ...state, setup: withSetup(state, o.id, { staff: s.staff - 1 }) }, now);
+  }
+  if (s.staff >= n * MAX_STAFF_PER_UNIT) return fail("max");
+  const fee = hireCost(o.id);
+  if (state.cash < fee) return fail("not-enough-cash");
+  return done({ ...state, cash: state.cash - fee, setup: withSetup(state, o.id, { staff: s.staff + 1 }) }, now);
+}
+
+// Nastavení čísla (cena, výroba, riziko) v rozsahu SETTING_RANGE. Hodnota se zaokrouhlí a ořízne.
+export function setCompanySetting(state: EconomyState, id: unknown, field: unknown, value: unknown, now: number): ActionResult {
+  const o = ownedCompany(state, id);
+  if (o.error) return fail(o.error);
+  if (field !== "price" && field !== "output" && field !== "risk") return fail("bad-request");
+  if (typeof value !== "number" || !Number.isFinite(value)) return fail("bad-request");
+  const v = clampSetting(field, value);
+  const patch: Partial<CompanySetup> = field === "price" ? { price: v } : field === "output" ? { output: v } : { risk: v };
+  return done({ ...state, setup: withSetup(state, o.id, patch) }, now);
+}
+
+export function runCampaign(state: EconomyState, id: unknown, now: number): ActionResult {
+  const o = ownedCompany(state, id);
+  if (o.error) return fail(o.error);
+  if (now < setupOf(state, o.id).marketingUntil) return fail("busy");
+  const price = campaignPrice(state, o.id);
+  if (state.cash < price) return fail("not-enough-cash");
+  return done(
+    { ...state, cash: state.cash - price, setup: withSetup(state, o.id, { marketingUntil: now + MARKETING_MINUTES * 60_000 }) },
+    now,
+  );
+}
+
+// Reakce na negativní událost: krizový fond zmírní ztrátu. Jen jednou za událost a u firmy, kterou událost zasáhla.
+export function fundResponse(state: EconomyState, id: unknown, now: number): ActionResult {
+  const o = ownedCompany(state, id);
+  if (o.error) return fail(o.error);
+  const ev = currentEvent(now);
+  if (!ev || !isNegativeEvent(ev.def) || !eventAffects(ev.def, o.id)) return fail("nothing");
+  if (state.responses[o.id] === ev.window) return fail("busy");
+  const price = fundPrice(state, o.id);
+  if (state.cash < price) return fail("not-enough-cash");
+  return done({ ...state, cash: state.cash - price, responses: { ...state.responses, [o.id]: ev.window } }, now);
 }
 
 function qtyOf(raw: unknown): number | null {
