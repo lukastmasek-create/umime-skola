@@ -42,6 +42,11 @@ export type DailyQuizText = {
   localBest: string; // {n}
   notEnough: string;
   starting: string;
+  teaserWaiting: string;
+  teaserContinue: string;
+  teaserDone: string; // {n} {p}
+  teaserPlay: string;
+  teaserOpen: string;
 };
 
 const cs: DailyQuizText = {
@@ -86,6 +91,11 @@ const cs: DailyQuizText = {
   localBest: "Nejlepší: {n} / 10",
   notEnough: "Pro tuto kombinaci tématu a obtížnosti není dost otázek. Zkus jiné téma.",
   starting: "Připravuji otázky…",
+  teaserWaiting: "Dnešní kvíz čeká: 10 otázek, vyber si téma a obtížnost.",
+  teaserContinue: "Máš rozehráno, dohraj to!",
+  teaserDone: "Dnes máš {n} / 10 a {p} bodů. Nový kvíz za {t}.",
+  teaserPlay: "Hrát",
+  teaserOpen: "Žebříček",
 };
 const en: DailyQuizText = {
   nav: "Daily quiz",
@@ -129,6 +139,11 @@ const en: DailyQuizText = {
   localBest: "Best: {n} / 10",
   notEnough: "Not enough questions for this topic and difficulty. Try another topic.",
   starting: "Preparing questions…",
+  teaserWaiting: "Today's quiz is waiting: 10 questions, pick a topic and difficulty.",
+  teaserContinue: "You have one in progress, finish it!",
+  teaserDone: "Today: {n} / 10 and {p} points. New quiz in {t}.",
+  teaserPlay: "Play",
+  teaserOpen: "Leaderboard",
 };
 const de: DailyQuizText = {
   nav: "Tages-Quiz",
@@ -172,6 +187,11 @@ const de: DailyQuizText = {
   localBest: "Bestwert: {n} / 10",
   notEnough: "Für dieses Thema und diese Schwierigkeit gibt es nicht genug Fragen. Probiere ein anderes Thema.",
   starting: "Fragen werden vorbereitet…",
+  teaserWaiting: "Das heutige Quiz wartet: 10 Fragen, wähle Thema und Schwierigkeit.",
+  teaserContinue: "Du hast eins begonnen, spiel es zu Ende!",
+  teaserDone: "Heute: {n} / 10 und {p} Punkte. Neues Quiz in {t}.",
+  teaserPlay: "Spielen",
+  teaserOpen: "Rangliste",
 };
 const ru: DailyQuizText = {
   nav: "Квиз дня",
@@ -215,6 +235,11 @@ const ru: DailyQuizText = {
   localBest: "Лучший: {n} / 10",
   notEnough: "Для этой темы и сложности мало вопросов. Попробуй другую тему.",
   starting: "Готовлю вопросы…",
+  teaserWaiting: "Квиз дня ждёт: 10 вопросов, выбери тему и сложность.",
+  teaserContinue: "Квиз начат, доиграй его!",
+  teaserDone: "Сегодня: {n} / 10 и {p} очков. Новый квиз через {t}.",
+  teaserPlay: "Играть",
+  teaserOpen: "Рейтинг",
 };
 
 const texts: Record<Locale, DailyQuizText> = { cs, en, de, ru };
