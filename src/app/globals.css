@@ -2662,6 +2662,26 @@ select[aria-invalid="true"] {
     opacity: 0;
   }
 }
+/* Rozpad kola po zatočení: 20 snímků z Blenderu, přehraje se jednou. */
+.wheel-shatter {
+  background-repeat: no-repeat;
+  background-size: 2000% 100%;
+  animation: wheel-shatter 1s steps(20) forwards;
+}
+@keyframes wheel-shatter {
+  to {
+    background-position: 105.263% 0;
+  }
+}
+.wheel-reform {
+  animation: wheel-reform 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+@keyframes wheel-reform {
+  from {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+}
 .wheel-chest {
   animation: wheel-chest 0.7s cubic-bezier(0.2, 1.5, 0.4, 1) both;
 }
@@ -2709,6 +2729,8 @@ select[aria-invalid="true"] {
 @media (prefers-reduced-motion: reduce) {
   .wheel-win,
   .wheel-chest,
+  .wheel-shatter,
+  .wheel-reform,
   .wheel-confetti,
   .wheel-coin {
     animation: none;

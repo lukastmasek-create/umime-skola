@@ -40,6 +40,7 @@ model User {
   title    String?
   xpEvents XpEvent[]
   unlocks     Unlock[]
+  limitedCopies LimitedCopy[]
   escapeRuns  EscapeRun[]
   idleStates  IdleState[]
   groupMemberships GroupMember[]
@@ -545,4 +546,19 @@ model ContactMessage {
   @@index([status, createdAt])
   @@index([email, createdAt])
   @@index([userId, createdAt])
+}
+
+// Limitované edice z obchodu: každý kus má pořadové číslo (1 = první koupený).
+// Kusy se nikdy nedoprodávají; unikátní klíč hlídá, že číslo i hráč jsou u edice jen jednou.
+model LimitedCopy {
+  id        String   @id @default(cuid())
+  itemId    String
+  serial    Int
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, serial])
+  @@unique([itemId, userId])
 }

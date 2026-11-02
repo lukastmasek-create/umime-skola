@@ -203,10 +203,16 @@ def obchod():
     dest_dir = os.path.join(DEST, "..", "obchod")
     os.makedirs(dest_dir, exist_ok=True)
     for src, dest, q in (("obchod_kolo_stojan", "kolo-stojan.webp", 88), ("obchod_kolo_disk", "kolo-disk.webp", 90)):
-        im = frames(src)[0]
+        im = frames(src, (768, 768) if "disk" in src else None)[0]
         path = os.path.join(dest_dir, dest)
         im.save(path, format="WEBP", quality=q, method=5, alpha_quality=92)
         print(dest, round(os.path.getsize(path) / 1024), "kB", im.size)
+    for n in ("titul", "avatar", "ramecek", "banner"):
+        im = frames("obchod_ikona_" + n)[0]
+        im.save(os.path.join(dest_dir, "ikona-" + n + ".webp"), format="WEBP", quality=90, method=5, alpha_quality=92)
+    # rozpad kola: pás snímků vedle sebe (CSS steps)
+    if glob.glob(os.path.join(ROOT, "out", "obchod_kolo_rozpad", "f_*.png")):
+        strip("obchod_kolo_rozpad", "../obchod/kolo-rozpad.webp", (640, 640), quality=80)
     shutil.copy(os.path.join(ROOT, "out", "obchod_kolo_stojan", "layout.json"), os.path.join(ROOT, "..", "src", "components", "kolo-stojan.json"))
     fr = frames("obchod_kolo_predni", (384, 384))
     sheet = Image.new("RGBA", (384 * len(fr), 384), (0, 0, 0, 0))
