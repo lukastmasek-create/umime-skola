@@ -113,7 +113,7 @@ export const COMPANY_GROWTH = 1.15;
 
 // --- Investice ---
 
-export type AssetId = "stocks" | "metal" | "crypto" | "bonds" | "realestate";
+export type AssetId = "stocks" | "metal" | "crypto" | "bonds" | "realestate" | "fund" | "startup";
 export type AssetDef = {
   id: AssetId;
   base: number;
@@ -127,10 +127,14 @@ export type AssetDef = {
 };
 export const ASSETS: AssetDef[] = [
   { id: "bonds", base: 1_000, vol: 0.01, yield: 0.0015, drift: 0 },
+  // indexový fond: nízké riziko, stálý výnos a mírný růst
+  { id: "fund", base: 300, vol: 0.03, yield: 0.0008, drift: 0.00003 },
   { id: "metal", base: 2_000, vol: 0.07, yield: 0, drift: 0.00005 },
   { id: "stocks", base: 100, vol: 0.18, yield: 0, drift: 0.00015 },
   { id: "realestate", base: 50_000, vol: 0.04, yield: 0.005, drift: 0.00008 },
   { id: "crypto", base: 500, vol: 0.5, yield: 0, drift: 0, crypto: true },
+  // startupy: vysoké riziko, bez výnosu, ale s nejvyšším očekávaným růstem
+  { id: "startup", base: 200, vol: 0.4, yield: 0, drift: 0.0002 },
 ];
 
 function hash32(s: string): number {

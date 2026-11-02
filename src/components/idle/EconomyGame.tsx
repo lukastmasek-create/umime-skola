@@ -65,10 +65,22 @@ function money(n: number, currency: string, locale: Locale): string {
   return `${v.toLocaleString(loc)} ${currency}`.trim();
 }
 
+// Štítek rizika podle výkyvu ceny (ASSETS.vol): nízké do 5 %, střední do 20 %, jinak vysoké.
+const riskKey = (vol: number): "riskLow" | "riskMid" | "riskHigh" => (vol <= 0.05 ? "riskLow" : vol <= 0.2 ? "riskMid" : "riskHigh");
+
+// Mini graf vývoje ceny za posledních 6 hodin (24 bodů po 15 minutách). Počítá se z čisté funkce ceny, takže sedí se serverem.
+function priceSpark(id: AssetId, now: number): string {
+  const pts = Array.from({ length: 24 }, (_, i) => assetPrice(id, now - (23 - i) * 15 * 60_000));
+  const lo = Math.min(...pts);
+  const hi = Math.max(...pts);
+  const span = hi - lo || 1;
+  return pts.map((p, i) => `${((i / 23) * 120).toFixed(1)},${(34 - ((p - lo) / span) * 30).toFixed(1)}`).join(" ");
+}
+
 const EMOJI: Record<string, string> = {
   warehouse: "📦", seller: "🛒", cook: "🍳", police: "👮", vet: "🐾", programmer: "💻", banker: "🏦",
   shoes: "👟", clothes: "👕", tech: "📱", delivery: "🛵", supermarket: "🏬", digi: "🎮", software: "🧩", hardware: "🖥️", factory: "🏭",
-  bonds: "📜", metal: "🥇", stocks: "📈", realestate: "🏠", crypto: "🪙",
+  bonds: "📜", fund: "🧺", metal: "🥇", stocks: "📈", realestate: "🏠", crypto: "🪙", startup: "🚀",
   reselling: "🔁", carflip: "🚗", houseflip: "🏚️",
 };
 
@@ -430,6 +442,25 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                   </h3>
                   <p className="text-sm">
                     {t.price}: <b>{m(price)}</b>
+                  </p>
+                  <svg viewBox="0 0 120 36" preserveAspectRatio="none" className="h-9 w-full" aria-label={t.trend6h}>
+                    <polyline
+                      points={priceSpark(a.id, clock)}
+                      fill="none"
+                      stroke={price >= prev ? "var(--accent-green)" : "var(--danger)"}
+                      strokeWidth="2"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  </svg>
+                  <p className="flex flex-wrap gap-x-3 text-xs text-[var(--muted)]">
+                    <span>
+                      {t.risk}: <b>{t[riskKey(a.vol)]}</b>
+                    </span>
+                    {a.yield > 0 && (
+                      <span>
+                        {fill(t.yieldPerHour, { v: `${(a.yield * 100).toFixed(2)} %` })}
+                      </span>
+                    )}
                   </p>
                   {qty > 0 && (
                     <p className="text-sm text-[var(--muted)]">

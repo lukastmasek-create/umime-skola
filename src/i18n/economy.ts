@@ -65,6 +65,12 @@ export type EconomyText = {
   maxed: string;
   companiesHint: string;
   investHint: string;
+  risk: string;
+  riskLow: string;
+  riskMid: string;
+  riskHigh: string;
+  yieldPerHour: string;
+  trend6h: string;
   holding: string;
   price: string;
   invest: string;
@@ -134,7 +140,7 @@ const cs: EconomyText = {
     hardware: "Hardware",
     factory: "Fabrika",
   },
-  assets: { bonds: "Cenné papíry", metal: "Kovy", stocks: "Akcie", realestate: "Nemovitosti", crypto: "Kryptoměny" },
+  assets: { bonds: "Cenné papíry", fund: "Indexový fond", startup: "Startupy", metal: "Kovy", stocks: "Akcie", realestate: "Nemovitosti", crypto: "Kryptoměny" },
   hustles: { reselling: "Reselling", carflip: "Flipování aut", houseflip: "Flipování domů" },
   cash: "Hotovost",
   netWorth: "Jmění",
@@ -168,6 +174,12 @@ const cs: EconomyText = {
   maxed: "Maximum",
   companiesHint: "Každá další firma stejného oboru je dražší o 15 %.",
   investHint: "Ceny kolísají. Kup, když jsou nízko, prodej, když jsou vysoko.",
+  risk: "Riziko",
+  riskLow: "nízké",
+  riskMid: "střední",
+  riskHigh: "vysoké",
+  yieldPerHour: "Výnos od {v} / h",
+  trend6h: "Vývoj ceny za posledních 6 hodin",
   holding: "Držíš: {v}",
   price: "Cena",
   invest: "Investovat {n}",
@@ -256,7 +268,7 @@ const en: EconomyText = {
     hardware: "Hardware",
     factory: "Factory",
   },
-  assets: { bonds: "Securities", metal: "Metals", stocks: "Stocks", realestate: "Real estate", crypto: "Crypto" },
+  assets: { bonds: "Securities", fund: "Index fund", startup: "Startups", metal: "Metals", stocks: "Stocks", realestate: "Real estate", crypto: "Crypto" },
   hustles: { reselling: "Reselling", carflip: "Car flipping", houseflip: "House flipping" },
   cash: "Cash",
   netWorth: "Net worth",
@@ -290,6 +302,12 @@ const en: EconomyText = {
   maxed: "Maximum",
   companiesHint: "Each additional company of the same kind costs 15 % more.",
   investHint: "Prices move. Buy low, sell high.",
+  risk: "Risk",
+  riskLow: "low",
+  riskMid: "medium",
+  riskHigh: "high",
+  yieldPerHour: "Yield from {v} / h",
+  trend6h: "Price trend over the last 6 hours",
   holding: "Holding: {v}",
   price: "Price",
   invest: "Invest {n}",
@@ -378,7 +396,7 @@ const de: EconomyText = {
     hardware: "Hardware",
     factory: "Fabrik",
   },
-  assets: { bonds: "Wertpapiere", metal: "Metalle", stocks: "Aktien", realestate: "Immobilien", crypto: "Kryptowährungen" },
+  assets: { bonds: "Wertpapiere", fund: "Indexfonds", startup: "Startups", metal: "Metalle", stocks: "Aktien", realestate: "Immobilien", crypto: "Kryptowährungen" },
   hustles: { reselling: "Reselling", carflip: "Autos flippen", houseflip: "Häuser flippen" },
   cash: "Bargeld",
   netWorth: "Vermögen",
@@ -412,6 +430,12 @@ const de: EconomyText = {
   maxed: "Maximum",
   companiesHint: "Jede weitere Firma derselben Art kostet 15 % mehr.",
   investHint: "Die Preise schwanken. Kaufe günstig, verkaufe teuer.",
+  risk: "Risiko",
+  riskLow: "niedrig",
+  riskMid: "mittel",
+  riskHigh: "hoch",
+  yieldPerHour: "Rendite ab {v} / Std.",
+  trend6h: "Kursverlauf der letzten 6 Stunden",
   holding: "Bestand: {v}",
   price: "Preis",
   invest: "{n} investieren",
@@ -500,7 +524,7 @@ const ru: EconomyText = {
     hardware: "Железо",
     factory: "Фабрика",
   },
-  assets: { bonds: "Ценные бумаги", metal: "Металлы", stocks: "Акции", realestate: "Недвижимость", crypto: "Криптовалюты" },
+  assets: { bonds: "Ценные бумаги", fund: "Индексный фонд", startup: "Стартапы", metal: "Металлы", stocks: "Акции", realestate: "Недвижимость", crypto: "Криптовалюты" },
   hustles: { reselling: "Перепродажа", carflip: "Флип автомобилей", houseflip: "Флип домов" },
   cash: "Наличные",
   netWorth: "Состояние",
@@ -534,6 +558,12 @@ const ru: EconomyText = {
   maxed: "Максимум",
   companiesHint: "Каждая следующая компания того же вида дороже на 15 %.",
   investHint: "Цены колеблются. Покупай дёшево, продавай дорого.",
+  risk: "Риск",
+  riskLow: "низкий",
+  riskMid: "средний",
+  riskHigh: "высокий",
+  yieldPerHour: "Доход от {v} / ч",
+  trend6h: "Динамика цены за последние 6 часов",
   holding: "В наличии: {v}",
   price: "Цена",
   invest: "Вложить {n}",

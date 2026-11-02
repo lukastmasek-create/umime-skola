@@ -7,6 +7,7 @@ import {
   HUSTLES,
   JOBS,
   arbitrage,
+  assetDef,
   assetPrice,
   buyAsset,
   buyCompany,
@@ -192,6 +193,21 @@ test("začít znovu: nový start, zachová rekord a počet pokusů", () => {
     assert.equal(r.state.best, s.best);
     assert.deepEqual(r.state.companies, {});
   }
+});
+
+test("investice: nová aktiva jdou koupit a prodat a stará držba zůstane platná", () => {
+  const s = start("rich");
+  for (const id of ["fund", "startup"] as const) {
+    const b = buyAsset(s, id, 500, NOW);
+    ok(b);
+    const held = b.ok ? b.state : s;
+    assert.ok((held.holdings[id] ?? 0) > 0, `držba ${id}`);
+    const sold = sellAsset(held, id, 1, NOW);
+    ok(sold);
+  }
+  // stará aktiva mají beze změny stejnou cenu jako dřív (žádný přepočet držby)
+  assert.equal(assetDef("stocks").base, 100);
+  assert.equal(assetDef("bonds").yield, 0.0015);
 });
 
 test("jmění: hotovost + investice + firmy", () => {
