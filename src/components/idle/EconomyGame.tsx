@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { getEconomyText } from "@/i18n/economy";
+import { getEconomyText, type EconomyText } from "@/i18n/economy";
 import { notifyAccountChanged } from "@/lib/account-events";
 import {
   ARB_FEE,
@@ -11,6 +11,7 @@ import {
   COMPANIES,
   COUNTRIES,
   COUNTRY_DEF,
+  DIRECTIONS,
   ERAS,
   ERA_DEF,
   FAMILIES,
@@ -18,16 +19,28 @@ import {
   HUSTLES,
   INCOME_SPEED,
   JOBS,
+  LEVELS,
   MAX_EDU,
   MAX_JOB_RANK,
+  MAX_STAFF_PER_UNIT,
   assetPrice,
+  campaignPrice,
   companyIncome,
   companyPrice,
+  companyYield,
+  currentEvent,
+  eventAffects,
+  fundPrice,
+  hireCost,
   hustleReady,
   isLocked,
+  isNegativeEvent,
   jobRank,
+  setupOf,
+  upgradePrice,
   type AssetId,
   type CityId,
+  type CompanyId,
   type CountryId,
   type EconomyState,
   type EraId,
@@ -68,6 +81,7 @@ function money(n: number, currency: string, locale: Locale): string {
 const EMOJI: Record<string, string> = {
   warehouse: "📦", seller: "🛒", cook: "🍳", police: "👮", vet: "🐾", programmer: "💻", banker: "🏦",
   shoes: "👟", clothes: "👕", tech: "📱", delivery: "🛵", supermarket: "🏬", digi: "🎮", software: "🧩", hardware: "🖥️", factory: "🏭",
+  bakery: "🥖", carwash: "🚿", eshop: "🛍️", printshop: "🖨️", streaming: "📺",
   bonds: "📜", metal: "🥇", stocks: "📈", realestate: "🏠", crypto: "🪙",
   reselling: "🔁", carflip: "🚗", houseflip: "🏚️",
 };
@@ -95,6 +109,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
     family: "middle",
   });
   const busyRef = useRef(false);
+  const [selected, setSelected] = useState<CompanyId | null>(null);
 
   const errorText = useCallback((code?: string) => t.errors[code ?? "generic"] ?? t.errors.generic, [t]);
   const say = useCallback((text: string, ok = false) => {
@@ -297,6 +312,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
             <Row label={`💼 ${t.salary}`} value={`+${m(r.salary * r.multiplier)}`} />
             <Row label={`🏭 ${t.businessIncome}`} value={`+${m(r.companies * r.multiplier)}`} />
             <Row label={`🏠 ${t.passiveIncome}`} value={`+${m(r.passive * r.multiplier)}`} />
+            <Row label={`🧾 ${t.detail.costs}`} value={`−${m(r.companyCosts)}`} />
             <Row label={`🍞 ${t.living}`} value={`−${m(r.living)}`} />
             <Row label={`✖️ ${t.multiplier}`} value={`×${r.multiplier.toFixed(2)}`} />
             {data.learning > 0 && <Row label={`📚 ${t.learning}`} value={`+${Math.round(data.learning * 100)} %`} />}
@@ -393,6 +409,15 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                   <p className="text-sm text-[var(--muted)]">
                     {fill(t.owned, { n: owned })} · {fill(t.earns, { n: m(companyIncome(c.id) * INCOME_SPEED * r.multiplier) })}
                   </p>
+                  {owned > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setSelected((cur) => (cur === c.id ? null : c.id))}
+                      className="btn-bouncy bg-[var(--surface)] px-3 py-2 text-sm font-bold"
+                    >
+                      ⚙️ {selected === c.id ? t.detail.close : t.detail.open}
+                    </button>
+                  )}
                   <button
                     type="button"
                     disabled={busy || locked || liveCash < price}
@@ -405,6 +430,20 @@ export function EconomyGame({ locale }: { locale: Locale }) {
               );
             })}
           </div>
+          {selected && (state.companies[selected] ?? 0) > 0 && (
+            <CompanyDetail
+              id={selected}
+              state={state}
+              clock={clock}
+              multiplier={r.multiplier}
+              t={t}
+              m={m}
+              busy={busy}
+              liveCash={liveCash}
+              act={act}
+              onClose={() => setSelected(null)}
+            />
+          )}
         </section>
       )}
 
@@ -569,6 +608,176 @@ export function EconomyGame({ locale }: { locale: Locale }) {
 
       {toast && <Toast toast={toast} />}
     </div>
+  );
+}
+
+// Detail jedné firmy: výnos, mzdy, vylepšení, zaměstnanci, ceny, výroba, směr, marketing a reakce na událost.
+function CompanyDetail({
+  id,
+  state,
+  clock,
+  multiplier,
+  t,
+  m,
+  busy,
+  liveCash,
+  act,
+  onClose,
+}: {
+  id: CompanyId;
+  state: EconomyState;
+  clock: number;
+  multiplier: number;
+  t: EconomyText;
+  m: (n: number) => string;
+  busy: boolean;
+  liveCash: number;
+  act: (body: Record<string, unknown>, okText?: (p: Payload) => string) => Promise<void>;
+  onClose: () => void;
+}) {
+  const owned = state.companies[id] ?? 0;
+  const s = setupOf(state, id);
+  const y = companyYield(state, id, clock);
+  const gross = y.gross * INCOME_SPEED * multiplier;
+  const costs = y.costs * INCOME_SPEED;
+  const net = gross - costs;
+  const maxStaff = owned * MAX_STAFF_PER_UNIT;
+  const ev = currentEvent(clock);
+  const affected = !!ev && eventAffects(ev.def, id);
+  const funded = !!ev && state.responses[id] === ev.window;
+  const campaignLeft = s.marketingUntil - clock;
+  const fundCost = fundPrice(state, id);
+  const eventCopy = ev ? t.events[ev.def.id] : null;
+
+  return (
+    <section className="card mt-5 flex flex-col gap-5 p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-xl font-bold">
+          {EMOJI[id]} {t.companies[id]} · {fill(t.owned, { n: owned })}
+        </h2>
+        <button type="button" onClick={onClose} className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
+          {t.detail.close}
+        </button>
+      </div>
+
+      <div className="grid gap-2 sm:grid-cols-3">
+        <Row label={`📈 ${t.detail.income}`} value={`+${m(gross)}`} />
+        <Row label={`🧾 ${t.detail.costs}`} value={`−${m(costs)}`} />
+        <Row label={`💰 ${t.detail.net}`} value={`${net >= 0 ? "+" : "−"}${m(Math.abs(net))}`} />
+      </div>
+
+      <div className="flex flex-col gap-2 rounded-xl border-2 border-[var(--edge)] p-3">
+        <h3 className="font-bold">⚠️ {t.detail.eventTitle}</h3>
+        {!ev || !eventCopy ? (
+          <p className="text-sm text-[var(--muted)]">{t.detail.eventNone}</p>
+        ) : (
+          <>
+            <p className="text-sm">
+              <b>{eventCopy.title}</b> · {eventCopy.text}
+            </p>
+            <p className="text-xs text-[var(--muted)]">{fill(t.detail.eventEnds, { t: formatLeft(ev.endsAt - clock, t) })}</p>
+            {!affected ? (
+              <p className="text-sm text-[var(--muted)]">{t.detail.eventNoAction}</p>
+            ) : isNegativeEvent(ev.def) ? (
+              funded ? (
+                <p className="text-sm font-semibold">✓ {t.detail.eventFunded}</p>
+              ) : (
+                <button
+                  type="button"
+                  disabled={busy || liveCash < fundCost}
+                  onClick={() => void act({ action: "fundResponse", id }, () => t.toast.funded)}
+                  className="btn-bouncy w-fit bg-[var(--accent-yellow)] px-3 py-2 text-sm font-bold text-[#16132b] disabled:opacity-45"
+                >
+                  {fill(t.detail.eventFund, { n: m(fundCost) })}
+                </button>
+              )
+            ) : null}
+          </>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <h3 className="font-bold">🚀 {t.detail.upgrade}</h3>
+        <p className="text-xs text-[var(--muted)]">{t.detail.upgradeHint}</p>
+        {s.upgraded ? (
+          <p className="text-sm font-semibold">✓ {t.detail.upgradeDone}</p>
+        ) : (
+          <button
+            type="button"
+            disabled={busy || liveCash < upgradePrice(state, id)}
+            onClick={() => void act({ action: "upgradeCompany", id }, () => t.toast.upgraded)}
+            className="btn-bouncy w-fit bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
+          >
+            {fill(t.detail.upgradeBuy, { n: m(upgradePrice(state, id)) })}
+          </button>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <h3 className="font-bold">
+          👥 {t.detail.staff} · {s.staff}/{maxStaff}
+        </h3>
+        <p className="text-xs text-[var(--muted)]">{t.detail.staffHint}</p>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            disabled={busy || s.staff <= 0}
+            onClick={() => void act({ action: "hireStaff", id, delta: -1 }, () => t.toast.fired)}
+            className="btn-bouncy bg-[var(--surface)] px-3 py-2 text-sm font-bold disabled:opacity-45"
+          >
+            − {t.detail.fire}
+          </button>
+          <button
+            type="button"
+            disabled={busy || s.staff >= maxStaff || liveCash < hireCost(id)}
+            onClick={() => void act({ action: "hireStaff", id, delta: 1 }, () => t.toast.hired)}
+            className="btn-bouncy bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
+          >
+            {s.staff >= maxStaff ? t.detail.staffFull : `+ ${fill(t.detail.hire, { n: m(hireCost(id)) })}`}
+          </button>
+        </div>
+      </div>
+
+      <Group
+        label={t.detail.price}
+        values={LEVELS}
+        value={s.price}
+        names={t.detail.levels}
+        onPick={(v) => void act({ action: "setCompanyLevel", id, field: "price", value: v }, () => t.toast.level)}
+      />
+      <Group
+        label={t.detail.output}
+        values={LEVELS}
+        value={s.output}
+        names={t.detail.outputLevels}
+        onPick={(v) => void act({ action: "setCompanyLevel", id, field: "output", value: v }, () => t.toast.level)}
+      />
+      <div className="flex flex-col gap-1">
+        <Group
+          label={t.detail.direction}
+          values={DIRECTIONS}
+          value={s.direction}
+          names={t.detail.directions}
+          onPick={(v) => void act({ action: "setCompanyLevel", id, field: "direction", value: v }, () => t.toast.level)}
+        />
+        <p className="text-xs text-[var(--muted)]">{t.detail.directionHint}</p>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <h3 className="font-bold">📣 {t.detail.campaign}</h3>
+        <p className="text-xs text-[var(--muted)]">{t.detail.campaignHint}</p>
+        <button
+          type="button"
+          disabled={busy || campaignLeft > 0 || liveCash < campaignPrice(state, id)}
+          onClick={() => void act({ action: "runCampaign", id }, () => t.toast.campaign)}
+          className="btn-bouncy w-fit bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
+        >
+          {campaignLeft > 0
+            ? fill(t.detail.campaignRunning, { t: formatLeft(campaignLeft, t) })
+            : fill(t.detail.campaignGo, { n: m(campaignPrice(state, id)) })}
+        </button>
+      </div>
+    </section>
   );
 }
 

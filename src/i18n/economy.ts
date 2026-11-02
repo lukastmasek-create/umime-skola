@@ -1,5 +1,5 @@
 import type { Locale } from "./config";
-import type { AssetId, CityId, CompanyId, CountryId, EraId, FamilyId, HustleId, JobId } from "@/lib/idle/economy";
+import type { AssetId, CityId, CompanyId, CountryId, Direction, EraId, EventId, FamilyId, HustleId, JobId, Level } from "@/lib/idle/economy";
 
 // Texty Ekonomiky ve všech čtyřech jazycích.
 export type EconomyText = {
@@ -33,6 +33,41 @@ export type EconomyText = {
   companies: Record<CompanyId, string>;
   assets: Record<AssetId, string>;
   hustles: Record<HustleId, string>;
+  // detail firmy: ovládání, které se otevře po kliknutí na „Spravovat“
+  detail: {
+    open: string;
+    close: string;
+    upgrade: string;
+    upgradeDone: string;
+    upgradeBuy: string;
+    upgradeHint: string;
+    staff: string;
+    staffHint: string;
+    hire: string;
+    fire: string;
+    staffFull: string;
+    price: string;
+    output: string;
+    direction: string;
+    levels: Record<Level, string>;
+    outputLevels: Record<Level, string>;
+    directions: Record<Direction, string>;
+    directionHint: string;
+    campaign: string;
+    campaignHint: string;
+    campaignGo: string;
+    campaignRunning: string;
+    eventTitle: string;
+    eventNone: string;
+    eventFund: string;
+    eventFunded: string;
+    eventEnds: string;
+    eventNoAction: string;
+    income: string;
+    costs: string;
+    net: string;
+  };
+  events: Record<EventId, { title: string; text: string }>;
   cash: string;
   netWorth: string;
   perHour: string;
@@ -92,7 +127,22 @@ export type EconomyText = {
   restartConfirm: string;
   restartHint: string;
   saveNote: string;
-  toast: { bought: string; sold: string; profit: string; loss: string; created: string; edu: string; job: string; restarted: string };
+  toast: {
+    bought: string;
+    sold: string;
+    profit: string;
+    loss: string;
+    created: string;
+    edu: string;
+    job: string;
+    restarted: string;
+    upgraded: string;
+    hired: string;
+    fired: string;
+    level: string;
+    campaign: string;
+    funded: string;
+  };
   errors: Record<string, string>;
 };
 
@@ -133,9 +183,59 @@ const cs: EconomyText = {
     software: "Software",
     hardware: "Hardware",
     factory: "Fabrika",
+    bakery: "Pekárna",
+    carwash: "Myčka",
+    eshop: "E-shop",
+    printshop: "Tiskárna",
+    streaming: "Streaming",
   },
   assets: { bonds: "Cenné papíry", metal: "Kovy", stocks: "Akcie", realestate: "Nemovitosti", crypto: "Kryptoměny" },
   hustles: { reselling: "Reselling", carflip: "Flipování aut", houseflip: "Flipování domů" },
+  detail: {
+    open: "Spravovat",
+    close: "Zavřít",
+    upgrade: "Vylepšení oboru",
+    upgradeDone: "Vylepšeno (+30 %)",
+    upgradeBuy: "Vylepšit za {n}",
+    upgradeHint: "Jednorázové vylepšení: všechny firmy tohoto oboru vydělávají o 30 % víc.",
+    staff: "Zaměstnanci",
+    staffHint: "Každý zaměstnanec zvedne výnos, ale stojí mzdu. Nejvíc tři na kus.",
+    hire: "Najmout za {n}",
+    fire: "Propustit",
+    staffFull: "Kapacita je plná",
+    price: "Cena produktu",
+    output: "Výroba",
+    direction: "Směr firmy",
+    levels: { low: "Nízká", normal: "Běžná", high: "Vysoká" },
+    outputLevels: { low: "Malá", normal: "Běžná", high: "Velká" },
+    directions: { stable: "Stabilní", growth: "Růstový" },
+    directionHint: "Stabilní firma riskuje méně. Růstová vydělá víc, ale krize ji zasáhnou silněji.",
+    campaign: "Marketing",
+    campaignHint: "Kampaň na 30 minut zvedne výnos o 30 %.",
+    campaignGo: "Spustit za {n}",
+    campaignRunning: "Běží ještě {t}",
+    eventTitle: "Mimořádná událost",
+    eventNone: "Teď žádná událost není. Nová přijde každé dvě hodiny.",
+    eventFund: "Krizový fond za {n}",
+    eventFunded: "Fond zaplacen, ztráta je zmírněná",
+    eventEnds: "Končí za {t}",
+    eventNoAction: "Tahle událost firmu nezasáhne.",
+    income: "Výnos",
+    costs: "Náklady",
+    net: "Čistý zisk",
+  },
+  events: {
+    crash: { title: "Krach trhu", text: "Ceny na trhu prudce padly. Zisk firem klesá." },
+    hyper: { title: "Hyperinflace", text: "Peníze ztrácejí hodnotu a mzdy zaměstnanců výrazně rostou." },
+    shortage: { title: "Nedostatek zboží", text: "Dodavatelé nestíhají. Zboží chybí a prodeje klesají." },
+    outage: { title: "Výpadek serverů", text: "Digitální služby padají a zákazníci přestávají platit." },
+    boom: { title: "Ekonomický rozmach", text: "Lidé utrácejí. Všechny firmy vydělávají víc." },
+    viral: { title: "Virální trend", text: "Digitální produkty se šíří samy. Zisk roste." },
+    strike: { title: "Stávka", text: "Dělníci odešli z práce. Výroba stojí a mzdy rostou." },
+    fashion: { title: "Módní vlna", text: "Oblečení a obuv jsou hit. Prodej roste." },
+    subsidy: { title: "Státní dotace", text: "Fyzické firmy dostaly podporu. Zisk roste a mzdy jsou nižší." },
+    breach: { title: "Únik dat", text: "Digitální firmy ztrácejí důvěru zákazníků. Zisk klesá." },
+  },
   cash: "Hotovost",
   netWorth: "Jmění",
   perHour: "{n} za hodinu",
@@ -195,7 +295,7 @@ const cs: EconomyText = {
   restartConfirm: "Opravdu začít znovu? Přijdeš o postavu, firmy i investice. Zůstane ti rekord.",
   restartHint: "Kdykoliv můžeš začít od nuly s novou postavou.",
   saveNote: "Hra se ukládá sama po každé akci.",
-  toast: { bought: "Koupeno", sold: "Prodáno za {n}", profit: "Zisk {n}", loss: "Ztráta {n}", created: "Postava vytvořena", edu: "Vzdělání vylepšeno", job: "Nová práce", restarted: "Začínáš znovu" },
+  toast: { bought: "Koupeno", sold: "Prodáno za {n}", profit: "Zisk {n}", loss: "Ztráta {n}", created: "Postava vytvořena", edu: "Vzdělání vylepšeno", job: "Nová práce", restarted: "Začínáš znovu", upgraded: "Obor vylepšen", hired: "Zaměstnanec najat", fired: "Zaměstnanec propuštěn", level: "Nastaveno", campaign: "Kampaň běží 30 minut", funded: "Krizový fond zaplacen" },
   errors: {
     generic: "Něco se nepovedlo.",
     "login-required": "Přihlas se.",
@@ -255,9 +355,59 @@ const en: EconomyText = {
     software: "Software",
     hardware: "Hardware",
     factory: "Factory",
+    bakery: "Bakery",
+    carwash: "Car wash",
+    eshop: "E-shop",
+    printshop: "Print shop",
+    streaming: "Streaming",
   },
   assets: { bonds: "Securities", metal: "Metals", stocks: "Stocks", realestate: "Real estate", crypto: "Crypto" },
   hustles: { reselling: "Reselling", carflip: "Car flipping", houseflip: "House flipping" },
+  detail: {
+    open: "Manage",
+    close: "Close",
+    upgrade: "Industry upgrade",
+    upgradeDone: "Upgraded (+30 %)",
+    upgradeBuy: "Upgrade for {n}",
+    upgradeHint: "One-time upgrade: every company in this industry earns 30 % more.",
+    staff: "Employees",
+    staffHint: "Each employee raises output but costs wages. Up to three per unit.",
+    hire: "Hire for {n}",
+    fire: "Let go",
+    staffFull: "At capacity",
+    price: "Product price",
+    output: "Production",
+    direction: "Company direction",
+    levels: { low: "Low", normal: "Normal", high: "High" },
+    outputLevels: { low: "Small", normal: "Normal", high: "Large" },
+    directions: { stable: "Stable", growth: "Growth" },
+    directionHint: "A stable company takes less risk. A growth company earns more, but crises hit it harder.",
+    campaign: "Marketing",
+    campaignHint: "A 30-minute campaign raises income by 30 %.",
+    campaignGo: "Launch for {n}",
+    campaignRunning: "Running for {t} more",
+    eventTitle: "Extraordinary event",
+    eventNone: "No event right now. A new one comes every two hours.",
+    eventFund: "Crisis fund for {n}",
+    eventFunded: "Fund paid, the loss is softened",
+    eventEnds: "Ends in {t}",
+    eventNoAction: "This event does not affect the company.",
+    income: "Income",
+    costs: "Costs",
+    net: "Net profit",
+  },
+  events: {
+    crash: { title: "Market crash", text: "Market prices collapsed. Company profits fall." },
+    hyper: { title: "Hyperinflation", text: "Money loses value and employee wages rise sharply." },
+    shortage: { title: "Shortage", text: "Suppliers cannot keep up. Goods are missing and sales drop." },
+    outage: { title: "Server outage", text: "Digital services are down and customers stop paying." },
+    boom: { title: "Economic boom", text: "People are spending. Every company earns more." },
+    viral: { title: "Viral trend", text: "Digital products spread on their own. Profits grow." },
+    strike: { title: "Strike", text: "Workers have walked out. Production stops and wages rise." },
+    fashion: { title: "Fashion wave", text: "Clothes and shoes are a hit. Sales grow." },
+    subsidy: { title: "State subsidy", text: "Physical companies got support. Profits grow and wages are lower." },
+    breach: { title: "Data breach", text: "Digital companies are losing customer trust. Profits fall." },
+  },
   cash: "Cash",
   netWorth: "Net worth",
   perHour: "{n} per hour",
@@ -317,7 +467,7 @@ const en: EconomyText = {
   restartConfirm: "Really start over? You lose your character, companies and investments. Your record stays.",
   restartHint: "You can start from zero with a new character any time.",
   saveNote: "The game saves itself after every action.",
-  toast: { bought: "Bought", sold: "Sold for {n}", profit: "Profit {n}", loss: "Loss {n}", created: "Character created", edu: "Education improved", job: "New job", restarted: "Starting over" },
+  toast: { bought: "Bought", sold: "Sold for {n}", profit: "Profit {n}", loss: "Loss {n}", created: "Character created", edu: "Education improved", job: "New job", restarted: "Starting over", upgraded: "Industry upgraded", hired: "Employee hired", fired: "Employee let go", level: "Saved", campaign: "Campaign running for 30 minutes", funded: "Crisis fund paid" },
   errors: {
     generic: "Something went wrong.",
     "login-required": "Log in.",
@@ -377,9 +527,59 @@ const de: EconomyText = {
     software: "Software",
     hardware: "Hardware",
     factory: "Fabrik",
+    bakery: "Bäckerei",
+    carwash: "Autowaschanlage",
+    eshop: "Online-Shop",
+    printshop: "Druckerei",
+    streaming: "Streaming",
   },
   assets: { bonds: "Wertpapiere", metal: "Metalle", stocks: "Aktien", realestate: "Immobilien", crypto: "Kryptowährungen" },
   hustles: { reselling: "Reselling", carflip: "Autos flippen", houseflip: "Häuser flippen" },
+  detail: {
+    open: "Verwalten",
+    close: "Schließen",
+    upgrade: "Branchen-Upgrade",
+    upgradeDone: "Verbessert (+30 %)",
+    upgradeBuy: "Verbessern für {n}",
+    upgradeHint: "Einmaliges Upgrade: Jede Firma dieser Branche verdient 30 % mehr.",
+    staff: "Mitarbeiter",
+    staffHint: "Jeder Mitarbeiter steigert die Leistung, kostet aber Lohn. Höchstens drei pro Einheit.",
+    hire: "Einstellen für {n}",
+    fire: "Entlassen",
+    staffFull: "Kapazität erreicht",
+    price: "Produktpreis",
+    output: "Produktion",
+    direction: "Ausrichtung der Firma",
+    levels: { low: "Niedrig", normal: "Normal", high: "Hoch" },
+    outputLevels: { low: "Gering", normal: "Normal", high: "Groß" },
+    directions: { stable: "Stabil", growth: "Wachstum" },
+    directionHint: "Eine stabile Firma riskiert weniger. Eine Wachstumsfirma verdient mehr, aber Krisen treffen sie stärker.",
+    campaign: "Marketing",
+    campaignHint: "Eine 30-minütige Kampagne steigert den Ertrag um 30 %.",
+    campaignGo: "Starten für {n}",
+    campaignRunning: "Läuft noch {t}",
+    eventTitle: "Außergewöhnliches Ereignis",
+    eventNone: "Gerade kein Ereignis. Alle zwei Stunden kommt ein neues.",
+    eventFund: "Krisenfonds für {n}",
+    eventFunded: "Fonds bezahlt, der Verlust ist abgefedert",
+    eventEnds: "Endet in {t}",
+    eventNoAction: "Dieses Ereignis betrifft die Firma nicht.",
+    income: "Ertrag",
+    costs: "Kosten",
+    net: "Reingewinn",
+  },
+  events: {
+    crash: { title: "Börsencrash", text: "Die Marktpreise sind stark gefallen. Die Gewinne der Firmen sinken." },
+    hyper: { title: "Hyperinflation", text: "Geld verliert an Wert und die Löhne der Mitarbeiter steigen stark." },
+    shortage: { title: "Warenmangel", text: "Die Lieferanten kommen nicht nach. Waren fehlen und die Verkäufe sinken." },
+    outage: { title: "Serverausfall", text: "Digitale Dienste sind ausgefallen und Kunden zahlen nicht mehr." },
+    boom: { title: "Wirtschaftsboom", text: "Die Leute geben Geld aus. Alle Firmen verdienen mehr." },
+    viral: { title: "Viraler Trend", text: "Digitale Produkte verbreiten sich von selbst. Der Gewinn wächst." },
+    strike: { title: "Streik", text: "Die Arbeiter haben die Arbeit niedergelegt. Die Produktion steht und die Löhne steigen." },
+    fashion: { title: "Modewelle", text: "Kleidung und Schuhe sind ein Hit. Der Absatz wächst." },
+    subsidy: { title: "Staatliche Förderung", text: "Physische Firmen bekamen Unterstützung. Der Gewinn wächst und die Löhne sind niedriger." },
+    breach: { title: "Datenleck", text: "Digitale Firmen verlieren das Vertrauen der Kunden. Der Gewinn sinkt." },
+  },
   cash: "Bargeld",
   netWorth: "Vermögen",
   perHour: "{n} pro Stunde",
@@ -439,7 +639,7 @@ const de: EconomyText = {
   restartConfirm: "Wirklich neu beginnen? Du verlierst Figur, Firmen und Investitionen. Dein Rekord bleibt.",
   restartHint: "Du kannst jederzeit mit einer neuen Figur bei null anfangen.",
   saveNote: "Das Spiel speichert sich nach jeder Aktion selbst.",
-  toast: { bought: "Gekauft", sold: "Verkauft für {n}", profit: "Gewinn {n}", loss: "Verlust {n}", created: "Figur erstellt", edu: "Bildung verbessert", job: "Neuer Job", restarted: "Neustart" },
+  toast: { bought: "Gekauft", sold: "Verkauft für {n}", profit: "Gewinn {n}", loss: "Verlust {n}", created: "Figur erstellt", edu: "Bildung verbessert", job: "Neuer Job", restarted: "Neustart", upgraded: "Branche verbessert", hired: "Mitarbeiter eingestellt", fired: "Mitarbeiter entlassen", level: "Gespeichert", campaign: "Kampagne läuft 30 Minuten", funded: "Krisenfonds bezahlt" },
   errors: {
     generic: "Etwas ist schiefgelaufen.",
     "login-required": "Bitte anmelden.",
@@ -499,9 +699,59 @@ const ru: EconomyText = {
     software: "Софт",
     hardware: "Железо",
     factory: "Фабрика",
+    bakery: "Пекарня",
+    carwash: "Автомойка",
+    eshop: "Интернет-магазин",
+    printshop: "Типография",
+    streaming: "Стриминг",
   },
   assets: { bonds: "Ценные бумаги", metal: "Металлы", stocks: "Акции", realestate: "Недвижимость", crypto: "Криптовалюты" },
   hustles: { reselling: "Перепродажа", carflip: "Флип автомобилей", houseflip: "Флип домов" },
+  detail: {
+    open: "Управлять",
+    close: "Закрыть",
+    upgrade: "Улучшение отрасли",
+    upgradeDone: "Улучшено (+30 %)",
+    upgradeBuy: "Улучшить за {n}",
+    upgradeHint: "Одноразовое улучшение: все компании этой отрасли зарабатывают на 30 % больше.",
+    staff: "Сотрудники",
+    staffHint: "Каждый сотрудник повышает выпуск, но стоит зарплаты. Не больше трёх на единицу.",
+    hire: "Нанять за {n}",
+    fire: "Уволить",
+    staffFull: "Нет мест",
+    price: "Цена продукта",
+    output: "Производство",
+    direction: "Направление компании",
+    levels: { low: "Низкая", normal: "Обычная", high: "Высокая" },
+    outputLevels: { low: "Малое", normal: "Обычное", high: "Большое" },
+    directions: { stable: "Стабильное", growth: "Ростовое" },
+    directionHint: "Стабильная компания рискует меньше. Ростовая зарабатывает больше, но кризисы бьют по ней сильнее.",
+    campaign: "Маркетинг",
+    campaignHint: "Кампания на 30 минут повышает доход на 30 %.",
+    campaignGo: "Запустить за {n}",
+    campaignRunning: "Идёт ещё {t}",
+    eventTitle: "Чрезвычайное событие",
+    eventNone: "Сейчас событий нет. Новое приходит каждые два часа.",
+    eventFund: "Антикризисный фонд за {n}",
+    eventFunded: "Фонд оплачен, потери смягчены",
+    eventEnds: "Закончится через {t}",
+    eventNoAction: "Это событие не затрагивает компанию.",
+    income: "Доход",
+    costs: "Расходы",
+    net: "Чистая прибыль",
+  },
+  events: {
+    crash: { title: "Обвал рынка", text: "Цены на рынке резко упали. Прибыль компаний снижается." },
+    hyper: { title: "Гиперинфляция", text: "Деньги теряют ценность, зарплаты сотрудников заметно растут." },
+    shortage: { title: "Дефицит товаров", text: "Поставщики не справляются. Товаров не хватает, продажи падают." },
+    outage: { title: "Сбой серверов", text: "Цифровые сервисы не работают, клиенты перестают платить." },
+    boom: { title: "Экономический подъём", text: "Люди много тратят. Все компании зарабатывают больше." },
+    viral: { title: "Вирусный тренд", text: "Цифровые продукты распространяются сами. Прибыль растёт." },
+    strike: { title: "Забастовка", text: "Рабочие ушли с производства. Выпуск стоит, зарплаты растут." },
+    fashion: { title: "Модная волна", text: "Одежда и обувь в тренде. Продажи растут." },
+    subsidy: { title: "Государственная субсидия", text: "Физические компании получили поддержку. Прибыль растёт, зарплаты ниже." },
+    breach: { title: "Утечка данных", text: "Цифровые компании теряют доверие клиентов. Прибыль падает." },
+  },
   cash: "Наличные",
   netWorth: "Состояние",
   perHour: "{n} в час",
@@ -561,7 +811,7 @@ const ru: EconomyText = {
   restartConfirm: "Точно начать заново? Ты потеряешь персонажа, компании и инвестиции. Рекорд останется.",
   restartHint: "В любой момент можно начать с нуля с новым персонажем.",
   saveNote: "Игра сохраняется сама после каждого действия.",
-  toast: { bought: "Куплено", sold: "Продано за {n}", profit: "Прибыль {n}", loss: "Убыток {n}", created: "Персонаж создан", edu: "Образование улучшено", job: "Новая работа", restarted: "Начинаем заново" },
+  toast: { bought: "Куплено", sold: "Продано за {n}", profit: "Прибыль {n}", loss: "Убыток {n}", created: "Персонаж создан", edu: "Образование улучшено", job: "Новая работа", restarted: "Начинаем заново", upgraded: "Отрасль улучшена", hired: "Сотрудник нанят", fired: "Сотрудник уволен", level: "Сохранено", campaign: "Кампания идёт 30 минут", funded: "Антикризисный фонд оплачен" },
   errors: {
     generic: "Что-то пошло не так.",
     "login-required": "Войди в аккаунт.",
