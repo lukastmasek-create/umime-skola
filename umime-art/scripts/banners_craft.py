@@ -423,7 +423,6 @@ def craft_grove():
     rnd = random.Random(11)
     B.sky(26, 180, strength=0.07, dust=4.0, sun_intensity=0.2)
     sun((52, 0, 150), 3.5, "#ffe9b0", 0.05)
-    B.haze(0.0012, "#fff2c0", 0.5)
     look((0, -14, 2.4), (0, 0, 2.6), 30)
     ground(240, mat("#2f8f55", rough=0.95), z=0.0, subdiv=260, strength=0.5, scale=6)
     _trees(rnd, ["#2f8f55", "#3f9a52", "#5ab86a"], 34, (4.5, 18), (-1, 22), (4, 10))
@@ -454,7 +453,6 @@ def craft_amber_forest():
     rnd = random.Random(21)
     B.sky(14, 200, strength=0.06, dust=6.0, sun_intensity=0.2)
     sun((62, 0, 200), 3.5, "#ffc878", 0.05)
-    B.haze(0.0015, "#ffcf80", 0.5)
     look((0, -14, 2.4), (0, 0, 2.6), 30)
     ground(240, mat("#9a6a2a", rough=0.95), z=0.0, subdiv=260, strength=0.5, scale=6)
     _trees(rnd, ["#e8a830", "#d9822b", "#c0602a", "#f2c05a"], 38, (4.2, 18), (-1, 22), (4, 10))
@@ -573,7 +571,7 @@ def craft_throne():
     # oblouky v zadní zdi s okny a světlem
     for k in range(-3, 4):
         box((k * 4.2, 22, 4.5), (0.9, 1.0, 9.0), marble, bevel=0.05)
-        box((k * 4.2 + 2.1, 21.9, 5.5), (2.2, 0.2, 5.0), emit("#ffd9a0" if k % 2 else "#ffb8c8", 0.55))
+        box((k * 4.2 + 2.1, 21.9, 5.5), (2.2, 0.2, 5.0), emit("#e8b878" if k % 2 else "#e8a0b0", 0.18))
     # stupně k trůnu, trůn, prapory
     for s in range(4):
         box((6.4, 14 - s * 0.5, 0.2 + s * 0.3), (3.6 + s * 0.2, 2.6 + s * 0.5, 0.3), marble, bevel=0.04)
@@ -592,8 +590,7 @@ def craft_moonlight():
     rnd = random.Random(13)
     world_gradient([(0.0, "#8a5acf"), (0.4, "#4a2a8a"), (1.0, "#0a0838")], 1.0, stars=1.6, star_scale=1400)
     look((0, -14, 1.8), (0, 0, 3.2), 30)
-    sun((60, 0, -50), 1.2, "#cfd8ff")
-    fog(0.003, "#8a6acf")
+    sun((55, 0, -40), 2.4, "#cfd8ff")
     sphere((9.0, 40, 12.0), 4.2, banded("#e8e0c0", "#fffbe0", 6.0, 0.9))
     sphere((9.0, 40, 12.0), 4.2, emit("#fffbe0", 4.0))
     sphere((9.0, 39, 12.0), 7.5, emit("#c8b8ff", 0.5), scale=(1, 0.2, 1))
@@ -618,7 +615,7 @@ def craft_moonlight():
     for _ in range(14):
         x, z = rnd.uniform(-16, 16), rnd.uniform(5.5, 9.5)
         for b in range(5):
-            sphere((x + b * 0.9 + rnd.uniform(-0.3, 0.3), 24, z + rnd.uniform(-0.2, 0.2)), rnd.uniform(1.0, 1.9), emit("#8a7acf", 0.18), scale=(2.0, 0.6, 0.55), seg=16, rings=10)
+            sphere((x + b * 0.9 + rnd.uniform(-0.3, 0.3), 24, z + rnd.uniform(-0.2, 0.2)), rnd.uniform(1.0, 1.9), emit("#8a7acf", 0.12), scale=(1.8, 1.0, 0.7), seg=16, rings=10)
     for _ in range(40):
         sphere((rnd.uniform(-13, 13), rnd.uniform(1, 10), rnd.uniform(1, 8)), rnd.uniform(0.03, 0.07), emit("#e8e0ff", 14.0), seg=8, rings=6)
     render("craft-moonlight")
