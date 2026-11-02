@@ -21,6 +21,14 @@ type Activity = "eat" | "drink" | "read" | "cheer" | "laptop" | "cards" | "cocoa
 // Podle místa: nejblíž stupňům (4., 5.) fotí a fandí, dál hrají karty a pracují, nakonec odpočívají s jídlem a pitím.
 const ACTIVITIES: Activity[] = ["photo", "cheer", "laptop", "cards", "read", "cocoa", "eat", "drink"];
 
+// Klipy z Blenderu (umime-art/blender/avatary_animace.py): činnost u stolu a oslavy podle místa na stupních.
+const ACTIVITY_CLIP: Record<Activity, string> = { photo: "fotka", cheer: "fandeni", laptop: "psani", cards: "premysleni", read: "cteni", cocoa: "piti", eat: "jedeni", drink: "piti" };
+const PODIUM_CLIPS = {
+  champion: ["tanec", "salto", "pozdrav", "radost", "tanec", "fandeni"],
+  second: ["pozdrav", "tanec", "tleskani", "radost"],
+  third: ["tleskani", "pozdrav", "radost", "fandeni"],
+} as const;
+
 const PODIUM_X = [0, -1.22, 1.22];
 const PODIUM_H = [1.0, 0.72, 0.52];
 const PODIUM_COLOR = ["#f5c542", "#c9d3df", "#d9955a"];
@@ -409,8 +417,10 @@ type ActorState = {
   pivot: THREE.Group;
   model: THREE.Object3D;
   mixer: THREE.AnimationMixer;
-  joy: THREE.AnimationAction | null;
-  idle: THREE.AnimationAction | null;
+  clips: Map<string, THREE.AnimationAction>;
+  base: THREE.AnimationAction | null; // trvale hraný klip: klid, nebo činnost u stolu
+  loopClip: boolean; // true = base je klip činnosti (ne klid), procedurální pohyb se nepoužije
+  once: { act: THREE.AnimationAction; t: number } | null; // jednorázový klip (oslava, pozdrav) přes základ
   prop: Prop | null;
   gesture: { t: number; g: Gesture } | null;
   nextGesture: number;
@@ -445,6 +455,8 @@ function crown() {
   });
   return g;
 }
+
+const AVATAR_CLICK = ["radost", "salto", "tanec", "pozdrav", "tleskani", "fandeni"];
 
 type Slot = { rank: number; local: boolean; parent: THREE.Object3D; x: number; y: number; z: number; height: number; kind: "podium" | "seat"; entry: StageEntry };
 
@@ -777,18 +789,19 @@ export default function LeaderboardStage3D({
         slot.parent.add(root);
 
         const mixer = new THREE.AnimationMixer(model);
-        const idleClip = gltf.animations.find((c) => c.name === "klid");
-        const joyClip = gltf.animations.find((c) => c.name === "radost");
-        const idle = idleClip ? mixer.clipAction(idleClip) : null;
-        const joy = joyClip ? mixer.clipAction(joyClip) : null;
+        const clips = new Map<string, THREE.AnimationAction>();
+        for (const c of gltf.animations) clips.set(c.name, mixer.clipAction(c));
+        const idle = clips.get("klid") ?? null;
         if (idle) {
-          idle.time = (n * 0.37) % Math.max(idleClip!.duration, 0.1);
+          idle.time = (n * 0.37) % Math.max(idle.getClip().duration, 0.1);
           idle.play();
           if (reduceMotion) idle.paused = true;
         }
-        if (joy) {
-          joy.setLoop(THREE.LoopOnce, 1);
-          joy.clampWhenFinished = false;
+        for (const [name, act] of clips) {
+          if (name === "klid") continue;
+          act.setLoop(THREE.LoopOnce, 1);
+          act.clampWhenFinished = true;
+          act.setEffectiveWeight(0);
         }
         const activity: ActorState["activity"] = slot.kind === "podium" ? (["champion", "second", "third"] as const)[slot.rank - 1] : ACTIVITIES[(slot.rank - 4) % ACTIVITIES.length];
         let prop: Prop | null = null;
@@ -799,6 +812,27 @@ export default function LeaderboardStage3D({
             if ((o as THREE.Mesh).isMesh) o.castShadow = true;
           });
           slot.parent.add(prop.group);
+        }
+        // Činnost u stolu je klip ve smyčce; rychlost se přizpůsobí obdobím rekvizit (sousta, doušky, blesk).
+        let base = idle;
+        let loopClip = false;
+        if (slot.kind === "seat" && activity !== "champion" && activity !== "second" && activity !== "third") {
+          const act = clips.get(ACTIVITY_CLIP[activity]);
+          if (act && !reduceMotion) {
+            const period = activity === "eat" ? 2.8 : activity === "drink" ? 5 : activity === "photo" ? 3.6 : 0;
+            act.setLoop(THREE.LoopRepeat, Infinity);
+            act.clampWhenFinished = false;
+            const dur = act.getClip().duration;
+            if (period) act.setEffectiveTimeScale(dur / period);
+            // fáze podle času postavy (t = n * 1.3), u focení je blesk v klipu v 55 % a u rekvizity hned na začátku
+            const u0 = period ? ((n * 1.3) % period) / period : (n * 0.31) % 1;
+            act.time = ((u0 + (activity === "photo" ? 0.52 : 0)) % 1) * dur;
+            act.setEffectiveWeight(1);
+            act.play();
+            idle?.stop();
+            base = act;
+            loopClip = true;
+          }
         }
         // Cedulka: před stupněm na zemi, u stolu na čelní desce.
         const hl = slot.entry.id === highlightId;
@@ -830,8 +864,10 @@ export default function LeaderboardStage3D({
           pivot,
           model,
           mixer,
-          joy,
-          idle,
+          clips,
+          base,
+          loopClip,
+          once: null,
           prop,
           gesture: null,
           nextGesture: 1 + Math.random() * 3 + n * 0.2,
@@ -864,8 +900,8 @@ export default function LeaderboardStage3D({
     };
     const react = (a: ActorState) => {
       if (reduceMotion) return;
-      a.gesture = { t: 0, g: AVATAR_REACTIONS[a.reaction++ % AVATAR_REACTIONS.length] };
-      playJoy(a);
+      a.gesture = { t: 0, g: AVATAR_REACTIONS[a.reaction % AVATAR_REACTIONS.length] };
+      playClip(a, AVATAR_CLICK[a.reaction++ % AVATAR_CLICK.length]);
     };
     let downAt = 0;
     const onDown = () => (downAt = performance.now());
@@ -903,10 +939,32 @@ export default function LeaderboardStage3D({
       const w = (d + Math.PI) % (Math.PI * 2);
       return (w < 0 ? w + Math.PI * 2 : w) - Math.PI;
     };
-    const playJoy = (a: ActorState) => {
-      if (!a.joy) return;
-      a.joy.reset().play();
-      if (a.idle?.isRunning()) a.joy.crossFadeFrom(a.idle, 0.25, false);
+    // Jednorázový klip se přimíchá přes základ: váha plynule roste a před koncem klesá, takže není žádný střih.
+    const playClip = (a: ActorState, name: string) => {
+      const act = a.clips.get(name);
+      if (!act || (a.once && a.once.t < 0.4)) return;
+      if (a.once) a.once.act.stop();
+      act.reset();
+      act.setLoop(THREE.LoopOnce, 1);
+      act.clampWhenFinished = true;
+      act.setEffectiveWeight(0);
+      act.play();
+      a.once = { act, t: 0 };
+    };
+    const updateOnce = (a: ActorState, dt: number) => {
+      if (!a.once) return;
+      const { act } = a.once;
+      a.once.t += dt;
+      const dur = act.getClip().duration;
+      const w = Math.min(1, a.once.t / 0.22, Math.max(0, (dur - act.time) / 0.3));
+      const k = w * w * (3 - 2 * w);
+      act.setEffectiveWeight(k);
+      a.base?.setEffectiveWeight(1 - k);
+      if (act.time >= dur - 0.001 || a.once.t > dur + 0.5) {
+        act.stop();
+        a.base?.setEffectiveWeight(1);
+        a.once = null;
+      }
     };
     let elapsed = 0;
 
@@ -924,11 +982,9 @@ export default function LeaderboardStage3D({
         resetMotion(m);
         if (!reduceMotion) {
           const podium = a.activity === "champion" || a.activity === "second" || a.activity === "third";
-          // Klip radosti plynule přejde zpět do klidu, ještě než doběhne (jinak by postava cukla).
-          if (a.joy && a.idle && a.joy.isRunning() && !a.idle.isRunning() && a.joy.time > a.joy.getClip().duration - 0.3) {
-            a.idle.reset().play();
-            a.idle.crossFadeFrom(a.joy, 0.3, false);
-          } else if (a.joy && !a.joy.isRunning() && a.idle && !a.idle.isRunning()) a.idle.reset().play();
+          updateOnce(a, dt);
+          a.bites = Math.floor(a.t / 2.8);
+          a.sips = Math.floor(a.t / 5);
 
           if (podium) {
             // Stupně vítězů: gesta podle místa, 1. se raduje nejvíc.
@@ -936,14 +992,16 @@ export default function LeaderboardStage3D({
               const pool = a.activity === "champion" ? [GESTURES.victory, GESTURES.jumpSpin, GESTURES.dance, GESTURES.hop, GESTURES.cheer, GESTURES.backflip] : a.activity === "second" ? [GESTURES.dance, GESTURES.wiggle, GESTURES.hop, GESTURES.bow, GESTURES.groove] : [GESTURES.wiggle, GESTURES.hop, GESTURES.nod, GESTURES.skip, GESTURES.sway];
               a.gesture = { t: 0, g: pool[a.reaction++ % pool.length] };
               a.nextGesture = (a.activity === "champion" ? 1.2 : 2.4) + Math.random() * 2.2;
-              if (a.joy && (a.activity === "champion" || Math.random() < 0.5)) playJoy(a);
+              const names = PODIUM_CLIPS[a.activity as "champion" | "second" | "third"];
+              playClip(a, names[a.reaction % names.length]);
             }
             bodySway(a.t, m);
             m.rotY += px * 0.25; // vítězové koukají k publiku, trochu za kurzorem
           } else {
             // Sedící: činnost běží pořád a kliknutí na ni jen přidá gesto navíc.
             const t = a.t;
-            switch (a.activity) {
+            // Klip činnosti už pohybuje rukama i tělem; procedurální pohyb zůstává jen jako záloha pro model bez klipu.
+            switch (a.loopClip ? "klip" : a.activity) {
               case "eat": {
                 const period = 2.8;
                 const u = (t % period) / period;
@@ -1001,7 +1059,7 @@ export default function LeaderboardStage3D({
                 m.rotZ = 0.07 * Math.sin(t * 5.5 + a.phase);
                 if ((a.nextJoy -= dt) <= 0) {
                   a.nextJoy = 2.5 + Math.random() * 3;
-                  playJoy(a);
+                  playClip(a, "radost");
                 }
                 break;
               }
