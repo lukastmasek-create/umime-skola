@@ -89,6 +89,17 @@ const CLICK_REACTIONS: [string, Gesture | null][] = [
   ["pozdrav", GESTURES.bow],
   ["tleskani", GESTURES.cheer],
   ["fandeni", GESTURES.skip],
+  ["pirueta", null],
+  ["kolo", null],
+  ["karate", null],
+  ["svaly", GESTURES.stretch],
+  ["zpev", GESTURES.sway],
+  ["ukloneni", null],
+  ["smich", GESTURES.shake],
+  ["prekvapeni", null],
+  ["robot", null],
+  ["pozdrav", GESTURES.hop],
+  ["tanec", GESTURES.groove],
 ];
 // Klipy, které si postava občas zahraje sama.
 const IDLE_CLIPS = ["pozdrav", "premysleni", "unava", "cteni", "fotka", "tanec", "tleskani"];
@@ -197,7 +208,7 @@ export default function Avatar3D({
     let model: THREE.Object3D | null = null;
     let playJoy = () => {};
     // Klipy z Blenderu (pozdrav, tanec, čtení…) se přimíchávají přes klid váhou; vrací true, když klip model má.
-    let playClip: (name: string) => boolean = () => false;
+    let playClip: (name: string, force?: boolean) => boolean = () => false;
     let updateClip: (dt: number) => void = () => {};
     let clipBusy = () => false;
     let clipNames = new Set<string>();
@@ -346,10 +357,18 @@ export default function Avatar3D({
         }
         clipNames = new Set(actions.keys());
         let once: { act: THREE.AnimationAction; t: number } | null = null;
+        // Přerušený klip se za 0,2 s plynule vytratí, ať pózu nic neuseká.
+        let leaving: { act: THREE.AnimationAction; w0: number; t: number } | null = null;
         clipBusy = () => once !== null;
-        playClip = (name) => {
+        playClip = (name, force = false) => {
           const act = actions.get(name);
-          if (!act || reduceMotion || once) return false;
+          if (!act || reduceMotion) return false;
+          if (once) {
+            // Další kliknutí přeruší běžící klip (zkrátka plynule: jeho váha se jen přepne na nový).
+            if (!force) return false;
+            leaving = { act: once.act, w0: once.act.getEffectiveWeight(), t: 0 };
+            once = null;
+          }
           act.reset();
           act.setLoop(THREE.LoopOnce, 1);
           act.clampWhenFinished = true;
@@ -360,13 +379,27 @@ export default function Avatar3D({
         };
         // Váha klipu plynule roste a před koncem klesá, klid se doplňuje na 1: žádný střih.
         updateClip = (dt) => {
-          if (!once) return;
+          let lw = 0;
+          if (leaving) {
+            leaving.t += dt;
+            lw = leaving.w0 * Math.max(0, 1 - leaving.t / 0.2);
+            leaving.act.setEffectiveWeight(lw);
+            if (leaving.t >= 0.2) {
+              leaving.act.stop();
+              leaving = null;
+              lw = 0;
+            }
+          }
+          if (!once) {
+            idle?.setEffectiveWeight(Math.max(0, 1 - lw));
+            return;
+          }
           once.t += dt;
           const dur = once.act.getClip().duration;
           const w = Math.min(1, once.t / 0.25, Math.max(0, (dur - once.act.time) / 0.35));
           const k = w * w * (3 - 2 * w);
           once.act.setEffectiveWeight(k);
-          idle?.setEffectiveWeight(1 - k);
+          idle?.setEffectiveWeight(Math.max(0, 1 - k - lw));
           if (once.act.time >= dur - 0.001 || once.t > dur + 0.5) {
             once.act.stop();
             idle?.setEffectiveWeight(1);
@@ -375,10 +408,14 @@ export default function Avatar3D({
         };
         // Kliknutí: klip z modelu (radost, salto, tanec…) a k tomu pohyb celé postavy, každé kliknutí jiné.
         playJoy = () => {
-          if (reduceMotion || once) return;
-          const [clipName, g] = CLICK_REACTIONS[reaction++ % CLICK_REACTIONS.length];
-          if (!playClip(clipName)) playClip("radost");
-          if (g) gesture = { t: 0, g };
+          if (reduceMotion) return;
+          // Náhodná reakce, nikdy stejná dvakrát po sobě; klipy, které model nemá, se přeskočí.
+          const choices = CLICK_REACTIONS.map((r, i) => [r, i] as const).filter(([r, i]) => i !== reaction && actions.has(r[0]));
+          if (choices.length === 0) return;
+          const [[clipName, g], idx] = choices[Math.floor(Math.random() * choices.length)];
+          reaction = idx;
+          gesture = g ? { t: 0, g } : null;
+          playClip(clipName, true);
         };
         renderer.render(scene, camera);
         handlers.current.onReady();
