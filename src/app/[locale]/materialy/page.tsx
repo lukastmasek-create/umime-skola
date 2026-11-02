@@ -28,7 +28,11 @@ export default async function MaterialsIndexPage({ params }: { params: Promise<{
 
       <MaterialsLibrary
         locale={locale}
-        subjects={getMaterialSubjects().map((s) => ({ slug: s.slug, color: s.color, emoji: s.emoji, label: materialSubjectLabel(s, locale as Locale), count: getTopics(s.slug).length }))}
+        text={{ back: t.libraryBack, open: t.libraryOpen, topics: t.topics, levels: Object.fromEntries(Object.entries(t.levels).map(([k, v]) => [k, v.title])) }}
+        subjects={getMaterialSubjects().map((s) => {
+          const topics = getTopics(s.slug);
+          return { slug: s.slug, color: s.color, emoji: s.emoji, label: materialSubjectLabel(s, locale as Locale), count: topics.length, topics: topics.map((x) => ({ slug: x.slug, title: x.title, level: x.level })) };
+        })}
       />
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

@@ -3542,7 +3542,17 @@ button.town3d-chip[aria-pressed="true"] { background: #ffd24d; color: #1b1840; }
 
 /* 3D knihovna materiálů: cedulky nad knihovnami */
 .library-sign { position: absolute; left: 0; top: 0; pointer-events: auto; white-space: nowrap; border: 2px solid; border-radius: 0.5rem; background: #3a2a1a; color: #ffe8b8; padding: 0.15rem 0.55rem; font-size: 0.75rem; font-weight: 800; line-height: 1.15; text-align: center; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.45); }
-.library-sign:hover { background: #4a3a24; }
+.library-sign:hover { background: #4a3a24; cursor: pointer; }
+/* Přiblížený regál: panel s hřbety knih (témata) u dolního okraje scény. */
+.library-shelf { position: absolute; left: 0; right: 0; bottom: 0; max-height: 52%; display: flex; flex-direction: column; background: linear-gradient(#3a2a1ae6, #2a1e18f2); border-top: 3px solid #6a4426; color: #ffe8b8; }
+.library-shelf-head { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.85rem; }
+.library-shelf-back { flex: none; border: 2px solid #6a4426; border-radius: 0.5rem; background: #4a3a24; padding: 0.2rem 0.6rem; font-size: 0.75rem; font-weight: 800; color: #ffe8b8; }
+.library-shelf-back:hover { background: #5a4a30; cursor: pointer; }
+.library-shelf-books { overflow-y: auto; padding: 0 0.75rem 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.library-shelf-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 4px; padding-bottom: 6px; border-bottom: 5px solid #6a4426; }
+.library-shelf-level { flex-basis: 100%; font-size: 0.7rem; font-weight: 800; opacity: 0.75; }
+.library-spine { color: #1b1208; font-size: 0.75rem; font-weight: 800; line-height: 1.15; padding: 0.45rem 0.55rem; min-height: 3.2rem; max-width: 11rem; display: flex; align-items: center; border-radius: 4px 4px 2px 2px; border: 1px solid rgba(0, 0, 0, 0.35); border-top: 4px solid #ffd24d; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4); transition: transform 0.12s; }
+.library-spine:hover, .library-spine:focus-visible { transform: translateY(-5px); }
 
 /* Nastavení → Animace vypnuté: CSS animace a přechody skončí hned (3D scény čtou prefersReducedMotion). */
 [data-motion="off"] *,

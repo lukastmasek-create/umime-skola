@@ -7,7 +7,12 @@ import { glowSprite, rand } from "./scenery";
 
 export type LibrarySubject = { slug: string; color: string };
 export type LibraryLabel = { slug: string; x: number; y: number; visible: boolean };
-export type LibraryHandle = { labels: (cb: (items: LibraryLabel[]) => void) => void; dispose: () => void };
+export type LibraryHandle = {
+  labels: (cb: (items: LibraryLabel[]) => void) => void;
+  /** Přiblíží kameru k regálu předmětu (slug) nebo ji vrátí do celé místnosti (null). */
+  focus: (slug: string | null) => void;
+  dispose: () => void;
+};
 
 const CASE_W = 1.7;
 const CASE_H = 2.7;
@@ -355,6 +360,13 @@ export function createLibrary3D(container: HTMLElement, subjects: LibrarySubject
   const ray = new THREE.Raycaster();
   const ndc = new THREE.Vector2();
   let hovered: string | null = null;
+  let focused: string | null = null;
+  // kamera letí plynule: aktuální pozice a cíl se blíží k požadovaným (celá místnost nebo jeden regál)
+  const camPos = new THREE.Vector3();
+  const camLook = new THREE.Vector3();
+  let camInit = false;
+  const goalPos = new THREE.Vector3();
+  const goalLook = new THREE.Vector3();
   const pick = (e: PointerEvent) => {
     const r = el.getBoundingClientRect();
     ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
@@ -369,7 +381,7 @@ export function createLibrary3D(container: HTMLElement, subjects: LibrarySubject
   let drag: { x: number; moved: number } | null = null;
   const onDown = (e: PointerEvent) => (drag = { x: e.clientX, moved: 0 });
   const onMove = (e: PointerEvent) => {
-    if (drag && e.buttons) {
+    if (drag && e.buttons && !focused) {
       const dx = e.clientX - drag.x;
       drag.x = e.clientX;
       drag.moved += Math.abs(dx);
@@ -377,14 +389,16 @@ export function createLibrary3D(container: HTMLElement, subjects: LibrarySubject
       return;
     }
     hovered = pick(e);
-    el.style.cursor = hovered ? "pointer" : "grab";
+    el.style.cursor = hovered || focused ? "pointer" : "grab";
   };
   const onUp = (e: PointerEvent) => {
     const click = drag && drag.moved < 6;
     drag = null;
     if (!click) return;
     const s = pick(e);
+    // klik mimo regál při přiblížení vrací kameru zpět do místnosti
     if (s) onOpen(s);
+    else if (focused) onOpen("");
   };
   el.addEventListener("pointerdown", onDown);
   el.addEventListener("pointermove", onMove);
@@ -400,14 +414,34 @@ export function createLibrary3D(container: HTMLElement, subjects: LibrarySubject
     last = now;
     if (document.hidden) return;
     for (const c of cases) {
-      const want = c.slug === hovered ? 1 : 0;
+      const want = c.slug === hovered || c.slug === focused ? 1 : 0;
       c.out += (want - c.out) * Math.min(1, dt * 8);
       if (c.pull) c.pull.position.z = 0.02 + 0.22 * c.out;
       (c.glow.material as THREE.MeshBasicMaterial).opacity = 0.35 * c.out;
     }
     globe.rotation.y += dt * 0.4;
-    camera.position.set(cam.target.x + Math.sin(cam.theta) * cam.dist * Math.cos(cam.phi), cam.target.y + Math.sin(cam.phi) * cam.dist, cam.target.z + Math.cos(cam.theta) * cam.dist * Math.cos(cam.phi));
-    camera.lookAt(cam.target);
+    const fc = focused ? cases.find((c) => c.slug === focused) : null;
+    if (fc) {
+      // před regálem ve výšce očí, pohled mírně pod střed, ať je regál v horní části záběru nad panelem s knihami
+      fc.g.getWorldPosition(goalLook);
+      const front = v.set(0, 0, 1).transformDirection(fc.g.matrixWorld);
+      goalPos.copy(goalLook).addScaledVector(front, 3.1).setY(1.45);
+      goalLook.y = CASE_H / 2 - 0.35;
+    } else {
+      goalPos.set(cam.target.x + Math.sin(cam.theta) * cam.dist * Math.cos(cam.phi), cam.target.y + Math.sin(cam.phi) * cam.dist, cam.target.z + Math.cos(cam.theta) * cam.dist * Math.cos(cam.phi));
+      goalLook.copy(cam.target);
+    }
+    if (!camInit) {
+      camPos.copy(goalPos);
+      camLook.copy(goalLook);
+      camInit = true;
+    } else {
+      const k = Math.min(1, dt * 4.5);
+      camPos.lerp(goalPos, k);
+      camLook.lerp(goalLook, k);
+    }
+    camera.position.copy(camPos);
+    camera.lookAt(camLook);
     renderer.render(scene, camera);
     if (labelCb) {
       const r = el.getBoundingClientRect();
@@ -416,7 +450,7 @@ export function createLibrary3D(container: HTMLElement, subjects: LibrarySubject
           // cedulky střídavě ve dvou výškách, ať se na úzkých stěnách nepřekrývají
           c.g.localToWorld(v.set(0, CASE_H + (cases.indexOf(c) % 2 ? 0.75 : 0.3), 0.1));
           v.project(camera);
-          return { slug: c.slug, x: ((v.x + 1) / 2) * r.width, y: ((1 - v.y) / 2) * r.height, visible: v.z < 1 };
+          return { slug: c.slug, x: ((v.x + 1) / 2) * r.width, y: ((1 - v.y) / 2) * r.height, visible: v.z < 1 && !focused };
         }),
       );
     }
@@ -427,6 +461,10 @@ export function createLibrary3D(container: HTMLElement, subjects: LibrarySubject
   return {
     labels(cb) {
       labelCb = cb;
+    },
+    focus(slug) {
+      focused = slug;
+      if (slug) hovered = null;
     },
     dispose() {
       cancelAnimationFrame(raf);
