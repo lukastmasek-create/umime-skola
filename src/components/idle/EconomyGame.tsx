@@ -6,6 +6,7 @@ import { getEconomyText } from "@/i18n/economy";
 import { notifyAccountChanged } from "@/lib/account-events";
 import {
   ARB_FEE,
+  SPEEDS,
   ASSETS,
   ASSET_CATEGORIES,
   CITIES,
@@ -252,7 +253,8 @@ export function EconomyGame({ locale }: { locale: Locale }) {
   const { data } = view;
   const state = data.state;
   // Čas serveru posunutý o to, co uplynulo od odpovědi; podle něj se počítají odpočty i ceny.
-  const clock = data.now + Math.max(0, (nowMs || view.receivedAt) - view.receivedAt);
+  // Herní čas plyne rychlostí hráče (state.speed); server posílá čas k okamžiku `now`.
+  const clock = data.now + Math.max(0, (nowMs || view.receivedAt) - view.receivedAt) * state.speed;
   const ch = state.character;
 
   if (!ch) {
@@ -368,6 +370,23 @@ export function EconomyGame({ locale }: { locale: Locale }) {
       <p className="mb-3 text-sm font-semibold text-[var(--muted)]">
         {fill(t.perHour, { n: `${r.net >= 0 ? "+" : ""}${m(r.net)}` })} · ⭐ {data.points}
       </p>
+
+      <div className="mb-4 flex flex-wrap items-center gap-2" aria-label={t.timeSpeed}>
+        <span className="text-sm font-bold">⏩ {t.timeSpeed}</span>
+        {SPEEDS.map((sp) => (
+          <button
+            key={sp}
+            type="button"
+            aria-pressed={state.speed === sp}
+            disabled={busy}
+            onClick={() => void act({ action: "setSpeed", value: sp })}
+            className={`btn-bouncy px-3 py-1.5 text-sm font-bold ${state.speed === sp ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface)]"}`}
+          >
+            {sp}×
+          </button>
+        ))}
+        <span className="text-xs text-[var(--muted)]">{t.timeSpeedHint}</span>
+      </div>
 
       <div role="tablist" className="mb-5 flex flex-wrap gap-2">
         {tabs.map((id) => (
