@@ -3,12 +3,28 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { getEconomyText } from "@/i18n/economy";
+import { getEconomyWork } from "@/i18n/economy-work";
 import { notifyAccountChanged } from "@/lib/account-events";
 import {
   ARB_FEE,
   SPEEDS,
   ASSETS,
   ASSET_CATEGORIES,
+  BONUS_SHARE,
+  LEAD_EXTRA_ENERGY,
+  LEAD_MIN_RANK,
+  PROMO_BASE,
+  PROMO_MAX,
+  PROMO_PER_PERF,
+  RANK_POINTS,
+  RAISE_BASE,
+  RAISE_PER_PERF,
+  RAISE_SENIOR_PENALTY,
+  SHIFT_MIN_ENERGY,
+  SITUATIONS,
+  VACATION_MAX,
+  VACATION_WINDOW_MS,
+  type EconomyEvent,
   CITIES,
   COMPANIES,
   COUNTRIES,
@@ -28,7 +44,6 @@ import {
   hustleOffer,
   hustleReady,
   isLocked,
-  jobRank,
   type AssetCategoryId,
   type AssetId,
   type HustleId,
@@ -75,7 +90,7 @@ function priceSpark(id: AssetId, now: number): string {
 }
 
 const EMOJI: Record<string, string> = {
-  warehouse: "📦", seller: "🛒", cook: "🍳", police: "👮", vet: "🐾", programmer: "💻", banker: "🏦",
+  warehouse: "📦", seller: "🛒", farmer: "🌾", cook: "🍳", firefighter: "🚒", police: "👮", teacher: "📚", journalist: "📰", vet: "🐾", architect: "📐", programmer: "💻", pilot: "✈️", doctor: "🩺", banker: "🏦",
   shoes: "👟", clothes: "👕", tech: "📱", delivery: "🛵", supermarket: "🏬", digi: "🎮", software: "🧩", hardware: "🖥️", factory: "🏭",
   reselling: "🔁", carflip: "🚗", houseflip: "🏚️", lemonade: "🍋", startup: "🚀",
 };
@@ -157,7 +172,10 @@ export function EconomyGame({ locale }: { locale: Locale }) {
   });
   const busyRef = useRef(false);
 
-  const errorText = useCallback((code?: string) => t.errors[code ?? "generic"] ?? t.errors.generic, [t]);
+  const errorText = useCallback(
+    (code?: string) => getEconomyWork(locale).errors[code ?? ""] ?? t.errors[code ?? "generic"] ?? t.errors.generic,
+    [t, locale],
+  );
   const say = useCallback((text: string, ok = false) => {
     setToast({ text, ok });
     window.setTimeout(() => setToast((c) => (c?.text === text ? null : c)), 3200);
@@ -344,6 +362,28 @@ export function EconomyGame({ locale }: { locale: Locale }) {
     { label: t.assetCategories.metals, value: catHeld("metals"), color: "var(--cat-4)" },
     { label: t.other, value: catHeld("crypto") + catHeld("bonds") + catHeld("realestate"), color: "var(--cat-5)" },
   ];
+
+  const w = getEconomyWork(locale);
+  const job = state.job;
+  const shiftWait = Math.max(0, state.shiftReadyAt - clock);
+  const restWait = Math.max(0, state.restReadyAt - clock);
+  const raiseWait = Math.max(0, state.raiseReadyAt - clock);
+  const promoWait = job ? Math.max(0, job.promoRetryAt - clock) : 0;
+  const sick = state.sickUntil > clock;
+  const onVacation = state.vacationUntil > clock;
+  const needEnergy = SHIFT_MIN_ENERGY + (job?.lead ? LEAD_EXTRA_ENERGY : 0);
+  const vacLeft = Math.max(0, VACATION_MAX - state.vacations.filter((x) => clock - x < VACATION_WINDOW_MS).length);
+  const perfAvg = job && job.perfs.length ? job.perfs.reduce((x, y) => x + y, 0) / job.perfs.length : 0;
+  const promoPct = Math.min(PROMO_MAX, PROMO_BASE + PROMO_PER_PERF * perfAvg);
+  const raisePct = Math.max(0, RAISE_BASE + RAISE_PER_PERF * perfAvg - (job && job.rank >= LEAD_MIN_RANK ? RAISE_SENIOR_PENALTY : 0));
+  const nextPoints = job && job.rank < MAX_JOB_RANK ? RANK_POINTS[job.rank] : 0;
+  const crisisText =
+    state.crisis && job && state.crisis.job === job.id && clock < state.crisis.endAt
+      ? clock < state.crisis.startAt
+        ? fill(w.crisis, { t: formatLeft(state.crisis.startAt - clock, t) })
+        : null
+      : null;
+  const eventText = (p: Payload) => (p.event ? fill(w.events[p.event], { n: m(p.gained?.cash ?? 0) }) : t.toast.bought);
 
   const tabs: Tab[] = ["overview", "work", "companies", "invest", "hustle", "board"];
 
@@ -659,37 +699,168 @@ export function EconomyGame({ locale }: { locale: Locale }) {
       )}
 
       {tab === "work" && (
-        <section>
-          <p className="mb-3 text-sm text-[var(--muted)]">{t.workHint}</p>
-          <p className="mb-4 font-semibold">
-            {t.currentJob}:{" "}
-            {state.job
-              ? `${EMOJI[state.job.id]} ${t.jobs[state.job.id]} · ${fill(t.rank, { n: jobRank(state.job.hours) })}${jobRank(state.job.hours) >= MAX_JOB_RANK ? " ★" : ""}`
-              : t.noJob}
-          </p>
+        <section className="grid gap-4">
+          <p className="text-sm text-[var(--muted)]">{t.workHint}</p>
+
+          <div className="card flex flex-col gap-3 p-4">
+            <p className="font-semibold">
+              {t.currentJob}: {job ? `${EMOJI[job.id]} ${t.jobs[job.id]}` : t.noJob}
+            </p>
+            {job && (
+              <>
+                <div className="flex flex-wrap gap-2 text-sm">
+                  <span className="rounded-full border border-[var(--line)] px-2 py-0.5">
+                    {fill(w.rank, { n: job.rank })}
+                    {job.rank >= MAX_JOB_RANK ? " ★" : ""}
+                  </span>
+                  <span className="text-[var(--muted)]">
+                    {w.passive}: {m(r.salary)} {t.perHourShort}
+                  </span>
+                  {job.lead && <span className="rounded-full border border-[var(--line)] px-2 py-0.5">{w.lead}</span>}
+                </div>
+                <div>
+                  <div className="mb-1 text-sm text-[var(--muted)]">
+                    {job.rank >= MAX_JOB_RANK ? w.topRank : fill(w.pointsTo, { n: job.points, max: nextPoints })}
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-[var(--surface)]">
+                    <div className="h-full bg-[var(--accent-green)]" style={{ width: `${job.rank >= MAX_JOB_RANK ? 100 : Math.min(100, (job.points / nextPoints) * 100)}%` }} />
+                  </div>
+                </div>
+                {sick && <p className="text-sm font-semibold">🤒 {fill(w.sick, { t: formatLeft(state.sickUntil - clock, t) })}</p>}
+                {onVacation && <p className="text-sm font-semibold">🏖️ {formatLeft(state.vacationUntil - clock, t)}</p>}
+                {crisisText && <p className="text-sm font-semibold">📉 {crisisText}</p>}
+                {job.warned && <p className="text-sm font-semibold">⚠️ {w.warned}</p>}
+              </>
+            )}
+          </div>
+
+          <div className="card flex flex-col gap-3 p-4">
+            <h2 className="font-bold">{w.shiftTitle}</h2>
+            <p className="text-sm text-[var(--muted)]">{w.shiftIntro}</p>
+            <div>
+              <div className="mb-1 text-sm">{fill(w.energy, { n: Math.floor(state.energy) })}</div>
+              <div className="h-2 overflow-hidden rounded-full bg-[var(--surface)]">
+                <div className="h-full bg-[var(--brand-500)]" style={{ width: `${Math.min(100, state.energy)}%` }} />
+              </div>
+            </div>
+
+            {state.shift && job ? (
+              (() => {
+                const sit = SITUATIONS[(state.shift.seed + state.shift.step * 2) % SITUATIONS.length];
+                const text = w.situations[sit.id];
+                return (
+                  <div className="flex flex-col gap-3">
+                    <p className="text-sm font-semibold">{fill(w.shiftStep, { n: state.shift.step + 1 })}</p>
+                    <p>{text.text}</p>
+                    <div className="grid gap-2 sm:grid-cols-3">
+                      {text.choices.map((label, i) => (
+                        <button
+                          key={label}
+                          type="button"
+                          disabled={busy}
+                          onClick={() => void act({ action: "chooseShift", index: i }, eventText)}
+                          className="btn-bouncy rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-left text-sm font-bold disabled:opacity-45"
+                        >
+                          {label}
+                          <span className="block text-xs font-normal text-[var(--muted)]">{fill(w.shiftPerf, { n: sit.perf[i] })}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()
+            ) : (
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  disabled={busy || !job || sick || onVacation || shiftWait > 0 || state.energy < needEnergy}
+                  onClick={() => void act({ action: "startShift" }, eventText)}
+                  className="btn-bouncy w-fit bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white disabled:opacity-45"
+                >
+                  {w.shiftStart}
+                </button>
+                {shiftWait > 0 && <p className="text-sm text-[var(--muted)]">{fill(w.shiftNext, { t: formatLeft(shiftWait, t) })}</p>}
+                {state.energy < needEnergy && <p className="text-sm text-[var(--muted)]">{fill(w.energyNeed, { n: needEnergy })}</p>}
+              </div>
+            )}
+          </div>
+
+          <div className="card flex flex-col gap-3 p-4">
+            <h2 className="font-bold">{w.careerTitle}</h2>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              <button
+                type="button"
+                disabled={busy || !job || !!state.shift || job.rank >= MAX_JOB_RANK || promoWait > 0 || job.points < nextPoints}
+                onClick={() => void act({ action: "requestPromotion" }, eventText)}
+                className="btn-bouncy rounded-lg bg-[var(--brand-500)] px-3 py-2 text-left text-sm font-bold text-white disabled:opacity-45"
+              >
+                {promoWait > 0 ? fill(w.wait, { t: formatLeft(promoWait, t) }) : w.promo}
+                <span className="block text-xs font-normal opacity-80">{fill(w.promoChance, { n: Math.round(promoPct) })}</span>
+              </button>
+              <button
+                type="button"
+                disabled={busy || !job || !!state.shift || raiseWait > 0}
+                onClick={() => void act({ action: "negotiateRaise" }, eventText)}
+                className="btn-bouncy rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-left text-sm font-bold disabled:opacity-45"
+              >
+                {raiseWait > 0 ? fill(w.wait, { t: formatLeft(raiseWait, t) }) : w.raise}
+                <span className="block text-xs font-normal text-[var(--muted)]">{fill(w.promoChance, { n: Math.round(raisePct) })}</span>
+              </button>
+              <button
+                type="button"
+                disabled={busy || !job || !!state.shift || (job?.rank ?? 0) < LEAD_MIN_RANK}
+                onClick={() => void act({ action: "setLead", on: !job?.lead }, eventText)}
+                className="btn-bouncy rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-left text-sm font-bold disabled:opacity-45"
+              >
+                {job && job.rank >= LEAD_MIN_RANK ? (job.lead ? w.leadOn : w.leadOff) : w.leadLocked}
+                <span className="block text-xs font-normal text-[var(--muted)]">{w.leadNote}</span>
+              </button>
+              <button
+                type="button"
+                disabled={busy || !!state.shift || restWait > 0}
+                onClick={() => void act({ action: "rest" }, eventText)}
+                className="btn-bouncy rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-left text-sm font-bold disabled:opacity-45"
+              >
+                {restWait > 0 ? fill(w.wait, { t: formatLeft(restWait, t) }) : w.rest}
+              </button>
+              <button
+                type="button"
+                disabled={busy || !!state.shift || onVacation || sick || vacLeft <= 0}
+                onClick={() => void act({ action: "startVacation" }, eventText)}
+                className="btn-bouncy rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-left text-sm font-bold disabled:opacity-45"
+              >
+                {w.vacation}
+                <span className="block text-xs font-normal text-[var(--muted)]">{fill(w.vacationLeft, { n: vacLeft })}</span>
+              </button>
+            </div>
+            {state.dayPay > 0 && <p className="text-sm text-[var(--muted)]">{fill(w.bonus, { n: m(state.dayPay * BONUS_SHARE) })}</p>}
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {JOBS.map((j) => {
-              const current = state.job?.id === j.id;
+              const current = job?.id === j.id;
+              const locked = state.edu < j.edu;
               return (
-                <article key={j.id} className={`card flex flex-col gap-2 p-4 ${current ? "border-[var(--accent-green)]" : ""}`}>
+                <article key={j.id} className={`card flex flex-col gap-2 p-4 ${current ? "border-[var(--accent-green)]" : ""} ${locked ? "opacity-70" : ""}`}>
                   <h3 className="font-bold">
                     {EMOJI[j.id]} {t.jobs[j.id]}
                   </h3>
                   <p className="text-sm text-[var(--muted)]">
                     {m(j.salary * INCOME_SPEED * COUNTRY_DEF[ch.country].salary)} {t.perHourShort} · {j.fee > 0 ? fill(t.fee, { n: m(j.fee) }) : t.free}
                   </p>
+                  <p className="text-xs text-[var(--muted)]">{fill(w.eduReq, { n: j.edu })}</p>
                   {current ? (
-                    <button type="button" disabled={busy} onClick={() => void act({ action: "quitJob" })} className="btn-bouncy mt-auto bg-[var(--surface)] px-3 py-2 text-sm font-bold">
+                    <button type="button" disabled={busy || !!state.shift} onClick={() => void act({ action: "quitJob" })} className="btn-bouncy mt-auto bg-[var(--surface)] px-3 py-2 text-sm font-bold">
                       {t.quit}
                     </button>
                   ) : (
                     <button
                       type="button"
-                      disabled={busy || liveCash < j.fee}
+                      disabled={busy || !!state.shift || locked || liveCash < j.fee}
                       onClick={() => void act({ action: "takeJob", id: j.id }, () => t.toast.job)}
                       className="btn-bouncy mt-auto bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
                     >
-                      {t.take}
+                      {locked ? `🔒 ${fill(w.eduReq, { n: j.edu })}` : t.take}
                     </button>
                   )}
                 </article>

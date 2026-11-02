@@ -10,6 +10,7 @@ import {
   buyAsset,
   buyCompany,
   cashOutHustle,
+  chooseShift,
   collectHustle,
   createCharacter,
   currentEvent,
@@ -25,12 +26,18 @@ import {
   quitJob,
   rates,
   restart,
+  negotiateRaise,
+  requestPromotion,
+  rest,
   runCampaign,
   sellAsset,
   setCompanySetting,
+  setLead,
   setSpeed,
   settle,
   startHustle,
+  startShift,
+  startVacation,
   takeJob,
   topUpHustle,
   upgradeCompany,
@@ -82,10 +89,26 @@ type Body = {
   field?: unknown;
   value?: unknown;
   delta?: unknown;
+  index?: unknown;
+  on?: unknown;
 };
 
-function applyAction(state: EconomyState, body: Body, now: number): ActionResult {
+function applyAction(state: EconomyState, body: Body, now: number, learning: number): ActionResult {
   switch (body.action) {
+    case "startShift":
+      return startShift(state, now);
+    case "chooseShift":
+      return chooseShift(state, body.index, now, learning);
+    case "rest":
+      return rest(state, now);
+    case "requestPromotion":
+      return requestPromotion(state, now);
+    case "negotiateRaise":
+      return negotiateRaise(state, now);
+    case "setLead":
+      return setLead(state, body.on, now);
+    case "startVacation":
+      return startVacation(state, now);
     case "create":
       return createCharacter(state, body, now);
     case "restart":
@@ -175,7 +198,7 @@ export async function POST(request: Request) {
         const base = row ? normalizeState(row.data, real) : emptyState(real);
         const now = gameNow(base, real);
         const current = settle(base, now, learning);
-        const outcome = body.action === "setSpeed" ? setSpeed(current, body.value, real) : applyAction(current, body, now);
+        const outcome = body.action === "setSpeed" ? setSpeed(current, body.value, real) : applyAction(current, body, now, learning);
         if (!outcome.ok) return { outcome, points, now };
 
         const cost = outcome.pointsSpent ?? 0;
@@ -197,7 +220,11 @@ export async function POST(request: Request) {
     );
 
     if (!result.outcome.ok) return NextResponse.json({ error: result.outcome.error }, { status: 400 });
-    return NextResponse.json({ ...payload(result.outcome.state, result.points, learning, result.now), gained: result.outcome.gained ?? null });
+    return NextResponse.json({
+      ...payload(result.outcome.state, result.points, learning, result.now),
+      gained: result.outcome.gained ?? null,
+      event: result.outcome.event ?? null,
+    });
   } catch (error) {
     if (error instanceof NotEnoughPoints) return NextResponse.json({ error: "not-enough-points" }, { status: 400 });
     if (error instanceof Conflict || (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")) {

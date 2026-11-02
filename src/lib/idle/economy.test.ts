@@ -7,13 +7,16 @@ import {
   EVENT_DURATION_MS,
   EVENT_WINDOW_MS,
   HUSTLES,
+  INCOME_SPEED,
   JOBS,
+  SITUATIONS,
   arbitrage,
   assetDef,
   assetPrice,
   buyAsset,
   buyCompany,
   cashOutHustle,
+  chooseShift,
   collectHustle,
   companyIncome,
   companyYield,
@@ -26,23 +29,36 @@ import {
   hireStaff,
   investEdu,
   isNegativeEvent,
+  negotiateRaise,
+  newJob,
   netWorth,
   gameNow,
   normalizeState,
   setSpeed,
   quitJob,
   rates,
+  rest,
+  requestPromotion,
   restart,
   runCampaign,
   sellAsset,
   setCompanySetting,
+  setLead,
   settle,
   startHustle,
+  startShift,
+  startVacation,
   takeJob,
   topUpHustle,
   upgradeCompany,
   type EconomyState,
 } from "./economy.ts";
+
+// Pevný rng: první volání vrací 0,99 (žádná nemoc ani krize), třetí vrátí `seed` (výběr situací).
+const rngFor = (seed: number) => {
+  let i = 0;
+  return () => (i++ === 2 ? seed : 0.99);
+};
 
 const H = 3_600_000;
 const NOW = 1_800_000_000_000;
@@ -75,19 +91,204 @@ test("postava: startovní peníze podle rodiny a doby, jméno se očistí, podru
   assert.deepEqual(createCharacter(emptyState(NOW), { country: "cz", name: "   ", city: "town", era: "2025", family: "poor" }, NOW), { ok: false, error: "bad-request" });
 });
 
-test("práce: poplatek, výměna a výpověď; zkušenosti zvedají plat", () => {
+test("práce: poplatek, Vzdělání odemyká povolání, výměna a výpověď", () => {
   let s = start();
-  assert.deepEqual(takeJob(s, "banker", NOW), { ok: false, error: "not-enough-cash" });
+  assert.deepEqual(takeJob(s, "banker", NOW), { ok: false, error: "locked" });
+  assert.deepEqual(takeJob({ ...s, edu: 14 }, "banker", NOW), { ok: false, error: "not-enough-cash" });
   const r = takeJob(s, "warehouse", NOW);
   ok(r);
   s = r.ok ? r.state : s;
   assert.deepEqual(takeJob(s, "warehouse", NOW), { ok: false, error: "same-job" });
-  const before = rates(s, NOW).salary;
-  const later = { ...s, job: { id: "warehouse" as const, hours: 1 } };
-  assert.ok(rates(later, NOW).salary > before);
+  assert.equal(s.job?.rank, 1);
   const q = quitJob(s, NOW);
   ok(q);
   assert.deepEqual(quitJob(q.ok ? q.state : s, NOW), { ok: false, error: "no-job" });
+});
+
+test("pasivní plat je 60 % stupně a stoupá s povýšením a zvýšením", () => {
+  const s = takeJob(start(), "warehouse", NOW);
+  ok(s);
+  const base = s.ok ? s.state : start();
+  const salary = rates(base, NOW).salary;
+  assert.ok(Math.abs(salary - 40 * 0.6 * INCOME_SPEED) < 1e-6, `plat ${salary}`);
+  const up = { ...base, job: { ...base.job!, rank: 3 } };
+  assert.ok(rates(up, NOW).salary > salary);
+  const raised = { ...base, raises: { warehouse: 1.1 } };
+  assert.ok(rates(raised, NOW).salary > salary);
+  const ill = { ...base, sickUntil: NOW + H };
+  assert.equal(rates(ill, NOW).salary, 0);
+  const holiday = { ...base, vacationUntil: NOW + H };
+  assert.ok(Math.abs(rates(holiday, NOW).salary - salary / 2) < 1e-6);
+});
+
+// Pomocník: projde celou směnu. `pick` dostane výkony situace a vrátí index volby.
+const best = (p: number[]) => p.indexOf(Math.max(...p));
+const worst = (p: number[]) => p.indexOf(Math.min(...p));
+function playShift(s: EconomyState, now: number, pick: (perfs: number[]) => number): EconomyState {
+  let cur = s;
+  for (let step = 0; step < 3; step++) {
+    const sh = cur.shift!;
+    const perfs = [...SITUATIONS[(sh.seed + sh.step * 2) % SITUATIONS.length].perf];
+    const r = chooseShift(cur, pick(perfs), now);
+    ok(r);
+    cur = r.ok ? r.state : cur;
+  }
+  return cur;
+}
+
+test("směna: energie se odečítá, výplata roste s výkonem a body se připisují", () => {
+  const base = takeJob(start(), "warehouse", NOW);
+  ok(base);
+  const s = base.ok ? base.state : start();
+  const startCash = s.cash;
+  const started = startShift(s, NOW, rngFor(0));
+  ok(started);
+  const sh = started.ok ? started.state : s;
+  assert.equal(sh.energy, s.energy, "energie se odečítá až při rozhodnutích");
+  const good = playShift(sh, NOW, best);
+  const bad = playShift(sh, NOW, worst);
+  assert.ok(good.cash - startCash > bad.cash - startCash, "lepší výkon = vyšší výplata");
+  assert.equal(good.energy, sh.energy - 30);
+  assert.equal(good.shift, null);
+  assert.ok(good.job!.points > 0);
+  assert.deepEqual(startShift(good, NOW, rngFor(0)), { ok: false, error: "cooldown" });
+  const one = chooseShift(sh, 0, NOW);
+  ok(one);
+  assert.equal(one.ok && one.event, "shift-step");
+});
+
+test("směna: nejde spustit bez energie, při nemoci nebo na dovolené", () => {
+  const base = takeJob(start(), "warehouse", NOW);
+  const s = base.ok ? base.state : start();
+  assert.deepEqual(startShift({ ...s, energy: 20 }, NOW, () => 0.99), { ok: false, error: "low-energy" });
+  assert.deepEqual(startShift({ ...s, sickUntil: NOW + H }, NOW, () => 0.99), { ok: false, error: "sick" });
+  assert.deepEqual(startShift({ ...s, vacationUntil: NOW + H }, NOW, () => 0.99), { ok: false, error: "vacation" });
+  assert.deepEqual(startShift(start(), NOW, () => 0.99), { ok: false, error: "no-job" });
+  assert.deepEqual(chooseShift(s, 0, NOW), { ok: false, error: "no-shift" });
+});
+
+test("nemoc se losuje při nástupu a hráč ji nemůže odmítnout", () => {
+  const base = takeJob(start(), "warehouse", NOW);
+  const s = base.ok ? base.state : start();
+  const sick = startShift(s, NOW, () => 0.01);
+  ok(sick);
+  assert.equal(sick.ok ? sick.event : null, "sick");
+  assert.ok(sick.ok && sick.state.sickUntil > NOW);
+  assert.equal(sick.ok ? sick.state.shift : "x", null);
+});
+
+test("povýšení: body a čekání na stupeň, šance podle výkonu", () => {
+  const base = takeJob(start("business"), "warehouse", NOW);
+  const s = base.ok ? base.state : start();
+  assert.deepEqual(requestPromotion({ ...s, job: { ...s.job!, points: 0 } }, NOW + 3 * H), { ok: false, error: "not-enough-points" });
+  // Warehouse chce Vzdělání 1 (stupeň 1 → 2), proto edu 1.
+  const ready = { ...s, edu: 1, job: { ...s.job!, points: 60, rankSince: NOW - 3 * H } };
+  assert.deepEqual(requestPromotion({ ...ready, job: { ...ready.job!, rankSince: NOW } }, NOW), { ok: false, error: "not-ready" });
+  assert.deepEqual(requestPromotion({ ...ready, edu: 0 }, NOW), { ok: false, error: "locked" });
+  const yes = requestPromotion(ready, NOW, () => 0);
+  ok(yes);
+  assert.equal(yes.ok && yes.state.job?.rank, 2);
+  assert.equal(yes.ok && yes.event, "promoted");
+  const no = requestPromotion(ready, NOW, () => 0.999);
+  ok(no);
+  assert.equal(no.ok && no.event, "promo-rejected");
+  assert.deepEqual(requestPromotion(no.ok ? no.state : ready, NOW + 1000, () => 0), { ok: false, error: "cooldown" });
+});
+
+test("prémie: jednou za den 10 % z výplat za směny", () => {
+  const base = takeJob(start(), "warehouse", NOW);
+  const s = base.ok ? base.state : start();
+  const withPay = { ...s, dayPay: 1000, bonusAt: NOW };
+  const after = settle(withPay, NOW + 25 * H);
+  const control = settle({ ...withPay, dayPay: 0 }, NOW + 25 * H);
+  assert.ok(Math.abs(after.cash - control.cash - 100) < 1e-6, "prémie je 10 % z 1000");
+  assert.equal(after.dayPay, 0);
+  const soon = settle({ ...withPay }, NOW + H);
+  assert.equal(soon.dayPay, 1000, "před uplynutím dne se nic nevyplácí");
+});
+
+test("vyjednání platu: jednou za 7 dní, trvale zvýší plat povolání", () => {
+  const base = takeJob(start(), "warehouse", NOW);
+  const s = base.ok ? base.state : start();
+  const r = negotiateRaise(s, NOW, () => 0);
+  ok(r);
+  assert.ok(r.ok && (r.state.raises.warehouse ?? 1) > 1.04);
+  assert.equal(r.ok && r.event, "raised");
+  assert.deepEqual(negotiateRaise(r.ok ? r.state : s, NOW + H, () => 0), { ok: false, error: "cooldown" });
+  const no = negotiateRaise(s, NOW, () => 0.999);
+  assert.equal(no.ok && no.event, "raise-rejected");
+});
+
+test("vedoucí směny jen od stupně 4 a dovolená má limit", () => {
+  const base = takeJob(start(), "warehouse", NOW);
+  const s = base.ok ? base.state : start();
+  assert.deepEqual(setLead(s, true, NOW), { ok: false, error: "locked" });
+  const senior = { ...s, job: { ...s.job!, rank: 4 } };
+  const lead = setLead(senior, true, NOW);
+  ok(lead);
+  assert.equal(lead.ok && lead.state.job?.lead, true);
+  const v1 = startVacation(s, NOW);
+  ok(v1);
+  const v2 = startVacation(v1.ok ? v1.state : s, NOW + 25 * H);
+  ok(v2);
+  const v3 = startVacation(v2.ok ? v2.state : s, NOW + 50 * H);
+  assert.deepEqual(v3, { ok: false, error: "max" });
+});
+
+test("odpočinek jednou za 6 hodin doplní energii", () => {
+  const s = { ...start(), energy: 10 };
+  const r = rest(s, NOW);
+  ok(r);
+  assert.equal(r.ok && r.state.energy, 100);
+  assert.deepEqual(rest(r.ok ? r.state : s, NOW + H), { ok: false, error: "cooldown" });
+});
+
+test("výpověď: 5 špatných směn dá varování, dalších 5 výpověď", () => {
+  const base = takeJob(start(), "warehouse", NOW);
+  let s = base.ok ? base.state : start();
+  let t = NOW;
+  // seed 0 vybere situace, kde je nejhorší volba průměrně pod 30 %.
+  const badShift = (cur: EconomyState): EconomyState => {
+    t += 3 * H;
+    const st = startShift({ ...cur, energy: 100 }, t, rngFor(0));
+    ok(st);
+    return playShift(st.ok ? st.state : cur, t, worst);
+  };
+  for (let i = 0; i < 4; i++) s = badShift(s);
+  assert.equal(s.job?.warned, false);
+  s = badShift(s);
+  assert.equal(s.job?.warned, true);
+  assert.ok(s.job, "zatím je v práci");
+  for (let i = 0; i < 4; i++) s = badShift(s);
+  s = badShift(s);
+  assert.equal(s.job, null, "výpověď");
+});
+
+test("krize v oboru: varování přijde a plat se sníží až za den", () => {
+  const base = takeJob(start(), "warehouse", NOW);
+  const s = base.ok ? base.state : start();
+  const seq = [0.99, 0.01, 0];
+  let i = 0;
+  const warned = startShift(s, NOW, () => seq[i++]);
+  ok(warned);
+  assert.equal(warned.ok && warned.event, "crisis-warning");
+  const crisis = warned.ok ? warned.state.crisis : null;
+  assert.ok(crisis && crisis.startAt === NOW + 24 * H);
+  const before = jobSalaryAt(s, NOW + 25 * H);
+  const during = jobSalaryAt(warned.ok ? warned.state : s, NOW + 25 * H);
+  assert.ok(Math.abs(during - before * 0.9) < 1e-6, "krize snižuje plat o 10 %");
+});
+
+// Pasivní plat na hodinu, aby krizi šlo porovnat bez vlivu jiných složek.
+const jobSalaryAt = (s: EconomyState, now: number) => rates(s, now).salary;
+
+test("normalizace staré hry: stupeň se odvodí z hodin a body začínají od nuly", () => {
+  const old = normalizeState({ character: { country: "cz", name: "Eva", city: "town", era: "2025", family: "poor" }, job: { id: "warehouse", hours: 1 } }, NOW);
+  // Starý vzorec: 1 hodina = 4 kroky po 0,25 h, což dává stupeň 5.
+  assert.equal(old.job?.rank, 5);
+  assert.equal(old.job?.points, 0);
+  assert.equal(old.energy, 100);
+  assert.equal(old.shift, null);
 });
 
 test("firmy: cena roste s počtem, digitální obory zamyká doba", () => {
@@ -234,11 +435,11 @@ test("vzdělání: body se utrácejí, bonus roste a má strop", () => {
   const r = investEdu(s, NOW);
   assert.ok(r.ok && r.pointsSpent === 10);
   s = r.ok ? r.state : s;
-  const base = rates({ ...s, edu: 0, job: { id: "warehouse", hours: 0 } }, NOW);
-  const boosted = rates({ ...s, job: { id: "warehouse", hours: 0 } }, NOW);
+  const base = rates({ ...s, edu: 0, job: newJob("warehouse", NOW) }, NOW);
+  const boosted = rates({ ...s, job: newJob("warehouse", NOW) }, NOW);
   assert.ok(boosted.net > base.net);
   assert.deepEqual(investEdu({ ...s, edu: 25 }, NOW), { ok: false, error: "max" });
-  const learning = rates({ ...s, job: { id: "warehouse", hours: 0 } }, NOW, 5);
+  const learning = rates({ ...s, job: newJob("warehouse", NOW) }, NOW, 5);
   assert.ok(learning.multiplier <= 1 + 0.04 + 0.5 + 1e-9, "učení má strop");
 });
 
