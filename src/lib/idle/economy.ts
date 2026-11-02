@@ -3,7 +3,7 @@
 //
 // Jak Ekonomika funguje:
 //  - Hráč si vytvoří postavu (země, jméno, město, doba, rodina). To určuje startovní peníze a drobné bonusy.
-//  - Peníze plynou v reálném čase i mimo hru (nejvýš MAX_OFFLINE_H hodin): plat z práce, zisk firem,
+//  - Peníze plynou v reálném čase, mimo hru jen chvíli (MAX_OFFLINE_MIN minut): plat z práce, zisk firem,
 //    nájmy z nemovitostí, úroky z cenných papírů.
 //  - Práce: zaměstnání s platem, který časem roste (zkušenosti). Firmy: stavíš a rozšiřuješ podniky.
 //  - Investice: akcie, kovy, kryptoměny (ceny kolísají podle času, stejně na serveru i v prohlížeči),
@@ -13,18 +13,21 @@
 //    24 hodin dává navíc dočasné zrychlení.
 //  - Kdykoliv můžeš začít znovu. Rekordní jmění a počet pokusů zůstávají.
 
-export const MAX_OFFLINE_H = 12;
+// Hra je na aktivní hraní: mimo hru peníze běží jen chvíli a všechno ostatní je svižné.
+export const MAX_OFFLINE_MIN = 15;
+// Násobek všech příjmů a výdajů za hodinu (hodinové sazby níž jsou zachované, jen se rychleji "točí").
+export const INCOME_SPEED = 20;
 export const MAX_NAME = 20;
 export const MAX_COMPANY_UNITS = 50;
 export const MAX_EDU = 25;
 export const EDU_BONUS_PER_LEVEL = 0.04;
 export const MAX_LEARNING_BONUS = 0.5;
-export const JOB_RANK_HOURS = 10;
+export const JOB_RANK_HOURS = 0.25;
 export const MAX_JOB_RANK = 5;
 export const JOB_RANK_BONUS = 0.15;
-export const ARB_COOLDOWN_MS = 20 * 60_000;
+export const ARB_COOLDOWN_MS = 60_000;
 export const ARB_FEE = 0.005;
-export const ARB_CAP = 5_000;
+export const ARB_CAP = 100_000;
 const H = 3_600_000;
 
 // --- Postava ---
@@ -139,14 +142,14 @@ function hash32(s: string): number {
   return (h >>> 0) / 4294967296;
 }
 
-// Cena je čistá funkce času: dvě pomalé vlny a malý šum po 5 minutách. Server i prohlížeč vidí totéž.
+// Cena je čistá funkce času: dvě vlny (perioda zhruba 3 hodiny a 45 minut) a malý šum po minutě. Server i prohlížeč vidí totéž.
 export function assetPrice(id: AssetId, now: number): number {
   const def = ASSETS.find((a) => a.id === id)!;
   const phaseA = hash32(`${id}:a`) * Math.PI * 2;
   const phaseB = hash32(`${id}:b`) * Math.PI * 2;
   const hours = now / H;
-  const wave = 0.6 * Math.sin(hours / 9 + phaseA) + 0.4 * Math.sin(hours / 2.3 + phaseB);
-  const noise = (hash32(`${id}:${Math.floor(now / (5 * 60_000))}`) - 0.5) * 0.3;
+  const wave = 0.6 * Math.sin(hours / 0.5 + phaseA) + 0.4 * Math.sin(hours / 0.12 + phaseB);
+  const noise = (hash32(`${id}:${Math.floor(now / 60_000)}`) - 0.5) * 0.3;
   const trend = 1 + def.drift * (hours % 5_000);
   return Math.max(1, def.base * trend * (1 + def.vol * (wave + noise)));
 }
@@ -154,8 +157,8 @@ export function assetPrice(id: AssetId, now: number): number {
 // Dva trhy, které se krátkodobě rozcházejí. Rozdíl mezi nimi je příležitost pro arbitráž.
 export function arbitrageSpread(now: number): number {
   const h = now / H;
-  const a = Math.sin(h * 3.1 + 0.7) * 0.5 + Math.sin(h * 11 + 2.1) * 0.5;
-  const b = Math.sin(h * 2.7 + 4.2) * 0.5 + Math.sin(h * 9 + 0.3) * 0.5;
+  const a = Math.sin(h * 20 + 0.7) * 0.5 + Math.sin(h * 70 + 2.1) * 0.5;
+  const b = Math.sin(h * 17 + 4.2) * 0.5 + Math.sin(h * 55 + 0.3) * 0.5;
   return Math.abs(a - b) * 0.03;
 }
 
@@ -165,9 +168,9 @@ export type HustleId = "reselling" | "houseflip" | "carflip";
 export type HustleDef = { id: HustleId; cost: number; minutes: number; min: number; max: number };
 // Výsledek je násobek vloženého kapitálu mezi min a max (rozloženo rovnoměrně). Střední hodnota je mírně nad 1.
 export const HUSTLES: HustleDef[] = [
-  { id: "reselling", cost: 200, minutes: 10, min: 0.85, max: 1.5 },
-  { id: "carflip", cost: 5_000, minutes: 60, min: 0.8, max: 1.55 },
-  { id: "houseflip", cost: 60_000, minutes: 360, min: 0.75, max: 1.6 },
+  { id: "reselling", cost: 200, minutes: 1, min: 0.85, max: 1.5 },
+  { id: "carflip", cost: 5_000, minutes: 5, min: 0.8, max: 1.55 },
+  { id: "houseflip", cost: 60_000, minutes: 20, min: 0.75, max: 1.6 },
 ];
 export type HustleSlot = { startedAt: number; payout: number } | null;
 
@@ -364,8 +367,8 @@ export function rates(state: EconomyState, now: number, learning = 0): Rates {
   }
   // Životní náklady jsou malé, ale rostou s tím, jak jsi na tom líp (aby hráč nebyl zadarmo bohatý).
   const living = (6 * country.living * city.living * family.living) * (1 + Math.log10(1 + (state.cash + 0) / 1000) * 0.5);
-  const gross = (salary + companies + passive) * multiplier;
-  return { salary, companies, passive, living, multiplier, net: gross - living };
+  const gross = (salary + companies + passive) * multiplier * INCOME_SPEED;
+  return { salary: salary * INCOME_SPEED, companies: companies * INCOME_SPEED, passive: passive * INCOME_SPEED, living: living * INCOME_SPEED, multiplier, net: gross - living * INCOME_SPEED };
 }
 
 // Jmění = hotovost + hodnota investic + cena firem + rozjeté hustle.
@@ -383,7 +386,7 @@ export function netWorth(state: EconomyState, now: number): number {
 // Připíše příjem za uplynulý čas. Sazba se bere z poloviny úseku (cena aktiv se mění), proto stačí hrubý odhad.
 export function settle(state: EconomyState, now: number, learning = 0): EconomyState {
   if (!state.character) return { ...state, lastSeen: now };
-  const elapsed = Math.min(Math.max(0, now - state.lastSeen), MAX_OFFLINE_H * H);
+  const elapsed = Math.min(Math.max(0, now - state.lastSeen), MAX_OFFLINE_MIN * 60_000);
   if (elapsed <= 0) return { ...state, lastSeen: now };
   const hours = elapsed / H;
   const rate = rates(state, state.lastSeen + elapsed / 2, learning);
