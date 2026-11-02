@@ -30,7 +30,7 @@ import {
   restart,
   runCampaign,
   sellAsset,
-  setCompanyLevel,
+  setCompanySetting,
   settle,
   startHustle,
   takeJob,
@@ -265,12 +265,14 @@ test("firma: vylepšení, zaměstnanci, cena a výroba mění výnos; jde to jen
   ok(fired);
   assert.equal(fired.ok ? fired.state.setup.shoes?.staff : -1, 0);
 
-  const cheap = setCompanyLevel(s, "shoes", "output", "high", NOW);
+  const cheap = setCompanySetting(s, "shoes", "output", 1.4, NOW);
   ok(cheap);
-  assert.equal(cheap.ok ? cheap.state.setup.shoes?.output : "", "high");
-  assert.deepEqual(setCompanyLevel(s, "shoes", "price", "extreme", NOW), { ok: false, error: "bad-request" });
-  assert.deepEqual(setCompanyLevel(s, "shoes", "owner", "high", NOW), { ok: false, error: "bad-request" });
-  assert.deepEqual(setCompanyLevel(s, "clothes", "price", "high", NOW), { ok: false, error: "nothing" });
+  assert.equal(cheap.ok ? cheap.state.setup.shoes?.output : -1, 1.4);
+  const clamped = setCompanySetting(s, "shoes", "risk", 7, NOW);
+  assert.equal(clamped.ok ? clamped.state.setup.shoes?.risk : -1, 1);
+  assert.deepEqual(setCompanySetting(s, "shoes", "price", "extreme", NOW), { ok: false, error: "bad-request" });
+  assert.deepEqual(setCompanySetting(s, "shoes", "owner", 1, NOW), { ok: false, error: "bad-request" });
+  assert.deepEqual(setCompanySetting(s, "clothes", "price", 1.5, NOW), { ok: false, error: "nothing" });
 });
 
 test("firma: marketingová kampaň běží půl hodiny a nedá se spustit znovu", () => {

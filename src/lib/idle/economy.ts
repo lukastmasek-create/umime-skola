@@ -131,20 +131,37 @@ export const companyIncome = (id: CompanyId): number => {
 };
 export const COMPANY_GROWTH = 1.15;
 
-// Nastavení jedné firmy (typu) z detailu. Všechno se počítá z času a stavu, takže server i prohlížeč vidí totéž.
-export const LEVELS = ["low", "normal", "high"] as const;
-export type Level = (typeof LEVELS)[number];
-export const DIRECTIONS = ["stable", "growth"] as const;
-export type Direction = (typeof DIRECTIONS)[number];
+// Nastavení jedné firmy (typu) z detailu. Hráč si hodnoty nastaví sám posuvníkem; všechno se počítá
+// z času a stavu, takže server i prohlížeč vidí totéž.
+// price = násobek ceny produktu (víc na kus, víc citlivé na krize)
+// output = násobek výroby (víc zboží, víc provozních nákladů)
+// risk = 0 bezpečně … 1 riskantně (vyšší riziko = vyšší výnos z výroby i silnější dopad událostí)
+export const SETTING_RANGE = {
+  price: { min: 0.5, max: 2, step: 0.05 },
+  output: { min: 0.5, max: 1.5, step: 0.05 },
+  risk: { min: 0, max: 1, step: 0.05 },
+} as const;
+export type SettingKey = keyof typeof SETTING_RANGE;
 export type CompanySetup = {
   upgraded: boolean; // jednorázové vylepšení celého oboru
   staff: number; // zaměstnanci celkem (max MAX_STAFF_PER_UNIT na kus)
-  price: Level; // cena produktu
-  output: Level; // kolik se vyrobí (vyšší výroba = víc zboží, ale vyšší provoz)
-  direction: Direction; // směr firmy: stabilní, nebo růstový (víc zisku, víc rizika)
+  price: number;
+  output: number;
+  risk: number;
   marketingUntil: number; // do kdy běží marketingová kampaň
 };
-export const DEFAULT_SETUP: CompanySetup = { upgraded: false, staff: 0, price: "normal", output: "normal", direction: "stable", marketingUntil: 0 };
+export const DEFAULT_SETUP: CompanySetup = { upgraded: false, staff: 0, price: 1, output: 1, risk: 0.3, marketingUntil: 0 };
+export const clampSetting = (key: SettingKey, v: number) => {
+  const r = SETTING_RANGE[key];
+  const snapped = Math.round(v / r.step) * r.step;
+  return Math.min(r.max, Math.max(r.min, Number(snapped.toFixed(2))));
+};
+// Výnos z rizika: bezpečná firma vyrábí o trochu míň, riskantní o něco víc.
+export const riskOutput = (risk: number) => 0.85 + 0.6 * risk;
+// Citlivost na události: bezpečná firma má nárazník, riskantní je vystavená víc.
+export const riskExposure = (risk: number) => 0.3 + 1.5 * risk;
+// Provozní náklady výroby v násobku zisku kusu (výroba nad 0,5× něco stojí).
+export const upkeepShare = (output: number) => Math.max(0, (output - 0.5) * 0.3);
 export const MAX_STAFF_PER_UNIT = 3;
 export const STAFF_OUTPUT = 0.12; // zvýšení výroby na jednoho zaměstnance (na celou firmu přepočteno)
 export const STAFF_WAGE = 0.08; // hodinová mzda jednoho zaměstnance v násobku zisku kusu
@@ -156,16 +173,6 @@ export const MARKETING_BONUS = 1.3;
 export const MARKETING_COST = 0.1; // kampaň stojí podíl ceny firem
 export const FUND_COST = 0.1; // krizový fond stojí podíl ceny firem
 export const FUND_SAVES = 0.65; // jaký díl ztráty z události fond zachrání
-export const PRICE_MULT: Record<Level, number> = { low: 0.8, normal: 1, high: 1.3 };
-// Vyšší cena = větší citlivost na krize (lidé přestanou nakupovat). Nízká cena je nárazník.
-export const PRICE_RISK: Record<Level, number> = { low: 0.6, normal: 1, high: 1.5 };
-export const OUTPUT_MULT: Record<Level, number> = { low: 0.8, normal: 1, high: 1.3 };
-// Provozní náklady výroby v násobku zisku kusu (vyšší výroba stojí víc).
-export const OUTPUT_UPKEEP: Record<Level, number> = { low: 0, normal: 0.1, high: 0.3 };
-export const DIRECTION_DEF: Record<Direction, { output: number; risk: number }> = {
-  stable: { output: 1, risk: 0.5 },
-  growth: { output: 1.25, risk: 1.5 },
-};
 
 // --- Mimořádné události ---
 // Každé dvě hodiny přijde jedna událost a trvá půl hodiny. Vybírá se podle času (stejné na serveru i v prohlížeči).
@@ -387,9 +394,9 @@ export function normalizeState(raw: unknown, now: number): EconomyState {
       setup[def.id] = {
         upgraded: s.upgraded === true,
         staff: Math.floor(finite(s.staff, 0, 0, n * MAX_STAFF_PER_UNIT)),
-        price: LEVELS.includes(s.price as Level) ? (s.price as Level) : "normal",
-        output: LEVELS.includes(s.output as Level) ? (s.output as Level) : "normal",
-        direction: DIRECTIONS.includes(s.direction as Direction) ? (s.direction as Direction) : "stable",
+        price: clampSetting("price", finite(s.price, 1, SETTING_RANGE.price.min, SETTING_RANGE.price.max)),
+        output: clampSetting("output", finite(s.output, 1, SETTING_RANGE.output.min, SETTING_RANGE.output.max)),
+        risk: clampSetting("risk", finite(s.risk, 0.3, SETTING_RANGE.risk.min, SETTING_RANGE.risk.max)),
         marketingUntil: finite(s.marketingUntil, 0, 0, now + EVENT_WINDOW_MS),
       };
     }
@@ -481,10 +488,11 @@ export function eventEffect(state: EconomyState, id: CompanyId, now: number): { 
   const ev = currentEvent(now);
   if (!ev || !eventAffects(ev.def, id)) return { mult: 1, wageMult: 1 };
   const s = setupOf(state, id);
-  const risk = DIRECTION_DEF[s.direction].risk;
+  // Cena i riziko zvyšují citlivost na událost.
+  const exposure = riskExposure(s.risk) * s.price;
   const saved = state.responses[id] === ev.window ? 1 - FUND_SAVES : 1;
   const d = ev.def;
-  const mult = d.mult < 1 ? Math.max(0.05, 1 - (1 - d.mult) * risk * PRICE_RISK[s.price] * saved) : 1 + (d.mult - 1) * risk;
+  const mult = d.mult < 1 ? Math.max(0.05, 1 - (1 - d.mult) * exposure * saved) : 1 + (d.mult - 1) * exposure;
   return { mult, wageMult: 1 + (d.wageMult - 1) * saved };
 }
 
@@ -498,15 +506,15 @@ export function companyYield(state: EconomyState, id: CompanyId, now: number): {
   const staffMult = 1 + STAFF_OUTPUT * (s.staff / n);
   const boost =
     (s.upgraded ? 1 + UPGRADE_BONUS : 1) *
-    PRICE_MULT[s.price] *
-    OUTPUT_MULT[s.output] *
-    DIRECTION_DEF[s.direction].output *
+    s.price *
+    s.output *
+    riskOutput(s.risk) *
     (now < s.marketingUntil ? MARKETING_BONUS : 1) *
     staffMult *
     effect.mult;
   return {
     gross: base * boost,
-    costs: base * OUTPUT_UPKEEP[s.output] + s.staff * companyIncome(id) * STAFF_WAGE * effect.wageMult,
+    costs: base * upkeepShare(s.output) + s.staff * companyIncome(id) * STAFF_WAGE * effect.wageMult,
   };
 }
 
@@ -666,19 +674,15 @@ export function hireStaff(state: EconomyState, id: unknown, delta: unknown, now:
   return done({ ...state, cash: state.cash - fee, setup: withSetup(state, o.id, { staff: s.staff + 1 }) }, now);
 }
 
-export function setCompanyLevel(state: EconomyState, id: unknown, field: unknown, value: unknown, now: number): ActionResult {
+// Nastavení čísla (cena, výroba, riziko) v rozsahu SETTING_RANGE. Hodnota se zaokrouhlí a ořízne.
+export function setCompanySetting(state: EconomyState, id: unknown, field: unknown, value: unknown, now: number): ActionResult {
   const o = ownedCompany(state, id);
   if (o.error) return fail(o.error);
-  if (field === "price" || field === "output") {
-    if (!LEVELS.includes(value as Level)) return fail("bad-request");
-    const patch: Partial<CompanySetup> = field === "price" ? { price: value as Level } : { output: value as Level };
-    return done({ ...state, setup: withSetup(state, o.id, patch) }, now);
-  }
-  if (field === "direction") {
-    if (!DIRECTIONS.includes(value as Direction)) return fail("bad-request");
-    return done({ ...state, setup: withSetup(state, o.id, { direction: value as Direction }) }, now);
-  }
-  return fail("bad-request");
+  if (field !== "price" && field !== "output" && field !== "risk") return fail("bad-request");
+  if (typeof value !== "number" || !Number.isFinite(value)) return fail("bad-request");
+  const v = clampSetting(field, value);
+  const patch: Partial<CompanySetup> = field === "price" ? { price: v } : field === "output" ? { output: v } : { risk: v };
+  return done({ ...state, setup: withSetup(state, o.id, patch) }, now);
 }
 
 export function runCampaign(state: EconomyState, id: unknown, now: number): ActionResult {

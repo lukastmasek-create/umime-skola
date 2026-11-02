@@ -1,5 +1,5 @@
 import type { Locale } from "./config";
-import type { AssetId, CityId, CompanyId, CountryId, Direction, EraId, EventId, FamilyId, HustleId, JobId, Level } from "@/lib/idle/economy";
+import type { AssetId, CityId, CompanyId, CountryId, EraId, EventId, FamilyId, HustleId, JobId } from "@/lib/idle/economy";
 
 // Texty Ekonomiky ve všech čtyřech jazycích.
 export type EconomyText = {
@@ -48,11 +48,20 @@ export type EconomyText = {
     staffFull: string;
     price: string;
     output: string;
-    direction: string;
-    levels: Record<Level, string>;
-    outputLevels: Record<Level, string>;
-    directions: Record<Direction, string>;
-    directionHint: string;
+    risk: string;
+    riskHint: string;
+    priceHint: string;
+    outputHint: string;
+    lessonsTitle: string;
+    previewTitle: string;
+    previewNow: string;
+    previewSafe: string;
+    previewBold: string;
+    rules: string[];
+    tasksTitle: string;
+    taskDone: string;
+    taskTodo: string;
+    tasks: { profit: string; risk: string; fund: string; staff: string };
     campaign: string;
     campaignHint: string;
     campaignGo: string;
@@ -205,11 +214,30 @@ const cs: EconomyText = {
     staffFull: "Kapacita je plná",
     price: "Cena produktu",
     output: "Výroba",
-    direction: "Směr firmy",
-    levels: { low: "Nízká", normal: "Běžná", high: "Vysoká" },
-    outputLevels: { low: "Malá", normal: "Běžná", high: "Velká" },
-    directions: { stable: "Stabilní", growth: "Růstový" },
-    directionHint: "Stabilní firma riskuje méně. Růstová vydělá víc, ale krize ji zasáhnou silněji.",
+    risk: "Riziko",
+    riskHint: "Bezpečné: menší výnos a menší dopad krizí. Riskantní: víc výnosu, ale silnější ztráty.",
+    priceHint: "Cena: víc za kus, ale firma je citlivější na krize.",
+    outputHint: "Výroba: víc zboží, ale vyšší provozní náklady.",
+    lessonsTitle: "Pravidla hry",
+    previewTitle: "Odhad čistého zisku za hodinu",
+    previewNow: "Teď",
+    previewSafe: "Při bezpečném nastavení (riziko 0)",
+    previewBold: "Při riskantním nastavení (riziko 1)",
+    rules: [
+      "Výnos firmy = kusy × zisk kusu × cena × výroba × riziko.",
+      "Riziko zvyšuje výnos, ale i ztrátu při události.",
+      "Výroba stojí provoz. Vysoká výroba se vyplatí, jen když máš peníze na provoz.",
+      "Krizový fond zmírní ztrátu z události. Jde zaplatit jednou za událost.",
+    ],
+    tasksTitle: "Úkoly",
+    taskDone: "Splněno",
+    taskTodo: "Zatím ne",
+    tasks: {
+      profit: "Dosáhni čistého zisku aspoň 1 000 Kč za hodinu u jedné firmy",
+      risk: "Nastav riziko nad 0,8 a sleduj, jak se změní výnos",
+      fund: "Zaplať krizový fond při události",
+      staff: "Najmi aspoň jednoho zaměstnance",
+    },
     campaign: "Marketing",
     campaignHint: "Kampaň na 30 minut zvedne výnos o 30 %.",
     campaignGo: "Spustit za {n}",
@@ -377,11 +405,30 @@ const en: EconomyText = {
     staffFull: "At capacity",
     price: "Product price",
     output: "Production",
-    direction: "Company direction",
-    levels: { low: "Low", normal: "Normal", high: "High" },
-    outputLevels: { low: "Small", normal: "Normal", high: "Large" },
-    directions: { stable: "Stable", growth: "Growth" },
-    directionHint: "A stable company takes less risk. A growth company earns more, but crises hit it harder.",
+    risk: "Risk",
+    riskHint: "Safe: smaller income and smaller crisis impact. Risky: more income, but heavier losses.",
+    priceHint: "Price: more per unit, but the company is more exposed to crises.",
+    outputHint: "Production: more goods, but higher running costs.",
+    lessonsTitle: "Game rules",
+    previewTitle: "Estimated net profit per hour",
+    previewNow: "Now",
+    previewSafe: "With a safe setting (risk 0)",
+    previewBold: "With a risky setting (risk 1)",
+    rules: [
+      "Company income = units × profit per unit × price × production × risk.",
+      "Risk raises income, but also the loss from an event.",
+      "Production costs upkeep. High production pays off only when you can afford the upkeep.",
+      "A crisis fund softens the loss from an event. You can pay it once per event.",
+    ],
+    tasksTitle: "Tasks",
+    taskDone: "Done",
+    taskTodo: "Not yet",
+    tasks: {
+      profit: "Reach 1,000 net profit per hour from one company",
+      risk: "Set risk above 0.8 and watch how income changes",
+      fund: "Pay the crisis fund during an event",
+      staff: "Hire at least one employee",
+    },
     campaign: "Marketing",
     campaignHint: "A 30-minute campaign raises income by 30 %.",
     campaignGo: "Launch for {n}",
@@ -549,11 +596,30 @@ const de: EconomyText = {
     staffFull: "Kapazität erreicht",
     price: "Produktpreis",
     output: "Produktion",
-    direction: "Ausrichtung der Firma",
-    levels: { low: "Niedrig", normal: "Normal", high: "Hoch" },
-    outputLevels: { low: "Gering", normal: "Normal", high: "Groß" },
-    directions: { stable: "Stabil", growth: "Wachstum" },
-    directionHint: "Eine stabile Firma riskiert weniger. Eine Wachstumsfirma verdient mehr, aber Krisen treffen sie stärker.",
+    risk: "Risiko",
+    riskHint: "Sicher: kleinerer Ertrag und geringere Krisenfolgen. Riskant: mehr Ertrag, aber stärkere Verluste.",
+    priceHint: "Preis: mehr pro Einheit, aber die Firma ist anfälliger für Krisen.",
+    outputHint: "Produktion: mehr Ware, aber höhere Betriebskosten.",
+    lessonsTitle: "Spielregeln",
+    previewTitle: "Geschätzter Reingewinn pro Stunde",
+    previewNow: "Jetzt",
+    previewSafe: "Bei sicherer Einstellung (Risiko 0)",
+    previewBold: "Bei riskanter Einstellung (Risiko 1)",
+    rules: [
+      "Ertrag der Firma = Einheiten × Gewinn pro Einheit × Preis × Produktion × Risiko.",
+      "Das Risiko erhöht den Ertrag, aber auch den Verlust bei einem Ereignis.",
+      "Produktion kostet Unterhalt. Hohe Produktion lohnt sich nur, wenn du den Unterhalt zahlen kannst.",
+      "Der Krisenfonds mildert den Verlust eines Ereignisses. Er kann einmal pro Ereignis bezahlt werden.",
+    ],
+    tasksTitle: "Aufgaben",
+    taskDone: "Erledigt",
+    taskTodo: "Noch nicht",
+    tasks: {
+      profit: "Erreiche 1.000 Reingewinn pro Stunde mit einer Firma",
+      risk: "Stelle das Risiko über 0,8 ein und beobachte den Ertrag",
+      fund: "Bezahle den Krisenfonds während eines Ereignisses",
+      staff: "Stelle mindestens einen Mitarbeiter ein",
+    },
     campaign: "Marketing",
     campaignHint: "Eine 30-minütige Kampagne steigert den Ertrag um 30 %.",
     campaignGo: "Starten für {n}",
@@ -721,11 +787,30 @@ const ru: EconomyText = {
     staffFull: "Нет мест",
     price: "Цена продукта",
     output: "Производство",
-    direction: "Направление компании",
-    levels: { low: "Низкая", normal: "Обычная", high: "Высокая" },
-    outputLevels: { low: "Малое", normal: "Обычное", high: "Большое" },
-    directions: { stable: "Стабильное", growth: "Ростовое" },
-    directionHint: "Стабильная компания рискует меньше. Ростовая зарабатывает больше, но кризисы бьют по ней сильнее.",
+    risk: "Риск",
+    riskHint: "Безопасно: меньше дохода и меньше влияние кризисов. Рискованно: больше дохода, но сильнее потери.",
+    priceHint: "Цена: больше за единицу, но компания сильнее подвержена кризисам.",
+    outputHint: "Выпуск: больше товара, но выше расходы на содержание.",
+    lessonsTitle: "Правила игры",
+    previewTitle: "Оценка чистой прибыли в час",
+    previewNow: "Сейчас",
+    previewSafe: "При безопасной настройке (риск 0)",
+    previewBold: "При рискованной настройке (риск 1)",
+    rules: [
+      "Доход компании = единицы × прибыль за единицу × цена × выпуск × риск.",
+      "Риск повышает доход, но и потерю от события.",
+      "Выпуск требует расходов. Большой выпуск окупается, только если хватает денег на содержание.",
+      "Антикризисный фонд смягчает потерю от события. Оплатить его можно раз за событие.",
+    ],
+    tasksTitle: "Задания",
+    taskDone: "Готово",
+    taskTodo: "Пока нет",
+    tasks: {
+      profit: "Получи 1 000 чистой прибыли в час с одной компании",
+      risk: "Установи риск выше 0,8 и посмотри, как изменится доход",
+      fund: "Оплати антикризисный фонд во время события",
+      staff: "Найми хотя бы одного сотрудника",
+    },
     campaign: "Маркетинг",
     campaignHint: "Кампания на 30 минут повышает доход на 30 %.",
     campaignGo: "Запустить за {n}",

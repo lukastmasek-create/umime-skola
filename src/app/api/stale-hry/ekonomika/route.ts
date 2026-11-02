@@ -25,7 +25,7 @@ import {
   restart,
   runCampaign,
   sellAsset,
-  setCompanyLevel,
+  setCompanySetting,
   settle,
   startHustle,
   takeJob,
@@ -94,8 +94,8 @@ function applyAction(state: EconomyState, body: Body, now: number): ActionResult
       return upgradeCompany(state, body.id, now);
     case "hireStaff":
       return hireStaff(state, body.id, body.delta, now);
-    case "setCompanyLevel":
-      return setCompanyLevel(state, body.id, body.field, body.value, now);
+    case "setCompanySetting":
+      return setCompanySetting(state, body.id, body.field, body.value, now);
     case "runCampaign":
       return runCampaign(state, body.id, now);
     case "fundResponse":
