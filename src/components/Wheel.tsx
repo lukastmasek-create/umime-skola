@@ -40,6 +40,7 @@ export function Wheel({
   const [nextSpinAt, setNextSpinAt] = useState(initialNextSpinAt);
   const [wonAmount, setWonAmount] = useState<number | null>(null);
   const [wonItem, setWonItem] = useState<string | null>(null);
+  const [wonIcon, setWonIcon] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [shown, setShown] = useState(initialPoints);
@@ -106,6 +107,8 @@ export function Wheel({
         setSpinning(false);
         setWonAmount(data.amount);
         setWonItem(data.item ?? null);
+        const won = WHEEL_PRIZES[prizeIndex].item;
+        setWonIcon(data.item && won ? `/home/obchod/ikona-${ICON_FILE[won.kind]}.webp` : null);
         setBurst((b) => b + 1);
         setShatter((n) => n + 1);
         setReform(false);
@@ -180,7 +183,7 @@ export function Wheel({
             style={{ backgroundImage: "url(/home/obchod/kolo-predni.webp)", animationDuration: spinning ? "0.5s" : "2.2s" }}
           />
         </div>
-        {burst > 0 && <WheelWin key={burst} label={wonItem ?? `+${wonAmount ?? 0}`} cx={layout.cx * 100} cy={layout.cy * 100} />}
+        {burst > 0 && <WheelWin key={burst} label={wonItem ?? `+${wonAmount ?? 0}`} icon={wonIcon} cx={layout.cx * 100} cy={layout.cy * 100} />}
       </div>
 
       {!loggedIn ? (
@@ -231,7 +234,7 @@ export function Wheel({
 }
 
 // Výhra: truhla vyskočí a otevře se, ze středu kola vylétnou konfety, jiskry a mince (čisté CSS, jednorázově).
-function WheelWin({ label, cx, cy }: { label: string; cx: number; cy: number }) {
+function WheelWin({ label, icon, cx, cy }: { label: string; icon: string | null; cx: number; cy: number }) {
   const colors = ["#ff5a3c", "#ffd23a", "#3b9bff", "#7ee0b0", "#ff9ec7", "#c9b8ff"];
   return (
     <div aria-hidden className="wheel-win pointer-events-none absolute inset-0 z-30 overflow-visible">
@@ -253,9 +256,15 @@ function WheelWin({ label, cx, cy }: { label: string; cx: number; cy: number }) 
           </span>
         ))}
       </div>
-      <span className="wheel-chest absolute left-1/2 top-[14%] -translate-x-1/2 whitespace-nowrap text-4xl font-extrabold text-[#ffd23a]" style={{ fontFamily: "var(--font-heading)", textShadow: "0 0 4px #16132b, 0 3px 0 #16132b" }}>
-        {label}
-      </span>
+      <div className="wheel-chest absolute left-1/2 top-[10%] flex -translate-x-1/2 flex-col items-center">
+        {icon && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={icon} alt="" draggable={false} className="h-40 w-40 select-none drop-shadow-[0_10px_16px_rgba(0,0,0,0.45)]" />
+        )}
+        <span className="whitespace-nowrap text-4xl font-extrabold text-[#ffd23a]" style={{ fontFamily: "var(--font-heading)", textShadow: "0 0 4px #16132b, 0 3px 0 #16132b" }}>
+          {label}
+        </span>
+      </div>
     </div>
   );
 }
