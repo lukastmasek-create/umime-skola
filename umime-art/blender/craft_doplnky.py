@@ -93,11 +93,11 @@ def pet_sailor_collar():
 def pet_acorn_cap():
     brown = mat("cepicka", "#8a5a2b", rough=0.55)
     dark = mat("stopka", "#5a3a20", rough=0.5)
-    parts = [sphere((0, 0, 0.0), 0.44, brown, scale=(1, 1, 0.62))]
+    parts = [sphere((0, 0.02, 0.1), 0.36, brown, scale=(1, 1, 0.62))]
     for k in range(3):
-        parts.append(torus((0, 0, 0.02 + k * 0.07), 0.4 - k * 0.1, 0.02, dark))
-    parts.append(cyl((0, 0, 0.3), 0.04, 0.14, dark))
-    parts.append(sphere((0, 0, 0.38), 0.045, dark))
+        parts.append(torus((0, 0.02, 0.12 + k * 0.06), 0.33 - k * 0.09, 0.016, dark))
+    parts.append(cyl((0, 0.02, 0.3), 0.035, 0.12, dark))
+    parts.append(sphere((0, 0.02, 0.37), 0.04, dark))
     return parts
 
 

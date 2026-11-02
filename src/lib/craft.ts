@@ -217,11 +217,11 @@ export const RECIPES: Recipe[] = [
   named("pet-star-collar", "pet-acc", "kouzla", "⭐", worldCost("kouzla", 3, 2), n("Hvězdný obojek", "Star collar", "Sternenhalsband", "Звёздный ошейник"), true),
 
   // --- Do pokoje ---
-  named("room-solar-system", "room", "vesmir", "🪐", worldCost("vesmir", 5, 3, 1), n("Model sluneční soustavy", "Solar system model", "Sonnensystem-Modell", "Модель Солнечной системы")),
-  named("room-ship-wheel", "room", "more", "☸️", worldCost("more", 5, 3, 1), n("Lodní kormidlo", "Ship's wheel", "Steuerrad", "Штурвал")),
-  named("room-bonsai", "room", "les", "🪴", worldCost("les", 5, 3, 1), n("Bonsaj", "Bonsai", "Bonsai", "Бонсай")),
-  named("room-armor-stand", "room", "hrad", "🛡️", worldCost("hrad", 5, 3, 1), n("Brnění na stojanu", "Armour stand", "Rüstungsständer", "Доспехи на подставке")),
-  named("room-cauldron", "room", "kouzla", "🫕", worldCost("kouzla", 5, 3, 1), n("Kotlík s lektvarem", "Potion cauldron", "Zaubertrankkessel", "Котёл с зельем")),
+  named("room-solar-system", "room", "vesmir", "🪐", worldCost("vesmir", 5, 3, 1), n("Model sluneční soustavy", "Solar system model", "Sonnensystem-Modell", "Модель Солнечной системы"), true),
+  named("room-ship-wheel", "room", "more", "☸️", worldCost("more", 5, 3, 1), n("Lodní kormidlo", "Ship's wheel", "Steuerrad", "Штурвал"), true),
+  named("room-bonsai", "room", "les", "🪴", worldCost("les", 5, 3, 1), n("Bonsaj", "Bonsai", "Bonsai", "Бонсай"), true),
+  named("room-armor-stand", "room", "hrad", "🛡️", worldCost("hrad", 5, 3, 1), n("Brnění na stojanu", "Armour stand", "Rüstungsständer", "Доспехи на подставке"), true),
+  named("room-cauldron", "room", "kouzla", "🫕", worldCost("kouzla", 5, 3, 1), n("Kotlík s lektvarem", "Potion cauldron", "Zaubertrankkessel", "Котёл с зельем"), true),
 ];
 
 const RECIPE_BY_ID = new Map(RECIPES.map((r) => [r.id, r]));

@@ -1,7 +1,7 @@
 import type { Locale } from "@/i18n/config";
 import layout from "./room-layout.json";
 
-export type FurnitureDef = { id: string; icon: string; price: number; names: Record<Locale, string> };
+export type FurnitureDef = { id: string; icon: string; price: number; names: Record<Locale, string>; /** Jen z craftování: v obchodě se nekupuje, vlastní se po vyrobení (Unlock "room:<id>"). */ craft?: boolean };
 
 const f = (id: string, icon: string, price: number, cs: string, en: string, de: string, ru: string): FurnitureDef => ({
   id, icon, price, names: { cs, en, de, ru },
@@ -21,6 +21,17 @@ export const FURNITURE: FurnitureDef[] = [
   f("piano", "🎹", 350, "Piano", "Piano", "Klavier", "Пианино"),
   f("rocketbed", "🚀", 450, "Postel-raketa", "Rocket bed", "Raketenbett", "Кровать-ракета"),
 ];
+
+// Nábytek z craftování (profil → Craftování). Názvy jsou v receptech, tady jen id a ikona.
+const c = (id: string, icon: string, cs: string, en: string, de: string, ru: string): FurnitureDef => ({ ...f(id, icon, 0, cs, en, de, ru), craft: true });
+export const CRAFT_FURNITURE: FurnitureDef[] = [
+  c("solar-system", "🪐", "Model sluneční soustavy", "Solar system model", "Sonnensystem-Modell", "Модель Солнечной системы"),
+  c("ship-wheel", "☸️", "Lodní kormidlo", "Ship's wheel", "Steuerrad", "Штурвал"),
+  c("bonsai", "🪴", "Bonsaj", "Bonsai", "Bonsai", "Бонсай"),
+  c("armor-stand", "🛡️", "Brnění na stojanu", "Armour stand", "Rüstungsständer", "Доспехи на подставке"),
+  c("cauldron", "🫕", "Kotlík s lektvarem", "Potion cauldron", "Zaubertrankkessel", "Котёл с зельем"),
+];
+export const ALL_FURNITURE: FurnitureDef[] = [...FURNITURE, ...CRAFT_FURNITURE];
 
 export const ROOM_SLOTS = 12;
 
@@ -48,10 +59,12 @@ export const roomXpBonus = (s: RoomState, source: "test" | "game" | string) =>
   roomPlaced(s).reduce((sum, id) => sum + ((source === "test" ? ROOM_PERKS[id]?.xpTest : source === "game" ? ROOM_PERKS[id]?.xpGame : 0) ?? 0), 0);
 export const roomEndlessBonus = (s: RoomState) => roomPlaced(s).reduce((sum, id) => sum + (ROOM_PERKS[id]?.endless ?? 0), 0);
 
-export function normalizeRoom(raw: unknown): RoomState {
+/** `craftOwned`: nábytek z craftování, který hráč vyrobil (z tabulky Unlock). Počítá se jako vlastněný. */
+export function normalizeRoom(raw: unknown, craftOwned: string[] = []): RoomState {
   const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
-  const known = new Set(FURNITURE.map((x) => x.id));
-  const owned = Array.isArray(r.owned) ? [...new Set(r.owned.filter((x): x is string => typeof x === "string" && known.has(x)))] : [];
+  const known = new Set(ALL_FURNITURE.map((x) => x.id));
+  const stored = Array.isArray(r.owned) ? r.owned.filter((x): x is string => typeof x === "string" && known.has(x) && !CRAFT_FURNITURE.some((cf) => cf.id === x)) : [];
+  const owned = [...new Set([...stored, ...craftOwned.filter((x) => CRAFT_FURNITURE.some((cf) => cf.id === x))])];
   const placed: (string | null)[] = Array.from({ length: ROOM_SLOTS }, (_, i) => {
     const v = Array.isArray(r.placed) ? r.placed[i] : null;
     return typeof v === "string" && owned.includes(v) ? v : null;

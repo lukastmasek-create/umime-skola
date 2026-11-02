@@ -269,9 +269,114 @@ def f_rocketbed():
         cyl((sx, 0.6, 0.12), 0.05, 0.24, M("#8a93a6", 0.3, metal=0.8))
 
 
+def _ring(loc, R, r, m, rot=(0, 0, 0)):
+    FM.bpy.ops.mesh.primitive_torus_add(major_radius=R, minor_radius=r, location=loc, major_segments=48, minor_segments=12)
+    t = bpy.context.active_object
+    t.rotation_euler = tuple(math.radians(a) for a in rot)
+    t.data.materials.append(m)
+    return FM.smooth(t)
+
+
+def f_solar_system():
+    """Model sluneční soustavy na stojanu: Slunce uprostřed, planety na ramenech."""
+    wood = M("#6b3a1a", 0.5)
+    brass = M("#d9a43a", 0.3, metal=0.8)
+    cyl((0, 0, 0.05), 0.55, 0.1, wood)
+    cyl((0, 0, 0.55), 0.05, 0.9, brass)
+    sph((0, 0, 1.15), 0.2, M("#ffcf3a", 0.3, emit=1.2))
+    for k, (R, col, rad, ang, tilt) in enumerate([(0.34, "#b8b0a8", 0.05, 20, 0), (0.5, "#e8a060", 0.07, 110, 0), (0.68, "#4da3ff", 0.08, 200, 0), (0.86, "#e5484d", 0.065, 290, 0)]):
+        _ring((0, 0, 1.15 - 0.05 * k), R, 0.007, brass)
+        a = math.radians(ang)
+        sph((math.cos(a) * R, math.sin(a) * R, 1.15 - 0.05 * k), rad, M(col, 0.45))
+        cyl((0, 0, 1.15 - 0.05 * k), 0.008, 0.2 + k * 0.0, brass, rot=(0, 0, 0))
+    sph((math.cos(math.radians(60)) * 0.86, math.sin(math.radians(60)) * 0.86, 0.9), 0.1, M("#e8c27a", 0.4))
+    _ring((math.cos(math.radians(60)) * 0.86, math.sin(math.radians(60)) * 0.86, 0.9), 0.15, 0.012, M("#c8a060", 0.5), rot=(70, 0, 0))
+
+
+def f_ship_wheel():
+    """Lodní kormidlo na dřevěném podstavci."""
+    wood = M("#8a5a2b", 0.5)
+    dark = M("#4a2f1e", 0.55)
+    brass = M("#d9a43a", 0.3, metal=0.8)
+    box((0, 0, 0.08), (0.8, 0.5, 0.16), dark, bevel=0.03)
+    cyl((0, 0.05, 0.55), 0.09, 0.9, dark)
+    cx, cz = (0, 1.15)
+    # kolo stojí ve svislé rovině XZ čelem k -y
+    FM.bpy.ops.mesh.primitive_torus_add(major_radius=0.5, minor_radius=0.05, location=(cx, 0, cz), rotation=(math.radians(90), 0, 0), major_segments=48, minor_segments=12)
+    t = bpy.context.active_object
+    t.data.materials.append(wood)
+    FM.smooth(t)
+    for k in range(8):
+        a = k * math.tau / 8
+        cyl((cx + math.cos(a) * 0.3, -0.0, cz + math.sin(a) * 0.3), 0.025, 0.6, wood, rot=(0, math.degrees(a) - 90, 0)).rotation_euler = (math.radians(0), math.radians(90) - a + math.pi / 2 * 0, 0)
+        cyl((cx + math.cos(a) * 0.62, 0, cz + math.sin(a) * 0.62), 0.035, 0.22, wood, rot=(0, 90 - math.degrees(a) + 90, 0)).rotation_euler = (0, math.pi / 2 - a, 0)
+    sph((cx, 0, cz), 0.12, brass)
+    sph((cx, -0.07, cz), 0.06, M("#c0392b", 0.4))
+
+
+def f_bonsai():
+    """Bonsaj v nízké misce."""
+    pot = M("#2e5aa8", 0.45)
+    soil = M("#4a2f1e", 0.95)
+    bark = M("#6b4a2a", 0.8)
+    box((0, 0, 0.12), (0.9, 0.55, 0.24), pot, bevel=0.06)
+    box((0, 0, 0.26), (0.8, 0.45, 0.05), soil, bevel=0.02)
+    cyl((-0.05, 0, 0.55), 0.07, 0.6, bark, rot=(0, 12, 0), r2=0.045)
+    cyl((0.12, 0, 0.88), 0.045, 0.4, bark, rot=(0, -35, 0), r2=0.025)
+    cyl((-0.2, 0, 0.78), 0.04, 0.35, bark, rot=(0, 40, 0), r2=0.02)
+    for (x, z, r, c) in [(0.3, 1.05, 0.28, "#3f9c3a"), (-0.32, 0.98, 0.26, "#58b947"), (0.0, 1.22, 0.3, "#3f9c3a"), (0.12, 0.95, 0.2, "#6fcf5a")]:
+        sph((x, 0, z), r, M(c, 0.55), (1.0, 0.8, 0.7))
+    sph((0.5, 0.1, 0.3), 0.07, M("#9aa4b8", 0.7))
+
+
+def f_armor_stand():
+    """Brnění na dřevěném stojanu se štítem a mečem."""
+    steel = M("#c9ced8", 0.28, metal=0.85)
+    dark = M("#5a6275", 0.35, metal=0.7)
+    wood = M("#6b3a1a", 0.5)
+    red = M("#c0392b", 0.55)
+    box((0, 0, 0.06), (0.9, 0.6, 0.12), wood, bevel=0.03)
+    cyl((0, 0, 0.55), 0.04, 0.9, wood)
+    for sx in (-1, 1):
+        cyl((sx * 0.16, 0, 0.5), 0.07, 0.8, steel, r2=0.06)
+    sph((0, 0, 1.15), 0.34, steel, (1.0, 0.7, 1.1))
+    box((0, 0, 0.82), (0.5, 0.36, 0.2), dark, bevel=0.04)
+    for sx in (-1, 1):
+        sph((sx * 0.38, 0, 1.28), 0.14, steel, (1, 0.9, 0.8))
+    sph((0, 0, 1.7), 0.22, steel, (1, 1, 1.05))
+    box((0, -0.2, 1.7), (0.3, 0.04, 0.05), M("#16132b", 0.5), bevel=0.01)
+    box((0, 0, 1.98), (0.05, 0.28, 0.2), red, bevel=0.02)
+    # štít u nohy a meč opřený o stojan
+    cyl((0.55, -0.1, 0.4), 0.26, 0.06, M("#3248f0", 0.45), rot=(80, 0, 0))
+    cyl((0.55, -0.14, 0.4), 0.1, 0.06, M("#ffc933", 0.3, metal=0.8), rot=(80, 0, 0))
+    box((-0.55, -0.1, 0.55), (0.07, 0.03, 0.95), M("#e8eef8", 0.2, metal=0.9), rot=(0, 10, 0), bevel=0.01)
+    box((-0.55, -0.1, 0.12), (0.26, 0.04, 0.05), M("#d9a43a", 0.3, metal=0.8), bevel=0.01)
+
+
+def f_cauldron():
+    """Železný kotlík s lektvarem nad ohýnkem."""
+    iron = M("#2c2a33", 0.4, metal=0.5)
+    potion = M("#58e0a0", 0.15, emit=1.4)
+    for k in range(3):
+        a = k * math.tau / 3 + 0.4
+        box((math.cos(a) * 0.3, math.sin(a) * 0.3, 0.12), (0.1, 0.1, 0.28), M("#4a2f1e", 0.8), rot=(0, 0, math.degrees(a)), bevel=0.01)
+    sph((0, 0, 0.62), 0.5, iron, (1, 1, 0.82))
+    _ring((0, 0, 0.98), 0.4, 0.05, iron)
+    cyl((0, 0, 0.97), 0.38, 0.03, potion)
+    for (x, y, z, r) in [(0.1, 0.0, 1.08, 0.07), (-0.15, 0.1, 1.15, 0.05), (0.05, -0.15, 1.25, 0.04), (-0.05, -0.05, 1.38, 0.03)]:
+        sph((x, y, z), r, M("#9af0c8", 0.1, emit=1.0))
+    for sx in (-1, 1):
+        _ring((sx * 0.5, 0, 0.72), 0.07, 0.015, iron, rot=(0, 90, 0))
+    for k in range(5):
+        a = k * math.tau / 5
+        cone((math.cos(a) * 0.18, math.sin(a) * 0.18, 0.22), 0.07, 0.3, M("#ff8a1a" if k % 2 else "#ffd24d", 0.4, emit=2.5))
+
+
 FURNITURE = dict(plant=(f_plant, 2.6), sofa=(f_sofa, 3.2), desk=(f_desk, 3.0), bookshelf=(f_bookshelf, 3.2), globe=(f_globe, 2.6),
                  guitar=(f_guitar, 3.15), aquarium=(f_aquarium, 3.0), telescope=(f_telescope, 2.95), trophy=(f_trophy, 3.0),
                  arcade=(f_arcade, 3.2), piano=(f_piano, 3.3), rocketbed=(f_rocketbed, 3.9))
+# Jen z craftování (id odpovídají src/lib/room.ts)
+FURNITURE.update({"solar-system": (f_solar_system, 2.9), "ship-wheel": (f_ship_wheel, 2.9), "bonsai": (f_bonsai, 2.6), "armor-stand": (f_armor_stand, 3.4), "cauldron": (f_cauldron, 2.8)})
 
 
 # Natočení kolem svislé osy ve stupních, aby byl dobře vidět tvar.

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { fill } from "@/i18n/profile";
 import { getRoomText } from "@/i18n/room";
-import { FURNITURE, ROOM_LAYOUT, ROOM_SLOTS, ROOM_SLOT_POS, furnitureSprite, type RoomState } from "@/lib/room";
+import { ALL_FURNITURE, FURNITURE, ROOM_LAYOUT, ROOM_SLOTS, ROOM_SLOT_POS, furnitureSprite, type RoomState } from "@/lib/room";
 import { Room3DView } from "@/components/Room3DView";
 import { getRoom3dText } from "@/i18n/room3d";
 import { CARDS, type Rarity } from "@/lib/collection";
@@ -21,7 +21,7 @@ const RARITY_STYLE: Record<Rarity, string> = {
 // Obrázek nábytku z Blenderu; když chybí, zobrazí se emoji.
 function Piece({ id, className = "" }: { id: string; className?: string }) {
   const [failed, setFailed] = useState(false);
-  const def = FURNITURE.find((f) => f.id === id);
+  const def = ALL_FURNITURE.find((f) => f.id === id);
   if (failed) {
     return (
       <span aria-hidden className={`flex items-center justify-center ${className}`}>
@@ -169,7 +169,7 @@ export function RoomView({ locale, initialTab = "room" }: { locale: Locale; init
               const id = data.room.placed[slot];
               const [x, y] = ROOM_SLOT_POS[slot];
               const lay = id ? ROOM_LAYOUT.furn[id] : null;
-              const name = id ? (FURNITURE.find((f) => f.id === id)?.names[locale] ?? t.remove) : t.emptySlot;
+              const name = id ? (ALL_FURNITURE.find((f) => f.id === id)?.names[locale] ?? t.remove) : t.emptySlot;
               return (
                 <button
                   key={slot}
@@ -210,9 +210,11 @@ export function RoomView({ locale, initialTab = "room" }: { locale: Locale; init
             {t.shop}
           </h2>
           <ul className="grid gap-2 sm:grid-cols-2">
-            {FURNITURE.map((f) => {
+            {ALL_FURNITURE.map((f) => {
               const owned = data.room.owned.includes(f.id);
               const placed = data.room.placed.includes(f.id);
+              // Nábytek z craftování se v obchodě neprodává, ukáže se až po vyrobení (a jen ve 2D pokoji).
+              if (f.craft && (!owned || view3d)) return null;
               return (
                 <li key={f.id} className="flex items-center gap-3 rounded-xl border-2 border-[var(--border-soft)] px-3 py-2">
                   <Piece id={f.id} className="h-12 w-12 shrink-0 text-3xl" />

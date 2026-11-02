@@ -3,6 +3,12 @@ import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { FURNITURE, ROOM_PERKS, ROOM_SLOTS, normalizeRoom } from "@/lib/room";
+
+// Nábytek z craftování je vlastněný, když má hráč Unlock "room:<id>".
+async function craftOwned(userId: string): Promise<string[]> {
+  const rows = await prisma.unlock.findMany({ where: { userId, key: { startsWith: "room:" } }, select: { key: true } });
+  return rows.map((r) => r.key.slice(5));
+}
 import { dayKey } from "@/lib/shop";
 import { normalizeCards } from "@/lib/collection";
 import { shopBlocked } from "@/lib/parental";
@@ -10,15 +16,16 @@ import { shopBlocked } from "@/lib/parental";
 const GAME = "room";
 
 async function snapshot(userId: string) {
-  const [user, roomRow, cardsRow] = await Promise.all([
+  const [user, roomRow, cardsRow, crafted] = await Promise.all([
     prisma.user.findUnique({ where: { id: userId }, select: { points: true } }),
     prisma.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } }),
     prisma.idleState.findUnique({ where: { userId_game: { userId, game: "cards" } } }),
+    craftOwned(userId),
   ]);
   return {
     loggedIn: true as const,
     points: user?.points ?? 0,
-    room: normalizeRoom(roomRow?.data),
+    room: normalizeRoom(roomRow?.data, crafted),
     day: dayKey(),
     cards: normalizeCards(cardsRow?.data).owned,
   };
@@ -45,7 +52,7 @@ export async function POST(request: Request) {
 
   try {
     const row = await prisma.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } });
-    const room = normalizeRoom(row?.data);
+    const room = normalizeRoom(row?.data, await craftOwned(userId));
     const save = (state: unknown) => {
       const json = state as Prisma.InputJsonValue;
       return prisma.idleState.upsert({
@@ -87,7 +94,7 @@ export async function POST(request: Request) {
       if (!reward || !room.placed.includes(id)) return fail("not-placed");
       const ok = await prisma.$transaction(async (tx) => {
         await tx.$executeRaw`select pg_advisory_xact_lock(hashtext(${userId}))`;
-        const fresh = normalizeRoom((await tx.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } }))?.data);
+        const fresh = normalizeRoom((await tx.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } }))?.data, await craftOwned(userId));
         if (fresh.used[id] === day) return false;
         await tx.user.update({ where: { id: userId }, data: { points: { increment: reward } } });
         await tx.pointTransaction.create({ data: { userId, amount: reward, reason: `Pokoj: ${id} ${day}` } });
