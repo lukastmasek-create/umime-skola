@@ -7,6 +7,7 @@ import { notifyAccountChanged } from "@/lib/account-events";
 import {
   ARB_FEE,
   ASSETS,
+  ASSET_CATEGORIES,
   CITIES,
   COMPANIES,
   COUNTRIES,
@@ -26,6 +27,7 @@ import {
   hustleReady,
   isLocked,
   jobRank,
+  type AssetCategoryId,
   type AssetId,
   type CityId,
   type CountryId,
@@ -65,6 +67,10 @@ function money(n: number, currency: string, locale: Locale): string {
   return `${v.toLocaleString(loc)} ${currency}`.trim();
 }
 
+const CAT_EMOJI: Record<AssetCategoryId, string> = {
+  crypto: "🪙", realestate: "🏠", stocks: "📈", metals: "🥇", bonds: "📜", funds: "🧺", startups: "🚀",
+};
+
 // Štítek rizika podle výkyvu ceny (ASSETS.vol): nízké do 5 %, střední do 20 %, jinak vysoké.
 const riskKey = (vol: number): "riskLow" | "riskMid" | "riskHigh" => (vol <= 0.05 ? "riskLow" : vol <= 0.2 ? "riskMid" : "riskHigh");
 
@@ -80,7 +86,6 @@ function priceSpark(id: AssetId, now: number): string {
 const EMOJI: Record<string, string> = {
   warehouse: "📦", seller: "🛒", cook: "🍳", police: "👮", vet: "🐾", programmer: "💻", banker: "🏦",
   shoes: "👟", clothes: "👕", tech: "📱", delivery: "🛵", supermarket: "🏬", digi: "🎮", software: "🧩", hardware: "🖥️", factory: "🏭",
-  bonds: "📜", fund: "🧺", metal: "🥇", stocks: "📈", realestate: "🏠", crypto: "🪙", startup: "🚀",
   reselling: "🔁", carflip: "🚗", houseflip: "🏚️",
 };
 
@@ -423,8 +428,13 @@ export function EconomyGame({ locale }: { locale: Locale }) {
       {tab === "invest" && (
         <section>
           <p className="mb-3 text-sm text-[var(--muted)]">{t.investHint}</p>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {ASSETS.map((a) => {
+          {ASSET_CATEGORIES.map((cat) => (
+            <div key={cat} className="mb-6">
+              <h3 className="mb-2 font-bold">
+                {CAT_EMOJI[cat]} {t.assetCategories[cat]}
+              </h3>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {ASSETS.filter((a) => a.cat === cat).map((a) => {
               const price = assetPrice(a.id, clock);
               const prev = assetPrice(a.id, clock - 3_600_000);
               const qty = state.holdings[a.id] ?? 0;
@@ -436,7 +446,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                 <article key={a.id} className={`card flex flex-col gap-2 p-4 ${locked ? "opacity-55" : ""}`}>
                   <h3 className="flex items-center justify-between font-bold">
                     <span>
-                      {EMOJI[a.id]} {t.assets[a.id]}
+                      {t.assets[a.id]}
                     </span>
                     <span className={`text-sm ${price >= prev ? "text-[var(--accent-green)]" : "text-[var(--danger)]"}`}>{price >= prev ? "▲" : "▼"}</span>
                   </h3>
@@ -501,7 +511,11 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                 </article>
               );
             })}
+              </div>
+            </div>
+          ))}
 
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <article className="card flex flex-col gap-2 p-4">
               <h3 className="font-bold">⚖️ {t.arbitrage}</h3>
               <p className="text-xs text-[var(--muted)]">{t.arbitrageHint}</p>

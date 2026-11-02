@@ -85,7 +85,7 @@ test("firmy: cena roste s počtem, digitální obory zamyká doba", () => {
   assert.equal(second.ok ? s.cash - second.state.cash : 0, 173);
   const old = start("rich", "1990");
   assert.deepEqual(buyCompany({ ...old, cash: 1e6 }, "software", NOW), { ok: false, error: "locked" });
-  assert.deepEqual(buyAsset({ ...old, cash: 1e6 }, "crypto", 100, NOW), { ok: false, error: "locked" });
+  assert.deepEqual(buyAsset({ ...old, cash: 1e6 }, "coin", 100, NOW), { ok: false, error: "locked" });
   assert.deepEqual(buyCompany(s, "nonsense", NOW), { ok: false, error: "bad-request" });
 });
 
@@ -111,24 +111,24 @@ test("investice: cena je čistá funkce času a nákup/prodej drží účet", ()
     }
   }
   const s = start("rich");
-  const b = buyAsset(s, "stocks", 1000, NOW);
+  const b = buyAsset(s, "technology", 1000, NOW);
   ok(b);
   const held = b.ok ? b.state : s;
   assert.equal(held.cash, 500);
-  assert.ok(Math.abs((held.holdings.stocks ?? 0) * assetPrice("stocks", NOW) - 1000) < 1e-6);
-  const sold = sellAsset(held, "stocks", 1, NOW);
+  assert.ok(Math.abs((held.holdings.technology ?? 0) * assetPrice("technology", NOW) - 1000) < 1e-6);
+  const sold = sellAsset(held, "technology", 1, NOW);
   ok(sold);
   const after = sold.ok ? sold.state : held;
   assert.ok(Math.abs(after.cash - 1500) < 1e-6, "ve stejný okamžik je prodej bez zisku");
-  assert.equal(after.holdings.stocks, undefined);
-  assert.deepEqual(sellAsset(after, "stocks", 1, NOW), { ok: false, error: "nothing" });
-  assert.deepEqual(buyAsset(s, "stocks", -5, NOW), { ok: false, error: "bad-request" });
-  assert.deepEqual(buyAsset({ ...s, cash: 0 }, "stocks", 10, NOW), { ok: false, error: "not-enough-cash" });
+  assert.equal(after.holdings.technology, undefined);
+  assert.deepEqual(sellAsset(after, "technology", 1, NOW), { ok: false, error: "nothing" });
+  assert.deepEqual(buyAsset(s, "technology", -5, NOW), { ok: false, error: "bad-request" });
+  assert.deepEqual(buyAsset({ ...s, cash: 0 }, "technology", 10, NOW), { ok: false, error: "not-enough-cash" });
 });
 
 test("nemovitosti a cenné papíry dávají pasivní příjem", () => {
   const s = { ...start("rich"), cash: 100_000 };
-  const re = buyAsset(s, "realestate", 50_000, NOW);
+  const re = buyAsset(s, "flat", 50_000, NOW);
   const state = re.ok ? re.state : s;
   assert.ok(rates(state, NOW).passive > 0);
 });
@@ -197,7 +197,7 @@ test("začít znovu: nový start, zachová rekord a počet pokusů", () => {
 
 test("investice: nová aktiva jdou koupit a prodat a stará držba zůstane platná", () => {
   const s = start("rich");
-  for (const id of ["fund", "startup"] as const) {
+  for (const id of ["index", "startup_it"] as const) {
     const b = buyAsset(s, id, 500, NOW);
     ok(b);
     const held = b.ok ? b.state : s;
@@ -206,8 +206,21 @@ test("investice: nová aktiva jdou koupit a prodat a stará držba zůstane plat
     ok(sold);
   }
   // stará aktiva mají beze změny stejnou cenu jako dřív (žádný přepočet držby)
-  assert.equal(assetDef("stocks").base, 100);
-  assert.equal(assetDef("bonds").yield, 0.0015);
+  assert.equal(assetDef("technology").base, 100);
+  assert.equal(assetDef("state").yield, 0.0015);
+});
+
+test("investice: staré obecné držby se přesunou na výchozí položku bez ztráty", () => {
+  assert.equal(assetDef("technology").seed, "stocks");
+  const raw = { ...start("rich"), holdings: { stocks: 4 }, cost: { stocks: 90 } };
+  const s = normalizeState(raw, NOW);
+  assert.equal(s.holdings.technology, 4);
+  assert.equal(s.holdings.stocks, undefined);
+  assert.equal(s.cost.technology, 90);
+  // nová a stará držba téže položky se sloučí a cena na kus je vážený průměr
+  const both = normalizeState({ ...start("rich"), holdings: { stocks: 1, technology: 3 }, cost: { stocks: 100, technology: 200 } }, NOW);
+  assert.equal(both.holdings.technology, 4);
+  assert.equal(both.cost.technology, 175);
 });
 
 test("jmění: hotovost + investice + firmy", () => {
@@ -235,8 +248,8 @@ test("normalizeState: poškozená data se opraví bez pádu", () => {
   assert.equal(bad.cash, 0);
   assert.equal(bad.companies.shoes, 50);
   assert.equal("ghost" in bad.companies, false);
-  assert.equal(bad.holdings.stocks, undefined);
-  assert.equal(bad.holdings.metal, 2);
+  assert.equal(bad.holdings.technology, undefined);
+  assert.equal(bad.holdings.gold, 2);
   assert.ok(bad.hustle.carflip!.startedAt <= NOW && bad.hustle.carflip!.payout <= 5000 * 1.55);
   assert.equal(bad.edu, 25);
   const round = normalizeState(JSON.parse(JSON.stringify(start("rich"))), NOW);

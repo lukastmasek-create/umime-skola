@@ -1,5 +1,5 @@
 import type { Locale } from "./config";
-import type { AssetId, CityId, CompanyId, CountryId, EraId, FamilyId, HustleId, JobId } from "@/lib/idle/economy";
+import type { AssetCategoryId, AssetId, CityId, CompanyId, CountryId, EraId, FamilyId, HustleId, JobId } from "@/lib/idle/economy";
 
 // Texty Ekonomiky ve všech čtyřech jazycích.
 export type EconomyText = {
@@ -32,6 +32,7 @@ export type EconomyText = {
   jobs: Record<JobId, string>;
   companies: Record<CompanyId, string>;
   assets: Record<AssetId, string>;
+  assetCategories: Record<AssetCategoryId, string>;
   hustles: Record<HustleId, string>;
   cash: string;
   netWorth: string;
@@ -140,7 +141,8 @@ const cs: EconomyText = {
     hardware: "Hardware",
     factory: "Fabrika",
   },
-  assets: { bonds: "Cenné papíry", fund: "Indexový fond", startup: "Startupy", metal: "Kovy", stocks: "Akcie", realestate: "Nemovitosti", crypto: "Kryptoměny" },
+  assets: { coin: "Hlavní coin", altcoin: "Altcoin", stablecoin: "Stablecoin", memecoin: "Memecoin", defi: "DeFi token", flat: "Byt", house: "Dům", land: "Pozemek", office: "Kancelář", technology: "Technologie", energy: "Energetika", bank: "Banky", consumer: "Spotřební zboží", biotech: "Biotech", gold: "Zlato", silver: "Stříbro", copper: "Měď", state: "Státní dluhopisy", corporate: "Firemní dluhopisy", junk: "Vysoký výnos", index: "Světový index", dividend: "Dividendový fond", theme: "Tematický fond", startup_it: "Startup IT", startup_fintech: "Startup fintech", startup_green: "Startup zelená energie" },
+  assetCategories: { crypto: "Kryptoměny", realestate: "Pozemky a nemovitosti", stocks: "Akcie", metals: "Kovy", bonds: "Dluhopisy", funds: "Fondy", startups: "Startupy" },
   hustles: { reselling: "Reselling", carflip: "Flipování aut", houseflip: "Flipování domů" },
   cash: "Hotovost",
   netWorth: "Jmění",
@@ -268,7 +270,8 @@ const en: EconomyText = {
     hardware: "Hardware",
     factory: "Factory",
   },
-  assets: { bonds: "Securities", fund: "Index fund", startup: "Startups", metal: "Metals", stocks: "Stocks", realestate: "Real estate", crypto: "Crypto" },
+  assets: { coin: "Main coin", altcoin: "Altcoin", stablecoin: "Stablecoin", memecoin: "Memecoin", defi: "DeFi token", flat: "Apartment", house: "House", land: "Plot of land", office: "Office", technology: "Technology", energy: "Energy", bank: "Banks", consumer: "Consumer goods", biotech: "Biotech", gold: "Gold", silver: "Silver", copper: "Copper", state: "Government bonds", corporate: "Corporate bonds", junk: "High yield", index: "World index", dividend: "Dividend fund", theme: "Thematic fund", startup_it: "IT startup", startup_fintech: "Fintech startup", startup_green: "Green energy startup" },
+  assetCategories: { crypto: "Crypto", realestate: "Land and property", stocks: "Stocks", metals: "Metals", bonds: "Bonds", funds: "Funds", startups: "Startups" },
   hustles: { reselling: "Reselling", carflip: "Car flipping", houseflip: "House flipping" },
   cash: "Cash",
   netWorth: "Net worth",
@@ -396,7 +399,8 @@ const de: EconomyText = {
     hardware: "Hardware",
     factory: "Fabrik",
   },
-  assets: { bonds: "Wertpapiere", fund: "Indexfonds", startup: "Startups", metal: "Metalle", stocks: "Aktien", realestate: "Immobilien", crypto: "Kryptowährungen" },
+  assets: { coin: "Hauptcoin", altcoin: "Altcoin", stablecoin: "Stablecoin", memecoin: "Memecoin", defi: "DeFi-Token", flat: "Wohnung", house: "Haus", land: "Grundstück", office: "Büro", technology: "Technologie", energy: "Energie", bank: "Banken", consumer: "Konsumgüter", biotech: "Biotech", gold: "Gold", silver: "Silber", copper: "Kupfer", state: "Staatsanleihen", corporate: "Unternehmensanleihen", junk: "Hochzins", index: "Welt-Index", dividend: "Dividendenfonds", theme: "Themenfonds", startup_it: "IT-Startup", startup_fintech: "Fintech-Startup", startup_green: "Startup Grüne Energie" },
+  assetCategories: { crypto: "Kryptowährungen", realestate: "Grundstücke und Immobilien", stocks: "Aktien", metals: "Metalle", bonds: "Anleihen", funds: "Fonds", startups: "Startups" },
   hustles: { reselling: "Reselling", carflip: "Autos flippen", houseflip: "Häuser flippen" },
   cash: "Bargeld",
   netWorth: "Vermögen",
@@ -524,7 +528,8 @@ const ru: EconomyText = {
     hardware: "Железо",
     factory: "Фабрика",
   },
-  assets: { bonds: "Ценные бумаги", fund: "Индексный фонд", startup: "Стартапы", metal: "Металлы", stocks: "Акции", realestate: "Недвижимость", crypto: "Криптовалюты" },
+  assets: { coin: "Основная монета", altcoin: "Альткоин", stablecoin: "Стейблкоин", memecoin: "Мемкоин", defi: "DeFi-токен", flat: "Квартира", house: "Дом", land: "Участок", office: "Офис", technology: "Технологии", energy: "Энергетика", bank: "Банки", consumer: "Потребительские товары", biotech: "Биотех", gold: "Золото", silver: "Серебро", copper: "Медь", state: "Гос. облигации", corporate: "Корп. облигации", junk: "Высокодоходные", index: "Мировой индекс", dividend: "Дивидендный фонд", theme: "Тематический фонд", startup_it: "IT-стартап", startup_fintech: "Финтех-стартап", startup_green: "Стартап «зелёная энергия»" },
+  assetCategories: { crypto: "Криптовалюты", realestate: "Участки и недвижимость", stocks: "Акции", metals: "Металлы", bonds: "Облигации", funds: "Фонды", startups: "Стартапы" },
   hustles: { reselling: "Перепродажа", carflip: "Флип автомобилей", houseflip: "Флип домов" },
   cash: "Наличные",
   netWorth: "Состояние",
