@@ -11,7 +11,8 @@ import bmesh
 
 M = lambda n, c, **k: material(n, c, **k)
 TAU = math.tau
-PRIZE_COLORS = ["#3248f0", "#ff5a3c", "#ffc933", "#17a864", "#29a3ff", "#ff5a3c", "#3248f0", "#ffc933"]  # = WHEEL_PRIZES
+PRIZE_COLORS = ["#3248f0", "#ff5a3c", "#ffc933", "#17a864", "#29a3ff", "#9b5cf0"] * 2  # = WHEEL_PRIZES (12 políček)
+N = len(PRIZE_COLORS)
 GOLD = lambda n="g": M(n, "#ffc933", roughness=0.22, metallic=1.0)
 
 
@@ -91,26 +92,139 @@ def X(o, rot=(math.radians(90), 0, 0)):
 
 
 # ---------------------------------------------------------------- Disk (otáčí se na webu)
-def kolo_disk():
-    front_cam("obchod_kolo_disk", 512, 512, 2.45)
-    gold = GOLD("kd_g")
+def disk_parts(gold, tag="kd"):
+    """Postaví disk a vrátí pro každé políčko seznam objektů (výseč, lem, tečky, ráfek, kolík) a objekty středu."""
+    groups = []
     for i, c in enumerate(PRIZE_COLORS):
-        a0, a1 = i * TAU / 8 + 0.012, (i + 1) * TAU / 8 - 0.012
-        sector(0.19, 0.93, a0, a1, -0.05, 0.05, M("kd_s%d" % i, c, roughness=0.18), name="seg%d" % i)
-        # světlejší vnitřní lem a drobné bodíky u okraje
+        a0, a1 = i * TAU / N + 0.01, (i + 1) * TAU / N - 0.01
         mid = (a0 + a1) / 2
-        sector(0.80, 0.93, a0 + 0.03, a1 - 0.03, -0.054, 0.05, M("kd_l%d" % i, c, roughness=0.12, metallic=0.2), name="lem%d" % i)
+        g = [sector(0.19, 0.93, a0, a1, -0.05, 0.05, M("%s_s%d" % (tag, i), c, roughness=0.18), name="seg%d" % i),
+             sector(0.80, 0.93, a0 + 0.025, a1 - 0.025, -0.054, 0.05, M("%s_l%d" % (tag, i), c, roughness=0.12, metallic=0.2), name="lem%d" % i),
+             sector(0.93, 1.03, a0 - 0.01, a1 + 0.01, -0.07, 0.07, gold, name="rim%d" % i)]
         for d in (-0.35, 0, 0.35):
             aa = mid + d * (a1 - a0) * 0.6
-            sphere((0.86 * math.sin(aa), -0.06, 0.86 * math.cos(aa)), 0.018, M("kd_d", "#fff7d0", roughness=0.2), seg=8, rings=6)
-    # zlatý ráfek, pivo a kolíčky mezi políčky
-    X(torus((0, 0, 0), 0.97, 0.07, gold))
-    X(torus((0, 0, 0), 0.2, 0.035, gold))
-    for k in range(8):
-        a = k * TAU / 8
-        bar((0.2 * math.sin(a), -0.045, 0.2 * math.cos(a)), (0.95 * math.sin(a), -0.045, 0.95 * math.cos(a)), 0.014, gold, verts=8)
-        sphere((0.985 * math.sin(a), -0.07, 0.985 * math.cos(a)), 0.04, GOLD("kd_pg"), seg=12, rings=8)
+            g.append(sphere((0.86 * math.sin(aa), -0.06, 0.86 * math.cos(aa)), 0.018, M("%s_d" % tag, "#fff7d0", roughness=0.2), seg=8, rings=6))
+        a = i * TAU / N
+        g.append(bar((0.2 * math.sin(a), -0.045, 0.2 * math.cos(a)), (0.95 * math.sin(a), -0.045, 0.95 * math.cos(a)), 0.014, gold, verts=8))
+        g.append(sphere((1.0 * math.sin(a), -0.08, 1.0 * math.cos(a)), 0.045, GOLD("%s_pg" % tag), seg=12, rings=8))
+        groups.append((mid, g))
+    hub = [X(torus((0, 0, 0), 0.2, 0.035, gold)), sphere((0, -0.05, 0), 0.19, M("%s_hub" % tag, "#ffffff", roughness=0.25), scale=(1, 0.25, 1), seg=24, rings=10)]
+    return groups, hub
+
+
+def kolo_disk():
+    front_cam("obchod_kolo_disk", 1024, 1024, 2.45, samples=128)
+    disk_parts(GOLD("kd_g"))
     run(lambda t: None, "obchod_kolo_disk")
+
+
+# ---------------------------------------------------------------- Rozpad kola: výseče se rozletí a zmizí
+def kolo_rozpad():
+    front_cam("obchod_kolo_rozpad", 640, 640, 4.0, frames=20, samples=40)
+    groups, hub = disk_parts(GOLD("kr_g"), "kr")
+    pivots = []
+    for mid, g in groups:
+        piv = empty()
+        piv.location = (0, 0, 0)
+        for o in g:
+            child(o, piv)
+        pivots.append((mid, piv))
+    hub_piv = empty()
+    for o in hub:
+        child(o, hub_piv)
+    sparks = [star(0.09, 0.04, glow("kr_sp%d" % k, "#ffe27a", 6.0), -0.2, "sp%d" % k, rot=0.5 * k, thick=0.01) for k in range(18)]
+
+    def ease(x):
+        return 1 - (1 - min(1.0, max(0.0, x))) ** 3
+
+    @anim
+    def _rozpad(t):
+        k = ease((t - 0.1) / 0.8)
+        shrink = max(0.0, (t - 0.55) / 0.45)
+        for i, (mid, piv) in enumerate(pivots):
+            d = 2.4 * k
+            piv.location = (d * math.sin(mid), -0.3 * k, d * math.cos(mid))
+            piv.rotation_euler = (math.radians(60) * k * (1 if i % 2 else -1), math.radians(150) * k * (1 if i % 3 else -1), math.radians(220) * k * (-1 if i % 2 else 1))
+            sc = max(0.001, 1.0 - shrink ** 1.5)
+            piv.scale = (sc, sc, sc)
+        hs = max(0.001, 1.0 - max(0.0, (t - 0.3) / 0.4) ** 1.5)
+        hub_piv.scale = (hs, hs, hs)
+        for i, sp in enumerate(sparks):
+            a = i * TAU / len(sparks) + 0.3
+            q = max(0.0, (t - 0.12) / 0.8)
+            r = 0.3 + 2.0 * ease(q)
+            s_ = max(0.0, math.sin(math.pi * min(1.0, q))) * 1.4
+            sp.location = (r * math.sin(a), -0.2, r * math.cos(a))
+            sp.scale = (s_, s_, s_)
+
+    run(lambda t: None, "obchod_kolo_rozpad")
+
+
+# ---------------------------------------------------------------- Ikony výher (místo emoji na kole)
+def ikona_cam(name):
+    front_cam(name, 256, 256, 2.6, samples=96)
+
+
+def ikona_titul():
+    """Medaile s hvězdou na stuze."""
+    ikona_cam("obchod_ikona_titul")
+    gold, red = GOLD("it_g"), M("it_r", "#e8453c", roughness=0.4)
+    for sx in (-1, 1):
+        box((sx * 0.28, 0.02, 0.62), (0.34, 0.04, 1.0), red if sx > 0 else M("it_b", "#3248f0", roughness=0.4), rot=(0, math.radians(sx * 22), 0), bevel=0.01)
+    X(cyl((0, 0, -0.1), 0.62, 0.12, gold, verts=48))
+    X(cyl((0, -0.07, -0.1), 0.48, 0.05, M("it_in", "#ffd84a", roughness=0.2, metallic=1.0), verts=48))
+    star(0.34, 0.15, M("it_st", "#ff5a3c", roughness=0.3), -0.14, "medstar", thick=0.06).location = (0, 0, -0.1)
+    run(lambda t: None, "obchod_ikona_titul")
+
+
+def ikona_avatar():
+    """Víla: hlava s vlasy, křídla a hůlka."""
+    ikona_cam("obchod_ikona_avatar")
+    skin, hair = M("ia_sk", "#ffd0b0", roughness=0.5), M("ia_h", "#ff7ab8", roughness=0.4)
+    wing = M("ia_w", "#bfe8ff", roughness=0.15, metallic=0.2)
+    for sx in (-1, 1):
+        sphere((sx * 0.62, 0.15, 0.25), 0.5, wing, scale=(0.55, 0.08, 1.0), seg=24, rings=14).rotation_euler = (0, math.radians(sx * 28), 0)
+        sphere((sx * 0.5, 0.15, -0.35), 0.34, wing, scale=(0.55, 0.08, 0.9), seg=24, rings=14).rotation_euler = (0, math.radians(-sx * 25), 0)
+    sphere((0, 0.05, -0.55), 0.5, M("ia_dr", "#9b5cf0", roughness=0.4), scale=(1.0, 0.6, 0.8), seg=24, rings=14)
+    sphere((0, 0.04, 0.12), 0.52, hair, scale=(1.08, 0.85, 1.08), seg=32, rings=20)
+    sphere((0, -0.1, 0.05), 0.44, skin, seg=32, rings=20)
+    for sx in (-1, 1):
+        sphere((sx * 0.16, -0.5, 0.07), 0.055, M("ia_e", "#2a2050", roughness=0.3), seg=12, rings=8)
+        sphere((sx * 0.27, -0.46, -0.06), 0.06, M("ia_c", "#ff9aa8", roughness=0.5), scale=(1, 0.5, 0.7), seg=12, rings=8)
+    sphere((0, -0.52, -0.08), 0.045, M("ia_m", "#e0505a", roughness=0.4), scale=(1.6, 0.6, 0.8), seg=12, rings=8)
+    bar((0.55, -0.2, -0.75), (0.9, -0.2, 0.0), 0.025, M("ia_wd", "#8a5a34", roughness=0.5), verts=10)
+    star(0.2, 0.09, GOLD("ia_g"), -0.24, "wand", thick=0.05).location = (0.9, 0, 0.05)
+    run(lambda t: None, "obchod_ikona_avatar")
+
+
+def ikona_ramecek():
+    """Zlatý rámeček s obrázkem krajiny."""
+    ikona_cam("obchod_ikona_ramecek")
+    gold = GOLD("ir_g")
+    box((0, 0.1, 0), (1.5, 0.06, 1.2), M("ir_sky", "#4ac8ff", roughness=0.5), bevel=0)
+    sphere((0.35, 0.05, 0.22), 0.17, glow("ir_sun", "#ffe27a", 3.0), scale=(1, 0.3, 1), seg=20, rings=12)
+    sphere((-0.15, 0.04, -0.45), 0.5, M("ir_hill", "#3fa752", roughness=0.6), scale=(1.25, 0.15, 0.45), seg=24, rings=14)
+    for (cx, cz, w, h) in ((0, 0.69, 1.74, 0.2), (0, -0.69, 1.74, 0.2), (-0.77, 0, 0.2, 1.4), (0.77, 0, 0.2, 1.4)):
+        box((cx, -0.02 - 0.01 * (w > h), cz), (w, 0.12, h), gold, bevel=0.0)
+    for (cx, cz) in ((-0.82, 0.74), (0.82, 0.74), (-0.82, -0.74), (0.82, -0.74)):
+        sphere((cx, -0.08, cz), 0.1, GOLD("ir_k"), seg=14, rings=10)
+    run(lambda t: None, "obchod_ikona_ramecek")
+
+
+def ikona_banner():
+    """Vlajka-banner se západem slunce na tyči."""
+    ikona_cam("obchod_ikona_banner")
+    gold = GOLD("ib_g")
+    box((0, 0.05, 0.05), (1.6, 0.05, 1.1), M("ib_bg", "#ff8a4c", roughness=0.5), bevel=0.01)
+    box((0, 0.04, -0.2), (1.6, 0.06, 0.5), M("ib_bg2", "#e0508c", roughness=0.5), bevel=0.0)
+    sphere((0, -0.0, -0.02), 0.34, glow("ib_sun", "#ffe27a", 3.0), scale=(1, 0.2, 1), seg=24, rings=14)
+    box((0, 0.03, -0.43), (1.6, 0.07, 0.14), M("ib_sea", "#3248f0", roughness=0.3), bevel=0.0)
+    cyl((0, 0.0, 0.66), 0.045, 1.9, gold, rot=(0, math.radians(90), 0), verts=16)
+    for sx in (-1, 1):
+        sphere((sx * 0.96, 0.0, 0.66), 0.08, gold, seg=12, rings=8)
+    for k in range(5):
+        cone((-0.64 + k * 0.32, -0.02, -0.68), 0.12, 0.0, 0.25, M("ib_t", "#ffd84a", roughness=0.4), verts=3, rot=(math.radians(180), 0, 0))
+    run(lambda t: None, "obchod_ikona_banner")
 
 
 # ---------------------------------------------------------------- Popředí kola: žárovky, nába a ručička
@@ -155,15 +269,18 @@ def kolo_predni():
 # ---------------------------------------------------------------- Stojan (budka) kolem kola
 def kolo_stojan():
     W, H = 900, 860
-    OS = 4.9
+    OS = 3.8
     CZ = 0.33
     front_cam("obchod_kolo_stojan", W, H, OS, cz=CZ)
     gold = GOLD("ks_g")
     red, white = M("ks_r", "#e8453c", roughness=0.5), M("ks_w", "#fff6e6", roughness=0.5)
     wood, dark = M("ks_wd", "#8a5a34", roughness=0.6), M("ks_dk", "#2b3560", roughness=0.4, metallic=0.5)
     # zadní panel (hvězdičkový) a oblouk
-    box((0, 0.5, 0.15), (3.5, 0.12, 3.5), M("ks_back", "#4a3fc4", roughness=0.7), bevel=0.04)
-    cyl((0, 0.45, 0.15), 1.62, 0.1, M("ks_back2", "#6a5ae0", roughness=0.6), rot=(math.radians(90), 0, 0), verts=64)
+    box((0, 0.5, 0.0), (3.0, 0.12, 3.2), M("ks_back", "#4a3fc4", roughness=0.7), bevel=0.04)
+    cyl((0, 0.45, 0.0), 1.4, 0.1, M("ks_back2", "#6a5ae0", roughness=0.6), rot=(math.radians(90), 0, 0), verts=64)
+    ray = M("ks_ray", "#8a78f0", roughness=0.7)
+    for k in range(12):
+        sector(0.3, 1.35, (2 * k) * TAU / 24 + 0.02, (2 * k + 1) * TAU / 24 - 0.02, 0.36, 0.38, ray, name="ray%d" % k).location = (0, 0, 0.0)
     rnd = random.Random(7)
     for k in range(18):
         a = rnd.uniform(0, TAU)
@@ -172,28 +289,28 @@ def kolo_stojan():
         star(s, s * 0.45, glow("ks_st%d" % k, "#ffe27a", 2.0), 0.38, "bs%d" % k, rot=a, thick=0.02).location = (r * math.sin(a), 0.0, 0.15 + r * math.cos(a) * 0.8)
     # sloupy po stranách s hvězdnými hlavicemi
     for sx in (-1, 1):
-        cyl((sx * 1.85, 0.2, 0.2), 0.16, 3.2, striped_material("ks_pil%d" % sx, "#e8453c", "#fff6e6", freq=7, roughness=0.5, axis="Z"), verts=24)
-        cyl((sx * 1.85, 0.2, 1.85), 0.22, 0.1, gold, verts=24)
-        star(0.28, 0.12, gold, 0.1, "fin%d" % sx, thick=0.1).location = (sx * 1.85, 0.0, 2.05)
-        cyl((sx * 1.85, 0.2, -1.4), 0.24, 0.12, gold, verts=24)
+        cyl((sx * 1.62, 0.2, 0.2), 0.16, 3.2, striped_material("ks_pil%d" % sx, "#e8453c", "#fff6e6", freq=7, roughness=0.5, axis="Z"), verts=24)
+        cyl((sx * 1.62, 0.2, 1.85), 0.22, 0.1, gold, verts=24)
+        star(0.28, 0.12, gold, 0.1, "fin%d" % sx, thick=0.1).location = (sx * 1.62, 0.0, 2.05)
+        cyl((sx * 1.62, 0.2, -1.4), 0.24, 0.12, gold, verts=24)
     # stříška s volány a žárovkami
-    box((0, 0.1, 2.0), (4.4, 0.8, 0.12), red, bevel=0.03)
-    for k in range(11):
-        x = -2.0 + k * 0.4
+    box((0, 0.1, 2.0), (3.7, 0.8, 0.12), red, bevel=0.03)
+    for k in range(9):
+        x = -1.6 + k * 0.4
         cone((x, -0.28, 1.86), 0.21, 0.0, 0.26, red if k % 2 else white, verts=24, rot=(math.radians(180), 0, 0))
-    for k in range(23):
-        sphere((-2.1 + k * 0.19, -0.33, 2.07), 0.045, glow("ks_bl%d" % k, "#fff0b0", 3.0), seg=8, rings=6)
+    for k in range(19):
+        sphere((-1.7 + k * 0.19, -0.33, 2.07), 0.045, glow("ks_bl%d" % k, "#fff0b0", 3.0), seg=8, rings=6)
     # podstavec: tři stupně se zlatými lištami a šachovnicí
-    for i, (w, z, c) in enumerate(((4.2, -1.55, "#2b3560"), (3.7, -1.38, "#3b4a9a"), (3.2, -1.22, "#4a5ac0"))):
+    for i, (w, z, c) in enumerate(((3.7, -1.55, "#2b3560"), (3.25, -1.38, "#3b4a9a"), (2.8, -1.22, "#4a5ac0"))):
         box((0, 0.0, z), (w, 1.0, 0.18), M("ks_pd%d" % i, c, roughness=0.5), bevel=0.04)
         box((0, -0.5, z + 0.07), (w, 0.03, 0.04), gold, bevel=0.005)
-    for k in range(9):
-        box((-1.6 + k * 0.4, -0.5, -1.22), (0.18, 0.03, 0.12), M("ks_ck%d" % (k % 2), "#fff6e6" if k % 2 else "#ff5a3c", roughness=0.5), bevel=0)
+    for k in range(7):
+        box((-1.2 + k * 0.4, -0.5, -1.22), (0.18, 0.03, 0.12), M("ks_ck%d" % (k % 2), "#fff6e6" if k % 2 else "#ff5a3c", roughness=0.5), bevel=0)
     # držák kola (zlatá osa) a stoličky po stranách
     cyl((0, 0.25, 0.0), 0.28, 0.5, gold, rot=(math.radians(90), 0, 0), verts=24)
     for sx in (-1, 1):
-        cyl((sx * 1.35, -0.2, -1.05), 0.2, 0.4, M("ks_pl%d" % sx, "#ff9a3c", roughness=0.5), verts=24)
-        sphere((sx * 1.35, -0.2, -0.78), 0.2, M("ks_ba%d" % sx, ["#ff5a7a", "#4ad0ff"][(sx + 1) // 2], roughness=0.3), seg=20, rings=14)
+        cyl((sx * 1.2, -0.2, -1.05), 0.2, 0.4, M("ks_pl%d" % sx, "#ff9a3c", roughness=0.5), verts=24)
+        sphere((sx * 1.2, -0.2, -0.78), 0.2, M("ks_ba%d" % sx, ["#ff5a7a", "#4ad0ff"][(sx + 1) // 2], roughness=0.3), seg=20, rings=14)
     os.makedirs(os.path.join(OUT, "obchod_kolo_stojan"), exist_ok=True)
     # střed kola na obrázku (podíly) a velikost disku
     cx_frac = 0.5
@@ -441,7 +558,7 @@ def stanek_poklad():
     run(lambda t: None, "obchod_stanek_poklad")
 
 
-JOBS = {"kolo_disk": kolo_disk, "kolo_predni": kolo_predni, "kolo_stojan": kolo_stojan, "stanek_mince": stanek_mince, "stanek_truhla": stanek_truhla, "stanek_poklad": stanek_poklad}
+JOBS = {"kolo_disk": kolo_disk, "kolo_rozpad": kolo_rozpad, "ikona_titul": ikona_titul, "ikona_avatar": ikona_avatar, "ikona_ramecek": ikona_ramecek, "ikona_banner": ikona_banner, "kolo_predni": kolo_predni, "kolo_stojan": kolo_stojan, "stanek_mince": stanek_mince, "stanek_truhla": stanek_truhla, "stanek_poklad": stanek_poklad}
 
 if __name__ == "__main__":
     for w in [a for a in args() if a in JOBS]:

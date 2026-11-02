@@ -9,6 +9,7 @@ import layout from "./kolo-stojan.json";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/config";
 
+const ICON_FILE = { title: "titul", avatar: "avatar", frame: "ramecek", banner: "banner" } as const;
 const SEGMENT_ANGLE = 360 / WHEEL_PRIZES.length;
 // Svislá poloha popisků od horního okraje kola, v procentech jeho výšky.
 const LABEL_TOP = `${(0.5 - WHEEL_LABEL_RADIUS) * 100}%`;
@@ -44,6 +45,9 @@ export function Wheel({
   const [shown, setShown] = useState(initialPoints);
   const shownRef = useRef(initialPoints);
   const [burst, setBurst] = useState(0);
+  // Po dotočení se kolo rozpadne (sprite z Blenderu) a pak se složí zpět.
+  const [shatter, setShatter] = useState(0);
+  const [reform, setReform] = useState(false);
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 30000);
@@ -103,6 +107,9 @@ export function Wheel({
         setWonAmount(data.amount);
         setWonItem(data.item ?? null);
         setBurst((b) => b + 1);
+        setShatter((n) => n + 1);
+        setReform(false);
+        window.setTimeout(() => setReform(true), 1000);
         setPoints(data.points);
         setNextSpinAt(data.nextSpinAt);
       }, 4000);
@@ -125,11 +132,12 @@ export function Wheel({
         <img src="/home/obchod/kolo-stojan.webp" alt="" aria-hidden draggable={false} className="absolute inset-0 h-full w-full select-none" />
         <div className="absolute aspect-square" style={{ left: `${layout.cx * 100}%`, top: `${layout.cy * 100}%`, width: `${layout.disk * 100}%`, transform: "translate(-50%, -50%)" }}>
           <div
-            className="absolute inset-0"
+            className={`absolute inset-0 ${reform ? "wheel-reform" : ""}`}
             style={{
               transform: `rotate(${rotation}deg)`,
               transition: spinning ? "transform 4s cubic-bezier(0.17,0.67,0.12,1)" : "none",
               filter: "drop-shadow(0 6px 8px rgba(10,6,40,0.45))",
+              visibility: shatter > 0 && !reform ? "hidden" : "visible",
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -147,12 +155,25 @@ export function Wheel({
                       textShadow: "0 0 3px #16132b, 0 0 3px #16132b, 0 2px 0 #16132b",
                     }}
                   >
-                    {prize.item ? prize.item.icon : prize.amount}
+                    {prize.item ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={`/home/obchod/ikona-${ICON_FILE[prize.item.kind]}.webp`} alt={prize.item.name} draggable={false} className="h-12 w-12 select-none sm:h-16 sm:w-16" style={{ filter: "drop-shadow(0 2px 2px rgba(22,19,43,0.6))" }} />
+                    ) : (
+                      prize.amount
+                    )}
                   </span>
                 </div>
               );
             })}
           </div>
+          {shatter > 0 && !reform && (
+            <span
+              key={shatter}
+              aria-hidden
+              className="wheel-shatter pointer-events-none absolute z-20 block"
+              style={{ left: "-31.6%", top: "-31.6%", width: "163.3%", height: "163.3%", backgroundImage: "url(/home/obchod/kolo-rozpad.webp)" }}
+            />
+          )}
           <span
             aria-hidden
             className="globe-sprite pointer-events-none absolute inset-0 block"
