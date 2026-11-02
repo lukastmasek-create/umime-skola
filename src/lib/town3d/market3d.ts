@@ -9,8 +9,7 @@ import { forestTrees, glowSprite, gradientSky, ground, hero, noiseTex, placeMode
 // Klik na stánek: hrdina k němu dojde a otevře se nabídka (onOpen). Popisky stánků kreslí React přes labels().
 
 // Místo ve scéně: stánky se zbožím, „lod“ = dominanta (stavby do městečka), „sady“ = obchodník se sadami,
-// „trh“ = nástěnka trhu mezi hráči.
-export type MarketSpot = StallKey | "sady" | "trh";
+export type MarketSpot = StallKey | "sady";
 export type MarketOpts = {
   world: WorldId;
   look: number;
@@ -20,7 +19,7 @@ export type MarketOpts = {
 export type MarketLabel = { key: MarketSpot; x: number; y: number; visible: boolean };
 export type MarketHandle = { labels: (cb: (items: MarketLabel[]) => void) => void; open: (key: MarketSpot) => void; dispose: () => void };
 
-const STALLS: MarketSpot[] = ["avatary", "tituly", "ramecky", "pozadi", "mazlicci", "sady", "trh"];
+const STALLS: MarketSpot[] = ["avatary", "tituly", "ramecky", "pozadi", "mazlicci", "sady"];
 const ARC = [-68, -34, 0, 34, 68, 104, -104].map((d) => (d * Math.PI) / 180);
 const RADIUS = 9.5;
 const HOME = new THREE.Vector3(0, 0, 4.5);
