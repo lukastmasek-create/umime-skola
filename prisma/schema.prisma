@@ -29,6 +29,12 @@ model User {
   schoolId String?
   school   School? @relation(fields: [schoolId], references: [id], onDelete: SetNull)
 
+  // PRO předplatné, které účet využívá jako člen (rodinný tarif, jednotlivec).
+  // Školní tarif se váže přes schoolId, ne přes tento sloupec.
+  subscriptionId     String?
+  subscription       Subscription?   @relation("SubscriptionMembers", fields: [subscriptionId], references: [id], onDelete: SetNull)
+  ownedSubscriptions Subscription[]  @relation("SubscriptionOwner")
+
   // Vybraný avatar (id z src/lib/avatars.ts). Fotky se nenahrávají.
   avatar   String?
   title    String?
@@ -191,9 +197,44 @@ model School {
   city      String   @default("")
   createdAt DateTime @default(now())
 
-  users User[]
+  users         User[]
+  subscriptions Subscription[]
 
   @@unique([name, city])
+}
+
+// --- PRO předplatné ---
+// Platba zatím není řešena: záznamy vytváří admin nebo budoucí platební integrace.
+// INDIVIDUAL a FAMILY: platí ownerId, členové jsou účty s User.subscriptionId = id.
+// SCHOOL: platí škola (schoolId), PRO mají všichni žáci té školy.
+// Pravidla "ownerId u INDIVIDUAL/FAMILY, schoolId u SCHOOL" hlídá CHECK v prisma/sql/pro-update.sql.
+
+enum SubscriptionTier {
+  INDIVIDUAL
+  FAMILY
+  SCHOOL
+}
+
+model Subscription {
+  id   String           @id @default(cuid())
+  tier SubscriptionTier
+
+  ownerId String?
+  owner   User?   @relation("SubscriptionOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+
+  schoolId String?
+  school   School? @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  members User[] @relation("SubscriptionMembers")
+
+  // Platnost od–do. endsAt = null znamená, že předplatné trvá, dokud ho nikdo neukončí.
+  startsAt  DateTime  @default(now())
+  endsAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([ownerId])
+  @@index([schoolId])
 }
 
 model Account {
