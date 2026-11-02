@@ -4,12 +4,13 @@ import { IdleHub } from "@/components/idle/IdleHub";
 import { getIdleText } from "@/i18n/idle";
 import { isLocale, type Locale } from "@/i18n/config";
 
-const COLORS = ["#8fd0ff", "#ff8a6b", "#7ee0b0", "#ffc933"];
+const COLORS = ["#8fd0ff", "#ff8a6b", "#7ee0b0", "#ffc933", "#c9a7ff"];
 // Hra na stejném pořadí jako v texty.games: Základna, Mazlíčci, Farma, Město. null = zatím se chystá.
-const PATHS = ["zakladna", "mazlicci", "farma", "mesto"] as const;
+const PATHS = ["zakladna", "mazlicci", "farma", "mesto", "ekonomika"] as const;
 
 // Vyrenderovaná diorámata (pás 24 snímků) ve stejném pořadí jako hry.
-const ART = ["zakladna", "mazlicci", "farma", "mesto"] as const;
+// Ekonomika zatím nemá render, místo něj je emoji.
+const ART = ["zakladna", "mazlicci", "farma", "mesto", null] as const;
 
 export default async function IdleGamesPage({
   params,
@@ -37,11 +38,17 @@ export default async function IdleGamesPage({
                 className="relative flex h-32 items-end justify-between overflow-hidden rounded-xl border-2 border-[var(--edge)] p-3"
                 style={{ background: COLORS[i % COLORS.length] }}
               >
-                <div
-                  aria-hidden
-                  className="globe-sprite pointer-events-none absolute bottom-0 left-1/2 h-36 w-36 -translate-x-1/2 drop-shadow-[0_6px_6px_rgba(0,0,0,0.35)]"
-                  style={{ backgroundImage: `url(/home/hry/${ART[i]}.webp)` }}
-                />
+                {ART[i] ? (
+                  <div
+                    aria-hidden
+                    className="globe-sprite pointer-events-none absolute bottom-0 left-1/2 h-36 w-36 -translate-x-1/2 drop-shadow-[0_6px_6px_rgba(0,0,0,0.35)]"
+                    style={{ backgroundImage: `url(/home/hry/${ART[i]}.webp)` }}
+                  />
+                ) : (
+                  <span aria-hidden className="pointer-events-none absolute inset-0 flex items-center justify-center text-6xl">
+                    💰
+                  </span>
+                )}
                 <span
                   className="relative text-4xl font-extrabold leading-none text-[#16132b]"
                   style={{ fontFamily: "var(--font-heading)" }}

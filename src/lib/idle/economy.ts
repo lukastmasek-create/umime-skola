@@ -1,0 +1,561 @@
+// Herní logika Ekonomiky (nekonečná hra o bohatství). Čistý kód bez databáze a Reactu:
+// stejný výpočet běží na serveru (autoritativně) i v prohlížeči (živý odpočet peněz).
+//
+// Jak Ekonomika funguje:
+//  - Hráč si vytvoří postavu (země, jméno, město, doba, rodina). To určuje startovní peníze a drobné bonusy.
+//  - Peníze plynou v reálném čase i mimo hru (nejvýš MAX_OFFLINE_H hodin): plat z práce, zisk firem,
+//    nájmy z nemovitostí, úroky z cenných papírů.
+//  - Práce: zaměstnání s platem, který časem roste (zkušenosti). Firmy: stavíš a rozšiřuješ podniky.
+//  - Investice: akcie, kovy, kryptoměny (ceny kolísají podle času, stejně na serveru i v prohlížeči),
+//    nemovitosti, cenné papíry a arbitráž.
+//  - Hustle: reselling, flipování domů a aut. Vložíš kapitál, po čase si vybereš výsledek (může i prodělat).
+//  - Body z učení se dají investovat do Vzdělání (trvalý bonus ke všem příjmům). Aktivní učení za posledních
+//    24 hodin dává navíc dočasné zrychlení.
+//  - Kdykoliv můžeš začít znovu. Rekordní jmění a počet pokusů zůstávají.
+
+export const MAX_OFFLINE_H = 12;
+export const MAX_NAME = 20;
+export const MAX_COMPANY_UNITS = 50;
+export const MAX_EDU = 25;
+export const EDU_BONUS_PER_LEVEL = 0.04;
+export const MAX_LEARNING_BONUS = 0.5;
+export const JOB_RANK_HOURS = 10;
+export const MAX_JOB_RANK = 5;
+export const JOB_RANK_BONUS = 0.15;
+export const ARB_COOLDOWN_MS = 20 * 60_000;
+export const ARB_FEE = 0.005;
+export const ARB_CAP = 5_000;
+const H = 3_600_000;
+
+// --- Postava ---
+
+export const COUNTRIES = ["cz", "sk", "de", "us", "gb", "jp"] as const;
+export const CITIES = ["village", "town", "city", "metropolis"] as const;
+export const ERAS = ["1990", "2010", "2025", "2050"] as const;
+export const FAMILIES = ["poor", "middle", "rich", "business"] as const;
+export type CountryId = (typeof COUNTRIES)[number];
+export type CityId = (typeof CITIES)[number];
+export type EraId = (typeof ERAS)[number];
+export type FamilyId = (typeof FAMILIES)[number];
+
+// salary = násobek platu, living = násobek životních nákladů
+export const COUNTRY_DEF: Record<CountryId, { currency: string; salary: number; living: number }> = {
+  cz: { currency: "Kč", salary: 1, living: 1 },
+  sk: { currency: "€", salary: 1, living: 0.95 },
+  de: { currency: "€", salary: 1.1, living: 1.1 },
+  us: { currency: "$", salary: 1.15, living: 1.15 },
+  gb: { currency: "£", salary: 1.1, living: 1.15 },
+  jp: { currency: "¥", salary: 1.05, living: 1.05 },
+};
+// rent = násobek nájmů z nemovitostí
+export const CITY_DEF: Record<CityId, { salary: number; living: number; rent: number }> = {
+  village: { salary: 0.9, living: 0.6, rent: 0.8 },
+  town: { salary: 1, living: 0.85, rent: 0.95 },
+  city: { salary: 1.15, living: 1.1, rent: 1.15 },
+  metropolis: { salary: 1.3, living: 1.5, rent: 1.4 },
+};
+// Doba: násobek startovních peněz a od jaké chvíle existují digitální obory.
+export const ERA_DEF: Record<EraId, { start: number; digital: boolean; crypto: boolean }> = {
+  "1990": { start: 0.6, digital: false, crypto: false },
+  "2010": { start: 1, digital: true, crypto: true },
+  "2025": { start: 1, digital: true, crypto: true },
+  "2050": { start: 1.5, digital: true, crypto: true },
+};
+// start = startovní peníze, living = životní náklady, cost = násobek cen firem
+export const FAMILY_DEF: Record<FamilyId, { start: number; living: number; company: number }> = {
+  poor: { start: 100, living: 0.8, company: 1 },
+  middle: { start: 300, living: 1, company: 1 },
+  rich: { start: 1500, living: 1.4, company: 1 },
+  business: { start: 500, living: 1, company: 0.9 },
+};
+
+export type Character = { country: CountryId; name: string; city: CityId; era: EraId; family: FamilyId };
+
+// --- Práce ---
+
+export type JobId = "warehouse" | "seller" | "cook" | "police" | "vet" | "programmer" | "banker";
+export type JobDef = { id: JobId; salary: number; fee: number };
+// salary = plat za hodinu (rank 1), fee = jednorázový poplatek za kurzy / nástup
+export const JOBS: JobDef[] = [
+  { id: "warehouse", salary: 40, fee: 0 },
+  { id: "seller", salary: 60, fee: 100 },
+  { id: "cook", salary: 90, fee: 300 },
+  { id: "police", salary: 140, fee: 800 },
+  { id: "vet", salary: 320, fee: 3_000 },
+  { id: "programmer", salary: 480, fee: 6_000 },
+  { id: "banker", salary: 800, fee: 15_000 },
+];
+
+// --- Firmy ---
+
+export type CompanyId = "shoes" | "clothes" | "tech" | "delivery" | "supermarket" | "digi" | "software" | "hardware" | "factory";
+export type CompanyDef = { id: CompanyId; cost: number; digital: boolean };
+export const COMPANIES: CompanyDef[] = [
+  { id: "shoes", cost: 150, digital: false },
+  { id: "clothes", cost: 600, digital: false },
+  { id: "tech", cost: 2_500, digital: false },
+  { id: "delivery", cost: 8_000, digital: true },
+  { id: "supermarket", cost: 25_000, digital: false },
+  { id: "digi", cost: 80_000, digital: true },
+  { id: "software", cost: 250_000, digital: true },
+  { id: "hardware", cost: 800_000, digital: false },
+  { id: "factory", cost: 3_000_000, digital: false },
+];
+// Zisk firmy za hodinu: čím dál dražší obor, tím delší návratnost (5 h u první, 13 h u poslední).
+export const companyIncome = (id: CompanyId): number => {
+  const idx = COMPANIES.findIndex((c) => c.id === id);
+  return Math.round(COMPANIES[idx].cost / (5 + idx));
+};
+export const COMPANY_GROWTH = 1.15;
+
+// --- Investice ---
+
+export type AssetId = "stocks" | "metal" | "crypto" | "bonds" | "realestate";
+export type AssetDef = {
+  id: AssetId;
+  base: number;
+  // výkyv ceny kolem základní hodnoty (0,15 = ±15 %)
+  vol: number;
+  // pravidelný výnos za hodinu jako podíl z ceny (nájem / úrok)
+  yield: number;
+  // dlouhodobý růst ceny za hodinu
+  drift: number;
+  crypto?: boolean;
+};
+export const ASSETS: AssetDef[] = [
+  { id: "bonds", base: 1_000, vol: 0.01, yield: 0.0015, drift: 0 },
+  { id: "metal", base: 2_000, vol: 0.07, yield: 0, drift: 0.00005 },
+  { id: "stocks", base: 100, vol: 0.18, yield: 0, drift: 0.00015 },
+  { id: "realestate", base: 50_000, vol: 0.04, yield: 0.005, drift: 0.00008 },
+  { id: "crypto", base: 500, vol: 0.5, yield: 0, drift: 0, crypto: true },
+];
+
+function hash32(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0) / 4294967296;
+}
+
+// Cena je čistá funkce času: dvě pomalé vlny a malý šum po 5 minutách. Server i prohlížeč vidí totéž.
+export function assetPrice(id: AssetId, now: number): number {
+  const def = ASSETS.find((a) => a.id === id)!;
+  const phaseA = hash32(`${id}:a`) * Math.PI * 2;
+  const phaseB = hash32(`${id}:b`) * Math.PI * 2;
+  const hours = now / H;
+  const wave = 0.6 * Math.sin(hours / 9 + phaseA) + 0.4 * Math.sin(hours / 2.3 + phaseB);
+  const noise = (hash32(`${id}:${Math.floor(now / (5 * 60_000))}`) - 0.5) * 0.3;
+  const trend = 1 + def.drift * (hours % 5_000);
+  return Math.max(1, def.base * trend * (1 + def.vol * (wave + noise)));
+}
+
+// Dva trhy, které se krátkodobě rozcházejí. Rozdíl mezi nimi je příležitost pro arbitráž.
+export function arbitrageSpread(now: number): number {
+  const h = now / H;
+  const a = Math.sin(h * 3.1 + 0.7) * 0.5 + Math.sin(h * 11 + 2.1) * 0.5;
+  const b = Math.sin(h * 2.7 + 4.2) * 0.5 + Math.sin(h * 9 + 0.3) * 0.5;
+  return Math.abs(a - b) * 0.03;
+}
+
+// --- Hustle ---
+
+export type HustleId = "reselling" | "houseflip" | "carflip";
+export type HustleDef = { id: HustleId; cost: number; minutes: number; min: number; max: number };
+// Výsledek je násobek vloženého kapitálu mezi min a max (rozloženo rovnoměrně). Střední hodnota je mírně nad 1.
+export const HUSTLES: HustleDef[] = [
+  { id: "reselling", cost: 200, minutes: 10, min: 0.85, max: 1.5 },
+  { id: "carflip", cost: 5_000, minutes: 60, min: 0.8, max: 1.55 },
+  { id: "houseflip", cost: 60_000, minutes: 360, min: 0.75, max: 1.6 },
+];
+export type HustleSlot = { startedAt: number; payout: number } | null;
+
+// --- Stav ---
+
+export type EconomyState = {
+  v: 1;
+  character: Character | null;
+  cash: number;
+  totalEarned: number;
+  // Největší jmění v tomto pokusu a nejlepší za celou dobu hraní.
+  peak: number;
+  best: number;
+  runs: number;
+  startedAt: number;
+  lastSeen: number;
+  job: { id: JobId; hours: number } | null;
+  companies: Partial<Record<CompanyId, number>>;
+  holdings: Partial<Record<AssetId, number>>;
+  // průměrná nákupní cena držených kusů (jen pro zobrazení zisku)
+  cost: Partial<Record<AssetId, number>>;
+  hustle: Partial<Record<HustleId, HustleSlot>>;
+  edu: number;
+  arbReadyAt: number;
+};
+
+export type ErrorCode =
+  | "bad-request"
+  | "no-character"
+  | "has-character"
+  | "not-enough-cash"
+  | "not-enough-points"
+  | "locked"
+  | "max"
+  | "no-job"
+  | "same-job"
+  | "nothing"
+  | "busy"
+  | "not-ready"
+  | "no-spread"
+  | "cooldown";
+
+export type ActionResult =
+  | { ok: true; state: EconomyState; pointsSpent?: number; gained?: { cash?: number; profit?: number } }
+  | { ok: false; error: ErrorCode };
+
+export const isCountry = (v: unknown): v is CountryId => COUNTRIES.includes(v as CountryId);
+export const isCity = (v: unknown): v is CityId => CITIES.includes(v as CityId);
+export const isEra = (v: unknown): v is EraId => ERAS.includes(v as EraId);
+export const isFamily = (v: unknown): v is FamilyId => FAMILIES.includes(v as FamilyId);
+export const isJob = (v: unknown): v is JobId => JOBS.some((j) => j.id === v);
+export const isCompany = (v: unknown): v is CompanyId => COMPANIES.some((c) => c.id === v);
+export const isAsset = (v: unknown): v is AssetId => ASSETS.some((a) => a.id === v);
+export const isHustle = (v: unknown): v is HustleId => HUSTLES.some((h) => h.id === v);
+
+export const jobDef = (id: JobId) => JOBS.find((j) => j.id === id)!;
+export const companyDef = (id: CompanyId) => COMPANIES.find((c) => c.id === id)!;
+export const assetDef = (id: AssetId) => ASSETS.find((a) => a.id === id)!;
+export const hustleDef = (id: HustleId) => HUSTLES.find((h) => h.id === id)!;
+
+export function emptyState(now: number, runs = 0, best = 0): EconomyState {
+  return {
+    v: 1,
+    character: null,
+    cash: 0,
+    totalEarned: 0,
+    peak: 0,
+    best,
+    runs,
+    startedAt: now,
+    lastSeen: now,
+    job: null,
+    companies: {},
+    holdings: {},
+    cost: {},
+    hustle: {},
+    edu: 0,
+    arbReadyAt: 0,
+  };
+}
+
+const finite = (v: unknown, fallback: number, min = 0, max = Number.MAX_SAFE_INTEGER) =>
+  typeof v === "number" && Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : fallback;
+
+export function cleanName(raw: unknown): string {
+  if (typeof raw !== "string") return "";
+  return raw.replace(/[\u0000-\u001f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, MAX_NAME);
+}
+
+export function normalizeState(raw: unknown, now: number): EconomyState {
+  const base = emptyState(now);
+  if (!raw || typeof raw !== "object") return base;
+  const r = raw as Record<string, unknown>;
+
+  const c = r.character as Record<string, unknown> | null | undefined;
+  const name = cleanName(c?.name);
+  const character: Character | null =
+    c && name && isCountry(c.country) && isCity(c.city) && isEra(c.era) && isFamily(c.family)
+      ? { country: c.country, name, city: c.city, era: c.era, family: c.family }
+      : null;
+
+  const companies: EconomyState["companies"] = {};
+  for (const def of COMPANIES) {
+    const n = Math.floor(finite((r.companies as Record<string, unknown> | undefined)?.[def.id], 0, 0, MAX_COMPANY_UNITS));
+    if (n > 0) companies[def.id] = n;
+  }
+  const holdings: EconomyState["holdings"] = {};
+  const cost: EconomyState["cost"] = {};
+  for (const a of ASSETS) {
+    const q = finite((r.holdings as Record<string, unknown> | undefined)?.[a.id], 0, 0, 1e9);
+    if (q > 0) {
+      holdings[a.id] = q;
+      cost[a.id] = finite((r.cost as Record<string, unknown> | undefined)?.[a.id], a.base, 0, 1e12);
+    }
+  }
+  const hustle: EconomyState["hustle"] = {};
+  for (const h of HUSTLES) {
+    const s = (r.hustle as Record<string, { startedAt?: unknown; payout?: unknown } | null> | undefined)?.[h.id];
+    if (s && typeof s === "object") {
+      hustle[h.id] = { startedAt: finite(s.startedAt, now, 0, now), payout: finite(s.payout, 0, 0, h.cost * h.max) };
+    }
+  }
+  const j = r.job as { id?: unknown; hours?: unknown } | null | undefined;
+  const job = j && isJob(j.id) ? { id: j.id, hours: finite(j.hours, 0, 0, 1e6) } : null;
+
+  const cash = finite(r.cash, 0, 0, 1e15);
+  return {
+    v: 1,
+    character,
+    cash,
+    totalEarned: finite(r.totalEarned, 0, 0, 1e18),
+    peak: finite(r.peak, cash, 0, 1e15),
+    best: finite(r.best, 0, 0, 1e15),
+    runs: Math.floor(finite(r.runs, 0, 0, 1e6)),
+    startedAt: finite(r.startedAt, now, 0, now),
+    lastSeen: finite(r.lastSeen, now, 0, now),
+    job,
+    companies,
+    holdings,
+    cost,
+    hustle,
+    edu: Math.floor(finite(r.edu, 0, 0, MAX_EDU)),
+    arbReadyAt: finite(r.arbReadyAt, 0, 0, now + ARB_COOLDOWN_MS),
+  };
+}
+
+// --- Bonusy a sazby ---
+
+export const learningBonusFromXp = (xpLast24h: number) => Math.min(MAX_LEARNING_BONUS, Math.max(0, xpLast24h) / 1000);
+export const eduBonus = (edu: number) => Math.min(MAX_EDU, Math.max(0, edu)) * EDU_BONUS_PER_LEVEL;
+export const eduCost = (edu: number) => 10 + edu * 8;
+export const jobRank = (hours: number) => Math.min(MAX_JOB_RANK, 1 + Math.floor(hours / JOB_RANK_HOURS));
+export const companyPrice = (state: EconomyState, id: CompanyId): number => {
+  const owned = state.companies[id] ?? 0;
+  const mult = state.character ? FAMILY_DEF[state.character.family].company : 1;
+  return Math.round(companyDef(id).cost * mult * Math.pow(COMPANY_GROWTH, owned));
+};
+
+export function isLocked(state: EconomyState, kind: "company" | "asset", id: string): boolean {
+  const era = state.character ? ERA_DEF[state.character.era] : ERA_DEF["2025"];
+  if (kind === "company") return !era.digital && companyDef(id as CompanyId).digital;
+  return !era.crypto && !!assetDef(id as AssetId).crypto;
+}
+
+export type Rates = {
+  salary: number;
+  companies: number;
+  passive: number;
+  living: number;
+  // všechny příjmy se násobí multiplier (vzdělání + učení + rozšíření)
+  multiplier: number;
+  // čistý příjem za hodinu
+  net: number;
+};
+
+export function rates(state: EconomyState, now: number, learning = 0): Rates {
+  const ch = state.character;
+  if (!ch) return { salary: 0, companies: 0, passive: 0, living: 0, multiplier: 1, net: 0 };
+  const country = COUNTRY_DEF[ch.country];
+  const city = CITY_DEF[ch.city];
+  const family = FAMILY_DEF[ch.family];
+  const multiplier = 1 + eduBonus(state.edu) + Math.min(MAX_LEARNING_BONUS, Math.max(0, learning));
+
+  const salary = state.job
+    ? jobDef(state.job.id).salary * (1 + JOB_RANK_BONUS * (jobRank(state.job.hours) - 1)) * country.salary * city.salary
+    : 0;
+  let companies = 0;
+  for (const c of COMPANIES) companies += (state.companies[c.id] ?? 0) * companyIncome(c.id);
+  let passive = 0;
+  for (const a of ASSETS) {
+    if (!a.yield) continue;
+    const qty = state.holdings[a.id] ?? 0;
+    if (qty > 0) passive += qty * assetPrice(a.id, now) * a.yield * (a.id === "realestate" ? city.rent : 1);
+  }
+  // Životní náklady jsou malé, ale rostou s tím, jak jsi na tom líp (aby hráč nebyl zadarmo bohatý).
+  const living = (6 * country.living * city.living * family.living) * (1 + Math.log10(1 + (state.cash + 0) / 1000) * 0.5);
+  const gross = (salary + companies + passive) * multiplier;
+  return { salary, companies, passive, living, multiplier, net: gross - living };
+}
+
+// Jmění = hotovost + hodnota investic + cena firem + rozjeté hustle.
+export function netWorth(state: EconomyState, now: number): number {
+  let total = state.cash;
+  for (const a of ASSETS) total += (state.holdings[a.id] ?? 0) * assetPrice(a.id, now);
+  for (const c of COMPANIES) {
+    const n = state.companies[c.id] ?? 0;
+    if (n > 0) total += c.cost * n * (state.character ? FAMILY_DEF[state.character.family].company : 1);
+  }
+  for (const h of HUSTLES) total += state.hustle[h.id]?.payout ? hustleDef(h.id).cost : 0;
+  return Math.round(total);
+}
+
+// Připíše příjem za uplynulý čas. Sazba se bere z poloviny úseku (cena aktiv se mění), proto stačí hrubý odhad.
+export function settle(state: EconomyState, now: number, learning = 0): EconomyState {
+  if (!state.character) return { ...state, lastSeen: now };
+  const elapsed = Math.min(Math.max(0, now - state.lastSeen), MAX_OFFLINE_H * H);
+  if (elapsed <= 0) return { ...state, lastSeen: now };
+  const hours = elapsed / H;
+  const rate = rates(state, state.lastSeen + elapsed / 2, learning);
+  const gain = rate.net * hours;
+  const cash = Math.max(0, state.cash + gain);
+  const earned = gain > 0 ? gain : 0;
+  const job = state.job ? { ...state.job, hours: state.job.hours + hours } : null;
+  const next: EconomyState = { ...state, cash, job, totalEarned: state.totalEarned + earned, lastSeen: now };
+  return withPeak(next, now);
+}
+
+function withPeak(state: EconomyState, now: number): EconomyState {
+  const worth = netWorth(state, now);
+  return { ...state, peak: Math.max(state.peak, worth), best: Math.max(state.best, worth) };
+}
+
+const fail = (error: ErrorCode): ActionResult => ({ ok: false, error });
+const done = (state: EconomyState, now: number, extra: Omit<Extract<ActionResult, { ok: true }>, "ok" | "state"> = {}): ActionResult => ({
+  ok: true,
+  state: withPeak(state, now),
+  ...extra,
+});
+
+// --- Akce ---
+
+export function createCharacter(state: EconomyState, input: Partial<Record<keyof Character, unknown>>, now: number): ActionResult {
+  if (state.character) return fail("has-character");
+  const name = cleanName(input.name);
+  if (!name || !isCountry(input.country) || !isCity(input.city) || !isEra(input.era) || !isFamily(input.family)) return fail("bad-request");
+  const character: Character = { country: input.country, name, city: input.city, era: input.era, family: input.family };
+  const cash = Math.round(FAMILY_DEF[character.family].start * ERA_DEF[character.era].start);
+  return done({ ...emptyState(now, state.runs, state.best), character, cash, peak: cash }, now);
+}
+
+// Začít znovu: smaže postup a postavu, zůstane rekord a počet pokusů.
+export function restart(state: EconomyState, now: number): ActionResult {
+  return { ok: true, state: emptyState(now, state.runs + 1, state.best) };
+}
+
+export function takeJob(state: EconomyState, id: unknown, now: number): ActionResult {
+  if (!state.character) return fail("no-character");
+  if (!isJob(id)) return fail("bad-request");
+  if (state.job?.id === id) return fail("same-job");
+  const fee = jobDef(id).fee;
+  if (state.cash < fee) return fail("not-enough-cash");
+  return done({ ...state, cash: state.cash - fee, job: { id, hours: 0 } }, now);
+}
+
+export function quitJob(state: EconomyState, now: number): ActionResult {
+  if (!state.job) return fail("no-job");
+  return done({ ...state, job: null }, now);
+}
+
+export function buyCompany(state: EconomyState, id: unknown, now: number): ActionResult {
+  if (!state.character) return fail("no-character");
+  if (!isCompany(id)) return fail("bad-request");
+  if (isLocked(state, "company", id)) return fail("locked");
+  const owned = state.companies[id] ?? 0;
+  if (owned >= MAX_COMPANY_UNITS) return fail("max");
+  const price = companyPrice(state, id);
+  if (state.cash < price) return fail("not-enough-cash");
+  return done({ ...state, cash: state.cash - price, companies: { ...state.companies, [id]: owned + 1 } }, now);
+}
+
+function qtyOf(raw: unknown): number | null {
+  if (typeof raw !== "number" || !Number.isFinite(raw) || raw <= 0) return null;
+  return raw;
+}
+
+// Nákup za částku (cash), ne za počet kusů: kusy jsou zlomkové, takže jde investovat i malá suma.
+export function buyAsset(state: EconomyState, id: unknown, amount: unknown, now: number): ActionResult {
+  if (!state.character) return fail("no-character");
+  if (!isAsset(id)) return fail("bad-request");
+  const spend = qtyOf(amount);
+  if (spend === null) return fail("bad-request");
+  if (isLocked(state, "asset", id)) return fail("locked");
+  const money = Math.min(spend, state.cash);
+  if (money < 1) return fail("not-enough-cash");
+  const price = assetPrice(id, now);
+  const qty = money / price;
+  const have = state.holdings[id] ?? 0;
+  const avg = state.cost[id] ?? price;
+  const newCost = (have * avg + money) / (have + qty);
+  return done(
+    {
+      ...state,
+      cash: state.cash - money,
+      holdings: { ...state.holdings, [id]: have + qty },
+      cost: { ...state.cost, [id]: newCost },
+    },
+    now,
+  );
+}
+
+// Prodej za podíl držených kusů (0–1], nebo všeho.
+export function sellAsset(state: EconomyState, id: unknown, share: unknown, now: number): ActionResult {
+  if (!state.character) return fail("no-character");
+  if (!isAsset(id)) return fail("bad-request");
+  const have = state.holdings[id] ?? 0;
+  if (have <= 0) return fail("nothing");
+  const s = typeof share === "number" && Number.isFinite(share) ? Math.min(1, Math.max(0, share)) : 1;
+  if (s <= 0) return fail("bad-request");
+  const qty = have * s;
+  const price = assetPrice(id, now);
+  const money = qty * price;
+  const remaining = have - qty;
+  const holdings = { ...state.holdings };
+  const cost = { ...state.cost };
+  if (remaining < 1e-9) {
+    delete holdings[id];
+    delete cost[id];
+  } else {
+    holdings[id] = remaining;
+  }
+  const profit = money - qty * (state.cost[id] ?? price);
+  return done({ ...state, cash: state.cash + money, holdings, cost, totalEarned: state.totalEarned + Math.max(0, profit) }, now, {
+    gained: { cash: Math.round(money), profit: Math.round(profit) },
+  });
+}
+
+export function arbitrageLimit(state: EconomyState): number {
+  return ARB_CAP * (1 + state.edu * 0.2);
+}
+
+export function arbitrage(state: EconomyState, amount: unknown, now: number): ActionResult {
+  if (!state.character) return fail("no-character");
+  if (now < state.arbReadyAt) return fail("cooldown");
+  const spend = qtyOf(amount);
+  if (spend === null) return fail("bad-request");
+  const money = Math.min(spend, state.cash, arbitrageLimit(state));
+  if (money < 1) return fail("not-enough-cash");
+  const edge = arbitrageSpread(now) - ARB_FEE;
+  if (edge <= 0) return fail("no-spread");
+  const profit = money * edge;
+  return done(
+    { ...state, cash: state.cash + profit, totalEarned: state.totalEarned + profit, arbReadyAt: now + ARB_COOLDOWN_MS },
+    now,
+    { gained: { cash: Math.round(profit), profit: Math.round(profit) } },
+  );
+}
+
+// `rng` vrací číslo [0,1); server dává Math.random, test pevnou hodnotu.
+export function startHustle(state: EconomyState, id: unknown, now: number, rng: () => number = Math.random): ActionResult {
+  if (!state.character) return fail("no-character");
+  if (!isHustle(id)) return fail("bad-request");
+  if (state.hustle[id]) return fail("busy");
+  const def = hustleDef(id);
+  if (state.cash < def.cost) return fail("not-enough-cash");
+  const payout = Math.round(def.cost * (def.min + (def.max - def.min) * rng()));
+  return done({ ...state, cash: state.cash - def.cost, hustle: { ...state.hustle, [id]: { startedAt: now, payout } } }, now);
+}
+
+export const hustleReady = (slot: HustleSlot | undefined, id: HustleId, now: number) =>
+  !!slot && now - slot.startedAt >= hustleDef(id).minutes * 60_000;
+
+export function collectHustle(state: EconomyState, id: unknown, now: number): ActionResult {
+  if (!state.character) return fail("no-character");
+  if (!isHustle(id)) return fail("bad-request");
+  const slot = state.hustle[id];
+  if (!slot) return fail("nothing");
+  if (!hustleReady(slot, id, now)) return fail("not-ready");
+  const hustle = { ...state.hustle };
+  delete hustle[id];
+  const profit = slot.payout - hustleDef(id).cost;
+  return done({ ...state, cash: state.cash + slot.payout, hustle, totalEarned: state.totalEarned + Math.max(0, profit) }, now, {
+    gained: { cash: slot.payout, profit },
+  });
+}
+
+// Investice bodů z učení do Vzdělání: trvalý bonus ke všem příjmům.
+export function investEdu(state: EconomyState, now: number): ActionResult {
+  if (!state.character) return fail("no-character");
+  if (state.edu >= MAX_EDU) return fail("max");
+  return done({ ...state, edu: state.edu + 1 }, now, { pointsSpent: eduCost(state.edu) });
+}
