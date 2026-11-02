@@ -63,6 +63,17 @@ const MODELS: Record<string, { file: string; figureWidth: number }> = {
   princ: { file: "princ", figureWidth: 125 },
   carodejnice: { file: "carodejnice", figureWidth: 159 },
   zralok: { file: "zralok", figureWidth: 128 },
+  // z craftování (umime-art/blender/avatary3d.py)
+  "star-wanderer": { file: "star-wanderer", figureWidth: 150 },
+  "coral-guardian": { file: "coral-guardian", figureWidth: 131 },
+  "forest-spirit": { file: "forest-spirit", figureWidth: 128 },
+  "blacksmith": { file: "blacksmith", figureWidth: 131 },
+  "moon-witch": { file: "moon-witch", figureWidth: 159 },
+  "comet-rider": { file: "comet-rider", figureWidth: 150 },
+  "pearl-diver": { file: "pearl-diver", figureWidth: 137 },
+  "amber-druid": { file: "amber-druid", figureWidth: 128 },
+  "royal-guard": { file: "royal-guard", figureWidth: 125 },
+  "dragon-mage": { file: "dragon-mage", figureWidth: 159 },
 };
 
 export function getAvatarModel(id: string | null | undefined): string | null {

@@ -325,9 +325,9 @@ def craft_reef():
     # Bez mlhy ve světě: nekonečný objem pohltí pozadí; hloubku vody nahradí přechod barvy.
     world_gradient([(0.0, "#0b6f9a"), (0.5, "#2ab8e8"), (1.0, "#9fefff")], 1.6)
     look((0, -14, 2.4), (0, 0, 2.2), 30)
-    sun((35, 0, -20), 7.0, "#e8fbff", 0.05)
-    point((0, -4, 7), 900, "#bff4ff", 2.0)
-    ground(120, mat("#e8d3a0", rough=0.9), z=0.0, subdiv=260, strength=0.6, scale=5)
+    sun((35, 0, -20), 2.6, "#e8fbff", 0.05)
+    point((0, -4, 7), 260, "#bff4ff", 2.0)
+    ground(120, mat("#c9a672", rough=0.95), z=0.0, subdiv=260, strength=0.6, scale=5)
     cols = ["#ff7a8a", "#ffb25c", "#c86bff", "#ff5d9a", "#ffd24d", "#5de0c0"]
     for side in (-1, 1):
         for k in range(15):
@@ -381,7 +381,8 @@ def craft_reef():
 def craft_lagoon():
     reset(SAMPLES)
     rnd = random.Random(9)
-    B.sky(18, 200, strength=0.04, dust=1.5, sun_intensity=0.1)
+    B.sky(38, 200, strength=0.09, dust=1.0, sun_intensity=0.3)
+    sun((50, 0, 160), 3.5, "#fff4e0", 0.03)
     look((0, -14, 1.6), (0, 0, 1.6), 30)
     ground(400, B.wave_material("#0aa8a8", "#5fe0d0", 0.03), z=0.0, subdiv=400, strength=0.12, scale=2.5)
     sand = mat("#f2dfa8", rough=0.9)
