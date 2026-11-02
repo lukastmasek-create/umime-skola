@@ -549,6 +549,17 @@ SPECS = [
     dict(id="princ", skin="#ffd5a8", top="#2e5aa8", pants="#f4ead8", shoes="#5a3a20", hair=("short", "#7a4a2a"), crown=True, cape="#c0392b", belt="#ffc933", buttons=2),
     dict(id="carodejnice", skin="#ffe0c8", top="#6a3aa8", dress=True, pants="#6a3aa8", shoes="#2a1a3a", hair=("long", "#8e44ad"), hat=("witch", "#2a2238"), band="#c08cff", earring=True),
     dict(id="zralok", skin="#ffd5a8", top="#7a8ca8", sleeve="#7a8ca8", belly="#f4f4f8", pants="#7a8ca8", shoes="#4a5a78", hood="#7a8ca8", hat=("fin", "#7a8ca8"), tail=("shark", "#7a8ca8")),
+    # --- craftované avatary (profil → Craftování)
+    dict(id="star-wanderer", skin="#c9d6ff", top="#2b2d6e", sleeve="#2b2d6e", pants="#1c1f4e", shoes="#ffd24d", collar="#ffd24d", hair=("short", "#e8eeff"), hat=("helmet", "#5a6cff"), cape="#4a3fa8", buttons=2),
+    dict(id="coral-guardian", skin="#ff8a7a", top="#ff6a8a", sleeve="#ff6a8a", pants="#c8405f", shoes="#ffd24d", hair=("long", "#3fc1ff"), crown=True, belt="#ffd24d", earring=True),
+    dict(id="forest-spirit", skin="#a7d36b", top="#3f9a4a", sleeve="#6aa84f", pants="#2f7a3a", shoes="#5a3a20", hood="#3f9a4a", hat=("cone", "#6ee7a8"), belt="#8a5a2b", brows="#2f7a3a"),
+    dict(id="blacksmith", skin="#ffd5a8", top="#8a5a3a", sleeve="#8a5a3a", pants="#3a3a44", shoes="#2a2a30", vest="#4a3a30", beard="#6a3b22", hat=("bandana", "#c0392b"), belt="#2a2a30", brows="#4a2a1a"),
+    dict(id="moon-witch", skin="#e7dcff", top="#4a2a8a", dress=True, pants="#4a2a8a", shoes="#2a1a3a", hair=("long", "#f4f1ff"), hat=("witch", "#2a1a5a"), band="#ffd24d", earring=True),
+    dict(id="comet-rider", skin="#ffd0a8", top="#1c2a6e", sleeve="#1c2a6e", pants="#1c2a6e", shoes="#ff8a3d", collar="#ff8a3d", hair=("short", "#ff8a3d"), hat=("helmet", "#ff8a3d"), cape="#ff5d73", buttons=2),
+    dict(id="pearl-diver", skin="#ffd9c4", top="#2fc4c9", stripes="#ffffff", pants="#1f8ccc", shoes="#ffd24d", hair=("long", "#3a2a22"), hat=("bandana", "#2fc4c9"), earring=True, belt="#ffffff"),
+    dict(id="amber-druid", skin="#c8e08a", top="#9a6a2a", sleeve="#9a6a2a", pants="#5a3a20", shoes="#3a2410", hood="#9a6a2a", beard="#e8c870", hat=("cone", "#e8a830"), belt="#3a2410", brows="#e8c870"),
+    dict(id="royal-guard", skin="#ffd5a8", top="#2e3a8a", sleeve="#2e3a8a", pants="#f4ead8", shoes="#3a2a22", hair=("short", "#3a2a22"), crown=True, cape="#c0392b", belt="#ffc933", collar="#ffc933", buttons=3),
+    dict(id="dragon-mage", skin="#6fd08a", top="#5a2fa0", sleeve="#5a2fa0", pants="#3a1f70", shoes="#2a1a3a", hat=("witch", "#9a4cff"), band="#ffd24d", cape="#2a1a5a", tail=("spring", "#6fd08a"), belt="#ffd24d"),
 ]
 
 
