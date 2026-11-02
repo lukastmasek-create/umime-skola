@@ -22,6 +22,8 @@ export type PlayerMarketText = {
   done: { list: string; cancel: string; buy: string };
   limit: string; // {n}
   hist: { empty: string; balance: string; bought: string; sold: string; swapped: string; fee: string }; // {n}, {name}, {got}, {gave}
+  cats: { all: string; avatar: string; title: string; frame: string; banner: string };
+  more: { sortNew: string; sortLow: string; sortHigh: string; emptyCat: string; pick: string; seller: string };
   swap: { sell: string; swap: string; want: string; wants: string; button: string; done: string; free: string }; // wants: {name}
 };
 
@@ -46,6 +48,8 @@ const cs: PlayerMarketText = {
   done: { list: "Věc je ve výloze.", cancel: "Věc je zpátky u tebe.", buy: "Koupeno!" },
   limit: "Najednou můžeš mít nejvýš {n} nabídek.",
   hist: { empty: "Zatím žádné obchody.", balance: "Máš {n} 🪙", bought: "Koupeno: {name}", sold: "Prodáno: {name}", swapped: "Výměna: {got} za {gave}", fee: "Poplatek z prodeje: {name}" },
+  cats: { all: "Vše", avatar: "Avatary", title: "Tituly", frame: "Rámečky", banner: "Pozadí" },
+  more: { sortNew: "Nejnovější", sortLow: "Nejlevnější", sortHigh: "Nejdražší", emptyCat: "V této kategorii nic není.", pick: "Vyber věc, kterou chceš prodat nebo vyměnit.", seller: "Prodejce" },
   swap: { sell: "Za body", swap: "Výměna", want: "Chci výměnou za", wants: "Chce: {name}", button: "Vyměnit", done: "Vyměněno!", free: "Výměna je bez poplatku." },
 };
 const en: PlayerMarketText = {
@@ -69,6 +73,8 @@ const en: PlayerMarketText = {
   done: { list: "Your item is in the window.", cancel: "The item is back with you.", buy: "Bought!" },
   limit: "You can have at most {n} offers at once.",
   hist: { empty: "No trades yet.", balance: "You have {n} 🪙", bought: "Bought: {name}", sold: "Sold: {name}", swapped: "Swap: {got} for {gave}", fee: "Sale fee: {name}" },
+  cats: { all: "All", avatar: "Avatars", title: "Titles", frame: "Frames", banner: "Banners" },
+  more: { sortNew: "Newest", sortLow: "Cheapest", sortHigh: "Most expensive", emptyCat: "Nothing in this category.", pick: "Pick an item to sell or swap.", seller: "Seller" },
   swap: { sell: "For points", swap: "Swap", want: "I want in return", wants: "Wants: {name}", button: "Swap", done: "Swapped!", free: "Swaps have no fee." },
 };
 const de: PlayerMarketText = {
@@ -92,6 +98,8 @@ const de: PlayerMarketText = {
   done: { list: "Dein Gegenstand liegt im Schaufenster.", cancel: "Der Gegenstand ist wieder bei dir.", buy: "Gekauft!" },
   limit: "Du kannst höchstens {n} Angebote gleichzeitig haben.",
   hist: { empty: "Noch keine Geschäfte.", balance: "Du hast {n} 🪙", bought: "Gekauft: {name}", sold: "Verkauft: {name}", swapped: "Tausch: {got} gegen {gave}", fee: "Verkaufsgebühr: {name}" },
+  cats: { all: "Alle", avatar: "Avatare", title: "Titel", frame: "Rahmen", banner: "Hintergründe" },
+  more: { sortNew: "Neueste", sortLow: "Günstigste", sortHigh: "Teuerste", emptyCat: "Nichts in dieser Kategorie.", pick: "Wähle einen Gegenstand zum Verkaufen oder Tauschen.", seller: "Verkäufer" },
   swap: { sell: "Für Punkte", swap: "Tausch", want: "Ich möchte dafür", wants: "Möchte: {name}", button: "Tauschen", done: "Getauscht!", free: "Tauschen kostet keine Gebühr." },
 };
 const ru: PlayerMarketText = {
@@ -115,6 +123,8 @@ const ru: PlayerMarketText = {
   done: { list: "Вещь на витрине.", cancel: "Вещь снова у тебя.", buy: "Куплено!" },
   limit: "Одновременно можно иметь не больше {n} предложений.",
   hist: { empty: "Сделок пока нет.", balance: "У тебя {n} 🪙", bought: "Куплено: {name}", sold: "Продано: {name}", swapped: "Обмен: {got} на {gave}", fee: "Комиссия с продажи: {name}" },
+  cats: { all: "Все", avatar: "Аватары", title: "Титулы", frame: "Рамки", banner: "Фоны" },
+  more: { sortNew: "Новые", sortLow: "Дешёвые", sortHigh: "Дорогие", emptyCat: "В этой категории пусто.", pick: "Выбери вещь, чтобы продать или обменять.", seller: "Продавец" },
   swap: { sell: "За баллы", swap: "Обмен", want: "Хочу взамен", wants: "Хочет: {name}", button: "Обменять", done: "Обменено!", free: "Обмен без комиссии." },
 };
 const texts: Record<Locale, PlayerMarketText> = { cs, en, de, ru };
