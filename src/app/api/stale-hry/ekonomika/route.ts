@@ -16,6 +16,7 @@ import {
   eduCost,
   emptyState,
   fundResponse,
+  gameNow,
   hireStaff,
   investEdu,
   learningBonusFromXp,
@@ -27,6 +28,7 @@ import {
   runCampaign,
   sellAsset,
   setCompanySetting,
+  setSpeed,
   settle,
   startHustle,
   takeJob,
@@ -131,13 +133,16 @@ export async function GET() {
   if (!userId) return NextResponse.json({ error: "login-required" }, { status: 401 });
 
   try {
-    const now = Date.now();
+    const real = Date.now();
     const [row, user, learning] = await Promise.all([
       prisma.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } }),
       prisma.user.findUnique({ where: { id: userId }, select: { points: true } }),
-      learningFor(userId, now),
+      learningFor(userId, real),
     ]);
-    const state = settle(row ? normalizeState(row.data, now) : emptyState(now), now, learning);
+    const base = row ? normalizeState(row.data, real) : emptyState(real);
+    // Herní čas podle rychlosti hráče; reálný čas jen pro kotvu a pro XP za den.
+    const now = gameNow(base, real);
+    const state = settle(base, now, learning);
     // Uložíme i při pouhém otevření, ať je žebříček aktuální. Při souběhu s akcí se zápis tiše zahodí.
     if (row && state.character) {
       const data = state as unknown as Prisma.InputJsonValue;
@@ -158,8 +163,8 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as Body;
 
   try {
-    const now = Date.now();
-    const learning = await learningFor(userId, now);
+    const real = Date.now();
+    const learning = await learningFor(userId, real);
 
     const result = await prisma.$transaction(
       async (tx) => {
@@ -167,9 +172,11 @@ export async function POST(request: Request) {
         const user = await tx.user.findUnique({ where: { id: userId }, select: { points: true } });
         const points = user?.points ?? 0;
 
-        const current = settle(row ? normalizeState(row.data, now) : emptyState(now), now, learning);
-        const outcome = applyAction(current, body, now);
-        if (!outcome.ok) return { outcome, points };
+        const base = row ? normalizeState(row.data, real) : emptyState(real);
+        const now = gameNow(base, real);
+        const current = settle(base, now, learning);
+        const outcome = body.action === "setSpeed" ? setSpeed(current, body.value, real) : applyAction(current, body, now);
+        if (!outcome.ok) return { outcome, points, now };
 
         const cost = outcome.pointsSpent ?? 0;
         if (cost > 0) {
@@ -184,13 +191,13 @@ export async function POST(request: Request) {
         } else {
           await tx.idleState.create({ data: { userId, game: GAME, data } });
         }
-        return { outcome, points: points - cost };
+        return { outcome, points: points - cost, now };
       },
       { maxWait: 10_000, timeout: 20_000 },
     );
 
     if (!result.outcome.ok) return NextResponse.json({ error: result.outcome.error }, { status: 400 });
-    return NextResponse.json({ ...payload(result.outcome.state, result.points, learning, now), gained: result.outcome.gained ?? null });
+    return NextResponse.json({ ...payload(result.outcome.state, result.points, learning, result.now), gained: result.outcome.gained ?? null });
   } catch (error) {
     if (error instanceof NotEnoughPoints) return NextResponse.json({ error: "not-enough-points" }, { status: 400 });
     if (error instanceof Conflict || (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")) {

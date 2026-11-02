@@ -123,6 +123,8 @@ export type EconomyText = {
   noJob: string;
   rank: string;
   perHourShort: string;
+  timeSpeed: string;
+  timeSpeedHint: string;
   take: string;
   quit: string;
   fee: string;
@@ -351,6 +353,8 @@ const cs: EconomyText = {
   noJob: "Zatím nemáš práci.",
   rank: "Pozice {n}",
   perHourShort: "/ h",
+  timeSpeed: "Čas hry",
+  timeSpeedHint: "Herní čas běží rychleji: plat, firmy, hustly a ceny. Žebříček počítá s tímto časem.",
   take: "Nastoupit",
   quit: "Dát výpověď",
   fee: "Kurz {n}",
@@ -583,6 +587,8 @@ const en: EconomyText = {
   noJob: "You have no job yet.",
   rank: "Rank {n}",
   perHourShort: "/ h",
+  timeSpeed: "Game time",
+  timeSpeedHint: "Game time runs faster: wages, companies, hustles and prices. The leaderboard counts this time too.",
   take: "Start job",
   quit: "Quit",
   fee: "Course {n}",
@@ -815,6 +821,8 @@ const de: EconomyText = {
   noJob: "Du hast noch keinen Job.",
   rank: "Rang {n}",
   perHourShort: "/ Std.",
+  timeSpeed: "Spielzeit",
+  timeSpeedHint: "Die Spielzeit läuft schneller: Lohn, Firmen, Hustles und Preise. Die Rangliste zählt diese Zeit mit.",
   take: "Job antreten",
   quit: "Kündigen",
   fee: "Kurs {n}",
@@ -1047,6 +1055,8 @@ const ru: EconomyText = {
   noJob: "У тебя пока нет работы.",
   rank: "Ранг {n}",
   perHourShort: "/ ч",
+  timeSpeed: "Время игры",
+  timeSpeedHint: "Игровое время идёт быстрее: зарплата, фирмы, подработки и цены. Рейтинг учитывает это время.",
   take: "Устроиться",
   quit: "Уволиться",
   fee: "Курсы {n}",

@@ -15,6 +15,12 @@
 
 // Hra je na aktivní hraní: mimo hru peníze běží jen chvíli a všechno ostatní je svižné.
 export const MAX_OFFLINE_MIN = 15;
+// Časový posun: herní čas běží rychleji než reálný (1×–16×). Mimo hru se strop offline násobí rychlostí.
+export const SPEEDS = [1, 2, 4, 8, 16] as const;
+export type Speed = (typeof SPEEDS)[number];
+export const isSpeed = (v: unknown): v is Speed => SPEEDS.includes(v as Speed);
+// Kotva herních hodin: herní čas `game` připadá na reálný čas `real`.
+export type GameClock = { real: number; game: number };
 // Násobek všech příjmů a výdajů za hodinu (hodinové sazby níž jsou zachované, jen se rychleji "točí").
 export const INCOME_SPEED = 20;
 export const MAX_NAME = 20;
@@ -379,6 +385,9 @@ export type EconomyState = {
   hustle: Partial<Record<HustleId, HustleSlot>>;
   edu: number;
   arbReadyAt: number;
+  // časový posun a kotva herních hodin (viz gameNow)
+  speed: Speed;
+  clock: GameClock;
 };
 
 export type ErrorCode =
@@ -436,6 +445,8 @@ export function emptyState(now: number, runs = 0, best = 0): EconomyState {
     hustle: {},
     edu: 0,
     arbReadyAt: 0,
+    speed: 1,
+    clock: { real: now, game: now },
   };
 }
 
@@ -447,10 +458,15 @@ export function cleanName(raw: unknown): string {
   return raw.replace(/[\u0000-\u001f<>]/g, "").replace(/\s+/g, " ").trim().slice(0, MAX_NAME);
 }
 
-export function normalizeState(raw: unknown, now: number): EconomyState {
-  const base = emptyState(now);
+export function normalizeState(raw: unknown, real: number): EconomyState {
+  const base = emptyState(real);
   if (!raw || typeof raw !== "object") return base;
   const r = raw as Record<string, unknown>;
+  const speed: Speed = isSpeed(r.speed) ? r.speed : 1;
+  const k = (r.clock ?? {}) as Partial<Record<keyof GameClock, unknown>>;
+  const clock: GameClock = { real: finite(k.real, real, 0, real), game: finite(k.game, real, 0, 1e15) };
+  // Kotva je v herním čase; ořezy níž se počítají proti herním hodinám, jinak by se zrychlený čas useknul.
+  const now = gameNow({ speed, clock }, real);
 
   const c = r.character as Record<string, unknown> | null | undefined;
   const name = cleanName(c?.name);
@@ -528,6 +544,8 @@ export function normalizeState(raw: unknown, now: number): EconomyState {
     hustle,
     edu: Math.floor(finite(r.edu, 0, 0, MAX_EDU)),
     arbReadyAt: finite(r.arbReadyAt, 0, 0, now + ARB_COOLDOWN_MS),
+    speed,
+    clock,
   };
 }
 
@@ -654,10 +672,15 @@ export function netWorth(state: EconomyState, now: number): number {
   return Math.round(total);
 }
 
+// Herní čas v okamžiku reálného času `real`: od kotvy běží rychlostí `speed`.
+export function gameNow(state: Pick<EconomyState, "speed" | "clock">, real: number): number {
+  return state.clock.game + Math.max(0, real - state.clock.real) * state.speed;
+}
+
 // Připíše příjem za uplynulý čas. Sazba se bere z poloviny úseku (cena aktiv se mění), proto stačí hrubý odhad.
 export function settle(state: EconomyState, now: number, learning = 0): EconomyState {
   if (!state.character) return { ...state, lastSeen: now };
-  const elapsed = Math.min(Math.max(0, now - state.lastSeen), MAX_OFFLINE_MIN * 60_000);
+  const elapsed = Math.min(Math.max(0, now - state.lastSeen), MAX_OFFLINE_MIN * 60_000 * state.speed);
   if (elapsed <= 0) return { ...state, lastSeen: now };
   const hours = elapsed / H;
   const rate = rates(state, state.lastSeen + elapsed / 2, learning);
@@ -675,6 +698,13 @@ function withPeak(state: EconomyState, now: number): EconomyState {
 }
 
 const fail = (error: ErrorCode): ActionResult => ({ ok: false, error });
+
+// Přepne rychlost času. Volá se až po připsání příjmu, takže se nic nepočítá starou rychlostí navíc.
+export function setSpeed(state: EconomyState, speed: unknown, real: number): ActionResult {
+  if (!state.character) return fail("no-character");
+  if (!isSpeed(speed)) return fail("bad-request");
+  return { ok: true, state: { ...state, speed, clock: { real, game: gameNow(state, real) } } };
+}
 const done = (state: EconomyState, now: number, extra: Omit<Extract<ActionResult, { ok: true }>, "ok" | "state"> = {}): ActionResult => ({
   ok: true,
   state: withPeak(state, now),
@@ -689,12 +719,12 @@ export function createCharacter(state: EconomyState, input: Partial<Record<keyof
   if (!name || !isCountry(input.country) || !isCity(input.city) || !isEra(input.era) || !isFamily(input.family)) return fail("bad-request");
   const character: Character = { country: input.country, name, city: input.city, era: input.era, family: input.family };
   const cash = Math.round(FAMILY_DEF[character.family].start * ERA_DEF[character.era].start);
-  return done({ ...emptyState(now, state.runs, state.best), character, cash, peak: cash }, now);
+  return done({ ...emptyState(now, state.runs, state.best), speed: state.speed, clock: state.clock, character, cash, peak: cash }, now);
 }
 
 // Začít znovu: smaže postup a postavu, zůstane rekord a počet pokusů.
 export function restart(state: EconomyState, now: number): ActionResult {
-  return { ok: true, state: emptyState(now, state.runs + 1, state.best) };
+  return { ok: true, state: { ...emptyState(now, state.runs + 1, state.best), speed: state.speed, clock: state.clock } };
 }
 
 export function takeJob(state: EconomyState, id: unknown, now: number): ActionResult {

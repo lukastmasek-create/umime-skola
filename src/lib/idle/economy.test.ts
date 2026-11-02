@@ -27,7 +27,9 @@ import {
   investEdu,
   isNegativeEvent,
   netWorth,
+  gameNow,
   normalizeState,
+  setSpeed,
   quitJob,
   rates,
   restart,
@@ -393,4 +395,29 @@ test("události: krizový fond zmírní ztrátu jen jednou a jen u zasažené fi
   assert.ok(companyYield(fund.state, "shoes", t!).gross > before, "fond zvedne výnos oproti bezbrannému stavu");
   assert.deepEqual(fundResponse(fund.state, "shoes", t!), { ok: false, error: "busy" });
   assert.deepEqual(fundResponse(owned, "shoes", NOW + EVENT_DURATION_MS + 1), { ok: false, error: "nothing" });
+});
+
+test("čas: rychlost 16× připíše 16× příjem, offline strop se násobí a uložený herní čas se nořeže", () => {
+  const bought = buyCompany(start("rich"), "shoes", NOW);
+  const s1 = bought.ok ? bought.state : start("rich");
+  const fast = setSpeed(s1, 16, NOW);
+  assert.ok(fast.ok);
+  const s16 = fast.ok ? fast.state : s1;
+  assert.equal(gameNow(s16, NOW + 1000), NOW + 16_000, "herní čas plyne 16×");
+  const gain1 = settle(s1, NOW + 60_000).cash - s1.cash;
+  const gain16 = settle(s16, gameNow(s16, NOW + 60_000)).cash - s16.cash;
+  assert.ok(gain16 > gain1 * 15 && gain16 < gain1 * 17, `16× ${gain16} vs 1× ${gain1}`);
+  // offline strop: 15 reálných minut = 240 herních minut při 16×
+  const week = settle(s16, gameNow(s16, NOW + 7 * 24 * H));
+  const capped = settle(s16, NOW + 240 * 60_000);
+  assert.ok(Math.abs(week.cash - capped.cash) < 1e-6, "offline strop se násobí rychlostí");
+  // herní čas předběhne reálný; uložený stav se při načtení nesmí useknout
+  const ahead = settle(s16, gameNow(s16, NOW + H));
+  assert.equal(normalizeState(JSON.parse(JSON.stringify(ahead)), NOW + H).lastSeen, NOW + 16 * H);
+  assert.equal(normalizeState(JSON.parse(JSON.stringify(ahead)), NOW + H).speed, 16);
+});
+
+test("čas: nepovolená rychlost a bez postavy se nepřepne", () => {
+  assert.deepEqual(setSpeed(start(), 3, NOW), { ok: false, error: "bad-request" });
+  assert.deepEqual(setSpeed(emptyState(NOW), 2, NOW), { ok: false, error: "no-character" });
 });
