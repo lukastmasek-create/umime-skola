@@ -5,6 +5,7 @@ import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, type Locale } from "@/i18n/config";
 import { Wheel } from "@/components/Wheel";
 import { BuyPointsCard } from "@/components/BuyPointsCard";
+import { LimitedShop, MaterialShop, ProCard, ShopTabs } from "@/components/ShopSections";
 
 export const revalidate = 0;
 
@@ -51,25 +52,35 @@ export default async function ShopPage({
       </h1>
       <p className="mb-10 text-[var(--muted)]">{dict.shop.subtitle}</p>
 
-      <Wheel
-        locale={locale as Locale}
-        dict={dict}
-        loggedIn={!!userId}
-        initialPoints={points}
-        initialNextSpinAt={nextSpinAt}
+      <ShopTabs
+        panels={{
+          mince: (
+            <div>
+              <ProCard />
+              <h2 className="mb-1 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+                {dict.shop.buyTitle.replace(/^[^a-zA-ZÀ-ɏА-я0-9]+/, "")}
+              </h2>
+              <p className="mb-6 text-sm text-[var(--muted)]">{dict.shop.buyDesc}</p>
+              <div className="grid gap-5 sm:grid-cols-3">
+                {POINT_PACKAGES.map((pkg) => (
+                  <BuyPointsCard key={pkg.points} pkg={pkg} dict={dict} />
+                ))}
+              </div>
+            </div>
+          ),
+          materialy: <MaterialShop locale={locale as Locale} loggedIn={!!userId} />,
+          modely: <LimitedShop locale={locale as Locale} loggedIn={!!userId} />,
+          kolo: (
+            <Wheel
+              locale={locale as Locale}
+              dict={dict}
+              loggedIn={!!userId}
+              initialPoints={points}
+              initialNextSpinAt={nextSpinAt}
+            />
+          ),
+        }}
       />
-
-      <div className="mt-12">
-        <h2 className="mb-1 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          {dict.shop.buyTitle.replace(/^[^a-zA-ZÀ-ɏА-я0-9]+/, "")}
-        </h2>
-        <p className="mb-6 text-sm text-[var(--muted)]">{dict.shop.buyDesc}</p>
-        <div className="grid gap-5 sm:grid-cols-3">
-          {POINT_PACKAGES.map((pkg) => (
-            <BuyPointsCard key={pkg.points} pkg={pkg} dict={dict} />
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

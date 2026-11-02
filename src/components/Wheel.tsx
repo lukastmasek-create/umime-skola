@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { WHEEL_PRIZES } from "@/lib/wheel";
+import { WHEEL_EXTRA_PRICE, WHEEL_PRIZES } from "@/lib/wheel";
 import { WHEEL_LABEL_RADIUS } from "@/lib/rewards";
 import { RewardImage } from "@/components/RewardImage";
 import layout from "./kolo-stojan.json";
@@ -69,14 +69,14 @@ export function Wheel({
   const cooldownRemaining = nextSpinAt ? new Date(nextSpinAt).getTime() - now : 0;
   const onCooldown = cooldownRemaining > 0;
 
-  async function spin() {
-    if (spinning || onCooldown || !loggedIn) return;
+  async function spin(extra = false) {
+    if (spinning || (onCooldown && !extra) || !loggedIn) return;
     setError(null);
     setWonAmount(null);
     setSpinning(true);
 
     try {
-      const res = await fetch("/api/kolo-stesti", { method: "POST" });
+      const res = await fetch("/api/kolo-stesti", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ extra }) });
       const data = await res.json();
 
       if (!res.ok) {
@@ -168,7 +168,7 @@ export function Wheel({
         </p>
       ) : (
         <button
-          onClick={spin}
+          onClick={() => spin()}
           disabled={spinning || onCooldown}
           className="btn-bouncy rounded-full bg-[var(--brand-500)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--brand-600)] disabled:cursor-not-allowed disabled:opacity-50"
         >
@@ -177,6 +177,15 @@ export function Wheel({
             : onCooldown
               ? `${dict.shop.spinAgainIn} ${formatCountdown(cooldownRemaining)}`
               : dict.shop.spinButton}
+        </button>
+      )}
+      {loggedIn && onCooldown && (
+        <button
+          onClick={() => spin(true)}
+          disabled={spinning || points < WHEEL_EXTRA_PRICE}
+          className="btn-bouncy -mt-2 rounded-full border border-[var(--brand-500)] px-5 py-2 text-sm font-semibold text-[var(--brand-600)] transition-colors hover:bg-[var(--brand-50)] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Zatočit znovu za {WHEEL_EXTRA_PRICE} bodů
         </button>
       )}
 
@@ -220,12 +229,9 @@ function WheelWin({ amount, cx, cy }: { amount: number; cx: number; cy: number }
           </span>
         ))}
       </div>
-      <div className="wheel-chest absolute left-1/2 top-[8%] w-[46%] -translate-x-1/2">
-        <RewardImage name="truhla-otevreni" size={256} className="h-auto w-full drop-shadow-[0_10px_16px_rgba(0,0,0,0.45)]" />
-        <span className="mt-1 block text-center text-3xl font-extrabold text-[#ffd23a]" style={{ fontFamily: "var(--font-heading)", textShadow: "0 0 4px #16132b, 0 3px 0 #16132b" }}>
-          +{amount}
-        </span>
-      </div>
+      <span className="wheel-chest absolute left-1/2 top-[14%] -translate-x-1/2 text-5xl font-extrabold text-[#ffd23a]" style={{ fontFamily: "var(--font-heading)", textShadow: "0 0 4px #16132b, 0 3px 0 #16132b" }}>
+        +{amount}
+      </span>
     </div>
   );
 }

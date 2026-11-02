@@ -25,6 +25,11 @@ export const WHEEL_PRIZES: WheelPrize[] = [
 
 export const WHEEL_SPIN_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 
+// Další točení navíc za body (po využití bezplatného denního točení).
+export const WHEEL_EXTRA_PRICE = 40;
+export const WHEEL_EXTRA_PER_DAY = 5;
+export const WHEEL_EXTRA_REASON = "Kolo štěstí: extra točení";
+
 export function pickWheelPrizeIndex(): number {
   const totalWeight = WHEEL_PRIZES.reduce((sum, p) => sum + p.weight, 0);
   let roll = Math.random() * totalWeight;
