@@ -418,8 +418,13 @@ export default function Avatar3D({
           if (once) {
             // Další kliknutí přeruší běžící klip (zkrátka plynule: jeho váha se jen přepne na nový).
             if (!force) return false;
-            leaving = { act: once.act, w0: once.act.getEffectiveWeight(), t: 0 };
+            // Dřívější doznívající klip se hned zastaví, jinak by zůstal viset ve směsi.
+            if (leaving && leaving.act !== act) leaving.act.stop();
+            // Stejný klip znovu: nemá se vytrácet, jen se spustí od začátku.
+            leaving = once.act === act ? null : { act: once.act, w0: once.act.getEffectiveWeight(), t: 0 };
             once = null;
+          } else if (leaving?.act === act) {
+            leaving = null;
           }
           act.reset();
           act.setLoop(THREE.LoopOnce, 1);
