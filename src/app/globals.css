@@ -28,6 +28,12 @@
   --radius-card: 18px;
   --radius-btn: 12px;
   --space-section: 5rem;
+  /* Kategoriální barvy grafů (ověřeny validátorem palety, světlý povrch) */
+  --cat-1: #2a78d6;
+  --cat-2: #eb6834;
+  --cat-3: #1baf7a;
+  --cat-4: #eda100;
+  --cat-5: #6250d6;
 }
 
 html {
@@ -71,6 +77,12 @@ html[data-font="classic"] {
   --shadow-ink: #05040f;
   --danger: #ff8080;
   --field-border: #7d76c0;
+  /* Kategoriální barvy grafů pro tmavý povrch (ověřeny validátorem palety) */
+  --cat-1: #3987e5;
+  --cat-2: #d95926;
+  --cat-3: #199e70;
+  --cat-4: #c98500;
+  --cat-5: #9085e9;
 }
 
 @theme inline {

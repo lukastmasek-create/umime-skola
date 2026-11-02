@@ -50,6 +50,7 @@ type Payload = {
 type View = { data: Payload; receivedAt: number };
 type Load = "loading" | "login" | "unavailable" | "ready";
 type Tab = "overview" | "work" | "companies" | "invest" | "hustle" | "board";
+type OvTab = "summary" | "earnings" | "assets" | "education";
 type Board = { top: { rank: number; name: string; country: string | null; best: number; runs: number; me: boolean }[]; me: { rank: number; best: number } | null };
 
 const fill = (text: string, vars: Record<string, string | number>) => text.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ""));
@@ -78,11 +79,65 @@ function formatLeft(ms: number, t: ReturnType<typeof getEconomyText>): string {
   return `${fill(t.hours, { n: Math.floor(m / 60) })} ${String(m % 60).padStart(2, "0")} min`;
 }
 
+type DonutPart = { label: string; value: number; color: string };
+
+// Koláč bez knihovny: kruhy s dashoffsetem. Barva patří položce, ne pořadí.
+function Donut({ parts, centerLabel, centerValue, shareLabel }: { parts: DonutPart[]; centerLabel: string; centerValue: string; shareLabel: string }) {
+  const shown = parts.filter((p) => p.value > 0);
+  const total = shown.reduce((sum, p) => sum + p.value, 0);
+  const R = 40;
+  const C = 2 * Math.PI * R;
+  const segments = shown.map((p, i) => {
+    const len = total > 0 ? (p.value / total) * C : 0;
+    const before = shown.slice(0, i).reduce((sum, q) => sum + (total > 0 ? (q.value / total) * C : 0), 0);
+    return { p, len, offset: -before };
+  });
+  return (
+    <div className="flex flex-wrap items-center gap-4">
+      <svg viewBox="0 0 100 100" className="h-36 w-36 shrink-0" role="img" aria-label={centerLabel + ": " + centerValue}>
+        <circle cx="50" cy="50" r={R} fill="none" stroke="var(--surface-muted)" strokeWidth="16" />
+        {segments.map(({ p, len, offset }) => (
+          <circle
+            key={p.label}
+            cx="50"
+            cy="50"
+            r={R}
+            fill="none"
+            strokeWidth="16"
+            style={{ stroke: p.color }}
+            strokeDasharray={len + " " + (C - len)}
+            strokeDashoffset={offset}
+            transform="rotate(-90 50 50)"
+          />
+        ))}
+        <text x="50" y="46" textAnchor="middle" fill="var(--muted)" fontSize="7">
+          {centerLabel}
+        </text>
+        <text x="50" y="58" textAnchor="middle" fill="var(--foreground)" fontSize="8" fontWeight="700">
+          {centerValue}
+        </text>
+      </svg>
+      <ul aria-label={shareLabel} className="flex min-w-0 flex-1 flex-col gap-1.5 text-sm">
+        {parts.map((p) => (
+          <li key={p.label} className="flex items-center justify-between gap-2">
+            <span className="flex min-w-0 items-center gap-2">
+              <i className="inline-block h-3 w-3 shrink-0 rounded-sm" style={{ background: p.color }} />
+              <span className="truncate">{p.label}</span>
+            </span>
+            <b className="shrink-0">{total > 0 ? Math.round((p.value / total) * 100) : 0} %</b>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function EconomyGame({ locale }: { locale: Locale }) {
   const t = getEconomyText(locale);
   const [load, setLoad] = useState<Load>("loading");
   const [view, setView] = useState<View | null>(null);
   const [tab, setTab] = useState<Tab>("overview");
+  const [ov, setOv] = useState<OvTab>("summary");
   const [nowMs, setNowMs] = useState(0);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
@@ -262,6 +317,24 @@ export function EconomyGame({ locale }: { locale: Locale }) {
   const companiesOwned = Object.values(state.companies).reduce((s, n) => s + (n ?? 0), 0);
   const runningHustles = HUSTLES.filter((h) => state.hustle[h.id]).length;
   const holdings = ASSETS.map((a) => ({ id: a.id, value: (state.holdings[a.id] ?? 0) * assetPrice(a.id, clock) })).filter((h) => h.value > 0);
+  const grossHour = r.salary * r.multiplier + r.companies * r.multiplier + r.passive * r.multiplier;
+  const passiveShare = grossHour > 0 ? (r.passive * r.multiplier) / grossHour : 0;
+  const companyRows = COMPANIES.map((c) => {
+    const count = state.companies[c.id] ?? 0;
+    return { id: c.id, count, perHour: count * companyIncome(c.id) * INCOME_SPEED * r.multiplier, value: count * c.cost * FAMILY_DEF[ch.family].company };
+  })
+    .filter((c) => c.count > 0)
+    .sort((a, b) => b.perHour - a.perHour);
+  const bestCo = companyRows[0] ?? null;
+  const companyScale = Math.max(1, ...companyRows.map((c) => c.perHour));
+  const heldValue = (id: AssetId) => holdings.find((h) => h.id === id)?.value ?? 0;
+  const assetParts = [
+    { label: t.cash, value: liveCash, color: "var(--cat-1)" },
+    { label: t.companiesOwned, value: companyRows.reduce((sum, c) => sum + c.value, 0), color: "var(--cat-2)" },
+    { label: t.assets.stocks, value: heldValue("stocks"), color: "var(--cat-3)" },
+    { label: t.assets.metal, value: heldValue("metal"), color: "var(--cat-4)" },
+    { label: t.other, value: heldValue("crypto") + heldValue("bonds") + heldValue("realestate"), color: "var(--cat-5)" },
+  ];
 
   const tabs: Tab[] = ["overview", "work", "companies", "invest", "hustle", "board"];
 
@@ -306,149 +379,256 @@ export function EconomyGame({ locale }: { locale: Locale }) {
       </div>
 
       {tab === "overview" && (
-        <section className="grid gap-4 md:grid-cols-2">
-          {/* Hrdina: jmění, vývoj vůči vrcholu a hlavní statistiky hry */}
-          <div className="card flex flex-col gap-4 p-5 md:col-span-2">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">🏆 {t.netWorth}</p>
-                <p className="text-4xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
-                  {m(worth)}
-                </p>
-              </div>
-              <span
-                className={`pill px-3 py-1.5 text-sm font-bold ${atPeak ? "bg-[var(--accent-green)] text-[#16132b]" : "bg-[var(--surface)]"}`}
+        <section>
+          <div role="tablist" className="mb-4 flex flex-wrap gap-2">
+            {(["summary", "earnings", "assets", "education"] as OvTab[]).map((id) => (
+              <button
+                key={id}
+                role="tab"
+                aria-selected={ov === id}
+                type="button"
+                onClick={() => setOv(id)}
+                className={`btn-bouncy px-3 py-1.5 text-sm font-bold ${ov === id ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface)]"}`}
               >
-                {atPeak ? t.atPeak : `${m(worth - state.peak)} ${t.vsPeak}`}
-              </span>
-            </div>
-            <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {[
-                { icon: "💵", label: t.cash, value: m(liveCash) },
-                { icon: "💰", label: t.totalEarned, value: m(state.totalEarned) },
-                { icon: "⏱️", label: t.timePlayed, value: playedText },
-                { icon: "⭐", label: t.best, value: m(state.best) },
-              ].map((s) => (
-                <div key={s.label} className="rounded-xl bg-[var(--surface-muted)] p-3">
-                  <dt className="text-xs text-[var(--muted)]">
-                    {s.icon} {s.label}
-                  </dt>
-                  <dd className="font-bold">{s.value}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-
-          {/* Příjmy za hodinu: pruhy jsou v jedné barvě, kladné zeleně, náklady červeně */}
-          <div className="card flex flex-col gap-3 p-5">
-            <h2 className="font-bold">{t.incomeTitle}</h2>
-            {incomeParts.map((p) => (
-              <div key={p.label} className="flex flex-col gap-1">
-                <div className="flex justify-between text-sm">
-                  <span>
-                    {p.icon} {p.label}
-                  </span>
-                  <b className={p.cost ? "text-[var(--danger)]" : ""}>
-                    {p.cost ? "−" : "+"}
-                    {m(p.value)}
-                  </b>
-                </div>
-                <div className="h-2.5 overflow-hidden rounded-full bg-[var(--surface-muted)]">
-                  <div
-                    className={`h-full rounded-full ${p.cost ? "bg-[var(--danger)]" : "bg-[var(--accent-green)]"}`}
-                    style={{ width: `${(p.value / incomeScale) * 100}%` }}
-                  />
-                </div>
-              </div>
+                {id === "summary" ? t.ovSummary : id === "earnings" ? t.ovEarnings : id === "assets" ? t.ovAssets : t.ovEducation}
+              </button>
             ))}
-            <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t-2 border-dashed border-[var(--edge)] pt-3 text-sm">
-              <span>
-                ✖️ {t.multiplier}: <b>×{r.multiplier.toFixed(2)}</b>
-                {data.learning > 0 && (
-                  <>
-                    {" "}
-                    · 📚 {t.learning}: <b>+{Math.round(data.learning * 100)} %</b>
-                  </>
-                )}
-              </span>
-              <span className="font-extrabold">
-                = {r.net >= 0 ? "+" : ""}
-                {m(r.net)} {t.perHourShort}
-              </span>
-            </div>
-            <p className="text-xs text-[var(--muted)]">{t.overviewHint}</p>
           </div>
 
-          {/* Majetek: firmy, aktiva a rozjeté hustle */}
-          <div className="card flex flex-col gap-3 p-5">
-            <h2 className="font-bold">🧺 {t.assetsTitle}</h2>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-xl bg-[var(--surface-muted)] p-3">
-                <p className="text-xs text-[var(--muted)]">🏭 {t.companiesOwned}</p>
-                <p className="font-bold">{companiesOwned}</p>
+          {ov === "summary" && (
+            <div className="grid gap-4 md:grid-cols-2">
+              {/* Hrdina: jmění, vývoj vůči vrcholu hry a hlavní statistiky */}
+              <div className="card flex flex-col gap-4 p-5 md:col-span-2">
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">🏆 {t.netWorth}</p>
+                    <p className="text-4xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
+                      {m(worth)}
+                    </p>
+                  </div>
+                  <span className={`pill px-3 py-1.5 text-sm font-bold ${atPeak ? "bg-[var(--accent-green)] text-[#16132b]" : "bg-[var(--surface)]"}`}>
+                    {atPeak ? t.atPeak : `${m(worth - state.peak)} ${t.vsPeak}`}
+                  </span>
+                </div>
+                <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  {[
+                    { icon: "💵", label: t.cash, value: m(liveCash) },
+                    { icon: "💰", label: t.totalEarned, value: m(state.totalEarned) },
+                    { icon: "⏱️", label: t.timePlayed, value: playedText },
+                    { icon: "⭐", label: t.best, value: m(state.best) },
+                  ].map((s) => (
+                    <div key={s.label} className="rounded-xl bg-[var(--surface-muted)] p-3">
+                      <dt className="text-xs text-[var(--muted)]">
+                        {s.icon} {s.label}
+                      </dt>
+                      <dd className="font-bold">{s.value}</dd>
+                    </div>
+                  ))}
+                </dl>
               </div>
-              <div className="rounded-xl bg-[var(--surface-muted)] p-3">
-                <p className="text-xs text-[var(--muted)]">🎯 {t.hustlesRunning}</p>
-                <p className="font-bold">{runningHustles}</p>
+
+              {/* Nové statistiky */}
+              <div className="card flex flex-col gap-3 p-5 md:col-span-2">
+                <h2 className="font-bold">{t.ovSummary}</h2>
+                <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                  {[
+                    { icon: "🏠", label: t.passiveShare, value: `${Math.round(passiveShare * 100)} %` },
+                    { icon: "🏭", label: t.bestCompany, value: bestCo ? `${t.companies[bestCo.id]} · ${m(bestCo.perHour)} ${t.perHourShort}` : t.noCompany },
+                    { icon: "📅", label: t.avgDay, value: `${r.net >= 0 ? "+" : ""}${m(r.net * 24)}` },
+                    { icon: "🍞", label: t.yearlyCost, value: `−${m(r.living * 24 * 365)}` },
+                  ].map((s) => (
+                    <div key={s.label} className="rounded-xl bg-[var(--surface-muted)] p-3">
+                      <dt className="text-xs text-[var(--muted)]">
+                        {s.icon} {s.label}
+                      </dt>
+                      <dd className="font-bold">{s.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+
+              <div className="card flex flex-col gap-2 p-4 md:col-span-2">
+                <p className="text-sm">
+                  {t.runs}: <b>{state.runs}</b>
+                </p>
+                <p className="text-xs text-[var(--muted)]">{t.restartHint} {t.saveNote}</p>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => {
+                    if (window.confirm(t.restartConfirm)) void act({ action: "restart" }, () => t.toast.restarted);
+                  }}
+                  className="btn-bouncy w-fit bg-[var(--surface)] px-4 py-2 text-sm font-bold"
+                >
+                  🔄 {t.restart}
+                </button>
               </div>
             </div>
-            {holdings.length === 0 ? (
-              <p className="text-sm text-[var(--muted)]">
-                {t.assetsTitle}: {t.none}
-              </p>
-            ) : (
-              <ul className="flex flex-col gap-1.5 text-sm">
-                {holdings.map((h) => (
-                  <li key={h.id} className="flex justify-between">
-                    <span>
-                      {EMOJI[h.id]} {t.assets[h.id]}
-                    </span>
-                    <b>{m(h.value)}</b>
-                  </li>
+          )}
+
+          {ov === "earnings" && (
+            <div className="grid gap-4 md:grid-cols-2">
+              {/* Koláč zdrojů příjmu */}
+              <div className="card flex flex-col gap-3 p-5">
+                <h2 className="font-bold">{t.incomeTitle}</h2>
+                <Donut
+                  parts={[
+                    { label: t.salary, value: r.salary * r.multiplier, color: "var(--cat-1)" },
+                    { label: t.businessIncome, value: r.companies * r.multiplier, color: "var(--cat-2)" },
+                    { label: t.passiveIncome, value: r.passive * r.multiplier, color: "var(--cat-3)" },
+                  ]}
+                  centerLabel={t.centerIncome}
+                  centerValue={m(grossHour)}
+                  shareLabel={t.shareLabel}
+                />
+              </div>
+
+              {/* Pruhy příjmů a nákladů */}
+              <div className="card flex flex-col gap-3 p-5">
+                <h2 className="font-bold">{t.incomeTitle}</h2>
+                {incomeParts.map((p) => (
+                  <div key={p.label} className="flex flex-col gap-1">
+                    <div className="flex justify-between text-sm">
+                      <span>
+                        {p.icon} {p.label}
+                      </span>
+                      <b className={p.cost ? "text-[var(--danger)]" : ""}>
+                        {p.cost ? "−" : "+"}
+                        {m(p.value)}
+                      </b>
+                    </div>
+                    <div className="h-2.5 overflow-hidden rounded-full bg-[var(--surface-muted)]">
+                      <div
+                        className={`h-full rounded-full ${p.cost ? "bg-[var(--danger)]" : "bg-[var(--accent-green)]"}`}
+                        style={{ width: `${(p.value / incomeScale) * 100}%` }}
+                      />
+                    </div>
+                  </div>
                 ))}
-              </ul>
-            )}
-          </div>
+                <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t-2 border-dashed border-[var(--edge)] pt-3 text-sm">
+                  <span>
+                    ✖️ {t.multiplier}: <b>×{r.multiplier.toFixed(2)}</b>
+                    {data.learning > 0 && (
+                      <>
+                        {" "}
+                        · 📚 {t.learning}: <b>+{Math.round(data.learning * 100)} %</b>
+                      </>
+                    )}
+                  </span>
+                  <span className="font-extrabold">
+                    = {r.net >= 0 ? "+" : ""}
+                    {m(r.net)} {t.perHourShort}
+                  </span>
+                </div>
+                <p className="text-xs text-[var(--muted)]">{t.overviewHint}</p>
+              </div>
 
-          {/* Vzdělání: investice bodů z učení do trvalého zvýšení příjmů */}
-          <div className="card flex flex-col gap-3 p-5">
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="font-bold">🎓 {t.education}</h2>
-              <span className="text-sm font-bold">
-                {state.edu} / {MAX_EDU}
-              </span>
+              <div className="grid grid-cols-2 gap-3 md:col-span-2 lg:grid-cols-4">
+                {[
+                  { icon: "🏠", label: t.passiveShare, value: `${Math.round(passiveShare * 100)} %` },
+                  { icon: "📅", label: t.avgDay, value: `${r.net >= 0 ? "+" : ""}${m(r.net * 24)}` },
+                  { icon: "🍞", label: t.yearlyCost, value: `−${m(r.living * 24 * 365)}` },
+                  { icon: "🏭", label: t.bestCompany, value: bestCo ? `${t.companies[bestCo.id]} · ${m(bestCo.perHour)} ${t.perHourShort}` : t.noCompany },
+                ].map((s) => (
+                  <div key={s.label} className="card p-4">
+                    <p className="text-xs text-[var(--muted)]">
+                      {s.icon} {s.label}
+                    </p>
+                    <p className="font-bold">{s.value}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-            <p className="text-sm text-[var(--muted)]">{t.educationHint}</p>
-            <div className="h-3 overflow-hidden rounded-full border-2 border-[var(--edge)] bg-[var(--surface-muted)]">
-              <div className="h-full bg-[var(--accent-green)]" style={{ width: `${(state.edu / MAX_EDU) * 100}%` }} />
-            </div>
-            <button
-              type="button"
-              disabled={busy || state.edu >= MAX_EDU || data.points < data.eduCost}
-              onClick={() => void act({ action: "investEdu" }, () => t.toast.edu)}
-              className="btn-bouncy mt-auto bg-[var(--accent-yellow)] px-4 py-2 text-sm font-bold text-[#16132b] disabled:opacity-45"
-            >
-              {state.edu >= MAX_EDU ? t.educationMax : fill(t.educationBuy, { n: state.edu + 1, p: data.eduCost })}
-            </button>
-          </div>
+          )}
 
-          {/* Patička: počet pokusů a restart */}
-          <div className="card flex flex-col gap-2 p-4 md:col-span-2">
-            <p className="text-sm">
-              {t.runs}: <b>{state.runs}</b>
-            </p>
-            <p className="text-xs text-[var(--muted)]">{t.restartHint} {t.saveNote}</p>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => {
-                if (window.confirm(t.restartConfirm)) void act({ action: "restart" }, () => t.toast.restarted);
-              }}
-              className="btn-bouncy w-fit bg-[var(--surface)] px-4 py-2 text-sm font-bold"
-            >
-              🔄 {t.restart}
-            </button>
-          </div>
+          {ov === "assets" && (
+            <div className="grid gap-4 md:grid-cols-2">
+              {/* Koláč majetku */}
+              <div className="card flex flex-col gap-3 p-5">
+                <h2 className="font-bold">🧺 {t.assetsTitle}</h2>
+                <Donut
+                  parts={assetParts}
+                  centerLabel={t.centerAssets}
+                  centerValue={m(worth)}
+                  shareLabel={t.shareLabel}
+                />
+              </div>
+
+              {/* Sloupcový graf firem: výnos za hodinu */}
+              <div className="card flex flex-col gap-3 p-5">
+                <h2 className="font-bold">🏭 {t.companiesPerHour}</h2>
+                {companyRows.length === 0 ? (
+                  <p className="text-sm text-[var(--muted)]">{t.noCompany}</p>
+                ) : (
+                  companyRows.map((c) => (
+                    <div key={c.id} className="flex flex-col gap-1">
+                      <div className="flex justify-between text-sm">
+                        <span>
+                          {EMOJI[c.id]} {t.companies[c.id]} × {c.count}
+                        </span>
+                        <b>{m(c.perHour)} {t.perHourShort}</b>
+                      </div>
+                      <div className="h-2.5 overflow-hidden rounded-full bg-[var(--surface-muted)]">
+                        <div className="h-full rounded-full bg-[var(--brand-500)]" style={{ width: `${(c.perHour / companyScale) * 100}%` }} />
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="card flex flex-col gap-3 p-5 md:col-span-2">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-[var(--surface-muted)] p-3">
+                    <p className="text-xs text-[var(--muted)]">🏭 {t.companiesOwned}</p>
+                    <p className="font-bold">{companiesOwned}</p>
+                  </div>
+                  <div className="rounded-xl bg-[var(--surface-muted)] p-3">
+                    <p className="text-xs text-[var(--muted)]">🎯 {t.hustlesRunning}</p>
+                    <p className="font-bold">{runningHustles}</p>
+                  </div>
+                </div>
+                {holdings.length === 0 ? (
+                  <p className="text-sm text-[var(--muted)]">
+                    {t.assetsTitle}: {t.none}
+                  </p>
+                ) : (
+                  <ul className="flex flex-col gap-1.5 text-sm">
+                    {holdings.map((h) => (
+                      <li key={h.id} className="flex justify-between">
+                        <span>
+                          {EMOJI[h.id]} {t.assets[h.id]}
+                        </span>
+                        <b>{m(h.value)}</b>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          )}
+
+          {ov === "education" && (
+            <div className="card flex flex-col gap-3 p-5">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="font-bold">🎓 {t.education}</h2>
+                <span className="text-sm font-bold">
+                  {state.edu} / {MAX_EDU}
+                </span>
+              </div>
+              <p className="text-sm text-[var(--muted)]">{t.educationHint}</p>
+              <div className="h-3 overflow-hidden rounded-full border-2 border-[var(--edge)] bg-[var(--surface-muted)]">
+                <div className="h-full bg-[var(--accent-green)]" style={{ width: `${(state.edu / MAX_EDU) * 100}%` }} />
+              </div>
+              <button
+                type="button"
+                disabled={busy || state.edu >= MAX_EDU || data.points < data.eduCost}
+                onClick={() => void act({ action: "investEdu" }, () => t.toast.edu)}
+                className="btn-bouncy w-fit bg-[var(--accent-yellow)] px-4 py-2 text-sm font-bold text-[#16132b] disabled:opacity-45"
+              >
+                {state.edu >= MAX_EDU ? t.educationMax : fill(t.educationBuy, { n: state.edu + 1, p: data.eduCost })}
+              </button>
+            </div>
+          )}
         </section>
       )}
 

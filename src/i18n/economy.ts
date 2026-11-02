@@ -55,6 +55,20 @@ export type EconomyText = {
   companiesOwned: string;
   hustlesRunning: string;
   none: string;
+  ovSummary: string;
+  ovEarnings: string;
+  ovAssets: string;
+  ovEducation: string;
+  centerIncome: string;
+  centerAssets: string;
+  passiveShare: string;
+  bestCompany: string;
+  avgDay: string;
+  yearlyCost: string;
+  companiesPerHour: string;
+  noCompany: string;
+  shareLabel: string;
+  other: string;
   learning: string;
   education: string;
   educationHint: string;
@@ -169,6 +183,20 @@ const cs: EconomyText = {
   companiesOwned: "Firmy",
   hustlesRunning: "Rozjeté hustle",
   none: "žádný",
+  ovSummary: "Shrnutí",
+  ovEarnings: "Výdělky",
+  ovAssets: "Majetek",
+  ovEducation: "Vzdělání",
+  centerIncome: "Příjem/h",
+  centerAssets: "Celkem",
+  passiveShare: "Pasivní podíl",
+  bestCompany: "Nejlepší firma",
+  avgDay: "Průměr za den",
+  yearlyCost: "Roční náklady",
+  companiesPerHour: "Firmy – příjem za hodinu",
+  noCompany: "Zatím žádná firma",
+  shareLabel: "Podíl",
+  other: "Ostatní",
   learning: "Bonus za dnešní učení",
   education: "Vzdělání",
   educationHint: "Investuj body z učení: každá úroveň trvale zvedne všechny příjmy o 4 %.",
@@ -302,6 +330,20 @@ const en: EconomyText = {
   companiesOwned: "Companies",
   hustlesRunning: "Running hustles",
   none: "none",
+  ovSummary: "Summary",
+  ovEarnings: "Earnings",
+  ovAssets: "Assets",
+  ovEducation: "Education",
+  centerIncome: "Income/h",
+  centerAssets: "Total",
+  passiveShare: "Passive share",
+  bestCompany: "Best company",
+  avgDay: "Average per day",
+  yearlyCost: "Yearly costs",
+  companiesPerHour: "Companies – income per hour",
+  noCompany: "No company yet",
+  shareLabel: "Share",
+  other: "Other",
   learning: "Bonus for today's learning",
   education: "Education",
   educationHint: "Invest points from learning: every level permanently raises all income by 4 %.",
@@ -435,6 +477,20 @@ const de: EconomyText = {
   companiesOwned: "Firmen",
   hustlesRunning: "Laufende Hustles",
   none: "keine",
+  ovSummary: "Übersicht",
+  ovEarnings: "Verdienst",
+  ovAssets: "Vermögen",
+  ovEducation: "Bildung",
+  centerIncome: "Ertrag/Std",
+  centerAssets: "Gesamt",
+  passiveShare: "Passiver Anteil",
+  bestCompany: "Beste Firma",
+  avgDay: "Durchschnitt pro Tag",
+  yearlyCost: "Jährliche Kosten",
+  companiesPerHour: "Firmen – Ertrag pro Stunde",
+  noCompany: "Noch keine Firma",
+  shareLabel: "Anteil",
+  other: "Sonstiges",
   learning: "Bonus für heutiges Lernen",
   education: "Bildung",
   educationHint: "Investiere Punkte vom Lernen: Jede Stufe erhöht dauerhaft alle Einkünfte um 4 %.",
@@ -568,6 +624,20 @@ const ru: EconomyText = {
   companiesOwned: "Компании",
   hustlesRunning: "Активные подработки",
   none: "нет",
+  ovSummary: "Итоги",
+  ovEarnings: "Заработок",
+  ovAssets: "Активы",
+  ovEducation: "Образование",
+  centerIncome: "Доход/ч",
+  centerAssets: "Всего",
+  passiveShare: "Доля пассивного",
+  bestCompany: "Лучшая компания",
+  avgDay: "В среднем за день",
+  yearlyCost: "Годовые расходы",
+  companiesPerHour: "Компании — доход в час",
+  noCompany: "Пока нет компаний",
+  shareLabel: "Доля",
+  other: "Прочее",
   learning: "Бонус за сегодняшнюю учёбу",
   education: "Образование",
   educationHint: "Вкладывай баллы за учёбу: каждый уровень навсегда повышает все доходы на 4 %.",
