@@ -8,7 +8,7 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { clone as cloneModel } from "three/addons/utils/SkeletonUtils.js";
 import { DRACO_DECODER_PATH, getAvatarModel } from "@/lib/avatars3d";
-import { AVATAR_REACTIONS, GESTURES, resetMotion, smooth, type Gesture, type Motion } from "@/components/motion-gestures";
+import { AVATAR_REACTIONS, GESTURES, bodySway, resetMotion, smooth, type Gesture, type Motion } from "@/components/motion-gestures";
 import { prefersReducedMotion } from "@/lib/motion";
 
 export type StageEntry = { id: string; name: string; avatar: string | null; value: string };
@@ -17,8 +17,9 @@ export type StageEntry = { id: string; name: string; avatar: string | null; valu
 // čtou nebo fandí. Postavy jsou stejné modely z Blenderu jako na profilu; stoly, rekvizity, korunu,
 // konfety a světla skládá tento soubor z jednoduchých těles.
 
-type Activity = "eat" | "drink" | "read" | "cheer" | "laptop" | "cards" | "cocoa";
-const ACTIVITIES: Activity[] = ["eat", "laptop", "read", "cocoa", "drink", "cards", "cheer"];
+type Activity = "eat" | "drink" | "read" | "cheer" | "laptop" | "cards" | "cocoa" | "photo";
+// Podle místa: nejblíž stupňům (4., 5.) fotí a fandí, dál hrají karty a pracují, nakonec odpočívají s jídlem a pitím.
+const ACTIVITIES: Activity[] = ["photo", "cheer", "laptop", "cards", "read", "cocoa", "eat", "drink"];
 
 const PODIUM_X = [0, -1.22, 1.22];
 const PODIUM_H = [1.0, 0.72, 0.52];
@@ -321,7 +322,84 @@ function cocoa(): Prop {
   };
 }
 
-const PROPS: Record<Activity, () => Prop> = { eat: cupcake, drink: juice, read: book, cheer: popcorn, laptop, cards, cocoa };
+// Fotoaparát s bleskem: každé pár vteřin zabliká.
+function camera(): Prop {
+  const g = new THREE.Group();
+  const body = box(0.2, 0.12, 0.1, std("#2b2f3a", 0.4, 0.5), 0.02);
+  body.position.y = 0.06;
+  const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.045, 0.06, 20), std("#aeb7c9", 0.25, 0.8));
+  lens.rotation.x = Math.PI / 2;
+  lens.position.set(0, 0.07, 0.08);
+  const glass = new THREE.Mesh(new THREE.CircleGeometry(0.032, 20), std("#4cc9f0", 0.05, 0.3));
+  glass.position.set(0, 0.07, 0.111);
+  const flash = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
+  flash.position.set(0, 0.2, 0.2);
+  g.add(body, lens, glass, flash); // objektiv míří k publiku (ke kameře scény)
+  return {
+    group: g,
+    update: (_t, a) => {
+      const u = (a.t % 3.6) / 3.6;
+      (flash.material as THREE.MeshBasicMaterial).opacity = u < 0.06 ? 0.85 * (1 - u / 0.06) : 0;
+    },
+  };
+}
+
+const PROPS: Record<Activity, () => Prop> = { eat: cupcake, drink: juice, read: book, cheer: popcorn, laptop, cards, cocoa, photo: camera };
+
+// --- odměny za místa: pohár, medaile a růžice ---
+function trophyCup(): THREE.Group {
+  const g = new THREE.Group();
+  const gold = std("#ffcf33", 0.2, 0.95);
+  const profile = [[0.001, 0], [0.09, 0], [0.09, 0.03], [0.04, 0.06], [0.03, 0.2], [0.07, 0.24], [0.11, 0.32], [0.12, 0.42], [0.1, 0.46], [0.001, 0.46]].map(([x, y]) => new THREE.Vector2(x, y));
+  const cup = new THREE.Mesh(new THREE.LatheGeometry(profile, 32), gold);
+  cup.castShadow = true;
+  g.add(cup);
+  for (const sx of [-1, 1]) {
+    const handle = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.013, 8, 20, Math.PI), gold);
+    handle.position.set(sx * 0.115, 0.36, 0);
+    handle.rotation.z = sx > 0 ? -Math.PI / 2 : Math.PI / 2;
+    g.add(handle);
+  }
+  return g;
+}
+
+function medal(color: string, ribbon: string): THREE.Group {
+  const g = new THREE.Group();
+  const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.02, 40), std(color, 0.22, 0.95));
+  disc.rotation.x = Math.PI / 2;
+  disc.position.y = 0.26;
+  disc.castShadow = true;
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.01, 8, 40), std(color, 0.15, 1));
+  rim.position.y = 0.26;
+  const star = new THREE.Mesh(new THREE.CircleGeometry(0.05, 5), std("#ffffff", 0.3, 0.6));
+  star.position.set(0, 0.26, 0.0115);
+  const band = box(0.07, 0.15, 0.012, std(ribbon, 0.7), 0.004);
+  band.position.y = 0.4;
+  const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.08, 16), std("#3a2b7d", 0.5));
+  stand.position.y = 0.04;
+  g.add(disc, rim, star, band, stand);
+  return g;
+}
+
+function rosette(color: string): THREE.Group {
+  const g = new THREE.Group();
+  const m = std(color, 0.5);
+  for (const sx of [-1, 1]) {
+    const tail = box(0.045, 0.14, 0.01, m, 0.004);
+    tail.position.set(sx * 0.03, -0.1, 0);
+    tail.rotation.z = sx * 0.22;
+    g.add(tail);
+  }
+  const ruffle = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.015, 24), m);
+  ruffle.rotation.x = Math.PI / 2;
+  const core = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.02, 20), std("#fff6dc", 0.4));
+  core.rotation.x = Math.PI / 2;
+  core.position.z = 0.006;
+  g.add(ruffle, core);
+  return g;
+}
+
+const ROSETTE_COLORS = ["#8f5bff", "#3d57ff", "#2fbf71", "#ff4fa3", "#ff8f3d"];
 
 // --- postavy ---
 type ActorState = {
@@ -339,6 +417,7 @@ type ActorState = {
   nextJoy: number;
   reaction: number;
   motion: Motion;
+  shown: Motion;
   t: number;
   bites: number;
   sips: number;
@@ -401,7 +480,7 @@ export default function LeaderboardStage3D({
       handlers.current.onError();
       return;
     }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.NeutralToneMapping;
     renderer.shadowMap.enabled = true;
@@ -420,7 +499,7 @@ export default function LeaderboardStage3D({
     const key = new THREE.DirectionalLight(0xfff0d8, 2.4);
     key.position.set(-3, 6, 5);
     key.castShadow = true;
-    key.shadow.mapSize.set(2048, 2048);
+    key.shadow.mapSize.set(1536, 1536);
     key.shadow.camera.left = -7;
     key.shadow.camera.right = 7;
     key.shadow.camera.top = 5;
@@ -451,7 +530,7 @@ export default function LeaderboardStage3D({
     // --- jeviště ---
     const stage = new THREE.Group();
     scene.add(stage);
-    const floor = new THREE.Mesh(new THREE.CircleGeometry(7.5, 64), std("#3a2b7d", 0.85));
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(7.5, 64), new THREE.MeshPhysicalMaterial({ color: "#3a2b7d", roughness: 0.5, metalness: 0.08, clearcoat: 0.35, clearcoatRoughness: 0.5 }));
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     stage.add(floor);
@@ -502,6 +581,23 @@ export default function LeaderboardStage3D({
     bunting.add(rope);
     stage.add(bunting);
 
+    // Závěsy po stranách a bodové světlo na vítěze: scéna působí jako skutečné pódium.
+    const curtainMat = new THREE.MeshStandardMaterial({ color: "#8f1f4a", roughness: 0.75, side: THREE.DoubleSide });
+    for (const side of [-1, 1]) {
+      const geo = new THREE.PlaneGeometry(2.4, 4.4, 48, 1);
+      const pos = geo.attributes.position;
+      for (let i = 0; i < pos.count; i++) pos.setZ(i, Math.sin(pos.getX(i) * 5.2) * 0.12);
+      geo.computeVertexNormals();
+      const curtain = new THREE.Mesh(geo, curtainMat);
+      curtain.position.set(side * (halfW + 0.9), 2.2, -2.2);
+      curtain.receiveShadow = true;
+      stage.add(curtain);
+    }
+    const spot = new THREE.SpotLight(0xfff0d0, 38, 14, 0.5, 0.7, 1.4);
+    spot.position.set(0, 6.5, 3.2);
+    spot.target.position.set(0, 1, 0);
+    scene.add(spot, spot.target);
+
     // Světelné kužele nad stupni
     const beams: THREE.Mesh[] = [];
     for (const [x, tilt] of [[-2.4, 0.42], [2.4, -0.42]] as const) {
@@ -537,7 +633,7 @@ export default function LeaderboardStage3D({
     const podiumTops: THREE.Mesh[] = [];
     for (let i = 0; i < 3; i++) {
       const h = PODIUM_H[i];
-      const body = box(1.1, h, 1.0, std("#f4ecff", 0.5), 0.05);
+      const body = box(1.1, h, 1.0, new THREE.MeshPhysicalMaterial({ color: "#f4ecff", roughness: 0.38, clearcoat: 0.7, clearcoatRoughness: 0.25 }), 0.05);
       body.position.set(PODIUM_X[i], h / 2, 0);
       stage.add(body);
       const cap = box(1.14, 0.07, 1.04, std(PODIUM_COLOR[i], 0.28, 0.65), 0.03);
@@ -547,6 +643,45 @@ export default function LeaderboardStage3D({
       const num = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.62), new THREE.MeshBasicMaterial({ map: rankNumeral(i + 1, PODIUM_COLOR[i]), transparent: true, toneMapped: false }));
       num.position.set(PODIUM_X[i], h * 0.58, 0.502);
       stage.add(num);
+    }
+
+    // Odměny za místa stojí na stupních: zlatý pohár, stříbrná a bronzová medaile. Pomalu se točí a houpou.
+    const rewards: { obj: THREE.Object3D; y: number; phase: number }[] = [];
+    [
+      { obj: trophyCup(), scale: 0.85 },
+      { obj: medal("#d6dee8", "#3d57ff"), scale: 1.05 },
+      { obj: medal("#d9955a", "#2fbf71"), scale: 1.05 },
+    ].forEach(({ obj, scale }, i) => {
+      obj.scale.setScalar(scale);
+      obj.position.set(PODIUM_X[i] + 0.38, PODIUM_H[i] + 0.045, 0.22);
+      obj.traverse((o) => {
+        if ((o as THREE.Mesh).isMesh) o.castShadow = true;
+      });
+      stage.add(obj);
+      rewards.push({ obj, y: obj.position.y, phase: i * 1.7 });
+    });
+
+    // Ohňostroj nad stupni vítězů (3 salvy za sebou).
+    const bursts: { points: THREE.Points; dirs: THREE.Vector3[]; cx: number; cy: number; offset: number }[] = [];
+    const fwDisposables: { dispose: () => void }[] = [];
+    if (!reduceMotion) {
+      const fwColors = ["#ffcf33", "#ff5d73", "#4cc9f0", "#7ee0b0", "#b388ff"];
+      for (let b = 0; b < 3; b++) {
+        const N = 40;
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(N * 3), 3));
+        const colors = new Float32Array(N * 3);
+        const c = new THREE.Color(fwColors[b * 2 % fwColors.length]);
+        for (let i = 0; i < N; i++) c.toArray(colors, i * 3);
+        geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+        const mat = new THREE.PointsMaterial({ size: 0.1, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false });
+        const points = new THREE.Points(geo, mat);
+        points.frustumCulled = false;
+        stage.add(points);
+        fwDisposables.push(geo, mat);
+        const dirs = Array.from({ length: N }, () => new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize());
+        bursts.push({ points, dirs, cx: [-1.4, 0.2, 1.5][b], cy: [3.0, 3.5, 2.9][b], offset: b / 3 });
+      }
     }
 
     // --- sedadla a stoly ---
@@ -676,6 +811,13 @@ export default function LeaderboardStage3D({
           const m = addPlate(slot.parent, tex, 0.84, { x: slot.x, y: 0.33, z: 0.965 });
           disposables.push(m.geometry, m.material as THREE.Material);
         }
+        if (slot.kind === "seat") {
+          // Růžice pro 4. až 10. místo, nad cedulkou na čelní desce stolu.
+          const r = rosette(ROSETTE_COLORS[(slot.rank - 4) % ROSETTE_COLORS.length]);
+          r.position.set(slot.x, 0.5, 0.975);
+          r.scale.setScalar(0.8);
+          slot.parent.add(r);
+        }
         if (slot.rank === 1) {
           crownMesh.position.set(slot.x, slot.y + slot.height + 0.25, 0);
           crownBase.y = crownMesh.position.y;
@@ -696,6 +838,7 @@ export default function LeaderboardStage3D({
           nextJoy: 1.5 + Math.random() * 3,
           reaction: n,
           motion: { y: 0, rotX: 0, rotY: 0, rotZ: 0, sx: 1, sy: 1 },
+          shown: { y: 0, rotX: 0, rotY: 0, rotZ: 0, sx: 1, sy: 1 },
           t: n * 1.3,
           bites: 0,
           sips: 0,
@@ -722,10 +865,7 @@ export default function LeaderboardStage3D({
     const react = (a: ActorState) => {
       if (reduceMotion) return;
       a.gesture = { t: 0, g: AVATAR_REACTIONS[a.reaction++ % AVATAR_REACTIONS.length] };
-      if (a.joy) {
-        a.joy.reset().play();
-        if (a.idle?.isRunning()) a.joy.crossFadeFrom(a.idle, 0.12, false);
-      }
+      playJoy(a);
     };
     let downAt = 0;
     const onDown = () => (downAt = performance.now());
@@ -758,6 +898,16 @@ export default function LeaderboardStage3D({
     // --- animace ---
     const clock = new THREE.Clock();
     const bell = (u: number, a: number, b: number) => (u < a || u > b ? 0 : Math.sin(((u - a) / (b - a)) * Math.PI));
+    const extra: Motion = { y: 0, rotX: 0, rotY: 0, rotZ: 0, sx: 1, sy: 1 };
+    const wrapAngle = (d: number) => {
+      const w = (d + Math.PI) % (Math.PI * 2);
+      return (w < 0 ? w + Math.PI * 2 : w) - Math.PI;
+    };
+    const playJoy = (a: ActorState) => {
+      if (!a.joy) return;
+      a.joy.reset().play();
+      if (a.idle?.isRunning()) a.joy.crossFadeFrom(a.idle, 0.25, false);
+    };
     let elapsed = 0;
 
     const tick = () => {
@@ -773,34 +923,31 @@ export default function LeaderboardStage3D({
         const m = a.motion;
         resetMotion(m);
         if (!reduceMotion) {
-          // oslavy a gesta
-          if (a.gesture) {
-            a.gesture.t += dt;
-            a.gesture.g.run(Math.min(1, a.gesture.t / a.gesture.g.duration), m);
-            if (a.gesture.t >= a.gesture.g.duration) a.gesture = null;
-          }
-          if (a.activity === "champion" || a.activity === "second" || a.activity === "third") {
-            const pool = a.activity === "champion" ? [GESTURES.victory, GESTURES.jumpSpin, GESTURES.dance, GESTURES.hop] : a.activity === "second" ? [GESTURES.dance, GESTURES.wiggle, GESTURES.hop, GESTURES.bow] : [GESTURES.wiggle, GESTURES.hop, GESTURES.nod, GESTURES.dance];
+          const podium = a.activity === "champion" || a.activity === "second" || a.activity === "third";
+          // Klip radosti plynule přejde zpět do klidu, ještě než doběhne (jinak by postava cukla).
+          if (a.joy && a.idle && a.joy.isRunning() && !a.idle.isRunning() && a.joy.time > a.joy.getClip().duration - 0.3) {
+            a.idle.reset().play();
+            a.idle.crossFadeFrom(a.joy, 0.3, false);
+          } else if (a.joy && !a.joy.isRunning() && a.idle && !a.idle.isRunning()) a.idle.reset().play();
+
+          if (podium) {
+            // Stupně vítězů: gesta podle místa, 1. se raduje nejvíc.
             if (!a.gesture && (a.nextGesture -= dt) <= 0) {
+              const pool = a.activity === "champion" ? [GESTURES.victory, GESTURES.jumpSpin, GESTURES.dance, GESTURES.hop, GESTURES.cheer, GESTURES.backflip] : a.activity === "second" ? [GESTURES.dance, GESTURES.wiggle, GESTURES.hop, GESTURES.bow, GESTURES.groove] : [GESTURES.wiggle, GESTURES.hop, GESTURES.nod, GESTURES.skip, GESTURES.sway];
               a.gesture = { t: 0, g: pool[a.reaction++ % pool.length] };
               a.nextGesture = (a.activity === "champion" ? 1.2 : 2.4) + Math.random() * 2.2;
-              if (a.joy && (a.activity === "champion" || Math.random() < 0.5)) {
-                a.joy.reset().play();
-                if (a.idle?.isRunning()) a.joy.crossFadeFrom(a.idle, 0.12, false);
-              }
+              if (a.joy && (a.activity === "champion" || Math.random() < 0.5)) playJoy(a);
             }
-            // radost se dohraje a vrací se klid
-            if (a.joy && !a.joy.isRunning() && a.idle && !a.idle.isRunning()) a.idle.reset().play();
-            // vítězové koukají k publiku, trochu za kurzorem
-            m.rotY += px * 0.25;
-          } else if (!a.gesture) {
+            bodySway(a.t, m);
+            m.rotY += px * 0.25; // vítězové koukají k publiku, trochu za kurzorem
+          } else {
+            // Sedící: činnost běží pořád a kliknutí na ni jen přidá gesto navíc.
             const t = a.t;
             switch (a.activity) {
               case "eat": {
                 const period = 2.8;
                 const u = (t % period) / period;
-                const bites = Math.floor(t / period);
-                a.bites = bites;
+                a.bites = Math.floor(t / period);
                 m.rotX = 0.26 * bell(u, 0.15, 0.55);
                 m.y = -0.03 * bell(u, 0.15, 0.55);
                 const chew = u > 0.55 && u < 0.95 ? Math.sin((u - 0.55) * Math.PI * 10) : 0;
@@ -841,33 +988,75 @@ export default function LeaderboardStage3D({
                 m.sy = 1 + 0.012 * Math.sin(t * 2);
                 break;
               }
+              case "photo": {
+                // Fotí vítěze: předklon k hledáčku, ve chvíli blesku malé trhnutí a pak se rozhlédne.
+                const u = (t % 3.6) / 3.6;
+                m.rotX = 0.1 * bell(u, 0.4, 0.97) - 0.05 * bell(u, 0, 0.12);
+                m.y = 0.03 * bell(u, 0, 0.12);
+                m.rotY = 0.22 * Math.sin(t * 0.5);
+                break;
+              }
               case "cheer": {
                 m.y = 0.05 * Math.abs(Math.sin(t * 5.5 + a.phase));
                 m.rotZ = 0.07 * Math.sin(t * 5.5 + a.phase);
                 if ((a.nextJoy -= dt) <= 0) {
                   a.nextJoy = 2.5 + Math.random() * 3;
-                  if (a.joy) {
-                    a.joy.reset().play();
-                    if (a.idle?.isRunning()) a.joy.crossFadeFrom(a.idle, 0.12, false);
-                  }
+                  playJoy(a);
                 }
-                if (a.joy && !a.joy.isRunning() && a.idle && !a.idle.isRunning()) a.idle.reset().play();
                 break;
               }
             }
+            bodySway(a.t, m);
             m.rotY += px * 0.12;
           }
+
+          // Gesto se přičte k základnímu pohybu místo jeho nahrazení.
+          if (a.gesture) {
+            a.gesture.t += dt;
+            resetMotion(extra);
+            a.gesture.g.run(Math.min(1, a.gesture.t / a.gesture.g.duration), extra);
+            m.y += extra.y;
+            m.rotX += extra.rotX;
+            m.rotY += extra.rotY;
+            m.rotZ += extra.rotZ;
+            m.sx *= extra.sx;
+            m.sy *= extra.sy;
+            if (a.gesture.t >= a.gesture.g.duration) a.gesture = null;
+          }
           a.prop?.update(a.t, a);
+
+          // Vyhlazení: výsledek dohání cíl plynule (úhly po nejkratší cestě), takže nikde není skok ani střih.
+          const k = 1 - Math.exp(-dt * 18);
+          const sh = a.shown;
+          sh.y += (m.y - sh.y) * k;
+          sh.rotX += (m.rotX - sh.rotX) * k;
+          sh.rotY += wrapAngle(m.rotY - sh.rotY) * k;
+          sh.rotZ += (m.rotZ - sh.rotZ) * k;
+          sh.sx += (m.sx - sh.sx) * k;
+          sh.sy += (m.sy - sh.sy) * k;
         }
-        a.pivot.position.y = a.center + m.y;
-        a.pivot.rotation.set(m.rotX, m.rotY, m.rotZ);
-        a.pivot.scale.set(m.sx, m.sy, m.sx);
+        const sh = a.shown;
+        a.pivot.position.y = a.center + sh.y;
+        a.pivot.rotation.set(sh.rotX, sh.rotY, sh.rotZ);
+        a.pivot.scale.set(sh.sx, sh.sy, sh.sx);
       }
 
       if (!reduceMotion) {
         px += (pxTarget - px) * Math.min(1, dt * 3);
         crownMesh.position.y = crownBase.y + Math.sin(elapsed * 2.2) * 0.04;
         crownMesh.rotation.y = elapsed * 0.9;
+        rewards.forEach((r) => {
+          r.obj.rotation.y = elapsed * 0.8 + r.phase;
+          r.obj.position.y = r.y + 0.015 + Math.sin(elapsed * 1.9 + r.phase) * 0.015;
+        });
+        bursts.forEach((b) => {
+          const u = (elapsed * 0.3 + b.offset) % 1;
+          const attr = b.points.geometry.attributes.position as THREE.BufferAttribute;
+          const radius = Math.sin(Math.min(1, u * 1.5) * Math.PI * 0.5) * 1.15;
+          b.dirs.forEach((d, i) => attr.setXYZ(i, b.cx + d.x * radius, b.cy + d.y * radius - u * u * 0.6, -0.8 + d.z * radius));
+          attr.needsUpdate = true;
+          (b.points.material as THREE.PointsMaterial).opacity = u < 0.04 ? 0 : Math.pow(1 - u, 1.6);
+        });
         bunting.children.forEach((c) => {
           if (c.userData.phase !== undefined) c.rotation.z = Math.sin(elapsed * 1.6 + c.userData.phase) * 0.12;
         });
@@ -918,6 +1107,7 @@ export default function LeaderboardStage3D({
         }
       });
       disposables.forEach((d) => d.dispose());
+      fwDisposables.forEach((d) => d.dispose());
       confetti.dispose();
       env.dispose();
       pmrem.dispose();

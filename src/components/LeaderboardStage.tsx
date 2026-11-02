@@ -21,9 +21,10 @@ export function LeaderboardStage({
   const [status, setStatus] = useState<"loading" | "ready" | "failed">("loading");
   if (status === "failed") return <>{fallback}</>;
   return (
-    <div className="relative mb-6 overflow-hidden rounded-3xl border-2 border-[var(--edge)] shadow-[0_6px_0_var(--edge)]">
+    // Bez rámečku a bez malého okénka: scéna přesahuje užší sloupec stránky a zabírá šířku okna i velkou část výšky.
+    <div className="relative left-1/2 mb-8 w-[min(calc(100vw-1rem),72rem)] -translate-x-1/2 overflow-hidden rounded-[2rem]">
       <div
-        className="relative aspect-[5/4] w-full sm:aspect-[21/9]"
+        className="relative h-[clamp(320px,52vw,640px)] w-full"
         style={{ background: "radial-gradient(120% 90% at 50% 0%, #6a4fd6 0%, #3a2b7d 55%, #221a52 100%)" }}
       >
         <div className={`absolute inset-0 transition-opacity duration-500 ${status === "ready" ? "opacity-100" : "opacity-0"}`}>
