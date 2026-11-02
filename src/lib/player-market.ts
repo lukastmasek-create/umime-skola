@@ -13,7 +13,8 @@ export const MIN_PRICE = 10;
 export const maxPrice = (item: ShopItem) => Math.max(MIN_PRICE, item.price * 2);
 export const sellerGets = (price: number) => price - Math.ceil(price * MARKET_FEE);
 
-export type Listing = { id: string; itemId: string; price: number; at: string };
+// wantId = nabídka výměny: místo bodů prodávající chce jinou věc z katalogu (cena je pak 0, bez poplatku).
+export type Listing = { id: string; itemId: string; price: number; at: string; wantId?: string };
 export type MarketOffer = Listing & { sellerId: string; seller: string; mine: boolean };
 
 export function tradable(itemId: string): ShopItem | null {
@@ -27,5 +28,6 @@ export function normalizeListings(raw: unknown): Listing[] {
   return list
     .filter((l): l is Listing => !!l && typeof l.id === "string" && typeof l.itemId === "string" && Number.isInteger(l.price) && typeof l.at === "string")
     .filter((l) => tradable(l.itemId))
+    .map((l) => (l.wantId && tradable(l.wantId) && l.wantId !== l.itemId ? l : { ...l, wantId: undefined }))
     .slice(0, MAX_LISTINGS);
 }

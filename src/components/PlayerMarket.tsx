@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Preview } from "@/components/ShopView";
+import { SHOP_ITEMS } from "@/lib/shop";
 import { getPlayerMarketText } from "@/i18n/player-market";
 import { notifyAccountChanged } from "@/lib/account-events";
-import { MARKET_FEE, MAX_LISTINGS, MIN_PRICE, maxPrice, sellerGets, tradable, type MarketOffer } from "@/lib/player-market";
+import { MARKET_FEE, MARKET_KINDS, MAX_LISTINGS, MIN_PRICE, maxPrice, sellerGets, tradable, type MarketOffer } from "@/lib/player-market";
 import type { Locale } from "@/i18n/config";
 
 // Trh mezi hráči (uvnitř okna obchodu): nabídky ostatních, vlastní nabídky a vystavení věci za body.
@@ -19,7 +20,7 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
   const [loggedIn, setLoggedIn] = useState(true);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
-  const [sell, setSell] = useState<{ itemId: string; price: number } | null>(null);
+  const [sell, setSell] = useState<{ itemId: string; price: number; want: string | null } | null>(null);
 
   const load = useCallback(async () => {
     const [o, s] = await Promise.all([
@@ -55,6 +56,9 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
   const worn = shop ? Object.values(shop.equipped) : [];
   const sellable = (shop?.owned ?? []).map((id) => tradable(id)).filter((i) => i && !worn.includes(i.ref)) as NonNullable<ReturnType<typeof tradable>>[];
   const avatar = shop?.equipped.avatar ?? null;
+  const catalog = SHOP_ITEMS.filter((i) => (MARKET_KINDS as readonly string[]).includes(i.kind));
+  // věci, které mohu nabídnout při výměně: vlastním a nenosím
+  const canGive = new Set(sellable.map((i) => i.id));
 
   const card = "flex flex-col gap-2 rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] p-2";
   return (
@@ -79,18 +83,20 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
             {others.map((o) => {
               const item = tradable(o.itemId)!;
               const have = shop?.owned.includes(item.id);
+              const want = o.wantId ? tradable(o.wantId) : null;
               return (
                 <div key={o.id} className={card}>
                   <Preview item={item} locale={locale} avatar={avatar} />
                   <p className="truncate text-sm font-bold">{item.names[locale]}</p>
                   <p className="truncate text-xs text-[var(--muted)]">{t.seller.replace("{name}", o.seller)}</p>
+                  {want && <p className="truncate text-xs font-semibold">🔄 {t.swap.wants.replace("{name}", want.names[locale])}</p>}
                   <button
                     type="button"
-                    disabled={busy || !loggedIn || have || (shop?.points ?? 0) < o.price}
-                    onClick={() => act({ action: "buy", id: o.id, seller: o.sellerId }, t.done.buy)}
+                    disabled={busy || !loggedIn || have || (want ? !canGive.has(want.id) : (shop?.points ?? 0) < o.price)}
+                    onClick={() => act({ action: "buy", id: o.id, seller: o.sellerId }, want ? t.swap.done : t.done.buy)}
                     className="btn-bouncy btn-primary px-3 py-1.5 text-sm font-bold disabled:opacity-50"
                   >
-                    {have ? t.owned : `${t.buy} · ${o.price} 🪙`}
+                    {have ? t.owned : want ? `🔄 ${t.swap.button}` : `${t.buy} · ${o.price} 🪙`}
                   </button>
                 </div>
               );
@@ -105,11 +111,12 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
           <div className="grid grid-cols-2 gap-2">
             {mine.map((o) => {
               const item = tradable(o.itemId)!;
+              const want = o.wantId ? tradable(o.wantId) : null;
               return (
                 <div key={o.id} className={card}>
                   <Preview item={item} locale={locale} avatar={avatar} />
                   <p className="truncate text-sm font-bold">
-                    {item.names[locale]} · {o.price} 🪙
+                    {item.names[locale]} · {want ? `🔄 ${want.names[locale]}` : `${o.price} 🪙`}
                   </p>
                   <button type="button" disabled={busy} onClick={() => act({ action: "cancel", id: o.id }, t.done.cancel)} className="btn-bouncy bg-[var(--surface-muted)] px-3 py-1.5 text-sm font-bold disabled:opacity-50">
                     {t.cancel}
@@ -133,18 +140,43 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
                 const on = sell?.itemId === item.id;
                 return (
                   <div key={item.id} className={card}>
-                    <button type="button" onClick={() => setSell({ itemId: item.id, price: item.price })} className="text-left">
+                    <button type="button" onClick={() => setSell({ itemId: item.id, price: item.price, want: null })} className="text-left">
                       <Preview item={item} locale={locale} avatar={avatar} />
                       <p className="mt-1 truncate text-sm font-bold">{item.names[locale]}</p>
                     </button>
                     {on && sell && (
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-semibold">
-                          {t.price}: {sell.price} 🪙
-                          <input type="range" min={MIN_PRICE} max={maxPrice(item)} step={5} value={sell.price} onChange={(e) => setSell({ itemId: item.id, price: Number(e.target.value) })} className="w-full" />
-                        </label>
-                        <p className="text-xs text-[var(--muted)]">{t.youGet.replace("{n}", String(sellerGets(sell.price)))}</p>
-                        <button type="button" disabled={busy || mine.length >= MAX_LISTINGS} onClick={() => act({ action: "list", itemId: item.id, price: sell.price }, t.done.list)} className="btn-bouncy btn-primary px-3 py-1.5 text-sm font-bold disabled:opacity-50">
+                        <div className="flex gap-1">
+                          {([false, true] as const).map((isSwap) => (
+                            <button key={String(isSwap)} type="button" onClick={() => setSell({ ...sell, want: isSwap ? (catalog.find((c) => c.id !== item.id)?.id ?? null) : null })} className={`pill flex-1 px-2 py-1 text-xs font-bold ${!!sell.want === isSwap ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface-muted)]"}`}>
+                              {isSwap ? `🔄 ${t.swap.swap}` : t.swap.sell}
+                            </button>
+                          ))}
+                        </div>
+                        {sell.want ? (
+                          <>
+                            <label className="text-xs font-semibold">
+                              {t.swap.want}
+                              <select value={sell.want} onChange={(e) => setSell({ ...sell, want: e.target.value })} className="mt-1 w-full rounded-lg border-2 border-[var(--edge)] bg-[var(--surface)] px-2 py-1 text-sm">
+                                {catalog.filter((c) => c.id !== item.id).map((c) => (
+                                  <option key={c.id} value={c.id}>
+                                    {c.names[locale]}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            <p className="text-xs text-[var(--muted)]">{t.swap.free}</p>
+                          </>
+                        ) : (
+                          <>
+                            <label className="text-xs font-semibold">
+                              {t.price}: {sell.price} 🪙
+                              <input type="range" min={MIN_PRICE} max={maxPrice(item)} step={5} value={sell.price} onChange={(e) => setSell({ ...sell, price: Number(e.target.value) })} className="w-full" />
+                            </label>
+                            <p className="text-xs text-[var(--muted)]">{t.youGet.replace("{n}", String(sellerGets(sell.price)))}</p>
+                          </>
+                        )}
+                        <button type="button" disabled={busy || mine.length >= MAX_LISTINGS} onClick={() => act({ action: "list", itemId: item.id, ...(sell.want ? { wantId: sell.want } : { price: sell.price }) }, t.done.list)} className="btn-bouncy btn-primary px-3 py-1.5 text-sm font-bold disabled:opacity-50">
                           {t.list}
                         </button>
                       </div>

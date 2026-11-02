@@ -21,6 +21,7 @@ export type PlayerMarketText = {
   errors: Record<string, string>;
   done: { list: string; cancel: string; buy: string };
   limit: string; // {n}
+  swap: { sell: string; swap: string; want: string; wants: string; button: string; done: string; free: string }; // wants: {name}
 };
 
 const cs: PlayerMarketText = {
@@ -40,9 +41,10 @@ const cs: PlayerMarketText = {
   fee: "Trh si bere {p} %.",
   owned: "Už máš",
   login: "Pro trh se přihlas.",
-  errors: { parental: "Nákupy zakázal rodič v nastavení.", "not-enough-points": "Nemáš dost bodů.", owned: "Tuhle věc už máš.", gone: "Nabídka už není k mání.", equipped: "Nošenou věc nejde prodat.", "too-many": "Víc nabídek najednou mít nemůžeš.", "bad-price": "Takovou cenu nejde nastavit.", x: "Něco se nepovedlo, zkus to znovu." },
+  errors: { "not-owned": "Nemáš věc, kterou prodávající chce.", "seller-owns": "Prodávající už tuhle věc má.", parental: "Nákupy zakázal rodič v nastavení.", "not-enough-points": "Nemáš dost bodů.", owned: "Tuhle věc už máš.", gone: "Nabídka už není k mání.", equipped: "Nošenou věc nejde prodat.", "too-many": "Víc nabídek najednou mít nemůžeš.", "bad-price": "Takovou cenu nejde nastavit.", x: "Něco se nepovedlo, zkus to znovu." },
   done: { list: "Věc je ve výloze.", cancel: "Věc je zpátky u tebe.", buy: "Koupeno!" },
   limit: "Najednou můžeš mít nejvýš {n} nabídek.",
+  swap: { sell: "Za body", swap: "Výměna", want: "Chci výměnou za", wants: "Chce: {name}", button: "Vyměnit", done: "Vyměněno!", free: "Výměna je bez poplatku." },
 };
 const en: PlayerMarketText = {
   open: "🤝 Player market",
@@ -61,9 +63,10 @@ const en: PlayerMarketText = {
   fee: "The market keeps {p}%.",
   owned: "Owned",
   login: "Log in to use the market.",
-  errors: { parental: "A parent has blocked purchases in settings.", "not-enough-points": "Not enough points.", owned: "You already have this.", gone: "That offer is gone.", equipped: "You can't sell an item you're wearing.", "too-many": "You can't have more offers at once.", "bad-price": "That price isn't allowed.", x: "Something went wrong, try again." },
+  errors: { "not-owned": "You don't have the item the seller wants.", "seller-owns": "The seller already has that item.", parental: "A parent has blocked purchases in settings.", "not-enough-points": "Not enough points.", owned: "You already have this.", gone: "That offer is gone.", equipped: "You can't sell an item you're wearing.", "too-many": "You can't have more offers at once.", "bad-price": "That price isn't allowed.", x: "Something went wrong, try again." },
   done: { list: "Your item is in the window.", cancel: "The item is back with you.", buy: "Bought!" },
   limit: "You can have at most {n} offers at once.",
+  swap: { sell: "For points", swap: "Swap", want: "I want in return", wants: "Wants: {name}", button: "Swap", done: "Swapped!", free: "Swaps have no fee." },
 };
 const de: PlayerMarketText = {
   open: "🤝 Spielermarkt",
@@ -82,9 +85,10 @@ const de: PlayerMarketText = {
   fee: "Der Markt behält {p} %.",
   owned: "Schon da",
   login: "Melde dich für den Markt an.",
-  errors: { parental: "Käufe wurden von den Eltern gesperrt.", "not-enough-points": "Nicht genug Punkte.", owned: "Das hast du schon.", gone: "Das Angebot ist weg.", equipped: "Getragene Dinge kann man nicht verkaufen.", "too-many": "Mehr Angebote gleichzeitig gehen nicht.", "bad-price": "Dieser Preis ist nicht erlaubt.", x: "Etwas ist schiefgegangen, versuch es nochmal." },
+  errors: { "not-owned": "Du hast den Gegenstand nicht, den der Verkäufer will.", "seller-owns": "Der Verkäufer hat das schon.", parental: "Käufe wurden von den Eltern gesperrt.", "not-enough-points": "Nicht genug Punkte.", owned: "Das hast du schon.", gone: "Das Angebot ist weg.", equipped: "Getragene Dinge kann man nicht verkaufen.", "too-many": "Mehr Angebote gleichzeitig gehen nicht.", "bad-price": "Dieser Preis ist nicht erlaubt.", x: "Etwas ist schiefgegangen, versuch es nochmal." },
   done: { list: "Dein Gegenstand liegt im Schaufenster.", cancel: "Der Gegenstand ist wieder bei dir.", buy: "Gekauft!" },
   limit: "Du kannst höchstens {n} Angebote gleichzeitig haben.",
+  swap: { sell: "Für Punkte", swap: "Tausch", want: "Ich möchte dafür", wants: "Möchte: {name}", button: "Tauschen", done: "Getauscht!", free: "Tauschen kostet keine Gebühr." },
 };
 const ru: PlayerMarketText = {
   open: "🤝 Рынок игроков",
@@ -103,9 +107,10 @@ const ru: PlayerMarketText = {
   fee: "Рынок берёт {p} %.",
   owned: "Уже есть",
   login: "Войди, чтобы пользоваться рынком.",
-  errors: { parental: "Покупки запрещены родителем.", "not-enough-points": "Не хватает баллов.", owned: "У тебя это уже есть.", gone: "Предложение уже недоступно.", equipped: "Надетую вещь продать нельзя.", "too-many": "Больше предложений одновременно нельзя.", "bad-price": "Такую цену поставить нельзя.", x: "Что-то пошло не так, попробуй ещё раз." },
+  errors: { "not-owned": "У тебя нет вещи, которую хочет продавец.", "seller-owns": "У продавца это уже есть.", parental: "Покупки запрещены родителем.", "not-enough-points": "Не хватает баллов.", owned: "У тебя это уже есть.", gone: "Предложение уже недоступно.", equipped: "Надетую вещь продать нельзя.", "too-many": "Больше предложений одновременно нельзя.", "bad-price": "Такую цену поставить нельзя.", x: "Что-то пошло не так, попробуй ещё раз." },
   done: { list: "Вещь на витрине.", cancel: "Вещь снова у тебя.", buy: "Куплено!" },
   limit: "Одновременно можно иметь не больше {n} предложений.",
+  swap: { sell: "За баллы", swap: "Обмен", want: "Хочу взамен", wants: "Хочет: {name}", button: "Обменять", done: "Обменено!", free: "Обмен без комиссии." },
 };
 const texts: Record<Locale, PlayerMarketText> = { cs, en, de, ru };
 export const getPlayerMarketText = (locale: Locale) => texts[locale];
