@@ -10,7 +10,8 @@ import type { Locale } from "@/i18n/config";
 
 // Trh mezi hráči (uvnitř okna obchodu): nabídky ostatních, vlastní nabídky a vystavení věci za body.
 type Shop = { owned: string[]; equipped: { avatar: string | null; title: string | null; frame: string | null; banner: string | null }; points: number } | null;
-type Tab = "offers" | "mine" | "sell";
+type Tab = "offers" | "mine" | "sell" | "history";
+type Row = { id: string; amount: number; reason: string; createdAt: string };
 
 export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: () => void }) {
   const t = getPlayerMarketText(locale);
@@ -19,6 +20,7 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
   const [shop, setShop] = useState<Shop>(null);
   const [loggedIn, setLoggedIn] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [rows, setRows] = useState<Row[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
   const [sell, setSell] = useState<{ itemId: string; price: number; want: string | null } | null>(null);
 
@@ -28,6 +30,8 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
       fetch("/api/shop").then((r) => (r.ok ? r.json() : null)).catch(() => null),
     ]);
     if (o?.offers) setOffers(o.offers);
+    const h = await fetch("/api/shop?history=1").then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    if (h?.history) setRows((h.history as Row[]).filter((x) => x.reason.startsWith("shop:market-")));
     if (s) {
       setLoggedIn(!!s.loggedIn);
       if (s.loggedIn) setShop({ owned: s.owned, equipped: s.equipped, points: s.points });
@@ -65,13 +69,14 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
     <div className="flex flex-col gap-3">
       <p className="text-sm text-[var(--muted)]">{t.intro}</p>
       <div className="flex gap-1">
-        {(["offers", "mine", "sell"] as Tab[]).map((k) => (
+        {(["offers", "mine", "sell", "history"] as Tab[]).map((k) => (
           <button key={k} type="button" onClick={() => setTab(k)} className={`pill px-3 py-1.5 text-sm font-bold ${tab === k ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface-muted)]"}`}>
             {t.tabs[k]}
             {k === "mine" && mine.length ? ` (${mine.length})` : ""}
           </button>
         ))}
       </div>
+      {shop && <p className="text-sm font-semibold">{t.hist.balance.replace("{n}", String(shop.points))}</p>}
       {msg && <p className="text-sm font-bold">{msg}</p>}
       {!loggedIn && <p className="text-sm font-semibold">{t.login}</p>}
 
@@ -125,6 +130,32 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
               );
             })}
           </div>
+        ))}
+
+      {tab === "history" &&
+        (rows.length === 0 ? (
+          <p className="text-sm text-[var(--muted)]">{t.hist.empty}</p>
+        ) : (
+          <ul className="flex flex-col gap-1.5">
+            {rows.map((x) => {
+              const [, kind, a, b] = x.reason.split(":");
+              const name = (id?: string) => (id ? (tradable(id)?.names[locale] ?? id) : "?");
+              const text =
+                kind === "market-buy" ? t.hist.bought.replace("{name}", name(a))
+                : kind === "market-sell" ? t.hist.sold.replace("{name}", name(a))
+                : kind === "market-swap" ? t.hist.swapped.replace("{got}", name(a)).replace("{gave}", name(b))
+                : t.hist.fee.replace("{name}", name(a));
+              return (
+                <li key={x.id} className="flex items-center justify-between gap-2 rounded-xl bg-[var(--surface-muted)] px-3 py-1.5 text-sm">
+                  <span className="truncate font-semibold">{text}</span>
+                  <span className="shrink-0 text-xs text-[var(--muted)]">
+                    {x.amount !== 0 && `${x.amount > 0 ? "+" : ""}${x.amount} 🪙 · `}
+                    {new Date(x.createdAt).toLocaleDateString(locale)}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
         ))}
 
       {tab === "sell" && (
