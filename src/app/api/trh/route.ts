@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { STYLE_GAME, normalizeStyle } from "@/lib/cosmetics";
 import { unlockKey } from "@/lib/shop";
-import { MARKET_GAME, MAX_LISTINGS, MIN_PRICE, maxPrice, normalizeListings, sellerGets, tradable, type Listing, type MarketOffer } from "@/lib/player-market";
+import { MARKET_FEE_EMAIL, MARKET_GAME, MAX_LISTINGS, MIN_PRICE, maxPrice, normalizeListings, sellerGets, tradable, type Listing, type MarketOffer } from "@/lib/player-market";
 import { shopBlocked } from "@/lib/parental";
 
 // Trh mezi hráči: GET = všechny nabídky, POST { action: "list" | "cancel" | "buy" }.
@@ -95,6 +95,13 @@ export async function POST(request: Request) {
           if (paid.count === 0) throw new Fail("not-enough-points");
           const gets = sellerGets(l.price);
           await tx.user.update({ where: { id: sellerId }, data: { points: { increment: gets } } });
+          // poplatek jde provozovateli tržiště (když účet neexistuje, propadne)
+          const fee = l.price - gets;
+          const owner = fee > 0 ? await tx.user.findFirst({ where: { email: { equals: MARKET_FEE_EMAIL, mode: "insensitive" } }, select: { id: true } }) : null;
+          if (owner) {
+            await tx.user.update({ where: { id: owner.id }, data: { points: { increment: fee } } });
+            await tx.pointTransaction.create({ data: { userId: owner.id, amount: fee, reason: `shop:market-fee:${item.id}` } });
+          }
           await tx.pointTransaction.createMany({
             data: [
               { userId, amount: -l.price, reason: `shop:market-buy:${item.id}` },

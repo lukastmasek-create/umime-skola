@@ -1,11 +1,13 @@
 import { getShopItem, type ShopItem } from "@/lib/shop";
 
 // Trh mezi hráči: hráč vystaví věc z katalogu, kterou vlastní, za body; jiný hráč ji koupí.
-// Vystavená věc se hráči odebere (je „ve výloze“), při zrušení se vrátí. Trh si bere poplatek.
+// Vystavená věc se hráči odebere (je „ve výloze“), při zrušení se vrátí. Poplatek z prodeje jde na účet MARKET_FEE_EMAIL.
 // Nabídky jsou v IdleState pod hrou MARKET_GAME (jeden řádek na prodávajícího), bez změny schématu.
 export const MARKET_GAME = "trh-nabidky";
 export const MARKET_KINDS = ["avatar", "title", "frame", "banner"] as const;
 export const MARKET_FEE = 0.1;
+// Poplatek (10 %) z každého prodeje připadne tomuto účtu.
+export const MARKET_FEE_EMAIL = "tuzitv@seznam.cz";
 export const MAX_LISTINGS = 5;
 export const MIN_PRICE = 10;
 export const maxPrice = (item: ShopItem) => Math.max(MIN_PRICE, item.price * 2);

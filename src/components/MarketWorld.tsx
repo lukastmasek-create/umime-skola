@@ -307,7 +307,7 @@ function useScenery(stage: React.RefObject<HTMLDivElement | null>, back: React.R
 
 const VEIL: Record<string, string> = { pirate: "#cfe8ff", space: "#9be8ff", forest: "#e8ffb0", castle: "#1a1020", sea: "#5fd0ee" };
 
-export function MarketWorld({ locale, initialWorld, film = false }: { locale: Locale; initialWorld?: WorldId; film?: boolean }) {
+export function MarketWorld({ locale, initialWorld, film = false, openTrade = false }: { locale: Locale; initialWorld?: WorldId; film?: boolean; openTrade?: boolean }) {
   const t = getShopText(locale);
   const x = getShopExtraText(locale);
   const m = getMarketText(locale);
@@ -333,7 +333,7 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
   const [night, setNight] = useState(false);
   const [shot, setShot] = useState<{ n: number; id: string } | null>(null);
   const [talk, setTalk] = useState<{ id: string; text: string } | null>(null);
-  const [trade, setTrade] = useState(false);
+  const [trade, setTrade] = useState(openTrade);
   // 3D scéna je výchozí; 2D vrstvy zůstávají jako jednodušší pohled a záloha bez WebGL
   const [view3d, setView3d] = useState(true);
   const [bundles, setBundles] = useState(false);
