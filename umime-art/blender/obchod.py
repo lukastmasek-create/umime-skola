@@ -92,23 +92,37 @@ def X(o, rot=(math.radians(90), 0, 0)):
 
 
 # ---------------------------------------------------------------- Disk (otáčí se na webu)
+def bevel(o, width=0.02, segs=3):
+    """Sražená hrana (modifikátor Bevel), ať se na hranách chytá světlo."""
+    m = o.modifiers.new("bv", "BEVEL")
+    m.width = width
+    m.segments = segs
+    m.limit_method = "ANGLE"
+    m.angle_limit = math.radians(30)
+    return o
+
+
 def disk_parts(gold, tag="kd"):
     """Postaví disk a vrátí pro každé políčko seznam objektů (výseč, lem, tečky, ráfek, kolík) a objekty středu."""
     groups = []
     for i, c in enumerate(PRIZE_COLORS):
         a0, a1 = i * TAU / N + 0.01, (i + 1) * TAU / N - 0.01
         mid = (a0 + a1) / 2
-        g = [sector(0.19, 0.93, a0, a1, -0.05, 0.05, M("%s_s%d" % (tag, i), c, roughness=0.18), name="seg%d" % i),
-             sector(0.80, 0.93, a0 + 0.025, a1 - 0.025, -0.054, 0.05, M("%s_l%d" % (tag, i), c, roughness=0.12, metallic=0.2), name="lem%d" % i),
-             sector(0.93, 1.03, a0 - 0.01, a1 + 0.01, -0.07, 0.07, gold, name="rim%d" % i)]
+        g = [bevel(sector(0.19, 0.93, a0, a1, -0.04, 0.08, M("%s_s%d" % (tag, i), c, roughness=0.18), name="seg%d" % i), 0.02, 3),
+             # zvýšený vnější lem políčka (polštář)
+             bevel(sector(0.78, 0.92, a0 + 0.03, a1 - 0.03, -0.085, 0.06, M("%s_l%d" % (tag, i), c, roughness=0.1, metallic=0.25), name="lem%d" % i), 0.03, 4),
+             # vnitřní vyvýšený okraj u středu
+             bevel(sector(0.2, 0.3, a0 + 0.03, a1 - 0.03, -0.075, 0.06, M("%s_in%d" % (tag, i), c, roughness=0.12, metallic=0.2), name="in%d" % i), 0.025, 3),
+             bevel(sector(0.93, 1.04, a0 - 0.012, a1 + 0.012, -0.1, 0.09, gold, name="rim%d" % i), 0.035, 4)]
         for d in (-0.35, 0, 0.35):
             aa = mid + d * (a1 - a0) * 0.6
-            g.append(sphere((0.86 * math.sin(aa), -0.06, 0.86 * math.cos(aa)), 0.018, M("%s_d" % tag, "#fff7d0", roughness=0.2), seg=8, rings=6))
+            g.append(sphere((0.855 * math.sin(aa), -0.105, 0.855 * math.cos(aa)), 0.022, M("%s_d" % tag, "#fff7d0", roughness=0.2), seg=8, rings=6))
         a = i * TAU / N
-        g.append(bar((0.2 * math.sin(a), -0.045, 0.2 * math.cos(a)), (0.95 * math.sin(a), -0.045, 0.95 * math.cos(a)), 0.014, gold, verts=8))
-        g.append(sphere((1.0 * math.sin(a), -0.08, 1.0 * math.cos(a)), 0.045, GOLD("%s_pg" % tag), seg=12, rings=8))
+        g.append(bar((0.2 * math.sin(a), -0.07, 0.2 * math.cos(a)), (0.95 * math.sin(a), -0.07, 0.95 * math.cos(a)), 0.022, gold, verts=10))
+        g.append(sphere((1.0 * math.sin(a), -0.11, 1.0 * math.cos(a)), 0.055, GOLD("%s_pg" % tag), seg=12, rings=8))
         groups.append((mid, g))
-    hub = [X(torus((0, 0, 0), 0.2, 0.035, gold)), sphere((0, -0.05, 0), 0.19, M("%s_hub" % tag, "#ffffff", roughness=0.25), scale=(1, 0.25, 1), seg=24, rings=10)]
+    hub = [X(torus((0, -0.05, 0), 0.2, 0.05, gold)), sphere((0, -0.06, 0), 0.19, M("%s_hub" % tag, "#ffffff", roughness=0.2), scale=(1, 0.35, 1), seg=32, rings=16),
+           X(torus((0, -0.1, 0), 0.1, 0.02, gold))]
     return groups, hub
 
 
