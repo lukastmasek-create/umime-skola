@@ -8,7 +8,7 @@
 
 // Políčko může místo bodů dát věc z obchodu (avatar nebo titul). Kdo ji už vlastní,
 // dostane místo ní `amount` bodů, takže výhra nikdy nepropadne.
-export type WheelItemPrize = { kind: "avatar" | "title"; ref: string; name: string; icon: string };
+export type WheelItemPrize = { kind: "avatar" | "title" | "frame" | "banner"; ref: string; name: string; icon: string };
 
 export type WheelPrize = {
   amount: number;
@@ -20,8 +20,8 @@ export type WheelPrize = {
 export const WHEEL_PRIZES: WheelPrize[] = [
   { amount: 5, weight: 30, color: "#3248f0" },
   { amount: 10, weight: 25, color: "#ff5a3c" },
-  { amount: 15, weight: 18, color: "#ffc933" },
-  { amount: 20, weight: 12, color: "#17a864" },
+  { amount: 15, weight: 4, color: "#ffc933", item: { kind: "banner", ref: "sunset", name: "Banner Západ slunce", icon: "🌅" } },
+  { amount: 20, weight: 4, color: "#17a864", item: { kind: "frame", ref: "leaf", name: "Listový rámeček", icon: "🖼️" } },
   { amount: 10, weight: 25, color: "#29a3ff" },
   { amount: 50, weight: 4, color: "#ff5a3c", item: { kind: "title", ref: "dreamer", name: "Titul Snílek", icon: "🏅" } },
   { amount: 15, weight: 18, color: "#3248f0" },
