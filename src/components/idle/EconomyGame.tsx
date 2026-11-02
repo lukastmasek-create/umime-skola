@@ -104,6 +104,8 @@ export function EconomyGame({ locale }: { locale: Locale }) {
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
   const [board, setBoard] = useState<Board | null>(null);
+  // Které kategorie investic jsou rozbalené (výchozí: všechny sbalené).
+  const [openCats, setOpenCats] = useState<Partial<Record<AssetCategoryId, boolean>>>({});
   const [form, setForm] = useState<{ name: string; country: CountryId; city: CityId; era: EraId; family: FamilyId }>({
     name: "",
     country: "cz",
@@ -428,11 +430,26 @@ export function EconomyGame({ locale }: { locale: Locale }) {
       {tab === "invest" && (
         <section>
           <p className="mb-3 text-sm text-[var(--muted)]">{t.investHint}</p>
-          {ASSET_CATEGORIES.map((cat) => (
-            <div key={cat} className="mb-6">
-              <h3 className="mb-2 font-bold">
-                {CAT_EMOJI[cat]} {t.assetCategories[cat]}
-              </h3>
+          {ASSET_CATEGORIES.map((cat) => {
+            const open = !!openCats[cat];
+            const held = ASSETS.filter((a) => a.cat === cat).reduce((sum, a) => sum + (state.holdings[a.id] ?? 0) * assetPrice(a.id, clock), 0);
+            return (
+            <div key={cat} className="mb-4">
+              <button
+                type="button"
+                aria-expanded={open}
+                onClick={() => setOpenCats((o) => ({ ...o, [cat]: !o[cat] }))}
+                className="mb-2 flex w-full items-center justify-between gap-3 rounded-lg bg-[var(--surface)] px-4 py-3 text-left font-bold"
+              >
+                <span>
+                  {CAT_EMOJI[cat]} {t.assetCategories[cat]}
+                </span>
+                <span className="flex items-center gap-3 text-sm">
+                  {held > 0 && <span className="text-[var(--muted)]">{m(held)}</span>}
+                  <span aria-hidden="true">{open ? "▴" : "▾"}</span>
+                </span>
+              </button>
+              {open && (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {ASSETS.filter((a) => a.cat === cat).map((a) => {
               const price = assetPrice(a.id, clock);
@@ -512,8 +529,10 @@ export function EconomyGame({ locale }: { locale: Locale }) {
               );
             })}
               </div>
+              )}
             </div>
-          ))}
+            );
+          })}
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <article className="card flex flex-col gap-2 p-4">
