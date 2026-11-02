@@ -23,6 +23,7 @@ import {
   assetPrice,
   companyIncome,
   companyPrice,
+  hustleOffer,
   hustleReady,
   isLocked,
   jobRank,
@@ -69,7 +70,7 @@ const EMOJI: Record<string, string> = {
   warehouse: "📦", seller: "🛒", cook: "🍳", police: "👮", vet: "🐾", programmer: "💻", banker: "🏦",
   shoes: "👟", clothes: "👕", tech: "📱", delivery: "🛵", supermarket: "🏬", digi: "🎮", software: "🧩", hardware: "🖥️", factory: "🏭",
   bonds: "📜", metal: "🥇", stocks: "📈", realestate: "🏠", crypto: "🪙",
-  reselling: "🔁", carflip: "🚗", houseflip: "🏚️",
+  reselling: "🔁", carflip: "🚗", houseflip: "🏚️", lemonade: "🍋", startup: "🚀",
 };
 
 function formatLeft(ms: number, t: ReturnType<typeof getEconomyText>): string {
@@ -497,6 +498,41 @@ export function EconomyGame({ locale }: { locale: Locale }) {
       {tab === "hustle" && (
         <section>
           <p className="mb-3 text-sm text-[var(--muted)]">{t.hustleHint}</p>
+          <div className="card mb-5 flex flex-col gap-3 p-4">
+            <h3 className="font-bold">{t.hustlePanel}</h3>
+            {HUSTLES.some((h) => state.hustle[h.id] && !hustleReady(state.hustle[h.id], h.id, clock)) ? (
+              HUSTLES.filter((h) => state.hustle[h.id] && !hustleReady(state.hustle[h.id], h.id, clock)).map((h) => {
+                const slot = state.hustle[h.id]!;
+                const total = h.minutes * 60_000;
+                const elapsed = Math.min(total, clock - slot.startedAt);
+                return (
+                  <div key={h.id} className="flex flex-col gap-2 rounded-lg border border-[var(--border)] p-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold">
+                        {EMOJI[h.id]} {t.hustles[h.id]}
+                      </p>
+                      <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-[var(--border)]">
+                        <div className="h-full bg-[var(--brand-500)]" style={{ width: `${(elapsed / total) * 100}%` }} />
+                      </div>
+                      <p className="mt-1 text-sm text-[var(--muted)]">
+                        {fill(t.hustleRunning, { t: formatLeft(total - elapsed, t) })} · {fill(t.hustleOffer, { n: m(hustleOffer(slot, h.id, clock)) })}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void act({ action: "cashOutHustle", id: h.id })}
+                      className="btn-bouncy px-3 py-2 text-sm font-bold text-white sm:shrink-0"
+                    >
+                      {t.hustleCashOut}
+                    </button>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-sm text-[var(--muted)]">{t.hustleNone}</p>
+            )}
+          </div>
           <div className="grid gap-4 sm:grid-cols-3">
             {HUSTLES.map((h) => {
               const slot = state.hustle[h.id];

@@ -164,14 +164,18 @@ export function arbitrageSpread(now: number): number {
 
 // --- Hustle ---
 
-export type HustleId = "reselling" | "houseflip" | "carflip";
+export type HustleId = "lemonade" | "reselling" | "carflip" | "houseflip" | "startup";
 export type HustleDef = { id: HustleId; cost: number; minutes: number; min: number; max: number };
 // Výsledek je násobek vloženého kapitálu mezi min a max (rozloženo rovnoměrně). Střední hodnota je mírně nad 1.
 export const HUSTLES: HustleDef[] = [
+  { id: "lemonade", cost: 50, minutes: 1, min: 0.6, max: 1.8 },
   { id: "reselling", cost: 200, minutes: 1, min: 0.85, max: 1.5 },
   { id: "carflip", cost: 5_000, minutes: 5, min: 0.8, max: 1.55 },
   { id: "houseflip", cost: 60_000, minutes: 20, min: 0.75, max: 1.6 },
+  { id: "startup", cost: 150_000, minutes: 45, min: 0.3, max: 3.2 },
 ];
+// Předčasný prodej rozjetého hustlu: nabídka roste od vkladu k výplatě, prodej teď stojí poplatek.
+export const HUSTLE_CASHOUT_FEE = 0.05;
 export type HustleSlot = { startedAt: number; payout: number } | null;
 
 // --- Stav ---
@@ -541,6 +545,29 @@ export function startHustle(state: EconomyState, id: unknown, now: number, rng: 
 
 export const hustleReady = (slot: HustleSlot | undefined, id: HustleId, now: number) =>
   !!slot && now - slot.startedAt >= hustleDef(id).minutes * 60_000;
+
+// Aktuální nabídka kupce: lineárně roste od vloženého kapitálu k výplatě.
+export function hustleOffer(slot: NonNullable<HustleSlot>, id: HustleId, now: number): number {
+  const def = hustleDef(id);
+  const p = Math.min(1, Math.max(0, (now - slot.startedAt) / (def.minutes * 60_000)));
+  return Math.round(def.cost + (slot.payout - def.cost) * p);
+}
+
+// Průběžné rozhodování: hráč může rozjetý hustl prodat dřív za aktuální nabídku (mínus poplatek).
+export function cashOutHustle(state: EconomyState, id: unknown, now: number): ActionResult {
+  if (!state.character) return fail("no-character");
+  if (!isHustle(id)) return fail("bad-request");
+  const slot = state.hustle[id];
+  if (!slot) return fail("nothing");
+  if (hustleReady(slot, id, now)) return fail("ready");
+  const value = Math.round(hustleOffer(slot, id, now) * (1 - HUSTLE_CASHOUT_FEE));
+  const hustle = { ...state.hustle };
+  delete hustle[id];
+  const profit = value - hustleDef(id).cost;
+  return done({ ...state, cash: state.cash + value, hustle, totalEarned: state.totalEarned + Math.max(0, profit) }, now, {
+    gained: { cash: value, profit },
+  });
+}
 
 export function collectHustle(state: EconomyState, id: unknown, now: number): ActionResult {
   if (!state.character) return fail("no-character");

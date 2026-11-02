@@ -10,10 +10,12 @@ import {
   assetPrice,
   buyAsset,
   buyCompany,
+  cashOutHustle,
   collectHustle,
   companyIncome,
   createCharacter,
   emptyState,
+  hustleOffer,
   investEdu,
   netWorth,
   normalizeState,
@@ -164,6 +166,23 @@ test("hustle: kapitál se zablokuje, výsledek je v rozsahu a vybrat jde až po 
   assert.ok(rich.ok && rich.state.cash > 1000);
   assert.deepEqual(startHustle({ ...s, cash: 100 }, "carflip", NOW), { ok: false, error: "not-enough-cash" });
   assert.deepEqual(collectHustle(s, "reselling", NOW), { ok: false, error: "nothing" });
+});
+
+test("hustle: průběžné rozhodování – prodej teď dává nabídku minus poplatek, po čase už jen výběr", () => {
+  const s = { ...start("rich"), cash: 10_000 };
+  const r = startHustle(s, "carflip", NOW, () => 0.999999);
+  ok(r);
+  const slot = r.state;
+  assert.equal(slot.cash, 5000);
+  // Na začátku je nabídka rovna vkladu, takže prodej hned znamená ztrátu poplatku (5 %).
+  const early = cashOutHustle(slot, "carflip", NOW);
+  assert.ok(early.ok && early.state.cash === 5000 + Math.round(5000 * 0.95) && !early.state.hustle.carflip);
+  // V půlce je nabídka mezi vkladem a výplatou.
+  const mid = hustleOffer(slot.hustle.carflip!, "carflip", NOW + 150_000);
+  assert.ok(mid > 5000 && mid < 5000 * 1.55);
+  // Po uplynutí času už se prodává jen přes sběr výsledku.
+  assert.deepEqual(cashOutHustle(slot, "carflip", NOW + 5 * 60_000), { ok: false, error: "ready" });
+  assert.deepEqual(cashOutHustle(s, "carflip", NOW), { ok: false, error: "nothing" });
 });
 
 test("vzdělání: body se utrácejí, bonus roste a má strop", () => {

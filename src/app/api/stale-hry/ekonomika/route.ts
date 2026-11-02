@@ -9,6 +9,7 @@ import {
   assetPrice,
   buyAsset,
   buyCompany,
+  cashOutHustle,
   collectHustle,
   createCharacter,
   eduCost,
@@ -89,6 +90,8 @@ function applyAction(state: EconomyState, body: Body, now: number): ActionResult
       return startHustle(state, body.id, now);
     case "collectHustle":
       return collectHustle(state, body.id, now);
+    case "cashOutHustle":
+      return cashOutHustle(state, body.id, now);
     case "investEdu":
       return investEdu(state, now);
     default:
