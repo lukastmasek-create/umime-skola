@@ -17,8 +17,6 @@ type MaterialsText = {
   interactive: { check: string; right: string; wrong: string; cards: string; flip: string; practice: string; again: string; score: string };
   back: string;
   allSubjects: string;
-  libraryBack: string;
-  libraryOpen: string;
   examples: string;
   tip: string;
 };
@@ -46,8 +44,6 @@ const texts: Record<Locale, MaterialsText> = {
     interactive: { check: "Ověř si", right: "Správně!", wrong: "Vedle, správně je:", cards: "Kartičky – klikni a otoč", flip: "Otočit kartičku", practice: "Procvič si téma", again: "Znovu", score: "Hotovo! Správně {a} z {b}." },
     back: "Zpět na přehled předmětu",
     allSubjects: "Všechny předměty",
-    libraryBack: "Zpět do knihovny",
-    libraryOpen: "Otevřít celý předmět",
     examples: "Příklady",
     tip: "Tip",
   },
@@ -73,8 +69,6 @@ const texts: Record<Locale, MaterialsText> = {
     interactive: { check: "Check yourself", right: "Correct!", wrong: "Not quite, the answer is:", cards: "Flashcards – click to flip", flip: "Flip the card", practice: "Practise this topic", again: "Again", score: "Done! {a} of {b} correct." },
     back: "Back to subject overview",
     allSubjects: "All subjects",
-    libraryBack: "Back to the library",
-    libraryOpen: "Open the whole subject",
     examples: "Examples",
     tip: "Tip",
   },
@@ -100,8 +94,6 @@ const texts: Record<Locale, MaterialsText> = {
     interactive: { check: "Teste dich", right: "Richtig!", wrong: "Leider nicht, richtig ist:", cards: "Karteikarten – klicken zum Umdrehen", flip: "Karte umdrehen", practice: "Thema üben", again: "Nochmal", score: "Fertig! {a} von {b} richtig." },
     back: "Zurück zur Fachübersicht",
     allSubjects: "Alle Fächer",
-    libraryBack: "Zurück zur Bibliothek",
-    libraryOpen: "Ganzes Fach öffnen",
     examples: "Beispiele",
     tip: "Tipp",
   },
@@ -127,8 +119,6 @@ const texts: Record<Locale, MaterialsText> = {
     interactive: { check: "Проверь себя", right: "Верно!", wrong: "Не совсем, правильно:", cards: "Карточки – нажми, чтобы перевернуть", flip: "Перевернуть карточку", practice: "Потренируйся", again: "Ещё раз", score: "Готово! Верно {a} из {b}." },
     back: "Назад к обзору предмета",
     allSubjects: "Все предметы",
-    libraryBack: "Назад в библиотеку",
-    libraryOpen: "Открыть весь предмет",
     examples: "Примеры",
     tip: "Совет",
   },

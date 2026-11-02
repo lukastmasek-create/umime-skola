@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import { getMaterialSubjects, getTopics, materialSubjectLabel } from "@/lib/materials";
 import { getMaterialsText } from "@/i18n/materials";
 import { isLocale, type Locale } from "@/i18n/config";
-import { MaterialsLibrary } from "@/components/MaterialsLibrary";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -25,15 +24,6 @@ export default async function MaterialsIndexPage({ params }: { params: Promise<{
       <p className="mb-2 max-w-3xl text-[var(--muted)]">{t.subtitle}</p>
       {t.czechOnlyNote && <p className="mb-8 text-sm font-semibold text-[var(--brand-600)]">{t.czechOnlyNote}</p>}
       {!t.czechOnlyNote && <div className="mb-8" />}
-
-      <MaterialsLibrary
-        locale={locale}
-        text={{ back: t.libraryBack, open: t.libraryOpen, topics: t.topics, levels: Object.fromEntries(Object.entries(t.levels).map(([k, v]) => [k, v.title])) }}
-        subjects={getMaterialSubjects().map((s) => {
-          const topics = getTopics(s.slug);
-          return { slug: s.slug, color: s.color, emoji: s.emoji, label: materialSubjectLabel(s, locale as Locale), count: topics.length, topics: topics.map((x) => ({ slug: x.slug, title: x.title, level: x.level })) };
-        })}
-      />
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {getMaterialSubjects().map((subject) => {
