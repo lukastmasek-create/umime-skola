@@ -23,11 +23,14 @@ import {
   normalizeState,
   quitJob,
   rates,
+  researchCompany,
   restart,
   runCampaign,
   sellAsset,
+  sellCompany,
   setCompanySetting,
   settle,
+  signContract,
   startHustle,
   takeJob,
   topUpHustle,
@@ -104,6 +107,12 @@ function applyAction(state: EconomyState, body: Body, now: number): ActionResult
       return runCampaign(state, body.id, now);
     case "fundResponse":
       return fundResponse(state, body.id, now);
+    case "sellCompany":
+      return sellCompany(state, body.id, now);
+    case "signContract":
+      return signContract(state, body.id, now);
+    case "researchCompany":
+      return researchCompany(state, body.id, now);
     case "buyAsset":
       return buyAsset(state, body.id, body.amount, now);
     case "sellAsset":

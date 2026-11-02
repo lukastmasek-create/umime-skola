@@ -11,12 +11,19 @@ import {
   companyIncome,
   companyPrice,
   companyYield,
+  contractActive,
+  contractPrice,
   currentEvent,
+  currentRival,
   eventAffects,
   fundPrice,
   hireCost,
   isLocked,
   isNegativeEvent,
+  MAX_RESEARCH,
+  researchLevel,
+  researchPrice,
+  sellPrice,
   setupOf,
   upgradePrice,
   type CompanyId,
@@ -100,6 +107,7 @@ export function CompanyTab(props: Common) {
           const price = companyPrice(state, c.id);
           const campaign = clock < setupOf(state, c.id).marketingUntil;
           const threatened = !!ev && isNegativeEvent(ev.def) && eventAffects(ev.def, c.id) && owned > 0;
+          const rival = owned > 0 && currentRival(state, clock) === c.id;
           return (
             <article
               key={c.id}
@@ -130,9 +138,10 @@ export function CompanyTab(props: Common) {
                   </>
                 )}
               </p>
-              {(threatened || campaign) && (
+              {(threatened || campaign || rival) && (
                 <div className="flex flex-wrap gap-1.5 text-xs font-bold">
                   {threatened && <span className="pill bg-[var(--danger)] px-2 py-0.5 text-white">⚠️ {t.events[ev!.def.id].title}</span>}
+                  {rival && <span className="pill bg-[var(--danger)] px-2 py-0.5 text-white">🎯 {t.detail.rivalTitle}</span>}
                   {campaign && <span className="pill bg-[var(--accent-yellow)] px-2 py-0.5 text-[#16132b]">📣 {t.detail.campaign}</span>}
                 </div>
               )}
@@ -249,6 +258,11 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
   const campaignLeft = s.marketingUntil - clock;
   const fundCost = fundPrice(state, id);
   const eventCopy = ev ? t.events[ev.def.id] : null;
+  const rivalHere = currentRival(state, clock) === id;
+  const level = researchLevel(state, id);
+  const contractLeft = (state.contracts[id] ?? 0) - clock;
+  const contractOn = contractActive(state, id, clock);
+  const sellFor = sellPrice(state, id);
 
   // Náhled: stejný výpočet jako na serveru, jen s jiným rizikem.
   const netWithRisk = (risk: number) => {
@@ -352,6 +366,62 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
             ) : null}
           </>
         )}
+      </div>
+
+      <div className="flex flex-col gap-2 rounded-xl border-2 border-[var(--edge)] p-3">
+        <h3 className="font-bold">🎯 {t.detail.rivalTitle}</h3>
+        <p className="text-sm">{rivalHere ? t.detail.rivalNow : t.detail.rivalNone}</p>
+        {rivalHere && <p className="text-xs text-[var(--muted)]">{t.detail.rivalShield}</p>}
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="flex flex-col gap-2">
+          <h3 className="font-bold">🔬 {t.detail.researchTitle}</h3>
+          <p className="text-xs text-[var(--muted)]">{t.detail.researchHint}</p>
+          {level >= MAX_RESEARCH ? (
+            <p className="text-sm font-semibold">✓ {t.detail.researchMax}</p>
+          ) : (
+            <button
+              type="button"
+              disabled={busy || liveCash < researchPrice(state, id)}
+              onClick={() => void act({ action: "researchCompany", id }, () => t.toast.researched)}
+              className="btn-bouncy w-fit bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
+            >
+              {fill(t.detail.researchLevel, { n: level, max: MAX_RESEARCH })} · {fill(t.detail.researchGo, { n: m(researchPrice(state, id)) })}
+            </button>
+          )}
+        </div>
+        <div className="flex flex-col gap-2">
+          <h3 className="font-bold">📝 {t.detail.contractTitle}</h3>
+          <p className="text-xs text-[var(--muted)]">{t.detail.contractHint}</p>
+          {contractOn ? (
+            <p className="text-sm font-semibold">{fill(t.detail.contractRunning, { t: formatLeft(contractLeft, t) })}</p>
+          ) : (
+            <button
+              type="button"
+              disabled={busy || liveCash < contractPrice(state, id)}
+              onClick={() => void act({ action: "signContract", id }, () => t.toast.contract)}
+              className="btn-bouncy w-fit bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
+            >
+              {fill(t.detail.contractGo, { n: m(contractPrice(state, id)) })}
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <h3 className="font-bold">💱 {t.detail.sellTitle}</h3>
+        <p className="text-xs text-[var(--muted)]">{t.detail.sellHint}</p>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => {
+            if (window.confirm(t.detail.sellConfirm)) void act({ action: "sellCompany", id }, () => t.toast.companySold);
+          }}
+          className="btn-bouncy w-fit bg-[var(--surface)] px-3 py-2 text-sm font-bold disabled:opacity-45"
+        >
+          {fill(t.detail.sellGo, { n: m(sellFor) })}
+        </button>
       </div>
 
       <div className="flex flex-col gap-2">

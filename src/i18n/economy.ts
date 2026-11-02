@@ -76,6 +76,23 @@ export type EconomyText = {
     income: string;
     costs: string;
     net: string;
+    sellTitle: string;
+    sellHint: string;
+    sellGo: string;
+    sellConfirm: string;
+    contractTitle: string;
+    contractHint: string;
+    contractGo: string;
+    contractRunning: string;
+    researchTitle: string;
+    researchHint: string;
+    researchLevel: string;
+    researchGo: string;
+    researchMax: string;
+    rivalTitle: string;
+    rivalNow: string;
+    rivalShield: string;
+    rivalNone: string;
   };
   events: Record<EventId, { title: string; text: string }>;
   cash: string;
@@ -192,6 +209,9 @@ export type EconomyText = {
     level: string;
     campaign: string;
     funded: string;
+    companySold: string;
+    contract: string;
+    researched: string;
   };
   errors: Record<string, string>;
 };
@@ -293,6 +313,23 @@ const cs: EconomyText = {
     income: "Výnos",
     costs: "Náklady",
     net: "Čistý zisk",
+    sellTitle: "Prodej firmy",
+    sellHint: "Prodáš jeden kus za podíl ceny, kterou jsi za něj zaplatil. Firma s posledním kusem zmizí.",
+    sellGo: "Prodat jeden kus za {n}",
+    sellConfirm: "Opravdu prodat jeden kus této firmy?",
+    contractTitle: "Odběratelský kontrakt",
+    contractHint: "Pevný odběr na 6 hodin: +35 % výnosu, ale krize tuto firmu zasáhnou silněji.",
+    contractGo: "Podepsat za {n}",
+    contractRunning: "Platí ještě {t}",
+    researchTitle: "Výzkum produktů",
+    researchHint: "Každá úroveň zvedne výnos oboru o 15 %, ale nové produkty jsou citlivější na krize.",
+    researchLevel: "Úroveň {n} z {max}",
+    researchGo: "Vyvinout za {n}",
+    researchMax: "Nejvyšší úroveň",
+    rivalTitle: "Konkurence",
+    rivalNow: "Konkurent teď přetahuje zákazníky u tohoto oboru (−20 %).",
+    rivalShield: "Kampaň konkurenci částečně brání.",
+    rivalNone: "Teď tě žádný konkurent neohrožuje.",
   },
   events: {
     crash: { title: "Krach trhu", text: "Ceny na trhu prudce padly. Zisk firem klesá." },
@@ -405,7 +442,7 @@ const cs: EconomyText = {
   restartConfirm: "Opravdu začít znovu? Přijdeš o postavu, firmy i investice. Zůstane ti rekord.",
   restartHint: "Kdykoliv můžeš začít od nuly s novou postavou.",
   saveNote: "Hra se ukládá sama po každé akci.",
-  toast: { bought: "Koupeno", sold: "Prodáno za {n}", profit: "Zisk {n}", loss: "Ztráta {n}", created: "Postava vytvořena", edu: "Vzdělání vylepšeno", job: "Nová práce", restarted: "Začínáš znovu", upgraded: "Obor vylepšen", hired: "Zaměstnanec najat", fired: "Zaměstnanec propuštěn", level: "Nastaveno", campaign: "Kampaň běží 30 minut", funded: "Krizový fond zaplacen" },
+  toast: { bought: "Koupeno", sold: "Prodáno za {n}", profit: "Zisk {n}", loss: "Ztráta {n}", created: "Postava vytvořena", edu: "Vzdělání vylepšeno", job: "Nová práce", restarted: "Začínáš znovu", upgraded: "Obor vylepšen", hired: "Zaměstnanec najat", fired: "Zaměstnanec propuštěn", level: "Nastaveno", campaign: "Kampaň běží 30 minut", funded: "Krizový fond zaplacen", companySold: "Firma prodána za {n}", contract: "Kontrakt podepsán", researched: "Výzkum hotový" },
   errors: {
     generic: "Něco se nepovedlo.",
     "login-required": "Přihlas se.",
@@ -525,6 +562,23 @@ const en: EconomyText = {
     income: "Income",
     costs: "Costs",
     net: "Net profit",
+    sellTitle: "Sell company",
+    sellHint: "You sell one unit for a share of the price you paid for it. The company with its last unit disappears.",
+    sellGo: "Sell one unit for {n}",
+    sellConfirm: "Really sell one unit of this company?",
+    contractTitle: "Supply contract",
+    contractHint: "A fixed buyer for 6 hours: +35 % income, but crises hit this company harder.",
+    contractGo: "Sign for {n}",
+    contractRunning: "Active for {t} more",
+    researchTitle: "Product research",
+    researchHint: "Each level raises the industry's income by 15 %, but new products are more exposed to crises.",
+    researchLevel: "Level {n} of {max}",
+    researchGo: "Develop for {n}",
+    researchMax: "Top level",
+    rivalTitle: "Competition",
+    rivalNow: "A competitor is taking customers in this industry right now (−20 %).",
+    rivalShield: "The campaign partly protects against the competitor.",
+    rivalNone: "No competitor is threatening you right now.",
   },
   events: {
     crash: { title: "Market crash", text: "Market prices collapsed. Company profits fall." },
@@ -637,7 +691,7 @@ const en: EconomyText = {
   restartConfirm: "Really start over? You lose your character, companies and investments. Your record stays.",
   restartHint: "You can start from zero with a new character any time.",
   saveNote: "The game saves itself after every action.",
-  toast: { bought: "Bought", sold: "Sold for {n}", profit: "Profit {n}", loss: "Loss {n}", created: "Character created", edu: "Education improved", job: "New job", restarted: "Starting over", upgraded: "Industry upgraded", hired: "Employee hired", fired: "Employee let go", level: "Saved", campaign: "Campaign running for 30 minutes", funded: "Crisis fund paid" },
+  toast: { bought: "Bought", sold: "Sold for {n}", profit: "Profit {n}", loss: "Loss {n}", created: "Character created", edu: "Education improved", job: "New job", restarted: "Starting over", upgraded: "Industry upgraded", hired: "Employee hired", fired: "Employee let go", level: "Saved", campaign: "Campaign running for 30 minutes", funded: "Crisis fund paid", companySold: "Company sold for {n}", contract: "Contract signed", researched: "Research done" },
   errors: {
     generic: "Something went wrong.",
     "login-required": "Log in.",
@@ -757,6 +811,23 @@ const de: EconomyText = {
     income: "Ertrag",
     costs: "Kosten",
     net: "Reingewinn",
+    sellTitle: "Firma verkaufen",
+    sellHint: "Du verkaufst eine Einheit für einen Anteil des Preises, den du dafür bezahlt hast. Die Firma mit der letzten Einheit verschwindet.",
+    sellGo: "Eine Einheit für {n} verkaufen",
+    sellConfirm: "Wirklich eine Einheit dieser Firma verkaufen?",
+    contractTitle: "Liefervertrag",
+    contractHint: "Fester Abnehmer für 6 Stunden: +35 % Ertrag, aber Krisen treffen diese Firma stärker.",
+    contractGo: "Unterschreiben für {n}",
+    contractRunning: "Noch {t} gültig",
+    researchTitle: "Produktforschung",
+    researchHint: "Jede Stufe erhöht den Ertrag der Branche um 15 %, aber neue Produkte sind krisenanfälliger.",
+    researchLevel: "Stufe {n} von {max}",
+    researchGo: "Entwickeln für {n}",
+    researchMax: "Höchste Stufe",
+    rivalTitle: "Konkurrenz",
+    rivalNow: "Ein Konkurrent zieht gerade Kunden in dieser Branche ab (−20 %).",
+    rivalShield: "Die Kampagne schützt teilweise vor dem Konkurrenten.",
+    rivalNone: "Gerade bedroht dich kein Konkurrent.",
   },
   events: {
     crash: { title: "Börsencrash", text: "Die Marktpreise sind stark gefallen. Die Gewinne der Firmen sinken." },
@@ -869,7 +940,7 @@ const de: EconomyText = {
   restartConfirm: "Wirklich neu beginnen? Du verlierst Figur, Firmen und Investitionen. Dein Rekord bleibt.",
   restartHint: "Du kannst jederzeit mit einer neuen Figur bei null anfangen.",
   saveNote: "Das Spiel speichert sich nach jeder Aktion selbst.",
-  toast: { bought: "Gekauft", sold: "Verkauft für {n}", profit: "Gewinn {n}", loss: "Verlust {n}", created: "Figur erstellt", edu: "Bildung verbessert", job: "Neuer Job", restarted: "Neustart", upgraded: "Branche verbessert", hired: "Mitarbeiter eingestellt", fired: "Mitarbeiter entlassen", level: "Gespeichert", campaign: "Kampagne läuft 30 Minuten", funded: "Krisenfonds bezahlt" },
+  toast: { bought: "Gekauft", sold: "Verkauft für {n}", profit: "Gewinn {n}", loss: "Verlust {n}", created: "Figur erstellt", edu: "Bildung verbessert", job: "Neuer Job", restarted: "Neustart", upgraded: "Branche verbessert", hired: "Mitarbeiter eingestellt", fired: "Mitarbeiter entlassen", level: "Gespeichert", campaign: "Kampagne läuft 30 Minuten", funded: "Krisenfonds bezahlt", companySold: "Firma verkauft für {n}", contract: "Vertrag unterschrieben", researched: "Forschung abgeschlossen" },
   errors: {
     generic: "Etwas ist schiefgelaufen.",
     "login-required": "Bitte anmelden.",
@@ -989,6 +1060,23 @@ const ru: EconomyText = {
     income: "Доход",
     costs: "Расходы",
     net: "Чистая прибыль",
+    sellTitle: "Продажа компании",
+    sellHint: "Ты продаёшь одну единицу за часть цены, которую за неё заплатил. Компания с последней единицей исчезнет.",
+    sellGo: "Продать одну единицу за {n}",
+    sellConfirm: "Точно продать одну единицу этой компании?",
+    contractTitle: "Контракт с покупателем",
+    contractHint: "Постоянный покупатель на 6 часов: +35 % дохода, но кризисы бьют по этой компании сильнее.",
+    contractGo: "Подписать за {n}",
+    contractRunning: "Действует ещё {t}",
+    researchTitle: "Исследование продуктов",
+    researchHint: "Каждый уровень повышает доход отрасли на 15 %, но новые продукты сильнее подвержены кризисам.",
+    researchLevel: "Уровень {n} из {max}",
+    researchGo: "Разработать за {n}",
+    researchMax: "Максимальный уровень",
+    rivalTitle: "Конкуренция",
+    rivalNow: "Конкурент сейчас переманивает клиентов в этой отрасли (−20 %).",
+    rivalShield: "Кампания частично защищает от конкурента.",
+    rivalNone: "Сейчас тебе никто не угрожает.",
   },
   events: {
     crash: { title: "Обвал рынка", text: "Цены на рынке резко упали. Прибыль компаний снижается." },
@@ -1101,7 +1189,7 @@ const ru: EconomyText = {
   restartConfirm: "Точно начать заново? Ты потеряешь персонажа, компании и инвестиции. Рекорд останется.",
   restartHint: "В любой момент можно начать с нуля с новым персонажем.",
   saveNote: "Игра сохраняется сама после каждого действия.",
-  toast: { bought: "Куплено", sold: "Продано за {n}", profit: "Прибыль {n}", loss: "Убыток {n}", created: "Персонаж создан", edu: "Образование улучшено", job: "Новая работа", restarted: "Начинаем заново", upgraded: "Отрасль улучшена", hired: "Сотрудник нанят", fired: "Сотрудник уволен", level: "Сохранено", campaign: "Кампания идёт 30 минут", funded: "Антикризисный фонд оплачен" },
+  toast: { bought: "Куплено", sold: "Продано за {n}", profit: "Прибыль {n}", loss: "Убыток {n}", created: "Персонаж создан", edu: "Образование улучшено", job: "Новая работа", restarted: "Начинаем заново", upgraded: "Отрасль улучшена", hired: "Сотрудник нанят", fired: "Сотрудник уволен", level: "Сохранено", campaign: "Кампания идёт 30 минут", funded: "Антикризисный фонд оплачен", companySold: "Компания продана за {n}", contract: "Контракт подписан", researched: "Исследование готово" },
   errors: {
     generic: "Что-то пошло не так.",
     "login-required": "Войди в аккаунт.",

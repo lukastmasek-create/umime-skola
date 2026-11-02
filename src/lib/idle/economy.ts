@@ -173,6 +173,23 @@ export const MARKETING_BONUS = 1.3;
 export const MARKETING_COST = 0.1; // kampaň stojí podíl ceny firem
 export const FUND_COST = 0.1; // krizový fond stojí podíl ceny firem
 export const FUND_SAVES = 0.65; // jaký díl ztráty z události fond zachrání
+// Prodej firmy: jeden kus za podíl ceny, za kterou se koupil (posledně koupený kus).
+export const SELL_SHARE = 0.6;
+// Odběratelský kontrakt: pevný odběr na několik hodin. Stojí pár hodin výnosu a zvedne výnos,
+// ale krize tu firmu zasáhnou silněji (odběratel při krizi odejde).
+export const CONTRACT_MS = 6 * H;
+export const CONTRACT_FEE_HOURS = 2;
+export const CONTRACT_BONUS = 0.35;
+export const CONTRACT_EXPOSURE = 1.5;
+// Výzkum produktů: každá úroveň zvedne výnos oboru, ale nové produkty jsou křehčí vůči krizím.
+export const MAX_RESEARCH = 3;
+export const RESEARCH_COST = 0.4; // podíl ceny oboru za první úroveň (další stojí víc)
+export const RESEARCH_BONUS = 0.15;
+export const RESEARCH_EXPOSURE = 0.1;
+// Konkurence: každé okno (jako události) jeden z tvých oborů dostane konkurenta na půl hodiny.
+// Kampaň útok zmírní na polovinu.
+export const RIVAL_BITE = 0.2;
+export const RIVAL_CAMPAIGN_SHIELD = 0.5;
 
 // --- Mimořádné události ---
 // Každé dvě hodiny přijde jedna událost a trvá půl hodiny. Vybírá se podle času (stejné na serveru i v prohlížeči).
@@ -373,6 +390,9 @@ export type EconomyState = {
   setup: Partial<Record<CompanyId, CompanySetup>>;
   // na kterou událost (číslo okna) hráč u firmy zareagoval
   responses: Partial<Record<CompanyId, number>>;
+  // úroveň výzkumu produktů a konec odběratelského kontraktu (ms) u oboru
+  research: Partial<Record<CompanyId, number>>;
+  contracts: Partial<Record<CompanyId, number>>;
   holdings: Partial<Record<AssetId, number>>;
   // průměrná nákupní cena držených kusů (jen pro zobrazení zisku)
   cost: Partial<Record<AssetId, number>>;
@@ -431,6 +451,8 @@ export function emptyState(now: number, runs = 0, best = 0): EconomyState {
     companies: {},
     setup: {},
     responses: {},
+    research: {},
+    contracts: {},
     holdings: {},
     cost: {},
     hustle: {},
@@ -462,10 +484,16 @@ export function normalizeState(raw: unknown, now: number): EconomyState {
   const companies: EconomyState["companies"] = {};
   const setup: EconomyState["setup"] = {};
   const responses: EconomyState["responses"] = {};
+  const research: EconomyState["research"] = {};
+  const contracts: EconomyState["contracts"] = {};
   const win = eventWindow(now);
   for (const def of COMPANIES) {
     const n = Math.floor(finite((r.companies as Record<string, unknown> | undefined)?.[def.id], 0, 0, MAX_COMPANY_UNITS));
     if (n > 0) companies[def.id] = n;
+    const lvl = Math.floor(finite((r.research as Record<string, unknown> | undefined)?.[def.id], 0, 0, MAX_RESEARCH));
+    if (n > 0 && lvl > 0) research[def.id] = lvl;
+    const endsAt = finite((r.contracts as Record<string, unknown> | undefined)?.[def.id], 0, 0, now + CONTRACT_MS);
+    if (n > 0 && endsAt > now) contracts[def.id] = endsAt;
     const s = (r.setup as Record<string, Partial<Record<keyof CompanySetup, unknown>>> | undefined)?.[def.id];
     if (n > 0 && s && typeof s === "object") {
       setup[def.id] = {
@@ -523,6 +551,8 @@ export function normalizeState(raw: unknown, now: number): EconomyState {
     companies,
     setup,
     responses,
+    research,
+    contracts,
     holdings,
     cost,
     hustle,
@@ -569,13 +599,37 @@ export const hireCost = (id: CompanyId) => Math.round(companyIncome(id) * STAFF_
 export const campaignPrice = (state: EconomyState, id: CompanyId) => Math.round(companyDef(id).cost * (state.companies[id] ?? 0) * MARKETING_COST * familyCompany(state));
 export const fundPrice = (state: EconomyState, id: CompanyId) => Math.round(companyDef(id).cost * (state.companies[id] ?? 0) * FUND_COST * familyCompany(state));
 
+export const researchLevel = (state: EconomyState, id: CompanyId): number => state.research[id] ?? 0;
+export const contractActive = (state: EconomyState, id: CompanyId, now: number): boolean => (state.contracts[id] ?? 0) > now;
+
+// Konkurent: každé okno jeden z vlastněných oborů (podle času, stejné na serveru i v prohlížeči).
+export function currentRival(state: EconomyState, now: number): CompanyId | null {
+  const window = eventWindow(now);
+  if (now - window * EVENT_WINDOW_MS >= EVENT_DURATION_MS) return null;
+  const owned = COMPANIES.filter((c) => (state.companies[c.id] ?? 0) > 0);
+  if (owned.length === 0) return null;
+  return owned[Math.floor(hash32(`rival:${window}`) * owned.length)].id;
+}
+
+// Účinek konkurenta na jednu firmu: dražší produkt přetahuje zákazníky víc, kampaň útok zmírní.
+export function rivalMult(state: EconomyState, id: CompanyId, now: number): number {
+  if (currentRival(state, now) !== id) return 1;
+  const s = setupOf(state, id);
+  const shield = now < s.marketingUntil ? RIVAL_CAMPAIGN_SHIELD : 1;
+  return Math.max(0.5, 1 - RIVAL_BITE * s.price * shield);
+}
+
 // Účinek právě běžící události na jednu firmu (jen když ji hráč nezmírnil krizovým fondem).
 export function eventEffect(state: EconomyState, id: CompanyId, now: number): { mult: number; wageMult: number } {
   const ev = currentEvent(now);
   if (!ev || !eventAffects(ev.def, id)) return { mult: 1, wageMult: 1 };
   const s = setupOf(state, id);
-  // Cena i riziko zvyšují citlivost na událost.
-  const exposure = riskExposure(s.risk) * s.price;
+  // Cena i riziko zvyšují citlivost na událost; výzkum a aktivní kontrakt ji zvyšují taky.
+  const exposure =
+    riskExposure(s.risk) *
+    s.price *
+    (1 + RESEARCH_EXPOSURE * researchLevel(state, id)) *
+    (contractActive(state, id, now) ? CONTRACT_EXPOSURE : 1);
   const saved = state.responses[id] === ev.window ? 1 - FUND_SAVES : 1;
   const d = ev.def;
   const mult = d.mult < 1 ? Math.max(0.05, 1 - (1 - d.mult) * exposure * saved) : 1 + (d.mult - 1) * exposure;
@@ -597,7 +651,10 @@ export function companyYield(state: EconomyState, id: CompanyId, now: number): {
     riskOutput(s.risk) *
     (now < s.marketingUntil ? MARKETING_BONUS : 1) *
     staffMult *
-    effect.mult;
+    effect.mult *
+    (contractActive(state, id, now) ? 1 + CONTRACT_BONUS : 1) *
+    (1 + RESEARCH_BONUS * researchLevel(state, id)) *
+    rivalMult(state, id, now);
   return {
     gross: base * boost,
     costs: base * upkeepShare(s.output) + s.staff * companyIncome(id) * STAFF_WAGE * effect.wageMult,
@@ -793,6 +850,54 @@ export function fundResponse(state: EconomyState, id: unknown, now: number): Act
   const price = fundPrice(state, o.id);
   if (state.cash < price) return fail("not-enough-cash");
   return done({ ...state, cash: state.cash - price, responses: { ...state.responses, [o.id]: ev.window } }, now);
+}
+
+// Cena, za kterou jde prodat jeden kus: podíl ceny, kterou hráč za poslední kus zaplatil.
+export const sellPrice = (state: EconomyState, id: CompanyId) => Math.round((companyPrice(state, id) / COMPANY_GROWTH) * SELL_SHARE);
+export const contractPrice = (state: EconomyState, id: CompanyId) =>
+  Math.round((state.companies[id] ?? 0) * companyIncome(id) * INCOME_SPEED * CONTRACT_FEE_HOURS * familyCompany(state));
+export const researchPrice = (state: EconomyState, id: CompanyId) =>
+  Math.round(companyDef(id).cost * RESEARCH_COST * (researchLevel(state, id) + 1) * familyCompany(state));
+
+// Prodej jednoho kusu. Zbylé zaměstnance ořízne na nové kapacitě; při posledním kusu firma zmizí.
+export function sellCompany(state: EconomyState, id: unknown, now: number): ActionResult {
+  const o = ownedCompany(state, id);
+  if (o.error) return fail(o.error);
+  const n = state.companies[o.id] ?? 0;
+  const money = sellPrice(state, o.id);
+  const companies = { ...state.companies, [o.id]: n - 1 };
+  const setup = { ...state.setup };
+  const contracts = { ...state.contracts };
+  if (n - 1 <= 0) {
+    delete companies[o.id];
+    delete setup[o.id];
+    delete contracts[o.id];
+  } else if (state.setup[o.id]) {
+    const s = state.setup[o.id]!;
+    setup[o.id] = { ...s, staff: Math.min(s.staff, (n - 1) * MAX_STAFF_PER_UNIT) };
+  }
+  return done({ ...state, cash: state.cash + money, companies, setup, contracts }, now, { gained: { cash: money } });
+}
+
+// Odběratelský kontrakt na CONTRACT_MS. Jen jeden najednou, po skončení jde podepsat znovu.
+export function signContract(state: EconomyState, id: unknown, now: number): ActionResult {
+  const o = ownedCompany(state, id);
+  if (o.error) return fail(o.error);
+  if (contractActive(state, o.id, now)) return fail("busy");
+  const price = contractPrice(state, o.id);
+  if (state.cash < price) return fail("not-enough-cash");
+  return done({ ...state, cash: state.cash - price, contracts: { ...state.contracts, [o.id]: now + CONTRACT_MS } }, now);
+}
+
+// Výzkum: každá další úroveň je dražší a dává další bonus k výnosu oboru.
+export function researchCompany(state: EconomyState, id: unknown, now: number): ActionResult {
+  const o = ownedCompany(state, id);
+  if (o.error) return fail(o.error);
+  const lvl = researchLevel(state, o.id);
+  if (lvl >= MAX_RESEARCH) return fail("max");
+  const price = researchPrice(state, o.id);
+  if (state.cash < price) return fail("not-enough-cash");
+  return done({ ...state, cash: state.cash - price, research: { ...state.research, [o.id]: lvl + 1 } }, now);
 }
 
 function qtyOf(raw: unknown): number | null {
