@@ -88,12 +88,9 @@ export type EconomyText = {
   hustleNone: string;
   hustleStake: string;
   hustleRisk: string;
-  riskSafe: string;
-  riskNormal: string;
-  riskRisky: string;
   riskHint: string;
+  hustleAll: string;
   hustleTopUp: string;
-  hustleMax: string;
   minutes: string;
   hours: string;
   boardHint: string;
@@ -203,12 +200,9 @@ const cs: EconomyText = {
   hustleNone: "Žádný hustl neběží.",
   hustleStake: "Vklad",
   hustleRisk: "Riziko",
-  riskSafe: "Opatrně",
-  riskNormal: "Normálně",
-  riskRisky: "Riskantně",
-  riskHint: "Riskantnější volba rozšíří rozsah výsledků: víc zisku i ztráty.",
+  riskHint: "Vyšší riziko = širší rozsah výsledků: víc zisku i ztráty. 1 % je téměř jistý výsledek.",
+  hustleAll: "Vše",
   hustleTopUp: "Dokoupit {n}",
-  hustleMax: "Maximální vklad dosažen",
   minutes: "{n} min",
   hours: "{n} h",
   boardHint: "Pořadí podle nejvyššího jmění, kterého kdy hráč dosáhl.",
@@ -337,12 +331,9 @@ const en: EconomyText = {
   hustleNone: "No hustle is running.",
   hustleStake: "Stake",
   hustleRisk: "Risk",
-  riskSafe: "Careful",
-  riskNormal: "Normal",
-  riskRisky: "Risky",
-  riskHint: "A riskier choice widens the range of results: more profit and more loss.",
+  riskHint: "Higher risk = wider range of results: more profit and more loss. 1% is almost a sure result.",
+  hustleAll: "All",
   hustleTopUp: "Add {n}",
-  hustleMax: "Maximum stake reached",
   minutes: "{n} min",
   hours: "{n} h",
   boardHint: "Ranked by the highest net worth a player has ever reached.",
@@ -471,12 +462,9 @@ const de: EconomyText = {
   hustleNone: "Kein Hustle läuft.",
   hustleStake: "Einsatz",
   hustleRisk: "Risiko",
-  riskSafe: "Vorsichtig",
-  riskNormal: "Normal",
-  riskRisky: "Riskant",
-  riskHint: "Eine riskantere Wahl macht die Ergebnisse breiter: mehr Gewinn und mehr Verlust.",
+  riskHint: "Höheres Risiko = breitere Ergebnisse: mehr Gewinn und mehr Verlust. 1 % ist fast ein sicheres Ergebnis.",
+  hustleAll: "Alles",
   hustleTopUp: "Nachlegen {n}",
-  hustleMax: "Maximaler Einsatz erreicht",
   minutes: "{n} Min.",
   hours: "{n} Std.",
   boardHint: "Sortiert nach dem höchsten Vermögen, das ein Spieler je erreicht hat.",
@@ -605,12 +593,9 @@ const ru: EconomyText = {
   hustleNone: "Сейчас ничего не запущено.",
   hustleStake: "Вклад",
   hustleRisk: "Риск",
-  riskSafe: "Осторожно",
-  riskNormal: "Обычно",
-  riskRisky: "Рискованно",
-  riskHint: "Более рискованный выбор расширяет диапазон результатов: больше и прибыли, и убытка.",
+  riskHint: "Выше риск — шире диапазон результатов: больше и прибыли, и убытка. 1 % — почти гарантированный результат.",
+  hustleAll: "Всё",
   hustleTopUp: "Докупить {n}",
-  hustleMax: "Достигнут максимальный вклад",
   minutes: "{n} мин",
   hours: "{n} ч",
   boardHint: "Порядок по самому высокому состоянию, которого когда-либо достиг игрок.",

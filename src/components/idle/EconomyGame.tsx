@@ -23,15 +23,13 @@ import {
   assetPrice,
   companyIncome,
   companyPrice,
-  HUSTLE_MAX_STAKE,
-  HUSTLE_STAKES,
+  HUSTLE_RISK_DEFAULT,
   hustleOffer,
   hustleReady,
   isLocked,
   jobRank,
   type AssetId,
   type HustleId,
-  type HustleRisk,
   type CityId,
   type CountryId,
   type EconomyState,
@@ -91,7 +89,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
   const [nowMs, setNowMs] = useState(0);
   // Rozkliknutá karta hustlu a zvolený vklad/riziko pro každou kartu zvlášť.
   const [hustleOpen, setHustleOpen] = useState<HustleId | null>(null);
-  const [hustleCfg, setHustleCfg] = useState<Partial<Record<HustleId, { stake: number; risk: HustleRisk }>>>({});
+  const [hustleCfg, setHustleCfg] = useState<Partial<Record<HustleId, { stake: number; risk: number }>>>({});
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
   const [board, setBoard] = useState<Board | null>(null);
@@ -545,13 +543,11 @@ export function EconomyGame({ locale }: { locale: Locale }) {
               const slot = state.hustle[h.id];
               const ready = hustleReady(slot, h.id, clock);
               const open = hustleOpen === h.id;
-              const cfg = hustleCfg[h.id] ?? { stake: 1, risk: "normal" as HustleRisk };
-              const setCfg = (patch: Partial<{ stake: number; risk: HustleRisk }>) =>
+              const cfg = hustleCfg[h.id] ?? { stake: h.cost, risk: HUSTLE_RISK_DEFAULT };
+              const setCfg = (patch: Partial<{ stake: number; risk: number }>) =>
                 setHustleCfg((prev) => ({ ...prev, [h.id]: { ...cfg, ...patch } }));
-              const amount = Math.round(h.cost * cfg.stake);
-              const capReached = slot ? slot.stake + amount > h.cost * HUSTLE_MAX_STAKE : false;
-              const chip = (active: boolean) =>
-                `rounded-lg border px-2.5 py-1.5 text-xs font-bold disabled:opacity-45 ${active ? "border-[var(--brand-500)] bg-[var(--brand-500)] text-white" : "border-[var(--border)]"}`;
+              const amount = cfg.stake;
+              const canAfford = amount >= 1 && liveCash >= amount;
               return (
                 <article key={h.id} className={`card flex flex-col gap-2 p-4 ${ready ? "border-[var(--accent-green)]" : ""}`}>
                   <button
@@ -593,16 +589,29 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                   {open && !ready && (
                     <div className="flex flex-col gap-3 border-t border-[var(--border)] pt-3">
                       <div className="flex flex-col gap-1.5">
-                        <span className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.hustleStake}</span>
-                        <div className="flex flex-wrap gap-1.5">
-                          {HUSTLE_STAKES.map((mult) => {
-                            const cost = Math.round(h.cost * mult);
-                            return (
-                              <button key={mult} type="button" aria-pressed={cfg.stake === mult} disabled={busy || (!slot && liveCash < cost)} onClick={() => setCfg({ stake: mult })} className={chip(cfg.stake === mult)}>
-                                {m(cost)}
-                              </button>
-                            );
-                          })}
+                        <label htmlFor={`stake-${h.id}`} className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+                          {t.hustleStake}
+                        </label>
+                        <div className="flex gap-1.5">
+                          <input
+                            id={`stake-${h.id}`}
+                            type="number"
+                            inputMode="numeric"
+                            min={1}
+                            step={1}
+                            disabled={busy}
+                            value={cfg.stake || ""}
+                            onChange={(e) => setCfg({ stake: Math.max(0, Math.floor(Number(e.target.value)) || 0) })}
+                            className="min-w-0 flex-1 rounded-lg border border-[var(--border)] bg-transparent px-2.5 py-1.5 text-sm"
+                          />
+                          <button
+                            type="button"
+                            disabled={busy || liveCash < 1}
+                            onClick={() => setCfg({ stake: Math.floor(liveCash) })}
+                            className="rounded-lg border border-[var(--border)] px-2.5 py-1.5 text-xs font-bold disabled:opacity-45"
+                          >
+                            {t.hustleAll}
+                          </button>
                         </div>
                       </div>
 
@@ -613,11 +622,11 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                           </p>
                           <button
                             type="button"
-                            disabled={busy || capReached || liveCash < amount}
+                            disabled={busy || !canAfford}
                             onClick={() => void act({ action: "topUpHustle", id: h.id, stake: cfg.stake })}
                             className="btn-bouncy bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
                           >
-                            {capReached ? t.hustleMax : fill(t.hustleTopUp, { n: m(amount) })}
+                            {fill(t.hustleTopUp, { n: m(amount) })}
                           </button>
                           <button
                             type="button"
@@ -631,19 +640,28 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                       ) : (
                         <>
                           <div className="flex flex-col gap-1.5">
-                            <span className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.hustleRisk}</span>
-                            <div className="flex flex-wrap gap-1.5">
-                              {(["safe", "normal", "risky"] as const).map((r) => (
-                                <button key={r} type="button" aria-pressed={cfg.risk === r} disabled={busy} onClick={() => setCfg({ risk: r })} className={chip(cfg.risk === r)}>
-                                  {r === "safe" ? t.riskSafe : r === "normal" ? t.riskNormal : t.riskRisky}
-                                </button>
-                              ))}
+                            <div className="flex items-center justify-between">
+                              <label htmlFor={`risk-${h.id}`} className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+                                {t.hustleRisk}
+                              </label>
+                              <span className="text-sm font-bold">{cfg.risk} %</span>
                             </div>
+                            <input
+                              id={`risk-${h.id}`}
+                              type="range"
+                              min={1}
+                              max={100}
+                              step={1}
+                              disabled={busy}
+                              value={cfg.risk}
+                              onChange={(e) => setCfg({ risk: Number(e.target.value) })}
+                              className="w-full accent-[var(--brand-500)]"
+                            />
                             <p className="text-xs text-[var(--muted)]">{t.riskHint}</p>
                           </div>
                           <button
                             type="button"
-                            disabled={busy || liveCash < amount}
+                            disabled={busy || !canAfford}
                             onClick={() => void act({ action: "startHustle", id: h.id, stake: cfg.stake, risk: cfg.risk })}
                             className="btn-bouncy bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
                           >

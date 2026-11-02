@@ -171,26 +171,30 @@ test("hustle: kapitál se zablokuje, výsledek je v rozsahu a vybrat jde až po 
 
 test("hustle: vklad a riziko volí hráč, dokoupení zvětší výplatu ve stejném poměru", () => {
   const s = { ...start("rich"), cash: 100_000 };
-  // Vklad 2× základ: 10 000, střed výplaty zůstává na 1,55× (rizikově se jen rozšiřuje rozsah).
-  const r = startHustle(s, "carflip", NOW, () => 0.5, { stake: 2, risk: "normal" });
+  // Vklad 10 000 (libovolná částka), riziko 50 %: střed výplaty zůstává na 1,55×.
+  const r = startHustle(s, "carflip", NOW, () => 0.5, { stake: 10_000, risk: 50 });
   ok(r);
   assert.equal(r.state.cash, 90_000);
   assert.equal(r.state.hustle.carflip!.stake, 10_000);
-  const safe = startHustle(s, "carflip", NOW, () => 0, { stake: 1, risk: "safe" });
-  const risky = startHustle(s, "carflip", NOW, () => 0, { stake: 1, risk: "risky" });
+  // Riziko 10 % má užší rozsah než 100 %: při nejnižším výsledku je ztráta mírnější.
+  const safe = startHustle(s, "carflip", NOW, () => 0, { stake: 10_000, risk: 10 });
+  const risky = startHustle(s, "carflip", NOW, () => 0, { stake: 10_000, risk: 100 });
   ok(safe);
   ok(risky);
-  // Při nejnižším výsledku je bezpečná volba méně drastická než riziková.
   assert.ok(safe.state.hustle.carflip!.payout > risky.state.hustle.carflip!.payout);
-  assert.deepEqual(startHustle(s, "carflip", NOW, Math.random, { stake: 3 }), { ok: false, error: "bad-request" });
-  // Dokoupení 1× základ: vklad 5 000 → 10 000, výplata se zvětší ve stejném poměru.
+  // Neplatné hodnoty: nulový či neceločíselný vklad, riziko mimo 1–100.
+  assert.deepEqual(startHustle(s, "carflip", NOW, Math.random, { stake: 0 }), { ok: false, error: "bad-request" });
+  assert.deepEqual(startHustle(s, "carflip", NOW, Math.random, { stake: 10.5 }), { ok: false, error: "bad-request" });
+  assert.deepEqual(startHustle(s, "carflip", NOW, Math.random, { stake: 1000, risk: 0 }), { ok: false, error: "bad-request" });
+  assert.deepEqual(startHustle(s, "carflip", NOW, Math.random, { stake: 1000, risk: 101 }), { ok: false, error: "bad-request" });
+  // Dokoupení 5 000: vklad 10 000 → 15 000, výplata se zvětší ve stejném poměru.
   const before = r.state.hustle.carflip!;
-  const top = topUpHustle(r.state, "carflip", NOW + 60_000, 1);
+  const top = topUpHustle(r.state, "carflip", NOW + 60_000, 5_000);
   ok(top);
   assert.equal(top.state.hustle.carflip!.stake, 15_000);
-  assert.equal(top.state.hustle.carflip!.payout, Math.round(before.payout * 1.5));
-  assert.deepEqual(topUpHustle(top.state, "carflip", NOW, 5), { ok: false, error: "max-stake" });
-  assert.deepEqual(topUpHustle(r.state, "carflip", NOW + 5 * 60_000, 1), { ok: false, error: "ready" });
+  assert.equal(top.state.hustle.carflip!.payout, before.payout + Math.round((before.payout / before.stake) * 5_000));
+  assert.deepEqual(topUpHustle(top.state, "carflip", NOW, 1_000_000), { ok: false, error: "not-enough-cash" });
+  assert.deepEqual(topUpHustle(r.state, "carflip", NOW + 5 * 60_000, 5_000), { ok: false, error: "ready" });
 });
 
 test("hustle: průběžné rozhodování – prodej teď dává nabídku minus poplatek, po čase už jen výběr", () => {
