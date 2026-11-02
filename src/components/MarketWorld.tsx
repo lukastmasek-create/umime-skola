@@ -758,13 +758,14 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
               </div>
             );
           })()}
-          {toast && (
-            <div role="status" className={`absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full border-2 border-[var(--edge)] px-4 py-2 text-sm font-bold shadow-[0_3px_0_var(--shadow-ink)] ${toast.ok ? "bg-[var(--accent-green)] text-[#16132b]" : "bg-[var(--danger)] text-white"}`}>
-              {toast.text}
-            </div>
-          )}
         </div>
       </div>
+      )}
+      {/* hláška o nákupu či chybě: mimo scénu, aby byla vidět i ve 3D */}
+      {toast && (
+        <div role="status" className={`fixed bottom-6 left-1/2 z-[70] max-w-[90vw] -translate-x-1/2 rounded-full border-2 border-[var(--edge)] px-4 py-2 text-sm font-bold shadow-[0_3px_0_var(--shadow-ink)] ${toast.ok ? "bg-[var(--accent-green)] text-[#16132b]" : "bg-[var(--danger)] text-white"}`}>
+          {toast.text}
+        </div>
       )}
 
       {/* rychlá volba stánků (hlavně pro telefony) */}
