@@ -89,6 +89,31 @@ export type EconomyText = {
   living: string;
   multiplier: string;
   overviewHint: string;
+  incomeTitle: string;
+  statsTitle: string;
+  vsPeak: string;
+  atPeak: string;
+  totalEarned: string;
+  timePlayed: string;
+  days: string;
+  assetsTitle: string;
+  companiesOwned: string;
+  hustlesRunning: string;
+  none: string;
+  ovSummary: string;
+  ovEarnings: string;
+  ovAssets: string;
+  ovEducation: string;
+  centerIncome: string;
+  centerAssets: string;
+  passiveShare: string;
+  bestCompany: string;
+  avgDay: string;
+  yearlyCost: string;
+  companiesPerHour: string;
+  noCompany: string;
+  shareLabel: string;
+  other: string;
   learning: string;
   education: string;
   educationHint: string;
@@ -292,6 +317,31 @@ const cs: EconomyText = {
   living: "Životní náklady",
   multiplier: "Násobek příjmů",
   overviewHint: "Příjem běží v reálném čase, ale mimo hru jen 15 minut. Hraj aktivně!",
+  incomeTitle: "Příjmy za hodinu",
+  statsTitle: "Tvoje hra",
+  vsPeak: "oproti vrcholu této hry",
+  atPeak: "Jsi na vrcholu této hry 🎉",
+  totalEarned: "Celkem vydělano",
+  timePlayed: "Čas ve hře",
+  days: "{n} d",
+  assetsTitle: "Majetek",
+  companiesOwned: "Firmy",
+  hustlesRunning: "Rozjeté hustle",
+  none: "žádný",
+  ovSummary: "Shrnutí",
+  ovEarnings: "Výdělky",
+  ovAssets: "Majetek",
+  ovEducation: "Vzdělání",
+  centerIncome: "Příjem/h",
+  centerAssets: "Celkem",
+  passiveShare: "Pasivní podíl",
+  bestCompany: "Nejlepší firma",
+  avgDay: "Průměr za den",
+  yearlyCost: "Roční náklady",
+  companiesPerHour: "Firmy – příjem za hodinu",
+  noCompany: "Zatím žádná firma",
+  shareLabel: "Podíl",
+  other: "Ostatní",
   learning: "Bonus za dnešní učení",
   education: "Vzdělání",
   educationHint: "Investuj body z učení: každá úroveň trvale zvedne všechny příjmy o 4 %.",
@@ -499,6 +549,31 @@ const en: EconomyText = {
   living: "Living costs",
   multiplier: "Income multiplier",
   overviewHint: "Income runs in real time, but only for 15 minutes while you are away. Play actively!",
+  incomeTitle: "Income per hour",
+  statsTitle: "Your game",
+  vsPeak: "vs. this run's peak",
+  atPeak: "You're at this run's peak 🎉",
+  totalEarned: "Total earned",
+  timePlayed: "Time played",
+  days: "{n} d",
+  assetsTitle: "Assets",
+  companiesOwned: "Companies",
+  hustlesRunning: "Running hustles",
+  none: "none",
+  ovSummary: "Summary",
+  ovEarnings: "Earnings",
+  ovAssets: "Assets",
+  ovEducation: "Education",
+  centerIncome: "Income/h",
+  centerAssets: "Total",
+  passiveShare: "Passive share",
+  bestCompany: "Best company",
+  avgDay: "Average per day",
+  yearlyCost: "Yearly costs",
+  companiesPerHour: "Companies – income per hour",
+  noCompany: "No company yet",
+  shareLabel: "Share",
+  other: "Other",
   learning: "Bonus for today's learning",
   education: "Education",
   educationHint: "Invest points from learning: every level permanently raises all income by 4 %.",
@@ -706,6 +781,31 @@ const de: EconomyText = {
   living: "Lebenshaltungskosten",
   multiplier: "Einkommensfaktor",
   overviewHint: "Das Einkommen läuft in Echtzeit, aber nur 15 Minuten, wenn du nicht da bist. Spiel aktiv!",
+  incomeTitle: "Einkommen pro Stunde",
+  statsTitle: "Dein Spiel",
+  vsPeak: "gegenüber dem Höchststand dieses Durchlaufs",
+  atPeak: "Du bist auf dem Höchststand dieses Durchlaufs 🎉",
+  totalEarned: "Insgesamt verdient",
+  timePlayed: "Spielzeit",
+  days: "{n} T",
+  assetsTitle: "Vermögenswerte",
+  companiesOwned: "Firmen",
+  hustlesRunning: "Laufende Hustles",
+  none: "keine",
+  ovSummary: "Übersicht",
+  ovEarnings: "Verdienst",
+  ovAssets: "Vermögen",
+  ovEducation: "Bildung",
+  centerIncome: "Ertrag/Std",
+  centerAssets: "Gesamt",
+  passiveShare: "Passiver Anteil",
+  bestCompany: "Beste Firma",
+  avgDay: "Durchschnitt pro Tag",
+  yearlyCost: "Jährliche Kosten",
+  companiesPerHour: "Firmen – Ertrag pro Stunde",
+  noCompany: "Noch keine Firma",
+  shareLabel: "Anteil",
+  other: "Sonstiges",
   learning: "Bonus für heutiges Lernen",
   education: "Bildung",
   educationHint: "Investiere Punkte vom Lernen: Jede Stufe erhöht dauerhaft alle Einkünfte um 4 %.",
@@ -913,6 +1013,31 @@ const ru: EconomyText = {
   living: "Расходы на жизнь",
   multiplier: "Множитель доходов",
   overviewHint: "Доход идёт в реальном времени, но пока тебя нет — только 15 минут. Играй активно!",
+  incomeTitle: "Доход в час",
+  statsTitle: "Твоя игра",
+  vsPeak: "относительно пика этой игры",
+  atPeak: "Ты на пике этой игры 🎉",
+  totalEarned: "Всего заработано",
+  timePlayed: "Время в игре",
+  days: "{n} д",
+  assetsTitle: "Активы",
+  companiesOwned: "Компании",
+  hustlesRunning: "Активные подработки",
+  none: "нет",
+  ovSummary: "Итоги",
+  ovEarnings: "Заработок",
+  ovAssets: "Активы",
+  ovEducation: "Образование",
+  centerIncome: "Доход/ч",
+  centerAssets: "Всего",
+  passiveShare: "Доля пассивного",
+  bestCompany: "Лучшая компания",
+  avgDay: "В среднем за день",
+  yearlyCost: "Годовые расходы",
+  companiesPerHour: "Компании — доход в час",
+  noCompany: "Пока нет компаний",
+  shareLabel: "Доля",
+  other: "Прочее",
   learning: "Бонус за сегодняшнюю учёбу",
   education: "Образование",
   educationHint: "Вкладывай баллы за учёбу: каждый уровень навсегда повышает все доходы на 4 %.",
