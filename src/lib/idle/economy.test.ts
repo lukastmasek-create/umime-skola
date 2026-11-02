@@ -66,7 +66,7 @@ test("práce: poplatek, výměna a výpověď; zkušenosti zvedají plat", () =>
   s = r.ok ? r.state : s;
   assert.deepEqual(takeJob(s, "warehouse", NOW), { ok: false, error: "same-job" });
   const before = rates(s, NOW).salary;
-  const later = { ...s, job: { id: "warehouse" as const, hours: 25 } };
+  const later = { ...s, job: { id: "warehouse" as const, hours: 1 } };
   assert.ok(rates(later, NOW).salary > before);
   const q = quitJob(s, NOW);
   ok(q);
@@ -92,12 +92,12 @@ test("příjem: peníze plynou v čase, offline má strop, bez postavy nic", () 
   let s = start("rich");
   const bought = buyCompany(s, "shoes", NOW);
   s = bought.ok ? bought.state : s;
-  const hour = settle(s, NOW + H);
-  const gain = hour.cash - s.cash;
-  assert.ok(gain > 15 && gain < 30, `za hodinu ${gain}`);
+  const minute = settle(s, NOW + 60_000);
+  const gain = minute.cash - s.cash;
+  assert.ok(gain > 5 && gain < 12, `za minutu ${gain}`);
   const week = settle(s, NOW + 7 * 24 * H);
-  const capped = settle(s, NOW + 12 * H);
-  assert.ok(Math.abs(week.cash - capped.cash) < 1e-6, "offline má strop 12 h");
+  const capped = settle(s, NOW + 15 * 60_000);
+  assert.ok(Math.abs(week.cash - capped.cash) < 1e-6, "offline má strop 15 min");
   assert.equal(settle(emptyState(NOW), NOW + H).cash, 0);
 });
 
@@ -136,7 +136,7 @@ test("arbitráž: potřebuje rozdíl cen a čeká se mezi obchody", () => {
   const s = start("rich");
   let found: number | null = null;
   for (let i = 0; i < 2000 && found === null; i++) {
-    const t = NOW + i * 60_000;
+    const t = NOW + i * 20_000;
     if (arbitrage(s, 1000, t).ok) found = t;
   }
   assert.ok(found !== null, "někdy se rozdíl cen vyplatí");
@@ -157,10 +157,10 @@ test("hustle: kapitál se zablokuje, výsledek je v rozsahu a vybrat jde až po 
   const slot = lo.ok ? lo.state : s;
   assert.equal(slot.cash, 800);
   assert.deepEqual(startHustle(slot, "reselling", NOW), { ok: false, error: "busy" });
-  assert.deepEqual(collectHustle(slot, "reselling", NOW + 60_000), { ok: false, error: "not-ready" });
-  const paid = collectHustle(slot, "reselling", NOW + 10 * 60_000);
+  assert.deepEqual(collectHustle(slot, "reselling", NOW + 20_000), { ok: false, error: "not-ready" });
+  const paid = collectHustle(slot, "reselling", NOW + 60_000);
   assert.ok(paid.ok && paid.state.cash === 800 + 170 && !paid.state.hustle.reselling);
-  const rich = collectHustle(hi.ok ? hi.state : s, "reselling", NOW + 10 * 60_000);
+  const rich = collectHustle(hi.ok ? hi.state : s, "reselling", NOW + 60_000);
   assert.ok(rich.ok && rich.state.cash > 1000);
   assert.deepEqual(startHustle({ ...s, cash: 100 }, "carflip", NOW), { ok: false, error: "not-enough-cash" });
   assert.deepEqual(collectHustle(s, "reselling", NOW), { ok: false, error: "nothing" });

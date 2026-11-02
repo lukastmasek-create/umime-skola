@@ -16,6 +16,7 @@ import {
   FAMILIES,
   FAMILY_DEF,
   HUSTLES,
+  INCOME_SPEED,
   JOBS,
   MAX_EDU,
   MAX_JOB_RANK,
@@ -53,13 +54,15 @@ type Board = { top: { rank: number; name: string; country: string | null; best: 
 
 const fill = (text: string, vars: Record<string, string | number>) => text.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ""));
 
-function money(n: number, currency: string): string {
+function money(n: number, currency: string, locale: Locale): string {
+  const { numberLocale: loc, units } = getEconomyText(locale);
   const v = Math.round(n);
   const abs = Math.abs(v);
-  if (abs >= 1e12) return `${(v / 1e12).toFixed(2)} bil. ${currency}`;
-  if (abs >= 1e9) return `${(v / 1e9).toFixed(2)} mld. ${currency}`;
-  if (abs >= 1e6) return `${(v / 1e6).toFixed(2)} mil. ${currency}`;
-  return `${v.toLocaleString("cs-CZ")} ${currency}`;
+  const short = (x: number, unit: string) => `${x.toLocaleString(loc, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${unit} ${currency}`.trim();
+  if (abs >= 1e12) return short(v / 1e12, units.trillion);
+  if (abs >= 1e9) return short(v / 1e9, units.billion);
+  if (abs >= 1e6) return short(v / 1e6, units.million);
+  return `${v.toLocaleString(loc)} ${currency}`.trim();
 }
 
 const EMOJI: Record<string, string> = {
@@ -93,11 +96,11 @@ export function EconomyGame({ locale }: { locale: Locale }) {
   });
   const busyRef = useRef(false);
 
+  const errorText = useCallback((code?: string) => t.errors[code ?? "generic"] ?? t.errors.generic, [t]);
   const say = useCallback((text: string, ok = false) => {
     setToast({ text, ok });
     window.setTimeout(() => setToast((c) => (c?.text === text ? null : c)), 3200);
   }, []);
-  const errorText = useCallback((code?: string) => t.errors[code ?? "generic"] ?? t.errors.generic, [t]);
 
   const refresh = useCallback(async () => {
     try {
@@ -224,12 +227,12 @@ export function EconomyGame({ locale }: { locale: Locale }) {
             onClick={() => void act({ action: "create", ...form }, () => t.toast.created)}
             className="btn-bouncy bg-[var(--brand-500)] px-5 py-2.5 font-bold text-white disabled:opacity-45"
           >
-            {t.create.start} · {fill(t.create.startMoney, { n: money(startCash, cur) })}
+            {t.create.start} · {fill(t.create.startMoney, { n: money(startCash, cur, locale) })}
           </button>
         </section>
         {state.best > 0 && (
           <p className="mt-3 text-sm text-[var(--muted)]">
-            {t.best}: {money(state.best, cur)} · {t.runs}: {state.runs}
+            {t.best}: {money(state.best, cur, locale)} · {t.runs}: {state.runs}
           </p>
         )}
         {toast && <Toast toast={toast} />}
@@ -238,7 +241,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
   }
 
   const cur = COUNTRY_DEF[ch.country].currency;
-  const m = (n: number) => money(n, cur);
+  const m = (n: number) => money(n, cur, locale);
   const r = data.rates;
   // Hotovost běží plynule: server poslal stav k okamžiku `now`, zbytek dopočítáme ze sazby.
   const liveCash = Math.max(0, state.cash + (r.net * (clock - data.now)) / 3_600_000);
@@ -351,7 +354,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                     {EMOJI[j.id]} {t.jobs[j.id]}
                   </h3>
                   <p className="text-sm text-[var(--muted)]">
-                    {m(j.salary * COUNTRY_DEF[ch.country].salary)} {t.perHourShort} · {j.fee > 0 ? fill(t.fee, { n: m(j.fee) }) : t.free}
+                    {m(j.salary * INCOME_SPEED * COUNTRY_DEF[ch.country].salary)} {t.perHourShort} · {j.fee > 0 ? fill(t.fee, { n: m(j.fee) }) : t.free}
                   </p>
                   {current ? (
                     <button type="button" disabled={busy} onClick={() => void act({ action: "quitJob" })} className="btn-bouncy mt-auto bg-[var(--surface)] px-3 py-2 text-sm font-bold">
@@ -388,7 +391,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                     {EMOJI[c.id]} {t.companies[c.id]}
                   </h3>
                   <p className="text-sm text-[var(--muted)]">
-                    {fill(t.owned, { n: owned })} · {fill(t.earns, { n: m(companyIncome(c.id) * r.multiplier) })}
+                    {fill(t.owned, { n: owned })} · {fill(t.earns, { n: m(companyIncome(c.id) * INCOME_SPEED * r.multiplier) })}
                   </p>
                   <button
                     type="button"
@@ -556,7 +559,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                     {row.name} {row.me && `(${t.you})`}
                   </span>
                   <span className="text-xs text-[var(--muted)]">{row.runs + 1}×</span>
-                  <span className="font-semibold">{money(row.best, row.country && row.country in COUNTRY_DEF ? COUNTRY_DEF[row.country as CountryId].currency : "")}</span>
+                  <span className="font-semibold">{money(row.best, row.country && row.country in COUNTRY_DEF ? COUNTRY_DEF[row.country as CountryId].currency : "", locale)}</span>
                 </li>
               ))}
             </ol>
