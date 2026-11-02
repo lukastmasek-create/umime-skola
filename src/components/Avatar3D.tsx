@@ -104,6 +104,7 @@ export default function Avatar3D({
   custom,
   onParts,
   snapshotRef,
+  mood,
 }: {
   src: string;
   label: string;
@@ -113,8 +114,14 @@ export default function Avatar3D({
   onParts?: (parts: AvatarParts) => void;
   // Sem se po načtení modelu vloží funkce, která vyfotí portrét postavy (data URL) pro malé ikonky.
   snapshotRef?: { current: (() => string | null) | null };
+  // Nálada: „sad“ = po prohře se postava pořád smutně svěšuje (klip smutek), „happy“ = tančí a raduje se.
+  mood?: "sad" | "happy";
 }) {
   const box = useRef<HTMLDivElement>(null);
+  const moodRef = useRef(mood);
+  useEffect(() => {
+    moodRef.current = mood;
+  }, [mood]);
   // Callbacky v refu, aby se scéna nestavěla znovu při každém renderu rodiče.
   const handlers = useRef({ onReady, onError, onParts });
   useEffect(() => {
@@ -204,6 +211,8 @@ export default function Avatar3D({
     const shown: Motion = { y: 0, rotX: 0, rotY: 0, rotZ: 0, sx: 1, sy: 1 };
     let gesture: { t: number; g: Gesture } | null = null;
     let untilIdle = 3 + Math.random() * 3;
+    let moodWait = 0.6;
+    let moodStep = 0;
     let reaction = Math.floor(Math.random() * CLICK_REACTIONS.length);
     let look = 0; // plynule sledovaný náklon za kurzorem
     let lookTarget = 0;
@@ -439,6 +448,13 @@ export default function Avatar3D({
           if (gesture.t >= gesture.g.duration) {
             gesture = null;
             untilIdle = 4 + Math.random() * 4;
+          }
+        } else if (moodRef.current) {
+          // Nálada má přednost před náhodnými klipy: smutek se opakuje s krátkou pauzou, radost střídá tanec a výskok.
+          if (!dragging && !clipBusy() && (moodWait -= dt) <= 0) {
+            const names = moodRef.current === "sad" ? ["smutek"] : ["tanec", "radost", "fandeni", "tleskani"];
+            if (playClip(names[moodStep++ % names.length])) moodWait = moodRef.current === "sad" ? 1.2 : 0.8;
+            else moodWait = 1;
           }
         } else if (!dragging && !clipBusy() && (untilIdle -= dt) <= 0) {
           // V klidu střídavě jedno z nových animovaných klipů (ruce, hlava) a pohyb těla bez klipu.

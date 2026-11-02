@@ -181,6 +181,7 @@ export function Defense({ t, questions, backHref }: { t: ClassicText; questions:
           questions={questions}
           onAgain={restart}
           backHref={backHref}
+          outcome={g.phase === "won" ? "won" : "lost"}
         >
           <p className="text-lg font-bold">{g.phase === "won" ? d.win : d.lose}</p>
         </FinishCard>
