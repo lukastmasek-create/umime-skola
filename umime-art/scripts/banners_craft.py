@@ -381,7 +381,8 @@ def craft_reef():
 def craft_lagoon():
     reset(SAMPLES)
     rnd = random.Random(9)
-    B.sky(18, 200, strength=0.04, dust=1.5, sun_intensity=0.1)
+    B.sky(38, 200, strength=0.09, dust=1.0, sun_intensity=0.3)
+    sun((50, 0, 160), 3.5, "#fff4e0", 0.03)
     look((0, -14, 1.6), (0, 0, 1.6), 30)
     ground(400, B.wave_material("#0aa8a8", "#5fe0d0", 0.03), z=0.0, subdiv=400, strength=0.12, scale=2.5)
     sand = mat("#f2dfa8", rough=0.9)
