@@ -32,14 +32,31 @@ export const TOGGLE_NODE: Record<Toggle, RegExp> = {
 export const PATTERNS = ["none", "stripes", "dots", "checks", "belly"] as const;
 export type Pattern = (typeof PATTERNS)[number];
 
+// Doplňky z craftování (public/avatars-3d/accessories/<id>.glb). "head" se připíná na hlavu (kýve se s ní),
+// "body" na tělo. Hráč doplněk vlastní, když má v tabulce Unlock klíč "acc:<id>".
+export const ACCESSORIES = [
+  { id: "antenna-helmet", mount: "head" },
+  { id: "leaf-wreath", mount: "head" },
+  { id: "knight-helmet", mount: "head" },
+  { id: "witch-hat", mount: "head" },
+  { id: "pearl-necklace", mount: "body" },
+  { id: "cape-of-stars", mount: "body" },
+  { id: "dragon-wings", mount: "body" },
+] as const;
+export type AccessoryId = (typeof ACCESSORIES)[number]["id"];
+export const ACCESSORY_IDS: readonly string[] = ACCESSORIES.map((a) => a.id);
+export const MAX_WORN = 3;
+
 export type AvatarCustom = {
   colors: Partial<Record<Slot, string>>;
   hidden: Toggle[];
+  /** Nasazené doplňky z craftování. */
+  worn: AccessoryId[];
   pattern: Pattern;
   patternColor: string;
 };
 
-export const EMPTY_CUSTOM: AvatarCustom = { colors: {}, hidden: [], pattern: "none", patternColor: "#ffffff" };
+export const EMPTY_CUSTOM: AvatarCustom = { colors: {}, hidden: [], worn: [], pattern: "none", patternColor: "#ffffff" };
 
 // Paleta po řadách: světlé, syté a tmavé odstíny (8 barev v každé). Vlastní barvu jde zadat i mimo paletu.
 export const PALETTE_ROWS: { id: "light" | "bright" | "dark"; colors: string[] }[] = [
@@ -64,7 +81,8 @@ export function normalizeCustom(raw: unknown): AvatarCustom {
   }
   const hidden = Array.isArray(r.hidden) ? TOGGLES.filter((t) => (r.hidden as unknown[]).includes(t)) : [];
   const pattern = PATTERNS.find((p) => p === r.pattern) ?? "none";
-  return { colors, hidden: [...hidden], pattern, patternColor: isHex(r.patternColor) ? r.patternColor.toLowerCase() : "#ffffff" };
+  const worn = ACCESSORIES.map((a) => a.id).filter((id) => Array.isArray(r.worn) && (r.worn as unknown[]).includes(id)).slice(0, MAX_WORN);
+  return { colors, hidden: [...hidden], worn, pattern, patternColor: isHex(r.patternColor) ? r.patternColor.toLowerCase() : "#ffffff" };
 }
 
 export function normalizeCustomMap(raw: unknown, avatarIds?: string[]): Record<string, AvatarCustom> {

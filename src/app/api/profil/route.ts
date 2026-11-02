@@ -161,7 +161,9 @@ export async function POST(request: Request) {
       }
       const row = await prisma.idleState.findUnique({ where: { userId_game: { userId, game: STYLE_GAME } } });
       const prev = normalizeStyle(row?.data);
-      const custom = normalizeCustom(body.custom);
+      const parsed = normalizeCustom(body.custom);
+      // Nasadit jde jen vyrobený doplněk (Unlock "acc:<id>").
+      const custom = { ...parsed, worn: parsed.worn.filter((id) => unlocks.includes(`acc:${id}`)) };
       const next = { ...prev, custom: { ...prev.custom, [body.customFor]: custom } };
       // Snímek přebarvené postavy pro malé ikonky (null = původní vzhled, ikonka se smaže).
       if (body.icon === null || isIconData(body.icon)) await saveAvatarIcon(userId, body.customFor, body.icon ?? null);

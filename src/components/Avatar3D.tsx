@@ -13,6 +13,7 @@ import {
   SLOT_MATERIAL,
   TOGGLES,
   TOGGLE_NODE,
+  ACCESSORIES,
   type AvatarCustom,
   type AvatarParts,
 } from "@/lib/avatar-custom";
@@ -235,6 +236,56 @@ export default function Avatar3D({
           slots: SLOTS.filter((s) => slotMats[s]?.length),
           toggles: TOGGLES.filter((t) => toggleNodes[t]?.length),
         };
+        // Doplňky z craftování: modely jsou v souřadnicích avatara, na hlavu se připínají s posunem o výšku krku.
+        const findNode = (re: RegExp) => {
+          let found: THREE.Object3D | null = null;
+          model!.traverse((o) => {
+            if (!found && re.test(o.name)) found = o;
+          });
+          return found as THREE.Object3D | null;
+        };
+        const headNode = findNode(/_hlava$/);
+        const bodyNode = findNode(/_telo$/);
+        const hatNodes: THREE.Object3D[] = [];
+        model.traverse((o) => {
+          if (/_antena_model$|^koruna/.test(o.name)) hatNodes.push(o);
+        });
+        const worn = new Map<string, THREE.Object3D>();
+        const loadingAcc = new Set<string>();
+        let wantedWorn: string[] = [];
+        const syncWorn = (ids: string[]) => {
+          wantedWorn = ids;
+          for (const [id, obj] of worn) {
+            if (ids.includes(id)) continue;
+            obj.parent?.remove(obj);
+            worn.delete(id);
+          }
+          for (const id of ids) {
+            if (worn.has(id) || loadingAcc.has(id)) continue;
+            const def = ACCESSORIES.find((a) => a.id === id);
+            if (!def) continue;
+            loadingAcc.add(id);
+            loader.load(
+              `/avatars-3d/accessories/${id}.glb`,
+              (acc) => {
+                loadingAcc.delete(id);
+                if (disposed || !wantedWorn.includes(id) || worn.has(id)) return;
+                acc.scene.traverse((o) => {
+                  if ((o as THREE.Mesh).isMesh) o.castShadow = true;
+                });
+                const host = def.mount === "head" ? headNode : bodyNode;
+                if (!host) return;
+                if (def.mount === "head") acc.scene.position.y = -headNode!.position.y;
+                host.add(acc.scene);
+                worn.set(id, acc.scene);
+              },
+              undefined,
+              () => loadingAcc.delete(id),
+            );
+          }
+          const headWorn = ids.some((id) => ACCESSORIES.find((a) => a.id === id)?.mount === "head");
+          if (headWorn) for (const n of hatNodes) n.visible = false;
+        };
         applyRef.current = (c) => {
           for (const slot of SLOTS) {
             for (const mat of slotMats[slot] ?? []) {
@@ -257,6 +308,7 @@ export default function Avatar3D({
             }
           }
           for (const t of TOGGLES) for (const n of toggleNodes[t] ?? []) n.visible = !c?.hidden.includes(t);
+          syncWorn(c?.worn ?? []);
           const pat = PATTERNS.indexOf(c?.pattern ?? "none");
           for (const mat of patternMats) {
             const u = mat.userData.patternUniforms as { uPat: { value: number }; uCol2: { value: THREE.Color } };

@@ -130,7 +130,7 @@ const unlock = (id: string, category: RecipeCategory, world: ThemedWorld, output
   ready: true,
 });
 
-const named = (id: string, category: RecipeCategory, world: ThemedWorld, icon: string, cost: Recipe["cost"], names: Names): Recipe => ({
+const named = (id: string, category: RecipeCategory, world: ThemedWorld, icon: string, cost: Recipe["cost"], names: Names, ready = false): Recipe => ({
   id,
   category,
   world,
@@ -140,7 +140,7 @@ const named = (id: string, category: RecipeCategory, world: ThemedWorld, icon: s
   icon,
   names,
   asset3d: `craft-${id}`,
-  ready: false,
+  ready,
 });
 
 // Ceny podle světa: [běžný, neobvyklý, vzácný, epický] materiál daného světa.
@@ -201,20 +201,20 @@ export const RECIPES: Recipe[] = [
   unlock("banner-craft-dragon-lair", "profile", "kouzla", "banner", "craft-dragon-lair", "🖼️", worldCost("kouzla", 4, 3, 1), n("Pozadí: Dračí doupě", "Banner: Dragon lair", "Hintergrund: Drachenhöhle", "Фон: Логово дракона"), "banner-craft-dragon-lair"),
 
   // --- Doplňky na avatara (zatím jen pojmenované, čekají na 3D model) ---
-  named("antenna-helmet", "avatar-acc", "vesmir", "🪖", worldCost("vesmir", 4, 2, 1), n("Helma s anténkou", "Antenna helmet", "Antennenhelm", "Шлем с антенной")),
-  named("pearl-necklace", "avatar-acc", "more", "📿", worldCost("more", 4, 2, 1), n("Perlový náhrdelník", "Pearl necklace", "Perlenkette", "Жемчужное ожерелье")),
-  named("leaf-wreath", "avatar-acc", "les", "🌿", worldCost("les", 4, 2, 1), n("Věnec z listí", "Leaf wreath", "Blätterkranz", "Венок из листьев")),
-  named("knight-helmet", "avatar-acc", "hrad", "⛑️", worldCost("hrad", 4, 2, 1), n("Rytířská přilba", "Knight's helmet", "Ritterhelm", "Рыцарский шлем")),
-  named("witch-hat", "avatar-acc", "kouzla", "🎩", worldCost("kouzla", 4, 2, 1), n("Čarodějný klobouk", "Witch hat", "Hexenhut", "Колдовская шляпа")),
-  named("cape-of-stars", "avatar-acc", "vesmir", "🦸", worldCost("vesmir", 0, 3, 1, 1), n("Hvězdný plášť", "Cape of stars", "Sternenumhang", "Звёздный плащ")),
-  named("dragon-wings", "avatar-acc", "kouzla", "🪽", worldCost("kouzla", 0, 3, 1, 1), n("Dračí křídla", "Dragon wings", "Drachenflügel", "Драконьи крылья")),
+  named("antenna-helmet", "avatar-acc", "vesmir", "🪖", worldCost("vesmir", 4, 2, 1), n("Helma s anténkou", "Antenna helmet", "Antennenhelm", "Шлем с антенной"), true),
+  named("pearl-necklace", "avatar-acc", "more", "📿", worldCost("more", 4, 2, 1), n("Perlový náhrdelník", "Pearl necklace", "Perlenkette", "Жемчужное ожерелье"), true),
+  named("leaf-wreath", "avatar-acc", "les", "🌿", worldCost("les", 4, 2, 1), n("Věnec z listí", "Leaf wreath", "Blätterkranz", "Венок из листьев"), true),
+  named("knight-helmet", "avatar-acc", "hrad", "⛑️", worldCost("hrad", 4, 2, 1), n("Rytířská přilba", "Knight's helmet", "Ritterhelm", "Рыцарский шлем"), true),
+  named("witch-hat", "avatar-acc", "kouzla", "🎩", worldCost("kouzla", 4, 2, 1), n("Čarodějný klobouk", "Witch hat", "Hexenhut", "Колдовская шляпа"), true),
+  named("cape-of-stars", "avatar-acc", "vesmir", "🦸", worldCost("vesmir", 0, 3, 1, 1), n("Hvězdný plášť", "Cape of stars", "Sternenumhang", "Звёздный плащ"), true),
+  named("dragon-wings", "avatar-acc", "kouzla", "🪽", worldCost("kouzla", 0, 3, 1, 1), n("Dračí křídla", "Dragon wings", "Drachenflügel", "Драконьи крылья"), true),
 
   // --- Doplňky pro mazlíčky ---
-  named("pet-spacesuit", "pet-acc", "vesmir", "👨‍🚀", worldCost("vesmir", 3, 2), n("Skafandr pro mazlíčka", "Pet spacesuit", "Raumanzug für Haustiere", "Скафандр для питомца")),
-  named("pet-sailor-collar", "pet-acc", "more", "⚓", worldCost("more", 3, 2), n("Námořnický obojek", "Sailor collar", "Matrosenhalsband", "Матросский ошейник")),
-  named("pet-acorn-cap", "pet-acc", "les", "🌰", worldCost("les", 3, 2), n("Žaludová čepička", "Acorn cap", "Eichelmütze", "Шапочка-жёлудь")),
-  named("pet-knight-cape", "pet-acc", "hrad", "🛡️", worldCost("hrad", 3, 2), n("Rytířský plášť pro mazlíčka", "Pet knight cape", "Ritterumhang für Haustiere", "Рыцарский плащ для питомца")),
-  named("pet-star-collar", "pet-acc", "kouzla", "⭐", worldCost("kouzla", 3, 2), n("Hvězdný obojek", "Star collar", "Sternenhalsband", "Звёздный ошейник")),
+  named("pet-spacesuit", "pet-acc", "vesmir", "👨‍🚀", worldCost("vesmir", 3, 2), n("Skafandr pro mazlíčka", "Pet spacesuit", "Raumanzug für Haustiere", "Скафандр для питомца"), true),
+  named("pet-sailor-collar", "pet-acc", "more", "⚓", worldCost("more", 3, 2), n("Námořnický obojek", "Sailor collar", "Matrosenhalsband", "Матросский ошейник"), true),
+  named("pet-acorn-cap", "pet-acc", "les", "🌰", worldCost("les", 3, 2), n("Žaludová čepička", "Acorn cap", "Eichelmütze", "Шапочка-жёлудь"), true),
+  named("pet-knight-cape", "pet-acc", "hrad", "🛡️", worldCost("hrad", 3, 2), n("Rytířský plášť pro mazlíčka", "Pet knight cape", "Ritterumhang für Haustiere", "Рыцарский плащ для питомца"), true),
+  named("pet-star-collar", "pet-acc", "kouzla", "⭐", worldCost("kouzla", 3, 2), n("Hvězdný obojek", "Star collar", "Sternenhalsband", "Звёздный ошейник"), true),
 
   // --- Do pokoje ---
   named("room-solar-system", "room", "vesmir", "🪐", worldCost("vesmir", 5, 3, 1), n("Model sluneční soustavy", "Solar system model", "Sonnensystem-Modell", "Модель Солнечной системы")),
@@ -227,6 +227,19 @@ export const RECIPES: Recipe[] = [
 const RECIPE_BY_ID = new Map(RECIPES.map((r) => [r.id, r]));
 export const recipeDef = (id: string) => RECIPE_BY_ID.get(id);
 
+/** Doplněk mazlíčka v profilu mazlíčka je jeho id bez předpony "pet-" (např. "spacesuit"). */
+export const petAccessoryRef = (r: Recipe) => r.ref.replace(/^pet-/, "");
+/** Nábytek do pokoje: id bez předpony "room-" (např. "bonsai"). */
+export const roomFurnitureRef = (r: Recipe) => r.ref.replace(/^room-/, "");
+
+// Vyrobený doplněk se zapisuje tam, odkud ho čte hra, která ho používá:
+// mazlíčci čtou "pet:<id>", pokoj "room:<id>" a šatník avatara "acc:<id>".
+function namedKey(r: Recipe): string {
+  if (r.category === "pet-acc") return `pet:${petAccessoryRef(r)}`;
+  if (r.category === "room") return `room:${roomFurnitureRef(r)}`;
+  return `acc:${r.ref}`;
+}
+
 /** Klíč v tabulce Unlock pro vyrobenou věc (u bonusů žádný, ty jsou v inventáři). */
 export function unlockKey(r: Recipe): string | null {
   switch (r.output) {
@@ -237,7 +250,7 @@ export function unlockKey(r: Recipe): string | null {
     case "banner":
       return `banner:${r.ref}`;
     case "named":
-      return `craft:${r.ref}`;
+      return namedKey(r);
     default:
       return null;
   }

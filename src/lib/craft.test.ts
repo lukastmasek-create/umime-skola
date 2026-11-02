@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 import {
   BUY_PER_DAY,
@@ -71,8 +71,15 @@ test("vyrobené avatary, tituly a pozadí existují v profilu; doplňky čekají
     }
     if (r.output === "banner") assert.ok(cosmetics.includes(`"${r.ref}":`), `pozadí ${r.ref}`);
     if (r.output === "named") {
-      assert.equal(r.ready, false, `${r.id} nemá model, nesmí jít vyrobit`);
       assert.ok(r.asset3d?.startsWith("craft-"), `${r.id}: jméno modelu`);
+      // Jde vyrobit jen to, co má model na disku.
+      const file =
+        r.category === "pet-acc"
+          ? `../../public/pets/accessories/${r.ref.replace(/^pet-/, "")}.glb`
+          : r.category === "avatar-acc"
+            ? `../../public/avatars-3d/accessories/${r.ref}.glb`
+            : `../../public/room/furniture/${r.ref.replace(/^room-/, "")}.webp`;
+      if (r.ready) assert.ok(existsSync(new URL(file, import.meta.url)), `${r.id}: chybí ${file}`);
     }
     if (r.output === "bonus") assert.ok(r.effect, r.id);
   }
@@ -137,7 +144,15 @@ test("vyrobit: chybějící materiál, zaplacení, odemčení jen jednou, doplň
   assert.equal(r.unlock, "avatar:star-wanderer");
   assert.deepEqual(r.state.mats, { "moon-dust": 4, meteorite: 2, "star-crystal": 1 });
   assert.deepEqual(craft(rich, avatar.id, ["avatar:star-wanderer"]), { ok: false, error: "owned" });
-  assert.deepEqual(craft(withMats({ "moon-dust": 99, meteorite: 99, "star-crystal": 99 }), "antenna-helmet", []), { ok: false, error: "not-ready" });
+  // Recept bez modelu (ready: false) nejde vyrobit, ani když jsou materiály.
+  const helmet = recipeDef("antenna-helmet")!;
+  const wasReady = helmet.ready;
+  helmet.ready = false;
+  try {
+    assert.deepEqual(craft(withMats({ "moon-dust": 99, meteorite: 99, "star-crystal": 99 }), "antenna-helmet", []), { ok: false, error: "not-ready" });
+  } finally {
+    helmet.ready = wasReady;
+  }
   assert.deepEqual(craft(rich, "nope", []), { ok: false, error: "unknown" });
   const b = craft(withMats({ wood: 8, iron: 2 }), "scroll", []);
   assert.ok(b.ok && b.state.inv.scroll === 1 && b.unlock === null);
