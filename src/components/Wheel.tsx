@@ -127,7 +127,7 @@ export function Wheel({
       <p className="max-w-sm text-sm text-[var(--muted)]">{dict.shop.wheelDesc}</p>
 
       {/* Pouťová budka z Blenderu: pevný stojan, disk s částkami se točí, žárovky v popředí běží dokola. */}
-      <div className="relative mx-auto w-full max-w-[540px]" style={{ aspectRatio: `${layout.w} / ${layout.h}` }}>
+      <div className="relative mx-auto w-full max-w-[540px] overflow-hidden" style={{ aspectRatio: `${layout.w} / ${layout.h}` }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/home/obchod/kolo-stojan.webp" alt="" aria-hidden draggable={false} className="absolute inset-0 h-full w-full select-none" />
         <div className="absolute aspect-square" style={{ left: `${layout.cx * 100}%`, top: `${layout.cy * 100}%`, width: `${layout.disk * 100}%`, transform: "translate(-50%, -50%)" }}>
