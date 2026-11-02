@@ -198,12 +198,12 @@ def craft_nebula():
     look((0, -14, 2.0), (0, 0, 2.0), 30)
     sun((55, 0, -35), 4.0, "#fff0e0")
     # planeta s prstencem vpravo, měsíc vlevo
-    sphere((7.6, 6, 3.0), 1.5, banded("#d98a5a", "#f6d8a8", 5.0))
-    bpy.ops.mesh.primitive_torus_add(major_radius=2.6, minor_radius=0.55, location=(7.6, 6, 3.0), rotation=(math.radians(72), math.radians(10), 0), major_segments=96)
+    sphere((7.6, 6, 3.0), 1.5, banded("#d98a5a", "#f6d8a8", 1.6))
+    bpy.ops.mesh.primitive_torus_add(major_radius=2.3, minor_radius=0.3, location=(7.6, 6, 3.0), rotation=(math.radians(72), math.radians(10), 0), major_segments=96)
     ring = bpy.context.active_object
     ring.scale = (1, 1, 0.05)
     add(ring, mat("#d9b88a", rough=0.6))
-    sphere((-8.4, 4, 0.9), 0.8, banded("#7a8cc0", "#b8c4e8", 8.0, 0.9))
+    sphere((-8.4, 4, 0.9), 0.8, banded("#7a8cc0", "#b8c4e8", 2.5, 0.9))
     render("craft-nebula")
 
 
@@ -212,20 +212,24 @@ def craft_comet_trail():
     world_gradient([(0.0, "#030a2a"), (0.55, "#0d1f6a"), (1.0, "#020618")], 1.0, stars=1.6)
     look((0, -14, 2.0), (0, 0, 2.0), 30)
     sun((55, 0, -35), 2.0, "#cfe0ff")
-    # kometa vpravo, ohon doleva přes celý obrázek
-    sphere((8.2, 5, 3.4), 0.9, emit("#ffffff", 10.0))
-    sphere((8.2, 5, 3.4), 1.4, mat("#9fd8ff", rough=0.4, emit=2.0, transmission=0.0), scale=(1, 1, 1))
-    for k in range(26):
-        t = k / 25
-        x = 8.2 - 1.0 - t * 17
-        z = 3.4 - t * 2.2 + 0.2 * math.sin(t * 8)
-        r = 0.85 * (1 - t) + 0.1
-        sphere((x, 5 + t * 0.5, z), r, emit("#8fd0ff" if k % 2 else "#cfe8ff", 3.2 * (1 - t) + 0.25), scale=(2.4, 1, 1), seg=24, rings=12)
     rnd = random.Random(8)
-    for _ in range(50):
-        x = rnd.uniform(-14, 9)
-        sphere((x, rnd.uniform(0, 8), rnd.uniform(-0.5, 7)), rnd.uniform(0.02, 0.06), emit("#ffffff", 9.0), seg=8, rings=6)
-    sphere((-8, 3, 0.4), 0.7, mat("#7a8cc0", rough=0.9))
+    hx, hz = 8.4, 5.0
+    # jádro a záře
+    sphere((hx, 5, hz), 0.5, emit("#ffffff", 14.0))
+    sphere((hx, 5, hz), 0.9, emit("#9fd8ff", 1.6), scale=(1, 0.6, 1))
+    # ohon: stovky malých zářících částic kolem lehce zakřivené osy; dál od hlavy řidší a slabší
+    blue = ["#8fd0ff", "#cfe8ff", "#6aa8ff", "#ffffff"]
+    for _ in range(900):
+        t = rnd.random() ** 1.5
+        x = hx - 0.6 - t * 19
+        z = hz - t * 1.6 + 0.25 * math.sin(t * 5)
+        spread = 0.1 + t * 0.9
+        px, pz = x + rnd.gauss(0, 0.12), z + rnd.gauss(0, spread * 0.6)
+        r = rnd.uniform(0.025, 0.09) * (1.1 - t * 0.6)
+        sphere((px, 5 + rnd.gauss(0, 0.4), pz), r, emit(rnd.choice(blue), 5.0 * (1 - t) + 0.4), seg=8, rings=6)
+    for _ in range(70):
+        sphere((rnd.uniform(-14, 9), rnd.uniform(0, 8), rnd.uniform(-0.5, 7)), rnd.uniform(0.02, 0.05), emit("#ffffff", 9.0), seg=8, rings=6)
+    sphere((-8.6, 3, 0.7), 0.7, mat("#7a8cc0", rough=0.9))
     render("craft-comet-trail")
 
 
