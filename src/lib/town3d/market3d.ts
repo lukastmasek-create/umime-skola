@@ -351,6 +351,8 @@ export function createMarket3D(container: HTMLElement, opts: MarketOpts): Market
   if (!stage) return null;
   const { renderer } = stage;
   stage.el.style.background = "transparent";
+  // Obchod je plný světel a stínů; na retině (×2–3) by GPU kreslilo 4–9× víc pixelů, než oko pozná.
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
   const scene = new THREE.Scene();
   scene.environment = stage.env;
   scene.environmentIntensity = 0.4;
@@ -368,6 +370,11 @@ export function createMarket3D(container: HTMLElement, opts: MarketOpts): Market
   ro.observe(container);
 
   const env = buildEnv(opts.world, scene);
+  // Stínová mapa slunce 2048² je pro tak malé náměstí zbytečně drahá (alokuje se až při prvním snímku).
+  scene.traverse((o) => {
+    const l = o as THREE.DirectionalLight;
+    if (l.isDirectionalLight && l.shadow) l.shadow.mapSize.set(1024, 1024);
+  });
   const sky = scene.children.find((c) => c.renderOrder === -10) ?? null;
   const stallObj = new Map<MarketSpot, THREE.Group>();
   const front = new Map<MarketSpot, THREE.Vector3>();
@@ -512,11 +519,16 @@ export function createMarket3D(container: HTMLElement, opts: MarketOpts): Market
   let raf = 0;
   let last = performance.now();
   let time = 0;
+  // mimo obrazovku (scroll, jiná část stránky) se nic nepočítá ani nekreslí
+  let onScreen = true;
+  const io = new IntersectionObserver(([e]) => (onScreen = e.isIntersecting));
+  io.observe(container);
+  const prevLabel = new Map<MarketSpot, string>();
   const frame = (now: number) => {
     raf = requestAnimationFrame(frame);
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
-    if (document.hidden) return;
+    if (document.hidden || !onScreen) return;
     time += dt;
     env.update(time, dt);
     for (const l of loops) l.update(dt);
@@ -554,14 +566,19 @@ export function createMarket3D(container: HTMLElement, opts: MarketOpts): Market
     sky?.position.copy(camera.position);
     renderer.render(scene, camera);
     if (labelCb) {
-      const rect = el.getBoundingClientRect();
-      labelCb(
-        STALLS.map((key) => {
-          const g = stallObj.get(key)!;
-          v.set(g.position.x, 4.4, g.position.z).project(camera);
-          return { key, x: ((v.x + 1) / 2) * rect.width, y: ((1 - v.y) / 2) * rect.height, visible: v.z < 1 };
-        }),
-      );
+      const { w, h } = stage.size();
+      // cedule se přesouvají jen když se kamera nebo velikost změnily (jinak by se každý snímek zbytečně přepočítával styl)
+      const changed: MarketLabel[] = [];
+      for (const key of STALLS) {
+        const g = stallObj.get(key)!;
+        v.set(g.position.x, 4.4, g.position.z).project(camera);
+        const item = { key, x: Math.round(((v.x + 1) / 2) * w), y: Math.round(((1 - v.y) / 2) * h), visible: v.z < 1 };
+        const sig = `${item.x},${item.y},${item.visible}`;
+        if (prevLabel.get(key) === sig) continue;
+        prevLabel.set(key, sig);
+        changed.push(item);
+      }
+      if (changed.length) labelCb(changed);
     }
   };
   void Promise.race([Promise.all(loads), new Promise((r) => window.setTimeout(r, 4000))]).then(() => {
@@ -577,6 +594,7 @@ export function createMarket3D(container: HTMLElement, opts: MarketOpts): Market
     dispose() {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      io.disconnect();
       el.removeEventListener("pointerdown", onDown);
       el.removeEventListener("pointermove", onMove);
       el.removeEventListener("pointerup", onUp);
