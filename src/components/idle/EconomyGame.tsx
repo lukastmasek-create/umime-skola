@@ -247,6 +247,21 @@ export function EconomyGame({ locale }: { locale: Locale }) {
   const liveCash = Math.max(0, state.cash + (r.net * (clock - data.now)) / 3_600_000);
   const worth = Math.max(data.netWorth, data.netWorth + (liveCash - state.cash));
   const readyHustles = HUSTLES.filter((h) => hustleReady(state.hustle[h.id], h.id, clock)).length;
+  // Přehled: příjmy za hodinu (hrubé části + náklady) a majetek.
+  const incomeParts = [
+    { icon: "💼", label: t.salary, value: r.salary * r.multiplier, cost: false },
+    { icon: "🏭", label: t.businessIncome, value: r.companies * r.multiplier, cost: false },
+    { icon: "🏠", label: t.passiveIncome, value: r.passive * r.multiplier, cost: false },
+    { icon: "🍞", label: t.living, value: r.living, cost: true },
+  ];
+  const incomeScale = Math.max(1, ...incomeParts.map((p) => p.value));
+  const atPeak = worth >= state.peak;
+  const playedMs = Math.max(0, clock - state.startedAt);
+  const playedDays = Math.floor(playedMs / 86_400_000);
+  const playedText = playedDays > 0 ? `${fill(t.days, { n: playedDays })} ${formatLeft(playedMs % 86_400_000, t)}` : formatLeft(playedMs, t);
+  const companiesOwned = Object.values(state.companies).reduce((s, n) => s + (n ?? 0), 0);
+  const runningHustles = HUSTLES.filter((h) => state.hustle[h.id]).length;
+  const holdings = ASSETS.map((a) => ({ id: a.id, value: (state.holdings[a.id] ?? 0) * assetPrice(a.id, clock) })).filter((h) => h.value > 0);
 
   const tabs: Tab[] = ["overview", "work", "companies", "invest", "hustle", "board"];
 
@@ -292,18 +307,117 @@ export function EconomyGame({ locale }: { locale: Locale }) {
 
       {tab === "overview" && (
         <section className="grid gap-4 md:grid-cols-2">
-          <div className="card flex flex-col gap-2 p-4">
-            <h2 className="font-bold">{t.perHour.replace("{n}", "")}</h2>
-            <Row label={`💼 ${t.salary}`} value={`+${m(r.salary * r.multiplier)}`} />
-            <Row label={`🏭 ${t.businessIncome}`} value={`+${m(r.companies * r.multiplier)}`} />
-            <Row label={`🏠 ${t.passiveIncome}`} value={`+${m(r.passive * r.multiplier)}`} />
-            <Row label={`🍞 ${t.living}`} value={`−${m(r.living)}`} />
-            <Row label={`✖️ ${t.multiplier}`} value={`×${r.multiplier.toFixed(2)}`} />
-            {data.learning > 0 && <Row label={`📚 ${t.learning}`} value={`+${Math.round(data.learning * 100)} %`} />}
-            <p className="mt-1 text-xs text-[var(--muted)]">{t.overviewHint}</p>
+          {/* Hrdina: jmění, vývoj vůči vrcholu a hlavní statistiky hry */}
+          <div className="card flex flex-col gap-4 p-5 md:col-span-2">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">🏆 {t.netWorth}</p>
+                <p className="text-4xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
+                  {m(worth)}
+                </p>
+              </div>
+              <span
+                className={`pill px-3 py-1.5 text-sm font-bold ${atPeak ? "bg-[var(--accent-green)] text-[#16132b]" : "bg-[var(--surface)]"}`}
+              >
+                {atPeak ? t.atPeak : `${m(worth - state.peak)} ${t.vsPeak}`}
+              </span>
+            </div>
+            <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[
+                { icon: "💵", label: t.cash, value: m(liveCash) },
+                { icon: "💰", label: t.totalEarned, value: m(state.totalEarned) },
+                { icon: "⏱️", label: t.timePlayed, value: playedText },
+                { icon: "⭐", label: t.best, value: m(state.best) },
+              ].map((s) => (
+                <div key={s.label} className="rounded-xl bg-[var(--surface-muted)] p-3">
+                  <dt className="text-xs text-[var(--muted)]">
+                    {s.icon} {s.label}
+                  </dt>
+                  <dd className="font-bold">{s.value}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
-          <div className="card flex flex-col gap-3 p-4">
-            <h2 className="font-bold">🎓 {t.education}</h2>
+
+          {/* Příjmy za hodinu: pruhy jsou v jedné barvě, kladné zeleně, náklady červeně */}
+          <div className="card flex flex-col gap-3 p-5">
+            <h2 className="font-bold">{t.incomeTitle}</h2>
+            {incomeParts.map((p) => (
+              <div key={p.label} className="flex flex-col gap-1">
+                <div className="flex justify-between text-sm">
+                  <span>
+                    {p.icon} {p.label}
+                  </span>
+                  <b className={p.cost ? "text-[var(--danger)]" : ""}>
+                    {p.cost ? "−" : "+"}
+                    {m(p.value)}
+                  </b>
+                </div>
+                <div className="h-2.5 overflow-hidden rounded-full bg-[var(--surface-muted)]">
+                  <div
+                    className={`h-full rounded-full ${p.cost ? "bg-[var(--danger)]" : "bg-[var(--accent-green)]"}`}
+                    style={{ width: `${(p.value / incomeScale) * 100}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+            <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t-2 border-dashed border-[var(--edge)] pt-3 text-sm">
+              <span>
+                ✖️ {t.multiplier}: <b>×{r.multiplier.toFixed(2)}</b>
+                {data.learning > 0 && (
+                  <>
+                    {" "}
+                    · 📚 {t.learning}: <b>+{Math.round(data.learning * 100)} %</b>
+                  </>
+                )}
+              </span>
+              <span className="font-extrabold">
+                = {r.net >= 0 ? "+" : ""}
+                {m(r.net)} {t.perHourShort}
+              </span>
+            </div>
+            <p className="text-xs text-[var(--muted)]">{t.overviewHint}</p>
+          </div>
+
+          {/* Majetek: firmy, aktiva a rozjeté hustle */}
+          <div className="card flex flex-col gap-3 p-5">
+            <h2 className="font-bold">🧺 {t.assetsTitle}</h2>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl bg-[var(--surface-muted)] p-3">
+                <p className="text-xs text-[var(--muted)]">🏭 {t.companiesOwned}</p>
+                <p className="font-bold">{companiesOwned}</p>
+              </div>
+              <div className="rounded-xl bg-[var(--surface-muted)] p-3">
+                <p className="text-xs text-[var(--muted)]">🎯 {t.hustlesRunning}</p>
+                <p className="font-bold">{runningHustles}</p>
+              </div>
+            </div>
+            {holdings.length === 0 ? (
+              <p className="text-sm text-[var(--muted)]">
+                {t.assetsTitle}: {t.none}
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-1.5 text-sm">
+                {holdings.map((h) => (
+                  <li key={h.id} className="flex justify-between">
+                    <span>
+                      {EMOJI[h.id]} {t.assets[h.id]}
+                    </span>
+                    <b>{m(h.value)}</b>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Vzdělání: investice bodů z učení do trvalého zvýšení příjmů */}
+          <div className="card flex flex-col gap-3 p-5">
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="font-bold">🎓 {t.education}</h2>
+              <span className="text-sm font-bold">
+                {state.edu} / {MAX_EDU}
+              </span>
+            </div>
             <p className="text-sm text-[var(--muted)]">{t.educationHint}</p>
             <div className="h-3 overflow-hidden rounded-full border-2 border-[var(--edge)] bg-[var(--surface-muted)]">
               <div className="h-full bg-[var(--accent-green)]" style={{ width: `${(state.edu / MAX_EDU) * 100}%` }} />
@@ -312,14 +426,16 @@ export function EconomyGame({ locale }: { locale: Locale }) {
               type="button"
               disabled={busy || state.edu >= MAX_EDU || data.points < data.eduCost}
               onClick={() => void act({ action: "investEdu" }, () => t.toast.edu)}
-              className="btn-bouncy bg-[var(--accent-yellow)] px-4 py-2 text-sm font-bold text-[#16132b] disabled:opacity-45"
+              className="btn-bouncy mt-auto bg-[var(--accent-yellow)] px-4 py-2 text-sm font-bold text-[#16132b] disabled:opacity-45"
             >
               {state.edu >= MAX_EDU ? t.educationMax : fill(t.educationBuy, { n: state.edu + 1, p: data.eduCost })}
             </button>
           </div>
+
+          {/* Patička: počet pokusů a restart */}
           <div className="card flex flex-col gap-2 p-4 md:col-span-2">
             <p className="text-sm">
-              {t.best}: <b>{m(state.best)}</b> · {t.runs}: <b>{state.runs}</b>
+              {t.runs}: <b>{state.runs}</b>
             </p>
             <p className="text-xs text-[var(--muted)]">{t.restartHint} {t.saveNote}</p>
             <button
@@ -593,14 +709,6 @@ function Group<K extends string>({ label, values, value, names, onPick }: { labe
 );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-3 text-sm">
-      <span>{label}</span>
-      <b>{value}</b>
-    </div>
-  );
-}
 
 function Toast({ toast }: { toast: { text: string; ok: boolean } }) {
   return (
