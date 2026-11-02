@@ -239,7 +239,7 @@ def craft_reef():
     w = world_gradient([(0.0, "#0b5f8a"), (0.5, "#1aa3d6"), (1.0, "#7fe3ff")], 1.0)
     look((0, -14, 2.4), (0, 0, 2.2), 30)
     sun((35, 0, -20), 6.0, "#e8fbff", 0.05)
-    fog(0.02, "#7fe3ff")
+    fog(0.004, "#7fe3ff")
     ground(80, mat("#e8d3a0", rough=0.9), z=0.0, subdiv=200, strength=0.6, scale=5)
     cols = ["#ff7a8a", "#ffb25c", "#c86bff", "#ff5d9a", "#ffd24d"]
     for side in (-1, 1):
@@ -397,7 +397,7 @@ def craft_moonlight():
     w = world_gradient([(0.0, "#8a5acf"), (0.4, "#4a2a8a"), (1.0, "#0a0838")], 1.0, stars=1.5)
     look((0, -14, 1.8), (0, 0, 3.2), 30)
     sun((60, 0, -50), 1.2, "#cfd8ff")
-    fog(0.01, "#8a6acf")
+    fog(0.003, "#8a6acf")
     # měsíc vpravo nahoře se září
     sphere((9.0, 40, 12.0), 4.2, emit("#fffbe0", 9.0))
     sphere((9.0, 39, 12.0), 7.0, emit("#c8b8ff", 0.6), scale=(1, 0.2, 1))
