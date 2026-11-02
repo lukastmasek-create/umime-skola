@@ -25,6 +25,7 @@ import {
   settle,
   startHustle,
   takeJob,
+  topUpHustle,
   ASSETS,
   type ActionResult,
   type EconomyState,
@@ -66,6 +67,8 @@ type Body = {
   city?: unknown;
   era?: unknown;
   family?: unknown;
+  stake?: unknown;
+  risk?: unknown;
 };
 
 function applyAction(state: EconomyState, body: Body, now: number): ActionResult {
@@ -87,7 +90,9 @@ function applyAction(state: EconomyState, body: Body, now: number): ActionResult
     case "arbitrage":
       return arbitrage(state, body.amount, now);
     case "startHustle":
-      return startHustle(state, body.id, now);
+      return startHustle(state, body.id, now, Math.random, { stake: body.stake, risk: body.risk });
+    case "topUpHustle":
+      return topUpHustle(state, body.id, now, body.stake);
     case "collectHustle":
       return collectHustle(state, body.id, now);
     case "cashOutHustle":

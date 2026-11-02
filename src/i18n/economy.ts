@@ -86,6 +86,14 @@ export type EconomyText = {
   hustleOffer: string;
   hustleCashOut: string;
   hustleNone: string;
+  hustleStake: string;
+  hustleRisk: string;
+  riskSafe: string;
+  riskNormal: string;
+  riskRisky: string;
+  riskHint: string;
+  hustleTopUp: string;
+  hustleMax: string;
   minutes: string;
   hours: string;
   boardHint: string;
@@ -193,6 +201,14 @@ const cs: EconomyText = {
   hustleOffer: "Nabídka: {n}",
   hustleCashOut: "Prodat teď (−5 %)",
   hustleNone: "Žádný hustl neběží.",
+  hustleStake: "Vklad",
+  hustleRisk: "Riziko",
+  riskSafe: "Opatrně",
+  riskNormal: "Normálně",
+  riskRisky: "Riskantně",
+  riskHint: "Riskantnější volba rozšíří rozsah výsledků: víc zisku i ztráty.",
+  hustleTopUp: "Dokoupit {n}",
+  hustleMax: "Maximální vklad dosažen",
   minutes: "{n} min",
   hours: "{n} h",
   boardHint: "Pořadí podle nejvyššího jmění, kterého kdy hráč dosáhl.",
@@ -319,6 +335,14 @@ const en: EconomyText = {
   hustleOffer: "Offer: {n}",
   hustleCashOut: "Sell now (−5%)",
   hustleNone: "No hustle is running.",
+  hustleStake: "Stake",
+  hustleRisk: "Risk",
+  riskSafe: "Careful",
+  riskNormal: "Normal",
+  riskRisky: "Risky",
+  riskHint: "A riskier choice widens the range of results: more profit and more loss.",
+  hustleTopUp: "Add {n}",
+  hustleMax: "Maximum stake reached",
   minutes: "{n} min",
   hours: "{n} h",
   boardHint: "Ranked by the highest net worth a player has ever reached.",
@@ -445,6 +469,14 @@ const de: EconomyText = {
   hustleOffer: "Angebot: {n}",
   hustleCashOut: "Jetzt verkaufen (−5 %)",
   hustleNone: "Kein Hustle läuft.",
+  hustleStake: "Einsatz",
+  hustleRisk: "Risiko",
+  riskSafe: "Vorsichtig",
+  riskNormal: "Normal",
+  riskRisky: "Riskant",
+  riskHint: "Eine riskantere Wahl macht die Ergebnisse breiter: mehr Gewinn und mehr Verlust.",
+  hustleTopUp: "Nachlegen {n}",
+  hustleMax: "Maximaler Einsatz erreicht",
   minutes: "{n} Min.",
   hours: "{n} Std.",
   boardHint: "Sortiert nach dem höchsten Vermögen, das ein Spieler je erreicht hat.",
@@ -571,6 +603,14 @@ const ru: EconomyText = {
   hustleOffer: "Предложение: {n}",
   hustleCashOut: "Продать сейчас (−5%)",
   hustleNone: "Сейчас ничего не запущено.",
+  hustleStake: "Вклад",
+  hustleRisk: "Риск",
+  riskSafe: "Осторожно",
+  riskNormal: "Обычно",
+  riskRisky: "Рискованно",
+  riskHint: "Более рискованный выбор расширяет диапазон результатов: больше и прибыли, и убытка.",
+  hustleTopUp: "Докупить {n}",
+  hustleMax: "Достигнут максимальный вклад",
   minutes: "{n} мин",
   hours: "{n} ч",
   boardHint: "Порядок по самому высокому состоянию, которого когда-либо достиг игрок.",

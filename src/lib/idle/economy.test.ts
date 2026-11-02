@@ -26,6 +26,7 @@ import {
   settle,
   startHustle,
   takeJob,
+  topUpHustle,
   type EconomyState,
 } from "./economy.ts";
 
@@ -168,6 +169,30 @@ test("hustle: kapitál se zablokuje, výsledek je v rozsahu a vybrat jde až po 
   assert.deepEqual(collectHustle(s, "reselling", NOW), { ok: false, error: "nothing" });
 });
 
+test("hustle: vklad a riziko volí hráč, dokoupení zvětší výplatu ve stejném poměru", () => {
+  const s = { ...start("rich"), cash: 100_000 };
+  // Vklad 2× základ: 10 000, střed výplaty zůstává na 1,55× (rizikově se jen rozšiřuje rozsah).
+  const r = startHustle(s, "carflip", NOW, () => 0.5, { stake: 2, risk: "normal" });
+  ok(r);
+  assert.equal(r.state.cash, 90_000);
+  assert.equal(r.state.hustle.carflip!.stake, 10_000);
+  const safe = startHustle(s, "carflip", NOW, () => 0, { stake: 1, risk: "safe" });
+  const risky = startHustle(s, "carflip", NOW, () => 0, { stake: 1, risk: "risky" });
+  ok(safe);
+  ok(risky);
+  // Při nejnižším výsledku je bezpečná volba méně drastická než riziková.
+  assert.ok(safe.state.hustle.carflip!.payout > risky.state.hustle.carflip!.payout);
+  assert.deepEqual(startHustle(s, "carflip", NOW, Math.random, { stake: 3 }), { ok: false, error: "bad-request" });
+  // Dokoupení 1× základ: vklad 5 000 → 10 000, výplata se zvětší ve stejném poměru.
+  const before = r.state.hustle.carflip!;
+  const top = topUpHustle(r.state, "carflip", NOW + 60_000, 1);
+  ok(top);
+  assert.equal(top.state.hustle.carflip!.stake, 15_000);
+  assert.equal(top.state.hustle.carflip!.payout, Math.round(before.payout * 1.5));
+  assert.deepEqual(topUpHustle(top.state, "carflip", NOW, 5), { ok: false, error: "max-stake" });
+  assert.deepEqual(topUpHustle(r.state, "carflip", NOW + 5 * 60_000, 1), { ok: false, error: "ready" });
+});
+
 test("hustle: průběžné rozhodování – prodej teď dává nabídku minus poplatek, po čase už jen výběr", () => {
   const s = { ...start("rich"), cash: 10_000 };
   const r = startHustle(s, "carflip", NOW, () => 0.999999);
@@ -240,7 +265,7 @@ test("normalizeState: poškozená data se opraví bez pádu", () => {
   assert.equal("ghost" in bad.companies, false);
   assert.equal(bad.holdings.stocks, undefined);
   assert.equal(bad.holdings.metal, 2);
-  assert.ok(bad.hustle.carflip!.startedAt <= NOW && bad.hustle.carflip!.payout <= 5000 * 1.55);
+  assert.ok(bad.hustle.carflip!.startedAt <= NOW && bad.hustle.carflip!.payout <= 5000 * 5 * 1.55);
   assert.equal(bad.edu, 25);
   const round = normalizeState(JSON.parse(JSON.stringify(start("rich"))), NOW);
   assert.equal(round.character?.name, "Eva");

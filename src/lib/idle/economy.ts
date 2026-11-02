@@ -176,7 +176,15 @@ export const HUSTLES: HustleDef[] = [
 ];
 // Předčasný prodej rozjetého hustlu: nabídka roste od vkladu k výplatě, prodej teď stojí poplatek.
 export const HUSTLE_CASHOUT_FEE = 0.05;
-export type HustleSlot = { startedAt: number; payout: number } | null;
+export type HustleSlot = { startedAt: number; payout: number; stake: number } | null;
+// Vklad je násobek základní ceny hustlu a celkem smí být nejvýš HUSTLE_MAX_STAKE násobek.
+export const HUSTLE_STAKES: number[] = [0.5, 1, 2, 5];
+export const HUSTLE_MAX_STAKE = 5;
+// Riziko roztáhne nebo zúží rozsah výplaty kolem střední hodnoty (střed se nemění).
+export type HustleRisk = "safe" | "normal" | "risky";
+export const HUSTLE_RISK_SPREAD: Record<HustleRisk, number> = { safe: 0.5, normal: 1, risky: 1.5 };
+export const isHustleRisk = (v: unknown): v is HustleRisk => v === "safe" || v === "normal" || v === "risky";
+export type HustleOptions = { stake?: unknown; risk?: unknown };
 
 // --- Stav ---
 
@@ -292,9 +300,10 @@ export function normalizeState(raw: unknown, now: number): EconomyState {
   }
   const hustle: EconomyState["hustle"] = {};
   for (const h of HUSTLES) {
-    const s = (r.hustle as Record<string, { startedAt?: unknown; payout?: unknown } | null> | undefined)?.[h.id];
+    const s = (r.hustle as Record<string, { startedAt?: unknown; payout?: unknown; stake?: unknown } | null> | undefined)?.[h.id];
     if (s && typeof s === "object") {
-      hustle[h.id] = { startedAt: finite(s.startedAt, now, 0, now), payout: finite(s.payout, 0, 0, h.cost * h.max) };
+      const stake = finite(s.stake, h.cost, 1, h.cost * HUSTLE_MAX_STAKE);
+      hustle[h.id] = { startedAt: finite(s.startedAt, now, 0, now), payout: finite(s.payout, 0, 0, h.cost * HUSTLE_MAX_STAKE * h.max), stake };
     }
   }
   const j = r.job as { id?: unknown; hours?: unknown } | null | undefined;
@@ -383,7 +392,7 @@ export function netWorth(state: EconomyState, now: number): number {
     const n = state.companies[c.id] ?? 0;
     if (n > 0) total += c.cost * n * (state.character ? FAMILY_DEF[state.character.family].company : 1);
   }
-  for (const h of HUSTLES) total += state.hustle[h.id]?.payout ? hustleDef(h.id).cost : 0;
+  for (const h of HUSTLES) total += state.hustle[h.id]?.stake ?? 0;
   return Math.round(total);
 }
 
@@ -533,14 +542,44 @@ export function arbitrage(state: EconomyState, amount: unknown, now: number): Ac
 }
 
 // `rng` vrací číslo [0,1); server dává Math.random, test pevnou hodnotu.
-export function startHustle(state: EconomyState, id: unknown, now: number, rng: () => number = Math.random): ActionResult {
+export function startHustle(
+  state: EconomyState,
+  id: unknown,
+  now: number,
+  rng: () => number = Math.random,
+  opts: HustleOptions = {},
+): ActionResult {
   if (!state.character) return fail("no-character");
   if (!isHustle(id)) return fail("bad-request");
   if (state.hustle[id]) return fail("busy");
   const def = hustleDef(id);
-  if (state.cash < def.cost) return fail("not-enough-cash");
-  const payout = Math.round(def.cost * (def.min + (def.max - def.min) * rng()));
-  return done({ ...state, cash: state.cash - def.cost, hustle: { ...state.hustle, [id]: { startedAt: now, payout } } }, now);
+  const mult = opts.stake === undefined ? 1 : opts.stake;
+  if (typeof mult !== "number" || !HUSTLE_STAKES.includes(mult)) return fail("bad-request");
+  const risk = opts.risk === undefined ? "normal" : opts.risk;
+  if (!isHustleRisk(risk)) return fail("bad-request");
+  const stake = Math.round(def.cost * mult);
+  if (state.cash < stake) return fail("not-enough-cash");
+  const mid = (def.min + def.max) / 2;
+  const half = ((def.max - def.min) / 2) * HUSTLE_RISK_SPREAD[risk];
+  const payout = Math.round(stake * (mid - half + 2 * half * rng()));
+  return done({ ...state, cash: state.cash - stake, hustle: { ...state.hustle, [id]: { startedAt: now, payout, stake } } }, now);
+}
+
+// Dokoupení kapitálu během čekání: výplata se zvětší ve stejném poměru jako vklad.
+export function topUpHustle(state: EconomyState, id: unknown, now: number, mult: unknown): ActionResult {
+  if (!state.character) return fail("no-character");
+  if (!isHustle(id)) return fail("bad-request");
+  const slot = state.hustle[id];
+  if (!slot) return fail("nothing");
+  if (hustleReady(slot, id, now)) return fail("ready");
+  if (typeof mult !== "number" || !HUSTLE_STAKES.includes(mult)) return fail("bad-request");
+  const def = hustleDef(id);
+  const add = Math.round(def.cost * mult);
+  if (slot.stake + add > def.cost * HUSTLE_MAX_STAKE) return fail("max-stake");
+  if (state.cash < add) return fail("not-enough-cash");
+  const extra = Math.round((slot.payout / slot.stake) * add);
+  const next = { startedAt: slot.startedAt, stake: slot.stake + add, payout: slot.payout + extra };
+  return done({ ...state, cash: state.cash - add, hustle: { ...state.hustle, [id]: next } }, now);
 }
 
 export const hustleReady = (slot: HustleSlot | undefined, id: HustleId, now: number) =>
@@ -550,7 +589,7 @@ export const hustleReady = (slot: HustleSlot | undefined, id: HustleId, now: num
 export function hustleOffer(slot: NonNullable<HustleSlot>, id: HustleId, now: number): number {
   const def = hustleDef(id);
   const p = Math.min(1, Math.max(0, (now - slot.startedAt) / (def.minutes * 60_000)));
-  return Math.round(def.cost + (slot.payout - def.cost) * p);
+  return Math.round(slot.stake + (slot.payout - slot.stake) * p);
 }
 
 // Průběžné rozhodování: hráč může rozjetý hustl prodat dřív za aktuální nabídku (mínus poplatek).
@@ -563,7 +602,7 @@ export function cashOutHustle(state: EconomyState, id: unknown, now: number): Ac
   const value = Math.round(hustleOffer(slot, id, now) * (1 - HUSTLE_CASHOUT_FEE));
   const hustle = { ...state.hustle };
   delete hustle[id];
-  const profit = value - hustleDef(id).cost;
+  const profit = value - slot.stake;
   return done({ ...state, cash: state.cash + value, hustle, totalEarned: state.totalEarned + Math.max(0, profit) }, now, {
     gained: { cash: value, profit },
   });
@@ -577,7 +616,7 @@ export function collectHustle(state: EconomyState, id: unknown, now: number): Ac
   if (!hustleReady(slot, id, now)) return fail("not-ready");
   const hustle = { ...state.hustle };
   delete hustle[id];
-  const profit = slot.payout - hustleDef(id).cost;
+  const profit = slot.payout - slot.stake;
   return done({ ...state, cash: state.cash + slot.payout, hustle, totalEarned: state.totalEarned + Math.max(0, profit) }, now, {
     gained: { cash: slot.payout, profit },
   });
