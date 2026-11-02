@@ -62,7 +62,7 @@ export default async function ShopPage({
       />
 
       <a
-        href={`/${locale}/uzivatelsky-obchod?trh=1`}
+        href={`/${locale}/trziste`}
         className="card card-hover mt-12 flex items-center gap-4 p-6"
       >
         <span aria-hidden className="text-5xl">🤝</span>

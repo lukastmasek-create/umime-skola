@@ -4,10 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { Modal, Preview, type Snapshot } from "@/components/ShopView";
-import { PlayerMarket } from "@/components/PlayerMarket";
 import { Market3DView } from "@/components/Market3DView";
 import type { MarketSpot } from "@/lib/town3d/market3d";
-import { getPlayerMarketText } from "@/i18n/player-market";
 import { bannerCss, isFrameId } from "@/lib/cosmetics";
 import { BUNDLE_DISCOUNT, DEAL_DISCOUNT, SHOP_BUNDLES, SHOP_ITEMS, bundlePrice, dailyDealIds, dayKey, salePrice, type ShopItem } from "@/lib/shop";
 import { WORLDS, inWorld, type SceneDef, type StallKey, type WorldId } from "@/lib/market-worlds";
@@ -307,7 +305,7 @@ function useScenery(stage: React.RefObject<HTMLDivElement | null>, back: React.R
 
 const VEIL: Record<string, string> = { pirate: "#cfe8ff", space: "#9be8ff", forest: "#e8ffb0", castle: "#1a1020", sea: "#5fd0ee" };
 
-export function MarketWorld({ locale, initialWorld, film = false, openTrade = false }: { locale: Locale; initialWorld?: WorldId; film?: boolean; openTrade?: boolean }) {
+export function MarketWorld({ locale, initialWorld, film = false }: { locale: Locale; initialWorld?: WorldId; film?: boolean }) {
   const t = getShopText(locale);
   const x = getShopExtraText(locale);
   const m = getMarketText(locale);
@@ -333,12 +331,10 @@ export function MarketWorld({ locale, initialWorld, film = false, openTrade = fa
   const [night, setNight] = useState(false);
   const [shot, setShot] = useState<{ n: number; id: string } | null>(null);
   const [talk, setTalk] = useState<{ id: string; text: string } | null>(null);
-  const [trade, setTrade] = useState(openTrade);
   // 3D scéna je výchozí; 2D vrstvy zůstávají jako jednodušší pohled a záloha bez WebGL
   const [view3d, setView3d] = useState(true);
   const [bundles, setBundles] = useState(false);
   const [hover3d, setHover3d] = useState<MarketSpot | null>(null);
-  const pm = getPlayerMarketText(locale);
   const nightRef = useRef(false);
 
   const world = WORLDS.find((w) => w.id === worldId) ?? WORLDS[0];
@@ -601,14 +597,13 @@ export function MarketWorld({ locale, initialWorld, film = false, openTrade = fa
           signs={{
             ...Object.fromEntries(STALL_KEYS.map((k) => [k, { name: wt.stalls[k].name, count: `${countOf(k).have}/${countOf(k).total}` }])),
             sady: { name: `🎒 ${x.bundlesTitle}`, count: `-${Math.round(BUNDLE_DISCOUNT * 100)} %` },
-            trh: { name: pm.open, count: "" },
           }}
           hover={hover3d}
-          hello={(k) => (k === "sady" ? { npc: x.bundlesTitle, text: x.bundlesHint } : k === "trh" ? { npc: pm.title, text: pm.intro } : { npc: wt.stalls[k].npc, text: wt.stalls[k].hello[0] })}
-          onOpen={(k) => (k === "sady" ? setBundles(true) : k === "trh" ? setTrade(true) : setOpen(k))}
+          hello={(k) => (k === "sady" ? { npc: x.bundlesTitle, text: x.bundlesHint } : { npc: wt.stalls[k].npc, text: wt.stalls[k].hello[0] })}
+          onOpen={(k) => (k === "sady" ? setBundles(true) : setOpen(k))}
           onHover={(k) => {
             setHover3d(k);
-            setHover(k === "sady" || k === "trh" ? null : k);
+            setHover(k === "sady" ? null : k);
           }}
           onFail={() => setView3d(false)}
         />
@@ -781,9 +776,6 @@ export function MarketWorld({ locale, initialWorld, film = false, openTrade = fa
         <button type="button" onClick={() => setView3d((v) => !v)} className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-sm font-bold" aria-pressed={view3d}>
           {view3d ? "🖼️ 2D" : "🧊 3D"}
         </button>
-        <button type="button" onClick={() => setTrade(true)} className="btn-bouncy bg-[var(--accent-yellow)] px-3 py-1.5 text-sm font-bold text-[#16132b]">
-          {pm.open}
-        </button>
         <Link href={`/${locale}/uzivatelsky-obchod?seznam=1`} className="ml-auto self-center text-sm font-semibold text-[var(--muted)] underline hover:text-[var(--foreground)]">
           {m.classic}
         </Link>
@@ -819,12 +811,6 @@ export function MarketWorld({ locale, initialWorld, film = false, openTrade = fa
               );
             })}
           </div>
-        </Modal>
-      )}
-
-      {trade && (
-        <Modal title={pm.title} onClose={() => setTrade(false)} closeLabel={m.close}>
-          <PlayerMarket locale={locale} onChange={() => void load()} />
         </Modal>
       )}
 
