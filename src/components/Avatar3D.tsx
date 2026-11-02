@@ -6,7 +6,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { DRACO_DECODER_PATH } from "@/lib/avatars3d";
-import { AVATAR_IDLE_GESTURES, AVATAR_REACTIONS, bodySway, resetMotion, type Gesture, type Motion } from "@/components/motion-gestures";
+import { AVATAR_IDLE_GESTURES, GESTURES, bodySway, resetMotion, type Gesture, type Motion } from "@/components/motion-gestures";
 import {
   PATTERNS,
   SLOTS,
@@ -80,6 +80,18 @@ function addPattern(mat: THREE.Material) {
   m.customProgramCacheKey = () => "pattern";
   m.needsUpdate = true;
 }
+
+// Kliknutí střídá klipy z Blenderu s pohybem celé postavy (null = klip stačí sám).
+const CLICK_REACTIONS: [string, Gesture | null][] = [
+  ["radost", GESTURES.jumpSpin],
+  ["tanec", null],
+  ["salto", null],
+  ["pozdrav", GESTURES.bow],
+  ["tleskani", GESTURES.cheer],
+  ["fandeni", GESTURES.skip],
+];
+// Klipy, které si postava občas zahraje sama.
+const IDLE_CLIPS = ["pozdrav", "premysleni", "unava", "cteni", "fotka", "tanec", "tleskani"];
 
 // Živá 3D postava: klid ve smyčce, kolem toho náhodná gesta, kliknutí = radost a pokaždé jiná reakce
 // (přemet, tanec, úklon, výskok), tažení = otočení, pohyb myši ji nechá koukat za kurzorem.
@@ -177,6 +189,11 @@ export default function Avatar3D({
     let mixer: THREE.AnimationMixer | null = null;
     let model: THREE.Object3D | null = null;
     let playJoy = () => {};
+    // Klipy z Blenderu (pozdrav, tanec, čtení…) se přimíchávají přes klid váhou; vrací true, když klip model má.
+    let playClip: (name: string) => boolean = () => false;
+    let updateClip: (dt: number) => void = () => {};
+    let clipBusy = () => false;
+    let clipNames = new Set<string>();
     // Celá postava visí na pivotu v pase, aby se přemet otáčel kolem těla a ne kolem chodidel.
     const PIVOT_Y = 0.9;
     const pivot = new THREE.Group();
@@ -187,7 +204,7 @@ export default function Avatar3D({
     const shown: Motion = { y: 0, rotX: 0, rotY: 0, rotZ: 0, sx: 1, sy: 1 };
     let gesture: { t: number; g: Gesture } | null = null;
     let untilIdle = 3 + Math.random() * 3;
-    let reaction = Math.floor(Math.random() * AVATAR_REACTIONS.length);
+    let reaction = Math.floor(Math.random() * CLICK_REACTIONS.length);
     let look = 0; // plynule sledovaný náklon za kurzorem
     let lookTarget = 0;
     let dragging = false;
@@ -307,29 +324,52 @@ export default function Avatar3D({
         mixer = new THREE.AnimationMixer(model);
         const clip = (name: string) => gltf.animations.find((c) => c.name === name);
         const idleClip = clip("klid");
-        const joyClip = clip("radost");
         const idle = idleClip ? mixer.clipAction(idleClip) : null;
-        const joy = joyClip ? mixer.clipAction(joyClip) : null;
         if (idle && !reduceMotion) idle.play();
-        if (joy) {
-          joy.setLoop(THREE.LoopOnce, 1);
-          mixer.addEventListener("finished", (e) => {
-            if (e.action === joy && idle && !reduceMotion) {
-              idle.reset().play();
-              idle.crossFadeFrom(joy, 0.25, false);
-            }
-          });
-          playJoy = () => {
-            joy.reset().play();
-            if (idle?.isRunning()) joy.crossFadeFrom(idle, 0.12, false);
-          };
+        const actions = new Map<string, THREE.AnimationAction>();
+        for (const c of gltf.animations) {
+          if (c.name === "klid") continue;
+          const act = mixer.clipAction(c);
+          act.setLoop(THREE.LoopOnce, 1);
+          act.clampWhenFinished = true;
+          act.setEffectiveWeight(0);
+          actions.set(c.name, act);
         }
-        // Kliknutí: radost z modelu plus gesto celé postavy, každé kliknutí jiné.
-        const joyClipPlay = playJoy;
+        clipNames = new Set(actions.keys());
+        let once: { act: THREE.AnimationAction; t: number } | null = null;
+        clipBusy = () => once !== null;
+        playClip = (name) => {
+          const act = actions.get(name);
+          if (!act || reduceMotion || once) return false;
+          act.reset();
+          act.setLoop(THREE.LoopOnce, 1);
+          act.clampWhenFinished = true;
+          act.setEffectiveWeight(0);
+          act.play();
+          once = { act, t: 0 };
+          return true;
+        };
+        // Váha klipu plynule roste a před koncem klesá, klid se doplňuje na 1: žádný střih.
+        updateClip = (dt) => {
+          if (!once) return;
+          once.t += dt;
+          const dur = once.act.getClip().duration;
+          const w = Math.min(1, once.t / 0.25, Math.max(0, (dur - once.act.time) / 0.35));
+          const k = w * w * (3 - 2 * w);
+          once.act.setEffectiveWeight(k);
+          idle?.setEffectiveWeight(1 - k);
+          if (once.act.time >= dur - 0.001 || once.t > dur + 0.5) {
+            once.act.stop();
+            idle?.setEffectiveWeight(1);
+            once = null;
+          }
+        };
+        // Kliknutí: klip z modelu (radost, salto, tanec…) a k tomu pohyb celé postavy, každé kliknutí jiné.
         playJoy = () => {
-          joyClipPlay();
-          if (reduceMotion) return;
-          gesture = { t: 0, g: AVATAR_REACTIONS[reaction++ % AVATAR_REACTIONS.length] };
+          if (reduceMotion || once) return;
+          const [clipName, g] = CLICK_REACTIONS[reaction++ % CLICK_REACTIONS.length];
+          if (!playClip(clipName)) playClip("radost");
+          if (g) gesture = { t: 0, g };
         };
         renderer.render(scene, camera);
         handlers.current.onReady();
@@ -389,6 +429,7 @@ export default function Avatar3D({
     // Mimo obrazovku se nevykresluje (šetří baterii na telefonech).
     const tick = () => {
       const dt = Math.min(clock.getDelta(), 0.1);
+      updateClip(dt);
       mixer?.update(dt);
       resetMotion(motion);
       if (!reduceMotion) {
@@ -399,8 +440,11 @@ export default function Avatar3D({
             gesture = null;
             untilIdle = 4 + Math.random() * 4;
           }
-        } else if (!dragging && (untilIdle -= dt) <= 0) {
-          gesture = { t: 0, g: AVATAR_IDLE_GESTURES[Math.floor(Math.random() * AVATAR_IDLE_GESTURES.length)] };
+        } else if (!dragging && !clipBusy() && (untilIdle -= dt) <= 0) {
+          // V klidu střídavě jedno z nových animovaných klipů (ruce, hlava) a pohyb těla bez klipu.
+          const names = IDLE_CLIPS.filter((n) => clipNames.has(n));
+          if (names.length && Math.random() < 0.6 && playClip(names[Math.floor(Math.random() * names.length)])) untilIdle = 4 + Math.random() * 4;
+          else gesture = { t: 0, g: AVATAR_IDLE_GESTURES[Math.floor(Math.random() * AVATAR_IDLE_GESTURES.length)] };
         }
         look += (lookTarget - look) * Math.min(1, dt * 4);
         motion.rotY += look * 0.28;
