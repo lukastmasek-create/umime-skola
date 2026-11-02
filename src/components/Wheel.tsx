@@ -38,6 +38,7 @@ export function Wheel({
   const [points, setPoints] = useState(initialPoints);
   const [nextSpinAt, setNextSpinAt] = useState(initialNextSpinAt);
   const [wonAmount, setWonAmount] = useState<number | null>(null);
+  const [wonItem, setWonItem] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const [shown, setShown] = useState(initialPoints);
@@ -73,6 +74,7 @@ export function Wheel({
     if (spinning || (onCooldown && !extra) || !loggedIn) return;
     setError(null);
     setWonAmount(null);
+    setWonItem(null);
     setSpinning(true);
 
     try {
@@ -99,6 +101,7 @@ export function Wheel({
       window.setTimeout(() => {
         setSpinning(false);
         setWonAmount(data.amount);
+        setWonItem(data.item ?? null);
         setBurst((b) => b + 1);
         setPoints(data.points);
         setNextSpinAt(data.nextSpinAt);
@@ -144,7 +147,7 @@ export function Wheel({
                       textShadow: "0 0 3px #16132b, 0 0 3px #16132b, 0 2px 0 #16132b",
                     }}
                   >
-                    {prize.amount}
+                    {prize.item ? prize.item.icon : prize.amount}
                   </span>
                 </div>
               );
@@ -156,7 +159,7 @@ export function Wheel({
             style={{ backgroundImage: "url(/home/obchod/kolo-predni.webp)", animationDuration: spinning ? "0.5s" : "2.2s" }}
           />
         </div>
-        {burst > 0 && <WheelWin key={burst} amount={wonAmount ?? 0} cx={layout.cx * 100} cy={layout.cy * 100} />}
+        {burst > 0 && <WheelWin key={burst} label={wonItem ?? `+${wonAmount ?? 0}`} cx={layout.cx * 100} cy={layout.cy * 100} />}
       </div>
 
       {!loggedIn ? (
@@ -192,7 +195,7 @@ export function Wheel({
       {wonAmount !== null && (
         <p className="pill flex items-center gap-2 bg-[var(--brand-50)] py-1 pl-1 pr-4 text-sm text-[var(--brand-700)]">
           <RewardImage name="mince-otoceni" size={32} />
-          {dict.shop.wonPrefix} {wonAmount} {dict.shop.pointsSuffix}
+          {wonItem ? `${dict.shop.wonPrefix} ${wonItem}` : `${dict.shop.wonPrefix} ${wonAmount} ${dict.shop.pointsSuffix}`}
         </p>
       )}
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
@@ -207,7 +210,7 @@ export function Wheel({
 }
 
 // Výhra: truhla vyskočí a otevře se, ze středu kola vylétnou konfety, jiskry a mince (čisté CSS, jednorázově).
-function WheelWin({ amount, cx, cy }: { amount: number; cx: number; cy: number }) {
+function WheelWin({ label, cx, cy }: { label: string; cx: number; cy: number }) {
   const colors = ["#ff5a3c", "#ffd23a", "#3b9bff", "#7ee0b0", "#ff9ec7", "#c9b8ff"];
   return (
     <div aria-hidden className="wheel-win pointer-events-none absolute inset-0 z-30 overflow-visible">
@@ -229,8 +232,8 @@ function WheelWin({ amount, cx, cy }: { amount: number; cx: number; cy: number }
           </span>
         ))}
       </div>
-      <span className="wheel-chest absolute left-1/2 top-[14%] -translate-x-1/2 text-5xl font-extrabold text-[#ffd23a]" style={{ fontFamily: "var(--font-heading)", textShadow: "0 0 4px #16132b, 0 3px 0 #16132b" }}>
-        +{amount}
+      <span className="wheel-chest absolute left-1/2 top-[14%] -translate-x-1/2 whitespace-nowrap text-4xl font-extrabold text-[#ffd23a]" style={{ fontFamily: "var(--font-heading)", textShadow: "0 0 4px #16132b, 0 3px 0 #16132b" }}>
+        {label}
       </span>
     </div>
   );

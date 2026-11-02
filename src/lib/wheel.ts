@@ -6,8 +6,13 @@
 // znovu vyrenderovat v Blenderu (umime-art/scripts/wheel.py); částky lze
 // měnit volně, kreslí je web.
 
+// Políčko může místo bodů dát věc z obchodu (avatar nebo titul). Kdo ji už vlastní,
+// dostane místo ní `amount` bodů, takže výhra nikdy nepropadne.
+export type WheelItemPrize = { kind: "avatar" | "title"; ref: string; name: string; icon: string };
+
 export type WheelPrize = {
   amount: number;
+  item?: WheelItemPrize;
   weight: number;
   color: string;
 };
@@ -18,9 +23,9 @@ export const WHEEL_PRIZES: WheelPrize[] = [
   { amount: 15, weight: 18, color: "#ffc933" },
   { amount: 20, weight: 12, color: "#17a864" },
   { amount: 10, weight: 25, color: "#29a3ff" },
-  { amount: 50, weight: 4, color: "#ff5a3c" },
+  { amount: 50, weight: 4, color: "#ff5a3c", item: { kind: "title", ref: "dreamer", name: "Titul Snílek", icon: "🏅" } },
   { amount: 15, weight: 18, color: "#3248f0" },
-  { amount: 100, weight: 1, color: "#ffc933" },
+  { amount: 100, weight: 1, color: "#ffc933", item: { kind: "avatar", ref: "fairy", name: "Avatar Víla", icon: "🧚" } },
 ];
 
 export const WHEEL_SPIN_COOLDOWN_MS = 24 * 60 * 60 * 1000;

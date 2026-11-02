@@ -47,9 +47,20 @@ export async function POST(request: Request) {
   }
 
   const prizeIndex = pickWheelPrizeIndex();
-  const amount = WHEEL_PRIZES[prizeIndex].amount;
+  const prize = WHEEL_PRIZES[prizeIndex];
+  let amount = prize.amount;
+  let wonItem: string | null = null;
 
   const updated = await prisma.$transaction(async (tx) => {
+    if (prize.item) {
+      const key = `${prize.item.kind}:${prize.item.ref}`;
+      const had = await tx.unlock.findUnique({ where: { userId_key: { userId, key } } });
+      if (!had) {
+        await tx.unlock.create({ data: { userId, key } });
+        wonItem = prize.item.name;
+        amount = 0;
+      }
+    }
     if (extraSpin) {
       const paid = await tx.user.updateMany({ where: { id: userId, points: { gte: WHEEL_EXTRA_PRICE } }, data: { points: { decrement: WHEEL_EXTRA_PRICE } } });
       if (paid.count === 0) throw new Error("not-enough-points");
@@ -62,16 +73,17 @@ export async function POST(request: Request) {
       select: { points: true },
     });
     await tx.pointTransaction.create({
-      data: { userId, amount, reason: "Kolo štěstí" },
+      data: { userId, amount, reason: wonItem ? `Kolo štěstí: ${wonItem}` : "Kolo štěstí" },
     });
     // XP jen za bezplatné točení, ať se úroveň nedá koupit za body.
-    if (!extraSpin) await tx.xpEvent.create({ data: { userId, amount, source: "wheel" } });
+    if (!extraSpin) await tx.xpEvent.create({ data: { userId, amount: amount || prize.amount, source: "wheel" } });
     return updatedUser;
   });
 
   return NextResponse.json({
     prizeIndex,
     amount,
+    item: wonItem,
     points: updated.points,
     nextSpinAt: extraSpin
       ? new Date(user.lastWheelSpinAt!.getTime() + WHEEL_SPIN_COOLDOWN_MS).toISOString()
