@@ -28,6 +28,16 @@ async function writeListings(tx: Tx, userId: string, listings: Listing[]) {
 }
 const lock = (tx: Tx, id: string) => tx.$executeRaw`select pg_advisory_xact_lock(hashtext(${id}))`;
 
+// Věc, kterou hráč právě nosí (nejde ji prodat ani vyměnit).
+async function wornRef(tx: Tx, userId: string, kind: "avatar" | "title" | "frame" | "banner") {
+  const [user, style] = await Promise.all([
+    tx.user.findUnique({ where: { id: userId }, select: { avatar: true, title: true } }),
+    tx.idleState.findUnique({ where: { userId_game: { userId, game: STYLE_GAME } } }),
+  ]);
+  const st = normalizeStyle(style?.data);
+  return { avatar: user?.avatar, title: user?.title, frame: st.frame, banner: st.banner }[kind];
+}
+
 class Fail extends Error {
   constructor(public code: string) {
     super(code);
@@ -48,30 +58,26 @@ export async function POST(request: Request) {
   const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: "login" }, { status: 401 });
   if (await shopBlocked(userId)) return NextResponse.json({ error: "parental" }, { status: 403 });
-  const body = (await request.json().catch(() => ({}))) as { action?: unknown; itemId?: unknown; price?: unknown; id?: unknown; seller?: unknown };
+  const body = (await request.json().catch(() => ({}))) as { action?: unknown; itemId?: unknown; wantId?: unknown; price?: unknown; id?: unknown; seller?: unknown };
   try {
     await prisma.$transaction(
       async (tx) => {
         if (body.action === "list") {
           const item = typeof body.itemId === "string" ? tradable(body.itemId) : null;
-          const price = Math.floor(Number(body.price));
+          const want = typeof body.wantId === "string" ? tradable(body.wantId) : null;
+          if (body.wantId !== undefined && body.wantId !== null && (!want || want.id === item?.id)) throw new Fail("unknown-item");
+          const price = want ? 0 : Math.floor(Number(body.price));
           if (!item) throw new Fail("unknown-item");
-          if (!Number.isFinite(price) || price < MIN_PRICE || price > maxPrice(item)) throw new Fail("bad-price");
+          if (!want && (!Number.isFinite(price) || price < MIN_PRICE || price > maxPrice(item))) throw new Fail("bad-price");
           await lock(tx, userId);
           const listings = await readListings(tx, userId);
           if (listings.length >= MAX_LISTINGS) throw new Fail("too-many");
           const key = unlockKey(item);
           // nošenou věc nejde vystavit
-          const [user, style] = await Promise.all([
-            tx.user.findUnique({ where: { id: userId }, select: { avatar: true, title: true } }),
-            tx.idleState.findUnique({ where: { userId_game: { userId, game: STYLE_GAME } } }),
-          ]);
-          const st = normalizeStyle(style?.data);
-          const worn = { avatar: user?.avatar, title: user?.title, frame: st.frame, banner: st.banner }[item.kind as "avatar" | "title" | "frame" | "banner"];
-          if (worn === item.ref) throw new Fail("equipped");
+          if ((await wornRef(tx, userId, item.kind as "avatar" | "title" | "frame" | "banner")) === item.ref) throw new Fail("equipped");
           const removed = await tx.unlock.deleteMany({ where: { userId, key } });
           if (removed.count === 0) throw new Fail("not-owned");
-          listings.push({ id: randomUUID(), itemId: item.id, price, at: new Date().toISOString() });
+          listings.push({ id: randomUUID(), itemId: item.id, price, at: new Date().toISOString(), ...(want ? { wantId: want.id } : {}) });
           await writeListings(tx, userId, listings);
         } else if (body.action === "cancel") {
           await lock(tx, userId);
@@ -91,6 +97,25 @@ export async function POST(request: Request) {
           const item = tradable(l.itemId)!;
           const key = unlockKey(item);
           if (await tx.unlock.findUnique({ where: { userId_key: { userId, key } } })) throw new Fail("owned");
+          if (l.wantId) {
+            // výměna věc za věc, bez bodů a bez poplatku
+            const want = tradable(l.wantId)!;
+            const wantKey = unlockKey(want);
+            if ((await wornRef(tx, userId, want.kind as "avatar" | "title" | "frame" | "banner")) === want.ref) throw new Fail("equipped");
+            if (await tx.unlock.findUnique({ where: { userId_key: { userId: sellerId, key: wantKey } } })) throw new Fail("seller-owns");
+            const given = await tx.unlock.deleteMany({ where: { userId, key: wantKey } });
+            if (given.count === 0) throw new Fail("not-owned");
+            await tx.unlock.create({ data: { userId, key } });
+            await tx.unlock.create({ data: { userId: sellerId, key: wantKey } });
+            await tx.pointTransaction.createMany({
+              data: [
+                { userId, amount: 0, reason: `shop:market-swap:${item.id}:${want.id}` },
+                { userId: sellerId, amount: 0, reason: `shop:market-swap:${want.id}:${item.id}` },
+              ],
+            });
+            await writeListings(tx, sellerId, listings.filter((x) => x.id !== l.id));
+            return;
+          }
           const paid = await tx.user.updateMany({ where: { id: userId, points: { gte: l.price } }, data: { points: { decrement: l.price } } });
           if (paid.count === 0) throw new Fail("not-enough-points");
           const gets = sellerGets(l.price);
