@@ -28,6 +28,8 @@ export const isSpeed = (v: unknown): v is Speed => SPEEDS.includes(v as Speed);
 export type GameClock = { real: number; game: number };
 // Násobek všech příjmů a výdajů za hodinu (hodinové sazby níž jsou zachované, jen se rychleji "točí").
 export const INCOME_SPEED = 20;
+// Základ životních nákladů za herní hodinu (před násobky země, města a rodiny).
+export const LIVING_BASE = 18;
 export const MAX_NAME = 20;
 export const MAX_COMPANY_UNITS = 50;
 export const MAX_EDU = 25;
@@ -242,20 +244,20 @@ export type CompanyId =
 // payback = návratnost v hodinách (zisk za hodinu na jeden kus = cena / návratnost)
 export type CompanyDef = { id: CompanyId; cost: number; digital: boolean; payback: number };
 export const COMPANIES: CompanyDef[] = [
-  { id: "shoes", cost: 150, digital: false, payback: 5 },
-  { id: "clothes", cost: 600, digital: false, payback: 6 },
-  { id: "bakery", cost: 1_200, digital: false, payback: 6.5 },
-  { id: "tech", cost: 2_500, digital: false, payback: 7 },
-  { id: "carwash", cost: 5_000, digital: false, payback: 7.5 },
-  { id: "delivery", cost: 8_000, digital: true, payback: 8 },
-  { id: "eshop", cost: 18_000, digital: true, payback: 8.5 },
-  { id: "supermarket", cost: 25_000, digital: false, payback: 9 },
-  { id: "printshop", cost: 40_000, digital: false, payback: 9.5 },
-  { id: "digi", cost: 80_000, digital: true, payback: 10 },
-  { id: "software", cost: 250_000, digital: true, payback: 11 },
-  { id: "streaming", cost: 400_000, digital: true, payback: 11.5 },
-  { id: "hardware", cost: 800_000, digital: false, payback: 12 },
-  { id: "factory", cost: 3_000_000, digital: false, payback: 13 },
+  { id: "shoes", cost: 450, digital: false, payback: 15 },
+  { id: "clothes", cost: 1_800, digital: false, payback: 18 },
+  { id: "bakery", cost: 3_600, digital: false, payback: 19.5 },
+  { id: "tech", cost: 7_500, digital: false, payback: 21 },
+  { id: "carwash", cost: 15_000, digital: false, payback: 22.5 },
+  { id: "delivery", cost: 24_000, digital: true, payback: 24 },
+  { id: "eshop", cost: 54_000, digital: true, payback: 25.5 },
+  { id: "supermarket", cost: 75_000, digital: false, payback: 27 },
+  { id: "printshop", cost: 120_000, digital: false, payback: 28.5 },
+  { id: "digi", cost: 240_000, digital: true, payback: 30 },
+  { id: "software", cost: 750_000, digital: true, payback: 33 },
+  { id: "streaming", cost: 1_200_000, digital: true, payback: 34.5 },
+  { id: "hardware", cost: 2_400_000, digital: false, payback: 36 },
+  { id: "factory", cost: 9_000_000, digital: false, payback: 39 },
 ];
 // Zisk firmy za hodinu na jeden kus, bez úprav (ty přidává nastavení firmy).
 export const companyIncome = (id: CompanyId): number => {
@@ -375,17 +377,20 @@ export const riskOutput = (risk: number) => 0.85 + 0.6 * risk;
 // Citlivost na události: bezpečná firma má nárazník, riskantní je vystavená víc.
 export const riskExposure = (risk: number) => 0.3 + 1.5 * risk;
 // Provozní náklady výroby v násobku zisku kusu (výroba nad 0,5× něco stojí).
-export const upkeepShare = (output: number) => Math.max(0, (output - 0.5) * 0.3);
+export const upkeepShare = (output: number) => Math.max(0, (output - 0.5) * 0.5);
+// Fixní provozní náklady firmy (nájem prostor, energie, pojištění, servis) v násobku zisku kusu za hodinu.
+// Platí, i když firma nic nevyrábí.
+export const OPEX_SHARE = 0.5;
 export const MAX_STAFF_PER_UNIT = 3;
 export const STAFF_OUTPUT = 0.12; // zvýšení výroby na jednoho zaměstnance (na celou firmu přepočteno)
 export const STAFF_WAGE = 0.08; // hodinová mzda jednoho zaměstnance v násobku zisku kusu
 export const STAFF_HIRE_HOURS = 24; // nábor stojí den mzdy
 export const UPGRADE_BONUS = 0.3;
-export const UPGRADE_COST_MULT = 2;
+export const UPGRADE_COST_MULT = 4;
 export const MARKETING_MINUTES = 30;
 export const MARKETING_BONUS = 1.3;
-export const MARKETING_COST = 0.1; // kampaň stojí podíl ceny firem
-export const FUND_COST = 0.1; // krizový fond stojí podíl ceny firem
+export const MARKETING_COST = 0.3; // kampaň stojí podíl ceny firem
+export const FUND_COST = 0.3; // krizový fond stojí podíl ceny firem
 export const FUND_SAVES = 0.65; // jaký díl ztráty z události fond zachrání
 // Prodej firmy: jeden kus za podíl ceny, za kterou se koupil (posledně koupený kus).
 export const SELL_SHARE = 0.6;
@@ -397,7 +402,7 @@ export const CONTRACT_BONUS = 0.35;
 export const CONTRACT_EXPOSURE = 1.5;
 // Výzkum produktů: každá úroveň zvedne výnos oboru, ale nové produkty jsou křehčí vůči krizím.
 export const MAX_RESEARCH = 3;
-export const RESEARCH_COST = 0.4; // podíl ceny oboru za první úroveň (další stojí víc)
+export const RESEARCH_COST = 1; // podíl ceny oboru za první úroveň (další stojí víc)
 export const RESEARCH_BONUS = 0.15;
 export const RESEARCH_EXPOSURE = 0.1;
 // Konkurence: každé okno (jako události) jeden z tvých oborů dostane konkurenta na půl hodiny.
@@ -683,57 +688,57 @@ export type HustleDef = {
 };
 export const HUSTLES: HustleDef[] = [
   {
-    id: "lemonade", cost: 50, gapSec: 20, edu: 0, market: [0.9, 1.1], scam: 0, lossShare: 0, protect: -1, commission: 0, upkeep: 0.03, target: 1.0,
+    id: "lemonade", cost: 100, gapSec: 20, edu: 0, market: [0.9, 1.1], scam: 0, lossShare: 0, protect: -1, commission: 0, upkeep: 0.06, target: 1.0,
     phases: [
-      [{ cost: 0.05, width: 0.05 }, { cost: 0.12, width: 0.1 }, { cost: 0, width: 0.2 }],
-      [{ cost: 0, width: 0.05 }, { cost: 0, width: 0.5 }, { cost: 0.08, width: 0.15 }],
-      [{ cost: 0, width: 0.025 }, { cost: 0, width: 0.25 }, { cost: 0.1, width: 0.2 }],
+      [{ cost: 0.1, width: 0.05 }, { cost: 0.24, width: 0.1 }, { cost: 0, width: 0.2 }],
+      [{ cost: 0, width: 0.05 }, { cost: 0, width: 0.5 }, { cost: 0.16, width: 0.15 }],
+      [{ cost: 0, width: 0.025 }, { cost: 0, width: 0.25 }, { cost: 0.2, width: 0.2 }],
     ],
   },
   {
-    id: "reselling", cost: 200, gapSec: 40, edu: 0, market: [0.85, 1.15], scam: 0.1, lossShare: 1, protect: 1, commission: 0.1, upkeep: 0, target: 1.0,
+    id: "reselling", cost: 400, gapSec: 40, edu: 0, market: [0.85, 1.15], scam: 0.1, lossShare: 1, protect: 1, commission: 0.1, upkeep: 0, target: 1.0,
     phases: [
-      [{ cost: 0.15, width: 0.1 }, { cost: 0.1, width: 0.075 }, { cost: 0, width: 0.35 }],
-      [{ cost: 0, width: 0.02 }, { cost: 0.05, width: 0.0 }, { cost: 0, width: 0.025 }],
-      [{ cost: 0, width: 0.025 }, { cost: 0, width: 0.2 }, { cost: 0.02, width: 0.45 }],
+      [{ cost: 0.3, width: 0.1 }, { cost: 0.2, width: 0.075 }, { cost: 0, width: 0.35 }],
+      [{ cost: 0, width: 0.02 }, { cost: 0.1, width: 0.0 }, { cost: 0, width: 0.025 }],
+      [{ cost: 0, width: 0.025 }, { cost: 0, width: 0.2 }, { cost: 0.04, width: 0.45 }],
     ],
   },
   {
-    id: "carflip", cost: 5000, gapSec: 90, edu: 0, market: [0.9, 1.1], scam: 0.08, lossShare: 0.4, protect: 1, commission: 0.05, upkeep: 0.02, target: 1.0,
+    id: "carflip", cost: 10000, gapSec: 90, edu: 0, market: [0.9, 1.1], scam: 0.08, lossShare: 0.4, protect: 1, commission: 0.05, upkeep: 0.04, target: 1.0,
     phases: [
-      [{ cost: 0, width: 0.25 }, { cost: 0.05, width: 0.075 }, { cost: 0.12, width: 0.15 }],
-      [{ cost: 0.08, width: 0.05 }, { cost: 0.12, width: 0.075 }, { cost: 0.3, width: 0.1 }],
+      [{ cost: 0, width: 0.25 }, { cost: 0.1, width: 0.075 }, { cost: 0.24, width: 0.15 }],
+      [{ cost: 0.16, width: 0.05 }, { cost: 0.24, width: 0.075 }, { cost: 0.6, width: 0.1 }],
       [{ cost: 0, width: 0.035 }, { cost: 0, width: 0.075 }, { cost: 0, width: 0.2 }],
     ],
   },
   {
-    id: "houseflip", cost: 60000, gapSec: 180, edu: 3, market: [0.88, 1.12], scam: 0.05, lossShare: 0.2, protect: 1, commission: 0.03, upkeep: 0.04, target: 1.0,
+    id: "houseflip", cost: 120000, gapSec: 180, edu: 3, market: [0.88, 1.12], scam: 0.05, lossShare: 0.2, protect: 1, commission: 0.03, upkeep: 0.08, target: 1.0,
     phases: [
-      [{ cost: 0.08, width: 0.1 }, { cost: 0.12, width: 0.075 }, { cost: 0.2, width: 0.15 }],
-      [{ cost: 0.05, width: 0.04 }, { cost: 0.15, width: 0.075 }, { cost: 0.35, width: 0.125 }],
-      [{ cost: 0, width: 0.025 }, { cost: 0, width: 0.05 }, { cost: 0.06, width: 0.2 }],
+      [{ cost: 0.16, width: 0.1 }, { cost: 0.24, width: 0.075 }, { cost: 0.4, width: 0.15 }],
+      [{ cost: 0.1, width: 0.04 }, { cost: 0.3, width: 0.075 }, { cost: 0.7, width: 0.125 }],
+      [{ cost: 0, width: 0.025 }, { cost: 0, width: 0.05 }, { cost: 0.12, width: 0.2 }],
     ],
   },
   {
-    id: "startup", cost: 150000, gapSec: 300, edu: 8, market: [0.8, 1.2], scam: 0.15, lossShare: 1, protect: 1, commission: 0, upkeep: 0.08, target: 1.08,
+    id: "startup", cost: 300000, gapSec: 300, edu: 8, market: [0.8, 1.2], scam: 0.15, lossShare: 1, protect: 1, commission: 0, upkeep: 0.16, target: 1.08,
     phases: [
-      [{ cost: 0, width: 0.025 }, { cost: 0.05, width: 0.075 }, { cost: 0.1, width: 0.175 }],
-      [{ cost: 0, width: 0.3 }, { cost: 0.1, width: 0.1 }, { cost: 0.2, width: 0.4 }],
-      [{ cost: 0, width: 0.1 }, { cost: 0.1, width: 0.65 }, { cost: 0, width: 0.125 }],
+      [{ cost: 0, width: 0.025 }, { cost: 0.1, width: 0.075 }, { cost: 0.2, width: 0.175 }],
+      [{ cost: 0, width: 0.3 }, { cost: 0.2, width: 0.1 }, { cost: 0.4, width: 0.4 }],
+      [{ cost: 0, width: 0.1 }, { cost: 0.2, width: 0.65 }, { cost: 0, width: 0.125 }],
     ],
   },
   {
-    id: "freelance", cost: 1000, gapSec: 60, edu: 0, market: [0.97, 1.03], scam: 0.12, lossShare: 1, protect: 0, commission: 0.1, upkeep: 0, target: 1.0,
+    id: "freelance", cost: 2000, gapSec: 60, edu: 0, market: [0.97, 1.03], scam: 0.12, lossShare: 1, protect: 0, commission: 0.1, upkeep: 0, target: 1.0,
     phases: [
-      [{ cost: 0, width: 0.1 }, { cost: 0.1, width: 0.15 }, { cost: 0.2, width: 0.35 }],
-      [{ cost: 0, width: 0.05 }, { cost: 0.1, width: 0.175 }, { cost: 0, width: 0.35 }],
-      [{ cost: 0, width: 0.02 }, { cost: 0.05, width: 0.08 }, { cost: 0, width: 0.5 }],
+      [{ cost: 0, width: 0.1 }, { cost: 0.2, width: 0.15 }, { cost: 0.4, width: 0.35 }],
+      [{ cost: 0, width: 0.05 }, { cost: 0.2, width: 0.175 }, { cost: 0, width: 0.35 }],
+      [{ cost: 0, width: 0.02 }, { cost: 0.1, width: 0.08 }, { cost: 0, width: 0.5 }],
     ],
   },
 ];
 // Příležitost: náhodná čtvrtá volba v kole (šance HUSTLE_EVENT_CHANCE).
 // Příležitost: náhodná nabídka s širším rozsahem, stejnou očekávanou hodnotou jako ostatní volby (jen víc rizika).
-export const HUSTLE_EVENT: HustleOption = { cost: 0.05, width: 0.35 };
+export const HUSTLE_EVENT: HustleOption = { cost: 0.1, width: 0.35 };
 export const HUSTLE_EVENT_CHANCE = 0.15;
 // Série úspěchů: každé vítězné kolo zvedne rozsahy o 2 %, nejvýš o 10 %.
 export const HUSTLE_STREAK_STEP = 0.01;
@@ -1298,7 +1303,7 @@ export function companyYield(
   const strike = unionOn && morale < UNION_THRESHOLD && hash32(`strike:${id}:${eventWindow(now)}`) < STRIKE_CHANCE;
   return {
     gross: strike ? gross0 * STRIKE_OUTPUT : gross0,
-    costs: base * upkeepShare(s.output) + wageCost,
+    costs: base * (upkeepShare(s.output) + OPEX_SHARE) + wageCost,
     morale,
     strike,
   };
@@ -1346,7 +1351,7 @@ export function rates(state: EconomyState, now: number, learning = 0): Rates {
     if (a.cat === "stocks") dividends += income;
   }
   // Životní náklady jsou malé, ale rostou s tím, jak jsi na tom líp (aby hráč nebyl zadarmo bohatý).
-  const living = (6 * country.living * city.living * family.living) * (1 + Math.log10(1 + (state.cash + 0) / 1000) * 0.5);
+  const living = (LIVING_BASE * country.living * city.living * family.living) * (1 + Math.log10(1 + (state.cash + 0) / 1000) * 0.5);
   const gross = (salary + companies + passive) * multiplier * INCOME_SPEED;
   return {
     salary: salary * INCOME_SPEED,
