@@ -297,7 +297,7 @@ module.exports = {
       section: "20. století",
       grade: 9,
       qs: [
-        [1,"Kdy vzniklo Československo?","28. října 1918",["1. září 1939","9. května 1945","17. listopadu 1989"],"Den vzniku státu."],
+        [1,"Který rok skončila první světová válka?","1918",["1914","1919","1945"],"Válka skončila v listopadu 1918."],
         [1,"Kdo byl prvním prezidentem?","T. G. Masaryk",["Edvard Beneš","Antonín Zápotocký","Klement Gottwald"],"Zvolen 14. listopadu 1918."],
         [1,"Jak se jmenoval československý legionář a vojenský pilot a generál?","Milan Rastislav Štefánik",["Jan Žižka","Josef Švejk","Emil Hácha"],"Štefánik."],
         [2,"Kdo byl v zahraničním odboji spolu s Masarykem?","Edvard Beneš",["Klement Gottwald","Alois Rašín","Jan Masaryk"],"Beneš."],
@@ -345,7 +345,7 @@ module.exports = {
       section: "20. století",
       grade: 9,
       qs: [
-        [1,"Kdy začala druhá světová válka?","1. září 1939",["28. června 1914","14. května 1948","9. listopadu 1989"],"Napadení Polska."],
+        [1,"Který pakt uzavřely v srpnu 1939 SSSR a Německo?","Molotov-Ribbentropův pakt",["Mnichovská dohoda","Locarnská smlouva","Spojenecká smlouva Francie a Velké Británie"],"Pakt o neútočení byl podepsán 23. srpna 1939."],
         [1,"Kdy skončila v Evropě?","8. května 1945",["11. listopadu 1918","15. března 1939","25. února 1948"],"Kapitulace Německa."],
         [1,"Kdo byl vůdcem nacistického Německa?","Adolf Hitler",["Benito Mussolini","Josef Stalin","Winston Churchill"],"Hitler."],
         [2,"Která země byla napadena jako první?","Polsko",["Francie","Británie","Československo"],"1. září 1939."],
@@ -443,8 +443,8 @@ module.exports = {
       qs: [
         [1,"Kdy začala sametová revoluce?","17. listopadu 1989",["25. února 1948","21. srpna 1968","28. října 1918"],"Studentská demonstrace."],
         [1,"Kdo se stal prezidentem v prosinci 1989?","Václav Havel",["Gustáv Husák","Václav Klaus","Ludvík Svoboda"],"29. 12. 1989."],
-        [1,"Jak se jmenovalo hnutí, které vedlo revoluci?","Občanské fórum",["KSČ","Charta 77","Sokol"],"OF."],
-        [2,"Kdy vznikla samostatná Česká republika?","1. ledna 1993",["28. října 1918","17. listopadu 1989","1. května 2004"],"Rozdělení Československa."],
+        [1,"Který den roku 1989 začal zásah policie na Národní třídě?","17. listopadu",["28. října","1. května","21. srpna"],"Zásah na Národní třídě 17. listopadu 1989 odstartoval revoluci."],
+        [2,"Jak se jmenoval stát, který se v roce 1993 rozdělil na Česko a Slovensko?","Československo",["Rakousko-Uhersko","Jugoslávie","Sovětský svaz"],"1. ledna 1993 vzniklo ze Československa Česko a Slovensko."],
         [2,"Kdo byl první premiér České republiky?","Václav Klaus",["Václav Havel","Miloš Zeman","Petr Pithart"],"Premiér 1992–1997."],
         [2,"Kdy vstoupila ČR do EU?","1. května 2004",["1. ledna 1993","12. března 1999","17. listopadu 1989"],"Spolu s dalšími devíti zeměmi."],
         [3,"Kdy vstoupila ČR do NATO?","12. března 1999",["1. ledna 1993","1. května 2004","17. listopadu 1989"],"NATO 1999."],

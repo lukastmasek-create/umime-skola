@@ -179,7 +179,7 @@ module.exports = {
       qs: [
         [1,"Kdo napsal Psohlavce?","Alois Jirásek",["Karel Čapek","Jan Neruda","Božena Němcová"],"Jirásek."],
         [1,"Kdo napsal Výlety pana Broučka?","Svatopluk Čech",["Jan Neruda","Karel Čapek","Jaroslav Vrchlický"],"Čech."],
-        [1,"Kdo napsal Babičku?","Božena Němcová",["Alois Jirásek","Jan Neruda","Svatopluk Čech"],"Němcová."],
+        [1,"Kdo napsal román Maryša?","bratři Mrštíkové",["Alois Jirásek","Karel Havlíček Borovský","Jan Neruda"],"Maryšu napsali bratři Mrštíkové (Alois a Vilém)."],
         [2,"Který literární směr zastupují Jirásek, Neruda a Mrštíkové?","realismus",["romantismus","baroko","klasicismus"],"Realismus."],
         [2,"Kdo napsal F. L. Věk?","Alois Jirásek",["Svatopluk Čech","Jan Neruda","Karel Čapek"],"Jirásek."],
         [2,"Kdo napsal Maryšu?","bratři Mrštíkové",["Alois Jirásek","Jan Neruda","Svatopluk Čech"],"Alois a Vilém Mrštíkové."],
@@ -322,7 +322,7 @@ module.exports = {
       grade: 9,
       qs: [
         [1,"Kdo napsal román 1984?","George Orwell",["Aldous Huxley","Ray Bradbury","Jules Verne"],"Orwell."],
-        [1,"Kdo napsal Farmu zvířat?","George Orwell",["Aldous Huxley","Ray Bradbury","Karel Čapek"],"Orwell."],
+        [1,"Kdo napsal román Krásný nový svět?","Aldous Huxley",["George Orwell","Ray Bradbury","Franz Kafka"],"Krásný nový svět napsal Aldous Huxley."],
         [1,"Kdo napsal Stroj času?","H. G. Wells",["Jules Verne","Orwell","Bradbury"],"Wells."],
         [2,"Co je dystopie?","špatná, neutěšená společnost budoucnosti",["ideální společnost","historický román","pohádka"],"Dystopie."],
         [2,"Jak se jmenuje vůdce státu v románu 1984?","Velký bratr",["Winston Smith","Sněhulka","Gatsby"],"Velký bratr."],

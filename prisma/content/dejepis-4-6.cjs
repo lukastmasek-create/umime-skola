@@ -9,7 +9,7 @@ module.exports = {
       section: "Středověk",
       grade: 4,
       qs: [
-        [1, "Kdo byl Karel IV.?", "český král a římský císař", ["francouzský král", "papež", "uherský král"], "Karel IV. byl král český a císař římský."],
+        [1, "Kdo založil Univerzitu Karlovu v Praze?", "Karel IV.", ["Václav II.", "Přemysl Otakar II.", "Jan Lucemburský"], "Univerzitu Karlovu založil Karel IV. v roce 1348."],
         [1, "Kdy byla založena Univerzita Karlova?", "v roce 1348", ["v roce 1212", "v roce 1526", "v roce 1620"], "1348."],
         [1, "Který hrad nechal postavit Karel IV. pro uložení korunovačních klenotů?", "Karlštejn", ["Kost", "Křivoklát", "Bezděz"], "Karlštejn."],
         [2, "Který most nechal postavit Karel IV. v Praze?", "Karlův most", ["Čechův most", "Palackého most", "Hlávkův most"], "Karlův most."],
@@ -33,7 +33,7 @@ module.exports = {
       section: "Středověk",
       grade: 4,
       qs: [
-        [1, "Kdo byl Jan Hus?", "kazatel a reformátor církve", ["český král", "císař", "malíř"], "Jan Hus."],
+        [1, "Za co byl Jan Hus odsouzen k smrti?", "za kacířství", ["za zradu krále", "za loupež", "za podvody s penězi"], "Hus byl v roce 1415 v Kostnici upálen jako kacíř."],
         [1, "Kde kázal Jan Hus v Praze?", "v Betlémské kapli", ["na Pražském hradě", "v katedrále sv. Víta", "v Týnském chrámu"], "Betlémská kaple."],
         [1, "Kdy byl Hus upálen?", "6. července 1415", ["1. ledna 1420", "28. října 1918", "8. listopadu 1620"], "6. 7. 1415."],
         [2, "Ve kterém městě byl Hus upálen?", "v Kostnici", ["v Praze", "v Římě", "ve Vídni"], "Kostnice."],
@@ -423,7 +423,7 @@ module.exports = {
       qs: [
         [1, "Ve které zemi začala průmyslová revoluce?", "ve Velké Británii", ["ve Francii", "v Německu", "v Itálii"], "Anglie."],
         [1, "Kdo vylepšil parní stroj?", "James Watt", ["Thomas Edison", "Isaac Newton", "Louis Pasteur"], "Watt."],
-        [1, "Co poháněl parní stroj?", "továrny a lokomotivy", ["jen lodě", "jen auta", "jen letadla"], "Doprava a výroba."],
+        [1, "Jaký zdroj energie byl v průmyslové revoluci nejdůležitější?", "uhlí", ["dřevo", "zemní plyn", "sluneční energie"], "Parní stroje spalovaly uhlí."],
         [2, "Co vyráběly první továrny?", "textil a železo", ["jen obilí", "jen ropu", "jen dřevo"], "Textilní průmysl."],
         [2, "Kdo sestrojil první úspěšnou parní lokomotivu?", "George Stephenson", ["Henry Ford", "Karl Benz", "Rudolf Diesel"], "Stephenson."],
         [2, "Co nahradilo ruční práci?", "stroje", ["koně jen", "otroci", "řemeslníci jen"], "Stroje."],
@@ -450,7 +450,7 @@ module.exports = {
         [1, "Co bylo záminkou k válce?", "atentát v Sarajevu", ["pád Bastily", "požár Říma", "bitva u Waterloo"], "Atentát na Františka Ferdinanda."],
         [2, "Koho zavraždil Gavrilo Princip 28. června 1914?", "arcivévodu Františka Ferdinanda d'Este", ["císaře Františka Josefa", "Masaryka", "Kaiser Wilhelma"], "František Ferdinand."],
         [2, "Který stát patřil k Ústředním mocnostem?", "Německo", ["Francie", "Anglie", "USA"], "Německo, Rakousko-Uhersko."],
-        [2, "Kdo byl první prezident Československa?", "T. G. Masaryk", ["Edvard Beneš", "Milan Rastislav Štefánik", "Karel Kramář"], "Masaryk."],
+        [2, "Který prezident Československa byl zvolen v roce 1935 po Masarykovi?", "Edvard Beneš", ["Emil Hácha", "Antonín Zápotocký", "Klement Gottwald"], "Po Masarykovi se prezidentem stal Edvard Beneš."],
         [3, "Kdy vzniklo Československo?", "28. října 1918", ["1. ledna 1993", "8. května 1945", "17. listopadu 1989"], "28. října 1918."],
         [3, "Jak se nazývali čeští a slovenští vojáci bojující na straně Dohody?", "legionáři", ["husité", "landsturm", "granátníci"], "Legie."],
         [3, "Která slavná bitva legionářů se odehrála roku 1917?", "bitva u Zborova", ["bitva na Bílé hoře", "bitva u Slavkova", "bitva u Lipan"], "Zborov."],
