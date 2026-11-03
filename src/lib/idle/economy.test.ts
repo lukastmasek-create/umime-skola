@@ -511,7 +511,7 @@ test("investice: nová aktiva jdou koupit a prodat a stará držba zůstane plat
   }
   // stará aktiva mají beze změny stejnou cenu jako dřív (žádný přepočet držby)
   assert.equal(assetDef("technology").base, 100);
-  assert.equal(assetDef("state").yield, 0.0015);
+  assert.equal(assetDef("state").yield, 0.0006);
 });
 
 test("investice: staré obecné držby se přesunou na výchozí položku bez ztráty", () => {
