@@ -23,6 +23,8 @@ import {
   hireCost,
   isSick,
   batchPrice,
+  distressOf,
+  WARN_MS,
   stockCapacity,
   INPUT_BATCH_HOURS,
   NO_STOCK_OUTPUT,
@@ -123,6 +125,25 @@ export function CompanyTab(props: Common) {
   return (
     <section>
       <p className="mb-4 text-sm text-[var(--muted)]">{t.companiesHint}</p>
+      {(() => {
+        const d = distressOf(state, clock);
+        const last = state.lastBankruptId;
+        const recent = !!last && clock - state.lastBankruptAt < WARN_MS;
+        return (
+          <>
+            {d.danger && (
+              <div className="card mb-4 flex flex-col gap-1 border-2 border-[var(--danger)] p-4">
+                <h3 className="font-bold">⚠️ {t.distress.title}</h3>
+                <p className="text-sm">{t.distress.text}</p>
+                <p className="text-sm font-bold">{fill(t.distress.left, { t: formatLeft(d.leftMs, t) })}</p>
+              </div>
+            )}
+            {recent && last && (
+              <div className="card mb-4 p-4 text-sm font-bold">💥 {fill(t.distress.bankrupt, { c: t.companies[last] })}</div>
+            )}
+          </>
+        );
+      })()}
       <div className="card mb-6 flex flex-col gap-3 p-4">
         <h3 className="font-bold">🏗️ {t.phase.title}</h3>
         <p className="text-sm">

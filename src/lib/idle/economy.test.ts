@@ -51,6 +51,8 @@ import {
   unionDeal,
   buyStock,
   batchPrice,
+  distressOf,
+  WARN_MS,
   stockCapacity,
   INPUT_BATCH_HOURS,
   NO_STOCK_OUTPUT,
@@ -1146,4 +1148,56 @@ test("zásoby: při nedostatku zdraží dávky o polovinu", () => {
 test("zásoby: načtení oříznu na kapacitu skladu", () => {
   const s = normalizeState({ companies: { shoes: 1 }, setup: { shoes: { staff: 0, stock: 9999 } } }, NOW);
   assert.ok((s.setup.shoes?.stock ?? 0) <= stockCapacity(1, 12), "zásoby se vejdou do skladu");
+});
+
+// Firma, která prodělává: bez zásob, s prázdnou hotovostí.
+function losingFirm(): EconomyState {
+  const b = buyCompany({ ...start("rich"), cash: 3000 }, "shoes", NOW);
+  ok(b);
+  const st = b.ok ? b.state : emptyState(NOW);
+  return { ...st, cash: 0, distressAt: 0, phase: 12 };
+}
+
+test("krach: bez hotovosti přijde varování; po dni bez záchrany zkrachuje firma", () => {
+  const s = losingFirm();
+  assert.ok(ratesOf(s, NOW).net < 0, "firma v tomto stavu prodělává");
+  assert.equal(distressOf(s, NOW).danger, true, "varování hned, když peníze nestačí");
+  const warned = settle(s, NOW + 60_000);
+  assert.ok(warned.distressAt > 0, "varování se zapíše");
+  assert.equal(warned.companies.shoes, 1, "varování ještě firmu nezavře");
+  const day = settle({ ...warned, lastSeen: NOW + 60_000 }, NOW + 60_000 + WARN_MS - 60_000);
+  assert.equal(day.companies.shoes, 1, "před koncem lhůty firma žije");
+  const dead = settle({ ...day, lastSeen: NOW + 60_000 + WARN_MS - 60_000 }, NOW + 60_000 + WARN_MS + 60_000);
+  assert.equal(dead.companies.shoes, undefined, "po lhůtě zkrachuje");
+  assert.equal(dead.bankruptcies, 1);
+  assert.equal(dead.lastBankruptId, "shoes");
+  assert.equal(dead.distressAt, 0);
+});
+
+test("krach: když peníze přijdou zpět, varování zmizí a nic se nestane", () => {
+  const s = losingFirm();
+  const warned = settle(s, NOW + 60_000);
+  assert.ok(warned.distressAt > 0);
+  const saved = settle({ ...warned, cash: 1e9 }, NOW + 2 * WARN_MS);
+  assert.equal(saved.distressAt, 0, "záchrana zruší varování");
+  assert.equal(saved.companies.shoes, 1, "firma zůstane");
+  assert.equal(saved.bankruptcies, 0);
+});
+
+test("krach: bez firem se nic nezavře a bez postavy nejsou varování", () => {
+  const noFirm = { ...start("rich"), cash: 0, distressAt: 0 };
+  assert.equal(distressOf(noFirm, NOW).danger, false, "bez firmy se o krachu firmy nemluví, i když dochází peníze");
+  const later = settle({ ...noFirm, distressAt: NOW - 2 * WARN_MS }, NOW);
+  assert.equal(later.bankruptcies, 0, "bez firmy není co zavírat");
+  assert.equal(distressOf(emptyState(NOW), NOW).danger, false);
+});
+
+test("krach: načtení zachová stav varování a počet krachů", () => {
+  const s = normalizeState({ character: null, distressAt: NOW - 1000, bankruptcies: 2, lastBankruptId: "tech", lastBankruptAt: NOW - 5 }, NOW);
+  assert.equal(s.distressAt, NOW - 1000);
+  assert.equal(s.bankruptcies, 2);
+  assert.equal(s.lastBankruptId, "tech");
+  const bad = normalizeState({ lastBankruptId: "nope", distressAt: 9e15 }, NOW);
+  assert.equal(bad.lastBankruptId, null);
+  assert.ok(bad.distressAt <= NOW);
 });

@@ -705,6 +705,13 @@ export type HustleSlot = {
 
 // --- Stav ---
 
+// --- Krach firmy s varováním ---
+// Když peníze nestačí na provozní náklady (méně než WARN_HOURS hodin čistého výdaje), přijde varování.
+// Když varování trvá WARN_MS, zkrachuje firma s nejhorším výsledkem. Hráč má čas ji zachránit
+// (prodat kus, propustit, snížit výrobu).
+export const WARN_HOURS = 24;
+export const WARN_MS = 24 * H;
+
 export type EconomyState = {
   v: 1;
   character: Character | null;
@@ -749,6 +756,11 @@ export type EconomyState = {
   hustle: Partial<Record<HustleId, HustleSlot>>;
   edu: number;
   arbReadyAt: number;
+  // od kdy trvá varování před krachem (0 = žádné) a kolik firem zkrachovalo
+  distressAt: number;
+  bankruptcies: number;
+  lastBankruptId: CompanyId | null;
+  lastBankruptAt: number;
   // čekající příkazy, pořadové číslo příkazu, zprávy z trhu, historie hodnoty
   orders: Order[];
   orderSeq: number;
@@ -835,6 +847,10 @@ export function emptyState(now: number, runs = 0, best = 0): EconomyState {
     hustle: {},
     edu: 0,
     arbReadyAt: 0,
+    distressAt: 0,
+    bankruptcies: 0,
+    lastBankruptId: null,
+    lastBankruptAt: 0,
     orders: [],
     orderSeq: 0,
     news: [],
@@ -1035,6 +1051,10 @@ export function normalizeState(raw: unknown, real: number): EconomyState {
     hustle,
     edu: Math.floor(finite(r.edu, 0, 0, MAX_EDU)),
     arbReadyAt: finite(r.arbReadyAt, 0, 0, now + ARB_COOLDOWN_MS),
+    distressAt: finite(r.distressAt, 0, 0, now),
+    bankruptcies: Math.floor(finite(r.bankruptcies, 0, 0, 1e6)),
+    lastBankruptId: isCompany(r.lastBankruptId) ? r.lastBankruptId : null,
+    lastBankruptAt: finite(r.lastBankruptAt, 0, 0, now),
     orders: normalizeOrders(r.orders, now),
     orderSeq: Math.floor(finite(r.orderSeq, 0, 0, 1e9)),
     news: normalizeNews(r.news, now),
@@ -1347,6 +1367,47 @@ function applyQuits(state: EconomyState, now: number): EconomyState {
   return { ...state, setup };
 }
 
+// Čistý výdaj je záporný a peníze na něj nestačí: stav varování.
+export function distressOf(state: EconomyState, now: number, learning = 0): { danger: boolean; leftMs: number } {
+  if (!state.character || !COMPANIES.some((c) => (state.companies[c.id] ?? 0) > 0)) return { danger: false, leftMs: 0 };
+  const r = rates(state, now, learning);
+  const danger = r.net < 0 && state.cash < -r.net * WARN_HOURS;
+  if (!danger) return { danger: false, leftMs: 0 };
+  const since = state.distressAt || now;
+  return { danger: true, leftMs: Math.max(0, since + WARN_MS - now) };
+}
+
+// Krach firmy s nejhorším výsledkem za hodinu. Zanikne celý obor včetně zaměstnanců a zásob.
+function bankruptcy(state: EconomyState, now: number): EconomyState {
+  let worst: CompanyId | null = null;
+  let worstNet = Infinity;
+  for (const c of COMPANIES) {
+    if ((state.companies[c.id] ?? 0) <= 0) continue;
+    const y = companyYield(state, c.id, now);
+    const net = y.gross - y.costs;
+    if (net < worstNet) {
+      worstNet = net;
+      worst = c.id;
+    }
+  }
+  if (!worst) return { ...state, distressAt: 0 };
+  const companies = { ...state.companies };
+  const setup = { ...state.setup };
+  const contracts = { ...state.contracts };
+  delete companies[worst];
+  delete setup[worst];
+  delete contracts[worst];
+  return { ...state, companies, setup, contracts, distressAt: 0, bankruptcies: state.bankruptcies + 1, lastBankruptId: worst, lastBankruptAt: now };
+}
+
+function checkDistress(state: EconomyState, now: number, learning: number): EconomyState {
+  const { danger } = distressOf(state, now, learning);
+  if (!danger) return state.distressAt ? { ...state, distressAt: 0 } : state;
+  const at = state.distressAt || now;
+  if (now - at >= WARN_MS) return bankruptcy({ ...state, distressAt: at }, now);
+  return { ...state, distressAt: at };
+}
+
 export function settle(state: EconomyState, now: number, learning = 0): EconomyState {
   if (!state.character) return { ...state, lastSeen: now };
   const elapsed = Math.min(Math.max(0, now - state.lastSeen), MAX_OFFLINE_MIN * 60_000 * state.speed);
@@ -1365,6 +1426,8 @@ export function settle(state: EconomyState, now: number, learning = 0): EconomyS
   }
   // Spotřeba vstupů: výroba zásoby postupně odebírá.
   if (elapsed > 0) next = consumeStock(next, hours);
+  // Varování před krachem a případný krach (podle skutečného času, ať nejde obejít čekáním).
+  next = checkDistress(next, now, learning);
   // Odchody: když se mění dvouhodinové okno, může firma přijít o jednoho zaměstnance.
   if (elapsed > 0 && eventWindow(now) !== eventWindow(state.lastSeen)) next = applyQuits(next, now);
   if (now - state.bonusAt >= BONUS_MS) {
