@@ -3,6 +3,21 @@ import { test } from "node:test";
 import {
   ARB_COOLDOWN_MS,
   ASSETS,
+  ASSET_EVENT_DURATION_MS,
+  ASSET_EVENT_WINDOW_MS,
+  ASSET_EVENTS,
+  HISTORY_STEP_MS,
+  MAX_ORDERS,
+  ORDER_CHECK_MS,
+  STARTUP_IDS,
+  STARTUP_ROUND_MS,
+  assetEventMult,
+  cancelOrder,
+  currentAssetEvent,
+  placeOrder,
+  portfolioValue,
+  startupOutcome,
+  startupRoundOf,
   COMPANIES,
   EVENT_DURATION_MS,
   EVENT_WINDOW_MS,
@@ -325,7 +340,8 @@ test("investice: cena je čistá funkce času a nákup/prodej drží účet", ()
     assert.equal(assetPrice(a.id, NOW), assetPrice(a.id, NOW));
     for (let i = 0; i < 200; i++) {
       const p = assetPrice(a.id, NOW + i * 7 * 60_000);
-      assert.ok(p > 0 && p < a.base * 3, `cena ${a.id} ${p}`);
+      // zprávy trhu umí cenu zvednout i nad dvojnásobek základu (memecoin s rally 1,5×)
+      assert.ok(p > 0 && p < a.base * 4, `cena ${a.id} ${p}`);
     }
   }
   const s = start("rich");
@@ -621,4 +637,144 @@ test("čas: rychlost 16× připíše 16× příjem, offline strop se násobí a 
 test("čas: nepovolená rychlost a bez postavy se nepřepne", () => {
   assert.deepEqual(setSpeed(start(), 3, NOW), { ok: false, error: "bad-request" });
   assert.deepEqual(setSpeed(emptyState(NOW), 2, NOW), { ok: false, error: "no-character" });
+});
+
+test("tržní zprávy: zpráva působí jen na svou kategorii a jen hodinu z každých tří", () => {
+  let found = 0;
+  for (let t = NOW; t < NOW + 30 * H; t += 10 * 60_000) {
+    const ev = currentAssetEvent(t);
+    if (!ev) continue;
+    found++;
+    for (const a of ASSETS) {
+      const expected = ev.def.affects === "all" || ev.def.affects.includes(a.cat) ? ev.def.mult : 1;
+      assert.equal(assetEventMult(a.id, t), expected, `${ev.def.id} → ${a.id}`);
+    }
+  }
+  assert.ok(found > 0, "zprávy se objevují");
+  assert.ok(ASSET_EVENTS.length >= 5);
+  const windowStart = Math.floor(NOW / ASSET_EVENT_WINDOW_MS) * ASSET_EVENT_WINDOW_MS;
+  assert.equal(currentAssetEvent(windowStart + ASSET_EVENT_DURATION_MS), null, "po hodině zpráva končí");
+});
+
+test("startupy: držba se vyhodnotí v kole, které nastane po nákupu (exit i krach)", () => {
+  const base = startupRoundOf(NOW);
+  const first = (id: (typeof STARTUP_IDS)[number]) => {
+    for (let r = base + 1; r <= base + 400; r++) {
+      const out = startupOutcome(id, r);
+      if (out.kind !== "run") return { round: r, kind: out.kind };
+    }
+    return null;
+  };
+  const exitId = STARTUP_IDS.find((id) => first(id)?.kind === "exit");
+  const krachId = STARTUP_IDS.find((id) => first(id)?.kind === "krach");
+  assert.ok(exitId && krachId, "v testovacím okně jsou oba výsledky");
+
+  for (const [id, want] of [
+    [exitId, "startup-exit"],
+    [krachId, "startup-krach"],
+  ] as const) {
+    const f = first(id)!;
+    const bought = buyAsset({ ...start(), cash: 1_000_000 }, id, 10_000, NOW);
+    ok(bought);
+    if (!bought.ok) continue;
+    const after = settle(bought.state, f.round * STARTUP_ROUND_MS + 1);
+    assert.equal(after.holdings[id], undefined, `${id}: držba je pryč`);
+    assert.ok(after.news.some((n) => n.kind === want && n.asset === id), `${id}: zpráva ${want}`);
+  }
+});
+
+test("startupy: kolo, které nastalo před nákupem, držbu neovlivní", () => {
+  const id = STARTUP_IDS[0];
+  const base = startupRoundOf(NOW);
+  const bought = buyAsset({ ...start(), cash: 1_000_000 }, id, 10_000, NOW);
+  ok(bought);
+  if (!bought.ok) return;
+  assert.equal(bought.state.startupRound[id], base, "nová držba začíná v aktuálním kole");
+  const same = settle(bought.state, NOW + 1);
+  assert.ok((same.holdings[id] ?? 0) > 0, "v tom samém kole se nic nevyhodnocuje");
+});
+
+test("příkazy: stop-loss se splní, až cena klesne na hranici; hranice na špatné straně se odmítne", () => {
+  const bought = buyAsset({ ...start(), cash: 1_000_000 }, "technology", 100_000, NOW);
+  ok(bought);
+  if (!bought.ok) return;
+  const p0 = assetPrice("technology", NOW);
+  // Hledáme čas, kdy se cena v okně kontroly (hodina po poslední kontrole, ta se bere po krocích) dostane pod dnešní cenu.
+  let at = 0;
+  let trigger = 0;
+  for (let k = 1; k <= 48 && !at; k++) {
+    const t = NOW + k * H;
+    const from = t - 15 * 60_000;
+    const low = Math.min(assetPrice("technology", from + ORDER_CHECK_MS), assetPrice("technology", t));
+    if (low < p0 * 0.999) {
+      at = t;
+      trigger = low * 1.0001;
+    }
+  }
+  assert.ok(at > 0, "v následujících dvou dnech cena klesne");
+
+  const placed = placeOrder(bought.state, { asset: "technology", side: "sell", when: "below", price: trigger, amount: 0, share: 1 }, NOW);
+  ok(placed);
+  if (!placed.ok) return;
+  assert.deepEqual(placeOrder(bought.state, { asset: "technology", side: "sell", when: "above", price: trigger, amount: 0, share: 1 }, NOW), { ok: false, error: "bad-request" });
+  assert.deepEqual(placeOrder(bought.state, { asset: "technology", side: "buy", when: "below", price: p0 * 2, amount: 100, share: 0 }, NOW), { ok: false, error: "bad-request" });
+
+  const later = settle(placed.state, at);
+  assert.equal(later.holdings.technology, undefined, "držba se prodala");
+  assert.equal(later.orders.length, 0, "příkaz je vyřízený");
+  assert.ok(later.news.some((n) => n.kind === "sell-filled" && n.asset === "technology"), "zpráva o prodeji");
+});
+
+test("příkazy: nejvýš osm čekajících, zrušit jde jen existující", () => {
+  let s = { ...start(), cash: 1_000_000 };
+  const p = assetPrice("gold", NOW);
+  for (let i = 0; i < MAX_ORDERS; i++) {
+    const r = placeOrder(s, { asset: "gold", side: "buy", when: "below", price: p * 0.5, amount: 1000, share: 0 }, NOW);
+    ok(r);
+    if (r.ok) s = r.state;
+  }
+  assert.equal(s.orders.length, MAX_ORDERS);
+  assert.deepEqual(placeOrder(s, { asset: "gold", side: "buy", when: "below", price: p * 0.5, amount: 1000, share: 0 }, NOW), { ok: false, error: "max" });
+  const firstId = s.orders[0].id;
+  const cancelled = cancelOrder(s, firstId, NOW);
+  ok(cancelled);
+  if (cancelled.ok) assert.equal(cancelled.state.orders.length, MAX_ORDERS - 1);
+  assert.deepEqual(cancelOrder(s, "nope", NOW), { ok: false, error: "nothing" });
+});
+
+test("historie: bod se zapíše nejvýš jednou za čtvrt hodiny", () => {
+  let s = settle(start(), NOW + 60_000);
+  assert.equal(s.history.length, 1);
+  s = settle(s, NOW + 5 * 60_000);
+  assert.equal(s.history.length, 1);
+  s = settle(s, NOW + 60_000 + HISTORY_STEP_MS + 60_000);
+  assert.equal(s.history.length, 2);
+  assert.equal(s.history[1].p, portfolioValue(s, NOW + 60_000 + HISTORY_STEP_MS + 60_000));
+});
+
+test("dividendy: výnos z akcií se ukazuje zvlášť, z kovů ne", () => {
+  const r = rates({ ...start(), holdings: { energy: 1000, flat: 1 } }, NOW);
+  assert.ok(r.dividends > 0 && r.dividends < r.passive, "nájem z bytu není dividenda");
+  assert.equal(rates({ ...start(), holdings: { gold: 1000 } }, NOW).dividends, 0);
+});
+
+test("uložená hra bez nových polí se načte a neplatné příkazy se zahodí", () => {
+  const old = { ...start() } as Record<string, unknown>;
+  for (const k of ["orders", "orderSeq", "news", "history", "startupRound"]) delete old[k];
+  const n = normalizeState(old, NOW);
+  assert.deepEqual(n.orders, []);
+  assert.deepEqual(n.news, []);
+  assert.deepEqual(n.history, []);
+  assert.deepEqual(n.startupRound, {});
+  const bad = normalizeState(
+    {
+      ...start(),
+      orders: [
+        { id: "x", asset: "nope", side: "buy", when: "below", price: 1, amount: 1, share: 0, createdAt: NOW },
+        { id: "y", asset: "gold", side: "buy", when: "below", price: 5, amount: 10, share: 0, createdAt: NOW },
+      ],
+    },
+    NOW,
+  );
+  assert.deepEqual(bad.orders.map((o) => o.id), ["y"]);
 });

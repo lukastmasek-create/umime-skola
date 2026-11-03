@@ -38,6 +38,7 @@ export type Payload = {
   eduCost: number;
   gained?: { cash?: number; profit?: number } | null;
   event?: EconomyEvent | null;
+  assetEvent?: { id: string; endsAt: number } | null;
 };
 
 export type Act = (body: Record<string, unknown>, okText?: (p: Payload) => string) => Promise<void>;

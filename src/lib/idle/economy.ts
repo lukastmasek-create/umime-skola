@@ -9,8 +9,9 @@
 //    Výkon dává body práce, z bodů se odemykají stupně a žádost o povýšení. Energie směny omezuje.
 //  - Vzdělání odemyká povolání. Dovolená, nemoc, prémie, vyjednání platu a krize v oboru hru doplňují.
 //  - Firmy: stavíš a rozšiřuješ podniky a najímáš do nich zaměstnance (stojí mzdu, zvyšují výnos).
-//  - Investice: akcie, kovy, kryptoměny (ceny kolísají podle času, stejně na serveru i v prohlížeči),
-//    nemovitosti, cenné papíry a arbitráž.
+//  - Investice: akcie (dividendy), kovy, kryptoměny, nemovitosti, cenné papíry a arbitráž. Ceny kolísají podle času
+//    (stejně na serveru i v prohlížeči), tržní zprávy hnou celou kategorií, limitní a stop-loss příkazy se plní při hraní,
+//    startupy každých 12 hodin buď vyjdou (výplata), nebo zkrachují.
 //  - Hustle: reselling, flipování domů a aut. Vložíš kapitál, po čase si vybereš výsledek (může i prodělat).
 //  - Body z učení se dají investovat do Vzdělání (trvalý bonus ke všem příjmům). Aktivní učení za posledních
 //    24 hodin dává navíc dočasné zrychlení.
@@ -400,7 +401,7 @@ export const ASSETS: AssetDef[] = [
   asset("land", "realestate", 20_000, 0.03, 0, 0.0001),
   asset("office", "realestate", 200_000, 0.06, 0.006, 0.00004),
   // akcie
-  asset("technology", "stocks", 100, 0.18, 0, 0.00015, { seed: "stocks" }),
+  asset("technology", "stocks", 100, 0.18, 0.00025, 0.00015, { seed: "stocks" }),
   asset("energy", "stocks", 80, 0.08, 0.0003, 0.00003),
   asset("bank", "stocks", 60, 0.12, 0.0004, 0.00005),
   asset("consumer", "stocks", 40, 0.1, 0.0002, 0.00004),
@@ -452,7 +453,7 @@ export function assetPrice(id: AssetId, now: number): number {
   const wave = 0.6 * Math.sin(hours / 0.5 + phaseA) + 0.4 * Math.sin(hours / 0.12 + phaseB);
   const noise = (hash32(`${def.seed}:${Math.floor(now / 60_000)}`) - 0.5) * 0.3;
   const trend = 1 + def.drift * (hours % 5_000);
-  return Math.max(1, def.base * trend * (1 + def.vol * (wave + noise)));
+  return Math.max(1, def.base * trend * (1 + def.vol * (wave + noise))) * assetEventMult(id, now);
 }
 
 // Dva trhy, které se krátkodobě rozcházejí. Rozdíl mezi nimi je příležitost pro arbitráž.
@@ -462,6 +463,79 @@ export function arbitrageSpread(now: number): number {
   const b = Math.sin(h * 17 + 4.2) * 0.5 + Math.sin(h * 55 + 0.3) * 0.5;
   return Math.abs(a - b) * 0.03;
 }
+
+// --- Tržní zprávy (ovlivní ceny aktiv) ---
+// Každé tři hodiny přijde jedna zpráva a platí hodinu. Působí na celou kategorii nebo na všechno. Počítá se podle času, stejně na serveru i v prohlížeči.
+export const ASSET_EVENT_WINDOW_MS = 3 * H;
+export const ASSET_EVENT_DURATION_MS = H;
+export type AssetEventDef = { id: string; affects: "all" | AssetCategoryId[]; mult: number };
+export const ASSET_EVENTS: AssetEventDef[] = [
+  { id: "cryptoRally", affects: ["crypto"], mult: 1.5 },
+  { id: "cryptoCrash", affects: ["crypto"], mult: 0.6 },
+  { id: "rateHike", affects: ["bonds", "realestate", "funds"], mult: 0.93 },
+  { id: "rateCut", affects: ["bonds", "realestate"], mult: 1.05 },
+  { id: "techBoom", affects: ["stocks", "startups"], mult: 1.2 },
+  { id: "goldFear", affects: ["metals"], mult: 1.25 },
+  { id: "panic", affects: ["stocks", "funds", "startups"], mult: 0.82 },
+  { id: "bull", affects: "all", mult: 1.1 },
+  { id: "bear", affects: "all", mult: 0.9 },
+];
+export type ActiveAssetEvent = { def: AssetEventDef; endsAt: number };
+export function currentAssetEvent(now: number): ActiveAssetEvent | null {
+  const window = Math.floor(now / ASSET_EVENT_WINDOW_MS);
+  const offset = now - window * ASSET_EVENT_WINDOW_MS;
+  if (offset >= ASSET_EVENT_DURATION_MS) return null;
+  const def = ASSET_EVENTS[Math.floor(hash32(`asset-event:${window}`) * ASSET_EVENTS.length)];
+  return { def, endsAt: window * ASSET_EVENT_WINDOW_MS + ASSET_EVENT_DURATION_MS };
+}
+// Násobek ceny z právě běžící zprávy (1 = žádná zpráva na toto aktivum nepůsobí).
+export function assetEventMult(id: AssetId, now: number): number {
+  const ev = currentAssetEvent(now);
+  if (!ev) return 1;
+  const cat = assetDef(id).cat;
+  return ev.def.affects === "all" || ev.def.affects.includes(cat) ? ev.def.mult : 1;
+}
+
+// --- Startupy: kola každých 12 hodin ---
+// Držba startupu v každém kole buď vyjde (exit s násobkem vložené ceny), nebo zkrachuje, nebo běží dál.
+export const STARTUP_ROUND_MS = 12 * H;
+export const STARTUP_EXIT_CHANCE = 0.2;
+export const STARTUP_KRACH_CHANCE = 0.15;
+// Kolo, které uplynulo bez přepočtu (dlouhá nepřítomnost), se nevyhodnocuje po jednom: vezme se nejvýš tolik posledních kol.
+export const STARTUP_MAX_ROUNDS = 30;
+export type StartupOutcome = { kind: "run" } | { kind: "krach" } | { kind: "exit"; mult: number };
+export const startupRoundOf = (now: number) => Math.floor(now / STARTUP_ROUND_MS);
+export function startupOutcome(id: AssetId, round: number): StartupOutcome {
+  const r = hash32(`startup-round:${id}:${round}`);
+  if (r < STARTUP_EXIT_CHANCE) return { kind: "exit", mult: 1.8 + hash32(`startup-mult:${id}:${round}`) * 0.8 };
+  if (r < STARTUP_EXIT_CHANCE + STARTUP_KRACH_CHANCE) return { kind: "krach" };
+  return { kind: "run" };
+}
+export const STARTUP_IDS: AssetId[] = ASSETS.filter((a) => a.cat === "startups").map((a) => a.id);
+
+// --- Příkazy (limitní, stop-loss, take-profit) ---
+// Příkaz čeká, až cena dosáhne hranice. Plní se stejně jako příjmy: při přepočtu stavu, nejvýš do offline okna.
+export const MAX_ORDERS = 8;
+export const ORDER_CHECK_MS = 10 * 60_000;
+const ORDER_MAX_SAMPLES = 400;
+export type OrderSide = "buy" | "sell";
+// "below": spustit, když cena klesne na hranici (limitní nákup, stop-loss). "above": když vystoupá (take-profit, nákup na průrazu).
+export type OrderWhen = "below" | "above";
+export type Order = { id: string; asset: AssetId; side: OrderSide; when: OrderWhen; price: number; amount: number; share: number; createdAt: number };
+
+// Zprávy z trhu: výsledky kol startupů a naplněné příkazy.
+export const NEWS_MAX = 12;
+export const NEWS_KINDS = ["startup-exit", "startup-krach", "buy-filled", "sell-filled", "order-failed"] as const;
+export type NewsKind = (typeof NEWS_KINDS)[number];
+export type NewsItem = { t: number; kind: NewsKind; asset: AssetId; amount: number };
+
+// Historie hodnoty: jmění (w) a hodnota investic (p), zapisuje se každou čtvrt hodinu.
+export const HISTORY_STEP_MS = 15 * 60_000;
+export const HISTORY_MAX = 96;
+export type HistoryPoint = { t: number; w: number; p: number };
+
+export const portfolioValue = (state: Pick<EconomyState, "holdings">, now: number): number =>
+  ASSETS.reduce((sum, a) => sum + (state.holdings[a.id] ?? 0) * assetPrice(a.id, now), 0);
 
 // --- Hustle ---
 
@@ -526,6 +600,13 @@ export type EconomyState = {
   hustle: Partial<Record<HustleId, HustleSlot>>;
   edu: number;
   arbReadyAt: number;
+  // čekající příkazy, pořadové číslo příkazu, zprávy z trhu, historie hodnoty
+  orders: Order[];
+  orderSeq: number;
+  news: NewsItem[];
+  history: HistoryPoint[];
+  // poslední vyhodnocené kolo startupu u držené položky (kolo, které nastalo po nákupu, už platí)
+  startupRound: Partial<Record<AssetId, number>>;
   // časový posun a kotva herních hodin (viz gameNow)
   speed: Speed;
   clock: GameClock;
@@ -602,6 +683,11 @@ export function emptyState(now: number, runs = 0, best = 0): EconomyState {
     hustle: {},
     edu: 0,
     arbReadyAt: 0,
+    orders: [],
+    orderSeq: 0,
+    news: [],
+    history: [],
+    startupRound: {},
     speed: 1,
     clock: { real: now, game: now },
   };
@@ -721,6 +807,13 @@ export function normalizeState(raw: unknown, real: number): EconomyState {
   const cr = r.crisis as Record<string, unknown> | null | undefined;
   const crisis: Crisis = cr && isJob(cr.job) ? { job: cr.job, startAt: finite(cr.startAt, 0, 0, 1e15), endAt: finite(cr.endAt, 0, 0, 1e15) } : null;
 
+  const startupRound: EconomyState["startupRound"] = {};
+  const srIn = (r.startupRound ?? {}) as Record<string, unknown>;
+  for (const id of STARTUP_IDS) {
+    const v = srIn[id];
+    if (typeof v === "number" && Number.isFinite(v)) startupRound[id] = Math.floor(Math.min(1e12, Math.max(0, v)));
+  }
+
   const cash = finite(r.cash, 0, 0, 1e15);
   return {
     v: 1,
@@ -755,9 +848,62 @@ export function normalizeState(raw: unknown, real: number): EconomyState {
     hustle,
     edu: Math.floor(finite(r.edu, 0, 0, MAX_EDU)),
     arbReadyAt: finite(r.arbReadyAt, 0, 0, now + ARB_COOLDOWN_MS),
+    orders: normalizeOrders(r.orders, now),
+    orderSeq: Math.floor(finite(r.orderSeq, 0, 0, 1e9)),
+    news: normalizeNews(r.news, now),
+    history: normalizeHistory(r.history, now),
+    startupRound,
     speed,
     clock,
   };
+}
+
+function normalizeOrders(raw: unknown, now: number): Order[] {
+  if (!Array.isArray(raw)) return [];
+  const out: Order[] = [];
+  for (const x of raw) {
+    if (!x || typeof x !== "object") continue;
+    const o = x as Record<string, unknown>;
+    if (typeof o.id !== "string" || o.id.length > 40 || !isAsset(o.asset)) continue;
+    if ((o.side !== "buy" && o.side !== "sell") || (o.when !== "below" && o.when !== "above")) continue;
+    const price = finite(o.price, 0, 0, 1e15);
+    if (price <= 0) continue;
+    out.push({
+      id: o.id,
+      asset: o.asset,
+      side: o.side as OrderSide,
+      when: o.when as OrderWhen,
+      price,
+      amount: finite(o.amount, 0, 0, 1e15),
+      share: finite(o.share, 0, 0, 1),
+      createdAt: finite(o.createdAt, now, 0, now),
+    });
+    if (out.length >= MAX_ORDERS) break;
+  }
+  return out;
+}
+
+function normalizeNews(raw: unknown, now: number): NewsItem[] {
+  if (!Array.isArray(raw)) return [];
+  const out: NewsItem[] = [];
+  for (const x of raw) {
+    if (!x || typeof x !== "object") continue;
+    const n = x as Record<string, unknown>;
+    if (!(NEWS_KINDS as readonly unknown[]).includes(n.kind) || !isAsset(n.asset)) continue;
+    out.push({ t: finite(n.t, now, 0, now), kind: n.kind as NewsKind, asset: n.asset, amount: finite(n.amount, 0, 0, 1e15) });
+  }
+  return out.slice(-NEWS_MAX);
+}
+
+function normalizeHistory(raw: unknown, now: number): HistoryPoint[] {
+  if (!Array.isArray(raw)) return [];
+  const out: HistoryPoint[] = [];
+  for (const x of raw) {
+    if (!x || typeof x !== "object") continue;
+    const h = x as Record<string, unknown>;
+    out.push({ t: finite(h.t, now, 0, now), w: finite(h.w, 0, -1e15, 1e15), p: finite(h.p, 0, 0, 1e15) });
+  }
+  return out.slice(-HISTORY_MAX);
 }
 
 // --- Bonusy a sazby ---
@@ -806,6 +952,8 @@ export type Rates = {
   multiplier: number;
   // čistý příjem za hodinu
   net: number;
+  // z passive: výnos z akcií (dividendy) za hodinu
+  dividends: number;
 };
 
 export const setupOf = (state: EconomyState, id: CompanyId): CompanySetup => state.setup[id] ?? DEFAULT_SETUP;
@@ -854,7 +1002,7 @@ const avgPerf = (perfs: number[]) => (perfs.length ? perfs.reduce((a, b) => a + 
 
 export function rates(state: EconomyState, now: number, learning = 0): Rates {
   const ch = state.character;
-  if (!ch) return { salary: 0, companies: 0, passive: 0, living: 0, companyCosts: 0, multiplier: 1, net: 0 };
+  if (!ch) return { salary: 0, companies: 0, passive: 0, living: 0, companyCosts: 0, multiplier: 1, net: 0, dividends: 0 };
   const country = COUNTRY_DEF[ch.country];
   const city = CITY_DEF[ch.city];
   const family = FAMILY_DEF[ch.family];
@@ -872,10 +1020,14 @@ export function rates(state: EconomyState, now: number, learning = 0): Rates {
     companyCosts += y.costs;
   }
   let passive = 0;
+  let dividends = 0;
   for (const a of ASSETS) {
     if (!a.yield) continue;
     const qty = state.holdings[a.id] ?? 0;
-    if (qty > 0) passive += qty * assetPrice(a.id, now) * a.yield * (a.cat === "realestate" ? city.rent : 1);
+    if (qty <= 0) continue;
+    const income = qty * assetPrice(a.id, now) * a.yield * (a.cat === "realestate" ? city.rent : 1);
+    passive += income;
+    if (a.cat === "stocks") dividends += income;
   }
   // Životní náklady jsou malé, ale rostou s tím, jak jsi na tom líp (aby hráč nebyl zadarmo bohatý).
   const living = (6 * country.living * city.living * family.living) * (1 + Math.log10(1 + (state.cash + 0) / 1000) * 0.5);
@@ -888,6 +1040,7 @@ export function rates(state: EconomyState, now: number, learning = 0): Rates {
     companyCosts: companyCosts * INCOME_SPEED,
     multiplier,
     net: gross - (living + companyCosts) * INCOME_SPEED,
+    dividends: dividends * INCOME_SPEED,
   };
 }
 
@@ -930,7 +1083,96 @@ export function settle(state: EconomyState, now: number, learning = 0): EconomyS
     const bonus = state.dayPay * BONUS_SHARE;
     next = { ...next, cash: next.cash + bonus, totalEarned: next.totalEarned + bonus, dayPay: 0, bonusAt: now };
   }
+  next = resolveStartups(next, now);
+  next = fillOrders(next, now - elapsed, now);
+  next = recordHistory(next, now);
   return withPeak(next, now);
+}
+
+// Zapíše nový bod do historie, nejvýš jednou za čtvrt hodiny.
+function recordHistory(state: EconomyState, now: number): EconomyState {
+  const last = state.history[state.history.length - 1];
+  if (last && now - last.t < HISTORY_STEP_MS) return state;
+  const point: HistoryPoint = { t: now, w: netWorth(state, now), p: portfolioValue(state, now) };
+  return { ...state, history: [...state.history, point].slice(-HISTORY_MAX) };
+}
+
+function pushNews(state: EconomyState, item: NewsItem): EconomyState {
+  return { ...state, news: [...state.news, item].slice(-NEWS_MAX) };
+}
+
+// Vyhodnotí kola startupů, která od posledního přepočtu nastala u držených položek.
+function resolveStartups(state: EconomyState, now: number): EconomyState {
+  const cur = startupRoundOf(now);
+  const rounds: Partial<Record<AssetId, number>> = { ...state.startupRound };
+  let s = state;
+  for (const id of STARTUP_IDS) {
+    if ((s.holdings[id] ?? 0) <= 0) {
+      rounds[id] = cur;
+      continue;
+    }
+    const last = rounds[id] ?? cur;
+    for (let r = Math.max(last + 1, cur - STARTUP_MAX_ROUNDS + 1); r <= cur; r++) {
+      const qty = s.holdings[id] ?? 0;
+      if (qty <= 0) break;
+      const out = startupOutcome(id, r);
+      if (out.kind === "run") continue;
+      const price = assetPrice(id, r * STARTUP_ROUND_MS);
+      const basis = qty * (s.cost[id] ?? price);
+      if (out.kind === "exit") {
+        const money = qty * price * out.mult;
+        s = pushNews(closePosition(s, id, money, basis), { t: r * STARTUP_ROUND_MS, kind: "startup-exit", asset: id, amount: Math.round(money) });
+      } else {
+        s = pushNews(closePosition(s, id, 0, basis), { t: r * STARTUP_ROUND_MS, kind: "startup-krach", asset: id, amount: Math.round(qty * price) });
+      }
+    }
+    rounds[id] = cur;
+  }
+  return { ...s, startupRound: rounds };
+}
+
+// Uzavře celou držbu a připíše výtěžek (u krachu nulový). Do celkového výdělku se počítá jen kladný zisk.
+function closePosition(state: EconomyState, id: AssetId, cash: number, basis: number): EconomyState {
+  const holdings = { ...state.holdings };
+  const cost = { ...state.cost };
+  delete holdings[id];
+  delete cost[id];
+  return { ...state, cash: state.cash + cash, holdings, cost, totalEarned: state.totalEarned + Math.max(0, cash - basis) };
+}
+
+// Plní čekající příkazy, pokud cena v úseku [from, to] dosáhla hranice. Kontroluje se po krocích, ne jen na konci.
+function fillOrders(state: EconomyState, from: number, to: number): EconomyState {
+  if (state.orders.length === 0 || to <= from) return state;
+  const step = Math.max(ORDER_CHECK_MS, Math.ceil((to - from) / ORDER_MAX_SAMPLES));
+  let s = state;
+  for (let at = from + step; ; at += step) {
+    const t = Math.min(at, to);
+    s = fillOrdersAt(s, t);
+    if (t >= to || s.orders.length === 0) break;
+  }
+  return s;
+}
+
+function fillOrdersAt(state: EconomyState, at: number): EconomyState {
+  let s = state;
+  for (const o of state.orders) {
+    const p = assetPrice(o.asset, at);
+    const hit = o.when === "below" ? p <= o.price : p >= o.price;
+    if (!hit) continue;
+    s = { ...s, orders: s.orders.filter((x) => x.id !== o.id) };
+    if (o.side === "buy") {
+      const money = Math.min(o.amount, s.cash);
+      s = money < 1
+        ? pushNews(s, { t: at, kind: "order-failed", asset: o.asset, amount: 0 })
+        : pushNews(applyBuy(s, o.asset, money, p, at), { t: at, kind: "buy-filled", asset: o.asset, amount: Math.round(money) });
+    } else if ((s.holdings[o.asset] ?? 0) <= 0) {
+      s = pushNews(s, { t: at, kind: "order-failed", asset: o.asset, amount: 0 });
+    } else {
+      const sold = applySell(s, o.asset, o.share, p);
+      s = pushNews(sold.state, { t: at, kind: "sell-filled", asset: o.asset, amount: Math.round(sold.money) });
+    }
+  }
+  return s;
 }
 
 function withPeak(state: EconomyState, now: number): EconomyState {
@@ -1248,32 +1490,30 @@ export function buyAsset(state: EconomyState, id: unknown, amount: unknown, now:
   if (isLocked(state, "asset", id)) return fail("locked");
   const money = Math.min(spend, state.cash);
   if (money < 1) return fail("not-enough-cash");
-  const price = assetPrice(id, now);
+  return done(applyBuy(state, id, money, assetPrice(id, now), now), now);
+}
+
+// Nákup za hotovost za zadanou cenu kusu. Sdílí ho přímý nákup i plnění příkazu.
+function applyBuy(state: EconomyState, id: AssetId, money: number, price: number, now: number): EconomyState {
   const qty = money / price;
   const have = state.holdings[id] ?? 0;
   const avg = state.cost[id] ?? price;
   const newCost = (have * avg + money) / (have + qty);
-  return done(
-    {
-      ...state,
-      cash: state.cash - money,
-      holdings: { ...state.holdings, [id]: have + qty },
-      cost: { ...state.cost, [id]: newCost },
-    },
-    now,
-  );
+  // Nová držba startupu se poprvé vyhodnotí až v dalším kole, ne v tom, ve kterém byla koupena.
+  const startupRound = have <= 0 && assetDef(id).cat === "startups" ? { ...state.startupRound, [id]: startupRoundOf(now) } : state.startupRound;
+  return {
+    ...state,
+    cash: state.cash - money,
+    holdings: { ...state.holdings, [id]: have + qty },
+    cost: { ...state.cost, [id]: newCost },
+    startupRound,
+  };
 }
 
-// Prodej za podíl držených kusů (0–1], nebo všeho.
-export function sellAsset(state: EconomyState, id: unknown, share: unknown, now: number): ActionResult {
-  if (!state.character) return fail("no-character");
-  if (!isAsset(id)) return fail("bad-request");
+// Prodej podílu držby za zadanou cenu. Sdílí ho přímý prodej i plnění příkazu.
+function applySell(state: EconomyState, id: AssetId, share: number, price: number): { state: EconomyState; money: number; profit: number } {
   const have = state.holdings[id] ?? 0;
-  if (have <= 0) return fail("nothing");
-  const s = typeof share === "number" && Number.isFinite(share) ? Math.min(1, Math.max(0, share)) : 1;
-  if (s <= 0) return fail("bad-request");
-  const qty = have * s;
-  const price = assetPrice(id, now);
+  const qty = have * share;
   const money = qty * price;
   const remaining = have - qty;
   const holdings = { ...state.holdings };
@@ -1285,9 +1525,69 @@ export function sellAsset(state: EconomyState, id: unknown, share: unknown, now:
     holdings[id] = remaining;
   }
   const profit = money - qty * (state.cost[id] ?? price);
-  return done({ ...state, cash: state.cash + money, holdings, cost, totalEarned: state.totalEarned + Math.max(0, profit) }, now, {
-    gained: { cash: Math.round(money), profit: Math.round(profit) },
-  });
+  const next = { ...state, cash: state.cash + money, holdings, cost, totalEarned: state.totalEarned + Math.max(0, profit) };
+  return { state: next, money, profit };
+}
+
+// Prodej za podíl držených kusů (0–1], nebo všeho.
+export function sellAsset(state: EconomyState, id: unknown, share: unknown, now: number): ActionResult {
+  if (!state.character) return fail("no-character");
+  if (!isAsset(id)) return fail("bad-request");
+  const have = state.holdings[id] ?? 0;
+  if (have <= 0) return fail("nothing");
+  const s = typeof share === "number" && Number.isFinite(share) ? Math.min(1, Math.max(0, share)) : 1;
+  if (s <= 0) return fail("bad-request");
+  const sold = applySell(state, id, s, assetPrice(id, now));
+  return done(sold.state, now, { gained: { cash: Math.round(sold.money), profit: Math.round(sold.profit) } });
+}
+
+// Příkaz: nákup nebo prodej, až cena dosáhne hranice. Hranice musí být na správné straně aktuální ceny,
+// jinak by se příkaz splnil hned (to je dobře vidět jako chyba, ne jako tichý nákup).
+export function placeOrder(
+  state: EconomyState,
+  input: { asset: unknown; side: unknown; when: unknown; price: unknown; amount: unknown; share: unknown },
+  now: number,
+): ActionResult {
+  if (!state.character) return fail("no-character");
+  if (!isAsset(input.asset)) return fail("bad-request");
+  const asset = input.asset;
+  if (input.side !== "buy" && input.side !== "sell") return fail("bad-request");
+  if (input.when !== "below" && input.when !== "above") return fail("bad-request");
+  const price = qtyOf(input.price);
+  if (price === null) return fail("bad-request");
+  const current = assetPrice(asset, now);
+  if (input.when === "below" ? price >= current : price <= current) return fail("bad-request");
+  if (state.orders.length >= MAX_ORDERS) return fail("max");
+  let amount = 0;
+  let share = 0;
+  if (input.side === "buy") {
+    const spend = qtyOf(input.amount);
+    if (spend === null) return fail("bad-request");
+    amount = spend;
+  } else {
+    if ((state.holdings[asset] ?? 0) <= 0) return fail("nothing");
+    const s = typeof input.share === "number" && Number.isFinite(input.share) ? input.share : 1;
+    if (s <= 0 || s > 1) return fail("bad-request");
+    share = s;
+  }
+  const order: Order = {
+    id: `o${state.orderSeq}-${now.toString(36)}`,
+    asset,
+    side: input.side,
+    when: input.when,
+    price,
+    amount,
+    share,
+    createdAt: now,
+  };
+  return done({ ...state, orders: [...state.orders, order], orderSeq: state.orderSeq + 1 }, now);
+}
+
+export function cancelOrder(state: EconomyState, id: unknown, now: number): ActionResult {
+  if (!state.character) return fail("no-character");
+  if (typeof id !== "string") return fail("bad-request");
+  if (!state.orders.some((o) => o.id === id)) return fail("nothing");
+  return done({ ...state, orders: state.orders.filter((o) => o.id !== id) }, now);
 }
 
 export function arbitrageLimit(state: EconomyState): number {
