@@ -29,6 +29,7 @@ import {
   UNION_MIN_STAFF,
   ROLE_MAX,
   ROLE_WAGE,
+  STAFF_BASE_WAGE,
   STAFF_ROLES,
   rolesOf,
   isLocked,
@@ -524,7 +525,7 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
           {STAFF_ROLES.map((role) => {
             const cap = ROLE_MAX[role];
             const full = s.staff >= maxStaff || (cap !== null && roles[role] >= cap);
-            const wage = Math.round(hireCost(id) * ROLE_WAGE[role]);
+            const wage = Math.round(STAFF_BASE_WAGE * ROLE_WAGE[role]);
             return (
               <li key={role} className="flex flex-wrap items-center gap-2">
                 <span className="min-w-[9rem] font-bold">
