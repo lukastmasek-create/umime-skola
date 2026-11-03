@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { prisma } from "@/lib/prisma";
 import { ECONOMY_GAME, learningFor } from "@/lib/idle/economy-server";
 import {
@@ -56,6 +57,16 @@ import {
 } from "@/lib/idle/economy";
 
 const GAME = ECONOMY_GAME;
+
+// Na Workers jde práce po odeslání odpovědi dokončit přes waitUntil; jinde stačí nechat promise běžet.
+function runInBackground(work: Promise<unknown>) {
+  try {
+    const { ctx } = getCloudflareContext({ async: false });
+    ctx.waitUntil(work);
+  } catch {
+    void work;
+  }
+}
 
 class Conflict extends Error {}
 class NotEnoughPoints extends Error {}
@@ -193,9 +204,10 @@ export async function GET() {
     const now = gameNow(base, real);
     const state = settle(base, now, learning);
     // Uložíme i při pouhém otevření, ať je žebříček aktuální. Při souběhu s akcí se zápis tiše zahodí.
+    // Zápis běží na pozadí, odpověď na načtení stránky na něj nečeká.
     if (row && state.character) {
       const data = state as unknown as Prisma.InputJsonValue;
-      await prisma.idleState.updateMany({ where: { id: row.id, updatedAt: row.updatedAt }, data: { data } }).catch(() => null);
+      runInBackground(prisma.idleState.updateMany({ where: { id: row.id, updatedAt: row.updatedAt }, data: { data } }).catch(() => null));
     }
     return NextResponse.json(payload(state, user?.points ?? 0, learning, now));
   } catch (error) {
