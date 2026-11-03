@@ -51,6 +51,7 @@ import {
   unionDeal,
   buyStock,
   buyNeed,
+  buyBoost,
   ASSETS,
   type ActionResult,
   type EconomyState,
@@ -156,6 +157,8 @@ function applyAction(state: EconomyState, body: Body, now: number, learning: num
       return buyStock(state, body.id, body.amount, now);
     case "buyNeed":
       return buyNeed(state, body.id, body.amount, now);
+    case "buyBoost":
+      return buyBoost(state, body.id, now);
     case "buyAsset":
       return buyAsset(state, body.id, body.amount, now);
     case "sellAsset":

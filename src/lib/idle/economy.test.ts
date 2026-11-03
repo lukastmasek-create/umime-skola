@@ -53,13 +53,18 @@ import {
   buyStock,
   buyNeed,
   needDaily,
-  needsPenalty,
+  needsEffects,
+  buyBoost,
+  BOOST_DEF,
+  boostPrice,
+  CLOTHING_INCOME,
+  DRINK_DRAIN,
+  FOOD_REGEN,
+  HEALTH_ENERGY_CAP,
   livingCost,
   emptyNeeds,
   MAX_NEED_DAYS,
   NEEDS,
-  NEED_PENALTY_FLOOR,
-  HUNGRY_ENERGY,
   batchPrice,
   stockCapacity,
   INPUT_BATCH_HOURS,
@@ -119,7 +124,10 @@ const ok = (r: { ok: boolean }) => assert.ok(r.ok, JSON.stringify(r));
 function start(family: "poor" | "middle" | "rich" | "business" = "middle", era: "1990" | "2010" | "2025" | "2050" = "2025"): EconomyState {
   const r = createCharacter(emptyState(NOW), { country: "cz", name: "  Eva  ", city: "town", era, family }, NOW);
   assert.ok(r.ok);
-  return r.ok ? r.state : emptyState(NOW);
+  // Výchozí postava má zásoby naplněné, ať testy směn a příjmu neřeší potřeby. Potřeby testují samostatné testy.
+  const full = emptyNeeds();
+  for (const id of NEEDS) full[id] = MAX_NEED_DAYS;
+  return r.ok ? { ...r.state, needs: full } : emptyState(NOW);
 }
 
 test("obsah: jedinečná id, platné ceny a rostoucí žebříčky", () => {
@@ -1225,7 +1233,7 @@ test("směna bodů: prodej dává peníze, nákup bere peníze, obojí jen s dos
 });
 
 test("potřeby: nákup zásoby stojí cenu dne za každý den, jde jen do limitu a jen celé dny", () => {
-  const s = { ...start("rich"), cash: 1e12 };
+  const s = { ...start("rich"), cash: 1e12, needs: emptyNeeds() };
   const b = buyNeed(s, "food", 2, NOW);
   ok(b);
   if (!b.ok) return;
@@ -1246,29 +1254,77 @@ test("potřeby: denní náklady tvoří celou životní úroveň a bez jejich n�
   const total = NEEDS.reduce((sum, id) => sum + needDaily(s, id), 0);
   assert.ok(Math.abs(total - livingCost(s) * 24) <= NEEDS.length, "součet dnů odpovídá životním nákladům");
   // Bez práce a bez nákupů peníze nezmizí: životní náklady se nestrhávají pasivně.
-  const later = settle(s, NOW + H);
-  assert.equal(later.cash, s.cash);
-  assert.equal(rates(s, NOW).net, 0);
+  const stocked = { ...s, needs: { ...s.needs, housing: 1 } };
+  const later = settle(stocked, NOW + 15 * 60_000);
+  assert.equal(later.cash, s.cash, "zaplacené bydlení nic nestrhává");
+  const r = rates(stocked, NOW);
+  assert.ok(Math.abs(r.net - ((r.salary + r.companies + r.passive) * r.multiplier - r.companyCosts)) < 1e-6, "čistý výdělek nepočítá životní náklady");
 });
 
-test("potřeby: prázdná zásoba snižuje výdělek, nezbytnosti víc a hlad snižuje energii", () => {
+test("potřeby: každá prázdná zásoba má svůj účinek", () => {
   const full = emptyNeeds();
   for (const id of NEEDS) full[id] = 3;
-  assert.equal(needsPenalty(full).income, 1);
-  assert.equal(needsPenalty(full).energy, 1);
-  const noFood = { ...full, food: 0 };
-  assert.ok(needsPenalty(noFood).income < 1);
-  assert.equal(needsPenalty(noFood).energy, HUNGRY_ENERGY);
-  const noLeisure = { ...full, leisure: 0 };
-  assert.ok(needsPenalty(noLeisure).income > needsPenalty(noFood).income, "zábava je méně důležitá než jídlo");
-  assert.ok(Math.abs(needsPenalty(emptyNeeds()).income - (1 - 3 * 0.1 - 4 * 0.04)) < 1e-9, "všechny prázdné: 3 nezbytnosti a 4 ostatní");
-  assert.ok(needsPenalty(emptyNeeds()).income >= NEED_PENALTY_FLOOR);
+  const s0 = { ...start("middle"), needs: full };
+  const e0 = needsEffects(s0, NOW);
+  assert.equal(e0.income, 1);
+  assert.equal(e0.energyRegen, 1);
+  assert.equal(e0.energyDrain, 0);
+  assert.equal(e0.energyCap, 1);
+  assert.equal(e0.noShift, false);
+  assert.equal(e0.bills, false);
+  const at = (id: (typeof NEEDS)[number]) => needsEffects({ ...s0, needs: { ...full, [id]: 0 } }, NOW);
+  assert.equal(at("clothing").income, CLOTHING_INCOME, "bez oblečení nižší výdělek");
+  assert.equal(at("food").energyRegen, FOOD_REGEN, "bez jídla pomalejší dobíjení");
+  assert.equal(at("drink").energyDrain, DRINK_DRAIN, "bez pití energie ubývá");
+  assert.equal(at("health").energyCap, HEALTH_ENERGY_CAP, "bez zdraví strop energie");
+  assert.equal(at("transport").noShift, true, "bez dopravy nejde směna");
+  assert.equal(at("housing").bills, true, "bez bydlení přibývají pokuty");
+  assert.equal(at("leisure").energyRegen, 0.8, "bez zábavy pomaleji");
+});
 
-  const job = { ...start("middle"), job: newJob("warehouse", NOW), cash: 0 };
-  const fed = ratesOf({ ...job, needs: full }, NOW);
-  const hungry = ratesOf({ ...job, needs: noFood }, NOW);
-  assert.ok(hungry.net < fed.net, "bez jídla klesne čistý výdělek");
-  assert.ok(Math.abs(hungry.multiplier - needsPenalty(noFood).income) < 1e-9);
+test("potřeby: bez dopravy nejde nastoupit na směnu", () => {
+  const job = { ...start("middle"), job: newJob("warehouse", NOW), energy: 100, needs: { ...emptyNeeds(), transport: 0 } };
+  assert.deepEqual(startShift(job, NOW, () => 0.5), { ok: false, error: "no-transport" });
+  const ok1 = startShift({ ...job, needs: { ...job.needs, transport: 1 } }, NOW, () => 0.5);
+  assert.ok(ok1.ok);
+});
+
+test("potřeby: nezaplacené účty stojí každou hodinu pokutu", () => {
+  const s = { ...start("middle"), cash: 10_000, needs: { ...emptyNeeds(), housing: 1 } };
+  const later = settle(s, NOW + 15 * 60_000);
+  assert.equal(later.cash, s.cash, "se zaplaceným bydlením nic");
+  const unpaid = settle({ ...s, needs: { ...emptyNeeds() } }, NOW + 15 * 60_000);
+  assert.ok(unpaid.cash < s.cash, "bez zaplacení naskočí pokuta");
+});
+
+test("boosty: energy drink zdvojnásobí dobíjení energie a vyprší", () => {
+  const base = { ...start("middle"), energy: 10, needs: { ...emptyNeeds(), food: 5, drink: 5, leisure: 5 } };
+  const bought = buyBoost({ ...base, cash: 1e12 }, "energy_drink", NOW);
+  ok(bought);
+  if (!bought.ok) return;
+  assert.equal(bought.state.cash, 1e12 - boostPrice({ ...base, cash: 1e12 }, "energy_drink"));
+  const boosted = settle(bought.state, NOW + 15 * 60_000);
+  const plain = settle(base, NOW + 15 * 60_000);
+  assert.ok(boosted.energy > plain.energy + 1, "během boostu se energie dobíjí rychleji");
+  const after = settle(bought.state, NOW + (BOOST_DEF.energy_drink.minutes + 5) * 60_000);
+  const expired = settle(base, NOW + (BOOST_DEF.energy_drink.minutes + 5) * 60_000);
+  assert.ok(Math.abs(after.energy - expired.energy) < 1e-6, "po vypršení už boost nic nedělá");
+});
+
+test("boosty: kino přidá výdělek a další koupě boost prodlouží, nejvýš do limitu", () => {
+  const s = { ...start("middle"), cash: 1e12 };
+  const once = buyBoost(s, "cinema", NOW);
+  ok(once);
+  if (!once.ok) return;
+  const twice = buyBoost(once.state, "cinema", NOW);
+  ok(twice);
+  if (!twice.ok) return;
+  const until1 = once.state.boosts[0].until;
+  const until2 = twice.state.boosts.find((b) => b.id === "cinema")!.until;
+  assert.ok(until2 > until1, "koupě prodlouží");
+  assert.ok(until2 <= NOW + 240 * 60_000, "nejvýš 4 hodiny dopředu");
+  assert.deepEqual(buyBoost({ ...s, cash: 0 }, "cinema", NOW), { ok: false, error: "not-enough-cash" });
+  assert.deepEqual(buyBoost(s, "nothing", NOW), { ok: false, error: "bad-request" });
 });
 
 test("potřeby: spotřeba ubývá v čase a nikdy neklesne pod nulu, načtení se ořízne", () => {

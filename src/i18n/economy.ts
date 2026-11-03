@@ -572,6 +572,7 @@ const cs: EconomyText = {
     "no-spread": "Teď se rozdíl cen nevyplatí, zkus to později.",
     cooldown: "Ještě chvíli počkej.",
     conflict: "Hra se mezitím změnila, zkus to znovu.",
+    "no-transport": "Bez dopravy nenastoupíš na směnu.",
     unavailable: "Hra je dočasně nedostupná.",
   },
 };
@@ -874,6 +875,7 @@ const en: EconomyText = {
     "no-spread": "The price gap is not worth it right now, try later.",
     cooldown: "Wait a little longer.",
     conflict: "The game changed in the meantime, try again.",
+    "no-transport": "You can't start a shift without transport.",
     unavailable: "The game is temporarily unavailable.",
   },
 };
@@ -1176,6 +1178,7 @@ const de: EconomyText = {
     "no-spread": "Die Preisdifferenz lohnt sich gerade nicht, versuche es später.",
     cooldown: "Warte noch einen Moment.",
     conflict: "Das Spiel hat sich inzwischen geändert, versuche es erneut.",
+    "no-transport": "Ohne Verkehrsmittel kannst du keine Schicht beginnen.",
     unavailable: "Das Spiel ist vorübergehend nicht verfügbar.",
   },
 };
@@ -1478,6 +1481,7 @@ const ru: EconomyText = {
     "no-spread": "Сейчас разница в ценах невыгодна, попробуй позже.",
     cooldown: "Подожди ещё немного.",
     conflict: "Игра тем временем изменилась, попробуй ещё раз.",
+    "no-transport": "Без транспорта нельзя начать смену.",
     unavailable: "Игра временно недоступна.",
   },
 };

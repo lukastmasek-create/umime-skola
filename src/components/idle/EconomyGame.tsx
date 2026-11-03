@@ -41,7 +41,9 @@ import {
   NEED_DEF,
   NEEDS,
   needDaily,
-  needsPenalty,
+  BOOSTS,
+  boostPrice,
+  type BoostId,
   assetPrice,
   companyIncome,
   hustleDue,
@@ -354,7 +356,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
   const nd = getEconomyNeeds(locale);
   // Zásoby potřeb ubývají průběžně (stejně jako hotovost), od posledního přepočtu serverem se odečítají z času.
   const liveNeeds = Object.fromEntries(NEEDS.map((id) => [id, Math.max(0, state.needs[id] - (clock - data.now) / 86_400_000)])) as Record<NeedId, number>;
-  const livePenalty = 1 - needsPenalty(liveNeeds).income;
+  const emptyNeedCount = NEEDS.filter((id) => liveNeeds[id] <= 0.001).length;
   const job = state.job;
   const shiftWait = Math.max(0, state.shiftReadyAt - clock);
   const restWait = Math.max(0, state.restReadyAt - clock);
@@ -738,10 +740,38 @@ export function EconomyGame({ locale }: { locale: Locale }) {
 
           <div className="card flex flex-col gap-2 p-4 text-sm">
             <p className="font-semibold">{fill(nd.dailyCost, { p: m(r.living * 24) })}</p>
-            <p className={livePenalty > 0.001 ? "font-semibold text-[var(--danger)]" : "text-[var(--muted)]"}>
-              {livePenalty > 0.001 ? fill(nd.penalty, { p: Math.round(livePenalty * 100) }) : nd.noPenalty}
+            <p className={emptyNeedCount > 0 ? "font-semibold text-[var(--danger)]" : "text-[var(--muted)]"}>
+              {emptyNeedCount > 0 ? fill(nd.emptyCount, { n: emptyNeedCount }) : nd.allStocked}
             </p>
-            <p className="text-xs text-[var(--muted)]">{nd.hunger}</p>
+          </div>
+
+          <div className="card flex flex-col gap-3 p-4">
+            <h2 className="font-bold">{nd.boostsTitle}</h2>
+            <p className="text-sm text-[var(--muted)]">{nd.boostsHint}</p>
+            {BOOSTS.map((id: BoostId) => {
+              const left = Math.max(0, ...state.boosts.filter((b) => b.id === id).map((b) => b.until - clock));
+              const price = boostPrice(state, id);
+              const def = nd.boosts[id];
+              return (
+                <div key={id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-[var(--surface)] p-3">
+                  <div>
+                    <p className="font-semibold">{def.name}</p>
+                    <p className="text-sm text-[var(--muted)]">{def.effect}</p>
+                    <p className="text-xs text-[var(--muted)]">
+                      {left > 0 ? fill(nd.boostLeft, { t: formatLeft(left, t) }) : nd.boostNone}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={busy || state.cash < price}
+                    onClick={() => void act({ action: "buyBoost", id }, () => nd.bought)}
+                    className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white disabled:opacity-45"
+                  >
+                    {nd.buyBoost} · {m(price)}
+                  </button>
+                </div>
+              );
+            })}
           </div>
 
           {NEEDS.map((id) => {
@@ -762,6 +792,10 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                   </span>
                 </div>
                 <p className="text-sm text-[var(--muted)]">{def.hint}</p>
+                <p className={`rounded-lg px-3 py-2 text-sm ${empty ? "bg-[var(--surface)] font-semibold text-[var(--danger)]" : "bg-[var(--surface)] text-[var(--muted)]"}`}>
+                  {empty ? "⚠ " : ""}
+                  {def.effect}
+                </p>
                 <div>
                   <div className="mb-1 flex justify-between gap-2 text-sm">
                     <span className={empty ? "font-bold text-[var(--danger)]" : "font-semibold"}>
