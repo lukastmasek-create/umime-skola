@@ -56,7 +56,7 @@ export type EconomyText = {
   unavailable: string;
   loading: string;
   inv: InvestText;
-  tabs: { overview: string; work: string; companies: string; invest: string; hustle: string; board: string };
+  tabs: { overview: string; work: string; needs: string; companies: string; invest: string; hustle: string; board: string };
   create: {
     title: string;
     hint: string;
@@ -335,7 +335,7 @@ const cs: EconomyText = {
     events: { cryptoRally: "Boom kryptoměn", cryptoCrash: "Pád kryptoměn", rateHike: "Zvýšení úroků", rateCut: "Snížení úroků", techBoom: "Technologický boom", goldFear: "Strach z krize, zlato roste", panic: "Panika na trhu", bull: "Býčí trh", bear: "Medvědí trh" },
     newsKinds: { "startup-exit": "🎉 {a} vyšel: výplata {n}", "startup-krach": "💥 {a} zkrachoval, ztráta {n}", "buy-filled": "✅ Příkaz splněn: koupeno {a} za {n}", "sell-filled": "✅ Příkaz splněn: prodáno {a} za {n}", "order-failed": "⚠️ Příkaz na {a} se nesplnil" },
   },
-  tabs: { overview: "Přehled", work: "Práce", companies: "Firma", invest: "Investice", hustle: "Hustle", board: "Žebříček" },
+  tabs: { overview: "Přehled", work: "Práce", needs: "Potřeby", companies: "Firma", invest: "Investice", hustle: "Hustle", board: "Žebříček" },
   create: {
     title: "Vytvoř si postavu",
     hint: "Volba určuje startovní peníze a drobné bonusy. Kdykoliv můžeš začít znovu s jinou postavou.",
@@ -594,6 +594,7 @@ const cs: EconomyText = {
     "no-spread": "Teď se rozdíl cen nevyplatí, zkus to později.",
     cooldown: "Ještě chvíli počkej.",
     conflict: "Hra se mezitím změnila, zkus to znovu.",
+    "no-transport": "Bez dopravy nenastoupíš na směnu.",
     unavailable: "Hra je dočasně nedostupná.",
   },
 };
@@ -648,7 +649,7 @@ const en: EconomyText = {
     events: { cryptoRally: "Crypto boom", cryptoCrash: "Crypto crash", rateHike: "Interest rate hike", rateCut: "Interest rate cut", techBoom: "Tech boom", goldFear: "Crisis fear, gold rises", panic: "Market panic", bull: "Bull market", bear: "Bear market" },
     newsKinds: { "startup-exit": "🎉 {a} exited: payout {n}", "startup-krach": "💥 {a} went bust, loss {n}", "buy-filled": "✅ Order filled: bought {a} for {n}", "sell-filled": "✅ Order filled: sold {a} for {n}", "order-failed": "⚠️ Order on {a} failed" },
   },
-  tabs: { overview: "Overview", work: "Work", companies: "Company", invest: "Invest", hustle: "Hustle", board: "Leaderboard" },
+  tabs: { overview: "Overview", work: "Work", needs: "Needs", companies: "Company", invest: "Invest", hustle: "Hustle", board: "Leaderboard" },
   create: {
     title: "Create your character",
     hint: "Your choices set your starting money and small perks. You can restart with a new character any time.",
@@ -907,6 +908,7 @@ const en: EconomyText = {
     "no-spread": "The price gap is not worth it right now, try later.",
     cooldown: "Wait a little longer.",
     conflict: "The game changed in the meantime, try again.",
+    "no-transport": "You can't start a shift without transport.",
     unavailable: "The game is temporarily unavailable.",
   },
 };
@@ -961,7 +963,7 @@ const de: EconomyText = {
     events: { cryptoRally: "Krypto-Boom", cryptoCrash: "Krypto-Crash", rateHike: "Zinserhöhung", rateCut: "Zinssenkung", techBoom: "Tech-Boom", goldFear: "Krisenangst, Gold steigt", panic: "Marktpanik", bull: "Bullenmarkt", bear: "Bärenmarkt" },
     newsKinds: { "startup-exit": "🎉 {a} hat einen Exit: Auszahlung {n}", "startup-krach": "💥 {a} ist pleite, Verlust {n}", "buy-filled": "✅ Order ausgeführt: {a} für {n} gekauft", "sell-filled": "✅ Order ausgeführt: {a} für {n} verkauft", "order-failed": "⚠️ Order auf {a} fehlgeschlagen" },
   },
-  tabs: { overview: "Übersicht", work: "Arbeit", companies: "Firma", invest: "Investieren", hustle: "Hustle", board: "Rangliste" },
+  tabs: { overview: "Übersicht", work: "Arbeit", needs: "Bedarf", companies: "Firma", invest: "Investieren", hustle: "Hustle", board: "Rangliste" },
   create: {
     title: "Erstelle deine Figur",
     hint: "Deine Wahl bestimmt das Startgeld und kleine Vorteile. Du kannst jederzeit mit einer neuen Figur neu beginnen.",
@@ -1220,6 +1222,7 @@ const de: EconomyText = {
     "no-spread": "Die Preisdifferenz lohnt sich gerade nicht, versuche es später.",
     cooldown: "Warte noch einen Moment.",
     conflict: "Das Spiel hat sich inzwischen geändert, versuche es erneut.",
+    "no-transport": "Ohne Verkehrsmittel kannst du keine Schicht beginnen.",
     unavailable: "Das Spiel ist vorübergehend nicht verfügbar.",
   },
 };
@@ -1274,7 +1277,7 @@ const ru: EconomyText = {
     events: { cryptoRally: "Бум криптовалют", cryptoCrash: "Обвал криптовалют", rateHike: "Повышение ставок", rateCut: "Снижение ставок", techBoom: "Технологический бум", goldFear: "Страх кризиса, золото растёт", panic: "Паника на рынке", bull: "Бычий рынок", bear: "Медвежий рынок" },
     newsKinds: { "startup-exit": "🎉 {a} вышел на выход: выплата {n}", "startup-krach": "💥 {a} обанкротился, убыток {n}", "buy-filled": "✅ Ордер исполнен: куплено {a} на {n}", "sell-filled": "✅ Ордер исполнен: продано {a} на {n}", "order-failed": "⚠️ Ордер на {a} не исполнен" },
   },
-  tabs: { overview: "Обзор", work: "Работа", companies: "Компания", invest: "Инвестиции", hustle: "Подработки", board: "Рейтинг" },
+  tabs: { overview: "Обзор", work: "Работа", needs: "Нужды", companies: "Компания", invest: "Инвестиции", hustle: "Подработки", board: "Рейтинг" },
   create: {
     title: "Создай персонажа",
     hint: "Твой выбор определяет стартовые деньги и небольшие бонусы. В любой момент можно начать заново с новым персонажем.",
@@ -1533,6 +1536,7 @@ const ru: EconomyText = {
     "no-spread": "Сейчас разница в ценах невыгодна, попробуй позже.",
     cooldown: "Подожди ещё немного.",
     conflict: "Игра тем временем изменилась, попробуй ещё раз.",
+    "no-transport": "Без транспорта нельзя начать смену.",
     unavailable: "Игра временно недоступна.",
   },
 };

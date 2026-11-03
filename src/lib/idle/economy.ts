@@ -14,6 +14,8 @@
 //    startupy každých 12 hodin buď vyjdou (výplata), nebo zkrachují.
 //  - Hustle: reselling, flipování domů a aut, startup. Vložíš kapitál a ve třech kolech rozhoduješ mezi jistotou,
 //    vyvážením, rizikem a případnou příležitostí. Výsledek se vyplatí na konci (může i prodělat).
+//  - Životní potřeby (jídlo, pití, oblečení, bydlení, doprava, zdraví, zábava) se kupují v obchodě na dny dopředu.
+//    Každý den zásoba ubývá. Prázdná zásoba snižuje výdělek a bez jídla nebo pití se energie dobíjí jen napůl.
 //  - Body z učení se dají investovat do Vzdělání (trvalý bonus ke všem příjmům). Aktivní učení za posledních
 //    24 hodin dává navíc dočasné zrychlení.
 //  - Kdykoliv můžeš začít znovu. Rekordní jmění a počet pokusů zůstávají.
@@ -789,6 +791,82 @@ export type HustleSlot = {
   log: number[];
 } | null;
 
+// --- Životní potřeby ---
+// Kupují se v obchodě na dny dopředu. Cena dne je podíl životních nákladů (stejná částka jako dřív, jen se platí nákupem).
+export const NEEDS = ["food", "drink", "clothing", "housing", "transport", "health", "leisure"] as const;
+export type NeedId = (typeof NEEDS)[number];
+export const NEED_DEF: Record<NeedId, { share: number; essential: boolean }> = {
+  food: { share: 0.3, essential: true },
+  drink: { share: 0.1, essential: true },
+  clothing: { share: 0.1, essential: true },
+  housing: { share: 0.25, essential: false },
+  transport: { share: 0.1, essential: false },
+  health: { share: 0.08, essential: false },
+  leisure: { share: 0.07, essential: false },
+};
+export const MAX_NEED_DAYS = 7; // nejvíc dní zásoby, kterou lze mít naskladněnou
+// Účinky prázdné zásoby (každá potřeba jiný):
+export const CLOTHING_INCOME = 0.85; // bez oblečení je výdělek nižší
+export const FOOD_REGEN = 0.5; // bez jídla se energie dobíjí napůl
+export const LEISURE_REGEN = 0.8; // bez zábavy se energie dobíjí o pětinu pomaleji
+export const DRINK_DRAIN = 3; // bez pití energie za hodinu ubývá
+export const HEALTH_ENERGY_CAP = 0.7; // bez péče o zdraví nejde energie nad 70 %
+export type Needs = Record<NeedId, number>; // zásoba v dnech
+export const emptyNeeds = (): Needs => ({ food: 0, drink: 0, clothing: 0, housing: 0, transport: 0, health: 0, leisure: 0 });
+export const isNeed = (v: unknown): v is NeedId => NEEDS.includes(v as NeedId);
+
+// Spotřební zboží: kupuje se v obchodě v záložce Potřeby a dá časový boost. Cena je podíl denních nákladů.
+export const BOOSTS = ["energy_drink", "cinema"] as const;
+export type BoostId = (typeof BOOSTS)[number];
+export const BOOST_DEF: Record<BoostId, { need: NeedId; priceShare: number; minutes: number; energy: number; income: number }> = {
+  energy_drink: { need: "drink", priceShare: 0.1, minutes: 30, energy: 2, income: 1 }, // dvojnásobné dobíjení energie
+  cinema: { need: "leisure", priceShare: 0.25, minutes: 120, energy: 1, income: 1.1 }, // +10 % výdělku
+};
+export const MAX_BOOST_MINUTES = 240; // nejdéle se boosty mohou sčítat dopředu
+export const isBoost = (v: unknown): v is BoostId => BOOSTS.includes(v as BoostId);
+export type ActiveBoost = { id: BoostId; until: number };
+export const boostPrice = (state: Pick<EconomyState, "character" | "cash">, id: BoostId): number =>
+  Math.round(livingCost(state) * 24 * BOOST_DEF[id].priceShare);
+
+// Hodinový odhad životních nákladů (cena všech potřeb dohromady při plné spotřebě).
+export function livingCost(state: Pick<EconomyState, "character" | "cash">): number {
+  const ch = state.character;
+  if (!ch) return 0;
+  const country = COUNTRY_DEF[ch.country];
+  const city = CITY_DEF[ch.city];
+  const family = FAMILY_DEF[ch.family];
+  // Životní náklady jsou malé, ale rostou s tím, jak jsi na tom líp (aby hráč nebyl zadarmo bohatý).
+  return (6 * country.living * city.living * family.living) * (1 + Math.log10(1 + state.cash / 1000) * 0.5) * INCOME_SPEED;
+}
+
+// Cena jednoho dne zásoby dané potřeby.
+export const needDaily = (state: Pick<EconomyState, "character" | "cash">, id: NeedId): number =>
+  Math.round(livingCost(state) * 24 * NEED_DEF[id].share);
+
+// Účinky prázdných zásob: každá potřeba má vlastní efekt (viz konstanty výš).
+export type NeedEffects = {
+  income: number; // násobek výdělku (oblečení)
+  energyRegen: number; // násobek dobíjení energie (jídlo, zábava)
+  energyDrain: number; // energie ubývající za hodinu (pití)
+  energyCap: number; // nejvyšší dosažitelná energie v podílu (zdraví)
+  noShift: boolean; // bez dopravy nejde nastoupit na směnu
+  bills: boolean; // nezaplacené účty: každou hodinu pokuta v ceně denního nákladu na bydlení
+};
+export function needsEffects(state: Pick<EconomyState, "needs" | "boosts">, now: number): NeedEffects {
+  const needs = state.needs;
+  const empty = (id: NeedId) => needs[id] <= 0;
+  const boost = (kind: "energy" | "income") =>
+    state.boosts.reduce((m, b) => (b.until > now ? m * BOOST_DEF[b.id][kind] : m), 1);
+  return {
+    income: (empty("clothing") ? CLOTHING_INCOME : 1) * boost("income"),
+    energyRegen: (empty("food") ? FOOD_REGEN : 1) * (empty("leisure") ? LEISURE_REGEN : 1) * boost("energy"),
+    energyDrain: empty("drink") ? DRINK_DRAIN : 0,
+    energyCap: empty("health") ? HEALTH_ENERGY_CAP : 1,
+    noShift: empty("transport"),
+    bills: empty("housing"),
+  };
+}
+
 // --- Stav ---
 
 // --- Krach firmy s varováním ---
@@ -811,6 +889,10 @@ export type EconomyState = {
   lastSeen: number;
   job: JobState | null;
   energy: number;
+  // zásoby životních potřeb (dny)
+  needs: Needs;
+  // aktivní boosty ze spotřebního zboží (until = herní čas konce)
+  boosts: ActiveBoost[];
   shift: ShiftState;
   shiftReadyAt: number;
   restReadyAt: number;
@@ -880,7 +962,8 @@ export type ErrorCode =
   | "no-shift"
   | "low-energy"
   | "sick"
-  | "vacation";
+  | "vacation"
+  | "no-transport";
 
 export type ActionResult =
   | {
@@ -922,6 +1005,8 @@ export function emptyState(now: number, runs = 0, best = 0): EconomyState {
     lastSeen: now,
     job: null,
     energy: ENERGY_MAX,
+    needs: emptyNeeds(),
+    boosts: [],
     shift: null,
     shiftReadyAt: 0,
     restReadyAt: 0,
@@ -1134,6 +1219,8 @@ export function normalizeState(raw: unknown, real: number): EconomyState {
     lastSeen: finite(r.lastSeen, now, 0, now),
     job,
     energy: finite(r.energy, ENERGY_MAX, 0, ENERGY_MAX),
+    needs: normalizeNeeds(r.needs),
+    boosts: normalizeBoosts(r.boosts, now),
     shift,
     shiftReadyAt: finite(r.shiftReadyAt, 0, 0, now + SHIFT_COOLDOWN_MS),
     restReadyAt: finite(r.restReadyAt, 0, 0, now + REST_COOLDOWN_MS),
@@ -1171,6 +1258,22 @@ export function normalizeState(raw: unknown, real: number): EconomyState {
     speed,
     clock,
   };
+}
+
+function normalizeBoosts(raw: unknown, now: number): ActiveBoost[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((b): b is ActiveBoost => !!b && typeof b === "object" && isBoost((b as ActiveBoost).id) && typeof (b as ActiveBoost).until === "number")
+    .map((b) => ({ id: b.id, until: finite(b.until, now, 0, now + MAX_BOOST_MINUTES * 60_000) }))
+    .filter((b) => b.until > now)
+    .slice(-10);
+}
+
+function normalizeNeeds(raw: unknown): Needs {
+  const out = emptyNeeds();
+  const r = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  for (const id of NEEDS) out[id] = finite(r[id], 0, 0, MAX_NEED_DAYS);
+  return out;
 }
 
 function normalizeOrders(raw: unknown, now: number): Order[] {
@@ -1365,10 +1468,10 @@ const avgPerf = (perfs: number[]) => (perfs.length ? perfs.reduce((a, b) => a + 
 export function rates(state: EconomyState, now: number, learning = 0): Rates {
   const ch = state.character;
   if (!ch) return { salary: 0, companies: 0, passive: 0, living: 0, companyCosts: 0, multiplier: 1, net: 0, dividends: 0 };
-  const country = COUNTRY_DEF[ch.country];
   const city = CITY_DEF[ch.city];
   const family = FAMILY_DEF[ch.family];
-  const multiplier = 1 + eduBonus(state.edu) + Math.min(MAX_LEARNING_BONUS, Math.max(0, learning));
+  const effects = needsEffects(state, now);
+  const multiplier = (1 + eduBonus(state.edu) + Math.min(MAX_LEARNING_BONUS, Math.max(0, learning))) * effects.income;
 
   // Pasivní plat: 60 % stupně, nic během nemoci, polovina na dovolené.
   const passiveFactor = state.sickUntil > now ? 0 : state.vacationUntil > now ? VACATION_PAY : 1;
@@ -1401,17 +1504,17 @@ export function rates(state: EconomyState, now: number, learning = 0): Rates {
     passive += income;
     if (a.cat === "stocks") dividends += income;
   }
-  // Životní náklady jsou malé, ale rostou s tím, jak jsi na tom líp (aby hráč nebyl zadarmo bohatý).
-  const living = (LIVING_BASE * country.living * city.living * family.living) * (1 + Math.log10(1 + (state.cash + 0) / 1000) * 0.5);
+  // Životní potřeby se neodečítají pasivně, platí se nákupem v obchodě (viz buyNeed). `living` je jen odhad jejich ceny.
+  const living = livingCost(state);
   const gross = (salary + companies + passive) * multiplier * INCOME_SPEED;
   return {
     salary: salary * INCOME_SPEED,
     companies: companies * INCOME_SPEED,
     passive: passive * INCOME_SPEED,
-    living: living * INCOME_SPEED,
+    living,
     companyCosts: companyCosts * INCOME_SPEED,
     multiplier,
-    net: gross - (living + companyCosts) * INCOME_SPEED,
+    net: gross - companyCosts * INCOME_SPEED,
     dividends: dividends * INCOME_SPEED,
   };
 }
@@ -1444,6 +1547,39 @@ function consumeStock(state: EconomyState, hours: number): EconomyState {
     setup[c.id] = { ...s, stock: Math.max(0, s.stock - n * s.output * INPUT_RATE * hours) };
   }
   return { ...state, setup };
+}
+
+// Spotřeba životních potřeb: každou herní hodinu ubyde 1/24 dne zásoby u každé potřeby.
+function consumeNeeds(state: EconomyState, hours: number): EconomyState {
+  const needs = { ...state.needs };
+  for (const id of NEEDS) needs[id] = Math.max(0, needs[id] - hours / 24);
+  return { ...state, needs };
+}
+
+// Nákup zásoby potřeby v obchodě na několik dní dopředu. Zásoba se nejvýš doplní na MAX_NEED_DAYS.
+export function buyNeed(state: EconomyState, id: unknown, days: unknown, now: number): ActionResult {
+  if (!state.character) return fail("no-character");
+  if (!isNeed(id)) return fail("bad-request");
+  if (typeof days !== "number" || !Number.isInteger(days) || days < 1) return fail("bad-request");
+  const have = state.needs[id];
+  const add = Math.min(days, MAX_NEED_DAYS - have);
+  if (add <= 1e-9) return fail("max");
+  const price = Math.round(needDaily(state, id) * add);
+  if (state.cash < price) return fail("not-enough-cash");
+  return done({ ...state, cash: state.cash - price, needs: { ...state.needs, [id]: have + add } }, now);
+}
+
+// Koupě spotřebního zboží: dá časový boost. Další koupě ho prodlouží (nejvýš MAX_BOOST_MINUTES dopředu).
+export function buyBoost(state: EconomyState, id: unknown, now: number): ActionResult {
+  if (!state.character) return fail("no-character");
+  if (!isBoost(id)) return fail("bad-request");
+  const price = boostPrice(state, id);
+  if (state.cash < price) return fail("not-enough-cash");
+  const def = BOOST_DEF[id];
+  const current = state.boosts.find((b) => b.id === id && b.until > now)?.until ?? now;
+  const until = Math.min(now + MAX_BOOST_MINUTES * 60_000, Math.max(current, now) + def.minutes * 60_000);
+  const boosts = [...state.boosts.filter((b) => b.id !== id || b.until <= now), { id, until }];
+  return done({ ...state, cash: state.cash - price, boosts }, now);
 }
 
 // Nákup dávek vstupů do skladu (zaplatí se předem).
@@ -1521,6 +1657,7 @@ export function settle(state: EconomyState, now: number, learning = 0): EconomyS
   const elapsed = Math.min(Math.max(0, now - state.lastSeen), MAX_OFFLINE_MIN * 60_000 * state.speed);
   const hours = elapsed / H;
   let next: EconomyState = { ...state, lastSeen: now };
+  const fx = needsEffects(state, now);
   if (elapsed > 0) {
     const rate = rates(state, state.lastSeen + elapsed / 2, learning);
     const gain = rate.net * hours;
@@ -1529,11 +1666,14 @@ export function settle(state: EconomyState, now: number, learning = 0): EconomyS
       cash: Math.max(0, state.cash + gain),
       job: state.job ? { ...state.job, hours: state.job.hours + hours } : null,
       totalEarned: state.totalEarned + (gain > 0 ? gain : 0),
-      energy: Math.min(ENERGY_MAX, state.energy + ENERGY_PER_HOUR * hours),
+      energy: Math.min(ENERGY_MAX * fx.energyCap, Math.max(0, state.energy + ENERGY_PER_HOUR * hours * fx.energyRegen - fx.energyDrain * hours)),
     };
   }
-  // Spotřeba vstupů: výroba zásoby postupně odebírá.
+  // Spotřeba vstupů: výroba zásoby postupně odebírá. Stejně tak se ubírají životní potřeby.
   if (elapsed > 0) next = consumeStock(next, hours);
+  if (elapsed > 0) next = consumeNeeds(next, hours);
+  // Nezaplacené účty: každou hodinu pokuta v ceně denního nákladu na bydlení.
+  if (elapsed > 0 && fx.bills) next = { ...next, cash: Math.max(0, next.cash - needDaily(next, "housing") / 24 * hours) };
   // Varování před krachem a případný krach (podle skutečného času, ať nejde obejít čekáním).
   next = checkDistress(next, now, learning);
   // Odchody: když se mění dvouhodinové okno, může firma přijít o jednoho zaměstnance.
@@ -1696,6 +1836,7 @@ export function startShift(state: EconomyState, now: number, rng: () => number =
   if (state.sickUntil > now) return fail("sick");
   if (state.vacationUntil > now) return fail("vacation");
   if (now < state.shiftReadyAt) return fail("cooldown");
+  if (needsEffects(state, now).noShift) return fail("no-transport");
   const extra = state.job.lead ? LEAD_EXTRA_ENERGY : 0;
   if (state.energy < SHIFT_MIN_ENERGY + extra) return fail("low-energy");
 

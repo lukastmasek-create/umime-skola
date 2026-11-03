@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { getEconomyText } from "@/i18n/economy";
 import { getEconomyWork } from "@/i18n/economy-work";
+import { getEconomyNeeds } from "@/i18n/economy-needs";
 import { getEconomyHustle } from "@/i18n/economy-hustle";
 import { notifyAccountChanged } from "@/lib/account-events";
 import { getCraftText } from "@/i18n/craft";
@@ -38,6 +39,13 @@ import {
   JOBS,
   MAX_EDU,
   MAX_JOB_RANK,
+  MAX_NEED_DAYS,
+  NEED_DEF,
+  NEEDS,
+  needDaily,
+  BOOSTS,
+  boostPrice,
+  type BoostId,
   assetPrice,
   companyIncome,
   hustleDue,
@@ -47,6 +55,7 @@ import {
   type CountryId,
   type EraId,
   type FamilyId,
+  type NeedId,
   POINT_BUY_CASH,
   POINT_SELL_CASH,
 } from "@/lib/idle/economy";
@@ -57,7 +66,10 @@ import type { Locale } from "@/i18n/config";
 
 type View = { data: Payload; receivedAt: number };
 type Load = "loading" | "login" | "unavailable" | "ready";
-type Tab = "overview" | "work" | "companies" | "invest" | "hustle" | "board";
+// Ikony potřeb v záložce Potřeby.
+const NEED_EMOJI: Record<NeedId, string> = { food: "🍎", drink: "🥤", clothing: "👕", housing: "🏠", transport: "🚌", health: "🩺", leisure: "🎬" };
+
+type Tab = "overview" | "work" | "needs" | "companies" | "invest" | "hustle" | "board";
 type OvTab = "summary" | "earnings" | "assets" | "education" | "materials";
 type Board = { top: { rank: number; name: string; country: string | null; best: number; runs: number; me: boolean }[]; me: { rank: number; best: number } | null };
 // Výřez z /api/craft: materiály a denní limit nákupu.
@@ -359,7 +371,6 @@ export function EconomyGame({ locale }: { locale: Locale }) {
     { icon: "🏭", label: t.businessIncome, value: r.companies * r.multiplier, cost: false },
     { icon: "🏠", label: t.passiveIncome, value: r.passive * r.multiplier, cost: false },
     { icon: "🧾", label: t.detail.costs, value: r.companyCosts, cost: true },
-    { icon: "🍞", label: t.living, value: r.living, cost: true },
   ];
   const incomeScale = Math.max(1, ...incomeParts.map((p) => p.value));
   const atPeak = worth >= state.peak;
@@ -390,6 +401,10 @@ export function EconomyGame({ locale }: { locale: Locale }) {
   ];
 
   const w = getEconomyWork(locale);
+  const nd = getEconomyNeeds(locale);
+  // Zásoby potřeb ubývají průběžně (stejně jako hotovost), od posledního přepočtu serverem se odečítají z času.
+  const liveNeeds = Object.fromEntries(NEEDS.map((id) => [id, Math.max(0, state.needs[id] - (clock - data.now) / 86_400_000)])) as Record<NeedId, number>;
+  const emptyNeedCount = NEEDS.filter((id) => liveNeeds[id] <= 0.001).length;
   const job = state.job;
   const shiftWait = Math.max(0, state.shiftReadyAt - clock);
   const restWait = Math.max(0, state.restReadyAt - clock);
@@ -411,7 +426,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
       : null;
   const eventText = (p: Payload) => (p.event ? fill(w.events[p.event], { n: m(p.gained?.cash ?? 0) }) : t.toast.bought);
 
-  const tabs: Tab[] = ["overview", "work", "companies", "invest", "hustle", "board"];
+  const tabs: Tab[] = ["overview", "work", "needs", "companies", "invest", "hustle", "board"];
 
   return (
     <div>
@@ -819,6 +834,105 @@ export function EconomyGame({ locale }: { locale: Locale }) {
               )}
             </div>
           )}
+        </section>
+      )}
+
+      {tab === "needs" && (
+        <section className="grid gap-4">
+          <p className="text-sm text-[var(--muted)]">{nd.intro}</p>
+
+          <div className="card flex flex-col gap-2 p-4 text-sm">
+            <p className="font-semibold">{fill(nd.dailyCost, { p: m(r.living * 24) })}</p>
+            <p className={emptyNeedCount > 0 ? "font-semibold text-[var(--danger)]" : "text-[var(--muted)]"}>
+              {emptyNeedCount > 0 ? fill(nd.emptyCount, { n: emptyNeedCount }) : nd.allStocked}
+            </p>
+          </div>
+
+          <div className="card flex flex-col gap-3 p-4">
+            <h2 className="font-bold">{nd.boostsTitle}</h2>
+            <p className="text-sm text-[var(--muted)]">{nd.boostsHint}</p>
+            {BOOSTS.map((id: BoostId) => {
+              const left = Math.max(0, ...state.boosts.filter((b) => b.id === id).map((b) => b.until - clock));
+              const price = boostPrice(state, id);
+              const def = nd.boosts[id];
+              return (
+                <div key={id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-[var(--surface)] p-3">
+                  <div>
+                    <p className="font-semibold">{def.name}</p>
+                    <p className="text-sm text-[var(--muted)]">{def.effect}</p>
+                    <p className="text-xs text-[var(--muted)]">
+                      {left > 0 ? fill(nd.boostLeft, { t: formatLeft(left, t) }) : nd.boostNone}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={busy || state.cash < price}
+                    onClick={() => void act({ action: "buyBoost", id }, () => nd.bought)}
+                    className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white disabled:opacity-45"
+                  >
+                    {nd.buyBoost} · {m(price)}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {NEEDS.map((id) => {
+            const def = nd.items[id];
+            const days = liveNeeds[id];
+            const empty = days <= 0.001;
+            const daily = needDaily(state, id);
+            const room = MAX_NEED_DAYS - state.needs[id];
+            const full = room <= 0.001;
+            return (
+              <div key={id} className="card flex flex-col gap-3 p-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h2 className="font-bold">
+                    {NEED_EMOJI[id]} {def.name}
+                  </h2>
+                  <span className="rounded-full border border-[var(--line)] px-2 py-0.5 text-xs">
+                    {NEED_DEF[id].essential ? nd.essential : nd.common}
+                  </span>
+                </div>
+                <p className="text-sm text-[var(--muted)]">{def.hint}</p>
+                <p className={`rounded-lg px-3 py-2 text-sm ${empty ? "bg-[var(--surface)] font-semibold text-[var(--danger)]" : "bg-[var(--surface)] text-[var(--muted)]"}`}>
+                  {empty ? "⚠ " : ""}
+                  {def.effect}
+                </p>
+                <div>
+                  <div className="mb-1 flex justify-between gap-2 text-sm">
+                    <span className={empty ? "font-bold text-[var(--danger)]" : "font-semibold"}>
+                      {empty ? nd.empty : fill(nd.days, { n: days.toLocaleString(locale, { maximumFractionDigits: 1 }) })}
+                    </span>
+                    <span className="text-[var(--muted)]">{fill(nd.perDay, { p: m(daily) })}</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-[var(--surface)]">
+                    <div className="h-full bg-[var(--accent-green)]" style={{ width: `${Math.min(100, (days / MAX_NEED_DAYS) * 100)}%` }} />
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={busy || full || state.cash < daily * Math.min(1, room)}
+                    onClick={() => void act({ action: "buyNeed", id, amount: 1 }, () => nd.bought)}
+                    className="btn-bouncy bg-[var(--surface)] px-4 py-2 text-sm font-bold disabled:opacity-45"
+                  >
+                    {full ? nd.full : nd.buyDay}
+                  </button>
+                  {!full && (
+                    <button
+                      type="button"
+                      disabled={busy || state.cash < daily * room}
+                      onClick={() => void act({ action: "buyNeed", id, amount: Math.ceil(room) }, () => nd.bought)}
+                      className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white disabled:opacity-45"
+                    >
+                      {fill(nd.fill, { n: MAX_NEED_DAYS })}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </section>
       )}
 
