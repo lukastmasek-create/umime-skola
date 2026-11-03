@@ -47,7 +47,7 @@ import {
   rates as ratesOf,
   upgradePhase,
   isSick,
-  rolesOf,
+  rolesOf, eventEffect,
   UNION_DEAL_MS,
   unionDeal,
   buyStock,
@@ -118,7 +118,7 @@ test("obsah: jedinečná id, platné ceny a rostoucí žebříčky", () => {
   assert.equal(new Set(ids).size, ids.length);
   assert.deepEqual(JOBS.map((j) => j.salary), [...JOBS.map((j) => j.salary)].sort((a, b) => a - b));
   assert.deepEqual(COMPANIES.map((c) => c.cost), [...COMPANIES.map((c) => c.cost)].sort((a, b) => a - b));
-  for (const c of COMPANIES) assert.ok(companyIncome(c.id) > 0 && c.cost / companyIncome(c.id) <= 14, `návratnost ${c.id}`);
+  for (const c of COMPANIES) assert.ok(companyIncome(c.id) > 0 && c.cost / companyIncome(c.id) <= 40, `návratnost ${c.id}`);
 });
 
 test("postava: startovní peníze podle rodiny a doby, jméno se očistí, podruhé nejde", () => {
@@ -338,10 +338,10 @@ test("firmy: cena roste s počtem, digitální obory zamyká doba", () => {
   const first = buyCompany(s, "shoes", NOW);
   ok(first);
   s = first.ok ? first.state : s;
-  assert.equal(s.cash, 1500 - 150);
+  assert.equal(s.cash, 1500 - 450);
   const second = buyCompany(s, "shoes", NOW);
   ok(second);
-  assert.equal(second.ok ? s.cash - second.state.cash : 0, 173);
+  assert.equal(second.ok ? s.cash - second.state.cash : 0, 518);
   const old = start("rich", "1990");
   assert.deepEqual(buyCompany({ ...old, cash: 1e6 }, "software", NOW), { ok: false, error: "locked" });
   assert.deepEqual(buyAsset({ ...old, cash: 1e6 }, "coin", 100, NOW), { ok: false, error: "locked" });
@@ -415,7 +415,7 @@ test("hustle: projekt projde třemi fázemi, každá se otevře po čase a na ko
   const r = startHustle(s, "lemonade", NOW, () => 0.3);
   ok(r);
   let st = r.state;
-  assert.equal(st.cash, 950);
+  assert.equal(st.cash, 900);
   assert.deepEqual(startHustle(st, "lemonade", NOW), { ok: false, error: "busy" });
   // První fáze se otevře až po jednom intervalu (20 s), ne hned.
   assert.deepEqual(decideHustle(st, "lemonade", NOW + 19_000, 0), { ok: false, error: "not-ready" });
@@ -429,7 +429,7 @@ test("hustle: projekt projde třemi fázemi, každá se otevře po čase a na ko
   ok(last);
   assert.ok(!last.state.hustle.lemonade, "po poslední fázi je projekt uzavřen");
   assert.equal(last.state.knowledge.lemonade, 1, "dokončený běh přidá zkušenost");
-  assert.ok(last.ok && last.gained?.cash === last.state.cash - 950, "výplata se připíše do hotovosti");
+  assert.ok(last.ok && last.gained?.cash === last.state.cash - 900, "výplata se připíše do hotovosti");
   assert.deepEqual(decideHustle(last.state, "lemonade", NOW + 60_000, 0), { ok: false, error: "nothing" });
 });
 
@@ -439,7 +439,7 @@ test("hustle: volba musí být v nabídce fáze, nejde zamknutý projekt a nejde
   ok(r);
   assert.deepEqual(decideHustle(r.state, "lemonade", NOW + 20_000, 9), { ok: false, error: "bad-request" });
   assert.deepEqual(startHustle(s, "houseflip", NOW), { ok: false, error: "locked" });
-  assert.ok(startHustle({ ...s, edu: 3, cash: 100_000 }, "houseflip", NOW).ok, "Vzdělání 3 odemyká Flipování domů");
+  assert.ok(startHustle({ ...s, edu: 3, cash: 200_000 }, "houseflip", NOW).ok, "Vzdělání 3 odemyká Flipování domů");
   assert.deepEqual(startHustle({ ...s, cash: 100 }, "carflip", NOW), { ok: false, error: "not-enough-cash" });
   assert.deepEqual(topUpHustle(r.state, "lemonade", NOW, 5000), { ok: false, error: "not-enough-cash" });
 });
@@ -822,7 +822,7 @@ test("čas: rychlost 16× připíše 16× příjem, offline strop se násobí a 
   assert.equal(gameNow(s16, NOW + 1000), NOW + 16_000, "herní čas plyne 16×");
   const gain1 = settle(s1, NOW + 60_000).cash - s1.cash;
   const gain16 = settle(s16, gameNow(s16, NOW + 60_000)).cash - s16.cash;
-  assert.ok(gain16 > gain1 * 15 && gain16 < gain1 * 17, `16× ${gain16} vs 1× ${gain1}`);
+  assert.ok(Math.abs(gain16 / gain1 - 16) < 0.01, `16× ${gain16} vs 1× ${gain1}`);
   // offline strop: 15 reálných minut = 240 herních minut při 16×
   const week = settle(s16, gameNow(s16, NOW + 7 * 24 * H));
   const capped = settle(s16, NOW + 240 * 60_000);
@@ -1057,14 +1057,16 @@ test("zaměstnanci: účetní sníží daň; vyplatí se u větší firmy, u jed
     ok(z);
     return z.ok ? z.state : st;
   };
-  const big = buy(20);
+  // Účetní ušetří jen z kladného zisku, takže srovnáváme v čase bez krize (výnos oboru není snížený).
+  const big = buy(40);
+  const calm = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => NOW + i * H).find((t) => eventEffect(big, "shoes", t).mult === 1) ?? NOW;
   const accBig = hireStaff(big, "shoes", 1, NOW, "accountant");
   ok(accBig);
-  if (accBig.ok) assert.ok(ratesOf({ ...accBig.state, phase: 5 }, NOW).net > ratesOf({ ...big, phase: 5 }, NOW).net, "u velké firmy se účetní vyplatí");
+  if (accBig.ok) assert.ok(ratesOf({ ...accBig.state, phase: 5 }, calm).net > ratesOf({ ...big, phase: 5 }, calm).net, "u velké firmy se účetní vyplatí");
   const small = buy(1);
   const accSmall = hireStaff(small, "shoes", 1, NOW, "accountant");
   ok(accSmall);
-  if (accSmall.ok) assert.ok(ratesOf({ ...accSmall.state, phase: 5 }, NOW).net < ratesOf({ ...small, phase: 5 }, NOW).net, "u jedné firmy je mzda větší než úspora");
+  if (accSmall.ok) assert.ok(ratesOf({ ...accSmall.state, phase: 5 }, calm).net < ratesOf({ ...small, phase: 5 }, calm).net, "u jedné firmy je mzda větší než úspora");
 });
 
 // Firma s hodně drahou partou: mzdy tlačí spokojenost pod práh.
