@@ -53,15 +53,31 @@ node prisma/import-schools.cjs skoly.csv
 
 U XML lze názvy tagů změnit parametry `--record-tag`, `--name-tag` a `--city-tag`. Duplicity se přeskočí.
 
-## Deploy (Vercel nebo Render)
+## Deploy (Cloudflare Workers, doména ucimesehrou.org)
 
-1. Push repozitáře na GitHub.
-2. Na Vercelu/Renderu vytvoř nový projekt a napoj ho na tento GitHub repozitář.
-3. V nastavení projektu (Environment Variables) nastav `DATABASE_URL` a `AUTH_SECRET`
-   stejně jako v `.env`.
-4. Zajisti databázi (např. Render PostgreSQL, Neon, Supabase) a po prvním deployi
-   spusť migraci (`npx prisma migrate deploy`) — na Renderu lze jako "Build Command"
-   použít `npm install && npx prisma migrate deploy && npm run build`.
+Aplikace běží na Cloudflare Workers přes OpenNext (`@opennextjs/cloudflare`), databáze PostgreSQL zůstává externí a připojuje se přes Hyperdrive.
+
+1. Jednorázově vytvoř Hyperdrive konfiguraci nad Postgresem (výstup obsahuje `id`):
+   ```bash
+   npx wrangler hyperdrive create ucimesehrou --connection-string="postgresql://USER:PASS@HOST:5432/DB"
+   ```
+   Vlož `id` do `wrangler.jsonc` (místo `REPLACE_WITH_HYPERDRIVE_ID`).
+2. Nastav secret pro přihlašování (NextAuth):
+   ```bash
+   npx wrangler secret put AUTH_SECRET
+   ```
+3. Zóna `ucimesehrou.org` musí být přidána do účtu Cloudflare. Vlastní doména se nastavuje v `routes` ve `wrangler.jsonc`.
+4. Nasazení:
+   ```bash
+   npm run deploy      # build přes OpenNext + wrangler deploy
+   npm run preview     # lokální náhled v prostředí Workers
+   ```
+5. Po prvním nasazení spusť migraci proti databázi (z lokálního stroje, s `DATABASE_URL` ukazující na produkční Postgres):
+   ```bash
+   npx prisma migrate deploy
+   ```
+
+Lokálně se Prisma připojuje přes `DATABASE_URL` z `.env`. Na Workers se použije binding `HYPERDRIVE`.
 
 ## Další kroky
 

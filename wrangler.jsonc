@@ -1,0 +1,26 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "ucimesehrou",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-13",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  // Připojení k externímu PostgreSQL přes Hyperdrive.
+  // Id vytvoř příkazem: npx wrangler hyperdrive create <nazev> --connection-string="postgresql://..."
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "REPLACE_WITH_HYPERDRIVE_ID"
+    }
+  ],
+  // Vlastní doména ucimesehrou.org (zóna musí být v účtu Cloudflare).
+  "routes": [
+    { "pattern": "ucimesehrou.org", "custom_domain": true }
+  ]
+}
