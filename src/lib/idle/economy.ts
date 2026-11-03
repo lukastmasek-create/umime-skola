@@ -433,31 +433,31 @@ export const ASSETS: AssetDef[] = [
   // kryptoměny (odemknuté až v éře s kryptem)
   asset("coin", "crypto", 500, 0.5, 0, 0, { seed: "crypto", crypto: true }),
   asset("altcoin", "crypto", 120, 0.8, 0, 0.0001, { crypto: true }),
-  asset("stablecoin", "crypto", 10, 0.005, 0.0003, 0, { crypto: true }),
+  asset("stablecoin", "crypto", 10, 0.005, 0.0002, 0, { crypto: true }),
   asset("memecoin", "crypto", 5, 1.2, 0, 0, { crypto: true }),
   asset("defi", "crypto", 80, 0.6, 0.0002, 0.00005, { crypto: true }),
   // pozemky a nemovitosti (výnos násobí nájem ve městě)
-  asset("flat", "realestate", 50_000, 0.04, 0.005, 0.00008, { seed: "realestate" }),
-  asset("house", "realestate", 120_000, 0.05, 0.004, 0.00006),
+  asset("flat", "realestate", 50_000, 0.04, 0.0015, 0.00008, { seed: "realestate" }),
+  asset("house", "realestate", 120_000, 0.05, 0.00125, 0.00006),
   asset("land", "realestate", 20_000, 0.03, 0, 0.0001),
-  asset("office", "realestate", 200_000, 0.06, 0.006, 0.00004),
+  asset("office", "realestate", 200_000, 0.06, 0.00175, 0.00004),
   // akcie
-  asset("technology", "stocks", 100, 0.18, 0.00025, 0.00015, { seed: "stocks" }),
-  asset("energy", "stocks", 80, 0.08, 0.0003, 0.00003),
-  asset("bank", "stocks", 60, 0.12, 0.0004, 0.00005),
-  asset("consumer", "stocks", 40, 0.1, 0.0002, 0.00004),
+  asset("technology", "stocks", 100, 0.18, 0.0004, 0.00015, { seed: "stocks" }),
+  asset("energy", "stocks", 80, 0.08, 0.0008, 0.00003),
+  asset("bank", "stocks", 60, 0.12, 0.0009, 0.00005),
+  asset("consumer", "stocks", 40, 0.1, 0.0005, 0.00004),
   asset("biotech", "stocks", 150, 0.35, 0, 0.0001),
   // kovy
   asset("gold", "metals", 2_000, 0.07, 0, 0.00005, { seed: "metal" }),
   asset("silver", "metals", 30, 0.1, 0, 0.00003),
   asset("copper", "metals", 150, 0.12, 0, 0.00002),
   // dluhopisy
-  asset("state", "bonds", 1_000, 0.01, 0.0015, 0, { seed: "bonds" }),
-  asset("corporate", "bonds", 1_000, 0.03, 0.0022, 0),
-  asset("junk", "bonds", 1_000, 0.12, 0.004, 0),
+  asset("state", "bonds", 1_000, 0.01, 0.0006, 0, { seed: "bonds" }),
+  asset("corporate", "bonds", 1_000, 0.03, 0.001, 0),
+  asset("junk", "bonds", 1_000, 0.12, 0.0025, 0),
   // fondy
-  asset("index", "funds", 300, 0.03, 0.0008, 0.00003, { seed: "fund" }),
-  asset("dividend", "funds", 200, 0.02, 0.0012, 0.00001),
+  asset("index", "funds", 300, 0.03, 0.0004, 0.00003, { seed: "fund" }),
+  asset("dividend", "funds", 200, 0.02, 0.0006, 0.00001),
   asset("theme", "funds", 250, 0.08, 0.0002, 0.00008),
   // startupy: vysoké riziko, bez výnosu, nejvyšší očekávaný růst
   asset("startup_it", "startups", 200, 0.4, 0, 0.0002, { seed: "startup" }),
@@ -548,7 +548,7 @@ export type StartupOutcome = { kind: "run" } | { kind: "krach" } | { kind: "exit
 export const startupRoundOf = (now: number) => Math.floor(now / STARTUP_ROUND_MS);
 export function startupOutcome(id: AssetId, round: number): StartupOutcome {
   const r = hash32(`startup-round:${id}:${round}`);
-  if (r < STARTUP_EXIT_CHANCE) return { kind: "exit", mult: 1.8 + hash32(`startup-mult:${id}:${round}`) * 0.8 };
+  if (r < STARTUP_EXIT_CHANCE) return { kind: "exit", mult: 1.5 + hash32(`startup-mult:${id}:${round}`) * 0.6 };
   if (r < STARTUP_EXIT_CHANCE + STARTUP_KRACH_CHANCE) return { kind: "krach" };
   return { kind: "run" };
 }
