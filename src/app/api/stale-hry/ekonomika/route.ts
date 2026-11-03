@@ -5,6 +5,9 @@ import { prisma } from "@/lib/prisma";
 import {
   arbitrage,
   arbitrageLimit,
+  cancelOrder,
+  currentAssetEvent,
+  placeOrder,
   arbitrageSpread,
   assetPrice,
   buyAsset,
@@ -60,6 +63,7 @@ async function learningFor(userId: string, now: number): Promise<number> {
 function payload(state: EconomyState, points: number, learning: number, now: number) {
   const rate = rates(state, now, learning);
   const event = currentEvent(now);
+  const assetEvent = currentAssetEvent(now);
   return {
     state,
     points,
@@ -71,6 +75,7 @@ function payload(state: EconomyState, points: number, learning: number, now: num
     arbitrage: { spread: arbitrageSpread(now), limit: arbitrageLimit(state) },
     eduCost: eduCost(state.edu),
     event: event ? { id: event.def.id, window: event.window, endsAt: event.endsAt } : null,
+    assetEvent: assetEvent ? { id: assetEvent.def.id, endsAt: assetEvent.endsAt } : null,
   };
 }
 
@@ -91,6 +96,9 @@ type Body = {
   delta?: unknown;
   index?: unknown;
   on?: unknown;
+  side?: unknown;
+  when?: unknown;
+  price?: unknown;
 };
 
 function applyAction(state: EconomyState, body: Body, now: number, learning: number): ActionResult {
@@ -143,6 +151,10 @@ function applyAction(state: EconomyState, body: Body, now: number, learning: num
       return collectHustle(state, body.id, now);
     case "cashOutHustle":
       return cashOutHustle(state, body.id, now);
+    case "placeOrder":
+      return placeOrder(state, { asset: body.id, side: body.side, when: body.when, price: body.price, amount: body.amount, share: body.share }, now);
+    case "cancelOrder":
+      return cancelOrder(state, body.id, now);
     case "investEdu":
       return investEdu(state, now);
     default:

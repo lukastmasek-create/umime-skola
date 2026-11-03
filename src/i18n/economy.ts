@@ -2,6 +2,46 @@ import type { Locale } from "./config";
 import type { AssetCategoryId, AssetId, CityId, CompanyId, CountryId, EraId, EventId, FamilyId, HustleId, JobId } from "@/lib/idle/economy";
 
 // Texty Ekonomiky ve všech čtyřech jazycích.
+// Texty záložky Investice (tržní zprávy, kola startupů, příkazy, graf portfolia).
+export type InvestText = {
+  title: string;
+  portfolio: string;
+  invested: string;
+  profit: string;
+  dividends: string;
+  all: string;
+  chart: string;
+  chartEmpty: string;
+  news: string;
+  newsEmpty: string;
+  eventNow: string;
+  eventEnds: string;
+  ago: string;
+  events: Record<string, string>;
+  newsKinds: Record<string, string>;
+  startupRound: string;
+  orders: string;
+  ordersHint: string;
+  ordersEmpty: string;
+  cancel: string;
+  ordersMax: string;
+  orderButton: string;
+  kindBuyBelow: string;
+  kindSellBelow: string;
+  kindSellAbove: string;
+  kindBuyAbove: string;
+  orderPrice: string;
+  orderAmount: string;
+  orderShare: string;
+  orderShareAll: string;
+  orderShareHalf: string;
+  orderPlace: string;
+  orderDone: string;
+  orderLine: string;
+  summaryTitle: string;
+  cardsEmpty: string;
+};
+
 export type EconomyText = {
   // formátování čísel: jazyk pro oddělovače a zkratky řádů (milion, miliarda, bilion)
   numberLocale: string;
@@ -12,6 +52,7 @@ export type EconomyText = {
   loginHint: string;
   unavailable: string;
   loading: string;
+  inv: InvestText;
   tabs: { overview: string; work: string; companies: string; invest: string; hustle: string; board: string };
   create: {
     title: string;
@@ -207,6 +248,44 @@ const cs: EconomyText = {
   loginHint: "Postup v ekonomice se ukládá k tvému účtu.",
   unavailable: "Hra je teď nedostupná, zkus to za chvíli.",
   loading: "Načítám…",
+  inv: {
+    title: "Investice",
+    portfolio: "Hodnota investic",
+    invested: "Vloženo",
+    profit: "Zisk / ztráta",
+    dividends: "Dividendy / h",
+    all: "Vše",
+    chart: "Vývoj jmění",
+    chartEmpty: "Graf se začne kreslit po pár minutách hry.",
+    news: "Zprávy z trhu",
+    newsEmpty: "Zatím nic nového.",
+    eventNow: "Právě teď: {name}",
+    eventEnds: "končí za {t}",
+    ago: "před {t}",
+    startupRound: "Startupy se vyhodnocují každých 12 hodin: buď vyjdou s výplatou, nebo zkrachují, nebo běží dál.",
+    orders: "Příkazy",
+    ordersHint: "Čekají, až cena dosáhne hranice. Plní se při hraní, mimo hru jen 15 minut.",
+    ordersEmpty: "Žádné čekající příkazy.",
+    cancel: "Zrušit",
+    ordersMax: "Nejvýš {n} čekajících příkazů.",
+    orderButton: "Příkaz",
+    kindBuyBelow: "Limitní nákup (koupit, když klesne na)",
+    kindSellBelow: "Stop-loss (prodat, když klesne na)",
+    kindSellAbove: "Take-profit (prodat, když vyroste na)",
+    kindBuyAbove: "Nákup na průrazu (koupit, když vyroste na)",
+    orderPrice: "Hranice ceny",
+    orderAmount: "Částka",
+    orderShare: "Kolik prodat",
+    orderShareAll: "Celou držbu",
+    orderShareHalf: "Polovinu",
+    orderPlace: "Zadat příkaz",
+    orderDone: "Příkaz je zadaný.",
+    orderLine: "{k} · hranice {p}",
+    summaryTitle: "Přehled portfolia",
+    cardsEmpty: "V této kategorii nic není.",
+    events: { cryptoRally: "Boom kryptoměn", cryptoCrash: "Pád kryptoměn", rateHike: "Zvýšení úroků", rateCut: "Snížení úroků", techBoom: "Technologický boom", goldFear: "Strach z krize, zlato roste", panic: "Panika na trhu", bull: "Býčí trh", bear: "Medvědí trh" },
+    newsKinds: { "startup-exit": "🎉 {a} vyšel: výplata {n}", "startup-krach": "💥 {a} zkrachoval, ztráta {n}", "buy-filled": "✅ Příkaz splněn: koupeno {a} za {n}", "sell-filled": "✅ Příkaz splněn: prodáno {a} za {n}", "order-failed": "⚠️ Příkaz na {a} se nesplnil" },
+  },
   tabs: { overview: "Přehled", work: "Práce", companies: "Firma", invest: "Investice", hustle: "Hustle", board: "Žebříček" },
   create: {
     title: "Vytvoř si postavu",
@@ -441,6 +520,44 @@ const en: EconomyText = {
   loginHint: "Your economy progress is saved to your account.",
   unavailable: "The game is unavailable right now, try again in a moment.",
   loading: "Loading…",
+  inv: {
+    title: "Investments",
+    portfolio: "Portfolio value",
+    invested: "Invested",
+    profit: "Profit / loss",
+    dividends: "Dividends / h",
+    all: "All",
+    chart: "Net worth over time",
+    chartEmpty: "The chart starts after a few minutes of play.",
+    news: "Market news",
+    newsEmpty: "Nothing new yet.",
+    eventNow: "Right now: {name}",
+    eventEnds: "ends in {t}",
+    ago: "{t} ago",
+    startupRound: "Startups are settled every 12 hours: they exit with a payout, go bust, or keep running.",
+    orders: "Orders",
+    ordersHint: "They wait until the price reaches the limit. They fill while you play, and only for 15 minutes while away.",
+    ordersEmpty: "No pending orders.",
+    cancel: "Cancel",
+    ordersMax: "At most {n} pending orders.",
+    orderButton: "Order",
+    kindBuyBelow: "Limit buy (buy when it falls to)",
+    kindSellBelow: "Stop-loss (sell when it falls to)",
+    kindSellAbove: "Take-profit (sell when it rises to)",
+    kindBuyAbove: "Breakout buy (buy when it rises to)",
+    orderPrice: "Price trigger",
+    orderAmount: "Amount",
+    orderShare: "How much to sell",
+    orderShareAll: "All of it",
+    orderShareHalf: "Half",
+    orderPlace: "Place order",
+    orderDone: "Order placed.",
+    orderLine: "{k} · trigger {p}",
+    summaryTitle: "Portfolio overview",
+    cardsEmpty: "Nothing in this category.",
+    events: { cryptoRally: "Crypto boom", cryptoCrash: "Crypto crash", rateHike: "Interest rate hike", rateCut: "Interest rate cut", techBoom: "Tech boom", goldFear: "Crisis fear, gold rises", panic: "Market panic", bull: "Bull market", bear: "Bear market" },
+    newsKinds: { "startup-exit": "🎉 {a} exited: payout {n}", "startup-krach": "💥 {a} went bust, loss {n}", "buy-filled": "✅ Order filled: bought {a} for {n}", "sell-filled": "✅ Order filled: sold {a} for {n}", "order-failed": "⚠️ Order on {a} failed" },
+  },
   tabs: { overview: "Overview", work: "Work", companies: "Company", invest: "Invest", hustle: "Hustle", board: "Leaderboard" },
   create: {
     title: "Create your character",
@@ -675,6 +792,44 @@ const de: EconomyText = {
   loginHint: "Dein Fortschritt in der Wirtschaft wird in deinem Konto gespeichert.",
   unavailable: "Das Spiel ist gerade nicht erreichbar, versuche es gleich noch einmal.",
   loading: "Lädt…",
+  inv: {
+    title: "Investitionen",
+    portfolio: "Portfoliowert",
+    invested: "Eingesetzt",
+    profit: "Gewinn / Verlust",
+    dividends: "Dividenden / Std.",
+    all: "Alle",
+    chart: "Vermögensverlauf",
+    chartEmpty: "Das Diagramm erscheint nach ein paar Minuten Spielzeit.",
+    news: "Marktnachrichten",
+    newsEmpty: "Noch nichts Neues.",
+    eventNow: "Gerade: {name}",
+    eventEnds: "endet in {t}",
+    ago: "vor {t}",
+    startupRound: "Startups werden alle 12 Stunden abgerechnet: Sie haben einen Exit, gehen pleite oder laufen weiter.",
+    orders: "Orders",
+    ordersHint: "Sie warten, bis der Kurs die Grenze erreicht. Ausgeführt werden sie beim Spielen, abwesend nur 15 Minuten.",
+    ordersEmpty: "Keine offenen Orders.",
+    cancel: "Abbrechen",
+    ordersMax: "Höchstens {n} offene Orders.",
+    orderButton: "Order",
+    kindBuyBelow: "Limit-Kauf (kaufen, wenn er auf fällt)",
+    kindSellBelow: "Stop-Loss (verkaufen, wenn er auf fällt)",
+    kindSellAbove: "Take-Profit (verkaufen, wenn er auf steigt)",
+    kindBuyAbove: "Ausbruchs-Kauf (kaufen, wenn er auf steigt)",
+    orderPrice: "Kursgrenze",
+    orderAmount: "Betrag",
+    orderShare: "Wie viel verkaufen",
+    orderShareAll: "Alles",
+    orderShareHalf: "Die Hälfte",
+    orderPlace: "Order aufgeben",
+    orderDone: "Order aufgegeben.",
+    orderLine: "{k} · Grenze {p}",
+    summaryTitle: "Portfolio-Übersicht",
+    cardsEmpty: "In dieser Kategorie ist nichts.",
+    events: { cryptoRally: "Krypto-Boom", cryptoCrash: "Krypto-Crash", rateHike: "Zinserhöhung", rateCut: "Zinssenkung", techBoom: "Tech-Boom", goldFear: "Krisenangst, Gold steigt", panic: "Marktpanik", bull: "Bullenmarkt", bear: "Bärenmarkt" },
+    newsKinds: { "startup-exit": "🎉 {a} hat einen Exit: Auszahlung {n}", "startup-krach": "💥 {a} ist pleite, Verlust {n}", "buy-filled": "✅ Order ausgeführt: {a} für {n} gekauft", "sell-filled": "✅ Order ausgeführt: {a} für {n} verkauft", "order-failed": "⚠️ Order auf {a} fehlgeschlagen" },
+  },
   tabs: { overview: "Übersicht", work: "Arbeit", companies: "Firma", invest: "Investieren", hustle: "Hustle", board: "Rangliste" },
   create: {
     title: "Erstelle deine Figur",
@@ -909,6 +1064,44 @@ const ru: EconomyText = {
   loginHint: "Прогресс в экономике сохраняется в твоём аккаунте.",
   unavailable: "Игра сейчас недоступна, попробуй чуть позже.",
   loading: "Загрузка…",
+  inv: {
+    title: "Инвестиции",
+    portfolio: "Стоимость портфеля",
+    invested: "Вложено",
+    profit: "Прибыль / убыток",
+    dividends: "Дивиденды / ч",
+    all: "Все",
+    chart: "Динамика капитала",
+    chartEmpty: "График появится через несколько минут игры.",
+    news: "Новости рынка",
+    newsEmpty: "Пока ничего нового.",
+    eventNow: "Сейчас: {name}",
+    eventEnds: "закончится через {t}",
+    ago: "{t} назад",
+    startupRound: "Стартапы оцениваются каждые 12 часов: либо выходят с выплатой, либо банкротятся, либо работают дальше.",
+    orders: "Ордера",
+    ordersHint: "Ждут, пока цена дойдёт до границы. Исполняются во время игры, вне игры только 15 минут.",
+    ordersEmpty: "Нет ожидающих ордеров.",
+    cancel: "Отменить",
+    ordersMax: "Не больше {n} ожидающих ордеров.",
+    orderButton: "Ордер",
+    kindBuyBelow: "Лимитная покупка (купить, когда упадёт до)",
+    kindSellBelow: "Стоп-лосс (продать, когда упадёт до)",
+    kindSellAbove: "Тейк-профит (продать, когда вырастет до)",
+    kindBuyAbove: "Покупка на пробое (купить, когда вырастет до)",
+    orderPrice: "Граница цены",
+    orderAmount: "Сумма",
+    orderShare: "Сколько продать",
+    orderShareAll: "Всё",
+    orderShareHalf: "Половину",
+    orderPlace: "Поставить ордер",
+    orderDone: "Ордер поставлен.",
+    orderLine: "{k} · граница {p}",
+    summaryTitle: "Обзор портфеля",
+    cardsEmpty: "В этой категории пусто.",
+    events: { cryptoRally: "Бум криптовалют", cryptoCrash: "Обвал криптовалют", rateHike: "Повышение ставок", rateCut: "Снижение ставок", techBoom: "Технологический бум", goldFear: "Страх кризиса, золото растёт", panic: "Паника на рынке", bull: "Бычий рынок", bear: "Медвежий рынок" },
+    newsKinds: { "startup-exit": "🎉 {a} вышел на выход: выплата {n}", "startup-krach": "💥 {a} обанкротился, убыток {n}", "buy-filled": "✅ Ордер исполнен: куплено {a} на {n}", "sell-filled": "✅ Ордер исполнен: продано {a} на {n}", "order-failed": "⚠️ Ордер на {a} не исполнен" },
+  },
   tabs: { overview: "Обзор", work: "Работа", companies: "Компания", invest: "Инвестиции", hustle: "Подработки", board: "Рейтинг" },
   create: {
     title: "Создай персонажа",
