@@ -230,6 +230,28 @@ export default async function Home({
           </div>
         </div>
       </section>
+
+      {/* 6) O nás */}
+      <section className="zone zone-tech">
+        <Wave fill="#160a2c" />
+        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-24 pt-24 sm:px-6">
+          <h2 className="reveal mb-4 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
+            👋 {h.about.title}
+          </h2>
+          <p className="reveal mb-10 max-w-3xl text-lg leading-relaxed text-[var(--muted)]">{h.about.lead}</p>
+          <div className="grid gap-5 md:grid-cols-3">
+            {h.about.points.map((point) => (
+              <article key={point.title} className="reveal card p-6">
+                <h3 className="mb-2 text-lg font-bold">{point.title}</h3>
+                <p className="text-sm leading-relaxed text-[var(--muted)]">{point.text}</p>
+              </article>
+            ))}
+          </div>
+          <Link href={`/${locale}/kontakt`} className="btn-bouncy btn-secondary mt-10 inline-flex">
+            {h.about.contact} →
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }

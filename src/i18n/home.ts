@@ -23,6 +23,12 @@ export type HomeText = {
   progressPoints: string;
   continueLearning: string;
   openProfile: string;
+  about: {
+    title: string;
+    lead: string;
+    points: { title: string; text: string }[];
+    contact: string;
+  };
 };
 
 const cs: HomeText = {
@@ -57,6 +63,16 @@ const cs: HomeText = {
   progressPoints: "Body",
   continueLearning: "Pokračovat v učení",
   openProfile: "Otevřít profil",
+  about: {
+    title: "O nás",
+    lead: "Učíme se hrou je vzdělávací web pro žáky 1. až 9. třídy. Věříme, že se člověk nejlépe učí tehdy, když ho to baví. Proto procvičování spojujeme s hrami, body a malými výzvami a ke každé odpovědi máš vysvětlení.",
+    points: [
+      { title: "Co děláme", text: "Připravujeme kurzy a testy ke čtrnácti předmětům od 1. do 9. třídy, každý s pěti úrovněmi obtížnosti." },
+      { title: "Proč hrou", text: "Za správné odpovědi získáš body, odemkneš vylepšení a postoupíš o úroveň výš. Učení tak připomíná hru, ne úkol." },
+      { title: "Pro koho", text: "Pro žáky, rodiče i učitele. Registrace je zdarma a body, úrovně i časy v únikovkách si uložíš na svůj účet." },
+    ],
+    contact: "Napiš nám",
+  },
 };
 
 const en: HomeText = {
@@ -91,6 +107,16 @@ const en: HomeText = {
   progressPoints: "Points",
   continueLearning: "Keep learning",
   openProfile: "Open profile",
+  about: {
+    title: "About us",
+    lead: "Učíme se hrou (Let's learn through play) is an educational website for pupils in grades 1 to 9. We believe people learn best when they enjoy it, so we combine practice with games, points and small challenges, and every answer comes with an explanation.",
+    points: [
+      { title: "What we do", text: "We create courses and tests for fourteen subjects from grade 1 to 9, each with five difficulty levels." },
+      { title: "Why through play", text: "Correct answers earn points, unlock upgrades and move you up a level. Learning feels like a game, not a chore." },
+      { title: "Who it's for", text: "Pupils, parents and teachers. Registration is free, and your points, levels and escape room times are saved to your account." },
+    ],
+    contact: "Write to us",
+  },
 };
 
 const de: HomeText = {
@@ -125,6 +151,16 @@ const de: HomeText = {
   progressPoints: "Punkte",
   continueLearning: "Weiterlernen",
   openProfile: "Profil öffnen",
+  about: {
+    title: "Über uns",
+    lead: "Učíme se hrou (Lernen durch Spielen) ist eine Lernplattform für Schülerinnen und Schüler der 1. bis 9. Klasse. Wir glauben, dass man am besten lernt, wenn es Spaß macht. Deshalb verbinden wir Üben mit Spielen, Punkten und kleinen Herausforderungen, und zu jeder Antwort gibt es eine Erklärung.",
+    points: [
+      { title: "Was wir machen", text: "Wir erstellen Kurse und Tests zu vierzehn Fächern von der 1. bis zur 9. Klasse, jeweils mit fünf Schwierigkeitsstufen." },
+      { title: "Warum spielerisch", text: "Richtige Antworten bringen Punkte, schalten Verbesserungen frei und lassen dich aufsteigen. Lernen fühlt sich wie ein Spiel an, nicht wie eine Pflicht." },
+      { title: "Für wen", text: "Für Schülerinnen und Schüler, Eltern und Lehrkräfte. Die Registrierung ist kostenlos, und Punkte, Level und Zeiten aus den Escape Rooms werden in deinem Konto gespeichert." },
+    ],
+    contact: "Schreib uns",
+  },
 };
 
 const ru: HomeText = {
@@ -159,6 +195,16 @@ const ru: HomeText = {
   progressPoints: "Баллы",
   continueLearning: "Продолжить обучение",
   openProfile: "Открыть профиль",
+  about: {
+    title: "О нас",
+    lead: "Učíme se hrou («Учимся играя») — образовательный сайт для учеников с 1 по 9 класс. Мы считаем, что лучше всего учиться тогда, когда это интересно. Поэтому мы сочетаем тренировку с играми, баллами и небольшими заданиями, а к каждому ответу есть объяснение.",
+    points: [
+      { title: "Что мы делаем", text: "Создаём курсы и тесты по четырнадцати предметам с 1 по 9 класс, в каждом пять уровней сложности." },
+      { title: "Почему через игру", text: "Верные ответы приносят баллы, открывают улучшения и помогают подниматься на уровень выше. Учёба становится похожа на игру, а не на обязанность." },
+      { title: "Для кого", text: "Для учеников, родителей и учителей. Регистрация бесплатна, а баллы, уровни и время в квестах сохраняются в твоём аккаунте." },
+    ],
+    contact: "Напиши нам",
+  },
 };
 
 const texts: Record<Locale, HomeText> = { cs, en, de, ru };
