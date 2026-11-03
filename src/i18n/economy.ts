@@ -1,5 +1,5 @@
 import type { Locale } from "./config";
-import type { AssetCategoryId, AssetId, CityId, CompanyId, CountryId, EraId, EventId, FamilyId, HustleId, JobId } from "@/lib/idle/economy";
+import type { AssetCategoryId, AssetId, CityId, CompanyId, CountryId, EraId, EventId, FamilyId, HustleId, JobId, StaffRole } from "@/lib/idle/economy";
 
 // Texty Ekonomiky ve všech čtyřech jazycích.
 // Texty záložky Investice (tržní zprávy, kola startupů, příkazy, graf portfolia).
@@ -88,6 +88,10 @@ export type EconomyText = {
     hire: string;
     fire: string;
     staffFull: string;
+    roles: Record<StaffRole, string>;
+    roleFull: string;
+    rookie: string;
+    sick: string;
     price: string;
     output: string;
     risk: string;
@@ -370,6 +374,10 @@ const cs: EconomyText = {
     hire: "Najmout za {n}",
     fire: "Propustit",
     staffFull: "Kapacita je plná",
+    roles: { producer: "Výrobce", seller: "Prodavač", accountant: "Účetní", manager: "Manažer" },
+    roleFull: "Max. 1 na firmu",
+    rookie: "Nově najatí se zaškolují: ještě {t}",
+    sick: "Jeden výrobce je dnes nemocný",
     price: "Cena produktu",
     output: "Výroba",
     risk: "Riziko",
@@ -674,6 +682,10 @@ const en: EconomyText = {
     hire: "Hire for {n}",
     fire: "Let go",
     staffFull: "At capacity",
+    roles: { producer: "Producer", seller: "Seller", accountant: "Accountant", manager: "Manager" },
+    roleFull: "Max. 1 per company",
+    rookie: "New hires are training: {t} left",
+    sick: "One producer is sick today",
     price: "Product price",
     output: "Production",
     risk: "Risk",
@@ -978,6 +990,10 @@ const de: EconomyText = {
     hire: "Einstellen für {n}",
     fire: "Entlassen",
     staffFull: "Kapazität erreicht",
+    roles: { producer: "Produzent", seller: "Verkäufer", accountant: "Buchhalter", manager: "Manager" },
+    roleFull: "Max. 1 pro Firma",
+    rookie: "Neue Mitarbeitende werden eingearbeitet: noch {t}",
+    sick: "Ein Produzent ist heute krank",
     price: "Produktpreis",
     output: "Produktion",
     risk: "Risiko",
@@ -1282,6 +1298,10 @@ const ru: EconomyText = {
     hire: "Нанять за {n}",
     fire: "Уволить",
     staffFull: "Нет мест",
+    roles: { producer: "Производитель", seller: "Продавец", accountant: "Бухгалтер", manager: "Менеджер" },
+    roleFull: "Не больше 1 на компанию",
+    rookie: "Новые сотрудники обучаются: ещё {t}",
+    sick: "Один производитель сегодня болеет",
     price: "Цена продукта",
     output: "Производство",
     risk: "Риск",

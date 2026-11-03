@@ -21,6 +21,11 @@ import {
   eventAffects,
   fundPrice,
   hireCost,
+  isSick,
+  ROLE_MAX,
+  ROLE_WAGE,
+  STAFF_ROLES,
+  rolesOf,
   isLocked,
   isNegativeEvent,
   MAX_RESEARCH,
@@ -288,6 +293,7 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
   const costs = y.costs * INCOME_SPEED;
   const net = gross - costs;
   const maxStaff = owned * MAX_STAFF_PER_UNIT;
+  const roles = rolesOf(s);
   const ev = currentEvent(clock);
   const affected = !!ev && eventAffects(ev.def, id);
   const funded = !!ev && state.responses[id] === ev.window;
@@ -482,24 +488,38 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
           👥 {t.detail.staff} · {s.staff}/{maxStaff}
         </h3>
         <p className="text-xs text-[var(--muted)]">{t.detail.staffHint}</p>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            disabled={busy || s.staff <= 0}
-            onClick={() => void act({ action: "hireStaff", id, delta: -1 }, () => t.toast.fired)}
-            className="btn-bouncy bg-[var(--surface)] px-3 py-2 text-sm font-bold disabled:opacity-45"
-          >
-            − {t.detail.fire}
-          </button>
-          <button
-            type="button"
-            disabled={busy || s.staff >= maxStaff || liveCash < hireCost(id)}
-            onClick={() => void act({ action: "hireStaff", id, delta: 1 }, () => t.toast.hired)}
-            className="btn-bouncy bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
-          >
-            {s.staff >= maxStaff ? t.detail.staffFull : `+ ${fill(t.detail.hire, { n: m(hireCost(id)) })}`}
-          </button>
-        </div>
+        {clock < s.rookieUntil && <p className="text-xs font-semibold">{fill(t.detail.rookie, { t: formatLeft(s.rookieUntil - clock, t) })}</p>}
+        {isSick(id, clock) && roles.producer > 0 && <p className="text-xs font-semibold">🤒 {t.detail.sick}</p>}
+        <ul className="flex flex-col gap-2">
+          {STAFF_ROLES.map((role) => {
+            const cap = ROLE_MAX[role];
+            const full = s.staff >= maxStaff || (cap !== null && roles[role] >= cap);
+            const wage = Math.round(hireCost(id) * ROLE_WAGE[role]);
+            return (
+              <li key={role} className="flex flex-wrap items-center gap-2">
+                <span className="min-w-[9rem] font-bold">
+                  {t.detail.roles[role]} · {roles[role]}
+                </span>
+                <button
+                  type="button"
+                  disabled={busy || roles[role] <= 0}
+                  onClick={() => void act({ action: "hireStaff", id, delta: -1, role }, () => t.toast.fired)}
+                  className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-sm font-bold disabled:opacity-45"
+                >
+                  − {t.detail.fire}
+                </button>
+                <button
+                  type="button"
+                  disabled={busy || full || liveCash < wage}
+                  onClick={() => void act({ action: "hireStaff", id, delta: 1, role }, () => t.toast.hired)}
+                  className="btn-bouncy bg-[var(--brand-500)] px-3 py-1.5 text-sm font-bold text-white disabled:opacity-45"
+                >
+                  {full ? (cap !== null && roles[role] >= cap ? t.detail.roleFull : t.detail.staffFull) : `+ ${fill(t.detail.hire, { n: m(wage) })}`}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
       </div>
 
       <div className="flex flex-col gap-2">

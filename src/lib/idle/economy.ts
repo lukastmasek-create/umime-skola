@@ -275,15 +275,66 @@ export const SETTING_RANGE = {
   risk: { min: 0, max: 1, step: 0.05 },
 } as const;
 export type SettingKey = keyof typeof SETTING_RANGE;
+// --- Zaměstnanci s rolemi ---
+export const STAFF_ROLES = ["producer", "seller", "accountant", "manager"] as const;
+export type StaffRole = (typeof STAFF_ROLES)[number];
+export type StaffRoles = Record<StaffRole, number>;
+export const isStaffRole = (v: unknown): v is StaffRole => STAFF_ROLES.includes(v as StaffRole);
+// Mzda role v násobku základní mzdy zaměstnance.
+export const ROLE_WAGE: Record<StaffRole, number> = { producer: 1, seller: 1, accountant: 1.5, manager: 2.5 };
+// Nejvíc lidí jedné role na firmu (null = bez limitu kromě celkové kapacity).
+export const ROLE_MAX: Record<StaffRole, number | null> = { producer: null, seller: null, accountant: 1, manager: 1 };
+export const SELLER_OUTPUT = 0.08; // prodavač přidá prodej (na celou firmu přepočteno jako výroba)
+export const MANAGER_BONUS = 0.1; // manažer zvedne výnos firmy o pevný podíl
+export const ACCOUNTANT_TAX_CUT = 0.15; // každý účetní sníží daň o tento podíl (celkově)
+export const ACCOUNTANT_TAX_MAX = 0.5;
+export const ROOKIE_MS = 6 * H; // po náboru se firma zaškoluje
+export const ROOKIE_FACTOR = 0.6; // výkon zaškolované firmy
+export const STAFF_SICK_CHANCE = 0.1; // šance, že v daném okně je jeden výrobce nemocný
+export const QUIT_CHANCE = 0.15; // šance, že firma v daném okně přijde o jednoho zaměstnance (odchod)
+export const emptyRoles = (): StaffRoles => ({ producer: 0, seller: 0, accountant: 0, manager: 0 });
+
 export type CompanySetup = {
   upgraded: boolean; // jednorázové vylepšení celého oboru
-  staff: number; // zaměstnanci celkem (max MAX_STAFF_PER_UNIT na kus)
+  staff: number; // zaměstnanci celkem (max MAX_STAFF_PER_UNIT na kus), součet rolí
+  roles: StaffRoles; // rozdělení podle rolí (výrobce = zbytek)
+  rookieUntil: number; // do kdy se zaškolují noví lidé
   price: number;
   output: number;
   risk: number;
   marketingUntil: number; // do kdy běží marketingová kampaň
 };
-export const DEFAULT_SETUP: CompanySetup = { upgraded: false, staff: 0, price: 1, output: 1, risk: 0.3, marketingUntil: 0 };
+export const DEFAULT_SETUP: CompanySetup = {
+  upgraded: false,
+  staff: 0,
+  roles: emptyRoles(),
+  rookieUntil: 0,
+  price: 1,
+  output: 1,
+  risk: 0.3,
+  marketingUntil: 0,
+};
+// Rozdělení rolí. Výrobce je to, co zbyde z celkového počtu (starší data mají jen staff).
+export function rolesOf(s: Pick<CompanySetup, "staff" | "roles">): StaffRoles {
+  const r = s.roles ?? emptyRoles();
+  const others = (r.seller ?? 0) + (r.accountant ?? 0) + (r.manager ?? 0);
+  return { producer: Math.max(0, s.staff - others), seller: r.seller ?? 0, accountant: r.accountant ?? 0, manager: r.manager ?? 0 };
+}
+// Ořízne počet na kapacitu a přebytek bere nejdřív z výrobců, pak z ostatních rolí.
+function fitStaff(s: CompanySetup, cap: number): CompanySetup {
+  const r = rolesOf(s);
+  let excess = Math.max(0, s.staff - cap);
+  const out = { ...r };
+  for (const k of ["producer", "seller", "manager", "accountant"] as StaffRole[]) {
+    const d = Math.min(out[k], excess);
+    out[k] -= d;
+    excess -= d;
+  }
+  const staff = Math.min(cap, out.producer + out.seller + out.accountant + out.manager);
+  return { ...s, staff, roles: { ...out, producer: staff - (out.seller + out.accountant + out.manager) } };
+}
+// Nemoc: v okně může být jeden výrobce nemocný. Je to čistá funkce času, takže server i prohlížeč vidí totéž.
+export const isSick = (id: CompanyId, now: number): boolean => hash32(`sick:${id}:${eventWindow(now)}`) < STAFF_SICK_CHANCE;
 export const clampSetting = (key: SettingKey, v: number) => {
   const r = SETTING_RANGE[key];
   const snapped = Math.round(v / r.step) * r.step;
@@ -804,9 +855,20 @@ export function normalizeState(raw: unknown, real: number): EconomyState {
     if (n > 0 && endsAt > now) contracts[def.id] = endsAt;
     const s = (r.setup as Record<string, Partial<Record<keyof CompanySetup, unknown>>> | undefined)?.[def.id];
     if (n > 0 && s && typeof s === "object") {
+      const rIn = (s.roles ?? {}) as Record<string, unknown>;
+      const cap = n * MAX_STAFF_PER_UNIT;
+      const roles = emptyRoles();
+      roles.seller = Math.floor(finite(rIn.seller, 0, 0, cap));
+      roles.accountant = Math.floor(finite(rIn.accountant, 0, 0, Math.min(cap, ROLE_MAX.accountant ?? cap)));
+      roles.manager = Math.floor(finite(rIn.manager, 0, 0, Math.min(cap, ROLE_MAX.manager ?? cap)));
+      const others = roles.seller + roles.accountant + roles.manager;
+      const staffIn = Math.floor(finite(s.staff, 0, 0, cap));
+      const fixed = fitStaff({ ...DEFAULT_SETUP, staff: Math.max(staffIn, others), roles }, cap);
       setup[def.id] = {
         upgraded: s.upgraded === true,
-        staff: Math.floor(finite(s.staff, 0, 0, n * MAX_STAFF_PER_UNIT)),
+        staff: fixed.staff,
+        roles: fixed.roles,
+        rookieUntil: finite(s.rookieUntil, 0, 0, now + ROOKIE_MS),
         price: clampSetting("price", finite(s.price, 1, SETTING_RANGE.price.min, SETTING_RANGE.price.max)),
         output: clampSetting("output", finite(s.output, 1, SETTING_RANGE.output.min, SETTING_RANGE.output.max)),
         risk: clampSetting("risk", finite(s.risk, 0.3, SETTING_RANGE.risk.min, SETTING_RANGE.risk.max)),
@@ -1100,7 +1162,13 @@ export function companyYield(state: EconomyState, id: CompanyId, now: number): {
   const s = setupOf(state, id);
   const effect = eventEffect(state, id, now);
   const base = n * companyIncome(id);
-  const staffMult = 1 + STAFF_OUTPUT * (s.staff / n);
+  const roles = rolesOf(s);
+  const rookie = now < s.rookieUntil ? ROOKIE_FACTOR : 1;
+  const producers = Math.max(0, roles.producer - (roles.producer > 0 && isSick(id, now) ? 1 : 0));
+  const staffMult = 1 + STAFF_OUTPUT * ((producers * rookie) / n);
+  const salesMult = 1 + SELLER_OUTPUT * ((roles.seller * rookie) / n);
+  const managerMult = roles.manager > 0 ? 1 + MANAGER_BONUS : 1;
+  const wages = STAFF_ROLES.reduce((sum, k) => sum + roles[k] * ROLE_WAGE[k], 0);
   const boost =
     (s.upgraded ? 1 + UPGRADE_BONUS : 1) *
     s.price *
@@ -1108,13 +1176,15 @@ export function companyYield(state: EconomyState, id: CompanyId, now: number): {
     riskOutput(s.risk) *
     (now < s.marketingUntil ? MARKETING_BONUS : 1) *
     staffMult *
+    salesMult *
+    managerMult *
     effect.mult *
     (contractActive(state, id, now) ? 1 + CONTRACT_BONUS : 1) *
     (1 + RESEARCH_BONUS * researchLevel(state, id)) *
     rivalMult(state, id, now);
   return {
     gross: base * boost,
-    costs: base * upkeepShare(s.output) + s.staff * companyIncome(id) * STAFF_WAGE * effect.wageMult,
+    costs: base * upkeepShare(s.output) + wages * companyIncome(id) * STAFF_WAGE * effect.wageMult,
   };
 }
 
@@ -1135,16 +1205,19 @@ export function rates(state: EconomyState, now: number, learning = 0): Rates {
   let companies = 0;
   let companyCosts = 0;
   let companyValue = 0;
+  let accountants = 0;
   for (const c of COMPANIES) {
     const y = companyYield(state, c.id, now);
     companies += y.gross;
     companyCosts += y.costs;
     companyValue += c.cost * (state.companies[c.id] ?? 0) * family.company;
+    if ((state.companies[c.id] ?? 0) > 0) accountants += rolesOf(setupOf(state, c.id)).accountant;
   }
+  const taxCut = Math.min(ACCOUNTANT_TAX_MAX, ACCOUNTANT_TAX_CUT * accountants);
   // Nájem a daň podle fáze firmy. Nájem má minimum z hodnoty firem, takže neklesne k nule ani při malém výnosu.
   const phase = PHASE_RATES[Math.min(MAX_PHASE, Math.max(1, state.phase)) - 1];
   const rent = Math.max(phase.rent * companies, RENT_FLOOR * companyValue);
-  const tax = phase.tax * Math.max(0, companies - companyCosts - rent);
+  const tax = phase.tax * (1 - taxCut) * Math.max(0, companies - companyCosts - rent);
   companyCosts += rent + tax;
   let passive = 0;
   let dividends = 0;
@@ -1190,6 +1263,21 @@ export function gameNow(state: Pick<EconomyState, "speed" | "clock">, real: numb
 
 // Připíše příjem za uplynulý čas a doplní energii. Sazba se bere z poloviny úseku (cena aktiv se mění), proto stačí hrubý odhad.
 // Prémie se vyplácí jednou za den, bez ohledu na offline strop.
+// Odchod zaměstnance: jedna šance na firmu v daném okně. Odejde člověk z nejpočetnější role.
+function applyQuits(state: EconomyState, now: number): EconomyState {
+  const window = eventWindow(now);
+  const setup = { ...state.setup };
+  for (const c of COMPANIES) {
+    const s = state.setup[c.id];
+    if (!s || s.staff <= 0 || (state.companies[c.id] ?? 0) <= 0) continue;
+    if (hash32(`quit:${c.id}:${window}`) >= QUIT_CHANCE) continue;
+    const roles = rolesOf(s);
+    const role = STAFF_ROLES.reduce((best, k) => (roles[k] > roles[best] ? k : best), STAFF_ROLES[0]);
+    setup[c.id] = { ...s, staff: s.staff - 1, roles: { ...roles, [role]: roles[role] - 1 } };
+  }
+  return { ...state, setup };
+}
+
 export function settle(state: EconomyState, now: number, learning = 0): EconomyState {
   if (!state.character) return { ...state, lastSeen: now };
   const elapsed = Math.min(Math.max(0, now - state.lastSeen), MAX_OFFLINE_MIN * 60_000 * state.speed);
@@ -1206,6 +1294,8 @@ export function settle(state: EconomyState, now: number, learning = 0): EconomyS
       energy: Math.min(ENERGY_MAX, state.energy + ENERGY_PER_HOUR * hours),
     };
   }
+  // Odchody: když se mění dvouhodinové okno, může firma přijít o jednoho zaměstnance.
+  if (elapsed > 0 && eventWindow(now) !== eventWindow(state.lastSeen)) next = applyQuits(next, now);
   if (now - state.bonusAt >= BONUS_MS) {
     const bonus = state.dayPay * BONUS_SHARE;
     next = { ...next, cash: next.cash + bonus, totalEarned: next.totalEarned + bonus, dayPay: 0, bonusAt: now };
@@ -1552,20 +1642,31 @@ export function upgradeCompany(state: EconomyState, id: unknown, now: number): A
   return done({ ...state, cash: state.cash - price, setup: withSetup(state, o.id, { upgraded: true }) }, now);
 }
 
-export function hireStaff(state: EconomyState, id: unknown, delta: unknown, now: number): ActionResult {
+export function hireStaff(state: EconomyState, id: unknown, delta: unknown, now: number, role: unknown = "producer"): ActionResult {
   const o = ownedCompany(state, id);
   if (o.error) return fail(o.error);
   if (delta !== 1 && delta !== -1) return fail("bad-request");
+  if (!isStaffRole(role)) return fail("bad-request");
   const s = setupOf(state, o.id);
   const n = state.companies[o.id] ?? 0;
+  const roles = rolesOf(s);
   if (delta === -1) {
-    if (s.staff <= 0) return fail("nothing");
-    return done({ ...state, setup: withSetup(state, o.id, { staff: s.staff - 1 }) }, now);
+    if (roles[role] <= 0) return fail("nothing");
+    const next = { ...roles, [role]: roles[role] - 1 };
+    return done({ ...state, setup: withSetup(state, o.id, { staff: s.staff - 1, roles: next }) }, now);
   }
   if (s.staff >= n * MAX_STAFF_PER_UNIT) return fail("max");
-  const fee = hireCost(o.id);
+  const cap = ROLE_MAX[role];
+  if (cap !== null && roles[role] >= cap) return fail("max");
+  const fee = Math.round(hireCost(o.id) * ROLE_WAGE[role]);
   if (state.cash < fee) return fail("not-enough-cash");
-  return done({ ...state, cash: state.cash - fee, setup: withSetup(state, o.id, { staff: s.staff + 1 }) }, now);
+  const next = { ...roles, [role]: roles[role] + 1 };
+  // Noví lidé se zaškolují: celá firma je chvíli méně výkonná.
+  const rookieUntil = Math.max(now, s.rookieUntil) + ROOKIE_MS;
+  return done(
+    { ...state, cash: state.cash - fee, setup: withSetup(state, o.id, { staff: s.staff + 1, roles: next, rookieUntil }) },
+    now,
+  );
 }
 
 // Nastavení čísla (cena, výroba, riziko) v rozsahu SETTING_RANGE. Hodnota se zaokrouhlí a ořízne.
@@ -1625,7 +1726,7 @@ export function sellCompany(state: EconomyState, id: unknown, now: number): Acti
     delete contracts[o.id];
   } else if (state.setup[o.id]) {
     const s = state.setup[o.id]!;
-    setup[o.id] = { ...s, staff: Math.min(s.staff, (n - 1) * MAX_STAFF_PER_UNIT) };
+    setup[o.id] = fitStaff(s, (n - 1) * MAX_STAFF_PER_UNIT);
   }
   return done({ ...state, cash: state.cash + money, companies, setup, contracts }, now, { gained: { cash: money } });
 }

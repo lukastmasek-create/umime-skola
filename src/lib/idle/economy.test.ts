@@ -45,6 +45,8 @@ import {
   phaseRequirement,
   rates as ratesOf,
   upgradePhase,
+  isSick,
+  rolesOf,
   sellCompany,
   signContract,
   chooseShift,
@@ -918,4 +920,91 @@ test("uložená hra bez nových polí se načte a neplatné příkazy se zahodí
     NOW,
   );
   assert.deepEqual(bad.orders.map((o) => o.id), ["y"]);
+});
+
+test("zaměstnanci: role se nabírají zvlášť, účetní a manažer jsou jen jeden na firmu", () => {
+  const bought = buyCompany({ ...start("rich"), cash: 1e9 }, "shoes", NOW);
+  ok(bought);
+  let s = bought.ok ? bought.state : emptyState(NOW);
+  const seller = hireStaff(s, "shoes", 1, NOW, "seller");
+  ok(seller);
+  s = seller.ok ? seller.state : s;
+  assert.equal(rolesOf(s.setup.shoes!).seller, 1);
+  assert.equal(s.setup.shoes!.staff, 1);
+  const mgr = hireStaff(s, "shoes", 1, NOW, "manager");
+  ok(mgr);
+  s = mgr.ok ? mgr.state : s;
+  assert.deepEqual(hireStaff(s, "shoes", 1, NOW, "manager"), { ok: false, error: "max" }, "manažer je jen jeden");
+  assert.deepEqual(hireStaff(s, "shoes", 1, NOW, "nobody"), { ok: false, error: "bad-request" });
+  const fired = hireStaff(s, "shoes", -1, NOW, "seller");
+  ok(fired);
+  assert.equal(rolesOf(fired.ok ? fired.state.setup.shoes! : s.setup.shoes!).seller, 0);
+  assert.deepEqual(hireStaff(fired.ok ? fired.state : s, "shoes", -1, NOW, "seller"), { ok: false, error: "nothing" });
+});
+
+test("zaměstnanci: prodavač a manažer zvednou výnos; nová parta je chvíli méně výkonná", () => {
+  const bought = buyCompany({ ...start("rich"), cash: 1e9 }, "shoes", NOW);
+  ok(bought);
+  const base = bought.ok ? bought.state : emptyState(NOW);
+  const plain = companyYield(base, "shoes", NOW).gross;
+  const sellerHire = hireStaff(base, "shoes", 1, NOW, "seller");
+  ok(sellerHire);
+  if (!sellerHire.ok) return;
+  const withSeller = sellerHire.state;
+  assert.ok(companyYield(withSeller, "shoes", NOW).gross > plain, "prodavač zvedne výnos");
+  const mgr = hireStaff(base, "shoes", 1, NOW, "manager");
+  ok(mgr);
+  if (mgr.ok) assert.ok(companyYield(mgr.state, "shoes", NOW).gross > plain, "manažer zvedne výnos");
+  const trained = { ...withSeller, setup: { ...withSeller.setup, shoes: { ...withSeller.setup.shoes!, rookieUntil: 0 } } };
+  assert.ok(companyYield(withSeller, "shoes", NOW).gross < companyYield(trained, "shoes", NOW).gross, "zaškolení stojí výkon");
+});
+
+test("zaměstnanci: nemoc je deterministická a v okně se nemění", () => {
+  let sick = 0;
+  for (let i = 0; i < 1000; i++) if (isSick("shoes", NOW + i * EVENT_WINDOW_MS)) sick++;
+  assert.ok(sick > 20 && sick < 200, `nemoc zhruba v 10 % oken, je ${sick}`);
+  assert.equal(isSick("shoes", NOW), isSick("shoes", NOW + 1000), "uvnitř okna se nemění");
+});
+
+test("zaměstnanci: odchod nikdy nevezme víc, než je v firmě lidí, a ubere z nejpočetnější role", () => {
+  const bought = buyCompany({ ...start("rich"), cash: 1e9 }, "shoes", NOW);
+  ok(bought);
+  let s = bought.ok ? bought.state : emptyState(NOW);
+  for (const role of ["producer", "producer", "seller"] as const) {
+    const h = hireStaff(s, "shoes", 1, NOW, role);
+    ok(h);
+    s = h.ok ? h.state : s;
+  }
+  let drops = 0;
+  for (let w = 1; w <= 200; w++) {
+    const boundary = w * EVENT_WINDOW_MS;
+    const after = settle({ ...s, lastSeen: boundary - 1000 }, boundary + 1000);
+    const before = s.setup.shoes!.staff;
+    const left = after.setup.shoes?.staff ?? 0;
+    assert.ok(left >= 0 && left <= before, "nikdy víc, než bylo");
+    const r = rolesOf(after.setup.shoes ?? s.setup.shoes!);
+    assert.ok(r.producer >= 0 && r.seller >= 0, "role nejsou záporné");
+    if (left < before) drops++;
+  }
+  assert.ok(drops > 0, "za 200 oken někdo odejde");
+});
+
+test("zaměstnanci: účetní sníží daň; vyplatí se u větší firmy, u jedné firmy ne", () => {
+  const buy = (n: number) => {
+    let st = { ...start("rich"), cash: 1e12 };
+    for (let i = 0; i < n; i++) {
+      const b = buyCompany(st, "shoes", NOW);
+      ok(b);
+      st = b.ok ? b.state : st;
+    }
+    return st;
+  };
+  const big = buy(20);
+  const accBig = hireStaff(big, "shoes", 1, NOW, "accountant");
+  ok(accBig);
+  if (accBig.ok) assert.ok(ratesOf({ ...accBig.state, phase: 5 }, NOW).net > ratesOf({ ...big, phase: 5 }, NOW).net, "u velké firmy se účetní vyplatí");
+  const small = buy(1);
+  const accSmall = hireStaff(small, "shoes", 1, NOW, "accountant");
+  ok(accSmall);
+  if (accSmall.ok) assert.ok(ratesOf({ ...accSmall.state, phase: 5 }, NOW).net < ratesOf({ ...small, phase: 5 }, NOW).net, "u jedné firmy je mzda větší než úspora");
 });

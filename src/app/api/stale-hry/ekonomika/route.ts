@@ -98,6 +98,7 @@ type Body = {
   field?: unknown;
   value?: unknown;
   delta?: unknown;
+  role?: unknown;
   index?: unknown;
   on?: unknown;
   side?: unknown;
@@ -134,7 +135,7 @@ function applyAction(state: EconomyState, body: Body, now: number, learning: num
     case "upgradeCompany":
       return upgradeCompany(state, body.id, now);
     case "hireStaff":
-      return hireStaff(state, body.id, body.delta, now);
+      return hireStaff(state, body.id, body.delta, now, body.role);
     case "setCompanySetting":
       return setCompanySetting(state, body.id, body.field, body.value, now);
     case "runCampaign":
