@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { EconomyText } from "@/i18n/economy";
 import {
   COMPANIES,
+  type EconomyEvent,
   INCOME_SPEED,
   MAX_PHASE,
   MAX_STAFF_PER_UNIT,
@@ -48,6 +49,8 @@ export type Payload = {
   arbitrage: { spread: number; limit: number };
   eduCost: number;
   gained?: { cash?: number; profit?: number } | null;
+  event?: EconomyEvent | null;
+  assetEvent?: { id: string; endsAt: number } | null;
 };
 
 export type Act = (body: Record<string, unknown>, okText?: (p: Payload) => string) => Promise<void>;

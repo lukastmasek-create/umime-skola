@@ -1,6 +1,13 @@
 # Návrh: přepracování sekce Práce ve hře Ekonomika
 
-Stav: **návrh ke schválení**. Kód zatím neměněn. Všechna čísla jsou výchozí a dají se doladit po hraní.
+Stav: **implementováno podle návrhu** (větev `claude/bold-goodall-mfl3lb`). Všechna čísla jsou výchozí a dají se doladit po hraní.
+
+Odchylky od návrhu při implementaci:
+- Situace směn jsou 6 sdílených pro všechna povolání (ne 6–8 na povolání). Rozšíření je obsahová práce.
+- Nemoc se losuje při nástupu do směny (3 %), ne průběžně.
+- Krize v oboru přijde 24 hodin po varování a trvá 7 dní.
+- Prémie je 10 % z celkových výplat za směny za uplynulý den (ne z průměrné výplaty).
+- Povýšení vyžaduje Vzdělání rovné požadavku povolání plus stupeň.
 
 ## 1. Co je dnes špatně (podle tvých odpovědí)
 

@@ -5,17 +5,22 @@ import { prisma } from "@/lib/prisma";
 import {
   arbitrage,
   arbitrageLimit,
+  cancelOrder,
+  currentAssetEvent,
+  placeOrder,
   arbitrageSpread,
   assetPrice,
   buyAsset,
   buyCompany,
   cashOutHustle,
+  chooseShift,
   collectHustle,
   createCharacter,
   currentEvent,
   eduCost,
   emptyState,
   fundResponse,
+  gameNow,
   hireStaff,
   investEdu,
   learningBonusFromXp,
@@ -25,13 +30,20 @@ import {
   rates,
   researchCompany,
   restart,
+  negotiateRaise,
+  requestPromotion,
+  rest,
   runCampaign,
   sellAsset,
   sellCompany,
   setCompanySetting,
+  setLead,
+  setSpeed,
   settle,
   signContract,
   startHustle,
+  startShift,
+  startVacation,
   takeJob,
   topUpHustle,
   upgradeCompany,
@@ -55,6 +67,7 @@ async function learningFor(userId: string, now: number): Promise<number> {
 function payload(state: EconomyState, points: number, learning: number, now: number) {
   const rate = rates(state, now, learning);
   const event = currentEvent(now);
+  const assetEvent = currentAssetEvent(now);
   return {
     state,
     points,
@@ -66,6 +79,7 @@ function payload(state: EconomyState, points: number, learning: number, now: num
     arbitrage: { spread: arbitrageSpread(now), limit: arbitrageLimit(state) },
     eduCost: eduCost(state.edu),
     event: event ? { id: event.def.id, window: event.window, endsAt: event.endsAt } : null,
+    assetEvent: assetEvent ? { id: assetEvent.def.id, endsAt: assetEvent.endsAt } : null,
   };
 }
 
@@ -84,10 +98,29 @@ type Body = {
   field?: unknown;
   value?: unknown;
   delta?: unknown;
+  index?: unknown;
+  on?: unknown;
+  side?: unknown;
+  when?: unknown;
+  price?: unknown;
 };
 
-function applyAction(state: EconomyState, body: Body, now: number): ActionResult {
+function applyAction(state: EconomyState, body: Body, now: number, learning: number): ActionResult {
   switch (body.action) {
+    case "startShift":
+      return startShift(state, now);
+    case "chooseShift":
+      return chooseShift(state, body.index, now, learning);
+    case "rest":
+      return rest(state, now);
+    case "requestPromotion":
+      return requestPromotion(state, now);
+    case "negotiateRaise":
+      return negotiateRaise(state, now);
+    case "setLead":
+      return setLead(state, body.on, now);
+    case "startVacation":
+      return startVacation(state, now);
     case "create":
       return createCharacter(state, body, now);
     case "restart":
@@ -130,6 +163,10 @@ function applyAction(state: EconomyState, body: Body, now: number): ActionResult
       return collectHustle(state, body.id, now);
     case "cashOutHustle":
       return cashOutHustle(state, body.id, now);
+    case "placeOrder":
+      return placeOrder(state, { asset: body.id, side: body.side, when: body.when, price: body.price, amount: body.amount, share: body.share }, now);
+    case "cancelOrder":
+      return cancelOrder(state, body.id, now);
     case "investEdu":
       return investEdu(state, now);
     default:
@@ -143,13 +180,16 @@ export async function GET() {
   if (!userId) return NextResponse.json({ error: "login-required" }, { status: 401 });
 
   try {
-    const now = Date.now();
+    const real = Date.now();
     const [row, user, learning] = await Promise.all([
       prisma.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } }),
       prisma.user.findUnique({ where: { id: userId }, select: { points: true } }),
-      learningFor(userId, now),
+      learningFor(userId, real),
     ]);
-    const state = settle(row ? normalizeState(row.data, now) : emptyState(now), now, learning);
+    const base = row ? normalizeState(row.data, real) : emptyState(real);
+    // Herní čas podle rychlosti hráče; reálný čas jen pro kotvu a pro XP za den.
+    const now = gameNow(base, real);
+    const state = settle(base, now, learning);
     // Uložíme i při pouhém otevření, ať je žebříček aktuální. Při souběhu s akcí se zápis tiše zahodí.
     if (row && state.character) {
       const data = state as unknown as Prisma.InputJsonValue;
@@ -170,8 +210,8 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as Body;
 
   try {
-    const now = Date.now();
-    const learning = await learningFor(userId, now);
+    const real = Date.now();
+    const learning = await learningFor(userId, real);
 
     const result = await prisma.$transaction(
       async (tx) => {
@@ -179,9 +219,11 @@ export async function POST(request: Request) {
         const user = await tx.user.findUnique({ where: { id: userId }, select: { points: true } });
         const points = user?.points ?? 0;
 
-        const current = settle(row ? normalizeState(row.data, now) : emptyState(now), now, learning);
-        const outcome = applyAction(current, body, now);
-        if (!outcome.ok) return { outcome, points };
+        const base = row ? normalizeState(row.data, real) : emptyState(real);
+        const now = gameNow(base, real);
+        const current = settle(base, now, learning);
+        const outcome = body.action === "setSpeed" ? setSpeed(current, body.value, real) : applyAction(current, body, now, learning);
+        if (!outcome.ok) return { outcome, points, now };
 
         const cost = outcome.pointsSpent ?? 0;
         if (cost > 0) {
@@ -196,13 +238,17 @@ export async function POST(request: Request) {
         } else {
           await tx.idleState.create({ data: { userId, game: GAME, data } });
         }
-        return { outcome, points: points - cost };
+        return { outcome, points: points - cost, now };
       },
       { maxWait: 10_000, timeout: 20_000 },
     );
 
     if (!result.outcome.ok) return NextResponse.json({ error: result.outcome.error }, { status: 400 });
-    return NextResponse.json({ ...payload(result.outcome.state, result.points, learning, now), gained: result.outcome.gained ?? null });
+    return NextResponse.json({
+      ...payload(result.outcome.state, result.points, learning, result.now),
+      gained: result.outcome.gained ?? null,
+      event: result.outcome.event ?? null,
+    });
   } catch (error) {
     if (error instanceof NotEnoughPoints) return NextResponse.json({ error: "not-enough-points" }, { status: 400 });
     if (error instanceof Conflict || (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")) {
