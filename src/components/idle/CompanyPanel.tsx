@@ -22,6 +22,7 @@ import {
   fundPrice,
   hireCost,
   isSick,
+  UNION_MIN_STAFF,
   ROLE_MAX,
   ROLE_WAGE,
   STAFF_ROLES,
@@ -490,6 +491,28 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
         <p className="text-xs text-[var(--muted)]">{t.detail.staffHint}</p>
         {clock < s.rookieUntil && <p className="text-xs font-semibold">{fill(t.detail.rookie, { t: formatLeft(s.rookieUntil - clock, t) })}</p>}
         {isSick(id, clock) && roles.producer > 0 && <p className="text-xs font-semibold">🤒 {t.detail.sick}</p>}
+        <p className="text-xs">
+          {t.detail.moraleLabel}: <b>{Math.round(y.morale * 100)} %</b>
+        </p>
+        {y.strike && <p className="pill w-fit bg-[var(--danger)] px-2 py-0.5 text-xs font-bold text-white">✊ {t.detail.strikeNow}</p>}
+        {s.staff >= UNION_MIN_STAFF && (
+          <div className="flex flex-col gap-1 rounded-xl bg-[var(--surface-muted)] p-3">
+            <p className="text-sm font-bold">🤝 {t.detail.unionTitle}</p>
+            <p className="text-xs text-[var(--muted)]">{t.detail.unionHint}</p>
+            {s.unionUntil > clock ? (
+              <p className="text-sm font-semibold">{fill(t.detail.unionActive, { t: formatLeft(s.unionUntil - clock, t) })}</p>
+            ) : (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void act({ action: "unionDeal", id }, () => t.toast.union)}
+                className="btn-bouncy w-fit bg-[var(--surface)] px-3 py-2 text-sm font-bold disabled:opacity-45"
+              >
+                {t.detail.unionGo}
+              </button>
+            )}
+          </div>
+        )}
         <ul className="flex flex-col gap-2">
           {STAFF_ROLES.map((role) => {
             const cap = ROLE_MAX[role];

@@ -47,6 +47,8 @@ import {
   upgradePhase,
   isSick,
   rolesOf,
+  UNION_DEAL_MS,
+  unionDeal,
   sellCompany,
   signContract,
   chooseShift,
@@ -1007,4 +1009,65 @@ test("zaměstnanci: účetní sníží daň; vyplatí se u větší firmy, u jed
   const accSmall = hireStaff(small, "shoes", 1, NOW, "accountant");
   ok(accSmall);
   if (accSmall.ok) assert.ok(ratesOf({ ...accSmall.state, phase: 5 }, NOW).net < ratesOf({ ...small, phase: 5 }, NOW).net, "u jedné firmy je mzda větší než úspora");
+});
+
+// Firma s hodně drahou partou: mzdy tlačí spokojenost pod práh.
+function crowdedFirm(): EconomyState {
+  let st = { ...start("rich"), cash: 1e12 };
+  for (let i = 0; i < 2; i++) {
+    const b = buyCompany(st, "shoes", NOW);
+    ok(b);
+    st = b.ok ? b.state : st;
+  }
+  for (const role of ["producer", "producer", "producer", "manager", "accountant"] as const) {
+    const h = hireStaff(st, "shoes", 1, NOW, role);
+    ok(h);
+    st = h.ok ? h.state : st;
+  }
+  return { ...st, setup: { ...st.setup, shoes: { ...st.setup.shoes!, rookieUntil: 0 } } };
+}
+
+test("odbory: stávka nevznikne bez odborů a při dobré spokojenosti", () => {
+  const bought = buyCompany({ ...start("rich"), cash: 1e9 }, "shoes", NOW);
+  ok(bought);
+  const solo = bought.ok ? bought.state : emptyState(NOW);
+  for (let i = 0; i < 300; i++) assert.equal(companyYield(solo, "shoes", NOW + i * EVENT_WINDOW_MS).strike, false, "málo lidí, žádné odbory");
+  const crowded = crowdedFirm();
+  assert.ok(companyYield(crowded, "shoes", NOW).morale < 0.4, "přetížená parta drží spokojenost pod prahem");
+});
+
+test("odbory: stávka půlí výnos a dohoda ji na čas zastaví", () => {
+  const crowded = crowdedFirm();
+  let t: number | null = null;
+  for (let i = 0; i < 500 && t === null; i++) {
+    const at = NOW + i * EVENT_WINDOW_MS;
+    if (companyYield(crowded, "shoes", at).strike) t = at;
+  }
+  assert.ok(t !== null, "přetížená firma s mzdami pod prahem jednou stávkuje");
+  const struck = companyYield(crowded, "shoes", t!);
+  const calm = { ...crowded, setup: { ...crowded.setup, shoes: { ...crowded.setup.shoes!, unionUntil: t! + 1 } } };
+  const free = companyYield(calm, "shoes", t!);
+  assert.equal(free.strike, false, "dohoda stávku zastaví");
+  assert.ok(Math.abs(struck.gross * 2 - free.gross) < 1e-6 * free.gross, "stávka je přesně poloviční výnos");
+});
+
+test("odbory: dohoda stojí den mezd, jde jen u firmy s dost lidmi a platí na čas", () => {
+  const crowded = crowdedFirm();
+  const deal = unionDeal(crowded, "shoes", NOW);
+  ok(deal);
+  if (!deal.ok) return;
+  assert.ok(crowded.cash > deal.state.cash, "dohoda něco stojí");
+  assert.deepEqual(unionDeal(deal.state, "shoes", NOW), { ok: false, error: "busy" });
+  for (let i = 0; i * EVENT_WINDOW_MS < UNION_DEAL_MS; i++) {
+    assert.equal(companyYield(deal.state, "shoes", NOW + i * EVENT_WINDOW_MS).strike, false, "během dohody žádná stávka");
+  }
+  const small = buyCompany({ ...start("rich"), cash: 1e9 }, "shoes", NOW);
+  ok(small);
+  if (small.ok) assert.deepEqual(unionDeal(small.state, "shoes", NOW), { ok: false, error: "nothing" }, "málo lidí, žádná dohoda");
+  assert.deepEqual(unionDeal(crowded, "clothes", NOW), { ok: false, error: "nothing" }, "bez firmy není dohoda");
+});
+
+test("odbory: čas dohody se při načtení ořízne na nejdelší povolenou dobu", () => {
+  const s = normalizeState({ companies: { shoes: 2 }, setup: { shoes: { staff: 0, unionUntil: NOW + 999 * H } } }, NOW);
+  assert.equal(s.setup.shoes?.unionUntil, NOW + UNION_DEAL_MS);
 });
