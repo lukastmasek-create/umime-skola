@@ -571,24 +571,55 @@ function hash32(s: string): number {
   return (h >>> 0) / 4294967296;
 }
 
-// Cena je čistá funkce času: dvě vlny (perioda zhruba 3 hodiny a 45 minut) a malý šum po minutě. Server i prohlížeč vidí totéž.
+// Náhodná složka ceny: několik vrstev hladkého šumu s různou délkou vlny (od několika minut po desítky hodin).
+// Každá vrstva má v mřížce náhodné hodnoty odvozené z hashe, mezi nimi se plynule interpoluje. Výsledek je čistá funkce času,
+// takže server i prohlížeč vidí stejnou cenu, ale vypadá náhodně: cena nemá pevné pásmo a může klesnout i vystoupat
+// výrazně dál než dřív, bez pravidelného kmitání mezi nejmenší a největší hodnotou.
+const NOISE_LAYERS: { period: number; amp: number }[] = [
+  { period: 6 * 60_000, amp: 0.55 },
+  { period: 25 * 60_000, amp: 0.8 },
+  { period: 2 * H, amp: 1 },
+  { period: 9 * H, amp: 0.9 },
+  { period: 30 * H, amp: 0.7 },
+];
+const NOISE_NORM = Math.sqrt(NOISE_LAYERS.reduce((sum, l) => sum + l.amp * l.amp, 0));
+// Kolikrát se hýbe log-cena: směrodatná odchylka je zhruba max(vol, VOL_MIN) × VOL_SCALE.
+const VOL_SCALE = 2;
+// I nejklidnější aktivum (dluhopisy, stablecoin) se mírně hýbe, jinak by graf zůstal skoro rovný.
+const VOL_MIN = 0.03;
+// Přibližně normální hodnota v mřížce (součet tří rovnoměrných, vycentrovaný a přeškálovaný na rozptyl 1).
+const latticeGauss = (key: string): number => (hash32(key) + hash32(`${key}|1`) + hash32(`${key}|2`) - 1.5) * 2;
+
+// Výsledný šum přibližně v rozmezí ±3, rozptyl ~1.
+function priceNoise(seed: string, now: number): number {
+  let z = 0;
+  NOISE_LAYERS.forEach((layer, i) => {
+    const x = now / layer.period;
+    const k = Math.floor(x);
+    const f = x - k;
+    const s = f * f * (3 - 2 * f);
+    const a = latticeGauss(`${seed}:${i}:${k}`);
+    const b = latticeGauss(`${seed}:${i}:${k + 1}`);
+    z += layer.amp * (a + (b - a) * s);
+  });
+  return z / NOISE_NORM;
+}
+
+// Cena je čistá funkce času: náhodný šum v logaritmu kolem trendu, k tomu zprávy trhu.
 export function assetPrice(id: AssetId, now: number): number {
   const def = assetDef(id);
-  const phaseA = hash32(`${def.seed}:a`) * Math.PI * 2;
-  const phaseB = hash32(`${def.seed}:b`) * Math.PI * 2;
   const hours = now / H;
-  const wave = 0.6 * Math.sin(hours / 0.5 + phaseA) + 0.4 * Math.sin(hours / 0.12 + phaseB);
-  const noise = (hash32(`${def.seed}:${Math.floor(now / 60_000)}`) - 0.5) * 0.3;
   const trend = 1 + def.drift * (hours % 5_000);
-  return Math.max(1, def.base * trend * (1 + def.vol * (wave + noise))) * assetEventMult(id, now);
+  const logMove = Math.max(def.vol, VOL_MIN) * VOL_SCALE * priceNoise(def.seed, now);
+  // Jen podlaha proti nule, žádné pevné pásmo: cena může klesnout i vystoupat výrazně dál než základ.
+  return Math.max(def.base * 0.02, def.base * trend * Math.exp(logMove)) * assetEventMult(id, now);
 }
 
 // Dva trhy, které se krátkodobě rozcházejí. Rozdíl mezi nimi je příležitost pro arbitráž.
 export function arbitrageSpread(now: number): number {
-  const h = now / H;
-  const a = Math.sin(h * 20 + 0.7) * 0.5 + Math.sin(h * 70 + 2.1) * 0.5;
-  const b = Math.sin(h * 17 + 4.2) * 0.5 + Math.sin(h * 55 + 0.3) * 0.5;
-  return Math.abs(a - b) * 0.03;
+  // Rozdíl dvou nezávislých šumů: obvykle malý, občas výrazně větší (nejvýš 12 %).
+  const d = Math.abs(priceNoise('arb-a', now) - priceNoise('arb-b', now));
+  return Math.min(0.12, d * 0.025);
 }
 
 // --- Tržní zprávy (ovlivní ceny aktiv) ---

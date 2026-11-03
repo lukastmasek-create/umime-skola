@@ -367,10 +367,15 @@ test("investice: cena je čistá funkce času a nákup/prodej drží účet", ()
     assert.equal(assetPrice(a.id, NOW), assetPrice(a.id, NOW));
     for (let i = 0; i < 200; i++) {
       const p = assetPrice(a.id, NOW + i * 7 * 60_000);
-      // zprávy trhu umí cenu zvednout i nad dvojnásobek základu (memecoin s rally 1,5×)
-      assert.ok(p > 0 && p < a.base * 4, `cena ${a.id} ${p}`);
+      assert.ok(Number.isFinite(p) && p > 0, `cena ${a.id} ${p}`);
     }
   }
+  // Cena je náhodná, nemá pevné pásmo: u rizikového aktiva se objeví hodnota pod i nad základem a rozptyl je velký.
+  const risky: number[] = [];
+  for (let i = 0; i < 400; i++) risky.push(assetPrice("memecoin", NOW + i * 60 * 60_000));
+  assert.ok(risky.some((p) => p < 5), "memecoin klesne pod základ");
+  assert.ok(risky.some((p) => p > 5 * 3), "memecoin vystoupá výrazně nad základ");
+  assert.ok(Math.max(...risky) / Math.min(...risky) > 20, "rozptyl je velký");
   const s = start("rich");
   const b = buyAsset(s, "technology", 1000, NOW);
   ok(b);
