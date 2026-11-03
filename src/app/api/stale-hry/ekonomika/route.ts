@@ -84,7 +84,7 @@ function payload(state: EconomyState, points: number, learning: number, now: num
     learning,
     rates: rate,
     netWorth: netWorth(state, now),
-    prices: Object.fromEntries(ASSETS.map((a) => [a.id, assetPrice(a.id, now)])),
+    prices: Object.fromEntries(ASSETS.map((a) => [a.id, assetPrice(a.id, now, state.startedAt)])),
     arbitrage: { spread: arbitrageSpread(now), limit: arbitrageLimit(state) },
     eduCost: eduCost(state.edu),
     event: event ? { id: event.def.id, window: event.window, endsAt: event.endsAt } : null,

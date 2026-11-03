@@ -54,11 +54,11 @@ function axisValue(v: number): string {
 // Podrobný graf ceny za posledních 6 hodin: bod každých 5 minut, poslední bod je živá cena.
 const SPARK_SPAN = 6 * 60 * 60_000;
 const SPARK_STEP = 5 * 60_000;
-function priceHistory(id: AssetId, now: number): ChartPoint[] {
+function priceHistory(id: AssetId, now: number, origin: number): ChartPoint[] {
   const n = SPARK_SPAN / SPARK_STEP;
   return Array.from({ length: n + 1 }, (_, i) => {
     const t = now - (n - i) * SPARK_STEP;
-    return { t, v: assetPrice(id, t) };
+    return { t, v: assetPrice(id, t, origin) };
   });
 }
 
@@ -78,7 +78,7 @@ export function InvestPanel({ state, clock, liveCash, netWorth, rates, arbitrage
   const [orderAmount, setOrderAmount] = useState("");
   const [orderShare, setOrderShare] = useState(1);
 
-  const priceOf = (id: AssetId) => assetPrice(id, clock);
+  const priceOf = (id: AssetId) => assetPrice(id, clock, state.startedAt);
   const value = ASSETS.reduce((sum, a) => sum + (state.holdings[a.id] ?? 0) * priceOf(a.id), 0);
   const invested = ASSETS.reduce((sum, a) => sum + (state.holdings[a.id] ?? 0) * (state.cost[a.id] ?? priceOf(a.id)), 0);
   const pl = value - invested;
@@ -186,8 +186,8 @@ export function InvestPanel({ state, clock, liveCash, netWorth, rates, arbitrage
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {shownAssets.map((a) => {
           const price = priceOf(a.id);
-          const prev = assetPrice(a.id, clock - 3_600_000);
-          const hist = priceHistory(a.id, clock);
+          const prev = assetPrice(a.id, clock - 3_600_000, state.startedAt);
+          const hist = priceHistory(a.id, clock, state.startedAt);
           const cost = state.cost[a.id];
           const qty = state.holdings[a.id] ?? 0;
           const locked = isLocked(state, "asset", a.id);

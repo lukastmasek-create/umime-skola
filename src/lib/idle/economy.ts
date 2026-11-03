@@ -11,7 +11,7 @@
 //  - Firmy: stavíš a rozšiřuješ podniky a najímáš do nich zaměstnance (stojí mzdu, zvyšují výnos).
 //  - Investice: akcie (dividendy), kovy, kryptoměny, nemovitosti, cenné papíry a arbitráž. Ceny kolísají podle času
 //    (stejně na serveru i v prohlížeči), tržní zprávy hnou celou kategorií, limitní a stop-loss příkazy se plní při hraní,
-//    startupy každých 12 hodin buď vyjdou (výplata), nebo zkrachují.
+//    startupy každý herní rok buď vyjdou (výplata), nebo zkrachují.
 //  - Hustle: reselling, flipování domů a aut, startup. Vložíš kapitál a ve třech kolech rozhoduješ mezi jistotou,
 //    vyvážením, rizikem a případnou příležitostí. Výsledek se vyplatí na konci (může i prodělat).
 //  - Životní potřeby (jídlo, pití, oblečení, bydlení, doprava, zdraví, zábava) se kupují v obchodě na dny dopředu.
@@ -29,9 +29,8 @@ export const isSpeed = (v: unknown): v is Speed => SPEEDS.includes(v as Speed);
 // Kotva herních hodin: herní čas `game` připadá na reálný čas `real`.
 export type GameClock = { real: number; game: number };
 // Násobek všech příjmů a výdajů za hodinu (hodinové sazby níž jsou zachované, jen se rychleji "točí").
-export const INCOME_SPEED = 20;
-// Základ životních nákladů za herní hodinu (před násobky země, města a rodiny).
-export const LIVING_BASE = 18;
+// Peníze jsou v herních kreditech (1 kredit = 1 000 Kč) za herní rok. Herní hodina = rok, takže sazby jsou roční.
+export const INCOME_SPEED = 1;
 export const MAX_NAME = 20;
 export const MAX_COMPANY_UNITS = 50;
 export const MAX_EDU = 25;
@@ -43,21 +42,26 @@ export const MAX_JOB_RANK = 5;
 export const JOB_RANK_BONUS = 0.15;
 export const ARB_COOLDOWN_MS = 60_000;
 export const ARB_FEE = 0.005;
-export const ARB_CAP = 100_000;
+export const ARB_CAP = 5_000;
 const H = 3_600_000;
 const DAY = 24 * H;
+// Herní den (1/365 herní hodiny = roku): délky nemoci, dovolené a krize se počítají v herním čase, aby měly ekonomický smysl.
+const GAME_DAY = H / 365;
 
 // --- Práce: směny, energie, kariéra ---
 
 export const PERF_MAX = 100;
 export const ENERGY_MAX = 100;
-export const ENERGY_PER_HOUR = 8;
+// Energie se doplňuje podle REÁLNÉHO času (ne herního), aby omezení platilo i při rychlosti 16×: 360 za reálnou hodinu = 12 směn.
+export const ENERGY_PER_HOUR = 360;
 export const SITUATIONS_PER_SHIFT = 3;
 export const SITUATION_ENERGY = 10;
 export const SHIFT_MIN_ENERGY = 30;
 export const LEAD_EXTRA_ENERGY = 10;
 export const SHIFT_COOLDOWN_MS = 2 * 60_000;
-export const SHIFT_PAY_HOURS = 2;
+export const SHIFTS_PER_YEAR = 12; // směna = 1/12 aktivní části ročního platu
+export const PERSONAL_TAX = 0.23; // daň z příjmu a odvody z mzdy (orientačně ČR)
+export const LIVING_BASE = 320; // roční životní náklady single osoby v ČR (kredity, čistě)
 // Podíl platu, který běží pasivně. Zbytek jde do směn.
 export const PASSIVE_SHARE = 0.6;
 // Body potřebné k dalšímu stupni: RANK_POINTS[stupeň − 1] (stupeň 1 → 2 chce 50 bodů).
@@ -77,14 +81,14 @@ export const RAISE_MAX = 2;
 export const BONUS_SHARE = 0.1;
 export const BONUS_MS = DAY;
 export const REST_COOLDOWN_MS = 6 * H;
-export const VACATION_MS = DAY;
+export const VACATION_MS = GAME_DAY;
 export const VACATION_PAY = 0.5;
 export const VACATION_MAX = 2;
 export const VACATION_WINDOW_MS = 30 * DAY;
 export const SICK_CHANCE = 0.03;
 export const CRISIS_CHANCE = 0.02;
-export const CRISIS_DELAY_MS = DAY;
-export const CRISIS_MS = 7 * DAY;
+export const CRISIS_DELAY_MS = GAME_DAY;
+export const CRISIS_MS = 7 * GAME_DAY;
 export const CRISIS_SALARY = 0.9;
 // Výkon pod BAD_PERF se počítá jako špatná směna. Po DISMISS_STREAK takových za sebou přijde varování,
 // a když je po varování dalších DISMISS_STREAK špatných směn, přijde výpověď. Jedna dobrá směna varování ruší.
@@ -127,10 +131,10 @@ export const ERA_DEF: Record<EraId, { start: number; digital: boolean; crypto: b
 };
 // start = startovní peníze, living = životní náklady, cost = násobek cen firem
 export const FAMILY_DEF: Record<FamilyId, { start: number; living: number; company: number }> = {
-  poor: { start: 100, living: 0.8, company: 1 },
-  middle: { start: 300, living: 1, company: 1 },
-  rich: { start: 1500, living: 1.4, company: 1 },
-  business: { start: 500, living: 1, company: 0.9 },
+  poor: { start: 20, living: 0.8, company: 1 },
+  middle: { start: 120, living: 1, company: 1 },
+  rich: { start: 2_000, living: 1.4, company: 1 },
+  business: { start: 800, living: 1, company: 0.9 },
 };
 
 export type Character = { country: CountryId; name: string; city: CityId; era: EraId; family: FamilyId };
@@ -152,23 +156,23 @@ export type JobId =
   | "pilot"
   | "doctor"
   | "banker";
-// salary = plat za hodinu (stupeň 1), fee = jednorázový poplatek za kurzy / nástup, edu = potřebné Vzdělání
+// salary = roční hrubá mzda (stupeň 1, kredity), fee = jednorázový poplatek za kurzy / nástup, edu = potřebné Vzdělání
 export type JobDef = { id: JobId; salary: number; fee: number; edu: number };
 export const JOBS: JobDef[] = [
-  { id: "warehouse", salary: 40, fee: 0, edu: 0 },
-  { id: "seller", salary: 60, fee: 100, edu: 1 },
-  { id: "farmer", salary: 70, fee: 150, edu: 1 },
-  { id: "cook", salary: 90, fee: 300, edu: 2 },
-  { id: "firefighter", salary: 120, fee: 500, edu: 4 },
-  { id: "police", salary: 140, fee: 800, edu: 5 },
-  { id: "teacher", salary: 180, fee: 1_200, edu: 6 },
-  { id: "journalist", salary: 200, fee: 1_500, edu: 6 },
-  { id: "vet", salary: 320, fee: 3_000, edu: 8 },
-  { id: "architect", salary: 400, fee: 4_000, edu: 9 },
-  { id: "programmer", salary: 480, fee: 6_000, edu: 10 },
-  { id: "pilot", salary: 550, fee: 7_000, edu: 11 },
-  { id: "doctor", salary: 600, fee: 9_000, edu: 12 },
-  { id: "banker", salary: 800, fee: 15_000, edu: 14 },
+  { id: "warehouse", salary: 480, fee: 0, edu: 0 },
+  { id: "seller", salary: 520, fee: 15, edu: 1 },
+  { id: "farmer", salary: 540, fee: 20, edu: 1 },
+  { id: "cook", salary: 560, fee: 40, edu: 2 },
+  { id: "firefighter", salary: 600, fee: 60, edu: 4 },
+  { id: "police", salary: 650, fee: 80, edu: 5 },
+  { id: "teacher", salary: 680, fee: 120, edu: 6 },
+  { id: "journalist", salary: 700, fee: 120, edu: 6 },
+  { id: "vet", salary: 850, fee: 300, edu: 8 },
+  { id: "architect", salary: 900, fee: 400, edu: 9 },
+  { id: "programmer", salary: 1_100, fee: 600, edu: 10 },
+  { id: "pilot", salary: 1_300, fee: 800, edu: 11 },
+  { id: "doctor", salary: 1_400, fee: 900, edu: 12 },
+  { id: "banker", salary: 1_600, fee: 1_200, edu: 14 },
 ];
 
 // Situace směny. Každá má 3 volby s pevným výkonem (0–100 %). Stejné situace sdílí všechna povolání.
@@ -246,20 +250,20 @@ export type CompanyId =
 // payback = návratnost v hodinách (zisk za hodinu na jeden kus = cena / návratnost)
 export type CompanyDef = { id: CompanyId; cost: number; digital: boolean; payback: number };
 export const COMPANIES: CompanyDef[] = [
-  { id: "shoes", cost: 450, digital: false, payback: 15 },
-  { id: "clothes", cost: 1_800, digital: false, payback: 18 },
-  { id: "bakery", cost: 3_600, digital: false, payback: 19.5 },
-  { id: "tech", cost: 7_500, digital: false, payback: 21 },
-  { id: "carwash", cost: 15_000, digital: false, payback: 22.5 },
-  { id: "delivery", cost: 24_000, digital: true, payback: 24 },
-  { id: "eshop", cost: 54_000, digital: true, payback: 25.5 },
-  { id: "supermarket", cost: 75_000, digital: false, payback: 27 },
-  { id: "printshop", cost: 120_000, digital: false, payback: 28.5 },
-  { id: "digi", cost: 240_000, digital: true, payback: 30 },
-  { id: "software", cost: 750_000, digital: true, payback: 33 },
-  { id: "streaming", cost: 1_200_000, digital: true, payback: 34.5 },
-  { id: "hardware", cost: 2_400_000, digital: false, payback: 36 },
-  { id: "factory", cost: 9_000_000, digital: false, payback: 39 },
+  { id: "shoes", cost: 1_000, digital: false, payback: 5 },
+  { id: "clothes", cost: 2_000, digital: false, payback: 6 },
+  { id: "bakery", cost: 3_000, digital: false, payback: 6.5 },
+  { id: "tech", cost: 6_000, digital: false, payback: 7 },
+  { id: "carwash", cost: 9_000, digital: false, payback: 7.5 },
+  { id: "delivery", cost: 12_000, digital: true, payback: 8 },
+  { id: "eshop", cost: 20_000, digital: true, payback: 8.5 },
+  { id: "supermarket", cost: 40_000, digital: false, payback: 9 },
+  { id: "printshop", cost: 60_000, digital: false, payback: 9.5 },
+  { id: "digi", cost: 120_000, digital: true, payback: 10 },
+  { id: "software", cost: 150_000, digital: true, payback: 11 },
+  { id: "streaming", cost: 200_000, digital: true, payback: 11.5 },
+  { id: "hardware", cost: 300_000, digital: false, payback: 12 },
+  { id: "factory", cost: 500_000, digital: false, payback: 13 },
 ];
 // Zisk firmy za hodinu na jeden kus, bez úprav (ty přidává nastavení firmy).
 export const companyIncome = (id: CompanyId): number => {
@@ -288,7 +292,7 @@ export const isStaffRole = (v: unknown): v is StaffRole => STAFF_ROLES.includes(
 export const ROLE_WAGE: Record<StaffRole, number> = { producer: 1, seller: 1, accountant: 1.5, manager: 2.5 };
 // Nejvíc lidí jedné role na firmu (null = bez limitu kromě celkové kapacity).
 export const ROLE_MAX: Record<StaffRole, number | null> = { producer: null, seller: null, accountant: 1, manager: 1 };
-export const SELLER_OUTPUT = 0.08; // prodavač přidá prodej (na celou firmu přepočteno jako výroba)
+export const SELLER_REVENUE = 500; // prodavač přidá výnos za rok (kredity)
 export const MANAGER_BONUS = 0.1; // manažer zvedne výnos firmy o pevný podíl
 export const ACCOUNTANT_TAX_CUT = 0.15; // každý účetní sníží daň o tento podíl (celkově)
 export const ACCOUNTANT_TAX_MAX = 0.5;
@@ -306,7 +310,7 @@ export const UNION_THRESHOLD = 0.4;
 export const STRIKE_CHANCE = 0.5;
 export const STRIKE_OUTPUT = 0.5;
 export const UNION_DEAL_MS = 12 * H;
-export const UNION_DEAL_HOURS = 24; // dohoda stojí den mezd
+export const UNION_DEAL_YEARS = 1 / 12; // dohoda stojí měsíc mezd
 export const moraleFrom = (wageShare: number) => Math.min(1, Math.max(0, 1.2 - 2 * wageShare));
 
 // --- Zásoby a vstupy ---
@@ -384,9 +388,9 @@ export const upkeepShare = (output: number) => Math.max(0, (output - 0.5) * 0.5)
 // Platí, i když firma nic nevyrábí.
 export const OPEX_SHARE = 0.5;
 export const MAX_STAFF_PER_UNIT = 3;
-export const STAFF_OUTPUT = 0.12; // zvýšení výroby na jednoho zaměstnance (na celou firmu přepočteno)
-export const STAFF_WAGE = 0.08; // hodinová mzda jednoho zaměstnance v násobku zisku kusu
-export const STAFF_HIRE_HOURS = 24; // nábor stojí den mzdy
+export const STAFF_REVENUE = 720; // výnos za rok, který přidá jeden výrobce (kredity)
+export const STAFF_BASE_WAGE = 480; // roční mzda výrobce (kredity), ostatní role násobí ROLE_WAGE
+export const STAFF_HIRE_YEARS = 1 / 12; // nábor stojí měsíc mzdy
 export const UPGRADE_BONUS = 0.3;
 export const UPGRADE_COST_MULT = 4;
 export const MARKETING_MINUTES = 30;
@@ -399,7 +403,7 @@ export const SELL_SHARE = 0.6;
 // Odběratelský kontrakt: pevný odběr na několik hodin. Stojí pár hodin výnosu a zvedne výnos,
 // ale krize tu firmu zasáhnou silněji (odběratel při krizi odejde).
 export const CONTRACT_MS = 6 * H;
-export const CONTRACT_FEE_HOURS = 2;
+export const CONTRACT_FEE_YEARS = 0.25; // kontrakt stojí čtvrt roku výnosu
 export const CONTRACT_BONUS = 0.35;
 export const CONTRACT_EXPOSURE = 1.5;
 // Výzkum produktů: každá úroveň zvedne výnos oboru, ale nové produkty jsou křehčí vůči krizím.
@@ -432,8 +436,9 @@ export const PHASE_RATES: { rent: number; tax: number }[] = [
   { rent: 0.16, tax: 0.25 },
 ];
 // Požadovaný výnos firem za hodinu pro postup do fáze k (od fáze 2). Postup stojí den tohoto výnosu.
-export const phaseRequirement = (k: number): number => (k <= 1 ? 0 : Math.round(2_000 * Math.pow(1.8, k - 2)));
-export const phaseCost = (k: number): number => phaseRequirement(k) * 24;
+export const PHASE_COST_YEARS = 0.25; // postup stojí čtvrt roku výnosu firem
+export const phaseRequirement = (k: number): number => (k <= 1 ? 0 : Math.round(400 * Math.pow(1.8, k - 2)));
+export const phaseCost = (k: number): number => Math.round(phaseRequirement(k) * PHASE_COST_YEARS);
 
 // --- Mimořádné události ---
 // Každé dvě hodiny přijde jedna událost a trvá půl hodiny. Vybírá se podle času (stejné na serveru i v prohlížeči).
@@ -518,39 +523,40 @@ const asset = (
 ): AssetDef => ({ id, cat, seed: extra.seed ?? id, base, vol, yield: yieldRate, drift, ...(extra.crypto ? { crypto: true } : {}) });
 
 export const ASSETS: AssetDef[] = [
-  // kryptoměny (odemknuté až v éře s kryptem)
+  // Výnos a drift jsou roční (na herní hodinu = rok). Hodnoty odpovídají orientačně ČR / EU běžným sazbám.
+  // kryptoměny (odemknuté až v éře s kryptem): bez výnosu a bez trendu, čistě spekulace
   asset("coin", "crypto", 500, 0.5, 0, 0, { seed: "crypto", crypto: true }),
-  asset("altcoin", "crypto", 120, 0.8, 0, 0.0001, { crypto: true }),
-  asset("stablecoin", "crypto", 10, 0.005, 0.0002, 0, { crypto: true }),
+  asset("altcoin", "crypto", 120, 0.8, 0, 0, { crypto: true }),
+  asset("stablecoin", "crypto", 10, 0.005, 0.03, 0, { crypto: true }),
   asset("memecoin", "crypto", 5, 1.2, 0, 0, { crypto: true }),
-  asset("defi", "crypto", 80, 0.6, 0.0002, 0.00005, { crypto: true }),
-  // pozemky a nemovitosti (výnos násobí nájem ve městě)
-  asset("flat", "realestate", 50_000, 0.04, 0.0015, 0.00008, { seed: "realestate" }),
-  asset("house", "realestate", 120_000, 0.05, 0.00125, 0.00006),
-  asset("land", "realestate", 20_000, 0.03, 0, 0.0001),
-  asset("office", "realestate", 200_000, 0.06, 0.00175, 0.00004),
-  // akcie
-  asset("technology", "stocks", 100, 0.18, 0.0004, 0.00015, { seed: "stocks" }),
-  asset("energy", "stocks", 80, 0.08, 0.0008, 0.00003),
-  asset("bank", "stocks", 60, 0.12, 0.0009, 0.00005),
-  asset("consumer", "stocks", 40, 0.1, 0.0005, 0.00004),
-  asset("biotech", "stocks", 150, 0.35, 0, 0.0001),
-  // kovy
-  asset("gold", "metals", 2_000, 0.07, 0, 0.00005, { seed: "metal" }),
-  asset("silver", "metals", 30, 0.1, 0, 0.00003),
-  asset("copper", "metals", 150, 0.12, 0, 0.00002),
-  // dluhopisy
-  asset("state", "bonds", 1_000, 0.01, 0.0006, 0, { seed: "bonds" }),
-  asset("corporate", "bonds", 1_000, 0.03, 0.001, 0),
-  asset("junk", "bonds", 1_000, 0.12, 0.0025, 0),
-  // fondy
-  asset("index", "funds", 300, 0.03, 0.0004, 0.00003, { seed: "fund" }),
-  asset("dividend", "funds", 200, 0.02, 0.0006, 0.00001),
-  asset("theme", "funds", 250, 0.08, 0.0002, 0.00008),
-  // startupy: vysoké riziko, bez výnosu, nejvyšší očekávaný růst
-  asset("startup_it", "startups", 200, 0.4, 0, 0.0002, { seed: "startup" }),
-  asset("startup_fintech", "startups", 150, 0.5, 0, 0.00025),
-  asset("startup_green", "startups", 120, 0.3, 0, 0.00015),
+  asset("defi", "crypto", 80, 0.6, 0.05, 0, { crypto: true }),
+  // pozemky a nemovitosti: nájemní výnos ~3–5 %, růst ceny ~4–6 % ročně (výnos násobí nájem ve městě)
+  asset("flat", "realestate", 5_000, 0.04, 0.035, 0.05, { seed: "realestate" }),
+  asset("house", "realestate", 12_000, 0.05, 0.03, 0.05),
+  asset("land", "realestate", 2_000, 0.03, 0, 0.04),
+  asset("office", "realestate", 20_000, 0.06, 0.05, 0.04),
+  // akcie: dividendy ~1–4 %, dlouhodobý růst kolem 2–9 %
+  asset("technology", "stocks", 100, 0.18, 0.01, 0.09, { seed: "stocks" }),
+  asset("energy", "stocks", 80, 0.08, 0.04, 0.02),
+  asset("bank", "stocks", 60, 0.12, 0.04, 0.04),
+  asset("consumer", "stocks", 40, 0.1, 0.025, 0.04),
+  asset("biotech", "stocks", 150, 0.35, 0, 0.06),
+  // kovy: bez výnosu, růst jen mírný
+  asset("gold", "metals", 2_000, 0.07, 0, 0.04, { seed: "metal" }),
+  asset("silver", "metals", 30, 0.1, 0, 0.03),
+  asset("copper", "metals", 150, 0.12, 0, 0.02),
+  // dluhopisy: státní ~4,5 %, firemní ~5,5 %, rizikové ~8 % výnos, bez růstu ceny
+  asset("state", "bonds", 1_000, 0.01, 0.045, 0, { seed: "bonds" }),
+  asset("corporate", "bonds", 1_000, 0.03, 0.055, 0),
+  asset("junk", "bonds", 1_000, 0.12, 0.08, 0),
+  // fondy: indexový ~1,5 % výnos a ~6 % růst
+  asset("index", "funds", 300, 0.03, 0.015, 0.06, { seed: "fund" }),
+  asset("dividend", "funds", 200, 0.02, 0.03, 0.04),
+  asset("theme", "funds", 250, 0.08, 0.005, 0.07),
+  // startupy: bez výnosu a trendu, hodnota se mění jen výsledky kol (exit nebo krach)
+  asset("startup_it", "startups", 200, 0.4, 0, 0, { seed: "startup" }),
+  asset("startup_fintech", "startups", 150, 0.5, 0, 0),
+  asset("startup_green", "startups", 120, 0.3, 0, 0),
 ];
 
 // Staré obecné názvy držeb -> výchozí položka. Při načtení se držby přesunou (viz normalizeState).
@@ -564,64 +570,45 @@ const LEGACY_ASSET: Partial<Record<AssetId, string>> = {
   startup_it: "startup",
 };
 
+// Hash pro náhodné, ale deterministické jevy. FNV-1a sám o sobě dává u čísel kol, která se liší jen poslední
+// číslicí, téměř monotónní řadu (události a krachy by se shlukovaly). Proto na konci míchá bity (murmur3 fmix32).
 function hash32(s: string): number {
   let h = 2166136261;
   for (let i = 0; i < s.length; i++) {
     h ^= s.charCodeAt(i);
     h = Math.imul(h, 16777619);
   }
+  h ^= h >>> 16;
+  h = Math.imul(h, 0x85ebca6b);
+  h ^= h >>> 13;
+  h = Math.imul(h, 0xc2b2ae35);
+  h ^= h >>> 16;
   return (h >>> 0) / 4294967296;
 }
 
-// Náhodná složka ceny: několik vrstev hladkého šumu s různou délkou vlny (od několika minut po desítky hodin).
-// Každá vrstva má v mřížce náhodné hodnoty odvozené z hashe, mezi nimi se plynule interpoluje. Výsledek je čistá funkce času,
-// takže server i prohlížeč vidí stejnou cenu, ale vypadá náhodně: cena nemá pevné pásmo a může klesnout i vystoupat
-// výrazně dál než dřív, bez pravidelného kmitání mezi nejmenší a největší hodnotou.
-const NOISE_LAYERS: { period: number; amp: number }[] = [
-  { period: 6 * 60_000, amp: 0.55 },
-  { period: 25 * 60_000, amp: 0.8 },
-  { period: 2 * H, amp: 1 },
-  { period: 9 * H, amp: 0.9 },
-  { period: 30 * H, amp: 0.7 },
-];
-const NOISE_NORM = Math.sqrt(NOISE_LAYERS.reduce((sum, l) => sum + l.amp * l.amp, 0));
-// Kolikrát se hýbe log-cena: směrodatná odchylka je zhruba max(vol, VOL_MIN) × VOL_SCALE.
-const VOL_SCALE = 2;
-// I nejklidnější aktivum (dluhopisy, stablecoin) se mírně hýbe, jinak by graf zůstal skoro rovný.
-const VOL_MIN = 0.03;
-// Přibližně normální hodnota v mřížce (součet tří rovnoměrných, vycentrovaný a přeškálovaný na rozptyl 1).
-const latticeGauss = (key: string): number => (hash32(key) + hash32(`${key}|1`) + hash32(`${key}|2`) - 1.5) * 2;
-
-// Výsledný šum přibližně v rozmezí ±3, rozptyl ~1.
-function priceNoise(seed: string, now: number): number {
-  let z = 0;
-  NOISE_LAYERS.forEach((layer, i) => {
-    const x = now / layer.period;
-    const k = Math.floor(x);
-    const f = x - k;
-    const s = f * f * (3 - 2 * f);
-    const a = latticeGauss(`${seed}:${i}:${k}`);
-    const b = latticeGauss(`${seed}:${i}:${k + 1}`);
-    z += layer.amp * (a + (b - a) * s);
-  });
-  return z / NOISE_NORM;
-}
-
-// Cena je čistá funkce času: náhodný šum v logaritmu kolem trendu, k tomu zprávy trhu.
-export function assetPrice(id: AssetId, now: number): number {
+// Cena je čistá funkce času: dvě vlny (krátký rytmus) a malý šum po minutě. Dlouhodobý trend je složené úročení
+// od začátku hry hráče (`origin`, obvykle `startedAt`): jeden herní hodina = jeden rok, takže `drift` je roční růst.
+// Trend se nesmí resetovat (dřív se počítal z času modulo 5000 h a cena na hranici skočila).
+export const GROWTH_HORIZON_YEARS = 40;
+export function assetPrice(id: AssetId, now: number, origin: number): number {
   const def = assetDef(id);
   const hours = now / H;
-  const trend = 1 + def.drift * (hours % 5_000);
-  const logMove = Math.max(def.vol, VOL_MIN) * VOL_SCALE * priceNoise(def.seed, now);
-  // Jen podlaha proti nule, žádné pevné pásmo: cena může klesnout i vystoupat výrazně dál než základ.
-  return Math.max(def.base * 0.02, def.base * trend * Math.exp(logMove)) * assetEventMult(id, now);
+  const phaseA = hash32(`${def.seed}:a`) * Math.PI * 2;
+  const phaseB = hash32(`${def.seed}:b`) * Math.PI * 2;
+  const wave = 0.6 * Math.sin(hours / 0.5 + phaseA) + 0.4 * Math.sin(hours / 0.12 + phaseB);
+  const noise = (hash32(`${def.seed}:${Math.floor(now / 60_000)}`) - 0.5) * 0.3;
+  // Růst se počítá nejvýš do horizontu, jinak by složené úročení přeteklo (hra běží až 16× rychleji).
+  const years = Math.min(GROWTH_HORIZON_YEARS, Math.max(0, now - origin) / H);
+  const trend = Math.pow(1 + def.drift, years);
+  return Math.max(1, def.base * trend * (1 + def.vol * (wave + noise))) * assetEventMult(id, now);
 }
 
 // Dva trhy, které se krátkodobě rozcházejí. Rozdíl mezi nimi je příležitost pro arbitráž.
 export function arbitrageSpread(now: number): number {
-  // Rozdíl dvou nezávislých šumů: obvykle malý, občas výrazně větší (nejvýš 12 %).
-  const d = Math.abs(priceNoise('arb-a', now) - priceNoise('arb-b', now));
-  return Math.min(0.12, d * 0.025);
+  const h = now / H;
+  const a = Math.sin(h * 20 + 0.7) * 0.5 + Math.sin(h * 70 + 2.1) * 0.5;
+  const b = Math.sin(h * 17 + 4.2) * 0.5 + Math.sin(h * 55 + 0.3) * 0.5;
+  return Math.abs(a - b) * 0.03;
 }
 
 // --- Tržní zprávy (ovlivní ceny aktiv) ---
@@ -656,18 +643,20 @@ export function assetEventMult(id: AssetId, now: number): number {
   return ev.def.affects === "all" || ev.def.affects.includes(cat) ? ev.def.mult : 1;
 }
 
-// --- Startupy: kola každých 12 hodin ---
+// --- Startupy: kola každý herní rok (1 hodina) ---
 // Držba startupu v každém kole buď vyjde (exit s násobkem vložené ceny), nebo zkrachuje, nebo běží dál.
-export const STARTUP_ROUND_MS = 12 * H;
-export const STARTUP_EXIT_CHANCE = 0.2;
-export const STARTUP_KRACH_CHANCE = 0.15;
+// Realita: většina startupů zanikne, exit se podaří zhruba jednomu z deseti. Při 2 % exitu a 18 % krachu za rok
+// vyjde exit před krachem zhruba v 10 % případů, a výherní násobek je 4–8×, takže očekávaná hodnota je záporná.
+export const STARTUP_ROUND_MS = H;
+export const STARTUP_EXIT_CHANCE = 0.02;
+export const STARTUP_KRACH_CHANCE = 0.18;
 // Kolo, které uplynulo bez přepočtu (dlouhá nepřítomnost), se nevyhodnocuje po jednom: vezme se nejvýš tolik posledních kol.
 export const STARTUP_MAX_ROUNDS = 30;
 export type StartupOutcome = { kind: "run" } | { kind: "krach" } | { kind: "exit"; mult: number };
 export const startupRoundOf = (now: number) => Math.floor(now / STARTUP_ROUND_MS);
 export function startupOutcome(id: AssetId, round: number): StartupOutcome {
   const r = hash32(`startup-round:${id}:${round}`);
-  if (r < STARTUP_EXIT_CHANCE) return { kind: "exit", mult: 1.5 + hash32(`startup-mult:${id}:${round}`) * 0.6 };
+  if (r < STARTUP_EXIT_CHANCE) return { kind: "exit", mult: 4 + hash32(`startup-mult:${id}:${round}`) * 4 };
   if (r < STARTUP_EXIT_CHANCE + STARTUP_KRACH_CHANCE) return { kind: "krach" };
   return { kind: "run" };
 }
@@ -694,8 +683,8 @@ export const HISTORY_STEP_MS = 15 * 60_000;
 export const HISTORY_MAX = 96;
 export type HistoryPoint = { t: number; w: number; p: number };
 
-export const portfolioValue = (state: Pick<EconomyState, "holdings">, now: number): number =>
-  ASSETS.reduce((sum, a) => sum + (state.holdings[a.id] ?? 0) * assetPrice(a.id, now), 0);
+export const portfolioValue = (state: Pick<EconomyState, "holdings" | "startedAt">, now: number): number =>
+  ASSETS.reduce((sum, a) => sum + (state.holdings[a.id] ?? 0) * assetPrice(a.id, now, state.startedAt), 0);
 
 // --- Hustle ---
 // Hustl je projekt ve třech fázích: nákup, provoz, prodej. Čísla a popisy jsou v NAVRH_EKONOMIKA_HUSTLE.md.
@@ -835,8 +824,8 @@ export function livingCost(state: Pick<EconomyState, "character" | "cash">): num
   const country = COUNTRY_DEF[ch.country];
   const city = CITY_DEF[ch.city];
   const family = FAMILY_DEF[ch.family];
-  // Životní náklady jsou malé, ale rostou s tím, jak jsi na tom líp (aby hráč nebyl zadarmo bohatý).
-  return (6 * country.living * city.living * family.living) * (1 + Math.log10(1 + state.cash / 1000) * 0.5) * INCOME_SPEED;
+  // Stejný odhad, jaký používá rates (roční životní náklady ve stejných jednotkách jako příjem).
+  return LIVING_BASE * country.living * city.living * family.living;
 }
 
 // Cena jednoho dne zásoby dané potřeby.
@@ -1328,7 +1317,7 @@ function normalizeHistory(raw: unknown, now: number): HistoryPoint[] {
 
 export const learningBonusFromXp = (xpLast24h: number) => Math.min(MAX_LEARNING_BONUS, Math.max(0, xpLast24h) / 1000);
 export const eduBonus = (edu: number) => Math.min(MAX_EDU, Math.max(0, edu)) * EDU_BONUS_PER_LEVEL;
-export const eduCost = (edu: number) => 10 + edu * 8;
+export const eduCost = (edu: number) => 5 + edu * 6;
 export const jobRank = (hours: number) => Math.min(MAX_JOB_RANK, 1 + Math.floor(hours / JOB_RANK_HOURS));
 export const companyPrice = (state: EconomyState, id: CompanyId): number => {
   const owned = state.companies[id] ?? 0;
@@ -1377,7 +1366,9 @@ export type Rates = {
 export const setupOf = (state: EconomyState, id: CompanyId): CompanySetup => state.setup[id] ?? DEFAULT_SETUP;
 const familyCompany = (state: EconomyState) => (state.character ? FAMILY_DEF[state.character.family].company : 1);
 export const upgradePrice = (state: EconomyState, id: CompanyId) => Math.round(companyDef(id).cost * UPGRADE_COST_MULT * familyCompany(state));
-export const hireCost = (id: CompanyId) => Math.round(companyIncome(id) * STAFF_WAGE * INCOME_SPEED * STAFF_HIRE_HOURS);
+export const hireCost = (_id: CompanyId) => Math.round(STAFF_BASE_WAGE * STAFF_HIRE_YEARS);
+// Roční mzdy všech zaměstnanců firmy (kredity).
+const payroll = (roles: StaffRoles) => STAFF_ROLES.reduce((sum, k) => sum + roles[k] * ROLE_WAGE[k], 0) * STAFF_BASE_WAGE;
 export const campaignPrice = (state: EconomyState, id: CompanyId) => Math.round(companyDef(id).cost * (state.companies[id] ?? 0) * MARKETING_COST * familyCompany(state));
 export const fundPrice = (state: EconomyState, id: CompanyId) => Math.round(companyDef(id).cost * (state.companies[id] ?? 0) * FUND_COST * familyCompany(state));
 
@@ -1432,26 +1423,23 @@ export function companyYield(
   const roles = rolesOf(s);
   const rookie = now < s.rookieUntil ? ROOKIE_FACTOR : 1;
   const producers = Math.max(0, roles.producer - (roles.producer > 0 && isSick(id, now) ? 1 : 0));
-  const staffMult = 1 + STAFF_OUTPUT * ((producers * rookie) / n);
-  const salesMult = 1 + SELLER_OUTPUT * ((roles.seller * rookie) / n);
+  // Výrobce a prodavač přidají pevný výnos za rok (mzda je absolutní, takže se to vyplatí jen u dost výnosné firmy).
+  const staffRevenue = producers * rookie * STAFF_REVENUE + roles.seller * rookie * SELLER_REVENUE;
   const managerMult = roles.manager > 0 ? 1 + MANAGER_BONUS : 1;
-  const wages = STAFF_ROLES.reduce((sum, k) => sum + roles[k] * ROLE_WAGE[k], 0);
   const boost =
     (s.upgraded ? 1 + UPGRADE_BONUS : 1) *
     s.price *
     s.output *
     riskOutput(s.risk) *
     (now < s.marketingUntil ? MARKETING_BONUS : 1) *
-    staffMult *
-    salesMult *
     managerMult *
     effect.mult *
     (contractActive(state, id, now) ? 1 + CONTRACT_BONUS : 1) *
     (1 + RESEARCH_BONUS * researchLevel(state, id)) *
     rivalMult(state, id, now);
   const stocked = s.stock > 0 ? 1 : NO_STOCK_OUTPUT;
-  const gross0 = base * boost * stocked;
-  const wageCost = wages * companyIncome(id) * STAFF_WAGE * effect.wageMult;
+  const gross0 = (base * boost + staffRevenue) * stocked;
+  const wageCost = payroll(roles) * effect.wageMult;
   const morale = gross0 > 0 ? moraleFrom(wageCost / gross0) : 1;
   const unionOn = s.staff >= UNION_MIN_STAFF && s.unionUntil <= now;
   const strike = unionOn && morale < UNION_THRESHOLD && hash32(`strike:${id}:${eventWindow(now)}`) < STRIKE_CHANCE;
@@ -1468,6 +1456,7 @@ const avgPerf = (perfs: number[]) => (perfs.length ? perfs.reduce((a, b) => a + 
 export function rates(state: EconomyState, now: number, learning = 0): Rates {
   const ch = state.character;
   if (!ch) return { salary: 0, companies: 0, passive: 0, living: 0, companyCosts: 0, multiplier: 1, net: 0, dividends: 0 };
+  const country = COUNTRY_DEF[ch.country];
   const city = CITY_DEF[ch.city];
   const family = FAMILY_DEF[ch.family];
   const effects = needsEffects(state, now);
@@ -1475,7 +1464,7 @@ export function rates(state: EconomyState, now: number, learning = 0): Rates {
 
   // Pasivní plat: 60 % stupně, nic během nemoci, polovina na dovolené.
   const passiveFactor = state.sickUntil > now ? 0 : state.vacationUntil > now ? VACATION_PAY : 1;
-  const salary = jobHourly(state, now) * PASSIVE_SHARE * passiveFactor;
+  const salary = jobHourly(state, now) * PASSIVE_SHARE * passiveFactor * (1 - PERSONAL_TAX);
 
   let companies = 0;
   let companyCosts = 0;
@@ -1500,12 +1489,12 @@ export function rates(state: EconomyState, now: number, learning = 0): Rates {
     if (!a.yield) continue;
     const qty = state.holdings[a.id] ?? 0;
     if (qty <= 0) continue;
-    const income = qty * assetPrice(a.id, now) * a.yield * (a.cat === "realestate" ? city.rent : 1);
+    const income = qty * assetPrice(a.id, now, state.startedAt) * a.yield * (a.cat === "realestate" ? city.rent : 1);
     passive += income;
     if (a.cat === "stocks") dividends += income;
   }
-  // Životní potřeby se neodečítají pasivně, platí se nákupem v obchodě (viz buyNeed). `living` je jen odhad jejich ceny.
-  const living = livingCost(state);
+  // Životní náklady jsou malé, ale rostou s tím, jak jsi na tom líp (aby hráč nebyl zadarmo bohatý).
+  const living = LIVING_BASE * country.living * city.living * family.living;
   const gross = (salary + companies + passive) * multiplier * INCOME_SPEED;
   return {
     salary: salary * INCOME_SPEED,
@@ -1522,7 +1511,7 @@ export function rates(state: EconomyState, now: number, learning = 0): Rates {
 // Jmění = hotovost + hodnota investic + cena firem + hodnota rozjetých hustlů.
 export function netWorth(state: EconomyState, now: number): number {
   let total = state.cash;
-  for (const a of ASSETS) total += (state.holdings[a.id] ?? 0) * assetPrice(a.id, now);
+  for (const a of ASSETS) total += (state.holdings[a.id] ?? 0) * assetPrice(a.id, now, state.startedAt);
   for (const c of COMPANIES) {
     const n = state.companies[c.id] ?? 0;
     if (n > 0) total += c.cost * n * (state.character ? FAMILY_DEF[state.character.family].company : 1);
@@ -1666,7 +1655,7 @@ export function settle(state: EconomyState, now: number, learning = 0): EconomyS
       cash: Math.max(0, state.cash + gain),
       job: state.job ? { ...state.job, hours: state.job.hours + hours } : null,
       totalEarned: state.totalEarned + (gain > 0 ? gain : 0),
-      energy: Math.min(ENERGY_MAX * fx.energyCap, Math.max(0, state.energy + ENERGY_PER_HOUR * hours * fx.energyRegen - fx.energyDrain * hours)),
+      energy: Math.min(ENERGY_MAX * fx.energyCap, Math.max(0, state.energy + (ENERGY_PER_HOUR * hours * fx.energyRegen) / state.speed - fx.energyDrain * hours)),
     };
   }
   // Spotřeba vstupů: výroba zásoby postupně odebírá. Stejně tak se ubírají životní potřeby.
@@ -1716,7 +1705,7 @@ function resolveStartups(state: EconomyState, now: number): EconomyState {
       if (qty <= 0) break;
       const out = startupOutcome(id, r);
       if (out.kind === "run") continue;
-      const price = assetPrice(id, r * STARTUP_ROUND_MS);
+      const price = assetPrice(id, r * STARTUP_ROUND_MS, s.startedAt);
       const basis = qty * (s.cost[id] ?? price);
       if (out.kind === "exit") {
         const money = qty * price * out.mult;
@@ -1755,7 +1744,7 @@ function fillOrders(state: EconomyState, from: number, to: number): EconomyState
 function fillOrdersAt(state: EconomyState, at: number): EconomyState {
   let s = state;
   for (const o of state.orders) {
-    const p = assetPrice(o.asset, at);
+    const p = assetPrice(o.asset, at, state.startedAt);
     const hit = o.when === "below" ? p <= o.price : p >= o.price;
     if (!hit) continue;
     s = { ...s, orders: s.orders.filter((x) => x.id !== o.id) };
@@ -1842,7 +1831,7 @@ export function startShift(state: EconomyState, now: number, rng: () => number =
 
   if (rng() < SICK_CHANCE) {
     const days = rng() < 0.5 ? 1 : 2;
-    return done({ ...state, sickUntil: now + days * DAY }, now, { event: "sick" });
+    return done({ ...state, sickUntil: now + days * GAME_DAY }, now, { event: "sick" });
   }
 
   let event: EconomyEvent = "shift-started";
@@ -1885,7 +1874,8 @@ export function chooseShift(state: EconomyState, index: unknown, now: number, le
   const pay = Math.round(
     jobHourly(state, now) *
       (1 - PASSIVE_SHARE) *
-      SHIFT_PAY_HOURS *
+      (1 / SHIFTS_PER_YEAR) *
+      (1 - PERSONAL_TAX) *
       (0.7 + (0.6 * avg) / PERF_MAX) *
       (shift.lead ? LEAD_PAY : 1) *
       mult *
@@ -2033,8 +2023,7 @@ export function unionDeal(state: EconomyState, id: unknown, now: number): Action
   if (s.staff < UNION_MIN_STAFF) return fail("nothing");
   if (s.unionUntil > now) return fail("busy");
   const roles = rolesOf(s);
-  const wages = STAFF_ROLES.reduce((sum, k) => sum + roles[k] * ROLE_WAGE[k], 0);
-  const fee = Math.round(companyIncome(o.id) * STAFF_WAGE * INCOME_SPEED * UNION_DEAL_HOURS * wages);
+  const fee = Math.round(payroll(roles) * UNION_DEAL_YEARS);
   if (state.cash < fee) return fail("not-enough-cash");
   return done({ ...state, cash: state.cash - fee, setup: withSetup(state, o.id, { unionUntil: now + UNION_DEAL_MS }) }, now);
 }
@@ -2104,7 +2093,7 @@ export function fundResponse(state: EconomyState, id: unknown, now: number): Act
 // Cena, za kterou jde prodat jeden kus: podíl ceny, kterou hráč za poslední kus zaplatil.
 export const sellPrice = (state: EconomyState, id: CompanyId) => Math.round((companyPrice(state, id) / COMPANY_GROWTH) * SELL_SHARE);
 export const contractPrice = (state: EconomyState, id: CompanyId) =>
-  Math.round((state.companies[id] ?? 0) * companyIncome(id) * INCOME_SPEED * CONTRACT_FEE_HOURS * familyCompany(state));
+  Math.round((state.companies[id] ?? 0) * companyIncome(id) * INCOME_SPEED * CONTRACT_FEE_YEARS * familyCompany(state));
 export const researchPrice = (state: EconomyState, id: CompanyId) =>
   Math.round(companyDef(id).cost * RESEARCH_COST * (researchLevel(state, id) + 1) * familyCompany(state));
 
@@ -2164,7 +2153,7 @@ export function buyAsset(state: EconomyState, id: unknown, amount: unknown, now:
   if (isLocked(state, "asset", id)) return fail("locked");
   const money = Math.min(spend, state.cash);
   if (money < 1) return fail("not-enough-cash");
-  return done(applyBuy(state, id, money, assetPrice(id, now), now), now);
+  return done(applyBuy(state, id, money, assetPrice(id, now, state.startedAt), now), now);
 }
 
 // Nákup za hotovost za zadanou cenu kusu. Sdílí ho přímý nákup i plnění příkazu.
@@ -2211,7 +2200,7 @@ export function sellAsset(state: EconomyState, id: unknown, share: unknown, now:
   if (have <= 0) return fail("nothing");
   const s = typeof share === "number" && Number.isFinite(share) ? Math.min(1, Math.max(0, share)) : 1;
   if (s <= 0) return fail("bad-request");
-  const sold = applySell(state, id, s, assetPrice(id, now));
+  const sold = applySell(state, id, s, assetPrice(id, now, state.startedAt));
   return done(sold.state, now, { gained: { cash: Math.round(sold.money), profit: Math.round(sold.profit) } });
 }
 
@@ -2229,7 +2218,7 @@ export function placeOrder(
   if (input.when !== "below" && input.when !== "above") return fail("bad-request");
   const price = qtyOf(input.price);
   if (price === null) return fail("bad-request");
-  const current = assetPrice(asset, now);
+  const current = assetPrice(asset, now, state.startedAt);
   if (input.when === "below" ? price >= current : price <= current) return fail("bad-request");
   if (state.orders.length >= MAX_ORDERS) return fail("max");
   let amount = 0;

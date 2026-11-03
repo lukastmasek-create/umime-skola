@@ -141,10 +141,10 @@ test("obsah: jedinečná id, platné ceny a rostoucí žebříčky", () => {
 });
 
 test("postava: startovní peníze podle rodiny a doby, jméno se očistí, podruhé nejde", () => {
-  assert.equal(start("middle").cash, 300);
-  assert.equal(start("rich").cash, 1500);
-  assert.equal(start("poor", "1990").cash, 60);
-  assert.equal(start("business", "2050").cash, 750);
+  assert.equal(start("middle").cash, 120);
+  assert.equal(start("rich").cash, 2000);
+  assert.equal(start("poor", "1990").cash, 12);
+  assert.equal(start("business", "2050").cash, 1200);
   const s = start();
   assert.equal(s.character?.name, "Eva");
   assert.deepEqual(createCharacter(s, { country: "cz", name: "X", city: "town", era: "2025", family: "poor" }, NOW), { ok: false, error: "has-character" });
@@ -171,7 +171,7 @@ test("pasivní plat je 60 % stupně a stoupá s povýšením a zvýšením", () 
   ok(s);
   const base = s.ok ? s.state : start();
   const salary = rates(base, NOW).salary;
-  assert.ok(Math.abs(salary - 40 * 0.6 * INCOME_SPEED) < 1e-6, `plat ${salary}`);
+  assert.ok(Math.abs(salary - 480 * 0.6 * (1 - 0.23)) < 1e-6, `plat ${salary}`);
   const up = { ...base, job: { ...base.job!, rank: 3 } };
   assert.ok(rates(up, NOW).salary > salary);
   const raised = { ...base, raises: { warehouse: 1.1 } };
@@ -325,7 +325,7 @@ test("výpověď: 5 špatných směn dá varování, dalších 5 výpověď", ()
   assert.equal(s.job, null, "výpověď");
 });
 
-test("krize v oboru: varování přijde a plat se sníží až za den", () => {
+test("krize v oboru: varování přijde a plat se sníží až za herní den", () => {
   const base = takeJob(start(), "warehouse", NOW);
   const s = base.ok ? base.state : start();
   const seq = [0.99, 0.01, 0];
@@ -334,9 +334,9 @@ test("krize v oboru: varování přijde a plat se sníží až za den", () => {
   ok(warned);
   assert.equal(warned.ok && warned.event, "crisis-warning");
   const crisis = warned.ok ? warned.state.crisis : null;
-  assert.ok(crisis && crisis.startAt === NOW + 24 * H);
-  const before = jobSalaryAt(s, NOW + 25 * H);
-  const during = jobSalaryAt(warned.ok ? warned.state : s, NOW + 25 * H);
+  assert.ok(crisis && crisis.startAt === NOW + H / 365);
+  const before = jobSalaryAt(s, NOW + 2 * H / 365);
+  const during = jobSalaryAt(warned.ok ? warned.state : s, NOW + 2 * H / 365);
   assert.ok(Math.abs(during - before * 0.9) < 1e-6, "krize snižuje plat o 10 %");
 });
 
@@ -353,14 +353,14 @@ test("normalizace staré hry: stupeň se odvodí z hodin a body začínají od n
 });
 
 test("firmy: cena roste s počtem, digitální obory zamyká doba", () => {
-  let s = start("rich");
+  let s = { ...start("rich"), cash: 3000 };
   const first = buyCompany(s, "shoes", NOW);
   ok(first);
   s = first.ok ? first.state : s;
-  assert.equal(s.cash, 1500 - 450);
+  assert.equal(s.cash, 3000 - 1000);
   const second = buyCompany(s, "shoes", NOW);
   ok(second);
-  assert.equal(second.ok ? s.cash - second.state.cash : 0, 518);
+  assert.equal(second.ok ? s.cash - second.state.cash : 0, 1150);
   const old = start("rich", "1990");
   assert.deepEqual(buyCompany({ ...old, cash: 1e6 }, "software", NOW), { ok: false, error: "locked" });
   assert.deepEqual(buyAsset({ ...old, cash: 1e6 }, "coin", 100, NOW), { ok: false, error: "locked" });
@@ -383,28 +383,31 @@ test("příjem: peníze plynou v čase, offline má strop, bez postavy nic", () 
 
 test("investice: cena je čistá funkce času a nákup/prodej drží účet", () => {
   for (const a of ASSETS) {
-    assert.equal(assetPrice(a.id, NOW), assetPrice(a.id, NOW));
+    assert.equal(assetPrice(a.id, NOW, NOW), assetPrice(a.id, NOW, NOW));
     for (let i = 0; i < 200; i++) {
-      const p = assetPrice(a.id, NOW + i * 7 * 60_000);
-      assert.ok(Number.isFinite(p) && p > 0, `cena ${a.id} ${p}`);
+      const now = NOW + i * 7 * 60_000;
+      const p = assetPrice(a.id, now, NOW);
+      // zprávy trhu umí cenu zvednout i nad dvojnásobek základu (memecoin s rally 1,5×); trend roste složeně podle ročního driftu
+      const trend = Math.pow(1 + a.drift, Math.max(0, now - NOW) / H);
+      assert.ok(p > 0 && p < a.base * trend * 4, `cena ${a.id} ${p}`);
     }
   }
   // Cena je náhodná, nemá pevné pásmo: u rizikového aktiva se objeví hodnota pod i nad základem a rozptyl je velký.
   const risky: number[] = [];
-  for (let i = 0; i < 400; i++) risky.push(assetPrice("memecoin", NOW + i * 60 * 60_000));
+  for (let i = 0; i < 400; i++) risky.push(assetPrice("memecoin", NOW + i * 60 * 60_000, NOW));
   assert.ok(risky.some((p) => p < 5), "memecoin klesne pod základ");
   assert.ok(risky.some((p) => p > 5 * 3), "memecoin vystoupá výrazně nad základ");
-  assert.ok(Math.max(...risky) / Math.min(...risky) > 20, "rozptyl je velký");
+  assert.ok(Math.max(...risky) / Math.min(...risky) > 10, "rozptyl je velký");
   const s = start("rich");
   const b = buyAsset(s, "technology", 1000, NOW);
   ok(b);
   const held = b.ok ? b.state : s;
-  assert.equal(held.cash, 500);
-  assert.ok(Math.abs((held.holdings.technology ?? 0) * assetPrice("technology", NOW) - 1000) < 1e-6);
+  assert.equal(held.cash, 1000);
+  assert.ok(Math.abs((held.holdings.technology ?? 0) * assetPrice("technology", NOW, NOW) - 1000) < 1e-6);
   const sold = sellAsset(held, "technology", 1, NOW);
   ok(sold);
   const after = sold.ok ? sold.state : held;
-  assert.ok(Math.abs(after.cash - 1500) < 1e-6, "ve stejný okamžik je prodej bez zisku");
+  assert.ok(Math.abs(after.cash - 2000) < 1e-6, "ve stejný okamžik je prodej bez zisku");
   assert.equal(after.holdings.technology, undefined);
   assert.deepEqual(sellAsset(after, "technology", 1, NOW), { ok: false, error: "nothing" });
   assert.deepEqual(buyAsset(s, "technology", -5, NOW), { ok: false, error: "bad-request" });
@@ -552,7 +555,7 @@ test("hustle: stará uložená hra se rozjetý hustl vrátí na hotovost, zkuše
 test("vzdělání: body se utrácejí, bonus roste a má strop", () => {
   let s = start();
   const r = investEdu(s, NOW);
-  assert.ok(r.ok && r.pointsSpent === 10);
+  assert.ok(r.ok && r.pointsSpent === 5);
   s = r.ok ? r.state : s;
   const base = rates({ ...s, edu: 0, job: newJob("warehouse", NOW) }, NOW);
   const boosted = rates({ ...s, job: newJob("warehouse", NOW) }, NOW);
@@ -589,7 +592,7 @@ test("investice: nová aktiva jdou koupit a prodat a stará držba zůstane plat
   }
   // stará aktiva mají beze změny stejnou cenu jako dřív (žádný přepočet držby)
   assert.equal(assetDef("technology").base, 100);
-  assert.equal(assetDef("state").yield, 0.0006);
+  assert.equal(assetDef("state").yield, 0.045);
 });
 
 test("investice: staré obecné držby se přesunou na výchozí položku bez ztráty", () => {
@@ -607,9 +610,9 @@ test("investice: staré obecné držby se přesunou na výchozí položku bez zt
 
 test("jmění: hotovost + investice + firmy", () => {
   const s = start("rich");
-  assert.equal(netWorth(s, NOW), 1500);
+  assert.equal(netWorth(s, NOW), 2000);
   const c = buyCompany(s, "shoes", NOW);
-  assert.equal(c.ok ? netWorth(c.state, NOW) : -1, 1500);
+  assert.equal(c.ok ? netWorth(c.state, NOW) : -1, 2000);
 });
 
 test("normalizeState: poškozená data se opraví bez pádu", () => {
@@ -836,10 +839,15 @@ test("fáze: nájem a daň rostou s fází; bez firmy se nic neplatí", () => {
 });
 
 test("čas: rychlost 16× připíše 16× příjem, offline strop se násobí a uložený herní čas se nořeže", () => {
-  // Hotovost držíme nízkou: životní náklady rostou s jměním, takže velké jmění by čistý výnos zkreslilo.
-  const bought = buyCompany({ ...start("rich"), cash: 3000 }, "shoes", NOW);
-  const withStock = bought.ok ? buyStock(bought.state, "shoes", stockCapacity(1, 1), NOW) : bought;
-  const s1 = withStock.ok ? withStock.state : start("rich");
+  // Deset kusů a zásoby, aby čistý výnos byl kladný (roční životní náklady jsou větší než výnos jednoho kusu).
+  let s0 = { ...start("rich"), cash: 1_000_000 };
+  for (let i = 0; i < 10; i++) {
+    const b = buyCompany(s0, "shoes", NOW);
+    ok(b);
+    s0 = b.ok ? b.state : s0;
+  }
+  const withStock = buyStock(s0, "shoes", stockCapacity(10, 1), NOW);
+  const s1 = withStock.ok ? withStock.state : s0;
   const fast = setSpeed(s1, 16, NOW);
   assert.ok(fast.ok);
   const s16 = fast.ok ? fast.state : s1;
@@ -880,29 +888,38 @@ test("tržní zprávy: zpráva působí jen na svou kategorii a jen hodinu z ka�
 });
 
 test("startupy: držba se vyhodnotí v kole, které nastane po nákupu (exit i krach)", () => {
-  const base = startupRoundOf(NOW);
-  const first = (id: (typeof STARTUP_IDS)[number]) => {
-    for (let r = base + 1; r <= base + 400; r++) {
+  // První nevyrovnané kolo od daného kola (nevyrovnané = exit nebo krach).
+  const first = (id: (typeof STARTUP_IDS)[number], from: number) => {
+    for (let r = from; r < from + 400; r++) {
       const out = startupOutcome(id, r);
       if (out.kind !== "run") return { round: r, kind: out.kind };
     }
     return null;
   };
-  const exitId = STARTUP_IDS.find((id) => first(id)?.kind === "exit");
-  const krachId = STARTUP_IDS.find((id) => first(id)?.kind === "krach");
-  assert.ok(exitId && krachId, "v testovacím okně jsou oba výsledky");
-
-  for (const [id, want] of [
-    [exitId, "startup-exit"],
-    [krachId, "startup-krach"],
+  // Hledáme nákup (kolo p) takový, že první výsledek po něm je požadovaného typu.
+  const find = (want: "exit" | "krach") => {
+    const base = startupRoundOf(NOW);
+    for (const id of STARTUP_IDS) {
+      for (let p = base; p < base + 20_000; p++) {
+        const f = first(id, p + 1);
+        if (f && f.kind === want) return { id, p, round: f.round };
+      }
+    }
+    return null;
+  };
+  for (const [want, event] of [
+    ["exit", "startup-exit"],
+    ["krach", "startup-krach"],
   ] as const) {
-    const f = first(id)!;
-    const bought = buyAsset({ ...start(), cash: 1_000_000 }, id, 10_000, NOW);
+    const hit = find(want);
+    assert.ok(hit, `najde se nákup s výsledkem ${want}`);
+    if (!hit) continue;
+    const bought = buyAsset({ ...start(), cash: 1_000_000 }, hit.id, 10_000, hit.p * STARTUP_ROUND_MS + 1);
     ok(bought);
     if (!bought.ok) continue;
-    const after = settle(bought.state, f.round * STARTUP_ROUND_MS + 1);
-    assert.equal(after.holdings[id], undefined, `${id}: držba je pryč`);
-    assert.ok(after.news.some((n) => n.kind === want && n.asset === id), `${id}: zpráva ${want}`);
+    const after = settle(bought.state, hit.round * STARTUP_ROUND_MS + 1);
+    assert.equal(after.holdings[hit.id], undefined, `${hit.id}: držba je pryč`);
+    assert.ok(after.news.some((n) => n.kind === event && n.asset === hit.id), `${hit.id}: zpráva ${event}`);
   }
 });
 
@@ -921,14 +938,14 @@ test("příkazy: stop-loss se splní, až cena klesne na hranici; hranice na šp
   const bought = buyAsset({ ...start(), cash: 1_000_000 }, "technology", 100_000, NOW);
   ok(bought);
   if (!bought.ok) return;
-  const p0 = assetPrice("technology", NOW);
+  const p0 = assetPrice("technology", NOW, NOW);
   // Hledáme čas, kdy se cena v okně kontroly (hodina po poslední kontrole, ta se bere po krocích) dostane pod dnešní cenu.
   let at = 0;
   let trigger = 0;
-  for (let k = 1; k <= 48 && !at; k++) {
-    const t = NOW + k * H;
-    const from = t - 15 * 60_000;
-    const low = Math.min(assetPrice("technology", from + ORDER_CHECK_MS), assetPrice("technology", t));
+  // Kontroly jdou po mřížce ORDER_CHECK_MS od začátku, stejně jako při vyrovnání (settle).
+  for (let k = 1; k <= 390 && !at; k++) {
+    const t = NOW + k * ORDER_CHECK_MS;
+    const low = Math.min(assetPrice("technology", t - ORDER_CHECK_MS, NOW), assetPrice("technology", t, NOW));
     if (low < p0 * 0.999) {
       at = t;
       trigger = low * 1.0001;
@@ -950,7 +967,7 @@ test("příkazy: stop-loss se splní, až cena klesne na hranici; hranice na šp
 
 test("příkazy: nejvýš osm čekajících, zrušit jde jen existující", () => {
   let s = { ...start(), cash: 1_000_000 };
-  const p = assetPrice("gold", NOW);
+  const p = assetPrice("gold", NOW, NOW);
   for (let i = 0; i < MAX_ORDERS; i++) {
     const r = placeOrder(s, { asset: "gold", side: "buy", when: "below", price: p * 0.5, amount: 1000, share: 0 }, NOW);
     ok(r);
@@ -1070,27 +1087,27 @@ test("zaměstnanci: odchod nikdy nevezme víc, než je v firmě lidí, a ubere z
 });
 
 test("zaměstnanci: účetní sníží daň; vyplatí se u větší firmy, u jedné firmy ne", () => {
-  const buy = (n: number) => {
+  // Účetní sníží daň z zisku o 15 %. Vyplatí se, když úspora přesáhne mzdu (720 kreditů ročně).
+  // Velká továrna (20 kusů) úsporu přinese, jeden obchod s botami ne.
+  const buy = (n: number, id: "factory" | "shoes") => {
     let st = { ...start("rich"), cash: 1e12 };
     for (let i = 0; i < n; i++) {
-      const b = buyCompany(st, "shoes", NOW);
+      const b = buyCompany(st, id, NOW);
       ok(b);
       st = b.ok ? b.state : st;
     }
-    const z = buyStock(st, "shoes", n, NOW);
+    const z = buyStock(st, id, n, NOW);
     ok(z);
     return z.ok ? z.state : st;
   };
-  // Účetní ušetří jen z kladného zisku, takže srovnáváme v čase bez krize (výnos oboru není snížený).
-  const big = buy(40);
-  const calm = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => NOW + i * H).find((t) => eventEffect(big, "shoes", t).mult === 1) ?? NOW;
-  const accBig = hireStaff(big, "shoes", 1, NOW, "accountant");
+  const big = buy(20, "factory");
+  const accBig = hireStaff(big, "factory", 1, NOW, "accountant");
   ok(accBig);
-  if (accBig.ok) assert.ok(ratesOf({ ...accBig.state, phase: 5 }, calm).net > ratesOf({ ...big, phase: 5 }, calm).net, "u velké firmy se účetní vyplatí");
-  const small = buy(1);
+  if (accBig.ok) assert.ok(ratesOf({ ...accBig.state, phase: 5 }, NOW).net > ratesOf({ ...big, phase: 5 }, NOW).net, "u velké firmy se účetní vyplatí");
+  const small = buy(1, "shoes");
   const accSmall = hireStaff(small, "shoes", 1, NOW, "accountant");
   ok(accSmall);
-  if (accSmall.ok) assert.ok(ratesOf({ ...accSmall.state, phase: 5 }, calm).net < ratesOf({ ...small, phase: 5 }, calm).net, "u jedné firmy je mzda větší než úspora");
+  if (accSmall.ok) assert.ok(ratesOf({ ...accSmall.state, phase: 5 }, NOW).net < ratesOf({ ...small, phase: 5 }, NOW).net, "u jedné firmy je mzda větší než úspora");
 });
 
 // Firma s hodně drahou partou: mzdy tlačí spokojenost pod práh.
@@ -1364,8 +1381,8 @@ test("boosty: energy drink zdvojnásobí dobíjení energie a vyprší", () => {
   ok(bought);
   if (!bought.ok) return;
   assert.equal(bought.state.cash, 1e12 - boostPrice({ ...base, cash: 1e12 }, "energy_drink"));
-  const boosted = settle(bought.state, NOW + 15 * 60_000);
-  const plain = settle(base, NOW + 15 * 60_000);
+  const boosted = settle(bought.state, NOW + 2 * 60_000);
+  const plain = settle(base, NOW + 2 * 60_000);
   assert.ok(boosted.energy > plain.energy + 1, "během boostu se energie dobíjí rychleji");
   const after = settle(bought.state, NOW + (BOOST_DEF.energy_drink.minutes + 5) * 60_000);
   const expired = settle(base, NOW + (BOOST_DEF.energy_drink.minutes + 5) * 60_000);
