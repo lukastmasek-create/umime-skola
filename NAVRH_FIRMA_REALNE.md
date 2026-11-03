@@ -76,6 +76,28 @@ Přechod mezi fázemi stojí peníze a čas (podmínky: obrat, počet zaměstnan
 - **Tempo:** střední, hodiny a dny. Dvanáct fází se dá dohrát za několik dní reálného času.
 - **Pořadí stavby:** nejdřív fáze a provozní náklady, pak zaměstnanci a zásoby, potom holding a expanze, nakonec burza.
 
-## 11. Otevřené otázky
+## 11. Nájem a daň podle fáze (výchozí hodnoty)
+
+- **Nájem** je podíl na výnosu firmy za hodinu, ale **nejméně 0,1 % ceny firmy za hodinu** (platí i při nečinnosti). Garáž nájem nemá.
+- **Daň** je podíl na kladném zisku firmy za hodinu. Ztráta daň nemá.
+
+| # | Fáze | Nájem (podíl výnosu) | Daň (podíl zisku) |
+|---|---|---:|---:|
+| 1 | Garáž | 0 % | 5 % |
+| 2 | Dílna | 5 % | 10 % |
+| 3 | Malý sklad | 7 % | 12 % |
+| 4 | Prodejna | 8 % | 15 % |
+| 5 | Pobočka | 9 % | 15 % |
+| 6 | Velká pobočka | 10 % | 18 % |
+| 7 | Výrobní hala | 11 % | 18 % |
+| 8 | Logistické centrum | 12 % | 20 % |
+| 9 | Fabrika | 13 % | 20 % |
+| 10 | Velká fabrika | 14 % | 22 % |
+| 11 | Zahraniční závod | 15 % | 25 % |
+| 12 | Sídlo holdingu | 16 % | 25 % |
+
+Názvy fází jsou návrh a dají se změnit. Čísla jsou výchozí a doladí se po hraní.
+
+## 12. Otevřené otázky
 
 Jsou v dotazníku v rozhovoru. Hlavně: počty fází, role a jejich mzdy, výše úroků a podílů, délka varování.
