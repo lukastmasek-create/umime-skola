@@ -323,7 +323,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
   const playedText = playedDays > 0 ? `${fill(t.days, { n: playedDays })} ${formatLeft(playedMs % 86_400_000, t)}` : formatLeft(playedMs, t);
   const companiesOwned = Object.values(state.companies).reduce((s, n) => s + (n ?? 0), 0);
   const runningHustles = HUSTLES.filter((h) => state.hustle[h.id]).length;
-  const holdings = ASSETS.map((a) => ({ id: a.id, value: (state.holdings[a.id] ?? 0) * assetPrice(a.id, clock) })).filter((h) => h.value > 0);
+  const holdings = ASSETS.map((a) => ({ id: a.id, value: (state.holdings[a.id] ?? 0) * assetPrice(a.id, clock, state.startedAt) })).filter((h) => h.value > 0);
   const grossHour = r.salary * r.multiplier + r.companies * r.multiplier + r.passive * r.multiplier;
   const passiveShare = grossHour > 0 ? (r.passive * r.multiplier) / grossHour : 0;
   const companyRows = COMPANIES.map((c) => {
@@ -335,7 +335,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
   const bestCo = companyRows[0] ?? null;
   const companyScale = Math.max(1, ...companyRows.map((c) => c.perHour));
   // Hodnota držby v dané kategorii investic (kategorie jsou z lib/idle/economy.ts).
-  const catHeld = (cat: AssetCategoryId) => ASSETS.filter((a) => a.cat === cat).reduce((sum, a) => sum + (state.holdings[a.id] ?? 0) * assetPrice(a.id, clock), 0);
+  const catHeld = (cat: AssetCategoryId) => ASSETS.filter((a) => a.cat === cat).reduce((sum, a) => sum + (state.holdings[a.id] ?? 0) * assetPrice(a.id, clock, state.startedAt), 0);
   const assetParts = [
     { label: t.cash, value: liveCash, color: "var(--cat-1)" },
     { label: t.companiesOwned, value: companyRows.reduce((sum, c) => sum + c.value, 0), color: "var(--cat-2)" },

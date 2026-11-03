@@ -511,39 +511,40 @@ const asset = (
 ): AssetDef => ({ id, cat, seed: extra.seed ?? id, base, vol, yield: yieldRate, drift, ...(extra.crypto ? { crypto: true } : {}) });
 
 export const ASSETS: AssetDef[] = [
-  // kryptoměny (odemknuté až v éře s kryptem)
+  // Výnos a drift jsou roční (na herní hodinu = rok). Hodnoty odpovídají orientačně ČR / EU běžným sazbám.
+  // kryptoměny (odemknuté až v éře s kryptem): bez výnosu a bez trendu, čistě spekulace
   asset("coin", "crypto", 500, 0.5, 0, 0, { seed: "crypto", crypto: true }),
-  asset("altcoin", "crypto", 120, 0.8, 0, 0.0001, { crypto: true }),
-  asset("stablecoin", "crypto", 10, 0.005, 0.0002, 0, { crypto: true }),
+  asset("altcoin", "crypto", 120, 0.8, 0, 0, { crypto: true }),
+  asset("stablecoin", "crypto", 10, 0.005, 0.03, 0, { crypto: true }),
   asset("memecoin", "crypto", 5, 1.2, 0, 0, { crypto: true }),
-  asset("defi", "crypto", 80, 0.6, 0.0002, 0.00005, { crypto: true }),
-  // pozemky a nemovitosti (výnos násobí nájem ve městě)
-  asset("flat", "realestate", 50_000, 0.04, 0.0015, 0.00008, { seed: "realestate" }),
-  asset("house", "realestate", 120_000, 0.05, 0.00125, 0.00006),
-  asset("land", "realestate", 20_000, 0.03, 0, 0.0001),
-  asset("office", "realestate", 200_000, 0.06, 0.00175, 0.00004),
-  // akcie
-  asset("technology", "stocks", 100, 0.18, 0.0004, 0.00015, { seed: "stocks" }),
-  asset("energy", "stocks", 80, 0.08, 0.0008, 0.00003),
-  asset("bank", "stocks", 60, 0.12, 0.0009, 0.00005),
-  asset("consumer", "stocks", 40, 0.1, 0.0005, 0.00004),
-  asset("biotech", "stocks", 150, 0.35, 0, 0.0001),
-  // kovy
-  asset("gold", "metals", 2_000, 0.07, 0, 0.00005, { seed: "metal" }),
-  asset("silver", "metals", 30, 0.1, 0, 0.00003),
-  asset("copper", "metals", 150, 0.12, 0, 0.00002),
-  // dluhopisy
-  asset("state", "bonds", 1_000, 0.01, 0.0006, 0, { seed: "bonds" }),
-  asset("corporate", "bonds", 1_000, 0.03, 0.001, 0),
-  asset("junk", "bonds", 1_000, 0.12, 0.0025, 0),
-  // fondy
-  asset("index", "funds", 300, 0.03, 0.0004, 0.00003, { seed: "fund" }),
-  asset("dividend", "funds", 200, 0.02, 0.0006, 0.00001),
-  asset("theme", "funds", 250, 0.08, 0.0002, 0.00008),
-  // startupy: vysoké riziko, bez výnosu, nejvyšší očekávaný růst
-  asset("startup_it", "startups", 200, 0.4, 0, 0.0002, { seed: "startup" }),
-  asset("startup_fintech", "startups", 150, 0.5, 0, 0.00025),
-  asset("startup_green", "startups", 120, 0.3, 0, 0.00015),
+  asset("defi", "crypto", 80, 0.6, 0.05, 0, { crypto: true }),
+  // pozemky a nemovitosti: nájemní výnos ~3–5 %, růst ceny ~4–6 % ročně (výnos násobí nájem ve městě)
+  asset("flat", "realestate", 50_000, 0.04, 0.035, 0.05, { seed: "realestate" }),
+  asset("house", "realestate", 120_000, 0.05, 0.03, 0.05),
+  asset("land", "realestate", 20_000, 0.03, 0, 0.04),
+  asset("office", "realestate", 200_000, 0.06, 0.05, 0.04),
+  // akcie: dividendy ~1–4 %, dlouhodobý růst kolem 2–9 %
+  asset("technology", "stocks", 100, 0.18, 0.01, 0.09, { seed: "stocks" }),
+  asset("energy", "stocks", 80, 0.08, 0.04, 0.02),
+  asset("bank", "stocks", 60, 0.12, 0.04, 0.04),
+  asset("consumer", "stocks", 40, 0.1, 0.025, 0.04),
+  asset("biotech", "stocks", 150, 0.35, 0, 0.06),
+  // kovy: bez výnosu, růst jen mírný
+  asset("gold", "metals", 2_000, 0.07, 0, 0.04, { seed: "metal" }),
+  asset("silver", "metals", 30, 0.1, 0, 0.03),
+  asset("copper", "metals", 150, 0.12, 0, 0.02),
+  // dluhopisy: státní ~4,5 %, firemní ~5,5 %, rizikové ~8 % výnos, bez růstu ceny
+  asset("state", "bonds", 1_000, 0.01, 0.045, 0, { seed: "bonds" }),
+  asset("corporate", "bonds", 1_000, 0.03, 0.055, 0),
+  asset("junk", "bonds", 1_000, 0.12, 0.08, 0),
+  // fondy: indexový ~1,5 % výnos a ~6 % růst
+  asset("index", "funds", 300, 0.03, 0.015, 0.06, { seed: "fund" }),
+  asset("dividend", "funds", 200, 0.02, 0.03, 0.04),
+  asset("theme", "funds", 250, 0.08, 0.005, 0.07),
+  // startupy: bez výnosu a trendu, hodnota se mění jen výsledky kol (exit nebo krach)
+  asset("startup_it", "startups", 200, 0.4, 0, 0, { seed: "startup" }),
+  asset("startup_fintech", "startups", 150, 0.5, 0, 0),
+  asset("startup_green", "startups", 120, 0.3, 0, 0),
 ];
 
 // Staré obecné názvy držeb -> výchozí položka. Při načtení se držby přesunou (viz normalizeState).
@@ -557,24 +558,36 @@ const LEGACY_ASSET: Partial<Record<AssetId, string>> = {
   startup_it: "startup",
 };
 
+// Hash pro náhodné, ale deterministické jevy. FNV-1a sám o sobě dává u čísel kol, která se liší jen poslední
+// číslicí, téměř monotónní řadu (události a krachy by se shlukovaly). Proto na konci míchá bity (murmur3 fmix32).
 function hash32(s: string): number {
   let h = 2166136261;
   for (let i = 0; i < s.length; i++) {
     h ^= s.charCodeAt(i);
     h = Math.imul(h, 16777619);
   }
+  h ^= h >>> 16;
+  h = Math.imul(h, 0x85ebca6b);
+  h ^= h >>> 13;
+  h = Math.imul(h, 0xc2b2ae35);
+  h ^= h >>> 16;
   return (h >>> 0) / 4294967296;
 }
 
-// Cena je čistá funkce času: dvě vlny (perioda zhruba 3 hodiny a 45 minut) a malý šum po minutě. Server i prohlížeč vidí totéž.
-export function assetPrice(id: AssetId, now: number): number {
+// Cena je čistá funkce času: dvě vlny (krátký rytmus) a malý šum po minutě. Dlouhodobý trend je složené úročení
+// od začátku hry hráče (`origin`, obvykle `startedAt`): jeden herní hodina = jeden rok, takže `drift` je roční růst.
+// Trend se nesmí resetovat (dřív se počítal z času modulo 5000 h a cena na hranici skočila).
+export const GROWTH_HORIZON_YEARS = 40;
+export function assetPrice(id: AssetId, now: number, origin: number): number {
   const def = assetDef(id);
   const phaseA = hash32(`${def.seed}:a`) * Math.PI * 2;
   const phaseB = hash32(`${def.seed}:b`) * Math.PI * 2;
   const hours = now / H;
   const wave = 0.6 * Math.sin(hours / 0.5 + phaseA) + 0.4 * Math.sin(hours / 0.12 + phaseB);
   const noise = (hash32(`${def.seed}:${Math.floor(now / 60_000)}`) - 0.5) * 0.3;
-  const trend = 1 + def.drift * (hours % 5_000);
+  // Růst se počítá nejvýš do horizontu, jinak by složené úročení přeteklo (hra běží až 16× rychleji).
+  const years = Math.min(GROWTH_HORIZON_YEARS, Math.max(0, now - origin) / H);
+  const trend = Math.pow(1 + def.drift, years);
   return Math.max(1, def.base * trend * (1 + def.vol * (wave + noise))) * assetEventMult(id, now);
 }
 
@@ -618,18 +631,20 @@ export function assetEventMult(id: AssetId, now: number): number {
   return ev.def.affects === "all" || ev.def.affects.includes(cat) ? ev.def.mult : 1;
 }
 
-// --- Startupy: kola každých 12 hodin ---
+// --- Startupy: kola každý herní rok (1 hodina) ---
 // Držba startupu v každém kole buď vyjde (exit s násobkem vložené ceny), nebo zkrachuje, nebo běží dál.
-export const STARTUP_ROUND_MS = 12 * H;
-export const STARTUP_EXIT_CHANCE = 0.2;
-export const STARTUP_KRACH_CHANCE = 0.15;
+// Realita: většina startupů zanikne, exit se podaří zhruba jednomu z deseti. Při 2 % exitu a 18 % krachu za rok
+// vyjde exit před krachem zhruba v 10 % případů, a výherní násobek je 4–8×, takže očekávaná hodnota je záporná.
+export const STARTUP_ROUND_MS = H;
+export const STARTUP_EXIT_CHANCE = 0.02;
+export const STARTUP_KRACH_CHANCE = 0.18;
 // Kolo, které uplynulo bez přepočtu (dlouhá nepřítomnost), se nevyhodnocuje po jednom: vezme se nejvýš tolik posledních kol.
 export const STARTUP_MAX_ROUNDS = 30;
 export type StartupOutcome = { kind: "run" } | { kind: "krach" } | { kind: "exit"; mult: number };
 export const startupRoundOf = (now: number) => Math.floor(now / STARTUP_ROUND_MS);
 export function startupOutcome(id: AssetId, round: number): StartupOutcome {
   const r = hash32(`startup-round:${id}:${round}`);
-  if (r < STARTUP_EXIT_CHANCE) return { kind: "exit", mult: 1.5 + hash32(`startup-mult:${id}:${round}`) * 0.6 };
+  if (r < STARTUP_EXIT_CHANCE) return { kind: "exit", mult: 4 + hash32(`startup-mult:${id}:${round}`) * 4 };
   if (r < STARTUP_EXIT_CHANCE + STARTUP_KRACH_CHANCE) return { kind: "krach" };
   return { kind: "run" };
 }
@@ -656,8 +671,8 @@ export const HISTORY_STEP_MS = 15 * 60_000;
 export const HISTORY_MAX = 96;
 export type HistoryPoint = { t: number; w: number; p: number };
 
-export const portfolioValue = (state: Pick<EconomyState, "holdings">, now: number): number =>
-  ASSETS.reduce((sum, a) => sum + (state.holdings[a.id] ?? 0) * assetPrice(a.id, now), 0);
+export const portfolioValue = (state: Pick<EconomyState, "holdings" | "startedAt">, now: number): number =>
+  ASSETS.reduce((sum, a) => sum + (state.holdings[a.id] ?? 0) * assetPrice(a.id, now, state.startedAt), 0);
 
 // --- Hustle ---
 
@@ -1269,7 +1284,7 @@ export function rates(state: EconomyState, now: number, learning = 0): Rates {
     if (!a.yield) continue;
     const qty = state.holdings[a.id] ?? 0;
     if (qty <= 0) continue;
-    const income = qty * assetPrice(a.id, now) * a.yield * (a.cat === "realestate" ? city.rent : 1);
+    const income = qty * assetPrice(a.id, now, state.startedAt) * a.yield * (a.cat === "realestate" ? city.rent : 1);
     passive += income;
     if (a.cat === "stocks") dividends += income;
   }
@@ -1291,7 +1306,7 @@ export function rates(state: EconomyState, now: number, learning = 0): Rates {
 // Jmění = hotovost + hodnota investic + cena firem + hodnota rozjetých hustlů.
 export function netWorth(state: EconomyState, now: number): number {
   let total = state.cash;
-  for (const a of ASSETS) total += (state.holdings[a.id] ?? 0) * assetPrice(a.id, now);
+  for (const a of ASSETS) total += (state.holdings[a.id] ?? 0) * assetPrice(a.id, now, state.startedAt);
   for (const c of COMPANIES) {
     const n = state.companies[c.id] ?? 0;
     if (n > 0) total += c.cost * n * (state.character ? FAMILY_DEF[state.character.family].company : 1);
@@ -1405,7 +1420,7 @@ function resolveStartups(state: EconomyState, now: number): EconomyState {
       if (qty <= 0) break;
       const out = startupOutcome(id, r);
       if (out.kind === "run") continue;
-      const price = assetPrice(id, r * STARTUP_ROUND_MS);
+      const price = assetPrice(id, r * STARTUP_ROUND_MS, s.startedAt);
       const basis = qty * (s.cost[id] ?? price);
       if (out.kind === "exit") {
         const money = qty * price * out.mult;
@@ -1444,7 +1459,7 @@ function fillOrders(state: EconomyState, from: number, to: number): EconomyState
 function fillOrdersAt(state: EconomyState, at: number): EconomyState {
   let s = state;
   for (const o of state.orders) {
-    const p = assetPrice(o.asset, at);
+    const p = assetPrice(o.asset, at, state.startedAt);
     const hit = o.when === "below" ? p <= o.price : p >= o.price;
     if (!hit) continue;
     s = { ...s, orders: s.orders.filter((x) => x.id !== o.id) };
@@ -1852,7 +1867,7 @@ export function buyAsset(state: EconomyState, id: unknown, amount: unknown, now:
   if (isLocked(state, "asset", id)) return fail("locked");
   const money = Math.min(spend, state.cash);
   if (money < 1) return fail("not-enough-cash");
-  return done(applyBuy(state, id, money, assetPrice(id, now), now), now);
+  return done(applyBuy(state, id, money, assetPrice(id, now, state.startedAt), now), now);
 }
 
 // Nákup za hotovost za zadanou cenu kusu. Sdílí ho přímý nákup i plnění příkazu.
@@ -1899,7 +1914,7 @@ export function sellAsset(state: EconomyState, id: unknown, share: unknown, now:
   if (have <= 0) return fail("nothing");
   const s = typeof share === "number" && Number.isFinite(share) ? Math.min(1, Math.max(0, share)) : 1;
   if (s <= 0) return fail("bad-request");
-  const sold = applySell(state, id, s, assetPrice(id, now));
+  const sold = applySell(state, id, s, assetPrice(id, now, state.startedAt));
   return done(sold.state, now, { gained: { cash: Math.round(sold.money), profit: Math.round(sold.profit) } });
 }
 
@@ -1917,7 +1932,7 @@ export function placeOrder(
   if (input.when !== "below" && input.when !== "above") return fail("bad-request");
   const price = qtyOf(input.price);
   if (price === null) return fail("bad-request");
-  const current = assetPrice(asset, now);
+  const current = assetPrice(asset, now, state.startedAt);
   if (input.when === "below" ? price >= current : price <= current) return fail("bad-request");
   if (state.orders.length >= MAX_ORDERS) return fail("max");
   let amount = 0;

@@ -361,11 +361,13 @@ test("příjem: peníze plynou v čase, offline má strop, bez postavy nic", () 
 
 test("investice: cena je čistá funkce času a nákup/prodej drží účet", () => {
   for (const a of ASSETS) {
-    assert.equal(assetPrice(a.id, NOW), assetPrice(a.id, NOW));
+    assert.equal(assetPrice(a.id, NOW, NOW), assetPrice(a.id, NOW, NOW));
     for (let i = 0; i < 200; i++) {
-      const p = assetPrice(a.id, NOW + i * 7 * 60_000);
-      // zprávy trhu umí cenu zvednout i nad dvojnásobek základu (memecoin s rally 1,5×)
-      assert.ok(p > 0 && p < a.base * 4, `cena ${a.id} ${p}`);
+      const now = NOW + i * 7 * 60_000;
+      const p = assetPrice(a.id, now, NOW);
+      // zprávy trhu umí cenu zvednout i nad dvojnásobek základu (memecoin s rally 1,5×); trend roste složeně podle ročního driftu
+      const trend = Math.pow(1 + a.drift, Math.max(0, now - NOW) / H);
+      assert.ok(p > 0 && p < a.base * trend * 4, `cena ${a.id} ${p}`);
     }
   }
   const s = start("rich");
@@ -373,7 +375,7 @@ test("investice: cena je čistá funkce času a nákup/prodej drží účet", ()
   ok(b);
   const held = b.ok ? b.state : s;
   assert.equal(held.cash, 500);
-  assert.ok(Math.abs((held.holdings.technology ?? 0) * assetPrice("technology", NOW) - 1000) < 1e-6);
+  assert.ok(Math.abs((held.holdings.technology ?? 0) * assetPrice("technology", NOW, NOW) - 1000) < 1e-6);
   const sold = sellAsset(held, "technology", 1, NOW);
   ok(sold);
   const after = sold.ok ? sold.state : held;
@@ -519,7 +521,7 @@ test("investice: nová aktiva jdou koupit a prodat a stará držba zůstane plat
   }
   // stará aktiva mají beze změny stejnou cenu jako dřív (žádný přepočet držby)
   assert.equal(assetDef("technology").base, 100);
-  assert.equal(assetDef("state").yield, 0.0006);
+  assert.equal(assetDef("state").yield, 0.045);
 });
 
 test("investice: staré obecné držby se přesunou na výchozí položku bez ztráty", () => {
@@ -810,29 +812,38 @@ test("tržní zprávy: zpráva působí jen na svou kategorii a jen hodinu z ka�
 });
 
 test("startupy: držba se vyhodnotí v kole, které nastane po nákupu (exit i krach)", () => {
-  const base = startupRoundOf(NOW);
-  const first = (id: (typeof STARTUP_IDS)[number]) => {
-    for (let r = base + 1; r <= base + 400; r++) {
+  // První nevyrovnané kolo od daného kola (nevyrovnané = exit nebo krach).
+  const first = (id: (typeof STARTUP_IDS)[number], from: number) => {
+    for (let r = from; r < from + 400; r++) {
       const out = startupOutcome(id, r);
       if (out.kind !== "run") return { round: r, kind: out.kind };
     }
     return null;
   };
-  const exitId = STARTUP_IDS.find((id) => first(id)?.kind === "exit");
-  const krachId = STARTUP_IDS.find((id) => first(id)?.kind === "krach");
-  assert.ok(exitId && krachId, "v testovacím okně jsou oba výsledky");
-
-  for (const [id, want] of [
-    [exitId, "startup-exit"],
-    [krachId, "startup-krach"],
+  // Hledáme nákup (kolo p) takový, že první výsledek po něm je požadovaného typu.
+  const find = (want: "exit" | "krach") => {
+    const base = startupRoundOf(NOW);
+    for (const id of STARTUP_IDS) {
+      for (let p = base; p < base + 20_000; p++) {
+        const f = first(id, p + 1);
+        if (f && f.kind === want) return { id, p, round: f.round };
+      }
+    }
+    return null;
+  };
+  for (const [want, event] of [
+    ["exit", "startup-exit"],
+    ["krach", "startup-krach"],
   ] as const) {
-    const f = first(id)!;
-    const bought = buyAsset({ ...start(), cash: 1_000_000 }, id, 10_000, NOW);
+    const hit = find(want);
+    assert.ok(hit, `najde se nákup s výsledkem ${want}`);
+    if (!hit) continue;
+    const bought = buyAsset({ ...start(), cash: 1_000_000 }, hit.id, 10_000, hit.p * STARTUP_ROUND_MS + 1);
     ok(bought);
     if (!bought.ok) continue;
-    const after = settle(bought.state, f.round * STARTUP_ROUND_MS + 1);
-    assert.equal(after.holdings[id], undefined, `${id}: držba je pryč`);
-    assert.ok(after.news.some((n) => n.kind === want && n.asset === id), `${id}: zpráva ${want}`);
+    const after = settle(bought.state, hit.round * STARTUP_ROUND_MS + 1);
+    assert.equal(after.holdings[hit.id], undefined, `${hit.id}: držba je pryč`);
+    assert.ok(after.news.some((n) => n.kind === event && n.asset === hit.id), `${hit.id}: zpráva ${event}`);
   }
 });
 
@@ -851,14 +862,14 @@ test("příkazy: stop-loss se splní, až cena klesne na hranici; hranice na šp
   const bought = buyAsset({ ...start(), cash: 1_000_000 }, "technology", 100_000, NOW);
   ok(bought);
   if (!bought.ok) return;
-  const p0 = assetPrice("technology", NOW);
+  const p0 = assetPrice("technology", NOW, NOW);
   // Hledáme čas, kdy se cena v okně kontroly (hodina po poslední kontrole, ta se bere po krocích) dostane pod dnešní cenu.
   let at = 0;
   let trigger = 0;
-  for (let k = 1; k <= 48 && !at; k++) {
-    const t = NOW + k * H;
-    const from = t - 15 * 60_000;
-    const low = Math.min(assetPrice("technology", from + ORDER_CHECK_MS), assetPrice("technology", t));
+  // Kontroly jdou po mřížce ORDER_CHECK_MS od začátku, stejně jako při vyrovnání (settle).
+  for (let k = 1; k <= 390 && !at; k++) {
+    const t = NOW + k * ORDER_CHECK_MS;
+    const low = Math.min(assetPrice("technology", t - ORDER_CHECK_MS, NOW), assetPrice("technology", t, NOW));
     if (low < p0 * 0.999) {
       at = t;
       trigger = low * 1.0001;
@@ -880,7 +891,7 @@ test("příkazy: stop-loss se splní, až cena klesne na hranici; hranice na šp
 
 test("příkazy: nejvýš osm čekajících, zrušit jde jen existující", () => {
   let s = { ...start(), cash: 1_000_000 };
-  const p = assetPrice("gold", NOW);
+  const p = assetPrice("gold", NOW, NOW);
   for (let i = 0; i < MAX_ORDERS; i++) {
     const r = placeOrder(s, { asset: "gold", side: "buy", when: "below", price: p * 0.5, amount: 1000, share: 0 }, NOW);
     ok(r);
@@ -1146,4 +1157,30 @@ test("zásoby: při nedostatku zdraží dávky o polovinu", () => {
 test("zásoby: načtení oříznu na kapacitu skladu", () => {
   const s = normalizeState({ companies: { shoes: 1 }, setup: { shoes: { staff: 0, stock: 9999 } } }, NOW);
   assert.ok((s.setup.shoes?.stock ?? 0) <= stockCapacity(1, 12), "zásoby se vejdou do skladu");
+});
+
+test("investice: trend cen neskáče na hranici 5000 herních hodin (dřív byl reset z modulo)", () => {
+  const origin = NOW;
+  // Tolerance 15 % pokrývá vlny a šum; starý reset dával u bytu −28 %.
+  for (const id of ["flat", "index"] as const) {
+    const before = assetPrice(id, origin + 5000 * H - 1_000, origin);
+    const after = assetPrice(id, origin + 5000 * H + 1_000, origin);
+    assert.ok(Math.abs(after / before - 1) < 0.15, `skok ${id}: ${before} -> ${after}`);
+  }
+});
+
+test("startupy: exit je vzácný a většina startupů zanikne (realistické šance)", () => {
+  const N = 20_000;
+  let exits = 0;
+  let krachs = 0;
+  for (let i = 0; i < N; i++) {
+    for (let r = 0; r < 200; r++) {
+      const out = startupOutcome("startup_it", i * 1000 + r);
+      if (out.kind === "exit") { exits++; break; }
+      if (out.kind === "krach") { krachs++; break; }
+    }
+  }
+  const exitShare = exits / (exits + krachs);
+  assert.ok(exitShare > 0.05 && exitShare < 0.15, `podíl exitů ${exitShare}`);
+  assert.ok(krachs / (exits + krachs) > 0.85, "většina startupů zanikne");
 });
