@@ -12,6 +12,9 @@ export type InvestText = {
   all: string;
   chart: string;
   chartEmpty: string;
+  chartNow: string;
+  chartCost: string;
+  chartFrom: string;
   news: string;
   newsEmpty: string;
   eventNow: string;
@@ -292,6 +295,9 @@ const cs: EconomyText = {
     all: "Vše",
     chart: "Vývoj jmění",
     chartEmpty: "Graf se začne kreslit po pár minutách hry.",
+    chartNow: "nyní",
+    chartCost: "nákup",
+    chartFrom: "před {t}",
     news: "Zprávy z trhu",
     newsEmpty: "Zatím nic nového.",
     eventNow: "Právě teď: {name}",
@@ -594,6 +600,9 @@ const en: EconomyText = {
     all: "All",
     chart: "Net worth over time",
     chartEmpty: "The chart starts after a few minutes of play.",
+    chartNow: "now",
+    chartCost: "cost",
+    chartFrom: "{t} ago",
     news: "Market news",
     newsEmpty: "Nothing new yet.",
     eventNow: "Right now: {name}",
@@ -896,6 +905,9 @@ const de: EconomyText = {
     all: "Alle",
     chart: "Vermögensverlauf",
     chartEmpty: "Das Diagramm erscheint nach ein paar Minuten Spielzeit.",
+    chartNow: "jetzt",
+    chartCost: "Einstand",
+    chartFrom: "vor {t}",
     news: "Marktnachrichten",
     newsEmpty: "Noch nichts Neues.",
     eventNow: "Gerade: {name}",
@@ -1198,6 +1210,9 @@ const ru: EconomyText = {
     all: "Все",
     chart: "Динамика капитала",
     chartEmpty: "График появится через несколько минут игры.",
+    chartNow: "сейчас",
+    chartCost: "покупка",
+    chartFrom: "{t} назад",
     news: "Новости рынка",
     newsEmpty: "Пока ничего нового.",
     eventNow: "Сейчас: {name}",

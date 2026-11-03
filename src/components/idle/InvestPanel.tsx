@@ -16,6 +16,7 @@ import {
 } from "@/lib/idle/economy";
 import type { EconomyText } from "@/i18n/economy";
 import { fill, formatLeft, type Payload } from "./CompanyPanel";
+import { PriceChart, type ChartPoint } from "./PriceChart";
 
 type Act = (body: Record<string, unknown>, okText?: (p: Payload) => string) => Promise<void>;
 type OrderKind = "buyBelow" | "sellBelow" | "sellAbove" | "buyAbove";
@@ -41,13 +42,24 @@ const CAT_EMOJI: Record<AssetCategoryId, string> = {
 // Štítek rizika podle výkyvu ceny (ASSETS.vol): nízké do 5 %, střední do 20 %, jinak vysoké.
 const riskKey = (vol: number): "riskLow" | "riskMid" | "riskHigh" => (vol <= 0.05 ? "riskLow" : vol <= 0.2 ? "riskMid" : "riskHigh");
 
-// Mini graf vývoje ceny za posledních 6 hodin (24 bodů po 15 minutách). Počítá se z čisté funkce ceny, takže sedí se serverem.
-function priceSpark(id: AssetId, now: number): string {
-  const pts = Array.from({ length: 24 }, (_, i) => assetPrice(id, now - (23 - i) * 15 * 60_000));
-  const lo = Math.min(...pts);
-  const hi = Math.max(...pts);
-  const span = hi - lo || 1;
-  return pts.map((p, i) => `${((i / 23) * 120).toFixed(1)},${(34 - ((p - lo) / span) * 30).toFixed(1)}`).join(" ");
+// Krátký zápis hodnoty pro osu grafu (plná částka je u kurzoru).
+function axisValue(v: number): string {
+  const a = Math.abs(v);
+  if (a >= 1e6) return `${(v / 1e6).toFixed(1)} M`;
+  if (a >= 1e4) return `${Math.round(v / 1e3)} k`;
+  if (a >= 100) return String(Math.round(v));
+  return v.toFixed(2);
+}
+
+// Podrobný graf ceny za posledních 6 hodin: bod každých 5 minut, poslední bod je živá cena.
+const SPARK_SPAN = 6 * 60 * 60_000;
+const SPARK_STEP = 5 * 60_000;
+function priceHistory(id: AssetId, now: number): ChartPoint[] {
+  const n = SPARK_SPAN / SPARK_STEP;
+  return Array.from({ length: n + 1 }, (_, i) => {
+    const t = now - (n - i) * SPARK_STEP;
+    return { t, v: assetPrice(id, t) };
+  });
 }
 
 const ORDER_KINDS: OrderKind[] = ["buyBelow", "sellBelow", "sellAbove", "buyAbove"];
@@ -56,28 +68,6 @@ const KIND_KEY: Record<OrderKind, KindKey> = { buyBelow: "kindBuyBelow", sellBel
 const orderKindOf = (o: Pick<Order, "side" | "when">): OrderKind =>
   o.side === "buy" ? (o.when === "below" ? "buyBelow" : "buyAbove") : o.when === "below" ? "sellBelow" : "sellAbove";
 const orderParams = (k: OrderKind) => ({ side: k.startsWith("buy") ? "buy" : "sell", when: k.endsWith("Below") ? "below" : "above" });
-
-// Graf jmění z historie; poslední bod je živá hodnota, aby čára došla až k aktuálnímu času.
-function ChartLine({ points, label, emptyText }: { points: { t: number; v: number }[]; label: string; emptyText: string }) {
-  if (points.length < 2) return <p className="text-sm text-[var(--muted)]">{emptyText}</p>;
-  const t0 = points[0].t;
-  const t1 = points[points.length - 1].t;
-  const vs = points.map((p) => p.v);
-  const lo = Math.min(...vs);
-  const hi = Math.max(...vs);
-  const span = hi - lo || 1;
-  const coords = points.map((p) => {
-    const x = t1 > t0 ? ((p.t - t0) / (t1 - t0)) * 300 : 300;
-    const y = 80 - ((p.v - lo) / span) * 70;
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  });
-  const up = vs[vs.length - 1] >= vs[0];
-  return (
-    <svg viewBox="0 0 300 90" preserveAspectRatio="none" className="h-28 w-full" role="img" aria-label={label}>
-      <polyline points={coords.join(" ")} fill="none" stroke={up ? "var(--accent-green)" : "var(--danger)"} strokeWidth="2" vectorEffect="non-scaling-stroke" />
-    </svg>
-  );
-}
 
 export function InvestPanel({ state, clock, liveCash, netWorth, rates, arbitrage, assetEvent, m, t, busy, act }: Props) {
   const ti = t.inv;
@@ -162,7 +152,21 @@ export function InvestPanel({ state, clock, liveCash, netWorth, rates, arbitrage
 
       <article className="card p-4">
         <h3 className="mb-2 font-bold">📈 {ti.chart}</h3>
-        <ChartLine points={chart} label={ti.chart} emptyText={ti.chartEmpty} />
+        {chart.length < 2 ? (
+          <p className="text-sm text-[var(--muted)]">{ti.chartEmpty}</p>
+        ) : (
+          <PriceChart
+            points={chart}
+            from={chart[0].t}
+            to={clock}
+            label={ti.chart}
+            format={m}
+            axisFormat={axisValue}
+            timeLabel={(tt) => (clock - tt < 60_000 ? ti.chartNow : fill(ti.chartFrom, { t: formatLeft(clock - tt, t) }))}
+            leftLabel={fill(ti.chartFrom, { t: formatLeft(clock - chart[0].t, t) })}
+            rightLabel={ti.chartNow}
+          />
+        )}
       </article>
 
       <div role="group" aria-label={ti.all} className="flex flex-wrap gap-2">
@@ -183,6 +187,8 @@ export function InvestPanel({ state, clock, liveCash, netWorth, rates, arbitrage
         {shownAssets.map((a) => {
           const price = priceOf(a.id);
           const prev = assetPrice(a.id, clock - 3_600_000);
+          const hist = priceHistory(a.id, clock);
+          const cost = state.cost[a.id];
           const qty = state.holdings[a.id] ?? 0;
           const locked = isLocked(state, "asset", a.id);
           const value = qty * price;
@@ -198,9 +204,18 @@ export function InvestPanel({ state, clock, liveCash, netWorth, rates, arbitrage
               <p className="text-sm">
                 {t.price}: <b>{m(price)}</b>
               </p>
-              <svg viewBox="0 0 120 36" preserveAspectRatio="none" className="h-9 w-full" aria-label={t.trend6h}>
-                <polyline points={priceSpark(a.id, clock)} fill="none" stroke={price >= prev ? "var(--accent-green)" : "var(--danger)"} strokeWidth="2" vectorEffect="non-scaling-stroke" />
-              </svg>
+              <PriceChart
+                points={hist}
+                from={clock - SPARK_SPAN}
+                to={clock}
+                label={t.trend6h}
+                format={m}
+                axisFormat={axisValue}
+                timeLabel={(tt) => (clock - tt < 60_000 ? ti.chartNow : fill(ti.chartFrom, { t: formatLeft(clock - tt, t) }))}
+                leftLabel={fill(ti.chartFrom, { t: formatLeft(SPARK_SPAN, t) })}
+                rightLabel={ti.chartNow}
+                reference={qty > 0 && cost ? { v: cost, label: ti.chartCost } : undefined}
+              />
               <p className="flex flex-wrap gap-x-3 text-xs text-[var(--muted)]">
                 <span>
                   {t.risk}: <b>{t[riskKey(a.vol)]}</b>
