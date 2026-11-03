@@ -51,6 +51,15 @@ import {
   UNION_DEAL_MS,
   unionDeal,
   buyStock,
+  buyNeed,
+  needDaily,
+  needsPenalty,
+  livingCost,
+  emptyNeeds,
+  MAX_NEED_DAYS,
+  NEEDS,
+  NEED_PENALTY_FLOOR,
+  HUNGRY_ENERGY,
   batchPrice,
   stockCapacity,
   INPUT_BATCH_HOURS,
@@ -1213,4 +1222,63 @@ test("směna bodů: prodej dává peníze, nákup bere peníze, obojí jen s dos
   assert.ok(fractional.ok && fractional.pointsChange?.amount === -1, "desetinný počet se zaokrouhlí dolů");
   assert.deepEqual(exchangePoints(s, "swap", 1, 10, NOW), { ok: false, error: "bad-request" });
   assert.deepEqual(exchangePoints(emptyState(NOW), "sell", 1, 10, NOW), { ok: false, error: "no-character" });
+});
+
+test("potřeby: nákup zásoby stojí cenu dne za každý den, jde jen do limitu a jen celé dny", () => {
+  const s = { ...start("rich"), cash: 1e12 };
+  const b = buyNeed(s, "food", 2, NOW);
+  ok(b);
+  if (!b.ok) return;
+  assert.equal(b.state.needs.food, 2);
+  assert.equal(s.cash - b.state.cash, needDaily(s, "food") * 2);
+  const full = buyNeed({ ...s, needs: { ...s.needs, food: MAX_NEED_DAYS - 0.5 } }, "food", 3, NOW);
+  ok(full);
+  if (full.ok) assert.equal(full.state.needs.food, MAX_NEED_DAYS, "doplní jen do limitu, víc neplatí");
+  assert.deepEqual(buyNeed({ ...s, needs: { ...s.needs, food: MAX_NEED_DAYS } }, "food", 1, NOW), { ok: false, error: "max" });
+  assert.deepEqual(buyNeed(s, "food", 1.5, NOW), { ok: false, error: "bad-request" });
+  assert.deepEqual(buyNeed(s, "bogus", 1, NOW), { ok: false, error: "bad-request" });
+  assert.deepEqual(buyNeed({ ...s, cash: 0 }, "food", 1, NOW), { ok: false, error: "not-enough-cash" });
+  assert.deepEqual(buyNeed(emptyState(NOW), "food", 1, NOW), { ok: false, error: "no-character" });
+});
+
+test("potřeby: denní náklady tvoří celou životní úroveň a bez jejich nákupu se nic nestrhává", () => {
+  const s = { ...start("middle"), cash: 5_000 };
+  const total = NEEDS.reduce((sum, id) => sum + needDaily(s, id), 0);
+  assert.ok(Math.abs(total - livingCost(s) * 24) <= NEEDS.length, "součet dnů odpovídá životním nákladům");
+  // Bez práce a bez nákupů peníze nezmizí: životní náklady se nestrhávají pasivně.
+  const later = settle(s, NOW + H);
+  assert.equal(later.cash, s.cash);
+  assert.equal(rates(s, NOW).net, 0);
+});
+
+test("potřeby: prázdná zásoba snižuje výdělek, nezbytnosti víc a hlad snižuje energii", () => {
+  const full = emptyNeeds();
+  for (const id of NEEDS) full[id] = 3;
+  assert.equal(needsPenalty(full).income, 1);
+  assert.equal(needsPenalty(full).energy, 1);
+  const noFood = { ...full, food: 0 };
+  assert.ok(needsPenalty(noFood).income < 1);
+  assert.equal(needsPenalty(noFood).energy, HUNGRY_ENERGY);
+  const noLeisure = { ...full, leisure: 0 };
+  assert.ok(needsPenalty(noLeisure).income > needsPenalty(noFood).income, "zábava je méně důležitá než jídlo");
+  assert.ok(Math.abs(needsPenalty(emptyNeeds()).income - (1 - 3 * 0.1 - 4 * 0.04)) < 1e-9, "všechny prázdné: 3 nezbytnosti a 4 ostatní");
+  assert.ok(needsPenalty(emptyNeeds()).income >= NEED_PENALTY_FLOOR);
+
+  const job = { ...start("middle"), job: newJob("warehouse", NOW), cash: 0 };
+  const fed = ratesOf({ ...job, needs: full }, NOW);
+  const hungry = ratesOf({ ...job, needs: noFood }, NOW);
+  assert.ok(hungry.net < fed.net, "bez jídla klesne čistý výdělek");
+  assert.ok(Math.abs(hungry.multiplier - needsPenalty(noFood).income) < 1e-9);
+});
+
+test("potřeby: spotřeba ubývá v čase a nikdy neklesne pod nulu, načtení se ořízne", () => {
+  const s = { ...start("middle"), needs: { ...emptyNeeds(), food: 1 } };
+  const later = settle(s, NOW + 15 * 60_000);
+  assert.ok(later.needs.food < 1 && later.needs.food > 0.98, "čtvrt hodiny ubere zlomek dne");
+  assert.equal(later.needs.clothing, 0);
+  const normalized = normalizeState({ ...s, needs: { food: 99, drink: -4, clothing: "x" } }, NOW);
+  assert.equal(normalized.needs.food, MAX_NEED_DAYS);
+  assert.equal(normalized.needs.drink, 0);
+  assert.equal(normalized.needs.clothing, 0);
+  assert.equal(normalizeState({}, NOW).needs.housing, 0);
 });
