@@ -9,6 +9,7 @@ import { notifyAccountChanged } from "@/lib/account-events";
 import { bannerCss } from "@/lib/cosmetics";
 import {
   BUY_PRICE,
+  CASH_PRICE,
   MATERIALS,
   RARITIES,
   RECIPES,
@@ -417,6 +418,16 @@ export function CraftPanel({ locale, onUnlocked, onWardrobe }: { locale: Locale;
                                 className="rounded-md border-2 border-[var(--edge)] px-1.5 py-0.5 text-[11px] font-bold disabled:opacity-40"
                               >
                                 🛒 {t.buyFor.replace("{n}", String(price))}
+                              </button>
+                            )}
+                            {CASH_PRICE[rar] && (
+                              <button
+                                type="button"
+                                disabled={!!busy || data.buyLeft <= 0}
+                                onClick={() => act(`buyCash:${def.id}`, { action: "buyCash", id: def.id, count: 1 })}
+                                className="rounded-md border-2 border-[var(--edge)] px-1.5 py-0.5 text-[11px] font-bold disabled:opacity-40"
+                              >
+                                💱 {t.buyCashFor.replace("{n}", String(CASH_PRICE[rar]))}
                               </button>
                             )}
                           </div>

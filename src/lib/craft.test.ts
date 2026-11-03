@@ -13,6 +13,7 @@ import {
   activeTotal,
   applyEvents,
   buy,
+  buyCash,
   craft,
   dropsForQuest,
   dropsForXp,
@@ -199,6 +200,18 @@ test("nákup: jen běžné a neobvyklé, denní limit a body", () => {
   const full = withMats({}, { bought: { day: "2026-10-31", count: BUY_PER_DAY } });
   assert.deepEqual(buy(full, "wood", 1, 999, NOW), { ok: false, error: "limit" });
   assert.ok(buy(full, "wood", 1, 999, NOW + 86_400_000).ok, "další den zase jde");
+});
+
+test("nákup za peníze: běžné a neobvyklé, sdílený denní limit a cena", () => {
+  const r = buyCash(withMats({}), "iron", 2, 1_000_000, NOW);
+  assert.ok(r.ok && r.price === 800_000 && r.state.mats.iron === 2);
+  for (const m of MATERIALS.filter((x) => x.rarity === "common" || x.rarity === "uncommon")) {
+    assert.ok(buyCash(withMats({}), m.id, 1, 1_000_000, NOW).ok, m.id);
+  }
+  assert.deepEqual(buyCash(withMats({}), "silver", 1, 9_999_999, NOW), { ok: false, error: "unknown" });
+  assert.deepEqual(buyCash(withMats({}), "wood", 1, 149_999, NOW), { ok: false, error: "not-enough-cash" });
+  const used = withMats({}, { bought: { day: "2026-10-31", count: BUY_PER_DAY } });
+  assert.deepEqual(buyCash(used, "wood", 1, 999_999_999, NOW), { ok: false, error: "limit" });
 });
 
 test("bonusy za body nejdou zneužít nákupem materiálu", () => {

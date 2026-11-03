@@ -68,6 +68,9 @@ import {
   fundResponse,
   hireStaff,
   investEdu,
+  exchangePoints,
+  POINT_BUY_CASH,
+  POINT_SELL_CASH,
   isNegativeEvent,
   negotiateRaise,
   newJob,
@@ -1189,4 +1192,25 @@ test("zásoby: při nedostatku zdraží dávky o polovinu", () => {
 test("zásoby: načtení oříznu na kapacitu skladu", () => {
   const s = normalizeState({ companies: { shoes: 1 }, setup: { shoes: { staff: 0, stock: 9999 } } }, NOW);
   assert.ok((s.setup.shoes?.stock ?? 0) <= stockCapacity(1, 12), "zásoby se vejdou do skladu");
+});
+
+test("směna bodů: prodej dává peníze, nákup bere peníze, obojí jen s dostatkem", () => {
+  const eva = createCharacter(emptyState(NOW), { country: "cz", name: "Eva", city: "town", era: "2025", family: "poor" }, NOW);
+  assert.ok(eva.ok);
+  const s = { ...eva.state, cash: 2 * POINT_BUY_CASH };
+
+  const sell = exchangePoints(s, "sell", 3, 10, NOW);
+  assert.ok(sell.ok && sell.state.cash === 2 * POINT_BUY_CASH + 3 * POINT_SELL_CASH);
+  assert.deepEqual(sell.ok && sell.pointsChange?.amount, -3);
+  assert.deepEqual(exchangePoints(s, "sell", 11, 10, NOW), { ok: false, error: "not-enough-points" });
+
+  const buy = exchangePoints(s, "buy", 2, 0, NOW);
+  assert.ok(buy.ok && buy.state.cash === 0 && buy.pointsChange?.amount === 2);
+  assert.deepEqual(exchangePoints(s, "buy", 3, 0, NOW), { ok: false, error: "not-enough-cash" });
+
+  assert.deepEqual(exchangePoints(s, "sell", 0, 10, NOW), { ok: false, error: "bad-request" });
+  const fractional = exchangePoints(s, "sell", 1.5, 10, NOW);
+  assert.ok(fractional.ok && fractional.pointsChange?.amount === -1, "desetinný počet se zaokrouhlí dolů");
+  assert.deepEqual(exchangePoints(s, "swap", 1, 10, NOW), { ok: false, error: "bad-request" });
+  assert.deepEqual(exchangePoints(emptyState(NOW), "sell", 1, 10, NOW), { ok: false, error: "no-character" });
 });

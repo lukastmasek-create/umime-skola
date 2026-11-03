@@ -202,6 +202,7 @@ export type EconomyText = {
   educationHint: string;
   educationBuy: string;
   educationMax: string;
+  exchange: { title: string; hint: string; amount: string; sell: string; buy: string; sellRate: string; buyRate: string; sold: string; bought: string };
   currentJob: string;
   noJob: string;
   rank: string;
@@ -504,6 +505,7 @@ const cs: EconomyText = {
   educationHint: "Investuj body z učení: každá úroveň trvale zvedne všechny příjmy o 4 %.",
   educationBuy: "Úroveň {n} za {p} bodů",
   educationMax: "Nejvyšší úroveň",
+  exchange: { title: "Směna bodů a peněz", hint: "Body z učení můžeš prodat za peníze, nebo za peníze koupit body. Prodej: 1 bod = 10 000. Nákup: 1 bod = 1 000 000.", amount: "Počet bodů", sell: "Prodat", buy: "Koupit", sellRate: "Prodej: 1 bod = {p}", buyRate: "Nákup: 1 bod = {p}", sold: "Prodáno {n} bodů", bought: "Koupeno {n} bodů" },
   currentJob: "Tvoje práce",
   noJob: "Zatím nemáš práci.",
   rank: "Pozice {n}",
@@ -805,6 +807,7 @@ const en: EconomyText = {
   educationHint: "Invest points from learning: every level permanently raises all income by 4 %.",
   educationBuy: "Level {n} for {p} points",
   educationMax: "Highest level",
+  exchange: { title: "Exchange points and money", hint: "Sell learning points for money, or buy points with money. Selling: 1 point = 10,000. Buying: 1 point = 1,000,000.", amount: "Points", sell: "Sell", buy: "Buy", sellRate: "Sell: 1 point = {p}", buyRate: "Buy: 1 point = {p}", sold: "Sold {n} points", bought: "Bought {n} points" },
   currentJob: "Your job",
   noJob: "You have no job yet.",
   rank: "Rank {n}",
@@ -1106,6 +1109,7 @@ const de: EconomyText = {
   educationHint: "Investiere Punkte vom Lernen: Jede Stufe erhöht dauerhaft alle Einkünfte um 4 %.",
   educationBuy: "Stufe {n} für {p} Punkte",
   educationMax: "Höchste Stufe",
+  exchange: { title: "Punkte und Geld tauschen", hint: "Lernpunkte kannst du gegen Geld verkaufen oder mit Geld Punkte kaufen. Verkauf: 1 Punkt = 10.000. Kauf: 1 Punkt = 1.000.000.", amount: "Punkte", sell: "Verkaufen", buy: "Kaufen", sellRate: "Verkauf: 1 Punkt = {p}", buyRate: "Kauf: 1 Punkt = {p}", sold: "{n} Punkte verkauft", bought: "{n} Punkte gekauft" },
   currentJob: "Dein Job",
   noJob: "Du hast noch keinen Job.",
   rank: "Rang {n}",
@@ -1407,6 +1411,7 @@ const ru: EconomyText = {
   educationHint: "Вкладывай баллы за учёбу: каждый уровень навсегда повышает все доходы на 4 %.",
   educationBuy: "Уровень {n} за {p} баллов",
   educationMax: "Высший уровень",
+  exchange: { title: "Обмен баллов и денег", hint: "Баллы за учёбу можно продать за деньги или купить баллы за деньги. Продажа: 1 балл = 10 000. Покупка: 1 балл = 1 000 000.", amount: "Баллы", sell: "Продать", buy: "Купить", sellRate: "Продажа: 1 балл = {p}", buyRate: "Покупка: 1 балл = {p}", sold: "Продано баллов: {n}", bought: "Куплено баллов: {n}" },
   currentJob: "Твоя работа",
   noJob: "У тебя пока нет работы.",
   rank: "Ранг {n}",

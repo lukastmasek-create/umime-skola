@@ -835,7 +835,16 @@ export type ErrorCode =
   | "vacation";
 
 export type ActionResult =
-  | { ok: true; state: EconomyState; pointsSpent?: number; gained?: { cash?: number; profit?: number }; event?: EconomyEvent; hustle?: { lost: boolean; mult: number } }
+  | {
+      ok: true;
+      state: EconomyState;
+      pointsSpent?: number;
+      // změna bodů ze směny (kladná = přičtení, záporná = odečtení), server ji zapíše do historie bodů
+      pointsChange?: { amount: number; reason: string };
+      gained?: { cash?: number; profit?: number };
+      event?: EconomyEvent;
+      hustle?: { lost: boolean; mult: number };
+    }
   | { ok: false; error: ErrorCode };
 
 export const isCountry = (v: unknown): v is CountryId => COUNTRIES.includes(v as CountryId);
@@ -2177,6 +2186,31 @@ export function investEdu(state: EconomyState, now: number): ActionResult {
   if (!state.character) return fail("no-character");
   if (state.edu >= MAX_EDU) return fail("max");
   return done({ ...state, edu: state.edu + 1 }, now, { pointsSpent: eduCost(state.edu) });
+}
+
+// Směna bodů za peníze. Prodej: 1 bod = POINT_SELL_CASH peněz. Nákup: 1 bod = POINT_BUY_CASH peněz (100× dražší).
+export const POINT_SELL_CASH = 10_000;
+export const POINT_BUY_CASH = 1_000_000;
+export const MAX_EXCHANGE_POINTS = 10_000;
+
+export function exchangePoints(state: EconomyState, direction: unknown, amount: unknown, points: number, now: number): ActionResult {
+  if (!state.character) return fail("no-character");
+  const n = typeof amount === "number" ? Math.floor(amount) : NaN;
+  if (!Number.isFinite(n) || n < 1 || n > MAX_EXCHANGE_POINTS) return fail("bad-request");
+  if (direction === "sell") {
+    if (points < n) return fail("not-enough-points");
+    return done({ ...state, cash: state.cash + n * POINT_SELL_CASH }, now, {
+      pointsChange: { amount: -n, reason: "Ekonomika: prodej bodů za peníze" },
+    });
+  }
+  if (direction === "buy") {
+    const cost = n * POINT_BUY_CASH;
+    if (state.cash < cost) return fail("not-enough-cash");
+    return done({ ...state, cash: state.cash - cost }, now, {
+      pointsChange: { amount: n, reason: "Ekonomika: nákup bodů za peníze" },
+    });
+  }
+  return fail("bad-request");
 }
 
 // Postup do další fáze: chce výnos firem za hodinu a zaplatí den tohoto výnosu.
