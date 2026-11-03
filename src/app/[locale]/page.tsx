@@ -259,7 +259,7 @@ export default async function Home({
             <h3 className="mb-4 text-xl font-bold" style={heading}>
               {h.about.teamTitle}
             </h3>
-            <ul className="grid gap-4 sm:grid-cols-3">
+            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {h.about.team.map((member) => (
                 <li key={member.name} className="card flex items-start gap-4 p-4">
                   <span aria-hidden className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--surface-muted)] text-xl font-extrabold" style={heading}>

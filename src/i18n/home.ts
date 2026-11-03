@@ -91,6 +91,7 @@ const cs: HomeText = {
       { name: "Natálie Majerová", role: "Marketing Manažer", bio: "Stará se o marketing a o to, aby se web dostal k dětem, rodičům a učitelům." },
       { name: "Lukáš Tomášek", role: "Hlavní Developer", bio: "Vede vývoj platformy, od kurzů a her po účty a žebříčky." },
       { name: "Lukáš Záhorský", role: "Inovátor", bio: "Přichází s novými nápady na hry a způsoby učení." },
+      { name: "Ondra Vrba", role: "Tester / programátor", bio: "Testuje kurzy, hry a únikovky, aby všechno fungovalo tak, jak má." },
     ],
   },
 };
@@ -150,6 +151,7 @@ const en: HomeText = {
       { name: "Natálie Majerová", role: "Marketing Manager", bio: "Looks after marketing and makes sure the site reaches kids, parents and teachers." },
       { name: "Lukáš Tomášek", role: "Lead Developer", bio: "Leads the platform's development, from courses and games to accounts and leaderboards." },
       { name: "Lukáš Záhorský", role: "Innovator", bio: "Brings new ideas for games and ways of learning." },
+      { name: "Ondra Vrba", role: "Tester / Programmer", bio: "Tests courses, games and escape rooms so that everything works as it should." },
     ],
   },
 };
@@ -209,6 +211,7 @@ const de: HomeText = {
       { name: "Natálie Majerová", role: "Marketing-Managerin", bio: "Kümmert sich um Marketing und darum, dass die Seite Kinder, Eltern und Lehrkräfte erreicht." },
       { name: "Lukáš Tomášek", role: "Hauptentwickler", bio: "Leitet die Entwicklung der Plattform, von Kursen und Spielen bis zu Konten und Ranglisten." },
       { name: "Lukáš Záhorský", role: "Innovator", bio: "Bringt neue Ideen für Spiele und Lernweisen ein." },
+      { name: "Ondra Vrba", role: "Tester / Programmierer", bio: "Testet Kurse, Spiele und Escape Rooms, damit alles so funktioniert, wie es soll." },
     ],
   },
 };
@@ -268,6 +271,7 @@ const ru: HomeText = {
       { name: "Natálie Majerová", role: "Маркетинг-менеджер", bio: "Отвечает за маркетинг и за то, чтобы сайт дошёл до детей, родителей и учителей." },
       { name: "Lukáš Tomášek", role: "Главный разработчик", bio: "Руководит разработкой платформы: от курсов и игр до аккаунтов и рейтингов." },
       { name: "Lukáš Záhorský", role: "Инноватор", bio: "Приносит новые идеи для игр и способов обучения." },
+      { name: "Ondra Vrba", role: "Тестировщик / программист", bio: "Тестирует курсы, игры и квесты, чтобы всё работало как надо." },
     ],
   },
 };
