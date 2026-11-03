@@ -62,6 +62,7 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
     settings.push({ key: "registrace", href: `/${locale}/registrace`, label: dict.nav.register });
   }
   settings.push({ key: "nastaveni", href: `/${locale}/nastaveni`, label: dict.nav.settings });
+  settings.push({ key: "o-nas", href: `/${locale}#o-nas`, label: home.about.title, noActive: true });
   settings.push({ key: "kontakt", href: `/${locale}/kontakt`, label: getContactText(locale).nav });
   const groups: Group[] = [
     { key: "town", label: getTownHubText(locale).nav, items: [{ key: "mestecko", href: `/${locale}/mestecko`, label: getTownHubText(locale).nav }] },

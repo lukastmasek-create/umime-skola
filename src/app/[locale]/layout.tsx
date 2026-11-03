@@ -14,6 +14,7 @@ import { notFound } from "next/navigation";
 import { THEME_INIT_SCRIPT } from "@/lib/theme-init-script";
 import { ParentalGuard } from "@/components/ParentalGuard";
 import { getContactText } from "@/i18n/contact";
+import { getHomeText } from "@/i18n/home";
 
 const heading = Unbounded({
   subsets: ["latin", "latin-ext", "cyrillic"],
@@ -95,6 +96,10 @@ export default async function LocaleLayout({
         <main className="world flex-1">{children}</main>
         <footer className="border-t-2 border-[var(--edge)] bg-[var(--surface)] py-6 text-center text-sm text-[var(--muted)]">
           &copy; {new Date().getFullYear()} {dict.footer.rights}
+          <span aria-hidden> · </span>
+          <Link href={`/${locale}#o-nas`} className="font-semibold hover:text-[var(--foreground)] hover:underline">
+            {getHomeText(locale as Locale).about.title}
+          </Link>
           <span aria-hidden> · </span>
           <Link href={`/${locale}/kontakt`} className="font-semibold hover:text-[var(--foreground)] hover:underline">
             {getContactText(locale as Locale).nav}

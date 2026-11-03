@@ -232,7 +232,7 @@ export default async function Home({
       </section>
 
       {/* 6) O nás */}
-      <section className="zone zone-tech">
+      <section id="o-nas" className="zone zone-tech scroll-mt-24">
         <Wave fill="#160a2c" />
         <div className="relative z-10 mx-auto max-w-6xl px-4 pb-24 pt-24 sm:px-6">
           <h2 className="reveal mb-4 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
