@@ -13,8 +13,12 @@ function resolveConnectionString(): string {
     // Mimo Workers (next dev, next start) kontext není k dispozici.
   }
   const url = process.env.DATABASE_URL;
-  if (!url) throw new Error("DATABASE_URL není nastavena.");
-  return url;
+  if (url) return url;
+  // Při sestavování (next build) se stránky předrenderují a nepotřebují skutečné připojení.
+  if (process.env.NEXT_PHASE === "phase-production-build") {
+    return "postgresql://build:build@localhost:5432/build";
+  }
+  throw new Error("DATABASE_URL není nastavena.");
 }
 
 // Prevents creating a new PrismaClient on every hot-reload in development.
