@@ -21,11 +21,17 @@ function resolveConnectionString(): string {
   throw new Error("DATABASE_URL není nastavena (ani Hyperdrive binding).");
 }
 
+// Čas posledního vytvoření klienta (ms), jen pro diagnostiku (Server-Timing).
+export let lastClientCreateMs = 0;
+
 function createClient(): PrismaClient {
-  return new PrismaClient({
+  const started = performance.now();
+  const client = new PrismaClient({
     adapter: new PrismaPg({ connectionString: resolveConnectionString() }),
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
+  lastClientCreateMs = performance.now() - started;
+  return client;
 }
 
 // Workers: jeden klient na jeden požadavek (klíčovaný podle jeho ExecutionContext).

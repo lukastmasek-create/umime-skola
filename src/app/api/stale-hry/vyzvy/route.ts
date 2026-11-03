@@ -222,10 +222,15 @@ async function partyInfo(db: Db, userId: string, state: ChallengeState, now: num
 
 async function snapshot(db: Db, userId: string, now: number) {
   const { state } = await loadChallenge(db, userId, now);
-  const party = await partyInfo(db, userId, state, now);
+  // Hry se načtou jedním dotazem a paralelně se skupinami (nezávislé čtení).
+  const [party, gameRows] = await Promise.all([
+    partyInfo(db, userId, state, now),
+    db.idleState.findMany({ where: { userId, game: { in: CH_GAMES.map((g) => GAME_KEY[g]) } } }),
+  ]);
+  const rowByGame = new Map(gameRows.map((r) => [r.game, r] as const));
   const games = {} as Record<ChGame, unknown>;
   for (const game of CH_GAMES) {
-    const row = await loadGame(db, userId, game);
+    const row = rowByGame.get(GAME_KEY[game]) ?? null;
     const meta = state.games[game];
     const progress = row ? gameProgress(game, row.data, now) : 0;
     const next = meta.chapter + 1;
