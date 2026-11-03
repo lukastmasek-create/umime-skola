@@ -28,37 +28,40 @@ function createClient(): PrismaClient {
   });
 }
 
-// Ve vývoji se klient sdílí (hot reload). Na Workers se nesmí spojení
-// z jednoho požadavku použít v jiném, proto se tam pro každý dotaz vytvoří
-// nový klient a po dokončení se odpojí.
-const isDev = process.env.NODE_ENV === "development";
+// Workers: jeden klient na jeden požadavek (klíčovaný podle jeho ExecutionContext).
+// Spojení z jednoho požadavku se nesmí použít v jiném, proto se klient nesdílí napříč požadavky.
+const clientsByRequest = new WeakMap<object, PrismaClient>();
+// Node / vývoj: jeden sdílený klient (hot reload).
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient | undefined };
 
-function getDevClient(): PrismaClient {
-  if (!globalForPrisma.prisma) globalForPrisma.prisma = createClient();
-  return globalForPrisma.prisma;
-}
-
-async function runOnFreshClient(path: PropertyKey[], args: unknown[]): Promise<unknown> {
-  const client = isDev ? getDevClient() : createClient();
+function getClient(): PrismaClient {
   try {
-    const owner = path.slice(0, -1).reduce<any>((obj, key) => obj[key], client);
-    const fn = owner[path[path.length - 1]];
-    return await fn.apply(owner, args);
-  } finally {
-    if (!isDev) await client.$disconnect();
+    const { ctx } = getCloudflareContext({ async: false });
+    let client = clientsByRequest.get(ctx);
+    if (!client) {
+      client = createClient();
+      clientsByRequest.set(ctx, client);
+    }
+    return client;
+  } catch {
+    // Není Workers požadavek (next dev, next start, sestavení).
+    if (!globalForPrisma.prisma) globalForPrisma.prisma = createClient();
+    return globalForPrisma.prisma;
   }
 }
 
-// Proxy zaznamenává cestu (např. prisma.course.findFirst) a teprve při volání
-// ji provede na klientovi pro daný dotaz.
+// Proxy zaznamenává cestu (např. prisma.course.findFirst) a provede ji
+// na klientovi aktuálního požadavku až při volání.
 function callPath(path: PropertyKey[]): unknown {
   return new Proxy(function () {}, {
     get(_target, prop) {
       return callPath([...path, prop]);
     },
     apply(_target, _this, args) {
-      return runOnFreshClient(path, args);
+      const client = getClient();
+      const owner = path.slice(0, -1).reduce<any>((obj, key) => obj[key], client);
+      const fn = owner[path[path.length - 1]];
+      return fn.apply(owner, args);
     },
   });
 }
