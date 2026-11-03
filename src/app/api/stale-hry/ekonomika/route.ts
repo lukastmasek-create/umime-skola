@@ -213,12 +213,16 @@ export async function POST(request: Request) {
 
   try {
     const real = Date.now();
-    const learning = await learningFor(prisma, userId, real);
+    // Čtení jdou paralelně mimo transakci (jedna síťová odezva místo pěti sekvenčních).
+    // Souběh hlídají stejně jako dřív: stav přes updatedAt a body přes podmíněné updateMany.
+    const [learning, row, user] = await Promise.all([
+      learningFor(prisma, userId, real),
+      prisma.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } }),
+      prisma.user.findUnique({ where: { id: userId }, select: { points: true } }),
+    ]);
 
     const result = await prisma.$transaction(
       async (tx) => {
-        const row = await tx.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } });
-        const user = await tx.user.findUnique({ where: { id: userId }, select: { points: true } });
         const points = user?.points ?? 0;
 
         const base = row ? normalizeState(row.data, real) : emptyState(real);
