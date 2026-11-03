@@ -5,6 +5,9 @@ import { prisma } from "@/lib/prisma";
 import {
   arbitrage,
   arbitrageLimit,
+  cancelOrder,
+  currentAssetEvent,
+  placeOrder,
   arbitrageSpread,
   assetPrice,
   buyAsset,
@@ -24,22 +27,28 @@ import {
   normalizeState,
   quitJob,
   rates,
+  researchCompany,
   restart,
   negotiateRaise,
   requestPromotion,
   rest,
   runCampaign,
   sellAsset,
+  sellCompany,
   setCompanySetting,
   setLead,
   setSpeed,
   settle,
+  signContract,
   startHustle,
   startShift,
   startVacation,
   takeJob,
   topUpHustle,
   upgradeCompany,
+  upgradePhase,
+  unionDeal,
+  buyStock,
   ASSETS,
   type ActionResult,
   type EconomyState,
@@ -59,6 +68,7 @@ async function learningFor(userId: string, now: number): Promise<number> {
 function payload(state: EconomyState, points: number, learning: number, now: number) {
   const rate = rates(state, now, learning);
   const event = currentEvent(now);
+  const assetEvent = currentAssetEvent(now);
   return {
     state,
     points,
@@ -70,6 +80,7 @@ function payload(state: EconomyState, points: number, learning: number, now: num
     arbitrage: { spread: arbitrageSpread(now), limit: arbitrageLimit(state) },
     eduCost: eduCost(state.edu),
     event: event ? { id: event.def.id, window: event.window, endsAt: event.endsAt } : null,
+    assetEvent: assetEvent ? { id: assetEvent.def.id, endsAt: assetEvent.endsAt } : null,
   };
 }
 
@@ -88,8 +99,12 @@ type Body = {
   field?: unknown;
   value?: unknown;
   delta?: unknown;
+  role?: unknown;
   index?: unknown;
   on?: unknown;
+  side?: unknown;
+  when?: unknown;
+  price?: unknown;
 };
 
 function applyAction(state: EconomyState, body: Body, now: number, learning: number): ActionResult {
@@ -121,13 +136,25 @@ function applyAction(state: EconomyState, body: Body, now: number, learning: num
     case "upgradeCompany":
       return upgradeCompany(state, body.id, now);
     case "hireStaff":
-      return hireStaff(state, body.id, body.delta, now);
+      return hireStaff(state, body.id, body.delta, now, body.role);
     case "setCompanySetting":
       return setCompanySetting(state, body.id, body.field, body.value, now);
     case "runCampaign":
       return runCampaign(state, body.id, now);
     case "fundResponse":
       return fundResponse(state, body.id, now);
+    case "sellCompany":
+      return sellCompany(state, body.id, now);
+    case "signContract":
+      return signContract(state, body.id, now);
+    case "researchCompany":
+      return researchCompany(state, body.id, now);
+    case "upgradePhase":
+      return upgradePhase(state, now);
+    case "unionDeal":
+      return unionDeal(state, body.id, now);
+    case "buyStock":
+      return buyStock(state, body.id, body.amount, now);
     case "buyAsset":
       return buyAsset(state, body.id, body.amount, now);
     case "sellAsset":
@@ -138,6 +165,10 @@ function applyAction(state: EconomyState, body: Body, now: number, learning: num
       return startHustle(state, body.id, now, Math.random, { stake: body.stake });
     case "topUpHustle":
       return topUpHustle(state, body.id, now, body.stake);
+    case "placeOrder":
+      return placeOrder(state, { asset: body.id, side: body.side, when: body.when, price: body.price, amount: body.amount, share: body.share }, now);
+    case "cancelOrder":
+      return cancelOrder(state, body.id, now);
     case "decideHustle":
       return decideHustle(state, body.id, now, body.option);
     case "investEdu":

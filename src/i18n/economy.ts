@@ -1,7 +1,47 @@
 import type { Locale } from "./config";
-import type { AssetCategoryId, AssetId, CityId, CompanyId, CountryId, EraId, EventId, FamilyId, HustleId, JobId } from "@/lib/idle/economy";
+import type { AssetCategoryId, AssetId, CityId, CompanyId, CountryId, EraId, EventId, FamilyId, HustleId, JobId, StaffRole } from "@/lib/idle/economy";
 
 // Texty Ekonomiky ve všech čtyřech jazycích.
+// Texty záložky Investice (tržní zprávy, kola startupů, příkazy, graf portfolia).
+export type InvestText = {
+  title: string;
+  portfolio: string;
+  invested: string;
+  profit: string;
+  dividends: string;
+  all: string;
+  chart: string;
+  chartEmpty: string;
+  news: string;
+  newsEmpty: string;
+  eventNow: string;
+  eventEnds: string;
+  ago: string;
+  events: Record<string, string>;
+  newsKinds: Record<string, string>;
+  startupRound: string;
+  orders: string;
+  ordersHint: string;
+  ordersEmpty: string;
+  cancel: string;
+  ordersMax: string;
+  orderButton: string;
+  kindBuyBelow: string;
+  kindSellBelow: string;
+  kindSellAbove: string;
+  kindBuyAbove: string;
+  orderPrice: string;
+  orderAmount: string;
+  orderShare: string;
+  orderShareAll: string;
+  orderShareHalf: string;
+  orderPlace: string;
+  orderDone: string;
+  orderLine: string;
+  summaryTitle: string;
+  cardsEmpty: string;
+};
+
 export type EconomyText = {
   // formátování čísel: jazyk pro oddělovače a zkratky řádů (milion, miliarda, bilion)
   numberLocale: string;
@@ -12,6 +52,7 @@ export type EconomyText = {
   loginHint: string;
   unavailable: string;
   loading: string;
+  inv: InvestText;
   tabs: { overview: string; work: string; companies: string; invest: string; hustle: string; board: string };
   create: {
     title: string;
@@ -46,6 +87,22 @@ export type EconomyText = {
     hire: string;
     fire: string;
     staffFull: string;
+    roles: Record<StaffRole, string>;
+    roleFull: string;
+    rookie: string;
+    sick: string;
+    moraleLabel: string;
+    strikeNow: string;
+    unionTitle: string;
+    unionHint: string;
+    unionActive: string;
+    unionGo: string;
+    stockTitle: string;
+    stockHint: string;
+    stockLevel: string;
+    stockEmpty: string;
+    stockBuy: string;
+    stockFull: string;
     price: string;
     output: string;
     risk: string;
@@ -75,6 +132,33 @@ export type EconomyText = {
     income: string;
     costs: string;
     net: string;
+    sellTitle: string;
+    sellHint: string;
+    sellGo: string;
+    sellConfirm: string;
+    contractTitle: string;
+    contractHint: string;
+    contractGo: string;
+    contractRunning: string;
+    researchTitle: string;
+    researchHint: string;
+    researchLevel: string;
+    researchGo: string;
+    researchMax: string;
+    rivalTitle: string;
+    rivalNow: string;
+    rivalShield: string;
+    rivalNone: string;
+  };
+  phase: {
+    names: string[];
+    now: string;
+    need: string;
+    go: string;
+    max: string;
+    locked: string;
+    rates: string;
+    title: string;
   };
   events: Record<EventId, { title: string; text: string }>;
   cash: string;
@@ -180,6 +264,11 @@ export type EconomyText = {
     level: string;
     campaign: string;
     funded: string;
+    companySold: string;
+    union: string;
+    stock: string;
+    contract: string;
+    researched: string;
   };
   errors: Record<string, string>;
 };
@@ -193,6 +282,44 @@ const cs: EconomyText = {
   loginHint: "Postup v ekonomice se ukládá k tvému účtu.",
   unavailable: "Hra je teď nedostupná, zkus to za chvíli.",
   loading: "Načítám…",
+  inv: {
+    title: "Investice",
+    portfolio: "Hodnota investic",
+    invested: "Vloženo",
+    profit: "Zisk / ztráta",
+    dividends: "Dividendy / h",
+    all: "Vše",
+    chart: "Vývoj jmění",
+    chartEmpty: "Graf se začne kreslit po pár minutách hry.",
+    news: "Zprávy z trhu",
+    newsEmpty: "Zatím nic nového.",
+    eventNow: "Právě teď: {name}",
+    eventEnds: "končí za {t}",
+    ago: "před {t}",
+    startupRound: "Startupy se vyhodnocují každých 12 hodin: buď vyjdou s výplatou, nebo zkrachují, nebo běží dál.",
+    orders: "Příkazy",
+    ordersHint: "Čekají, až cena dosáhne hranice. Plní se při hraní, mimo hru jen 15 minut.",
+    ordersEmpty: "Žádné čekající příkazy.",
+    cancel: "Zrušit",
+    ordersMax: "Nejvýš {n} čekajících příkazů.",
+    orderButton: "Příkaz",
+    kindBuyBelow: "Limitní nákup (koupit, když klesne na)",
+    kindSellBelow: "Stop-loss (prodat, když klesne na)",
+    kindSellAbove: "Take-profit (prodat, když vyroste na)",
+    kindBuyAbove: "Nákup na průrazu (koupit, když vyroste na)",
+    orderPrice: "Hranice ceny",
+    orderAmount: "Částka",
+    orderShare: "Kolik prodat",
+    orderShareAll: "Celou držbu",
+    orderShareHalf: "Polovinu",
+    orderPlace: "Zadat příkaz",
+    orderDone: "Příkaz je zadaný.",
+    orderLine: "{k} · hranice {p}",
+    summaryTitle: "Přehled portfolia",
+    cardsEmpty: "V této kategorii nic není.",
+    events: { cryptoRally: "Boom kryptoměn", cryptoCrash: "Pád kryptoměn", rateHike: "Zvýšení úroků", rateCut: "Snížení úroků", techBoom: "Technologický boom", goldFear: "Strach z krize, zlato roste", panic: "Panika na trhu", bull: "Býčí trh", bear: "Medvědí trh" },
+    newsKinds: { "startup-exit": "🎉 {a} vyšel: výplata {n}", "startup-krach": "💥 {a} zkrachoval, ztráta {n}", "buy-filled": "✅ Příkaz splněn: koupeno {a} za {n}", "sell-filled": "✅ Příkaz splněn: prodáno {a} za {n}", "order-failed": "⚠️ Příkaz na {a} se nesplnil" },
+  },
   tabs: { overview: "Přehled", work: "Práce", companies: "Firma", invest: "Investice", hustle: "Hustle", board: "Žebříček" },
   create: {
     title: "Vytvoř si postavu",
@@ -241,6 +368,22 @@ const cs: EconomyText = {
     hire: "Najmout za {n}",
     fire: "Propustit",
     staffFull: "Kapacita je plná",
+    roles: { producer: "Výrobce", seller: "Prodavač", accountant: "Účetní", manager: "Manažer" },
+    roleFull: "Max. 1 na firmu",
+    rookie: "Nově najatí se zaškolují: ještě {t}",
+    sick: "Jeden výrobce je dnes nemocný",
+    moraleLabel: "Spokojenost",
+    strikeNow: "Stávka! Výnos firmy je poloviční.",
+    unionTitle: "Odbory",
+    unionHint: "Odbory se ozvou, když jsou mzdy příliš vysoké a lidé nespokojení. Dohoda je zastaví na 12 hodin.",
+    unionActive: "Dohoda platí ještě {t}",
+    unionGo: "Uzavřít dohodu s odbory (den mezd)",
+    stockTitle: "Zásoby a vstupy",
+    stockHint: "Výroba spotřebuje vstupy. Dávka stojí {h} h výnosu kusu. Když zásoby dojdou, výnos klesá.",
+    stockLevel: "Zásoby: {s} / {c} dávek",
+    stockEmpty: "Zásoby došly: výnos jen {p} %",
+    stockBuy: "Koupit {n} za {p}",
+    stockFull: "Sklad je plný",
     price: "Cena produktu",
     output: "Výroba",
     risk: "Riziko",
@@ -280,6 +423,33 @@ const cs: EconomyText = {
     income: "Výnos",
     costs: "Náklady",
     net: "Čistý zisk",
+    sellTitle: "Prodej firmy",
+    sellHint: "Prodáš jeden kus za podíl ceny, kterou jsi za něj zaplatil. Firma s posledním kusem zmizí.",
+    sellGo: "Prodat jeden kus za {n}",
+    sellConfirm: "Opravdu prodat jeden kus této firmy?",
+    contractTitle: "Odběratelský kontrakt",
+    contractHint: "Pevný odběr na 6 hodin: +35 % výnosu, ale krize tuto firmu zasáhnou silněji.",
+    contractGo: "Podepsat za {n}",
+    contractRunning: "Platí ještě {t}",
+    researchTitle: "Výzkum produktů",
+    researchHint: "Každá úroveň zvedne výnos oboru o 15 %, ale nové produkty jsou citlivější na krize.",
+    researchLevel: "Úroveň {n} z {max}",
+    researchGo: "Vyvinout za {n}",
+    researchMax: "Nejvyšší úroveň",
+    rivalTitle: "Konkurence",
+    rivalNow: "Konkurent teď přetahuje zákazníky u tohoto oboru (−20 %).",
+    rivalShield: "Kampaň konkurenci částečně brání.",
+    rivalNone: "Teď tě žádný konkurent neohrožuje.",
+  },
+  phase: {
+    names: ["Garáž", "Dílna", "Malý sklad", "Prodejna", "Pobočka", "Velká pobočka", "Výrobní hala", "Logistické centrum", "Fabrika", "Velká fabrika", "Zahraniční závod", "Sídlo holdingu"],
+    title: "Fáze firmy",
+    now: "Fáze {n} z 12: {name}",
+    need: "Pro další fázi potřebuješ výnos firem aspoň {v} / h.",
+    go: "Postoupit za {c}",
+    max: "Nejvyšší fáze: sídlo holdingu",
+    locked: "Zatím málo výnosu",
+    rates: "Nájem {r} % výnosu, daň {t} % zisku",
   },
   events: {
     crash: { title: "Krach trhu", text: "Ceny na trhu prudce padly. Zisk firem klesá." },
@@ -381,7 +551,7 @@ const cs: EconomyText = {
   restartConfirm: "Opravdu začít znovu? Přijdeš o postavu, firmy i investice. Zůstane ti rekord.",
   restartHint: "Kdykoliv můžeš začít od nuly s novou postavou.",
   saveNote: "Hra se ukládá sama po každé akci.",
-  toast: { bought: "Koupeno", sold: "Prodáno za {n}", profit: "Zisk {n}", loss: "Ztráta {n}", created: "Postava vytvořena", edu: "Vzdělání vylepšeno", job: "Nová práce", restarted: "Začínáš znovu", upgraded: "Obor vylepšen", hired: "Zaměstnanec najat", fired: "Zaměstnanec propuštěn", level: "Nastaveno", campaign: "Kampaň běží 30 minut", funded: "Krizový fond zaplacen" },
+  toast: { bought: "Koupeno", sold: "Prodáno za {n}", profit: "Zisk {n}", loss: "Ztráta {n}", created: "Postava vytvořena", edu: "Vzdělání vylepšeno", job: "Nová práce", restarted: "Začínáš znovu", upgraded: "Obor vylepšen", hired: "Zaměstnanec najat", fired: "Zaměstnanec propuštěn", level: "Nastaveno", campaign: "Kampaň běží 30 minut", funded: "Krizový fond zaplacen", companySold: "Firma prodána za {n}", union: "Dohoda s odbory uzavřena", stock: "Zásoby doplněny", contract: "Kontrakt podepsán", researched: "Výzkum hotový" },
   errors: {
     generic: "Něco se nepovedlo.",
     "login-required": "Přihlas se.",
@@ -413,6 +583,44 @@ const en: EconomyText = {
   loginHint: "Your economy progress is saved to your account.",
   unavailable: "The game is unavailable right now, try again in a moment.",
   loading: "Loading…",
+  inv: {
+    title: "Investments",
+    portfolio: "Portfolio value",
+    invested: "Invested",
+    profit: "Profit / loss",
+    dividends: "Dividends / h",
+    all: "All",
+    chart: "Net worth over time",
+    chartEmpty: "The chart starts after a few minutes of play.",
+    news: "Market news",
+    newsEmpty: "Nothing new yet.",
+    eventNow: "Right now: {name}",
+    eventEnds: "ends in {t}",
+    ago: "{t} ago",
+    startupRound: "Startups are settled every 12 hours: they exit with a payout, go bust, or keep running.",
+    orders: "Orders",
+    ordersHint: "They wait until the price reaches the limit. They fill while you play, and only for 15 minutes while away.",
+    ordersEmpty: "No pending orders.",
+    cancel: "Cancel",
+    ordersMax: "At most {n} pending orders.",
+    orderButton: "Order",
+    kindBuyBelow: "Limit buy (buy when it falls to)",
+    kindSellBelow: "Stop-loss (sell when it falls to)",
+    kindSellAbove: "Take-profit (sell when it rises to)",
+    kindBuyAbove: "Breakout buy (buy when it rises to)",
+    orderPrice: "Price trigger",
+    orderAmount: "Amount",
+    orderShare: "How much to sell",
+    orderShareAll: "All of it",
+    orderShareHalf: "Half",
+    orderPlace: "Place order",
+    orderDone: "Order placed.",
+    orderLine: "{k} · trigger {p}",
+    summaryTitle: "Portfolio overview",
+    cardsEmpty: "Nothing in this category.",
+    events: { cryptoRally: "Crypto boom", cryptoCrash: "Crypto crash", rateHike: "Interest rate hike", rateCut: "Interest rate cut", techBoom: "Tech boom", goldFear: "Crisis fear, gold rises", panic: "Market panic", bull: "Bull market", bear: "Bear market" },
+    newsKinds: { "startup-exit": "🎉 {a} exited: payout {n}", "startup-krach": "💥 {a} went bust, loss {n}", "buy-filled": "✅ Order filled: bought {a} for {n}", "sell-filled": "✅ Order filled: sold {a} for {n}", "order-failed": "⚠️ Order on {a} failed" },
+  },
   tabs: { overview: "Overview", work: "Work", companies: "Company", invest: "Invest", hustle: "Hustle", board: "Leaderboard" },
   create: {
     title: "Create your character",
@@ -461,6 +669,22 @@ const en: EconomyText = {
     hire: "Hire for {n}",
     fire: "Let go",
     staffFull: "At capacity",
+    roles: { producer: "Producer", seller: "Seller", accountant: "Accountant", manager: "Manager" },
+    roleFull: "Max. 1 per company",
+    rookie: "New hires are training: {t} left",
+    sick: "One producer is sick today",
+    moraleLabel: "Morale",
+    strikeNow: "Strike! Company income is halved.",
+    unionTitle: "Union",
+    unionHint: "The union speaks up when wages are too high and people are unhappy. A deal stops strikes for 12 hours.",
+    unionActive: "Deal active for {t} more",
+    unionGo: "Make a deal with the union (one day of wages)",
+    stockTitle: "Stock and inputs",
+    stockHint: "Production uses inputs. A batch costs {h} h of one unit's income. When stock runs out, income drops.",
+    stockLevel: "Stock: {s} / {c} batches",
+    stockEmpty: "Stock ran out: income only {p} %",
+    stockBuy: "Buy {n} for {p}",
+    stockFull: "Warehouse is full",
     price: "Product price",
     output: "Production",
     risk: "Risk",
@@ -500,6 +724,33 @@ const en: EconomyText = {
     income: "Income",
     costs: "Costs",
     net: "Net profit",
+    sellTitle: "Sell company",
+    sellHint: "You sell one unit for a share of the price you paid for it. The company with its last unit disappears.",
+    sellGo: "Sell one unit for {n}",
+    sellConfirm: "Really sell one unit of this company?",
+    contractTitle: "Supply contract",
+    contractHint: "A fixed buyer for 6 hours: +35 % income, but crises hit this company harder.",
+    contractGo: "Sign for {n}",
+    contractRunning: "Active for {t} more",
+    researchTitle: "Product research",
+    researchHint: "Each level raises the industry's income by 15 %, but new products are more exposed to crises.",
+    researchLevel: "Level {n} of {max}",
+    researchGo: "Develop for {n}",
+    researchMax: "Top level",
+    rivalTitle: "Competition",
+    rivalNow: "A competitor is taking customers in this industry right now (−20 %).",
+    rivalShield: "The campaign partly protects against the competitor.",
+    rivalNone: "No competitor is threatening you right now.",
+  },
+  phase: {
+    names: ["Garage", "Workshop", "Small warehouse", "Shop", "Branch", "Large branch", "Production hall", "Logistics centre", "Factory", "Large factory", "Foreign plant", "Holding HQ"],
+    title: "Company phase",
+    now: "Phase {n} of 12: {name}",
+    need: "The next phase needs company income of at least {v} / h.",
+    go: "Advance for {c}",
+    max: "Top phase: holding HQ",
+    locked: "Not enough income yet",
+    rates: "Rent {r} % of income, tax {t} % of profit",
   },
   events: {
     crash: { title: "Market crash", text: "Market prices collapsed. Company profits fall." },
@@ -601,7 +852,7 @@ const en: EconomyText = {
   restartConfirm: "Really start over? You lose your character, companies and investments. Your record stays.",
   restartHint: "You can start from zero with a new character any time.",
   saveNote: "The game saves itself after every action.",
-  toast: { bought: "Bought", sold: "Sold for {n}", profit: "Profit {n}", loss: "Loss {n}", created: "Character created", edu: "Education improved", job: "New job", restarted: "Starting over", upgraded: "Industry upgraded", hired: "Employee hired", fired: "Employee let go", level: "Saved", campaign: "Campaign running for 30 minutes", funded: "Crisis fund paid" },
+  toast: { bought: "Bought", sold: "Sold for {n}", profit: "Profit {n}", loss: "Loss {n}", created: "Character created", edu: "Education improved", job: "New job", restarted: "Starting over", upgraded: "Industry upgraded", hired: "Employee hired", fired: "Employee let go", level: "Saved", campaign: "Campaign running for 30 minutes", funded: "Crisis fund paid", companySold: "Company sold for {n}", union: "Deal with the union made", stock: "Stock restocked", contract: "Contract signed", researched: "Research done" },
   errors: {
     generic: "Something went wrong.",
     "login-required": "Log in.",
@@ -633,6 +884,44 @@ const de: EconomyText = {
   loginHint: "Dein Fortschritt in der Wirtschaft wird in deinem Konto gespeichert.",
   unavailable: "Das Spiel ist gerade nicht erreichbar, versuche es gleich noch einmal.",
   loading: "Lädt…",
+  inv: {
+    title: "Investitionen",
+    portfolio: "Portfoliowert",
+    invested: "Eingesetzt",
+    profit: "Gewinn / Verlust",
+    dividends: "Dividenden / Std.",
+    all: "Alle",
+    chart: "Vermögensverlauf",
+    chartEmpty: "Das Diagramm erscheint nach ein paar Minuten Spielzeit.",
+    news: "Marktnachrichten",
+    newsEmpty: "Noch nichts Neues.",
+    eventNow: "Gerade: {name}",
+    eventEnds: "endet in {t}",
+    ago: "vor {t}",
+    startupRound: "Startups werden alle 12 Stunden abgerechnet: Sie haben einen Exit, gehen pleite oder laufen weiter.",
+    orders: "Orders",
+    ordersHint: "Sie warten, bis der Kurs die Grenze erreicht. Ausgeführt werden sie beim Spielen, abwesend nur 15 Minuten.",
+    ordersEmpty: "Keine offenen Orders.",
+    cancel: "Abbrechen",
+    ordersMax: "Höchstens {n} offene Orders.",
+    orderButton: "Order",
+    kindBuyBelow: "Limit-Kauf (kaufen, wenn er auf fällt)",
+    kindSellBelow: "Stop-Loss (verkaufen, wenn er auf fällt)",
+    kindSellAbove: "Take-Profit (verkaufen, wenn er auf steigt)",
+    kindBuyAbove: "Ausbruchs-Kauf (kaufen, wenn er auf steigt)",
+    orderPrice: "Kursgrenze",
+    orderAmount: "Betrag",
+    orderShare: "Wie viel verkaufen",
+    orderShareAll: "Alles",
+    orderShareHalf: "Die Hälfte",
+    orderPlace: "Order aufgeben",
+    orderDone: "Order aufgegeben.",
+    orderLine: "{k} · Grenze {p}",
+    summaryTitle: "Portfolio-Übersicht",
+    cardsEmpty: "In dieser Kategorie ist nichts.",
+    events: { cryptoRally: "Krypto-Boom", cryptoCrash: "Krypto-Crash", rateHike: "Zinserhöhung", rateCut: "Zinssenkung", techBoom: "Tech-Boom", goldFear: "Krisenangst, Gold steigt", panic: "Marktpanik", bull: "Bullenmarkt", bear: "Bärenmarkt" },
+    newsKinds: { "startup-exit": "🎉 {a} hat einen Exit: Auszahlung {n}", "startup-krach": "💥 {a} ist pleite, Verlust {n}", "buy-filled": "✅ Order ausgeführt: {a} für {n} gekauft", "sell-filled": "✅ Order ausgeführt: {a} für {n} verkauft", "order-failed": "⚠️ Order auf {a} fehlgeschlagen" },
+  },
   tabs: { overview: "Übersicht", work: "Arbeit", companies: "Firma", invest: "Investieren", hustle: "Hustle", board: "Rangliste" },
   create: {
     title: "Erstelle deine Figur",
@@ -681,6 +970,22 @@ const de: EconomyText = {
     hire: "Einstellen für {n}",
     fire: "Entlassen",
     staffFull: "Kapazität erreicht",
+    roles: { producer: "Produzent", seller: "Verkäufer", accountant: "Buchhalter", manager: "Manager" },
+    roleFull: "Max. 1 pro Firma",
+    rookie: "Neue Mitarbeitende werden eingearbeitet: noch {t}",
+    sick: "Ein Produzent ist heute krank",
+    moraleLabel: "Zufriedenheit",
+    strikeNow: "Streik! Der Ertrag der Firma ist halbiert.",
+    unionTitle: "Gewerkschaft",
+    unionHint: "Die Gewerkschaft meldet sich, wenn die Löhne zu hoch und die Leute unzufrieden sind. Eine Vereinbarung stoppt Streiks für 12 Stunden.",
+    unionActive: "Vereinbarung gilt noch {t}",
+    unionGo: "Vereinbarung mit der Gewerkschaft (ein Tageslohn)",
+    stockTitle: "Lager und Vorprodukte",
+    stockHint: "Die Produktion verbraucht Vorprodukte. Eine Charge kostet {h} h Ertrag einer Einheit. Ist das Lager leer, sinkt der Ertrag.",
+    stockLevel: "Lager: {s} / {c} Chargen",
+    stockEmpty: "Lager leer: Ertrag nur noch {p} %",
+    stockBuy: "{n} kaufen für {p}",
+    stockFull: "Lager ist voll",
     price: "Produktpreis",
     output: "Produktion",
     risk: "Risiko",
@@ -720,6 +1025,33 @@ const de: EconomyText = {
     income: "Ertrag",
     costs: "Kosten",
     net: "Reingewinn",
+    sellTitle: "Firma verkaufen",
+    sellHint: "Du verkaufst eine Einheit für einen Anteil des Preises, den du dafür bezahlt hast. Die Firma mit der letzten Einheit verschwindet.",
+    sellGo: "Eine Einheit für {n} verkaufen",
+    sellConfirm: "Wirklich eine Einheit dieser Firma verkaufen?",
+    contractTitle: "Liefervertrag",
+    contractHint: "Fester Abnehmer für 6 Stunden: +35 % Ertrag, aber Krisen treffen diese Firma stärker.",
+    contractGo: "Unterschreiben für {n}",
+    contractRunning: "Noch {t} gültig",
+    researchTitle: "Produktforschung",
+    researchHint: "Jede Stufe erhöht den Ertrag der Branche um 15 %, aber neue Produkte sind krisenanfälliger.",
+    researchLevel: "Stufe {n} von {max}",
+    researchGo: "Entwickeln für {n}",
+    researchMax: "Höchste Stufe",
+    rivalTitle: "Konkurrenz",
+    rivalNow: "Ein Konkurrent zieht gerade Kunden in dieser Branche ab (−20 %).",
+    rivalShield: "Die Kampagne schützt teilweise vor dem Konkurrenten.",
+    rivalNone: "Gerade bedroht dich kein Konkurrent.",
+  },
+  phase: {
+    names: ["Garage", "Werkstatt", "Kleinlager", "Laden", "Filiale", "Große Filiale", "Produktionshalle", "Logistikzentrum", "Fabrik", "Große Fabrik", "Auslandswerk", "Holding-Zentrale"],
+    title: "Firmenstufe",
+    now: "Stufe {n} von 12: {name}",
+    need: "Für die nächste Stufe brauchst du einen Firmenertrag von mindestens {v} / h.",
+    go: "Aufsteigen für {c}",
+    max: "Höchste Stufe: Holding-Zentrale",
+    locked: "Noch zu wenig Ertrag",
+    rates: "Miete {r} % des Ertrags, Steuer {t} % des Gewinns",
   },
   events: {
     crash: { title: "Börsencrash", text: "Die Marktpreise sind stark gefallen. Die Gewinne der Firmen sinken." },
@@ -821,7 +1153,7 @@ const de: EconomyText = {
   restartConfirm: "Wirklich neu beginnen? Du verlierst Figur, Firmen und Investitionen. Dein Rekord bleibt.",
   restartHint: "Du kannst jederzeit mit einer neuen Figur bei null anfangen.",
   saveNote: "Das Spiel speichert sich nach jeder Aktion selbst.",
-  toast: { bought: "Gekauft", sold: "Verkauft für {n}", profit: "Gewinn {n}", loss: "Verlust {n}", created: "Figur erstellt", edu: "Bildung verbessert", job: "Neuer Job", restarted: "Neustart", upgraded: "Branche verbessert", hired: "Mitarbeiter eingestellt", fired: "Mitarbeiter entlassen", level: "Gespeichert", campaign: "Kampagne läuft 30 Minuten", funded: "Krisenfonds bezahlt" },
+  toast: { bought: "Gekauft", sold: "Verkauft für {n}", profit: "Gewinn {n}", loss: "Verlust {n}", created: "Figur erstellt", edu: "Bildung verbessert", job: "Neuer Job", restarted: "Neustart", upgraded: "Branche verbessert", hired: "Mitarbeiter eingestellt", fired: "Mitarbeiter entlassen", level: "Gespeichert", campaign: "Kampagne läuft 30 Minuten", funded: "Krisenfonds bezahlt", companySold: "Firma verkauft für {n}", union: "Vereinbarung mit der Gewerkschaft geschlossen", stock: "Lager aufgefüllt", contract: "Vertrag unterschrieben", researched: "Forschung abgeschlossen" },
   errors: {
     generic: "Etwas ist schiefgelaufen.",
     "login-required": "Bitte anmelden.",
@@ -853,6 +1185,44 @@ const ru: EconomyText = {
   loginHint: "Прогресс в экономике сохраняется в твоём аккаунте.",
   unavailable: "Игра сейчас недоступна, попробуй чуть позже.",
   loading: "Загрузка…",
+  inv: {
+    title: "Инвестиции",
+    portfolio: "Стоимость портфеля",
+    invested: "Вложено",
+    profit: "Прибыль / убыток",
+    dividends: "Дивиденды / ч",
+    all: "Все",
+    chart: "Динамика капитала",
+    chartEmpty: "График появится через несколько минут игры.",
+    news: "Новости рынка",
+    newsEmpty: "Пока ничего нового.",
+    eventNow: "Сейчас: {name}",
+    eventEnds: "закончится через {t}",
+    ago: "{t} назад",
+    startupRound: "Стартапы оцениваются каждые 12 часов: либо выходят с выплатой, либо банкротятся, либо работают дальше.",
+    orders: "Ордера",
+    ordersHint: "Ждут, пока цена дойдёт до границы. Исполняются во время игры, вне игры только 15 минут.",
+    ordersEmpty: "Нет ожидающих ордеров.",
+    cancel: "Отменить",
+    ordersMax: "Не больше {n} ожидающих ордеров.",
+    orderButton: "Ордер",
+    kindBuyBelow: "Лимитная покупка (купить, когда упадёт до)",
+    kindSellBelow: "Стоп-лосс (продать, когда упадёт до)",
+    kindSellAbove: "Тейк-профит (продать, когда вырастет до)",
+    kindBuyAbove: "Покупка на пробое (купить, когда вырастет до)",
+    orderPrice: "Граница цены",
+    orderAmount: "Сумма",
+    orderShare: "Сколько продать",
+    orderShareAll: "Всё",
+    orderShareHalf: "Половину",
+    orderPlace: "Поставить ордер",
+    orderDone: "Ордер поставлен.",
+    orderLine: "{k} · граница {p}",
+    summaryTitle: "Обзор портфеля",
+    cardsEmpty: "В этой категории пусто.",
+    events: { cryptoRally: "Бум криптовалют", cryptoCrash: "Обвал криптовалют", rateHike: "Повышение ставок", rateCut: "Снижение ставок", techBoom: "Технологический бум", goldFear: "Страх кризиса, золото растёт", panic: "Паника на рынке", bull: "Бычий рынок", bear: "Медвежий рынок" },
+    newsKinds: { "startup-exit": "🎉 {a} вышел на выход: выплата {n}", "startup-krach": "💥 {a} обанкротился, убыток {n}", "buy-filled": "✅ Ордер исполнен: куплено {a} на {n}", "sell-filled": "✅ Ордер исполнен: продано {a} на {n}", "order-failed": "⚠️ Ордер на {a} не исполнен" },
+  },
   tabs: { overview: "Обзор", work: "Работа", companies: "Компания", invest: "Инвестиции", hustle: "Подработки", board: "Рейтинг" },
   create: {
     title: "Создай персонажа",
@@ -901,6 +1271,22 @@ const ru: EconomyText = {
     hire: "Нанять за {n}",
     fire: "Уволить",
     staffFull: "Нет мест",
+    roles: { producer: "Производитель", seller: "Продавец", accountant: "Бухгалтер", manager: "Менеджер" },
+    roleFull: "Не больше 1 на компанию",
+    rookie: "Новые сотрудники обучаются: ещё {t}",
+    sick: "Один производитель сегодня болеет",
+    moraleLabel: "Удовлетворённость",
+    strikeNow: "Забастовка! Доход компании сокращён вдвое.",
+    unionTitle: "Профсоюз",
+    unionHint: "Профсоюз заявляет о себе, когда зарплаты слишком высоки и люди недовольны. Соглашение останавливает забастовки на 12 часов.",
+    unionActive: "Соглашение действует ещё {t}",
+    unionGo: "Заключить соглашение с профсоюзом (день зарплат)",
+    stockTitle: "Запасы и сырьё",
+    stockHint: "Производство расходует сырьё. Партия стоит {h} ч дохода одной единицы. Когда запасы кончаются, доход падает.",
+    stockLevel: "Запасы: {s} / {c} партий",
+    stockEmpty: "Запасы кончились: доход только {p} %",
+    stockBuy: "Купить {n} за {p}",
+    stockFull: "Склад полон",
     price: "Цена продукта",
     output: "Производство",
     risk: "Риск",
@@ -940,6 +1326,33 @@ const ru: EconomyText = {
     income: "Доход",
     costs: "Расходы",
     net: "Чистая прибыль",
+    sellTitle: "Продажа компании",
+    sellHint: "Ты продаёшь одну единицу за часть цены, которую за неё заплатил. Компания с последней единицей исчезнет.",
+    sellGo: "Продать одну единицу за {n}",
+    sellConfirm: "Точно продать одну единицу этой компании?",
+    contractTitle: "Контракт с покупателем",
+    contractHint: "Постоянный покупатель на 6 часов: +35 % дохода, но кризисы бьют по этой компании сильнее.",
+    contractGo: "Подписать за {n}",
+    contractRunning: "Действует ещё {t}",
+    researchTitle: "Исследование продуктов",
+    researchHint: "Каждый уровень повышает доход отрасли на 15 %, но новые продукты сильнее подвержены кризисам.",
+    researchLevel: "Уровень {n} из {max}",
+    researchGo: "Разработать за {n}",
+    researchMax: "Максимальный уровень",
+    rivalTitle: "Конкуренция",
+    rivalNow: "Конкурент сейчас переманивает клиентов в этой отрасли (−20 %).",
+    rivalShield: "Кампания частично защищает от конкурента.",
+    rivalNone: "Сейчас тебе никто не угрожает.",
+  },
+  phase: {
+    names: ["Гараж", "Мастерская", "Малый склад", "Магазин", "Филиал", "Большой филиал", "Производственный цех", "Логистический центр", "Фабрика", "Большая фабрика", "Зарубежный завод", "Штаб-квартира холдинга"],
+    title: "Фаза компании",
+    now: "Фаза {n} из 12: {name}",
+    need: "Для следующей фазы нужен доход компаний не меньше {v} / ч.",
+    go: "Перейти за {c}",
+    max: "Высшая фаза: штаб-квартира холдинга",
+    locked: "Пока мало дохода",
+    rates: "Аренда {r} % дохода, налог {t} % прибыли",
   },
   events: {
     crash: { title: "Обвал рынка", text: "Цены на рынке резко упали. Прибыль компаний снижается." },
@@ -1041,7 +1454,7 @@ const ru: EconomyText = {
   restartConfirm: "Точно начать заново? Ты потеряешь персонажа, компании и инвестиции. Рекорд останется.",
   restartHint: "В любой момент можно начать с нуля с новым персонажем.",
   saveNote: "Игра сохраняется сама после каждого действия.",
-  toast: { bought: "Куплено", sold: "Продано за {n}", profit: "Прибыль {n}", loss: "Убыток {n}", created: "Персонаж создан", edu: "Образование улучшено", job: "Новая работа", restarted: "Начинаем заново", upgraded: "Отрасль улучшена", hired: "Сотрудник нанят", fired: "Сотрудник уволен", level: "Сохранено", campaign: "Кампания идёт 30 минут", funded: "Антикризисный фонд оплачен" },
+  toast: { bought: "Куплено", sold: "Продано за {n}", profit: "Прибыль {n}", loss: "Убыток {n}", created: "Персонаж создан", edu: "Образование улучшено", job: "Новая работа", restarted: "Начинаем заново", upgraded: "Отрасль улучшена", hired: "Сотрудник нанят", fired: "Сотрудник уволен", level: "Сохранено", campaign: "Кампания идёт 30 минут", funded: "Антикризисный фонд оплачен", companySold: "Компания продана за {n}", union: "Соглашение с профсоюзом заключено", stock: "Запасы пополнены", contract: "Контракт подписан", researched: "Исследование готово" },
   errors: {
     generic: "Что-то пошло не так.",
     "login-required": "Войди в аккаунт.",

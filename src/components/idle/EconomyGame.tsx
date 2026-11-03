@@ -7,10 +7,8 @@ import { getEconomyWork } from "@/i18n/economy-work";
 import { getEconomyHustle } from "@/i18n/economy-hustle";
 import { notifyAccountChanged } from "@/lib/account-events";
 import {
-  ARB_FEE,
   SPEEDS,
   ASSETS,
-  ASSET_CATEGORIES,
   BONUS_SHARE,
   LEAD_EXTRA_ENERGY,
   LEAD_MIN_RANK,
@@ -25,7 +23,6 @@ import {
   SITUATIONS,
   VACATION_MAX,
   VACATION_WINDOW_MS,
-  type EconomyEvent,
   CITIES,
   COMPANIES,
   COUNTRIES,
@@ -44,7 +41,6 @@ import {
   hustleDue,
   isLocked,
   type AssetCategoryId,
-  type AssetId,
   type CityId,
   type CountryId,
   type EraId,
@@ -52,6 +48,7 @@ import {
 } from "@/lib/idle/economy";
 import { CompanyTab, fill, formatLeft, type Payload } from "./CompanyPanel";
 import { HustleTab } from "./HustleTab";
+import { InvestPanel } from "./InvestPanel";
 import type { Locale } from "@/i18n/config";
 
 type View = { data: Payload; receivedAt: number };
@@ -70,22 +67,6 @@ function money(n: number, currency: string, locale: Locale): string {
   if (abs >= 1e9) return short(v / 1e9, units.billion);
   if (abs >= 1e6) return short(v / 1e6, units.million);
   return `${v.toLocaleString(loc)} ${currency}`.trim();
-}
-
-const CAT_EMOJI: Record<AssetCategoryId, string> = {
-  crypto: "🪙", realestate: "🏠", stocks: "📈", metals: "🥇", bonds: "📜", funds: "🧺", startups: "🚀",
-};
-
-// Štítek rizika podle výkyvu ceny (ASSETS.vol): nízké do 5 %, střední do 20 %, jinak vysoké.
-const riskKey = (vol: number): "riskLow" | "riskMid" | "riskHigh" => (vol <= 0.05 ? "riskLow" : vol <= 0.2 ? "riskMid" : "riskHigh");
-
-// Mini graf vývoje ceny za posledních 6 hodin (24 bodů po 15 minutách). Počítá se z čisté funkce ceny, takže sedí se serverem.
-function priceSpark(id: AssetId, now: number): string {
-  const pts = Array.from({ length: 24 }, (_, i) => assetPrice(id, now - (23 - i) * 15 * 60_000));
-  const lo = Math.min(...pts);
-  const hi = Math.max(...pts);
-  const span = hi - lo || 1;
-  return pts.map((p, i) => `${((i / 23) * 120).toFixed(1)},${(34 - ((p - lo) / span) * 30).toFixed(1)}`).join(" ");
 }
 
 const EMOJI: Record<string, string> = {
@@ -157,8 +138,6 @@ export function EconomyGame({ locale }: { locale: Locale }) {
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
   const [board, setBoard] = useState<Board | null>(null);
-  // Které kategorie investic jsou rozbalené (výchozí: všechny sbalené).
-  const [openCats, setOpenCats] = useState<Partial<Record<AssetCategoryId, boolean>>>({});
   const [form, setForm] = useState<{ name: string; country: CountryId; city: CityId; era: EraId; family: FamilyId }>({
     name: "",
     country: "cz",
@@ -871,134 +850,19 @@ export function EconomyGame({ locale }: { locale: Locale }) {
       )}
 
       {tab === "invest" && (
-        <section>
-          <p className="mb-3 text-sm text-[var(--muted)]">{t.investHint}</p>
-          {ASSET_CATEGORIES.map((cat) => {
-            const open = !!openCats[cat];
-            const held = ASSETS.filter((a) => a.cat === cat).reduce((sum, a) => sum + (state.holdings[a.id] ?? 0) * assetPrice(a.id, clock), 0);
-            return (
-            <div key={cat} className="mb-4">
-              <button
-                type="button"
-                aria-expanded={open}
-                onClick={() => setOpenCats((o) => ({ ...o, [cat]: !o[cat] }))}
-                className="mb-2 flex w-full items-center justify-between gap-3 rounded-lg bg-[var(--surface)] px-4 py-3 text-left font-bold"
-              >
-                <span>
-                  {CAT_EMOJI[cat]} {t.assetCategories[cat]}
-                </span>
-                <span className="flex items-center gap-3 text-sm">
-                  {held > 0 && <span className="text-[var(--muted)]">{m(held)}</span>}
-                  <span aria-hidden="true">{open ? "▴" : "▾"}</span>
-                </span>
-              </button>
-              {open && (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {ASSETS.filter((a) => a.cat === cat).map((a) => {
-              const price = assetPrice(a.id, clock);
-              const prev = assetPrice(a.id, clock - 3_600_000);
-              const qty = state.holdings[a.id] ?? 0;
-              const locked = isLocked(state, "asset", a.id);
-              const value = qty * price;
-              const pl = qty > 0 ? value - qty * (state.cost[a.id] ?? price) : 0;
-              const chunk = Math.max(1, Math.floor(liveCash / 4));
-              return (
-                <article key={a.id} className={`card flex flex-col gap-2 p-4 ${locked ? "opacity-55" : ""}`}>
-                  <h3 className="flex items-center justify-between font-bold">
-                    <span>
-                      {t.assets[a.id]}
-                    </span>
-                    <span className={`text-sm ${price >= prev ? "text-[var(--accent-green)]" : "text-[var(--danger)]"}`}>{price >= prev ? "▲" : "▼"}</span>
-                  </h3>
-                  <p className="text-sm">
-                    {t.price}: <b>{m(price)}</b>
-                  </p>
-                  <svg viewBox="0 0 120 36" preserveAspectRatio="none" className="h-9 w-full" aria-label={t.trend6h}>
-                    <polyline
-                      points={priceSpark(a.id, clock)}
-                      fill="none"
-                      stroke={price >= prev ? "var(--accent-green)" : "var(--danger)"}
-                      strokeWidth="2"
-                      vectorEffect="non-scaling-stroke"
-                    />
-                  </svg>
-                  <p className="flex flex-wrap gap-x-3 text-xs text-[var(--muted)]">
-                    <span>
-                      {t.risk}: <b>{t[riskKey(a.vol)]}</b>
-                    </span>
-                    {a.yield > 0 && (
-                      <span>
-                        {fill(t.yieldPerHour, { v: `${(a.yield * 100).toFixed(2)} %` })}
-                      </span>
-                    )}
-                  </p>
-                  {qty > 0 && (
-                    <p className="text-sm text-[var(--muted)]">
-                      {fill(t.holding, { v: m(value) })} · {t.profit}: {pl >= 0 ? "+" : "−"}
-                      {m(Math.abs(pl))}
-                    </p>
-                  )}
-                  {locked ? (
-                    <p className="text-sm font-semibold">🔒 {t.locked1990}</p>
-                  ) : (
-                    <div className="mt-auto flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        disabled={busy || liveCash < 1}
-                        onClick={() => void act({ action: "buyAsset", id: a.id, amount: chunk }, () => t.toast.bought)}
-                        className="btn-bouncy flex-1 bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
-                      >
-                        {fill(t.invest, { n: m(chunk) })}
-                      </button>
-                      <button
-                        type="button"
-                        disabled={busy || qty <= 0}
-                        onClick={() => void act({ action: "sellAsset", id: a.id as AssetId, share: 0.5 }, (p) => fill(t.toast.sold, { n: m(p.gained?.cash ?? 0) }))}
-                        className="btn-bouncy bg-[var(--surface)] px-3 py-2 text-sm font-bold disabled:opacity-45"
-                      >
-                        {t.sell}
-                      </button>
-                      <button
-                        type="button"
-                        disabled={busy || qty <= 0}
-                        onClick={() => void act({ action: "sellAsset", id: a.id as AssetId, share: 1 }, (p) => fill(t.toast.sold, { n: m(p.gained?.cash ?? 0) }))}
-                        className="btn-bouncy bg-[var(--surface)] px-3 py-2 text-sm font-bold disabled:opacity-45"
-                      >
-                        {t.sellAll}
-                      </button>
-                    </div>
-                  )}
-                </article>
-              );
-            })}
-              </div>
-              )}
-            </div>
-            );
-          })}
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <article className="card flex flex-col gap-2 p-4">
-              <h3 className="font-bold">⚖️ {t.arbitrage}</h3>
-              <p className="text-xs text-[var(--muted)]">{t.arbitrageHint}</p>
-              <p className="text-sm font-semibold">
-                {fill(t.spread, { n: (data.arbitrage.spread * 100).toFixed(2) })} <span className="text-[var(--muted)]">(−{(ARB_FEE * 100).toFixed(1)} %)</span>
-              </p>
-              <button
-                type="button"
-                disabled={busy || clock < state.arbReadyAt || liveCash < 1}
-                onClick={() =>
-                  void act({ action: "arbitrage", amount: Math.min(liveCash, data.arbitrage.limit) }, (p) => fill(t.toast.profit, { n: m(p.gained?.profit ?? 0) }))
-                }
-                className="btn-bouncy mt-auto bg-[var(--accent-yellow)] px-3 py-2 text-sm font-bold text-[#16132b] disabled:opacity-45"
-              >
-                {clock < state.arbReadyAt
-                  ? fill(t.arbitrageWait, { t: formatLeft(state.arbReadyAt - clock, t) })
-                  : fill(t.arbitrageGo, { n: m(Math.min(liveCash, data.arbitrage.limit)) })}
-              </button>
-            </article>
-          </div>
-        </section>
+        <InvestPanel
+          state={state}
+          clock={clock}
+          liveCash={liveCash}
+          netWorth={worth}
+          rates={r}
+          arbitrage={data.arbitrage}
+          assetEvent={data.assetEvent ?? null}
+          m={m}
+          t={t}
+          busy={busy}
+          act={act}
+        />
       )}
 
       {tab === "hustle" && (

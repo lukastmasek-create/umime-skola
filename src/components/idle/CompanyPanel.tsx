@@ -6,18 +6,40 @@ import {
   COMPANIES,
   type EconomyEvent,
   INCOME_SPEED,
+  MAX_PHASE,
   MAX_STAFF_PER_UNIT,
+  PHASE_RATES,
   SETTING_RANGE,
   campaignPrice,
   companyIncome,
   companyPrice,
   companyYield,
+  contractActive,
+  contractPrice,
   currentEvent,
+  currentRival,
   eventAffects,
   fundPrice,
   hireCost,
+  isSick,
+  batchPrice,
+  stockCapacity,
+  INPUT_BATCH_HOURS,
+  NO_STOCK_OUTPUT,
+  UNION_MIN_STAFF,
+  ROLE_MAX,
+  ROLE_WAGE,
+  STAFF_ROLES,
+  rolesOf,
   isLocked,
   isNegativeEvent,
+  MAX_RESEARCH,
+  phaseCost,
+  phaseRequirement,
+  rates as companyRates,
+  researchLevel,
+  researchPrice,
+  sellPrice,
   setupOf,
   upgradePrice,
   type CompanyId,
@@ -38,6 +60,7 @@ export type Payload = {
   eduCost: number;
   gained?: { cash?: number; profit?: number } | null;
   event?: EconomyEvent | null;
+  assetEvent?: { id: string; endsAt: number } | null;
 };
 
 export type Act = (body: Record<string, unknown>, okText?: (p: Payload) => string) => Promise<void>;
@@ -90,10 +113,38 @@ export function CompanyTab(props: Common) {
   const { state, clock, multiplier, t, m, busy, liveCash, act } = props;
   const [selected, setSelected] = useState<CompanyId | null>(null);
   const ev = currentEvent(clock);
+  const phase = state.phase;
+  const income = companyRates(state, clock).companies;
+  const nextPhase = phase + 1;
+  const nextNeed = phaseRequirement(nextPhase);
+  const nextCost = phaseCost(nextPhase);
+  const rate = PHASE_RATES[phase - 1];
 
   return (
     <section>
       <p className="mb-4 text-sm text-[var(--muted)]">{t.companiesHint}</p>
+      <div className="card mb-6 flex flex-col gap-3 p-4">
+        <h3 className="font-bold">🏗️ {t.phase.title}</h3>
+        <p className="text-sm">
+          <b>{fill(t.phase.now, { n: phase, name: t.phase.names[phase - 1] })}</b>
+        </p>
+        <p className="text-xs text-[var(--muted)]">{fill(t.phase.rates, { r: Math.round(rate.rent * 100), t: Math.round(rate.tax * 100) })}</p>
+        {phase >= MAX_PHASE ? (
+          <p className="text-sm font-semibold">✓ {t.phase.max}</p>
+        ) : (
+          <>
+            <p className="text-sm text-[var(--muted)]">{fill(t.phase.need, { v: m(nextNeed) })}</p>
+            <button
+              type="button"
+              disabled={busy || income < nextNeed || liveCash < nextCost}
+              onClick={() => void act({ action: "upgradePhase" }, () => t.phase.names[nextPhase - 1])}
+              className="btn-bouncy w-fit bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
+            >
+              {income < nextNeed ? t.phase.locked : fill(t.phase.go, { c: m(nextCost) })} · {t.phase.names[nextPhase - 1]}
+            </button>
+          </>
+        )}
+      </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {COMPANIES.map((c) => {
           const style = COMPANY_STYLE[c.id];
@@ -102,6 +153,7 @@ export function CompanyTab(props: Common) {
           const price = companyPrice(state, c.id);
           const campaign = clock < setupOf(state, c.id).marketingUntil;
           const threatened = !!ev && isNegativeEvent(ev.def) && eventAffects(ev.def, c.id) && owned > 0;
+          const rival = owned > 0 && currentRival(state, clock) === c.id;
           return (
             <article
               key={c.id}
@@ -132,9 +184,10 @@ export function CompanyTab(props: Common) {
                   </>
                 )}
               </p>
-              {(threatened || campaign) && (
+              {(threatened || campaign || rival) && (
                 <div className="flex flex-wrap gap-1.5 text-xs font-bold">
                   {threatened && <span className="pill bg-[var(--danger)] px-2 py-0.5 text-white">⚠️ {t.events[ev!.def.id].title}</span>}
+                  {rival && <span className="pill bg-[var(--danger)] px-2 py-0.5 text-white">🎯 {t.detail.rivalTitle}</span>}
                   {campaign && <span className="pill bg-[var(--accent-yellow)] px-2 py-0.5 text-[#16132b]">📣 {t.detail.campaign}</span>}
                 </div>
               )}
@@ -245,12 +298,21 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
   const costs = y.costs * INCOME_SPEED;
   const net = gross - costs;
   const maxStaff = owned * MAX_STAFF_PER_UNIT;
+  const roles = rolesOf(s);
+  const stockCap = stockCapacity(owned, state.phase);
+  const stockFree = Math.max(0, Math.floor(stockCap - s.stock));
+  const batch = batchPrice(state, id, clock);
   const ev = currentEvent(clock);
   const affected = !!ev && eventAffects(ev.def, id);
   const funded = !!ev && state.responses[id] === ev.window;
   const campaignLeft = s.marketingUntil - clock;
   const fundCost = fundPrice(state, id);
   const eventCopy = ev ? t.events[ev.def.id] : null;
+  const rivalHere = currentRival(state, clock) === id;
+  const level = researchLevel(state, id);
+  const contractLeft = (state.contracts[id] ?? 0) - clock;
+  const contractOn = contractActive(state, id, clock);
+  const sellFor = sellPrice(state, id);
 
   // Náhled: stejný výpočet jako na serveru, jen s jiným rizikem.
   const netWithRisk = (risk: number) => {
@@ -356,6 +418,62 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
         )}
       </div>
 
+      <div className="flex flex-col gap-2 rounded-xl border-2 border-[var(--edge)] p-3">
+        <h3 className="font-bold">🎯 {t.detail.rivalTitle}</h3>
+        <p className="text-sm">{rivalHere ? t.detail.rivalNow : t.detail.rivalNone}</p>
+        {rivalHere && <p className="text-xs text-[var(--muted)]">{t.detail.rivalShield}</p>}
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="flex flex-col gap-2">
+          <h3 className="font-bold">🔬 {t.detail.researchTitle}</h3>
+          <p className="text-xs text-[var(--muted)]">{t.detail.researchHint}</p>
+          {level >= MAX_RESEARCH ? (
+            <p className="text-sm font-semibold">✓ {t.detail.researchMax}</p>
+          ) : (
+            <button
+              type="button"
+              disabled={busy || liveCash < researchPrice(state, id)}
+              onClick={() => void act({ action: "researchCompany", id }, () => t.toast.researched)}
+              className="btn-bouncy w-fit bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
+            >
+              {fill(t.detail.researchLevel, { n: level, max: MAX_RESEARCH })} · {fill(t.detail.researchGo, { n: m(researchPrice(state, id)) })}
+            </button>
+          )}
+        </div>
+        <div className="flex flex-col gap-2">
+          <h3 className="font-bold">📝 {t.detail.contractTitle}</h3>
+          <p className="text-xs text-[var(--muted)]">{t.detail.contractHint}</p>
+          {contractOn ? (
+            <p className="text-sm font-semibold">{fill(t.detail.contractRunning, { t: formatLeft(contractLeft, t) })}</p>
+          ) : (
+            <button
+              type="button"
+              disabled={busy || liveCash < contractPrice(state, id)}
+              onClick={() => void act({ action: "signContract", id }, () => t.toast.contract)}
+              className="btn-bouncy w-fit bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
+            >
+              {fill(t.detail.contractGo, { n: m(contractPrice(state, id)) })}
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <h3 className="font-bold">💱 {t.detail.sellTitle}</h3>
+        <p className="text-xs text-[var(--muted)]">{t.detail.sellHint}</p>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => {
+            if (window.confirm(t.detail.sellConfirm)) void act({ action: "sellCompany", id }, () => t.toast.companySold);
+          }}
+          className="btn-bouncy w-fit bg-[var(--surface)] px-3 py-2 text-sm font-bold disabled:opacity-45"
+        >
+          {fill(t.detail.sellGo, { n: m(sellFor) })}
+        </button>
+      </div>
+
       <div className="flex flex-col gap-2">
         <h3 className="font-bold">🚀 {t.detail.upgrade}</h3>
         <p className="text-xs text-[var(--muted)]">{t.detail.upgradeHint}</p>
@@ -378,22 +496,85 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
           👥 {t.detail.staff} · {s.staff}/{maxStaff}
         </h3>
         <p className="text-xs text-[var(--muted)]">{t.detail.staffHint}</p>
+        {clock < s.rookieUntil && <p className="text-xs font-semibold">{fill(t.detail.rookie, { t: formatLeft(s.rookieUntil - clock, t) })}</p>}
+        {isSick(id, clock) && roles.producer > 0 && <p className="text-xs font-semibold">🤒 {t.detail.sick}</p>}
+        <p className="text-xs">
+          {t.detail.moraleLabel}: <b>{Math.round(y.morale * 100)} %</b>
+        </p>
+        {y.strike && <p className="pill w-fit bg-[var(--danger)] px-2 py-0.5 text-xs font-bold text-white">✊ {t.detail.strikeNow}</p>}
+        {s.staff >= UNION_MIN_STAFF && (
+          <div className="flex flex-col gap-1 rounded-xl bg-[var(--surface-muted)] p-3">
+            <p className="text-sm font-bold">🤝 {t.detail.unionTitle}</p>
+            <p className="text-xs text-[var(--muted)]">{t.detail.unionHint}</p>
+            {s.unionUntil > clock ? (
+              <p className="text-sm font-semibold">{fill(t.detail.unionActive, { t: formatLeft(s.unionUntil - clock, t) })}</p>
+            ) : (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void act({ action: "unionDeal", id }, () => t.toast.union)}
+                className="btn-bouncy w-fit bg-[var(--surface)] px-3 py-2 text-sm font-bold disabled:opacity-45"
+              >
+                {t.detail.unionGo}
+              </button>
+            )}
+          </div>
+        )}
+        <ul className="flex flex-col gap-2">
+          {STAFF_ROLES.map((role) => {
+            const cap = ROLE_MAX[role];
+            const full = s.staff >= maxStaff || (cap !== null && roles[role] >= cap);
+            const wage = Math.round(hireCost(id) * ROLE_WAGE[role]);
+            return (
+              <li key={role} className="flex flex-wrap items-center gap-2">
+                <span className="min-w-[9rem] font-bold">
+                  {t.detail.roles[role]} · {roles[role]}
+                </span>
+                <button
+                  type="button"
+                  disabled={busy || roles[role] <= 0}
+                  onClick={() => void act({ action: "hireStaff", id, delta: -1, role }, () => t.toast.fired)}
+                  className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-sm font-bold disabled:opacity-45"
+                >
+                  − {t.detail.fire}
+                </button>
+                <button
+                  type="button"
+                  disabled={busy || full || liveCash < wage}
+                  onClick={() => void act({ action: "hireStaff", id, delta: 1, role }, () => t.toast.hired)}
+                  className="btn-bouncy bg-[var(--brand-500)] px-3 py-1.5 text-sm font-bold text-white disabled:opacity-45"
+                >
+                  {full ? (cap !== null && roles[role] >= cap ? t.detail.roleFull : t.detail.staffFull) : `+ ${fill(t.detail.hire, { n: m(wage) })}`}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <h3 className="font-bold">📦 {t.detail.stockTitle}</h3>
+        <p className="text-xs text-[var(--muted)]">{fill(t.detail.stockHint, { h: INPUT_BATCH_HOURS })}</p>
+        <p className="text-sm">
+          <b>{fill(t.detail.stockLevel, { s: Math.floor(s.stock), c: stockCap })}</b>
+        </p>
+        {s.stock <= 0 && <p className="pill w-fit bg-[var(--danger)] px-2 py-0.5 text-xs font-bold text-white">⚠️ {fill(t.detail.stockEmpty, { p: Math.round(NO_STOCK_OUTPUT * 100) })}</p>}
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            disabled={busy || s.staff <= 0}
-            onClick={() => void act({ action: "hireStaff", id, delta: -1 }, () => t.toast.fired)}
-            className="btn-bouncy bg-[var(--surface)] px-3 py-2 text-sm font-bold disabled:opacity-45"
+            disabled={busy || stockFree < 1 || liveCash < batch}
+            onClick={() => void act({ action: "buyStock", id, amount: 1 }, () => t.toast.stock)}
+            className="btn-bouncy bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
           >
-            − {t.detail.fire}
+            {stockFree < 1 ? t.detail.stockFull : fill(t.detail.stockBuy, { n: 1, p: m(batch) })}
           </button>
           <button
             type="button"
-            disabled={busy || s.staff >= maxStaff || liveCash < hireCost(id)}
-            onClick={() => void act({ action: "hireStaff", id, delta: 1 }, () => t.toast.hired)}
-            className="btn-bouncy bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
+            disabled={busy || stockFree < 5 || liveCash < batch * 5}
+            onClick={() => void act({ action: "buyStock", id, amount: 5 }, () => t.toast.stock)}
+            className="btn-bouncy bg-[var(--surface)] px-3 py-2 text-sm font-bold disabled:opacity-45"
           >
-            {s.staff >= maxStaff ? t.detail.staffFull : `+ ${fill(t.detail.hire, { n: m(hireCost(id)) })}`}
+            {fill(t.detail.stockBuy, { n: 5, p: m(batch * 5) })}
           </button>
         </div>
       </div>
