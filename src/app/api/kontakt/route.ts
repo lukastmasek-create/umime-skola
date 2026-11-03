@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { RATE_LIMIT, RATE_WINDOW_MS, validateContact } from "@/lib/contact";
 import { isLocale } from "@/i18n/config";
+import { clientIp, withinRateLimit } from "@/lib/rate-limit";
 
 // Kontaktní formulář: uloží zprávu do ContactMessage. Přihlášenému uživateli se zpráva přiřadí k účtu.
 export async function POST(request: Request) {
@@ -12,6 +13,8 @@ export async function POST(request: Request) {
 
   // Past na roboty: skryté pole, které člověk nevyplní. Robotovi tváříme úspěch, ale nic neuložíme.
   if (typeof body.website === "string" && body.website.trim() !== "") return NextResponse.json({ ok: true });
+
+  if (!(await withinRateLimit(`kontakt:${clientIp(request)}`, 10, 600))) return NextResponse.json({ error: "rate" }, { status: 429 });
 
   const result = validateContact(body);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });

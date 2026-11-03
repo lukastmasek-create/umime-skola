@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 
 import { prisma } from "@/lib/prisma";
+import { clientIp, withinRateLimit } from "@/lib/rate-limit";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -18,6 +19,9 @@ export async function POST(request: Request) {
 }
 
 async function register(request: Request) {
+  if (!(await withinRateLimit(`reg:${clientIp(request)}`, 5, 3600))) {
+    return NextResponse.json({ error: "Příliš mnoho pokusů. Zkus to za chvíli." }, { status: 429 });
+  }
   const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
   const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
   const password = typeof body?.password === "string" ? body.password : "";

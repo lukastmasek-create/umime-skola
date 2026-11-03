@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { prisma } from "@/lib/prisma";
+import { withinRateLimit } from "@/lib/rate-limit";
 import { defaultLocale } from "@/i18n/config";
 
 // Na Workers nemusí být secrety z dashboardu v process.env, proto se čtou z bindingů.
@@ -38,6 +39,8 @@ const authConfig: NextAuthConfig = {
         const password = credentials?.password as string | undefined;
 
         if (!email || !password) return null;
+        // 10 pokusů za 15 minut na jeden účet (proti hádání hesla).
+        if (!(await withinRateLimit(`login:${email.trim().toLowerCase()}`, 10, 900))) return null;
 
         // E-mail se hledá bez ohledu na velikost písmen, stejně jako kontrola při registraci.
         const user = await prisma.user.findFirst({
