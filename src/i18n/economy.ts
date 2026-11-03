@@ -153,6 +153,12 @@ export type EconomyText = {
     rivalShield: string;
     rivalNone: string;
   };
+  distress: {
+    title: string;
+    text: string;
+    left: string;
+    bankrupt: string;
+  };
   phase: {
     names: string[];
     now: string;
@@ -449,6 +455,12 @@ const cs: EconomyText = {
     rivalNow: "Konkurent teď přetahuje zákazníky u tohoto oboru (−20 %).",
     rivalShield: "Kampaň konkurenci částečně brání.",
     rivalNone: "Teď tě žádný konkurent neohrožuje.",
+  },
+  distress: {
+    title: "Firmám dochází peníze",
+    text: "Peníze nestačí na provozní náklady. Prodej kus, propusť zaměstnance nebo sniž výrobu, jinak zkrachuje nejhorší firma.",
+    left: "Zbývá {t} na záchranu",
+    bankrupt: "Firma {c} zkrachovala. Zanikla i se zaměstnanci a zásobami.",
   },
   phase: {
     names: ["Garáž", "Dílna", "Malý sklad", "Prodejna", "Pobočka", "Velká pobočka", "Výrobní hala", "Logistické centrum", "Fabrika", "Velká fabrika", "Zahraniční závod", "Sídlo holdingu"],
@@ -757,6 +769,12 @@ const en: EconomyText = {
     rivalShield: "The campaign partly protects against the competitor.",
     rivalNone: "No competitor is threatening you right now.",
   },
+  distress: {
+    title: "Your companies are running out of money",
+    text: "Cash does not cover running costs. Sell a unit, let staff go or cut production, or the worst company goes bankrupt.",
+    left: "{t} left to save it",
+    bankrupt: "{c} went bankrupt. It closed with its staff and stock.",
+  },
   phase: {
     names: ["Garage", "Workshop", "Small warehouse", "Shop", "Branch", "Large branch", "Production hall", "Logistics centre", "Factory", "Large factory", "Foreign plant", "Holding HQ"],
     title: "Company phase",
@@ -1064,6 +1082,12 @@ const de: EconomyText = {
     rivalShield: "Die Kampagne schützt teilweise vor dem Konkurrenten.",
     rivalNone: "Gerade bedroht dich kein Konkurrent.",
   },
+  distress: {
+    title: "Den Firmen geht das Geld aus",
+    text: "Das Geld reicht nicht für die laufenden Kosten. Verkaufe eine Einheit, entlass Personal oder senke die Produktion, sonst geht die schlechteste Firma pleite.",
+    left: "Noch {t} zur Rettung",
+    bankrupt: "{c} ist pleite. Sie wurde mit Personal und Lager geschlossen.",
+  },
   phase: {
     names: ["Garage", "Werkstatt", "Kleinlager", "Laden", "Filiale", "Große Filiale", "Produktionshalle", "Logistikzentrum", "Fabrik", "Große Fabrik", "Auslandswerk", "Holding-Zentrale"],
     title: "Firmenstufe",
@@ -1370,6 +1394,12 @@ const ru: EconomyText = {
     rivalNow: "Конкурент сейчас переманивает клиентов в этой отрасли (−20 %).",
     rivalShield: "Кампания частично защищает от конкурента.",
     rivalNone: "Сейчас тебе никто не угрожает.",
+  },
+  distress: {
+    title: "У компаний заканчиваются деньги",
+    text: "Денег не хватает на текущие расходы. Продай единицу, уволь сотрудников или сократи производство, иначе худшая компания обанкротится.",
+    left: "Осталось {t}, чтобы спасти",
+    bankrupt: "{c} обанкротилась. Закрылась вместе с сотрудниками и запасами.",
   },
   phase: {
     names: ["Гараж", "Мастерская", "Малый склад", "Магазин", "Филиал", "Большой филиал", "Производственный цех", "Логистический центр", "Фабрика", "Большая фабрика", "Зарубежный завод", "Штаб-квартира холдинга"],
