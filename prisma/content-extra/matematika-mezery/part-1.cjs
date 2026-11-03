@@ -1,0 +1,32 @@
+// Doplňující otázky (ke kurzům Matematika – mezery, logické úlohy). Řádek: [obtížnost 1-5, otázka, správná, [3 špatné], vysvětlení]
+module.exports = {
+  extra: {
+    "mat-logicke-ulohy": [
+      [1, "Doplň číselnou řadu: 10, 20, 30, 40, ?", "50", ["45", "60", "35"], "Přičítáme 10."],
+      [1, "Které číslo nepatří mezi ostatní: 3, 5, 9, 11, 13?", "9", ["3", "5", "11"], "Všechna ostatní jsou prvočísla, 9 = 3 · 3."],
+      [1, "Doplň číselnou řadu: 7, 14, 21, 28, ?", "35", ["30", "42", "49"], "Přičítáme 7."],
+      [1, "Jaký tvar bude další: kruh, čtverec, kruh, čtverec, ?", "kruh", ["čtverec", "trojúhelník", "hvězda"], "Tvary se střídají."],
+      [1, "Kolik nohou mají dohromady 2 psi a 1 kočka?", "12", ["8", "10", "6"], "2 · 4 + 4 = 12."],
+      [2, "Doplň číselnou řadu: 2, 5, 8, 11, ?", "14", ["13", "15", "16"], "Přičítáme 3."],
+      [2, "Doplň číselnou řadu: 81, 27, 9, 3, ?", "1", ["0", "2", "6"], "Dělíme třemi."],
+      [2, "Anna má 15 bonbónů. Dala 6 kamarádce a 4 bratrovi. Kolik jich má?", "5", ["9", "11", "4"], "15 − 6 − 4 = 5."],
+      [2, "Kolik stran mají dohromady šestiúhelník a osmiúhelník?", "14", ["12", "13", "16"], "6 + 8 = 14."],
+      [2, "Dnes je pondělí. Jaký den bylo před čtyřmi dny?", "čtvrtek", ["pátek", "středa", "neděle"], "Pondělí − 1 = neděle, − 2 = sobota, − 3 = pátek, − 4 = čtvrtek."],
+      [3, "Doplň číselnou řadu: 1, 3, 6, 10, 15, ?", "21", ["20", "18", "24"], "Rozdíly rostou: 2, 3, 4, 5, 6."],
+      [3, "Doplň číselnou řadu: 1, 2, 6, 24, ?", "120", ["48", "96", "72"], "Násobíme 2, 3, 4, 5."],
+      [3, "Kolik různých dvojciferných čísel sestavíš z číslic 1 a 2, když se nesmí opakovat?", "2", ["1", "3", "4"], "Jsou to 12 a 21."],
+      [3, "Kolik minut je 3 hodiny?", "180", ["150", "120", "200"], "3 · 60 = 180."],
+      [3, "V krabici je 12 zelených a 8 modrých míčků. Kolik je jich dohromady?", "20", ["4", "18", "22"], "12 + 8 = 20."],
+      [4, "Doplň číselnou řadu: 2, 3, 5, 9, 17, ?", "33", ["27", "31", "35"], "Rozdíly jsou 1, 2, 4, 8, 16, další je 32; 17 + 16 = 33."],
+      [4, "Pavel je dvakrát starší než Jana. Dohromady jsou staří 24 let. Kolik je Janě?", "8", ["12", "16", "6"], "Jana x, Pavel 2x, 3x = 24 → x = 8."],
+      [4, "Kolik je 20 − 4 · 3 + 8 : 4?", "10", ["8", "12", "14"], "20 − 12 + 2 = 10."],
+      [4, "Kolik čtverců je na šachovnici 3 × 3 (všech velikostí)?", "14", ["9", "12", "16"], "9 + 4 + 1 = 14."],
+      [4, "Autobus jede 45 minut rychlostí 60 km/h. Jak dlouhá je trasa?", "45 km", ["60 km", "30 km", "75 km"], "60 · 0,75 = 45 km."],
+      [5, "Kolik různých dvojic lze vybrat ze čtyř lidí?", "6", ["4", "8", "12"], "C(4, 2) = 6."],
+      [5, "Kolik je 2⁵ − 3³ + 4²?", "21", ["15", "11", "25"], "32 − 27 + 16 = 21."],
+      [5, "Součet čtyř po sobě jdoucích čísel je 58. Které je nejmenší?", "13", ["12", "14", "15"], "4x + 6 = 58 → x = 13."],
+      [5, "Kolik nejméně ponožek musíš vytáhnout z šuplíku se 4 černými a 4 bílými, aby byl jistě pár stejné barvy?", "3", ["2", "4", "8"], "Dvě barvy, takže třetí ponožka musí tvořit pár."],
+      [5, "Kolik různých pořadí lze vytvořit z 3 knih?", "6", ["3", "9", "12"], "3 · 2 · 1 = 6."],
+    ],
+  },
+};

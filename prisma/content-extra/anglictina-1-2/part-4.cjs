@@ -1,0 +1,32 @@
+// Doplňující otázky (ke kurzům Angličtina 1.–2. třída, 4. část). Řádek: [obtížnost 1-5, otázka, správná, [3 špatné], vysvětlení]
+module.exports = {
+  extra: {
+    "aj-1-hello": [
+      [1, "Co znamená \"hi\"?", "ahoj", ["sbohem", "prosím", "děkuji"], "Hi je ahoj."],
+      [1, "Co znamená \"bye\"?", "čau / ahoj na rozloučenou", ["dobrý den", "promiň", "dobrou noc"], "Bye je čau na rozloučenou."],
+      [1, "Co znamená \"thanks\"?", "díky", ["prosím", "ahoj", "promiň"], "Thanks je díky."],
+      [1, "Co znamená \"sorry\"?", "promiň / omlouvám se", ["děkuji", "ahoj", "dobrou noc"], "Sorry je promiň."],
+      [1, "Co znamená \"please\"?", "prosím", ["děkuji", "ahoj", "ano"], "Please je prosím."],
+      [2, "Jak se anglicky řekne dobré odpoledne?", "good afternoon", ["good evening", "good morning", "good night"], "Good afternoon je dobré odpoledne."],
+      [2, "Jak se anglicky řekne dobrý večer?", "good evening", ["good night", "good morning", "good afternoon"], "Good evening je dobrý večer."],
+      [2, "Jak se anglicky řekne ahoj (neformálně)?", "hello", ["goodbye", "thanks", "please"], "Hello je ahoj."],
+      [2, "Jak se anglicky řekne na shledanou?", "goodbye", ["hello", "please", "sorry"], "Goodbye je na shledanou."],
+      [2, "Co znamená \"no\"?", "ne", ["ano", "prosím", "promiň"], "No je ne."],
+      [3, "Jak se anglicky řekne Jak se máš? (neformálně)?", "How are you?", ["What is you?", "Where are you?", "Who are you?"], "How are you? = Jak se máš?"],
+      [3, "Jak odpovíš na \"How are you?\" dobře?", "I'm fine, thanks.", ["I'm pen, thanks.", "I'm yes, thanks.", "I'm sorry, no."], "I'm fine, thanks = Mám se dobře, díky."],
+      [3, "Jak se anglicky řekne \"Nashledanou zítra\"?", "See you tomorrow.", ["See you yesterday.", "Hello tomorrow.", "Sorry tomorrow."], "See you tomorrow = Uvidíme se zítra."],
+      [3, "Jak se anglicky řekne \"Prosím\" jako odpověď na díky?", "You're welcome.", ["I'm welcome.", "Thanks you.", "Sorry welcome."], "You're welcome = Prosím (není zač)."],
+      [3, "Jak se anglicky řekne \"Dobrou noc\"?", "good night", ["good morning", "good day", "good evening"], "Good night je dobrou noc."],
+      [4, "Co řekneš, když ti někdo něco dá? (What do you say when someone gives you something?)", "Thank you.", ["Sorry.", "Goodbye.", "Good night."], "Když někdo něco dá, řekneme Thank you."],
+      [4, "Co řekneš, když někomu šlápneš na nohu? (What do you say when you step on someone's foot?)", "Sorry!", ["Hello!", "Thank you!", "Yes!"], "Sorry je omluva."],
+      [4, "Co řekneš, když něco chceš? (What do you say when you want something?)", "Please.", ["Goodbye.", "Sorry.", "Good night."], "Please je prosím při prosbě."],
+      [4, "Co řekneš, když přijdeš do třídy ráno? (What do you say when you come into class in the morning?)", "Good morning!", ["Good night!", "Goodbye!", "Sorry!"], "Ráno říkáme Good morning."],
+      [4, "Co řekneš učiteli na konci hodiny? (What do you say to the teacher at the end of the lesson?)", "Goodbye!", ["Hello!", "Please!", "Sorry!"], "Na konci hodiny se loučíme Goodbye."],
+      [5, "Co znamená \"Nice to meet you\"?", "Rád tě poznávám", ["Rád tě vidím znovu", "Je mi líto", "Mám tě rád"], "Nice to meet you = Rád tě poznávám."],
+      [5, "Co znamená \"How do you do?\"", "Těší mě (formální pozdrav)", ["Jak to děláš?", "Co děláš?", "Kolik to stojí?"], "How do you do je formální pozdrav."],
+      [5, "Co znamená \"See you later\"?", "Uvidíme se později", ["Uvidíme se včera", "Už tě nikdy neuvidím", "Dobrou noc"], "See you later = uvidíme se později."],
+      [5, "Co znamená \"Good luck!\"?", "Hodně štěstí!", ["Dobrou noc!", "Promiň!", "Na shledanou!"], "Good luck je hodně štěstí."],
+      [5, "Co znamená \"Excuse me\", když chceš projít?", "Promiňte, prosím", ["Děkuji, prosím", "Dobrý večer, prosím", "Ahoj, prosím"], "Excuse me je promiňte."],
+    ],
+  },
+};

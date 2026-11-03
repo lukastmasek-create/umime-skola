@@ -9,6 +9,7 @@ const fs = require("fs");
 const path = require("path");
 
 const contentDir = path.join(__dirname, "content");
+const extraDir = path.join(__dirname, "content-extra");
 const outDir = path.join(__dirname, "sql");
 fs.mkdirSync(outDir, { recursive: true });
 
@@ -44,8 +45,22 @@ for (const file of files) {
   const questionRows = [];
   let subjectQuestions = 0;
 
+  // Doplňující otázky ke kurzům: prisma/content-extra/<název souboru bez .cjs>/*.cjs,
+  // každý soubor exportuje { extra: { slug: [ [obtížnost, ...], ... ] } }
+  const extraSubdir = path.join(extraDir, file.replace(/\.cjs$/, ""));
+  const extra = {};
+  if (fs.existsSync(extraSubdir)) {
+    for (const part of fs.readdirSync(extraSubdir).filter((f) => f.endsWith(".cjs")).sort()) {
+      Object.assign(extra, require(path.join(extraSubdir, part)).extra || {});
+    }
+  }
+  for (const slug of Object.keys(extra)) {
+    if (!data.courses.some((c) => c.slug === slug)) problems.push(`${file} (content-extra): kurz ${slug} neexistuje`);
+  }
+
   for (const course of data.courses) {
     const where = `${file} / ${course.slug}`;
+    course.qs = [...course.qs, ...(extra[course.slug] || [])];
     if (seenSlugs.has(course.slug)) problems.push(`${where}: duplicitní slug`);
     if (!/^[a-z0-9-]+$/.test(course.slug)) problems.push(`${where}: slug smí obsahovat jen a-z, 0-9 a pomlčky`);
     seenSlugs.add(course.slug);

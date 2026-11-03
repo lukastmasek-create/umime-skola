@@ -1,0 +1,32 @@
+// Doplňující otázky (ke kurzům Přírodopis – 1. až 6. třída, 3. část). Řádek: [obtížnost 1-5, otázka, správná, [3 špatné], vysvětlení]
+module.exports = {
+  extra: {
+    "prir-ekosystem-ochrana": [
+      [1, "Do které popelnice patří nápojové kartony?", "do žluté", ["do modré", "do zelené", "do hnědé"], "Kartony se třídí do žluté popelnice."],
+      [1, "Do které popelnice patří bioodpad?", "do hnědé", ["do modré", "do žluté", "do zelené"], "Bioodpad patří do hnědé popelnice."],
+      [1, "Do které popelnice patří kovové obaly?", "do žluté", ["do modré", "do zelené", "do černé"], "Kovové obaly patří do žluté."],
+      [1, "Co uděláme s nepotřebnými léky?", "odneseme je do lékárny", ["vyhodíme do popelnice", "spálíme doma", "zakopeme na zahradě"], "Léky se vrací do lékárny."],
+      [1, "Co je to kompost?", "rozložený bioodpad využitelný jako hnojivo", ["spálený odpad", "plast", "kámen"], "Kompost je hnojivo."],
+      [2, "Které pohoří je domovem Krkonošského národního parku?", "Krkonoše", ["Šumava", "Beskydy", "Jeseníky"], "KRNAP leží v Krkonoších."],
+      [2, "Jaký je hlavní cíl chráněné krajinné oblasti?", "chránit krajinu i s lidskou činností", ["zakázat veškerý pohyb", "zavést těžbu", "stavět silnice"], "CHKO kombinuje ochranu a hospodaření."],
+      [2, "Kdo vyhlašuje národní park?", "stát (ministerstvo)", ["obec", "hasiči", "turisté"], "Národní parky vyhlašuje stát."],
+      [2, "Co je to přírodní památka?", "malé chráněné území s jedním prvkem přírody", ["velké chráněné území", "zákaz vstupu do měst", "zoologická zahrada"], "Přírodní památka chrání malé území."],
+      [2, "Co je to Natura 2000?", "evropská soustava chráněných území", ["česká mapa turistů", "světová organizace", "kniha druhů"], "Natura 2000 je evropská síť."],
+      [3, "Který plyn přispívá ke skleníkovému efektu a vzniká v zemědělství?", "metan", ["kyslík", "dusík", "helium"], "Metan je silný skleníkový plyn."],
+      [3, "Které látky z průmyslu způsobují kyselé deště?", "oxidy síry a dusíku", ["kyslík a vodík", "helium a argon", "uhlík a křemík"], "Oxidy síry a dusíku tvoří kyseliny."],
+      [3, "Co je to ozónová vrstva?", "vrstva v atmosféře chránící před UV zářením", ["vrstva v půdě", "vrstva vody", "vrstva v kůře"], "Ozón pohlcuje UV záření."],
+      [3, "Co je to recyklace papíru?", "výroba nového papíru z použitého", ["spalování papíru", "skládkování papíru", "zakopání papíru"], "Recyklace šetří stromy."],
+      [3, "Co je to rozklad odpadu?", "přeměna organického odpadu mikroorganismy", ["zvětšení objemu", "ztráta vody", "vznik kovu"], "Mikroby rozkládají organický odpad."],
+      [4, "Který typ odpadu se nesmí spalovat bez úpravy?", "baterie", ["papír", "plast", "sklo"], "Baterie obsahují těžké kovy."],
+      [4, "Co je to biodiverzitní hotspot?", "oblast s velkou rozmanitostí a ohrožením druhů", ["oblast bez druhů", "pouštní zóna", "polární oblast"], "Hotspot je rozmanitá a ohrožená oblast."],
+      [4, "Co je to ekologická stopa?", "míra vlivu člověka na přírodu", ["počet stop v lese", "cesta zvěře", "stopa na sněhu"], "Ekologická stopa měří dopad."],
+      [4, "Která rostlina je v ČR známa jako invazní druh?", "křídlatka japonská", ["kopřiva", "bříza", "jetel"], "Křídlatka se šíří a vytlačuje původní druhy."],
+      [4, "Proč jsou mokřady důležité?", "ukládají vodu a jsou domovem mnoha druhů", ["slouží jako skládky", "zvyšují sucho", "jsou vhodné pro stavbu silnic"], "Mokřady zadržují vodu."],
+      [5, "Co znamená pojem udržitelný rozvoj?", "rozvoj, který nezhorší podmínky budoucích generací", ["rychlý růst bez ohledu na přírodu", "zákaz výroby", "zastavení růstu"], "Udržitelný rozvoj chrání budoucnost."],
+      [5, "Co je to bioremediace?", "čištění prostředí pomocí organismů", ["čištění vzduchu filtrem", "těžba nerostů", "stavba hrází"], "Bioremediace využívá mikroby a rostliny."],
+      [5, "Co je to smog?", "znečištěný vzduch zahalený mlhou a kouřem", ["mlha z oceánu", "bílý sníh", "dým z ohně"], "Smog je znečištěný vzduch."],
+      [5, "Co je to fosilní palivo?", "palivo vzniklé z dávných organismů", ["dřevo", "bioplyn", "sluneční energie"], "Uhlí, ropa a plyn jsou fosilní paliva."],
+      [5, "Co je to ekosystémová služba?", "přínos přírody pro člověka, např. čistá voda", ["služba v restauraci", "dopravní služba", "poštovní služba"], "Příroda poskytuje služby lidem."],
+    ],
+  },
+};
