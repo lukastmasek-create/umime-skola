@@ -8,6 +8,7 @@ import {
   activate,
   activeTotal,
   buy,
+  buyCash,
   craft,
   recipeDef,
   refine,
@@ -16,6 +17,7 @@ import {
   type CraftState,
 } from "@/lib/craft";
 import { CraftConflict, loadCraft, saveCraft } from "@/lib/craft-server";
+import { EconomyConflict, loadEconomy, saveEconomy } from "@/lib/idle/economy-server";
 import { CHALLENGE_GAME, CH_GAMES, MAX_SHIELDS, normalizeChallenge } from "@/lib/idle/challenge";
 import { WHEEL_SPIN_COOLDOWN_MS } from "@/lib/wheel";
 
@@ -157,6 +159,18 @@ export async function POST(request: Request) {
         if (res.count === 0) throw new ActionError("points");
         await tx.pointTransaction.create({ data: { userId, amount: -r.price, reason: "Craftování: nákup materiálu" } });
         points -= r.price;
+        done = { kind: "bought" };
+      } else if (action === "buyCash") {
+        // Peníze jsou v Ekonomice (jiný záznam), proto se oba zápisy dělají v jedné transakci.
+        const eco = await loadEconomy(tx, userId, now);
+        if (!eco) throw new ActionError("no-character");
+        const r = buyCash(state, id, typeof body.count === "number" ? body.count : 1, eco.state.cash, now);
+        if (!r.ok) throw new ActionError(r.error);
+        await saveEconomy(tx, eco, { ...eco.state, cash: eco.state.cash - r.price }).catch((e) => {
+          if (e instanceof EconomyConflict) throw new ActionError("conflict");
+          throw e;
+        });
+        state = r.state;
         done = { kind: "bought" };
       } else if (action === "focus") {
         const r = setFocus(state, body.world);

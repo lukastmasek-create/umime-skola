@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { ECONOMY_GAME, learningFor } from "@/lib/idle/economy-server";
 import {
   arbitrage,
   arbitrageLimit,
@@ -20,9 +21,9 @@ import {
   emptyState,
   fundResponse,
   gameNow,
+  exchangePoints,
   hireStaff,
   investEdu,
-  learningBonusFromXp,
   netWorth,
   normalizeState,
   quitJob,
@@ -54,16 +55,10 @@ import {
   type EconomyState,
 } from "@/lib/idle/economy";
 
-const GAME = "ekonomika";
-const DAY_MS = 24 * 60 * 60 * 1000;
+const GAME = ECONOMY_GAME;
 
 class Conflict extends Error {}
 class NotEnoughPoints extends Error {}
-
-async function learningFor(userId: string, now: number): Promise<number> {
-  const sum = await prisma.xpEvent.aggregate({ where: { userId, createdAt: { gte: new Date(now - DAY_MS) } }, _sum: { amount: true } });
-  return learningBonusFromXp(sum._sum.amount ?? 0);
-}
 
 function payload(state: EconomyState, points: number, learning: number, now: number) {
   const rate = rates(state, now, learning);
@@ -86,6 +81,7 @@ function payload(state: EconomyState, points: number, learning: number, now: num
 
 type Body = {
   action?: unknown;
+  direction?: unknown;
   id?: unknown;
   amount?: unknown;
   share?: unknown;
@@ -107,8 +103,10 @@ type Body = {
   price?: unknown;
 };
 
-function applyAction(state: EconomyState, body: Body, now: number, learning: number): ActionResult {
+function applyAction(state: EconomyState, body: Body, now: number, learning: number, points: number): ActionResult {
   switch (body.action) {
+    case "exchange":
+      return exchangePoints(state, body.direction, body.amount, points, now);
     case "startShift":
       return startShift(state, now);
     case "chooseShift":
@@ -188,7 +186,7 @@ export async function GET() {
     const [row, user, learning] = await Promise.all([
       prisma.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } }),
       prisma.user.findUnique({ where: { id: userId }, select: { points: true } }),
-      learningFor(userId, real),
+      learningFor(prisma, userId, real),
     ]);
     const base = row ? normalizeState(row.data, real) : emptyState(real);
     // Herní čas podle rychlosti hráče; reálný čas jen pro kotvu a pro XP za den.
@@ -215,7 +213,7 @@ export async function POST(request: Request) {
 
   try {
     const real = Date.now();
-    const learning = await learningFor(userId, real);
+    const learning = await learningFor(prisma, userId, real);
 
     const result = await prisma.$transaction(
       async (tx) => {
@@ -226,13 +224,25 @@ export async function POST(request: Request) {
         const base = row ? normalizeState(row.data, real) : emptyState(real);
         const now = gameNow(base, real);
         const current = settle(base, now, learning);
-        const outcome = body.action === "setSpeed" ? setSpeed(current, body.value, real) : applyAction(current, body, now, learning);
+        const outcome = body.action === "setSpeed" ? setSpeed(current, body.value, real) : applyAction(current, body, now, learning, points);
         if (!outcome.ok) return { outcome, points, now };
 
         const cost = outcome.pointsSpent ?? 0;
         if (cost > 0) {
           const spent = await tx.user.updateMany({ where: { id: userId, points: { gte: cost } }, data: { points: { decrement: cost } } });
           if (spent.count === 0) throw new NotEnoughPoints();
+        }
+
+        // Směna bodů: odečtení jen když hráč pořád má dost (souběžné okno), přičtení se zapíše do historie bodů.
+        const change = outcome.pointsChange;
+        if (change) {
+          if (change.amount < 0) {
+            const spent = await tx.user.updateMany({ where: { id: userId, points: { gte: -change.amount } }, data: { points: { decrement: -change.amount } } });
+            if (spent.count === 0) throw new NotEnoughPoints();
+          } else {
+            await tx.user.update({ where: { id: userId }, data: { points: { increment: change.amount } } });
+          }
+          await tx.pointTransaction.create({ data: { userId, amount: change.amount, reason: change.reason } });
         }
 
         const data = { ...outcome.state, lastSeen: now } as unknown as Prisma.InputJsonValue;
@@ -242,7 +252,7 @@ export async function POST(request: Request) {
         } else {
           await tx.idleState.create({ data: { userId, game: GAME, data } });
         }
-        return { outcome, points: points - cost, now };
+        return { outcome, points: points - cost + (change?.amount ?? 0), now };
       },
       { maxWait: 10_000, timeout: 20_000 },
     );

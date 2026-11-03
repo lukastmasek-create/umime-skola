@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { BUY_PER_DAY, BUY_PRICE, MATERIALS } from "@/lib/craft";
+import { BUY_PER_DAY, BUY_PRICE, CASH_PRICE, MATERIALS } from "@/lib/craft";
 import { LIMITED_ITEMS } from "@/lib/limited";
 import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
@@ -95,14 +95,14 @@ export function MaterialShop({ locale, loggedIn }: { locale: Locale; loggedIn: b
       .catch(() => {});
   }, [loggedIn]);
 
-  async function buy(id: string) {
+  async function buy(id: string, cash = false) {
     setBusy(true);
     setMsg(null);
     try {
-      const res = await fetch("/api/craft", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "buy", id, count: 1 }) });
+      const res = await fetch("/api/craft", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: cash ? "buyCash" : "buy", id, count: 1 }) });
       const data = await res.json();
       if (!res.ok) {
-        setMsg(data.error === "points" ? "Nemáš dost bodů." : data.error === "limit" ? "Dnešní limit nákupu je vyčerpaný." : "Nákup se nepovedl.");
+        setMsg(data.error === "points" ? "Nemáš dost bodů." : data.error === "not-enough-cash" ? "Nemáš dost peněz v Ekonomice." : data.error === "limit" ? "Dnešní limit nákupu je vyčerpaný." : "Nákup se nepovedl.");
       } else {
         setView(data);
         notifyAccountChanged();
@@ -116,7 +116,7 @@ export function MaterialShop({ locale, loggedIn }: { locale: Locale; loggedIn: b
   const forSale = MATERIALS.filter((m) => BUY_PRICE[m.rarity]);
   return (
     <div>
-      <p className="mb-1 text-sm text-[var(--muted)]">Běžné a neobvyklé materiály koupíš za body. Vzácnější se dají získat jen učením nebo zušlechtěním.</p>
+      <p className="mb-1 text-sm text-[var(--muted)]">Běžné a neobvyklé materiály koupíš za body, nebo za peníze z Ekonomiky. Vzácnější se dají získat jen učením nebo zušlechtěním.</p>
       <p className="mb-5 text-xs text-[var(--faint)]">
         Denní limit: {BUY_PER_DAY} kusů{view?.buyLeft !== undefined ? ` (zbývá ${view.buyLeft})` : ""}
         {view?.points !== undefined ? ` · Tvoje body: ${view.points}` : ""}
@@ -144,6 +144,15 @@ export function MaterialShop({ locale, loggedIn }: { locale: Locale; loggedIn: b
             >
               Koupit za {BUY_PRICE[m.rarity]}
             </button>
+            {CASH_PRICE[m.rarity] && (
+              <button
+                onClick={() => buy(m.id, true)}
+                disabled={!loggedIn || busy || view?.buyLeft === 0}
+                className="btn-bouncy w-full rounded-full border-2 border-[var(--brand-500)] px-3 py-1.5 text-xs font-semibold text-[var(--brand-600)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Koupit za {CASH_PRICE[m.rarity]} z Ekonomiky
+              </button>
+            )}
           </div>
         ))}
       </div>

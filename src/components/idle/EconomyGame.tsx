@@ -45,6 +45,8 @@ import {
   type CountryId,
   type EraId,
   type FamilyId,
+  POINT_BUY_CASH,
+  POINT_SELL_CASH,
 } from "@/lib/idle/economy";
 import { CompanyTab, fill, formatLeft, type Payload } from "./CompanyPanel";
 import { HustleTab } from "./HustleTab";
@@ -138,6 +140,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
   const [board, setBoard] = useState<Board | null>(null);
+  const [xAmount, setXAmount] = useState(10);
   const [form, setForm] = useState<{ name: string; country: CountryId; city: CityId; era: EraId; family: FamilyId }>({
     name: "",
     country: "cz",
@@ -216,7 +219,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
         setView({ data, receivedAt: Date.now() });
         setNowMs(Date.now());
         if (okText) say(okText(data), true);
-        if (body.action === "investEdu") notifyAccountChanged();
+        if (body.action === "investEdu" || body.action === "exchange") notifyAccountChanged();
       } catch {
         say(t.errors.generic);
       } finally {
@@ -668,6 +671,49 @@ export function EconomyGame({ locale }: { locale: Locale }) {
               >
                 {state.edu >= MAX_EDU ? t.educationMax : fill(t.educationBuy, { n: state.edu + 1, p: data.eduCost })}
               </button>
+
+              <div className="mt-2 flex flex-col gap-3 border-t-2 border-[var(--border-soft)] pt-4">
+                <h3 className="font-bold">💱 {t.exchange.title}</h3>
+                <p className="text-sm text-[var(--muted)]">{t.exchange.hint}</p>
+                <label className="flex items-center gap-2 text-sm font-bold">
+                  {t.exchange.amount}
+                  <input
+                    type="number"
+                    min={1}
+                    max={10000}
+                    value={xAmount}
+                    onChange={(e) => setXAmount(Number(e.target.value))}
+                    className="w-28 rounded-md border-2 border-[var(--edge)] bg-[var(--surface)] px-2 py-1"
+                  />
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    disabled={busy || !(xAmount >= 1) || data.points < Math.floor(xAmount)}
+                    onClick={() => {
+                      const n = Math.floor(xAmount);
+                      void act({ action: "exchange", direction: "sell", amount: n }, () => fill(t.exchange.sold, { n }));
+                    }}
+                    className="btn-bouncy bg-[var(--accent-green)] px-4 py-2 text-sm font-bold text-[#16132b] disabled:opacity-45"
+                  >
+                    {t.exchange.sell}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy || !(xAmount >= 1) || state.cash < Math.floor(xAmount) * POINT_BUY_CASH}
+                    onClick={() => {
+                      const n = Math.floor(xAmount);
+                      void act({ action: "exchange", direction: "buy", amount: n }, () => fill(t.exchange.bought, { n }));
+                    }}
+                    className="btn-bouncy bg-[var(--accent-yellow)] px-4 py-2 text-sm font-bold text-[#16132b] disabled:opacity-45"
+                  >
+                    {t.exchange.buy}
+                  </button>
+                </div>
+                <p className="text-xs text-[var(--muted)]">
+                  {fill(t.exchange.sellRate, { p: m(POINT_SELL_CASH) })} · {fill(t.exchange.buyRate, { p: m(POINT_BUY_CASH) })}
+                </p>
+              </div>
             </div>
           )}
         </section>

@@ -38,6 +38,7 @@ export type CraftText = {
   buyHint: string;
   buyLeft: string;
   buyFor: string;
+  buyCashFor: string;
   refineTitle: string;
   refineHint: string;
   refineAction: string;
@@ -58,7 +59,7 @@ export type CraftText = {
     refined: string;
     focus: string;
   };
-  errors: Record<"unknown" | "not-ready" | "missing" | "owned" | "limit" | "cap" | "none" | "points" | "conflict" | "unavailable" | "wheel-ready" | "shield-full", string>;
+  errors: Record<"unknown" | "not-ready" | "missing" | "owned" | "limit" | "cap" | "none" | "points" | "not-enough-cash" | "conflict" | "unavailable" | "wheel-ready" | "shield-full", string>;
   hintCraft: string;
 };
 
@@ -109,6 +110,7 @@ const cs: CraftText = {
   buyHint: "Vzácné a epické materiály koupit nejdou, ty se dají jen vysloužit nebo zušlechtit.",
   buyLeft: "Dnes můžeš koupit ještě {n} ks.",
   buyFor: "Koupit za {n} b.",
+  buyCashFor: "Koupit za {n} z Ekonomiky",
   refineTitle: "Zušlechtit",
   refineHint: "3 × materiál → 1 × vyšší vzácnost stejného světa.",
   refineAction: "3 → 1",
@@ -139,6 +141,7 @@ const cs: CraftText = {
     none: "Tenhle bonus v inventáři nemáš.",
     points: "Nemáš dost bodů.",
     conflict: "Změnilo se to v jiném okně, zkus to znovu.",
+    "not-enough-cash": "Nemáš dost peněz v Ekonomice.",
     unavailable: "Něco se nepovedlo, zkus to za chvíli.",
     "wheel-ready": "Kolo štěstí můžeš roztočit i bez žetonu, nech si ho na později.",
     "shield-full": "Štíty v kvízech máš plné, nech si ho na později.",
@@ -193,6 +196,7 @@ const en: CraftText = {
   buyHint: "Rare and epic materials can't be bought, only earned or refined.",
   buyLeft: "You can buy {n} more today.",
   buyFor: "Buy for {n} pts",
+  buyCashFor: "Buy for {n} from Economy",
   refineTitle: "Refine",
   refineHint: "3 × material → 1 × next rarity of the same world.",
   refineAction: "3 → 1",
@@ -223,6 +227,7 @@ const en: CraftText = {
     none: "You don't have this bonus in your inventory.",
     points: "You don't have enough points.",
     conflict: "It changed in another window, try again.",
+    "not-enough-cash": "You don't have enough money in Economy.",
     unavailable: "Something went wrong, try again in a moment.",
     "wheel-ready": "You can spin the wheel without a token, save it for later.",
     "shield-full": "Your quiz shields are full, save it for later.",
@@ -277,6 +282,7 @@ const de: CraftText = {
   buyHint: "Seltene und epische Materialien kann man nicht kaufen, nur verdienen oder veredeln.",
   buyLeft: "Heute kannst du noch {n} Stück kaufen.",
   buyFor: "Für {n} P. kaufen",
+  buyCashFor: "Für {n} aus der Ökonomie kaufen",
   refineTitle: "Veredeln",
   refineHint: "3 × Material → 1 × nächste Seltenheit derselben Welt.",
   refineAction: "3 → 1",
@@ -307,6 +313,7 @@ const de: CraftText = {
     none: "Diesen Bonus hast du nicht im Inventar.",
     points: "Du hast nicht genug Punkte.",
     conflict: "Es hat sich in einem anderen Fenster geändert, versuch es noch einmal.",
+    "not-enough-cash": "Du hast nicht genug Geld in der Ökonomie.",
     unavailable: "Etwas ist schiefgelaufen, versuch es gleich noch einmal.",
     "wheel-ready": "Du kannst das Rad auch ohne Chip drehen, heb ihn dir auf.",
     "shield-full": "Deine Quiz-Schilde sind voll, heb ihn dir auf.",
@@ -361,6 +368,7 @@ const ru: CraftText = {
   buyHint: "Редкие и эпические материалы купить нельзя, их можно только заработать или улучшить.",
   buyLeft: "Сегодня можно купить ещё {n} шт.",
   buyFor: "Купить за {n} б.",
+  buyCashFor: "Купить за {n} из экономики",
   refineTitle: "Улучшить",
   refineHint: "3 × материал → 1 × следующая редкость того же мира.",
   refineAction: "3 → 1",
@@ -391,6 +399,7 @@ const ru: CraftText = {
     none: "Этого бонуса нет в инвентаре.",
     points: "Не хватает баллов.",
     conflict: "Что-то изменилось в другом окне, попробуй ещё раз.",
+    "not-enough-cash": "Не хватает денег в экономике.",
     unavailable: "Что-то пошло не так, попробуй чуть позже.",
     "wheel-ready": "Колесо можно крутить и без жетона, прибереги его.",
     "shield-full": "Щиты в викторинах заполнены, прибереги его.",

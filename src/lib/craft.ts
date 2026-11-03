@@ -418,7 +418,7 @@ export function applyEvents(state: CraftState, xp: XpEventLite[], quests: XpEven
 
 // --- akce ---
 
-export type CraftError = "unknown" | "not-ready" | "missing" | "owned" | "limit" | "cap" | "none" | "points";
+export type CraftError = "unknown" | "not-ready" | "missing" | "owned" | "limit" | "cap" | "none" | "points" | "not-enough-cash";
 export type ActionResult<T = object> = ({ ok: true; state: CraftState } & T) | { ok: false; error: CraftError };
 
 export const canAfford = (state: CraftState, cost: Recipe["cost"]) => Object.entries(cost).every(([id, c]) => (state.mats[id] ?? 0) >= (c ?? 0));
@@ -495,6 +495,23 @@ export function buy(state: CraftState, materialId: string, count: number, points
   if (bought.count + c > BUY_PER_DAY) return { ok: false, error: "limit" };
   const price = unit * c;
   if (points < price) return { ok: false, error: "points" };
+  const mats = { ...state.mats, [materialId]: Math.min(MAX_STACK, (state.mats[materialId] ?? 0) + c) };
+  return { ok: true, state: { ...state, mats, bought: { day: bought.day, count: bought.count + c } }, price };
+}
+
+// Nákup za peníze z Ekonomiky: běžné a neobvyklé materiály. Cena = cena za body × 10 000 (kurz prodeje bodů).
+// Denní limit je společný s nákupem za body.
+export const CASH_PRICE: Partial<Record<Rarity, number>> = { common: 150_000, uncommon: 400_000 };
+
+export function buyCash(state: CraftState, materialId: string, count: number, cash: number, now: number): ActionResult<{ price: number }> {
+  const def = materialDef(materialId);
+  const unit = def ? CASH_PRICE[def.rarity] : undefined;
+  if (!def || !unit) return { ok: false, error: "unknown" };
+  const c = Math.max(1, Math.min(BUY_PER_DAY, Math.floor(count)));
+  const bought = state.bought.day === dayKey(now) ? state.bought : { day: dayKey(now), count: 0 };
+  if (bought.count + c > BUY_PER_DAY) return { ok: false, error: "limit" };
+  const price = unit * c;
+  if (cash < price) return { ok: false, error: "not-enough-cash" };
   const mats = { ...state.mats, [materialId]: Math.min(MAX_STACK, (state.mats[materialId] ?? 0) + c) };
   return { ok: true, state: { ...state, mats, bought: { day: bought.day, count: bought.count + c } }, price };
 }
