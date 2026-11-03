@@ -9,9 +9,8 @@ import {
   assetPrice,
   buyAsset,
   buyCompany,
-  cashOutHustle,
   chooseShift,
-  collectHustle,
+  decideHustle,
   createCharacter,
   currentEvent,
   eduCost,
@@ -86,6 +85,7 @@ type Body = {
   family?: unknown;
   stake?: unknown;
   risk?: unknown;
+  option?: unknown;
   field?: unknown;
   value?: unknown;
   delta?: unknown;
@@ -139,10 +139,8 @@ function applyAction(state: EconomyState, body: Body, now: number, learning: num
       return startHustle(state, body.id, now, Math.random, { stake: body.stake, risk: body.risk });
     case "topUpHustle":
       return topUpHustle(state, body.id, now, body.stake);
-    case "collectHustle":
-      return collectHustle(state, body.id, now);
-    case "cashOutHustle":
-      return cashOutHustle(state, body.id, now);
+    case "decideHustle":
+      return decideHustle(state, body.id, now, body.option);
     case "investEdu":
       return investEdu(state, now);
     default:

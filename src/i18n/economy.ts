@@ -156,13 +156,18 @@ export type EconomyText = {
   arbitrageGo: string;
   arbitrageWait: string;
   hustleHint: string;
+  hustleValue: string;
+  hustleRound: string;
+  hustleSituations: Record<HustleId, [string, string, string]>;
+  hustleOptions: Record<"secure" | "balance" | "risky" | "event", { name: string; hint: string }>;
+  hustleRange: string;
+  hustleStreak: string;
+  hustleLength: string;
+  hustleLocked: string;
+  hustleDue: string;
   hustleStart: string;
-  hustleReady: string;
   hustleRunning: string;
-  hustleCollect: string;
   hustlePanel: string;
-  hustleOffer: string;
-  hustleCashOut: string;
   hustleNone: string;
   hustleStake: string;
   hustleRisk: string;
@@ -385,14 +390,19 @@ const cs: EconomyText = {
   spread: "Rozdíl cen: {n} %",
   arbitrageGo: "Vydělat na rozdílu ({n})",
   arbitrageWait: "Další obchod za {t}",
-  hustleHint: "Vlož kapitál, počkej a vyber výsledek. Můžeš vydělat i prodělat.",
+  hustleHint: "Vlož kapitál a rozhoduj ve třech kolech. V každém kole volíš jistotu nebo riziko, výsledek se vyplatí na konci. Můžeš vydělat i prodělat.",
+  hustleValue: "Hodnota: {n}",
+  hustleRound: "Kolo {n} z {m}",
+  hustleSituations: { lemonade: ["První zákazník chce slevu.", "Vedro: lidé kupují víc.", "Sousední stánek snižuje ceny."], reselling: ["Na bazaru je dobrá nabídka, ale bez záruky.", "Cena zboží náhle vyskočila.", "Kupec chce slevu za rychlou platbu."], carflip: ["Auto má skrytou vadu: opravit, nebo prodat tak?", "Kupec nabízí výměnu za jiné auto.", "Inzerát zaujal několik lidí."], houseflip: ["Stavba odhalí vlhkost ve sklepě.", "Realitní trh se mění.", "Banka schválila hypotéku s podmínkami."], startup: ["Investor nabízí peníze za velký podíl.", "Konkurence spustila podobný produkt.", "Prototyp funguje, ale špatně se škáluje."] },
+  hustleOptions: { secure: { name: "Zajistit", hint: "Úzký rozsah, jistý výsledek" }, balance: { name: "Vyvážit", hint: "Průměrný rozsah" }, risky: { name: "Riskovat", hint: "Široký rozsah, možná velká výhra i ztráta" }, event: { name: "Příležitost", hint: "Vzácná šance s vyšším průměrem" } },
+  hustleRange: "×{lo}–{hi}",
+  hustleStreak: "Série {n}",
+  hustleLength: "Celkem {t}",
+  hustleLocked: "Odemkne se při Vzdělání {n}",
+  hustleDue: "Rozhodni teď",
   hustleStart: "Začít (vložit {n})",
-  hustleReady: "Hotovo!",
-  hustleRunning: "Zbývá {t}",
-  hustleCollect: "Vybrat výsledek",
+  hustleRunning: "Další kolo za {t}",
   hustlePanel: "Rozjeté hustly – rozhoduj průběžně",
-  hustleOffer: "Nabídka: {n}",
-  hustleCashOut: "Prodat teď (−5 %)",
   hustleNone: "Žádný hustl neběží.",
   hustleStake: "Vklad",
   hustleRisk: "Riziko",
@@ -619,14 +629,19 @@ const en: EconomyText = {
   spread: "Price gap: {n} %",
   arbitrageGo: "Profit from the gap ({n})",
   arbitrageWait: "Next trade in {t}",
-  hustleHint: "Put in capital, wait and collect the result. You can win or lose.",
+  hustleHint: "Put in capital and decide in three rounds. Each round you pick safety or risk; the result is paid out at the end. You can win or lose.",
+  hustleValue: "Value: {n}",
+  hustleRound: "Round {n} of {m}",
+  hustleSituations: { lemonade: ["The first customer wants a discount.", "Heat wave: people buy more.", "The stall next door cuts its prices."], reselling: ["A good offer on the marketplace, but no warranty.", "The price suddenly jumped.", "A buyer wants a discount for fast payment."], carflip: ["The car has a hidden fault: fix it or sell as is?", "A buyer offers a trade for another car.", "The listing caught the eye of several people."], houseflip: ["The survey reveals damp in the cellar.", "The property market is shifting.", "The bank approved the mortgage with conditions."], startup: ["An investor offers money for a large stake.", "A competitor launched a similar product.", "The prototype works but does not scale well."] },
+  hustleOptions: { secure: { name: "Secure", hint: "Narrow range, safe result" }, balance: { name: "Balance", hint: "Average range" }, risky: { name: "Gamble", hint: "Wide range, big win or loss" }, event: { name: "Opportunity", hint: "Rare chance, higher average" } },
+  hustleRange: "×{lo}–{hi}",
+  hustleStreak: "Streak {n}",
+  hustleLength: "Total {t}",
+  hustleLocked: "Unlocks at Education {n}",
+  hustleDue: "Decide now",
   hustleStart: "Start (invest {n})",
-  hustleReady: "Done!",
-  hustleRunning: "{t} left",
-  hustleCollect: "Collect result",
+  hustleRunning: "Next round in {t}",
   hustlePanel: "Running hustles – decide as you go",
-  hustleOffer: "Offer: {n}",
-  hustleCashOut: "Sell now (−5%)",
   hustleNone: "No hustle is running.",
   hustleStake: "Stake",
   hustleRisk: "Risk",
@@ -853,14 +868,19 @@ const de: EconomyText = {
   spread: "Preisdifferenz: {n} %",
   arbitrageGo: "An der Differenz verdienen ({n})",
   arbitrageWait: "Nächster Handel in {t}",
-  hustleHint: "Setze Kapital ein, warte und hole das Ergebnis ab. Du kannst gewinnen oder verlieren.",
+  hustleHint: "Setze Kapital ein und entscheide in drei Runden. Jede Runde wählst du Sicherheit oder Risiko, das Ergebnis wird am Ende ausgezahlt. Du kannst gewinnen oder verlieren.",
+  hustleValue: "Wert: {n}",
+  hustleRound: "Runde {n} von {m}",
+  hustleSituations: { lemonade: ["Die erste Kundin will Rabatt.", "Hitzewelle: Die Leute kaufen mehr.", "Der Nachbarstand senkt die Preise."], reselling: ["Gutes Angebot auf dem Markt, aber ohne Garantie.", "Der Preis ist plötzlich gestiegen.", "Ein Käufer will Rabatt für schnelle Zahlung."], carflip: ["Das Auto hat einen versteckten Mangel: reparieren oder so verkaufen?", "Ein Käufer bietet einen Tausch gegen ein anderes Auto an.", "Das Inserat hat mehrere Leute neugierig gemacht."], houseflip: ["Das Gutachten zeigt Feuchtigkeit im Keller.", "Der Immobilienmarkt verändert sich.", "Die Bank hat die Hypothek mit Auflagen genehmigt."], startup: ["Ein Investor bietet Geld für einen großen Anteil.", "Ein Konkurrent bringt ein ähnliches Produkt.", "Der Prototyp funktioniert, skaliert aber schlecht."] },
+  hustleOptions: { secure: { name: "Sichern", hint: "Enger Bereich, sicheres Ergebnis" }, balance: { name: "Ausgleichen", hint: "Mittlerer Bereich" }, risky: { name: "Riskieren", hint: "Breiter Bereich, großer Gewinn oder Verlust" }, event: { name: "Gelegenheit", hint: "Seltene Chance mit höherem Mittelwert" } },
+  hustleRange: "×{lo}–{hi}",
+  hustleStreak: "Serie {n}",
+  hustleLength: "Gesamt {t}",
+  hustleLocked: "Wird bei Bildung {n} freigeschaltet",
+  hustleDue: "Jetzt entscheiden",
   hustleStart: "Starten ({n} einsetzen)",
-  hustleReady: "Fertig!",
-  hustleRunning: "Noch {t}",
-  hustleCollect: "Ergebnis abholen",
+  hustleRunning: "Nächste Runde in {t}",
   hustlePanel: "Laufende Hustles – entscheide unterwegs",
-  hustleOffer: "Angebot: {n}",
-  hustleCashOut: "Jetzt verkaufen (−5 %)",
   hustleNone: "Kein Hustle läuft.",
   hustleStake: "Einsatz",
   hustleRisk: "Risiko",
@@ -1087,14 +1107,19 @@ const ru: EconomyText = {
   spread: "Разница в ценах: {n} %",
   arbitrageGo: "Заработать на разнице ({n})",
   arbitrageWait: "Следующая сделка через {t}",
-  hustleHint: "Вложи капитал, подожди и забери результат. Можно выиграть, а можно и потерять.",
+  hustleHint: "Вложи капитал и принимай решения в три раунда. В каждом раунде выбираешь надёжность или риск, итог выплачивается в конце. Можно выиграть, а можно и потерять.",
+  hustleValue: "Стоимость: {n}",
+  hustleRound: "Раунд {n} из {m}",
+  hustleSituations: { lemonade: ["Первый покупатель просит скидку.", "Жара: люди покупают больше.", "Соседний ларёк снижает цены."], reselling: ["Хорошее предложение на барахолке, но без гарантии.", "Цена вдруг взлетела.", "Покупатель просит скидку за быструю оплату."], carflip: ["У машины скрытый дефект: чинить или продать как есть?", "Покупатель предлагает обмен на другую машину.", "Объявление заинтересовало несколько человек."], houseflip: ["В подвале обнаружена сырость.", "Рынок недвижимости меняется.", "Банк одобрил ипотеку с условиями."], startup: ["Инвестор предлагает деньги за крупную долю.", "Конкуренты выпустили похожий продукт.", "Прототип работает, но плохо масштабируется."] },
+  hustleOptions: { secure: { name: "Зафиксировать", hint: "Узкий разброс, надёжный результат" }, balance: { name: "Сбалансировать", hint: "Средний разброс" }, risky: { name: "Рискнуть", hint: "Широкий разброс, возможны большой выигрыш и потеря" }, event: { name: "Шанс", hint: "Редкий шанс с большим средним значением" } },
+  hustleRange: "×{lo}–{hi}",
+  hustleStreak: "Серия {n}",
+  hustleLength: "Всего {t}",
+  hustleLocked: "Откроется при Образовании {n}",
+  hustleDue: "Решить сейчас",
   hustleStart: "Начать (вложить {n})",
-  hustleReady: "Готово!",
-  hustleRunning: "Осталось {t}",
-  hustleCollect: "Забрать результат",
-  hustlePanel: "Текущие подработки — решай по ходу",
-  hustleOffer: "Предложение: {n}",
-  hustleCashOut: "Продать сейчас (−5%)",
+  hustleRunning: "Следующий раунд через {t}",
+  hustlePanel: "Активные подработки – решай по ходу",
   hustleNone: "Сейчас ничего не запущено.",
   hustleStake: "Вклад",
   hustleRisk: "Риск",

@@ -11,7 +11,8 @@
 //  - Firmy: stavíš a rozšiřuješ podniky a najímáš do nich zaměstnance (stojí mzdu, zvyšují výnos).
 //  - Investice: akcie, kovy, kryptoměny (ceny kolísají podle času, stejně na serveru i v prohlížeči),
 //    nemovitosti, cenné papíry a arbitráž.
-//  - Hustle: reselling, flipování domů a aut. Vložíš kapitál, po čase si vybereš výsledek (může i prodělat).
+//  - Hustle: reselling, flipování domů a aut, startup. Vložíš kapitál a ve třech kolech rozhoduješ mezi jistotou,
+//    vyvážením, rizikem a případnou příležitostí. Výsledek se vyplatí na konci (může i prodělat).
 //  - Body z učení se dají investovat do Vzdělání (trvalý bonus ke všem příjmům). Aktivní učení za posledních
 //    24 hodin dává navíc dočasné zrychlení.
 //  - Kdykoliv můžeš začít znovu. Rekordní jmění a počet pokusů zůstávají.
@@ -466,24 +467,46 @@ export function arbitrageSpread(now: number): number {
 // --- Hustle ---
 
 export type HustleId = "lemonade" | "reselling" | "carflip" | "houseflip" | "startup";
-export type HustleDef = { id: HustleId; cost: number; minutes: number; min: number; max: number };
-// Výsledek je násobek vloženého kapitálu mezi min a max (rozloženo rovnoměrně). Střední hodnota je mírně nad 1.
+// Hustl běží v kolech: každé kolo je rozhodnutí. `gapSec` je čas mezi rozhodnutími, `edu` je potřebné Vzdělání k odemčení.
+export type HustleDef = { id: HustleId; cost: number; gapSec: number; min: number; max: number; edu: number };
+export const HUSTLE_ROUNDS = 3;
+// Celkový násobek vloženého kapitálu se rozkládá do kol. Střední hodnota (min+max)/2 je mírně nad 1.
 export const HUSTLES: HustleDef[] = [
-  { id: "lemonade", cost: 50, minutes: 1, min: 0.6, max: 1.8 },
-  { id: "reselling", cost: 200, minutes: 1, min: 0.85, max: 1.5 },
-  { id: "carflip", cost: 5_000, minutes: 5, min: 0.8, max: 1.55 },
-  { id: "houseflip", cost: 60_000, minutes: 20, min: 0.75, max: 1.6 },
-  { id: "startup", cost: 150_000, minutes: 45, min: 0.3, max: 3.2 },
+  { id: "lemonade", cost: 50, gapSec: 20, min: 0.6, max: 1.8, edu: 0 },
+  { id: "reselling", cost: 200, gapSec: 30, min: 0.85, max: 1.5, edu: 0 },
+  { id: "carflip", cost: 5_000, gapSec: 60, min: 0.8, max: 1.55, edu: 0 },
+  { id: "houseflip", cost: 60_000, gapSec: 120, min: 0.75, max: 1.6, edu: 3 },
+  { id: "startup", cost: 150_000, gapSec: 300, min: 0.3, max: 3.2, edu: 8 },
 ];
-// Předčasný prodej rozjetého hustlu: nabídka roste od vkladu k výplatě, prodej teď stojí poplatek.
-export const HUSTLE_CASHOUT_FEE = 0.05;
-export type HustleSlot = { startedAt: number; payout: number; stake: number } | null;
-// Vklad je libovolná celá částka (nejvýš do výše hotovosti). Riziko 1–100 % určuje, jak široký je rozsah výplaty
-// kolem střední hodnoty: 1 % = téměř jistý výsledek, 100 % = plný rozsah hustlu.
+// Vklad je libovolná celá částka (nejvýš do výše hotovosti). Riziko 1–100 % určuje šířku rozsahu každé volby.
 export const HUSTLE_RISK_DEFAULT = 100;
 export const isHustleStake = (v: unknown): v is number => typeof v === "number" && Number.isInteger(v) && v > 0 && v <= 1e12;
 export const isHustleRisk = (v: unknown): v is number => typeof v === "number" && Number.isInteger(v) && v >= 1 && v <= 100;
 export type HustleOptions = { stake?: unknown; risk?: unknown };
+// Volby v každém kole. Jistota je úzká, Riziko široké; Příležitost se objeví jen někdy.
+export type HustleChoiceKey = "secure" | "balance" | "risky" | "event";
+export const HUSTLE_CHOICE_KEYS: HustleChoiceKey[] = ["secure", "balance", "risky", "event"];
+// Šířka rozsahu jako násobek poloviny pásma kola (riziko ji ještě škáluje).
+const CHOICE_WIDTH: Record<HustleChoiceKey, number> = { secure: 0.25, balance: 1, risky: 1.6, event: 0.8 };
+// Série úspěchů v běhu zvedá střed rozsahu o 2 % za každé vítězné kolo, nejvýš o 10 %.
+export const HUSTLE_STREAK_STEP = 0.02;
+export const HUSTLE_STREAK_MAX = 0.1;
+// Šance, že v kole přijde Příležitost (čtvrtá volba s vyšším středem).
+export const HUSTLE_EVENT_CHANCE = 0.15;
+export type HustleSlot = {
+  startedAt: number;
+  // aktuální hodnota držby (vklad vynásobený dosavadními koly, plus dokoupení)
+  value: number;
+  // celkem vložený kapitál (pro zisk)
+  stake: number;
+  // počet rozhodnutých kol (0 až HUSTLE_ROUNDS)
+  round: number;
+  // semínko, ze kterého se deterministicky losují všechna kola a výsledky (server i prohlížeč počítají stejně)
+  seed: number;
+  risk: number;
+  // po sobě jdoucí vítězná kola
+  streak: number;
+} | null;
 
 // --- Stav ---
 
@@ -675,13 +698,26 @@ export function normalizeState(raw: unknown, real: number): EconomyState {
       cost[a.id] = (qNew * cNew + qOld * cOld) / q;
     }
   }
+  // Hustly ze staré verze (bez kol) se vyplatí hned při načtení: vklad byl odečten už při startu.
   const hustle: EconomyState["hustle"] = {};
+  let refund = 0;
   for (const h of HUSTLES) {
-    const s = (r.hustle as Record<string, { startedAt?: unknown; payout?: unknown; stake?: unknown } | null> | undefined)?.[h.id];
-    if (s && typeof s === "object") {
-      const stake = finite(s.stake, h.cost, 1, 1e12);
-      hustle[h.id] = { startedAt: finite(s.startedAt, now, 0, now), payout: finite(s.payout, 0, 0, stake * h.max), stake };
+    const s = (r.hustle as Record<string, Record<string, unknown> | null> | undefined)?.[h.id];
+    if (!s || typeof s !== "object") continue;
+    if (s.seed === undefined) {
+      refund += finite(s.payout, 0, 0, 1e12);
+      continue;
     }
+    const stake = finite(s.stake, h.cost, 1, 1e12);
+    hustle[h.id] = {
+      startedAt: finite(s.startedAt, now, 0, now),
+      value: finite(s.value, stake, 0, 1e13),
+      stake,
+      round: Math.floor(finite(s.round, 0, 0, HUSTLE_ROUNDS - 1)),
+      seed: Math.floor(finite(s.seed, 0, 0, 2 ** 31)),
+      risk: Math.floor(finite(s.risk, HUSTLE_RISK_DEFAULT, 1, 100)),
+      streak: Math.floor(finite(s.streak, 0, 0, 1e6)),
+    };
   }
 
   // Stará uložená hra má jen id a hodiny. Stupeň se odvodí z hodin, body začínají od nuly.
@@ -721,7 +757,7 @@ export function normalizeState(raw: unknown, real: number): EconomyState {
   const cr = r.crisis as Record<string, unknown> | null | undefined;
   const crisis: Crisis = cr && isJob(cr.job) ? { job: cr.job, startAt: finite(cr.startAt, 0, 0, 1e15), endAt: finite(cr.endAt, 0, 0, 1e15) } : null;
 
-  const cash = finite(r.cash, 0, 0, 1e15);
+  const cash = finite(r.cash, 0, 0, 1e15) + refund;
   return {
     v: 1,
     character,
@@ -891,7 +927,7 @@ export function rates(state: EconomyState, now: number, learning = 0): Rates {
   };
 }
 
-// Jmění = hotovost + hodnota investic + cena firem + rozjeté hustle.
+// Jmění = hotovost + hodnota investic + cena firem + hodnota rozjetých hustlů.
 export function netWorth(state: EconomyState, now: number): number {
   let total = state.cash;
   for (const a of ASSETS) total += (state.holdings[a.id] ?? 0) * assetPrice(a.id, now);
@@ -899,7 +935,7 @@ export function netWorth(state: EconomyState, now: number): number {
     const n = state.companies[c.id] ?? 0;
     if (n > 0) total += c.cost * n * (state.character ? FAMILY_DEF[state.character.family].company : 1);
   }
-  for (const h of HUSTLES) total += state.hustle[h.id]?.stake ?? 0;
+  for (const h of HUSTLES) total += state.hustle[h.id]?.value ?? 0;
   return Math.round(total);
 }
 
@@ -1311,7 +1347,7 @@ export function arbitrage(state: EconomyState, amount: unknown, now: number): Ac
   );
 }
 
-// `rng` vrací číslo [0,1); server dává Math.random, test pevnou hodnotu.
+// `rng` vrací číslo [0,1); server dává Math.random, test pevnou hodnotu. Vklad se zablokuje, kola přijdou po čase.
 export function startHustle(
   state: EconomyState,
   id: unknown,
@@ -1321,71 +1357,96 @@ export function startHustle(
 ): ActionResult {
   if (!state.character) return fail("no-character");
   if (!isHustle(id)) return fail("bad-request");
-  if (state.hustle[id]) return fail("busy");
   const def = hustleDef(id);
+  if (state.edu < def.edu) return fail("locked");
+  if (state.hustle[id]) return fail("busy");
   const stake = opts.stake === undefined ? def.cost : opts.stake;
   if (!isHustleStake(stake)) return fail("bad-request");
   const risk = opts.risk === undefined ? HUSTLE_RISK_DEFAULT : opts.risk;
   if (!isHustleRisk(risk)) return fail("bad-request");
   if (state.cash < stake) return fail("not-enough-cash");
-  const mid = (def.min + def.max) / 2;
-  const half = ((def.max - def.min) / 2) * (risk / 100);
-  const payout = Math.round(stake * (mid - half + 2 * half * rng()));
-  return done({ ...state, cash: state.cash - stake, hustle: { ...state.hustle, [id]: { startedAt: now, payout, stake } } }, now);
+  const seed = Math.floor(rng() * 2 ** 31);
+  const slot: NonNullable<HustleSlot> = { startedAt: now, value: stake, stake, round: 0, seed, risk, streak: 0 };
+  return done({ ...state, cash: state.cash - stake, hustle: { ...state.hustle, [id]: slot } }, now);
 }
 
-// Dokoupení kapitálu během čekání: výplata se zvětší ve stejném poměru jako vklad.
+// Dokoupení kapitálu během běhu: přidá se do hodnoty i do vloženého kapitálu, takže zisk zůstává čistý.
 export function topUpHustle(state: EconomyState, id: unknown, now: number, amount: unknown): ActionResult {
   if (!state.character) return fail("no-character");
   if (!isHustle(id)) return fail("bad-request");
   const slot = state.hustle[id];
   if (!slot) return fail("nothing");
-  if (hustleReady(slot, id, now)) return fail("ready");
   if (!isHustleStake(amount)) return fail("bad-request");
-  const add = amount;
-  if (state.cash < add) return fail("not-enough-cash");
-  const extra = Math.round((slot.payout / slot.stake) * add);
-  const next = { startedAt: slot.startedAt, stake: slot.stake + add, payout: slot.payout + extra };
-  return done({ ...state, cash: state.cash - add, hustle: { ...state.hustle, [id]: next } }, now);
+  if (state.cash < amount) return fail("not-enough-cash");
+  const next = { ...slot, value: slot.value + amount, stake: slot.stake + amount };
+  return done({ ...state, cash: state.cash - amount, hustle: { ...state.hustle, [id]: next } }, now);
 }
 
-export const hustleReady = (slot: HustleSlot | undefined, id: HustleId, now: number) =>
-  !!slot && now - slot.startedAt >= hustleDef(id).minutes * 60_000;
+// Čas, kdy se otevře kolo `round`: každé kolo přijde po jednom intervalu od předchozího.
+export const hustleRoundAt = (slot: NonNullable<HustleSlot>, id: HustleId, round: number) =>
+  slot.startedAt + (round + 1) * hustleDef(id).gapSec * 1000;
 
-// Aktuální nabídka kupce: lineárně roste od vloženého kapitálu k výplatě.
-export function hustleOffer(slot: NonNullable<HustleSlot>, id: HustleId, now: number): number {
+// Kolo je otevřené, když uplynul jeho čas a hráč ho ještě nerozhodl.
+export const hustleDue = (slot: HustleSlot | undefined, id: HustleId, now: number) =>
+  !!slot && slot.round < HUSTLE_ROUNDS && now >= hustleRoundAt(slot, id, slot.round);
+
+// Deterministický hash (semínko, kolo, index) → [0, 1). Stejný vstup dává stejný výsledek na serveru i v prohlížeči.
+export function hustleRoll(seed: number, round: number, index: number): number {
+  let x = (seed ^ Math.imul(round + 1, 0x9e3779b1) ^ Math.imul(index + 1, 0x85ebca77)) >>> 0;
+  x = Math.imul(x ^ (x >>> 16), 0x7feb352d);
+  x = Math.imul(x ^ (x >>> 15), 0x846ca68b);
+  x = (x ^ (x >>> 16)) >>> 0;
+  return x / 4294967296;
+}
+
+// Střed a polovina pásma jednoho kola: součin středů všech kol dává střední hodnotu hustlu.
+export function hustleBand(id: HustleId): { center: number; half: number } {
   const def = hustleDef(id);
-  const p = Math.min(1, Math.max(0, (now - slot.startedAt) / (def.minutes * 60_000)));
-  return Math.round(slot.stake + (slot.payout - slot.stake) * p);
+  const mid = (def.min + def.max) / 2;
+  const lo = def.min ** (1 / HUSTLE_ROUNDS);
+  const hi = def.max ** (1 / HUSTLE_ROUNDS);
+  return { center: mid ** (1 / HUSTLE_ROUNDS), half: (hi - lo) / 2 };
 }
 
-// Průběžné rozhodování: hráč může rozjetý hustl prodat dřív za aktuální nabídku (mínus poplatek).
-export function cashOutHustle(state: EconomyState, id: unknown, now: number): ActionResult {
+// Volby otevřeného kola: rozsah násobku pro každou volbu. Příležitost se objeví jen s pravděpodobností.
+export function hustleChoices(slot: NonNullable<HustleSlot>, id: HustleId): { key: HustleChoiceKey; lo: number; hi: number }[] {
+  const { center, half } = hustleBand(id);
+  const k = slot.risk / 100;
+  const streakBonus = Math.min(HUSTLE_STREAK_MAX, slot.streak * HUSTLE_STREAK_STEP);
+  const base = center + streakBonus;
+  const keys: HustleChoiceKey[] = ["secure", "balance", "risky"];
+  if (hustleRoll(slot.seed, slot.round, 4) < HUSTLE_EVENT_CHANCE) keys.push("event");
+  return keys.map((key) => {
+    // Příležitost má vyšší střed (o polovinu pásma nahoru), ostatní jsou kolem středu.
+    const shift = key === "event" ? half * 0.5 : 0;
+    const w = half * CHOICE_WIDTH[key] * k;
+    return { key, lo: Math.max(0, base + shift - w), hi: base + shift + w };
+  });
+}
+
+// Rozhodnutí v kole: volba určí násobek z rozsahu. Po posledním kole se výsledek vyplatí a hustl se uzavře.
+export function decideHustle(state: EconomyState, id: unknown, now: number, option: unknown): ActionResult {
   if (!state.character) return fail("no-character");
   if (!isHustle(id)) return fail("bad-request");
   const slot = state.hustle[id];
   if (!slot) return fail("nothing");
-  if (hustleReady(slot, id, now)) return fail("ready");
-  const value = Math.round(hustleOffer(slot, id, now) * (1 - HUSTLE_CASHOUT_FEE));
+  if (!hustleDue(slot, id, now)) return fail("not-ready");
+  const choice = hustleChoices(slot, id).find((c) => c.key === option);
+  if (!choice) return fail("bad-request");
+  const u = hustleRoll(slot.seed, slot.round, HUSTLE_CHOICE_KEYS.indexOf(choice.key));
+  const mult = choice.lo + (choice.hi - choice.lo) * u;
+  const value = Math.max(0, Math.round(slot.value * mult));
+  const streak = mult >= 1 ? slot.streak + 1 : 0;
+  const round = slot.round + 1;
+  if (round < HUSTLE_ROUNDS) {
+    const next = { ...slot, value, round, streak };
+    return done({ ...state, hustle: { ...state.hustle, [id]: next } }, now);
+  }
   const hustle = { ...state.hustle };
   delete hustle[id];
   const profit = value - slot.stake;
   return done({ ...state, cash: state.cash + value, hustle, totalEarned: state.totalEarned + Math.max(0, profit) }, now, {
     gained: { cash: value, profit },
-  });
-}
-
-export function collectHustle(state: EconomyState, id: unknown, now: number): ActionResult {
-  if (!state.character) return fail("no-character");
-  if (!isHustle(id)) return fail("bad-request");
-  const slot = state.hustle[id];
-  if (!slot) return fail("nothing");
-  if (!hustleReady(slot, id, now)) return fail("not-ready");
-  const hustle = { ...state.hustle };
-  delete hustle[id];
-  const profit = slot.payout - slot.stake;
-  return done({ ...state, cash: state.cash + slot.payout, hustle, totalEarned: state.totalEarned + Math.max(0, profit) }, now, {
-    gained: { cash: slot.payout, profit },
   });
 }
 
