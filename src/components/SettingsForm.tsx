@@ -6,11 +6,16 @@ import type { Dictionary } from "@/i18n/dictionaries";
 import { locales, localeNames, localeFlags, type Locale } from "@/i18n/config";
 import { setLocaleCookie } from "@/lib/locale-cookie";
 import { SchoolPicker } from "@/components/SchoolPicker";
-import { AccountSettings } from "@/components/AccountSettings";
+import { getSettingsExtraText } from "@/i18n/settings-extra";
+import { MotionSetting } from "@/components/settings/MotionSetting";
+import { AccountSection } from "@/components/settings/AccountSection";
+import { ParentalSection } from "@/components/settings/ParentalSection";
 
 type Theme = "light" | "dark" | "system";
 type FontStyle = "playful" | "classic";
 type FontSize = "small" | "medium" | "large";
+type Section = "graphics" | "school" | "account" | "parental";
+const SECTIONS: Section[] = ["graphics", "school", "account", "parental"];
 
 function OptionButton({
   active,
@@ -43,6 +48,8 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
   const [font, setFont] = useState<FontStyle>("playful");
   const [fontSize, setFontSize] = useState<FontSize>("medium");
   const [saved, setSaved] = useState(false);
+  const [section, setSection] = useState<Section>("graphics");
+  const sectionLabels = getSettingsExtraText(locale).sections;
 
   useEffect(() => {
     // Hydrating from localStorage after mount — server has no access to it,
@@ -122,70 +129,90 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="card p-6">
-        <h2 className="mb-4 text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          {dict.settings.appearance}
-        </h2>
+      <nav className="flex flex-wrap gap-2" aria-label={dict.settings.title}>
+        {SECTIONS.map((s) => (
+          <OptionButton key={s} active={section === s} onClick={() => setSection(s)}>
+            {sectionLabels[s]}
+          </OptionButton>
+        ))}
+      </nav>
 
-        <div className="mb-5">
-          <p className="mb-2 text-sm font-medium text-[var(--muted)]">{dict.settings.theme}</p>
-          <div className="flex flex-wrap gap-2">
-            <OptionButton active={theme === "light"} onClick={() => applyTheme("light")}>
-              {dict.settings.themeLight}
-            </OptionButton>
-            <OptionButton active={theme === "dark"} onClick={() => applyTheme("dark")}>
-              {dict.settings.themeDark}
-            </OptionButton>
-            <OptionButton active={theme === "system"} onClick={() => applyTheme("system")}>
-              {dict.settings.themeSystem}
-            </OptionButton>
-          </div>
-        </div>
+      {section === "graphics" && (
+        <>
+          <section className="card p-6">
+            <h2 className="mb-4 text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+              {dict.settings.appearance}
+            </h2>
 
-        <div className="mb-5">
-          <p className="mb-2 text-sm font-medium text-[var(--muted)]">{dict.settings.fontStyle}</p>
-          <div className="flex flex-wrap gap-2">
-            <OptionButton active={font === "playful"} onClick={() => applyFont("playful")}>
-              {dict.settings.fontPlayful}
-            </OptionButton>
-            <OptionButton active={font === "classic"} onClick={() => applyFont("classic")}>
-              {dict.settings.fontClassic}
-            </OptionButton>
-          </div>
-        </div>
+            <div className="mb-5">
+              <p className="mb-2 text-sm font-medium text-[var(--muted)]">{dict.settings.theme}</p>
+              <div className="flex flex-wrap gap-2">
+                <OptionButton active={theme === "light"} onClick={() => applyTheme("light")}>
+                  {dict.settings.themeLight}
+                </OptionButton>
+                <OptionButton active={theme === "dark"} onClick={() => applyTheme("dark")}>
+                  {dict.settings.themeDark}
+                </OptionButton>
+                <OptionButton active={theme === "system"} onClick={() => applyTheme("system")}>
+                  {dict.settings.themeSystem}
+                </OptionButton>
+              </div>
+            </div>
 
-        <div>
-          <p className="mb-2 text-sm font-medium text-[var(--muted)]">{dict.settings.fontSize}</p>
-          <div className="flex flex-wrap gap-2">
-            <OptionButton active={fontSize === "small"} onClick={() => applyFontSize("small")}>
-              {dict.settings.fontSizeSmall}
-            </OptionButton>
-            <OptionButton active={fontSize === "medium"} onClick={() => applyFontSize("medium")}>
-              {dict.settings.fontSizeMedium}
-            </OptionButton>
-            <OptionButton active={fontSize === "large"} onClick={() => applyFontSize("large")}>
-              {dict.settings.fontSizeLarge}
-            </OptionButton>
-          </div>
-        </div>
-      </section>
+            <div className="mb-5">
+              <p className="mb-2 text-sm font-medium text-[var(--muted)]">{dict.settings.fontStyle}</p>
+              <div className="flex flex-wrap gap-2">
+                <OptionButton active={font === "playful"} onClick={() => applyFont("playful")}>
+                  {dict.settings.fontPlayful}
+                </OptionButton>
+                <OptionButton active={font === "classic"} onClick={() => applyFont("classic")}>
+                  {dict.settings.fontClassic}
+                </OptionButton>
+              </div>
+            </div>
 
-      <section className="card p-6">
-        <h2 className="mb-4 text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          {dict.settings.language}
-        </h2>
-        <div className="flex flex-wrap gap-2">
-          {locales.map((l) => (
-            <OptionButton key={l} active={l === locale} onClick={() => switchLanguage(l)}>
-              {localeFlags[l]} {localeNames[l]}
-            </OptionButton>
-          ))}
-        </div>
-      </section>
+            <div>
+              <p className="mb-2 text-sm font-medium text-[var(--muted)]">{dict.settings.fontSize}</p>
+              <div className="flex flex-wrap gap-2">
+                <OptionButton active={fontSize === "small"} onClick={() => applyFontSize("small")}>
+                  {dict.settings.fontSizeSmall}
+                </OptionButton>
+                <OptionButton active={fontSize === "medium"} onClick={() => applyFontSize("medium")}>
+                  {dict.settings.fontSizeMedium}
+                </OptionButton>
+                <OptionButton active={fontSize === "large"} onClick={() => applyFontSize("large")}>
+                  {dict.settings.fontSizeLarge}
+                </OptionButton>
+              </div>
+            </div>
+          </section>
 
-      <SchoolPicker locale={locale} />
+          <MotionSetting locale={locale} />
+        </>
+      )}
 
-      <AccountSettings locale={locale} />
+      {section === "school" && <SchoolPicker locale={locale} />}
+
+      {section === "account" && (
+        <>
+          <AccountSection locale={locale} />
+
+          <section className="card p-6">
+            <h2 className="mb-4 text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+              {dict.settings.language}
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {locales.map((l) => (
+                <OptionButton key={l} active={l === locale} onClick={() => switchLanguage(l)}>
+                  {localeFlags[l]} {localeNames[l]}
+                </OptionButton>
+              ))}
+            </div>
+          </section>
+        </>
+      )}
+
+      {section === "parental" && <ParentalSection locale={locale} />}
 
       <p
         className={`text-sm font-medium text-[var(--brand-600)] transition-opacity ${

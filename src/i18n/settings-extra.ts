@@ -33,6 +33,7 @@ export type SettingsExtraText = {
   timeUpHint: string;
   blockedTogether: string;
   loginFirst: string;
+  sections: Record<"graphics" | "school" | "account" | "parental", string>;
 };
 
 const cs: SettingsExtraText = {
@@ -67,6 +68,7 @@ const cs: SettingsExtraText = {
   timeUpHint: "Pro dnešek je hotovo, zítra zase! Rodič může čas prodloužit zadáním PINu.",
   blockedTogether: "Společné hraní zakázal rodič v nastavení.",
   loginFirst: "Pro tato nastavení se přihlas.",
+  sections: { graphics: "Grafika", school: "Škola", account: "Účet", parental: "Rodičovská kontrola" },
 };
 const en: SettingsExtraText = {
   motion: "Animations",
@@ -100,6 +102,7 @@ const en: SettingsExtraText = {
   timeUpHint: "That's it for today, see you tomorrow! A parent can extend the time with the PIN.",
   blockedTogether: "A parent has blocked playing together in settings.",
   loginFirst: "Log in to use these settings.",
+  sections: { graphics: "Graphics", school: "School", account: "Account", parental: "Parental controls" },
 };
 const de: SettingsExtraText = {
   motion: "Animationen",
@@ -133,6 +136,7 @@ const de: SettingsExtraText = {
   timeUpHint: "Für heute ist Schluss, bis morgen! Eltern können die Zeit mit der PIN verlängern.",
   blockedTogether: "Gemeinsames Spielen wurde von den Eltern gesperrt.",
   loginFirst: "Melde dich für diese Einstellungen an.",
+  sections: { graphics: "Grafik", school: "Schule", account: "Konto", parental: "Elternkontrolle" },
 };
 const ru: SettingsExtraText = {
   motion: "Анимации",
@@ -166,6 +170,7 @@ const ru: SettingsExtraText = {
   timeUpHint: "На сегодня всё, до завтра! Родитель может продлить время PIN-кодом.",
   blockedTogether: "Совместная игра запрещена родителем в настройках.",
   loginFirst: "Войди, чтобы пользоваться этими настройками.",
+  sections: { graphics: "Графика", school: "Школа", account: "Аккаунт", parental: "Родительский контроль" },
 };
 const texts: Record<Locale, SettingsExtraText> = { cs, en, de, ru };
 export const getSettingsExtraText = (locale: Locale) => texts[locale];
