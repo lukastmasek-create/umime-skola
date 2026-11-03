@@ -16,7 +16,8 @@
   "hyperdrive": [
     {
       "binding": "HYPERDRIVE",
-      "id": "9e8b00071af14ddda614134d726074fe"
+      "id": "9e8b00071af14ddda614134d726074fe",
+      "localConnectionString": "postgresql://postgres:postgres@localhost:5432/postgres"
     }
   ],
   // Vlastní doména ucimesehrou.org (zóna musí být v účtu Cloudflare).
