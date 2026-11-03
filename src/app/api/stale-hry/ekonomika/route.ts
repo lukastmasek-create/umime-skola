@@ -35,6 +35,7 @@ import {
   takeJob,
   topUpHustle,
   upgradeCompany,
+  upgradePhase,
   ASSETS,
   type ActionResult,
   type EconomyState,
@@ -113,6 +114,8 @@ function applyAction(state: EconomyState, body: Body, now: number): ActionResult
       return signContract(state, body.id, now);
     case "researchCompany":
       return researchCompany(state, body.id, now);
+    case "upgradePhase":
+      return upgradePhase(state, now);
     case "buyAsset":
       return buyAsset(state, body.id, body.amount, now);
     case "sellAsset":

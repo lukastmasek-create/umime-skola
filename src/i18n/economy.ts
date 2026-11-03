@@ -94,6 +94,16 @@ export type EconomyText = {
     rivalShield: string;
     rivalNone: string;
   };
+  phase: {
+    names: string[];
+    now: string;
+    need: string;
+    go: string;
+    max: string;
+    locked: string;
+    rates: string;
+    title: string;
+  };
   events: Record<EventId, { title: string; text: string }>;
   cash: string;
   netWorth: string;
@@ -330,6 +340,16 @@ const cs: EconomyText = {
     rivalNow: "Konkurent teď přetahuje zákazníky u tohoto oboru (−20 %).",
     rivalShield: "Kampaň konkurenci částečně brání.",
     rivalNone: "Teď tě žádný konkurent neohrožuje.",
+  },
+  phase: {
+    names: ["Garáž", "Dílna", "Malý sklad", "Prodejna", "Pobočka", "Velká pobočka", "Výrobní hala", "Logistické centrum", "Fabrika", "Velká fabrika", "Zahraniční závod", "Sídlo holdingu"],
+    title: "Fáze firmy",
+    now: "Fáze {n} z 12: {name}",
+    need: "Pro další fázi potřebuješ výnos firem aspoň {v} / h.",
+    go: "Postoupit za {c}",
+    max: "Nejvyšší fáze: sídlo holdingu",
+    locked: "Zatím málo výnosu",
+    rates: "Nájem {r} % výnosu, daň {t} % zisku",
   },
   events: {
     crash: { title: "Krach trhu", text: "Ceny na trhu prudce padly. Zisk firem klesá." },
@@ -580,6 +600,16 @@ const en: EconomyText = {
     rivalShield: "The campaign partly protects against the competitor.",
     rivalNone: "No competitor is threatening you right now.",
   },
+  phase: {
+    names: ["Garage", "Workshop", "Small warehouse", "Shop", "Branch", "Large branch", "Production hall", "Logistics centre", "Factory", "Large factory", "Foreign plant", "Holding HQ"],
+    title: "Company phase",
+    now: "Phase {n} of 12: {name}",
+    need: "The next phase needs company income of at least {v} / h.",
+    go: "Advance for {c}",
+    max: "Top phase: holding HQ",
+    locked: "Not enough income yet",
+    rates: "Rent {r} % of income, tax {t} % of profit",
+  },
   events: {
     crash: { title: "Market crash", text: "Market prices collapsed. Company profits fall." },
     hyper: { title: "Hyperinflation", text: "Money loses value and employee wages rise sharply." },
@@ -829,6 +859,16 @@ const de: EconomyText = {
     rivalShield: "Die Kampagne schützt teilweise vor dem Konkurrenten.",
     rivalNone: "Gerade bedroht dich kein Konkurrent.",
   },
+  phase: {
+    names: ["Garage", "Werkstatt", "Kleinlager", "Laden", "Filiale", "Große Filiale", "Produktionshalle", "Logistikzentrum", "Fabrik", "Große Fabrik", "Auslandswerk", "Holding-Zentrale"],
+    title: "Firmenstufe",
+    now: "Stufe {n} von 12: {name}",
+    need: "Für die nächste Stufe brauchst du einen Firmenertrag von mindestens {v} / h.",
+    go: "Aufsteigen für {c}",
+    max: "Höchste Stufe: Holding-Zentrale",
+    locked: "Noch zu wenig Ertrag",
+    rates: "Miete {r} % des Ertrags, Steuer {t} % des Gewinns",
+  },
   events: {
     crash: { title: "Börsencrash", text: "Die Marktpreise sind stark gefallen. Die Gewinne der Firmen sinken." },
     hyper: { title: "Hyperinflation", text: "Geld verliert an Wert und die Löhne der Mitarbeiter steigen stark." },
@@ -1077,6 +1117,16 @@ const ru: EconomyText = {
     rivalNow: "Конкурент сейчас переманивает клиентов в этой отрасли (−20 %).",
     rivalShield: "Кампания частично защищает от конкурента.",
     rivalNone: "Сейчас тебе никто не угрожает.",
+  },
+  phase: {
+    names: ["Гараж", "Мастерская", "Малый склад", "Магазин", "Филиал", "Большой филиал", "Производственный цех", "Логистический центр", "Фабрика", "Большая фабрика", "Зарубежный завод", "Штаб-квартира холдинга"],
+    title: "Фаза компании",
+    now: "Фаза {n} из 12: {name}",
+    need: "Для следующей фазы нужен доход компаний не меньше {v} / ч.",
+    go: "Перейти за {c}",
+    max: "Высшая фаза: штаб-квартира холдинга",
+    locked: "Пока мало дохода",
+    rates: "Аренда {r} % дохода, налог {t} % прибыли",
   },
   events: {
     crash: { title: "Обвал рынка", text: "Цены на рынке резко упали. Прибыль компаний снижается." },

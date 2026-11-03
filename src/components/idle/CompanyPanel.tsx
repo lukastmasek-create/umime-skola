@@ -5,7 +5,9 @@ import type { EconomyText } from "@/i18n/economy";
 import {
   COMPANIES,
   INCOME_SPEED,
+  MAX_PHASE,
   MAX_STAFF_PER_UNIT,
+  PHASE_RATES,
   SETTING_RANGE,
   campaignPrice,
   companyIncome,
@@ -21,6 +23,9 @@ import {
   isLocked,
   isNegativeEvent,
   MAX_RESEARCH,
+  phaseCost,
+  phaseRequirement,
+  rates as companyRates,
   researchLevel,
   researchPrice,
   sellPrice,
@@ -95,10 +100,38 @@ export function CompanyTab(props: Common) {
   const { state, clock, multiplier, t, m, busy, liveCash, act } = props;
   const [selected, setSelected] = useState<CompanyId | null>(null);
   const ev = currentEvent(clock);
+  const phase = state.phase;
+  const income = companyRates(state, clock).companies;
+  const nextPhase = phase + 1;
+  const nextNeed = phaseRequirement(nextPhase);
+  const nextCost = phaseCost(nextPhase);
+  const rate = PHASE_RATES[phase - 1];
 
   return (
     <section>
       <p className="mb-4 text-sm text-[var(--muted)]">{t.companiesHint}</p>
+      <div className="card mb-6 flex flex-col gap-3 p-4">
+        <h3 className="font-bold">🏗️ {t.phase.title}</h3>
+        <p className="text-sm">
+          <b>{fill(t.phase.now, { n: phase, name: t.phase.names[phase - 1] })}</b>
+        </p>
+        <p className="text-xs text-[var(--muted)]">{fill(t.phase.rates, { r: Math.round(rate.rent * 100), t: Math.round(rate.tax * 100) })}</p>
+        {phase >= MAX_PHASE ? (
+          <p className="text-sm font-semibold">✓ {t.phase.max}</p>
+        ) : (
+          <>
+            <p className="text-sm text-[var(--muted)]">{fill(t.phase.need, { v: m(nextNeed) })}</p>
+            <button
+              type="button"
+              disabled={busy || income < nextNeed || liveCash < nextCost}
+              onClick={() => void act({ action: "upgradePhase" }, () => t.phase.names[nextPhase - 1])}
+              className="btn-bouncy w-fit bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
+            >
+              {income < nextNeed ? t.phase.locked : fill(t.phase.go, { c: m(nextCost) })} · {t.phase.names[nextPhase - 1]}
+            </button>
+          </>
+        )}
+      </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {COMPANIES.map((c) => {
           const style = COMPANY_STYLE[c.id];

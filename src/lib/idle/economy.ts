@@ -191,6 +191,29 @@ export const RESEARCH_EXPOSURE = 0.1;
 export const RIVAL_BITE = 0.2;
 export const RIVAL_CAMPAIGN_SHIELD = 0.5;
 
+// --- Fáze firmy (realný provoz) ---
+// Dvanáct fází od garáže po holding. Nájem je podíl výnosu firem za hodinu, nejméně RENT_FLOOR hodnoty firem
+// za hodinu. Daň je podíl kladného zisku za hodinu.
+export const MAX_PHASE = 12;
+export const RENT_FLOOR = 0.001;
+export const PHASE_RATES: { rent: number; tax: number }[] = [
+  { rent: 0, tax: 0.05 },
+  { rent: 0.05, tax: 0.1 },
+  { rent: 0.07, tax: 0.12 },
+  { rent: 0.08, tax: 0.15 },
+  { rent: 0.09, tax: 0.15 },
+  { rent: 0.1, tax: 0.18 },
+  { rent: 0.11, tax: 0.18 },
+  { rent: 0.12, tax: 0.2 },
+  { rent: 0.13, tax: 0.2 },
+  { rent: 0.14, tax: 0.22 },
+  { rent: 0.15, tax: 0.25 },
+  { rent: 0.16, tax: 0.25 },
+];
+// Požadovaný výnos firem za hodinu pro postup do fáze k (od fáze 2). Postup stojí den tohoto výnosu.
+export const phaseRequirement = (k: number): number => (k <= 1 ? 0 : Math.round(2_000 * Math.pow(1.8, k - 2)));
+export const phaseCost = (k: number): number => phaseRequirement(k) * 24;
+
 // --- Mimořádné události ---
 // Každé dvě hodiny přijde jedna událost a trvá půl hodiny. Vybírá se podle času (stejné na serveru i v prohlížeči).
 export const EVENT_WINDOW_MS = 2 * H;
@@ -393,6 +416,8 @@ export type EconomyState = {
   // úroveň výzkumu produktů a konec odběratelského kontraktu (ms) u oboru
   research: Partial<Record<CompanyId, number>>;
   contracts: Partial<Record<CompanyId, number>>;
+  // aktuální fáze firmy (1 = garáž, MAX_PHASE = holding)
+  phase: number;
   holdings: Partial<Record<AssetId, number>>;
   // průměrná nákupní cena držených kusů (jen pro zobrazení zisku)
   cost: Partial<Record<AssetId, number>>;
@@ -453,6 +478,7 @@ export function emptyState(now: number, runs = 0, best = 0): EconomyState {
     responses: {},
     research: {},
     contracts: {},
+    phase: 1,
     holdings: {},
     cost: {},
     hustle: {},
@@ -553,6 +579,7 @@ export function normalizeState(raw: unknown, now: number): EconomyState {
     responses,
     research,
     contracts,
+    phase: Math.floor(finite(r.phase, 1, 1, MAX_PHASE)),
     holdings,
     cost,
     hustle,
@@ -674,11 +701,18 @@ export function rates(state: EconomyState, now: number, learning = 0): Rates {
     : 0;
   let companies = 0;
   let companyCosts = 0;
+  let companyValue = 0;
   for (const c of COMPANIES) {
     const y = companyYield(state, c.id, now);
     companies += y.gross;
     companyCosts += y.costs;
+    companyValue += c.cost * (state.companies[c.id] ?? 0) * family.company;
   }
+  // Nájem a daň podle fáze firmy. Nájem má minimum z hodnoty firem, takže neklesne k nule ani při malém výnosu.
+  const phase = PHASE_RATES[Math.min(MAX_PHASE, Math.max(1, state.phase)) - 1];
+  const rent = Math.max(phase.rent * companies, RENT_FLOOR * companyValue);
+  const tax = phase.tax * Math.max(0, companies - companyCosts - rent);
+  companyCosts += rent + tax;
   let passive = 0;
   for (const a of ASSETS) {
     if (!a.yield) continue;
@@ -1060,4 +1094,15 @@ export function investEdu(state: EconomyState, now: number): ActionResult {
   if (!state.character) return fail("no-character");
   if (state.edu >= MAX_EDU) return fail("max");
   return done({ ...state, edu: state.edu + 1 }, now, { pointsSpent: eduCost(state.edu) });
+}
+
+// Postup do další fáze: chce výnos firem za hodinu a zaplatí den tohoto výnosu.
+export function upgradePhase(state: EconomyState, now: number): ActionResult {
+  if (!state.character) return fail("no-character");
+  if (state.phase >= MAX_PHASE) return fail("max");
+  const next = state.phase + 1;
+  if (rates(state, now).companies < phaseRequirement(next)) return fail("locked");
+  const price = phaseCost(next);
+  if (state.cash < price) return fail("not-enough-cash");
+  return done({ ...state, cash: state.cash - price, phase: next }, now);
 }

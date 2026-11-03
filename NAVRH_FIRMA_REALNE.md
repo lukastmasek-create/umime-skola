@@ -1,6 +1,17 @@
 # Návrh: firma jako realný provoz
 
-Stav: **návrh, kód zatím neměněn.** Čísla jsou výchozí a dají se doladit po hraní.
+Stav: **krok 1 hotový** (fáze 1–12, nájem a daň, postup do další fáze, karta ve Firmě). Zbytek je v kroku 2 a dál. Čísla jsou výchozí a dají se doladit po hraní.
+
+## Postup implementace
+
+1. Hotovo: fáze, nájem a daň, postup do další fáze.
+2. Další: zaměstnanci s rolemi, zkušenost, odchody a nemoc.
+3. Zásoby a vstupy.
+4. Varování před krachem a krach firmy.
+5. Úvěr v bance a investor za podíl.
+6. Holding a jeho financování.
+7. Zahraniční expanze.
+8. Burza (IPO, akcie, dividendy).
 
 ## Rozhodnutí z dotazníku
 

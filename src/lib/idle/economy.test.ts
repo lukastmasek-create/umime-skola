@@ -19,6 +19,12 @@ import {
   researchCompany,
   rivalMult,
   sellPrice,
+  PHASE_RATES,
+  MAX_PHASE,
+  phaseCost,
+  phaseRequirement,
+  rates as ratesOf,
+  upgradePhase,
   sellCompany,
   signContract,
   cashOutHustle,
@@ -479,4 +485,43 @@ test("nová pole: stará data se doplní a příliš dlouhý kontrakt se ořízn
   assert.deepEqual(s.research, { shoes: 3 });
   assert.equal(s.contracts.shoes, NOW + CONTRACT_MS, "kontrakt delší než limit se ořízne na nejdelší dobu");
   assert.deepEqual(normalizeState(null, NOW).research, {});
+});
+
+test("fáze: postup chce výnos firem a zaplatí den tohoto výnosu; nejde přeskočit", () => {
+  const s = { ...start("rich"), cash: 1e12 };
+  assert.deepEqual(upgradePhase(s, NOW), { ok: false, error: "locked" }, "bez firem není dost výnosu");
+  const bought = buyCompany(s, "shoes", NOW);
+  ok(bought);
+  let g = bought.ok ? bought.state : s;
+  // Kusy kupujeme, dokud výnos nedosáhne požadavku (události a konkurent ho mohou snížit).
+  for (let i = 0; i < 50 && ratesOf(g, NOW).companies < phaseRequirement(2); i++) {
+    const b = buyCompany(g, "shoes", NOW);
+    ok(b);
+    g = b.ok ? b.state : g;
+  }
+  assert.ok(ratesOf(g, NOW).companies >= phaseRequirement(2), "výnos stačí");
+  const up = upgradePhase(g, NOW);
+  ok(up);
+  if (!up.ok) return;
+  assert.equal(up.state.phase, 2);
+  assert.equal(g.cash - up.state.cash, phaseCost(2));
+  if (ratesOf(up.state, NOW).companies < phaseRequirement(3)) {
+    assert.deepEqual(upgradePhase(up.state, NOW), { ok: false, error: "locked" }, "další fáze chce víc výnosu");
+  }
+  assert.deepEqual(upgradePhase({ ...g, cash: 0 }, NOW), { ok: false, error: "not-enough-cash" });
+});
+
+test("fáze: nájem a daň rostou s fází; bez firmy se nic neplatí", () => {
+  const bought = buyCompany({ ...start("rich"), cash: 1e9 }, "shoes", NOW);
+  ok(bought);
+  const base = bought.ok ? bought.state : emptyState(NOW);
+  const low = ratesOf({ ...base, phase: 1 }, NOW);
+  const high = ratesOf({ ...base, phase: 12 }, NOW);
+  assert.ok(high.companyCosts > low.companyCosts, "vyšší fáze stojí víc");
+  assert.equal(PHASE_RATES.length, MAX_PHASE);
+  const owned = ratesOf({ ...base, phase: 2 }, NOW);
+  assert.ok(owned.companyCosts > 0, "firma platí nájem a daň");
+  assert.equal(ratesOf({ ...start("rich"), phase: 2 }, NOW).companyCosts, 0, "bez firmy se nic neplatí");
+  assert.equal(normalizeState({ phase: 99 }, NOW).phase, MAX_PHASE);
+  assert.equal(normalizeState(null, NOW).phase, 1);
 });
