@@ -1,13 +1,26 @@
 import { grantFullAccessOnce, hasFullAccessEmail } from "@/lib/full-access";
-import NextAuth from "next-auth";
+import NextAuth, { type NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { prisma } from "@/lib/prisma";
 import { defaultLocale } from "@/i18n/config";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+// Na Workers nemusí být secrety z dashboardu v process.env, proto se čtou z bindingů.
+function authSecret(): string | undefined {
+  try {
+    const { env } = getCloudflareContext({ async: false });
+    const secret = (env as { AUTH_SECRET?: string }).AUTH_SECRET;
+    if (secret) return secret;
+  } catch {
+    // Mimo požadavek na Workers kontext není k dispozici.
+  }
+  return process.env.AUTH_SECRET;
+}
+
+const authConfig: NextAuthConfig = {
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   pages: {
@@ -58,4 +71,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
   },
-});
+};
+
+// Konfigurace se skládá při každém požadavku, aby se načetl secret z bindingů.
+// trustHost: aplikace běží za Cloudflare na vlastní doméně.
+export const { handlers, signIn, signOut, auth } = NextAuth(() => ({
+  ...authConfig,
+  secret: authSecret(),
+  trustHost: true,
+}));
