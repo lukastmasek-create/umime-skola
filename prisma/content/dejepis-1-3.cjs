@@ -253,7 +253,7 @@ module.exports = {
       grade: 2,
       qs: [
         [1, "Co je hrad?", "opevněná stavba pro obranu", ["obchod", "škola", "nádraží"], "Hrad."],
-        [1, "Co je zámek?", "pohodlné sídlo šlechty", ["pevnost", "nemocnice", "kůlna"], "Zámek."],
+        [1, "Který hrad v Praze byl sídlem českých králů?", "Pražský hrad", ["Karlštejn", "Křivoklát", "Konopiště"], "Pražský hrad byl po staletí sídlem českých panovníků."],
         [1, "Co chránilo hrad?", "hradby a příkop", ["zahrada", "trávník", "plot"], "Hradby."],
         [2, "Co je věž na hradě?", "vysoká stavba pro hlídání", ["jídelna", "ložnice", "sklep"], "Strážní věž."],
         [2, "Co je padací most?", "most, který se zvedá a zavírá vchod", ["most přes řeku", "lávka", "tunel"], "Padací most."],
@@ -324,7 +324,7 @@ module.exports = {
       section: "Tradice",
       grade: 2,
       qs: [
-        [1, "Kdy slavíme Nový rok?", "1. ledna", ["31. prosince", "6. ledna", "24. prosince"], "1. ledna."],
+        [1, "Který státní svátek připadá na 5. července?", "Den slovanských věrozvěstů Cyrila a Metoděje", ["Den české státnosti", "Den vzniku samostatného Československa", "Den boje za svobodu a demokracii"], "5. července si připomínáme příchod věrozvěstů Cyrila a Metoděje."],
         [1, "Kdy je Den vzniku samostatného československého státu?", "28. října", ["1. ledna", "8. května", "17. listopadu"], "28. října 1918."],
         [1, "Jaký svátek je 8. května?", "Den vítězství", ["Den práce", "Den dětí", "Den matek"], "Konec války 1945."],
         [2, "Jaký svátek je 1. května?", "Svátek práce", ["Den dětí", "Den vítězství", "Den matek"], "1. května."],
