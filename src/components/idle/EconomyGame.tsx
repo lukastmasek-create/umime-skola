@@ -6,6 +6,8 @@ import { getEconomyText } from "@/i18n/economy";
 import { getEconomyWork } from "@/i18n/economy-work";
 import { getEconomyHustle } from "@/i18n/economy-hustle";
 import { notifyAccountChanged } from "@/lib/account-events";
+import { getCraftText } from "@/i18n/craft";
+import { CASH_PRICE, MATERIALS, WORLDS, type World } from "@/lib/craft";
 import {
   SPEEDS,
   ASSETS,
@@ -56,8 +58,11 @@ import type { Locale } from "@/i18n/config";
 type View = { data: Payload; receivedAt: number };
 type Load = "loading" | "login" | "unavailable" | "ready";
 type Tab = "overview" | "work" | "companies" | "invest" | "hustle" | "board";
-type OvTab = "summary" | "earnings" | "assets" | "education";
+type OvTab = "summary" | "earnings" | "assets" | "education" | "materials";
 type Board = { top: { rank: number; name: string; country: string | null; best: number; runs: number; me: boolean }[]; me: { rank: number; best: number } | null };
+// Výřez z /api/craft: materiály a denní limit nákupu.
+type CraftView = { points?: number; buyLeft?: number; mats?: Record<string, number> };
+const WORLD_ICON: Record<World, string> = { obecne: "🧰", vesmir: "🚀", more: "🌊", les: "🌲", hrad: "🏰", kouzla: "🪄" };
 
 
 function money(n: number, currency: string, locale: Locale): string {
@@ -132,6 +137,7 @@ function Donut({ parts, centerLabel, centerValue, shareLabel }: { parts: DonutPa
 
 export function EconomyGame({ locale }: { locale: Locale }) {
   const t = getEconomyText(locale);
+  const ct = getCraftText(locale);
   const [load, setLoad] = useState<Load>("loading");
   const [view, setView] = useState<View | null>(null);
   const [tab, setTab] = useState<Tab>("overview");
@@ -141,6 +147,9 @@ export function EconomyGame({ locale }: { locale: Locale }) {
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
   const [board, setBoard] = useState<Board | null>(null);
   const [xAmount, setXAmount] = useState(10);
+  const [craft, setCraft] = useState<CraftView | null>(null);
+  const [craftBusy, setCraftBusy] = useState<string | null>(null);
+  const [craftMsg, setCraftMsg] = useState<string | null>(null);
   const [form, setForm] = useState<{ name: string; country: CountryId; city: CityId; era: EraId; family: FamilyId }>({
     name: "",
     country: "cz",
@@ -229,6 +238,45 @@ export function EconomyGame({ locale }: { locale: Locale }) {
     },
     [errorText, refresh, say, t.errors.generic],
   );
+
+  // Materiály: načtou se až při otevření záložky. Nákup za peníze řeší server (/api/craft, akce buyCash) v jedné transakci s Ekonomikou.
+  useEffect(() => {
+    if (tab !== "overview" || ov !== "materials") return;
+    let cancelled = false;
+    fetch("/api/craft")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!cancelled && d) setCraft(d as CraftView);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [tab, ov]);
+
+  async function buyMaterial(id: string, name: string) {
+    if (craftBusy || busy) return;
+    setCraftBusy(id);
+    setCraftMsg(null);
+    try {
+      const res = await fetch("/api/craft", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "buyCash", id, count: 1 }) });
+      const json = (await res.json().catch(() => ({}))) as CraftView & { error?: string };
+      if (!res.ok) {
+        setCraftMsg(ct.errors[(json.error ?? "unavailable") as keyof typeof ct.errors] ?? ct.errors.unavailable);
+        if (json.error === "conflict") void refresh();
+        return;
+      }
+      setCraft(json);
+      setCraftMsg(fill(t.materials.bought, { name }));
+      // Peníze v Ekonomice se změnily na serveru, načteme stav znovu.
+      void refresh();
+      notifyAccountChanged();
+    } catch {
+      setCraftMsg(ct.errors.unavailable);
+    } finally {
+      setCraftBusy(null);
+    }
+  }
 
   if (load === "loading") return <p className="text-[var(--muted)]">{t.loading}</p>;
   if (load === "unavailable") return <p className="card p-6 text-center">{t.unavailable}</p>;
@@ -425,7 +473,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
       {tab === "overview" && (
         <section>
           <div role="tablist" className="mb-4 flex flex-wrap gap-2">
-            {(["summary", "earnings", "assets", "education"] as OvTab[]).map((id) => (
+            {(["summary", "earnings", "assets", "education", "materials"] as OvTab[]).map((id) => (
               <button
                 key={id}
                 role="tab"
@@ -434,7 +482,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                 onClick={() => setOv(id)}
                 className={`btn-bouncy px-3 py-1.5 text-sm font-bold ${ov === id ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface)]"}`}
               >
-                {id === "summary" ? t.ovSummary : id === "earnings" ? t.ovEarnings : id === "assets" ? t.ovAssets : t.ovEducation}
+                {id === "summary" ? t.ovSummary : id === "earnings" ? t.ovEarnings : id === "assets" ? t.ovAssets : id === "education" ? t.ovEducation : t.ovMaterials}
               </button>
             ))}
           </div>
@@ -673,7 +721,10 @@ export function EconomyGame({ locale }: { locale: Locale }) {
               </button>
 
               <div className="mt-2 flex flex-col gap-3 border-t-2 border-[var(--border-soft)] pt-4">
-                <h3 className="font-bold">💱 {t.exchange.title}</h3>
+                <h3 className="flex flex-wrap items-center gap-2 font-bold">
+                  💱 {t.exchange.title}
+                  <span className="text-sm font-bold text-[var(--muted)]">⭐ {data.points}</span>
+                </h3>
                 <p className="text-sm text-[var(--muted)]">{t.exchange.hint}</p>
                 <label className="flex items-center gap-2 text-sm font-bold">
                   {t.exchange.amount}
@@ -714,6 +765,58 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                   {fill(t.exchange.sellRate, { p: m(POINT_SELL_CASH) })} · {fill(t.exchange.buyRate, { p: m(POINT_BUY_CASH) })}
                 </p>
               </div>
+            </div>
+          )}
+
+          {ov === "materials" && (
+            <div className="card flex flex-col gap-4 p-5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 className="font-bold">🧱 {t.materials.title}</h2>
+                {craft?.buyLeft !== undefined && <span className="text-sm font-bold">{fill(ct.buyLeft, { n: craft.buyLeft })}</span>}
+              </div>
+              <p className="text-sm text-[var(--muted)]">{t.materials.hint}</p>
+              {craftMsg && <p className="text-sm font-bold">{craftMsg}</p>}
+              {!craft ? (
+                <p className="text-sm text-[var(--muted)]">{t.loading}</p>
+              ) : (
+                WORLDS.map((w) => {
+                  const list = MATERIALS.filter((x) => x.world === w && CASH_PRICE[x.rarity] !== undefined);
+                  if (list.length === 0) return null;
+                  return (
+                    <div key={w} className="flex flex-col gap-2">
+                      <h3 className="text-sm font-bold">
+                        {WORLD_ICON[w]} {ct.worlds[w]}
+                      </h3>
+                      <ul className="grid gap-2 sm:grid-cols-2">
+                        {list.map((x) => {
+                          const price = CASH_PRICE[x.rarity] ?? 0;
+                          return (
+                            <li key={x.id} className="flex items-center gap-2 rounded-md border-2 border-[var(--border-soft)] p-2">
+                              <span className="text-xl" aria-hidden>
+                                {x.icon}
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className="block truncate text-sm font-bold">{x.names[locale]}</span>
+                                <span className="block text-[11px] text-[var(--muted)]">
+                                  {ct.rarities[x.rarity]} · {fill(t.materials.owned, { n: craft.mats?.[x.id] ?? 0 })}
+                                </span>
+                              </span>
+                              <button
+                                type="button"
+                                disabled={!!craftBusy || busy || (craft.buyLeft ?? 0) <= 0 || state.cash < price}
+                                onClick={() => void buyMaterial(x.id, x.names[locale])}
+                                className="btn-bouncy shrink-0 bg-[var(--accent-yellow)] px-2.5 py-1.5 text-xs font-bold text-[#16132b] disabled:opacity-45"
+                              >
+                                🛒 {m(price)}
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  );
+                })
+              )}
             </div>
           )}
         </section>
