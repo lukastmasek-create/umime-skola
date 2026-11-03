@@ -22,6 +22,9 @@ import {
   EVENT_DURATION_MS,
   EVENT_WINDOW_MS,
   HUSTLES,
+  decideHustle,
+  hustleChoices,
+  hustleRoll,
   INCOME_SPEED,
   JOBS,
   SITUATIONS,
@@ -44,15 +47,12 @@ import {
   upgradePhase,
   sellCompany,
   signContract,
-  cashOutHustle,
   chooseShift,
-  collectHustle,
   companyIncome,
   companyYield,
   createCharacter,
   currentEvent,
   emptyState,
-  hustleOffer,
   eventAffects,
   fundResponse,
   hireStaff,
@@ -397,67 +397,76 @@ test("arbitráž: potřebuje rozdíl cen a čeká se mezi obchody", () => {
   }
 });
 
-test("hustle: kapitál se zablokuje, výsledek je v rozsahu a vybrat jde až po čase", () => {
+test("hustle: kapitál se zablokuje a tři kola přijdou po čase, poslední rozhodnutí vyplatí", () => {
   const s = { ...start("rich"), cash: 1000 };
-  const lo = startHustle(s, "reselling", NOW, () => 0);
-  const hi = startHustle(s, "reselling", NOW, () => 0.999999);
-  ok(lo);
-  ok(hi);
-  const slot = lo.ok ? lo.state : s;
-  assert.equal(slot.cash, 800);
-  assert.deepEqual(startHustle(slot, "reselling", NOW), { ok: false, error: "busy" });
-  assert.deepEqual(collectHustle(slot, "reselling", NOW + 20_000), { ok: false, error: "not-ready" });
-  const paid = collectHustle(slot, "reselling", NOW + 60_000);
-  assert.ok(paid.ok && paid.state.cash === 800 + 170 && !paid.state.hustle.reselling);
-  const rich = collectHustle(hi.ok ? hi.state : s, "reselling", NOW + 60_000);
-  assert.ok(rich.ok && rich.state.cash > 1000);
+  const r = startHustle(s, "reselling", NOW, () => 0.3);
+  ok(r);
+  let st = r.state;
+  assert.equal(st.cash, 800);
+  assert.deepEqual(startHustle(st, "reselling", NOW), { ok: false, error: "busy" });
+  // První kolo se otevře až po jednom intervalu (30 s), ne hned.
+  assert.deepEqual(decideHustle(st, "reselling", NOW + 29_000, "balance"), { ok: false, error: "not-ready" });
+  const d1 = decideHustle(st, "reselling", NOW + 30_000, "balance");
+  ok(d1);
+  st = d1.state;
+  assert.equal(st.hustle.reselling!.round, 1);
+  assert.equal(st.cash, 800);
+  const d2 = decideHustle(st, "reselling", NOW + 60_000, "secure");
+  ok(d2);
+  st = d2.state;
+  assert.equal(st.hustle.reselling!.round, 2);
+  const d3 = decideHustle(st, "reselling", NOW + 90_000, "risky");
+  ok(d3);
+  assert.ok(!d3.state.hustle.reselling, "po posledním kole je hustl uzavřen");
+  assert.ok(d3.ok && d3.gained?.cash === d3.state.cash - 800, "výplata se připíše do hotovosti");
+  assert.deepEqual(decideHustle(d3.state, "reselling", NOW + 90_000, "balance"), { ok: false, error: "nothing" });
+});
+
+test("hustle: volba musí být v nabídce kola a nejde zamknutý hustl", () => {
+  const s = { ...start("rich"), cash: 1000 };
+  const r = startHustle(s, "reselling", NOW, () => 0.3);
+  ok(r);
+  assert.deepEqual(decideHustle(r.state, "reselling", NOW + 30_000, "neexistuje"), { ok: false, error: "bad-request" });
+  assert.deepEqual(startHustle({ ...s, edu: 0 }, "startup", NOW), { ok: false, error: "locked" });
   assert.deepEqual(startHustle({ ...s, cash: 100 }, "carflip", NOW), { ok: false, error: "not-enough-cash" });
-  assert.deepEqual(collectHustle(s, "reselling", NOW), { ok: false, error: "nothing" });
 });
 
-test("hustle: vklad a riziko volí hráč, dokoupení zvětší výplatu ve stejném poměru", () => {
-  const s = { ...start("rich"), cash: 100_000 };
-  // Vklad 10 000 (libovolná částka), riziko 50 %: střed výplaty zůstává na 1,55×.
-  const r = startHustle(s, "carflip", NOW, () => 0.5, { stake: 10_000, risk: 50 });
-  ok(r);
-  assert.equal(r.state.cash, 90_000);
-  assert.equal(r.state.hustle.carflip!.stake, 10_000);
-  // Riziko 10 % má užší rozsah než 100 %: při nejnižším výsledku je ztráta mírnější.
-  const safe = startHustle(s, "carflip", NOW, () => 0, { stake: 10_000, risk: 10 });
-  const risky = startHustle(s, "carflip", NOW, () => 0, { stake: 10_000, risk: 100 });
-  ok(safe);
-  ok(risky);
-  assert.ok(safe.state.hustle.carflip!.payout > risky.state.hustle.carflip!.payout);
-  // Neplatné hodnoty: nulový či neceločíselný vklad, riziko mimo 1–100.
-  assert.deepEqual(startHustle(s, "carflip", NOW, Math.random, { stake: 0 }), { ok: false, error: "bad-request" });
-  assert.deepEqual(startHustle(s, "carflip", NOW, Math.random, { stake: 10.5 }), { ok: false, error: "bad-request" });
-  assert.deepEqual(startHustle(s, "carflip", NOW, Math.random, { stake: 1000, risk: 0 }), { ok: false, error: "bad-request" });
-  assert.deepEqual(startHustle(s, "carflip", NOW, Math.random, { stake: 1000, risk: 101 }), { ok: false, error: "bad-request" });
-  // Dokoupení 5 000: vklad 10 000 → 15 000, výplata se zvětší ve stejném poměru.
-  const before = r.state.hustle.carflip!;
-  const top = topUpHustle(r.state, "carflip", NOW + 60_000, 5_000);
-  ok(top);
-  assert.equal(top.state.hustle.carflip!.stake, 15_000);
-  assert.equal(top.state.hustle.carflip!.payout, before.payout + Math.round((before.payout / before.stake) * 5_000));
-  assert.deepEqual(topUpHustle(top.state, "carflip", NOW, 1_000_000), { ok: false, error: "not-enough-cash" });
-  assert.deepEqual(topUpHustle(r.state, "carflip", NOW + 5 * 60_000, 5_000), { ok: false, error: "ready" });
+test("hustle: stejné semínko dává stejný výsledek a riziko zužuje rozsah každé volby", () => {
+  const base = { startedAt: NOW, value: 1000, stake: 1000, round: 0, seed: 42, streak: 0 };
+  const width = (risk: number, key: string) => {
+    const c = hustleChoices({ ...base, risk }, "carflip").find((x) => x.key === key);
+    assert.ok(c, key);
+    return c.hi - c.lo;
+  };
+  assert.ok(width(10, "risky") < width(100, "risky"));
+  assert.ok(width(100, "secure") < width(100, "risky"));
+  assert.equal(hustleRoll(42, 1, 2), hustleRoll(42, 1, 2));
+  for (let i = 0; i < 50; i++) {
+    const v = hustleRoll(i * 977, i % 3, i % 4);
+    assert.ok(v >= 0 && v < 1, `rozsah ${v}`);
+  }
 });
 
-test("hustle: průběžné rozhodování – prodej teď dává nabídku minus poplatek, po čase už jen výběr", () => {
+test("hustle: série úspěchů zvedá střed rozsahu a dokoupení zvětší hodnotu i vklad", () => {
+  const base = { startedAt: NOW, value: 1000, stake: 1000, round: 0, seed: 7, risk: 50 };
+  const fresh = hustleChoices({ ...base, streak: 0 }, "houseflip").find((x) => x.key === "balance")!;
+  const hot = hustleChoices({ ...base, streak: 9 }, "houseflip").find((x) => x.key === "balance")!;
+  assert.ok(hot.lo > fresh.lo && hot.hi > fresh.hi);
   const s = { ...start("rich"), cash: 10_000 };
-  const r = startHustle(s, "carflip", NOW, () => 0.999999);
+  const r = startHustle(s, "carflip", NOW, () => 0, { stake: 1000 });
   ok(r);
-  const slot = r.state;
-  assert.equal(slot.cash, 5000);
-  // Na začátku je nabídka rovna vkladu, takže prodej hned znamená ztrátu poplatku (5 %).
-  const early = cashOutHustle(slot, "carflip", NOW);
-  assert.ok(early.ok && early.state.cash === 5000 + Math.round(5000 * 0.95) && !early.state.hustle.carflip);
-  // V půlce je nabídka mezi vkladem a výplatou.
-  const mid = hustleOffer(slot.hustle.carflip!, "carflip", NOW + 150_000);
-  assert.ok(mid > 5000 && mid < 5000 * 1.55);
-  // Po uplynutí času už se prodává jen přes sběr výsledku.
-  assert.deepEqual(cashOutHustle(slot, "carflip", NOW + 5 * 60_000), { ok: false, error: "ready" });
-  assert.deepEqual(cashOutHustle(s, "carflip", NOW), { ok: false, error: "nothing" });
+  const top = topUpHustle(r.state, "carflip", NOW, 500);
+  ok(top);
+  assert.equal(top.state.cash, 10_000 - 1000 - 500);
+  assert.equal(top.state.hustle.carflip!.value, 1500);
+  assert.equal(top.state.hustle.carflip!.stake, 1500);
+});
+
+test("hustle: stará uložená hra se rozjetý hustl vyplatí hned při načtení", () => {
+  const raw = { ...start("rich"), cash: 500, hustle: { reselling: { startedAt: NOW, payout: 300, stake: 200 } } };
+  const n = normalizeState(JSON.parse(JSON.stringify(raw)), NOW);
+  assert.equal(n.cash, 800);
+  assert.equal(n.hustle.reselling, undefined);
 });
 
 test("vzdělání: body se utrácejí, bonus roste a má strop", () => {
@@ -532,7 +541,7 @@ test("normalizeState: poškozená data se opraví bez pádu", () => {
       cash: "lots",
       companies: { shoes: 9999, ghost: 4 },
       holdings: { stocks: -3, metal: 2 },
-      hustle: { carflip: { startedAt: NOW + 1e9, payout: 1e12 } },
+      hustle: { carflip: { startedAt: NOW + 1e9, value: -5, stake: 1e12, round: 9, seed: "x", risk: 500, streak: -1 } },
       edu: 99,
     },
     NOW,
@@ -543,7 +552,8 @@ test("normalizeState: poškozená data se opraví bez pádu", () => {
   assert.equal("ghost" in bad.companies, false);
   assert.equal(bad.holdings.technology, undefined);
   assert.equal(bad.holdings.gold, 2);
-  assert.ok(bad.hustle.carflip!.startedAt <= NOW && bad.hustle.carflip!.payout <= 5000 * 5 * 1.55);
+  const slot = bad.hustle.carflip!;
+  assert.ok(slot.startedAt <= NOW && slot.value === 0 && slot.round === 2 && slot.risk === 100 && slot.streak === 0);
   assert.equal(bad.edu, 25);
   const round = normalizeState(JSON.parse(JSON.stringify(start("rich"))), NOW);
   assert.equal(round.character?.name, "Eva");
