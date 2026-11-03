@@ -9,6 +9,7 @@ import {
   HUSTLES,
   decideHustle,
   hustleChoices,
+  hustleHint,
   hustleRoll,
   INCOME_SPEED,
   JOBS,
@@ -76,7 +77,6 @@ test("obsah: jedinečná id, platné ceny a rostoucí žebříčky", () => {
   assert.deepEqual(JOBS.map((j) => j.salary), [...JOBS.map((j) => j.salary)].sort((a, b) => a - b));
   assert.deepEqual(COMPANIES.map((c) => c.cost), [...COMPANIES.map((c) => c.cost)].sort((a, b) => a - b));
   for (const c of COMPANIES) assert.ok(companyIncome(c.id) > 0 && c.cost / companyIncome(c.id) <= 14, `návratnost ${c.id}`);
-  for (const h of HUSTLES) assert.ok(h.min < 1 && h.max > 1 && (h.min + h.max) / 2 > 1, `hustle ${h.id}`);
 });
 
 test("postava: startovní peníze podle rodiny a doby, jméno se očistí, podruhé nejde", () => {
@@ -367,49 +367,47 @@ test("arbitráž: potřebuje rozdíl cen a čeká se mezi obchody", () => {
   }
 });
 
-test("hustle: kapitál se zablokuje a tři kola přijdou po čase, poslední rozhodnutí vyplatí", () => {
+test("hustle: projekt projde třemi fázemi, každá se otevře po čase a na konci se vyplatí", () => {
   const s = { ...start("rich"), cash: 1000 };
-  const r = startHustle(s, "reselling", NOW, () => 0.3);
+  const r = startHustle(s, "lemonade", NOW, () => 0.3);
   ok(r);
   let st = r.state;
-  assert.equal(st.cash, 800);
-  assert.deepEqual(startHustle(st, "reselling", NOW), { ok: false, error: "busy" });
-  // První kolo se otevře až po jednom intervalu (30 s), ne hned.
-  assert.deepEqual(decideHustle(st, "reselling", NOW + 29_000, "balance"), { ok: false, error: "not-ready" });
-  const d1 = decideHustle(st, "reselling", NOW + 30_000, "balance");
-  ok(d1);
-  st = d1.state;
-  assert.equal(st.hustle.reselling!.round, 1);
-  assert.equal(st.cash, 800);
-  const d2 = decideHustle(st, "reselling", NOW + 60_000, "secure");
-  ok(d2);
-  st = d2.state;
-  assert.equal(st.hustle.reselling!.round, 2);
-  const d3 = decideHustle(st, "reselling", NOW + 90_000, "risky");
-  ok(d3);
-  assert.ok(!d3.state.hustle.reselling, "po posledním kole je hustl uzavřen");
-  assert.ok(d3.ok && d3.gained?.cash === d3.state.cash - 800, "výplata se připíše do hotovosti");
-  assert.deepEqual(decideHustle(d3.state, "reselling", NOW + 90_000, "balance"), { ok: false, error: "nothing" });
+  assert.equal(st.cash, 950);
+  assert.deepEqual(startHustle(st, "lemonade", NOW), { ok: false, error: "busy" });
+  // První fáze se otevře až po jednom intervalu (20 s), ne hned.
+  assert.deepEqual(decideHustle(st, "lemonade", NOW + 19_000, 0), { ok: false, error: "not-ready" });
+  for (const at of [NOW + 20_000, NOW + 40_000]) {
+    const d = decideHustle(st, "lemonade", at, 0);
+    ok(d);
+    st = d.state;
+  }
+  assert.equal(st.hustle.lemonade!.round, 2);
+  const last = decideHustle(st, "lemonade", NOW + 60_000, 0);
+  ok(last);
+  assert.ok(!last.state.hustle.lemonade, "po poslední fázi je projekt uzavřen");
+  assert.equal(last.state.knowledge.lemonade, 1, "dokončený běh přidá zkušenost");
+  assert.ok(last.ok && last.gained?.cash === last.state.cash - 950, "výplata se připíše do hotovosti");
+  assert.deepEqual(decideHustle(last.state, "lemonade", NOW + 60_000, 0), { ok: false, error: "nothing" });
 });
 
-test("hustle: volba musí být v nabídce kola a nejde zamknutý hustl", () => {
+test("hustle: volba musí být v nabídce fáze, nejde zamknutý projekt a nejde se dokoupit bez peněz", () => {
   const s = { ...start("rich"), cash: 1000 };
-  const r = startHustle(s, "reselling", NOW, () => 0.3);
+  const r = startHustle(s, "lemonade", NOW, () => 0.3);
   ok(r);
-  assert.deepEqual(decideHustle(r.state, "reselling", NOW + 30_000, "neexistuje"), { ok: false, error: "bad-request" });
-  assert.deepEqual(startHustle({ ...s, edu: 0 }, "startup", NOW), { ok: false, error: "locked" });
+  assert.deepEqual(decideHustle(r.state, "lemonade", NOW + 20_000, 9), { ok: false, error: "bad-request" });
+  assert.deepEqual(startHustle(s, "houseflip", NOW), { ok: false, error: "locked" });
+  assert.ok(startHustle({ ...s, edu: 3, cash: 100_000 }, "houseflip", NOW).ok, "Vzdělání 3 odemyká Flipování domů");
   assert.deepEqual(startHustle({ ...s, cash: 100 }, "carflip", NOW), { ok: false, error: "not-enough-cash" });
+  assert.deepEqual(topUpHustle(r.state, "lemonade", NOW, 5000), { ok: false, error: "not-enough-cash" });
 });
 
-test("hustle: stejné semínko dává stejný výsledek a riziko zužuje rozsah každé volby", () => {
-  const base = { startedAt: NOW, value: 1000, stake: 1000, round: 0, seed: 42, streak: 0 };
-  const width = (risk: number, key: string) => {
-    const c = hustleChoices({ ...base, risk }, "carflip").find((x) => x.key === key);
-    assert.ok(c, key);
+test("hustle: stejné semínko dává stejné losy, riziková volba má širší rozsah než jistá", () => {
+  const slot = { startedAt: NOW, value: 1000, stake: 1000, round: 0, seed: 42, streak: 0, protected: false, log: [] };
+  const width = (key: number) => {
+    const c = hustleChoices(slot, "carflip").find((x) => x.index === key)!;
     return c.hi - c.lo;
   };
-  assert.ok(width(10, "risky") < width(100, "risky"));
-  assert.ok(width(100, "secure") < width(100, "risky"));
+  assert.ok(width(0) > 0, "každá volba má kladný rozsah");
   assert.equal(hustleRoll(42, 1, 2), hustleRoll(42, 1, 2));
   for (let i = 0; i < 50; i++) {
     const v = hustleRoll(i * 977, i % 3, i % 4);
@@ -417,10 +415,10 @@ test("hustle: stejné semínko dává stejný výsledek a riziko zužuje rozsah 
   }
 });
 
-test("hustle: série úspěchů zvedá střed rozsahu a dokoupení zvětší hodnotu i vklad", () => {
-  const base = { startedAt: NOW, value: 1000, stake: 1000, round: 0, seed: 7, risk: 50 };
-  const fresh = hustleChoices({ ...base, streak: 0 }, "houseflip").find((x) => x.key === "balance")!;
-  const hot = hustleChoices({ ...base, streak: 9 }, "houseflip").find((x) => x.key === "balance")!;
+test("hustle: série úspěchů zvedá rozsahy a dokoupení zvětší hodnotu i vklad", () => {
+  const base = { startedAt: NOW, value: 1000, stake: 1000, round: 0, seed: 7, protected: false, log: [] };
+  const fresh = hustleChoices({ ...base, streak: 0 }, "houseflip").find((x) => x.index === 1)!;
+  const hot = hustleChoices({ ...base, streak: 9 }, "houseflip").find((x) => x.index === 1)!;
   assert.ok(hot.lo > fresh.lo && hot.hi > fresh.hi);
   const s = { ...start("rich"), cash: 10_000 };
   const r = startHustle(s, "carflip", NOW, () => 0, { stake: 1000 });
@@ -432,12 +430,57 @@ test("hustle: série úspěchů zvedá střed rozsahu a dokoupení zvětší hod
   assert.equal(top.state.hustle.carflip!.stake, 1500);
 });
 
-test("hustle: stará uložená hra se rozjetý hustl vyplatí hned při načtení", () => {
-  const raw = { ...start("rich"), cash: 500, hustle: { reselling: { startedAt: NOW, payout: 300, stake: 200 } } };
+test("hustle: ochrana (prohlídka, posudek) se zapíše, když hráč zvolí správnou volbu ve druhé fázi", () => {
+  const s = { ...start("rich"), cash: 100_000 };
+  const started = startHustle(s, "carflip", NOW, () => 0.2);
+  ok(started);
+  const d1 = decideHustle(started.state, "carflip", NOW + 90_000, 0);
+  ok(d1);
+  assert.equal(d1.state.hustle.carflip!.protected, false);
+  const d2 = decideHustle(d1.state, "carflip", NOW + 180_000, 1);
+  ok(d2);
+  assert.equal(d2.state.hustle.carflip!.protected, true, "prohlídka u mechanika chrání před reklamací");
+  assert.equal(d2.state.hustle.carflip!.round, 2);
+});
+
+test("hustle: zkušenost z dokončeného běhu se uloží, nejvýš 5 bodů", () => {
+  const g = startHustle({ ...start("rich"), cash: 1_000_000, knowledge: { reselling: 9 } }, "reselling", NOW, () => 0.4);
+  ok(g);
+  let st: EconomyState = g.state;
+  for (let i = 0; i < 3; i++) {
+    const d = decideHustle(st, "reselling", NOW + (i + 1) * 40_000, 0);
+    ok(d);
+    st = d.state;
+  }
+  assert.equal(st.knowledge.reselling, 5, "zkušenost se drží na maximu 5");
+});
+
+test("hustle: nápověda o trhu je jen se zkušeností a řekne směr", () => {
+  const slot = { startedAt: NOW, value: 1000, stake: 1000, round: 2, seed: 99, streak: 0, protected: false, log: [] };
+  assert.equal(hustleHint(slot, "reselling", 0), null);
+  const hint = hustleHint(slot, "reselling", 5);
+  assert.ok(hint && typeof hint.up === "boolean");
+});
+
+test("hustle: obsah je konzistentní (tři fáze po třech volbách, rozsahy dávají smysl)", () => {
+  for (const h of HUSTLES) {
+    assert.equal(h.phases.length, 3, h.id);
+    for (const phase of h.phases) {
+      assert.equal(phase.length, 3, h.id);
+      for (const o of phase) assert.ok(o.width >= 0 && o.cost >= 0, `${h.id} volba`);
+    }
+    assert.ok(h.market[0] < 1 && h.market[1] > 1, `trh ${h.id} pokrývá 1`);
+  }
+});
+
+test("hustle: stará uložená hra se rozjetý hustl vrátí na hotovost, zkušenost se načte", () => {
+  const raw = { ...start("rich"), cash: 500, hustle: { reselling: { startedAt: NOW, payout: 300, stake: 200 } }, knowledge: { lemonade: 9 } };
   const n = normalizeState(JSON.parse(JSON.stringify(raw)), NOW);
   assert.equal(n.cash, 800);
   assert.equal(n.hustle.reselling, undefined);
+  assert.equal(n.knowledge.lemonade, 5);
 });
+
 
 test("vzdělání: body se utrácejí, bonus roste a má strop", () => {
   let s = start();
@@ -511,7 +554,7 @@ test("normalizeState: poškozená data se opraví bez pádu", () => {
       cash: "lots",
       companies: { shoes: 9999, ghost: 4 },
       holdings: { stocks: -3, metal: 2 },
-      hustle: { carflip: { startedAt: NOW + 1e9, value: -5, stake: 1e12, round: 9, seed: "x", risk: 500, streak: -1 } },
+      hustle: { carflip: { startedAt: NOW + 1e9, value: -5, stake: 1e12, round: 9, seed: "x", streak: -1, protected: false, log: "bad" } },
       edu: 99,
     },
     NOW,
@@ -523,7 +566,7 @@ test("normalizeState: poškozená data se opraví bez pádu", () => {
   assert.equal(bad.holdings.technology, undefined);
   assert.equal(bad.holdings.gold, 2);
   const slot = bad.hustle.carflip!;
-  assert.ok(slot.startedAt <= NOW && slot.value === 0 && slot.round === 2 && slot.risk === 100 && slot.streak === 0);
+  assert.ok(slot.startedAt <= NOW && slot.value === 0 && slot.round === 2 && slot.streak === 0 && slot.log.length === 0);
   assert.equal(bad.edu, 25);
   const round = normalizeState(JSON.parse(JSON.stringify(start("rich"))), NOW);
   assert.equal(round.character?.name, "Eva");

@@ -33,7 +33,6 @@ export type EconomyText = {
   companies: Record<CompanyId, string>;
   assets: Record<AssetId, string>;
   assetCategories: Record<AssetCategoryId, string>;
-  hustles: Record<HustleId, string>;
   // detail firmy: ovládání, které se otevře po kliknutí na „Spravovat“
   detail: {
     open: string;
@@ -155,25 +154,7 @@ export type EconomyText = {
   spread: string;
   arbitrageGo: string;
   arbitrageWait: string;
-  hustleHint: string;
-  hustleValue: string;
-  hustleRound: string;
-  hustleSituations: Record<HustleId, [string, string, string]>;
-  hustleOptions: Record<"secure" | "balance" | "risky" | "event", { name: string; hint: string }>;
-  hustleRange: string;
-  hustleStreak: string;
-  hustleLength: string;
-  hustleLocked: string;
-  hustleDue: string;
-  hustleStart: string;
-  hustleRunning: string;
-  hustlePanel: string;
-  hustleNone: string;
-  hustleStake: string;
-  hustleRisk: string;
   riskHint: string;
-  hustleAll: string;
-  hustleTopUp: string;
   minutes: string;
   hours: string;
   boardHint: string;
@@ -248,7 +229,6 @@ const cs: EconomyText = {
   },
   assets: { coin: "Hlavní coin", altcoin: "Altcoin", stablecoin: "Stablecoin", memecoin: "Memecoin", defi: "DeFi token", flat: "Byt", house: "Dům", land: "Pozemek", office: "Kancelář", technology: "Technologie", energy: "Energetika", bank: "Banky", consumer: "Spotřební zboží", biotech: "Biotech", gold: "Zlato", silver: "Stříbro", copper: "Měď", state: "Státní dluhopisy", corporate: "Firemní dluhopisy", junk: "Vysoký výnos", index: "Světový index", dividend: "Dividendový fond", theme: "Tematický fond", startup_it: "Startup IT", startup_fintech: "Startup fintech", startup_green: "Startup zelená energie" },
   assetCategories: { crypto: "Kryptoměny", realestate: "Pozemky a nemovitosti", stocks: "Akcie", metals: "Kovy", bonds: "Dluhopisy", funds: "Fondy", startups: "Startupy" },
-  hustles: { lemonade: "Limonádový stánek", reselling: "Reselling", carflip: "Flipování aut", houseflip: "Flipování domů", startup: "Startup" },
   detail: {
     open: "Spravovat",
     close: "Zavřít",
@@ -390,25 +370,7 @@ const cs: EconomyText = {
   spread: "Rozdíl cen: {n} %",
   arbitrageGo: "Vydělat na rozdílu ({n})",
   arbitrageWait: "Další obchod za {t}",
-  hustleHint: "Vlož kapitál a rozhoduj ve třech kolech. V každém kole volíš jistotu nebo riziko, výsledek se vyplatí na konci. Můžeš vydělat i prodělat.",
-  hustleValue: "Hodnota: {n}",
-  hustleRound: "Kolo {n} z {m}",
-  hustleSituations: { lemonade: ["První zákazník chce slevu.", "Vedro: lidé kupují víc.", "Sousední stánek snižuje ceny."], reselling: ["Na bazaru je dobrá nabídka, ale bez záruky.", "Cena zboží náhle vyskočila.", "Kupec chce slevu za rychlou platbu."], carflip: ["Auto má skrytou vadu: opravit, nebo prodat tak?", "Kupec nabízí výměnu za jiné auto.", "Inzerát zaujal několik lidí."], houseflip: ["Stavba odhalí vlhkost ve sklepě.", "Realitní trh se mění.", "Banka schválila hypotéku s podmínkami."], startup: ["Investor nabízí peníze za velký podíl.", "Konkurence spustila podobný produkt.", "Prototyp funguje, ale špatně se škáluje."] },
-  hustleOptions: { secure: { name: "Zajistit", hint: "Úzký rozsah, jistý výsledek" }, balance: { name: "Vyvážit", hint: "Průměrný rozsah" }, risky: { name: "Riskovat", hint: "Široký rozsah, možná velká výhra i ztráta" }, event: { name: "Příležitost", hint: "Vzácná šance s vyšším průměrem" } },
-  hustleRange: "×{lo}–{hi}",
-  hustleStreak: "Série {n}",
-  hustleLength: "Celkem {t}",
-  hustleLocked: "Odemkne se při Vzdělání {n}",
-  hustleDue: "Rozhodni teď",
-  hustleStart: "Začít (vložit {n})",
-  hustleRunning: "Další kolo za {t}",
-  hustlePanel: "Rozjeté hustly – rozhoduj průběžně",
-  hustleNone: "Žádný hustl neběží.",
-  hustleStake: "Vklad",
-  hustleRisk: "Riziko",
   riskHint: "Vyšší riziko = širší rozsah výsledků: víc zisku i ztráty. 1 % je téměř jistý výsledek.",
-  hustleAll: "Vše",
-  hustleTopUp: "Dokoupit {n}",
   minutes: "{n} min",
   hours: "{n} h",
   boardHint: "Pořadí podle nejvyššího jmění, kterého kdy hráč dosáhl.",
@@ -487,7 +449,6 @@ const en: EconomyText = {
   },
   assets: { coin: "Main coin", altcoin: "Altcoin", stablecoin: "Stablecoin", memecoin: "Memecoin", defi: "DeFi token", flat: "Apartment", house: "House", land: "Plot of land", office: "Office", technology: "Technology", energy: "Energy", bank: "Banks", consumer: "Consumer goods", biotech: "Biotech", gold: "Gold", silver: "Silver", copper: "Copper", state: "Government bonds", corporate: "Corporate bonds", junk: "High yield", index: "World index", dividend: "Dividend fund", theme: "Thematic fund", startup_it: "IT startup", startup_fintech: "Fintech startup", startup_green: "Green energy startup" },
   assetCategories: { crypto: "Crypto", realestate: "Land and property", stocks: "Stocks", metals: "Metals", bonds: "Bonds", funds: "Funds", startups: "Startups" },
-  hustles: { lemonade: "Lemonade stand", reselling: "Reselling", carflip: "Car flipping", houseflip: "House flipping", startup: "Startup" },
   detail: {
     open: "Manage",
     close: "Close",
@@ -629,25 +590,7 @@ const en: EconomyText = {
   spread: "Price gap: {n} %",
   arbitrageGo: "Profit from the gap ({n})",
   arbitrageWait: "Next trade in {t}",
-  hustleHint: "Put in capital and decide in three rounds. Each round you pick safety or risk; the result is paid out at the end. You can win or lose.",
-  hustleValue: "Value: {n}",
-  hustleRound: "Round {n} of {m}",
-  hustleSituations: { lemonade: ["The first customer wants a discount.", "Heat wave: people buy more.", "The stall next door cuts its prices."], reselling: ["A good offer on the marketplace, but no warranty.", "The price suddenly jumped.", "A buyer wants a discount for fast payment."], carflip: ["The car has a hidden fault: fix it or sell as is?", "A buyer offers a trade for another car.", "The listing caught the eye of several people."], houseflip: ["The survey reveals damp in the cellar.", "The property market is shifting.", "The bank approved the mortgage with conditions."], startup: ["An investor offers money for a large stake.", "A competitor launched a similar product.", "The prototype works but does not scale well."] },
-  hustleOptions: { secure: { name: "Secure", hint: "Narrow range, safe result" }, balance: { name: "Balance", hint: "Average range" }, risky: { name: "Gamble", hint: "Wide range, big win or loss" }, event: { name: "Opportunity", hint: "Rare chance, higher average" } },
-  hustleRange: "×{lo}–{hi}",
-  hustleStreak: "Streak {n}",
-  hustleLength: "Total {t}",
-  hustleLocked: "Unlocks at Education {n}",
-  hustleDue: "Decide now",
-  hustleStart: "Start (invest {n})",
-  hustleRunning: "Next round in {t}",
-  hustlePanel: "Running hustles – decide as you go",
-  hustleNone: "No hustle is running.",
-  hustleStake: "Stake",
-  hustleRisk: "Risk",
   riskHint: "Higher risk = wider range of results: more profit and more loss. 1% is almost a sure result.",
-  hustleAll: "All",
-  hustleTopUp: "Add {n}",
   minutes: "{n} min",
   hours: "{n} h",
   boardHint: "Ranked by the highest net worth a player has ever reached.",
@@ -726,7 +669,6 @@ const de: EconomyText = {
   },
   assets: { coin: "Hauptcoin", altcoin: "Altcoin", stablecoin: "Stablecoin", memecoin: "Memecoin", defi: "DeFi-Token", flat: "Wohnung", house: "Haus", land: "Grundstück", office: "Büro", technology: "Technologie", energy: "Energie", bank: "Banken", consumer: "Konsumgüter", biotech: "Biotech", gold: "Gold", silver: "Silber", copper: "Kupfer", state: "Staatsanleihen", corporate: "Unternehmensanleihen", junk: "Hochzins", index: "Welt-Index", dividend: "Dividendenfonds", theme: "Themenfonds", startup_it: "IT-Startup", startup_fintech: "Fintech-Startup", startup_green: "Startup Grüne Energie" },
   assetCategories: { crypto: "Kryptowährungen", realestate: "Grundstücke und Immobilien", stocks: "Aktien", metals: "Metalle", bonds: "Anleihen", funds: "Fonds", startups: "Startups" },
-  hustles: { lemonade: "Limonadenstand", reselling: "Reselling", carflip: "Autos flippen", houseflip: "Häuser flippen", startup: "Startup" },
   detail: {
     open: "Verwalten",
     close: "Schließen",
@@ -868,25 +810,7 @@ const de: EconomyText = {
   spread: "Preisdifferenz: {n} %",
   arbitrageGo: "An der Differenz verdienen ({n})",
   arbitrageWait: "Nächster Handel in {t}",
-  hustleHint: "Setze Kapital ein und entscheide in drei Runden. Jede Runde wählst du Sicherheit oder Risiko, das Ergebnis wird am Ende ausgezahlt. Du kannst gewinnen oder verlieren.",
-  hustleValue: "Wert: {n}",
-  hustleRound: "Runde {n} von {m}",
-  hustleSituations: { lemonade: ["Die erste Kundin will Rabatt.", "Hitzewelle: Die Leute kaufen mehr.", "Der Nachbarstand senkt die Preise."], reselling: ["Gutes Angebot auf dem Markt, aber ohne Garantie.", "Der Preis ist plötzlich gestiegen.", "Ein Käufer will Rabatt für schnelle Zahlung."], carflip: ["Das Auto hat einen versteckten Mangel: reparieren oder so verkaufen?", "Ein Käufer bietet einen Tausch gegen ein anderes Auto an.", "Das Inserat hat mehrere Leute neugierig gemacht."], houseflip: ["Das Gutachten zeigt Feuchtigkeit im Keller.", "Der Immobilienmarkt verändert sich.", "Die Bank hat die Hypothek mit Auflagen genehmigt."], startup: ["Ein Investor bietet Geld für einen großen Anteil.", "Ein Konkurrent bringt ein ähnliches Produkt.", "Der Prototyp funktioniert, skaliert aber schlecht."] },
-  hustleOptions: { secure: { name: "Sichern", hint: "Enger Bereich, sicheres Ergebnis" }, balance: { name: "Ausgleichen", hint: "Mittlerer Bereich" }, risky: { name: "Riskieren", hint: "Breiter Bereich, großer Gewinn oder Verlust" }, event: { name: "Gelegenheit", hint: "Seltene Chance mit höherem Mittelwert" } },
-  hustleRange: "×{lo}–{hi}",
-  hustleStreak: "Serie {n}",
-  hustleLength: "Gesamt {t}",
-  hustleLocked: "Wird bei Bildung {n} freigeschaltet",
-  hustleDue: "Jetzt entscheiden",
-  hustleStart: "Starten ({n} einsetzen)",
-  hustleRunning: "Nächste Runde in {t}",
-  hustlePanel: "Laufende Hustles – entscheide unterwegs",
-  hustleNone: "Kein Hustle läuft.",
-  hustleStake: "Einsatz",
-  hustleRisk: "Risiko",
   riskHint: "Höheres Risiko = breitere Ergebnisse: mehr Gewinn und mehr Verlust. 1 % ist fast ein sicheres Ergebnis.",
-  hustleAll: "Alles",
-  hustleTopUp: "Nachlegen {n}",
   minutes: "{n} Min.",
   hours: "{n} Std.",
   boardHint: "Sortiert nach dem höchsten Vermögen, das ein Spieler je erreicht hat.",
@@ -965,7 +889,6 @@ const ru: EconomyText = {
   },
   assets: { coin: "Основная монета", altcoin: "Альткоин", stablecoin: "Стейблкоин", memecoin: "Мемкоин", defi: "DeFi-токен", flat: "Квартира", house: "Дом", land: "Участок", office: "Офис", technology: "Технологии", energy: "Энергетика", bank: "Банки", consumer: "Потребительские товары", biotech: "Биотех", gold: "Золото", silver: "Серебро", copper: "Медь", state: "Гос. облигации", corporate: "Корп. облигации", junk: "Высокодоходные", index: "Мировой индекс", dividend: "Дивидендный фонд", theme: "Тематический фонд", startup_it: "IT-стартап", startup_fintech: "Финтех-стартап", startup_green: "Стартап «зелёная энергия»" },
   assetCategories: { crypto: "Криптовалюты", realestate: "Участки и недвижимость", stocks: "Акции", metals: "Металлы", bonds: "Облигации", funds: "Фонды", startups: "Стартапы" },
-  hustles: { lemonade: "Лимонадный стенд", reselling: "Перепродажа", carflip: "Флип автомобилей", houseflip: "Флип домов", startup: "Стартап" },
   detail: {
     open: "Управлять",
     close: "Закрыть",
@@ -1107,25 +1030,7 @@ const ru: EconomyText = {
   spread: "Разница в ценах: {n} %",
   arbitrageGo: "Заработать на разнице ({n})",
   arbitrageWait: "Следующая сделка через {t}",
-  hustleHint: "Вложи капитал и принимай решения в три раунда. В каждом раунде выбираешь надёжность или риск, итог выплачивается в конце. Можно выиграть, а можно и потерять.",
-  hustleValue: "Стоимость: {n}",
-  hustleRound: "Раунд {n} из {m}",
-  hustleSituations: { lemonade: ["Первый покупатель просит скидку.", "Жара: люди покупают больше.", "Соседний ларёк снижает цены."], reselling: ["Хорошее предложение на барахолке, но без гарантии.", "Цена вдруг взлетела.", "Покупатель просит скидку за быструю оплату."], carflip: ["У машины скрытый дефект: чинить или продать как есть?", "Покупатель предлагает обмен на другую машину.", "Объявление заинтересовало несколько человек."], houseflip: ["В подвале обнаружена сырость.", "Рынок недвижимости меняется.", "Банк одобрил ипотеку с условиями."], startup: ["Инвестор предлагает деньги за крупную долю.", "Конкуренты выпустили похожий продукт.", "Прототип работает, но плохо масштабируется."] },
-  hustleOptions: { secure: { name: "Зафиксировать", hint: "Узкий разброс, надёжный результат" }, balance: { name: "Сбалансировать", hint: "Средний разброс" }, risky: { name: "Рискнуть", hint: "Широкий разброс, возможны большой выигрыш и потеря" }, event: { name: "Шанс", hint: "Редкий шанс с большим средним значением" } },
-  hustleRange: "×{lo}–{hi}",
-  hustleStreak: "Серия {n}",
-  hustleLength: "Всего {t}",
-  hustleLocked: "Откроется при Образовании {n}",
-  hustleDue: "Решить сейчас",
-  hustleStart: "Начать (вложить {n})",
-  hustleRunning: "Следующий раунд через {t}",
-  hustlePanel: "Активные подработки – решай по ходу",
-  hustleNone: "Сейчас ничего не запущено.",
-  hustleStake: "Вклад",
-  hustleRisk: "Риск",
   riskHint: "Выше риск — шире диапазон результатов: больше и прибыли, и убытка. 1 % — почти гарантированный результат.",
-  hustleAll: "Всё",
-  hustleTopUp: "Докупить {n}",
   minutes: "{n} мин",
   hours: "{n} ч",
   boardHint: "Порядок по самому высокому состоянию, которого когда-либо достиг игрок.",

@@ -84,7 +84,6 @@ type Body = {
   era?: unknown;
   family?: unknown;
   stake?: unknown;
-  risk?: unknown;
   option?: unknown;
   field?: unknown;
   value?: unknown;
@@ -136,7 +135,7 @@ function applyAction(state: EconomyState, body: Body, now: number, learning: num
     case "arbitrage":
       return arbitrage(state, body.amount, now);
     case "startHustle":
-      return startHustle(state, body.id, now, Math.random, { stake: body.stake, risk: body.risk });
+      return startHustle(state, body.id, now, Math.random, { stake: body.stake });
     case "topUpHustle":
       return topUpHustle(state, body.id, now, body.stake);
     case "decideHustle":
@@ -222,6 +221,7 @@ export async function POST(request: Request) {
       ...payload(result.outcome.state, result.points, learning, result.now),
       gained: result.outcome.gained ?? null,
       event: result.outcome.event ?? null,
+      hustle: result.outcome.hustle ?? null,
     });
   } catch (error) {
     if (error instanceof NotEnoughPoints) return NextResponse.json({ error: "not-enough-points" }, { status: 400 });

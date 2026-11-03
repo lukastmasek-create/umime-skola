@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { getEconomyText } from "@/i18n/economy";
 import { getEconomyWork } from "@/i18n/economy-work";
+import { getEconomyHustle } from "@/i18n/economy-hustle";
 import { notifyAccountChanged } from "@/lib/account-events";
 import {
   ARB_FEE,
@@ -40,21 +41,17 @@ import {
   MAX_JOB_RANK,
   assetPrice,
   companyIncome,
-  HUSTLE_RISK_DEFAULT,
-  HUSTLE_ROUNDS,
-  hustleChoices,
   hustleDue,
-  hustleRoundAt,
   isLocked,
   type AssetCategoryId,
   type AssetId,
-  type HustleId,
   type CityId,
   type CountryId,
   type EraId,
   type FamilyId,
 } from "@/lib/idle/economy";
 import { CompanyTab, fill, formatLeft, type Payload } from "./CompanyPanel";
+import { HustleTab } from "./HustleTab";
 import type { Locale } from "@/i18n/config";
 
 type View = { data: Payload; receivedAt: number };
@@ -157,9 +154,6 @@ export function EconomyGame({ locale }: { locale: Locale }) {
   const [tab, setTab] = useState<Tab>("overview");
   const [ov, setOv] = useState<OvTab>("summary");
   const [nowMs, setNowMs] = useState(0);
-  // Rozkliknutá karta hustlu a zvolený vklad/riziko pro každou kartu zvlášť.
-  const [hustleOpen, setHustleOpen] = useState<HustleId | null>(null);
-  const [hustleCfg, setHustleCfg] = useState<Partial<Record<HustleId, { stake: number; risk: number }>>>({});
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
   const [board, setBoard] = useState<Board | null>(null);
@@ -1008,174 +1002,18 @@ export function EconomyGame({ locale }: { locale: Locale }) {
       )}
 
       {tab === "hustle" && (
-        <section>
-          <p className="mb-3 text-sm text-[var(--muted)]">{t.hustleHint}</p>
-          <div className="card mb-5 flex flex-col gap-3 p-4">
-            <h3 className="font-bold">{t.hustlePanel}</h3>
-            {runningHustles === 0 && <p className="text-sm text-[var(--muted)]">{t.hustleNone}</p>}
-            {HUSTLES.filter((h) => state.hustle[h.id]).map((h) => {
-              const slot = state.hustle[h.id]!;
-              const due = hustleDue(slot, h.id, clock);
-              const wait = Math.max(0, hustleRoundAt(slot, h.id, slot.round) - clock);
-              return (
-                <div key={h.id} className={`flex flex-col gap-3 rounded-lg border p-3 ${due ? "border-[var(--brand-500)]" : "border-[var(--border)]"}`}>
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="font-semibold">
-                      {EMOJI[h.id]} {t.hustles[h.id]}
-                    </p>
-                    <p className="text-sm text-[var(--muted)]">{fill(t.hustleValue, { n: m(slot.value) })}</p>
-                  </div>
-                  <div className="flex gap-1.5" role="img" aria-label={fill(t.hustleRound, { n: slot.round + 1, m: HUSTLE_ROUNDS })}>
-                    {Array.from({ length: HUSTLE_ROUNDS }, (_, i) => (
-                      <span
-                        key={i}
-                        className={`h-2 flex-1 rounded-full ${i < slot.round ? "bg-[var(--brand-500)]" : i === slot.round && due ? "bg-[var(--accent-green)]" : "bg-[var(--border)]"}`}
-                      />
-                    ))}
-                  </div>
-                  {due ? (
-                    <>
-                      <p className="text-sm font-semibold">
-                        {fill(t.hustleRound, { n: slot.round + 1, m: HUSTLE_ROUNDS })}: {t.hustleSituations[h.id][slot.round]}
-                      </p>
-                      <div className="grid gap-2 sm:grid-cols-2">
-                        {hustleChoices(slot, h.id).map((c) => (
-                          <button
-                            key={c.key}
-                            type="button"
-                            disabled={busy}
-                            onClick={() => void act({ action: "decideHustle", id: h.id, option: c.key })}
-                            className="btn-bouncy flex flex-col items-start gap-0.5 rounded-lg border border-[var(--border)] p-2.5 text-left disabled:opacity-45"
-                          >
-                            <span className="font-bold">{t.hustleOptions[c.key].name}</span>
-                            <span className="text-xs text-[var(--muted)]">{t.hustleOptions[c.key].hint}</span>
-                            <span className="text-xs font-semibold">{fill(t.hustleRange, { lo: c.lo.toFixed(2), hi: c.hi.toFixed(2) })}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </>
-                  ) : (
-                    <p className="text-sm text-[var(--muted)]">{fill(t.hustleRunning, { t: formatLeft(wait, t) })}</p>
-                  )}
-                  {slot.streak > 0 && <p className="text-xs font-semibold">🔥 {fill(t.hustleStreak, { n: slot.streak })}</p>}
-                </div>
-              );
-            })}
-          </div>
-          <div className="grid items-start gap-4 sm:grid-cols-3">
-            {HUSTLES.map((h) => {
-              const slot = state.hustle[h.id];
-              const locked = state.edu < h.edu;
-              const due = hustleDue(slot, h.id, clock);
-              const open = hustleOpen === h.id;
-              const cfg = hustleCfg[h.id] ?? { stake: h.cost, risk: HUSTLE_RISK_DEFAULT };
-              const setCfg = (patch: Partial<{ stake: number; risk: number }>) =>
-                setHustleCfg((prev) => ({ ...prev, [h.id]: { ...cfg, ...patch } }));
-              const amount = cfg.stake;
-              const canAfford = amount >= 1 && liveCash >= amount;
-              return (
-                <article key={h.id} className={`card flex flex-col gap-2 p-4 ${due ? "border-[var(--brand-500)]" : ""}`}>
-                  <button
-                    type="button"
-                    aria-expanded={open}
-                    disabled={locked}
-                    onClick={() => setHustleOpen(open ? null : h.id)}
-                    className="flex w-full items-start justify-between gap-2 text-left disabled:opacity-60"
-                  >
-                    <span className="min-w-0">
-                      <span className="block font-bold">
-                        {EMOJI[h.id]} {t.hustles[h.id]}
-                      </span>
-                      <span className="block text-sm text-[var(--muted)]">
-                        {m(h.cost)} · {fill(t.hustleLength, { t: formatLeft(h.gapSec * HUSTLE_ROUNDS * 1000, t) })}
-                      </span>
-                    </span>
-                    <span aria-hidden className="text-[var(--muted)]">
-                      {open ? "▲" : "▼"}
-                    </span>
-                  </button>
-                  {locked && <p className="text-sm text-[var(--muted)]">🔒 {fill(t.hustleLocked, { n: h.edu })}</p>}
-                  {slot && (
-                    <p className="text-sm font-semibold">{due ? `✓ ${t.hustleDue}` : `⏳ ${fill(t.hustleRunning, { t: formatLeft(Math.max(0, hustleRoundAt(slot, h.id, slot.round) - clock), t) })}`}</p>
-                  )}
-
-                  {open && !locked && (
-                    <div className="flex flex-col gap-3 border-t border-[var(--border)] pt-3">
-                      <div className="flex flex-col gap-1.5">
-                        <label htmlFor={`stake-${h.id}`} className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
-                          {t.hustleStake}
-                        </label>
-                        <div className="flex gap-1.5">
-                          <input
-                            id={`stake-${h.id}`}
-                            type="number"
-                            inputMode="numeric"
-                            min={1}
-                            step={1}
-                            disabled={busy}
-                            value={cfg.stake || ""}
-                            onChange={(e) => setCfg({ stake: Math.max(0, Math.floor(Number(e.target.value)) || 0) })}
-                            className="min-w-0 flex-1 rounded-lg border border-[var(--border)] bg-transparent px-2.5 py-1.5 text-sm"
-                          />
-                          <button
-                            type="button"
-                            disabled={busy || liveCash < 1}
-                            onClick={() => setCfg({ stake: Math.floor(liveCash) })}
-                            className="rounded-lg border border-[var(--border)] px-2.5 py-1.5 text-xs font-bold disabled:opacity-45"
-                          >
-                            {t.hustleAll}
-                          </button>
-                        </div>
-                      </div>
-
-                      {slot ? (
-                        <button
-                          type="button"
-                          disabled={busy || !canAfford}
-                          onClick={() => void act({ action: "topUpHustle", id: h.id, stake: cfg.stake })}
-                          className="btn-bouncy bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
-                        >
-                          {fill(t.hustleTopUp, { n: m(amount) })}
-                        </button>
-                      ) : (
-                        <>
-                          <div className="flex flex-col gap-1.5">
-                            <div className="flex items-center justify-between">
-                              <label htmlFor={`risk-${h.id}`} className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
-                                {t.hustleRisk}
-                              </label>
-                              <span className="text-sm font-bold">{cfg.risk} %</span>
-                            </div>
-                            <input
-                              id={`risk-${h.id}`}
-                              type="range"
-                              min={1}
-                              max={100}
-                              step={1}
-                              disabled={busy}
-                              value={cfg.risk}
-                              onChange={(e) => setCfg({ risk: Number(e.target.value) })}
-                              className="w-full accent-[var(--brand-500)]"
-                            />
-                            <p className="text-xs text-[var(--muted)]">{t.riskHint}</p>
-                          </div>
-                          <button
-                            type="button"
-                            disabled={busy || !canAfford}
-                            onClick={() => void act({ action: "startHustle", id: h.id, stake: cfg.stake, risk: cfg.risk })}
-                            className="btn-bouncy bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
-                          >
-                            {fill(t.hustleStart, { n: m(amount) })}
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </article>
-              );
-            })}
-          </div>
-        </section>
+        <HustleTab
+          state={state}
+          clock={clock}
+          liveCash={liveCash}
+          busy={busy}
+          t={getEconomyHustle(locale)}
+          m={m}
+          fill={fill}
+          left={(ms) => formatLeft(ms, t)}
+          x={(n) => n.toLocaleString(t.numberLocale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          act={act}
+        />
       )}
 
       {tab === "board" && (

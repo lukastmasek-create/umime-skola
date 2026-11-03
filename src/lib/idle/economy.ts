@@ -465,47 +465,97 @@ export function arbitrageSpread(now: number): number {
 }
 
 // --- Hustle ---
-
-export type HustleId = "lemonade" | "reselling" | "carflip" | "houseflip" | "startup";
-// Hustl běží v kolech: každé kolo je rozhodnutí. `gapSec` je čas mezi rozhodnutími, `edu` je potřebné Vzdělání k odemčení.
-export type HustleDef = { id: HustleId; cost: number; gapSec: number; min: number; max: number; edu: number };
-export const HUSTLE_ROUNDS = 3;
-// Celkový násobek vloženého kapitálu se rozkládá do kol. Střední hodnota (min+max)/2 je mírně nad 1.
+// Hustl je projekt ve třech fázích: nákup, provoz, prodej. Čísla a popisy jsou v NAVRH_EKONOMIKA_HUSTLE.md.
+export type HustleId = "lemonade" | "reselling" | "carflip" | "houseflip" | "startup" | "freelance";
+export const HUSTLE_PHASES = 3;
+export const HUSTLE_MAX_EXPERIENCE = 5;
+// Volba v kole: náklad jako podíl vkladu a rozsah násobku hodnoty (skutečný výsledek se losuje až po volbě).
+// Volba v kole: náklad jako podíl vkladu a šířka rozsahu kolem středu (střed = očekávaná hodnota + náklad).
+export type HustleOption = { cost: number; width: number };
+export type HustleDef = {
+  id: HustleId;
+  cost: number; // výchozí vklad
+  gapSec: number; // čas mezi fázemi
+  edu: number; // Vzdělání potřebné k odemčení
+  market: [number, number]; // rozsah tržního koeficientu v prodejní fázi
+  scam: number; // šance na podvod, bankrot nebo nezaplacení bez ochrany
+  lossShare: number; // podíl hodnoty, který se při události ztratí
+  protect: number; // index volby v 2. fázi, která riziko sníží (-1 = žádná)
+  commission: number; // provize při prodeji
+  upkeep: number; // průběžný náklad za fázi (podíl vkladu)
+  target: number; // očekávaný násobek vkladu po všech fázích, po provizi, riziku a nákladech
+  phases: [HustleOption[], HustleOption[], HustleOption[]];
+};
 export const HUSTLES: HustleDef[] = [
-  { id: "lemonade", cost: 50, gapSec: 20, min: 0.6, max: 1.8, edu: 0 },
-  { id: "reselling", cost: 200, gapSec: 30, min: 0.85, max: 1.5, edu: 0 },
-  { id: "carflip", cost: 5_000, gapSec: 60, min: 0.8, max: 1.55, edu: 0 },
-  { id: "houseflip", cost: 60_000, gapSec: 120, min: 0.75, max: 1.6, edu: 3 },
-  { id: "startup", cost: 150_000, gapSec: 300, min: 0.3, max: 3.2, edu: 8 },
+  {
+    id: "lemonade", cost: 50, gapSec: 20, edu: 0, market: [0.9, 1.1], scam: 0, lossShare: 0, protect: -1, commission: 0, upkeep: 0.03, target: 1.0,
+    phases: [
+      [{ cost: 0.05, width: 0.05 }, { cost: 0.12, width: 0.1 }, { cost: 0, width: 0.2 }],
+      [{ cost: 0, width: 0.05 }, { cost: 0, width: 0.5 }, { cost: 0.08, width: 0.15 }],
+      [{ cost: 0, width: 0.025 }, { cost: 0, width: 0.25 }, { cost: 0.1, width: 0.2 }],
+    ],
+  },
+  {
+    id: "reselling", cost: 200, gapSec: 40, edu: 0, market: [0.85, 1.15], scam: 0.1, lossShare: 1, protect: 1, commission: 0.1, upkeep: 0, target: 1.0,
+    phases: [
+      [{ cost: 0.15, width: 0.1 }, { cost: 0.1, width: 0.075 }, { cost: 0, width: 0.35 }],
+      [{ cost: 0, width: 0.02 }, { cost: 0.05, width: 0.0 }, { cost: 0, width: 0.025 }],
+      [{ cost: 0, width: 0.025 }, { cost: 0, width: 0.2 }, { cost: 0.02, width: 0.45 }],
+    ],
+  },
+  {
+    id: "carflip", cost: 5000, gapSec: 90, edu: 0, market: [0.9, 1.1], scam: 0.08, lossShare: 0.4, protect: 1, commission: 0.05, upkeep: 0.02, target: 1.0,
+    phases: [
+      [{ cost: 0, width: 0.25 }, { cost: 0.05, width: 0.075 }, { cost: 0.12, width: 0.15 }],
+      [{ cost: 0.08, width: 0.05 }, { cost: 0.12, width: 0.075 }, { cost: 0.3, width: 0.1 }],
+      [{ cost: 0, width: 0.035 }, { cost: 0, width: 0.075 }, { cost: 0, width: 0.2 }],
+    ],
+  },
+  {
+    id: "houseflip", cost: 60000, gapSec: 180, edu: 3, market: [0.88, 1.12], scam: 0.05, lossShare: 0.2, protect: 1, commission: 0.03, upkeep: 0.04, target: 1.0,
+    phases: [
+      [{ cost: 0.08, width: 0.1 }, { cost: 0.12, width: 0.075 }, { cost: 0.2, width: 0.15 }],
+      [{ cost: 0.05, width: 0.04 }, { cost: 0.15, width: 0.075 }, { cost: 0.35, width: 0.125 }],
+      [{ cost: 0, width: 0.025 }, { cost: 0, width: 0.05 }, { cost: 0.06, width: 0.2 }],
+    ],
+  },
+  {
+    id: "startup", cost: 150000, gapSec: 300, edu: 8, market: [0.8, 1.2], scam: 0.15, lossShare: 1, protect: 1, commission: 0, upkeep: 0.08, target: 1.08,
+    phases: [
+      [{ cost: 0, width: 0.025 }, { cost: 0.05, width: 0.075 }, { cost: 0.1, width: 0.175 }],
+      [{ cost: 0, width: 0.3 }, { cost: 0.1, width: 0.1 }, { cost: 0.2, width: 0.4 }],
+      [{ cost: 0, width: 0.1 }, { cost: 0.1, width: 0.65 }, { cost: 0, width: 0.125 }],
+    ],
+  },
+  {
+    id: "freelance", cost: 1000, gapSec: 60, edu: 0, market: [0.97, 1.03], scam: 0.12, lossShare: 1, protect: 0, commission: 0.1, upkeep: 0, target: 1.0,
+    phases: [
+      [{ cost: 0, width: 0.1 }, { cost: 0.1, width: 0.15 }, { cost: 0.2, width: 0.35 }],
+      [{ cost: 0, width: 0.05 }, { cost: 0.1, width: 0.175 }, { cost: 0, width: 0.35 }],
+      [{ cost: 0, width: 0.02 }, { cost: 0.05, width: 0.08 }, { cost: 0, width: 0.5 }],
+    ],
+  },
 ];
-// Vklad je libovolná celá částka (nejvýš do výše hotovosti). Riziko 1–100 % určuje šířku rozsahu každé volby.
-export const HUSTLE_RISK_DEFAULT = 100;
-export const isHustleStake = (v: unknown): v is number => typeof v === "number" && Number.isInteger(v) && v > 0 && v <= 1e12;
-export const isHustleRisk = (v: unknown): v is number => typeof v === "number" && Number.isInteger(v) && v >= 1 && v <= 100;
-export type HustleOptions = { stake?: unknown; risk?: unknown };
-// Volby v každém kole. Jistota je úzká, Riziko široké; Příležitost se objeví jen někdy.
-export type HustleChoiceKey = "secure" | "balance" | "risky" | "event";
-export const HUSTLE_CHOICE_KEYS: HustleChoiceKey[] = ["secure", "balance", "risky", "event"];
-// Šířka rozsahu jako násobek poloviny pásma kola (riziko ji ještě škáluje).
-const CHOICE_WIDTH: Record<HustleChoiceKey, number> = { secure: 0.25, balance: 1, risky: 1.6, event: 0.8 };
-// Série úspěchů v běhu zvedá střed rozsahu o 2 % za každé vítězné kolo, nejvýš o 10 %.
-export const HUSTLE_STREAK_STEP = 0.02;
-export const HUSTLE_STREAK_MAX = 0.1;
-// Šance, že v kole přijde Příležitost (čtvrtá volba s vyšším středem).
+// Příležitost: náhodná čtvrtá volba v kole (šance HUSTLE_EVENT_CHANCE).
+// Příležitost: náhodná nabídka s širším rozsahem, stejnou očekávanou hodnotou jako ostatní volby (jen víc rizika).
+export const HUSTLE_EVENT: HustleOption = { cost: 0.05, width: 0.35 };
 export const HUSTLE_EVENT_CHANCE = 0.15;
+// Série úspěchů: každé vítězné kolo zvedne rozsahy o 2 %, nejvýš o 10 %.
+export const HUSTLE_STREAK_STEP = 0.01;
+export const HUSTLE_STREAK_MAX = 0.05;
+// Vklad je libovolná celá částka (nejvýš do výše hotovosti).
+export const isHustleStake = (v: unknown): v is number => typeof v === "number" && Number.isInteger(v) && v > 0 && v <= 1e12;
+export type HustleOptions = { stake?: unknown };
+// Rozjetý hustl: `round` je počet rozhodnutých fází, `seed` určuje všechny losy, `log` násobky z fází.
 export type HustleSlot = {
   startedAt: number;
-  // aktuální hodnota držby (vklad vynásobený dosavadními koly, plus dokoupení)
   value: number;
-  // celkem vložený kapitál (pro zisk)
   stake: number;
-  // počet rozhodnutých kol (0 až HUSTLE_ROUNDS)
   round: number;
-  // semínko, ze kterého se deterministicky losují všechna kola a výsledky (server i prohlížeč počítají stejně)
   seed: number;
-  risk: number;
-  // po sobě jdoucí vítězná kola
   streak: number;
+  protected: boolean;
+  log: number[];
 } | null;
 
 // --- Stav ---
@@ -547,6 +597,8 @@ export type EconomyState = {
   // průměrná nákupní cena držených kusů (jen pro zobrazení zisku)
   cost: Partial<Record<AssetId, number>>;
   hustle: Partial<Record<HustleId, HustleSlot>>;
+  // zkušenost z dokončených běhů každého hustlu (0–5), ovlivňuje nápovědu o trhu a riziko
+  knowledge: Partial<Record<HustleId, number>>;
   edu: number;
   arbReadyAt: number;
   // časový posun a kotva herních hodin (viz gameNow)
@@ -576,7 +628,7 @@ export type ErrorCode =
   | "vacation";
 
 export type ActionResult =
-  | { ok: true; state: EconomyState; pointsSpent?: number; gained?: { cash?: number; profit?: number }; event?: EconomyEvent }
+  | { ok: true; state: EconomyState; pointsSpent?: number; gained?: { cash?: number; profit?: number }; event?: EconomyEvent; hustle?: { lost: boolean; mult: number } }
   | { ok: false; error: ErrorCode };
 
 export const isCountry = (v: unknown): v is CountryId => COUNTRIES.includes(v as CountryId);
@@ -623,6 +675,7 @@ export function emptyState(now: number, runs = 0, best = 0): EconomyState {
     holdings: {},
     cost: {},
     hustle: {},
+    knowledge: {},
     edu: 0,
     arbReadyAt: 0,
     speed: 1,
@@ -698,26 +751,35 @@ export function normalizeState(raw: unknown, real: number): EconomyState {
       cost[a.id] = (qNew * cNew + qOld * cOld) / q;
     }
   }
-  // Hustly ze staré verze (bez kol) se vyplatí hned při načtení: vklad byl odečten už při startu.
+  // Hustly: starý tvar (bez fází a zkušenosti) se vrátí na hotovost, nový se načte.
   const hustle: EconomyState["hustle"] = {};
   let refund = 0;
   for (const h of HUSTLES) {
     const s = (r.hustle as Record<string, Record<string, unknown> | null> | undefined)?.[h.id];
     if (!s || typeof s !== "object") continue;
-    if (s.seed === undefined) {
-      refund += finite(s.payout, 0, 0, 1e12);
+    if (typeof s.protected !== "boolean") {
+      refund += finite(s.value ?? s.payout, 0, 0, 1e12);
       continue;
     }
     const stake = finite(s.stake, h.cost, 1, 1e12);
+    const logIn = Array.isArray(s.log) ? (s.log as unknown[]) : [];
     hustle[h.id] = {
       startedAt: finite(s.startedAt, now, 0, now),
       value: finite(s.value, stake, 0, 1e13),
       stake,
-      round: Math.floor(finite(s.round, 0, 0, HUSTLE_ROUNDS - 1)),
+      round: Math.floor(finite(s.round, 0, 0, HUSTLE_PHASES - 1)),
       seed: Math.floor(finite(s.seed, 0, 0, 2 ** 31)),
-      risk: Math.floor(finite(s.risk, HUSTLE_RISK_DEFAULT, 1, 100)),
       streak: Math.floor(finite(s.streak, 0, 0, 1e6)),
+      protected: s.protected,
+      log: logIn.slice(0, HUSTLE_PHASES).map((v) => finite(v, 1, 0, 1e6)),
     };
+  }
+  // Zkušenost z dokončených běhů (0–5 bodů na hustl).
+  const kIn = (r.knowledge ?? {}) as Record<string, unknown>;
+  const knowledge: EconomyState["knowledge"] = {};
+  for (const h of HUSTLES) {
+    const k = Math.floor(finite(kIn[h.id], 0, 0, HUSTLE_MAX_EXPERIENCE));
+    if (k > 0) knowledge[h.id] = k;
   }
 
   // Stará uložená hra má jen id a hodiny. Stupeň se odvodí z hodin, body začínají od nuly.
@@ -789,6 +851,7 @@ export function normalizeState(raw: unknown, real: number): EconomyState {
     holdings,
     cost,
     hustle,
+    knowledge,
     edu: Math.floor(finite(r.edu, 0, 0, MAX_EDU)),
     arbReadyAt: finite(r.arbReadyAt, 0, 0, now + ARB_COOLDOWN_MS),
     speed,
@@ -1347,7 +1410,7 @@ export function arbitrage(state: EconomyState, amount: unknown, now: number): Ac
   );
 }
 
-// `rng` vrací číslo [0,1); server dává Math.random, test pevnou hodnotu. Vklad se zablokuje, kola přijdou po čase.
+// `rng` dává semínko (server Math.random, test pevnou hodnotu). Vklad se zablokuje, fáze přijdou po čase.
 export function startHustle(
   state: EconomyState,
   id: unknown,
@@ -1362,11 +1425,9 @@ export function startHustle(
   if (state.hustle[id]) return fail("busy");
   const stake = opts.stake === undefined ? def.cost : opts.stake;
   if (!isHustleStake(stake)) return fail("bad-request");
-  const risk = opts.risk === undefined ? HUSTLE_RISK_DEFAULT : opts.risk;
-  if (!isHustleRisk(risk)) return fail("bad-request");
   if (state.cash < stake) return fail("not-enough-cash");
   const seed = Math.floor(rng() * 2 ** 31);
-  const slot: NonNullable<HustleSlot> = { startedAt: now, value: stake, stake, round: 0, seed, risk, streak: 0 };
+  const slot: NonNullable<HustleSlot> = { startedAt: now, value: stake, stake, round: 0, seed, streak: 0, protected: false, log: [] };
   return done({ ...state, cash: state.cash - stake, hustle: { ...state.hustle, [id]: slot } }, now);
 }
 
@@ -1382,15 +1443,15 @@ export function topUpHustle(state: EconomyState, id: unknown, now: number, amoun
   return done({ ...state, cash: state.cash - amount, hustle: { ...state.hustle, [id]: next } }, now);
 }
 
-// Čas, kdy se otevře kolo `round`: každé kolo přijde po jednom intervalu od předchozího.
+// Čas, kdy se otevře fáze `round`: každá přijde po jednom intervalu od předchozího.
 export const hustleRoundAt = (slot: NonNullable<HustleSlot>, id: HustleId, round: number) =>
   slot.startedAt + (round + 1) * hustleDef(id).gapSec * 1000;
 
-// Kolo je otevřené, když uplynul jeho čas a hráč ho ještě nerozhodl.
+// Fáze je otevřená, když uplynul její čas a hráč ji ještě nerozhodl.
 export const hustleDue = (slot: HustleSlot | undefined, id: HustleId, now: number) =>
-  !!slot && slot.round < HUSTLE_ROUNDS && now >= hustleRoundAt(slot, id, slot.round);
+  !!slot && slot.round < HUSTLE_PHASES && now >= hustleRoundAt(slot, id, slot.round);
 
-// Deterministický hash (semínko, kolo, index) → [0, 1). Stejný vstup dává stejný výsledek na serveru i v prohlížeči.
+// Deterministický hash (semínko, fáze, index) → [0, 1). Stejný vstup dává stejný los na serveru i v prohlížeči.
 export function hustleRoll(seed: number, round: number, index: number): number {
   let x = (seed ^ Math.imul(round + 1, 0x9e3779b1) ^ Math.imul(index + 1, 0x85ebca77)) >>> 0;
   x = Math.imul(x ^ (x >>> 16), 0x7feb352d);
@@ -1399,55 +1460,90 @@ export function hustleRoll(seed: number, round: number, index: number): number {
   return x / 4294967296;
 }
 
-// Střed a polovina pásma jednoho kola: součin středů všech kol dává střední hodnotu hustlu.
-export function hustleBand(id: HustleId): { center: number; half: number } {
+// Tržní koeficient běhu: v prodejní fázi se z něj násobí výsledek. Losuje se z rozsahu hustlu.
+export function hustleMarket(slot: NonNullable<HustleSlot>, id: HustleId): number {
+  const [lo, hi] = hustleDef(id).market;
+  return lo + (hi - lo) * hustleRoll(slot.seed, HUSTLE_PHASES, 0);
+}
+
+// Nápověda ze zkušenosti: trh jde nahoru, nebo dolů. Spolehlivost roste s body zkušenosti (50 % + 10 % za bod, max 90 %).
+export function hustleHint(slot: NonNullable<HustleSlot>, id: HustleId, experience: number): { up: boolean } | null {
+  if (experience <= 0) return null;
+  const up = hustleMarket(slot, id) >= 1;
+  const reliability = Math.min(0.9, 0.5 + 0.1 * experience);
+  const correct = hustleRoll(slot.seed, HUSTLE_PHASES, 1) < reliability;
+  return { up: correct ? up : !up };
+}
+
+// Základ fáze: násobek, který každá volba dává v průměru před svým nákladem. Vychází z cílové hodnoty hustlu,
+// takže všechny volby jedné fáze mají stejnou očekávanou hodnotu a liší se jen rozptylem a cenou.
+export function hustleBase(def: HustleDef): number {
+  const denom = (1 - def.commission) * (1 - def.scam * def.lossShare);
+  return (def.target / denom) ** (1 / HUSTLE_PHASES);
+}
+
+// Volby otevřené fáze. Série zvedá rozsahy, Příležitost se objeví jen někdy.
+export type HustleChoice = { index: number; cost: number; lo: number; hi: number; event: boolean };
+export function hustleChoices(slot: NonNullable<HustleSlot>, id: HustleId): HustleChoice[] {
   const def = hustleDef(id);
-  const mid = (def.min + def.max) / 2;
-  const lo = def.min ** (1 / HUSTLE_ROUNDS);
-  const hi = def.max ** (1 / HUSTLE_ROUNDS);
-  return { center: mid ** (1 / HUSTLE_ROUNDS), half: (hi - lo) / 2 };
+  const base = hustleBase(def);
+  const bonus = 1 + Math.min(HUSTLE_STREAK_MAX, slot.streak * HUSTLE_STREAK_STEP);
+  const range = (mid: number, width: number) => ({ lo: Math.max(0.05, mid - width) * bonus, hi: (mid + width) * bonus });
+  // Náklad volby je podíl VKLADU, odečítá se v penězích. Aby byla očekávaná hodnota stejná u každé volby,
+  // přepočte se na aktuální hodnotu držby (vklad / hodnota), takže střed rozsahu s nákladem roste.
+  const ratio = slot.value > 0 ? slot.stake / slot.value : 1;
+  const list: HustleChoice[] = def.phases[slot.round].map((o, index) => ({ index, cost: o.cost, ...range(base + (o.cost + def.upkeep) * ratio, o.width), event: false }));
+  if (hustleRoll(slot.seed, slot.round, 4) < HUSTLE_EVENT_CHANCE) {
+    const mid = base + HUSTLE_EVENT.cost * ratio;
+    list.push({ index: 3, cost: HUSTLE_EVENT.cost, ...range(mid, HUSTLE_EVENT.width), event: true });
+  }
+  return list;
 }
 
-// Volby otevřeného kola: rozsah násobku pro každou volbu. Příležitost se objeví jen s pravděpodobností.
-export function hustleChoices(slot: NonNullable<HustleSlot>, id: HustleId): { key: HustleChoiceKey; lo: number; hi: number }[] {
-  const { center, half } = hustleBand(id);
-  const k = slot.risk / 100;
-  const streakBonus = Math.min(HUSTLE_STREAK_MAX, slot.streak * HUSTLE_STREAK_STEP);
-  const base = center + streakBonus;
-  const keys: HustleChoiceKey[] = ["secure", "balance", "risky"];
-  if (hustleRoll(slot.seed, slot.round, 4) < HUSTLE_EVENT_CHANCE) keys.push("event");
-  return keys.map((key) => {
-    // Příležitost má vyšší střed (o polovinu pásma nahoru), ostatní jsou kolem středu.
-    const shift = key === "event" ? half * 0.5 : 0;
-    const w = half * CHOICE_WIDTH[key] * k;
-    return { key, lo: Math.max(0, base + shift - w), hi: base + shift + w };
-  });
-}
-
-// Rozhodnutí v kole: volba určí násobek z rozsahu. Po posledním kole se výsledek vyplatí a hustl se uzavře.
+// Rozhodnutí ve fázi. Po třetí fázi se provede prodej (trh, provize, riziko) a výsledek se připíše.
 export function decideHustle(state: EconomyState, id: unknown, now: number, option: unknown): ActionResult {
   if (!state.character) return fail("no-character");
   if (!isHustle(id)) return fail("bad-request");
   const slot = state.hustle[id];
   if (!slot) return fail("nothing");
   if (!hustleDue(slot, id, now)) return fail("not-ready");
-  const choice = hustleChoices(slot, id).find((c) => c.key === option);
+  const def = hustleDef(id);
+  const choice = hustleChoices(slot, id).find((c) => c.index === option);
   if (!choice) return fail("bad-request");
-  const u = hustleRoll(slot.seed, slot.round, HUSTLE_CHOICE_KEYS.indexOf(choice.key));
-  const mult = choice.lo + (choice.hi - choice.lo) * u;
-  const value = Math.max(0, Math.round(slot.value * mult));
-  const streak = mult >= 1 ? slot.streak + 1 : 0;
-  const round = slot.round + 1;
-  if (round < HUSTLE_ROUNDS) {
-    const next = { ...slot, value, round, streak };
-    return done({ ...state, hustle: { ...state.hustle, [id]: next } }, now);
+  const last = slot.round === HUSTLE_PHASES - 1;
+  const quality = choice.lo + (choice.hi - choice.lo) * hustleRoll(slot.seed, slot.round, choice.index);
+  let mult = quality;
+  let value = slot.value * quality;
+  let lost = false;
+  if (last) {
+    mult = quality * hustleMarket(slot, id) * (1 - def.commission);
+    value = slot.value * mult;
+    const experience = state.knowledge[id] ?? 0;
+    const chance = Math.max(0, def.scam * (slot.protected ? 0.5 : 1) - experience * 0.01);
+    if (hustleRoll(slot.seed, HUSTLE_PHASES, 2) < chance) {
+      lost = true;
+      value *= 1 - def.lossShare;
+    }
   }
+  value = Math.max(0, Math.round(value - (choice.cost + def.upkeep) * slot.stake));
+  const next = {
+    ...slot,
+    value,
+    round: slot.round + 1,
+    streak: quality >= 1 ? slot.streak + 1 : 0,
+    protected: slot.protected || (slot.round === 1 && choice.index === def.protect),
+    log: [...slot.log, Math.round(mult * 100) / 100],
+  };
+  if (!last) return done({ ...state, hustle: { ...state.hustle, [id]: next } }, now);
   const hustle = { ...state.hustle };
   delete hustle[id];
   const profit = value - slot.stake;
-  return done({ ...state, cash: state.cash + value, hustle, totalEarned: state.totalEarned + Math.max(0, profit) }, now, {
-    gained: { cash: value, profit },
-  });
+  const experience = Math.min(HUSTLE_MAX_EXPERIENCE, (state.knowledge[id] ?? 0) + 1);
+  return done(
+    { ...state, cash: state.cash + value, hustle, knowledge: { ...state.knowledge, [id]: experience }, totalEarned: state.totalEarned + Math.max(0, profit) },
+    now,
+    { gained: { cash: value, profit }, hustle: { lost, mult } },
+  );
 }
 
 // Investice bodů z učení do Vzdělání: trvalý bonus ke všem příjmům.
