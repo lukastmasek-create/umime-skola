@@ -50,7 +50,8 @@ const GAME_DAY = H / 365;
 
 export const PERF_MAX = 100;
 export const ENERGY_MAX = 100;
-export const ENERGY_PER_HOUR = 360; // 12 směn za herní rok při 30 energie na směnu
+// Energie se doplňuje podle REÁLNÉHO času (ne herního), aby omezení platilo i při rychlosti 16×: 360 za reálnou hodinu = 12 směn.
+export const ENERGY_PER_HOUR = 360;
 export const SITUATIONS_PER_SHIFT = 3;
 export const SITUATION_ENERGY = 10;
 export const SHIFT_MIN_ENERGY = 30;
@@ -1380,7 +1381,7 @@ export function settle(state: EconomyState, now: number, learning = 0): EconomyS
       cash: Math.max(0, state.cash + gain),
       job: state.job ? { ...state.job, hours: state.job.hours + hours } : null,
       totalEarned: state.totalEarned + (gain > 0 ? gain : 0),
-      energy: Math.min(ENERGY_MAX, state.energy + ENERGY_PER_HOUR * hours),
+      energy: Math.min(ENERGY_MAX, state.energy + (ENERGY_PER_HOUR * hours) / state.speed),
     };
   }
   // Spotřeba vstupů: výroba zásoby postupně odebírá.
