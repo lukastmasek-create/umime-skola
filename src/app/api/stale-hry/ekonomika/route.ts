@@ -48,6 +48,7 @@ import {
   upgradeCompany,
   upgradePhase,
   unionDeal,
+  buyStock,
   ASSETS,
   type ActionResult,
   type EconomyState,
@@ -153,6 +154,8 @@ function applyAction(state: EconomyState, body: Body, now: number, learning: num
       return upgradePhase(state, now);
     case "unionDeal":
       return unionDeal(state, body.id, now);
+    case "buyStock":
+      return buyStock(state, body.id, body.amount, now);
     case "buyAsset":
       return buyAsset(state, body.id, body.amount, now);
     case "sellAsset":

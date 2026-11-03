@@ -305,6 +305,21 @@ export const UNION_DEAL_MS = 12 * H;
 export const UNION_DEAL_HOURS = 24; // dohoda stojí den mezd
 export const moraleFrom = (wageShare: number) => Math.min(1, Math.max(0, 1.2 - 2 * wageShare));
 
+// --- Zásoby a vstupy ---
+// Výroba spotřebuje dávky vstupů (INPUT_RATE dávky na kus a hodinu při výrobě 1×). Dávky se kupují předem.
+// Sklad pojme STOCK_PER_UNIT dávek na kus a stupeň fáze. Když zásoby dojdou, výnos firmy klesne.
+export const INPUT_RATE = 0.1;
+export const INPUT_BATCH_HOURS = 1; // dávka stojí hodinu výnosu jednoho kusu (ať je začátek hratelný)
+export const STOCK_PER_UNIT = 4;
+export const NO_STOCK_OUTPUT = 0.2;
+export const SHORTAGE_PRICE = 1.5; // při události „nedostatek“ zdraží vstupy oboru
+export const stockCapacity = (n: number, phase: number) => n * STOCK_PER_UNIT * phase;
+export function batchPrice(state: EconomyState, id: CompanyId, now: number): number {
+  const ev = currentEvent(now);
+  const shortage = !!ev && ev.def.id === "shortage" && eventAffects(ev.def, id);
+  return Math.round(companyIncome(id) * INCOME_SPEED * INPUT_BATCH_HOURS * (shortage ? SHORTAGE_PRICE : 1));
+}
+
 export type CompanySetup = {
   upgraded: boolean; // jednorázové vylepšení celého oboru
   staff: number; // zaměstnanci celkem (max MAX_STAFF_PER_UNIT na kus), součet rolí
@@ -315,6 +330,7 @@ export type CompanySetup = {
   output: number;
   risk: number;
   marketingUntil: number; // do kdy běží marketingová kampaň
+  stock: number; // zásoby vstupů v dávkách
 };
 export const DEFAULT_SETUP: CompanySetup = {
   upgraded: false,
@@ -326,6 +342,7 @@ export const DEFAULT_SETUP: CompanySetup = {
   output: 1,
   risk: 0.3,
   marketingUntil: 0,
+  stock: 0,
 };
 // Rozdělení rolí. Výrobce je to, co zbyde z celkového počtu (starší data mají jen staff).
 export function rolesOf(s: Pick<CompanySetup, "staff" | "roles">): StaffRoles {
@@ -887,6 +904,7 @@ export function normalizeState(raw: unknown, real: number): EconomyState {
         output: clampSetting("output", finite(s.output, 1, SETTING_RANGE.output.min, SETTING_RANGE.output.max)),
         risk: clampSetting("risk", finite(s.risk, 0.3, SETTING_RANGE.risk.min, SETTING_RANGE.risk.max)),
         marketingUntil: finite(s.marketingUntil, 0, 0, now + EVENT_WINDOW_MS),
+        stock: finite(s.stock, 0, 0, stockCapacity(n, MAX_PHASE)),
       };
     }
     const resp = (r.responses as Record<string, unknown> | undefined)?.[def.id];
@@ -1200,7 +1218,8 @@ export function companyYield(
     (contractActive(state, id, now) ? 1 + CONTRACT_BONUS : 1) *
     (1 + RESEARCH_BONUS * researchLevel(state, id)) *
     rivalMult(state, id, now);
-  const gross0 = base * boost;
+  const stocked = s.stock > 0 ? 1 : NO_STOCK_OUTPUT;
+  const gross0 = base * boost * stocked;
   const wageCost = wages * companyIncome(id) * STAFF_WAGE * effect.wageMult;
   const morale = gross0 > 0 ? moraleFrom(wageCost / gross0) : 1;
   const unionOn = s.staff >= UNION_MIN_STAFF && s.unionUntil <= now;
@@ -1288,6 +1307,31 @@ export function gameNow(state: Pick<EconomyState, "speed" | "clock">, real: numb
 
 // Připíše příjem za uplynulý čas a doplní energii. Sazba se bere z poloviny úseku (cena aktiv se mění), proto stačí hrubý odhad.
 // Prémie se vyplácí jednou za den, bez ohledu na offline strop.
+function consumeStock(state: EconomyState, hours: number): EconomyState {
+  const setup = { ...state.setup };
+  for (const c of COMPANIES) {
+    const n = state.companies[c.id] ?? 0;
+    const s = state.setup[c.id];
+    if (!s || n <= 0 || s.stock <= 0) continue;
+    setup[c.id] = { ...s, stock: Math.max(0, s.stock - n * s.output * INPUT_RATE * hours) };
+  }
+  return { ...state, setup };
+}
+
+// Nákup dávek vstupů do skladu (zaplatí se předem).
+export function buyStock(state: EconomyState, id: unknown, amount: unknown, now: number): ActionResult {
+  const o = ownedCompany(state, id);
+  if (o.error) return fail(o.error);
+  if (typeof amount !== "number" || !Number.isInteger(amount) || amount < 1) return fail("bad-request");
+  const s = setupOf(state, o.id);
+  const n = state.companies[o.id] ?? 0;
+  const cap = stockCapacity(n, state.phase);
+  if (s.stock + amount > cap + 1e-9) return fail("max");
+  const price = batchPrice(state, o.id, now) * amount;
+  if (state.cash < price) return fail("not-enough-cash");
+  return done({ ...state, cash: state.cash - price, setup: withSetup(state, o.id, { stock: s.stock + amount }) }, now);
+}
+
 // Odchod zaměstnance: jedna šance na firmu v daném okně. Odejde člověk z nejpočetnější role.
 function applyQuits(state: EconomyState, now: number): EconomyState {
   const window = eventWindow(now);
@@ -1319,6 +1363,8 @@ export function settle(state: EconomyState, now: number, learning = 0): EconomyS
       energy: Math.min(ENERGY_MAX, state.energy + ENERGY_PER_HOUR * hours),
     };
   }
+  // Spotřeba vstupů: výroba zásoby postupně odebírá.
+  if (elapsed > 0) next = consumeStock(next, hours);
   // Odchody: když se mění dvouhodinové okno, může firma přijít o jednoho zaměstnance.
   if (elapsed > 0 && eventWindow(now) !== eventWindow(state.lastSeen)) next = applyQuits(next, now);
   if (now - state.bonusAt >= BONUS_MS) {
@@ -1765,7 +1811,8 @@ export function sellCompany(state: EconomyState, id: unknown, now: number): Acti
     delete contracts[o.id];
   } else if (state.setup[o.id]) {
     const s = state.setup[o.id]!;
-    setup[o.id] = fitStaff(s, (n - 1) * MAX_STAFF_PER_UNIT);
+    const fitted = fitStaff(s, (n - 1) * MAX_STAFF_PER_UNIT);
+    setup[o.id] = { ...fitted, stock: Math.min(s.stock, stockCapacity(n - 1, state.phase)) };
   }
   return done({ ...state, cash: state.cash + money, companies, setup, contracts }, now, { gained: { cash: money } });
 }

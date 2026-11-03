@@ -98,6 +98,12 @@ export type EconomyText = {
     unionHint: string;
     unionActive: string;
     unionGo: string;
+    stockTitle: string;
+    stockHint: string;
+    stockLevel: string;
+    stockEmpty: string;
+    stockBuy: string;
+    stockFull: string;
     price: string;
     output: string;
     risk: string;
@@ -279,6 +285,7 @@ export type EconomyText = {
     funded: string;
     companySold: string;
     union: string;
+    stock: string;
     contract: string;
     researched: string;
   };
@@ -391,6 +398,12 @@ const cs: EconomyText = {
     unionHint: "Odbory se ozvou, když jsou mzdy příliš vysoké a lidé nespokojení. Dohoda je zastaví na 12 hodin.",
     unionActive: "Dohoda platí ještě {t}",
     unionGo: "Uzavřít dohodu s odbory (den mezd)",
+    stockTitle: "Zásoby a vstupy",
+    stockHint: "Výroba spotřebuje vstupy. Dávka stojí {h} h výnosu kusu. Když zásoby dojdou, výnos klesá.",
+    stockLevel: "Zásoby: {s} / {c} dávek",
+    stockEmpty: "Zásoby došly: výnos jen {p} %",
+    stockBuy: "Koupit {n} za {p}",
+    stockFull: "Sklad je plný",
     price: "Cena produktu",
     output: "Výroba",
     risk: "Riziko",
@@ -576,7 +589,7 @@ const cs: EconomyText = {
   restartConfirm: "Opravdu začít znovu? Přijdeš o postavu, firmy i investice. Zůstane ti rekord.",
   restartHint: "Kdykoliv můžeš začít od nuly s novou postavou.",
   saveNote: "Hra se ukládá sama po každé akci.",
-  toast: { bought: "Koupeno", sold: "Prodáno za {n}", profit: "Zisk {n}", loss: "Ztráta {n}", created: "Postava vytvořena", edu: "Vzdělání vylepšeno", job: "Nová práce", restarted: "Začínáš znovu", upgraded: "Obor vylepšen", hired: "Zaměstnanec najat", fired: "Zaměstnanec propuštěn", level: "Nastaveno", campaign: "Kampaň běží 30 minut", funded: "Krizový fond zaplacen", companySold: "Firma prodána za {n}", union: "Dohoda s odbory uzavřena", contract: "Kontrakt podepsán", researched: "Výzkum hotový" },
+  toast: { bought: "Koupeno", sold: "Prodáno za {n}", profit: "Zisk {n}", loss: "Ztráta {n}", created: "Postava vytvořena", edu: "Vzdělání vylepšeno", job: "Nová práce", restarted: "Začínáš znovu", upgraded: "Obor vylepšen", hired: "Zaměstnanec najat", fired: "Zaměstnanec propuštěn", level: "Nastaveno", campaign: "Kampaň běží 30 minut", funded: "Krizový fond zaplacen", companySold: "Firma prodána za {n}", union: "Dohoda s odbory uzavřena", stock: "Zásoby doplněny", contract: "Kontrakt podepsán", researched: "Výzkum hotový" },
   errors: {
     generic: "Něco se nepovedlo.",
     "login-required": "Přihlas se.",
@@ -705,6 +718,12 @@ const en: EconomyText = {
     unionHint: "The union speaks up when wages are too high and people are unhappy. A deal stops strikes for 12 hours.",
     unionActive: "Deal active for {t} more",
     unionGo: "Make a deal with the union (one day of wages)",
+    stockTitle: "Stock and inputs",
+    stockHint: "Production uses inputs. A batch costs {h} h of one unit's income. When stock runs out, income drops.",
+    stockLevel: "Stock: {s} / {c} batches",
+    stockEmpty: "Stock ran out: income only {p} %",
+    stockBuy: "Buy {n} for {p}",
+    stockFull: "Warehouse is full",
     price: "Product price",
     output: "Production",
     risk: "Risk",
@@ -890,7 +909,7 @@ const en: EconomyText = {
   restartConfirm: "Really start over? You lose your character, companies and investments. Your record stays.",
   restartHint: "You can start from zero with a new character any time.",
   saveNote: "The game saves itself after every action.",
-  toast: { bought: "Bought", sold: "Sold for {n}", profit: "Profit {n}", loss: "Loss {n}", created: "Character created", edu: "Education improved", job: "New job", restarted: "Starting over", upgraded: "Industry upgraded", hired: "Employee hired", fired: "Employee let go", level: "Saved", campaign: "Campaign running for 30 minutes", funded: "Crisis fund paid", companySold: "Company sold for {n}", union: "Deal with the union made", contract: "Contract signed", researched: "Research done" },
+  toast: { bought: "Bought", sold: "Sold for {n}", profit: "Profit {n}", loss: "Loss {n}", created: "Character created", edu: "Education improved", job: "New job", restarted: "Starting over", upgraded: "Industry upgraded", hired: "Employee hired", fired: "Employee let go", level: "Saved", campaign: "Campaign running for 30 minutes", funded: "Crisis fund paid", companySold: "Company sold for {n}", union: "Deal with the union made", stock: "Stock restocked", contract: "Contract signed", researched: "Research done" },
   errors: {
     generic: "Something went wrong.",
     "login-required": "Log in.",
@@ -1019,6 +1038,12 @@ const de: EconomyText = {
     unionHint: "Die Gewerkschaft meldet sich, wenn die Löhne zu hoch und die Leute unzufrieden sind. Eine Vereinbarung stoppt Streiks für 12 Stunden.",
     unionActive: "Vereinbarung gilt noch {t}",
     unionGo: "Vereinbarung mit der Gewerkschaft (ein Tageslohn)",
+    stockTitle: "Lager und Vorprodukte",
+    stockHint: "Die Produktion verbraucht Vorprodukte. Eine Charge kostet {h} h Ertrag einer Einheit. Ist das Lager leer, sinkt der Ertrag.",
+    stockLevel: "Lager: {s} / {c} Chargen",
+    stockEmpty: "Lager leer: Ertrag nur noch {p} %",
+    stockBuy: "{n} kaufen für {p}",
+    stockFull: "Lager ist voll",
     price: "Produktpreis",
     output: "Produktion",
     risk: "Risiko",
@@ -1204,7 +1229,7 @@ const de: EconomyText = {
   restartConfirm: "Wirklich neu beginnen? Du verlierst Figur, Firmen und Investitionen. Dein Rekord bleibt.",
   restartHint: "Du kannst jederzeit mit einer neuen Figur bei null anfangen.",
   saveNote: "Das Spiel speichert sich nach jeder Aktion selbst.",
-  toast: { bought: "Gekauft", sold: "Verkauft für {n}", profit: "Gewinn {n}", loss: "Verlust {n}", created: "Figur erstellt", edu: "Bildung verbessert", job: "Neuer Job", restarted: "Neustart", upgraded: "Branche verbessert", hired: "Mitarbeiter eingestellt", fired: "Mitarbeiter entlassen", level: "Gespeichert", campaign: "Kampagne läuft 30 Minuten", funded: "Krisenfonds bezahlt", companySold: "Firma verkauft für {n}", union: "Vereinbarung mit der Gewerkschaft geschlossen", contract: "Vertrag unterschrieben", researched: "Forschung abgeschlossen" },
+  toast: { bought: "Gekauft", sold: "Verkauft für {n}", profit: "Gewinn {n}", loss: "Verlust {n}", created: "Figur erstellt", edu: "Bildung verbessert", job: "Neuer Job", restarted: "Neustart", upgraded: "Branche verbessert", hired: "Mitarbeiter eingestellt", fired: "Mitarbeiter entlassen", level: "Gespeichert", campaign: "Kampagne läuft 30 Minuten", funded: "Krisenfonds bezahlt", companySold: "Firma verkauft für {n}", union: "Vereinbarung mit der Gewerkschaft geschlossen", stock: "Lager aufgefüllt", contract: "Vertrag unterschrieben", researched: "Forschung abgeschlossen" },
   errors: {
     generic: "Etwas ist schiefgelaufen.",
     "login-required": "Bitte anmelden.",
@@ -1333,6 +1358,12 @@ const ru: EconomyText = {
     unionHint: "Профсоюз заявляет о себе, когда зарплаты слишком высоки и люди недовольны. Соглашение останавливает забастовки на 12 часов.",
     unionActive: "Соглашение действует ещё {t}",
     unionGo: "Заключить соглашение с профсоюзом (день зарплат)",
+    stockTitle: "Запасы и сырьё",
+    stockHint: "Производство расходует сырьё. Партия стоит {h} ч дохода одной единицы. Когда запасы кончаются, доход падает.",
+    stockLevel: "Запасы: {s} / {c} партий",
+    stockEmpty: "Запасы кончились: доход только {p} %",
+    stockBuy: "Купить {n} за {p}",
+    stockFull: "Склад полон",
     price: "Цена продукта",
     output: "Производство",
     risk: "Риск",
@@ -1518,7 +1549,7 @@ const ru: EconomyText = {
   restartConfirm: "Точно начать заново? Ты потеряешь персонажа, компании и инвестиции. Рекорд останется.",
   restartHint: "В любой момент можно начать с нуля с новым персонажем.",
   saveNote: "Игра сохраняется сама после каждого действия.",
-  toast: { bought: "Куплено", sold: "Продано за {n}", profit: "Прибыль {n}", loss: "Убыток {n}", created: "Персонаж создан", edu: "Образование улучшено", job: "Новая работа", restarted: "Начинаем заново", upgraded: "Отрасль улучшена", hired: "Сотрудник нанят", fired: "Сотрудник уволен", level: "Сохранено", campaign: "Кампания идёт 30 минут", funded: "Антикризисный фонд оплачен", companySold: "Компания продана за {n}", union: "Соглашение с профсоюзом заключено", contract: "Контракт подписан", researched: "Исследование готово" },
+  toast: { bought: "Куплено", sold: "Продано за {n}", profit: "Прибыль {n}", loss: "Убыток {n}", created: "Персонаж создан", edu: "Образование улучшено", job: "Новая работа", restarted: "Начинаем заново", upgraded: "Отрасль улучшена", hired: "Сотрудник нанят", fired: "Сотрудник уволен", level: "Сохранено", campaign: "Кампания идёт 30 минут", funded: "Антикризисный фонд оплачен", companySold: "Компания продана за {n}", union: "Соглашение с профсоюзом заключено", stock: "Запасы пополнены", contract: "Контракт подписан", researched: "Исследование готово" },
   errors: {
     generic: "Что-то пошло не так.",
     "login-required": "Войди в аккаунт.",

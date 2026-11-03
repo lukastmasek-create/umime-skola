@@ -49,6 +49,12 @@ import {
   rolesOf,
   UNION_DEAL_MS,
   unionDeal,
+  buyStock,
+  batchPrice,
+  stockCapacity,
+  INPUT_BATCH_HOURS,
+  NO_STOCK_OUTPUT,
+  SHORTAGE_PRICE,
   sellCompany,
   signContract,
   chooseShift,
@@ -760,8 +766,10 @@ test("fáze: nájem a daň rostou s fází; bez firmy se nic neplatí", () => {
 });
 
 test("čas: rychlost 16× připíše 16× příjem, offline strop se násobí a uložený herní čas se nořeže", () => {
-  const bought = buyCompany(start("rich"), "shoes", NOW);
-  const s1 = bought.ok ? bought.state : start("rich");
+  // Hotovost držíme nízkou: životní náklady rostou s jměním, takže velké jmění by čistý výnos zkreslilo.
+  const bought = buyCompany({ ...start("rich"), cash: 3000 }, "shoes", NOW);
+  const withStock = bought.ok ? buyStock(bought.state, "shoes", stockCapacity(1, 1), NOW) : bought;
+  const s1 = withStock.ok ? withStock.state : start("rich");
   const fast = setSpeed(s1, 16, NOW);
   assert.ok(fast.ok);
   const s16 = fast.ok ? fast.state : s1;
@@ -999,7 +1007,9 @@ test("zaměstnanci: účetní sníží daň; vyplatí se u větší firmy, u jed
       ok(b);
       st = b.ok ? b.state : st;
     }
-    return st;
+    const z = buyStock(st, "shoes", n, NOW);
+    ok(z);
+    return z.ok ? z.state : st;
   };
   const big = buy(20);
   const accBig = hireStaff(big, "shoes", 1, NOW, "accountant");
@@ -1070,4 +1080,70 @@ test("odbory: dohoda stojí den mezd, jde jen u firmy s dost lidmi a platí na �
 test("odbory: čas dohody se při načtení ořízne na nejdelší povolenou dobu", () => {
   const s = normalizeState({ companies: { shoes: 2 }, setup: { shoes: { staff: 0, unionUntil: NOW + 999 * H } } }, NOW);
   assert.equal(s.setup.shoes?.unionUntil, NOW + UNION_DEAL_MS);
+});
+
+test("zásoby: nákup dávek stojí peníze, jde jen do kapacity a jen celé dávky", () => {
+  const bought = buyCompany({ ...start("rich"), cash: 1e12 }, "shoes", NOW);
+  ok(bought);
+  const s = bought.ok ? bought.state : emptyState(NOW);
+  const cap = stockCapacity(1, s.phase);
+  const b = buyStock(s, "shoes", 2, NOW);
+  ok(b);
+  if (!b.ok) return;
+  assert.equal(b.state.setup.shoes?.stock, 2);
+  assert.equal(s.cash - b.state.cash, batchPrice(s, "shoes", NOW) * 2);
+  assert.deepEqual(buyStock(s, "shoes", cap + 1, NOW), { ok: false, error: "max" }, "víc než sklad nepojme");
+  assert.deepEqual(buyStock(s, "shoes", 1.5, NOW), { ok: false, error: "bad-request" });
+  assert.deepEqual(buyStock({ ...s, cash: 0 }, "shoes", 1, NOW), { ok: false, error: "not-enough-cash" });
+  assert.deepEqual(buyStock(s, "clothes", 1, NOW), { ok: false, error: "nothing" });
+});
+
+test("zásoby: bez zásob výnos klesne na zlomek, se zásobami je plný", () => {
+  const bought = buyCompany({ ...start("rich"), cash: 1e12 }, "shoes", NOW);
+  ok(bought);
+  const empty = bought.ok ? bought.state : emptyState(NOW);
+  const stocked = buyStock(empty, "shoes", 1, NOW);
+  ok(stocked);
+  if (!stocked.ok) return;
+  const full = companyYield(stocked.state, "shoes", NOW).gross;
+  const dry = companyYield(empty, "shoes", NOW).gross;
+  assert.ok(Math.abs(dry - full * NO_STOCK_OUTPUT) < 1e-6 * full, "bez zásob jen zlomek výnosu");
+});
+
+test("zásoby: výroba je spotřebovává v čase a nikdy neklesnou pod nulu", () => {
+  const bought = buyCompany({ ...start("rich"), cash: 1e12 }, "shoes", NOW);
+  ok(bought);
+  let st = bought.ok ? bought.state : emptyState(NOW);
+  st = buyCompany(st, "shoes", NOW).ok ? (buyCompany(st, "shoes", NOW) as { state: EconomyState }).state : st;
+  const stocked = buyStock(st, "shoes", 4, NOW);
+  ok(stocked);
+  if (!stocked.ok) return;
+  const before = stocked.state.setup.shoes!.stock;
+  const later = settle({ ...stocked.state, lastSeen: NOW - 10 * 60_000 }, NOW);
+  const used = before - later.setup.shoes!.stock;
+  assert.ok(Math.abs(used - 2 * 0.1 * (10 / 60)) < 1e-6, `2 kusy × 0,1 dávky/h × 10 min, je ${used}`);
+  const dry = settle({ ...stocked.state, setup: { shoes: { ...stocked.state.setup.shoes!, stock: 0.001 } } as EconomyState["setup"], lastSeen: NOW - 60 * 60_000 }, NOW);
+  assert.ok(dry.setup.shoes!.stock >= 0, "zásoby nejdou do mínusu");
+});
+
+test("zásoby: při nedostatku zdraží dávky o polovinu", () => {
+  let t: number | null = null;
+  for (let i = 0; i < 400 && t === null; i++) {
+    const at = NOW + i * EVENT_WINDOW_MS;
+    const ev = currentEvent(at);
+    if (ev && ev.def.id === "shortage" && eventAffects(ev.def, "shoes")) t = at;
+  }
+  assert.ok(t !== null, "nedostatek obuvi přijde do pár oken");
+  const bought = buyCompany({ ...start("rich"), cash: 1e12 }, "shoes", NOW);
+  ok(bought);
+  const s = bought.ok ? bought.state : emptyState(NOW);
+  const normal = batchPrice(s, "shoes", t! + EVENT_DURATION_MS + 1);
+  const short = batchPrice(s, "shoes", t!);
+  assert.ok(Math.abs(short / normal - SHORTAGE_PRICE) < 0.01, "při nedostatku zdražení");
+  assert.ok(normal > 0 && INPUT_BATCH_HOURS > 0);
+});
+
+test("zásoby: načtení oříznu na kapacitu skladu", () => {
+  const s = normalizeState({ companies: { shoes: 1 }, setup: { shoes: { staff: 0, stock: 9999 } } }, NOW);
+  assert.ok((s.setup.shoes?.stock ?? 0) <= stockCapacity(1, 12), "zásoby se vejdou do skladu");
 });
