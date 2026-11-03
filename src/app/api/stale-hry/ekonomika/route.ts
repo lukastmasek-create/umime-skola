@@ -233,51 +233,68 @@ export async function POST(request: Request) {
     const real = Date.now();
     // Čtení jdou paralelně mimo transakci (jedna síťová odezva místo pěti sekvenčních).
     // Souběh hlídají stejně jako dřív: stav přes updatedAt a body přes podmíněné updateMany.
-    const [learning, row, user] = await Promise.all([
-      learningFor(prisma, userId, real),
-      prisma.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } }),
-      prisma.user.findUnique({ where: { id: userId }, select: { points: true } }),
-    ]);
+    const readState = () =>
+      Promise.all([
+        prisma.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } }),
+        prisma.user.findUnique({ where: { id: userId }, select: { points: true } }),
+      ]);
+    const [learning, snapshot] = await Promise.all([learningFor(prisma, userId, real), readState()]);
+    let [row, user] = snapshot;
 
-    const result = await prisma.$transaction(
-      async (tx) => {
-        const points = user?.points ?? 0;
+    const runOnce = () =>
+      prisma.$transaction(
+        async (tx) => {
+          const points = user?.points ?? 0;
 
-        const base = row ? normalizeState(row.data, real) : emptyState(real);
-        const now = gameNow(base, real);
-        const current = settle(base, now, learning);
-        const outcome = body.action === "setSpeed" ? setSpeed(current, body.value, real) : applyAction(current, body, now, learning, points);
-        if (!outcome.ok) return { outcome, points, now };
+          const base = row ? normalizeState(row.data, real) : emptyState(real);
+          const now = gameNow(base, real);
+          const current = settle(base, now, learning);
+          const outcome = body.action === "setSpeed" ? setSpeed(current, body.value, real) : applyAction(current, body, now, learning, points);
+          if (!outcome.ok) return { outcome, points, now };
 
-        const cost = outcome.pointsSpent ?? 0;
-        if (cost > 0) {
-          const spent = await tx.user.updateMany({ where: { id: userId, points: { gte: cost } }, data: { points: { decrement: cost } } });
-          if (spent.count === 0) throw new NotEnoughPoints();
-        }
-
-        // Směna bodů: odečtení jen když hráč pořád má dost (souběžné okno), přičtení se zapíše do historie bodů.
-        const change = outcome.pointsChange;
-        if (change) {
-          if (change.amount < 0) {
-            const spent = await tx.user.updateMany({ where: { id: userId, points: { gte: -change.amount } }, data: { points: { decrement: -change.amount } } });
+          const cost = outcome.pointsSpent ?? 0;
+          if (cost > 0) {
+            const spent = await tx.user.updateMany({ where: { id: userId, points: { gte: cost } }, data: { points: { decrement: cost } } });
             if (spent.count === 0) throw new NotEnoughPoints();
-          } else {
-            await tx.user.update({ where: { id: userId }, data: { points: { increment: change.amount } } });
           }
-          await tx.pointTransaction.create({ data: { userId, amount: change.amount, reason: change.reason } });
-        }
 
-        const data = { ...outcome.state, lastSeen: now } as unknown as Prisma.InputJsonValue;
-        if (row) {
-          const updated = await tx.idleState.updateMany({ where: { id: row.id, updatedAt: row.updatedAt }, data: { data } });
-          if (updated.count === 0) throw new Conflict();
-        } else {
-          await tx.idleState.create({ data: { userId, game: GAME, data } });
-        }
-        return { outcome, points: points - cost + (change?.amount ?? 0), now };
-      },
-      { maxWait: 10_000, timeout: 20_000 },
-    );
+          // Směna bodů: odečtení jen když hráč pořád má dost (souběžné okno), přičtení se zapíše do historie bodů.
+          const change = outcome.pointsChange;
+          if (change) {
+            if (change.amount < 0) {
+              const spent = await tx.user.updateMany({ where: { id: userId, points: { gte: -change.amount } }, data: { points: { decrement: -change.amount } } });
+              if (spent.count === 0) throw new NotEnoughPoints();
+            } else {
+              await tx.user.update({ where: { id: userId }, data: { points: { increment: change.amount } } });
+            }
+            await tx.pointTransaction.create({ data: { userId, amount: change.amount, reason: change.reason } });
+          }
+
+          const data = { ...outcome.state, lastSeen: now } as unknown as Prisma.InputJsonValue;
+          if (row) {
+            const updated = await tx.idleState.updateMany({ where: { id: row.id, updatedAt: row.updatedAt }, data: { data } });
+            if (updated.count === 0) throw new Conflict();
+          } else {
+            await tx.idleState.create({ data: { userId, game: GAME, data } });
+          }
+          return { outcome, points: points - cost + (change?.amount ?? 0), now };
+        },
+        { maxWait: 10_000, timeout: 20_000 },
+      );
+
+    // Souběh: zápis na pozadí z načtení stránky (nebo jiná karta) změní řádek mezi čtením a uložením.
+    // Transakce se při chybě celá vrátí, takže bod ani stav se nepřipíšou napůl. Jednou to zkusíme znovu s čerstvým čtením.
+    let result: Awaited<ReturnType<typeof runOnce>>;
+    for (let attempt = 0; ; attempt++) {
+      try {
+        result = await runOnce();
+        break;
+      } catch (error) {
+        const raced = error instanceof Conflict || (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002");
+        if (!raced || attempt >= 1) throw error;
+        [row, user] = await readState();
+      }
+    }
 
     if (!result.outcome.ok) return NextResponse.json({ error: result.outcome.error }, { status: 400 });
     return NextResponse.json({
