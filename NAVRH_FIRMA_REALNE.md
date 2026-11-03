@@ -1,13 +1,13 @@
 # Návrh: firma jako realný provoz
 
-Stav: **kroky 1 a 2 hotové** (fáze, nájem a daň; zaměstnanci s rolemi, zaškolení, nemoc, odchody). Odbory zůstávají v kroku 2b. Zbytek je v kroku 3 a dál. Čísla jsou výchozí a dají se doladit po hraní.
+Stav: **kroky 1, 2, 2b a 3 hotové** (fáze, nájem a daň; zaměstnanci s rolemi; odbory; zásoby a vstupy). Zbytek je v kroku 4 a dál. Čísla jsou výchozí a dají se doladit po hraní.
 
 ## Postup implementace
 
 1. Hotovo: fáze, nájem a daň, postup do další fáze.
 2. Hotovo: zaměstnanci s rolemi (výrobce, prodavač, účetní, manažer), zaškolení po náboru, nemoc a odchody.
-2b. Další: odbory a spokojenost (stávky).
-3. Zásoby a vstupy.
+2b. Hotovo: odbory a spokojenost. Spokojenost klesá s podílem mezd na výnosu. Při nízké spokojenosti a aspoň 3 lidech může vypuknout stávka (výnos na polovinu). Dohoda s odbory (den mezd) stávky zastaví na 12 hodin.
+3. Hotovo: zásoby a vstupy. Výroba spotřebuje dávky (1 h výnosu kusu), sklad roste s fází, bez zásob výnos klesne na 20 %, při nedostatku zdraží dávky o 50 %.
 4. Varování před krachem a krach firmy.
 5. Úvěr v bance a investor za podíl.
 6. Holding a jeho financování.

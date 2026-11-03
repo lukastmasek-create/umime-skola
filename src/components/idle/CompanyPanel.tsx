@@ -22,6 +22,11 @@ import {
   fundPrice,
   hireCost,
   isSick,
+  batchPrice,
+  stockCapacity,
+  INPUT_BATCH_HOURS,
+  NO_STOCK_OUTPUT,
+  UNION_MIN_STAFF,
   ROLE_MAX,
   ROLE_WAGE,
   STAFF_ROLES,
@@ -294,6 +299,9 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
   const net = gross - costs;
   const maxStaff = owned * MAX_STAFF_PER_UNIT;
   const roles = rolesOf(s);
+  const stockCap = stockCapacity(owned, state.phase);
+  const stockFree = Math.max(0, Math.floor(stockCap - s.stock));
+  const batch = batchPrice(state, id, clock);
   const ev = currentEvent(clock);
   const affected = !!ev && eventAffects(ev.def, id);
   const funded = !!ev && state.responses[id] === ev.window;
@@ -490,6 +498,28 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
         <p className="text-xs text-[var(--muted)]">{t.detail.staffHint}</p>
         {clock < s.rookieUntil && <p className="text-xs font-semibold">{fill(t.detail.rookie, { t: formatLeft(s.rookieUntil - clock, t) })}</p>}
         {isSick(id, clock) && roles.producer > 0 && <p className="text-xs font-semibold">🤒 {t.detail.sick}</p>}
+        <p className="text-xs">
+          {t.detail.moraleLabel}: <b>{Math.round(y.morale * 100)} %</b>
+        </p>
+        {y.strike && <p className="pill w-fit bg-[var(--danger)] px-2 py-0.5 text-xs font-bold text-white">✊ {t.detail.strikeNow}</p>}
+        {s.staff >= UNION_MIN_STAFF && (
+          <div className="flex flex-col gap-1 rounded-xl bg-[var(--surface-muted)] p-3">
+            <p className="text-sm font-bold">🤝 {t.detail.unionTitle}</p>
+            <p className="text-xs text-[var(--muted)]">{t.detail.unionHint}</p>
+            {s.unionUntil > clock ? (
+              <p className="text-sm font-semibold">{fill(t.detail.unionActive, { t: formatLeft(s.unionUntil - clock, t) })}</p>
+            ) : (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void act({ action: "unionDeal", id }, () => t.toast.union)}
+                className="btn-bouncy w-fit bg-[var(--surface)] px-3 py-2 text-sm font-bold disabled:opacity-45"
+              >
+                {t.detail.unionGo}
+              </button>
+            )}
+          </div>
+        )}
         <ul className="flex flex-col gap-2">
           {STAFF_ROLES.map((role) => {
             const cap = ROLE_MAX[role];
@@ -520,6 +550,33 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
             );
           })}
         </ul>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <h3 className="font-bold">📦 {t.detail.stockTitle}</h3>
+        <p className="text-xs text-[var(--muted)]">{fill(t.detail.stockHint, { h: INPUT_BATCH_HOURS })}</p>
+        <p className="text-sm">
+          <b>{fill(t.detail.stockLevel, { s: Math.floor(s.stock), c: stockCap })}</b>
+        </p>
+        {s.stock <= 0 && <p className="pill w-fit bg-[var(--danger)] px-2 py-0.5 text-xs font-bold text-white">⚠️ {fill(t.detail.stockEmpty, { p: Math.round(NO_STOCK_OUTPUT * 100) })}</p>}
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            disabled={busy || stockFree < 1 || liveCash < batch}
+            onClick={() => void act({ action: "buyStock", id, amount: 1 }, () => t.toast.stock)}
+            className="btn-bouncy bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
+          >
+            {stockFree < 1 ? t.detail.stockFull : fill(t.detail.stockBuy, { n: 1, p: m(batch) })}
+          </button>
+          <button
+            type="button"
+            disabled={busy || stockFree < 5 || liveCash < batch * 5}
+            onClick={() => void act({ action: "buyStock", id, amount: 5 }, () => t.toast.stock)}
+            className="btn-bouncy bg-[var(--surface)] px-3 py-2 text-sm font-bold disabled:opacity-45"
+          >
+            {fill(t.detail.stockBuy, { n: 5, p: m(batch * 5) })}
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">
