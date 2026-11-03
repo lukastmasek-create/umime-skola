@@ -212,6 +212,10 @@ module.exports = {
       [5, "Kolik korun je 7 kusů po 45 Kč?", "315 Kč", ["305 Kč", "290 Kč", "352 Kč"], "7 · 45 = 315 Kč."],
       [5, "Sedm kamarádů vybralo po 26 Kč. Koupili dárek za 150 Kč. Kolik jim zbylo?", "32 Kč", ["24 Kč", "42 Kč", "182 Kč"], "7 · 26 = 182, 182 − 150 = 32 Kč."],
       [5, "Kolik hodin je 4 kola po 30 minutách?", "2", ["4", "3", "1"], "4 · 30 = 120 min = 2 hodiny."],
+      [1, "Na louce pasou 4 krávy a každá má 2 rohy. Kolik rohů je celkem?", "8", ["6", "4", "12"], "4 · 2 = 8."],
+      [1, "V každém balíčku jsou 4 kartičky. Kolik kartiček je ve 3 balíčcích?", "12", ["7", "8", "16"], "3 · 4 = 12."],
+      [2, "Kolik stojí 6 zmrzlin po 9 Kč?", "54 Kč", ["45 Kč", "63 Kč", "15 Kč"], "6 · 9 = 54 Kč."],
+      [3, "Dětský tábor má 7 stanů po 6 dětech. Kolik dětí je v táboře?", "42", ["36", "48", "13"], "7 · 6 = 42."],
     ],
     "mat-rimske-cislice": [
       [1, "Jaké číslo značí římská číslice C?", "100", ["50", "10", "500"], "C je sto."],
@@ -234,6 +238,11 @@ module.exports = {
       [5, "Kolik je X · II? Napiš výsledek čísly.", "20", ["12", "22", "8"], "10 · 2 = 20."],
       [5, "Jaké číslo značí římská číslice D?", "500", ["5000", "50", "100"], "D je pět set."],
       [5, "Který zápis znamená 1999?", "MCMXCIX", ["MDCCCXCIX", "MMXIX", "MCMXCVIII"], "1999 = M + CM + XC + IX."],
+      [1, "Jaké číslo značí římská číslice III?", "3", ["2", "4", "13"], "III = tři."],
+      [1, "Jaké číslo značí římská číslice IX?", "9", ["11", "8", "1"], "IX = devět."],
+      [2, "Jak se zapíše číslo 5 římsky?", "V", ["IV", "X", "VV"], "5 je V."],
+      [2, "Jak se zapíše číslo 10 římsky?", "X", ["IX", "V", "XX"], "10 je X."],
+      [3, "Jaké číslo značí XXIV?", "24", ["14", "26", "22"], "XX + IV = 24."],
     ],
   },
 };
