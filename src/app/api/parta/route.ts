@@ -166,14 +166,14 @@ export async function POST(request: Request) {
       case "challenge": {
         const opponentId = str(body.opponentId, 40);
         if (!opponentId || opponentId === userId) return fail("invalid-opponent");
-        const mine = await prisma.groupMember.findMany({ where: { userId }, select: { groupId: true } });
-        const shared = await prisma.groupMember.count({
-          where: { userId: opponentId, groupId: { in: mine.map((m) => m.groupId) } },
-        });
+        // Sdílená parta jedním dotazem (soupeř je členem skupiny, ve které jsem i já); souboje paralelně.
+        const [shared, open] = await Promise.all([
+          prisma.groupMember.count({ where: { userId: opponentId, group: { members: { some: { userId } } } } }),
+          prisma.duel.findMany({
+            where: { status: { in: ["pending", "active"] }, OR: [{ challengerId: userId }, { opponentId: userId }] },
+          }),
+        ]);
         if (shared === 0) return fail("not-in-group", 403);
-        const open = await prisma.duel.findMany({
-          where: { status: { in: ["pending", "active"] }, OR: [{ challengerId: userId }, { opponentId: userId }] },
-        });
         const running = open.filter((d) => d.status === "pending" || !d.endsAt || d.endsAt.getTime() > Date.now());
         if (running.length >= MAX_ACTIVE_DUELS) return fail("too-many-duels", 409);
         if (running.some((d) => d.challengerId === opponentId || d.opponentId === opponentId)) return fail("duel-exists", 409);

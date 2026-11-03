@@ -234,10 +234,13 @@ export async function POST(request: Request) {
   if (typeof body.id !== "string" || !Number.isFinite(choice) || choice < -1 || choice > 3) return NextResponse.json({ error: "bad-request" }, { status: 400 });
 
   try {
-    const state = await load(userId, date);
+    // Stav a otázka se načtou paralelně (oba čtení jsou nezávislá).
+    const [state, q] = await Promise.all([
+      load(userId, date),
+      prisma.question.findUnique({ where: { id: body.id }, select: { correctIndex: true, explanation: true } }),
+    ]);
     const index = state.answers.length;
     if (state.qIds.length === 0 || state.finishedAt || index >= SIZE || state.qIds[index] !== body.id) return NextResponse.json({ error: "out-of-order" }, { status: 409 });
-    const q = await prisma.question.findUnique({ where: { id: body.id }, select: { correctIndex: true, explanation: true } });
     if (!q) return NextResponse.json({ error: "unavailable" }, { status: 503 });
 
     const late = state.timed && now - state.lastAt > TIMED_SECONDS * 1000 + TIMED_GRACE_MS;
