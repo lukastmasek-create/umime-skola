@@ -205,7 +205,6 @@ module.exports = {
       [3, "Který bod leží nejníž: [2, −1], [0, 3], [5, 1]?", "[2, −1]", ["[0, 3]", "[5, 1]", "[2, 2]"], "Nejmenší y-ová souřadnice je −1."],
       [3, "Který bod leží na ose y: [0, 4], [4, 0], [2, 2]?", "[0, 4]", ["[4, 0]", "[2, 2]", "[1, 1]"], "Na ose y je x = 0."],
       [3, "Bod I[−4, −4] leží…", "ve 3. kvadrantu", ["v 1. kvadrantu", "ve 2. kvadrantu", "ve 4. kvadrantu"], "Obě souřadnice jsou záporné."],
-      [3, "Bod J[5, 0] leží…", "na ose x", ["na ose y", "v 1. kvadrantu", "v počátku"], "y = 0."],
       [3, "Který bod má obě souřadnice stejné: [3, 3], [3, −3], [−3, 3]?", "[3, 3]", ["[3, −3]", "[−3, 3]", "[0, 3]"], "Obě souřadnice jsou 3."],
       [4, "Body [0, 0], [4, 0] a [4, 3] tvoří trojúhelník. Je pravoúhlý?", "ano", ["ne", "jen rovnoramenný", "jen tupoúhlý"], "Úhel při bodě [4, 0] je pravý."],
       [4, "Jak daleko je bod [0, −5] od počátku?", "5", ["−5", "10", "0"], "Vzdálenost od počátku je 5."],
