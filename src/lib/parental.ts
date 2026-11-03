@@ -3,7 +3,15 @@ import { prisma } from "@/lib/prisma";
 // Rodičovská kontrola: PIN (bcrypt), denní limit času na webu (minuty, 0 = bez limitu), zákaz nákupů
 // v obchodech a zákaz společného hraní. Uloženo v IdleState pod hrou PARENTAL_GAME.
 export const PARENTAL_GAME = "rodicovska-kontrola";
-export type Parental = { pin: string | null; minutes: number; blockShop: boolean; blockTogether: boolean };
+// fails / lockedUntil: počet chybných PINů a do kdy je ověřování zamčené (ochrana proti hádání PINu).
+export type Parental = {
+  pin: string | null;
+  minutes: number;
+  blockShop: boolean;
+  blockTogether: boolean;
+  fails: number;
+  lockedUntil: number;
+};
 
 export function normalizeParental(raw: unknown): Parental {
   const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
@@ -13,6 +21,8 @@ export function normalizeParental(raw: unknown): Parental {
     minutes: Number.isFinite(minutes) ? Math.min(600, Math.max(0, minutes)) : 0,
     blockShop: r.blockShop === true,
     blockTogether: r.blockTogether === true,
+    fails: Number.isFinite(Number(r.fails)) ? Math.max(0, Math.floor(Number(r.fails))) : 0,
+    lockedUntil: Number.isFinite(Number(r.lockedUntil)) ? Math.max(0, Number(r.lockedUntil)) : 0,
   };
 }
 

@@ -562,3 +562,10 @@ model LimitedCopy {
   @@unique([itemId, serial])
   @@unique([itemId, userId])
 }
+
+// Počítadla požadavků pro limit (src/lib/rate-limit.ts). Tabulka: prisma/sql/rate-limit.sql.
+model RateLimit {
+  key         String   @id
+  count       Int      @default(0)
+  windowStart DateTime @default(now())
+}
