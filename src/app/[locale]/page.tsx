@@ -247,9 +247,32 @@ export default async function Home({
               </article>
             ))}
           </div>
-          <Link href={`/${locale}/kontakt`} className="btn-bouncy btn-secondary mt-10 inline-flex">
-            {h.about.contact} →
-          </Link>
+          <div className="reveal mt-12">
+            <h3 className="mb-4 text-xl font-bold" style={heading}>
+              {h.about.teamTitle}
+            </h3>
+            <ul className="grid gap-4 sm:grid-cols-3">
+              {h.about.team.map((member) => (
+                <li key={member.name} className="card flex items-center gap-4 p-4">
+                  <span aria-hidden className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--surface-muted)] text-xl font-extrabold" style={heading}>
+                    {member.name.charAt(0)}
+                  </span>
+                  <div>
+                    <p className="font-bold">{member.name}</p>
+                    <p className="text-sm text-[var(--muted)]">{member.role}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link href={`/${locale}/kontakt`} className="btn-bouncy btn-secondary inline-flex">
+              {h.about.contact} →
+            </Link>
+            <a href={`mailto:${h.about.email}`} className="font-semibold text-[var(--accent-green)] hover:underline">
+              ✉️ {h.about.email}
+            </a>
+          </div>
         </div>
       </section>
     </div>

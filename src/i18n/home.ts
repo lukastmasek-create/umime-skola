@@ -28,6 +28,9 @@ export type HomeText = {
     lead: string;
     points: { title: string; text: string }[];
     contact: string;
+    email: string;
+    teamTitle: string;
+    team: { name: string; role: string }[];
   };
 };
 
@@ -72,6 +75,13 @@ const cs: HomeText = {
       { title: "Pro koho", text: "Pro žáky, rodiče i učitele. Registrace je zdarma a body, úrovně i časy v únikovkách si uložíš na svůj účet." },
     ],
     contact: "Napiš nám",
+    email: "ucime.se.hrou@seznam.cz",
+    teamTitle: "Tým",
+    team: [
+      { name: "Natálie Majerová", role: "Marketing Manažer" },
+      { name: "Lukáš Tomášek", role: "Hlavní Developer" },
+      { name: "Lukáš Záhorský", role: "Inovátor" },
+    ],
   },
 };
 
@@ -116,6 +126,13 @@ const en: HomeText = {
       { title: "Who it's for", text: "Pupils, parents and teachers. Registration is free, and your points, levels and escape room times are saved to your account." },
     ],
     contact: "Write to us",
+    email: "ucime.se.hrou@seznam.cz",
+    teamTitle: "Team",
+    team: [
+      { name: "Natálie Majerová", role: "Marketing Manager" },
+      { name: "Lukáš Tomášek", role: "Lead Developer" },
+      { name: "Lukáš Záhorský", role: "Innovator" },
+    ],
   },
 };
 
@@ -160,6 +177,13 @@ const de: HomeText = {
       { title: "Für wen", text: "Für Schülerinnen und Schüler, Eltern und Lehrkräfte. Die Registrierung ist kostenlos, und Punkte, Level und Zeiten aus den Escape Rooms werden in deinem Konto gespeichert." },
     ],
     contact: "Schreib uns",
+    email: "ucime.se.hrou@seznam.cz",
+    teamTitle: "Team",
+    team: [
+      { name: "Natálie Majerová", role: "Marketing-Managerin" },
+      { name: "Lukáš Tomášek", role: "Hauptentwickler" },
+      { name: "Lukáš Záhorský", role: "Innovator" },
+    ],
   },
 };
 
@@ -204,6 +228,13 @@ const ru: HomeText = {
       { title: "Для кого", text: "Для учеников, родителей и учителей. Регистрация бесплатна, а баллы, уровни и время в квестах сохраняются в твоём аккаунте." },
     ],
     contact: "Напиши нам",
+    email: "ucime.se.hrou@seznam.cz",
+    teamTitle: "Команда",
+    team: [
+      { name: "Natálie Majerová", role: "Маркетинг-менеджер" },
+      { name: "Lukáš Tomášek", role: "Главный разработчик" },
+      { name: "Lukáš Záhorský", role: "Инноватор" },
+    ],
   },
 };
 
