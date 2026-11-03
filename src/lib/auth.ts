@@ -39,7 +39,10 @@ const authConfig: NextAuthConfig = {
 
         if (!email || !password) return null;
 
-        const user = await prisma.user.findUnique({ where: { email } });
+        // E-mail se hledá bez ohledu na velikost písmen, stejně jako kontrola při registraci.
+        const user = await prisma.user.findFirst({
+          where: { email: { equals: email.trim(), mode: "insensitive" } },
+        });
         if (!user || !user.password) return null;
 
         const isValid = await bcrypt.compare(password, user.password);

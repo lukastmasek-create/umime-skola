@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs";
 
 import { prisma } from "@/lib/prisma";
 
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export async function POST(request: Request) {
   try {
     return await register(request);
@@ -16,12 +18,10 @@ export async function POST(request: Request) {
 }
 
 async function register(request: Request) {
-  const body = await request.json();
-  const { name, email, password } = body as {
-    name?: string;
-    email?: string;
-    password?: string;
-  };
+  const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
+  const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
+  const password = typeof body?.password === "string" ? body.password : "";
+  const name = typeof body?.name === "string" ? body.name.replace(/\s+/g, " ").trim().slice(0, 80) : "";
 
   if (!email || !password) {
     return NextResponse.json(
@@ -29,8 +29,19 @@ async function register(request: Request) {
       { status: 400 }
     );
   }
+  if (!EMAIL.test(email) || email.length > 200) {
+    return NextResponse.json({ error: "Zadej platný e-mail." }, { status: 400 });
+  }
+  // Stejná pravidla jako při změně hesla v účtu (src/app/api/ucet/heslo).
+  if (password.length < 8 || password.length > 200) {
+    return NextResponse.json({ error: "Heslo musí mít 8 až 200 znaků." }, { status: 400 });
+  }
 
-  const existing = await prisma.user.findUnique({ where: { email } });
+  // Kontrola bez ohledu na velikost písmen, aby nevznikly duplicitní účty (např. Jan@x.cz a jan@x.cz).
+  const existing = await prisma.user.findFirst({
+    where: { email: { equals: email, mode: "insensitive" } },
+    select: { id: true },
+  });
   if (existing) {
     return NextResponse.json(
       { error: "Uživatel s tímto emailem už existuje." },
@@ -42,7 +53,7 @@ async function register(request: Request) {
 
   const user = await prisma.user.create({
     data: {
-      name,
+      name: name || null,
       email,
       password: hashedPassword,
     },
