@@ -178,11 +178,16 @@ export default async function Home({
       {/* 4) Hory: jak to funguje */}
       <section className="zone zone-peak">
         <Wave fill="#071427" />
-        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-24 pt-24 sm:px-6 sm:pb-32">
-          <h2 className="reveal mb-8 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
-            🏔️ {h.stepsTitle}
-          </h2>
-          <TownLife steps={h.steps} locale={locale} />
+        <div className="relative z-10 pb-16 pt-16 sm:pb-32 sm:pt-24">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+            <h2 className="reveal mb-6 text-2xl font-bold tracking-tight sm:mb-8 sm:text-3xl" style={heading}>
+              🏔️ {h.stepsTitle}
+            </h2>
+          </div>
+          {/* scéna jde přes celou sekci (až 1680 px), na telefonu od kraje ke kraji */}
+          <div className="mx-auto w-full max-w-[1680px] px-2 sm:px-4 lg:px-6">
+            <TownLife steps={h.steps} locale={locale} />
+          </div>
         </div>
       </section>
 

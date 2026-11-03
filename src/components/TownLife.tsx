@@ -134,6 +134,8 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
   const [pick, setPick] = useState<Weather | "auto">("auto");
   const [, setCalm] = useState(false);
   const [hover, setHover] = useState<number | null>(null);
+  // telefon: jedna bublina najednou (tři by se na úzké scéně překryly)
+  const [narrow, setNarrow] = useState(false);
   // stav sdílený se smyčkou (bez překreslování Reactu)
   const live = useRef({ night: true, pick: "auto" as Weather | "auto", reached: 0, override: null as null | { u: number; t: number }, calm: false });
 
@@ -595,19 +597,27 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
     return () => m.removeEventListener("change", set);
   }, []);
 
+  useEffect(() => {
+    const m = window.matchMedia("(max-width: 639px)");
+    const set = () => setNarrow(m.matches);
+    set();
+    m.addEventListener("change", set);
+    return () => m.removeEventListener("change", set);
+  }, []);
+
   const go = (i: number) => wrap.current?.dispatchEvent(new CustomEvent("town-go", { detail: i }));
   const dayCls = night ? "" : "town-day";
   const doors = [EX.b1_door, EX.b2_door, EX.b3_door];
   const tops = [EX.b1_top, EX.b2_top, EX.b3_top];
-  const BUBBLE_W = 0.215;
+  const BUBBLE_W = narrow ? 0.5 : 0.215;
   const shifts = [0.012, -0.045, -0.012]; // posun bubliny do strany, aby nezakrývala sopku a nevyčnívala ze scény
   const tints = ["#8fd0ff", "#c9b8ff", "#ffd24d"];
   const lampList = town.lamps as P[];
 
   return (
     <div>
-      <div ref={wrap} className={`relative mx-auto w-full max-w-[1280px] overflow-hidden rounded-3xl border-2 border-white/15 bg-[#0c0a24]/30 shadow-[0_20px_60px_rgba(10,6,40,0.55)] ${dayCls}`}>
-        <div ref={box} className="town-box relative w-full min-w-[760px] will-change-transform [container-type:inline-size]" style={{ aspectRatio: String(ASPECT) }}>
+      <div ref={wrap} className={`relative mx-auto w-full overflow-hidden rounded-3xl border-2 border-white/15 bg-[#0c0a24]/30 shadow-[0_20px_60px_rgba(10,6,40,0.55)] ${dayCls}`}>
+        <div ref={box} className="town-box relative w-full will-change-transform [container-type:inline-size]" style={{ aspectRatio: String(ASPECT) }}>
           {/* obloha: noc / den */}
           <div aria-hidden className="town-sky absolute inset-0" />
           <div aria-hidden className="town-stars absolute inset-0" />
@@ -711,7 +721,8 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
           {/* bubliny kroků nad budovami: vyskočí, když k budově hrdina dojde (nebo při najetí) */}
           {steps.slice(0, 3).map((st, i) => {
             const on = reached > i;
-            const show = on || hover === i;
+            // na telefonu svítí jen bublina posledního dosaženého kroku (nebo ta pod prstem)
+            const show = narrow ? hover === i || reached - 1 === i : on || hover === i;
             const left = Math.max(BUBBLE_W / 2 + 0.01, Math.min(1 - BUBBLE_W / 2 - 0.01, tops[i][0] + shifts[i]));
             const tail = 50 + ((tops[i][0] - left) / BUBBLE_W) * 100;
             return (
@@ -743,7 +754,8 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
           <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 z-[6] h-[9%] bg-gradient-to-b from-transparent to-[#160a2c]/90" />
           {/* eslint-enable @next/next/no-img-element */}
         </div>
-        <div className="pointer-events-none absolute right-3 top-3 z-10 flex gap-2">
+        {/* na telefonu dole (bubliny jsou nahoře), na větší obrazovce vpravo nahoře */}
+        <div className="pointer-events-none absolute bottom-3 right-3 z-10 flex gap-2 sm:bottom-auto sm:top-3">
           {[
             { k: "tod", icon: night ? "☀️" : "🌙", label: night ? labels.day : labels.night, on: false, act: () => setNight((v) => !v) },
             { k: "snow", icon: "❄️", label: labels.snow, on: pick === "snow", act: () => setPick((p) => (p === "snow" ? "clear" : "snow")) },
@@ -757,7 +769,7 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
               aria-label={b.label}
               aria-pressed={b.k === "tod" ? !night : b.on}
               title={b.label}
-              className={`pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full border-2 text-base shadow-[0_3px_0_rgba(10,6,40,0.6)] backdrop-blur transition-transform hover:-translate-y-0.5 ${b.on ? "border-[#ffd24d] bg-[#ffd24d]/25" : "border-white/30 bg-[#0c0a24]/60"}`}
+              className={`pointer-events-auto flex h-10 w-10 items-center justify-center rounded-full border-2 text-base sm:h-9 sm:w-9 shadow-[0_3px_0_rgba(10,6,40,0.6)] backdrop-blur transition-transform hover:-translate-y-0.5 ${b.on ? "border-[#ffd24d] bg-[#ffd24d]/25" : "border-white/30 bg-[#0c0a24]/60"}`}
             >
               <span aria-hidden>{b.icon}</span>
             </button>
