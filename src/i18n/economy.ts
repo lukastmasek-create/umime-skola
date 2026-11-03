@@ -190,6 +190,7 @@ export type EconomyText = {
   ovEarnings: string;
   ovAssets: string;
   ovEducation: string;
+  ovMaterials: string;
   centerIncome: string;
   centerAssets: string;
   passiveShare: string;
@@ -206,6 +207,7 @@ export type EconomyText = {
   educationBuy: string;
   educationMax: string;
   exchange: { title: string; hint: string; amount: string; sell: string; buy: string; sellRate: string; buyRate: string; sold: string; bought: string };
+  materials: { title: string; hint: string; owned: string; bought: string };
   currentJob: string;
   noJob: string;
   rank: string;
@@ -496,6 +498,7 @@ const cs: EconomyText = {
   ovEarnings: "Výdělky",
   ovAssets: "Majetek",
   ovEducation: "Vzdělání",
+  ovMaterials: "Materiály",
   centerIncome: "Příjem/h",
   centerAssets: "Celkem",
   passiveShare: "Pasivní podíl",
@@ -511,6 +514,7 @@ const cs: EconomyText = {
   educationHint: "Investuj body z učení: každá úroveň trvale zvedne všechny příjmy o 4 %.",
   educationBuy: "Úroveň {n} za {p} bodů",
   educationMax: "Nejvyšší úroveň",
+  materials: { title: "Materiály za peníze", hint: "Běžné a neobvyklé materiály si můžeš koupit přímo za peníze z Ekonomiky. Denní limit je společný s nákupem za body v Craftu.", owned: "Máš {n} ks", bought: "Koupeno: {name}" },
   exchange: { title: "Směna bodů a peněz", hint: "Body z učení můžeš prodat za peníze, nebo za peníze koupit body. Prodej: 1 bod = 10 000. Nákup: 1 bod = 1 000 000.", amount: "Počet bodů", sell: "Prodat", buy: "Koupit", sellRate: "Prodej: 1 bod = {p}", buyRate: "Nákup: 1 bod = {p}", sold: "Prodáno {n} bodů", bought: "Koupeno {n} bodů" },
   currentJob: "Tvoje práce",
   noJob: "Zatím nemáš práci.",
@@ -801,6 +805,7 @@ const en: EconomyText = {
   ovEarnings: "Earnings",
   ovAssets: "Assets",
   ovEducation: "Education",
+  ovMaterials: "Materials",
   centerIncome: "Income/h",
   centerAssets: "Total",
   passiveShare: "Passive share",
@@ -816,6 +821,7 @@ const en: EconomyText = {
   educationHint: "Invest points from learning: every level permanently raises all income by 4 %.",
   educationBuy: "Level {n} for {p} points",
   educationMax: "Highest level",
+  materials: { title: "Materials for money", hint: "You can buy common and uncommon materials directly with money from the Economy. The daily limit is shared with buying for points in Craft.", owned: "You have {n}", bought: "Bought: {name}" },
   exchange: { title: "Exchange points and money", hint: "Sell learning points for money, or buy points with money. Selling: 1 point = 10,000. Buying: 1 point = 1,000,000.", amount: "Points", sell: "Sell", buy: "Buy", sellRate: "Sell: 1 point = {p}", buyRate: "Buy: 1 point = {p}", sold: "Sold {n} points", bought: "Bought {n} points" },
   currentJob: "Your job",
   noJob: "You have no job yet.",
@@ -1106,6 +1112,7 @@ const de: EconomyText = {
   ovEarnings: "Verdienst",
   ovAssets: "Vermögen",
   ovEducation: "Bildung",
+  ovMaterials: "Materialien",
   centerIncome: "Ertrag/Std",
   centerAssets: "Gesamt",
   passiveShare: "Passiver Anteil",
@@ -1121,6 +1128,7 @@ const de: EconomyText = {
   educationHint: "Investiere Punkte vom Lernen: Jede Stufe erhöht dauerhaft alle Einkünfte um 4 %.",
   educationBuy: "Stufe {n} für {p} Punkte",
   educationMax: "Höchste Stufe",
+  materials: { title: "Materialien für Geld", hint: "Gewöhnliche und ungewöhnliche Materialien kannst du direkt mit Geld aus der Ökonomie kaufen. Das Tageslimit gilt zusammen mit dem Kauf für Punkte im Craft.", owned: "Du hast {n} Stück", bought: "Gekauft: {name}" },
   exchange: { title: "Punkte und Geld tauschen", hint: "Lernpunkte kannst du gegen Geld verkaufen oder mit Geld Punkte kaufen. Verkauf: 1 Punkt = 10.000. Kauf: 1 Punkt = 1.000.000.", amount: "Punkte", sell: "Verkaufen", buy: "Kaufen", sellRate: "Verkauf: 1 Punkt = {p}", buyRate: "Kauf: 1 Punkt = {p}", sold: "{n} Punkte verkauft", bought: "{n} Punkte gekauft" },
   currentJob: "Dein Job",
   noJob: "Du hast noch keinen Job.",
@@ -1411,6 +1419,7 @@ const ru: EconomyText = {
   ovEarnings: "Заработок",
   ovAssets: "Активы",
   ovEducation: "Образование",
+  ovMaterials: "Материалы",
   centerIncome: "Доход/ч",
   centerAssets: "Всего",
   passiveShare: "Доля пассивного",
@@ -1426,6 +1435,7 @@ const ru: EconomyText = {
   educationHint: "Вкладывай баллы за учёбу: каждый уровень навсегда повышает все доходы на 4 %.",
   educationBuy: "Уровень {n} за {p} баллов",
   educationMax: "Высший уровень",
+  materials: { title: "Материалы за деньги", hint: "Обычные и необычные материалы можно купить прямо за деньги из экономики. Дневной лимит общий с покупкой за баллы в крафте.", owned: "У тебя {n} шт.", bought: "Куплено: {name}" },
   exchange: { title: "Обмен баллов и денег", hint: "Баллы за учёбу можно продать за деньги или купить баллы за деньги. Продажа: 1 балл = 10 000. Покупка: 1 балл = 1 000 000.", amount: "Баллы", sell: "Продать", buy: "Купить", sellRate: "Продажа: 1 балл = {p}", buyRate: "Покупка: 1 балл = {p}", sold: "Продано баллов: {n}", bought: "Куплено баллов: {n}" },
   currentJob: "Твоя работа",
   noJob: "У тебя пока нет работы.",
