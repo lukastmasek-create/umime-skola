@@ -29,8 +29,10 @@ export type HomeText = {
     points: { title: string; text: string }[];
     contact: string;
     email: string;
+    why: { title: string; text: string };
+    problem: { title: string; text: string };
     teamTitle: string;
-    team: { name: string; role: string }[];
+    team: { name: string; role: string; bio: string }[];
   };
 };
 
@@ -75,12 +77,20 @@ const cs: HomeText = {
       { title: "Pro koho", text: "Pro žáky, rodiče i učitele. Registrace je zdarma a body, úrovně i časy v únikovkách si uložíš na svůj účet." },
     ],
     contact: "Napiš nám",
+    why: {
+      title: "Proč to děláme",
+      text: "Věříme, že se děti učí nejlépe, když je to baví a když vidí, že jejich úsilí má smysl. Chceme, aby procvičování bylo něco, na co se těší, a ne úkol, kterému se chtějí vyhnout.",
+    },
+    problem: {
+      title: "Co řešíme",
+      text: "Učivo se upevní hlavně procvičováním, ale běžná cvičení bývají nudná a bez zpětné vazby. Spojujeme kurzy, testy s vysvětlením každé odpovědi a hry, za které se sbírají body, aby učení dávalo smysl a bavilo.",
+    },
     email: "ucime.se.hrou@seznam.cz",
     teamTitle: "Tým",
     team: [
-      { name: "Natálie Majerová", role: "Marketing Manažer" },
-      { name: "Lukáš Tomášek", role: "Hlavní Developer" },
-      { name: "Lukáš Záhorský", role: "Inovátor" },
+      { name: "Natálie Majerová", role: "Marketing Manažer", bio: "Stará se o marketing a o to, aby se web dostal k dětem, rodičům a učitelům." },
+      { name: "Lukáš Tomášek", role: "Hlavní Developer", bio: "Vede vývoj platformy, od kurzů a her po účty a žebříčky." },
+      { name: "Lukáš Záhorský", role: "Inovátor", bio: "Přichází s novými nápady na hry a způsoby učení." },
     ],
   },
 };
@@ -126,12 +136,20 @@ const en: HomeText = {
       { title: "Who it's for", text: "Pupils, parents and teachers. Registration is free, and your points, levels and escape room times are saved to your account." },
     ],
     contact: "Write to us",
+    why: {
+      title: "Why we do it",
+      text: "We believe children learn best when it's fun and when they see their effort pays off. We want practice to be something kids look forward to, not a chore they avoid.",
+    },
+    problem: {
+      title: "What we're solving",
+      text: "Practice is what makes knowledge stick, but ordinary exercises are often boring and give no feedback. We combine courses, tests with an explanation for every answer and games that earn points, so learning makes sense and is enjoyable.",
+    },
     email: "ucime.se.hrou@seznam.cz",
     teamTitle: "Team",
     team: [
-      { name: "Natálie Majerová", role: "Marketing Manager" },
-      { name: "Lukáš Tomášek", role: "Lead Developer" },
-      { name: "Lukáš Záhorský", role: "Innovator" },
+      { name: "Natálie Majerová", role: "Marketing Manager", bio: "Looks after marketing and makes sure the site reaches kids, parents and teachers." },
+      { name: "Lukáš Tomášek", role: "Lead Developer", bio: "Leads the platform's development, from courses and games to accounts and leaderboards." },
+      { name: "Lukáš Záhorský", role: "Innovator", bio: "Brings new ideas for games and ways of learning." },
     ],
   },
 };
@@ -177,12 +195,20 @@ const de: HomeText = {
       { title: "Für wen", text: "Für Schülerinnen und Schüler, Eltern und Lehrkräfte. Die Registrierung ist kostenlos, und Punkte, Level und Zeiten aus den Escape Rooms werden in deinem Konto gespeichert." },
     ],
     contact: "Schreib uns",
+    why: {
+      title: "Warum wir das machen",
+      text: "Wir glauben, dass Kinder am besten lernen, wenn es Spaß macht und sie sehen, dass sich ihr Einsatz lohnt. Üben soll etwas sein, auf das man sich freut, und keine Pflicht, der man aus dem Weg geht.",
+    },
+    problem: {
+      title: "Was wir lösen",
+      text: "Üben festigt das Wissen, aber gewöhnliche Aufgaben sind oft langweilig und geben kein Feedback. Wir verbinden Kurse, Tests mit Erklärung zu jeder Antwort und Spiele, für die es Punkte gibt, damit Lernen Sinn ergibt und Freude macht.",
+    },
     email: "ucime.se.hrou@seznam.cz",
     teamTitle: "Team",
     team: [
-      { name: "Natálie Majerová", role: "Marketing-Managerin" },
-      { name: "Lukáš Tomášek", role: "Hauptentwickler" },
-      { name: "Lukáš Záhorský", role: "Innovator" },
+      { name: "Natálie Majerová", role: "Marketing-Managerin", bio: "Kümmert sich um Marketing und darum, dass die Seite Kinder, Eltern und Lehrkräfte erreicht." },
+      { name: "Lukáš Tomášek", role: "Hauptentwickler", bio: "Leitet die Entwicklung der Plattform, von Kursen und Spielen bis zu Konten und Ranglisten." },
+      { name: "Lukáš Záhorský", role: "Innovator", bio: "Bringt neue Ideen für Spiele und Lernweisen ein." },
     ],
   },
 };
@@ -228,12 +254,20 @@ const ru: HomeText = {
       { title: "Для кого", text: "Для учеников, родителей и учителей. Регистрация бесплатна, а баллы, уровни и время в квестах сохраняются в твоём аккаунте." },
     ],
     contact: "Напиши нам",
+    why: {
+      title: "Зачем мы это делаем",
+      text: "Мы верим, что дети лучше всего учатся, когда это интересно и когда видно, что усилия окупаются. Мы хотим, чтобы тренировка была тем, чего ждут, а не обязанностью, от которой хочется уйти.",
+    },
+    problem: {
+      title: "Какую проблему решаем",
+      text: "Тренировка закрепляет знания, но обычные упражнения часто скучны и не дают обратной связи. Мы соединяем курсы, тесты с объяснением каждого ответа и игры, за которые начисляются баллы, чтобы учиться было понятно и интересно.",
+    },
     email: "ucime.se.hrou@seznam.cz",
     teamTitle: "Команда",
     team: [
-      { name: "Natálie Majerová", role: "Маркетинг-менеджер" },
-      { name: "Lukáš Tomášek", role: "Главный разработчик" },
-      { name: "Lukáš Záhorský", role: "Инноватор" },
+      { name: "Natálie Majerová", role: "Маркетинг-менеджер", bio: "Отвечает за маркетинг и за то, чтобы сайт дошёл до детей, родителей и учителей." },
+      { name: "Lukáš Tomášek", role: "Главный разработчик", bio: "Руководит разработкой платформы: от курсов и игр до аккаунтов и рейтингов." },
+      { name: "Lukáš Záhorský", role: "Инноватор", bio: "Приносит новые идеи для игр и способов обучения." },
     ],
   },
 };

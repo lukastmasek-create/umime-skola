@@ -247,19 +247,28 @@ export default async function Home({
               </article>
             ))}
           </div>
+          <div className="reveal mt-12 grid gap-5 md:grid-cols-2">
+            {[h.about.why, h.about.problem].map((block) => (
+              <div key={block.title} className="card p-6">
+                <h3 className="mb-2 text-lg font-bold">{block.title}</h3>
+                <p className="text-sm leading-relaxed text-[var(--muted)]">{block.text}</p>
+              </div>
+            ))}
+          </div>
           <div className="reveal mt-12">
             <h3 className="mb-4 text-xl font-bold" style={heading}>
               {h.about.teamTitle}
             </h3>
             <ul className="grid gap-4 sm:grid-cols-3">
               {h.about.team.map((member) => (
-                <li key={member.name} className="card flex items-center gap-4 p-4">
+                <li key={member.name} className="card flex items-start gap-4 p-4">
                   <span aria-hidden className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--surface-muted)] text-xl font-extrabold" style={heading}>
                     {member.name.charAt(0)}
                   </span>
                   <div>
                     <p className="font-bold">{member.name}</p>
-                    <p className="text-sm text-[var(--muted)]">{member.role}</p>
+                    <p className="text-sm font-semibold text-[var(--accent-green)]">{member.role}</p>
+                    <p className="mt-1 text-sm leading-relaxed text-[var(--muted)]">{member.bio}</p>
                   </div>
                 </li>
               ))}
