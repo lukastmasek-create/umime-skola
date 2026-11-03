@@ -2496,7 +2496,7 @@ select[aria-invalid="true"] {
 .town-bubble {
   transform-origin: 50% 100%;
   transition: opacity 0.35s ease, transform 0.55s cubic-bezier(0.2, 1.5, 0.4, 1);
-  font-size: clamp(10px, 1.18cqw, 15px);
+  font-size: clamp(12px, 1.18cqw, 15px);
 }
 .town-bubble-body {
   position: relative;
