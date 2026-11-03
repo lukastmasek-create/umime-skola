@@ -553,10 +553,11 @@ INSERT INTO "Question" ("id","prompt","options","correctIndex","explanation","di
 ('q_cj-souveti_31','Ve kterém souvětí je vedlejší věta přívlastková?',ARRAY['Dům, který stojí u lesa, je starý.','Dům je starý.','Dům stojí u lesa.','Les je velký.']::TEXT[],0,'Který stojí u lesa – přívlastková.',4,ARRAY[]::TEXT[],NULL,31,'c_cj-souveti',NULL,NOW()),
 ('q_cj-souveti_32','Ve kterém souvětí je vedlejší věta příslovečná?',ARRAY['Práce je hotová.','Přijdu, až skončím.','Skončím práci.','Přijdu zítra.']::TEXT[],1,'Až skončím – časová.',4,ARRAY[]::TEXT[],NULL,32,'c_cj-souveti',NULL,NOW()),
 ('q_cj-souveti_33','Kolik vedlejších vět je v souvětí: Vím, že přijdeš, protože jsi slíbil?',ARRAY['3','2','1','0']::TEXT[],1,'Že přijdeš a protože jsi slíbil.',4,ARRAY[]::TEXT[],NULL,33,'c_cj-souveti',NULL,NOW()),
-('q_cj-souveti_34','Který typ vedlejší věty je: Když přijdeš, zavolej mi?',ARRAY['příčinná','přípustková','účelová','časová']::TEXT[],3,'Když – časová.',5,ARRAY[]::TEXT[],NULL,34,'c_cj-souveti',NULL,NOW()),
-('q_cj-souveti_35','Který typ vedlejší věty je: Protože pršelo, zůstali jsme doma?',ARRAY['podmínková','příčinná','časová','účelová']::TEXT[],1,'Protože – příčinná.',5,ARRAY[]::TEXT[],NULL,35,'c_cj-souveti',NULL,NOW()),
-('q_cj-souveti_36','Který typ vedlejší věty je: Aby se zlepšil, cvičí?',ARRAY['časová','příčinná','účelová','podmínková']::TEXT[],2,'Aby – účelová.',5,ARRAY[]::TEXT[],NULL,36,'c_cj-souveti',NULL,NOW()),
-('q_cj-souveti_37','Který typ vedlejší věty je: Kde bydlí babička, tam jedeme?',ARRAY['místní','časová','účelová','příčinná']::TEXT[],0,'Kde – místní.',5,ARRAY[]::TEXT[],NULL,37,'c_cj-souveti',NULL,NOW()),
-('q_cj-souveti_38','Který typ vedlejší věty je: Jestliže přijdeš, půjdeme ven?',ARRAY['podmínková','příčinná','časová','účelová']::TEXT[],0,'Jestliže – podmínková.',5,ARRAY[]::TEXT[],NULL,38,'c_cj-souveti',NULL,NOW())
+('q_cj-souveti_34','Která věta je v souvětí Dostal jsem dárek, který se mi líbil, hlavní?',ARRAY['se mi líbil','dárek se mi líbil','který se mi líbil','Dostal jsem dárek']::TEXT[],3,'Hlavní věta je Dostal jsem dárek.',4,ARRAY[]::TEXT[],NULL,34,'c_cj-souveti',NULL,NOW()),
+('q_cj-souveti_35','Který typ vedlejší věty je: Když přijdeš, zavolej mi?',ARRAY['přípustková','časová','příčinná','účelová']::TEXT[],1,'Když – časová.',5,ARRAY[]::TEXT[],NULL,35,'c_cj-souveti',NULL,NOW()),
+('q_cj-souveti_36','Který typ vedlejší věty je: Protože pršelo, zůstali jsme doma?',ARRAY['účelová','časová','příčinná','podmínková']::TEXT[],2,'Protože – příčinná.',5,ARRAY[]::TEXT[],NULL,36,'c_cj-souveti',NULL,NOW()),
+('q_cj-souveti_37','Který typ vedlejší věty je: Aby se zlepšil, cvičí?',ARRAY['účelová','časová','příčinná','podmínková']::TEXT[],0,'Aby – účelová.',5,ARRAY[]::TEXT[],NULL,37,'c_cj-souveti',NULL,NOW()),
+('q_cj-souveti_38','Který typ vedlejší věty je: Kde bydlí babička, tam jedeme?',ARRAY['místní','příčinná','časová','účelová']::TEXT[],0,'Kde – místní.',5,ARRAY[]::TEXT[],NULL,38,'c_cj-souveti',NULL,NOW()),
+('q_cj-souveti_39','Který typ vedlejší věty je: Jestliže přijdeš, půjdeme ven?',ARRAY['účelová','podmínková','příčinná','časová']::TEXT[],1,'Jestliže – podmínková.',5,ARRAY[]::TEXT[],NULL,39,'c_cj-souveti',NULL,NOW())
 ON CONFLICT ("id") DO NOTHING;
 

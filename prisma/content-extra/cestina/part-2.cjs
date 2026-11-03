@@ -237,6 +237,7 @@ module.exports = {
       [4, "Ve kterém souvětí je vedlejší věta přívlastková?", "Dům, který stojí u lesa, je starý.", ["Dům je starý.", "Dům stojí u lesa.", "Les je velký."], "Který stojí u lesa – přívlastková."],
       [4, "Ve kterém souvětí je vedlejší věta příslovečná?", "Přijdu, až skončím.", ["Přijdu zítra.", "Skončím práci.", "Práce je hotová."], "Až skončím – časová."],
       [4, "Kolik vedlejších vět je v souvětí: Vím, že přijdeš, protože jsi slíbil?", "2", ["1", "3", "0"], "Že přijdeš a protože jsi slíbil."],
+      [4, "Která věta je v souvětí Dostal jsem dárek, který se mi líbil, hlavní?", "Dostal jsem dárek", ["který se mi líbil", "se mi líbil", "dárek se mi líbil"], "Hlavní věta je Dostal jsem dárek."],
       [5, "Který typ vedlejší věty je: Když přijdeš, zavolej mi?", "časová", ["účelová", "příčinná", "přípustková"], "Když – časová."],
       [5, "Který typ vedlejší věty je: Protože pršelo, zůstali jsme doma?", "příčinná", ["účelová", "časová", "podmínková"], "Protože – příčinná."],
       [5, "Který typ vedlejší věty je: Aby se zlepšil, cvičí?", "účelová", ["časová", "příčinná", "podmínková"], "Aby – účelová."],
