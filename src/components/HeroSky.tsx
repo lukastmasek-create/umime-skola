@@ -186,6 +186,8 @@ export function HeroSky() {
     const cdust: { x: number; y: number; vx: number; vy: number; life: number; max: number; size: number; warm: boolean; drag: number }[] = [];
     // stopa komety: pozice hlavy za poslední chvíli (s časem, kdy tam byla)
     const TRAIL_LIFE = 1.6;
+    const STREAKS = 36;
+    const TRAIL_SEEDS = Array.from({ length: STREAKS }, () => Math.random());
     let trail: { x: number; y: number; t: number }[] = [];
     const cometImg = new Image();
     let cometReady = false;
@@ -369,19 +371,38 @@ export function HeroSky() {
             // (zužuje se, bliká a postupně hasne), takže vždy sleduje skutečnou dráhu komety
             trail.push({ x: px, y: py, t: sec });
             while (trail.length && sec - trail[0].t > TRAIL_LIFE) trail.shift();
+            // pozice na stopě ve stáří `age` (interpolace v historii pozic hlavy)
+            const posAt = (age: number) => {
+              const target = sec - age;
+              for (let i = trail.length - 1; i > 0; i--) {
+                if (trail[i - 1].t <= target) {
+                  const p0 = trail[i - 1], p1 = trail[i];
+                  const f = (target - p0.t) / Math.max(1e-6, p1.t - p0.t);
+                  return { x: p0.x + (p1.x - p0.x) * f, y: p0.y + (p1.y - p0.y) * f };
+                }
+              }
+              return trail.length ? { x: trail[0].x, y: trail[0].y } : { x: px, y: py };
+            };
             ctx.save();
             ctx.globalCompositeOperation = "lighter";
             ctx.lineCap = "round";
-            for (let i = trail.length - 1; i > 0; i--) {
-              const a = (sec - trail[i].t) / TRAIL_LIFE; // 0 u hlavy, 1 na konci stopy
-              const fade = Math.pow(1 - a, 1.5);
-              const shimmer = 0.75 + 0.25 * Math.sin(sec * 9 + i * 1.7);
-              const w = (size * 0.1) * (1 - a) + 0.6;
-              ctx.strokeStyle = `rgba(${i % 3 === 0 ? "255,236,190" : "190,220,255"},${0.55 * fade * shimmer})`;
-              ctx.lineWidth = w;
+            // tok částic: každá proudí od hlavy dozadu po stopě a pořád se pohybuje
+            // (věk se stále mění), boční chvění je malé a jiné u každé částice
+            for (let k = 0; k < STREAKS; k++) {
+              const u = (sec * 0.55 + TRAIL_SEEDS[k]) % 1; // 0 u hlavy, 1 na konci
+              const age = u * TRAIL_LIFE;
+              const age2 = Math.min(TRAIL_LIFE, age + 0.06); // krátká úsečka = pohyb
+              const p = posAt(age), q = posAt(age2);
+              const nx = -(q.y - p.y), ny = q.x - p.x;
+              const nl = Math.hypot(nx, ny) || 1;
+              const wob = Math.sin(sec * (3 + k * 0.13) + k) * (4 + 10 * u) * scale;
+              const ox = (nx / nl) * wob, oy = (ny / nl) * wob;
+              const fade = Math.pow(1 - u, 1.4) * (0.7 + 0.3 * Math.sin(sec * 11 + k));
+              ctx.strokeStyle = `rgba(${k % 3 === 0 ? "255,236,190" : "190,220,255"},${0.7 * fade})`;
+              ctx.lineWidth = (1.2 + 2.2 * (1 - u)) * scale;
               ctx.beginPath();
-              ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
-              ctx.lineTo(trail[i].x, trail[i].y);
+              ctx.moveTo(p.x + ox, p.y + oy);
+              ctx.lineTo(q.x + ox, q.y + oy);
               ctx.stroke();
             }
             ctx.restore();
