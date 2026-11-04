@@ -469,7 +469,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
                 {/* Zadní část podstavce jde za postavu. */}
                 <span
                   aria-hidden
-                  className="globe-sprite pointer-events-none absolute -bottom-[34%] left-1/2 h-[125%] w-[165%] -translate-x-1/2 drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)]"
+                  className="globe-sprite pointer-events-none absolute -bottom-[28%] left-1/2 h-[125%] w-[165%] -translate-x-1/2 drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)]"
                   style={{ backgroundImage: `url(${pedestalUrl(profile.avatar)})` }}
                 />
                 <ProfileAvatar
@@ -486,8 +486,8 @@ export function ProfileView({ locale }: { locale: Locale }) {
                     Ořez ukazuje jen spodek sprite od středu desky dolů. */}
                 <span
                   aria-hidden
-                  className="globe-sprite pointer-events-none absolute -bottom-[34%] left-1/2 h-[125%] w-[165%] -translate-x-1/2"
-                  style={{ backgroundImage: `url(${pedestalUrl(profile.avatar)})`, clipPath: "inset(60% 0 0 0)" }}
+                  className="globe-sprite pointer-events-none absolute -bottom-[28%] left-1/2 h-[125%] w-[165%] -translate-x-1/2"
+                  style={{ backgroundImage: `url(${pedestalUrl(profile.avatar)})`, clipPath: "inset(62% 0 0 0)" }}
                 />
               </div>
               <p className="mt-1 rounded-full bg-black/35 px-3 py-1 text-xs text-white backdrop-blur-sm">
