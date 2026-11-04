@@ -13,11 +13,10 @@ import { getSubjectText } from "@/i18n/subjects";
 import { CourseWorld } from "@/components/CourseWorld";
 import { getAllGradesLabel, gradeLabel } from "@/i18n/grades";
 import { isLocale, type Locale } from "@/i18n/config";
-import { isSupplementaryCourse, normalizeSearchText } from "@/lib/supplementary-courses";
+import { matchesCourseQuery } from "@/lib/course-search";
+import { CourseSearch } from "@/components/CourseSearch";
 
 export const revalidate = 0;
-
-const MAX_QUERY_LENGTH = 100;
 
 type Course = {
   id: string;
@@ -98,18 +97,9 @@ export default async function CategoryPage({
     loadFailed = true;
   }
 
-  // Hledání jen v doplňkových kurzech. Vyhledávací pole se ukáže, jen když je v seznamu
-  // aspoň jeden doplňkový kurz; hledání bez doplňkových kurzů nedává smysl, takže se ignoruje.
-  const hasSupplementary = courses.some((c) => isSupplementaryCourse(c.slug));
-  const query = hasSupplementary ? (q ?? "").trim().slice(0, MAX_QUERY_LENGTH) : "";
-  const needle = normalizeSearchText(query);
-  if (needle) {
-    courses = courses.filter(
-      (c) =>
-        isSupplementaryCourse(c.slug) &&
-        normalizeSearchText(`${c.title} ${c.description ?? ""}`).includes(needle),
-    );
-  }
+  // Hledání mezi právě zobrazenými kurzy (po filtru předmětu a třídy).
+  const query = (q ?? "").trim().slice(0, 100);
+  if (query) courses = courses.filter((c) => matchesCourseQuery(c, query));
 
   // Seskupení: předmět -> kategorie (obor) -> kurzy.
   const groups = new Map<string, Map<string, Course[]>>();
@@ -171,28 +161,8 @@ export default async function CategoryPage({
       />
 
       <div id={COURSES_ANCHOR} className="scroll-mt-6">
-      {hasSupplementary && (
-        <form role="search" method="get" action={`/${locale}/kurzy/${category.slug}#${COURSES_ANCHOR}`} className="mb-6 flex flex-wrap items-center gap-2">
-          {selectedSubject && <input type="hidden" name="predmet" value={selectedSubject.slug} />}
-          {selectedGrade && <input type="hidden" name="trida" value={String(selectedGrade)} />}
-          <input
-            type="search"
-            name="q"
-            defaultValue={query}
-            aria-label={dict.category.searchLabel}
-            placeholder={dict.category.searchLabel}
-            maxLength={MAX_QUERY_LENGTH}
-            className="min-w-48 flex-1 rounded-lg border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-2 text-sm"
-          />
-          <button type="submit" className="pill bg-[var(--brand-500)] px-4 py-2 text-sm font-semibold text-white">
-            {dict.category.searchButton}
-          </button>
-          {query && (
-            <Link href={filterHref(selectedSubject?.slug, selectedGrade)} className="text-sm font-semibold text-[var(--brand-600)] hover:underline">
-              {dict.category.clearSearch}
-            </Link>
-          )}
-        </form>
+      {!loadFailed && (courses.length > 0 || query) && (
+        <CourseSearch initialQuery={query} label={dict.category.searchLabel} />
       )}
       {courses.length === 0 ? (
         <div className="card p-10 text-center text-[var(--muted)]" role={loadFailed ? "alert" : undefined}>
