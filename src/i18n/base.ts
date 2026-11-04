@@ -33,6 +33,8 @@ export type BaseText = {
   build: {
     palette: string;
     demolish: string;
+    move: string;
+    moveHint: string;
     rotate: string;
     cancel: string;
     hint: string;
@@ -124,6 +126,8 @@ const cs: BaseText = {
   build: {
     palette: "Moduly",
     demolish: "Zbourat",
+    move: "Přesunout",
+    moveHint: "Klepni na nové místo. Přesun je zdarma; R moduly otočí, Zrušit výběr přesun ukončí.",
     rotate: "Otočit",
     cancel: "Zrušit výběr",
     hint: "Vyber modul a klepni na mřížku. Všechny moduly musí být spojené s velitelským modulem.",
@@ -282,6 +286,8 @@ const en: BaseText = {
   build: {
     palette: "Modules",
     demolish: "Demolish",
+    move: "Move",
+    moveHint: "Tap the new spot. Moving is free; R rotates, Cancel selection stops.",
     rotate: "Rotate",
     cancel: "Cancel selection",
     hint: "Pick a module and tap the grid. Every module has to be connected to the command module.",
@@ -440,6 +446,8 @@ const de: BaseText = {
   build: {
     palette: "Module",
     demolish: "Abreißen",
+    move: "Verschieben",
+    moveHint: "Tippe auf den neuen Platz. Verschieben ist kostenlos; R dreht, „Auswahl abbrechen“ beendet es.",
     rotate: "Drehen",
     cancel: "Auswahl aufheben",
     hint: "Wähle ein Modul und tippe aufs Raster. Jedes Modul muss mit dem Kommandomodul verbunden sein.",
@@ -598,6 +606,8 @@ const ru: BaseText = {
   build: {
     palette: "Модули",
     demolish: "Снести",
+    move: "Переместить",
+    moveHint: "Коснись нового места. Перемещение бесплатное; R поворачивает, «Отменить выбор» завершает.",
     rotate: "Повернуть",
     cancel: "Снять выбор",
     hint: "Выбери модуль и коснись сетки. Каждый модуль должен быть соединён с командным.",
@@ -756,6 +766,8 @@ const uk: BaseText = {
   build: {
     palette: "Модулі",
     demolish: "Знести",
+    move: "Перемістити",
+    moveHint: "Торкнися нового місця. Переміщення безплатне; R повертає, «Скасувати вибір» завершує.",
     rotate: "Повернути",
     cancel: "Скасувати вибір",
     hint: "Вибери модуль і клацни на сітку. Кожен модуль має бути з’єднаний із командним модулем.",
@@ -914,6 +926,8 @@ const ja: BaseText = {
   build: {
     palette: "モジュール",
     demolish: "撤去",
+    move: "移動",
+    moveHint: "新しい場所をタップしてください。移動は無料です。Rで回転、「選択を取り消す」で終了します。",
     rotate: "回転",
     cancel: "選択を解除",
     hint: "モジュールを選んでマス目をタップしてください。すべてのモジュールは司令モジュールとつながっている必要があります。",
@@ -1072,6 +1086,8 @@ const es: BaseText = {
   build: {
     palette: "Módulos",
     demolish: "Derribar",
+    move: "Mover",
+    moveHint: "Toca el nuevo sitio. Mover es gratis; R gira y «Cancelar selección» termina.",
     rotate: "Girar",
     cancel: "Cancelar selección",
     hint: "Elige un módulo y toca la cuadrícula. Todos los módulos tienen que estar conectados al módulo de mando.",
@@ -1230,6 +1246,8 @@ const fr: BaseText = {
   build: {
     palette: "Modules",
     demolish: "Démolir",
+    move: "Déplacer",
+    moveHint: "Touche le nouvel emplacement. Déplacer est gratuit ; R tourne, « Annuler la sélection » arrête.",
     rotate: "Pivoter",
     cancel: "Annuler la sélection",
     hint: "Choisis un module et touche la grille. Chaque module doit être relié au module de commande.",

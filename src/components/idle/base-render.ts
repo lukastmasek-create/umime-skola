@@ -6,6 +6,8 @@ export type BaseGhost = { id: string; x: number; y: number; rot: 0 | 1; valid: b
 
 export type BaseScene = {
   items: Placed[];
+  // Index modulu, který se právě přesouvá: skryje se a kreslí se jen ghost na novém místě.
+  hidden?: number | null;
   // Indexy modulů, které nejsou spojené s velitelským modulem.
   idle: Set<number>;
   ghost: BaseGhost | null;
@@ -364,7 +366,8 @@ export function drawBase(ctx: CanvasRenderingContext2D, size: number, dpr: numbe
 
   // Obsazená políčka, aby chodba věděla, kam vést trubky (1 = +x, 2 = -x, 4 = +y, 8 = -y).
   const taken = new Set<number>();
-  for (const [id, x, y, rot] of scene.items) {
+  for (const [index, [id, x, y, rot]] of scene.items.entries()) {
+    if (index === scene.hidden) continue;
     const def = getModule(id);
     if (!def) continue;
     const [w, h] = footprint(def, rot);
@@ -373,6 +376,7 @@ export function drawBase(ctx: CanvasRenderingContext2D, size: number, dpr: numbe
   const at = (x: number, y: number) => x >= 0 && y >= 0 && x < BASE_SIZE && y < BASE_SIZE && taken.has(y * BASE_SIZE + x);
 
   scene.items.forEach(([id, x, y, rot], index) => {
+    if (index === scene.hidden) return;
     const def = getModule(id);
     if (!def) return;
     const [w, h] = footprint(def, rot);

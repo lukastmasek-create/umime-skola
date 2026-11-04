@@ -9,11 +9,13 @@ import {
   CITY_SIZE,
   OFFLINE_CAP_HOURS,
   buildMany,
+  canMoveTo,
   canPlace,
   computeCity,
   demolishAt,
   footprint,
   getItem,
+  moveItem,
   occupancy,
   settleCity,
   type CityCat,
@@ -39,6 +41,8 @@ type Payload = {
 
 type Load = "loading" | "login" | "unavailable" | "ready";
 type Tool = "pan" | "demolish" | string;
+// Budova, kterou hráč přesouvá: origin (levý horní roh) a id. Otočení sdílí tlačítko Otočit.
+type Moving = { x: number; y: number; id: string };
 
 const EMOJI: Record<string, string> = {
   road: "🛣️", rail: "🛤️", crossing: "🚦", bus_stop: "🚏", tram_stop: "🚊", train_station: "🚉",
@@ -111,6 +115,7 @@ export function CityGame({ locale }: { locale: Locale }) {
   const [rot, setRot] = useState<0 | 1>(0);
   const [cat, setCat] = useState<CityCat>("housing");
   const [selected, setSelected] = useState<number | null>(null);
+  const [moving, setMoving] = useState<Moving | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -138,9 +143,9 @@ export function CityGame({ locale }: { locale: Locale }) {
   }, [stats]);
 
   // Poslední hodnoty pro kreslicí smyčku a pointer události (bez nového vykreslování).
-  const latest = useRef({ city, level, points, owned, tool, rot, selected, notWorking, occ, offset });
+  const latest = useRef({ city, level, points, owned, tool, rot, selected, moving, notWorking, occ, offset });
   useEffect(() => {
-    latest.current = { city, level, points, owned, tool, rot, selected, notWorking, occ, offset };
+    latest.current = { city, level, points, owned, tool, rot, selected, moving, notWorking, occ, offset };
   });
 
   const apply = useCallback((data: Payload) => {
@@ -261,6 +266,55 @@ export function CityGame({ locale }: { locale: Locale }) {
     [bonus, enqueue],
   );
 
+  // --- přesun (zdarma, bez mincí a bodů; stav na serveru se mění až po potvrzení) ---
+
+  // Levý horní roh přesouvané budovy tak, aby byla kurzorem uprostřed (stejně jako při stavění).
+  const moveTarget = (gx: number, gy: number) => {
+    const d = latest.current;
+    const def = d.moving ? getItem(d.moving.id) : undefined;
+    if (!d.moving || !def) return null;
+    const [w, h] = footprint(def, d.rot);
+    return { id: def.id, x: Math.floor(gx - w / 2 + 0.5), y: Math.floor(gy - h / 2 + 0.5), rot: d.rot };
+  };
+
+  const moveGhostAt = (gx: number, gy: number): Ghost[] => {
+    const d = latest.current;
+    const t = moveTarget(gx, gy);
+    if (!t || !d.city || !d.moving) return [];
+    const valid = canMoveTo(d.city, d.moving, { x: t.x, y: t.y, rot: t.rot }).ok;
+    return [{ id: t.id, x: t.x, y: t.y, rot: t.rot, valid }];
+  };
+
+  const commitMoveAt = (gx: number, gy: number) => {
+    const d = latest.current;
+    const t = moveTarget(gx, gy);
+    if (!d.city || !d.moving || !t) return;
+    const settled = settleCity(d.city, Date.now() + d.offset, bonus);
+    const res = moveItem(settled, d.moving, { x: t.x, y: t.y, rot: t.rot });
+    if (!res.ok) {
+      // Zůstaneme v režimu přesunu, ať hráč vybere jiné místo.
+      toast(errorText(res.error));
+      return;
+    }
+    setCity(res.state);
+    setMoving(null);
+    ghostsRef.current = [];
+    enqueue({ action: "move", from: { x: d.moving.x, y: d.moving.y }, to: { x: t.x, y: t.y, rot: t.rot } });
+  };
+
+  const startMove = (entry: Placed) => {
+    setMoving({ x: entry[1], y: entry[2], id: entry[0] });
+    setRot(entry[3]);
+    setSelected(null);
+    setTool("pan");
+    ghostsRef.current = [];
+  };
+
+  const cancelMove = () => {
+    setMoving(null);
+    ghostsRef.current = [];
+  };
+
   // --- kamera ---
 
   const clampCamera = useCallback(() => {
@@ -331,12 +385,14 @@ export function CityGame({ locale }: { locale: Locale }) {
       if (d.city) {
         updateTraffic(trafficRef.current, d.city.items, dt);
         const { w, h, dpr } = sizeRef.current;
+        const mv = d.moving;
         drawCity(ctx, w, h, dpr, cameraRef.current, {
           items: d.city.items,
           notWorking: d.notWorking,
           ghosts: ghostsRef.current,
           hover: hoverRef.current,
           selected: d.selected,
+          hidden: mv ? d.city.items.findIndex(([, x, y]) => x === mv.x && y === mv.y) : null,
           night: nightAt(now / 1000),
           time: now / 1000,
           traffic: trafficRef.current,
@@ -383,6 +439,10 @@ export function CityGame({ locale }: { locale: Locale }) {
 
   const updatePaintGhosts = (g: Extract<Gesture, { kind: "paint" }>) => {
     const d = latest.current;
+    if (d.moving) {
+      ghostsRef.current = moveGhostAt(g.anchor.gx, g.anchor.gy);
+      return;
+    }
     const def = buildTool();
     if (!def || !d.city) {
       ghostsRef.current = [];
@@ -436,7 +496,8 @@ export function CityGame({ locale }: { locale: Locale }) {
     }
 
     const d = latest.current;
-    const panDrag = e.button === 1 || e.button === 2 || d.tool === "pan";
+    // V režimu přesunu se tahem nepanuje, klik položí budovu.
+    const panDrag = e.button === 1 || e.button === 2 || (d.tool === "pan" && !d.moving);
     if (panDrag) {
       gestureRef.current = { kind: "pan", sx: e.clientX, sy: e.clientY, cx: cameraRef.current.x, cy: cameraRef.current.y, moved: false, tap: e.button === 0 };
       return;
@@ -493,6 +554,11 @@ export function CityGame({ locale }: { locale: Locale }) {
       return;
     }
 
+    if (latest.current.moving) {
+      if (prev === undefined && e.pointerType === "mouse") ghostsRef.current = moveGhostAt(grid.gx, grid.gy);
+      return;
+    }
+
     // jen pohyb myši: ukaž náhled
     const def = buildTool();
     if (def && prev === undefined && e.pointerType === "mouse" && latest.current.city) {
@@ -528,6 +594,11 @@ export function CityGame({ locale }: { locale: Locale }) {
 
     if (g.kind === "paint") {
       const d = latest.current;
+      if (d.moving) {
+        commitMoveAt(g.anchor.gx, g.anchor.gy);
+        ghostsRef.current = [];
+        return;
+      }
       if (d.tool === "demolish") {
         commitDemolish([...g.tiles.values()]);
         ghostsRef.current = [];
@@ -556,6 +627,7 @@ export function CityGame({ locale }: { locale: Locale }) {
       if (e.key === "Escape") {
         setTool("pan");
         setSelected(null);
+        setMoving(null);
         ghostsRef.current = [];
       }
     };
@@ -566,6 +638,7 @@ export function CityGame({ locale }: { locale: Locale }) {
   const chooseTool = (next: Tool) => {
     setTool((current) => (current === next ? "pan" : next));
     setSelected(null);
+    setMoving(null);
     ghostsRef.current = [];
   };
 
@@ -623,7 +696,9 @@ export function CityGame({ locale }: { locale: Locale }) {
   const bonusPercent = Math.round(bonus * 100);
   const activeItem = tool !== "pan" && tool !== "demolish" ? getItem(tool) : undefined;
   const items = CITY_ITEMS.filter((i) => i.cat === cat);
-  const hint = city.items.length <= CITY_SIZE + 2 && !activeItem && tool !== "demolish" ? t.hintStart : tool === "demolish" ? t.hintDemolish : activeItem ? t.hintBuild : t.hintPan;
+  const movingDef = moving ? getItem(moving.id) : undefined;
+  const rotatable = activeItem ?? movingDef;
+  const hint = moving ? t.hintMove : city.items.length <= CITY_SIZE + 2 && !activeItem && tool !== "demolish" ? t.hintStart : tool === "demolish" ? t.hintDemolish : activeItem ? t.hintBuild : t.hintPan;
 
   const selectedEntry: Placed | undefined = selected !== null ? city.items[selected] : undefined;
   const selectedDef = selectedEntry ? getItem(selectedEntry[0]) : undefined;
@@ -659,7 +734,7 @@ export function CityGame({ locale }: { locale: Locale }) {
         <canvas
           ref={canvasRef}
           className="block h-full w-full"
-          style={{ touchAction: "none", cursor: tool === "pan" ? "grab" : "crosshair" }}
+          style={{ touchAction: "none", cursor: tool === "pan" && !moving ? "grab" : "crosshair" }}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={(e) => finishPointer(e, false)}
@@ -674,7 +749,8 @@ export function CityGame({ locale }: { locale: Locale }) {
         <div className="absolute left-2 top-2 flex flex-col gap-2">
           <ToolButton label={t.modePan} icon="✋" active={tool === "pan"} onClick={() => chooseTool("pan")} />
           <ToolButton label={t.modeDemolish} icon="🧹" active={tool === "demolish"} onClick={() => chooseTool("demolish")} />
-          {activeItem && activeItem.size[0] !== activeItem.size[1] && (
+          {moving && <ToolButton label={t.moveCancel} icon="✖" onClick={cancelMove} />}
+          {rotatable && rotatable.size[0] !== rotatable.size[1] && (
             <ToolButton label={`${t.rotate} (R)`} icon="🔄" onClick={() => setRot((r) => (r === 0 ? 1 : 0))} />
           )}
         </div>
@@ -729,13 +805,18 @@ export function CityGame({ locale }: { locale: Locale }) {
                 {notWorking.has(selected) ? (selectedDef.needsRail ? `${t.notConnected} ${t.needsRail}` : t.notConnected) : `✓ ${t.working}`}
               </li>
             </ul>
-            <button
-              type="button"
-              onClick={() => commitDemolish([{ x: selectedEntry[1], y: selectedEntry[2] }])}
-              className="btn-bouncy mt-2 w-full bg-[var(--surface)] px-3 py-1.5 text-sm font-bold text-[var(--danger)]"
-            >
-              🧹 {fillTokens(t.demolish, { n: Math.floor(selectedDef.cost * 0.5) })}
-            </button>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => startMove(selectedEntry)} className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
+                🚚 {t.move}
+              </button>
+              <button
+                type="button"
+                onClick={() => commitDemolish([{ x: selectedEntry[1], y: selectedEntry[2] }])}
+                className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-sm font-bold text-[var(--danger)]"
+              >
+                🧹 {fillTokens(t.demolish, { n: Math.floor(selectedDef.cost * 0.5) })}
+              </button>
+            </div>
           </div>
         )}
       </div>

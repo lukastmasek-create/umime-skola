@@ -356,6 +356,40 @@ export function demolishAt(
   return { ok: true, state: { ...state, items, coins: state.coins + refund }, removed: remove.size, refund };
 }
 
+// Přesun již postavené budovy. Budova se identifikuje podle levého horního rohu (from).
+// Přesun je zdarma: nic se neplatí ani nevrací, body z učení zůstávají.
+// Kontroluje se bez samotné budovy, takže ji jde posunout i jen o kousek nebo otočit na místě.
+export function canMoveTo(
+  state: CityState,
+  from: { x: number; y: number },
+  to: { x: number; y: number; rot: 0 | 1 },
+): { ok: true; index: number } | { ok: false; error: CityError } {
+  const index = state.items.findIndex(([, x, y]) => x === from.x && y === from.y);
+  if (index < 0) return { ok: false, error: "nothing-there" };
+  const def = getItem(state.items[index][0]);
+  if (!def) return { ok: false, error: "unknown-item" };
+  if (!Number.isInteger(to.x) || !Number.isInteger(to.y)) return { ok: false, error: "out-of-bounds" };
+  const rot: 0 | 1 = to.rot === 1 ? 1 : 0;
+  const [w, h] = footprint(def, rot);
+  if (to.x < 0 || to.y < 0 || to.x + w > CITY_SIZE || to.y + h > CITY_SIZE) return { ok: false, error: "out-of-bounds" };
+  const occ = occupancy(state.items.filter((_, i) => i !== index));
+  for (let dy = 0; dy < h; dy++) for (let dx = 0; dx < w; dx++) if (occ.has(cellIndex(to.x + dx, to.y + dy))) return { ok: false, error: "occupied" };
+  return { ok: true, index };
+}
+
+export function moveItem(
+  state: CityState,
+  from: { x: number; y: number },
+  to: { x: number; y: number; rot: 0 | 1 },
+): { ok: true; state: CityState } | { ok: false; error: CityError } {
+  const check = canMoveTo(state, from, to);
+  if (!check.ok) return check;
+  const rot: 0 | 1 = to.rot === 1 ? 1 : 0;
+  // Pořadí položek se nemění, protože podle indexu se pracuje s dalšími výpočty (nefunkční budovy, výběr).
+  const items = state.items.map((entry, i): Placed => (i === check.index ? [entry[0], to.x, to.y, rot] : entry));
+  return { ok: true, state: { ...state, items } };
+}
+
 // --- výpočet města ---
 
 export type CityStats = {
