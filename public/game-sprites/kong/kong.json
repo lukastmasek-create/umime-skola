@@ -3,8 +3,8 @@
     "dlazdice": {
       "file": "dlazdice.webp",
       "cell": [
-        48,
-        24
+        96,
+        48
       ],
       "cols": 1,
       "frames": {
@@ -17,8 +17,8 @@
     "gorila": {
       "file": "gorila.webp",
       "cell": [
-        112,
-        128
+        224,
+        256
       ],
       "cols": 6,
       "frames": {
@@ -51,8 +51,8 @@
     "hrac": {
       "file": "hrac.webp",
       "cell": [
-        48,
-        64
+        96,
+        128
       ],
       "cols": 8,
       "frames": {
@@ -93,8 +93,8 @@
     "sud": {
       "file": "sud.webp",
       "cell": [
-        36,
-        36
+        72,
+        72
       ],
       "cols": 4,
       "frames": {
@@ -119,8 +119,8 @@
     "zebrik": {
       "file": "zebrik.webp",
       "cell": [
-        32,
-        24
+        64,
+        48
       ],
       "cols": 1,
       "frames": {
