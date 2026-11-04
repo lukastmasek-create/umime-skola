@@ -182,7 +182,8 @@ export function HeroSky() {
     let nextMeteor = 1.2;
     let comet: { x: number; y: number; vx: number; vy: number; boost: number; seed: number } | null = null;
     let nextComet = 2;
-    const cdust: { x: number; y: number; vx: number; vy: number; life: number; max: number; size: number; warm: boolean }[] = [];
+    // prachové částice: drag určuje, jak rychle se zpomalují (menší = delší stopa za kometou)
+    const cdust: { x: number; y: number; vx: number; vy: number; life: number; max: number; size: number; warm: boolean; drag: number }[] = [];
     const cometImg = new Image();
     let cometReady = false;
     cometImg.onload = () => {
@@ -229,7 +230,7 @@ export function HeroSky() {
         comet.boost = 1.6;
         for (let i = 0; i < 42; i++) {
           const a = Math.random() * TAU, v = rnd(60, 420);
-          cdust.push({ x: comet.x, y: comet.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0, max: rnd(0.7, 1.6), size: rnd(1.6, 3.6), warm: Math.random() < 0.35 });
+          cdust.push({ x: comet.x, y: comet.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0, max: rnd(0.7, 1.6), size: rnd(1.6, 3.6), warm: Math.random() < 0.35, drag: 0.9 });
         }
         if (!raf) kick();
         return;
@@ -350,24 +351,43 @@ export function HeroSky() {
             const py = comet.y + mouse.sy * 12;
             const frame = Math.floor((sec * 14) % COMET_FRAMES);
             const size = COMET_S * scale;
-            // sprite je zrcadlený (hlava vlevo dole), jádro leží v bodě COMET_HEAD
-            const dx = px - (1 - COMET_HEAD.x) * size;
-            const dy = py - COMET_HEAD.y * size;
+            // směr letu (aktuální rychlost včetně zrychlení u kurzoru)
+            const vxN = comet.vx * speed, vyN = comet.vy * speed;
+            const vLen = Math.hypot(vxN, vyN) || 1;
+            const ux = vxN / vLen, uy = vyN / vLen;
+            // sprite je zrcadlený a jádro leží v bodě COMET_HEAD; otočíme ho kolem jádra tak,
+            // aby ohon (v obrázku mířil doprava nahoru) vždy mířil přesně proti směru letu
+            const angle = Math.atan2(-uy, -ux) - Math.atan2(-0.62, 0.78);
+            const hx = COMET_HEAD.x * size, hy = COMET_HEAD.y * size;
             ctx.save();
             ctx.globalAlpha = Math.min(1, (W + 260 - comet.x) / 160, (comet.x + 420) / 200);
             ctx.shadowColor = "rgba(150,200,255,0.5)";
             ctx.shadowBlur = 26;
-            ctx.translate(dx + size, dy);
+            ctx.translate(px, py);
+            ctx.rotate(angle);
             ctx.scale(-1, 1);
-            ctx.drawImage(cometImg, frame * COMET_S, 0, COMET_S, COMET_S, 0, 0, size, size);
+            ctx.drawImage(cometImg, frame * COMET_S, 0, COMET_S, COMET_S, -hx, -hy, size, size);
             ctx.restore();
-            // částice z ohonu zůstávají za kometou na obloze a pomalu zhasínají
-            const tailDir = { x: 0.78, y: -0.62 }; // směr ohonu (zrcadlený): doprava nahoru
-            const n = comet.boost > 0.4 ? 3 : 1;
+            // prach vzniká na zadní straně jádra a unáší ho pohyb komety: částice mají část její rychlosti,
+            // takže zůstávají přesně na dráze za ní (při zrychlení se stopa natáhne, při zatáčce se prohne)
+            const n = comet.boost > 0.4 ? 4 : 2;
+            const perpX = -uy, perpY = ux;
             for (let i = 0; i < n; i++) {
-              const L = rnd(0.18, 0.9) * size * 0.78;
-              const sp = rnd(-0.12, 0.12) * size * 0.3;
-              cdust.push({ x: px + tailDir.x * L - tailDir.y * sp, y: py + tailDir.y * L + tailDir.x * sp, vx: -comet.vx * 0.12 + rnd(-8, 8), vy: -comet.vy * 0.12 + rnd(-8, 8), life: 0, max: rnd(1.4, 2.8), size: rnd(1, 2.6), warm: Math.random() < 0.3 });
+              const back = rnd(0.08, 0.2) * size; // start u zadní hrany jádra
+              const side = rnd(-0.06, 0.06) * size;
+              const s = rnd(-12, 12); // mírný rozptyl kolmo na let
+              const k = rnd(0.8, 0.95);
+              cdust.push({
+                x: px - ux * back + perpX * side,
+                y: py - uy * back + perpY * side,
+                vx: vxN * k + perpX * s,
+                vy: vyN * k + perpY * s,
+                life: 0,
+                max: rnd(1.6, 3.0),
+                size: rnd(1, 2.6),
+                warm: Math.random() < 0.3,
+                drag: 0.4,
+              });
             }
             // občas z komety odletí padající hvězda
             if (Math.random() < dt * 0.35) nextMeteor = Math.min(nextMeteor, 0.05);
@@ -382,8 +402,8 @@ export function HeroSky() {
           }
           d.x += d.vx * dt;
           d.y += d.vy * dt;
-          d.vx *= 1 - dt * 0.9;
-          d.vy *= 1 - dt * 0.9;
+          d.vx *= 1 - dt * d.drag;
+          d.vy *= 1 - dt * d.drag;
           const k = 1 - d.life / d.max;
           const c = d.warm ? "255,226,170" : "200,228,255";
           const g = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.size * 3);
@@ -392,7 +412,7 @@ export function HeroSky() {
           ctx.fillStyle = g;
           ctx.fillRect(d.x - d.size * 3, d.y - d.size * 3, d.size * 6, d.size * 6);
         }
-        if (cdust.length > 320) cdust.splice(0, cdust.length - 320);
+        if (cdust.length > 420) cdust.splice(0, cdust.length - 420);
         ctx.globalCompositeOperation = "source-over";
       }
 
