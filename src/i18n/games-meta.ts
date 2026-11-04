@@ -66,18 +66,6 @@ const META: Record<GameSlug, Record<Locale, Meta>> = {
     es: { name: "Caída de bloques", tag: "Deja caer el bloque en la columna con la respuesta correcta" },
     fr: { name: "Chute de blocs", tag: "Fais tomber le bloc sur la bonne réponse" },
   },
-  kong: {
-    ...withFallbacks({
-      cs: { name: "Výstup na sopku", tag: "Šplhej, uhýbej kamenům a seber správnou cedulku" },
-      en: { name: "Volcano Climb", tag: "Climb, dodge rocks and grab the right sign" },
-      de: { name: "Vulkanaufstieg", tag: "Klettere, weiche Steinen aus, schnapp dir das richtige Schild" },
-      ru: { name: "Подъём на вулкан", tag: "Карабкайся, уворачивайся и хватай верную табличку" },
-    }),
-    uk: { name: "Підйом на вулкан", tag: "Лізь, ухиляйся від каменів і схопи правильну табличку" },
-    ja: { name: "火山のぼり", tag: "のぼって、岩をよけて、正しい看板をつかもう" },
-    es: { name: "Subida al volcán", tag: "Trepa, esquiva las rocas y agarra el cartel correcto" },
-    fr: { name: "Ascension du volcan", tag: "Grimpe, évite les rochers et attrape le bon panneau" },
-  },
   mole: {
     ...withFallbacks({
       cs: { name: "Lov krtků", tag: "Klepni kladivem krtka se správnou cedulkou" },

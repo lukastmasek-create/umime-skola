@@ -161,35 +161,6 @@
     else e.pressed.add("fire");
   };
 
-  // ---- Kong: žebříky, skoky přes sudy, pak úder do správného bloku ----
-  bots["kong"] = (e) => {
-    const LAD = [{ x: 500, from: 0 }, { x: 150, from: 1 }, { x: 470, from: 2 }, { x: 60, from: 3 }];
-    const door = e.doors.find((d) => d.correct && d.alive);
-    if (!door) return;
-    const want = { left: false, right: false, up: false, down: false, fire: false };
-    if (e.climbing) {
-      want.up = true;
-    } else {
-      const near = e.barrels.find((b) => b.level === e.level && !b.falling && Math.abs(b.x - e.px) < 48 && Math.abs(b.x - e.px) > 20 && ((b.dir < 0 && b.x > e.px) || (b.dir > 0 && b.x < e.px)));
-      if (near && e.onGround) want.fire = true;
-      else if (e.level < 4) {
-        const lad = LAD.find((l) => l.from === e.level);
-        const dx = lad.x - e.px;
-        if (Math.abs(dx) > 6) {
-          want.left = dx < 0;
-          want.right = dx > 0;
-        } else if (e.onGround) want.up = true;
-      } else {
-        const dx = door.x + door.w / 2 - e.px;
-        if (Math.abs(dx) > 8) {
-          want.left = dx < 0;
-          want.right = dx > 0;
-        } else if (e.onGround) want.fire = true;
-      }
-    }
-    e.setInput(want);
-  };
-
   // ---- Krtek: klepnout na správného krtka, když je nahoře ----
   bots["mole"] = (e, st) => {
     const i = e.moles.findIndex((m) => m.correct && !m.gone);

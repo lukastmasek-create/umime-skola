@@ -11,7 +11,7 @@ bash tests/games/run.sh          # v jednom terminálu: sestaví a spustí strá
 
 # v druhém terminálu:
 node tests/games/play.js space-invaders,pac-man,snake easy 300
-node tests/games/fuzz.js snake,tetris,kong hard 25
+node tests/games/fuzz.js snake,tetris,mole hard 25
 ```
 
 - `play.js <hry> <easy|normal|hard> <limit v s>`: bot hraje celé kolo (osm otázek) jako rozumný hráč a vypíše,
