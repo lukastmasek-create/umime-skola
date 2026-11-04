@@ -28,7 +28,7 @@ LEAF_A = "#3f8a3e"
 LEAF_B = "#2f7a3a"
 
 
-def export_prop(name, objs, preview=False):
+def export_prop(name, objs, preview=False, file=None):
     """Spojí části do jednoho objektu se středem na zemi a uloží GLB (bez Draco, Blender ho jako modul neumí)."""
     os.makedirs(OUT, exist_ok=True)
     bpy.ops.object.select_all(action="DESELECT")
@@ -39,7 +39,8 @@ def export_prop(name, objs, preview=False):
     o = bpy.context.object
     o.name = name
     bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
-    path = os.path.join(OUT, f"les-{name}.glb")
+    stem = file or f"les-{name}"
+    path = os.path.join(OUT, f"{stem}.glb")
     bpy.ops.export_scene.gltf(
         filepath=path,
         export_format="GLB",
@@ -49,9 +50,9 @@ def export_prop(name, objs, preview=False):
         export_cameras=False,
     )
     tris = sum(len(p.vertices) - 2 for p in o.data.polygons)
-    print(f"EXPORT les-{name}: {os.path.getsize(path) // 1024} kB, {tris} trojúhelníků", flush=True)
+    print(f"EXPORT {stem}: {os.path.getsize(path) // 1024} kB, {tris} trojúhelníků", flush=True)
     if preview:
-        render_preview(f"les-{name}", o)
+        render_preview(stem, o)
 
 
 # ------------------------------------------------------------------------------------------ stavební kameny

@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { sfx } from "@/lib/market-sfx";
 import { canvasTex, clamp01, createStage, lerp, overlayFx, smooth, std, type Figure, irisIn, irisOut } from "./kit";
-import { ease, forestTrees, glowSprite, gradientSky, ground, hero, noiseTex, placeModel, rand, sparklePoints, sunLight, walk, waterMat, type P3 } from "./scenery";
+import { ease, forestTrees, glowSprite, gradientSky, ground, hero, noiseTex, placeModel, placeProps, rand, scatterRows, sparklePoints, sunLight, walk, waterMat, type P3, type Spot } from "./scenery";
 
 // 3D cut scény vstupu do světů z městečka (náhrada 2D přechodu runWorld): Kouzelný les, Hrad a Podmořské město.
 // Velké stavby jsou detailní modely z Blenderu (public/mestecko3d: strom, hrad-scena, podmorske), okolí, voda,
@@ -191,25 +191,8 @@ export function runForest3D(container: HTMLElement, opts: FilmOpts): Handle {
       const p = curve.getPointAt(clamp01(u));
       return [p.x + side, p.z];
     };
-    const dress = (name: string, spots: [number, number, number, number][]) => {
-      loads.push(
-        placeModel(name).then((m) => {
-          for (const [x, z, rot, sc] of spots) {
-            const c = m.clone(true);
-            c.position.set(x, 0, z);
-            c.rotation.y = rot;
-            c.scale.setScalar(sc);
-            scene.add(c);
-          }
-        }),
-      );
-    };
-    const sideOf = () => (Math.random() < 0.5 ? -1 : 1);
-    const rows = (n: number, u0: number, u1: number, dmin: number, dmax: number, sc: [number, number]) =>
-      Array.from({ length: n }, (_, i) => {
-        const [x, z] = roadside(lerp(u0, u1, (i + Math.random() * 0.6) / n), sideOf() * rand(dmin, dmax));
-        return [x, z, rand(0, Math.PI * 2), rand(sc[0], sc[1])] as [number, number, number, number];
-      });
+    const dress = (name: string, spots: Spot[]) => placeProps(scene, loads, name, spots);
+    const rows = (n: number, u0: number, u1: number, dmin: number, dmax: number, sc: [number, number]) => scatterRows(roadside, n, u0, u1, dmin, dmax, sc);
     dress("les-houba-ruzova", rows(9, 0.08, 0.92, 1.6, 2.6, [0.8, 1.3]));
     dress("les-houba-modra", rows(7, 0.1, 0.9, 1.8, 3, [0.8, 1.2]));
     dress("les-houba-fialova", rows(7, 0.12, 0.88, 1.8, 3, [0.8, 1.2]));
@@ -494,6 +477,16 @@ export function runCastle3D(container: HTMLElement, opts: FilmOpts): Handle {
     }
 
     const loads: Promise<unknown>[] = [placeModel("hrad-scena").then((m) => scene.add(m))];
+    // detailní rekvizity z Blenderu (umime-art/blender/mestecko3d_hrad_more.py): cimbuří podél cesty, kvetoucí stromy,
+    // železné koše s plamenem, bedny u hradeb a balvany u příkopu
+    const lane = (u: number, side: number): [number, number] => [side, lerp(16, 54, u)];
+    const wallSpots: Spot[] = [];
+    for (const sx of [-4.6, 4.6]) for (let i = 0; i < 10; i++) wallSpots.push([sx, 18 + i * 3.2, Math.PI / 2, 1]);
+    placeProps(scene, loads, "hrad-zidka", wallSpots);
+    placeProps(scene, loads, "hrad-kvetouci-strom", scatterRows(lane, 9, 0, 1, 6, 13, [0.9, 1.3]));
+    placeProps(scene, loads, "hrad-pochodne", [-2.3, 2.3].flatMap((x) => [28, 38, 48].map((z): Spot => [x, z, 0, 1])));
+    placeProps(scene, loads, "hrad-bedny", [[-6.2, 22], [6.2, 40]].map(([x, z]): Spot => [x, z, rand(0, 1), rand(0.9, 1.1)]));
+    placeProps(scene, loads, "hrad-skaly", scatterRows(lane, 4, 0, 1, 11, 14, [0.9, 1.4]));
     // světlo z nádvoří za bránou
     const inner = new THREE.Mesh(
       new THREE.PlaneGeometry(2.6, 3.8),
@@ -964,6 +957,26 @@ export function runSea3D(container: HTMLElement, opts: FilmOpts): Handle {
         scene.add(m);
       }),
     ];
+    // detailní rekvizity z Blenderu (umime-art/blender/mestecko3d_hrad_more.py): korály, mušle, truhly, řasy a medúzy
+    const seabed = (n: number, a: number, b: number, zr: number): Spot[] =>
+      Array.from({ length: n }, (): Spot => {
+        const [x, z] = bed(-10, 90, zr);
+        return [x, z, rand(0, Math.PI * 2), rand(a, b), -16];
+      });
+    placeProps(scene, loads, "more-koral", seabed(16, 0.8, 1.6, 22));
+    placeProps(scene, loads, "more-muzle", seabed(8, 0.9, 1.2, 22));
+    placeProps(scene, loads, "more-truhla", seabed(4, 1, 1.1, 22));
+    placeProps(scene, loads, "more-rasy", seabed(24, 1, 1.4, 22));
+    placeProps(
+      scene,
+      loads,
+      "more-medusa",
+      Array.from({ length: 8 }, (): Spot => {
+        const x = rand(-10, 90);
+        const z = rand(-22, 22);
+        return [x, z, 0, rand(0.9, 1.3), rand(-12, -5)];
+      }).filter(([x, z]) => Math.hypot(x - city.x, z - city.z) > 10),
+    );
     for (const [x, z] of [[-5, 0], [5, 3], [0, -5]] as const) {
       const l = new THREE.PointLight("#7fe8ff", 16, 26, 1.4);
       l.position.set(city.x + x, city.y + 4, city.z + z);
