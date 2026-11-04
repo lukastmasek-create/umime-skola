@@ -914,7 +914,7 @@ export function TownHub({ locale }: { locale: Locale }) {
         setFade(true);
         window.setTimeout(() => {
           setCine(null);
-          setFade(false);
+          // bílý obraz zůstane až do chvíle, kdy se objeví cíl (nová stránka nebo interiér); jinak by naskočil zpátky městečko
           onEnd();
         }, 230);
       }
@@ -951,6 +951,7 @@ export function TownHub({ locale }: { locale: Locale }) {
               setPhase(null);
               setGen((g) => g + 1);
               setBoard(true);
+              setFade(false); // interiér je připravený, bílý obraz se plynule rozpustí
             }
           };
           if (door) handle.current = runEnter(r as Parameters<typeof runEnter>[0], toBox(door), place.id as DoorKind, done);
