@@ -437,6 +437,9 @@ const UI: Record<Locale, UiText> = {
     },
     buildBonus: { skola: "+5 % XP за тести / рівень", herna: "+5 % XP в іграх / рівень", obchod: "3 % балів назад / рівень", namesti: "+1 бал за знахідку / рівень", pekarna: "+1 раунд міні-гри / рівень", knihovna: "+1 раунд міні-гри / рівень", hvezdarna: "+1 раунд міні-гри / рівень", kvetinarstvi: "+1 раунд міні-гри / рівень" },
     quest: { xp: "Здобудь {n} XP у тестах та іграх", games: "Зіграй {n}× гру з курсів", test: "Заверши тест", collect: "Збери {n} речей у містечку", mini: "Зіграй {n}× міні-гру в містечку", npc: "Дай мешканцю відповідь на питання", escape: "Розв'яжи квест-кімнату" },
+    talk: "Поговорити",
+    open: "Відкрити",
+    people: { knihovnice: { name: "Бібліотекарка", line: "Книжки тут розставлені за абеткою. Спробуй міні-гру в бібліотеці!" }, pekar: { name: "Пекар", line: "Свіжа випічка! Каса в пекарні покаже, як рахувати дрібні гроші." }, hrdina: { name: "Мандрівник", line: "Я теж блукаю містечком. Дороги ведуть до кожного місця." }, pes: { name: "Пес", line: "Гав! Хочеш погратися?" }, kocka: { name: "Кішка", line: "Мяу." }, ovce: { name: "Вівця", line: "Беее." }, slepice: { name: "Курка", line: "Ко-ко-ко!" }, papousek: { name: "Папуга", line: "Привіт, привіт!" } },
   },
   ja: {
     title: "まち",
@@ -492,6 +495,9 @@ const UI: Record<Locale, UiText> = {
     },
     buildBonus: { skola: "テストのXP +5% / レベル", herna: "ゲームのXP +5% / レベル", obchod: "買い物のポイント3%還元 / レベル", namesti: "拾ったものごとに+1ポイント / レベル", pekarna: "ミニゲーム +1ラウンド / レベル", knihovna: "ミニゲーム +1ラウンド / レベル", hvezdarna: "ミニゲーム +1ラウンド / レベル", kvetinarstvi: "ミニゲーム +1ラウンド / レベル" },
     quest: { xp: "テストとゲームで{n} XPを集めよう", games: "コースのゲームを{n}回プレイ", test: "テストを終える", collect: "まちで{n}個のものを集める", mini: "まちのミニゲームを{n}回プレイ", npc: "住人の質問に答える", escape: "脱出ゲームをクリアする" },
+    talk: "話しかける",
+    open: "開く",
+    people: { knihovnice: { name: "司書さん", line: "ここの本はアルファベット順に並んでいるよ。図書館のミニゲームもやってみてね！" }, pekar: { name: "パン屋さん", line: "焼きたてのパンだよ！パン屋のレジで、おつりの計算を教えてくれるよ。" }, hrdina: { name: "旅人", line: "ぼくも町を歩き回っているんだ。道はどこにでも続いているよ。" }, pes: { name: "犬", line: "ワン！あそぼう？" }, kocka: { name: "ねこ", line: "ニャーン。" }, ovce: { name: "ひつじ", line: "メェー。" }, slepice: { name: "にわとり", line: "コケコッコー！" }, papousek: { name: "オウム", line: "こんにちは、こんにちは！" } },
   },
   es: {
     title: "Pueblo",
@@ -547,6 +553,9 @@ const UI: Record<Locale, UiText> = {
     },
     buildBonus: { skola: "+5 % XP en exámenes / nivel", herna: "+5 % XP en juegos / nivel", obchod: "3 % de puntos de vuelta / nivel", namesti: "+1 punto por objeto / nivel", pekarna: "+1 ronda de minijuego / nivel", knihovna: "+1 ronda de minijuego / nivel", hvezdarna: "+1 ronda de minijuego / nivel", kvetinarstvi: "+1 ronda de minijuego / nivel" },
     quest: { xp: "Consigue {n} XP en exámenes y juegos", games: "Juega {n} veces a juegos de los cursos", test: "Completa un examen", collect: "Recoge {n} cosas por el pueblo", mini: "Juega {n} veces a minijuegos del pueblo", npc: "Responde a la pregunta de un habitante", escape: "Resuelve una sala de escape" },
+    talk: "Hablar",
+    open: "Abrir",
+    people: { knihovnice: { name: "Bibliotecaria", line: "Los libros de aquí están ordenados alfabéticamente. ¡Prueba el minijuego de la biblioteca!" }, pekar: { name: "Panadero", line: "¡Pan recién hecho! La caja de la panadería te enseñará a contar el cambio." }, hrdina: { name: "Viajero", line: "Yo también recorro el pueblo. Los caminos llevan a todos los lugares." }, pes: { name: "Perro", line: "¡Guau! ¿Quieres jugar?" }, kocka: { name: "Gato", line: "Miau." }, ovce: { name: "Oveja", line: "Beee." }, slepice: { name: "Gallina", line: "¡Cocorocó!" }, papousek: { name: "Loro", line: "¡Hola, hola!" } },
   },
   fr: {
     title: "Bourg",
@@ -602,6 +611,9 @@ const UI: Record<Locale, UiText> = {
     },
     buildBonus: { skola: "+5 % d'XP aux tests / niveau", herna: "+5 % d'XP aux jeux / niveau", obchod: "3 % des points remboursés / niveau", namesti: "+1 point par objet / niveau", pekarna: "+1 manche de mini-jeu / niveau", knihovna: "+1 manche de mini-jeu / niveau", hvezdarna: "+1 manche de mini-jeu / niveau", kvetinarstvi: "+1 manche de mini-jeu / niveau" },
     quest: { xp: "Gagne {n} XP aux tests et aux jeux", games: "Joue {n} fois à des jeux de cours", test: "Termine un test", collect: "Ramasse {n} objets dans le bourg", mini: "Joue {n} fois aux mini-jeux du bourg", npc: "Réponds à la question d'un habitant", escape: "Résous une escape room" },
+    talk: "Parler",
+    open: "Ouvrir",
+    people: { knihovnice: { name: "Bibliothécaire", line: "Les livres sont ici classés par ordre alphabétique. Essaie le mini-jeu de la bibliothèque !" }, pekar: { name: "Boulanger", line: "Du pain frais ! La caisse de la boulangerie t’apprendra à rendre la monnaie." }, hrdina: { name: "Voyageur", line: "Moi aussi, je me promène dans la ville. Les chemins mènent à tous les endroits." }, pes: { name: "Chien", line: "Ouaf ! Tu veux jouer ?" }, kocka: { name: "Chat", line: "Miaou." }, ovce: { name: "Mouton", line: "Bêêê." }, slepice: { name: "Poule", line: "Cot cot !" }, papousek: { name: "Perroquet", line: "Salut, salut !" } },
   },
 };
 
