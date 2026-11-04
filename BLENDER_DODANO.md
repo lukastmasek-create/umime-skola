@@ -185,3 +185,14 @@ Grafika stálé hry Farma (zdrojové skripty `umime-art/scripts/farm.py` a `farm
 - `background.webp` (1600 × 1000): pokoj s okny, obrazy, kobercem a prkennou podlahou.
 - Sloty v pokoji jsou v `ROOM_SLOT_POS` (`src/lib/room.ts`) v procentech, zadní řada je menší než přední. Chybí-li obrázek, zobrazí se emoji.
 - Složka `room/` je ve výjimkách `matcher` v `src/proxy.ts`.
+
+## Městečko: chůze a mraky nad zamčenými světy
+
+- **Chodci a hrdina** chodí jen po ulicích (`src/lib/town3d/world.ts`): budovy jsou pevné (`SOLID_PLACES`, `inFootprint`),
+  trasy chodců jdou po grafu ulic a obcházejí kašnu. Dveře domků (`layout.ts`) míří k ulici, příjezd nevede přes dům.
+  Hlídá to `src/lib/town3d/layout.test.ts` (součást `npm test`).
+- **Mrak nad zamčeným světem** (`public/mestecko3d/oblak.glb`, skript `umime-art/blender/mestecko_oblak.py`, render náhledu
+  do `PREVIEW_DIR`, Draco přes gltf-transform). Světy: les, hrad, moře, stanice; pirát je zdarma. Zamčení se čte z `/api/shop`
+  (`worlds`) v `TownWorld.tsx` a předává se enginu přes `setLocked`. Mrak se po odemčení smrští a zmizí; chůze se na jeho
+  hranici zastaví, klik na něj vede jen k nápovědě „Odemkni v obchodě“.
+- Mraky se do `scale` vejdou podle `cloudScale()` / `cloudRadius()` v `layout.ts`. Při změně tvaru budovy upravit tam.

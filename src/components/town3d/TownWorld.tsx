@@ -8,7 +8,7 @@ import { getTown3dText } from "@/i18n/town3d";
 import { getHeroLook } from "@/lib/hero";
 import { useAccount } from "@/lib/use-account";
 import { notifyAccountChanged } from "@/lib/account-events";
-import { PLACES } from "@/lib/town3d/layout";
+import { PLACES, WORLD_OF_PLACE } from "@/lib/town3d/layout";
 import type { WorldHandle } from "@/lib/town3d/world";
 import { Modal } from "@/components/ShopView";
 import { MiniGame } from "@/components/TownMini";
@@ -76,6 +76,8 @@ export function TownWorld({ locale }: { locale: Locale }) {
   const [toast, setToast] = useState<string | null>(null);
   const [miniOpen, setMiniOpen] = useState<MiniId | null>(null);
   const [plots, setPlots] = useState<Plots>({ roads: [], plots: {}, income: 0, incomeClaimed: false });
+  // odemčené uživatelské obchody (klíče světů); null dokud se neví → mraky se nezobrazí
+  const [openWorlds, setOpenWorlds] = useState<string[] | null>(null);
   const labelEls = useRef(new Map<string, HTMLButtonElement>());
   const [miniLeft, setMiniLeft] = useState<Partial<Record<MiniId, number>>>({});
   const miniText = getTownMiniText(locale);
@@ -93,14 +95,17 @@ export function TownWorld({ locale }: { locale: Locale }) {
 
   // načtení stavu ze serveru
   const refresh = useCallback(async () => {
-    const [s, q, b, t, m, pl] = await Promise.all([
+    const [s, q, b, t, m, pl, sh] = await Promise.all([
       fetch("/api/mestecko").then((r) => (r.ok ? r.json() : null)).catch(() => null),
       fetch("/api/mestecko/ukoly").then((r) => (r.ok ? r.json() : null)).catch(() => null),
       fetch("/api/mestecko/budovy").then((r) => (r.ok ? r.json() : null)).catch(() => null),
       fetch("/api/mestecko/poklady").then((r) => (r.ok ? r.json() : null)).catch(() => null),
       fetch("/api/mestecko/minihra").then((r) => (r.ok ? r.json() : null)).catch(() => null),
       fetch("/api/mestecko/parcely").then((r) => (r.ok ? r.json() : null)).catch(() => null),
+      fetch("/api/shop").then((r) => (r.ok ? r.json() : null)).catch(() => null),
     ]);
+    // první svět (pirát) je zdarma; ostatní jsou pod mraky, dokud se neodemknou v obchodě
+    if (sh) setOpenWorlds(["pirate", ...((sh.worlds as string[] | undefined) ?? [])]);
     if (pl?.roads) setPlots({ roads: pl.roads, plots: pl.plots ?? {}, income: pl.income ?? 0, incomeClaimed: !!pl.incomeClaimed });
     if (m?.mini) setMiniLeft(Object.fromEntries(Object.entries(m.mini as Record<MiniId, { left: number }>).map(([k, v]) => [k, v.left])));
     if (s?.spots) setSpots({ spots: s.spots, collected: s.collected ?? [] });
@@ -133,6 +138,11 @@ export function TownWorld({ locale }: { locale: Locale }) {
       if (b && el) el.textContent = `${PLOT_BUILDING[b].icon} ${ui.plotBuildings[b]?.name ?? b}`;
     }
   }, [plots, state, ui.plotBuildings]);
+  useEffect(() => {
+    if (!openWorlds) return;
+    world.current?.setLocked(Object.keys(WORLD_OF_PLACE).filter((id) => !openWorlds.includes(WORLD_OF_PLACE[id])));
+  }, [openWorlds, state]);
+  const isLocked = (id: string) => !!openWorlds && !!WORLD_OF_PLACE[id] && !openWorlds.includes(WORLD_OF_PLACE[id]);
   useEffect(() => {
     const ids = quests.filter((q) => !q.claimed).map((q) => questPlace(q.giver)).filter(Boolean) as string[];
     world.current?.setQuestMarks([...new Set(ids)]);
@@ -381,7 +391,7 @@ export function TownWorld({ locale }: { locale: Locale }) {
           {tab === "places" && (
             <>
               <h3 className="town3d-h">{ui.worlds}</h3>
-              {PLACES.filter((p) => p.kind === "world").map((p) => placeRow(p.id))}
+              {PLACES.filter((p) => p.kind === "world").map((p) => placeRow(p.id, undefined, isLocked(p.id) ? <span aria-hidden>🔒</span> : undefined))}
               <h3 className="town3d-h">{ui.town}</h3>
               {PLACES.filter((p) => p.kind === "place").map((p) => placeRow(p.id))}
               <h3 className="town3d-h">{ui.homes}</h3>
@@ -529,6 +539,7 @@ export function TownWorld({ locale }: { locale: Locale }) {
         <h2 className="text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
           {selPlot ? `${PLOT_BUILDING[selPlot].icon} ${ui.plotBuildings[selPlot]?.name}` : `${sel.icon} ${selText?.name}`}
         </h2>
+        {isLocked(sel.id) && <p className="mt-1 text-sm font-bold">🔒 {ui.locked}</p>}
         <p className="mt-1 text-sm opacity-80">
           {selPlot ? `${ui.plotBuildings[selPlot]?.desc} ${ui.perDay.replace("{n}", String(PLOT_BUILDING[selPlot].income))}` : sel.kind === "plot" ? ui.plotDesc : selText?.desc}
         </p>
@@ -558,7 +569,11 @@ export function TownWorld({ locale }: { locale: Locale }) {
           <button type="button" className="town3d-btn" onClick={() => world.current?.walkTo(sel.id)}>
             🚶 {ui.go}
           </button>
-          {sel.href && sel.kind === "world" ? (
+          {sel.href && sel.kind === "world" && isLocked(sel.id) ? (
+            <Link href={`/${locale}${sel.href}`} className="town3d-btn town3d-btn-gold">
+              🔓 {ui.unlock}
+            </Link>
+          ) : sel.href && sel.kind === "world" ? (
             <button type="button" className="town3d-btn town3d-btn-gold" onClick={() => setFilm(sel.id)}>
               🚪 {ui.enter}
             </button>

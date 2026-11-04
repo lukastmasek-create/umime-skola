@@ -8,13 +8,17 @@ import {
   PLACES,
   RIVER_Z,
   SEA,
+  SOLID_PLACES,
   STALLS,
   buildGraph,
   buildRoads,
+  cloudRadius,
+  cloudScale,
   distToRoad,
   doorPoint,
   findPath,
   FOUNTAIN,
+  inFootprint,
   nearestNode,
   type Place,
   type Pt,
@@ -41,6 +45,7 @@ export type WorldHandle = {
   setBuildMode: (on: boolean) => void;
   setCollectibles: (slots: { slot: number; kind: string; taken: boolean }[]) => void;
   setQuestMarks: (ids: string[]) => void;
+  setLocked: (ids: string[]) => void; // zamčené světy (id míst) zůstanou pod mraky, dokud se neodemknou
   labels: (cb: (items: { id: string; x: number; y: number; visible: boolean }[]) => void) => void;
   setPaused: (paused: boolean) => void; // během cut scény se městečko nevykresluje
   setRoads: (built: string[]) => void; // dostavěné plánované cesty (id z layout MAIN_ROADS)
@@ -127,6 +132,22 @@ function fitLength(obj: THREE.Object3D, len: number) {
   obj.scale.multiplyScalar(len / Math.max(size.x, size.z, 0.001));
   const b2 = new THREE.Box3().setFromObject(obj);
   obj.position.y -= b2.min.y;
+}
+
+// Lomená čára (kumulativní délky) a bod v dané vzdálenosti od začátku.
+function pathLens(route: Pt[]): number[] {
+  const lens = [0];
+  for (let i = 1; i < route.length; i++) lens.push(lens[i - 1] + Math.hypot(route[i][0] - route[i - 1][0], route[i][1] - route[i - 1][1]));
+  return lens;
+}
+function pointAt(route: Pt[], lens: number[], s: number): { x: number; z: number; dx: number; dz: number } {
+  let i = 0;
+  while (i < route.length - 2 && lens[i + 1] < s) i++;
+  const seg = Math.max(1e-6, lens[i + 1] - lens[i]);
+  const k = Math.min(1, Math.max(0, (s - lens[i]) / seg));
+  const [ax, az] = route[i];
+  const [bx, bz] = route[i + 1];
+  return { x: ax + (bx - ax) * k, z: az + (bz - az) * k, dx: bx - ax, dz: bz - az };
 }
 
 export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandle | null {
@@ -404,6 +425,42 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
     }
   }
 
+  // zamčené světy: nad budovou je mrak (oblak.glb z Blenderu), po odemčení se rozplyne
+  const locked = new Set<string>();
+  type Cloud = { g: THREE.Group; target: number; t: number; out: boolean };
+  const clouds = new Map<string, Cloud>();
+  let cloudTpl: THREE.Object3D | null = null;
+  function syncClouds() {
+    if (!cloudTpl) return;
+    for (const p of PLACES) {
+      const c = clouds.get(p.id);
+      if (locked.has(p.id)) {
+        if (!c) {
+          const g = new THREE.Group();
+          g.add(cloudTpl.clone(true));
+          g.position.set(p.x, 0, p.z);
+          g.rotation.y = p.ry;
+          g.scale.setScalar(0.001);
+          g.userData.placeId = p.id; // klik na mrak = klik na místo
+          add(g);
+          pickables.push(g);
+          clouds.set(p.id, { g, target: cloudScale(p), t: 0, out: false });
+        } else if (c.out) {
+          Object.assign(c, { out: false, t: 0 }); // znovu zamčeno: mrak naroste zpátky
+        }
+      } else if (c && !c.out) {
+        Object.assign(c, { out: true, t: 0 });
+      }
+    }
+  }
+  loads.push(
+    loadGltf(MODEL("oblak")).then((gltf) => {
+      cloudTpl = gltf.scene;
+      prepModel(cloudTpl);
+      syncClouds();
+    }).catch(() => {}),
+  );
+
   // mosty, lampy, stánky
   for (const x of BRIDGES_X) {
     loads.push(
@@ -562,8 +619,13 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
     .catch(() => {});
   let heroHolder: THREE.Group | null = null;
   // obyvatelé: chodci po ulicích a stojící u domků
-  type Walker = { obj: THREE.Object3D; update: (dt: number) => void; route: Pt[]; t: number; speed: number };
+  type Walker = { obj: THREE.Object3D; update: (dt: number) => void; route: Pt[]; lens: number[]; total: number; dist: number; speed: number };
   const walkers: Walker[] = [];
+  // trasa chodce jde po grafu ulic (ne přímou čárou přes náměstí a domy)
+  const streetRoute = (a: Pt, b: Pt): Pt[] => {
+    const p = findPath(graph, nearestNode(graph, a[0], a[1]), nearestNode(graph, b[0], b[1]));
+    return p.length >= 2 ? p : [a, b];
+  };
   const statics: { update: (dt: number) => void }[] = [];
   const walkerDefs: [string, Pt[], number][] = [
     ["knihovnice_chuze", [[-30, 0.9], [30, 0.9]], 1.6],
@@ -573,14 +635,16 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
     ["hrdina_4_chuze", [[-30.9, 0], [-30.9, 28]], 1.5],
     ["pes_bezi", [[29.1, 2], [29.1, 26]], 3.2],
   ];
-  for (const [name, route, speed] of walkerDefs) {
+  for (const [name, ends, speed] of walkerDefs) {
+    const route = streetRoute(ends[0], ends[1]);
+    const lens = pathLens(route);
     makeLoop(name)
       .then((l) => {
         fitHeight(l.root, name.startsWith("pes") ? 0.7 : HERO_H * 0.95);
         const holder = new THREE.Group();
         holder.add(l.root);
         add(holder);
-        walkers.push({ obj: holder, update: l.update, route, t: rr(), speed });
+        walkers.push({ obj: holder, update: l.update, route, lens, total: lens[lens.length - 1], dist: rr() * 2 * lens[lens.length - 1], speed });
       })
       .catch(() => {});
   }
@@ -666,10 +730,15 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
     const end: Pt = [x, z];
     // konec až k cíli, pokud je na cestě (dveře), jinak jen k nejbližšímu bodu ulice
     const onRoad = roads.some((rd) => !rd.planned && distToRoad(x, z, rd) < rd.w / 2 + 0.2);
-    path = onRoad ? [...p, end] : p;
+    path = clipToOpen(onRoad ? [...p, end] : p);
     arriveId = arrive;
     cam.follow = true;
   }
+  // klik na místo: u zamčeného světa se nedojde až dovnitř a nic se „nepřichází“
+  const goTo = (p: Place) => {
+    const [dx, dz] = p.door ? doorPoint(p) : [p.x, p.z];
+    walkToPoint(dx, dz, locked.has(p.id) ? null : p.id);
+  };
 
   const onDown = (e: PointerEvent) => {
     el.setPointerCapture(e.pointerId);
@@ -708,9 +777,7 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
       const hit = placeAt(e.clientX, e.clientY);
       if (hit.place) {
         opts.onSelect(hit.place);
-        const p = PLACES.find((x) => x.id === hit.place)!;
-        const [dx, dz] = p.door ? doorPoint(p) : [p.x, p.z];
-        walkToPoint(dx, dz, p.id);
+        goTo(PLACES.find((x) => x.id === hit.place)!);
       } else if (hit.point) walkToPoint(hit.point.x, hit.point.z, null);
     }
     drag = null;
@@ -737,9 +804,32 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
   window.addEventListener("keydown", onKey);
   window.addEventListener("keyup", onKey);
 
+  // budovy a mraky jsou pevné: po ulici se k nim dojde, ale dovnitř ne
+  const blockedAt = (x: number, z: number) =>
+    SOLID_PLACES.some((p) => inFootprint(p, x, z, 0.15)) || PLACES.some((p) => locked.has(p.id) && Math.hypot(x - p.x, z - p.z) < cloudRadius(p));
   const onRoad = (x: number, z: number) =>
+    !blockedAt(x, z) &&
     Math.hypot(x - FOUNTAIN.x, z - FOUNTAIN.z) > FOUNTAIN.r &&
     (roads.some((rd) => !rd.planned && distToRoad(x, z, rd) < rd.w / 2 + 0.1) || Math.hypot(x, z) < 9.2);
+  // cesta (klik, průchod) se zastaví na hranici mraku, nikdy ne uvnitř
+  function clipToOpen(pts: Pt[]): Pt[] {
+    const out: Pt[] = [pts[0]];
+    for (let i = 0; i + 1 < pts.length; i++) {
+      const [ax, az] = pts[i];
+      const [bx, bz] = pts[i + 1];
+      const n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 0.25));
+      for (let k = 1; k <= n; k++) {
+        const x = ax + ((bx - ax) * k) / n;
+        const z = az + ((bz - az) * k) / n;
+        if (PLACES.some((p) => locked.has(p.id) && Math.hypot(x - p.x, z - p.z) < cloudRadius(p))) {
+          out.push([ax + ((bx - ax) * (k - 1)) / n, az + ((bz - az) * (k - 1)) / n]);
+          return out;
+        }
+      }
+      out.push(pts[i + 1]);
+    }
+    return out;
+  }
 
   // ------------------------------------------------------------------------------------------ smyčka
   let night = false;
@@ -836,16 +926,34 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
       q.position.y = q.userData.baseY + Math.sin(time * 3 + i) * 0.3;
       q.rotation.y += dt * 1.5;
     });
+    // mraky: naroste s odskokem, po odemčení se smrští a zmizí
+    clouds.forEach((c, id) => {
+      c.t += dt;
+      if (c.out) {
+        const k = Math.min(1, c.t / 0.9);
+        c.g.scale.setScalar(Math.max(0.001, c.target * (1 - k * k * k)));
+        if (k >= 1) {
+          scene.remove(c.g);
+          const at = pickables.indexOf(c.g);
+          if (at >= 0) pickables.splice(at, 1);
+          clouds.delete(id);
+        }
+      } else {
+        const k = Math.min(1, c.t / 1.1);
+        const back = 1 + 2.70158 * (k - 1) ** 3 + 1.70158 * (k - 1) ** 2; // mírný odskok
+        c.g.scale.setScalar(Math.max(0.001, c.target * back));
+        c.g.position.y = Math.sin(time * 0.6 + c.target) * 0.12;
+      }
+    });
     for (const w of walkers) {
       w.update(dt);
-      const [a, b] = w.route;
-      const L = Math.hypot(b[0] - a[0], b[1] - a[1]);
-      w.t = (w.t + (dt * w.speed) / L / 2) % 1;
-      const k = w.t < 0.5 ? w.t * 2 : 2 - w.t * 2;
-      const dirx = (b[0] - a[0]) * (w.t < 0.5 ? 1 : -1);
-      const dirz = (b[1] - a[1]) * (w.t < 0.5 ? 1 : -1);
-      w.obj.position.set(a[0] + (b[0] - a[0]) * k, 0, a[1] + (b[1] - a[1]) * k);
-      w.obj.rotation.y = Math.atan2(dirx, dirz) - Math.PI / 2;
+      // tam a zpět po stejné trase, rychlost v metrech za vteřinu
+      w.dist = (w.dist + dt * w.speed) % (2 * w.total);
+      const fwd = w.dist <= w.total;
+      const p = pointAt(w.route, w.lens, fwd ? w.dist : 2 * w.total - w.dist);
+      const sg = fwd ? 1 : -1;
+      w.obj.position.set(p.x, 0, p.z);
+      w.obj.rotation.y = Math.atan2(p.dx * sg, p.dz * sg) - Math.PI / 2;
     }
     statics.forEach((s) => s.update(dt));
     if (ship) {
@@ -906,9 +1014,7 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
   return {
     walkTo(id) {
       const p = PLACES.find((x) => x.id === id);
-      if (!p) return;
-      const [dx, dz] = p.door ? doorPoint(p) : [p.x, p.z];
-      walkToPoint(dx, dz, id);
+      if (p) goTo(p);
     },
     focus(id) {
       const p = PLACES.find((x) => x.id === id);
@@ -927,6 +1033,11 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
     },
     setRoads,
     setPlots,
+    setLocked(ids) {
+      locked.clear();
+      ids.forEach((id) => locked.add(id));
+      syncClouds();
+    },
     setCollectibles(slots) {
       collectibles.forEach((c) => scene.remove(c.mesh));
       collectibles = slots

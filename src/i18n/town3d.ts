@@ -15,6 +15,8 @@ type UiText = {
   go: string;
   enter: string;
   soon: string;
+  locked: string; // zamčený svět pod mrakem
+  unlock: string;
   skip: string;
   day: string;
   night: string;
@@ -180,6 +182,8 @@ const UI: Record<Locale, UiText> = {
     go: "Jít tam",
     enter: "Vstoupit",
     soon: "Brzy",
+    locked: "Pod mrakem: odemkni ho v uživatelském obchodě",
+    unlock: "Odemknout v obchodě",
     skip: "Přeskočit",
     day: "Den",
     night: "Noc",
@@ -227,6 +231,8 @@ const UI: Record<Locale, UiText> = {
     go: "Go there",
     enter: "Enter",
     soon: "Soon",
+    locked: "Under a cloud: unlock it in the community shop",
+    unlock: "Unlock in the shop",
     skip: "Skip",
     day: "Day",
     night: "Night",
@@ -274,6 +280,8 @@ const UI: Record<Locale, UiText> = {
     go: "Hingehen",
     enter: "Betreten",
     soon: "Bald",
+    locked: "Unter einer Wolke: im Gemeinschaftsladen freischalten",
+    unlock: "Im Laden freischalten",
     skip: "Überspringen",
     day: "Tag",
     night: "Nacht",
@@ -321,6 +329,8 @@ const UI: Record<Locale, UiText> = {
     go: "Пойти",
     enter: "Войти",
     soon: "Скоро",
+    locked: "Под облаком: откройте в общем магазине",
+    unlock: "Открыть в магазине",
     skip: "Пропустить",
     day: "День",
     night: "Ночь",
