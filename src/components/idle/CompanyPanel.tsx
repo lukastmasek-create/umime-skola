@@ -108,12 +108,11 @@ type Common = {
   t: T;
   m: (n: number) => string;
   busy: boolean;
-  liveCash: number;
   act: Act;
 };
 
 export function CompanyTab(props: Common) {
-  const { state, clock, multiplier, t, m, busy, liveCash, act } = props;
+  const { state, clock, multiplier, t, m, busy, act } = props;
   const [selected, setSelected] = useState<CompanyId | null>(null);
   const ev = currentEvent(clock);
   const phase = state.phase;
@@ -158,7 +157,7 @@ export function CompanyTab(props: Common) {
             <p className="text-sm text-[var(--muted)]">{fill(t.phase.need, { v: m(nextNeed) })}</p>
             <button
               type="button"
-              disabled={busy || income < nextNeed || liveCash < nextCost}
+              disabled={busy || income < nextNeed}
               onClick={() => void act({ action: "upgradePhase" }, () => t.phase.names[nextPhase - 1])}
               className="btn-bouncy w-fit bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
             >
@@ -226,7 +225,7 @@ export function CompanyTab(props: Common) {
                 )}
                 <button
                   type="button"
-                  disabled={busy || locked || liveCash < price}
+                  disabled={busy || locked}
                   onClick={() => void act({ action: "buyCompany", id: c.id }, () => t.toast.bought)}
                   className="btn-bouncy flex-1 px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
                   style={{ background: style.color }}
@@ -247,7 +246,6 @@ export function CompanyTab(props: Common) {
           t={t}
           m={m}
           busy={busy}
-          liveCash={liveCash}
           act={act}
           onClose={() => setSelected(null)}
         />
@@ -311,7 +309,7 @@ function Slider({
   );
 }
 
-function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act, onClose }: Common & { id: CompanyId; onClose: () => void }) {
+function CompanyDetail({ id, state, clock, multiplier, t, m, busy, act, onClose }: Common & { id: CompanyId; onClose: () => void }) {
   const owned = state.companies[id] ?? 0;
   const s: CompanySetup = setupOf(state, id);
   const style = COMPANY_STYLE[id];
@@ -428,7 +426,7 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
               ) : (
                 <button
                   type="button"
-                  disabled={busy || liveCash < fundCost}
+                  disabled={busy}
                   onClick={() => void act({ action: "fundResponse", id }, () => t.toast.funded)}
                   className="btn-bouncy w-fit bg-[var(--accent-yellow)] px-3 py-2 text-sm font-bold text-[#16132b] disabled:opacity-45"
                 >
@@ -455,7 +453,7 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
           ) : (
             <button
               type="button"
-              disabled={busy || liveCash < researchPrice(state, id)}
+              disabled={busy}
               onClick={() => void act({ action: "researchCompany", id }, () => t.toast.researched)}
               className="btn-bouncy w-fit bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
             >
@@ -471,7 +469,7 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
           ) : (
             <button
               type="button"
-              disabled={busy || liveCash < contractPrice(state, id)}
+              disabled={busy}
               onClick={() => void act({ action: "signContract", id }, () => t.toast.contract)}
               className="btn-bouncy w-fit bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
             >
@@ -504,7 +502,7 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
         ) : (
           <button
             type="button"
-            disabled={busy || liveCash < upgradePrice(state, id)}
+            disabled={busy}
             onClick={() => void act({ action: "upgradeCompany", id }, () => t.toast.upgraded)}
             className="btn-bouncy w-fit bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
           >
@@ -562,7 +560,7 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
                 </button>
                 <button
                   type="button"
-                  disabled={busy || full || liveCash < wage}
+                  disabled={busy || full}
                   onClick={() => void act({ action: "hireStaff", id, delta: 1, role }, () => t.toast.hired)}
                   className="btn-bouncy bg-[var(--brand-500)] px-3 py-1.5 text-sm font-bold text-white disabled:opacity-45"
                 >
@@ -584,7 +582,7 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            disabled={busy || stockFree < 1 || liveCash < batch}
+            disabled={busy || stockFree < 1}
             onClick={() => void act({ action: "buyStock", id, amount: 1 }, () => t.toast.stock)}
             className="btn-bouncy bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
           >
@@ -592,7 +590,7 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
           </button>
           <button
             type="button"
-            disabled={busy || stockFree < 5 || liveCash < batch * 5}
+            disabled={busy || stockFree < 5}
             onClick={() => void act({ action: "buyStock", id, amount: 5 }, () => t.toast.stock)}
             className="btn-bouncy bg-[var(--surface)] px-3 py-2 text-sm font-bold disabled:opacity-45"
           >
@@ -606,7 +604,7 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, liveCash, act
         <p className="text-xs text-[var(--muted)]">{t.detail.campaignHint}</p>
         <button
           type="button"
-          disabled={busy || campaignLeft > 0 || liveCash < campaignPrice(state, id)}
+          disabled={busy || campaignLeft > 0}
           onClick={() => void act({ action: "runCampaign", id }, () => t.toast.campaign)}
           className="btn-bouncy w-fit bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
         >

@@ -363,7 +363,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
   const m = (n: number) => money(n, cur, locale);
   const r = data.rates;
   // Hotovost běží plynule: server poslal stav k okamžiku `now`, zbytek dopočítáme ze sazby.
-  const liveCash = Math.max(0, state.cash + (r.net * (clock - data.now)) / 3_600_000);
+  const liveCash = state.cash + (r.net * (clock - data.now)) / 3_600_000;
   const worth = Math.max(data.netWorth, data.netWorth + (liveCash - state.cash));
   const readyHustles = HUSTLES.filter((h) => hustleDue(state.hustle[h.id], h.id, clock)).length;
   // Přehled: příjmy za hodinu (hrubé části + náklady) a majetek.
@@ -770,7 +770,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                   </button>
                   <button
                     type="button"
-                    disabled={busy || !(xAmount >= 1) || state.cash < Math.floor(xAmount) * POINT_BUY_CASH}
+                    disabled={busy || !(xAmount >= 1)}
                     onClick={() => {
                       const n = Math.floor(xAmount);
                       void act({ action: "exchange", direction: "buy", amount: n }, () => fill(t.exchange.bought, { n }));
@@ -870,7 +870,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                   </div>
                   <button
                     type="button"
-                    disabled={busy || state.cash < price}
+                    disabled={busy}
                     onClick={() => void act({ action: "buyBoost", id }, () => nd.bought)}
                     className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white disabled:opacity-45"
                   >
@@ -917,7 +917,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
-                    disabled={busy || full || state.cash < daily * Math.min(1, room)}
+                    disabled={busy || full}
                     onClick={() => void act({ action: "buyNeed", id, amount: 1 }, () => nd.bought)}
                     className="btn-bouncy bg-[var(--surface)] px-4 py-2 text-sm font-bold disabled:opacity-45"
                   >
@@ -926,7 +926,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                   {!full && (
                     <button
                       type="button"
-                      disabled={busy || state.cash < daily * room}
+                      disabled={busy}
                       onClick={() => void act({ action: "buyNeed", id, amount: Math.ceil(room) }, () => nd.bought)}
                       className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white disabled:opacity-45"
                     >
@@ -1109,7 +1109,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                   ) : (
                     <button
                       type="button"
-                      disabled={busy || !!state.shift || locked || liveCash < j.fee}
+                      disabled={busy || !!state.shift || locked}
                       onClick={() => void act({ action: "takeJob", id: j.id }, () => t.toast.job)}
                       className="btn-bouncy mt-auto bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
                     >
@@ -1124,7 +1124,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
       )}
 
       {tab === "companies" && (
-        <CompanyTab state={state} clock={clock} multiplier={r.multiplier} t={t} m={m} busy={busy} liveCash={liveCash} act={act} />
+        <CompanyTab state={state} clock={clock} multiplier={r.multiplier} t={t} m={m} busy={busy} act={act} />
       )}
 
       {tab === "invest" && (
