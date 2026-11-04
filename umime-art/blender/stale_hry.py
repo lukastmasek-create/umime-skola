@@ -397,7 +397,128 @@ def mesto():
     run(lambda t: None, "hra_mesto")
 
 
-JOBS = {"zakladna": zakladna, "mazlicci": mazlicci, "farma": farma, "mesto": mesto}
+# ---------------------------------------------------------------- Ekonomika
+def ekonomika():
+    setup("hra_ekonomika", size=512, samples=128, ortho=3.7, target_z=1.0, world=("#ffe9b0", 0.6))
+    plinth("#5fb36a", "#fff4d0")
+    marble, roof, gold_wood = M("ebm", "#f2efe6", roughness=0.5), M("ebr", "#3a3f62", roughness=0.4), M("ebd", "#8a5a34", roughness=0.7)
+    gold = M("ego", "#ffc933", roughness=0.25, metallic=0.9)
+    green, red = M("egg", "#58c460", roughness=0.5), M("egr", "#ff5a3c", roughness=0.5)
+    sign = glow("esg", "#fff3b0", 2.0)
+    # banka: podstavec, sloupy, střecha a cedule
+    box((-0.45, 0.25, 0.14), (1.3, 0.9, 0.28), marble, bevel=0.02)
+    for cx in (-0.85, -0.6, -0.35, -0.1, 0.15):
+        cyl((cx, -0.12, 0.5), 0.045, 0.56, marble, verts=12)
+    box((-0.45, 0.25, 0.85), (1.45, 0.95, 0.1), roof, bevel=0.02)
+    box((-0.45, -0.22, 0.36), (0.22, 0.02, 0.36), gold_wood, bevel=0)
+    box((-0.45, -0.16, 0.99), (0.5, 0.03, 0.14), sign, bevel=0.01)
+    bar((-0.45, -0.2, 1.1), (-0.45, -0.2, 1.15), 0.005, gold, verts=6)
+    sphere((-0.45, -0.2, 1.17), 0.04, gold, seg=10, rings=8)
+    # sloupcový graf vzadu: výšky se v animaci mění
+    bars = []
+    for k in range(5):
+        x = 0.45 + k * 0.15
+        mat = green if k % 2 == 0 else red
+        bars.append((box((x, 0.8, 0.27), (0.12, 0.12, 0.4), mat, bevel=0.01), k))
+    # hromada zlatých mincí s dopadajícími mincemi
+    stack_x, stack_y = 0.8, -0.35
+    for k in range(5):
+        cyl((stack_x, stack_y, 0.09 + k * 0.035), 0.12, 0.03, gold, verts=24)
+    flip = bpy.data.objects.new("flip", None)
+    bpy.context.scene.collection.objects.link(flip)
+    flip.location = (stack_x, stack_y, 0.5)
+    cyl((0, 0, 0), 0.12, 0.03, gold, verts=24).parent = flip
+    falling = []
+    for k in range(4):
+        c = cyl((stack_x, stack_y, 1.0), 0.1, 0.025, gold, verts=20)
+        falling.append((c, k))
+    # schody před bankou
+    for k in range(2):
+        box((-0.45, -0.3 - 0.09 * k, 0.07 + 0.035 * k), (1.1 - 0.14 * k, 0.1, 0.07), M("est%d" % k, "#e8e2d2", roughness=0.7), bevel=0.01)
+    # prasátko-pokladnička (skupina se kývá)
+    pig = bpy.data.objects.new("pig", None)
+    bpy.context.scene.collection.objects.link(pig)
+    pig.location = (-0.95, -0.75, 0.07)
+    pk = M("epi", "#ffa8c5", roughness=0.6)
+    pparts = [sphere((0, 0, 0.12), 0.11, pk, scale=(1.3, 1, 0.9), seg=16, rings=10),
+              sphere((0.13, 0, 0.13), 0.045, pk, scale=(1, 1.1, 0.9), seg=10, rings=8),
+              cyl((0.18, 0, 0.13), 0.03, 0.02, M("epn", "#ff7fa8"), verts=12, rot=(0, math.radians(90), 0)),
+              cone((0.02, 0, 0.23), 0.025, 0.0, 0.05, pk, verts=6, rot=(0, math.radians(20), 0)),
+              box((-0.02, 0, 0.2), (0.06, 0.02, 0.01), M("eps", "#2a2a35"), bevel=0)]
+    for x, y in ((-0.07, -0.05), (-0.07, 0.05), (0.07, -0.05), (0.07, 0.05)):
+        pparts.append(cyl((x, y, 0.03), 0.02, 0.06, pk, verts=8))
+    for o in pparts:
+        o.parent = pig
+    # pytel s penězi s cedulkou
+    bag = bpy.data.objects.new("bag", None)
+    bpy.context.scene.collection.objects.link(bag)
+    bag.location = (0.5, -0.8, 0.07)
+    cloth = M("ebg", "#e8d9a8", roughness=0.8)
+    bparts = [sphere((0, 0, 0.14), 0.14, cloth, scale=(1, 1, 1.1), seg=20, rings=12),
+              cone((0, 0, 0.3), 0.05, 0.0, 0.08, cloth, verts=12),
+              box((0, -0.13, 0.13), (0.1, 0.02, 0.09), gold, bevel=0.005)]
+    for o in bparts:
+        o.parent = bag
+    # stojan s kurzy: pilíře se sloupci, které se mění
+    kiosk = bpy.data.objects.new("kiosk", None)
+    bpy.context.scene.collection.objects.link(kiosk)
+    kiosk.location = (1.1, -0.45, 0.07)
+    kparts = [cyl((0, 0, 0.35), 0.025, 0.6, M("ekp", "#2a2a35"), verts=10),
+              box((0, 0, 0.72), (0.24, 0.05, 0.2), M("eks", "#2a2a35"), bevel=0.01)]
+    kbars = []
+    for j, c in enumerate(("#58c460", "#ff5a3c", "#ffc933")):
+        b = box((-0.07 + j * 0.07, -0.027, 0.66), (0.04, 0.01, 0.12), glow("ekb%d" % j, c, 2.5), bevel=0)
+        kbars.append((b, j))
+        kparts.append(b)
+    for o in kparts:
+        o.parent = kiosk
+    # dvě vlající vlajky na střeše
+    flags = []
+    for k, (x, c) in enumerate(((-1.12, "#ffc933"), (0.22, "#58c460"))):
+        pole = bpy.data.objects.new("pole", None)
+        bpy.context.scene.collection.objects.link(pole)
+        pole.location = (x, 0.6, 0.92)
+        bar((0, 0, 0), (0, 0, 0.45), 0.012, M("efp", "#c9ced6", metallic=0.9), verts=6).parent = pole
+        fl = box((0.12, 0, 0.36), (0.24, 0.01, 0.14), M("eff%d" % k, c, roughness=0.5), bevel=0)
+        fl.parent = pole
+        flags.append((pole, k))
+    # šipka nahoru nad sloupcovým grafem
+    arrow = bpy.data.objects.new("arrow", None)
+    bpy.context.scene.collection.objects.link(arrow)
+    arrow.location = (0.75, 0.8, 1.0)
+    cone((0, 0, 0), 0.07, 0.0, 0.16, glow("ear", "#7ee0b0", 1.5), verts=12).parent = arrow
+    # stromy a lampy kolem
+    for (x, y) in ((-1.15, -0.5), (1.25, -0.2), (-1.1, 0.9)):
+        tree(x, y, 1.0, kind="round", leaf="#58c460")
+
+    @anim
+    def _e(t):
+        ph = t * math.tau
+        for o, k in bars:
+            f = 0.75 + 0.5 * abs(math.sin(ph + k * 1.1))
+            o.scale = (0.12, 0.12, 0.4 * f)
+            o.location.z = 0.07 + 0.2 * f
+        flip.rotation_euler = (ph, 0, 0)
+        for c, k in falling:
+            u = (t + k / 4.0) % 1.0
+            c.location = (stack_x, stack_y, 0.6 + 0.8 * (1 - u))
+            c.rotation_euler = (ph * 2, 0, 0)
+            c.scale = (1, 1, 1) if u < 0.9 else (0.0001, 0.0001, 0.0001)
+        pig.rotation_euler = (0, 0, 0.12 * math.sin(ph))
+        bag.location.z = 0.07 + 0.02 * abs(math.sin(2 * ph))
+        for fl, k in flags:
+            fl.rotation_euler = (0, 0, 0.25 * math.sin(ph + k * 1.5))
+        arrow.location.z = 1.0 + 0.05 * math.sin(ph)
+        for b, j in kbars:
+            h = 0.12 * (0.5 + 0.5 * abs(math.sin(ph + j * 0.9)))
+            b.scale = (0.04, 0.01, h)
+            b.location.z = 0.6 + h / 2
+        set_glow(sign, 1.4 + 0.8 * math.sin(2 * ph))
+
+    run(lambda t: None, "hra_ekonomika")
+
+
+JOBS = {"zakladna": zakladna, "mazlicci": mazlicci, "farma": farma, "mesto": mesto, "ekonomika": ekonomika}
 
 if __name__ == "__main__":
     for w in [a for a in args() if a in JOBS]:

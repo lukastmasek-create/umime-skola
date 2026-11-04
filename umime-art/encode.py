@@ -140,7 +140,7 @@ def hry():
     """Čtyři diorámata stálých her jako pásy snímků do public/home/hry."""
     dest_dir = os.path.join(DEST, "..", "hry")
     os.makedirs(dest_dir, exist_ok=True)
-    for name in ("zakladna", "mazlicci", "farma", "mesto"):
+    for name in ("zakladna", "mazlicci", "farma", "mesto", "ekonomika"):
         fr = frames("hra_" + name, (384, 384))
         sheet = Image.new("RGBA", (384 * len(fr), 384), (0, 0, 0, 0))
         for i, im in enumerate(fr):
