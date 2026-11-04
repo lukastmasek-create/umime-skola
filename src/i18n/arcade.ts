@@ -254,66 +254,6 @@ const T: Record<ArcadeSlug, Record<Locale, ArcadeText>> = {
       upgradeAction: "Contrôle des blocs",
     },
   },
-  kong: {
-    ...withFallbacks({
-      cs: {
-        title: "Výstup na sopku",
-        intro: "Vylez po žebřících nahoru a vyskoč pod blok se správnou odpovědí, tak do něj narazíš hlavou. Skákej přes valící se sudy, špatný blok ubere život.",
-        controls: "← → pohyb, ↑ ↓ žebřík, mezerník skok; na telefonu tlačítka",
-        action: "Skok",
-        upgradeAction: "Rychlost šplhání",
-      },
-      en: {
-        title: "Volcano Climb",
-        intro: "Climb the ladders to the top and jump up to bump the block with the right answer. Jump over rolling barrels, a wrong block costs a life.",
-        controls: "← → move, ↑ ↓ ladder, space jump; on a phone use the buttons",
-        action: "Jump",
-        upgradeAction: "Climbing speed",
-      },
-      de: {
-        title: "Vulkanaufstieg",
-        intro: "Klettere über die Leitern nach oben und springe gegen den Block mit der richtigen Antwort. Spring über rollende Fässer, ein falscher Block kostet ein Leben.",
-        controls: "← → bewegen, ↑ ↓ Leiter, Leertaste springen; am Handy die Tasten benutzen",
-        action: "Springen",
-        upgradeAction: "Klettertempo",
-      },
-      ru: {
-        title: "Подъём на вулкан",
-        intro: "Поднимайся по лестницам и подпрыгни, чтобы ударить головой блок с правильным ответом. Перепрыгивай катящиеся бочки, неверный блок отнимает жизнь.",
-        controls: "← → движение, ↑ ↓ лестница, пробел — прыжок; на телефоне кнопки",
-        action: "Прыжок",
-        upgradeAction: "Скорость лазания",
-      },
-    }),
-    uk: {
-      title: "Підйом на вулкан",
-      intro: "Піднімайся драбинами догори і підстрибни, щоб ударити головою блок із правильною відповіддю. Перестрибуй бочки, що котяться. Неправильний блок забирає життя.",
-      controls: "← → рух, ↑ ↓ драбина, пробіл — стрибок; на телефоні кнопки",
-      action: "Стрибок",
-      upgradeAction: "Швидкість лазіння",
-    },
-    ja: {
-      title: "火山登り",
-      intro: "はしごを登って頂上を目指し、正しい答えのブロックの下でジャンプして頭でぶつけよう。転がってくる樽はジャンプで避けてね。間違ったブロックにぶつかるとライフが減るよ。",
-      controls: "← → 移動、↑ ↓ はしご、スペース ジャンプ。スマホではボタンを使ってください",
-      action: "ジャンプ",
-      upgradeAction: "登る速さ",
-    },
-    es: {
-      title: "Subida al volcán",
-      intro: "Sube por las escaleras hasta arriba y salta para golpear con la cabeza el bloque con la respuesta correcta. Salta sobre los barriles que ruedan; un bloque equivocado te cuesta una vida.",
-      controls: "← → mover, ↑ ↓ escalera, espacio saltar; en el móvil usa los botones",
-      action: "Saltar",
-      upgradeAction: "Velocidad de escalada",
-    },
-    fr: {
-      title: "Ascension du volcan",
-      intro: "Grimpe les échelles jusqu'en haut et saute pour cogner la tête contre le bloc avec la bonne réponse. Saute par-dessus les tonneaux qui roulent ; un mauvais bloc coûte une vie.",
-      controls: "← → déplacer, ↑ ↓ échelle, espace sauter ; sur téléphone, utilise les boutons",
-      action: "Sauter",
-      upgradeAction: "Vitesse d'escalade",
-    },
-  },
   mole: {
     ...withFallbacks({
       cs: {
