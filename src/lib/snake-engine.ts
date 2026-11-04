@@ -131,9 +131,11 @@ export class SnakeEngine extends ArcadeEngine {
   }
 
   // Zapamatuje si, odkud se každý segment hýbe, a zkrátí skok, který by přeletěl přes celou plochu (okraj).
+  // Segment i je tentýž článek jako dřív na indexu i, po kroku se posune o jedno místo dopředu (na index i−1).
+  // Nový článek na konci (po sebrání jablka) nemá kam jet, proto stojí na místě posledního starého.
   private remember(old: Cell[]) {
     this.from = this.snake.map((c, i) => {
-      const f = old[Math.max(0, i - 1)];
+      const f = old[Math.min(i, old.length - 1)];
       return Math.abs(f.x - c.x) > 1 || Math.abs(f.y - c.y) > 1 ? { ...c } : { ...f };
     });
   }
