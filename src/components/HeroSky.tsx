@@ -184,6 +184,9 @@ export function HeroSky() {
     let nextComet = 2;
     // prachové částice: drag určuje, jak rychle se zpomalují (menší = delší stopa za kometou)
     const cdust: { x: number; y: number; vx: number; vy: number; life: number; max: number; size: number; warm: boolean; drag: number }[] = [];
+    // stopa komety: pozice hlavy za poslední chvíli (s časem, kdy tam byla)
+    const TRAIL_LIFE = 1.6;
+    let trail: { x: number; y: number; t: number }[] = [];
     const cometImg = new Image();
     let cometReady = false;
     cometImg.onload = () => {
@@ -343,7 +346,10 @@ export function HeroSky() {
           const speed = 1 + 1.7 * comet.boost;
           comet.x += comet.vx * speed * dt;
           comet.y += comet.vy * speed * dt;
-          if (comet.x < -420 || comet.y > H + 300) comet = null;
+          if (comet.x < -420 || comet.y > H + 300) {
+            comet = null;
+            trail = [];
+          }
           else {
             const scale = (Math.min(1.05, Math.max(0.55, W / 1300)) * (1 + 0.07 * Math.min(1, comet.boost)));
             // paralaxa: kometa je daleko, kurzor ji posouvá jen jemně
@@ -359,6 +365,26 @@ export function HeroSky() {
             // aby ohon (v obrázku mířil doprava nahoru) vždy mířil přesně proti směru letu
             const angle = Math.atan2(-uy, -ux) - Math.atan2(-0.62, 0.78);
             const hx = COMET_HEAD.x * size, hy = COMET_HEAD.y * size;
+            // animovaná stopa: pamatujeme si, kde hlava byla, a kreslíme pás od hlavy dozadu
+            // (zužuje se, bliká a postupně hasne), takže vždy sleduje skutečnou dráhu komety
+            trail.push({ x: px, y: py, t: sec });
+            while (trail.length && sec - trail[0].t > TRAIL_LIFE) trail.shift();
+            ctx.save();
+            ctx.globalCompositeOperation = "lighter";
+            ctx.lineCap = "round";
+            for (let i = trail.length - 1; i > 0; i--) {
+              const a = (sec - trail[i].t) / TRAIL_LIFE; // 0 u hlavy, 1 na konci stopy
+              const fade = Math.pow(1 - a, 1.5);
+              const shimmer = 0.75 + 0.25 * Math.sin(sec * 9 + i * 1.7);
+              const w = (size * 0.1) * (1 - a) + 0.6;
+              ctx.strokeStyle = `rgba(${i % 3 === 0 ? "255,236,190" : "190,220,255"},${0.55 * fade * shimmer})`;
+              ctx.lineWidth = w;
+              ctx.beginPath();
+              ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
+              ctx.lineTo(trail[i].x, trail[i].y);
+              ctx.stroke();
+            }
+            ctx.restore();
             ctx.save();
             ctx.globalAlpha = Math.min(1, (W + 260 - comet.x) / 160, (comet.x + 420) / 200);
             ctx.shadowColor = "rgba(150,200,255,0.5)";
@@ -368,27 +394,6 @@ export function HeroSky() {
             ctx.scale(-1, 1);
             ctx.drawImage(cometImg, frame * COMET_S, 0, COMET_S, COMET_S, -hx, -hy, size, size);
             ctx.restore();
-            // prach vzniká na zadní straně jádra a unáší ho pohyb komety: částice mají část její rychlosti,
-            // takže zůstávají přesně na dráze za ní (při zrychlení se stopa natáhne, při zatáčce se prohne)
-            const n = comet.boost > 0.4 ? 4 : 2;
-            const perpX = -uy, perpY = ux;
-            for (let i = 0; i < n; i++) {
-              const back = rnd(0.08, 0.2) * size; // start u zadní hrany jádra
-              const side = rnd(-0.06, 0.06) * size;
-              const s = rnd(-12, 12); // mírný rozptyl kolmo na let
-              const k = rnd(0.8, 0.95);
-              cdust.push({
-                x: px - ux * back + perpX * side,
-                y: py - uy * back + perpY * side,
-                vx: vxN * k + perpX * s,
-                vy: vyN * k + perpY * s,
-                life: 0,
-                max: rnd(1.6, 3.0),
-                size: rnd(1, 2.6),
-                warm: Math.random() < 0.3,
-                drag: 0.4,
-              });
-            }
             // občas z komety odletí padající hvězda
             if (Math.random() < dt * 0.35) nextMeteor = Math.min(nextMeteor, 0.05);
           }
