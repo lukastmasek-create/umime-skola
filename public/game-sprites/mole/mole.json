@@ -3,8 +3,8 @@
     "dira": {
       "file": "dira.webp",
       "cell": [
-        160,
-        64
+        256,
+        104
       ],
       "cols": 1,
       "frames": {
@@ -17,17 +17,13 @@
     "kladivo": {
       "file": "kladivo.webp",
       "cell": [
-        96,
-        96
+        128,
+        224
       ],
-      "cols": 2,
+      "cols": 1,
       "frames": {
-        "klid": [
+        "palka": [
           0,
-          0
-        ],
-        "uder": [
-          1,
           0
         ]
       }
@@ -35,21 +31,77 @@
     "krtek": {
       "file": "krtek.webp",
       "cell": [
-        96,
-        128
+        224,
+        240
       ],
-      "cols": 3,
+      "cols": 4,
       "frames": {
-        "nahoru": [
+        "nahoru_1": [
           0,
           0
         ],
-        "vykukuje": [
+        "nahoru_2": [
           1,
           0
         ],
-        "zasah": [
+        "nahoru_3": [
           2,
+          0
+        ],
+        "vykukuje": [
+          3,
+          0
+        ],
+        "zasah": [
+          0,
+          1
+        ],
+        "omamen": [
+          1,
+          1
+        ],
+        "vitez_1": [
+          2,
+          1
+        ],
+        "vitez_2": [
+          3,
+          1
+        ]
+      }
+    },
+    "hlina": {
+      "file": "hlina.webp",
+      "cell": [
+        64,
+        64
+      ],
+      "cols": 3,
+      "frames": {
+        "hlina_1": [
+          0,
+          0
+        ],
+        "hlina_2": [
+          1,
+          0
+        ],
+        "hlina_3": [
+          2,
+          0
+        ]
+      }
+    },
+    "bum": {
+      "file": "bum.webp",
+      "cell": [
+        128,
+        128
+      ],
+      "cols": 1,
+      "frames": {
+        "bum": [
+          0,
           0
         ]
       }
