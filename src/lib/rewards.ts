@@ -19,10 +19,10 @@ export type BadgeTier = {
 
 // Odznak podle úrovně. Hranice sedí na odemykání avatarů (úroveň 20 = král).
 export const BADGE_TIERS: BadgeTier[] = [
-  { id: "bronz", fromLevel: 1, names: withFallbacks({ cs: "Bronzový odznak", en: "Bronze badge", de: "Bronze-Abzeichen", ru: "Бронзовый значок" }) },
-  { id: "stribro", fromLevel: 5, names: withFallbacks({ cs: "Stříbrný odznak", en: "Silver badge", de: "Silber-Abzeichen", ru: "Серебряный значок" }) },
-  { id: "zlato", fromLevel: 10, names: withFallbacks({ cs: "Zlatý odznak", en: "Gold badge", de: "Gold-Abzeichen", ru: "Золотой значок" }) },
-  { id: "diamant", fromLevel: 20, names: withFallbacks({ cs: "Diamantový odznak", en: "Diamond badge", de: "Diamant-Abzeichen", ru: "Алмазный значок" }) },
+  { id: "bronz", fromLevel: 1, names: { ...withFallbacks({ cs: "Bronzový odznak", en: "Bronze badge", de: "Bronze-Abzeichen", ru: "Бронзовый значок" }), uk: "Бронзовий значок", ja: "ブロンズバッジ", es: "Insignia de bronce", fr: "Insigne de bronze" } },
+  { id: "stribro", fromLevel: 5, names: { ...withFallbacks({ cs: "Stříbrný odznak", en: "Silver badge", de: "Silber-Abzeichen", ru: "Серебряный значок" }), uk: "Срібний значок", ja: "シルバーバッジ", es: "Insignia de plata", fr: "Insigne d'argent" } },
+  { id: "zlato", fromLevel: 10, names: { ...withFallbacks({ cs: "Zlatý odznak", en: "Gold badge", de: "Gold-Abzeichen", ru: "Золотой значок" }), uk: "Золотий значок", ja: "ゴールドバッジ", es: "Insignia de oro", fr: "Insigne d'or" } },
+  { id: "diamant", fromLevel: 20, names: { ...withFallbacks({ cs: "Diamantový odznak", en: "Diamond badge", de: "Diamant-Abzeichen", ru: "Алмазный значок" }), uk: "Алмазний значок", ja: "ダイヤモンドバッジ", es: "Insignia de diamante", fr: "Insigne de diamant" } },
 ];
 
 export function getBadgeTier(level: number): BadgeTier {

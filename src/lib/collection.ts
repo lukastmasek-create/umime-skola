@@ -1,31 +1,43 @@
-import { withFallbacks } from "@/i18n/config";
+import { tr8 } from "@/i18n/config";
 import type { Locale } from "@/i18n/config";
 
 export type Rarity = "common" | "rare" | "epic";
 
 export type CardDef = { id: string; icon: string; rarity: Rarity; names: Record<Locale, string> };
 
-const c = (id: string, icon: string, rarity: Rarity, cs: string, en: string, de: string, ru: string): CardDef => ({
-  id, icon, rarity, names: withFallbacks({ cs, en, de, ru }),
+const c = (
+  id: string,
+  icon: string,
+  rarity: Rarity,
+  cs: string,
+  en: string,
+  de: string,
+  ru: string,
+  uk?: string,
+  ja?: string,
+  es?: string,
+  fr?: string,
+): CardDef => ({
+  id, icon, rarity, names: tr8(cs, en, de, ru, uk, ja, es, fr),
 });
 
 export const CARDS: CardDef[] = [
-  c("book", "📚", "common", "Kniha", "Book", "Buch", "Книга"),
-  c("pencil", "✏️", "common", "Tužka", "Pencil", "Bleistift", "Карандаш"),
-  c("globe", "🌍", "common", "Globus", "Globe", "Globus", "Глобус"),
-  c("atom", "⚛️", "common", "Atom", "Atom", "Atom", "Атом"),
-  c("leaf", "🍃", "common", "List", "Leaf", "Blatt", "Лист"),
-  c("abacus", "🧮", "common", "Počítadlo", "Abacus", "Abakus", "Счёты"),
-  c("owl", "🦉", "common", "Sova", "Owl", "Eule", "Сова"),
-  c("telescope", "🔭", "rare", "Dalekohled", "Telescope", "Teleskop", "Телескоп"),
-  c("microscope", "🔬", "rare", "Mikroskop", "Microscope", "Mikroskop", "Микроскоп"),
-  c("scroll", "📜", "rare", "Svitek", "Scroll", "Schriftrolle", "Свиток"),
-  c("compass", "🧭", "rare", "Kompas", "Compass", "Kompass", "Компас"),
-  c("rocket", "🚀", "rare", "Raketa", "Rocket", "Rakete", "Ракета"),
-  c("trophy", "🏆", "epic", "Pohár", "Trophy", "Pokal", "Кубок"),
-  c("crown", "👑", "epic", "Koruna", "Crown", "Krone", "Корона"),
-  c("dragon", "🐉", "epic", "Drak", "Dragon", "Drache", "Дракон"),
-  c("gem", "💎", "epic", "Drahokam", "Gem", "Edelstein", "Самоцвет"),
+  c("book", "📚", "common", "Kniha", "Book", "Buch", "Книга", "Книга", "本", "Libro", "Livre"),
+  c("pencil", "✏️", "common", "Tužka", "Pencil", "Bleistift", "Карандаш", "Олівець", "えんぴつ", "Lápiz", "Crayon"),
+  c("globe", "🌍", "common", "Globus", "Globe", "Globus", "Глобус", "Глобус", "地球儀", "Globo terráqueo", "Globe"),
+  c("atom", "⚛️", "common", "Atom", "Atom", "Atom", "Атом", "Атом", "原子", "Átomo", "Atome"),
+  c("leaf", "🍃", "common", "List", "Leaf", "Blatt", "Лист", "Листок", "葉っぱ", "Hoja", "Feuille"),
+  c("abacus", "🧮", "common", "Počítadlo", "Abacus", "Abakus", "Счёты", "Рахівниця", "そろばん", "Ábaco", "Boulier"),
+  c("owl", "🦉", "common", "Sova", "Owl", "Eule", "Сова", "Сова", "ふくろう", "Búho", "Hibou"),
+  c("telescope", "🔭", "rare", "Dalekohled", "Telescope", "Teleskop", "Телескоп", "Телескоп", "望遠鏡", "Telescopio", "Télescope"),
+  c("microscope", "🔬", "rare", "Mikroskop", "Microscope", "Mikroskop", "Микроскоп", "Мікроскоп", "顕微鏡", "Microscopio", "Microscope"),
+  c("scroll", "📜", "rare", "Svitek", "Scroll", "Schriftrolle", "Свиток", "Сувій", "巻物", "Pergamino", "Parchemin"),
+  c("compass", "🧭", "rare", "Kompas", "Compass", "Kompass", "Компас", "Компас", "コンパス", "Brújula", "Boussole"),
+  c("rocket", "🚀", "rare", "Raketa", "Rocket", "Rakete", "Ракета", "Ракета", "ロケット", "Cohete", "Fusée"),
+  c("trophy", "🏆", "epic", "Pohár", "Trophy", "Pokal", "Кубок", "Кубок", "トロフィー", "Trofeo", "Trophée"),
+  c("crown", "👑", "epic", "Koruna", "Crown", "Krone", "Корона", "Корона", "王冠", "Corona", "Couronne"),
+  c("dragon", "🐉", "epic", "Drak", "Dragon", "Drache", "Дракон", "Дракон", "ドラゴン", "Dragón", "Dragon"),
+  c("gem", "💎", "epic", "Drahokam", "Gem", "Edelstein", "Самоцвет", "Самоцвіт", "宝石", "Gema", "Gemme"),
 ];
 
 export const RARITY_ODDS: Record<Rarity, number> = { common: 0.7, rare: 0.25, epic: 0.05 };
