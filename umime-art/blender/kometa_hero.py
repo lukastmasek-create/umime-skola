@@ -153,10 +153,7 @@ def aim(obj, direction, origin):
     obj.location = origin + direction * (length / 2)
 
 
-ion = tail_volume("ion", 4.1, 0.62, ("#d6ebff", "#1b50ff"), 560.0, 10.0, 5.0, 3.0)
-aim(ion, TAIL, HEAD - TAIL * 0.1)
-ion2 = tail_volume("ion2", 3.3, 0.3, ("#ffffff", "#3a78ff"), 700.0, 10.0, 8.0, 11.0)
-aim(ion2, (TAIL + Vector((0, 0, 0.05))).normalized(), HEAD - TAIL * 0.1)
+# Ohon se do sprite už nezapékává: stopu kreslí web animovaně (HeroSky), sprite obsahuje jen jádro a komu.
 
 print('STAGE tails built', flush=True)
 # ---------- prach: simulovaný proud částic ----------
@@ -212,7 +209,7 @@ mesh = bpy.data.meshes.new("prach")
 mesh.from_pydata(_v0.tolist(), [], faces)
 ca = mesh.color_attributes.new("Col", "FLOAT_COLOR", "POINT")
 ca.data.foreach_set("color", _c0.ravel())
-dust = bpy.data.objects.new("prach", mesh); sc.collection.objects.link(dust); dust.data.materials.append(mat)
+dust = bpy.data.objects.new("prach", mesh)  # nevkládá se do scény: prach ve sprite není
 
 
 def update_dust(t):
@@ -233,7 +230,7 @@ add_camera((0, -10, 0), (0.0, 0, 0.1), ortho_scale=4.7)
 
 # jiskry putující po ohonu: za sebou nechávají zářící stopu (zmenšují se a mizí)
 sparks = []
-for i in range(14):
+for i in range(0):  # jiskry ve sprite se nerenderují, stopu řeší web
     m = bpy.data.materials.new("jisk%d" % i); nt = nodes(m)
     o_ = nt.nodes.new("ShaderNodeOutputMaterial"); e_ = nt.nodes.new("ShaderNodeEmission")
     e_.inputs["Color"].default_value = hex_rgba("#d6ebff"); e_.inputs["Strength"].default_value = 18.0
