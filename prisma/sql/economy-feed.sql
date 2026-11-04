@@ -14,3 +14,4 @@ CREATE INDEX IF NOT EXISTS "EconomyEvent_createdAt_idx" ON "EconomyEvent" ("crea
 CREATE INDEX IF NOT EXISTS "EconomyEvent_targetUserId_targetSeen_idx" ON "EconomyEvent" ("targetUserId", "targetSeen");
 -- Hledání předehnaných hráčů podle rekordu (recordProgress v economy-server.ts) bez skenu celé tabulky.
 CREATE INDEX IF NOT EXISTS "IdleState_ekonomika_best_idx" ON "IdleState" (((data->>'best')::float)) WHERE game = 'ekonomika';
+ALTER TABLE "EconomyEvent" ENABLE ROW LEVEL SECURITY;
