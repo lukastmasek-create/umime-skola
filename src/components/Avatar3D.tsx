@@ -466,13 +466,18 @@ export default function Avatar3D({
         // Kliknutí: klip z modelu (radost, salto, tanec…) a k tomu pohyb celé postavy, každé kliknutí jiné.
         playJoy = () => {
           if (reduceMotion) return;
-          // Náhodná reakce, nikdy stejná dvakrát po sobě; klipy, které model nemá, se přeskočí.
-          const choices = CLICK_REACTIONS.map((r, i) => [r, i] as const).filter(([r, i]) => i !== reaction && actions.has(r[0]));
+          // Náhodná reakce, nikdy stejná dvakrát po sobě. Model nemusí mít všechny klipy (postavy z craftování
+          // mají jen klid a radost), takže chybějící klip nahradí pohyb celé postavy, pokud k němu existuje.
+          const choices = CLICK_REACTIONS.map((r, i) => [r, i] as const).filter(([[name, g], i]) => i !== reaction && (actions.has(name) || g));
           if (choices.length === 0) return;
           const [[clipName, g], idx] = choices[Math.floor(Math.random() * choices.length)];
           reaction = idx;
-          gesture = g ? { t: 0, g } : null;
-          playClip(clipName, true);
+          if (actions.has(clipName)) {
+            gesture = g ? { t: 0, g } : null;
+            playClip(clipName, true);
+          } else if (g) {
+            gesture = { t: 0, g };
+          }
         };
         renderer.render(scene, camera);
         handlers.current.onReady();
@@ -546,9 +551,24 @@ export default function Avatar3D({
         } else if (moodRef.current) {
           // Nálada má přednost před náhodnými klipy: smutek se opakuje s krátkou pauzou, radost střídá tanec a výskok.
           if (!dragging && !clipBusy() && (moodWait -= dt) <= 0) {
-            const names = moodRef.current === "sad" ? ["smutek"] : ["tanec", "radost", "fandeni", "tleskani"];
-            if (playClip(names[moodStep++ % names.length])) moodWait = moodRef.current === "sad" ? 1.2 : 0.8;
-            else moodWait = 1;
+            // Bez klipu se použije pohyb celé postavy (smutek = svěšení, radost = taneční gesta).
+            const steps: [string, Gesture][] =
+              moodRef.current === "sad"
+                ? [["smutek", GESTURES.sleepy]]
+                : [
+                    ["tanec", GESTURES.groove],
+                    ["radost", GESTURES.jumpSpin],
+                    ["fandeni", GESTURES.skip],
+                    ["tleskani", GESTURES.cheer],
+                  ];
+            const [clipName, g] = steps[moodStep++ % steps.length];
+            const pause = moodRef.current === "sad" ? 1.2 : 0.8;
+            if (clipNames.has(clipName)) {
+              moodWait = playClip(clipName) ? pause : 1;
+            } else {
+              gesture = { t: 0, g };
+              moodWait = pause;
+            }
           }
         } else if (!dragging && !clipBusy() && (untilIdle -= dt) <= 0) {
           // V klidu střídavě jedno z nových animovaných klipů (ruce, hlava) a pohyb těla bez klipu.
