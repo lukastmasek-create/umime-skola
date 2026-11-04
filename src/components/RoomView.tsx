@@ -7,7 +7,7 @@ import { getRoomText } from "@/i18n/room";
 import { ALL_FURNITURE, FURNITURE, ROOM_LAYOUT, ROOM_SLOTS, ROOM_SLOT_POS, furnitureSprite, type RoomState } from "@/lib/room";
 import { Room3DView } from "@/components/Room3DView";
 import { getRoom3dText } from "@/i18n/room3d";
-import { CARDS, type Rarity } from "@/lib/collection";
+import { CARDS, collectionXpPercent, type Rarity } from "@/lib/collection";
 import type { Locale } from "@/i18n/config";
 
 type Data = { loggedIn: true; points: number; day: string; room: RoomState; cards: Record<string, number> };
@@ -256,6 +256,7 @@ export function RoomView({ locale, initialTab = "room" }: { locale: Locale; init
         <>
           <p className="text-sm text-[var(--muted)]">{t.cardsHint}</p>
           <p className="text-sm font-bold">{fill(t.cardsProgress, `${CARDS.filter((c) => data.cards[c.id]).length} / ${CARDS.length}`)} ({cardTotal})</p>
+          <p className="text-sm font-bold">{fill(t.cardsXpBonus, collectionXpPercent(data.cards))}</p>
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {CARDS.map((c) => {
               const n = data.cards[c.id] ?? 0;

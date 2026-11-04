@@ -29,18 +29,51 @@ export const CARDS: CardDef[] = [
 
 export const RARITY_ODDS: Record<Rarity, number> = { common: 0.7, rare: 0.25, epic: 0.05 };
 
-export type CardsState = { owned: Record<string, number> };
+export type CardsState = { owned: Record<string, number>; claimed: string[] };
+
+// Procentní bonus k XP z aktivit: 1 % za každou různou kartu, nejvýš 16 % (celá sbírka).
+export const COLLECTION_XP_PERCENT_PER_CARD = 1;
+
+// Jednorázové bonusy za počet různých karet, jen body (XP je procentní, viz výše).
+export type CollectionBonus = { id: string; uniqueAt: number; points: number };
+
+export const COLLECTION_BONUSES: CollectionBonus[] = [
+  { id: "collection:4", uniqueAt: 4, points: 5 },
+  { id: "collection:8", uniqueAt: 8, points: 10 },
+  { id: "collection:12", uniqueAt: 12, points: 15 },
+  { id: "collection:16", uniqueAt: 16, points: 25 },
+];
+
+export function uniqueCardCount(owned: Record<string, number>): number {
+  return CARDS.filter((card) => (owned[card.id] ?? 0) > 0).length;
+}
+
+// Bonusy, na které už hráč dosáhl, ale ještě je nedostal. Stejné číslo se po druhém
+// volání nevrátí, protože každý bonus se po vyplacení zapíše do `claimed`.
+export function collectionXpPercent(owned: Record<string, number>): number {
+  return uniqueCardCount(owned) * COLLECTION_XP_PERCENT_PER_CARD;
+}
+
+export function dueCollectionBonuses(state: CardsState): CollectionBonus[] {
+  const unique = uniqueCardCount(state.owned);
+  return COLLECTION_BONUSES.filter((b) => unique >= b.uniqueAt && !state.claimed.includes(b.id));
+}
 
 export function normalizeCards(raw: unknown): CardsState {
   const owned: Record<string, number> = {};
-  const src = raw && typeof raw === "object" ? (raw as { owned?: unknown }).owned : null;
+  const obj = raw && typeof raw === "object" ? (raw as { owned?: unknown; claimed?: unknown }) : null;
+  const src = obj?.owned;
   if (src && typeof src === "object") {
     for (const card of CARDS) {
       const n = Math.floor(Number((src as Record<string, unknown>)[card.id]));
       if (Number.isFinite(n) && n > 0) owned[card.id] = Math.min(n, 999);
     }
   }
-  return { owned };
+  const known = new Set(COLLECTION_BONUSES.map((b) => b.id));
+  const claimed = Array.isArray(obj?.claimed)
+    ? [...new Set(obj.claimed.filter((id): id is string => typeof id === "string" && known.has(id)))]
+    : [];
+  return { owned, claimed };
 }
 
 // Vylosuje kartu. `boost` posouvá šanci k vzácnějším (0 až 1), `rand` je kvůli testům vyměnitelné.

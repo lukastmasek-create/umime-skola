@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { buildingLevel } from "@/lib/town-progress-server";
 import { roomXpPercent } from "@/lib/room-server";
 import { craftXpPercent } from "@/lib/craft-server";
+import { collectionXpBonusPercent } from "@/lib/collection-server";
 import { XP_BONUS_PER_LEVEL } from "@/lib/town-progress";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -39,7 +40,9 @@ export async function POST(request: Request) {
     const roomBonus = await roomXpPercent(userId, source);
     // craftěné svitky (Craftování v profilu) přidávají XP na omezenou dobu, nejvýš +50 %
     const craftBonus = await craftXpPercent(userId);
-    const boosted = Math.round(requested * (1 + (XP_BONUS_PER_LEVEL * bonusLevel + roomBonus + craftBonus) / 100));
+    // sbírka karet přidává 1 % za každou různou kartu (nejvýš 16 %)
+    const collectionBonus = await collectionXpBonusPercent(userId);
+    const boosted = Math.round(requested * (1 + (XP_BONUS_PER_LEVEL * bonusLevel + roomBonus + craftBonus + collectionBonus) / 100));
     const gained = Math.min(boosted, MAX_XP_PER_CLAIM, remaining);
 
     if (gained > 0) {

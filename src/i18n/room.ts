@@ -20,6 +20,7 @@ export type RoomText = {
   emptySlot: string;
   cardsHint: string;
   cardsProgress: string; // {n} = "a / b"
+  cardsXpBonus: string; // {n} = procenta
   rarity: Record<"common" | "rare" | "epic", string>;
   notEnough: string;
 };
@@ -44,6 +45,7 @@ const cs: RoomText = {
   emptySlot: "Prázdné místo",
   cardsHint: "Karty padají za splněné denní a týdenní výzvy, milníky série a úspěchy. Vzácnější karty dostaneš za těžší výzvy.",
   cardsProgress: "Máš {n} karet",
+  cardsXpBonus: "Sbírka zvyšuje XP z aktivit o {n} %",
   rarity: { common: "Běžná", rare: "Vzácná", epic: "Epická" },
   notEnough: "Nemáš dost bodů.",
 };
@@ -68,6 +70,7 @@ const en: RoomText = {
   emptySlot: "Empty spot",
   cardsHint: "Cards drop for completed daily and weekly challenges, streak milestones and achievements. Harder challenges give rarer cards.",
   cardsProgress: "You have {n} cards",
+  cardsXpBonus: "The collection raises activity XP by {n}%",
   rarity: { common: "Common", rare: "Rare", epic: "Epic" },
   notEnough: "Not enough points.",
 };
@@ -92,6 +95,7 @@ const de: RoomText = {
   emptySlot: "Freier Platz",
   cardsHint: "Karten gibt es für erledigte tägliche und wöchentliche Aufgaben, Serien-Meilensteine und Erfolge. Schwerere Aufgaben bringen seltenere Karten.",
   cardsProgress: "Du hast {n} Karten",
+  cardsXpBonus: "Die Sammlung erhöht die XP aus Aktivitäten um {n} %",
   rarity: { common: "Gewöhnlich", rare: "Selten", epic: "Episch" },
   notEnough: "Nicht genug Punkte.",
 };
@@ -116,6 +120,7 @@ const ru: RoomText = {
   emptySlot: "Свободное место",
   cardsHint: "Карточки выпадают за ежедневные и недельные задания, этапы серии и достижения. За трудные задания карточки реже.",
   cardsProgress: "У тебя карточек: {n}",
+  cardsXpBonus: "Коллекция повышает XP за активности на {n} %",
   rarity: { common: "Обычная", rare: "Редкая", epic: "Эпическая" },
   notEnough: "Не хватает баллов.",
 };

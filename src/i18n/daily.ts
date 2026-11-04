@@ -25,6 +25,7 @@ export type DailyText = {
   petWaiting: string;
   cityCoins: string; // {n}
   cardGot: string; // {n} název
+  cardBonus: string; // {pts}
   collection: string;
   nudgeStreak: string; // {n}
   nudgeOpen: string;
@@ -60,6 +61,7 @@ const cs: DailyText = {
   petWaiting: '{n} se na tebe těší',
   cityCoins: 'Město vydělalo {n} mincí',
   cardGot: 'Nová karta: {n}',
+  cardBonus: 'Bonus za sbírku: +{pts} bodů',
   collection: 'Sbírka',
   weekly: "Týdenní výzvy",
   weeklyNames: { xp: "Získej 150 XP v testech a hrách", days: "Buď aktivní 5 různých dní", tests: "Dokonči 5 testů", escape: "Vyřeš 3 únikovky" },
@@ -117,6 +119,7 @@ const en: DailyText = {
   petWaiting: '{n} is waiting for you',
   cityCoins: 'Your city earned {n} coins',
   cardGot: 'New card: {n}',
+  cardBonus: 'Collection bonus: +{pts} points',
   collection: 'Collection',
   weekly: "Weekly challenges",
   weeklyNames: { xp: "Earn 150 XP in tests and games", days: "Be active on 5 different days", tests: "Finish 5 tests", escape: "Solve 3 escape rooms" },
@@ -174,6 +177,7 @@ const de: DailyText = {
   petWaiting: '{n} wartet auf dich',
   cityCoins: 'Deine Stadt hat {n} Münzen verdient',
   cardGot: 'Neue Karte: {n}',
+  cardBonus: 'Sammlungsbonus: +{pts} Punkte',
   collection: 'Sammlung',
   weekly: "Wochenaufgaben",
   weeklyNames: { xp: "Sammle 150 XP in Tests und Spielen", days: "Sei an 5 verschiedenen Tagen aktiv", tests: "Schließe 5 Tests ab", escape: "Löse 3 Escape Rooms" },
@@ -231,6 +235,7 @@ const ru: DailyText = {
   petWaiting: '{n} ждёт тебя',
   cityCoins: 'Город заработал монет: {n}',
   cardGot: 'Новая карточка: {n}',
+  cardBonus: 'Бонус за коллекцию: +{pts} очков',
   collection: 'Коллекция',
   weekly: "Недельные задания",
   weeklyNames: { xp: "Набери 150 XP в тестах и играх", days: "Занимайся в течение 5 разных дней", tests: "Пройди 5 тестов", escape: "Пройди 3 квест-комнаты" },
