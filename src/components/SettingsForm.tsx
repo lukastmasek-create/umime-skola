@@ -123,7 +123,7 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
 
   function switchLanguage(next: Locale) {
     setLocaleCookie(next);
-    const rest = pathname?.replace(/^\/(cs|en|de|ru)/, "") || "";
+    const rest = pathname?.replace(/^\/(cs|en|de|ru|uk|ja|es|fr)/, "") || "";
     router.push(`/${next}${rest}`);
   }
 

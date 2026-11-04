@@ -1,10 +1,12 @@
 "use client";
+import { withFallbacks } from "@/i18n/config";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { defaultLocale, isLocale, type Locale } from "@/i18n/config";
 
 const TEXT: Record<Locale, { title: string; body: string; home: string; courses: string }> = {
+  ...withFallbacks({
   cs: {
     title: "Tahle stránka se ztratila",
     body: "Odkaz je starý, nebo stránka neexistuje. Zkus to od začátku.",
@@ -28,6 +30,31 @@ const TEXT: Record<Locale, { title: string; body: string; home: string; courses:
     body: "Ссылка устарела или страницы не существует. Начни сначала.",
     home: "На главную",
     courses: "Смотреть курсы",
+  },
+  }),
+  uk: {
+    title: "Ця сторінка загубилася в космосі",
+    body: "Посилання застаріле або сторінки не існує. Почни спочатку.",
+    home: "На головну сторінку",
+    courses: "Переглянути курси",
+  },
+  ja: {
+    title: "このページは宇宙で迷子になりました",
+    body: "リンクが古いか、ページが存在しません。最初からやり直してください。",
+    home: "トップページへ",
+    courses: "コースを見る",
+  },
+  es: {
+    title: "Esta página se perdió en el espacio",
+    body: "El enlace es antiguo o la página no existe. Empieza de nuevo desde el principio.",
+    home: "Ir a la página principal",
+    courses: "Ver cursos",
+  },
+  fr: {
+    title: "Cette page s'est perdue dans l'espace",
+    body: "Le lien est ancien ou la page n'existe pas. Recommence depuis le début.",
+    home: "Retour à l'accueil",
+    courses: "Parcourir les cours",
   },
 };
 

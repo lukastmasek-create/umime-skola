@@ -1,3 +1,4 @@
+import { tr8 } from "@/i18n/config";
 // Craftování: materiály, recepty a celá herní logika bez databáze a Reactu (testy: src/lib/craft.test.ts).
 //
 // Materiály mají svět (obecné, vesmír, moře, les, hrad, kouzla) a vzácnost (běžný, neobvyklý, vzácný, epický).
@@ -15,7 +16,8 @@
 import type { Locale } from "@/i18n/config";
 
 type Names = Record<Locale, string>;
-const n = (cs: string, en: string, de: string, ru: string): Names => ({ cs, en, de, ru });
+const n = (cs: string, en: string, de: string, ru: string, uk?: string, ja?: string, es?: string, fr?: string): Names =>
+  tr8(cs, en, de, ru, uk, ja, es, fr);
 
 // --- světy a vzácnosti ---
 
@@ -38,35 +40,35 @@ const m = (id: string, world: World, rarity: Rarity, icon: string, names: Names)
 
 export const MATERIALS: MaterialDef[] = [
   // Obecné: suroviny na nástroje a bonusy.
-  m("wood", "obecne", "common", "🪵", n("Dřevo", "Wood", "Holz", "Дерево")),
-  m("iron", "obecne", "uncommon", "🔩", n("Železo", "Iron", "Eisen", "Железо")),
-  m("silver", "obecne", "rare", "🥈", n("Stříbro", "Silver", "Silber", "Серебро")),
-  m("gold", "obecne", "epic", "🪙", n("Zlato", "Gold", "Gold", "Золото")),
+  m("wood", "obecne", "common", "🪵", n("Dřevo", "Wood", "Holz", "Дерево", "Деревина", "木材", "Madera", "Bois")),
+  m("iron", "obecne", "uncommon", "🔩", n("Železo", "Iron", "Eisen", "Железо", "Залізо", "鉄", "Hierro", "Fer")),
+  m("silver", "obecne", "rare", "🥈", n("Stříbro", "Silver", "Silber", "Серебро", "Срібло", "銀", "Plata", "Argent")),
+  m("gold", "obecne", "epic", "🪙", n("Zlato", "Gold", "Gold", "Золото", "Золото", "金", "Oro", "Or")),
   // Vesmír
-  m("moon-dust", "vesmir", "common", "🌑", n("Měsíční prach", "Moon dust", "Mondstaub", "Лунная пыль")),
-  m("meteorite", "vesmir", "uncommon", "☄️", n("Meteorit", "Meteorite", "Meteorit", "Метеорит")),
-  m("star-crystal", "vesmir", "rare", "💠", n("Hvězdný krystal", "Star crystal", "Sternenkristall", "Звёздный кристалл")),
-  m("comet-core", "vesmir", "epic", "🌠", n("Jádro komety", "Comet core", "Kometenkern", "Ядро кометы")),
+  m("moon-dust", "vesmir", "common", "🌑", n("Měsíční prach", "Moon dust", "Mondstaub", "Лунная пыль", "Місячний пил", "月のちり", "Polvo lunar", "Poussière lunaire")),
+  m("meteorite", "vesmir", "uncommon", "☄️", n("Meteorit", "Meteorite", "Meteorit", "Метеорит", "Метеорит", "隕石", "Meteorito", "Météorite")),
+  m("star-crystal", "vesmir", "rare", "💠", n("Hvězdný krystal", "Star crystal", "Sternenkristall", "Звёздный кристалл", "Зоряний кристал", "星のクリスタル", "Cristal estelar", "Cristal stellaire")),
+  m("comet-core", "vesmir", "epic", "🌠", n("Jádro komety", "Comet core", "Kometenkern", "Ядро кометы", "Ядро комети", "彗星のコア", "Núcleo de cometa", "Noyau de comète")),
   // Moře
-  m("shell", "more", "common", "🐚", n("Mušle", "Seashell", "Muschel", "Ракушка")),
-  m("coral", "more", "uncommon", "🪸", n("Korál", "Coral", "Koralle", "Коралл")),
-  m("pearl", "more", "rare", "🦪", n("Perla", "Pearl", "Perle", "Жемчужина")),
-  m("ocean-heart", "more", "epic", "🌊", n("Srdce oceánu", "Heart of the ocean", "Herz des Ozeans", "Сердце океана")),
+  m("shell", "more", "common", "🐚", n("Mušle", "Seashell", "Muschel", "Ракушка", "Мушля", "貝殻", "Concha", "Coquillage")),
+  m("coral", "more", "uncommon", "🪸", n("Korál", "Coral", "Koralle", "Коралл", "Корал", "サンゴ", "Coral", "Corail")),
+  m("pearl", "more", "rare", "🦪", n("Perla", "Pearl", "Perle", "Жемчужина", "Перлина", "真珠", "Perla", "Perle")),
+  m("ocean-heart", "more", "epic", "🌊", n("Srdce oceánu", "Heart of the ocean", "Herz des Ozeans", "Сердце океана", "Серце океану", "海の心", "Corazón del océano", "Cœur de l'océan")),
   // Les
-  m("acorn", "les", "common", "🌰", n("Žalud", "Acorn", "Eichel", "Жёлудь")),
-  m("resin", "les", "uncommon", "🍯", n("Pryskyřice", "Resin", "Harz", "Смола")),
-  m("amber", "les", "rare", "🔶", n("Jantar", "Amber", "Bernstein", "Янтарь")),
-  m("golden-leaf", "les", "epic", "🍁", n("Zlatý list", "Golden leaf", "Goldenes Blatt", "Золотой лист")),
+  m("acorn", "les", "common", "🌰", n("Žalud", "Acorn", "Eichel", "Жёлудь", "Жолудь", "どんぐり", "Bellota", "Gland")),
+  m("resin", "les", "uncommon", "🍯", n("Pryskyřice", "Resin", "Harz", "Смола", "Смола", "樹脂", "Resina", "Résine")),
+  m("amber", "les", "rare", "🔶", n("Jantar", "Amber", "Bernstein", "Янтарь", "Бурштин", "琥珀", "Ámbar", "Ambre")),
+  m("golden-leaf", "les", "epic", "🍁", n("Zlatý list", "Golden leaf", "Goldenes Blatt", "Золотой лист", "Золотий листок", "金の葉", "Hoja dorada", "Feuille dorée")),
   // Hrad
-  m("stone", "hrad", "common", "🪨", n("Kámen", "Stone", "Stein", "Камень")),
-  m("steel", "hrad", "uncommon", "⚙️", n("Ocel", "Steel", "Stahl", "Сталь")),
-  m("ruby", "hrad", "rare", "🔴", n("Rubín", "Ruby", "Rubin", "Рубин")),
-  m("royal-seal", "hrad", "epic", "🏵️", n("Královská pečeť", "Royal seal", "Königliches Siegel", "Королевская печать")),
+  m("stone", "hrad", "common", "🪨", n("Kámen", "Stone", "Stein", "Камень", "Камінь", "石", "Piedra", "Pierre")),
+  m("steel", "hrad", "uncommon", "⚙️", n("Ocel", "Steel", "Stahl", "Сталь", "Сталь", "鋼", "Acero", "Acier")),
+  m("ruby", "hrad", "rare", "🔴", n("Rubín", "Ruby", "Rubin", "Рубин", "Рубін", "ルビー", "Rubí", "Rubis")),
+  m("royal-seal", "hrad", "epic", "🏵️", n("Královská pečeť", "Royal seal", "Königliches Siegel", "Королевская печать", "Королівська печатка", "王家の印章", "Sello real", "Sceau royal")),
   // Kouzla
-  m("herb", "kouzla", "common", "🌿", n("Bylina", "Herb", "Kraut", "Трава")),
-  m("magic-dust", "kouzla", "uncommon", "✨", n("Kouzelný prach", "Magic dust", "Zauberstaub", "Волшебная пыль")),
-  m("moonstone", "kouzla", "rare", "🔮", n("Měsíční kámen", "Moonstone", "Mondstein", "Лунный камень")),
-  m("dragon-scale", "kouzla", "epic", "🐉", n("Dračí šupina", "Dragon scale", "Drachenschuppe", "Драконья чешуя")),
+  m("herb", "kouzla", "common", "🌿", n("Bylina", "Herb", "Kraut", "Трава", "Трава", "薬草", "Hierba", "Herbe")),
+  m("magic-dust", "kouzla", "uncommon", "✨", n("Kouzelný prach", "Magic dust", "Zauberstaub", "Волшебная пыль", "Чарівний пил", "魔法の粉", "Polvo mágico", "Poudre magique")),
+  m("moonstone", "kouzla", "rare", "🔮", n("Měsíční kámen", "Moonstone", "Mondstein", "Лунный камень", "Місячний камінь", "月長石", "Piedra lunar", "Pierre de lune")),
+  m("dragon-scale", "kouzla", "epic", "🐉", n("Dračí šupina", "Dragon scale", "Drachenschuppe", "Драконья чешуя", "Драконяча луска", "ドラゴンのうろこ", "Escama de dragón", "Écaille de dragon")),
 ];
 
 const MATERIAL_BY_ID = new Map(MATERIALS.map((x) => [x.id, x]));
@@ -158,70 +160,70 @@ export const MAX_ENDLESS_BOOST = 0.5; // podíl (+50 %)
 
 export const RECIPES: Recipe[] = [
   // --- Bonusy (z obecných materiálů) ---
-  bonus("scroll", "📜", { wood: 4, iron: 1 }, { kind: "xp", pct: 20, minutes: 60 }, n("Svitek učence (+20 % XP na 1 h)", "Scholar's scroll (+20% XP for 1 h)", "Gelehrtenrolle (+20 % XP für 1 Std.)", "Свиток учёного (+20 % XP на 1 ч)")),
-  bonus("great-scroll", "📖", { iron: 2, silver: 1 }, { kind: "xp", pct: 30, minutes: 90 }, n("Kniha mudrce (+30 % XP na 1,5 h)", "Sage's book (+30% XP for 1.5 h)", "Buch des Weisen (+30 % XP für 1,5 Std.)", "Книга мудреца (+30 % XP на 1,5 ч)")),
-  bonus("pouch", "👛", { wood: 5, iron: 1 }, { kind: "points", amount: 40 }, n("Měšec bodů (+40 bodů)", "Pouch of points (+40 points)", "Punktebeutel (+40 Punkte)", "Мешочек очков (+40 очков)")),
-  bonus("golden-pouch", "💰", { silver: 1, gold: 1 }, { kind: "points", amount: 150 }, n("Zlatý měšec (+150 bodů)", "Golden pouch (+150 points)", "Goldener Beutel (+150 Punkte)", "Золотой мешочек (+150 очков)")),
-  bonus("hourglass", "⏳", { wood: 2, iron: 2 }, { kind: "endless", pct: 0.25, minutes: 120 }, n("Přesýpací hodiny (stálé hry +25 % na 2 h)", "Hourglass (endless games +25% for 2 h)", "Sanduhr (Endlosspiele +25 % für 2 Std.)", "Песочные часы (вечные игры +25 % на 2 ч)")),
-  bonus("wheel-token", "🎡", { wood: 3, silver: 1 }, { kind: "wheel" }, n("Žeton na kolo (otočka navíc)", "Wheel token (extra spin)", "Rad-Chip (Extra-Dreh)", "Жетон колеса (лишний поворот)")),
-  bonus("shield", "🛡️", { wood: 2, iron: 2 }, { kind: "shield" }, n("Štít série (kvízy ve stálých hrách)", "Streak shield (quizzes in endless games)", "Serienschild (Quiz in Endlosspielen)", "Щит серии (викторины в вечных играх)")),
+  bonus("scroll", "📜", { wood: 4, iron: 1 }, { kind: "xp", pct: 20, minutes: 60 }, n("Svitek učence (+20 % XP na 1 h)", "Scholar's scroll (+20% XP for 1 h)", "Gelehrtenrolle (+20 % XP für 1 Std.)", "Свиток учёного (+20 % XP на 1 ч)", "Сувій учня (+20 % XP на 1 год)", "学者の巻物（+20 % XP／1時間）", "Pergamino del erudito (+20 % de XP durante 1 h)", "Parchemin d'érudit (+20 % d'XP pendant 1 h)")),
+  bonus("great-scroll", "📖", { iron: 2, silver: 1 }, { kind: "xp", pct: 30, minutes: 90 }, n("Kniha mudrce (+30 % XP na 1,5 h)", "Sage's book (+30% XP for 1.5 h)", "Buch des Weisen (+30 % XP für 1,5 Std.)", "Книга мудреца (+30 % XP на 1,5 ч)", "Книга мудреця (+30 % XP на 1,5 год)", "賢者の本（+30 % XP／1.5時間）", "Libro del sabio (+30 % de XP durante 1,5 h)", "Livre du sage (+30 % d'XP pendant 1,5 h)")),
+  bonus("pouch", "👛", { wood: 5, iron: 1 }, { kind: "points", amount: 40 }, n("Měšec bodů (+40 bodů)", "Pouch of points (+40 points)", "Punktebeutel (+40 Punkte)", "Мешочек очков (+40 очков)", "Мішечок балів (+40 балів)", "ポイントの袋（+40ポイント）", "Bolsa de puntos (+40 puntos)", "Bourse de points (+40 points)")),
+  bonus("golden-pouch", "💰", { silver: 1, gold: 1 }, { kind: "points", amount: 150 }, n("Zlatý měšec (+150 bodů)", "Golden pouch (+150 points)", "Goldener Beutel (+150 Punkte)", "Золотой мешочек (+150 очков)", "Золотий мішечок (+150 балів)", "金の袋（+150ポイント）", "Bolsa dorada (+150 puntos)", "Bourse dorée (+150 points)")),
+  bonus("hourglass", "⏳", { wood: 2, iron: 2 }, { kind: "endless", pct: 0.25, minutes: 120 }, n("Přesýpací hodiny (stálé hry +25 % na 2 h)", "Hourglass (endless games +25% for 2 h)", "Sanduhr (Endlosspiele +25 % für 2 Std.)", "Песочные часы (вечные игры +25 % на 2 ч)", "Пісочний годинник (постійні ігри +25 % на 2 год)", "砂時計（いつでも遊べるゲーム +25 %／2時間）", "Reloj de arena (Juegos sin fin +25 % durante 2 h)", "Sablier (Jeux sans fin +25 % pendant 2 h)")),
+  bonus("wheel-token", "🎡", { wood: 3, silver: 1 }, { kind: "wheel" }, n("Žeton na kolo (otočka navíc)", "Wheel token (extra spin)", "Rad-Chip (Extra-Dreh)", "Жетон колеса (лишний поворот)", "Жетон колеса (додатковий оберт)", "ホイールのチップ（もう1回転）", "Ficha de la rueda (giro extra)", "Jeton de roue (tour supplémentaire)")),
+  bonus("shield", "🛡️", { wood: 2, iron: 2 }, { kind: "shield" }, n("Štít série (kvízy ve stálých hrách)", "Streak shield (quizzes in endless games)", "Serienschild (Quiz in Endlosspielen)", "Щит серии (викторины в вечных играх)", "Щит серії (вікторини в постійних іграх)", "連続記録シールド（いつでも遊べるゲームのクイズ）", "Escudo de racha (cuestionarios en los Juegos sin fin)", "Bouclier de série (quiz des Jeux sans fin)")),
 
   // --- Avatary (jen z craftění, z materiálů svého světa) ---
-  unlock("avatar-star-wanderer", "avatar", "vesmir", "avatar", "star-wanderer", "🧑‍🚀", worldCost("vesmir", 6, 3, 1), n("Hvězdný poutník", "Star wanderer", "Sternenwanderer", "Звёздный странник"), "avatar-craft-star-wanderer"),
-  unlock("avatar-coral-guardian", "avatar", "more", "avatar", "coral-guardian", "🧜", worldCost("more", 6, 3, 1), n("Korálový strážce", "Coral guardian", "Korallenwächter", "Коралловый страж"), "avatar-craft-coral-guardian"),
-  unlock("avatar-forest-spirit", "avatar", "les", "avatar", "forest-spirit", "🌳", worldCost("les", 6, 3, 1), n("Lesní duch", "Forest spirit", "Waldgeist", "Лесной дух"), "avatar-craft-forest-spirit"),
-  unlock("avatar-blacksmith", "avatar", "hrad", "avatar", "blacksmith", "⚒️", worldCost("hrad", 6, 3, 1), n("Hradní kovář", "Castle blacksmith", "Burgschmied", "Замковый кузнец"), "avatar-craft-blacksmith"),
-  unlock("avatar-moon-witch", "avatar", "kouzla", "avatar", "moon-witch", "🧙", worldCost("kouzla", 6, 3, 1), n("Měsíční čarodějka", "Moon witch", "Mondhexe", "Лунная колдунья"), "avatar-craft-moon-witch"),
-  unlock("avatar-comet-rider", "avatar", "vesmir", "avatar", "comet-rider", "☄️", worldCost("vesmir", 4, 4, 2, 1), n("Jezdec komet", "Comet rider", "Kometenreiter", "Наездник комет"), "avatar-craft-comet-rider"),
-  unlock("avatar-pearl-diver", "avatar", "more", "avatar", "pearl-diver", "🤿", worldCost("more", 4, 4, 2, 1), n("Lovkyně perel", "Pearl diver", "Perlentaucherin", "Ловица жемчуга"), "avatar-craft-pearl-diver"),
-  unlock("avatar-amber-druid", "avatar", "les", "avatar", "amber-druid", "🧝", worldCost("les", 4, 4, 2, 1), n("Jantarový druid", "Amber druid", "Bernsteindruide", "Янтарный друид"), "avatar-craft-amber-druid"),
-  unlock("avatar-royal-guard", "avatar", "hrad", "avatar", "royal-guard", "💂", worldCost("hrad", 4, 4, 2, 1), n("Královský strážce", "Royal guard", "Königswache", "Королевский страж"), "avatar-craft-royal-guard"),
-  unlock("avatar-dragon-mage", "avatar", "kouzla", "avatar", "dragon-mage", "🐲", worldCost("kouzla", 4, 4, 2, 1), n("Dračí mág", "Dragon mage", "Drachenmagier", "Драконий маг"), "avatar-craft-dragon-mage"),
+  unlock("avatar-star-wanderer", "avatar", "vesmir", "avatar", "star-wanderer", "🧑‍🚀", worldCost("vesmir", 6, 3, 1), n("Hvězdný poutník", "Star wanderer", "Sternenwanderer", "Звёздный странник", "Зоряний мандрівник", "星の旅人", "Viajero estelar", "Voyageur des étoiles"), "avatar-craft-star-wanderer"),
+  unlock("avatar-coral-guardian", "avatar", "more", "avatar", "coral-guardian", "🧜", worldCost("more", 6, 3, 1), n("Korálový strážce", "Coral guardian", "Korallenwächter", "Коралловый страж", "Кораловий охоронець", "サンゴの守護者", "Guardián de coral", "Gardien de corail"), "avatar-craft-coral-guardian"),
+  unlock("avatar-forest-spirit", "avatar", "les", "avatar", "forest-spirit", "🌳", worldCost("les", 6, 3, 1), n("Lesní duch", "Forest spirit", "Waldgeist", "Лесной дух", "Лісовий дух", "森の精霊", "Espíritu del bosque", "Esprit de la forêt"), "avatar-craft-forest-spirit"),
+  unlock("avatar-blacksmith", "avatar", "hrad", "avatar", "blacksmith", "⚒️", worldCost("hrad", 6, 3, 1), n("Hradní kovář", "Castle blacksmith", "Burgschmied", "Замковый кузнец", "Замковий коваль", "城の鍛冶屋", "Herrero del castillo", "Forgeron du château"), "avatar-craft-blacksmith"),
+  unlock("avatar-moon-witch", "avatar", "kouzla", "avatar", "moon-witch", "🧙", worldCost("kouzla", 6, 3, 1), n("Měsíční čarodějka", "Moon witch", "Mondhexe", "Лунная колдунья", "Місячна чаклунка", "月の魔女", "Bruja lunar", "Sorcière de la lune"), "avatar-craft-moon-witch"),
+  unlock("avatar-comet-rider", "avatar", "vesmir", "avatar", "comet-rider", "☄️", worldCost("vesmir", 4, 4, 2, 1), n("Jezdec komet", "Comet rider", "Kometenreiter", "Наездник комет", "Вершник комет", "彗星の騎手", "Jinete de cometas", "Cavalier des comètes"), "avatar-craft-comet-rider"),
+  unlock("avatar-pearl-diver", "avatar", "more", "avatar", "pearl-diver", "🤿", worldCost("more", 4, 4, 2, 1), n("Lovkyně perel", "Pearl diver", "Perlentaucherin", "Ловица жемчуга", "Ловчиня перлин", "真珠の潜り手", "Buceadora de perlas", "Plongeuse de perles"), "avatar-craft-pearl-diver"),
+  unlock("avatar-amber-druid", "avatar", "les", "avatar", "amber-druid", "🧝", worldCost("les", 4, 4, 2, 1), n("Jantarový druid", "Amber druid", "Bernsteindruide", "Янтарный друид", "Бурштиновий друїд", "琥珀のドルイド", "Druida de ámbar", "Druide d'ambre"), "avatar-craft-amber-druid"),
+  unlock("avatar-royal-guard", "avatar", "hrad", "avatar", "royal-guard", "💂", worldCost("hrad", 4, 4, 2, 1), n("Královský strážce", "Royal guard", "Königswache", "Королевский страж", "Королівський вартовий", "王家の衛兵", "Guardia real", "Garde royal"), "avatar-craft-royal-guard"),
+  unlock("avatar-dragon-mage", "avatar", "kouzla", "avatar", "dragon-mage", "🐲", worldCost("kouzla", 4, 4, 2, 1), n("Dračí mág", "Dragon mage", "Drachenmagier", "Драконий маг", "Драконячий маг", "ドラゴンの魔法使い", "Mago dragón", "Mage dragon"), "avatar-craft-dragon-mage"),
 
   // --- Ozdoby profilu (tituly a pozadí fungují hned) ---
-  unlock("title-comet-maker", "profile", "vesmir", "title", "comet-maker", "🏷️", worldCost("vesmir", 3, 1), n("Titul: Strůjce komet", "Title: Comet maker", "Titel: Kometenschmied", "Титул: Творец комет")),
-  unlock("title-tide-master", "profile", "more", "title", "tide-master", "🏷️", worldCost("more", 3, 1), n("Titul: Pán přílivu", "Title: Master of tides", "Titel: Herr der Gezeiten", "Титул: Повелитель приливов")),
-  unlock("title-forest-voice", "profile", "les", "title", "forest-voice", "🏷️", worldCost("les", 3, 1), n("Titul: Hlas lesa", "Title: Voice of the forest", "Titel: Stimme des Waldes", "Титул: Голос леса")),
-  unlock("title-master-smith", "profile", "hrad", "title", "master-smith", "🏷️", worldCost("hrad", 3, 1), n("Titul: Mistr kovář", "Title: Master smith", "Titel: Schmiedemeister", "Титул: Мастер-кузнец")),
-  unlock("title-alchemist", "profile", "kouzla", "title", "alchemist", "🏷️", worldCost("kouzla", 3, 1), n("Titul: Alchymista", "Title: Alchemist", "Titel: Alchemist", "Титул: Алхимик")),
-  unlock("title-cartographer", "profile", "vesmir", "title", "cartographer", "🏷️", worldCost("vesmir", 3, 2), n("Titul: Hvězdný kartograf", "Title: Star cartographer", "Titel: Sternenkartograf", "Титул: Звёздный картограф")),
-  unlock("title-reef-singer", "profile", "more", "title", "reef-singer", "🏷️", worldCost("more", 3, 2), n("Titul: Zpěvák útesu", "Title: Reef singer", "Titel: Riffsänger", "Титул: Певец рифа")),
-  unlock("title-druid", "profile", "les", "title", "druid", "🏷️", worldCost("les", 3, 2), n("Titul: Druid", "Title: Druid", "Titel: Druide", "Титул: Друид")),
-  unlock("title-steward", "profile", "hrad", "title", "steward", "🏷️", worldCost("hrad", 3, 2), n("Titul: Správce hradu", "Title: Castle steward", "Titel: Burgverwalter", "Титул: Управитель замка")),
-  unlock("title-dragon-whisperer", "profile", "kouzla", "title", "dragon-whisperer", "🏷️", worldCost("kouzla", 3, 2), n("Titul: Šeptač draků", "Title: Dragon whisperer", "Titel: Drachenflüsterer", "Титул: Шепчущий с драконами")),
-  unlock("banner-craft-nebula", "profile", "vesmir", "banner", "craft-nebula", "🖼️", worldCost("vesmir", 4, 2), n("Pozadí: Mlhovina", "Banner: Nebula", "Hintergrund: Nebel", "Фон: Туманность"), "banner-craft-nebula"),
-  unlock("banner-craft-reef", "profile", "more", "banner", "craft-reef", "🖼️", worldCost("more", 4, 2), n("Pozadí: Korálový útes", "Banner: Coral reef", "Hintergrund: Korallenriff", "Фон: Коралловый риф"), "banner-craft-reef"),
-  unlock("banner-craft-grove", "profile", "les", "banner", "craft-grove", "🖼️", worldCost("les", 4, 2), n("Pozadí: Prastarý háj", "Banner: Ancient grove", "Hintergrund: Uralter Hain", "Фон: Древняя роща"), "banner-craft-grove"),
-  unlock("banner-craft-forge", "profile", "hrad", "banner", "craft-forge", "🖼️", worldCost("hrad", 4, 2), n("Pozadí: Kovárna", "Banner: Forge", "Hintergrund: Schmiede", "Фон: Кузница"), "banner-craft-forge"),
-  unlock("banner-craft-moonlight", "profile", "kouzla", "banner", "craft-moonlight", "🖼️", worldCost("kouzla", 4, 2), n("Pozadí: Měsíční svit", "Banner: Moonlight", "Hintergrund: Mondschein", "Фон: Лунный свет"), "banner-craft-moonlight"),
-  unlock("banner-craft-comet-trail", "profile", "vesmir", "banner", "craft-comet-trail", "🖼️", worldCost("vesmir", 4, 3, 1), n("Pozadí: Stopa komety", "Banner: Comet trail", "Hintergrund: Kometenspur", "Фон: След кометы"), "banner-craft-comet-trail"),
-  unlock("banner-craft-lagoon", "profile", "more", "banner", "craft-lagoon", "🖼️", worldCost("more", 4, 3, 1), n("Pozadí: Laguna", "Banner: Lagoon", "Hintergrund: Lagune", "Фон: Лагуна"), "banner-craft-lagoon"),
-  unlock("banner-craft-amber-forest", "profile", "les", "banner", "craft-amber-forest", "🖼️", worldCost("les", 4, 3, 1), n("Pozadí: Jantarový les", "Banner: Amber forest", "Hintergrund: Bernsteinwald", "Фон: Янтарный лес"), "banner-craft-amber-forest"),
-  unlock("banner-craft-throne", "profile", "hrad", "banner", "craft-throne", "🖼️", worldCost("hrad", 4, 3, 1), n("Pozadí: Trůnní sál", "Banner: Throne room", "Hintergrund: Thronsaal", "Фон: Тронный зал"), "banner-craft-throne"),
-  unlock("banner-craft-dragon-lair", "profile", "kouzla", "banner", "craft-dragon-lair", "🖼️", worldCost("kouzla", 4, 3, 1), n("Pozadí: Dračí doupě", "Banner: Dragon lair", "Hintergrund: Drachenhöhle", "Фон: Логово дракона"), "banner-craft-dragon-lair"),
+  unlock("title-comet-maker", "profile", "vesmir", "title", "comet-maker", "🏷️", worldCost("vesmir", 3, 1), n("Titul: Strůjce komet", "Title: Comet maker", "Titel: Kometenschmied", "Титул: Творец комет", "Титул: Творець комет", "称号：彗星の作り手", "Título: Forjador de cometas", "Titre : Créateur de comètes")),
+  unlock("title-tide-master", "profile", "more", "title", "tide-master", "🏷️", worldCost("more", 3, 1), n("Titul: Pán přílivu", "Title: Master of tides", "Titel: Herr der Gezeiten", "Титул: Повелитель приливов", "Титул: Володар припливів", "称号：潮の主", "Título: Señor de las mareas", "Titre : Maître des marées")),
+  unlock("title-forest-voice", "profile", "les", "title", "forest-voice", "🏷️", worldCost("les", 3, 1), n("Titul: Hlas lesa", "Title: Voice of the forest", "Titel: Stimme des Waldes", "Титул: Голос леса", "Титул: Голос лісу", "称号：森の声", "Título: Voz del bosque", "Titre : Voix de la forêt")),
+  unlock("title-master-smith", "profile", "hrad", "title", "master-smith", "🏷️", worldCost("hrad", 3, 1), n("Titul: Mistr kovář", "Title: Master smith", "Titel: Schmiedemeister", "Титул: Мастер-кузнец", "Титул: Майстер-коваль", "称号：鍛冶の達人", "Título: Maestro herrero", "Titre : Maître forgeron")),
+  unlock("title-alchemist", "profile", "kouzla", "title", "alchemist", "🏷️", worldCost("kouzla", 3, 1), n("Titul: Alchymista", "Title: Alchemist", "Titel: Alchemist", "Титул: Алхимик", "Титул: Алхімік", "称号：錬金術師", "Título: Alquimista", "Titre : Alchimiste")),
+  unlock("title-cartographer", "profile", "vesmir", "title", "cartographer", "🏷️", worldCost("vesmir", 3, 2), n("Titul: Hvězdný kartograf", "Title: Star cartographer", "Titel: Sternenkartograf", "Титул: Звёздный картограф", "Титул: Зоряний картограф", "称号：星の地図製作者", "Título: Cartógrafo estelar", "Titre : Cartographe des étoiles")),
+  unlock("title-reef-singer", "profile", "more", "title", "reef-singer", "🏷️", worldCost("more", 3, 2), n("Titul: Zpěvák útesu", "Title: Reef singer", "Titel: Riffsänger", "Титул: Певец рифа", "Титул: Співак рифу", "称号：サンゴ礁の歌い手", "Título: Cantor del arrecife", "Titre : Chanteur du récif")),
+  unlock("title-druid", "profile", "les", "title", "druid", "🏷️", worldCost("les", 3, 2), n("Titul: Druid", "Title: Druid", "Titel: Druide", "Титул: Друид", "Титул: Друїд", "称号：ドルイド", "Título: Druida", "Titre : Druide")),
+  unlock("title-steward", "profile", "hrad", "title", "steward", "🏷️", worldCost("hrad", 3, 2), n("Titul: Správce hradu", "Title: Castle steward", "Titel: Burgverwalter", "Титул: Управитель замка", "Титул: Управитель замку", "称号：城の管理人", "Título: Administrador del castillo", "Titre : Intendant du château")),
+  unlock("title-dragon-whisperer", "profile", "kouzla", "title", "dragon-whisperer", "🏷️", worldCost("kouzla", 3, 2), n("Titul: Šeptač draků", "Title: Dragon whisperer", "Titel: Drachenflüsterer", "Титул: Шепчущий с драконами", "Титул: Шепотун драконів", "称号：ドラゴンの囁き手", "Título: Susurrador de dragones", "Titre : Murmurateur de dragons")),
+  unlock("banner-craft-nebula", "profile", "vesmir", "banner", "craft-nebula", "🖼️", worldCost("vesmir", 4, 2), n("Pozadí: Mlhovina", "Banner: Nebula", "Hintergrund: Nebel", "Фон: Туманность", "Фон: Туманність", "背景：星雲", "Fondo: Nebulosa", "Fond : Nébuleuse"), "banner-craft-nebula"),
+  unlock("banner-craft-reef", "profile", "more", "banner", "craft-reef", "🖼️", worldCost("more", 4, 2), n("Pozadí: Korálový útes", "Banner: Coral reef", "Hintergrund: Korallenriff", "Фон: Коралловый риф", "Фон: Кораловий риф", "背景：サンゴ礁", "Fondo: Arrecife de coral", "Fond : Récif corallien"), "banner-craft-reef"),
+  unlock("banner-craft-grove", "profile", "les", "banner", "craft-grove", "🖼️", worldCost("les", 4, 2), n("Pozadí: Prastarý háj", "Banner: Ancient grove", "Hintergrund: Uralter Hain", "Фон: Древняя роща", "Фон: Прадавній гай", "背景：太古の森", "Fondo: Arboleda antigua", "Fond : Bosquet ancestral"), "banner-craft-grove"),
+  unlock("banner-craft-forge", "profile", "hrad", "banner", "craft-forge", "🖼️", worldCost("hrad", 4, 2), n("Pozadí: Kovárna", "Banner: Forge", "Hintergrund: Schmiede", "Фон: Кузница", "Фон: Кузня", "背景：鍛冶場", "Fondo: Forja", "Fond : Forge"), "banner-craft-forge"),
+  unlock("banner-craft-moonlight", "profile", "kouzla", "banner", "craft-moonlight", "🖼️", worldCost("kouzla", 4, 2), n("Pozadí: Měsíční svit", "Banner: Moonlight", "Hintergrund: Mondschein", "Фон: Лунный свет", "Фон: Місячне світло", "背景：月明かり", "Fondo: Luz de luna", "Fond : Clair de lune"), "banner-craft-moonlight"),
+  unlock("banner-craft-comet-trail", "profile", "vesmir", "banner", "craft-comet-trail", "🖼️", worldCost("vesmir", 4, 3, 1), n("Pozadí: Stopa komety", "Banner: Comet trail", "Hintergrund: Kometenspur", "Фон: След кометы", "Фон: Слід комети", "背景：彗星の軌跡", "Fondo: Estela de cometa", "Fond : Traînée de comète"), "banner-craft-comet-trail"),
+  unlock("banner-craft-lagoon", "profile", "more", "banner", "craft-lagoon", "🖼️", worldCost("more", 4, 3, 1), n("Pozadí: Laguna", "Banner: Lagoon", "Hintergrund: Lagune", "Фон: Лагуна", "Фон: Лагуна", "背景：ラグーン", "Fondo: Laguna", "Fond : Lagon"), "banner-craft-lagoon"),
+  unlock("banner-craft-amber-forest", "profile", "les", "banner", "craft-amber-forest", "🖼️", worldCost("les", 4, 3, 1), n("Pozadí: Jantarový les", "Banner: Amber forest", "Hintergrund: Bernsteinwald", "Фон: Янтарный лес", "Фон: Бурштиновий ліс", "背景：琥珀の森", "Fondo: Bosque de ámbar", "Fond : Forêt d'ambre"), "banner-craft-amber-forest"),
+  unlock("banner-craft-throne", "profile", "hrad", "banner", "craft-throne", "🖼️", worldCost("hrad", 4, 3, 1), n("Pozadí: Trůnní sál", "Banner: Throne room", "Hintergrund: Thronsaal", "Фон: Тронный зал", "Фон: Тронна зала", "背景：玉座の間", "Fondo: Sala del trono", "Fond : Salle du trône"), "banner-craft-throne"),
+  unlock("banner-craft-dragon-lair", "profile", "kouzla", "banner", "craft-dragon-lair", "🖼️", worldCost("kouzla", 4, 3, 1), n("Pozadí: Dračí doupě", "Banner: Dragon lair", "Hintergrund: Drachenhöhle", "Фон: Логово дракона", "Фон: Драконяче лігво", "背景：ドラゴンの巣", "Fondo: Guarida del dragón", "Fond : Repaire du dragon"), "banner-craft-dragon-lair"),
 
   // --- Doplňky na avatara (zatím jen pojmenované, čekají na 3D model) ---
-  named("antenna-helmet", "avatar-acc", "vesmir", "🪖", worldCost("vesmir", 4, 2, 1), n("Helma s anténkou", "Antenna helmet", "Antennenhelm", "Шлем с антенной"), true),
-  named("pearl-necklace", "avatar-acc", "more", "📿", worldCost("more", 4, 2, 1), n("Perlový náhrdelník", "Pearl necklace", "Perlenkette", "Жемчужное ожерелье"), true),
-  named("leaf-wreath", "avatar-acc", "les", "🌿", worldCost("les", 4, 2, 1), n("Věnec z listí", "Leaf wreath", "Blätterkranz", "Венок из листьев"), true),
-  named("knight-helmet", "avatar-acc", "hrad", "⛑️", worldCost("hrad", 4, 2, 1), n("Rytířská přilba", "Knight's helmet", "Ritterhelm", "Рыцарский шлем"), true),
-  named("witch-hat", "avatar-acc", "kouzla", "🎩", worldCost("kouzla", 4, 2, 1), n("Čarodějný klobouk", "Witch hat", "Hexenhut", "Колдовская шляпа"), true),
-  named("cape-of-stars", "avatar-acc", "vesmir", "🦸", worldCost("vesmir", 0, 3, 1, 1), n("Hvězdný plášť", "Cape of stars", "Sternenumhang", "Звёздный плащ"), true),
-  named("dragon-wings", "avatar-acc", "kouzla", "🪽", worldCost("kouzla", 0, 3, 1, 1), n("Dračí křídla", "Dragon wings", "Drachenflügel", "Драконьи крылья"), true),
+  named("antenna-helmet", "avatar-acc", "vesmir", "🪖", worldCost("vesmir", 4, 2, 1), n("Helma s anténkou", "Antenna helmet", "Antennenhelm", "Шлем с антенной", "Шолом з антеною", "アンテナ付きヘルメット", "Casco con antena", "Casque à antenne"), true),
+  named("pearl-necklace", "avatar-acc", "more", "📿", worldCost("more", 4, 2, 1), n("Perlový náhrdelník", "Pearl necklace", "Perlenkette", "Жемчужное ожерелье", "Перлове намисто", "真珠のネックレス", "Collar de perlas", "Collier de perles"), true),
+  named("leaf-wreath", "avatar-acc", "les", "🌿", worldCost("les", 4, 2, 1), n("Věnec z listí", "Leaf wreath", "Blätterkranz", "Венок из листьев", "Вінок з листя", "葉っぱのリース", "Corona de hojas", "Couronne de feuilles"), true),
+  named("knight-helmet", "avatar-acc", "hrad", "⛑️", worldCost("hrad", 4, 2, 1), n("Rytířská přilba", "Knight's helmet", "Ritterhelm", "Рыцарский шлем", "Лицарський шолом", "騎士の兜", "Yelmo de caballero", "Heaume de chevalier"), true),
+  named("witch-hat", "avatar-acc", "kouzla", "🎩", worldCost("kouzla", 4, 2, 1), n("Čarodějný klobouk", "Witch hat", "Hexenhut", "Колдовская шляпа", "Чарівницький капелюх", "魔女の帽子", "Sombrero de bruja", "Chapeau de sorcière"), true),
+  named("cape-of-stars", "avatar-acc", "vesmir", "🦸", worldCost("vesmir", 0, 3, 1, 1), n("Hvězdný plášť", "Cape of stars", "Sternenumhang", "Звёздный плащ", "Зоряний плащ", "星のマント", "Capa de estrellas", "Cape d'étoiles"), true),
+  named("dragon-wings", "avatar-acc", "kouzla", "🪽", worldCost("kouzla", 0, 3, 1, 1), n("Dračí křídla", "Dragon wings", "Drachenflügel", "Драконьи крылья", "Драконячі крила", "ドラゴンの翼", "Alas de dragón", "Ailes de dragon"), true),
 
   // --- Doplňky pro mazlíčky ---
-  named("pet-spacesuit", "pet-acc", "vesmir", "👨‍🚀", worldCost("vesmir", 3, 2), n("Skafandr pro mazlíčka", "Pet spacesuit", "Raumanzug für Haustiere", "Скафандр для питомца"), true),
-  named("pet-sailor-collar", "pet-acc", "more", "⚓", worldCost("more", 3, 2), n("Námořnický obojek", "Sailor collar", "Matrosenhalsband", "Матросский ошейник"), true),
-  named("pet-acorn-cap", "pet-acc", "les", "🌰", worldCost("les", 3, 2), n("Žaludová čepička", "Acorn cap", "Eichelmütze", "Шапочка-жёлудь"), true),
-  named("pet-knight-cape", "pet-acc", "hrad", "🛡️", worldCost("hrad", 3, 2), n("Rytířský plášť pro mazlíčka", "Pet knight cape", "Ritterumhang für Haustiere", "Рыцарский плащ для питомца"), true),
-  named("pet-star-collar", "pet-acc", "kouzla", "⭐", worldCost("kouzla", 3, 2), n("Hvězdný obojek", "Star collar", "Sternenhalsband", "Звёздный ошейник"), true),
+  named("pet-spacesuit", "pet-acc", "vesmir", "👨‍🚀", worldCost("vesmir", 3, 2), n("Skafandr pro mazlíčka", "Pet spacesuit", "Raumanzug für Haustiere", "Скафандр для питомца", "Скафандр для улюбленця", "ペット用の宇宙服", "Traje espacial para mascotas", "Combinaison spatiale pour animal"), true),
+  named("pet-sailor-collar", "pet-acc", "more", "⚓", worldCost("more", 3, 2), n("Námořnický obojek", "Sailor collar", "Matrosenhalsband", "Матросский ошейник", "Матроський нашийник", "水夫の首輪", "Collar marinero", "Collier de marin"), true),
+  named("pet-acorn-cap", "pet-acc", "les", "🌰", worldCost("les", 3, 2), n("Žaludová čepička", "Acorn cap", "Eichelmütze", "Шапочка-жёлудь", "Жолудева шапочка", "どんぐりの帽子", "Gorrito de bellota", "Bonnet en gland"), true),
+  named("pet-knight-cape", "pet-acc", "hrad", "🛡️", worldCost("hrad", 3, 2), n("Rytířský plášť pro mazlíčka", "Pet knight cape", "Ritterumhang für Haustiere", "Рыцарский плащ для питомца", "Лицарський плащ для улюбленця", "ペット用の騎士のマント", "Capa de caballero para mascotas", "Cape de chevalier pour animal"), true),
+  named("pet-star-collar", "pet-acc", "kouzla", "⭐", worldCost("kouzla", 3, 2), n("Hvězdný obojek", "Star collar", "Sternenhalsband", "Звёздный ошейник", "Зоряний нашийник", "星の首輪", "Collar estrella", "Collier étoilé"), true),
 
   // --- Do pokoje ---
-  named("room-solar-system", "room", "vesmir", "🪐", worldCost("vesmir", 5, 3, 1), n("Model sluneční soustavy", "Solar system model", "Sonnensystem-Modell", "Модель Солнечной системы"), true),
-  named("room-ship-wheel", "room", "more", "☸️", worldCost("more", 5, 3, 1), n("Lodní kormidlo", "Ship's wheel", "Steuerrad", "Штурвал"), true),
-  named("room-bonsai", "room", "les", "🪴", worldCost("les", 5, 3, 1), n("Bonsaj", "Bonsai", "Bonsai", "Бонсай"), true),
-  named("room-armor-stand", "room", "hrad", "🛡️", worldCost("hrad", 5, 3, 1), n("Brnění na stojanu", "Armour stand", "Rüstungsständer", "Доспехи на подставке"), true),
-  named("room-cauldron", "room", "kouzla", "🫕", worldCost("kouzla", 5, 3, 1), n("Kotlík s lektvarem", "Potion cauldron", "Zaubertrankkessel", "Котёл с зельем"), true),
+  named("room-solar-system", "room", "vesmir", "🪐", worldCost("vesmir", 5, 3, 1), n("Model sluneční soustavy", "Solar system model", "Sonnensystem-Modell", "Модель Солнечной системы", "Модель Сонячної системи", "太陽系のモデル", "Maqueta del sistema solar", "Maquette du système solaire"), true),
+  named("room-ship-wheel", "room", "more", "☸️", worldCost("more", 5, 3, 1), n("Lodní kormidlo", "Ship's wheel", "Steuerrad", "Штурвал", "Корабельне стерно", "船の舵輪", "Timón de barco", "Roue de bateau"), true),
+  named("room-bonsai", "room", "les", "🪴", worldCost("les", 5, 3, 1), n("Bonsaj", "Bonsai", "Bonsai", "Бонсай", "Бонсай", "盆栽", "Bonsái", "Bonsaï"), true),
+  named("room-armor-stand", "room", "hrad", "🛡️", worldCost("hrad", 5, 3, 1), n("Brnění na stojanu", "Armour stand", "Rüstungsständer", "Доспехи на подставке", "Обладунки на стійці", "鎧の展示台", "Armadura en soporte", "Armure sur support"), true),
+  named("room-cauldron", "room", "kouzla", "🫕", worldCost("kouzla", 5, 3, 1), n("Kotlík s lektvarem", "Potion cauldron", "Zaubertrankkessel", "Котёл с зельем", "Казан із зіллям", "ポーションの大鍋", "Caldero de pociones", "Chaudron à potions"), true),
 ];
 
 const RECIPE_BY_ID = new Map(RECIPES.map((r) => [r.id, r]));

@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 // Texty živého 3D pokoje: co nábytek dělá a akce po kliknutí.
@@ -77,5 +78,67 @@ const ru: Room3dText = {
   view2d: "🖼️ 2D",
   view3d: "🧊 3D",
 };
-const texts: Record<Locale, Room3dText> = { cs, en, de, ru };
+const texts: Record<Locale, Room3dText> = {
+  ...withFallbacks({ cs, en, de, ru }),
+  uk: {
+    hint: "Клацни на меблі, і твій аватар підійде до неї. Тягни, щоб повернути кімнату, колесом наближай.",
+    perkXpTest: "+{n} % XP у тестах",
+    perkXpGame: "+{n} % XP в іграх",
+    perkEndless: "нескінченні ігри на {n} % швидші",
+    perkDaily: "+{n} балів щодня",
+    use: { aquarium: "Нагодувати рибок", plant: "Полити квітку", rocketbed: "Подрімати", guitar: "Пограти на гітарі", piano: "Пограти на піаніно", telescope: "Дивитися на зорі", sofa: "Відпочити" },
+    usedToday: "Сьогодні вже зроблено, завтра знову.",
+    go: { desk: "Вчитися в курсах", bookshelf: "Читати матеріали", trophy: "Глянути рейтинги", arcade: "Грати в нескінченні ігри", globe: "Відкрити мапу" },
+    notPlaced: "Постав його в кімнату, і воно допомагатиме.",
+    bonuses: "Бонуси кімнати",
+    gained: "+{n} балів!",
+    view2d: "🖼️ 2D",
+    view3d: "🧊 3D",
+  },
+  ja: {
+    hint: "家具をクリックすると、アバターがそこまで歩いていきます。ドラッグで部屋を回転、ホイールでズームできます。",
+    perkXpTest: "テストのXP +{n}%",
+    perkXpGame: "ゲームのXP +{n}%",
+    perkEndless: "エンドレスゲームが{n}%速くなる",
+    perkDaily: "毎日 +{n}ポイント",
+    use: { aquarium: "お魚にえさをあげる", plant: "お花に水をあげる", rocketbed: "お昼寝する", guitar: "ギターをひく", piano: "ピアノをひく", telescope: "星を見る", sofa: "休憩する" },
+    usedToday: "今日はもう完了です。また明日どうぞ。",
+    go: { desk: "コースで勉強する", bookshelf: "教材を読む", trophy: "ランキングを見る", arcade: "エンドレスゲームで遊ぶ", globe: "地図を開く" },
+    notPlaced: "へやに置くと、手伝ってくれるようになります。",
+    bonuses: "へやのボーナス",
+    gained: "+{n}ポイント！",
+    view2d: "🖼️ 2D",
+    view3d: "🧊 3D",
+  },
+  es: {
+    hint: "Haz clic en un mueble y tu avatar irá hasta él. Arrastra para girar la habitación y usa la rueda para acercar.",
+    perkXpTest: "+{n} % de XP en exámenes",
+    perkXpGame: "+{n} % de XP en juegos",
+    perkEndless: "juegos sin fin un {n} % más rápidos",
+    perkDaily: "+{n} puntos al día",
+    use: { aquarium: "Dar de comer a los peces", plant: "Regar la planta", rocketbed: "Echar una siesta", guitar: "Tocar la guitarra", piano: "Tocar el piano", telescope: "Mirar las estrellas", sofa: "Descansar" },
+    usedToday: "Hecho por hoy, vuelve mañana.",
+    go: { desk: "Estudiar en los cursos", bookshelf: "Leer materiales", trophy: "Ver las clasificaciones", arcade: "Jugar a juegos sin fin", globe: "Abrir el mapa" },
+    notPlaced: "Colócalo en tu habitación y te ayudará.",
+    bonuses: "Bonus de la habitación",
+    gained: "¡+{n} puntos!",
+    view2d: "🖼️ 2D",
+    view3d: "🧊 3D",
+  },
+  fr: {
+    hint: "Clique sur un meuble et ton avatar s'y rend. Fais glisser pour tourner la pièce, la molette pour zoomer.",
+    perkXpTest: "+{n} % d'XP aux tests",
+    perkXpGame: "+{n} % d'XP aux jeux",
+    perkEndless: "jeux sans fin {n} % plus rapides",
+    perkDaily: "+{n} points par jour",
+    use: { aquarium: "Nourrir les poissons", plant: "Arroser la plante", rocketbed: "Faire une sieste", guitar: "Jouer de la guitare", piano: "Jouer du piano", telescope: "Regarder les étoiles", sofa: "Se reposer" },
+    usedToday: "C'est fait pour aujourd'hui, reviens demain.",
+    go: { desk: "Étudier dans les cours", bookshelf: "Lire les supports", trophy: "Voir les classements", arcade: "Jouer aux jeux sans fin", globe: "Ouvrir la carte" },
+    notPlaced: "Place-le dans ta chambre et il t'aidera.",
+    bonuses: "Bonus de la chambre",
+    gained: "+{n} points !",
+    view2d: "🖼️ 2D",
+    view3d: "🧊 3D",
+  },
+};
 export const getRoom3dText = (locale: Locale) => texts[locale];

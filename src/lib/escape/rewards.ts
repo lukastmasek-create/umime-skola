@@ -1,3 +1,4 @@
+import { withFallbacks } from "@/i18n/config";
 import { CASTLE_ROOM } from "./rooms/castle";
 import { EXPEDITION_ROOM } from "./rooms/expedition";
 import { JUNGLE_ROOM } from "./rooms/jungle";
@@ -42,7 +43,7 @@ export function getRoom(id: string, locale: Locale): Room | undefined {
 }
 
 // Každá únikovka má víc místností za sebou: první (kit.ts / lab.ts) a druhou (inner.ts).
-const INNER: Record<Locale, Record<string, InnerText>> = { cs: INNER_CS, en: INNER_EN, de: INNER_DE, ru: INNER_RU };
+const INNER: Record<Locale, Record<string, InnerText>> = withFallbacks({ cs: INNER_CS, en: INNER_EN, de: INNER_DE, ru: INNER_RU });
 
 export type Difficulty = 1 | 2 | 3 | 4 | 5;
 

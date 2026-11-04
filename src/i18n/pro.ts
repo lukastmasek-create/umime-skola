@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 export type ProText = {
@@ -139,7 +140,121 @@ const ru: ProText = {
   ctaText: "Есть вопрос или интерес к тарифу для школы или семьи? Напиши нам.",
 };
 
-const texts: Record<Locale, ProText> = { cs, en, de, ru };
+const texts: Record<Locale, ProText> = {
+  ...withFallbacks({ cs, en, de, ru }),
+  uk: {
+    nav: "Umíme PRO",
+    title: "Umíme PRO",
+    subtitle: "Підписка, яка додає більше балів і більше можливостей. Усе, що в тебе вже є, залишається безкоштовним.",
+    status: {
+      guest: "Увійди, щоб побачити статус підписки.",
+      active: "У тебе активна підписка PRO.",
+      none: "У тебе поки немає активної підписки PRO.",
+      login: "Увійти",
+    },
+    compareTitle: "Безкоштовно і PRO",
+    compareFree: "Безкоштовно",
+    comparePro: "PRO",
+    rows: [
+      { what: "Бали за навчання", free: "звичайні", pro: "додатковий множник" },
+      { what: "Колесо фортуни", free: "1× на день", pro: "більше обертань" },
+      { what: "Можливості в крамниці та іграх", free: "базові", pro: "більше можливостей" },
+    ],
+    tiersTitle: "Тарифи",
+    tiers: {
+      individual: { title: "Для однієї особи", text: "Підписка на один акаунт. Діє лише для тебе." },
+      family: { title: "Родина", text: "Один тариф для кількох членів родини. Платник ним керує і додає учасників." },
+      school: { title: "Школа", text: "Тариф для учнів обраної школи. Діє, коли школа вказана в твоєму акаунті." },
+    },
+    availability: "Підписка зараз готується і поки що не продається. Ціни та умови тарифів додамо, коли буде можлива оплата.",
+    cta: "Написати нам",
+    ctaText: "Маєш питання або цікавить тариф для школи чи родини? Напиши нам.",
+  },
+  ja: {
+    nav: "Umíme PRO",
+    title: "Umíme PRO",
+    subtitle: "ポイントがより多く貯まり、できることも増えるサブスクリプションです。今お持ちのものはすべて無料のままです。",
+    status: {
+      guest: "サブスクリプションの状態を見るにはログインしてください。",
+      active: "PROのサブスクリプションが有効です。",
+      none: "まだPROのサブスクリプションが有効ではありません。",
+      login: "ログイン",
+    },
+    compareTitle: "無料とPRO",
+    compareFree: "無料",
+    comparePro: "PRO",
+    rows: [
+      { what: "学習ポイント", free: "通常", pro: "追加の倍率" },
+      { what: "ラッキーホイール", free: "1日1回", pro: "回転回数が増加" },
+      { what: "ショップやゲームでの選択肢", free: "基本", pro: "より多くの選択肢" },
+    ],
+    tiersTitle: "プラン",
+    tiers: {
+      individual: { title: "個人", text: "1つのアカウント向けのサブスクリプションです。ご自身だけに適用されます。" },
+      family: { title: "ファミリー", text: "家族複数人で使える1つのプランです。支払い者が管理し、メンバーを追加します。" },
+      school: { title: "学校", text: "選択した学校の児童・生徒向けのプランです。アカウントに学校が登録されていると適用されます。" },
+    },
+    availability: "サブスクリプションは準備中のため、現在はご購入いただけません。決済が可能になりましたら、料金とプランの条件を追加します。",
+    cta: "お問い合わせ",
+    ctaText: "学校や家族向けのプランに関するご質問やご興味はありますか？お気軽にご連絡ください。",
+  },
+  es: {
+    nav: "Umíme PRO",
+    title: "Umíme PRO",
+    subtitle: "Una suscripción que añade más puntos y más opciones. Todo lo que ya tienes sigue siendo gratis.",
+    status: {
+      guest: "Inicia sesión para ver el estado de tu suscripción.",
+      active: "Tienes una suscripción PRO activa.",
+      none: "Todavía no tienes una suscripción PRO activa.",
+      login: "Iniciar sesión",
+    },
+    compareTitle: "Gratis y PRO",
+    compareFree: "Gratis",
+    comparePro: "PRO",
+    rows: [
+      { what: "Puntos por aprender", free: "normales", pro: "multiplicador extra" },
+      { what: "Rueda de la fortuna", free: "1× al día", pro: "más giros" },
+      { what: "Opciones en la tienda y los juegos", free: "básicas", pro: "más opciones" },
+    ],
+    tiersTitle: "Tarifas",
+    tiers: {
+      individual: { title: "Individual", text: "Una suscripción para una cuenta. Solo se aplica a ti." },
+      family: { title: "Familiar", text: "Una tarifa para varios miembros de la familia. La persona que paga la gestiona y añade miembros." },
+      school: { title: "Escolar", text: "Una tarifa para los alumnos del colegio seleccionado. Se aplica cuando el colegio está indicado en tu cuenta." },
+    },
+    availability: "La suscripción se está preparando y todavía no se puede comprar. Añadiremos los precios y las condiciones de las tarifas cuando sea posible pagar.",
+    cta: "Escríbenos",
+    ctaText: "¿Tienes alguna pregunta o te interesa una tarifa para un colegio o una familia? Ponte en contacto.",
+  },
+  fr: {
+    nav: "Umíme PRO",
+    title: "Umíme PRO",
+    subtitle: "Un abonnement qui ajoute plus de points et plus d'options. Tout ce que tu as déjà reste gratuit.",
+    status: {
+      guest: "Connecte-toi pour voir l'état de ton abonnement.",
+      active: "Tu as un abonnement PRO actif.",
+      none: "Tu n'as pas encore d'abonnement PRO actif.",
+      login: "Se connecter",
+    },
+    compareTitle: "Gratuit et PRO",
+    compareFree: "Gratuit",
+    comparePro: "PRO",
+    rows: [
+      { what: "Points pour l'apprentissage", free: "standard", pro: "multiplicateur supplémentaire" },
+      { what: "Roue de la fortune", free: "1× par jour", pro: "plus de tours" },
+      { what: "Options dans la boutique et les jeux", free: "de base", pro: "plus d'options" },
+    ],
+    tiersTitle: "Formules",
+    tiers: {
+      individual: { title: "Individuel", text: "Un abonnement pour un seul compte. Il ne s'applique qu'à toi." },
+      family: { title: "Famille", text: "Une formule pour plusieurs membres de la famille. Le payeur la gère et ajoute des membres." },
+      school: { title: "École", text: "Une formule pour les élèves de l'école choisie. Elle s'applique lorsque ton école est indiquée dans ton compte." },
+    },
+    availability: "L'abonnement est en préparation et ne peut pas encore être acheté. Les tarifs et conditions des formules seront ajoutés dès que le paiement sera possible.",
+    cta: "Nous écrire",
+    ctaText: "Tu as une question ou tu t'intéresses à une formule pour une école ou une famille ? Écris-nous.",
+  },
+};
 
 export function getProText(locale: Locale): ProText {
   return texts[locale] ?? cs;

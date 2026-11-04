@@ -1,4 +1,5 @@
 "use client";
+import { withFallbacks } from "@/i18n/config";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -16,10 +17,16 @@ const TIERS = ["bronz", "stribro", "zlato"] as const;
 const STORAGE = "umime-medals-seen";
 
 const TEXT: Record<Locale, Record<string, string>> = {
-  cs: { title: "Medaile předmětů", bronz: "Bronzová medaile", stribro: "Stříbrná medaile", zlato: "Zlatá medaile", locked: "Dokonči první kurz", next: "Do dalšího stupně: {n} kurzů", all: "Máš všechny kurzy!", congrats: "Nová medaile!", ok: "Super!", done: "Hotovo {done} z {total}", summary: "{m} medailí · {c} kurzů hotovo" },
+  ...withFallbacks({
+  cs:{ title: "Medaile předmětů", bronz: "Bronzová medaile", stribro: "Stříbrná medaile", zlato: "Zlatá medaile", locked: "Dokonči první kurz", next: "Do dalšího stupně: {n} kurzů", all: "Máš všechny kurzy!", congrats: "Nová medaile!", ok: "Super!", done: "Hotovo {done} z {total}", summary: "{m} medailí · {c} kurzů hotovo" },
   en: { title: "Subject medals", bronz: "Bronze medal", stribro: "Silver medal", zlato: "Gold medal", locked: "Finish your first course", next: "To the next tier: {n} courses", all: "You finished every course!", congrats: "New medal!", ok: "Awesome!", done: "{done} of {total} done", summary: "{m} medals · {c} courses done" },
   de: { title: "Fächer-Medaillen", bronz: "Bronzemedaille", stribro: "Silbermedaille", zlato: "Goldmedaille", locked: "Schließe deinen ersten Kurs ab", next: "Bis zur nächsten Stufe: {n} Kurse", all: "Alle Kurse geschafft!", congrats: "Neue Medaille!", ok: "Super!", done: "{done} von {total} fertig", summary: "{m} Medaillen · {c} Kurse fertig" },
   ru: { title: "Медали по предметам", bronz: "Бронзовая медаль", stribro: "Серебряная медаль", zlato: "Золотая медаль", locked: "Пройди первый курс", next: "До следующего уровня: {n} курсов", all: "Все курсы пройдены!", congrats: "Новая медаль!", ok: "Супер!", done: "Пройдено {done} из {total}", summary: "Медалей: {m} · курсов пройдено: {c}" },
+  }),
+  uk: { title: "Медалі з предметів", bronz: "Бронзова медаль", stribro: "Срібна медаль", zlato: "Золота медаль", locked: "Пройди перший курс", next: "До наступного рівня: {n} курсів", all: "Ти пройшов(ла) всі курси!", congrats: "Нова медаль!", ok: "Супер!", done: "Пройдено {done} з {total}", summary: "Медалей: {m} · курсів пройдено: {c}" },
+  ja: { title: "教科のメダル", bronz: "ブロンズメダル", stribro: "シルバーメダル", zlato: "ゴールドメダル", locked: "最初のコースを終えよう", next: "次のランクまで: {n} コース", all: "すべてのコースを終えました！", congrats: "新しいメダル！", ok: "すごい！", done: "{done} / {total} 完了", summary: "メダル {m} 個 · 完了したコース {c} 件" },
+  es: { title: "Medallas de asignaturas", bronz: "Medalla de bronce", stribro: "Medalla de plata", zlato: "Medalla de oro", locked: "Termina tu primer curso", next: "Para el siguiente nivel: {n} cursos", all: "¡Has terminado todos los cursos!", congrats: "¡Nueva medalla!", ok: "¡Genial!", done: "{done} de {total} terminados", summary: "{m} medallas · {c} cursos terminados" },
+  fr: { title: "Médailles des matières", bronz: "Médaille de bronze", stribro: "Médaille d'argent", zlato: "Médaille d'or", locked: "Termine ton premier cours", next: "Au niveau suivant : {n} cours", all: "Tu as fini tous les cours !", congrats: "Nouvelle médaille !", ok: "Super !", done: "{done} sur {total} terminés", summary: "{m} médailles · {c} cours terminés" },
 };
 
 function tierOf(s: SubjectSummary | undefined): number {

@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 export type TestText = {
@@ -130,7 +131,111 @@ const ru: TestText = {
   strictNote: "Следи за длиной: i/í и y/ý считаются разными ответами.",
 };
 
-const texts: Record<Locale, TestText> = { cs, en, de, ru };
+const uk: TestText = {
+  difficulties: ["Найлегший", "Легкий", "Середній", "Складний", "Найскладніший"],
+  coursesTitle: "Курси",
+  coursesSubtitle: "Тренуйся, граючи. Обери складність.",
+  testsTitle: "Тести",
+  testsSubtitle: "Підсумковий тест, як у школі: відповіді пишеш у полях. Під час кожного запуску будуть інші питання.",
+  openTest: "Написати тест",
+  openCourse: "Грати",
+  locked: "Поки без питань",
+  test: "Тест",
+  question: "Питання",
+  hint: "💡 Підказка",
+  check: "Перевірити тест",
+  yourAnswer: "Твоя відповідь",
+  correctAnswer: "Правильно",
+  why: "Чому",
+  result: "Результат",
+  correctCount: "Правильно",
+  grade: "Оцінка",
+  gradeNames: ["відмінно", "дуже добре", "добре", "задовільно", "незадовільно"],
+  newTest: "Новий тест (інші питання)",
+  backToCourse: "← Назад до курсу",
+  empty: "Для цієї складності поки немає питань.",
+  strictNote: "Уважно з довжиною: i/í та y/ý вважаються різними відповідями.",
+};
+
+const ja: TestText = {
+  difficulties: ["いちばんやさしい", "やさしい", "ふつう", "むずかしい", "いちばんむずかしい"],
+  coursesTitle: "コース",
+  coursesSubtitle: "ゲームで練習しましょう。難易度を選んでください。",
+  testsTitle: "テスト",
+  testsSubtitle: "学校のような総合テストです。答えは欄に書き込みます。挑戦するたびに問題が変わります。",
+  openTest: "テストを受ける",
+  openCourse: "プレイ",
+  locked: "まだ問題がありません",
+  test: "テスト",
+  question: "問題",
+  hint: "💡 ヒント",
+  check: "テストを採点",
+  yourAnswer: "あなたの答え",
+  correctAnswer: "正解",
+  why: "理由",
+  result: "結果",
+  correctCount: "正解",
+  grade: "成績",
+  gradeNames: ["とても良い", "良い", "まずまず", "もう少し", "努力が必要"],
+  newTest: "新しいテスト（別の問題）",
+  backToCourse: "← コースに戻る",
+  empty: "この難易度の問題はまだありません。",
+  strictNote: "文字の長さに注意してください: i/í と y/ý は別の答えとして数えられます。",
+};
+
+const es: TestText = {
+  difficulties: ["Muy fácil", "Fácil", "Medio", "Difícil", "Muy difícil"],
+  coursesTitle: "Cursos",
+  coursesSubtitle: "Practica jugando. Elige una dificultad.",
+  testsTitle: "Tests",
+  testsSubtitle: "Un examen resumen como en el colegio: escribes las respuestas en los campos. Cada vez tendrás preguntas diferentes.",
+  openTest: "Hacer el test",
+  openCourse: "Jugar",
+  locked: "Todavía sin preguntas",
+  test: "Test",
+  question: "Pregunta",
+  hint: "💡 Pista",
+  check: "Evaluar test",
+  yourAnswer: "Tu respuesta",
+  correctAnswer: "Correcta",
+  why: "Por qué",
+  result: "Resultado",
+  correctCount: "Correctas",
+  grade: "Nota",
+  gradeNames: ["sobresaliente", "notable", "bien", "suficiente", "insuficiente"],
+  newTest: "Nuevo test (otras preguntas)",
+  backToCourse: "← Volver al curso",
+  empty: "Todavía no hay preguntas para esta dificultad.",
+  strictNote: "Ojo con la longitud: i/í e y/ý cuentan como respuestas distintas.",
+};
+
+const fr: TestText = {
+  difficulties: ["Très facile", "Facile", "Moyen", "Difficile", "Très difficile"],
+  coursesTitle: "Cours",
+  coursesSubtitle: "Entraîne-toi en jouant. Choisis une difficulté.",
+  testsTitle: "Tests",
+  testsSubtitle: "Un contrôle récapitulatif comme à l'école : tu écris les réponses dans les cases. À chaque essai, les questions changent.",
+  openTest: "Passer le test",
+  openCourse: "Jouer",
+  locked: "Pas encore de questions",
+  test: "Test",
+  question: "Question",
+  hint: "💡 Indice",
+  check: "Corriger le test",
+  yourAnswer: "Ta réponse",
+  correctAnswer: "Correct",
+  why: "Pourquoi",
+  result: "Résultat",
+  correctCount: "Correct",
+  grade: "Note",
+  gradeNames: ["très bien", "bien", "assez bien", "passable", "insuffisant"],
+  newTest: "Nouveau test (autres questions)",
+  backToCourse: "← Retour au cours",
+  empty: "Pas encore de questions pour cette difficulté.",
+  strictNote: "Attention à la longueur : i/í et y/ý comptent comme des réponses différentes.",
+};
+
+const texts: Record<Locale, TestText> = { ...withFallbacks({ cs, en, de, ru }), uk, ja, es, fr };
 
 export function getTestText(locale: Locale): TestText {
   return texts[locale];

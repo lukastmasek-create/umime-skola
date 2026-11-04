@@ -1,3 +1,4 @@
+import { tr8 } from "@/i18n/config";
 // Herní logika Farmy. Čistý kód bez databáze a Reactu: stejný výpočet běží na serveru
 // (autoritativně) i v prohlížeči (odpočty a náhled).
 //
@@ -11,7 +12,7 @@
 
 import type { Locale } from "@/i18n/config";
 
-const n = (cs: string, en: string, de: string, ru: string): Record<Locale, string> => ({ cs, en, de, ru });
+const n = (cs: string, en: string, de: string, ru: string, uk?: string, ja?: string, es?: string, fr?: string): Record<Locale, string> => tr8(cs, en, de, ru, uk, ja, es, fr);
 
 export const MAX_PLOTS = 24;
 export const START_PLOTS = 6;
@@ -60,48 +61,48 @@ export type AnimalDef = {
 export type ProductDef = { id: ProductId; price: number; xp: number; names: Record<Locale, string> };
 
 export const CROPS: CropDef[] = [
-  { id: "wheat", level: 1, seed: 5, minutes: 2, price: 10, xp: 1, names: n("Pšenice", "Wheat", "Weizen", "Пшеница") },
-  { id: "carrot", level: 1, seed: 8, minutes: 5, price: 17, xp: 2, names: n("Mrkev", "Carrot", "Karotte", "Морковь") },
-  { id: "corn", level: 2, seed: 14, minutes: 10, price: 30, xp: 3, names: n("Kukuřice", "Corn", "Mais", "Кукуруза") },
-  { id: "potato", level: 3, seed: 20, minutes: 20, price: 46, xp: 4, names: n("Brambor", "Potato", "Kartoffel", "Картофель") },
-  { id: "tomato", level: 4, seed: 30, minutes: 45, price: 76, xp: 6, names: n("Rajče", "Tomato", "Tomate", "Помидор") },
-  { id: "strawberry", level: 5, seed: 45, minutes: 90, price: 128, xp: 9, names: n("Jahoda", "Strawberry", "Erdbeere", "Клубника") },
-  { id: "sunflower", level: 6, seed: 60, minutes: 120, price: 170, xp: 11, names: n("Slunečnice", "Sunflower", "Sonnenblume", "Подсолнух") },
-  { id: "cabbage", level: 7, seed: 75, minutes: 150, price: 205, xp: 13, names: n("Zelí", "Cabbage", "Kohl", "Капуста") },
-  { id: "pumpkin", level: 8, seed: 90, minutes: 180, price: 260, xp: 15, names: n("Dýně", "Pumpkin", "Kürbis", "Тыква") },
-  { id: "watermelon", level: 9, seed: 115, minutes: 240, price: 330, xp: 18, names: n("Meloun", "Watermelon", "Wassermelone", "Арбуз") },
-  { id: "apple", level: 10, seed: 140, minutes: 300, price: 430, xp: 22, names: n("Jablko", "Apple", "Apfel", "Яблоко") },
-  { id: "cherry", level: 11, seed: 170, minutes: 360, price: 500, xp: 26, names: n("Třešně", "Cherries", "Kirschen", "Вишня") },
-  { id: "grapes", level: 12, seed: 200, minutes: 480, price: 660, xp: 32, names: n("Hrozny", "Grapes", "Trauben", "Виноград") },
-  { id: "peach", level: 14, seed: 240, minutes: 600, price: 810, xp: 38, names: n("Broskev", "Peach", "Pfirsich", "Персик") },
-  { id: "lavender", level: 16, seed: 300, minutes: 720, price: 980, xp: 46, names: n("Levandule", "Lavender", "Lavendel", "Лаванда") },
-  { id: "rose", level: 18, seed: 420, minutes: 900, price: 1330, xp: 62, names: n("Růže", "Rose", "Rose", "Роза") },
+  { id: "wheat", level: 1, seed: 5, minutes: 2, price: 10, xp: 1, names: n("Pšenice", "Wheat", "Weizen", "Пшеница", "Пшениця", "小麦", "Trigo", "Blé") },
+  { id: "carrot", level: 1, seed: 8, minutes: 5, price: 17, xp: 2, names: n("Mrkev", "Carrot", "Karotte", "Морковь", "Морква", "ニンジン", "Zanahoria", "Carotte") },
+  { id: "corn", level: 2, seed: 14, minutes: 10, price: 30, xp: 3, names: n("Kukuřice", "Corn", "Mais", "Кукуруза", "Кукурудза", "トウモロコシ", "Maíz", "Maïs") },
+  { id: "potato", level: 3, seed: 20, minutes: 20, price: 46, xp: 4, names: n("Brambor", "Potato", "Kartoffel", "Картофель", "Картопля", "ジャガイモ", "Patata", "Pomme de terre") },
+  { id: "tomato", level: 4, seed: 30, minutes: 45, price: 76, xp: 6, names: n("Rajče", "Tomato", "Tomate", "Помидор", "Помідор", "トマト", "Tomate", "Tomate") },
+  { id: "strawberry", level: 5, seed: 45, minutes: 90, price: 128, xp: 9, names: n("Jahoda", "Strawberry", "Erdbeere", "Клубника", "Полуниця", "イチゴ", "Fresa", "Fraise") },
+  { id: "sunflower", level: 6, seed: 60, minutes: 120, price: 170, xp: 11, names: n("Slunečnice", "Sunflower", "Sonnenblume", "Подсолнух", "Соняшник", "ヒマワリ", "Girasol", "Tournesol") },
+  { id: "cabbage", level: 7, seed: 75, minutes: 150, price: 205, xp: 13, names: n("Zelí", "Cabbage", "Kohl", "Капуста", "Капуста", "キャベツ", "Col", "Chou") },
+  { id: "pumpkin", level: 8, seed: 90, minutes: 180, price: 260, xp: 15, names: n("Dýně", "Pumpkin", "Kürbis", "Тыква", "Гарбуз", "カボチャ", "Calabaza", "Citrouille") },
+  { id: "watermelon", level: 9, seed: 115, minutes: 240, price: 330, xp: 18, names: n("Meloun", "Watermelon", "Wassermelone", "Арбуз", "Кавун", "スイカ", "Sandía", "Pastèque") },
+  { id: "apple", level: 10, seed: 140, minutes: 300, price: 430, xp: 22, names: n("Jablko", "Apple", "Apfel", "Яблоко", "Яблуко", "リンゴ", "Manzana", "Pomme") },
+  { id: "cherry", level: 11, seed: 170, minutes: 360, price: 500, xp: 26, names: n("Třešně", "Cherries", "Kirschen", "Вишня", "Черешня", "サクランボ", "Cerezas", "Cerises") },
+  { id: "grapes", level: 12, seed: 200, minutes: 480, price: 660, xp: 32, names: n("Hrozny", "Grapes", "Trauben", "Виноград", "Виноград", "ブドウ", "Uvas", "Raisins") },
+  { id: "peach", level: 14, seed: 240, minutes: 600, price: 810, xp: 38, names: n("Broskev", "Peach", "Pfirsich", "Персик", "Персик", "モモ", "Melocotón", "Pêche") },
+  { id: "lavender", level: 16, seed: 300, minutes: 720, price: 980, xp: 46, names: n("Levandule", "Lavender", "Lavendel", "Лаванда", "Лаванда", "ラベンダー", "Lavanda", "Lavande") },
+  { id: "rose", level: 18, seed: 420, minutes: 900, price: 1330, xp: 62, names: n("Růže", "Rose", "Rose", "Роза", "Троянда", "バラ", "Rosa", "Rose") },
 ];
 
 export const ANIMALS: AnimalDef[] = [
-  { id: "chicken", level: 2, cost: 120, product: "egg", minutes: 6, names: n("Slepice", "Chicken", "Huhn", "Курица") },
-  { id: "duck", level: 3, cost: 220, product: "duckegg", minutes: 10, names: n("Kachna", "Duck", "Ente", "Утка") },
-  { id: "sheep", level: 5, cost: 500, product: "wool", minutes: 20, names: n("Ovce", "Sheep", "Schaf", "Овца") },
-  { id: "goat", level: 6, cost: 750, product: "cheese", minutes: 30, names: n("Koza", "Goat", "Ziege", "Коза") },
-  { id: "cow", level: 8, cost: 1200, product: "milk", minutes: 40, names: n("Kráva", "Cow", "Kuh", "Корова") },
-  { id: "turkey", level: 9, cost: 1600, product: "turkeyegg", minutes: 50, names: n("Krocan", "Turkey", "Truthahn", "Индюк") },
-  { id: "pig", level: 11, cost: 2000, product: "truffle", minutes: 60, names: n("Prase", "Pig", "Schwein", "Свинья") },
-  { id: "bee", level: 13, cost: 3200, product: "honey", minutes: 90, names: n("Včely", "Bees", "Bienen", "Пчёлы") },
-  { id: "alpaca", level: 15, cost: 4300, product: "alpacawool", minutes: 110, names: n("Alpaka", "Alpaca", "Alpaka", "Альпака") },
-  { id: "silkworm", level: 17, cost: 5600, product: "silk", minutes: 150, names: n("Bource", "Silkworm", "Seidenraupe", "Шелкопряд") },
+  { id: "chicken", level: 2, cost: 120, product: "egg", minutes: 6, names: n("Slepice", "Chicken", "Huhn", "Курица", "Курка", "ニワトリ", "Gallina", "Poule") },
+  { id: "duck", level: 3, cost: 220, product: "duckegg", minutes: 10, names: n("Kachna", "Duck", "Ente", "Утка", "Качка", "アヒル", "Pato", "Canard") },
+  { id: "sheep", level: 5, cost: 500, product: "wool", minutes: 20, names: n("Ovce", "Sheep", "Schaf", "Овца", "Вівця", "ヒツジ", "Oveja", "Mouton") },
+  { id: "goat", level: 6, cost: 750, product: "cheese", minutes: 30, names: n("Koza", "Goat", "Ziege", "Коза", "Коза", "ヤギ", "Cabra", "Chèvre") },
+  { id: "cow", level: 8, cost: 1200, product: "milk", minutes: 40, names: n("Kráva", "Cow", "Kuh", "Корова", "Корова", "ウシ", "Vaca", "Vache") },
+  { id: "turkey", level: 9, cost: 1600, product: "turkeyegg", minutes: 50, names: n("Krocan", "Turkey", "Truthahn", "Индюк", "Індик", "シチメンチョウ", "Pavo", "Dindon") },
+  { id: "pig", level: 11, cost: 2000, product: "truffle", minutes: 60, names: n("Prase", "Pig", "Schwein", "Свинья", "Свиня", "ブタ", "Cerdo", "Cochon") },
+  { id: "bee", level: 13, cost: 3200, product: "honey", minutes: 90, names: n("Včely", "Bees", "Bienen", "Пчёлы", "Бджоли", "ミツバチ", "Abejas", "Abeilles") },
+  { id: "alpaca", level: 15, cost: 4300, product: "alpacawool", minutes: 110, names: n("Alpaka", "Alpaca", "Alpaka", "Альпака", "Альпака", "アルパカ", "Alpaca", "Alpaga") },
+  { id: "silkworm", level: 17, cost: 5600, product: "silk", minutes: 150, names: n("Bource", "Silkworm", "Seidenraupe", "Шелкопряд", "Шовкопряд", "カイコ", "Gusano de seda", "Ver à soie") },
 ];
 
 export const PRODUCTS: ProductDef[] = [
-  { id: "egg", price: 14, xp: 1, names: n("Vejce", "Egg", "Ei", "Яйцо") },
-  { id: "duckegg", price: 26, xp: 2, names: n("Kachní vejce", "Duck egg", "Enten-Ei", "Утиное яйцо") },
-  { id: "wool", price: 60, xp: 4, names: n("Vlna", "Wool", "Wolle", "Шерсть") },
-  { id: "cheese", price: 95, xp: 6, names: n("Sýr", "Cheese", "Käse", "Сыр") },
-  { id: "milk", price: 140, xp: 8, names: n("Mléko", "Milk", "Milch", "Молоко") },
-  { id: "turkeyegg", price: 185, xp: 10, names: n("Krocaní vejce", "Turkey egg", "Truthahn-Ei", "Индюшиное яйцо") },
-  { id: "truffle", price: 230, xp: 12, names: n("Lanýž", "Truffle", "Trüffel", "Трюфель") },
-  { id: "honey", price: 360, xp: 18, names: n("Med", "Honey", "Honig", "Мёд") },
-  { id: "alpacawool", price: 480, xp: 25, names: n("Vlna z alpaky", "Alpaca wool", "Alpaka-Wolle", "Шерсть альпаки") },
-  { id: "silk", price: 700, xp: 36, names: n("Hedvábí", "Silk", "Seide", "Шёлк") },
+  { id: "egg", price: 14, xp: 1, names: n("Vejce", "Egg", "Ei", "Яйцо", "Яйце", "卵", "Huevo", "Œuf") },
+  { id: "duckegg", price: 26, xp: 2, names: n("Kachní vejce", "Duck egg", "Enten-Ei", "Утиное яйцо", "Качине яйце", "アヒルの卵", "Huevo de pato", "Œuf de canard") },
+  { id: "wool", price: 60, xp: 4, names: n("Vlna", "Wool", "Wolle", "Шерсть", "Вовна", "羊毛", "Lana", "Laine") },
+  { id: "cheese", price: 95, xp: 6, names: n("Sýr", "Cheese", "Käse", "Сыр", "Сир", "チーズ", "Queso", "Fromage") },
+  { id: "milk", price: 140, xp: 8, names: n("Mléko", "Milk", "Milch", "Молоко", "Молоко", "牛乳", "Leche", "Lait") },
+  { id: "turkeyegg", price: 185, xp: 10, names: n("Krocaní vejce", "Turkey egg", "Truthahn-Ei", "Индюшиное яйцо", "Індиче яйце", "シチメンチョウの卵", "Huevo de pavo", "Œuf de dinde") },
+  { id: "truffle", price: 230, xp: 12, names: n("Lanýž", "Truffle", "Trüffel", "Трюфель", "Трюфель", "トリュフ", "Trufa", "Truffe") },
+  { id: "honey", price: 360, xp: 18, names: n("Med", "Honey", "Honig", "Мёд", "Мед", "はちみつ", "Miel", "Miel") },
+  { id: "alpacawool", price: 480, xp: 25, names: n("Vlna z alpaky", "Alpaca wool", "Alpaka-Wolle", "Шерсть альпаки", "Альпачия вовна", "アルパカの毛", "Lana de alpaca", "Laine d'alpaga") },
+  { id: "silk", price: 700, xp: 36, names: n("Hedvábí", "Silk", "Seide", "Шёлк", "Шовк", "絹", "Seda", "Soie") },
 ];
 
 export type Plot = { crop: CropId; plantedAt: number } | null;
