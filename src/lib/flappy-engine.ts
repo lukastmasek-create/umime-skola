@@ -4,6 +4,8 @@ import { Sprites } from "./sprites";
 
 const BIRD_X = 150;
 const BIRD_R = 13;
+// Zásah se počítá menším kruhem než vykreslený ptáček, aby hitbox nebyl přísný.
+const BIRD_HIT_R = 9;
 const WALL_W = 70;
 const GAP_BASE = 74;
 const GAP_CENTERS = [56, 150, 244, 338];
@@ -38,6 +40,45 @@ export class FlappyEngine extends ArcadeEngine {
 
   private blocked(i: number) {
     return this.eliminated.has(this.order[i]);
+  }
+
+  // Pevné úseky zdi (mezi otevřenými průlety), stejné jako v kreslení.
+  private solidEdges(): [number, number][] {
+    const h = this.gapH();
+    const open = GAP_CENTERS.filter((_, i) => !this.blocked(i));
+    const edges: [number, number][] = [[0, open[0] - h / 2]];
+    for (let i = 0; i < open.length - 1; i++) edges.push([open[i] + h / 2, open[i + 1] - h / 2]);
+    edges.push([open[open.length - 1] + h / 2, GROUND]);
+    return edges;
+  }
+
+  // Kruh ptáčka vs. obdélník zdi: zaokrouhlené rohy, takže dotek hrany není trestán ostrým rohem.
+  private hitsWall(): boolean {
+    const x0 = this.wallX;
+    const x1 = this.wallX + WALL_W;
+    for (const [y0, y1] of this.solidEdges()) {
+      const nx = Math.max(x0, Math.min(BIRD_X, x1));
+      const ny = Math.max(y0, Math.min(this.birdY, y1));
+      const dx = BIRD_X - nx;
+      const dy = this.birdY - ny;
+      if (dx * dx + dy * dy < BIRD_HIT_R * BIRD_HIT_R) return true;
+    }
+    return false;
+  }
+
+  // Průlet, ve kterém je ptáček právě teď (nejbližší otevřený střed).
+  private currentGap(): number {
+    let best = 0;
+    let bestDist = Infinity;
+    GAP_CENTERS.forEach((c, i) => {
+      if (this.blocked(i)) return;
+      const d = Math.abs(this.birdY - c);
+      if (d < bestDist) {
+        bestDist = d;
+        best = i;
+      }
+    });
+    return best;
   }
 
   protected eliminate(indices: number[]) {
@@ -112,26 +153,24 @@ export class FlappyEngine extends ArcadeEngine {
 
     this.vy += GRAVITY * this.floaty() * dt;
     this.birdY += this.vy * dt;
-    if (this.birdY < BIRD_R) {
-      this.birdY = BIRD_R;
+    if (this.birdY < BIRD_HIT_R) {
+      this.birdY = BIRD_HIT_R;
       this.vy = 0;
     }
-    if (this.birdY > GROUND - BIRD_R) {
+    if (this.birdY > GROUND - BIRD_HIT_R) {
       this.crash();
       return;
     }
 
     this.wallX -= 100 * this.pace() * dt;
-    const overlaps = this.wallX < BIRD_X + BIRD_R && this.wallX + WALL_W > BIRD_X - BIRD_R;
+    const overlaps = this.wallX < BIRD_X + BIRD_HIT_R && this.wallX + WALL_W > BIRD_X - BIRD_HIT_R;
     if (overlaps) {
-      const h = this.gapH();
-      const inside = GAP_CENTERS.findIndex((c, i) => !this.blocked(i) && this.birdY - BIRD_R * 0.8 >= c - h / 2 && this.birdY + BIRD_R * 0.8 <= c + h / 2);
-      if (inside < 0) {
+      if (this.hitsWall()) {
         this.crash();
         return;
       }
-      this.gapIndex = inside;
-    } else if (this.gapIndex !== null && this.wallX + WALL_W < BIRD_X - BIRD_R) {
+      this.gapIndex = this.currentGap();
+    } else if (this.gapIndex !== null && this.wallX + WALL_W < BIRD_X - BIRD_HIT_R) {
       const option = this.order[this.gapIndex];
       const x = BIRD_X;
       const y = this.birdY;
@@ -175,12 +214,7 @@ export class FlappyEngine extends ArcadeEngine {
     ctx.fillRect(0, GROUND, W, 3);
 
     // zeď: úseky mezi průlety
-    const h = this.gapH();
-    const open = GAP_CENTERS.filter((_, i) => !this.blocked(i));
-    const edges: [number, number][] = [[0, open[0] - h / 2]];
-    for (let i = 0; i < open.length - 1; i++) edges.push([open[i] + h / 2, open[i + 1] - h / 2]);
-    edges.push([open[open.length - 1] + h / 2, GROUND]);
-    for (const [y0, y1] of edges) {
+    for (const [y0, y1] of this.solidEdges()) {
       if (this.drawWall(ctx, y0, y1, y0 > 0, y1 < GROUND)) continue;
       ctx.fillStyle = "#3fae4a";
       ctx.strokeStyle = "#1f6b2b";
