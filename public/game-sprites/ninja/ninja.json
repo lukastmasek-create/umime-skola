@@ -3,8 +3,8 @@
     "cepel": {
       "file": "cepel.webp",
       "cell": [
-        96,
-        96
+        192,
+        192
       ],
       "cols": 1,
       "frames": {
@@ -17,8 +17,8 @@
     "ovoce": {
       "file": "ovoce.webp",
       "cell": [
-        96,
-        96
+        192,
+        192
       ],
       "cols": 8,
       "frames": {
