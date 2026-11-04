@@ -9,8 +9,7 @@ const COLORS = ["#8fd0ff", "#ff8a6b", "#7ee0b0", "#ffc933", "#c9a7ff"];
 const PATHS = ["zakladna", "mazlicci", "farma", "mesto", "ekonomika"] as const;
 
 // Vyrenderovaná diorámata (pás 24 snímků) ve stejném pořadí jako hry.
-// Ekonomika zatím nemá render, místo něj je emoji.
-const ART = ["zakladna", "mazlicci", "farma", "mesto", null] as const;
+const ART = ["zakladna", "mazlicci", "farma", "mesto", "ekonomika"] as const;
 
 export default async function IdleGamesPage({
   params,
