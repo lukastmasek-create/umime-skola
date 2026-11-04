@@ -6,16 +6,20 @@ const HOLE_Y = 290;
 const HOLE_X = [95, 245, 395, 545];
 const UP_TIME = 2.0;
 const DOWN_TIME = 0.9;
+// Čára, za kterou krtek mizí v díře (přední okraj díry). Spodek krtka nesmí být nikdy nad ní.
+const RIM_Y = HOLE_Y + 14;
 
 // Vysunutí krtka z díry (px) a jeho kreslená velikost (buňka listu je 224 × 240).
-const RISE = 96;
+const RISE = 80;
 const MOLE_W = 180;
 const MOLE_H = 192;
 // Kladivo: celý úder trvá SWING sekund, dopadne IMPACT_AT sekund po klepnutí.
 const SWING = 0.3;
 const IMPACT_AT = 0.17;
+const IMPACT_ANGLE = -38; // úhel kladiva v okamžiku dopadu (stupně, dopad na hlavu krtka)
 const HAMMER_W = 110;
 const HAMMER_H = 192;
+const HAMMER_PIVOT_Y = HOLE_Y + 10; // úchyt kladiva leží u okraje díry
 const HAMMER_PIVOT_CELL = 36; // kolik px nad spodním okrajem buňky kladiva je úchyt (cell 128 × 224)
 // Při zásahu se čas na chvíli zastaví (hit-stop): úder je tak tvrdší a lépe čitelný.
 const HIT_STOP = 0.085;
@@ -217,10 +221,11 @@ export class MoleEngine extends ArcadeEngine {
     return Math.min(1, Math.min(used, m.t) / 0.25);
   }
 
-  // Y souřadnice spodku krtka (spodek je schovaný v díře, dokud je krtek dole).
+  // Y souřadnice spodku krtka: plně vysunutý krtek má spodek přesně na přední hraně díry,
+  // schovaný je pod ní (a ořízne ho clip). Spodek tedy nikdy nevisí nad norou.
   private moleBottom(m: Mole, i: number): number {
     const p = this.winI === i ? 1 : this.popOut(m);
-    return HOLE_Y + 40 - p * RISE;
+    return RIM_Y + (1 - p) * (RISE + 14);
   }
 
   protected draw(ctx: CanvasRenderingContext2D) {
@@ -354,11 +359,11 @@ export class MoleEngine extends ArcadeEngine {
     this.sp.draw(ctx, "dira", "dira", x, HOLE_Y, 136, 56);
   }
 
-  // přední okraj díry přes krtka (spodní polovina sprite, jen pod čarou díry)
+  // přední okraj díry přes krtka (spodní část sprite, jen pod přední hranou díry)
   private drawHoleFront(ctx: CanvasRenderingContext2D, x: number) {
     ctx.save();
     ctx.beginPath();
-    ctx.rect(x - 70, HOLE_Y, 140, 40);
+    ctx.rect(x - 70, RIM_Y, 140, 40);
     ctx.clip();
     this.sp.draw(ctx, "dira", "dira", x, HOLE_Y, 136, 56);
     ctx.restore();
@@ -372,16 +377,21 @@ export class MoleEngine extends ArcadeEngine {
     const idle = 1 + 0.012 * Math.sin(this.time * 3.4 + i * 1.7);
 
     let frame: string;
-    let bounce = 0;
+    let dip = 0; // zásah krtka tlačí dolů do díry (kladné = níž)
+    let stretchX = 1;
+    let stretchY = 1;
     let wobble = 0;
     const winner = this.winI === i;
     if (winner) {
       const tau = this.time - this.winT;
       frame = Math.floor(tau * 4) % 2 ? "vitez_2" : "vitez_1";
-      bounce = Math.abs(Math.sin(tau * 6.5)) * 26 * Math.max(0.4, 1 - tau * 0.12);
+      // oslava: protahování a zkracování, spodek zůstává v díře
+      const hop = Math.abs(Math.sin(tau * 6.5)) * Math.max(0.4, 1 - tau * 0.12);
+      stretchY = 1 + 0.07 * hop;
+      stretchX = 1 - 0.05 * hop;
     } else if (m.phase === "stunned") {
       frame = sinceHit < 0.3 ? "zasah" : "omamen";
-      bounce = sinceHit < 0.35 ? Math.sin((sinceHit / 0.35) * Math.PI) * 26 : 0;
+      dip = sinceHit < 0.35 ? Math.sin((sinceHit / 0.35) * Math.PI) * 10 : 0;
       wobble = frame === "omamen" ? Math.sin(this.time * 5) * 0.1 : 0;
     } else {
       const p = this.popOut(m);
@@ -396,11 +406,11 @@ export class MoleEngine extends ArcadeEngine {
 
     ctx.save();
     ctx.beginPath();
-    ctx.rect(0, 0, W, HOLE_Y + 2);
+    ctx.rect(0, 0, W, RIM_Y);
     ctx.clip();
-    ctx.translate(x, bottom - bounce);
+    ctx.translate(x, bottom + dip);
     ctx.rotate(wobble);
-    ctx.scale(squashX, squashY * idle);
+    ctx.scale(squashX * stretchX, squashY * idle * stretchY);
     this.sp.draw(ctx, "krtek", frame, 0, -MOLE_H / 2, MOLE_W, MOLE_H);
     ctx.restore();
 
@@ -408,7 +418,7 @@ export class MoleEngine extends ArcadeEngine {
       drawLabel(ctx, m.label, x, Math.max(24, bottom - MOLE_H - 4), 138, ANSWER_COLORS[i % ANSWER_COLORS.length], { height: 34, size: 15 });
     }
     if (winner) {
-      drawLabel(ctx, m.label, x, Math.max(24, bottom - MOLE_H - 4 - bounce), 138, ANSWER_COLORS[i % ANSWER_COLORS.length], { height: 34, size: 15 });
+      drawLabel(ctx, m.label, x, Math.max(24, bottom - MOLE_H - 4), 138, ANSWER_COLORS[i % ANSWER_COLORS.length], { height: 34, size: 15 });
     }
     if (m.phase === "stunned" && !winner) {
       // tři hvězdičky kroužící nad hlavou
@@ -435,9 +445,9 @@ export class MoleEngine extends ArcadeEngine {
   private drawHammer(ctx: CanvasRenderingContext2D, m: Mole, i: number, art: boolean) {
     const x = HOLE_X[i];
     const e = SWING - m.swing;
-    const deg = e < IMPACT_AT ? lerp(38, -34, easeIn(e / IMPACT_AT)) : lerp(-34, 14, (e - IMPACT_AT) / (SWING - IMPACT_AT));
+    const deg = e < IMPACT_AT ? lerp(38, IMPACT_ANGLE, easeIn(e / IMPACT_AT)) : lerp(IMPACT_ANGLE, 14, (e - IMPACT_AT) / (SWING - IMPACT_AT));
     ctx.save();
-    ctx.translate(x + 78, HOLE_Y - 34);
+    ctx.translate(x + 78, HAMMER_PIVOT_Y);
     ctx.rotate((deg * Math.PI) / 180);
     if (art) {
       const s = HAMMER_H / 224;

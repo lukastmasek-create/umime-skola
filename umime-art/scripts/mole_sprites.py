@@ -204,16 +204,15 @@ def render_all():
         bpy.ops.render.render(write_still=True)
 
     # ---------- KRTEK ----------
-    fur = new_material("fur", "#8a5a3a", rough=0.7, sss=0.12, fur=0.18)
-    belly = new_material("belly", "#f2d6b0", rough=0.55, sss=0.2, fur=0.05)
-    pink = new_material("pink", "#ff8aa0", rough=0.3, coat=0.4)
+    # krtek obecný: sametová tmavě šedá srst (bez lesku), šedé břicho, růžový čenich a tlapy
+    fur = new_material("fur", "#4a4245", rough=0.9, sss=0.05, fur=0.1)
+    belly = new_material("belly", "#6d6468", rough=0.85, sss=0.08, fur=0.06)
+    pink = new_material("pink", "#e9a3a8", rough=0.4, sss=0.2)
     inner_ear = new_material("ear_in", "#f2a3b0", rough=0.6)
-    white = new_material("white", "#ffffff", rough=0.12, coat=0.5)
+    white = new_material("white", "#d9d0c6", rough=0.35)
     black = new_material("black", "#17132a", rough=0.25, coat=0.3)
-    yellow = new_material("helmet", "#ffd23f", rough=0.2, coat=0.9)
-    claw = new_material("claw", "#fff6e6", rough=0.3, coat=0.3)
+    claw = new_material("claw", "#efe4da", rough=0.4)
     mouth_m = new_material("mouth", "#5c1a2b", rough=0.4)
-    whisker = new_material("whisker", "#efe7d6", rough=0.35)
 
     mole = []
     body_e = empty("body")
@@ -225,15 +224,16 @@ def render_all():
 
     head_e = empty("head", parent=body_e)
     mole.append(head_e)
-    muzzle = part("sphere", "muzzle", (0, -0.9, 0.2), (0.38, 0.3, 0.3), belly, parent=head_e)
-    nose = part("sphere", "nose", (0, -1.15, 0.3), (0.13, 0.1, 0.09), pink, parent=head_e)
+    # špičatý růžový čenich (krtčí rypáček)
+    muzzle = part("sphere", "muzzle", (0, -0.92, 0.2), (0.26, 0.42, 0.25), pink, parent=head_e)
+    nose = part("sphere", "nose", (0, -1.32, 0.22), (0.1, 0.08, 0.08), pink, parent=head_e)
     mole += [muzzle, nose]
 
     eyes = {}
     for side, sx in (("L", -1), ("R", 1)):
         ex = 0.25 * sx
-        ew = part("sphere", f"eyeW_{side}", (ex, -0.8, 0.46), (0.17, 0.08, 0.18), white, parent=head_e)
-        pu = part("sphere", f"pupil_{side}", (ex, -0.88, 0.44), (0.095, 0.05, 0.11), black, parent=head_e)
+        ew = part("sphere", f"eyeW_{side}", (ex, -0.8, 0.46), (0.075, 0.05, 0.075), white, parent=head_e)
+        pu = part("sphere", f"pupil_{side}", (ex, -0.88, 0.44), (0.045, 0.03, 0.045), black, parent=head_e)
         sh = part("sphere", f"shine_{side}", (ex + 0.035 * sx, -0.915, 0.5), (0.032, 0.02, 0.032), white, parent=head_e)
         cl = part("sphere", f"closed_{side}", (ex, -0.9, 0.46), (0.15, 0.03, 0.03), black, parent=head_e)
         xa = part("cyl", f"xa_{side}", (ex, -0.92, 0.46), (0.03, 0.03, 0.28), black, rot=(math.radians(90), 0, math.radians(45)), parent=head_e)
@@ -243,8 +243,8 @@ def render_all():
         mole += [ew, pu, sh, cl, xa, xb, sp]
 
     for side, sx in (("L", -1), ("R", 1)):
-        ear = part("sphere", f"ear_{side}", (0.72 * sx, -0.28, 0.6), (0.17, 0.12, 0.17), fur, parent=head_e)
-        ein = part("sphere", f"earin_{side}", (0.72 * sx, -0.36, 0.6), (0.1, 0.07, 0.1), inner_ear, parent=head_e)
+        ear = part("sphere", f"ear_{side}", (0.72 * sx, -0.28, 0.6), (0.12, 0.09, 0.12), fur, parent=head_e)
+        ein = part("sphere", f"earin_{side}", (0.72 * sx, -0.36, 0.6), (0.07, 0.05, 0.07), inner_ear, parent=head_e)
         mole += [ear, ein]
 
     # ústa: dvě varianty (otevřená ‚au‘ a úsměv); skryté, dokud je póza nepotřebuje
@@ -252,25 +252,12 @@ def render_all():
     mouth_s = part("sphere", "mouth_s", (0, -1.0, 0.1), (0.22, 0.05, 0.05), mouth_m, parent=head_e)
     mole += [mouth_o, mouth_s]
 
-    # vousy (tři na každou stranu)
-    for side, sx in (("L", -1), ("R", 1)):
-        for k, fan in enumerate((-0.2, 0.0, 0.2)):
-            z = 0.2 + k * 0.05 - 0.05
-            w = part("cyl", f"whisk_{side}{k}", (0.5 * sx, -1.0, z), (0.011, 0.011, 0.3), whisker,
-                     rot=(0, math.radians(90), math.radians(fan * 60 * sx)), parent=head_e)
-            mole.append(w)
-
-    # helma: lesklá žlutá přilba s kšiltem
-    helmet = part("sphere", "helmet", (0, 0, 0.86), (0.96, 0.9, 0.44), yellow, parent=head_e)
-    brim = part("torus", "brim", (0, 0, 0.7), (1, 1, 1), yellow, rot=(math.radians(-6), 0, 0), parent=head_e, radius=0.95, minor=0.08)
-    mole += [helmet, brim]
-
     # ruce s pracky a drápky (každá ruka má pivot v rameni)
     arms = {}
     for side, sx in (("L", -1), ("R", 1)):
         sh_e = empty(f"shoulder_{side}", (0.82 * sx, -0.05, 0.05), parent=body_e)
         arm = part("sphere", f"arm_{side}", (0.84 * sx, -0.04, -0.3), (0.2, 0.2, 0.36), fur, parent=sh_e)
-        paw = part("sphere", f"paw_{side}", (0.92 * sx, -0.12, -0.66), (0.25, 0.22, 0.18), belly, parent=sh_e)
+        paw = part("sphere", f"paw_{side}", (0.92 * sx, -0.14, -0.66), (0.3, 0.26, 0.2), pink, parent=sh_e)
         claws = []
         for k, dx in enumerate((-0.1, 0.0, 0.1)):
             c = part("cone", f"claw_{side}{k}", (0.92 * sx + dx, -0.3, -0.84), (0.035, 0.035, 0.1), claw,
@@ -349,11 +336,11 @@ def render_all():
             for key, flag in vis.items():
                 set_hidden(e[key], not flag)
             if eye_mode == "squint":
-                e["w"].scale = (0.17, 0.08, 0.09)
-                e["p"].scale = (0.095, 0.05, 0.05)
+                e["w"].scale = (0.075, 0.05, 0.035)
+                e["p"].scale = (0.045, 0.03, 0.025)
             else:
-                e["w"].scale = (0.17, 0.08, 0.18)
-                e["p"].scale = (0.095, 0.05, 0.11)
+                e["w"].scale = (0.075, 0.05, 0.075)
+                e["p"].scale = (0.045, 0.03, 0.045)
         m = p.get("mouth")
         set_hidden(mouth_o, m != "o")
         set_hidden(mouth_s, m != "smile")
