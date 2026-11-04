@@ -761,8 +761,11 @@ function SpaceMap({
   const unlocked = isUnlocked(state, dest);
   const ready = docked.filter((s) => s.readyAt <= now && getShip(s.type)!.tier >= dest.tier);
   const chosen = ready.find((s) => s.id === shipId) ?? ready[0];
-  const earth = { x: 130, y: 180 };
   const sun = { x: 58, y: 180 };
+  // Země leží mezi Venuší (0.36) a Marsem (0.5), ne u Slunce
+  const EARTH_ORBIT = 0.43;
+  const earthR = 64 + EARTH_ORBIT * 470;
+  const earth = { x: sun.x + earthR, y: sun.y };
 
   const position = (d: DestDef, index: number) => {
     const r = 64 + d.orbit * 470;
