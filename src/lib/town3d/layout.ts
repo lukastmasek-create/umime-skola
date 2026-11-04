@@ -74,12 +74,13 @@ export const PLACES: Place[] = [
   { id: "more", kind: "world", icon: "🐠", model: "podmorske", x: 0, z: 45, ry: 0, hw: 10, hd: 10, door: 0, href: "/uzivatelsky-obchod?svet=sea", label: 10 },
   { id: "stanice", kind: "world", icon: "🚀", model: "stanice", x: 55, z: 42, ry: 0, hw: 8, hd: 8, door: 0, href: "/uzivatelsky-obchod?svet=space", label: 20 },
   // domky obyvatel (každý má svého obyvatele s úkolem)
-  { id: "babicka", kind: "home", icon: "👵", model: "domek1", x: -14, z: -24.5, ry: Math.PI, hw: 2.6, hd: 2.4, door: 2.8, label: 7 },
-  { id: "farmar", kind: "home", icon: "👨‍🌾", model: "domek2", x: 14, z: -24.5, ry: Math.PI, hw: 2.6, hd: 2.4, door: 2.8, label: 7 },
-  { id: "kluk", kind: "home", icon: "🧒", model: "domek3", x: -18, z: 34.5, ry: 0, hw: 2.6, hd: 2.4, door: 2.8, label: 7 },
-  { id: "rybar", kind: "home", icon: "🎣", model: "domek4", x: -38, z: 34.5, ry: 0, hw: 2.6, hd: 2.4, door: 2.8, label: 7 },
-  { id: "vedkyne", kind: "home", icon: "👩‍🔬", model: "domek5", x: 18, z: 34.5, ry: 0, hw: 2.6, hd: 2.4, door: 2.8, label: 7 },
-  { id: "kapitan", kind: "home", icon: "🧑‍✈️", model: "domek6", x: 38, z: 34.5, ry: 0, hw: 2.6, hd: 2.4, door: 2.8, label: 7 },
+  // dveře domků míří k nejbližší ulici (jinak by příjezd vedl přes dům)
+  { id: "babicka", kind: "home", icon: "👵", model: "domek1", x: -14, z: -24.5, ry: 0, hw: 2.6, hd: 2.4, door: 2.8, label: 7 },
+  { id: "farmar", kind: "home", icon: "👨‍🌾", model: "domek2", x: 14, z: -24.5, ry: 0, hw: 2.6, hd: 2.4, door: 2.8, label: 7 },
+  { id: "kluk", kind: "home", icon: "🧒", model: "domek3", x: -18, z: 34.5, ry: Math.PI, hw: 2.6, hd: 2.4, door: 2.8, label: 7 },
+  { id: "rybar", kind: "home", icon: "🎣", model: "domek4", x: -38, z: 34.5, ry: Math.PI, hw: 2.6, hd: 2.4, door: 2.8, label: 7 },
+  { id: "vedkyne", kind: "home", icon: "👩‍🔬", model: "domek5", x: 18, z: 34.5, ry: Math.PI, hw: 2.6, hd: 2.4, door: 2.8, label: 7 },
+  { id: "kapitan", kind: "home", icon: "🧑‍✈️", model: "domek6", x: 38, z: 34.5, ry: Math.PI, hw: 2.6, hd: 2.4, door: 2.8, label: 7 },
   // volné parcely pro vlastní stavby
   { id: "parcela1", kind: "plot", icon: "🏗️", model: "parcela", x: -52, z: 7, ry: Math.PI, hw: 4, hd: 3.5, door: 0, label: 4 },
   { id: "parcela2", kind: "plot", icon: "🏗️", model: "parcela", x: 52, z: 7, ry: Math.PI, hw: 4, hd: 3.5, door: 0, label: 4 },
@@ -102,6 +103,29 @@ export const LAMPS: Pt[] = [
 
 export function doorPoint(p: Place): Pt {
   return [p.x + Math.sin(p.ry) * p.door, p.z + Math.cos(p.ry) * p.door];
+}
+
+// Bod uvnitř půdorysu budovy (natočeného o `ry`); `pad` přidá rezervu kolem zdí v metrech.
+export function inFootprint(p: Place, x: number, z: number, pad = 0): boolean {
+  const dx = x - p.x;
+  const dz = z - p.z;
+  const lx = dx * Math.cos(p.ry) - dz * Math.sin(p.ry);
+  const lz = dx * Math.sin(p.ry) + dz * Math.cos(p.ry);
+  return Math.abs(lx) <= p.hw + pad && Math.abs(lz) <= p.hd + pad;
+}
+
+// Pevné budovy: po nich se nechodí (kromě volných parcel a náměstí, to řeší kašna a ulice).
+export const SOLID_PLACES: Place[] = PLACES.filter((p) => p.kind !== "plot" && p.id !== "namesti");
+
+// Svět (místo `world`) → klíč uživatelského obchodu; odemyká se přes /api/shop (`worlds`).
+export const WORLD_OF_PLACE: Record<string, string> = { les: "forest", hrad: "castle", more: "sea", stanice: "space", pristav: "pirate" };
+
+// Mrak nad zamčeným světem: měřítko modelu `oblak.glb` (14 m široký) a poloměr, který chůze nesmí překročit.
+export function cloudScale(p: Place): number {
+  return Math.max(1.3, (2 * Math.max(p.hw, p.hd) + 5) / 14);
+}
+export function cloudRadius(p: Place): number {
+  return 6.2 * cloudScale(p);
 }
 
 function nearestOnRoad(x: number, z: number, r: Road): { pt: Pt; d: number; k: number } {
