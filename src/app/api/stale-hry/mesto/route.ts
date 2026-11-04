@@ -13,6 +13,7 @@ import {
   computeCity,
   demolishAt,
   learningBonusFromXp,
+  moveItem,
   normalizeCity,
   settleCity,
   startState,
@@ -105,6 +106,8 @@ type Body = {
   action?: unknown;
   items?: unknown;
   tiles?: unknown;
+  from?: unknown;
+  to?: unknown;
 };
 
 function asList<T>(value: unknown, guard: (v: unknown) => v is T): T[] {
@@ -116,6 +119,8 @@ const isBuild = (v: unknown): v is { id: string; x: number; y: number; rot?: 0 |
   typeof (v as { x?: unknown }).x === "number" && typeof (v as { y?: unknown }).y === "number";
 const isTile = (v: unknown): v is { x: number; y: number } =>
   !!v && typeof v === "object" && typeof (v as { x?: unknown }).x === "number" && typeof (v as { y?: unknown }).y === "number";
+// Neplatné souřadnice pošleme jako -1, pak je pravidla přesunu odmítnou stejně jako cizí místo.
+const tileOr = (v: unknown) => (isTile(v) ? { x: v.x, y: v.y } : { x: -1, y: -1 });
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -123,7 +128,7 @@ export async function POST(request: Request) {
   if (!userId) return NextResponse.json({ error: "login-required" }, { status: 401 });
 
   const body = (await request.json().catch(() => ({}))) as Body;
-  if (body.action !== "build" && body.action !== "demolish") {
+  if (body.action !== "build" && body.action !== "demolish" && body.action !== "move") {
     return NextResponse.json({ error: "unknown-action" }, { status: 400 });
   }
 
@@ -148,11 +153,19 @@ export async function POST(request: Request) {
         nextState = out.state;
         spent = out.pointsSpent;
         info = { placed: out.placed, failed: out.failed };
-      } else {
+      } else if (body.action === "demolish") {
         const out = demolishAt(settled, asList(body.tiles, isTile));
         if (!out.ok) return { error: out.error as CityError };
         nextState = out.state;
         info = { removed: out.removed, refund: out.refund };
+      } else {
+        const to = body.to && typeof body.to === "object" ? (body.to as { rot?: unknown }) : {};
+        const out = moveItem(settled, tileOr(body.from), {
+          ...tileOr(body.to),
+          rot: to.rot === 1 ? 1 : 0,
+        });
+        if (!out.ok) return { error: out.error as CityError };
+        nextState = out.state;
       }
 
       if (spent > 0) {

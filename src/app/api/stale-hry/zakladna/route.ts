@@ -19,6 +19,7 @@ import {
   demolishAt,
   launchMission,
   learningBonusFromXp,
+  moveModule,
   normalizeBase,
   petBonusFromLevel,
   researchDest,
@@ -132,6 +133,8 @@ type Body = {
   action?: unknown;
   items?: unknown;
   tiles?: unknown;
+  from?: unknown;
+  to?: unknown;
   ship?: unknown;
   type?: unknown;
   dest?: unknown;
@@ -147,8 +150,10 @@ const isBuild = (v: unknown): v is { id: string; x: number; y: number; rot?: 0 |
   typeof (v as { x?: unknown }).x === "number" && typeof (v as { y?: unknown }).y === "number";
 const isTile = (v: unknown): v is { x: number; y: number } =>
   !!v && typeof v === "object" && typeof (v as { x?: unknown }).x === "number" && typeof (v as { y?: unknown }).y === "number";
+// Neplatné souřadnice pošleme jako -1, pak je pravidla přesunu odmítnou stejně jako cizí místo.
+const tileOr = (v: unknown) => (isTile(v) ? { x: v.x, y: v.y } : { x: -1, y: -1 });
 
-const ACTIONS = ["build", "demolish", "buildShip", "research", "launch", "collect", "answer"];
+const ACTIONS = ["build", "demolish", "move", "buildShip", "research", "launch", "collect", "answer"];
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -194,6 +199,13 @@ export async function POST(request: Request) {
             nextState = out.state;
             info = { removed: out.removed, refund: out.refund };
           }
+          break;
+        }
+        case "move": {
+          const to = body.to && typeof body.to === "object" ? (body.to as { rot?: unknown }) : {};
+          const out = moveModule(settled, tileOr(body.from), { ...tileOr(body.to), rot: to.rot === 1 ? 1 : 0 });
+          if (!out.ok) fail = out.error;
+          else nextState = out.state;
           break;
         }
         case "buildShip": {

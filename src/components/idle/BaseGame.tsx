@@ -9,6 +9,7 @@ import {
   DESTINATIONS,
   MODULES,
   SHIPS,
+  canMoveTo,
   canPlace,
   footprint,
   getDest,
@@ -62,7 +63,8 @@ type Payload = {
 
 type Load = "loading" | "login" | "unavailable" | "ready";
 type Tab = "build" | "fleet" | "map" | "codex";
-type Tool = { kind: "none" } | { kind: "module"; id: string } | { kind: "demolish" };
+// Přesun: from je levý horní roh modulu, který se právě přesouvá.
+type Tool = { kind: "none" } | { kind: "module"; id: string } | { kind: "demolish" } | { kind: "move"; from: { x: number; y: number } };
 
 const SYNC_EVERY_MS = 60_000;
 const SHIP_ICONS = { probe: "🛰️", shuttle: "🚀", explorer: "🛸" } as const;
@@ -269,6 +271,17 @@ export function BaseGame({ locale }: { locale: Locale }) {
         if (ctx) {
           let ghost = null;
           const hover = hoverRef.current;
+          const from = l.tool.kind === "move" ? l.tool.from : null;
+          const movingIndex = from ? l.state.items.findIndex(([, x, y]) => x === from.x && y === from.y) : -1;
+          if (from && movingIndex >= 0 && hover) {
+            const def = getModule(l.state.items[movingIndex][0]);
+            if (def) {
+              const [w, h] = footprint(def, l.rot);
+              const gx = Math.max(0, Math.min(BASE_SIZE - w, hover.x - Math.floor(w / 2)));
+              const gy = Math.max(0, Math.min(BASE_SIZE - h, hover.y - Math.floor(h / 2)));
+              ghost = { id: def.id, x: gx, y: gy, rot: l.rot, valid: canMoveTo(l.state, from, { x: gx, y: gy, rot: l.rot }).ok };
+            }
+          }
           if (l.tool.kind === "module" && hover && l.data) {
             const def = getModule(l.tool.id);
             if (def) {
@@ -284,6 +297,7 @@ export function BaseGame({ locale }: { locale: Locale }) {
             ghost,
             hover: l.tool.kind === "module" ? null : hover,
             selected: l.selected,
+            hidden: movingIndex >= 0 ? movingIndex : null,
             demolish: l.tool.kind === "demolish",
             docked: l.state.ships.filter((s) => !s.mission).length,
             time: (performance.now() - start) / 1000,
@@ -328,11 +342,29 @@ export function BaseGame({ locale }: { locale: Locale }) {
       });
     } else if (tool.kind === "demolish") {
       act({ action: "demolish", tiles: [cell] });
+    } else if (tool.kind === "move") {
+      const from = tool.from;
+      const entry = state.items.find(([, x, y]) => x === from.x && y === from.y);
+      const def = entry ? getModule(entry[0]) : undefined;
+      if (!def) return;
+      const [w, h] = footprint(def, rot);
+      const x = Math.max(0, Math.min(BASE_SIZE - w, cell.x - Math.floor(w / 2)));
+      const y = Math.max(0, Math.min(BASE_SIZE - h, cell.y - Math.floor(h / 2)));
+      // Po úspěchu se režim přesunu ukončí; při chybě zůstane, ať hráč zkusí jiné místo.
+      act({ action: "move", from, to: { x, y, rot } }, () => setTool({ kind: "none" }));
     } else {
       const index = occ.get(cell.y * BASE_SIZE + cell.x);
       setSelected(index ?? null);
       if (index !== undefined) setLessonId(state.items[index][0]);
     }
+  };
+
+  const startMove = (index: number) => {
+    const entry = state?.items[index];
+    if (!entry || entry[0] === "core") return;
+    setTool({ kind: "move", from: { x: entry[1], y: entry[2] } });
+    setRot(entry[3]);
+    setSelected(null);
   };
 
   // klávesa R otáčí vybraný modul
@@ -439,7 +471,7 @@ export function BaseGame({ locale }: { locale: Locale }) {
               onPointerLeave={onCanvasLeave}
               onPointerDown={onCanvasClick}
               className="touch-manipulation rounded-2xl border-2 border-[var(--edge)] shadow-[0_4px_0_var(--shadow-ink)]"
-              style={{ cursor: tool.kind === "demolish" ? "not-allowed" : tool.kind === "module" ? "copy" : "pointer" }}
+              style={{ cursor: tool.kind === "demolish" ? "not-allowed" : tool.kind === "module" ? "copy" : tool.kind === "move" ? "move" : "pointer" }}
               aria-label={t.title}
             />
             <p className="max-w-xl text-center text-xs text-[var(--muted)]">{t.build.hint}</p>
@@ -493,6 +525,15 @@ export function BaseGame({ locale }: { locale: Locale }) {
               <button type="button" onClick={() => setRot((r) => (r === 0 ? 1 : 0))} className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-xs font-bold">
                 ⟳ {t.build.rotate} (R)
               </button>
+              <button
+                type="button"
+                onClick={() => selected !== null && startMove(selected)}
+                disabled={selected === null || state.items[selected]?.[0] === "core"}
+                aria-pressed={tool.kind === "move"}
+                className={`btn-bouncy px-3 py-1.5 text-xs font-bold disabled:opacity-50 ${tool.kind === "move" ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface)]"}`}
+              >
+                🚚 {t.build.move}
+              </button>
               {tool.kind !== "none" && (
                 <button type="button" onClick={() => setTool({ kind: "none" })} className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-xs font-bold">
                   ✕ {t.build.cancel}
@@ -500,6 +541,7 @@ export function BaseGame({ locale }: { locale: Locale }) {
               )}
             </div>
 
+            {tool.kind === "move" && <p className="text-xs font-semibold text-[var(--muted)]">{t.build.moveHint}</p>}
             <LessonCard t={t} locale={locale} id={lessonId} />
             {selected !== null && idleSet.has(selected) && <p className="text-xs font-semibold text-[var(--danger)]">{t.build.disconnected}</p>}
           </div>

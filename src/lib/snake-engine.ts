@@ -21,6 +21,14 @@ export class SnakeEngine extends ArcadeEngine {
   private food: Cell[] = [];
   private grow = 0;
   private invuln = 0;
+  // Plynulý pohyb: had skáče po buňkách, ale kreslí se mezi předchozí a novou pozicí.
+  // from[i] je kde segment i stál před posledním krokem (stejný index jako v `snake`),
+  // t je postup mezi kroky (0 až 1). Úhel hlavy se otáčí také plynule.
+  private from: Cell[] = [];
+  private t = 1;
+  private interval = 0.17;
+  private headFrom = 0;
+  private headAng = 0;
 
   protected questionTime() {
     return 55;
@@ -59,6 +67,9 @@ export class SnakeEngine extends ArcadeEngine {
       this.grow = 0;
     }
     this.acc = 0;
+    this.t = 1;
+    this.from = this.snake.map((c) => ({ ...c }));
+    this.headAng = this.headFrom = this.angleOf(this.dir);
     this.invuln = carry ? 1.2 : 0;
     this.apples = [];
     this.food = [];
@@ -103,14 +114,28 @@ export class SnakeEngine extends ArcadeEngine {
     this.food.push(c);
   }
 
+  private angleOf(d: Dir) {
+    const v = DIR_VEC[d];
+    return Math.atan2(v.y, v.x);
+  }
+
   protected update(dt: number) {
     this.invuln = Math.max(0, this.invuln - dt);
-    const interval = Math.max(0.06, 0.17 / (this.pace() * this.moveMul()));
+    this.interval = Math.max(0.06, 0.17 / (this.pace() * this.moveMul()));
     this.acc += dt;
-    while (this.acc >= interval && !this.over) {
-      this.acc -= interval;
+    while (this.acc >= this.interval && !this.over) {
+      this.acc -= this.interval;
       this.step();
     }
+    this.t = Math.min(1, this.acc / this.interval);
+  }
+
+  // Zapamatuje si, odkud se každý segment hýbe, a zkrátí skok, který by přeletěl přes celou plochu (okraj).
+  private remember(old: Cell[]) {
+    this.from = this.snake.map((c, i) => {
+      const f = old[Math.max(0, i - 1)];
+      return Math.abs(f.x - c.x) > 1 || Math.abs(f.y - c.y) > 1 ? { ...c } : { ...f };
+    });
   }
 
   private step() {
@@ -120,16 +145,26 @@ export class SnakeEngine extends ArcadeEngine {
     const head = this.snake[0];
     const next = { x: (head.x + v.x + COLS) % COLS, y: (head.y + v.y + ROWS) % ROWS };
 
+    // úhel hlavy: nejkratší otočení od předchozího úhlu, aby se hlava netočila zpátky o celý kruh
+    this.headFrom = this.headAng;
+    let a = this.angleOf(this.dir);
+    while (a - this.headFrom > Math.PI) a -= 2 * Math.PI;
+    while (a - this.headFrom < -Math.PI) a += 2 * Math.PI;
+    this.headAng = a;
+
     if (this.invuln <= 0 && this.snake.slice(0, -1).some((c) => c.x === next.x && c.y === next.y)) {
       this.damage();
       this.burst((head.x + 0.5) * C, OY + (head.y + 0.5) * C, "#7ee0b0", 18);
       this.snake = this.snake.slice(0, Math.max(3, Math.ceil(this.snake.length / 2)));
+      this.from = this.snake.map((c) => ({ ...c }));
       this.invuln = 1.5;
       return;
     }
+    const old = this.snake.slice();
     this.snake.unshift(next);
     if (this.grow > 0) this.grow -= 1;
     else this.snake.pop();
+    this.remember(old);
 
     const fi = this.food.findIndex((f) => f.x === next.x && f.y === next.y);
     if (fi >= 0) {
@@ -176,21 +211,26 @@ export class SnakeEngine extends ArcadeEngine {
       ctx.fill();
     }
 
-    // had
+    // had (segmenty se kreslí na plynulé pozici mezi kroky)
     const flicker = this.invuln > 0 && Math.floor(this.time * 12) % 2 === 0;
+    const mix = this.over ? 1 : this.t;
+    const pos = (i: number) => {
+      const c = this.snake[i];
+      const f = this.from[i] ?? c;
+      return { x: (f.x + (c.x - f.x) * mix + 0.5) * C, y: OY + (f.y + (c.y - f.y) * mix + 0.5) * C };
+    };
+    const headRot = this.headFrom + (this.headAng - this.headFrom) * mix;
     let drawn = false;
     if (this.sp.has("had", "telo")) {
       drawn = true;
       ctx.globalAlpha = flicker ? 0.4 : 1;
       for (let i = this.snake.length - 1; i >= 0; i--) {
         const c = this.snake[i];
-        const cx = (c.x + 0.5) * C;
-        const cy = OY + (c.y + 0.5) * C;
+        const { x: cx, y: cy } = pos(i);
         const prev = this.snake[i - 1];
         const next = this.snake[i + 1];
         if (i === 0) {
-          const v = DIR_VEC[this.dir];
-          this.sp.draw(ctx, "had", "hlava", cx, cy, C * 1.15, C * 1.15, { rot: Math.atan2(v.y, v.x) });
+          this.sp.draw(ctx, "had", "hlava", cx, cy, C * 1.15, C * 1.15, { rot: headRot });
         } else if (!next) {
           this.sp.draw(ctx, "had", "ocas", cx, cy, C * 1.15, C * 1.15, { rot: Math.atan2(prev.y - c.y, prev.x - c.x) });
         } else if (prev.x - c.x === c.x - next.x && prev.y - c.y === c.y - next.y) {
@@ -213,19 +253,20 @@ export class SnakeEngine extends ArcadeEngine {
       const t = 1 - i / Math.max(1, this.snake.length);
       ctx.globalAlpha = flicker ? 0.4 : 1;
       ctx.fillStyle = i === 0 ? "#4ade80" : `rgb(${40 + t * 50}, ${150 + t * 60}, ${90 + t * 30})`;
+      const p = pos(i);
       ctx.beginPath();
-      ctx.roundRect(c.x * C + 1, OY + c.y * C + 1, C - 2, C - 2, i === 0 ? 8 : 6);
+      ctx.roundRect(p.x - C / 2 + 1, p.y - C / 2 + 1, C - 2, C - 2, i === 0 ? 8 : 6);
       ctx.fill();
     }
     ctx.globalAlpha = 1;
     const h = this.snake[0];
     if (h && !drawn) {
-      const v = DIR_VEC[this.dir];
-      const cx = (h.x + 0.5) * C;
-      const cy = OY + (h.y + 0.5) * C;
+      const cx = pos(0).x;
+      const cy = pos(0).y;
+      const v = { x: Math.cos(headRot), y: Math.sin(headRot) };
       for (const s of [-1, 1]) {
-        const ex = cx + (v.x !== 0 ? v.x * 3 : s * 4);
-        const ey = cy + (v.y !== 0 ? v.y * 3 : s * 4);
+        const ex = cx + (Math.abs(v.x) > 0.5 ? v.x * 3 : s * 4);
+        const ey = cy + (Math.abs(v.y) > 0.5 ? v.y * 3 : s * 4);
         ctx.fillStyle = "#fff";
         ctx.beginPath();
         ctx.arc(ex, ey, 2.6, 0, Math.PI * 2);

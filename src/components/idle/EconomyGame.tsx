@@ -15,6 +15,7 @@ import {
   BONUS_SHARE,
   LEAD_EXTRA_ENERGY,
   LEAD_MIN_RANK,
+  WALK_EXTRA_ENERGY,
   PROMO_BASE,
   PROMO_MAX,
   PROMO_PER_PERF,
@@ -413,6 +414,9 @@ export function EconomyGame({ locale }: { locale: Locale }) {
   const sick = state.sickUntil > clock;
   const onVacation = state.vacationUntil > clock;
   const needEnergy = SHIFT_MIN_ENERGY + (job?.lead ? LEAD_EXTRA_ENERGY : 0);
+  // Bez dopravy (zásoba dopravy je prázdná) jde hráč na směnu pěšky, za víc energie.
+  const noTransport = liveNeeds.transport <= 0.001;
+  const walkEnergy = needEnergy + WALK_EXTRA_ENERGY;
   const vacLeft = Math.max(0, VACATION_MAX - state.vacations.filter((x) => clock - x < VACATION_WINDOW_MS).length);
   const perfAvg = job && job.perfs.length ? job.perfs.reduce((x, y) => x + y, 0) / job.perfs.length : 0;
   const promoPct = Math.min(PROMO_MAX, PROMO_BASE + PROMO_PER_PERF * perfAvg);
@@ -1011,14 +1015,25 @@ export function EconomyGame({ locale }: { locale: Locale }) {
               <div className="flex flex-col gap-2">
                 <button
                   type="button"
-                  disabled={busy || !job || sick || onVacation || shiftWait > 0 || state.energy < needEnergy}
+                  disabled={busy || !job || sick || onVacation || shiftWait > 0 || noTransport || state.energy < needEnergy}
                   onClick={() => void act({ action: "startShift" }, eventText)}
                   className="btn-bouncy w-fit bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white disabled:opacity-45"
                 >
                   {w.shiftStart}
                 </button>
+                {noTransport && (
+                  <button
+                    type="button"
+                    disabled={busy || !job || sick || onVacation || shiftWait > 0 || state.energy < walkEnergy}
+                    onClick={() => void act({ action: "startShift", walk: true }, eventText)}
+                    className="btn-bouncy w-fit border border-[var(--line)] bg-[var(--surface)] px-4 py-2 text-sm font-bold disabled:opacity-45"
+                  >
+                    {w.shiftWalk}
+                  </button>
+                )}
                 {shiftWait > 0 && <p className="text-sm text-[var(--muted)]">{fill(w.shiftNext, { t: formatLeft(shiftWait, t) })}</p>}
-                {state.energy < needEnergy && <p className="text-sm text-[var(--muted)]">{fill(w.energyNeed, { n: needEnergy })}</p>}
+                {noTransport && <p className="text-sm text-[var(--muted)]">{fill(w.walkNote, { n: walkEnergy })}</p>}
+                {!noTransport && state.energy < needEnergy && <p className="text-sm text-[var(--muted)]">{fill(w.energyNeed, { n: needEnergy })}</p>}
               </div>
             )}
           </div>
