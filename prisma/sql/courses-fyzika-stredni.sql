@@ -5,7 +5,7 @@ INSERT INTO "Course" ("id","title","slug","description","published","category","
 ON CONFLICT ("slug") DO NOTHING;
 
 INSERT INTO "Level" ("id","title","order","published","courseId","createdAt","updatedAt") VALUES
-('l_fyz-s-kinematika-dynamika_1','Test 1',1,false,'c_fyz-s-kinematika-dynamika',NOW(),NOW()),
+('l_fyz-s-kinematika-dynamika_1','Test 1',1,true,'c_fyz-s-kinematika-dynamika',NOW(),NOW()),
 ('l_fyz-s-kinematika-dynamika_2','Test 2',2,true,'c_fyz-s-kinematika-dynamika',NOW(),NOW()),
 ('l_fyz-s-kinematika-dynamika_3','Test 3',3,true,'c_fyz-s-kinematika-dynamika',NOW(),NOW()),
 ('l_fyz-s-kinematika-dynamika_4','Test 4',4,true,'c_fyz-s-kinematika-dynamika',NOW(),NOW()),
@@ -37,6 +37,11 @@ INSERT INTO "Question" ("id","prompt","options","correctIndex","explanation","di
 ('q_fyz-s-kinematika-dynamika_21','Kulka o hmotnosti 0,01 kg letí rychlostí 400 m/s. Jaká je její hybnost?',ARRAY['40 kg·m/s','0,04 kg·m/s','400 kg·m/s','4 kg·m/s']::TEXT[],3,'p = 0,01 · 400 = 4 kg·m/s.',5,ARRAY[]::TEXT[],NULL,21,'c_fyz-s-kinematika-dynamika',NULL,NOW()),
 ('q_fyz-s-kinematika-dynamika_22','Vozík 2 kg jedoucí 3 m/s narazí do stojícího vozíku 1 kg a slepí se. Jaká je společná rychlost?',ARRAY['2 m/s','3 m/s','1,5 m/s','1 m/s']::TEXT[],0,'Hybnost 6 se rozdělí na hmotnost 3 kg: 6 : 3 = 2 m/s.',5,ARRAY[]::TEXT[],NULL,22,'c_fyz-s-kinematika-dynamika',NULL,NOW()),
 ('q_fyz-s-kinematika-dynamika_23','Jaká je přibližně první kosmická rychlost u Země?',ARRAY['7,9 km/s','16,7 km/s','0,79 km/s','11,2 km/s']::TEXT[],0,'Je to rychlost pro oběh těsně nad povrchem Země.',5,ARRAY[]::TEXT[],NULL,23,'c_fyz-s-kinematika-dynamika',NULL,NOW()),
-('q_fyz-s-kinematika-dynamika_24','Jak se změní dostředivá síla při dvojnásobné rychlosti (stejný poloměr a hmotnost)?',ARRAY['zůstane stejná','zmenší se na polovinu','zdvojnásobí se','vzroste čtyřnásobně']::TEXT[],3,'F = m · v² : r, závisí na druhé mocnině rychlosti.',5,ARRAY[]::TEXT[],NULL,24,'c_fyz-s-kinematika-dynamika',NULL,NOW())
+('q_fyz-s-kinematika-dynamika_24','Jak se změní dostředivá síla při dvojnásobné rychlosti (stejný poloměr a hmotnost)?',ARRAY['zůstane stejná','zmenší se na polovinu','zdvojnásobí se','vzroste čtyřnásobně']::TEXT[],3,'F = m · v² : r, závisí na druhé mocnině rychlosti.',5,ARRAY[]::TEXT[],NULL,24,'c_fyz-s-kinematika-dynamika',NULL,NOW()),
+('q_fyz-s-kinematika-dynamika_25','Jak se značí zrychlení?',ARRAY['a','v','t','s']::TEXT[],0,'Zrychlení se značí písmenem a.',1,ARRAY[]::TEXT[],NULL,25,'c_fyz-s-kinematika-dynamika',NULL,NOW()),
+('q_fyz-s-kinematika-dynamika_26','Jaká je jednotka rychlosti v soustavě SI?',ARRAY['m/s²','m/s','N','kg']::TEXT[],1,'Rychlost se v SI udává v metrech za sekundu.',1,ARRAY[]::TEXT[],NULL,26,'c_fyz-s-kinematika-dynamika',NULL,NOW()),
+('q_fyz-s-kinematika-dynamika_27','Jak se nazývá změna rychlosti za jednotku času?',ARRAY['frekvence','zrychlení','dráha','hybnost']::TEXT[],1,'Zrychlení a = Δv : t.',1,ARRAY[]::TEXT[],NULL,27,'c_fyz-s-kinematika-dynamika',NULL,NOW()),
+('q_fyz-s-kinematika-dynamika_28','Jak se změní dostředivé zrychlení při zdvojnásobení poloměru kružnice, je-li rychlost stejná?',ARRAY['zmenší se na čtvrtinu','zůstane stejné','zmenší se na polovinu','zdvojnásobí se']::TEXT[],2,'a = v² : r, takže je nepřímo úměrné poloměru.',4,ARRAY[]::TEXT[],NULL,28,'c_fyz-s-kinematika-dynamika',NULL,NOW()),
+('q_fyz-s-kinematika-dynamika_29','Jaká je hybnost tělesa o hmotnosti 3 kg letícího rychlostí 10 m/s?',ARRAY['30 kg·m/s','0,3 kg·m/s','3 kg·m/s','13 kg·m/s']::TEXT[],0,'p = m · v = 3 · 10 = 30 kg·m/s.',5,ARRAY[]::TEXT[],NULL,29,'c_fyz-s-kinematika-dynamika',NULL,NOW())
 ON CONFLICT ("id") DO NOTHING;
 
