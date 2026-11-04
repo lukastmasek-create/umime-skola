@@ -337,5 +337,319 @@ const ru: TownStoryText = {
   },
 };
 
-const texts: Record<Locale, TownStoryText> = withFallbacks({ cs, en, de, ru });
+const texts: Record<Locale, TownStoryText> = {
+  ...withFallbacks({ cs, en, de, ru }),
+  uk: {
+    button: "Історія містечка",
+    title: "Зоряна карта",
+    chapter: "Розділ {a} / {b}",
+    login: "Увійди, щоб містечко пам'ятало, як далеко ти зайшов(ла).",
+    claim: "Завершити розділ",
+    reward: "+{n} балів",
+    next: "Далі",
+    close: "Закрити",
+    finished: "Історія завершена. Дякую, що допоміг(ла) нам!",
+    objective: { talked: "Поговори з {n} мешканцями", hearts: "Набери {h} серденьок у {n} мешканців", minis: "Зіграй кожну міні-гру хоча б раз", sumfp: "Збери {n} балів дружби" },
+    notReady: "Ціль ще не виконана.",
+    error: "Не вдалося зберегти прогрес.",
+    who: { hrdina: "Ти", knihovnice: "Бібліотекарка", pekar: "Пекар", kluk: "Хлопчик", farmar: "Фермер", babicka: "Бабуся" },
+    chapters: {
+      arrival: {
+        title: "Загублена карта",
+        intro: [
+          { who: "knihovnice", text: "Ой, ти тут! У бібліотеці я знайшла порвану зоряну карту. Кожен шматок тримає хтось із містечка." },
+          { who: "hrdina", text: "Зоряна карта? А куди вона веде?" },
+          { who: "knihovnice", text: "Ніхто не знає. Але мешканці не віддадуть шматок, поки ти з ними не поговориш. Спробуй хоча б із трьома." },
+        ],
+        outro: [
+          { who: "knihovnice", text: "Чудово! Усі говорять про тебе. Перший шматок карти твій." },
+          { who: "hrdina", text: "Схоже на сузір'я. Що далі?" },
+        ],
+      },
+      friends: {
+        title: "Справжня дружба",
+        intro: [
+          { who: "pekar", text: "Вітаю! Другий шматок я стерегу під пирогом. Віддам його лише справжньому другові." },
+          { who: "hrdina", text: "А як ти розпізнаєш справжнього друга?" },
+          { who: "pekar", text: "Два серденька в розмові — для мене достатній доказ. Розмовляй, став запитання або принеси комусь подарунок." },
+        ],
+        outro: [
+          { who: "pekar", text: "Два серденька! Ось другий шматок, ще теплий." },
+          { who: "kluk", text: "Диви, карта складається! Шукаймо наступний!" },
+        ],
+      },
+      skills: {
+        title: "Вправні руки",
+        intro: [
+          { who: "farmar", text: "Третій шматок висить на вербі біля лагуни, але я не дотягнуся. Допоможеш мені з рештою роботи?" },
+          { who: "hrdina", text: "Звісно. Що треба зробити?" },
+          { who: "farmar", text: "Зловити рибу в лагуні, зібрати овочі на полі й допомогти пекарю з інгредієнтами. Кожне хоча б раз." },
+        ],
+        outro: [
+          { who: "farmar", text: "Молодець! У тебе вправні руки. Третій шматок твій." },
+          { who: "hrdina", text: "Бачу, що карта вказує на космос." },
+        ],
+      },
+      together: {
+        title: "Спільна справа",
+        intro: [
+          { who: "babicka", text: "Четвертий шматок лежить у шафі з рецептами. Але я хочу, щоб у містечку всі любили одне одного." },
+          { who: "hrdina", text: "Що мені зробити, бабусю?" },
+          { who: "babicka", text: "Знайди двох добрих друзів серед мешканців. Три серденька в кожного — це радість для всього містечка." },
+        ],
+        outro: [
+          { who: "babicka", text: "Два друзі й стільки серденьок! Четвертий шматок твій, дитино." },
+          { who: "knihovnice", text: "Лишився останній. Він покаже, де ховається карта." },
+        ],
+      },
+      starmap: {
+        title: "Зоряна карта",
+        intro: [
+          { who: "knihovnice", text: "Останній шматок несе ціле містечко разом. Чим більше друзів, тим яскравіше він світиться." },
+          { who: "hrdina", text: "Тоді я ще трохи поговорю, поспитаю й пограю!" },
+          { who: "kluk", text: "А я допоможу! Це буде найбільша таємниця містечка." },
+        ],
+        outro: [
+          { who: "knihovnice", text: "Карта завершена! Вона вказує на зорі над містечком, де на кожного чекає нова пригода." },
+          { who: "hrdina", text: "Дякую всім. Без допомоги кожного я б її ніколи не склав(ла)." },
+          { who: "pekar", text: "Найкраще в нашому містечку те, що разом ми заходимо далі. Пиріг для всіх!" },
+        ],
+      },
+    },
+  },
+  ja: {
+    button: "まちのおはなし",
+    title: "星の地図",
+    chapter: "第{a}章 / {b}",
+    login: "ログインすると、まちがどこまで進んだかを覚えてくれます。",
+    claim: "章をクリア",
+    reward: "+{n}ポイント",
+    next: "次へ",
+    close: "閉じる",
+    finished: "おはなしはこれで終わりです。手伝ってくれてありがとう！",
+    objective: { talked: "{n}人の住人とおしゃべりする", hearts: "{n}人の住人から{h}個のハートを集める", minis: "どのミニゲームも一度は遊ぶ", sumfp: "なかよしポイントを{n}点集める" },
+    notReady: "まだ目標を達成していません。",
+    error: "進み具合を保存できませんでした。",
+    who: { hrdina: "あなた", knihovnice: "司書さん", pekar: "パン屋さん", kluk: "男の子", farmar: "農場主さん", babicka: "おばあさん" },
+    chapters: {
+      arrival: {
+        title: "なくした地図",
+        intro: [
+          { who: "knihovnice", text: "あら、来てくれたのね！図書館で、破れた星の地図を見つけたの。切れ端はそれぞれ、まちの誰かが持っているのよ。" },
+          { who: "hrdina", text: "星の地図ですか？どこへつながっているのでしょう？" },
+          { who: "knihovnice", text: "それは誰にもわからないの。でも住人たちは、おしゃべりするまで切れ端をくれないのよ。まずは3人に話しかけてみて。" },
+        ],
+        outro: [
+          { who: "knihovnice", text: "すばらしいわ！みんながあなたの話をしているの。地図の最初の切れ端は、あなたのものよ。" },
+          { who: "hrdina", text: "星座みたいですね。次は何をすればいいですか？" },
+        ],
+      },
+      friends: {
+        title: "本当の友だち",
+        intro: [
+          { who: "pekar", text: "こんにちは！二つ目の切れ端は、ケーキの下で見張っているんだ。本当の友だちにしかあげないよ。" },
+          { who: "hrdina", text: "本当の友だちは、どうやって見分けるんですか？" },
+          { who: "pekar", text: "会話でハートが二つ集まれば、それが証拠さ。話をしたり、質問したり、プレゼントを渡したりしてみて。" },
+        ],
+        outro: [
+          { who: "pekar", text: "ハートが二つ！はい、二つ目の切れ端。まだ温かいよ。" },
+          { who: "kluk", text: "見て、地図がそろってきた！次のを探そうよ！" },
+        ],
+      },
+      skills: {
+        title: "器用な手",
+        intro: [
+          { who: "farmar", text: "三つ目の切れ端は、ラグーンのヤナギの木に引っかかっているんだけど、わしには届かなくてね。残りの仕事を手伝ってくれないかい？" },
+          { who: "hrdina", text: "もちろんです。何をすればいいですか？" },
+          { who: "farmar", text: "ラグーンで魚をつって、畑の野菜を収穫して、パン屋さんの材料を手伝ってほしいんだ。どれも一度ずつね。" },
+        ],
+        outro: [
+          { who: "farmar", text: "お見事！器用な手をしているね。三つ目の切れ端はあなたのものだ。" },
+          { who: "hrdina", text: "地図は宇宙を指しているみたいですね。" },
+        ],
+      },
+      together: {
+        title: "みんなで一緒に",
+        intro: [
+          { who: "babicka", text: "四つ目の切れ端は、わたしのレシピ棚にしまってあるの。でもね、まちのみんなが仲良くなってほしいのよ。" },
+          { who: "hrdina", text: "おばあさん、わたしは何をすればいいですか？" },
+          { who: "babicka", text: "住人の中から、仲良しを二人見つけてちょうだい。それぞれとハートを三つずつ。まち中が喜ぶわ。" },
+        ],
+        outro: [
+          { who: "babicka", text: "二人のお友だちと、こんなにたくさんのハート！四つ目の切れ端は、あなたのものよ。" },
+          { who: "knihovnice", text: "あと一つだけ残っているわ。それが地図の隠れ場所を教えてくれるはず。" },
+        ],
+      },
+      starmap: {
+        title: "星の地図",
+        intro: [
+          { who: "knihovnice", text: "最後の切れ端は、まち全体で一緒に持っているの。友だちが多いほど、明るく光るのよ。" },
+          { who: "hrdina", text: "では、もう少しおしゃべりしたり、質問したり、遊んだりしてみます！" },
+          { who: "kluk", text: "ぼくも手伝うよ！これがまち最大のひみつになるんだ。" },
+        ],
+        outro: [
+          { who: "knihovnice", text: "地図が完成しました！まちの上の星を指していて、そこでは一人ひとりを待っている新しい冒険があるわ。" },
+          { who: "hrdina", text: "みなさん、ありがとう。みんながいなければ、完成できませんでした。" },
+          { who: "pekar", text: "このまちのいいところはね、みんなで一緒なら遠くまで行けることさ。みんなにケーキを！" },
+        ],
+      },
+    },
+  },
+  es: {
+    button: "Historia del pueblo",
+    title: "El mapa estelar",
+    chapter: "Capítulo {a} / {b}",
+    login: "Inicia sesión para que el pueblo recuerde hasta dónde has llegado.",
+    claim: "Terminar capítulo",
+    reward: "+{n} puntos",
+    next: "Siguiente",
+    close: "Cerrar",
+    finished: "La historia ha terminado. ¡Gracias por ayudarnos!",
+    objective: { talked: "Charla con {n} vecinos", hearts: "Consigue {h} corazones con {n} vecinos", minis: "Juega al menos una vez a cada minijuego", sumfp: "Consigue {n} puntos de amistad" },
+    notReady: "El objetivo todavía no está completado.",
+    error: "No se pudo guardar tu progreso.",
+    who: { hrdina: "Tú", knihovnice: "Bibliotecaria", pekar: "Panadero", kluk: "Chico", farmar: "Granjero", babicka: "Abuela" },
+    chapters: {
+      arrival: {
+        title: "El mapa perdido",
+        intro: [
+          { who: "knihovnice", text: "¡Ah, estás aquí! En la biblioteca encontré un mapa estelar roto. Cada trozo lo guarda alguien del pueblo." },
+          { who: "hrdina", text: "¿Un mapa estelar? ¿Adónde lleva?" },
+          { who: "knihovnice", text: "Nadie lo sabe. Pero los vecinos no te darán un trozo hasta que hables con ellos. Prueba con al menos tres." },
+        ],
+        outro: [
+          { who: "knihovnice", text: "¡Estupendo! Todos hablan de ti. El primer trozo del mapa es tuyo." },
+          { who: "hrdina", text: "Parece una constelación. ¿Qué sigue?" },
+        ],
+      },
+      friends: {
+        title: "La verdadera amistad",
+        intro: [
+          { who: "pekar", text: "¡Hola! Guardo el segundo trozo debajo de una tarta. Solo se lo doy a un verdadero amigo." },
+          { who: "hrdina", text: "¿Y cómo reconoces a un verdadero amigo?" },
+          { who: "pekar", text: "Dos corazones en la conversación me bastan como prueba. Charla, haz preguntas o lleva un regalo a alguien." },
+        ],
+        outro: [
+          { who: "pekar", text: "¡Dos corazones! Aquí tienes el segundo trozo, ¡todavía calentito!" },
+          { who: "kluk", text: "¡Mira, el mapa se está completando! ¡A buscar el siguiente!" },
+        ],
+      },
+      skills: {
+        title: "Manos hábiles",
+        intro: [
+          { who: "farmar", text: "El tercer trozo cuelga del sauce junto a la laguna, pero no llego. ¿Me ayudas con el resto del trabajo?" },
+          { who: "hrdina", text: "Claro. ¿Qué hay que hacer?" },
+          { who: "farmar", text: "Pesca un pez en la laguna, recoge la verdura del campo y ayuda al panadero con los ingredientes. Cada cosa al menos una vez." },
+        ],
+        outro: [
+          { who: "farmar", text: "¡Muy bien! Tienes manos hábiles. El tercer trozo es tuyo." },
+          { who: "hrdina", text: "Veo que el mapa apunta al espacio." },
+        ],
+      },
+      together: {
+        title: "Juntos",
+        intro: [
+          { who: "babicka", text: "El cuarto trozo lo guardo en el armario de las recetas. Pero quiero que todos en el pueblo se quieran." },
+          { who: "hrdina", text: "¿Qué debo hacer, abuela?" },
+          { who: "babicka", text: "Encuentra a dos buenos amigos entre los vecinos. Tres corazones con cada uno, ¡eso alegra a todo el pueblo!" },
+        ],
+        outro: [
+          { who: "babicka", text: "¡Dos amigos y tantos corazones! El cuarto trozo es tuyo, cariño." },
+          { who: "knihovnice", text: "Solo queda el último. Mostrará dónde se esconde el mapa." },
+        ],
+      },
+      starmap: {
+        title: "El mapa estelar",
+        intro: [
+          { who: "knihovnice", text: "El último trozo lo lleva todo el pueblo unido. Cuantos más amigos, más brilla." },
+          { who: "hrdina", text: "¡Pues seguiré charlando, preguntando y jugando un rato más!" },
+          { who: "kluk", text: "¡Y yo te ayudo! Será el mayor secreto del pueblo." },
+        ],
+        outro: [
+          { who: "knihovnice", text: "¡El mapa está completo! Señala las estrellas sobre el pueblo, donde espera una nueva aventura para cada uno." },
+          { who: "hrdina", text: "Gracias a todos. Sin la ayuda de cada uno nunca lo habría completado." },
+          { who: "pekar", text: "Lo mejor de este pueblo es que, juntos, llegamos más lejos. ¡Tarta para todos!" },
+        ],
+      },
+    },
+  },
+  fr: {
+    button: "Histoire du bourg",
+    title: "La carte des étoiles",
+    chapter: "Chapitre {a} / {b}",
+    login: "Connecte-toi pour que le bourg se souvienne de ta progression.",
+    claim: "Terminer le chapitre",
+    reward: "+{n} points",
+    next: "Suivant",
+    close: "Fermer",
+    finished: "L'histoire est terminée. Merci de nous avoir aidés !",
+    objective: { talked: "Discute avec {n} habitants", hearts: "Obtiens {h} cœurs auprès de {n} habitants", minis: "Joue au moins une fois à chaque mini-jeu", sumfp: "Gagne {n} points d'amitié" },
+    notReady: "L'objectif n'est pas encore atteint.",
+    error: "Impossible de sauvegarder ta progression.",
+    who: { hrdina: "Toi", knihovnice: "Bibliothécaire", pekar: "Boulanger", kluk: "Garçon", farmar: "Fermier", babicka: "Mamie" },
+    chapters: {
+      arrival: {
+        title: "La carte perdue",
+        intro: [
+          { who: "knihovnice", text: "Oh, te voilà ! J'ai trouvé une carte des étoiles déchirée à la bibliothèque. Chaque morceau est gardé par quelqu'un du bourg." },
+          { who: "hrdina", text: "Une carte des étoiles ? Où mène-t-elle ?" },
+          { who: "knihovnice", text: "Personne ne le sait. Mais les habitants ne te donneront pas un morceau tant que tu n'auras pas discuté avec eux. Essaie avec au moins trois d'entre eux." },
+        ],
+        outro: [
+          { who: "knihovnice", text: "Formidable ! Tout le monde parle de toi. Le premier morceau de la carte est à toi." },
+          { who: "hrdina", text: "Ça ressemble à une constellation. Et ensuite ?" },
+        ],
+      },
+      friends: {
+        title: "La vraie amitié",
+        intro: [
+          { who: "pekar", text: "Bonjour ! Je garde le deuxième morceau sous un gâteau. Je ne le donne qu'à un vrai ami." },
+          { who: "hrdina", text: "Comment reconnaît-on un vrai ami ?" },
+          { who: "pekar", text: "Deux cœurs pendant la conversation, pour moi, c'est une preuve. Discute, pose des questions ou offre un cadeau à quelqu'un." },
+        ],
+        outro: [
+          { who: "pekar", text: "Deux cœurs ! Voilà le deuxième morceau, encore tout chaud." },
+          { who: "kluk", text: "Regarde, la carte se reforme ! Cherchons la suite !" },
+        ],
+      },
+      skills: {
+        title: "Des mains habiles",
+        intro: [
+          { who: "farmar", text: "Le troisième morceau est accroché au saule près de la lagune, mais je ne l'atteins pas. Tu m'aides pour le reste du travail ?" },
+          { who: "hrdina", text: "Bien sûr. Que faut-il faire ?" },
+          { who: "farmar", text: "Pêche un poisson dans la lagune, récolte les légumes du champ et aide le boulanger avec les ingrédients. Chacun au moins une fois." },
+        ],
+        outro: [
+          { who: "farmar", text: "Bravo ! Tu as des mains habiles. Le troisième morceau est à toi." },
+          { who: "hrdina", text: "Je vois que la carte pointe vers l'espace." },
+        ],
+      },
+      together: {
+        title: "Ensemble",
+        intro: [
+          { who: "babicka", text: "Le quatrième morceau est rangé dans mon placard à recettes. Mais je voudrais que tout le monde dans le bourg s'apprécie." },
+          { who: "hrdina", text: "Que dois-je faire, mamie ?" },
+          { who: "babicka", text: "Trouve deux bons amis parmi les habitants. Trois cœurs avec chacun, ça fait plaisir à tout le bourg." },
+        ],
+        outro: [
+          { who: "babicka", text: "Deux amis et autant de cœurs ! Le quatrième morceau est à toi, mon petit." },
+          { who: "knihovnice", text: "Il ne reste que le dernier. Il montrera où la carte se cache." },
+        ],
+      },
+      starmap: {
+        title: "La carte des étoiles",
+        intro: [
+          { who: "knihovnice", text: "Le dernier morceau, c'est tout le bourg qui le porte ensemble. Plus il y a d'amis, plus il brille." },
+          { who: "hrdina", text: "Alors je vais continuer à discuter, à poser des questions et à jouer !" },
+          { who: "kluk", text: "Et moi, je t'aiderai ! Ce sera le plus grand secret du bourg." },
+        ],
+        outro: [
+          { who: "knihovnice", text: "La carte est complète ! Elle montre les étoiles au-dessus du bourg, où une nouvelle aventure attend chacun." },
+          { who: "hrdina", text: "Merci à tous. Sans l'aide de chacun, je ne l'aurais jamais reconstituée." },
+          { who: "pekar", text: "Ce qu'il y a de mieux dans ce bourg, c'est qu'ensemble on va plus loin. Un gâteau pour tout le monde !" },
+        ],
+      },
+    },
+  },
+};
 export const getTownStoryText = (locale: Locale) => texts[locale];

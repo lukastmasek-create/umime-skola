@@ -5,12 +5,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { Locale } from "@/i18n/config";
 
-const TEXT: Record<Locale, { enter: string; exit: string; back: string }> = withFallbacks({
-  cs: { enter: "Celá obrazovka", exit: "Zavřít celou obrazovku", back: "Zpět na kurz" },
-  en: { enter: "Full screen", exit: "Exit full screen", back: "Back to course" },
-  de: { enter: "Vollbild", exit: "Vollbild beenden", back: "Zurück zum Kurs" },
-  ru: { enter: "На весь экран", exit: "Выйти из полноэкранного режима", back: "Назад к курсу" },
-});
+const TEXT: Record<Locale, { enter: string; exit: string; back: string }> = {
+  ...withFallbacks({
+    cs: { enter: "Celá obrazovka", exit: "Zavřít celou obrazovku", back: "Zpět na kurz" },
+    en: { enter: "Full screen", exit: "Exit full screen", back: "Back to course" },
+    de: { enter: "Vollbild", exit: "Vollbild beenden", back: "Zurück zum Kurs" },
+    ru: { enter: "На весь экран", exit: "Выйти из полноэкранного режима", back: "Назад к курсу" },
+  }),
+  uk: { enter: "На весь екран", exit: "Вийти з повноекранного режиму", back: "Назад до курсу" },
+  ja: { enter: "全画面", exit: "全画面を終了", back: "コースに戻る" },
+  es: { enter: "Pantalla completa", exit: "Salir de pantalla completa", back: "Volver al curso" },
+  fr: { enter: "Plein écran", exit: "Quitter le plein écran", back: "Retour au cours" },
+};
 
 // Obal hry: tlačítko „Celá obrazovka“ roztáhne na celou obrazovku celý obal (hru, ovládací tlačítka,
 // vysvětlení i výsledky), takže všechno zůstane uvnitř. Prohlížeče bez Fullscreen API (iPhone) dostanou

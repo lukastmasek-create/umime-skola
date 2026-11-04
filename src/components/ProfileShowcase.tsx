@@ -22,12 +22,18 @@ type Item = {
   href?: string;
 };
 
-const TEXT: Record<Locale, Record<string, string>> = withFallbacks({
-  cs: { title: "Vitrína odměn", badge: "Odznak úrovně", trophy: "Pohár žebříčku", podium: "Stupně vítězů", rubin: "Avatary", safir: "Tituly", smaragd: "Vzhled", chest: "Denní truhla", coin: "Body", wheel: "Kolo štěstí", top3: "Buď v první trojce žebříčku", top10: "Dostaň se do první desítky", need: "Odemkni {n} pro tenhle drahokam", open: "Otevřít" },
+const TEXT: Record<Locale, Record<string, string>> = {
+  ...withFallbacks({
+  cs:{ title: "Vitrína odměn", badge: "Odznak úrovně", trophy: "Pohár žebříčku", podium: "Stupně vítězů", rubin: "Avatary", safir: "Tituly", smaragd: "Vzhled", chest: "Denní truhla", coin: "Body", wheel: "Kolo štěstí", top3: "Buď v první trojce žebříčku", top10: "Dostaň se do první desítky", need: "Odemkni {n} pro tenhle drahokam", open: "Otevřít" },
   en: { title: "Trophy case", badge: "Level badge", trophy: "Leaderboard cup", podium: "Winners' podium", rubin: "Avatars", safir: "Titles", smaragd: "Looks", chest: "Daily chest", coin: "Points", wheel: "Wheel of fortune", top3: "Reach the top three of the leaderboard", top10: "Get into the top ten", need: "Unlock {n} for this gem", open: "Open" },
   de: { title: "Pokalvitrine", badge: "Level-Abzeichen", trophy: "Ranglisten-Pokal", podium: "Siegerpodest", rubin: "Avatare", safir: "Titel", smaragd: "Look", chest: "Tagestruhe", coin: "Punkte", wheel: "Glücksrad", top3: "Komm unter die ersten drei der Rangliste", top10: "Schaffe es in die Top Ten", need: "Schalte {n} für diesen Edelstein frei", open: "Öffnen" },
   ru: { title: "Витрина наград", badge: "Значок уровня", trophy: "Кубок рейтинга", podium: "Пьедестал", rubin: "Аватары", safir: "Титулы", smaragd: "Внешний вид", chest: "Ежедневный сундук", coin: "Очки", wheel: "Колесо удачи", top3: "Попади в тройку рейтинга", top10: "Попади в десятку лучших", need: "Открой {n}, чтобы получить этот камень", open: "Открыть" },
-});
+  }),
+  uk: { title: "Вітрина нагород", badge: "Значок рівня", trophy: "Кубок рейтингу", podium: "Подіум переможців", rubin: "Аватари", safir: "Титули", smaragd: "Зовнішній вигляд", chest: "Денна скриня", coin: "Бали", wheel: "Колесо фортуни", top3: "Потрапи в першу трійку рейтингу", top10: "Потрапи до першої десятки", need: "Відкрий ще {n} для цього самоцвіту", open: "Відкрити" },
+  ja: { title: "ごほうびのショーケース", badge: "レベルバッジ", trophy: "ランキングのカップ", podium: "優勝者の表彰台", rubin: "アバター", safir: "称号", smaragd: "見た目", chest: "デイリーチェスト", coin: "ポイント", wheel: "ラッキーホイール", top3: "ランキングの上位3位に入ろう", top10: "トップ10に入ろう", need: "あと {n} 個解放すると、このジェムが手に入ります", open: "開く" },
+  es: { title: "Vitrina de premios", badge: "Insignia de nivel", trophy: "Copa de la clasificación", podium: "Podio de ganadores", rubin: "Avatares", safir: "Títulos", smaragd: "Estilos", chest: "Cofre diario", coin: "Puntos", wheel: "Rueda de la fortuna", top3: "Llega al top tres de la clasificación", top10: "Entra en el top diez", need: "Desbloquea {n} para esta gema", open: "Abrir" },
+  fr: { title: "Vitrine des récompenses", badge: "Badge de niveau", trophy: "Coupe du classement", podium: "Podium des gagnants", rubin: "Avatars", safir: "Titres", smaragd: "Looks", chest: "Coffre quotidien", coin: "Points", wheel: "Roue de la fortune", top3: "Atteins le top 3 du classement", top10: "Entre dans le top 10", need: "Débloque {n} pour cette gemme", open: "Ouvrir" },
+};
 
 export function ProfileShowcase({
   locale,

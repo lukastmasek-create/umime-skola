@@ -77,7 +77,71 @@ const ru: IdleText = {
   ],
 };
 
-const texts: Record<Locale, IdleText> = withFallbacks({ cs, en, de, ru });
+const uk: IdleText = {
+  nav: "Постійні ігри",
+  title: "Постійні ігри",
+  subtitle: "Ігри, які ніколи не закінчуються. Бали за навчання їх рухають: ти будуєш, покращуєш і дбаєш про своє.",
+  soon: "Незабаром",
+  play: "Грати",
+  note: "Усі п'ять ігор уже доступні.",
+  games: [
+    { name: "База", description: "Побудуй власну базу і поступово покращуй її за бали, які отримуєш за навчання." },
+    { name: "Улюбленці", description: "Виховуй улюбленців, годуй їх, грайся з ними і спостерігай, як вони ростуть." },
+    { name: "Ферма", description: "Вирощуй урожай і тварин. Чим більше ти вчишся, тим більше заробляє ферма." },
+    { name: "Місто", description: "Розвивай своє місто від маленького села до великого міста." },
+    { name: "Економіка", description: "Збагачуйся: знайди роботу, засновуй компанії, інвестуй і ризикуй в угодах. Бали за навчання допомагають заробляти більше." },
+  ],
+};
+
+const ja: IdleText = {
+  nav: "いつでも遊べるゲーム",
+  title: "いつでも遊べるゲーム",
+  subtitle: "終わらないゲームです。学習で得たポイントがゲームを動かします。建てたり、強化したり、自分のものを大切に育てたりしましょう。",
+  soon: "近日公開",
+  play: "遊ぶ",
+  note: "5つのゲームすべてで遊べるようになりました。",
+  games: [
+    { name: "基地", description: "自分だけの基地を建てて、学習で得たポイントで少しずつ強化しましょう。" },
+    { name: "ペット", description: "ペットを育て、えさをあげ、一緒に遊び、成長を見守りましょう。" },
+    { name: "ファーム", description: "作物と動物を育てましょう。学習するほど、ファームの収入が増えます。" },
+    { name: "町", description: "小さな村から大きな町まで、自分の町を育てましょう。" },
+    { name: "経済", description: "お金持ちを目指しましょう。仕事に就き、会社を作り、投資して、取引に挑戦できます。学習ポイントでより多く稼げます。" },
+  ],
+};
+
+const es: IdleText = {
+  nav: "Juegos sin fin",
+  title: "Juegos sin fin",
+  subtitle: "Juegos que nunca terminan. Los puntos de aprendizaje los mantienen en marcha: construyes, mejoras y cuidas tus cosas.",
+  soon: "Pronto",
+  play: "Jugar",
+  note: "Los cinco juegos ya se pueden jugar.",
+  games: [
+    { name: "Base", description: "Construye tu propia base y mejórala poco a poco con los puntos que consigues aprendiendo." },
+    { name: "Mascotas", description: "Cría mascotas, dales de comer, juega con ellas y mira cómo crecen." },
+    { name: "Granja", description: "Cultiva cosechas y animales. Cuanto más aprendes, más gana tu granja." },
+    { name: "Ciudad", description: "Haz crecer tu propia ciudad desde un pequeño pueblo hasta una gran urbe." },
+    { name: "Economía", description: "Hazte rico: consigue un trabajo, crea empresas, invierte y prueba suerte en los negocios. Los puntos de aprendizaje te hacen ganar más." },
+  ],
+};
+
+const fr: IdleText = {
+  nav: "Jeux sans fin",
+  title: "Jeux sans fin",
+  subtitle: "Des jeux qui ne finissent jamais. Les points d'apprentissage les font avancer : tu construis, améliores et prends soin de tes affaires.",
+  soon: "Bientôt",
+  play: "Jouer",
+  note: "Les cinq jeux sont maintenant jouables.",
+  games: [
+    { name: "Base", description: "Construis ta propre base et améliore-la petit à petit avec les points gagnés en apprenant." },
+    { name: "Animaux de compagnie", description: "Élève tes animaux de compagnie, nourris-les, joue avec eux et regarde-les grandir." },
+    { name: "Ferme", description: "Fais pousser des cultures et des animaux. Plus tu apprends, plus ta ferme rapporte." },
+    { name: "Ville", description: "Fais grandir ta propre ville, du petit village à la grande métropole." },
+    { name: "Économie", description: "Deviens riche : trouve un emploi, crée des entreprises, investis et tente ta chance dans les affaires. Les points d'apprentissage te font gagner plus." },
+  ],
+};
+
+const texts: Record<Locale, IdleText> = { ...withFallbacks({ cs, en, de, ru }), uk, ja, es, fr };
 
 export function getIdleText(locale: Locale): IdleText {
   return texts[locale];

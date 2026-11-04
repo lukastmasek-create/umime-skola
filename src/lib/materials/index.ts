@@ -43,8 +43,8 @@ const MATERIALS: Record<string, Topic[]> = {
 // Předmět v materiálech: z kurzů (taxonomy.ts) nebo jen pro materiály (bez kurzů, s vlastními názvy).
 export type MaterialSubject = { slug: string; value: SubjectValue | null; emoji: string; color: string; names?: Record<Locale, string> };
 const EXTRA_SUBJECTS: MaterialSubject[] = [
-  { slug: "informatika", value: null, emoji: "💻", color: "#6fc3ff", names: withFallbacks({ cs: "Informatika", en: "Computer science", de: "Informatik", ru: "Информатика" }) },
-  { slug: "vytvarka", value: null, emoji: "🎨", color: "#ffb3d9", names: withFallbacks({ cs: "Výtvarná výchova", en: "Art", de: "Kunst", ru: "Изобразительное искусство" }) },
+  { slug: "informatika", value: null, emoji: "💻", color: "#6fc3ff", names: { ...withFallbacks({ cs: "Informatika", en: "Computer science", de: "Informatik", ru: "Информатика" }), uk: "Інформатика", ja: "情報", es: "Informática", fr: "Informatique" } },
+  { slug: "vytvarka", value: null, emoji: "🎨", color: "#ffb3d9", names: { ...withFallbacks({ cs: "Výtvarná výchova", en: "Art", de: "Kunst", ru: "Изобразительное искусство" }), uk: "Образотворче мистецтво", ja: "図工・美術", es: "Educación plástica", fr: "Arts plastiques" } },
 ];
 
 export function getTopics(subjectSlug: string): Topic[] {
