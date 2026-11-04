@@ -7,6 +7,9 @@ const ITEM_H = 40;
 // 3D ovoce z Blenderu, každá odpověď dostane jedno (celé a rozkrojené).
 const FRUITS = ["meloun", "jablko", "pomeranc", "ananas", "kiwi"];
 const FRUIT_SIZE = 56;
+// Katana: vykreslená velikost a délka klávesového úderu (± od středu), aby odpovídaly viditelné čepeli.
+const SWORD_DRAW = 44;
+const SWORD_HALF = 24;
 
 type Item = {
   x: number;
@@ -151,7 +154,7 @@ export class NinjaEngine extends ArcadeEngine {
     if (this.consume("fire")) {
       this.keyboard = true;
       this.trail.push({ x: this.cx, y: this.cy, life: 0.3 });
-      this.sliceAt(this.cx - 40, this.cy, this.cx + 40, this.cy);
+      this.sliceAt(this.cx - SWORD_HALF, this.cy, this.cx + SWORD_HALF, this.cy);
     }
 
     for (const item of this.items) {
@@ -246,14 +249,14 @@ export class NinjaEngine extends ArcadeEngine {
     const prev = this.trail[this.trail.length - 2];
     if (head && prev && head.life > 0.15) {
       const a = Math.atan2(head.y - prev.y, head.x - prev.x);
-      this.sp.draw(ctx, "cepel", "cepel", head.x, head.y, 64, 64, { rot: a + (3 * Math.PI) / 4 });
+      this.sp.draw(ctx, "cepel", "cepel", head.x, head.y, SWORD_DRAW, SWORD_DRAW, { rot: a + (3 * Math.PI) / 4 });
     }
-    if (this.keyboard && !this.over && !this.sp.draw(ctx, "cepel", "cepel", this.cx, this.cy, 64, 64)) {
+    if (this.keyboard && !this.over && !this.sp.draw(ctx, "cepel", "cepel", this.cx, this.cy, SWORD_DRAW, SWORD_DRAW)) {
       ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(this.cx - 40, this.cy);
-      ctx.lineTo(this.cx + 40, this.cy);
+      ctx.moveTo(this.cx - SWORD_HALF, this.cy);
+      ctx.lineTo(this.cx + SWORD_HALF, this.cy);
       ctx.moveTo(this.cx, this.cy - 10);
       ctx.lineTo(this.cx, this.cy + 10);
       ctx.stroke();
