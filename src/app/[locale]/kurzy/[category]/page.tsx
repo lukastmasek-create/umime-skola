@@ -13,6 +13,8 @@ import { getSubjectText } from "@/i18n/subjects";
 import { CourseWorld } from "@/components/CourseWorld";
 import { getAllGradesLabel, gradeLabel } from "@/i18n/grades";
 import { isLocale, type Locale } from "@/i18n/config";
+import { matchesCourseQuery } from "@/lib/course-search";
+import { CourseSearch } from "@/components/CourseSearch";
 
 export const revalidate = 0;
 
@@ -31,13 +33,13 @@ export default async function CategoryPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; category: string }>;
-  searchParams: Promise<{ predmet?: string; trida?: string }>;
+  searchParams: Promise<{ predmet?: string; trida?: string; q?: string }>;
 }) {
   const { locale, category: categorySlug } = await params;
   if (!isLocale(locale)) notFound();
   const dict = getDictionary(locale as Locale);
   const subjectText = getSubjectText(locale as Locale);
-  const { predmet, trida } = await searchParams;
+  const { predmet, trida, q } = await searchParams;
 
   const category = getCategoryBySlug(categorySlug);
   if (!category) notFound();
@@ -94,6 +96,10 @@ export default async function CategoryPage({
     courses = [];
     loadFailed = true;
   }
+
+  // Hledání mezi právě zobrazenými kurzy (po filtru předmětu a třídy).
+  const query = (q ?? "").trim().slice(0, 100);
+  if (query) courses = courses.filter((c) => matchesCourseQuery(c, query));
 
   // Seskupení: předmět -> kategorie (obor) -> kurzy.
   const groups = new Map<string, Map<string, Course[]>>();
@@ -155,13 +161,18 @@ export default async function CategoryPage({
       />
 
       <div id={COURSES_ANCHOR} className="scroll-mt-6">
+      {!loadFailed && (courses.length > 0 || query) && (
+        <CourseSearch initialQuery={query} label={dict.category.searchLabel} />
+      )}
       {courses.length === 0 ? (
         <div className="card p-10 text-center text-[var(--muted)]" role={loadFailed ? "alert" : undefined}>
           {loadFailed
             ? dict.category.loadFailed
-            : selectedSubject || selectedGrade
-              ? dict.category.noCoursesFiltered
-              : dict.category.noCourses}
+            : query
+              ? dict.category.noSearchResults
+              : selectedSubject || selectedGrade
+                ? dict.category.noCoursesFiltered
+                : dict.category.noCourses}
         </div>
       ) : (
         <div className="flex flex-col gap-12">

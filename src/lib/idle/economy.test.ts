@@ -156,7 +156,8 @@ test("postava: startovní peníze podle rodiny a doby, jméno se očistí, podru
 test("práce: poplatek, Vzdělání odemyká povolání, výměna a výpověď", () => {
   let s = start();
   assert.deepEqual(takeJob(s, "banker", NOW), { ok: false, error: "locked" });
-  assert.deepEqual(takeJob({ ...s, edu: 14 }, "banker", NOW), { ok: false, error: "not-enough-cash" });
+  const debtJob = takeJob({ ...s, edu: 14, cash: 0 }, "banker", NOW);
+  assert.ok(debtJob.ok && debtJob.state.cash < 0, "povolání jde i do minusu");
   const r = takeJob(s, "warehouse", NOW);
   ok(r);
   s = r.ok ? r.state : s;
@@ -664,7 +665,8 @@ test("firma: vylepšení, zaměstnanci, cena a výroba mění výnos; jde to jen
   assert.ok(companyYield(s, "shoes", NOW).costs > 0, "zaměstnanec stojí mzdu");
   assert.deepEqual(hireStaff(s, "shoes", 0, NOW), { ok: false, error: "bad-request" });
   assert.deepEqual(hireStaff({ ...s, companies: { shoes: 1 }, setup: { shoes: { ...s.setup.shoes!, staff: 3 } } }, "shoes", 1, NOW), { ok: false, error: "max" });
-  assert.deepEqual(hireStaff({ ...s, cash: 0 }, "shoes", 1, NOW), { ok: false, error: "not-enough-cash" });
+  const debtHire = hireStaff({ ...s, cash: 0 }, "shoes", 1, NOW);
+  assert.ok(debtHire.ok && debtHire.state.cash < 0, "nábor jde i do minusu");
   const fired = hireStaff(s, "shoes", -1, NOW);
   ok(fired);
   assert.equal(fired.ok ? fired.state.setup.shoes?.staff : -1, 0);
@@ -821,7 +823,8 @@ test("fáze: postup chce výnos firem a zaplatí den tohoto výnosu; nejde přes
   if (ratesOf(up.state, NOW).companies < phaseRequirement(3)) {
     assert.deepEqual(upgradePhase(up.state, NOW), { ok: false, error: "locked" }, "další fáze chce víc výnosu");
   }
-  assert.deepEqual(upgradePhase({ ...g, cash: 0 }, NOW), { ok: false, error: "not-enough-cash" });
+  const debtPhase = upgradePhase({ ...g, cash: 0 }, NOW);
+  assert.ok(debtPhase.ok && debtPhase.state.cash < 0, "postup jde i do minusu");
 });
 
 test("fáze: nájem a daň rostou s fází; bez firmy se nic neplatí", () => {
@@ -1184,7 +1187,8 @@ test("zásoby: nákup dávek stojí peníze, jde jen do kapacity a jen celé dá
   assert.equal(s.cash - b.state.cash, batchPrice(s, "shoes", NOW) * 2);
   assert.deepEqual(buyStock(s, "shoes", cap + 1, NOW), { ok: false, error: "max" }, "víc než sklad nepojme");
   assert.deepEqual(buyStock(s, "shoes", 1.5, NOW), { ok: false, error: "bad-request" });
-  assert.deepEqual(buyStock({ ...s, cash: 0 }, "shoes", 1, NOW), { ok: false, error: "not-enough-cash" });
+  const debtStock = buyStock({ ...s, cash: 0 }, "shoes", 1, NOW);
+  assert.ok(debtStock.ok && debtStock.state.cash < 0, "zásoby jdou i do minusu");
   assert.deepEqual(buyStock(s, "clothes", 1, NOW), { ok: false, error: "nothing" });
 });
 
@@ -1250,7 +1254,8 @@ test("směna bodů: prodej dává peníze, nákup bere peníze, obojí jen s dos
 
   const buy = exchangePoints(s, "buy", 2, 0, NOW);
   assert.ok(buy.ok && buy.state.cash === 0 && buy.pointsChange?.amount === 2);
-  assert.deepEqual(exchangePoints(s, "buy", 3, 0, NOW), { ok: false, error: "not-enough-cash" });
+  const debtPoints = exchangePoints(s, "buy", 3, 0, NOW);
+  assert.ok(debtPoints.ok && debtPoints.state.cash < 0, "body jdou i do minusu");
 
   assert.deepEqual(exchangePoints(s, "sell", 0, 10, NOW), { ok: false, error: "bad-request" });
   const fractional = exchangePoints(s, "sell", 1.5, 10, NOW);
@@ -1324,7 +1329,8 @@ test("potřeby: nákup zásoby stojí cenu dne za každý den, jde jen do limitu
   assert.deepEqual(buyNeed({ ...s, needs: { ...s.needs, food: MAX_NEED_DAYS } }, "food", 1, NOW), { ok: false, error: "max" });
   assert.deepEqual(buyNeed(s, "food", 1.5, NOW), { ok: false, error: "bad-request" });
   assert.deepEqual(buyNeed(s, "bogus", 1, NOW), { ok: false, error: "bad-request" });
-  assert.deepEqual(buyNeed({ ...s, cash: 0 }, "food", 1, NOW), { ok: false, error: "not-enough-cash" });
+  const debtFood = buyNeed({ ...s, cash: 0 }, "food", 1, NOW);
+  assert.ok(debtFood.ok && debtFood.state.cash < 0, "potřeby jdou i do minusu");
   assert.deepEqual(buyNeed(emptyState(NOW), "food", 1, NOW), { ok: false, error: "no-character" });
 });
 
@@ -1417,7 +1423,8 @@ test("boosty: kino přidá výdělek a další koupě boost prodlouží, nejvý�
   const until2 = twice.state.boosts.find((b) => b.id === "cinema")!.until;
   assert.ok(until2 > until1, "koupě prodlouží");
   assert.ok(until2 <= NOW + 240 * 60_000, "nejvýš 4 hodiny dopředu");
-  assert.deepEqual(buyBoost({ ...s, cash: 0 }, "cinema", NOW), { ok: false, error: "not-enough-cash" });
+  const debtBoost = buyBoost({ ...s, cash: 0 }, "cinema", NOW);
+  assert.ok(debtBoost.ok && debtBoost.state.cash < 0, "boost jde i do minusu");
   assert.deepEqual(buyBoost(s, "nothing", NOW), { ok: false, error: "bad-request" });
 });
 

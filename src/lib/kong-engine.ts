@@ -2,8 +2,9 @@ import { ANSWER_COLORS, ArcadeEngine, H, W, drawLabel, shuffleInPlace } from "./
 import { sfx } from "./game-fx";
 import { Sprites } from "./sprites";
 
-// Patra: 0 je země, 4 je horní patro se dveřmi s odpověďmi.
+// Patra: 0 je země, TOP je horní patro se dveřmi s odpověďmi.
 const LEVEL_Y = [398, 322, 246, 170, 94];
+const TOP = LEVEL_Y.length - 1;
 const SPANS: [number, number][] = [
   [0, W],
   [0, 540],
@@ -22,11 +23,37 @@ const PLAYER_H = 26;
 const START_X = 30;
 const GRAVITY = 1150;
 
+// Sudy valí gorila, dokud je hráč pod horním patrem. Cap je jen pojistka proti přeplnění plátna.
+const BARREL_CAP = 10;
+const TOSS = 0.35; // délka oblouku, kterým gorila sud hodí
+const FADE = 0.6; // doba, za kterou zmizí špatná odpověď
+
 // Odpovědi visí nad horním patrem jako bloky: musíš pod ně vyskočit a udeřit hlavou.
-type Door = { x: number; w: number; label: string; correct: boolean; alive: boolean; index: number; color: string; hit: number };
+type Door = {
+  x: number;
+  w: number;
+  label: string;
+  correct: boolean;
+  alive: boolean;
+  index: number;
+  color: string;
+  hit: number; // doba od úderu hlavou (animace odrazu)
+  aim: number; // 0–1: hráč je přímo pod blokem (plynule se zvýrazní)
+  fade: number; // doba mizení po vyřazení
+};
 const BLOCK_BOTTOM = 52;
 const BLOCK_H = 36;
-type Barrel = { x: number; y: number; vy: number; level: number; dir: number; falling: boolean; rot: number; jumped: boolean };
+type Barrel = {
+  x: number;
+  y: number;
+  vy: number;
+  level: number;
+  dir: number;
+  falling: boolean;
+  rot: number;
+  jumped: boolean;
+  toss: number; // zbývající doba oblouku po hodu
+};
 
 export class KongEngine extends ArcadeEngine {
   private sp = new Sprites("kong");
@@ -34,13 +61,16 @@ export class KongEngine extends ArcadeEngine {
   private py = LEVEL_Y[0];
   private vy = 0;
   private level = 0; // patro, na kterém hráč stojí
+  private prevLevel = 0;
   private onGround = true;
   private climbing: { x: number; from: number } | null = null;
   private facing = 1;
   private invuln = 0;
+  private squash = 0; // 1 těsně po dopadu, pak se vrací k normálu
   private doors: Door[] = [];
   private barrels: Barrel[] = [];
   private spawn = 1.5;
+  private throwT = 0; // gorila právě hází (krátká animace)
 
   protected questionTime() {
     return 90;
@@ -55,9 +85,12 @@ export class KongEngine extends ArcadeEngine {
     this.py = LEVEL_Y[0];
     this.vy = 0;
     this.level = 0;
+    this.prevLevel = 0;
     this.onGround = true;
     this.climbing = null;
     this.invuln = 0;
+    this.squash = 0;
+    this.throwT = 0;
     this.barrels = [];
     this.spawn = 1.8;
     this.doors = [];
@@ -76,6 +109,8 @@ export class KongEngine extends ArcadeEngine {
       index: optIndex,
       color: ANSWER_COLORS[k % ANSWER_COLORS.length],
       hit: 0,
+      aim: 0,
+      fade: 0,
     }));
   }
 
@@ -83,6 +118,7 @@ export class KongEngine extends ArcadeEngine {
     for (const d of this.doors) {
       if (!d.alive || d.correct || !indices.includes(d.index)) continue;
       d.alive = false;
+      d.fade = FADE;
       this.burst(d.x + d.w / 2, BLOCK_BOTTOM - BLOCK_H / 2, d.color, 14);
     }
     sfx("pickup");
@@ -99,7 +135,15 @@ export class KongEngine extends ArcadeEngine {
 
   protected update(dt: number) {
     this.invuln = Math.max(0, this.invuln - dt);
+    this.squash = Math.max(0, this.squash - dt * 4);
+    this.throwT = Math.max(0, this.throwT - dt);
     const speed = 115 * this.moveMul();
+
+    // Hráč právě doskočil nahoru: krátká nápověda, co dělat.
+    if (this.level === TOP && this.prevLevel !== TOP && this.onGround && !this.climbing && this.doors.some((d) => d.alive)) {
+      this.popText("Skoč pod správnou odpověď!", "#ffe066", W / 2, 130);
+    }
+    this.prevLevel = this.level;
 
     // --- hráč ---
     if (this.climbing) {
@@ -115,6 +159,8 @@ export class KongEngine extends ArcadeEngine {
         this.level = l.from + 1;
         this.climbing = null;
         this.onGround = true;
+        this.squash = 0.6;
+        sfx("land");
       } else if (this.py >= bottom) {
         this.py = bottom;
         this.level = l.from;
@@ -168,6 +214,7 @@ export class KongEngine extends ArcadeEngine {
               this.vy = 0;
               this.level = lv;
               this.onGround = true;
+              this.squash = 1;
               sfx("land");
               break;
             }
@@ -179,17 +226,24 @@ export class KongEngine extends ArcadeEngine {
     }
 
     // --- sudy ---
-    this.spawn -= dt;
-    // Na snazších obtížnostech je na plátně méně sudů najednou.
-    const maxBarrels = this.forgive() > 1.2 ? 3 : this.forgive() > 1.05 ? 4 : 6;
-    if (this.spawn <= 0 && this.barrels.length < maxBarrels) {
-      this.spawn = Math.max(1.1, 2.6 / this.pace()) * (0.8 + Math.random() * 0.5);
-      this.barrels.push({ x: W - 36, y: LEVEL_Y[4], vy: 0, level: 4, dir: -1, falling: false, rot: 0, jumped: false });
+    // Gorila hází, dokud hráč není v horním patře. Tam se přestane dívat a hází až po sestupu.
+    if (this.level < TOP) this.spawn -= dt;
+    if (this.level < TOP && this.spawn <= 0 && this.barrels.length < BARREL_CAP) {
+      // Na lehčích obtížnostech (forgive > 1) jsou mezi sudy delší pauzy; sudy ale chodí pořád.
+      this.spawn = Math.max(1.1, 2.6 / this.pace()) * (0.8 + Math.random() * 0.5) * this.forgive();
+      this.throwT = 0.3;
+      this.barrels.push({ x: W - 62, y: LEVEL_Y[TOP], vy: 0, level: TOP, dir: -1, falling: false, rot: 0, jumped: false, toss: TOSS });
     }
     const bspeed = 78 * this.pace();
     for (const b of this.barrels) {
       b.rot += b.dir * dt * 6;
-      if (!b.falling) {
+      if (b.toss > 0) {
+        // oblouk z rukou gorily dolů na patro
+        b.toss = Math.max(0, b.toss - dt);
+        const p = 1 - b.toss / TOSS;
+        b.x += b.dir * bspeed * dt;
+        b.y = b.toss > 0 ? LEVEL_Y[TOP] - 22 * (1 - p) - 26 * Math.sin(p * Math.PI) : LEVEL_Y[TOP];
+      } else if (!b.falling) {
         b.x += b.dir * bspeed * dt;
         if (!this.spanOk(b.level, b.x) && b.level > 0) {
           b.falling = true;
@@ -229,9 +283,14 @@ export class KongEngine extends ArcadeEngine {
       }
     }
 
-    // --- odpovědní bloky: úder hlavou při výskoku ---
-    for (const d of this.doors) d.hit = Math.max(0, d.hit - dt);
-    if (this.level === 4 && !this.onGround && !this.climbing && this.vy < 0) {
+    // --- odpovědní bloky: zvýraznění pod hráčem, úder hlavou při výskoku ---
+    for (const d of this.doors) {
+      d.hit = Math.max(0, d.hit - dt);
+      if (!d.alive) d.fade = Math.max(0, d.fade - dt);
+      const under = d.alive && this.level === TOP && !this.climbing && this.px >= d.x - 4 && this.px <= d.x + d.w + 4;
+      d.aim += ((under ? 1 : 0) - d.aim) * Math.min(1, dt * 12);
+    }
+    if (this.level === TOP && !this.onGround && !this.climbing && this.vy < 0) {
       const headTop = this.py - PLAYER_H - 5;
       for (const d of this.doors) {
         if (!d.alive) continue;
@@ -246,6 +305,7 @@ export class KongEngine extends ArcadeEngine {
           return;
         }
         d.alive = false;
+        d.fade = FADE;
         this.burst(cx, BLOCK_BOTTOM - BLOCK_H / 2, "#ff5d73", 20);
         this.wrong(d.index);
         break;
@@ -309,32 +369,73 @@ export class KongEngine extends ArcadeEngine {
       for (let x = a + 4; x < b; x += 24) ctx.fillRect(x, y + 3, 12, 3);
     });
 
-    // gorila nahoře vpravo
-    const gname = this.barrels.length > 0 && this.spawn < 0.4 ? "hod_1" : Math.floor(this.time * 3) % 2 === 0 ? "klid_1" : "klid_2";
-    if (!this.sp.draw(ctx, "gorila", gname, W - 40, LEVEL_Y[4], 60, 68, { anchorBottom: true })) this.drawKong(ctx, W - 40, LEVEL_Y[4]);
+    // gorila nahoře vpravo: nabírá sílu (buseni), hodí (hod), jinak dýchá (klid)
+    const windup = this.level < TOP && this.spawn > 0 && this.spawn < 0.5 && this.barrels.length < BARREL_CAP;
+    const gname =
+      this.throwT > 0
+        ? "hod_1"
+        : windup
+          ? Math.floor(this.time * 8) % 2 === 0
+            ? "buseni_1"
+            : "buseni_2"
+          : Math.floor(this.time * 3) % 2 === 0
+            ? "klid_1"
+            : "klid_2";
+    if (!this.sp.draw(ctx, "gorila", gname, W - 40, LEVEL_Y[TOP], 60, 68, { anchorBottom: true })) this.drawKong(ctx, W - 40, LEVEL_Y[TOP]);
+
+    // vodicí čára: od bloku, pod kterým hráč stojí, dolů k hlavě
+    const aimed = this.doors.find((d) => d.alive && d.aim > 0.5);
+    if (aimed && !this.climbing) {
+      ctx.save();
+      ctx.globalAlpha = aimed.aim * 0.9;
+      ctx.strokeStyle = aimed.color;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 5]);
+      ctx.lineDashOffset = -this.time * 20;
+      ctx.beginPath();
+      ctx.moveTo(this.px, BLOCK_BOTTOM + 2);
+      ctx.lineTo(this.px, this.py - PLAYER_H - 3);
+      ctx.stroke();
+      ctx.restore();
+    }
 
     // odpovědní bloky nad horním patrem
     for (const d of this.doors) {
-      if (!d.alive) continue;
+      if (!d.alive && d.fade <= 0) continue;
+      const k = d.alive ? 1 : d.fade / FADE; // průhlednost při zmizení
       const bump = d.hit > 0 ? Math.sin((d.hit / 0.25) * Math.PI) * 8 : 0;
-      const y = BLOCK_BOTTOM - BLOCK_H - bump;
+      const bob = d.alive ? Math.sin(this.time * 2.2 + d.x * 0.05) * 1.5 : 0;
+      const drop = d.alive ? 0 : (1 - k) * 24;
+      const cx = d.x + d.w / 2;
+      const cy = BLOCK_BOTTOM - BLOCK_H / 2 - bump + bob + drop;
+      ctx.save();
+      ctx.globalAlpha = k;
+      ctx.translate(cx, cy);
+      ctx.scale(1 + d.aim * 0.07, 1 + d.aim * 0.07);
+      ctx.shadowColor = d.color;
+      ctx.shadowBlur = 18 * d.aim;
       ctx.fillStyle = d.color;
       ctx.beginPath();
-      ctx.roundRect(d.x, y, d.w, BLOCK_H, 8);
+      ctx.roundRect(-d.w / 2, -BLOCK_H / 2, d.w, BLOCK_H, 8);
       ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,0.85)";
-      ctx.lineWidth = 2;
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = `rgba(255,255,255,${0.7 + d.aim * 0.3})`;
+      ctx.lineWidth = 2 + d.aim * 1.5;
       ctx.stroke();
-      drawLabel(ctx, d.label, d.x + d.w / 2, y + BLOCK_H / 2, d.w - 6, "rgba(0,0,0,0.25)", { height: BLOCK_H - 8, size: 16 });
-      // šipka naznačuje, že se pod blok skáče
-      ctx.fillStyle = "rgba(255,255,255,0.55)";
-      const ay = BLOCK_BOTTOM + 8 + Math.sin(this.time * 6 + d.x) * 2;
-      ctx.beginPath();
-      ctx.moveTo(d.x + d.w / 2, ay);
-      ctx.lineTo(d.x + d.w / 2 - 6, ay + 8);
-      ctx.lineTo(d.x + d.w / 2 + 6, ay + 8);
-      ctx.closePath();
-      ctx.fill();
+      drawLabel(ctx, d.label, 0, 0, d.w - 6, "rgba(0,0,0,0.25)", { height: BLOCK_H - 8, size: 16, alpha: k });
+      ctx.restore();
+
+      // šipka naznačuje, že se pod blok skáče; pod zvoleným blokem svítí víc
+      if (d.alive) {
+        ctx.fillStyle = `rgba(255,255,255,${0.45 + d.aim * 0.5})`;
+        const ay = BLOCK_BOTTOM + 8 + Math.sin(this.time * 6 + d.x) * 2 + d.aim * 3;
+        ctx.beginPath();
+        ctx.moveTo(cx, ay);
+        ctx.lineTo(cx - 6, ay + 8);
+        ctx.lineTo(cx + 6, ay + 8);
+        ctx.closePath();
+        ctx.fill();
+      }
     }
 
     // sudy
@@ -357,8 +458,18 @@ export class KongEngine extends ArcadeEngine {
       ctx.restore();
     }
 
-    // hráč
-    if (!(this.invuln > 0 && Math.floor(this.time * 10) % 2 === 0)) this.drawPlayer(ctx);
+    // hráč: při skoku se protáhne, při dopadu zmáčkne (kolem chodidel)
+    if (!(this.invuln > 0 && Math.floor(this.time * 10) % 2 === 0)) {
+      const air = !this.onGround && !this.climbing ? (this.vy < 0 ? 1 : -0.6) : 0;
+      const sx = 1 + this.squash * 0.22 - air * 0.05;
+      const sy = 1 - this.squash * 0.22 + air * 0.05;
+      ctx.save();
+      ctx.translate(this.px, this.py);
+      ctx.scale(sx, sy);
+      ctx.translate(-this.px, -this.py);
+      this.drawPlayer(ctx);
+      ctx.restore();
+    }
   }
 
   private drawKong(ctx: CanvasRenderingContext2D, x: number, y: number) {

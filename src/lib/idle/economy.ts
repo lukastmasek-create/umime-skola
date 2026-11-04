@@ -95,6 +95,9 @@ export const CRISIS_SALARY = 0.9;
 // a když je po varování dalších DISMISS_STREAK špatných směn, přijde výpověď. Jedna dobrá směna varování ruší.
 export const BAD_PERF = 30;
 export const DISMISS_STREAK = 5;
+// Minus: výdaje na život a podnikání (potřeby, boosty, povolání, firmy, zakázky, výzkum, fáze, body) smí hotovost stáhnout pod nulu.
+// Dluh pak splácí příjem. Když čistý výdaj převýší hotovost, přijde varování a krach firmy (viz distressOf).
+// Investice, sázky v hustlech a nákupy z burzy jdou jen z kladné hotovosti.
 
 // --- Postava ---
 
@@ -1196,7 +1199,7 @@ export function normalizeState(raw: unknown, real: number): EconomyState {
     if (typeof v === "number" && Number.isFinite(v)) startupRound[id] = Math.floor(Math.min(1e12, Math.max(0, v)));
   }
 
-  const cash = finite(r.cash, 0, 0, 1e15) + refund;
+  const cash = finite(r.cash, 0, -1e15, 1e15) + refund;
   return {
     v: 1,
     character,
@@ -1555,7 +1558,6 @@ export function buyNeed(state: EconomyState, id: unknown, days: unknown, now: nu
   const add = Math.min(days, MAX_NEED_DAYS - have);
   if (add <= 1e-9) return fail("max");
   const price = Math.round(needDaily(state, id) * add);
-  if (state.cash < price) return fail("not-enough-cash");
   return done({ ...state, cash: state.cash - price, needs: { ...state.needs, [id]: have + add } }, now);
 }
 
@@ -1564,7 +1566,6 @@ export function buyBoost(state: EconomyState, id: unknown, now: number): ActionR
   if (!state.character) return fail("no-character");
   if (!isBoost(id)) return fail("bad-request");
   const price = boostPrice(state, id);
-  if (state.cash < price) return fail("not-enough-cash");
   const def = BOOST_DEF[id];
   const current = state.boosts.find((b) => b.id === id && b.until > now)?.until ?? now;
   const until = Math.min(now + MAX_BOOST_MINUTES * 60_000, Math.max(current, now) + def.minutes * 60_000);
@@ -1582,7 +1583,6 @@ export function buyStock(state: EconomyState, id: unknown, amount: unknown, now:
   const cap = stockCapacity(n, state.phase);
   if (s.stock + amount > cap + 1e-9) return fail("max");
   const price = batchPrice(state, o.id, now) * amount;
-  if (state.cash < price) return fail("not-enough-cash");
   return done({ ...state, cash: state.cash - price, setup: withSetup(state, o.id, { stock: s.stock + amount }) }, now);
 }
 
@@ -1653,7 +1653,7 @@ export function settle(state: EconomyState, now: number, learning = 0): EconomyS
     const gain = rate.net * hours;
     next = {
       ...next,
-      cash: Math.max(0, state.cash + gain),
+      cash: state.cash + gain,
       job: state.job ? { ...state.job, hours: state.job.hours + hours } : null,
       totalEarned: state.totalEarned + (gain > 0 ? gain : 0),
       energy: Math.min(ENERGY_MAX * fx.energyCap, Math.max(0, state.energy + (ENERGY_PER_HOUR * hours * fx.energyRegen) / state.speed - fx.energyDrain * hours)),
@@ -1663,7 +1663,7 @@ export function settle(state: EconomyState, now: number, learning = 0): EconomyS
   if (elapsed > 0) next = consumeStock(next, hours);
   if (elapsed > 0) next = consumeNeeds(next, hours);
   // Nezaplacené účty: každou hodinu pokuta v ceně denního nákladu na bydlení.
-  if (elapsed > 0 && fx.bills) next = { ...next, cash: Math.max(0, next.cash - needDaily(next, "housing") / 24 * hours) };
+  if (elapsed > 0 && fx.bills) next = { ...next, cash: next.cash - needDaily(next, "housing") / 24 * hours };
   // Varování před krachem a případný krach (podle skutečného času, ať nejde obejít čekáním).
   next = checkDistress(next, now, learning);
   // Odchody: když se mění dvouhodinové okno, může firma přijít o jednoho zaměstnance.
@@ -1807,7 +1807,6 @@ export function takeJob(state: EconomyState, id: unknown, now: number): ActionRe
   if (state.job?.id === id) return fail("same-job");
   const def = jobDef(id);
   if (state.edu < def.edu) return fail("locked");
-  if (state.cash < def.fee) return fail("not-enough-cash");
   return done({ ...state, cash: state.cash - def.fee, job: newJob(id, now) }, now);
 }
 
@@ -1992,7 +1991,6 @@ export function buyCompany(state: EconomyState, id: unknown, now: number): Actio
   const owned = state.companies[id] ?? 0;
   if (owned >= MAX_COMPANY_UNITS) return fail("max");
   const price = companyPrice(state, id);
-  if (state.cash < price) return fail("not-enough-cash");
   return done({ ...state, cash: state.cash - price, companies: { ...state.companies, [id]: owned + 1 } }, now);
 }
 
@@ -2014,7 +2012,6 @@ export function upgradeCompany(state: EconomyState, id: unknown, now: number): A
   if (o.error) return fail(o.error);
   if (setupOf(state, o.id).upgraded) return fail("max");
   const price = upgradePrice(state, o.id);
-  if (state.cash < price) return fail("not-enough-cash");
   return done({ ...state, cash: state.cash - price, setup: withSetup(state, o.id, { upgraded: true }) }, now);
 }
 
@@ -2027,7 +2024,6 @@ export function unionDeal(state: EconomyState, id: unknown, now: number): Action
   if (s.unionUntil > now) return fail("busy");
   const roles = rolesOf(s);
   const fee = Math.round(payroll(roles) * UNION_DEAL_YEARS);
-  if (state.cash < fee) return fail("not-enough-cash");
   return done({ ...state, cash: state.cash - fee, setup: withSetup(state, o.id, { unionUntil: now + UNION_DEAL_MS }) }, now);
 }
 
@@ -2048,7 +2044,6 @@ export function hireStaff(state: EconomyState, id: unknown, delta: unknown, now:
   const cap = ROLE_MAX[role];
   if (cap !== null && roles[role] >= cap) return fail("max");
   const fee = Math.round(hireCost(o.id) * ROLE_WAGE[role]);
-  if (state.cash < fee) return fail("not-enough-cash");
   const next = { ...roles, [role]: roles[role] + 1 };
   // Noví lidé se zaškolují: celá firma je chvíli méně výkonná.
   const rookieUntil = Math.max(now, s.rookieUntil) + ROOKIE_MS;
@@ -2074,7 +2069,6 @@ export function runCampaign(state: EconomyState, id: unknown, now: number): Acti
   if (o.error) return fail(o.error);
   if (now < setupOf(state, o.id).marketingUntil) return fail("busy");
   const price = campaignPrice(state, o.id);
-  if (state.cash < price) return fail("not-enough-cash");
   return done(
     { ...state, cash: state.cash - price, setup: withSetup(state, o.id, { marketingUntil: now + MARKETING_MINUTES * 60_000 }) },
     now,
@@ -2089,7 +2083,6 @@ export function fundResponse(state: EconomyState, id: unknown, now: number): Act
   if (!ev || !isNegativeEvent(ev.def) || !eventAffects(ev.def, o.id)) return fail("nothing");
   if (state.responses[o.id] === ev.window) return fail("busy");
   const price = fundPrice(state, o.id);
-  if (state.cash < price) return fail("not-enough-cash");
   return done({ ...state, cash: state.cash - price, responses: { ...state.responses, [o.id]: ev.window } }, now);
 }
 
@@ -2127,7 +2120,6 @@ export function signContract(state: EconomyState, id: unknown, now: number): Act
   if (o.error) return fail(o.error);
   if (contractActive(state, o.id, now)) return fail("busy");
   const price = contractPrice(state, o.id);
-  if (state.cash < price) return fail("not-enough-cash");
   return done({ ...state, cash: state.cash - price, contracts: { ...state.contracts, [o.id]: now + CONTRACT_MS } }, now);
 }
 
@@ -2138,7 +2130,6 @@ export function researchCompany(state: EconomyState, id: unknown, now: number): 
   const lvl = researchLevel(state, o.id);
   if (lvl >= MAX_RESEARCH) return fail("max");
   const price = researchPrice(state, o.id);
-  if (state.cash < price) return fail("not-enough-cash");
   return done({ ...state, cash: state.cash - price, research: { ...state.research, [o.id]: lvl + 1 } }, now);
 }
 
@@ -2437,7 +2428,6 @@ export function exchangePoints(state: EconomyState, direction: unknown, amount: 
   }
   if (direction === "buy") {
     const cost = n * POINT_BUY_CASH;
-    if (state.cash < cost) return fail("not-enough-cash");
     return done({ ...state, cash: state.cash - cost }, now, {
       pointsChange: { amount: n, reason: "Ekonomika: nákup bodů za peníze" },
     });
@@ -2452,6 +2442,5 @@ export function upgradePhase(state: EconomyState, now: number): ActionResult {
   const next = state.phase + 1;
   if (rates(state, now).companies < phaseRequirement(next)) return fail("locked");
   const price = phaseCost(next);
-  if (state.cash < price) return fail("not-enough-cash");
   return done({ ...state, cash: state.cash - price, phase: next }, now);
 }
