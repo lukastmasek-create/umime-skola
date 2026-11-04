@@ -4,6 +4,7 @@ Hlava je vpravo dole, ohon vlevo nahoře; web ji zrcadlí podle směru letu."""
 import math
 import random
 import sys, os
+import numpy as np
 sys.path.insert(0, os.path.dirname(__file__))
 from common import *
 import bmesh
@@ -158,37 +159,67 @@ ion2 = tail_volume("ion2", 3.3, 0.3, ("#ffffff", "#3a78ff"), 700.0, 10.0, 8.0, 1
 aim(ion2, (TAIL + Vector((0, 0, 0.05))).normalized(), HEAD - TAIL * 0.1)
 
 print('STAGE tails built', flush=True)
-# ---------- prachový ohon: zakřivený roj částic ----------
+# ---------- prach: simulovaný proud částic ----------
+# Každá částice vzniká na zadní hraně jádra v určité fázi smyčky a letí podle svého stáří `a` (0..1 smyčky):
+# nejdřív rychle, pak ji brzdí odpor prostředí; navíc dostane vlastní náhodný bočný rozptyl.
+# Poloha závisí jen na stáří, takže smyčka 24 snímků na sebe navazuje bez skoku.
+# Tvar stopy tedy vzniká z pohybu částic, ne z předem nakresleného oblouku.
 mat = bpy.data.materials.new("prach"); nt = nodes(mat)
 out = nt.nodes.new("ShaderNodeOutputMaterial")
 attr = nt.nodes.new("ShaderNodeAttribute"); attr.attribute_name = "Col"
 em = nt.nodes.new("ShaderNodeEmission"); em.inputs["Strength"].default_value = 5.5
 nt.links.new(attr.outputs["Color"], em.inputs["Color"]); nt.links.new(em.outputs[0], out.inputs[0])
-OCT = [(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)]
 OCT_F = [(0, 2, 4), (2, 1, 4), (1, 3, 4), (3, 0, 4), (2, 0, 5), (1, 2, 5), (3, 1, 5), (0, 3, 5)]
-verts, faces, colors = [], [], []
-for i in range(22000):
-    t = rnd.random() ** 0.8
-    L = 3.2 * t
-    # zakřivení: osa se postupně stáčí k dolní straně
-    ang = math.atan2(TAIL.z, TAIL.x) + 0.55 * t * t - 0.12
-    pos = HEAD + Vector((math.cos(ang), 0, math.sin(ang))) * (0.25 + L)
-    spread = 0.06 + 0.7 * t
-    pos += Vector((rnd.gauss(0, spread * 0.35), rnd.gauss(0, 0.05), rnd.gauss(0, spread * 0.35)))
-    fade = (1 - t) ** 1.7
-    b = (0.15 + 0.85 * fade) * rnd.uniform(0.4, 1.0)
-    warm = (1.0, 0.78 + 0.15 * (1 - t), 0.48 + 0.3 * (1 - t))
-    r = rnd.choice((0.005, 0.007, 0.009, 0.012)) * (1.3 - 0.5 * t) * 1.2
-    base = len(verts)
-    for ox, oy, oz in OCT:
-        verts.append((pos.x + ox * r, pos.y + oy * r, pos.z + oz * r))
-        colors.append((warm[0] * b, warm[1] * b, warm[2] * b, 1.0))
-    faces.extend((base + a_, base + b_, base + c_) for a_, b_, c_ in OCT_F)
+OCT_NP = np.array([(1, 0, 0), (-1, 0, 0), (0, 1, 0), (0, -1, 0), (0, 0, 1), (0, 0, -1)], dtype=float)
+NP = 22000
+gen = np.random.default_rng(11)
+PH = gen.random(NP)                                   # fáze vzniku v smyčce
+R0 = gen.choice([0.007, 0.009, 0.012, 0.015], NP)     # velikost částice
+B0 = gen.uniform(0.4, 1.0, NP)                        # jas částice
+T_NP = np.array(TAIL, dtype=float)
+HEAD_NP = np.array(HEAD, dtype=float)
+LAT = gen.normal(0, 1, (NP, 3))
+LAT -= (LAT @ T_NP)[:, None] * T_NP[None, :]          # bočný rozptyl kolmo na ohon
+LAT[:, 1] *= 0.2                                      # málo rozptylu do hloubky
+DRAG = 1.8                                            # odpor prostředí
+V0 = 6.0                                              # počáteční rychlost ve směru ohonu
+SPREAD = 0.22                                         # šířka proudu
+START = HEAD_NP + T_NP * 0.55                         # začátek: zadní hrana jádra
+
+
+def dust_state(t):
+    a = (t - PH) % 1.0                                # stáří částice v jednotkách smyčky
+    f = (1.0 - np.exp(-DRAG * a)) / DRAG              # dráha s odporem
+    pos = START + T_NP * (V0 * f)[:, None] + LAT * (SPREAD * f + 0.08 * a * a)[:, None]
+    return pos, a
+
+
+def dust_mesh_arrays(t):
+    pos, a = dust_state(t)
+    r = R0 * (1.3 - 0.5 * a)
+    # plynulé vynoření u zdroje a zhasnutí na konci stopy (bez tvrdého střihu)
+    b = B0 * (0.15 + 0.85 * (1.0 - a) ** 1.7) * np.clip(a / 0.06, 0.0, 1.0) * np.clip((1.0 - a) / 0.3, 0.0, 1.0)
+    verts = (pos[:, None, :] + OCT_NP[None, :, :] * r[:, None, None]).reshape(-1, 3)
+    warm = np.stack([np.ones(NP), 0.78 + 0.15 * (1 - a), 0.48 + 0.3 * (1 - a)], axis=1) * b[:, None]
+    cols = np.ones((NP, 6, 4))
+    cols[:, :, :3] = warm[:, None, :]
+    return verts, cols.reshape(-1, 4)
+
+
+_v0, _c0 = dust_mesh_arrays(0.0)
+faces = [(i * 6 + a_, i * 6 + b_, i * 6 + c_) for i in range(NP) for a_, b_, c_ in OCT_F]
 mesh = bpy.data.meshes.new("prach")
-mesh.from_pydata(verts, [], faces)
+mesh.from_pydata(_v0.tolist(), [], faces)
 ca = mesh.color_attributes.new("Col", "FLOAT_COLOR", "POINT")
-ca.data.foreach_set("color", [c for col in colors for c in col])
+ca.data.foreach_set("color", _c0.ravel())
 dust = bpy.data.objects.new("prach", mesh); sc.collection.objects.link(dust); dust.data.materials.append(mat)
+
+
+def update_dust(t):
+    verts, cols = dust_mesh_arrays(t)
+    mesh.vertices.foreach_set("co", verts.ravel())
+    ca.data.foreach_set("color", cols.ravel())
+    mesh.update()
 
 print('STAGE dust built', flush=True)
 # ---------- světla ----------
@@ -229,7 +260,7 @@ def update(t):
     for j, mp in enumerate(MAPS):
         mp.inputs["Rotation"].default_value = (0, 0, ph * (1 if j == 0 else -1))
     coma.scale = (1 + 0.025 * math.sin(2 * ph), 1 + 0.025 * math.sin(2 * ph), 1 + 0.025 * math.sin(2 * ph))
-    dust.rotation_euler = (dust_base[0], dust_base[1] + 0.012 * math.sin(ph), dust_base[2])
+    update_dust(t)
     # jiskry
     for ob, a, off, p0 in sparks:
         u = (t + p0) % 1.0
