@@ -314,66 +314,6 @@ const T: Record<ArcadeSlug, Record<Locale, ArcadeText>> = {
       upgradeAction: "Vitesse d'escalade",
     },
   },
-  flappy: {
-    ...withFallbacks({
-      cs: {
-        title: "Let přes útesy",
-        intro: "Ptáček letí kolem čtyř průletů a u každého je odpověď. Proleť tím správným! Špatný průlet ubere život, stejně jako náraz do zdi nebo země.",
-        controls: "mezerník, ↑ nebo klepnutí = mávnutí křídly",
-        action: "Mávnout",
-        upgradeAction: "Síla křídel",
-      },
-      en: {
-        title: "Cliff Flight",
-        intro: "The bird flies past four gaps, each with an answer. Fly through the right one! A wrong gap costs a life, and so does hitting a wall or the ground.",
-        controls: "space, ↑ or tap to flap",
-        action: "Flap",
-        upgradeAction: "Wing power",
-      },
-      de: {
-        title: "Klippenflug",
-        intro: "Der Vogel fliegt an vier Lücken vorbei, jede mit einer Antwort. Flieg durch die richtige! Eine falsche Lücke kostet ein Leben, ebenso ein Aufprall an Wand oder Boden.",
-        controls: "Leertaste, ↑ oder Tippen zum Flattern",
-        action: "Flattern",
-        upgradeAction: "Flügelkraft",
-      },
-      ru: {
-        title: "Полёт над скалами",
-        intro: "Птичка летит мимо четырёх проходов, у каждого ответ. Пролети через правильный! Неверный проход отнимает жизнь, как и удар о стену или землю.",
-        controls: "пробел, ↑ или касание — взмах крыльями",
-        action: "Взмах",
-        upgradeAction: "Сила крыльев",
-      },
-    }),
-    uk: {
-      title: "Політ над скелями",
-      intro: "Пташка летить повз чотири проходи, у кожного є відповідь. Пролети крізь правильний! Неправильний прохід забирає життя, так само як удар об стіну чи землю.",
-      controls: "пробіл, ↑ або дотик — змах крилами",
-      action: "Змах",
-      upgradeAction: "Сила крил",
-    },
-    ja: {
-      title: "崖の飛行",
-      intro: "鳥は4つの隙間の前を通ります。それぞれの隙間に答えが書かれているので、正しい答えの隙間を通り抜けよう！間違った隙間を通るとライフが減り、壁や地面にぶつかってもライフが減ります。",
-      controls: "スペース、↑ またはタップで羽ばたき",
-      action: "羽ばたく",
-      upgradeAction: "翼の力",
-    },
-    es: {
-      title: "Vuelo entre acantilados",
-      intro: "El pájaro vuela junto a cuatro huecos, cada uno con una respuesta. ¡Pasa por el correcto! Un hueco equivocado te cuesta una vida, y también chocar contra una pared o el suelo.",
-      controls: "espacio, ↑ o toca para aletear",
-      action: "Aletear",
-      upgradeAction: "Potencia de alas",
-    },
-    fr: {
-      title: "Vol au-dessus des falaises",
-      intro: "L'oiseau vole devant quatre trouées, chacune avec une réponse. Passe par la bonne ! Une mauvaise trouée coûte une vie, tout comme heurter un mur ou le sol.",
-      controls: "espace, ↑ ou toucher pour battre des ailes",
-      action: "Battre des ailes",
-      upgradeAction: "Puissance des ailes",
-    },
-  },
   mole: {
     ...withFallbacks({
       cs: {
