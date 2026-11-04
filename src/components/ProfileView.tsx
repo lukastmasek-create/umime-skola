@@ -466,6 +466,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
 
             <div className="order-1 flex flex-col items-center sm:order-2">
               <div className="relative">
+                {/* Zadní část podstavce jde za postavu. */}
                 <span
                   aria-hidden
                   className="globe-sprite pointer-events-none absolute -bottom-[34%] left-1/2 h-[125%] w-[165%] -translate-x-1/2 drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)]"
@@ -480,6 +481,13 @@ export function ProfileView({ locale }: { locale: Locale }) {
                   snapshotRef={snapshotRef}
                   className="h-[320px] w-[250px] sm:h-[400px] sm:w-[300px]"
                   svgSize={170}
+                />
+                {/* Přední hrana desky leží před nohami postavy, takže ta stojí uvnitř podstavce.
+                    Ořez ukazuje jen spodek sprite od středu desky dolů. */}
+                <span
+                  aria-hidden
+                  className="globe-sprite pointer-events-none absolute -bottom-[34%] left-1/2 h-[125%] w-[165%] -translate-x-1/2"
+                  style={{ backgroundImage: `url(${pedestalUrl(profile.avatar)})`, clipPath: "inset(60% 0 0 0)" }}
                 />
               </div>
               <p className="mt-1 rounded-full bg-black/35 px-3 py-1 text-xs text-white backdrop-blur-sm">
