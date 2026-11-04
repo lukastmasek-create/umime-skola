@@ -3561,3 +3561,22 @@ button.town3d-chip[aria-pressed="true"] { background: #ffd24d; color: #1b1840; }
   transition-duration: 0.001ms !important;
   scroll-behavior: auto !important;
 }
+
+/* Lišta „Zprávy z trhu“ (EconomyTicker): nekonečný posun zpráv, pauza najetím myši. */
+.econ-ticker { overflow: hidden; }
+.econ-ticker-track { display: flex; width: max-content; animation: econ-ticker linear infinite; }
+.econ-ticker:hover .econ-ticker-track { animation-play-state: paused; }
+.econ-ticker-group { display: flex; flex-shrink: 0; }
+.econ-ticker-item { padding-right: 3rem; white-space: nowrap; }
+@keyframes econ-ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .econ-ticker { overflow-x: auto; }
+  .econ-ticker-track { animation: none; }
+  .econ-ticker-group[aria-hidden] { display: none; }
+}
+[data-motion="off"] .econ-ticker { overflow-x: auto; }
+[data-motion="off"] .econ-ticker-track { animation: none; }
+[data-motion="off"] .econ-ticker-group[aria-hidden] { display: none; }
