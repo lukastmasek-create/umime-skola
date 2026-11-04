@@ -14,6 +14,7 @@ import {
   buildRoads,
   cloudRadius,
   cloudScale,
+  cloudScaleY,
   distToRoad,
   doorPoint,
   findPath,
@@ -427,7 +428,12 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
 
   // zamčené světy: nad budovou je mrak (oblak.glb z Blenderu), po odemčení se rozplyne
   const locked = new Set<string>();
-  type Cloud = { g: THREE.Group; target: number; t: number; out: boolean };
+  type Cloud = { g: THREE.Group; target: number; ty: number; t: number; out: boolean };
+  // velikost mraku: vodorovně `target`, svisle `ty`, `k` je průběh animace (1 = plná velikost)
+  const sizeCloud = (c: Cloud, k: number) => {
+    const w = Math.max(0.001, c.target * k);
+    c.g.scale.set(w, Math.max(0.001, c.ty * k), w);
+  };
   const clouds = new Map<string, Cloud>();
   let cloudTpl: THREE.Object3D | null = null;
   function syncClouds() {
@@ -444,7 +450,7 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
           g.userData.placeId = p.id; // klik na mrak = klik na místo
           add(g);
           pickables.push(g);
-          clouds.set(p.id, { g, target: cloudScale(p), t: 0, out: false });
+          clouds.set(p.id, { g, target: cloudScale(p), ty: cloudScaleY(p), t: 0, out: false });
         } else if (c.out) {
           Object.assign(c, { out: false, t: 0 }); // znovu zamčeno: mrak naroste zpátky
         }
@@ -931,7 +937,7 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
       c.t += dt;
       if (c.out) {
         const k = Math.min(1, c.t / 0.9);
-        c.g.scale.setScalar(Math.max(0.001, c.target * (1 - k * k * k)));
+        sizeCloud(c, 1 - k * k * k);
         if (k >= 1) {
           scene.remove(c.g);
           const at = pickables.indexOf(c.g);
@@ -941,7 +947,7 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
       } else {
         const k = Math.min(1, c.t / 1.1);
         const back = 1 + 2.70158 * (k - 1) ** 3 + 1.70158 * (k - 1) ** 2; // mírný odskok
-        c.g.scale.setScalar(Math.max(0.001, c.target * back));
+        sizeCloud(c, back);
         c.g.position.y = Math.sin(time * 0.6 + c.target) * 0.12;
       }
     });
