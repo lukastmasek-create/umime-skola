@@ -108,7 +108,9 @@ export function HeaderAccount({
   const favBanners = favorites.banner.filter((b) => account.unlocks.includes(`banner:${b}`));
 
   return (
-    <div ref={rootRef} className="relative">
+    // Na mobilu se panel váže k hlavičce (sticky = vztažný prvek), takže ho lze roztáhnout přes šířku obrazovky.
+    // Od sm výše se váže k tlačítku a je zarovnaný doprava, jako dřív.
+    <div ref={rootRef} className="static sm:relative">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -127,7 +129,7 @@ export function HeaderAccount({
         <div
           role="dialog"
           aria-label={t.nav}
-          className="card absolute right-0 top-full z-50 mt-2 max-h-[calc(100vh-6rem)] w-[min(22rem,calc(100vw-2rem))] overflow-y-auto p-4"
+          className="card absolute inset-x-4 top-full z-50 mt-2 max-h-[calc(100dvh-6rem)] overflow-y-auto p-4 sm:inset-x-auto sm:left-auto sm:right-0 sm:w-[min(22rem,calc(100vw-2rem))] sm:max-h-[calc(100vh-6rem)]"
         >
           <div
             {...(isBannerId(account.banner) ? { "data-banner": account.banner } : {})}
