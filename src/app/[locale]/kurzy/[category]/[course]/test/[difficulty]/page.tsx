@@ -18,6 +18,23 @@ function shuffle<T>(items: T[]): T[] {
   return copy;
 }
 
+// Banka má u většiny kurzů jen 3 až 8 otázek na obtížnost, takže test jen z jedné obtížnosti
+// by vracel pořád stejné otázky. Nejdřív se berou otázky zvolené obtížnosti, pak sousední
+// (±1, ±2, …), uvnitř každé vzdálenosti náhodně. Obtížnost tak zůstává hlavním zdrojem.
+function buildTestQuestions<T extends { difficulty: number }>(pool: T[], target: number, size: number): T[] {
+  const bands = new Map<number, T[]>();
+  for (const q of pool) {
+    const distance = Math.abs(q.difficulty - target);
+    bands.set(distance, [...(bands.get(distance) ?? []), q]);
+  }
+  const picked: T[] = [];
+  for (const distance of [...bands.keys()].sort((a, b) => a - b)) {
+    picked.push(...shuffle(bands.get(distance) ?? []));
+    if (picked.length >= size) break;
+  }
+  return picked.slice(0, size);
+}
+
 export default async function CourseTestPage({
   params,
 }: {
@@ -34,7 +51,7 @@ export default async function CourseTestPage({
 
   let courseTitle: string | null = null;
   let courseId: string | undefined;
-  let pool: TestQuestion[] = [];
+  let pool: (TestQuestion & { difficulty: number })[] = [];
   try {
     const course = await prisma.course.findFirst({
       where: { slug: courseSlug, category: category.value, published: true },
@@ -42,7 +59,6 @@ export default async function CourseTestPage({
         id: true,
         title: true,
         questions: {
-          where: { difficulty },
           select: {
             id: true,
             prompt: true,
@@ -50,6 +66,7 @@ export default async function CourseTestPage({
             options: true,
             correctIndex: true,
             explanation: true,
+            difficulty: true,
           },
         },
       },
@@ -67,7 +84,9 @@ export default async function CourseTestPage({
   }
   if (!courseTitle) notFound();
 
-  const questions = shuffle(pool).slice(0, QUESTIONS_PER_TEST);
+  const questions: TestQuestion[] = buildTestQuestions(pool, difficulty, QUESTIONS_PER_TEST).map(
+    ({ difficulty: _difficulty, ...q }) => q,
+  );
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
