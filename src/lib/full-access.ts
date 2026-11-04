@@ -18,6 +18,7 @@ export const FULL_ACCESS_EMAILS: ReadonlySet<string> = new Set([
   "tuzitv@seznam.cz",
   "ondrej.vrba@infis.cz",
   "natalie.majerovainf@seznam.cz",
+  "lukas.zahor@infis.cz",
 ]);
 
 // Úroveň, kterou plný přístup dosazuje (XP se jen dopočítá, do databáze se nezapisuje).
