@@ -107,6 +107,7 @@ import {
   startHustle,
   startShift,
   startVacation,
+  WALK_EXTRA_ENERGY,
   takeJob,
   topUpHustle,
   upgradeCompany,
@@ -1365,6 +1366,21 @@ test("potřeby: bez dopravy nejde nastoupit na směnu", () => {
   assert.deepEqual(startShift(job, NOW, () => 0.5), { ok: false, error: "no-transport" });
   const ok1 = startShift({ ...job, needs: { ...job.needs, transport: 1 } }, NOW, () => 0.5);
   assert.ok(ok1.ok);
+});
+
+test("potřeby: bez dopravy jde směna pěšky, za víc energie", () => {
+  const job = { ...start("middle"), job: newJob("warehouse", NOW), energy: 100, needs: { ...emptyNeeds(), transport: 0 } };
+  const walked = startShift(job, NOW, () => 0.5, true);
+  assert.ok(walked.ok);
+  assert.equal(walked.state.shift?.startedAt, NOW);
+  assert.equal(walked.state.energy, 100 - WALK_EXTRA_ENERGY, "pěšky stojí víc energie");
+  // Pěšky nejde s energií pod minimem navýšeným o cestu.
+  const low = { ...job, energy: 30 + WALK_EXTRA_ENERGY - 1 };
+  assert.deepEqual(startShift(low, NOW, () => 0.5, true), { ok: false, error: "low-energy" });
+  // Když doprava je, pěšky se nic nenavyšuje.
+  const withCar = startShift({ ...job, needs: { ...job.needs, transport: 1 } }, NOW, () => 0.5, true);
+  assert.ok(withCar.ok);
+  assert.equal(withCar.state.energy, 100);
 });
 
 test("potřeby: nezaplacené účty stojí každou hodinu pokutu", () => {

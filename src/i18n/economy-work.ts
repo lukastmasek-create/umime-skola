@@ -13,6 +13,8 @@ export type WorkText = {
   shiftTitle: string;
   shiftIntro: string;
   shiftStart: string;
+  shiftWalk: string;
+  walkNote: string;
   shiftStep: string;
   shiftPerf: string;
   shiftNext: string;
@@ -54,6 +56,8 @@ const cs: WorkText = {
   shiftTitle: "Směna",
   shiftIntro: "Tři rozhodnutí. Lepší výkon znamená vyšší výplatu a víc bodů.",
   shiftStart: "Začít směnu",
+  shiftWalk: "Jít pěšky do práce",
+  walkNote: "Bez dopravy půjdeš pěšky. Stojí to víc energie, potřebuješ aspoň {n}.",
   shiftStep: "Situace {n} z 3",
   shiftPerf: "Výkon {n} %",
   shiftNext: "Další směna za {t}",
@@ -121,6 +125,8 @@ const en: WorkText = {
   shiftTitle: "Shift",
   shiftIntro: "Three decisions. Better performance means higher pay and more points.",
   shiftStart: "Start shift",
+  shiftWalk: "Walk to work",
+  walkNote: "Without transport you walk. It costs more energy, you need at least {n}.",
   shiftStep: "Situation {n} of 3",
   shiftPerf: "Performance {n} %",
   shiftNext: "Next shift in {t}",
@@ -188,6 +194,8 @@ const de: WorkText = {
   shiftTitle: "Schicht",
   shiftIntro: "Drei Entscheidungen. Bessere Leistung bringt mehr Lohn und mehr Punkte.",
   shiftStart: "Schicht beginnen",
+  shiftWalk: "Zu Fuß zur Arbeit",
+  walkNote: "Ohne Verkehrsmittel gehst du zu Fuß. Das kostet mehr Energie, du brauchst mindestens {n}.",
   shiftStep: "Situation {n} von 3",
   shiftPerf: "Leistung {n} %",
   shiftNext: "Nächste Schicht in {t}",
@@ -255,6 +263,8 @@ const ru: WorkText = {
   shiftTitle: "Смена",
   shiftIntro: "Три решения. Лучший результат даёт больше денег и очков.",
   shiftStart: "Начать смену",
+  shiftWalk: "Пойти на работу пешком",
+  walkNote: "Без транспорта пойдёшь пешком. Это стоит больше энергии, нужно не меньше {n}.",
   shiftStep: "Ситуация {n} из 3",
   shiftPerf: "Результат {n} %",
   shiftNext: "Следующая смена через {t}",

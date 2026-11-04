@@ -58,6 +58,7 @@ export const SITUATIONS_PER_SHIFT = 3;
 export const SITUATION_ENERGY = 10;
 export const SHIFT_MIN_ENERGY = 30;
 export const LEAD_EXTRA_ENERGY = 10;
+export const WALK_EXTRA_ENERGY = 15; // pěšky do práce bez dopravy: směna stojí víc energie
 export const SHIFT_COOLDOWN_MS = 2 * 60_000;
 export const SHIFTS_PER_YEAR = 12; // směna = 1/12 aktivní části ročního platu
 export const PERSONAL_TAX = 0.23; // daň z příjmu a odvody z mzdy (orientačně ČR)
@@ -1818,15 +1819,17 @@ export function quitJob(state: EconomyState, now: number): ActionResult {
 
 // Směna: spustí se, když je energie, hráč není nemocný ani na dovolené a uplynul cooldown.
 // Losuje se nemoc (hráč ji nevidí předem) a krize v oboru (přijde za den, ukáže se jako varování).
-export function startShift(state: EconomyState, now: number, rng: () => number = Math.random): ActionResult {
+// Bez dopravy jde na směnu jen pěšky (walk = true), a to za WALK_EXTRA_ENERGY navíc.
+export function startShift(state: EconomyState, now: number, rng: () => number = Math.random, walk = false): ActionResult {
   if (!state.character) return fail("no-character");
   if (!state.job) return fail("no-job");
   if (state.shift) return fail("busy");
   if (state.sickUntil > now) return fail("sick");
   if (state.vacationUntil > now) return fail("vacation");
   if (now < state.shiftReadyAt) return fail("cooldown");
-  if (needsEffects(state, now).noShift) return fail("no-transport");
-  const extra = state.job.lead ? LEAD_EXTRA_ENERGY : 0;
+  const noTransport = needsEffects(state, now).noShift;
+  if (noTransport && !walk) return fail("no-transport");
+  const extra = (state.job.lead ? LEAD_EXTRA_ENERGY : 0) + (noTransport ? WALK_EXTRA_ENERGY : 0);
   if (state.energy < SHIFT_MIN_ENERGY + extra) return fail("low-energy");
 
   if (rng() < SICK_CHANCE) {
