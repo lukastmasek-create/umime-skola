@@ -110,6 +110,7 @@ type Body = {
   delta?: unknown;
   role?: unknown;
   index?: unknown;
+  walk?: unknown;
   on?: unknown;
   side?: unknown;
   when?: unknown;
@@ -121,7 +122,7 @@ function applyAction(state: EconomyState, body: Body, now: number, learning: num
     case "exchange":
       return exchangePoints(state, body.direction, body.amount, points, now);
     case "startShift":
-      return startShift(state, now);
+      return startShift(state, now, Math.random, body.walk === true);
     case "chooseShift":
       return chooseShift(state, body.index, now, learning);
     case "rest":
