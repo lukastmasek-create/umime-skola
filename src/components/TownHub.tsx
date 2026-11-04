@@ -25,6 +25,7 @@ import { getMarketText } from "@/i18n/market";
 import { getSkipText } from "@/i18n/market-world";
 import { getTownHubText } from "@/i18n/town";
 import { notifyAccountChanged } from "@/lib/account-events";
+import { WORLD_VEIL } from "@/lib/market-worlds";
 import type { Locale } from "@/i18n/config";
 import hubData from "./mesto-hub-kotvy.json";
 import { prefersReducedMotion } from "@/lib/motion";
@@ -875,6 +876,19 @@ export function TownHub({ locale }: { locale: Locale }) {
     for (const p of PLACES) if (p.href) router.prefetch(`/${locale}${p.href}`);
     router.prefetch(`/${locale}/uzivatelsky-obchod`);
   }, [router, locale]);
+  // kde na obrazovce stojí hrdina (v procentech plátna 3D scény): odtud se clona rozevře
+  const irisAt = (): [number, number] | undefined => {
+    const h = hero.current;
+    const el = space3d.current;
+    if (!h || !el) return undefined;
+    const r = h.getBoundingClientRect();
+    const c = el.getBoundingClientRect();
+    if (!c.width || !c.height) return undefined;
+    const x = ((r.left + r.width / 2 - c.left) / c.width) * 100;
+    const y = ((r.top + r.height * 0.4 - c.top) / c.height) * 100;
+    return [Math.min(100, Math.max(0, x)), Math.min(100, Math.max(0, y))];
+  };
+
   const leave = useCallback(
     (href: string) => {
       router.push(href);
@@ -914,7 +928,7 @@ export function TownHub({ locale }: { locale: Locale }) {
         setFade(true);
         window.setTimeout(() => {
           setCine(null);
-          setFade(false);
+          // bílý obraz zůstane až do chvíle, kdy se objeví cíl (nová stránka nebo interiér); jinak by naskočil zpátky městečko
           onEnd();
         }, 230);
       }
@@ -951,6 +965,7 @@ export function TownHub({ locale }: { locale: Locale }) {
               setPhase(null);
               setGen((g) => g + 1);
               setBoard(true);
+              setFade(false); // interiér je připravený, bílý obraz se plynule rozpustí
             }
           };
           if (door) handle.current = runEnter(r as Parameters<typeof runEnter>[0], toBox(door), place.id as DoorKind, done);
@@ -966,7 +981,7 @@ export function TownHub({ locale }: { locale: Locale }) {
         void mod.then(({ runSpace3D }) => {
           const el = space3d.current;
           if (!alive || !el) return;
-          handle.current = runSpace3D(el, { look: getHeroLook(), onEnd: () => leave(`/${locale}/uzivatelsky-obchod?svet=space&film=1`) });
+          handle.current = runSpace3D(el, { look: getHeroLook(), veil: WORLD_VEIL.space, iris: irisAt(), onEnd: () => leave(`/${locale}/uzivatelsky-obchod?svet=space&film=1`) });
         });
       }, false);
       return () => {
@@ -981,7 +996,7 @@ export function TownHub({ locale }: { locale: Locale }) {
         void mod.then(({ runPirate3D }) => {
           const el = space3d.current;
           if (!alive || !el) return;
-          handle.current = runPirate3D(el, { look: getHeroLook(), onEnd: () => leave(`/${locale}/uzivatelsky-obchod?svet=pirate&film=1`) });
+          handle.current = runPirate3D(el, { look: getHeroLook(), veil: WORLD_VEIL.pirate, iris: irisAt(), onEnd: () => leave(`/${locale}/uzivatelsky-obchod?svet=pirate&film=1`) });
         });
       }, false);
       return () => {
@@ -998,7 +1013,7 @@ export function TownHub({ locale }: { locale: Locale }) {
           const el = space3d.current;
           if (!alive || !el) return;
           const run = world === "castle" ? films.runCastle3D : world === "sea" ? films.runSea3D : films.runForest3D;
-          handle.current = run(el, { look: getHeroLook(), onEnd: () => leave(`/${locale}/uzivatelsky-obchod?svet=${world}&film=1`) });
+          handle.current = run(el, { look: getHeroLook(), veil: WORLD_VEIL[world], iris: irisAt(), onEnd: () => leave(`/${locale}/uzivatelsky-obchod?svet=${world}&film=1`) });
         });
       }, false);
       return () => {

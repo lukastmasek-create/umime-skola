@@ -1,14 +1,14 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { sfx } from "@/lib/market-sfx";
-import { canvasTex, clamp01, createStage, lerp, makeHero, overlayFx, smooth, softDot, std, type Figure } from "./kit";
+import { canvasTex, clamp01, createStage, lerp, makeHero, overlayFx, smooth, softDot, std, type Figure, irisIn, irisOut } from "./kit";
 
 // 3D let raketou z městečka na vesmírnou stanici (náhrada 2D přechodu runSpace). Všechno je postavené v kódu:
 // rampa s věží, výtahem a lávkou, raketa, kouř a plamen, mraky, planeta, hvězdy a otáčející se stanice s dokem.
 // Děj: hrdina (jeho 3D postava) dojde k věži, vyjede výtahem, přejde lávku a nastoupí poklopem; lávka odjede,
 // odpočet, start, průlet mraky do vesmíru, přílet ke stanici, brána se otevře a raketa vletí do hangáru.
 
-export type SpaceOpts = { look: number; onEnd: () => void };
+export type SpaceOpts = { look: number; onEnd: () => void; veil?: string; iris?: [number, number] };
 export type Handle = { stop: () => void; skip: () => void };
 
 // časová osa (s)
@@ -566,12 +566,13 @@ export function runSpace3D(container: HTMLElement, opts: SpaceOpts): Handle {
     return { stop: () => {}, skip: () => {} };
   }
   const { renderer } = stage;
-  const fx = overlayFx(stage);
+  const fx = overlayFx(stage, opts.veil);
   const finish = () => {
     if (ended) return;
     ended = true;
     fx.flash(1);
-    opts.onEnd();
+    irisOut(stage.el);
+    window.setTimeout(opts.onEnd, 780);
   };
 
   // --- start z rampy
@@ -918,7 +919,7 @@ export function runSpace3D(container: HTMLElement, opts: SpaceOpts): Handle {
     renderer.compile(launch, camera);
     t0 = last = performance.now();
     raf = requestAnimationFrame(frame);
-    requestAnimationFrame(() => (stage.el.style.opacity = "1"));
+    irisIn(stage.el, opts.iris, opts.veil ?? "#fff");
   });
 
   return {

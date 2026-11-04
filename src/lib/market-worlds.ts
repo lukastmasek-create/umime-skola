@@ -6,6 +6,9 @@ import type { ShopKind } from "@/lib/shop";
 
 export type WorldId = "pirate" | "space" | "forest" | "castle" | "sea";
 
+// barva závoje (a bílého záblesku filmu) v každém světě; film i stránka světa musí mít stejnou
+export const WORLD_VEIL: Record<WorldId, string> = { pirate: "#cfe8ff", space: "#9be8ff", forest: "#e8ffb0", castle: "#1a1020", sea: "#5fd0ee" };
+
 export type StallKey = "avatary" | "tituly" | "ramecky" | "pozadi" | "mazlicci" | "lod";
 
 // Sprite postavy nebo věci ve scéně: `anchor` je klíč polohy z JSON scény, šířka je v % šířky scény a `feet` je,

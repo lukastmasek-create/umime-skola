@@ -1,13 +1,13 @@
 import * as THREE from "three";
 import { sfx } from "@/lib/market-sfx";
-import { canvasTex, clamp01, createStage, lerp, overlayFx, smooth, std, type Figure } from "./kit";
-import { ease, forestTrees, glowSprite, gradientSky, ground, hero, noiseTex, placeModel, rand, sparklePoints, sunLight, walk, waterMat, type P3 } from "./scenery";
+import { canvasTex, clamp01, createStage, lerp, overlayFx, smooth, std, type Figure, irisIn, irisOut } from "./kit";
+import { ease, forestTrees, glowSprite, gradientSky, ground, hero, noiseTex, placeModel, placeProps, rand, scatterRows, sparklePoints, sunLight, walk, waterMat, type P3, type Spot } from "./scenery";
 
 // 3D cut scény vstupu do světů z městečka (náhrada 2D přechodu runWorld): Kouzelný les, Hrad a Podmořské město.
 // Velké stavby jsou detailní modely z Blenderu (public/mestecko3d: strom, hrad-scena, podmorske), okolí, voda,
 // částice a pohyblivé díly (padací most, mříž, ponorka, portál ve dveřích) se staví tady.
 
-export type FilmOpts = { look: number; onEnd: () => void };
+export type FilmOpts = { look: number; onEnd: () => void; veil?: string; iris?: [number, number] };
 export type Handle = { stop: () => void; skip: () => void };
 
 type Ctx = { scene: THREE.Scene; camera: THREE.PerspectiveCamera; look: THREE.Vector3; renderer: THREE.WebGLRenderer };
@@ -31,12 +31,13 @@ function runFilm(container: HTMLElement, opts: FilmOpts, build: (ctx: Ctx) => Fi
     return { stop: () => {}, skip: () => {} };
   }
   const { renderer } = stage;
-  const fx = overlayFx(stage);
+  const fx = overlayFx(stage, opts.veil);
   const finish = () => {
     if (ended) return;
     ended = true;
     fx.flash(1);
-    opts.onEnd();
+    irisOut(stage.el);
+    window.setTimeout(opts.onEnd, 780);
   };
   const scene = new THREE.Scene();
   scene.environment = stage.env;
@@ -86,7 +87,7 @@ function runFilm(container: HTMLElement, opts: FilmOpts, build: (ctx: Ctx) => Fi
     renderer.compile(scene, camera);
     t0 = last = performance.now();
     raf = requestAnimationFrame(frame);
-    requestAnimationFrame(() => (stage.el.style.opacity = "1"));
+    irisIn(stage.el, opts.iris, opts.veil ?? "#fff");
   });
   return {
     stop() {
@@ -182,27 +183,27 @@ export function runForest3D(container: HTMLElement, opts: FilmOpts): Handle {
     }
     bush.castShadow = true;
     scene.add(bush);
-    const mushColors = ["#ff6fd8", "#6ff0ff", "#b88cff"];
-    mushColors.forEach((c, ci) => {
-      const n = 16;
-      const stems = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.06, 0.08, 0.3, 6), std("#f4ead8", 0.7), n);
-      const caps = new THREE.InstancedMesh(new THREE.SphereGeometry(0.22, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), std(c, 0.5, 0, { emissive: c, emissiveIntensity: 0.55 }), n);
-      for (let i = 0; i < n; i++) {
-        const p = curve.getPointAt(clamp01(((i * 3 + ci) / (n * 3)) * 0.95));
-        const side = (i + ci) % 2 ? 1 : -1;
-        const x = p.x + side * rand(1.3, 2.4);
-        const z = p.z + rand(-0.5, 0.5);
-        const s = rand(0.7, 1.6);
-        m4.compose(new THREE.Vector3(x, 0.15 * s, z), new THREE.Quaternion(), new THREE.Vector3(s, s, s));
-        stems.setMatrixAt(i, m4);
-        m4.compose(new THREE.Vector3(x, 0.28 * s, z), new THREE.Quaternion(), new THREE.Vector3(s, s, s));
-        caps.setMatrixAt(i, m4);
-      }
-      scene.add(stems, caps);
-    });
 
     // obří strom a portál ve dveřích
     const loads: Promise<unknown>[] = [];
+    // rekvizity z Blenderu (umime-art/blender/mestecko3d_les.py): houby, kapradí, květiny, balvany, lucerny a padlé kmeny
+    const roadside = (u: number, side: number): [number, number] => {
+      const p = curve.getPointAt(clamp01(u));
+      return [p.x + side, p.z];
+    };
+    const dress = (name: string, spots: Spot[]) => placeProps(scene, loads, name, spots);
+    const rows = (n: number, u0: number, u1: number, dmin: number, dmax: number, sc: [number, number]) => scatterRows(roadside, n, u0, u1, dmin, dmax, sc);
+    dress("les-houba-ruzova", rows(9, 0.08, 0.92, 1.6, 2.6, [0.8, 1.3]));
+    dress("les-houba-modra", rows(7, 0.1, 0.9, 1.8, 3, [0.8, 1.2]));
+    dress("les-houba-fialova", rows(7, 0.12, 0.88, 1.8, 3, [0.8, 1.2]));
+    dress("les-kapradi", rows(14, 0.05, 0.95, 1.0, 2.8, [0.9, 1.5]));
+    dress("les-kvetiny", rows(10, 0.04, 0.96, 1.2, 3.4, [0.9, 1.3]));
+    dress("les-balvan", rows(6, 0.2, 0.8, 2.2, 3.4, [0.9, 1.4]));
+    dress("les-padly-kmen", rows(2, 0.3, 0.7, 2.6, 3.2, [1, 1.1]));
+    dress("les-lampa", [0.3, 0.45, 0.6, 0.75].map((u, i) => {
+      const [x, z] = roadside(u, (i % 2 ? 1 : -1) * 1.5);
+      return [x, z, 0, 1] as [number, number, number, number];
+    }));
     loads.push(
       placeModel("strom").then((m) => {
         m.scale.setScalar(S);
@@ -235,8 +236,9 @@ export function runForest3D(container: HTMLElement, opts: FilmOpts): Handle {
     scene.add(portalGlow);
 
     // světlušky, víly a jiskry do portálu
-    const flies = sparklePoints(240, ["#fff59a", "#c8ff9a", "#ffe08a"], 0.22);
-    const flyBase = Array.from({ length: 240 }, () => [rand(-26, 26), rand(0.3, 6), rand(-14, 34), Math.random() * 6] as const);
+    const FLIES = 420;
+    const flies = sparklePoints(FLIES, ["#fff59a", "#c8ff9a", "#ffe08a"], 0.22);
+    const flyBase = Array.from({ length: FLIES }, () => [rand(-26, 26), rand(0.3, 6), rand(-14, 34), Math.random() * 6] as const);
     scene.add(flies);
     const fairies = ["#ffb8f0", "#a8f0ff", "#fff59a"].map((c, i) => {
       const g = new THREE.Group();
@@ -259,6 +261,45 @@ export function runForest3D(container: HTMLElement, opts: FilmOpts): Handle {
     });
     const swirl = sparklePoints(160, ["#fff1a8", "#ffb8f0", "#b8a8ff"], 0.16);
     scene.add(swirl);
+
+    // tráva a kapradí podél cesty (instancované listy, každý jiný náklon a odstín)
+    const BLADES = 1600;
+    const blade = new THREE.ConeGeometry(0.035, 0.46, 4);
+    blade.translate(0, 0.23, 0);
+    const grass = new THREE.InstancedMesh(blade, std("#3f8a3e", 0.9), BLADES);
+    const grassCols = ["#3f8a3e", "#2f7a3a", "#58a04a", "#276a36"];
+    const gm = new THREE.Matrix4();
+    const gq = new THREE.Quaternion();
+    const gs = new THREE.Vector3();
+    const gp = new THREE.Vector3();
+    const gc = new THREE.Color();
+    for (let i = 0; i < BLADES; i++) {
+      const p0 = curve.getPointAt(Math.random());
+      const side = (Math.random() < 0.5 ? -1 : 1) * rand(0.55, 3.4);
+      gp.set(p0.x + side, 0, p0.z + rand(-0.4, 0.4));
+      gq.setFromEuler(new THREE.Euler(rand(-0.35, 0.35), rand(0, Math.PI * 2), rand(-0.35, 0.35)));
+      gs.set(rand(0.7, 1.5), rand(0.6, 1.8), rand(0.7, 1.5));
+      gm.compose(gp, gq, gs);
+      grass.setMatrixAt(i, gm);
+      grass.setColorAt(i, gc.set(grassCols[i % grassCols.length]));
+    }
+    scene.add(grass);
+
+    // měsíční paprsky z korun: měkké kužele, které pomalu dýchají
+    const shaftMat = new THREE.MeshBasicMaterial({ color: "#cfe0ff", transparent: true, opacity: 0.06, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+    for (let i = 0; i < 7; i++) {
+      const shaft = new THREE.Mesh(new THREE.ConeGeometry(rand(1.6, 2.6), rand(18, 24), 18, 1, true), shaftMat);
+      shaft.position.set(rand(-14, 14), 10.5, rand(-4, 24));
+      shaft.rotation.set(rand(-0.08, 0.08), rand(0, Math.PI), rand(-0.22, 0.22));
+      scene.add(shaft);
+    }
+
+    // padající lístky a okvětní lístky, které se snášejí do světla
+    const PETALS = 150;
+    const petals = sparklePoints(PETALS, ["#ffb8f0", "#fff59a", "#a8f0ff", "#ffd6a0"], 0.2);
+    const petalBase = Array.from({ length: PETALS }, () => [rand(-14, 14), rand(0, 1), rand(-4, 26), rand(0, 6)] as const);
+    scene.add(petals);
+    const petPos = petals.geometry.attributes.position as THREE.BufferAttribute;
 
     let f: Figure | null = null;
     loads.push(
@@ -325,6 +366,14 @@ export function runForest3D(container: HTMLElement, opts: FilmOpts): Handle {
         }
         swPos.needsUpdate = true;
         (swirl.material as THREE.PointsMaterial).opacity = open;
+        // paprsky dýchají, lístky padají a kroužením se vracejí nahoru
+        shaftMat.opacity = 0.05 + 0.025 * Math.sin(t * 0.8) + 0.015 * Math.sin(t * 2.1 + 1);
+        for (let i = 0; i < PETALS; i++) {
+          const [x, y, z, ph] = petalBase[i];
+          const fall = ((y - t * 0.11 - i * 0.0031) % 1 + 1) % 1;
+          petPos.setXYZ(i, x + Math.sin(t * 0.7 + ph) * 1.2, 0.2 + fall * 10, z + Math.cos(t * 0.5 + ph) * 0.9);
+        }
+        petPos.needsUpdate = true;
         // hrdina
         if (f) {
           if (t < T.enter[0]) walk(f, HP, HT, t, t > T.open[1] ? "radost" : "stoji");
@@ -355,6 +404,10 @@ export function runForest3D(container: HTMLElement, opts: FilmOpts): Handle {
           camera.position.set(lerp(1.6, 0, k), lerp(1.7, DOOR[1], k), lerp(7.2, DOOR[2] + 0.4, k));
           look.set(0, DOOR[1], DOOR[2] - 2);
         }
+        // lehké chvění ruky kamery, víc při přiblížení k portálu
+        const shake = 0.012 + 0.03 * smooth(t, T.enter[0], T.end);
+        camera.position.x += Math.sin(t * 9.3) * shake;
+        camera.position.y += Math.cos(t * 7.1) * shake * 0.7;
       },
     };
   });
@@ -424,6 +477,16 @@ export function runCastle3D(container: HTMLElement, opts: FilmOpts): Handle {
     }
 
     const loads: Promise<unknown>[] = [placeModel("hrad-scena").then((m) => scene.add(m))];
+    // detailní rekvizity z Blenderu (umime-art/blender/mestecko3d_hrad_more.py): cimbuří podél cesty, kvetoucí stromy,
+    // železné koše s plamenem, bedny u hradeb a balvany u příkopu
+    const lane = (u: number, side: number): [number, number] => [side, lerp(16, 54, u)];
+    const wallSpots: Spot[] = [];
+    for (const sx of [-4.6, 4.6]) for (let i = 0; i < 10; i++) wallSpots.push([sx, 18 + i * 3.2, Math.PI / 2, 1]);
+    placeProps(scene, loads, "hrad-zidka", wallSpots);
+    placeProps(scene, loads, "hrad-kvetouci-strom", scatterRows(lane, 9, 0, 1, 6, 13, [0.9, 1.3]));
+    placeProps(scene, loads, "hrad-pochodne", [-2.3, 2.3].flatMap((x) => [28, 38, 48].map((z): Spot => [x, z, 0, 1])));
+    placeProps(scene, loads, "hrad-bedny", [[-6.2, 22], [6.2, 40]].map(([x, z]): Spot => [x, z, rand(0, 1), rand(0.9, 1.1)]));
+    placeProps(scene, loads, "hrad-skaly", scatterRows(lane, 4, 0, 1, 11, 14, [0.9, 1.4]));
     // světlo z nádvoří za bránou
     const inner = new THREE.Mesh(
       new THREE.PlaneGeometry(2.6, 3.8),
@@ -894,6 +957,26 @@ export function runSea3D(container: HTMLElement, opts: FilmOpts): Handle {
         scene.add(m);
       }),
     ];
+    // detailní rekvizity z Blenderu (umime-art/blender/mestecko3d_hrad_more.py): korály, mušle, truhly, řasy a medúzy
+    const seabed = (n: number, a: number, b: number, zr: number): Spot[] =>
+      Array.from({ length: n }, (): Spot => {
+        const [x, z] = bed(-10, 90, zr);
+        return [x, z, rand(0, Math.PI * 2), rand(a, b), -16];
+      });
+    placeProps(scene, loads, "more-koral", seabed(16, 0.8, 1.6, 22));
+    placeProps(scene, loads, "more-muzle", seabed(8, 0.9, 1.2, 22));
+    placeProps(scene, loads, "more-truhla", seabed(4, 1, 1.1, 22));
+    placeProps(scene, loads, "more-rasy", seabed(24, 1, 1.4, 22));
+    placeProps(
+      scene,
+      loads,
+      "more-medusa",
+      Array.from({ length: 8 }, (): Spot => {
+        const x = rand(-10, 90);
+        const z = rand(-22, 22);
+        return [x, z, 0, rand(0.9, 1.3), rand(-12, -5)];
+      }).filter(([x, z]) => Math.hypot(x - city.x, z - city.z) > 10),
+    );
     for (const [x, z] of [[-5, 0], [5, 3], [0, -5]] as const) {
       const l = new THREE.PointLight("#7fe8ff", 16, 26, 1.4);
       l.position.set(city.x + x, city.y + 4, city.z + z);

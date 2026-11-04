@@ -23,6 +23,33 @@ export function placeModel(name: string): Promise<THREE.Object3D> {
   });
 }
 
+/** Rozmístění rekvizity: x, z, natočení kolem Y, měřítko a volitelně výška (y, výchozí 0). */
+export type Spot = [number, number, number, number, number?];
+
+/** Naklonuje rekvizitu z Blenderu (public/mestecko3d/<name>.glb) na každé místo. */
+export function placeProps(scene: THREE.Scene, loads: Promise<unknown>[], name: string, spots: Spot[]) {
+  loads.push(
+    placeModel(name).then((m) => {
+      for (const [x, z, rot, sc, y] of spots) {
+        const c = m.clone(true);
+        c.position.set(x, y ?? 0, z);
+        c.rotation.y = rot;
+        c.scale.setScalar(sc);
+        scene.add(c);
+      }
+    }),
+  );
+}
+
+/** Řady rekvizit po obou stranách cesty; `at(u, side)` dá střed podle polohy u (0..1) a odsazení do strany. */
+export function scatterRows(at: (u: number, side: number) => [number, number], n: number, u0: number, u1: number, dmin: number, dmax: number, sc: [number, number]): Spot[] {
+  return Array.from({ length: n }, (_, i) => {
+    const side = (Math.random() < 0.5 ? -1 : 1) * rand(dmin, dmax);
+    const [x, z] = at(lerp(u0, u1, (i + Math.random() * 0.6) / n), side);
+    return [x, z, rand(0, Math.PI * 2), rand(sc[0], sc[1])];
+  });
+}
+
 export async function hero(look: number): Promise<Figure> {
   const f = await makeHero(look);
   const size = new THREE.Box3().setFromObject(f.root).getSize(new THREE.Vector3());

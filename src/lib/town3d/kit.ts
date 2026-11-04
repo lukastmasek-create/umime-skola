@@ -176,10 +176,11 @@ function disposeMat(m: THREE.Material) {
 }
 
 /** Filmové pruhy (0..1), číslo odpočtu a bílý záblesk na překryvu scény. */
-export function overlayFx(stage: Stage) {
+export function overlayFx(stage: Stage, veil = "#fff") {
   const bars = stage.overlay.querySelectorAll<HTMLElement>("[data-bar]");
   const count = stage.overlay.querySelector<HTMLElement>("[data-count]")!;
   const flash = stage.overlay.querySelector<HTMLElement>("[data-flash]")!;
+  flash.style.background = veil;
   return {
     bars(on: boolean) {
       bars.forEach((b) => (b.style.height = on ? "9%" : "0"));
@@ -196,6 +197,24 @@ export function overlayFx(stage: Stage) {
       flash.style.opacity = String(a);
     },
   };
+}
+
+/** Kruhová clona: scéna se z místa hrdiny rozevře (`at` v procentech plátna) a na konci se zavře do barvy závoje cíle. */
+export type Iris = [number, number];
+const IRIS_SHOW = "clip-path 1.1s cubic-bezier(.2,.7,.2,1), opacity .3s ease";
+export function irisIn(el: HTMLElement, at: Iris | undefined, veil: string) {
+  const [x, y] = at ?? [50, 50];
+  el.style.background = veil;
+  el.style.transition = "none";
+  el.style.clipPath = `circle(0% at ${x}% ${y}%)`;
+  el.style.opacity = "1";
+  void el.offsetWidth;
+  el.style.transition = IRIS_SHOW;
+  requestAnimationFrame(() => requestAnimationFrame(() => (el.style.clipPath = `circle(150% at ${x}% ${y}%)`)));
+}
+export function irisOut(el: HTMLElement, ms = 760) {
+  el.style.transition = `clip-path ${ms / 1000}s cubic-bezier(.6,0,.4,1)`;
+  el.style.clipPath = "circle(0% at 50% 46%)";
 }
 
 /** Plátno s nakreslenou texturou (sRGB). */

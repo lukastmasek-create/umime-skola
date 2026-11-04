@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { sfx } from "@/lib/market-sfx";
-import { canvasTex, clamp01, createStage, lerp, makeHero, makeLoop, makeModel, overlayFx, smooth, softDot, std, type Figure } from "./kit";
+import { canvasTex, clamp01, createStage, lerp, makeHero, makeLoop, makeModel, overlayFx, smooth, softDot, std, type Figure, irisIn, irisOut } from "./kit";
 
 // 3D vyplutí pirátské lodi z přístavu (náhrada 2D přechodu runPirate). Galéra, molo a lávka jsou modely
 // z Blenderu (pristav_lod.py, pristav_nastup.py → export_glb.py), kapitán a papoušek z mesto_figury.py;
@@ -8,7 +8,7 @@ import { canvasTex, clamp01, createStage, lerp, makeHero, makeLoop, makeModel, o
 // Děj: hrdina dojde po molu a lávce na palubu, kapitán u kormidla, lávka se stáhne, rumpál vytáhne kotvu,
 // plachty se nadmou a loď vypluje k ostrovům.
 
-export type PirateOpts = { look: number; onEnd: () => void };
+export type PirateOpts = { look: number; onEnd: () => void; veil?: string; iris?: [number, number] };
 export type Handle = { stop: () => void; skip: () => void };
 
 const T = { molo: 2.2, plank: 3.6, deck: 4.4, plankAway: 4.6, anchor: [4.8, 6.0], wind: [5.9, 6.8], sail: 6.8, fade: 11.0, end: 11.6 };
@@ -285,12 +285,13 @@ export function runPirate3D(container: HTMLElement, opts: PirateOpts): Handle {
     return { stop: () => {}, skip: () => {} };
   }
   const { renderer } = stage;
-  const fx = overlayFx(stage);
+  const fx = overlayFx(stage, opts.veil);
   const finish = () => {
     if (ended) return;
     ended = true;
     fx.flash(1);
-    opts.onEnd();
+    irisOut(stage.el);
+    window.setTimeout(opts.onEnd, 780);
   };
 
   const scene = new THREE.Scene();
@@ -559,7 +560,7 @@ export function runPirate3D(container: HTMLElement, opts: PirateOpts): Handle {
     renderer.compile(scene, camera);
     t0 = last = performance.now();
     raf = requestAnimationFrame(frame);
-    requestAnimationFrame(() => (stage.el.style.opacity = "1"));
+    irisIn(stage.el, opts.iris, opts.veil ?? "#fff");
   });
 
   return {
