@@ -753,8 +753,8 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
 
   const subject = bySlug(active) ?? subjects[0];
   const summary = data?.[subject.slug];
-  const base = `/${locale}/kurzy/zakladni?predmet=${subject.slug}`;
-  const href = (slug: string) => `/${locale}/kurzy/zakladni?predmet=${slug}`;
+  const base = `/${locale}/kurzy/zakladni?predmet=${subject.slug}#vyber-kurzu`;
+  const href = (slug: string) => `/${locale}/kurzy/zakladni?predmet=${slug}#vyber-kurzu`;
   const percent = summary && summary.total > 0 ? Math.round((summary.done / summary.total) * 100) : 0;
   const stageHidden = fallback ? "hidden" : "";
 

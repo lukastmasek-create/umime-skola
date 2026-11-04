@@ -121,7 +121,7 @@ export function SubjectMedals({ locale }: { locale: Locale }) {
           return (
             <li key={r.slug}>
               <Link
-                href={`/${locale}/kurzy/zakladni?predmet=${r.slug}`}
+                href={`/${locale}/kurzy/zakladni?predmet=${r.slug}#vyber-kurzu`}
                 className="medal-card group relative flex h-full flex-col items-center gap-1 rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface-muted)] p-2 text-center transition-transform hover:-translate-y-1"
                 title={hint}
               >
