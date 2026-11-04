@@ -47,11 +47,14 @@ for (const file of files) {
 
   // Doplňující otázky ke kurzům: prisma/content-extra/<název souboru bez .cjs>/*.cjs,
   // každý soubor exportuje { extra: { slug: [ [obtížnost, ...], ... ] } }
+  // Stejný kurz může být v více souborech: otázky se přidávají za sebe (nepřepisují se).
   const extraSubdir = path.join(extraDir, file.replace(/\.cjs$/, ""));
   const extra = {};
   if (fs.existsSync(extraSubdir)) {
     for (const part of fs.readdirSync(extraSubdir).filter((f) => f.endsWith(".cjs")).sort()) {
-      Object.assign(extra, require(path.join(extraSubdir, part)).extra || {});
+      for (const [slug, questions] of Object.entries(require(path.join(extraSubdir, part)).extra || {})) {
+        extra[slug] = [...(extra[slug] || []), ...questions];
+      }
     }
   }
   for (const slug of Object.keys(extra)) {
