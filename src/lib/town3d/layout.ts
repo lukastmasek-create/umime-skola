@@ -127,6 +127,12 @@ export function cloudScale(p: Place): number {
 export function cloudRadius(p: Place): number {
   return 9 * cloudScale(p);
 }
+// Výška mraku nad vysokými budovami (vrchol věže musí zůstat pod mrakem): cílová výška v metrech.
+const CLOUD_TOP: Record<string, number> = { hrad: 31, les: 21, stanice: 18 };
+// Svislé měřítko mraku: model má vrchol zhruba 13,5 m, takže pro vyšší budovu se mrak natáhne víc.
+export function cloudScaleY(p: Place): number {
+  return Math.max(cloudScale(p), (CLOUD_TOP[p.id] ?? 0) / 13.5);
+}
 
 function nearestOnRoad(x: number, z: number, r: Road): { pt: Pt; d: number; k: number } {
   const [x1, z1] = r.a;
