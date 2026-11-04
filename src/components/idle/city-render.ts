@@ -23,6 +23,8 @@ export type Scene = {
   ghosts: Ghost[];
   hover: { x: number; y: number } | null;
   selected: number | null;
+  // Index budovy, která se právě přesouvá: kreslí se jen jako ghost na novém místě.
+  hidden?: number | null;
   // 0 = den, 1 = noc
   night: number;
   time: number;
@@ -1643,6 +1645,7 @@ export function drawCity(ctx: CanvasRenderingContext2D, width: number, height: n
   const drawables: Drawable[] = [];
   scene.items.forEach(([id, x, y, rot], index) => {
     if (id === "road" || id === "rail" || id === "crossing") return;
+    if (index === scene.hidden) return;
     const def = getItem(id);
     if (!def) return;
     const [w, h] = footprint(def, rot);

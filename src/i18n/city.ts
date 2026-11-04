@@ -37,6 +37,9 @@ export type CityText = {
   hintBuild: string;
   hintPan: string;
   hintDemolish: string;
+  move: string;
+  moveCancel: string;
+  hintMove: string;
   selected: string;
   residents: string;
   jobsHere: string;
@@ -96,6 +99,9 @@ const cs: CityText = {
   hintBuild: "Klepni na políčko a pusť. U silnic, plotů a stromů taž prstem nebo myší a postavíš jich víc najednou.",
   hintPan: "Taž pro posun mapy, kolečkem nebo dvěma prsty přibližuj. Klepnutím na budovu zobrazíš podrobnosti.",
   hintDemolish: "Klepni nebo táhni přes budovy, které chceš zbourat. Vrátí se polovina mincí.",
+  move: "Přesunout",
+  moveCancel: "Zrušit přesun",
+  hintMove: "Klepni na nové místo, kam budovu přesunout. R ji otočí, Esc nebo tlačítko přesun zruší. Přesun nic nestojí.",
   selected: "Vybraná budova",
   residents: "Obyvatelé",
   jobsHere: "Pracovní místa",
@@ -168,6 +174,9 @@ const en: CityText = {
   hintBuild: "Tap a tile and release. For roads, railings and trees drag your finger or mouse to build several at once.",
   hintPan: "Drag to move the map, use the wheel or two fingers to zoom. Tap a building to see details.",
   hintDemolish: "Tap or drag over the buildings you want to demolish. Half of the coins come back.",
+  move: "Move",
+  moveCancel: "Cancel move",
+  hintMove: "Tap the new spot for the building. R rotates it, Esc or the button cancels. Moving is free.",
   selected: "Selected building",
   residents: "Residents",
   jobsHere: "Jobs",
@@ -240,6 +249,9 @@ const de: CityText = {
   hintBuild: "Tippe auf ein Feld und lass los. Bei Straßen, Geländern und Bäumen ziehst du mit dem Finger oder der Maus und baust mehrere auf einmal.",
   hintPan: "Ziehen verschiebt die Karte, mit dem Rad oder zwei Fingern zoomst du. Tippe ein Gebäude an, um Details zu sehen.",
   hintDemolish: "Tippe oder ziehe über die Gebäude, die du abreißen willst. Die Hälfte der Münzen kommt zurück.",
+  move: "Verschieben",
+  moveCancel: "Verschieben abbrechen",
+  hintMove: "Tippe auf den neuen Platz für das Gebäude. R dreht es, Esc oder der Button bricht ab. Verschieben kostet nichts.",
   selected: "Ausgewähltes Gebäude",
   residents: "Einwohner",
   jobsHere: "Arbeitsplätze",
@@ -312,6 +324,9 @@ const ru: CityText = {
   hintBuild: "Коснись клетки и отпусти. Для дорог, ограждений и деревьев води пальцем или мышью, чтобы построить сразу несколько.",
   hintPan: "Тяни, чтобы двигать карту, колесом или двумя пальцами меняй масштаб. Коснись здания, чтобы увидеть подробности.",
   hintDemolish: "Коснись или проведи по зданиям, которые хочешь снести. Половина монет вернётся.",
+  move: "Переместить",
+  moveCancel: "Отменить перемещение",
+  hintMove: "Коснись нового места для здания. R поворачивает, Esc или кнопка отменяют. Перемещение бесплатное.",
   selected: "Выбранное здание",
   residents: "Жители",
   jobsHere: "Рабочие места",
@@ -386,6 +401,9 @@ const texts: Record<Locale, CityText> = {
     hintBuild: "Торкнися клітинки й відпусти. Для доріг, огорож і дерев проведи пальцем або мишкою, щоб побудувати відразу кілька.",
     hintPan: "Тягни, щоб пересувати мапу, колесо або два пальці — для масштабу. Торкнися будівлі, щоб побачити подробиці.",
     hintDemolish: "Торкнися або проведи по будівлях, які хочеш знести. Половина монет повернеться.",
+    move: "Перемістити",
+    moveCancel: "Скасувати переміщення",
+    hintMove: "Торкнися нового місця для будівлі. R повертає, Esc або кнопка скасовують. Переміщення безплатне.",
     selected: "Обрана будівля",
     residents: "Мешканці",
     jobsHere: "Робочі місця",
@@ -457,6 +475,9 @@ const texts: Record<Locale, CityText> = {
     hintBuild: "マスをタップして、指を離してください。道路、さく、木は指かマウスでなぞると、一度にたくさん建てられます。",
     hintPan: "ドラッグでマップを動かし、ホイールか二本指でズームできます。建物をタップすると詳しく見られます。",
     hintDemolish: "取り壊したい建物をタップするか、なぞってください。コインの半分が戻ります。",
+    move: "移動",
+    moveCancel: "移動をやめる",
+    hintMove: "建物を置く新しい場所をタップしてください。Rで回転、Escかボタンで移動を取り消せます。移動は無料です。",
     selected: "選択中の建物",
     residents: "住民",
     jobsHere: "仕事の場所",
@@ -528,6 +549,9 @@ const texts: Record<Locale, CityText> = {
     hintBuild: "Toca una casilla y suelta. Para carreteras, vallas y árboles, arrastra el dedo o el ratón y construirás varios a la vez.",
     hintPan: "Arrastra para mover el mapa; con la rueda o con dos dedos puedes acercar. Toca un edificio para ver los detalles.",
     hintDemolish: "Toca o arrastra sobre los edificios que quieres derribar. Vuelve la mitad de las monedas.",
+    move: "Mover",
+    moveCancel: "Cancelar movimiento",
+    hintMove: "Toca el nuevo sitio del edificio. R lo gira; Esc o el botón cancelan. Mover es gratis.",
     selected: "Edificio seleccionado",
     residents: "Habitantes",
     jobsHere: "Puestos de trabajo",
@@ -599,6 +623,9 @@ const texts: Record<Locale, CityText> = {
     hintBuild: "Touche une case et relâche. Pour les routes, les barrières et les arbres, fais glisser le doigt ou la souris pour en construire plusieurs à la fois.",
     hintPan: "Fais glisser pour déplacer la carte ; la molette ou deux doigts permettent de zoomer. Touche un bâtiment pour voir les détails.",
     hintDemolish: "Touche ou fais glisser sur les bâtiments à démolir. La moitié des pièces est remboursée.",
+    move: "Déplacer",
+    moveCancel: "Annuler le déplacement",
+    hintMove: "Touche le nouvel emplacement du bâtiment. R le tourne, Échap ou le bouton annule. Déplacer est gratuit.",
     selected: "Bâtiment sélectionné",
     residents: "Habitants",
     jobsHere: "Postes de travail",
