@@ -33,6 +33,10 @@ export type Dictionary = {
     noCoursesFiltered: string;
     loadFailed: string;
     viewLevels: string;
+    searchLabel: string;
+    searchButton: string;
+    noSearchResults: string;
+    clearSearch: string;
   };
   languages: Record<LanguageCode, string>;
   course: {
@@ -176,6 +180,10 @@ const cs: Dictionary = {
       "V téhle sekci zatím nejsou žádné publikované kurzy pro zvolený jazyk.",
     loadFailed: "Kurzy se teď nepodařilo načíst. Zkus to prosím za chvíli znovu.",
     viewLevels: "Otevřít kurz →",
+    searchLabel: "Hledat v doplňkových kurzech",
+    searchButton: "Hledat",
+    noSearchResults: "Pro hledaný výraz jsme nic nenašli.",
+    clearSearch: "Zrušit hledání",
   },
   languages: { CJ: "Čeština", NJ: "Němčina", RS: "Ruština", AJ: "Angličtina" },
   course: {
@@ -320,6 +328,10 @@ const en: Dictionary = {
       "There are no published courses in this section for the selected language yet.",
     loadFailed: "Courses couldn't be loaded right now. Try again in a moment.",
     viewLevels: "Open course →",
+    searchLabel: "Search supplementary courses",
+    searchButton: "Search",
+    noSearchResults: "Nothing matched your search.",
+    clearSearch: "Clear search",
   },
   languages: { CJ: "Czech", NJ: "German", RS: "Russian", AJ: "English" },
   course: {
@@ -464,6 +476,10 @@ const de: Dictionary = {
       "In diesem Bereich gibt es noch keine veröffentlichten Kurse für die gewählte Sprache.",
     loadFailed: "Die Kurse konnten gerade nicht geladen werden. Versuche es gleich noch einmal.",
     viewLevels: "Kurs öffnen →",
+    searchLabel: "In Zusatzkursen suchen",
+    searchButton: "Suchen",
+    noSearchResults: "Für deine Suche wurde nichts gefunden.",
+    clearSearch: "Suche zurücksetzen",
   },
   languages: { CJ: "Tschechisch", NJ: "Deutsch", RS: "Russisch", AJ: "Englisch" },
   course: {
@@ -608,6 +624,10 @@ const ru: Dictionary = {
       "В этом разделе пока нет опубликованных курсов для выбранного языка.",
     loadFailed: "Не удалось загрузить курсы. Попробуй ещё раз через минуту.",
     viewLevels: "Открыть курс →",
+    searchLabel: "Поиск по дополнительным курсам",
+    searchButton: "Найти",
+    noSearchResults: "По твоему запросу ничего не нашлось.",
+    clearSearch: "Сбросить поиск",
   },
   languages: { CJ: "Чешский", NJ: "Немецкий", RS: "Русский", AJ: "Английский" },
   course: {
@@ -730,6 +750,10 @@ const uk: Dictionary = {
     noCoursesFiltered: "У цьому розділі поки немає опублікованих курсів для обраної мови.",
     loadFailed: "Не вдалося завантажити курси. Спробуй ще раз трохи пізніше.",
     viewLevels: "Відкрити курс →",
+    searchLabel: "Пошук у додаткових курсах",
+    searchButton: "Знайти",
+    noSearchResults: "За твоїм запитом нічого не знайдено.",
+    clearSearch: "Скинути пошук",
   },
   languages: { CJ: "Чеська", NJ: "Німецька", RS: "Російська", AJ: "Англійська" },
   course: {
@@ -852,6 +876,10 @@ const ja: Dictionary = {
     noCoursesFiltered: "選択した言語でこの分野の公開コースはまだありません。",
     loadFailed: "コースを読み込めませんでした。しばらくしてからもう一度お試しください。",
     viewLevels: "コースを開く →",
+    searchLabel: "補助コースを検索",
+    searchButton: "検索",
+    noSearchResults: "検索に一致するものは見つかりませんでした。",
+    clearSearch: "検索をクリア",
   },
   languages: { CJ: "チェコ語", NJ: "ドイツ語", RS: "ロシア語", AJ: "英語" },
   course: {
@@ -974,6 +1002,10 @@ const es: Dictionary = {
     noCoursesFiltered: "Todavía no hay cursos publicados en esta sección para el idioma seleccionado.",
     loadFailed: "No se pudieron cargar los cursos en este momento. Inténtalo de nuevo dentro de un momento.",
     viewLevels: "Abrir curso →",
+    searchLabel: "Buscar en los cursos complementarios",
+    searchButton: "Buscar",
+    noSearchResults: "No se encontró nada para tu búsqueda.",
+    clearSearch: "Borrar búsqueda",
   },
   languages: { CJ: "Checo", NJ: "Alemán", RS: "Ruso", AJ: "Inglés" },
   course: {
@@ -1096,6 +1128,10 @@ const fr: Dictionary = {
     noCoursesFiltered: "Aucun cours publié dans cette section pour la langue choisie, pour le moment.",
     loadFailed: "Impossible de charger les cours pour le moment. Réessaie dans quelques instants.",
     viewLevels: "Ouvrir le cours →",
+    searchLabel: "Rechercher dans les cours complémentaires",
+    searchButton: "Rechercher",
+    noSearchResults: "Aucun résultat pour ta recherche.",
+    clearSearch: "Effacer la recherche",
   },
   languages: { CJ: "Tchèque", NJ: "Allemand", RS: "Russe", AJ: "Anglais" },
   course: {

@@ -13,8 +13,11 @@ import { getSubjectText } from "@/i18n/subjects";
 import { CourseWorld } from "@/components/CourseWorld";
 import { getAllGradesLabel, gradeLabel } from "@/i18n/grades";
 import { isLocale, type Locale } from "@/i18n/config";
+import { isSupplementaryCourse, normalizeSearchText } from "@/lib/supplementary-courses";
 
 export const revalidate = 0;
+
+const MAX_QUERY_LENGTH = 100;
 
 type Course = {
   id: string;
@@ -31,13 +34,13 @@ export default async function CategoryPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; category: string }>;
-  searchParams: Promise<{ predmet?: string; trida?: string }>;
+  searchParams: Promise<{ predmet?: string; trida?: string; q?: string }>;
 }) {
   const { locale, category: categorySlug } = await params;
   if (!isLocale(locale)) notFound();
   const dict = getDictionary(locale as Locale);
   const subjectText = getSubjectText(locale as Locale);
-  const { predmet, trida } = await searchParams;
+  const { predmet, trida, q } = await searchParams;
 
   const category = getCategoryBySlug(categorySlug);
   if (!category) notFound();
@@ -93,6 +96,19 @@ export default async function CategoryPage({
     console.error("[kurzy] Načtení kurzů selhalo:", error);
     courses = [];
     loadFailed = true;
+  }
+
+  // Hledání jen v doplňkových kurzech. Vyhledávací pole se ukáže, jen když je v seznamu
+  // aspoň jeden doplňkový kurz; hledání bez doplňkových kurzů nedává smysl, takže se ignoruje.
+  const hasSupplementary = courses.some((c) => isSupplementaryCourse(c.slug));
+  const query = hasSupplementary ? (q ?? "").trim().slice(0, MAX_QUERY_LENGTH) : "";
+  const needle = normalizeSearchText(query);
+  if (needle) {
+    courses = courses.filter(
+      (c) =>
+        isSupplementaryCourse(c.slug) &&
+        normalizeSearchText(`${c.title} ${c.description ?? ""}`).includes(needle),
+    );
   }
 
   // Seskupení: předmět -> kategorie (obor) -> kurzy.
@@ -155,13 +171,38 @@ export default async function CategoryPage({
       />
 
       <div id={COURSES_ANCHOR} className="scroll-mt-6">
+      {hasSupplementary && (
+        <form role="search" method="get" action={`/${locale}/kurzy/${category.slug}#${COURSES_ANCHOR}`} className="mb-6 flex flex-wrap items-center gap-2">
+          {selectedSubject && <input type="hidden" name="predmet" value={selectedSubject.slug} />}
+          {selectedGrade && <input type="hidden" name="trida" value={String(selectedGrade)} />}
+          <input
+            type="search"
+            name="q"
+            defaultValue={query}
+            aria-label={dict.category.searchLabel}
+            placeholder={dict.category.searchLabel}
+            maxLength={MAX_QUERY_LENGTH}
+            className="min-w-48 flex-1 rounded-lg border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-2 text-sm"
+          />
+          <button type="submit" className="pill bg-[var(--brand-500)] px-4 py-2 text-sm font-semibold text-white">
+            {dict.category.searchButton}
+          </button>
+          {query && (
+            <Link href={filterHref(selectedSubject?.slug, selectedGrade)} className="text-sm font-semibold text-[var(--brand-600)] hover:underline">
+              {dict.category.clearSearch}
+            </Link>
+          )}
+        </form>
+      )}
       {courses.length === 0 ? (
         <div className="card p-10 text-center text-[var(--muted)]" role={loadFailed ? "alert" : undefined}>
           {loadFailed
             ? dict.category.loadFailed
-            : selectedSubject || selectedGrade
-              ? dict.category.noCoursesFiltered
-              : dict.category.noCourses}
+            : query
+              ? dict.category.noSearchResults
+              : selectedSubject || selectedGrade
+                ? dict.category.noCoursesFiltered
+                : dict.category.noCourses}
         </div>
       ) : (
         <div className="flex flex-col gap-12">
