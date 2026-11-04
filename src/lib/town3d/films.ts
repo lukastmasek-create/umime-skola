@@ -183,27 +183,44 @@ export function runForest3D(container: HTMLElement, opts: FilmOpts): Handle {
     }
     bush.castShadow = true;
     scene.add(bush);
-    const mushColors = ["#ff6fd8", "#6ff0ff", "#b88cff"];
-    mushColors.forEach((c, ci) => {
-      const n = 16;
-      const stems = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.06, 0.08, 0.3, 6), std("#f4ead8", 0.7), n);
-      const caps = new THREE.InstancedMesh(new THREE.SphereGeometry(0.22, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), std(c, 0.5, 0, { emissive: c, emissiveIntensity: 0.55 }), n);
-      for (let i = 0; i < n; i++) {
-        const p = curve.getPointAt(clamp01(((i * 3 + ci) / (n * 3)) * 0.95));
-        const side = (i + ci) % 2 ? 1 : -1;
-        const x = p.x + side * rand(1.3, 2.4);
-        const z = p.z + rand(-0.5, 0.5);
-        const s = rand(0.7, 1.6);
-        m4.compose(new THREE.Vector3(x, 0.15 * s, z), new THREE.Quaternion(), new THREE.Vector3(s, s, s));
-        stems.setMatrixAt(i, m4);
-        m4.compose(new THREE.Vector3(x, 0.28 * s, z), new THREE.Quaternion(), new THREE.Vector3(s, s, s));
-        caps.setMatrixAt(i, m4);
-      }
-      scene.add(stems, caps);
-    });
 
     // obří strom a portál ve dveřích
     const loads: Promise<unknown>[] = [];
+    // rekvizity z Blenderu (umime-art/blender/mestecko3d_les.py): houby, kapradí, květiny, balvany, lucerny a padlé kmeny
+    const roadside = (u: number, side: number): [number, number] => {
+      const p = curve.getPointAt(clamp01(u));
+      return [p.x + side, p.z];
+    };
+    const dress = (name: string, spots: [number, number, number, number][]) => {
+      loads.push(
+        placeModel(name).then((m) => {
+          for (const [x, z, rot, sc] of spots) {
+            const c = m.clone(true);
+            c.position.set(x, 0, z);
+            c.rotation.y = rot;
+            c.scale.setScalar(sc);
+            scene.add(c);
+          }
+        }),
+      );
+    };
+    const sideOf = () => (Math.random() < 0.5 ? -1 : 1);
+    const rows = (n: number, u0: number, u1: number, dmin: number, dmax: number, sc: [number, number]) =>
+      Array.from({ length: n }, (_, i) => {
+        const [x, z] = roadside(lerp(u0, u1, (i + Math.random() * 0.6) / n), sideOf() * rand(dmin, dmax));
+        return [x, z, rand(0, Math.PI * 2), rand(sc[0], sc[1])] as [number, number, number, number];
+      });
+    dress("les-houba-ruzova", rows(9, 0.08, 0.92, 1.6, 2.6, [0.8, 1.3]));
+    dress("les-houba-modra", rows(7, 0.1, 0.9, 1.8, 3, [0.8, 1.2]));
+    dress("les-houba-fialova", rows(7, 0.12, 0.88, 1.8, 3, [0.8, 1.2]));
+    dress("les-kapradi", rows(14, 0.05, 0.95, 1.0, 2.8, [0.9, 1.5]));
+    dress("les-kvetiny", rows(10, 0.04, 0.96, 1.2, 3.4, [0.9, 1.3]));
+    dress("les-balvan", rows(6, 0.2, 0.8, 2.2, 3.4, [0.9, 1.4]));
+    dress("les-padly-kmen", rows(2, 0.3, 0.7, 2.6, 3.2, [1, 1.1]));
+    dress("les-lampa", [0.3, 0.45, 0.6, 0.75].map((u, i) => {
+      const [x, z] = roadside(u, (i % 2 ? 1 : -1) * 1.5);
+      return [x, z, 0, 1] as [number, number, number, number];
+    }));
     loads.push(
       placeModel("strom").then((m) => {
         m.scale.setScalar(S);
