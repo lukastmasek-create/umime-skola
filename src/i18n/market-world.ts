@@ -17,7 +17,8 @@ export type WorldText = {
 };
 export type UnlockText = { title: string; text: string; button: string; needLevel: string; needPoints: string; done: string; locked: string };
 
-const space: Record<Locale, WorldText> = withFallbacks({
+const space: Record<Locale, WorldText> = {
+  ...withFallbacks({
   cs: {
     title: "Vesmírná stanice",
     subtitle: "Promenáda na oběžné dráze: roboti, mimozemšťané a astronauti ti prodají vesmírné zboží za body z učení.",
@@ -90,10 +91,84 @@ const space: Record<Locale, WorldText> = withFallbacks({
       bot: { label: "Поговорить с роботом", lines: ["Бип буп, убираю!", "В космосе нет пыли… но я найду.", "Чистота — половина миссии!"] },
     },
   },
-});
+}),
+  uk: {
+    title: "Космічна станція",
+    subtitle: "Прогулянка на орбіті: роботи, прибульці й астронавти продають космічні товари за бали з навчання.",
+    stalls: {
+      avatary: { name: "Перевдягальня", npc: "Адмірал Зірочка", hello: ["Увага, кадете! Скафандр сидить як влитий.", "Новий костюм для нової місії?"] },
+      tituly: { name: "Зоряна канцелярія", npc: "Робот Біп-7", hello: ["Біп буп! Впишу твоє звання в зоряний каталог.", "Обробляю твій запит… готово!"] },
+      ramecky: { name: "Майстерня рамок", npc: "Інженерка Мати", hello: ["Рамка з космічної сталі витримає навіть метеорити!", "Дай мені хвилинку, і я її налаштую."] },
+      pozadi: { name: "Галерея туманностей", npc: "Зорґла з Альфи", hello: ["Пофарбую твій фон у туманність, якої ти ще не бачив.", "Зоґлі! Вибери зоряне небо."] },
+      mazlicci: { name: "Біокуточок", npc: "Докторка Піпетка", hello: ["Улюбленець для твоєї бази? Цей блоб миленький.", "Аксесуари для космічних звірів у мене є всі."] },
+      lod: { name: "Док ракет", npc: "Космічний човник", hello: ["Будівлі для твого міста виготовляють у доку ракет."] },
+    },
+    fireLabel: "Запустити зонд",
+    boom: "БЗЗЗ!",
+    talk: {
+      pet: { label: "Погладити блоба", lines: ["Блуб! Блуб!", "Піп-піп!", "Я твій новий друг!", "Ням! Зірочки не знайдеться?"] },
+      bot: { label: "Поговорити з роботом", lines: ["Біп буп, прибираю!", "У космосі немає пилу… але я його знайду.", "Чистота — половина місії!"] },
+    },
+  },
+  ja: {
+    title: "宇宙ステーション",
+    subtitle: "軌道上の遊歩道です。ロボット、宇宙人、宇宙飛行士たちが、学習で貯めたポイントで宇宙グッズを売っています。",
+    stalls: {
+      avatary: { name: "着替え室", npc: "アドミラル・ホシノコ", hello: ["気をつけて、カデットさん！宇宙服がぴったりですよ。", "新しいミッションには、新しい衣装はいかがですか？"] },
+      tituly: { name: "星の事務所", npc: "ロボット ビップ7", hello: ["ビップ・ブップ！称号を星のカタログに記録しますね。", "リクエストを処理中… 完了！"] },
+      ramecky: { name: "フレーム工房", npc: "技師のマザー", hello: ["宇宙鋼のフレームです。隕石にも耐えますよ！", "少しお待ちください。調整しますね。"] },
+      pozadi: { name: "星雲ギャラリー", npc: "アルファのゾルグラ", hello: ["まだ見たことのない星雲で背景を塗ってあげますよ。", "ゾグリ！星空を選んでね。"] },
+      mazlicci: { name: "バイオコーナー", npc: "ドクターピペット", hello: ["基地で飼うペットをお探しですか？このブロブはかわいいですよ。", "宇宙の動物たちのアクセサリーなら、すべてそろっていますよ。"] },
+      lod: { name: "ロケットドック", npc: "スペースシャトル", hello: ["街に置く建物はロケットドックで作られています。"] },
+    },
+    fireLabel: "探査機を打ち上げる",
+    boom: "ビーーッ！",
+    talk: {
+      pet: { label: "ブロブをなでる", lines: ["ブルブル！ブルブル！", "ピップ！", "ぼくはきみの新しい友だちだよ！", "もぐもぐ！星はないかな？"] },
+      bot: { label: "ロボットに話しかける", lines: ["ビップ・ブップ、お掃除中です！", "宇宙にはホコリがないはずですが… 探してみます。", "清潔さはミッションの半分です！"] },
+    },
+  },
+  es: {
+    title: "Estación espacial",
+    subtitle: "Un paseo en órbita: robots, extraterrestres y astronautas te venden artículos espaciales por los puntos que ganas aprendiendo.",
+    stalls: {
+      avatary: { name: "Vestuario", npc: "Almirante Estrellita", hello: ["¡Atención, cadete! Ese traje espacial te queda como anillo al dedo.", "¿Un disfraz nuevo para una nueva misión?"] },
+      tituly: { name: "Oficina estelar", npc: "Robot Bip-7", hello: ["¡Bip bup! Escribiré tu título en el catálogo estelar.", "¡Procesando tu solicitud… listo!"] },
+      ramecky: { name: "Taller de marcos", npc: "Ingeniera Madre", hello: ["¡Un marco de acero espacial que resiste incluso los meteoritos!", "Dame un momento y lo ajusto para ti."] },
+      pozadi: { name: "Galería de nebulosas", npc: "Zorgla de Alfa", hello: ["Pintaré tu fondo con una nebulosa que nunca has visto.", "¡Zogli! Elige tu cielo estrellado."] },
+      mazlicci: { name: "Rincón bio", npc: "Doctora Pipeta", hello: ["¿Una mascota para tu base? Este blob es adorable.", "Tengo accesorios para todas las mascotas espaciales."] },
+      lod: { name: "Muelle de cohetes", npc: "Transbordador espacial", hello: ["Los edificios para tu ciudad se construyen en el muelle de cohetes."] },
+    },
+    fireLabel: "Lanzar una sonda",
+    boom: "¡BZZZ!",
+    talk: {
+      pet: { label: "Acariciar al blob", lines: ["¡Blub! ¡Blub!", "¡Pip pip!", "¡Soy tu nuevo amigo!", "¡Ñam! ¿No tendrás alguna estrella?"] },
+      bot: { label: "Hablar con el robot", lines: ["¡Bip bup, limpiando!", "En el espacio no hay polvo… pero lo encontraré.", "¡La limpieza es la mitad de la misión!"] },
+    },
+  },
+  fr: {
+    title: "Station spatiale",
+    subtitle: "Une promenade en orbite : des robots, des extraterrestres et des astronautes vendent des articles spatiaux contre les points que tu gagnes en apprenant.",
+    stalls: {
+      avatary: { name: "Cabine d'essayage", npc: "Amiral Étoilette", hello: ["Attention, cadet ! Cette combinaison spatiale te va comme un gant.", "Un nouveau costume pour une nouvelle mission ?"] },
+      tituly: { name: "Bureau des étoiles", npc: "Robot Bip-7", hello: ["Bip boup ! J'inscris ton titre dans le catalogue des étoiles.", "Je traite ta demande… terminé !"] },
+      ramecky: { name: "Atelier des cadres", npc: "Ingénieure Mère", hello: ["Un cadre en acier spatial, il résiste même aux météorites !", "Donne-moi un instant, je le règle pour toi."] },
+      pozadi: { name: "Galerie des nébuleuses", npc: "Zorgla d'Alpha", hello: ["Je vais peindre ton fond dans une nébuleuse que tu n'as jamais vue.", "Zogli ! Choisis ton ciel étoilé."] },
+      mazlicci: { name: "Coin bio", npc: "Docteure Pipette", hello: ["Un animal de compagnie pour ta base ? Ce blob est adorable.", "J'ai des accessoires pour tous les animaux de l'espace."] },
+      lod: { name: "Dock des fusées", npc: "Navette spatiale", hello: ["Les bâtiments pour ta ville se construisent au dock des fusées."] },
+    },
+    fireLabel: "Lancer une sonde",
+    boom: "BZZZ !",
+    talk: {
+      pet: { label: "Caresser le blob", lines: ["Blub ! Blub !", "Pip pip !", "Je suis ton nouvel ami !", "Miam ! Tu n'aurais pas une étoile ?"] },
+      bot: { label: "Parler au robot", lines: ["Bip boup, je nettoie !", "Il n'y a pas de poussière dans l'espace… mais je vais en trouver.", "La propreté, c'est la moitié de la mission !"] },
+    },
+  },
+};
 
 
-const forest: Record<Locale, WorldText> = withFallbacks({
+const forest: Record<Locale, WorldText> = {
+  ...withFallbacks({
   cs: {
     title: "Pohádkový les",
     subtitle: "Mýtina plná světlušek: víly, hajní a lesní řemeslníci ti prodají kouzelné zboží za body z učení.",
@@ -166,9 +241,83 @@ const forest: Record<Locale, WorldText> = withFallbacks({
       kocka: { label: "Погладить кошку", lines: ["Мяу!", "Мур… почеши за ушком.", "Мяу мяу!"] },
     },
   },
-});
+}),
+  uk: {
+    title: "Казковий ліс",
+    subtitle: "Галявина, повна світлячків: феї, лісники та лісові майстри продають тобі чарівні товари за бали з навчання.",
+    stalls: {
+      avatary: { name: "Лісова кравчиня", npc: "Фея Пелюстка", hello: ["Сукні з листя сидять, як ціла мрія!", "Ходи, пошию тобі щось із моху та пелюсток."] },
+      tituly: { name: "Сторожка", npc: "Лісник Мохомил", hello: ["Запишу твоє звання в лісову літопис.", "Ліс шанує тих, хто вчиться."] },
+      ramecky: { name: "Майстерня різьбярів", npc: "Різьбяр Шишка", hello: ["Рамка з гілочки, вирізана вручну!", "Відчуй запах дерева, як гарно пахне."] },
+      pozadi: { name: "Галерея світлячків", npc: "Художниця Світлячок", hello: ["Намалюю тобі фон, що сяє, як світлячки.", "Вибери кольори лісу."] },
+      mazlicci: { name: "Травознавство", npc: "Травниця Меліса", hello: ["Для улюбленця маю трави й прикраси.", "Цей кролик — мій найкращий клієнт."] },
+      lod: { name: "Будиночок на дереві", npc: "Будиночок", hello: ["Будівлі для твого міста виростають у будиночку на дереві."] },
+    },
+    fireLabel: "Махнути чарівною паличкою",
+    boom: "ШИМ!",
+    talk: {
+      kralik: { label: "Погладити кролика", lines: ["Нюх-нюх… морквинка?", "Скік-скік!", "Тут гарно, правда?"] },
+      kocka: { label: "Погладити кішку", lines: ["Мяу!", "Мур… почеши за вушком.", "Мяу-мяу!"] },
+    },
+  },
+  ja: {
+    title: "おとぎの森",
+    subtitle: "ホタルでいっぱいの空き地です。妖精、森の番人、森の職人たちが、学習ポイントで魔法のアイテムを売っています。",
+    stalls: {
+      avatary: { name: "森の仕立て屋", npc: "妖精ペタル", hello: ["葉っぱのドレス、ぴったりですよ！", "おいで、こけと花びらで何か作ってあげる。"] },
+      tituly: { name: "番人の小屋", npc: "森の番人モスィー", hello: ["あなたの称号を森の年代記に記しておきますね。", "森は学ぶ者を敬うのです。"] },
+      ramecky: { name: "彫刻工房", npc: "彫刻師のマツボックリ", hello: ["小枝でできたフレームを、手彫りで作りましたよ！", "木のいい香りでしょう？"] },
+      pozadi: { name: "ホタルのギャラリー", npc: "画家のグリマー", hello: ["ホタルのように光る背景を描いてあげますよ。", "森の色を選んでください。"] },
+      mazlicci: { name: "薬草店", npc: "薬草師のメリッサ", hello: ["ペットのための薬草と飾りがありますよ。", "このウサギは私の一番のお客さまなの。"] },
+      lod: { name: "木の上の家", npc: "木の家", hello: ["街に置く建物は、木の上の家で作られています。"] },
+    },
+    fireLabel: "魔法の杖を振る",
+    boom: "シュピン！",
+    talk: {
+      kralik: { label: "ウサギをなでる", lines: ["クンクン…にんじん？", "ぴょんぴょん！", "ここは素敵でしょう？"] },
+      kocka: { label: "ねこをなでる", lines: ["にゃあ！", "ゴロゴロ…耳の後ろをかいて。", "にゃーにゃー！"] },
+    },
+  },
+  es: {
+    title: "Bosque de cuento",
+    subtitle: "Un claro lleno de luciérnagas: hadas, guardabosques y artesanos del bosque te venden objetos mágicos por tus puntos de aprendizaje.",
+    stalls: {
+      avatary: { name: "Sastrería del bosque", npc: "Hada Pétalo", hello: ["¡Los vestidos de hojas te sientan de maravilla!", "Ven, te coseré algo de musgo y pétalos."] },
+      tituly: { name: "Casa del guardabosques", npc: "Guardabosques Musgoso", hello: ["Escribiré tu título en la crónica del bosque.", "El bosque honra a quien aprende."] },
+      ramecky: { name: "Taller del tallista", npc: "Tallista Piñacona", hello: ["¡Un marco de ramita, tallado a mano!", "Huele la madera, qué bien huele."] },
+      pozadi: { name: "Galería de luciérnagas", npc: "Pintora Destello", hello: ["Te pintaré un fondo que brille como las luciérnagas.", "Elige los colores del bosque."] },
+      mazlicci: { name: "Herbolario", npc: "Herborista Melisa", hello: ["Tengo hierbas y adornos para tu mascota.", "Este conejito es mi mejor cliente."] },
+      lod: { name: "Casa del árbol", npc: "Casa del árbol", hello: ["Los edificios para tu ciudad se construyen en la casa del árbol."] },
+    },
+    fireLabel: "Agitar la varita mágica",
+    boom: "¡ZAS!",
+    talk: {
+      kralik: { label: "Acariciar al conejito", lines: ["¿Snif, snif… una zanahoria?", "¡Hop hop!", "Se está muy bien aquí, ¿verdad?"] },
+      kocka: { label: "Acariciar al gato", lines: ["¡Miau!", "Prrr… rásscame detrás de la oreja.", "¡Miau miau!"] },
+    },
+  },
+  fr: {
+    title: "Forêt enchantée",
+    subtitle: "Une clairière pleine de lucioles : fées, gardes forestiers et artisans des bois te vendent des objets magiques contre tes points d'apprentissage.",
+    stalls: {
+      avatary: { name: "Tailleur de la forêt", npc: "Fée Pétale", hello: ["Les robes de feuilles te vont à merveille !", "Viens, je vais te coudre quelque chose de mousse et de pétales."] },
+      tituly: { name: "Maison du garde", npc: "Garde Mousseux", hello: ["J'inscrirai ton titre dans la chronique de la forêt.", "La forêt honore ceux qui apprennent."] },
+      ramecky: { name: "Atelier du sculpteur", npc: "Sculpteur Pomme-de-pin", hello: ["Un cadre en brindille, sculpté à la main !", "Sens le bois, comme il sent bon."] },
+      pozadi: { name: "Galerie des lucioles", npc: "Peintre Scintille", hello: ["Je te peindrai un fond qui brille comme des lucioles.", "Choisis les couleurs de la forêt."] },
+      mazlicci: { name: "Herboristerie", npc: "Herboriste Mélisse", hello: ["J'ai des herbes et des breloques pour ton animal.", "Ce lapin est mon meilleur client."] },
+      lod: { name: "Cabane dans l'arbre", npc: "Cabane", hello: ["Les bâtiments pour ta ville se construisent dans la cabane dans l'arbre."] },
+    },
+    fireLabel: "Agiter la baguette magique",
+    boom: "CHIM !",
+    talk: {
+      kralik: { label: "Caresser le lapin", lines: ["Snif snif… une carotte ?", "Hop hop !", "C'est joli ici, n'est-ce pas ?"] },
+      kocka: { label: "Caresser le chat", lines: ["Miaou !", "Purr… gratte-moi derrière l'oreille.", "Miaou miaou !"] },
+    },
+  },
+};
 
-const castle: Record<Locale, WorldText> = withFallbacks({
+const castle: Record<Locale, WorldText> = {
+  ...withFallbacks({
   cs: {
     title: "Hrad a tržiště",
     subtitle: "Středověké tržiště pod hradbami: krejčí, král, kovář i sokolník prodávají zboží za body z učení.",
@@ -241,9 +390,83 @@ const castle: Record<Locale, WorldText> = withFallbacks({
       slepice: { label: "Поговорить с курицей", lines: ["Ко-ко!", "Сегодня снесу золотое яйцо.", "Куд-кудах!"] },
     },
   },
-});
+}),
+  uk: {
+    title: "Замок і ярмарок",
+    subtitle: "Середньовічний ярмарок під стінами замку: кравець, король, коваль і соколятник продають товари за бали з навчання.",
+    stalls: {
+      avatary: { name: "Кравецтво", npc: "Кравець Голочка", hello: ["Костюм для лицаря чи принцеси, як забажаєш!", "Зніму мірку й пошию до завтра."] },
+      tituly: { name: "Королівська канцелярія", npc: "Король Корона", hello: ["Іменем корони надаю тобі це звання!", "Король цінує тих, хто вчиться."] },
+      ramecky: { name: "Кузня", npc: "Коваль Вм'ятина", hello: ["Рамка зі сталі, викована у вогні!", "Бум, бум! Витримає навіть подих дракона."] },
+      pozadi: { name: "Ткацька", npc: "Ткаля Пряжа", hello: ["Витку тобі фон із найкращих ниток.", "Поглянь на мої гобелени."] },
+      mazlicci: { name: "Соколина", npc: "Соколятник Пір'їнка", hello: ["Для улюбленця маю благородні прикраси.", "Сокіл сідає не на кожну руку."] },
+      lod: { name: "Замкова вежа", npc: "Вежа", hello: ["Будівлі для твого міста виготовляють у замковій майстерні."] },
+    },
+    fireLabel: "Вистрелити з катапульти",
+    boom: "БУМ!",
+    talk: {
+      pes: { label: "Погладити пса", lines: ["Гав-гав!", "Я охороняю ярмарок!", "Маєш для мене кісточку?"] },
+      slepice: { label: "Поговорити з куркою", lines: ["Ко-ко!", "Сьогодні знесу золоте яйце.", "Кудах-кудах!"] },
+    },
+  },
+  ja: {
+    title: "お城と市場",
+    subtitle: "城壁の下に広がる中世の市場です。仕立て屋、王さま、鍛冶屋、鷹匠が、学習ポイントで商品を売っています。",
+    stalls: {
+      avatary: { name: "仕立て屋", npc: "仕立て屋のハリ", hello: ["騎士でもお姫さまでも、お好みの衣装をご用意しますよ！", "採寸して、明日までに仕立てておきますね。"] },
+      tituly: { name: "王室の事務所", npc: "王様のクラウン", hello: ["王冠の名において、この称号を授けましょう！", "王様は学ぶ者を大切にしますよ。"] },
+      ramecky: { name: "鍛冶屋", npc: "鍛冶屋のデント", hello: ["炎で鍛えた鋼のフレームです！", "カンカン！ドラゴンの吐息にも耐えますよ。"] },
+      pozadi: { name: "機織り小屋", npc: "機織りのスレッド", hello: ["最高級の糸で背景を織ってあげますよ。", "私のタペストリーを見ていってください。"] },
+      mazlicci: { name: "鷹狩り小屋", npc: "鷹匠のフェザー", hello: ["ペットのための高貴な飾りがありますよ。", "鷹はだれの腕にでもとまるわけではないんです。"] },
+      lod: { name: "お城の塔", npc: "塔", hello: ["街に置く建物は、お城の工房で作られています。"] },
+    },
+    fireLabel: "投石器を発射する",
+    boom: "ドーン！",
+    talk: {
+      pes: { label: "犬をなでる", lines: ["ワンワン！", "市場を守っているんだ！", "ぼくにほねはあるかな？"] },
+      slepice: { label: "ニワトリに話しかける", lines: ["コッコッ！", "今日は金のたまごを産むわよ。", "コッ、コッコー！"] },
+    },
+  },
+  es: {
+    title: "Castillo y mercado",
+    subtitle: "Un mercado medieval bajo las murallas del castillo: el sastre, el rey, el herrero y el halconero venden artículos por tus puntos de aprendizaje.",
+    stalls: {
+      avatary: { name: "Sastrería", npc: "Sastre Aguja", hello: ["¡Un disfraz de caballero o de princesa, como quieras!", "Te tomaré medidas y te lo coso para mañana."] },
+      tituly: { name: "Oficina real", npc: "Rey Corona", hello: ["¡En nombre de la corona te concedo este título!", "El rey valora a quien aprende."] },
+      ramecky: { name: "Herrería", npc: "Herrero Abolladura", hello: ["¡Un marco de acero, forjado al fuego!", "¡Pum, pum! Aguanta incluso el aliento de un dragón."] },
+      pozadi: { name: "Tejeduría", npc: "Tejedora Hilo", hello: ["Te tejeré un fondo con los mejores hilos.", "Echa un vistazo tranquilo a mis tapices."] },
+      mazlicci: { name: "Halconería", npc: "Halconero Pluma", hello: ["Para tu mascota tengo adornos de nobles.", "El halcón no se posa en cualquier mano."] },
+      lod: { name: "Torre del castillo", npc: "Torre", hello: ["Los edificios para tu ciudad se construyen en el taller del castillo."] },
+    },
+    fireLabel: "Disparar la catapulta",
+    boom: "¡BUM!",
+    talk: {
+      pes: { label: "Acariciar al perro", lines: ["¡Guau guau!", "¡Vigilo el mercado!", "¿Tienes un hueso para mí?"] },
+      slepice: { label: "Hablar con la gallina", lines: ["¡Cocorocó!", "Hoy pondré un huevo de oro.", "¡Cloc cloc!"] },
+    },
+  },
+  fr: {
+    title: "Château et marché",
+    subtitle: "Un marché médiéval au pied des remparts : le tailleur, le roi, le forgeron et le fauconnier vendent des articles contre tes points d'apprentissage.",
+    stalls: {
+      avatary: { name: "Tailleur", npc: "Tailleur Aiguille", hello: ["Un costume de chevalier ou de princesse, comme tu le souhaites !", "Je prends tes mesures et je te coud ça d'ici demain."] },
+      tituly: { name: "Bureau royal", npc: "Roi Couronne", hello: ["Au nom de la couronne, je t'accorde ce titre !", "Le roi estime ceux qui apprennent."] },
+      ramecky: { name: "Forge", npc: "Forgeron Bosse", hello: ["Un cadre en acier, forgé au feu !", "Dong, dong ! Il résiste même au souffle d'un dragon."] },
+      pozadi: { name: "Tissage", npc: "Tisseuse Fil", hello: ["Je te tisserai un fond avec les plus beaux fils.", "Jette un œil à mes tapisseries."] },
+      mazlicci: { name: "Fauconnerie", npc: "Fauconnier Plume", hello: ["J'ai des parures dignes d'un noble pour ton animal.", "Le faucon ne se pose pas sur n'importe quelle main."] },
+      lod: { name: "Tour du château", npc: "Tour", hello: ["Les bâtiments pour ta ville se construisent dans les ateliers du château."] },
+    },
+    fireLabel: "Tirer la catapulte",
+    boom: "BOUM !",
+    talk: {
+      pes: { label: "Caresser le chien", lines: ["Ouaf ouaf !", "Je garde le marché !", "Tu as un os pour moi ?"] },
+      slepice: { label: "Parler à la poule", lines: ["Cot cot !", "Aujourd'hui, je pondrai un œuf d'or.", "Cot cot cot !"] },
+    },
+  },
+};
 
-const sea: Record<Locale, WorldText> = withFallbacks({
+const sea: Record<Locale, WorldText> = {
+  ...withFallbacks({
   cs: {
     title: "Podmořské město",
     subtitle: "Perleťové město na mořském dně: mořské panny, potápěči a mágové ti prodají mořské zboží za body z učení.",
@@ -316,14 +539,93 @@ const sea: Record<Locale, WorldText> = withFallbacks({
       krab: { label: "Поговорить с крабом", lines: ["Клац-клац!", "Боком ходить лучше всего.", "Осторожно, мои клешни!"] },
     },
   },
-});
+}),
+  uk: {
+    title: "Підводне місто",
+    subtitle: "Перлинне місто на морському дні: русалки, водолази й маги продають морські товари за бали з навчання.",
+    stalls: {
+      avatary: { name: "Раковинна роздягальня", npc: "Русалка Перлинка", hello: ["Ласти чи скафандр? Вибирай!", "Раковини тобі личать, повір мені."] },
+      tituly: { name: "Перлова канцелярія", npc: "Капітан Глибина", hello: ["Запишу твоє звання в корабельний журнал глибин.", "Бульк-бульк… готово!"] },
+      ramecky: { name: "Коралова майстерня", npc: "Перляр Перлик", hello: ["Рамка з коралів і перлин, неповторна!", "Перлина до перлини — ідеально пасують."] },
+      pozadi: { name: "Галерея медуз", npc: "Маг Мушля", hello: ["Зачарую для тебе фон із морських вогнів.", "Медузи з радістю тебе освітлять."] },
+      mazlicci: { name: "Акваріум", npc: "Дельфінка", hello: ["Для твого улюбленця маю морські прикраси.", "Рибки — мої найкращі подружки."] },
+      lod: { name: "Підводний човен", npc: "Підводний човен", hello: ["Будівлі для твого міста виготовляють у доці підводних човнів."] },
+    },
+    fireLabel: "Випустити бульбашку",
+    boom: "БУЛЬК!",
+    talk: {
+      ryba: { label: "Поговорити з рибкою", lines: ["Бульбуль!", "Плинь зі мною!", "Я голодна, є корм?"] },
+      krab: { label: "Поговорити з крабом", lines: ["Клац-клац!", "Боком ходити найкраще.", "Обережно, мої клешні!"] },
+    },
+  },
+  ja: {
+    title: "海底の街",
+    subtitle: "海底にある真珠色の街です。人魚、ダイバー、魔法使いたちが、学習ポイントで海のグッズを売っています。",
+    stalls: {
+      avatary: { name: "貝殻の着替え室", npc: "人魚のパール", hello: ["ひれにする？それとも潜水服？好きなほうを選んでね！", "貝殻、似合うと思うよ。ほんとだって。"] },
+      tituly: { name: "真珠の事務所", npc: "キャプテン・ディープ", hello: ["称号を深海の航海日誌に書いておきますね。", "ブクブク、ブクブク… 完了！"] },
+      ramecky: { name: "サンゴ工房", npc: "真珠職人のパーリー", hello: ["サンゴと真珠でできた、世界に一つのフレームです！", "真珠は真珠と並ぶと、ぴったりですね。"] },
+      pozadi: { name: "クラゲのギャラリー", npc: "魔法使いのマッスル", hello: ["海の光で背景を作り出しますよ。", "クラゲたちがよろこんであなたを照らしてくれますよ。"] },
+      mazlicci: { name: "水族館", npc: "イルカのドルフィナ", hello: ["ペットのための海の飾りがありますよ。", "お魚はわたしの一番の友だちなの。"] },
+      lod: { name: "潜水艦", npc: "潜水艦", hello: ["街に置く建物は、潜水艦のドックで作られています。"] },
+    },
+    fireLabel: "泡を放つ",
+    boom: "ブクッ！",
+    talk: {
+      ryba: { label: "お魚に話しかける", lines: ["ブクブク！", "一緒に泳ごうよ！", "おなかがすいたの。えさはある？"] },
+      krab: { label: "カニに話しかける", lines: ["カチャカチャ！", "横歩きがいちばんなんだ。", "はさみに気をつけてね！"] },
+    },
+  },
+  es: {
+    title: "Ciudad submarina",
+    subtitle: "Una ciudad nacarada en el fondo del mar: sirenas, buzos y magos te venden artículos marinos por tus puntos de aprendizaje.",
+    stalls: {
+      avatary: { name: "Vestuario de conchas", npc: "Sirena Perla", hello: ["¿Aletas o traje de buceo? ¡Tú eliges!", "Las conchas te quedan bien, confía en mí."] },
+      tituly: { name: "Oficina de perlas", npc: "Capitán Profundo", hello: ["Escribiré tu título en el diario de las profundidades.", "¡Burbujas, burbujas… listo!"] },
+      ramecky: { name: "Taller de coral", npc: "Perlero Perlito", hello: ["¡Un marco de coral y perlas, único!", "Perla con perla, combinan a la perfección."] },
+      pozadi: { name: "Galería de medusas", npc: "Mago Concha", hello: ["Conjuraré un fondo con luces del mar.", "Las medusas estarán encantadas de iluminarte."] },
+      mazlicci: { name: "Acuario", npc: "Delfina", hello: ["Para tu mascota tengo adornos del mar.", "Los peces son mis mejores amigos."] },
+      lod: { name: "Submarino", npc: "Submarino", hello: ["Los edificios para tu ciudad se construyen en el muelle del submarino."] },
+    },
+    fireLabel: "Soltar una burbuja",
+    boom: "¡BLUB!",
+    talk: {
+      ryba: { label: "Hablar con el pez", lines: ["¡Blubblub!", "¡Nada conmigo!", "Tengo hambre, ¿tienes comida?"] },
+      krab: { label: "Hablar con el cangrejo", lines: ["¡Clic clac!", "Lo mejor es andar de lado.", "¡Cuidado con mis pinzas!"] },
+    },
+  },
+  fr: {
+    title: "Ville sous-marine",
+    subtitle: "Une cité nacrée au fond de la mer : sirènes, plongeurs et mages te vendent des articles marins contre tes points d'apprentissage.",
+    stalls: {
+      avatary: { name: "Vestiaire aux coquillages", npc: "Sirène Perle", hello: ["Des palmes ou une combinaison ? À toi de choisir !", "Les coquillages te vont bien, crois-moi."] },
+      tituly: { name: "Bureau des perles", npc: "Capitaine Abysse", hello: ["J'inscris ton titre dans le journal des abysses.", "Bulles, bulles… c'est fait !"] },
+      ramecky: { name: "Atelier de corail", npc: "Perlier Perlin", hello: ["Un cadre en corail et en perles, unique au monde !", "Perle à perle, ça va à merveille."] },
+      pozadi: { name: "Galerie des méduses", npc: "Mage Coquille", hello: ["Je vais faire surgir un fond fait de lumières marines.", "Les méduses adorent t'illuminer."] },
+      mazlicci: { name: "Aquarium", npc: "Dauphine", hello: ["J'ai des breloques marines pour ton animal.", "Les poissons sont mes meilleurs amis."] },
+      lod: { name: "Sous-marin", npc: "Sous-marin", hello: ["Les bâtiments pour ta ville se construisent dans le dock du sous-marin."] },
+    },
+    fireLabel: "Lâcher une bulle",
+    boom: "BLOUP !",
+    talk: {
+      ryba: { label: "Parler au poisson", lines: ["Blub blub !", "Nage avec moi !", "J'ai faim, tu as à manger ?"] },
+      krab: { label: "Parler au crabe", lines: ["Clac clac !", "Marcher de côté, c'est le mieux.", "Attention à mes pinces !"] },
+    },
+  },
+};
 
-const unlock: Record<Locale, UnlockText> = withFallbacks({
+const unlock: Record<Locale, UnlockText> = {
+  ...withFallbacks({
   cs: { title: "Odemknout svět", text: "Svět „{name}“ se odemkne na úrovni {level} a stojí {points} bodů.", button: "Odemknout za {points} ⭐", needLevel: "Chybí ti úroveň {level}", needPoints: "Chybí ti {n} bodů", done: "Svět je odemčený!", locked: "Zamčeno" },
   en: { title: "Unlock world", text: "The world “{name}” unlocks at level {level} and costs {points} points.", button: "Unlock for {points} ⭐", needLevel: "You need level {level}", needPoints: "You need {n} more points", done: "World unlocked!", locked: "Locked" },
   de: { title: "Welt freischalten", text: "Die Welt „{name}“ wird ab Level {level} freigeschaltet und kostet {points} Punkte.", button: "Für {points} ⭐ freischalten", needLevel: "Dir fehlt Level {level}", needPoints: "Dir fehlen {n} Punkte", done: "Welt freigeschaltet!", locked: "Gesperrt" },
   ru: { title: "Открыть мир", text: "Мир «{name}» откроется на уровне {level} и стоит {points} баллов.", button: "Открыть за {points} ⭐", needLevel: "Нужен уровень {level}", needPoints: "Не хватает {n} баллов", done: "Мир открыт!", locked: "Закрыто" },
-});
+}),
+  uk: { title: "Відкрити світ", text: "Світ «{name}» відкривається на рівні {level} і коштує {points} балів.", button: "Відкрити за {points} ⭐", needLevel: "Бракує рівня {level}", needPoints: "Бракує {n} балів", done: "Світ відкрито!", locked: "Заблоковано" },
+  ja: { title: "ワールドを解放", text: "ワールド「{name}」はレベル{level}で解放され、{points}ポイントかかります。", button: "{points} ⭐で解放", needLevel: "レベル{level}が必要です", needPoints: "あと{n}ポイント必要です", done: "ワールドを解放しました！", locked: "ロック中" },
+  es: { title: "Desbloquear mundo", text: "El mundo «{name}» se desbloquea en el nivel {level} y cuesta {points} puntos.", button: "Desbloquear por {points} ⭐", needLevel: "Te falta el nivel {level}", needPoints: "Te faltan {n} puntos", done: "¡Mundo desbloqueado!", locked: "Bloqueado" },
+  fr: { title: "Débloquer le monde", text: "Le monde « {name} » se débloque au niveau {level} et coûte {points} points.", button: "Débloquer pour {points} ⭐", needLevel: "Il te faut le niveau {level}", needPoints: "Il te manque {n} points", done: "Monde débloqué !", locked: "Verrouillé" },
+};
 
 export function getUnlockText(locale: Locale): UnlockText {
   return unlock[locale];
@@ -346,7 +648,8 @@ export function getWorldText(locale: Locale, world: string): WorldText {
 }
 
 export type TownText = { tab: string; title: string; subtitle: string; walking: string; sheet: string; locked: string; talk: Record<string, { label: string; lines: string[] }> };
-const town: Record<Locale, TownText> = withFallbacks({
+const town: Record<Locale, TownText> = {
+  ...withFallbacks({
   cs: {
     tab: "Městečko",
     title: "Městečko",
@@ -403,16 +706,79 @@ const town: Record<Locale, TownText> = withFallbacks({
       kocka: { label: "Погладить кошку", lines: ["Мяу!", "Мур…", "Мяу мяу!"] },
     },
   },
-});
+}),
+  uk: {
+    tab: "Містечко",
+    title: "Містечко",
+    subtitle: "Почни з прогулянки містечком. Сходами вниз — піратська гавань, а на лузі стоїть ракета на космічну станцію. Клацни, куди хочеш піти.",
+    walking: "Йдемо…",
+    sheet: "Ракета на космічну станцію",
+    locked: "заблоковано",
+    talk: {
+      knihovnice: { label: "Поговорити з бібліотекаркою", lines: ["Хто читає, той росте!", "Нові книжки на полиці біля вікна.", "Тсс! У бібліотеці шепочуться."] },
+      pekar: { label: "Поговорити з пекарем", lines: ["Свіжі булочки, ще теплі!", "За навчання ти заслужив пиріг.", "Ммм, як пахне!"] },
+      kluk: { label: "Поговорити з хлопчиком", lines: ["Дивись, у гавані справжній корабель!", "Коли виросту, полечу на станцію!", "Швидше, а то пропустимо веселощі."] },
+      kocka: { label: "Погладити кішку", lines: ["Мяу!", "Мур…", "Мяу-мяу!"] },
+    },
+  },
+  ja: {
+    tab: "町",
+    title: "町",
+    subtitle: "まずは町を散歩してみましょう。階段を下りると海賊の港があり、草原には宇宙ステーションへのロケットが立っています。行きたい場所をクリックしてください。",
+    walking: "移動中…",
+    sheet: "宇宙ステーションへのロケット",
+    locked: "ロック中",
+    talk: {
+      knihovnice: { label: "司書さんに話しかける", lines: ["読む人は育つのよ！", "新しい本は窓辺の棚にありますよ。", "しーっ！図書館では小声でね。"] },
+      pekar: { label: "パン屋さんに話しかける", lines: ["焼きたてのロールパンですよ！", "勉強をがんばったご褒美に、ケーキはいかが？", "んー、いい匂い！"] },
+      kluk: { label: "男の子に話しかける", lines: ["見て、港に本物の船があるよ！", "大きくなったら、ぼくもステーションまで飛んでいくんだ！", "急いで、楽しいことを逃しちゃうよ。"] },
+      kocka: { label: "ねこをなでる", lines: ["にゃあ！", "ゴロゴロ…", "にゃーにゃー！"] },
+    },
+  },
+  es: {
+    tab: "Pueblo",
+    title: "Pueblo",
+    subtitle: "Empieza paseando por el pueblo. Bajando las escaleras está el puerto pirata, y en el prado se alza el cohete a la estación espacial. Haz clic donde quieras ir.",
+    walking: "En camino…",
+    sheet: "Cohete a la estación espacial",
+    locked: "bloqueado",
+    talk: {
+      knihovnice: { label: "Hablar con la bibliotecaria", lines: ["¡Quien lee, crece!", "Los libros nuevos están en la estantería de la ventana.", "¡Chist! En la biblioteca se susurra."] },
+      pekar: { label: "Hablar con el panadero", lines: ["¡Panecillos frescos, todavía calientes!", "Por aprender te mereces un pastel.", "¡Mmm, qué bien huele!"] },
+      kluk: { label: "Hablar con el niño", lines: ["¡Mira, en el puerto hay un barco de verdad!", "¡Cuando sea mayor, volaré a la estación!", "Date prisa, que nos perdemos la diversión."] },
+      kocka: { label: "Acariciar al gato", lines: ["¡Miau!", "Prrr…", "¡Miau miau!"] },
+    },
+  },
+  fr: {
+    tab: "Petite ville",
+    title: "Petite ville",
+    subtitle: "Commence par une balade en ville. En descendant l'escalier, il y a le port pirate, et dans la prairie se dresse la fusée vers la station spatiale. Clique à l'endroit où tu veux aller.",
+    walking: "En chemin…",
+    sheet: "Fusée vers la station spatiale",
+    locked: "verrouillé",
+    talk: {
+      knihovnice: { label: "Parler à la bibliothécaire", lines: ["Qui lit, grandit !", "Les nouveaux livres sont sur l'étagère près de la fenêtre.", "Chut ! À la bibliothèque, on chuchote."] },
+      pekar: { label: "Parler au boulanger", lines: ["Des petits pains frais, encore chauds !", "Pour avoir appris, tu mérites un gâteau.", "Mmm, ça sent si bon !"] },
+      kluk: { label: "Parler au garçon", lines: ["Regarde, il y a un vrai bateau dans le port !", "Quand je serai grand, je m'envolerai vers la station !", "Vite, on va rater le spectacle."] },
+      kocka: { label: "Caresser le chat", lines: ["Miaou !", "Purr…", "Miaou miaou !"] },
+    },
+  },
+};
 export function getTownText(locale: Locale): TownText {
   return town[locale];
 }
 
 export function getSkipText(locale: Locale): { skip: string; soundOn: string; soundOff: string } {
-  return withFallbacks({
+  return {
+    ...withFallbacks({
     cs: { skip: "Přeskočit", soundOn: "Vypnout zvuky", soundOff: "Zapnout zvuky" },
     en: { skip: "Skip", soundOn: "Mute sounds", soundOff: "Unmute sounds" },
     de: { skip: "Überspringen", soundOn: "Ton ausschalten", soundOff: "Ton einschalten" },
     ru: { skip: "Пропустить", soundOn: "Выключить звук", soundOff: "Включить звук" },
-  })[locale];
+  }),
+    uk: { skip: "Пропустити", soundOn: "Вимкнути звуки", soundOff: "Увімкнути звуки" },
+    ja: { skip: "スキップ", soundOn: "サウンドをオフ", soundOff: "サウンドをオン" },
+    es: { skip: "Saltar", soundOn: "Silenciar sonidos", soundOff: "Activar sonidos" },
+    fr: { skip: "Passer", soundOn: "Couper le son", soundOff: "Réactiver le son" },
+  }[locale];
 }
