@@ -147,8 +147,11 @@ na jazykovou verzi. Bez toho hra nenačetla `manifest.json`.
   `bg.webp` (800 × 450, stěna a podlaha), místa `a|b|c|d|e|door|examine.webp` (256 × 256)
   a předměty `items/key|partB|partC|tool|card.webp` (128 × 128). Klíče odpovídají `places` a `things`
   v `src/lib/escape/rooms/<místnost>.ts`. Render `escape_assets.py`, kopírování `escape_publish.mjs`.
-- **Hry flappy, mole, ninja**: `public/game-sprites/<hra>/` a `public/game-models/<hra>/` (stejný formát
+- **Hry flappy, ninja**: `public/game-sprites/<hra>/` a `public/game-models/<hra>/` (stejný formát
   jako u ostatních her). Render `game_sprites2.py`.
+- **Krtek (mole)**: `public/game-sprites/mole/` (`krtek.webp` 8 póz, `kladivo.webp`, `dira.webp`, `hlina.webp`, `bum.webp`)
+  a `public/game-models/mole/krtek.glb|kladivo.glb`. Render `umime-art/scripts/mole_sprites.py` (bpy, `python mole_sprites.py <složka>`;
+  `--pack-only` jen složí listy z již vyrenderovaných snímků).
 - **Druhé místnosti únikovek** (`public/escape/<místnost>-2/`, všech devět: lab, museum, expedition, jungle, pirate,
   kitchen, library, observatory, castle): `bg.webp` (1600 × 900), stavy `b_open`, `d_used`, `door_open` a předměty
   `items/key|card|note1|note2|note3.webp` (128 × 128). Klikací místa a rozměry výřezů jsou v `src/lib/escape/rooms/inner.ts`
