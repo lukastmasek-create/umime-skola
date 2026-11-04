@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 
 import { prisma } from "@/lib/prisma";
 import { clientIp, withinRateLimit } from "@/lib/rate-limit";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -23,6 +24,10 @@ async function register(request: Request) {
     return NextResponse.json({ error: "Příliš mnoho pokusů. Zkus to za chvíli." }, { status: 429 });
   }
   const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
+  // Ověření, že jde o člověka (Cloudflare Turnstile).
+  if (!(await verifyTurnstile(request, body?.turnstileToken))) {
+    return NextResponse.json({ error: "Ověření, že nejsi robot, se nepovedlo. Zkus to prosím znovu." }, { status: 400 });
+  }
   const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
   const password = typeof body?.password === "string" ? body.password : "";
   const name = typeof body?.name === "string" ? body.name.replace(/\s+/g, " ").trim().slice(0, 80) : "";

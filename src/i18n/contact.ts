@@ -32,6 +32,7 @@ export type ContactText = {
     "message-short": string;
     field: string;
     rate: string;
+    captcha: string;
     unavailable: string;
   };
 };
@@ -87,6 +88,7 @@ const cs: ContactText = {
     "message-short": "Zpráva je moc krátká, napiš aspoň pár slov.",
     field: "Zkontroluj pole „{field}“.",
     rate: "Poslal(a) jsi hodně zpráv za sebou. Zkus to prosím za pár minut.",
+    captcha: "Ověření, že nejsi robot, se nepovedlo. Zkus to prosím znovu.",
     unavailable: "Zprávu se teď nepodařilo odeslat. Zkus to prosím za chvíli.",
   },
 };
@@ -142,6 +144,7 @@ const en: ContactText = {
     "message-short": "The message is too short, write at least a few words.",
     field: "Check the field “{field}”.",
     rate: "You've sent a lot of messages in a row. Please try again in a few minutes.",
+    captcha: "The robot check didn't pass. Please try again.",
     unavailable: "The message couldn't be sent right now. Please try again in a moment.",
   },
 };
@@ -197,6 +200,7 @@ const de: ContactText = {
     "message-short": "Die Nachricht ist zu kurz, schreib wenigstens ein paar Wörter.",
     field: "Prüfe das Feld „{field}“.",
     rate: "Du hast viele Nachrichten hintereinander gesendet. Versuche es bitte in ein paar Minuten noch einmal.",
+    captcha: "Die Robot-Prüfung hat nicht funktioniert. Bitte versuche es noch einmal.",
     unavailable: "Die Nachricht konnte gerade nicht gesendet werden. Versuche es bitte gleich noch einmal.",
   },
 };
@@ -252,6 +256,7 @@ const ru: ContactText = {
     "message-short": "Сообщение слишком короткое, напиши хотя бы несколько слов.",
     field: "Проверь поле «{field}».",
     rate: "Ты отправил(а) много сообщений подряд. Попробуй, пожалуйста, через несколько минут.",
+    captcha: "Проверка на робота не пройдена. Попробуй, пожалуйста, ещё раз.",
     unavailable: "Сейчас не удалось отправить сообщение. Попробуй, пожалуйста, чуть позже.",
   },
 };
@@ -309,6 +314,7 @@ const texts: Record<Locale, ContactText> = {
       "message-short": "Повідомлення занадто коротке, напиши хоча б кілька слів.",
       field: "Перевір поле «{field}».",
       rate: "Ти надіслав(ла) багато повідомлень поспіль. Спробуй, будь ласка, через кілька хвилин.",
+      captcha: "Перевірка на робота не пройдена. Спробуй, будь ласка, ще раз.",
       unavailable: "Зараз не вдалося надіслати повідомлення. Спробуй, будь ласка, трохи пізніше.",
     },
   },
@@ -363,6 +369,7 @@ const texts: Record<Locale, ContactText> = {
       "message-short": "メッセージが短すぎます。少なくとも数語は書いてください。",
       field: "「{field}」の欄を確認してください。",
       rate: "続けて多くのメッセージを送信されました。数分後にもう一度お試しください。",
+      captcha: "ロボットチェックに失敗しました。もう一度お試しください。",
       unavailable: "ただいまメッセージを送信できませんでした。少し後にもう一度お試しください。",
     },
   },
@@ -417,6 +424,7 @@ const texts: Record<Locale, ContactText> = {
       "message-short": "El mensaje es demasiado corto, escribe al menos unas palabras.",
       field: "Revisa el campo «{field}».",
       rate: "Has enviado muchos mensajes seguidos. Inténtalo de nuevo en unos minutos.",
+      captcha: "No se pudo completar la comprobación anti-robots. Inténtalo de nuevo.",
       unavailable: "No se pudo enviar el mensaje ahora mismo. Inténtalo de nuevo en un momento.",
     },
   },
@@ -471,6 +479,7 @@ const texts: Record<Locale, ContactText> = {
       "message-short": "Le message est trop court, écris au moins quelques mots.",
       field: "Vérifie le champ « {field} ».",
       rate: "Tu as envoyé beaucoup de messages à la suite. Réessaie dans quelques minutes.",
+      captcha: "La vérification anti-robot a échoué. Réessaie, s'il te plaît.",
       unavailable: "Le message n'a pas pu être envoyé pour le moment. Réessaie dans un instant.",
     },
   },

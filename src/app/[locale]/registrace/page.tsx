@@ -1,12 +1,13 @@
 "use client";
 import { withFallbacks } from "@/i18n/config";
 
-import { useState, use } from "react";
+import { useState, useRef, use } from "react";
 import { useRouter } from "next/navigation";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, type Locale } from "@/i18n/config";
 import { notFound } from "next/navigation";
 import { AuthShell, type AuthMood } from "@/components/AuthShell";
+import { TurnstileWidget, type TurnstileHandle } from "@/components/TurnstileWidget";
 
 const GREETING: Record<Locale, string> = {
   ...withFallbacks({
@@ -37,6 +38,8 @@ export default function RegistracePage({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [mood, setMood] = useState<AuthMood>("idle");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<TurnstileHandle>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,10 +49,12 @@ export default function RegistracePage({
     const res = await fetch("/api/registrace", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, email, password, turnstileToken: captchaToken }),
     });
 
     setLoading(false);
+    // Token platí jen jednou, po každém pokusu se widget resetuje.
+    captchaRef.current?.reset();
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
@@ -102,6 +107,7 @@ export default function RegistracePage({
               className="rounded-lg border border-[var(--border-soft)] px-3 py-2 outline-none focus:border-[var(--brand-500)] focus:ring-2 focus:ring-[var(--brand-100)]"
             />
           </label>
+          <TurnstileWidget ref={captchaRef} onToken={setCaptchaToken} locale={locale} />
           {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
           <button
             type="submit"

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Locale } from "@/i18n/config";
 import { getContactText } from "@/i18n/contact";
+import { TurnstileWidget, type TurnstileHandle } from "@/components/TurnstileWidget";
 import {
   CONTACT_CATEGORIES,
   MESSAGE_MAX,
@@ -43,6 +44,8 @@ export function ContactForm({
   const [details, setDetails] = useState<Partial<Record<ContactField, string>>>({});
   const [website, setWebsite] = useState("");
   const [status, setStatus] = useState<Status>({ kind: "idle" });
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<TurnstileHandle>(null);
 
   const def = topic ? topicDef(topic) : undefined;
 
@@ -70,8 +73,9 @@ export function ContactForm({
       const res = await fetch("/api/kontakt", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ topic: def.id, name, email, message, details, website, locale }),
+        body: JSON.stringify({ topic: def.id, name, email, message, details, website, locale, turnstileToken: captchaToken }),
       });
+      captchaRef.current?.reset();
       const data = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
       if (res.ok && data.ok) {
         setStatus({ kind: "sent", email: email.trim() });
@@ -234,6 +238,8 @@ export function ContactForm({
               <input tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
             </label>
           </div>
+
+          <TurnstileWidget ref={captchaRef} onToken={setCaptchaToken} locale={locale} />
 
           {status.kind === "error" && (
             <p role="alert" className="text-sm font-semibold text-[var(--danger)]">
