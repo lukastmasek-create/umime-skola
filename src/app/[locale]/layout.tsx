@@ -13,6 +13,7 @@ import { isLocale, locales, type Locale } from "@/i18n/config";
 import { notFound } from "next/navigation";
 import { THEME_INIT_SCRIPT } from "@/lib/theme-init-script";
 import { ParentalGuard } from "@/components/ParentalGuard";
+import { EconomyTicker } from "@/components/EconomyTicker";
 import { getContactText } from "@/i18n/contact";
 import { getHomeText } from "@/i18n/home";
 
@@ -93,6 +94,7 @@ export default async function LocaleLayout({
         </header>
         <ReturnNudge locale={locale as Locale} />
         <ParentalGuard locale={locale as Locale} />
+        <EconomyTicker locale={locale as Locale} />
         <main className="world flex-1">{children}</main>
         <footer className="border-t-2 border-[var(--edge)] bg-[var(--surface)] py-6 text-center text-sm text-[var(--muted)]">
           &copy; {new Date().getFullYear()} {dict.footer.rights}
