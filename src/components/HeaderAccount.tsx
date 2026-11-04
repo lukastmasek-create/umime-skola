@@ -71,12 +71,12 @@ export function HeaderAccount({
   if (!account.loggedIn) {
     return (
       <>
-        <Link href={`/${locale}/prihlaseni`} className={`hidden sm:inline-flex ${linkClass}`}>
+        <Link href={`/${locale}/prihlaseni`} className={`inline-flex whitespace-nowrap ${linkClass}`}>
           {loginLabel}
         </Link>
         <Link
           href={`/${locale}/registrace`}
-          className="btn-bouncy inline-flex bg-[var(--brand-500)] px-3 py-1.5 text-sm font-bold text-white sm:px-4"
+          className="btn-bouncy inline-flex whitespace-nowrap bg-[var(--brand-500)] px-2.5 py-1.5 text-xs font-bold text-white sm:px-4 sm:text-sm"
         >
           {registerLabel}
         </Link>
