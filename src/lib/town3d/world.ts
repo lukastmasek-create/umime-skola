@@ -57,6 +57,20 @@ export type WorldHandle = {
 const MODEL = (name: string) => `/mestecko3d/${name}.glb`;
 const HERO_H = 1.75;
 const WALK_SPEED = 6.5;
+// Model hrdiny (hrdina_*.glb) má v kořeni natočení -18° (hledí o 18° ke kameře). Při chůzi proto
+// přičítáme tu samou odchylku, jinak postava chodí do strany místo ve směru pohybu.
+const HERO_YAW_FIX = (18 * Math.PI) / 180;
+// Most (most.glb): oblouk přes řeku. Uprostřed je povrch ~0.69, u kraje ~0.3; šířka ±2.3, délka ±4.6 od RIVER_Z.
+const BRIDGE = { halfW: 2.3, halfL: 4.6, base: 0.3, rise: 0.39 };
+/** Výška povrchu pod bodem (0 na zemi, výška klenby na mostě), aby hrdina a chodci šli po mostě a neprošli skrz něj. */
+function groundAt(x: number, z: number): number {
+  for (const bx of BRIDGES_X) {
+    const dx = Math.abs(x - bx);
+    const dz = Math.abs(z - RIVER_Z);
+    if (dx < BRIDGE.halfW && dz < BRIDGE.halfL) return BRIDGE.base + BRIDGE.rise * Math.cos((Math.PI / 2) * (dz / BRIDGE.halfL));
+  }
+  return 0;
+}
 // Místa denního sběru (sloty 0..17 z lib/town.ts) podél ulic nového městečka.
 export const COLLECT_SPOTS: Pt[] = [
   [-10, 2.6], [10, -2.6], [-26, -2.6], [26, 2.6], [2.4, -9], [-2.4, -21], [20, -15.8], [-20, -20.2], [-40.4, -12],
@@ -610,6 +624,7 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
   let hero: Figure | null = null;
   const heroPos = new THREE.Vector3(0, 0, 9.5);
   let heroDir = 0;
+  let heroY = 0; // výška nohou nad zemí (plynule se mění při vstupu na most)
   let path: Pt[] = [];
   let arriveId: string | null = null;
   makeHero(opts.look)
@@ -907,12 +922,13 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
         moving = true;
       }
     }
+    heroY += (groundAt(heroPos.x, heroPos.z) - heroY) * Math.min(1, dt * 16);
     if (hero && heroHolder) {
       hero.pose(moving ? "chuze" : "stoji");
       hero.update(dt);
-      heroHolder.position.copy(heroPos);
-      // postava v modelu hledí k +x: natočit tak, aby mířila směrem chůze
-      const want = heroDir - Math.PI / 2;
+      heroHolder.position.set(heroPos.x, heroY, heroPos.z);
+      // postava v modelu hledí k +x: natočit tak, aby mířila směrem chůze (+ kompenzace natočení modelu)
+      const want = heroDir - Math.PI / 2 + HERO_YAW_FIX;
       let diff = want - heroHolder.rotation.y;
       diff = Math.atan2(Math.sin(diff), Math.cos(diff));
       heroHolder.rotation.y += diff * Math.min(1, dt * 10);
@@ -958,7 +974,7 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
       const fwd = w.dist <= w.total;
       const p = pointAt(w.route, w.lens, fwd ? w.dist : 2 * w.total - w.dist);
       const sg = fwd ? 1 : -1;
-      w.obj.position.set(p.x, 0, p.z);
+      w.obj.position.set(p.x, groundAt(p.x, p.z), p.z);
       w.obj.rotation.y = Math.atan2(p.dx * sg, p.dz * sg) - Math.PI / 2;
     }
     statics.forEach((s) => s.update(dt));
