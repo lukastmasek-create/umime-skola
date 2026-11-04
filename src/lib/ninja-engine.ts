@@ -10,6 +10,9 @@ const FRUIT_SIZE = 56;
 // Katana: vykreslená velikost a délka klávesového úderu (± od středu), aby odpovídaly viditelné čepeli.
 const SWORD_DRAW = 44;
 const SWORD_HALF = 24;
+// Ovoce je vlevo od popisku, takže skupina (ovoce + popisek) má střed posunutý o GROUP_CENTER
+// od bodu item.x. Kreslení i zásah ji vycentrují na item.x, aby hitbox seděl na viditelné ovoce.
+const GROUP_CENTER = -(6 + FRUIT_SIZE / 2) / 2;
 
 type Item = {
   x: number;
@@ -111,7 +114,8 @@ export class NinjaEngine extends ArcadeEngine {
       for (let s = 0; s <= steps; s++) {
         const px = x0 + ((x1 - x0) * s) / steps;
         const py = y0 + ((y1 - y0) * s) / steps;
-        if (Math.abs(px - item.x) <= item.w / 2 + 6 && Math.abs(py - item.y) <= ITEM_H / 2 + 6) {
+        // skupina (ovoce + popisek) je široká w + 34 a vycentrovaná na item.x
+        if (Math.abs(px - item.x) <= item.w / 2 + Math.abs(GROUP_CENTER) + 6 && Math.abs(py - item.y) <= Math.max(ITEM_H, FRUIT_SIZE) / 2 + 6) {
           hit = true;
           break;
         }
@@ -204,7 +208,7 @@ export class NinjaEngine extends ArcadeEngine {
 
     for (const h of this.halves) {
       ctx.save();
-      ctx.translate(h.x, h.y);
+      ctx.translate(h.x - GROUP_CENTER, h.y);
       ctx.rotate(h.rot);
       ctx.globalAlpha = Math.min(1, h.life * 1.6);
       const fx = -h.w / 2 - 6;
@@ -224,7 +228,7 @@ export class NinjaEngine extends ArcadeEngine {
     for (const item of this.items) {
       if (item.state !== "fly") continue;
       ctx.save();
-      ctx.translate(item.x, item.y);
+      ctx.translate(item.x - GROUP_CENTER, item.y);
       ctx.rotate(Math.sin(item.x * 0.02 + this.time * 2) * 0.15);
       this.sp.draw(ctx, "ovoce", `${item.fruit}_cele`, -item.w / 2 - 6, 0, FRUIT_SIZE, FRUIT_SIZE, { rot: this.time * 1.5 + item.index });
       drawLabel(ctx, item.label, 0, 0, item.w, item.color, { height: ITEM_H, size: 15 });
