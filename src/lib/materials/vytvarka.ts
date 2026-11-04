@@ -1,4 +1,4 @@
-import { topic, sec, p, ul, table, tip, quiz, cards } from "./helpers";
+import { topic, sec, p, ul, ol, table, ex, tip, quiz, cards } from "./helpers";
 import type { Topic } from "./types";
 
 export const vytvarka: Topic[] = [
@@ -73,4 +73,37 @@ export const vytvarka: Topic[] = [
       ),
     ],
     ["Mona Lisa = Leonardo da Vinci.", "Alfons Mucha = secese a Slovanská epopej.", "Josef Lada = vesnické ilustrace."]),
+  topic("kresba-a-tonovani", "Kresba a tónování", 2,
+    "Jak kreslit tužkou, stínovat a vytvořit plastický dojem.",
+    [
+      sec("Tužka a její tvrdost",
+        table(["Tužka", "Značka", "Použití"], ["tvrdá", "H, 2H", "jemné čáry, rýsování"], ["střední", "HB", "běžné psaní a kreslení"], ["měkká", "B, 4B, 6B", "tmavé stíny, výrazná kresba"]),
+        quiz("Která tužka je nejměkčí a nejtmavší?", "6B", ["2H", "HB", "H"]),
+      ),
+      sec("Stínování",
+        ul("Světlo dopadá z jedné strany, proto je na druhé straně stín.", "Stíny kreslíme šrafováním (rovnoběžné čáry) nebo tečkováním.", "Tónování děláme postupně od světlé k tmavé, přechody mají být plynulé."),
+        ex("Koule: nejsvětlejší místo je tam, kam světlo dopadá; nejtmavší je na opačné straně."),
+        tip("Před kresbou si urči zdroj světla, podle něj budou stíny."),
+      ),
+      sec("Plastický dojem",
+        p("Stíny a světla vytvářejí dojem prostoru. Nejsvětlejší místa nech bílá, nevyplňuj je tužkou."),
+      ),
+    ],
+    ["Měkká tužka = tmavší stíny (B).", "Světlo jde z jedné strany, stín je na druhé.", "Tónování od světlé k tmavé."]),
+  topic("plastika-a-modelovani", "Plastika a modelování", 1,
+    "Tvorba z hlíny, papíru a drátu: jak vytvořit objem.",
+    [
+      sec("Co je plastika",
+        p("Plastika je výtvarné dílo ve třech rozměrech, které můžeme obejít dokola. Vytváříme ji modelováním (přidáváním materiálu), vyřezáváním (ubíráním) nebo skládáním."),
+        quiz("Který postup odpovídá modelování?", "přidávání a tvarování materiálu", ["odebírání kusů ze dřeva", "lepení fotografií", "malování na plátno"]),
+      ),
+      sec("Materiály",
+        table(["Materiál", "Jak se zpracuje"], ["modelovací hlína", "tvarujeme rukama, po zaschnutí nebo vypálení se zpevní"], ["papír a karton", "skládáme, stáčíme a lepíme"], ["drát", "ohýbáme do obrysu postavy"], ["dřevo", "řežeme nebo vyřezáváme"]),
+      ),
+      sec("Postup",
+        ol("Nakresli si tvar na papír nebo do skici.", "Vytvoř kostru z drátu, papíru nebo kuličky z alobalu.", "Obal ji materiálem a tvaruj detaily.", "Dokonči povrchem: barvou nebo lakem."),
+        tip("Hlínu nech pomalu vyschnout, jinak praská."),
+      ),
+    ],
+    ["Plastika = dílo ve třech rozměrech.", "Modelování = přidáváme materiál.", "Kostra drží tvar."]),
 ];

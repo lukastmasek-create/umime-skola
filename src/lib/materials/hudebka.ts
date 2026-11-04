@@ -1,4 +1,4 @@
-import { topic, sec, p, ul, table, ex, tip, quiz, cards } from "./helpers";
+import { topic, sec, p, ul, ol, table, ex, tip, quiz, cards } from "./helpers";
 import type { Topic } from "./types";
 
 export const hudebka: Topic[] = [
@@ -121,4 +121,38 @@ export const hudebka: Topic[] = [
       ),
     ],
     ["Smetana: Má vlast, Prodaná nevěsta.", "Dvořák: Novosvětská, Rusalka.", "Janáček: Liška Bystrouška."]),
+  topic("improvizace-a-hry-s-rytmem", "Improvizace a hry s rytmem", 2,
+    "Jak si zahrát s rytmem, tónem a vlastní melodií.",
+    [
+      sec("Co je improvizace",
+        p("Improvizace je okamžité vymýšlení hudby bez předem napsaných not. V jazzu hudebníci improvizují nad zadanými akordy; v dětské hudbě ji zvládneš s tělem nebo s jednoduchými nástroji."),
+      ),
+      sec("Hry s rytmem",
+        ol("Vytleskej rytmus svého jména: každá slabika je jeden úder.", "Jeden hráč vymyslí krátký rytmus, ostatní ho zopakují (ozvěna).", "Přidej tělesné zvuky: tleskání, dupání, luskání prsty."),
+        ex("Jméno Lukáš: Lu-káš = dva údery.", "Krátký rytmus: tleskni, tleskni, dupni."),
+      ),
+      sec("Melodie na pěti tónech",
+        p("Melodii můžeš složit z pentatoniky, tedy z pěti tónů. Pentatonika C-D-E-G-A je snadná, protože v ní nejsou půltóny."),
+        quiz("Kolik tónů má pentatonika?", "pět", ["sedm", "osm", "dvanáct"], "Pentatonika = penta = pět."),
+        tip("Při improvizaci opakuj krátké motivy; posluchač je snáz pozná a zapamatuje si je."),
+      ),
+    ],
+    ["Improvizace = vymýšlení hudby na místě.", "Ozvěna = zopakování rytmu.", "Pentatonika má pět tónů."]),
+  topic("hudba-ve-filmu-a-reklame", "Hudba ve filmu a reklamě", 3,
+    "Jak hudba působí na emoce a proč ji skladatelé používají v obraze.",
+    [
+      sec("Funkce hudby ve filmu",
+        ul("Vyjadřuje emoce: smutek, napětí, radost.", "Předznamenává děj: hrozbu nebo příchod hrdiny.", "Určuje tempo a rytmus scény.", "Vytváří atmosféru doby a místa."),
+        quiz("Jaká je hlavní funkce hudby ve filmu?", "vyvolat emoce a podpořit děj", ["zakrýt dialogy", "nahradit obraz", "zkrátit film"]),
+      ),
+      sec("Známé filmové skladby",
+        table(["Skladba", "Skladatel", "Film"], ["Hedwig's Theme", "John Williams", "Harry Potter"], ["hudba k Pánovi prstenů", "Howard Shore", "Pán prstenů"]),
+        ex("Pomalé smyčce a tiché tóny vyvolají napětí nebo smutek.", "Rychlé bicí a trubky dodají scéně akci."),
+      ),
+      sec("Hudba v reklamě",
+        p("Reklama používá krátké a chytlavé melodie (jingle), které si lidé zapamatují. Hudba má vzbudit sympatie k produktu."),
+        tip("Všimni si, jakou hudbu slyšíš v reklamě na jogurt a na auto. Je v tom rozdíl?"),
+      ),
+    ],
+    ["Hudba vyvolává emoce.", "Tempo a rytmus ovlivňují napětí scény.", "Jingle je krátká chytlavá melodie."]),
 ];
