@@ -9,7 +9,8 @@ type SubjectText = {
   labels: Record<SubjectValue, string>;
 };
 
-const texts: Record<Locale, SubjectText> = withFallbacks({
+const texts: Record<Locale, SubjectText> = {
+  ...withFallbacks({
   cs: {
     all: "Všechny předměty",
     other: "Ostatní",
@@ -94,7 +95,92 @@ const texts: Record<Locale, SubjectText> = withFallbacks({
       FRANCOUZSTINA: "Французский",
     },
   },
-});
+  }),
+  uk: {
+    all: "Усі предмети",
+    other: "Інше",
+    worldNote: "Натисни на острів, щоб побачити курси предмета",
+    labels: {
+      CESTINA: "Чеська мова",
+      LITERATURA: "Література",
+      ANGLICTINA: "Англійська",
+      NEMCINA: "Німецька",
+      RUSTINA: "Російська",
+      MATEMATIKA: "Математика",
+      DEJEPIS: "Історія",
+      ZEMEPIS: "Географія",
+      PRIRODOPIS: "Біологія",
+      FYZIKA: "Фізика",
+      CHEMIE: "Хімія",
+      OBCANKA: "Громадянська освіта",
+      HUDEBKA: "Музика",
+      FRANCOUZSTINA: "Французька",
+    },
+  },
+  ja: {
+    all: "すべての教科",
+    other: "その他",
+    worldNote: "島をクリックすると、その教科のコースが見られます",
+    labels: {
+      CESTINA: "チェコ語",
+      LITERATURA: "文学",
+      ANGLICTINA: "英語",
+      NEMCINA: "ドイツ語",
+      RUSTINA: "ロシア語",
+      MATEMATIKA: "算数・数学",
+      DEJEPIS: "歴史",
+      ZEMEPIS: "地理",
+      PRIRODOPIS: "生物",
+      FYZIKA: "物理",
+      CHEMIE: "化学",
+      OBCANKA: "公民",
+      HUDEBKA: "音楽",
+      FRANCOUZSTINA: "フランス語",
+    },
+  },
+  es: {
+    all: "Todas las asignaturas",
+    other: "Otras",
+    worldNote: "Haz clic en una isla para ver los cursos de la asignatura",
+    labels: {
+      CESTINA: "Checo",
+      LITERATURA: "Literatura",
+      ANGLICTINA: "Inglés",
+      NEMCINA: "Alemán",
+      RUSTINA: "Ruso",
+      MATEMATIKA: "Matemáticas",
+      DEJEPIS: "Historia",
+      ZEMEPIS: "Geografía",
+      PRIRODOPIS: "Biología",
+      FYZIKA: "Física",
+      CHEMIE: "Química",
+      OBCANKA: "Educación cívica",
+      HUDEBKA: "Música",
+      FRANCOUZSTINA: "Francés",
+    },
+  },
+  fr: {
+    all: "Toutes les matières",
+    other: "Autres",
+    worldNote: "Clique sur une île pour voir les cours de la matière",
+    labels: {
+      CESTINA: "Tchèque",
+      LITERATURA: "Littérature",
+      ANGLICTINA: "Anglais",
+      NEMCINA: "Allemand",
+      RUSTINA: "Russe",
+      MATEMATIKA: "Mathématiques",
+      DEJEPIS: "Histoire",
+      ZEMEPIS: "Géographie",
+      PRIRODOPIS: "Sciences naturelles",
+      FYZIKA: "Physique",
+      CHEMIE: "Chimie",
+      OBCANKA: "Éducation civique",
+      HUDEBKA: "Musique",
+      FRANCOUZSTINA: "Français",
+    },
+  },
+};
 
 export function getSubjectText(locale: Locale): SubjectText {
   return texts[locale];
