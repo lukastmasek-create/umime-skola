@@ -7,6 +7,9 @@ type UiText = {
   loading: string;
   noWebgl: string;
   hint: string;
+  talk: string; // výzva u obyvatele (klávesa E)
+  open: string; // výzva u budovy (klávesa E)
+  people: Record<string, { name: string; line: string }>; // chodci a zvířata bez vlastního domku
   tabs: { places: string; quests: string; build: string; treasures: string };
   worlds: string;
   town: string;
@@ -174,6 +177,9 @@ const UI: Record<Locale, UiText> = {
     loading: "Stavím městečko…",
     noWebgl: "Tvůj prohlížeč neumí 3D grafiku. Zkus jiný prohlížeč, nebo otevři původní městečko.",
     hint: "Klikni na místo a hrdina tam dojde · WASD chůze · táhni pro otočení · kolečko přiblíží",
+    talk: "Promluvit",
+    open: "Otevřít",
+    people: { knihovnice: { name: "Knihovnice", line: "Knihy jsou tu seřazené podle abecedy. Zkus minihru v knihovně!" }, pekar: { name: "Pekař", line: "Čerstvé pečivo! Pokladna v pekárně ti ukáže, jak počítat drobné." }, hrdina: { name: "Poutník", line: "Taky se toulám po městečku. Cesty vedou ke všem místům." }, pes: { name: "Pes", line: "Haf! Chceš si hrát?" }, kocka: { name: "Kočka", line: "Mňau." }, ovce: { name: "Ovce", line: "Bééé." }, slepice: { name: "Slepice", line: "Kokodák!" }, papousek: { name: "Papoušek", line: "Ahoj, ahoj!" } },
     tabs: { places: "Místa", quests: "Úkoly", build: "Stavby", treasures: "Poklady" },
     worlds: "Světy",
     town: "Ve městě",
@@ -223,6 +229,9 @@ const UI: Record<Locale, UiText> = {
     loading: "Building the town…",
     noWebgl: "Your browser can't show 3D graphics. Try another browser or open the original town.",
     hint: "Click a place and the hero walks there · WASD to walk · drag to rotate · wheel to zoom",
+    talk: "Talk",
+    open: "Open",
+    people: { knihovnice: { name: "Librarian", line: "The books here are sorted alphabetically. Try the mini-game in the library!" }, pekar: { name: "Baker", line: "Fresh bread! The till in the bakery will show you how to count change." }, hrdina: { name: "Wanderer", line: "I'm wandering around town too. The roads lead to every place." }, pes: { name: "Dog", line: "Woof! Want to play?" }, kocka: { name: "Cat", line: "Meow." }, ovce: { name: "Sheep", line: "Baaa." }, slepice: { name: "Hen", line: "Cluck!" }, papousek: { name: "Parrot", line: "Hello, hello!" } },
     tabs: { places: "Places", quests: "Quests", build: "Build", treasures: "Treasures" },
     worlds: "Worlds",
     town: "In town",
@@ -272,6 +281,9 @@ const UI: Record<Locale, UiText> = {
     loading: "Das Städtchen wird gebaut…",
     noWebgl: "Dein Browser kann keine 3D-Grafik. Probier einen anderen Browser oder öffne das alte Städtchen.",
     hint: "Klick auf einen Ort, der Held geht hin · WASD laufen · ziehen zum Drehen · Mausrad zoomt",
+    talk: "Sprechen",
+    open: "Öffnen",
+    people: { knihovnice: { name: "Bibliothekarin", line: "Die Bücher hier sind alphabetisch sortiert. Probier das Minispiel in der Bibliothek!" }, pekar: { name: "Bäcker", line: "Frisches Brot! An der Bäckerei-Kasse lernst du, Wechselgeld zu zählen." }, hrdina: { name: "Wanderer", line: "Ich bummle auch durch die Stadt. Die Wege führen zu allen Orten." }, pes: { name: "Hund", line: "Wau! Willst du spielen?" }, kocka: { name: "Katze", line: "Miau." }, ovce: { name: "Schaf", line: "Mäh." }, slepice: { name: "Huhn", line: "Gack!" }, papousek: { name: "Papagei", line: "Hallo, hallo!" } },
     tabs: { places: "Orte", quests: "Aufgaben", build: "Bauen", treasures: "Schätze" },
     worlds: "Welten",
     town: "In der Stadt",
@@ -321,6 +333,9 @@ const UI: Record<Locale, UiText> = {
     loading: "Строю городок…",
     noWebgl: "Твой браузер не умеет 3D-графику. Попробуй другой браузер или открой старый городок.",
     hint: "Нажми на место, и герой туда дойдёт · WASD ходьба · тяни для поворота · колесо приближает",
+    talk: "Поговорить",
+    open: "Открыть",
+    people: { knihovnice: { name: "Библиотекарша", line: "Книги здесь расставлены по алфавиту. Попробуй мини-игру в библиотеке!" }, pekar: { name: "Пекарь", line: "Свежий хлеб! У кассы пекарни научишься считать сдачу." }, hrdina: { name: "Путник", line: "Я тоже брожу по городку. Дороги ведут ко всем местам." }, pes: { name: "Собака", line: "Гав! Хочешь поиграть?" }, kocka: { name: "Кошка", line: "Мяу." }, ovce: { name: "Овца", line: "Бе-е." }, slepice: { name: "Курица", line: "Ко-ко-ко!" }, papousek: { name: "Попугай", line: "Привет, привет!" } },
     tabs: { places: "Места", quests: "Задания", build: "Стройка", treasures: "Клады" },
     worlds: "Миры",
     town: "В городе",

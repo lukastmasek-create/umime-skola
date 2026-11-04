@@ -31,12 +31,16 @@ import { prefersReducedMotion } from "@/lib/motion";
 // po ulicích (klik = cesta k místu, WASD = volná chůze po cestách), obyvatelé, zvířata, den a noc.
 // Engine je čistý three.js, React (TownWorld.tsx) jen kreslí panely a popisky.
 
+// Co je hrdinovi na dosah (klávesa E): budova/parcela, nebo obyvatel či zvíře (place = domek, ke kterému patří).
+export type Near = { kind: "place"; id: string } | { kind: "person"; id: string; place: string | null };
+
 export type WorldOpts = {
   look: number;
   onSelect: (id: string) => void;
   onArrive: (id: string) => void;
   onCollect?: (slot: number) => void;
   onReady?: () => void;
+  onNear?: (n: Near | null) => void; // změna toho, co je zrovna na dosah
 };
 
 export type WorldHandle = {
@@ -57,6 +61,9 @@ export type WorldHandle = {
 const MODEL = (name: string) => `/mestecko3d/${name}.glb`;
 const HERO_H = 1.75;
 const WALK_SPEED = 6.5;
+// Dosah pro interakci (E): od zdi budovy, resp. od středu postavy
+const NEAR_PLACE = 3;
+const NEAR_PERSON = 3.2;
 // Model hrdiny (hrdina_*.glb) má v kořeni natočení -18° (hledí o 18° ke kameře). Při chůzi proto
 // přičítáme tu samou odchylku, jinak postava chodí do strany místo ve směru pohybu.
 const HERO_YAW_FIX = (18 * Math.PI) / 180;
@@ -642,6 +649,9 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
   // obyvatelé: chodci po ulicích a stojící u domků
   type Walker = { obj: THREE.Object3D; update: (dt: number) => void; route: Pt[]; lens: number[]; total: number; dist: number; speed: number };
   const walkers: Walker[] = [];
+  // všichni, s kým jde mluvit (klávesa E): obyvatelé u domků, chodci a zvířata; obj se posouvá každý snímek
+  const people: { id: string; obj: THREE.Object3D; place: string | null }[] = [];
+  const placeOfPerson = (id: string) => (PLACES.some((p) => p.id === id) ? id : null);
   // trasa chodce jde po grafu ulic (ne přímou čárou přes náměstí a domy)
   const streetRoute = (a: Pt, b: Pt): Pt[] => {
     const p = findPath(graph, nearestNode(graph, a[0], a[1]), nearestNode(graph, b[0], b[1]));
@@ -666,6 +676,8 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
         holder.add(l.root);
         add(holder);
         walkers.push({ obj: holder, update: l.update, route, lens, total: lens[lens.length - 1], dist: rr() * 2 * lens[lens.length - 1], speed });
+        const who = name.split("_")[0];
+        people.push({ id: who, obj: holder, place: placeOfPerson(who) });
       })
       .catch(() => {});
   }
@@ -690,6 +702,7 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
         holder.rotation.y = Math.atan2(-(Math.cos(p.ry) * 1), Math.sin(p.ry)) + Math.PI;
         add(holder);
         statics.push(l);
+        people.push({ id: home, obj: holder, place: home });
       })
       .catch(() => {});
   }
@@ -702,6 +715,7 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
         l.root.rotation.y = rr() * Math.PI * 2;
         add(l.root);
         statics.push(l);
+        people.push({ id: name === "pes_sedi" ? "pes" : name, obj: l.root, place: null });
       })
       .catch(() => {});
   }
@@ -875,6 +889,32 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
   ro.observe(container);
   resize();
 
+  // nejbližší budova nebo člověk na dosah; u lidí a zvířat má přednost, když jsou stejně blízko
+  function nearest(): Near | null {
+    let bestD = Infinity;
+    let best: Near | null = null;
+    for (const w of people) {
+      const d = Math.hypot(w.obj.position.x - heroPos.x, w.obj.position.z - heroPos.z);
+      if (d < NEAR_PERSON && d < bestD) {
+        bestD = d;
+        best = { kind: "person", id: w.id, place: w.place };
+      }
+    }
+    for (const p of PLACES) {
+      const dx = heroPos.x - p.x;
+      const dz = heroPos.z - p.z;
+      const lx = dx * Math.cos(p.ry) - dz * Math.sin(p.ry);
+      const lz = dx * Math.sin(p.ry) + dz * Math.cos(p.ry);
+      const d = Math.hypot(Math.max(0, Math.abs(lx) - p.hw), Math.max(0, Math.abs(lz) - p.hd));
+      if (d < NEAR_PLACE && d < bestD) {
+        bestD = d;
+        best = { kind: "place", id: p.id };
+      }
+    }
+    return best;
+  }
+  let lastNear = "";
+
   function step(dt: number) {
     time += dt;
     // klávesnice: chůze relativně ke kameře, jen po cestách
@@ -978,6 +1018,12 @@ export function createWorld(container: HTMLElement, opts: WorldOpts): WorldHandl
       w.obj.rotation.y = Math.atan2(p.dx * sg, p.dz * sg) - Math.PI / 2;
     }
     statics.forEach((s) => s.update(dt));
+    const near = nearest();
+    const nearKey = near ? `${near.kind}:${near.id}` : "";
+    if (nearKey !== lastNear) {
+      lastNear = nearKey;
+      opts.onNear?.(near);
+    }
     if (ship) {
       ship.position.y = Math.sin(time * 1.2) * 0.15;
       ship.rotation.z = Math.sin(time * 1.2 + 0.5) * 0.03;
