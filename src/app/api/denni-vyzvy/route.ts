@@ -6,7 +6,7 @@ import { getXp } from "@/lib/xp";
 import { levelFromXp } from "@/lib/progression";
 import { normalizeState as normalizePets, settle as settlePets } from "@/lib/idle/pets";
 import { normalizeCity, settleCity } from "@/lib/idle/city";
-import { normalizeCards, rollCard } from "@/lib/collection";
+import { dueCollectionBonuses, normalizeCards, rollCard, type CollectionBonus } from "@/lib/collection";
 import { REVIEW_GAME, dueIds, normalizeReview } from "@/lib/review";
 import {
   FREEZE_PRICE,
@@ -43,13 +43,35 @@ async function saveIdle(userId: string, game: string, data: unknown) {
 }
 
 // Odměna za splněnou výzvu navíc: karta do sbírky (vzácnější za těžší výzvy).
+// Když sbírka dosáhne nového milníku (počet různých karet), připíše se i jednorázový bonus.
 async function grantCard(userId: string, kind: string) {
   const card = rollCard(CARD_BOOST[kind] ?? 0);
-  const row = await prisma.idleState.findUnique({ where: { userId_game: { userId, game: "cards" } } });
-  const state = normalizeCards(row?.data);
-  state.owned[card.id] = (state.owned[card.id] ?? 0) + 1;
-  await saveIdle(userId, "cards", state);
-  return card.id;
+  const bonuses = await prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`select pg_advisory_xact_lock(hashtext(${userId}))`;
+    const row = await tx.idleState.findUnique({ where: { userId_game: { userId, game: "cards" } } });
+    const state = normalizeCards(row?.data);
+    state.owned[card.id] = (state.owned[card.id] ?? 0) + 1;
+    const due: CollectionBonus[] = dueCollectionBonuses(state);
+    state.claimed = [...state.claimed, ...due.map((b) => b.id)];
+    const json = state as unknown as Prisma.InputJsonValue;
+    await tx.idleState.upsert({
+      where: { userId_game: { userId, game: "cards" } },
+      create: { userId, game: "cards", data: json },
+      update: { data: json },
+    });
+    for (const b of due) {
+      if (b.xp > 0) await tx.xpEvent.create({ data: { userId, amount: b.xp, source: b.id } });
+      if (b.points > 0) {
+        await tx.user.update({ where: { id: userId }, data: { points: { increment: b.points } } });
+        await tx.pointTransaction.create({ data: { userId, amount: b.points, reason: `Sbírka karet: ${b.uniqueAt} různých` } });
+      }
+    }
+    return due;
+  });
+  return {
+    cardId: card.id,
+    bonus: bonuses.length ? { xp: bonuses.reduce((s, b) => s + b.xp, 0), points: bonuses.reduce((s, b) => s + b.points, 0) } : null,
+  };
 }
 
 // Spočítá dnešní postup ve výzvách, sérii a úspěchy ze stávajících záznamů.
@@ -260,8 +282,13 @@ export async function POST(request: Request) {
     if (!target.ok) return NextResponse.json({ error: "Odměna není k vyzvednutí." }, { status: 409 });
 
     await prisma.xpEvent.create({ data: { userId, amount: target.amount, source: id } });
-    const card = await grantCard(userId, id.split(":")[0]).catch(() => null);
-    return NextResponse.json({ gained: target.amount, card, ...(await snapshot(userId)) });
+    const granted = await grantCard(userId, id.split(":")[0]).catch(() => null);
+    return NextResponse.json({
+      gained: target.amount,
+      card: granted?.cardId ?? null,
+      collectionBonus: granted?.bonus ?? null,
+      ...(await snapshot(userId)),
+    });
   } catch {
     return NextResponse.json({ error: "Databáze není dostupná." }, { status: 503 });
   }
