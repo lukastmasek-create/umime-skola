@@ -173,6 +173,10 @@ function ColorPicker({
   );
 }
 
+// Přední část podstavce: vše pod přední hranou horní plochy desky (elipsa 0,5 × 0,58 rámce).
+// Postava je tak za hranou zapuštěná do desky, zadní část desky za ní zůstává.
+const PEDESTAL_FRONT_CLIP = "polygon(0.0% 57.6%, 19.4% 57.6%, 22.0% 61.3%, 24.5% 62.8%, 27.1% 63.8%, 29.6% 64.6%, 32.2% 65.2%, 34.7% 65.7%, 37.3% 66.1%, 39.8% 66.4%, 42.4% 66.7%, 44.9% 66.8%, 47.5% 66.9%, 50.0% 67.0%, 52.5% 66.9%, 55.1% 66.8%, 57.6% 66.7%, 60.2% 66.4%, 62.7% 66.1%, 65.3% 65.7%, 67.8% 65.2%, 70.4% 64.6%, 72.9% 63.8%, 75.5% 62.8%, 78.0% 61.3%, 80.6% 57.6%, 100.0% 57.6%, 100.0% 100.0%, 0.0% 100.0%)";
+
 function itemName(kind: "frame" | "banner", ref: string, locale: Locale) {
   return SHOP_ITEMS.find((i) => i.kind === kind && i.ref === ref)?.names[locale] ?? ref;
 }
@@ -469,7 +473,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
                 {/* Zadní část podstavce jde za postavu. */}
                 <span
                   aria-hidden
-                  className="globe-sprite pointer-events-none absolute -bottom-[28%] left-1/2 h-[125%] w-[165%] -translate-x-1/2 drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)]"
+                  className="globe-sprite pointer-events-none absolute -bottom-[22%] left-1/2 h-[125%] w-[165%] -translate-x-1/2 drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)]"
                   style={{ backgroundImage: `url(${pedestalUrl(profile.avatar)})` }}
                 />
                 <ProfileAvatar
@@ -486,8 +490,8 @@ export function ProfileView({ locale }: { locale: Locale }) {
                     Ořez ukazuje jen spodek sprite od středu desky dolů. */}
                 <span
                   aria-hidden
-                  className="globe-sprite pointer-events-none absolute -bottom-[28%] left-1/2 h-[125%] w-[165%] -translate-x-1/2"
-                  style={{ backgroundImage: `url(${pedestalUrl(profile.avatar)})`, clipPath: "inset(62% 0 0 0)" }}
+                  className="globe-sprite pointer-events-none absolute -bottom-[22%] left-1/2 h-[125%] w-[165%] -translate-x-1/2"
+                  style={{ backgroundImage: `url(${pedestalUrl(profile.avatar)})`, clipPath: PEDESTAL_FRONT_CLIP }}
                 />
               </div>
               <p className="mt-1 rounded-full bg-black/35 px-3 py-1 text-xs text-white backdrop-blur-sm">
