@@ -36,12 +36,12 @@ BUM_CELL = (128, 128)
 POSES = {
     "nahoru_1": dict(bs=(1.0, 1.0, 1.02), eyes="open"),
     "nahoru_2": dict(bs=(1.0, 1.0, 1.02), eyes="blink"),
-    "nahoru_3": dict(hy=9, bs=(1.0, 1.0, 1.02), eyes="open", up_r=100, up_l=30, fwd=0, mouth="smile"),
+    "nahoru_3": dict(hy=9, bs=(1.0, 1.0, 1.02), eyes="open", up_r=40, up_l=25, fwd=0, mouth="smile"),
     "vykukuje": dict(hx=-14, bs=(1.0, 1.0, 0.98), eyes="squint", fwd=-72, up=0),
-    "zasah": dict(hx=24, bs=(1.14, 1.04, 0.8), eyes="x", mouth="o", up=62, fwd=-42),
+    "zasah": dict(hx=24, bs=(1.14, 1.04, 0.8), eyes="x", mouth="o", up=40, fwd=-62),
     "omamen": dict(hy=20, hx=6, bs=(1.02, 1.0, 0.96), eyes="spiral", mouth="o", up=35, fwd=-30),
     "vitez_1": dict(hx=-6, bs=(0.96, 0.96, 1.08), eyes="happy", mouth="smile", up=150, fwd=0),
-    "vitez_2": dict(hy=-7, bs=(1.02, 1.0, 1.03), eyes="happy", mouth="smile", up=70, fwd=0),
+    "vitez_2": dict(hy=-7, bs=(1.02, 1.0, 1.03), eyes="happy", mouth="smile", up=30, fwd=0),
 }
 # Pózy 'nahoru_3' a 'vitez_*' mají různé zvednutí levé/pravé paže (up_l / up_r jsou volitelné).
 

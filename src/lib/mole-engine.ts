@@ -344,15 +344,6 @@ export class MoleEngine extends ArcadeEngine {
       ctx.restore();
     }
 
-    // kurzor pro ovládání klávesnicí
-    const cx = HOLE_X[this.cursor];
-    ctx.strokeStyle = "rgba(255,255,255,0.85)";
-    ctx.lineWidth = 3;
-    ctx.setLineDash([8, 6]);
-    ctx.beginPath();
-    ctx.ellipse(cx, HOLE_Y, 64, 22, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.setLineDash([]);
   }
 
   private drawHoleBack(ctx: CanvasRenderingContext2D, x: number) {
