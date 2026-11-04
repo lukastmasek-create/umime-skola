@@ -60,7 +60,6 @@ async function grantCard(userId: string, kind: string) {
       update: { data: json },
     });
     for (const b of due) {
-      if (b.xp > 0) await tx.xpEvent.create({ data: { userId, amount: b.xp, source: b.id } });
       if (b.points > 0) {
         await tx.user.update({ where: { id: userId }, data: { points: { increment: b.points } } });
         await tx.pointTransaction.create({ data: { userId, amount: b.points, reason: `Sbírka karet: ${b.uniqueAt} různých` } });
@@ -70,7 +69,7 @@ async function grantCard(userId: string, kind: string) {
   });
   return {
     cardId: card.id,
-    bonus: bonuses.length ? { xp: bonuses.reduce((s, b) => s + b.xp, 0), points: bonuses.reduce((s, b) => s + b.points, 0) } : null,
+    bonus: bonuses.length ? { points: bonuses.reduce((s, b) => s + b.points, 0) } : null,
   };
 }
 

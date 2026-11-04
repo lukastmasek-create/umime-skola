@@ -124,8 +124,8 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
         setState(data);
         notifyAccountChanged();
         const card = CARDS.find((c) => c.id === data.card);
-        const b = data.collectionBonus as { xp: number; points: number } | null;
-        const bonus = b ? t.cardBonus.replace("{xp}", String(b.xp)).replace("{pts}", String(b.points)) : null;
+        const b = data.collectionBonus as { points: number } | null;
+        const bonus = b ? t.cardBonus.replace("{pts}", String(b.points)) : null;
         if (card) setNotice([fill(t.cardGot, `${card.icon} ${card.names[locale]}`), bonus].filter(Boolean).join(" · "));
       }
     } catch {
