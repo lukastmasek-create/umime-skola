@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { prisma } from "@/lib/prisma";
-import { ECONOMY_GAME, learningFor } from "@/lib/idle/economy-server";
+import { ECONOMY_GAME, learningFor, recordProgress } from "@/lib/idle/economy-server";
 import {
   arbitrage,
   arbitrageLimit,
@@ -213,7 +213,15 @@ export async function GET() {
     // Zápis běží na pozadí, odpověď na načtení stránky na něj nečeká.
     if (row && state.character) {
       const data = state as unknown as Prisma.InputJsonValue;
-      runInBackground(prisma.idleState.updateMany({ where: { id: row.id, updatedAt: row.updatedAt }, data: { data } }).catch(() => null));
+      // Pasivní výdělek může posunout rekord a předehnat hráče i bez akce, proto se oznámení zapisuje i tady.
+      runInBackground(
+        prisma
+          .$transaction(async (tx) => {
+            const res = await tx.idleState.updateMany({ where: { id: row.id, updatedAt: row.updatedAt }, data: { data } });
+            if (res.count > 0) await recordProgress(tx, userId, base, state);
+          })
+          .catch(() => null),
+      );
     }
     return NextResponse.json(payload(state, user?.points ?? 0, learning, now));
   } catch (error) {
@@ -277,6 +285,8 @@ export async function POST(request: Request) {
           } else {
             await tx.idleState.create({ data: { userId, game: GAME, data } });
           }
+          // Oznámení se zapíše až po uložení, ve stejné transakci (při konfliktu se vrátí i ono).
+          if (outcome.state.character) await recordProgress(tx, userId, base, outcome.state);
           return { outcome, points: points - cost + (change?.amount ?? 0), now };
         },
         { maxWait: 10_000, timeout: 20_000 },

@@ -569,3 +569,19 @@ model RateLimit {
   count       Int      @default(0)
   windowStart DateTime @default(now())
 }
+
+// Veřejná oznámení Ekonomiky (založení firmy, předehnání v žebříčku). Tabulka: prisma/sql/economy-feed.sql.
+// Oznámení „předehnán“ se zapíše i předehnanému hráči (targetUserId), aby ho viděl po přihlášení.
+model EconomyEvent {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  kind         String
+  actorName    String
+  companyId    String?
+  targetName   String?
+  targetUserId String?
+  targetSeen   Boolean  @default(false)
+
+  @@index([createdAt])
+  @@index([targetUserId, targetSeen])
+}

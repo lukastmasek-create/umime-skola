@@ -90,6 +90,7 @@ Lokálně se Prisma připojuje přes `DATABASE_URL` z `.env`. Na Workers se pou�
 Stránka `/hrat-spolecne`: kdokoliv založí hru (kvíz, závod nebo zlatá horečka), ostatní se připojí kódem. Stav se čte pollingem (~1 s), takže stačí Next.js a Postgres.
 
 - Před nasazením jednou spusť `prisma/sql/live-games.sql` v databázi (nové tabulky `QuestionSet`, `LiveRoom`, `LivePlayer`, `LiveAnswer`).
+- Oznámení Ekonomiky (založení firmy, předehnání v žebříčku): jednou spusť `prisma/sql/economy-feed.sql` (nová tabulka `EconomyEvent`).
 - Herní logika (body, pořadí, truhly) je v `src/lib/live/logic.ts`, testy: `npm test`.
 - Server: `src/lib/live/service.ts` a `src/app/api/live/`, obrazovky: `src/components/live/`, texty: `src/i18n/live.ts`.
 
