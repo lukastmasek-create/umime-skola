@@ -120,12 +120,12 @@ export const SOLID_PLACES: Place[] = PLACES.filter((p) => p.kind !== "plot" && p
 // Svět (místo `world`) → klíč uživatelského obchodu; odemyká se přes /api/shop (`worlds`).
 export const WORLD_OF_PLACE: Record<string, string> = { les: "forest", hrad: "castle", more: "sea", stanice: "space", pristav: "pirate" };
 
-// Mrak nad zamčeným světem: měřítko modelu `oblak.glb` (14 m široký) a poloměr, který chůze nesmí překročit.
+// Mrak nad zamčeným světem: měřítko modelu `oblak.glb` (zhruba 21 m široký, 15 m vysoký) a poloměr, který chůze nesmí překročit.
 export function cloudScale(p: Place): number {
-  return Math.max(1.3, (2 * Math.max(p.hw, p.hd) + 5) / 14);
+  return Math.max(1.3, (2 * Math.max(p.hw, p.hd) + 8) / 16);
 }
 export function cloudRadius(p: Place): number {
-  return 6.2 * cloudScale(p);
+  return 9 * cloudScale(p);
 }
 
 function nearestOnRoad(x: number, z: number, r: Road): { pt: Pt; d: number; k: number } {
