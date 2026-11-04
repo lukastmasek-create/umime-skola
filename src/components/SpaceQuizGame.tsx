@@ -8,7 +8,6 @@ import { SnakeEngine } from "@/lib/snake-engine";
 import { BreakoutEngine } from "@/lib/breakout-engine";
 import { TetrisEngine } from "@/lib/tetris-engine";
 import { KongEngine } from "@/lib/kong-engine";
-import { FlappyEngine } from "@/lib/flappy-engine";
 import { MoleEngine } from "@/lib/mole-engine";
 import { NinjaEngine } from "@/lib/ninja-engine";
 import type { HeldKey } from "@/lib/arcade-base";
@@ -65,7 +64,6 @@ const PADS: Partial<Record<GameSlug, PadSpec>> = {
   breakout: { keys: ["left", "right", "fire"] },
   tetris: { keys: ["left", "right", "up", "down", "fire"], up: "⟳", down: "▼" },
   kong: { keys: ["left", "right", "up", "down", "fire"] },
-  flappy: { keys: ["fire"] },
   mole: { keys: ["left", "right", "fire"] },
   ninja: { keys: ["left", "right", "up", "down", "fire"] },
 };
@@ -328,13 +326,11 @@ export function SpaceQuizGame({
                 ? new TetrisEngine(canvas, callbacks)
                 : game === "kong"
                   ? new KongEngine(canvas, callbacks)
-                  : game === "flappy"
-                      ? new FlappyEngine(canvas, callbacks)
-                      : game === "mole"
-                        ? new MoleEngine(canvas, callbacks)
-                        : game === "ninja"
-                          ? new NinjaEngine(canvas, callbacks)
-                          : new SpaceEngine(canvas, callbacks);
+                  : game === "mole"
+                    ? new MoleEngine(canvas, callbacks)
+                    : game === "ninja"
+                      ? new NinjaEngine(canvas, callbacks)
+                      : new SpaceEngine(canvas, callbacks);
     engineRef.current = engine;
     // Testovací háček: automatické testy (umime-art/../tests) si přes něj vezmou engine.
     if ((window as unknown as { __QUIZ_TEST__?: boolean }).__QUIZ_TEST__) (window as unknown as { __quizEngine?: QuizEngine }).__quizEngine = engine;

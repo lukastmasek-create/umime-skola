@@ -78,18 +78,6 @@ const META: Record<GameSlug, Record<Locale, Meta>> = {
     es: { name: "Subida al volcán", tag: "Trepa, esquiva las rocas y agarra el cartel correcto" },
     fr: { name: "Ascension du volcan", tag: "Grimpe, évite les rochers et attrape le bon panneau" },
   },
-  flappy: {
-    ...withFallbacks({
-      cs: { name: "Let přes útesy", tag: "Proleť mezerou se správnou odpovědí" },
-      en: { name: "Cliff Flight", tag: "Fly through the gap with the right answer" },
-      de: { name: "Klippenflug", tag: "Flieg durch die Lücke mit der richtigen Antwort" },
-      ru: { name: "Полёт над скалами", tag: "Пролети в проём с правильным ответом" },
-    }),
-    uk: { name: "Політ над скелями", tag: "Пролети крізь щілину з правильною відповіддю" },
-    ja: { name: "がけのフライト", tag: "正しい答えのすきまをすり抜けよう" },
-    es: { name: "Vuelo sobre acantilados", tag: "Vuela por el hueco con la respuesta correcta" },
-    fr: { name: "Vol au-dessus des falaises", tag: "Passe dans l'interstice avec la bonne réponse" },
-  },
   mole: {
     ...withFallbacks({
       cs: { name: "Lov krtků", tag: "Klepni kladivem krtka se správnou cedulkou" },

@@ -190,18 +190,6 @@
     e.setInput(want);
   };
 
-  // ---- Flappy: držet výšku středu průletu se správnou odpovědí ----
-  bots["flappy"] = (e, st) => {
-    const GAP = [56, 150, 244, 338];
-    const gi = e.order.findIndex((o) => o === e.correct);
-    const targetY = GAP[Math.max(0, gi)];
-    st.cool = (st.cool || 0) - 1;
-    if (e.birdY + e.vy * 0.05 > targetY + 20 && st.cool <= 0) {
-      e.pressed.add("fire");
-      st.cool = 3;
-    }
-  };
-
   // ---- Krtek: klepnout na správného krtka, když je nahoře ----
   bots["mole"] = (e, st) => {
     const i = e.moles.findIndex((m) => m.correct && !m.gone);

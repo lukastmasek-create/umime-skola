@@ -19,7 +19,7 @@ DRY = "--dry" in sys.argv
 # skupiny, které mají zasahovat až na okraj (dlaždice, pozadí, díly navazující na sousední buňku)
 KEEP = {
     ("breakout", "cihly"), ("breakout", "odpovedi"), ("breakout", "palka"), ("breakout", "micek"),
-    ("centipede", "clanky"), ("centipede", "houby"), ("flappy", "zed_hlavice"), ("flappy", "zed_telo"),
+    ("centipede", "clanky"), ("centipede", "houby"),
     ("kong", "dlazdice"), ("kong", "zebrik"), ("mario", "kopce_blizke"), ("mario", "kopce_daleke"),
     ("mario", "nebe"), ("mario", "nebe_boss"), ("mario", "zem"), ("mole", "dira"), ("mole", "krtek"),
     ("pacman", "bludiste"), ("snake", "had"), ("space", "pozadi_mlhovina"), ("tetris", "kostky"),
