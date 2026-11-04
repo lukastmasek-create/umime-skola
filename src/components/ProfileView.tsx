@@ -468,7 +468,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
               <div className="relative">
                 <span
                   aria-hidden
-                  className="globe-sprite pointer-events-none absolute -bottom-[34%] left-1/2 h-[125%] w-[165%] -translate-x-1/2 drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)]"
+                  className="globe-sprite pointer-events-none absolute -bottom-[34%] left-1/2 h-[125%] w-[165%] -translate-x-1/2 scale-[0.7] drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)] sm:scale-100"
                   style={{ backgroundImage: `url(${pedestalUrl(profile.avatar)})` }}
                 />
                 <ProfileAvatar
