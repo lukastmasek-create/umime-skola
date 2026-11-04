@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 export type GlobeText = {
@@ -146,7 +147,7 @@ const ru: GlobeText = {
   resetView: "Сбросить вид (двойной щелчок)",
 };
 
-const texts: Record<Locale, GlobeText> = { cs, en, de, ru };
+const texts: Record<Locale, GlobeText> = withFallbacks({ cs, en, de, ru });
 
 export function getGlobeText(locale: Locale): GlobeText {
   return texts[locale];

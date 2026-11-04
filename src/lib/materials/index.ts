@@ -1,3 +1,4 @@
+import { withFallbacks } from "@/i18n/config";
 import { SUBJECTS, type SubjectValue } from "@/lib/taxonomy";
 import type { Locale } from "@/i18n/config";
 import { getSubjectText } from "@/i18n/subjects";
@@ -42,8 +43,8 @@ const MATERIALS: Record<string, Topic[]> = {
 // Předmět v materiálech: z kurzů (taxonomy.ts) nebo jen pro materiály (bez kurzů, s vlastními názvy).
 export type MaterialSubject = { slug: string; value: SubjectValue | null; emoji: string; color: string; names?: Record<Locale, string> };
 const EXTRA_SUBJECTS: MaterialSubject[] = [
-  { slug: "informatika", value: null, emoji: "💻", color: "#6fc3ff", names: { cs: "Informatika", en: "Computer science", de: "Informatik", ru: "Информатика" } },
-  { slug: "vytvarka", value: null, emoji: "🎨", color: "#ffb3d9", names: { cs: "Výtvarná výchova", en: "Art", de: "Kunst", ru: "Изобразительное искусство" } },
+  { slug: "informatika", value: null, emoji: "💻", color: "#6fc3ff", names: withFallbacks({ cs: "Informatika", en: "Computer science", de: "Informatik", ru: "Информатика" }) },
+  { slug: "vytvarka", value: null, emoji: "🎨", color: "#ffb3d9", names: withFallbacks({ cs: "Výtvarná výchova", en: "Art", de: "Kunst", ru: "Изобразительное искусство" }) },
 ];
 
 export function getTopics(subjectSlug: string): Topic[] {

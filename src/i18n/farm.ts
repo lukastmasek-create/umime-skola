@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { ErrorCode } from "@/lib/idle/farm";
 
@@ -441,7 +442,7 @@ const ru: FarmText = {
   },
 };
 
-const TEXTS: Record<Locale, FarmText> = { cs, en, de, ru };
+const TEXTS: Record<Locale, FarmText> = withFallbacks({ cs, en, de, ru });
 
 export function getFarmText(locale: Locale): FarmText {
   return TEXTS[locale] ?? cs;

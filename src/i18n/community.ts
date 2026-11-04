@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 export type CommunityText = {
@@ -325,7 +326,7 @@ const ru: CommunityText = {
   },
 };
 
-const texts: Record<Locale, CommunityText> = { cs, en, de, ru };
+const texts: Record<Locale, CommunityText> = withFallbacks({ cs, en, de, ru });
 
 export function getCommunityText(locale: Locale): CommunityText {
   return texts[locale];

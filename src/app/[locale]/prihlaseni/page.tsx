@@ -1,4 +1,5 @@
 "use client";
+import { withFallbacks } from "@/i18n/config";
 
 import { useState, use } from "react";
 import { signIn } from "next-auth/react";
@@ -9,12 +10,12 @@ import { isLocale, type Locale } from "@/i18n/config";
 import { notFound } from "next/navigation";
 import { AuthShell, type AuthMood } from "@/components/AuthShell";
 
-const GREETING: Record<Locale, string> = {
+const GREETING: Record<Locale, string> = withFallbacks({
   cs: "Ahoj! Přihlas se a pokračuj ve hře.",
   en: "Hi! Log in and keep playing.",
   de: "Hallo! Melde dich an und spiel weiter.",
   ru: "Привет! Войди и продолжай играть.",
-};
+});
 
 export default function PrihlaseniPage({
   params,

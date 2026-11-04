@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 export type EscapeText = {
@@ -408,7 +409,7 @@ const ru: EscapeText = {
   },
 };
 
-const texts: Record<Locale, EscapeText> = { cs, en, de, ru };
+const texts: Record<Locale, EscapeText> = withFallbacks({ cs, en, de, ru });
 
 export function getEscapeText(locale: Locale): EscapeText {
   return texts[locale];

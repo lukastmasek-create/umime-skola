@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 // Texty živého 3D pokoje: co nábytek dělá a akce po kliknutí.
@@ -77,5 +78,5 @@ const ru: Room3dText = {
   view2d: "🖼️ 2D",
   view3d: "🧊 3D",
 };
-const texts: Record<Locale, Room3dText> = { cs, en, de, ru };
+const texts: Record<Locale, Room3dText> = withFallbacks({ cs, en, de, ru });
 export const getRoom3dText = (locale: Locale) => texts[locale];

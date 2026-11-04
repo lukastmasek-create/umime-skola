@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 type MaterialsText = {
@@ -21,7 +22,7 @@ type MaterialsText = {
   tip: string;
 };
 
-const texts: Record<Locale, MaterialsText> = {
+const texts: Record<Locale, MaterialsText> = withFallbacks({
   cs: {
     nav: "Materiály",
     title: "Výukové materiály",
@@ -122,7 +123,7 @@ const texts: Record<Locale, MaterialsText> = {
     examples: "Примеры",
     tip: "Совет",
   },
-};
+});
 
 export function getMaterialsText(locale: Locale): MaterialsText {
   return texts[locale];

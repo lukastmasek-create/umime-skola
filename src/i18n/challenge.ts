@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { ChGame } from "@/lib/idle/challenge";
 
@@ -595,7 +596,7 @@ const ru: ChallengeText = {
   },
 };
 
-const TEXTS: Record<Locale, ChallengeText> = { cs, en, de, ru };
+const TEXTS: Record<Locale, ChallengeText> = withFallbacks({ cs, en, de, ru });
 
 export function getChallengeText(locale: Locale): ChallengeText {
   return TEXTS[locale] ?? cs;

@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 // Texty živého 3D městečka (/mestecko): názvy a popisy míst a ovládací prvky.
@@ -168,7 +169,7 @@ const PLACES_RU: Record<string, PlaceText> = {
   parcela5: { name: "Участок у моря", desc: "" },
 };
 
-const UI: Record<Locale, UiText> = {
+const UI: Record<Locale, UiText> = withFallbacks({
   cs: {
     title: "Městečko",
     loading: "Stavím městečko…",
@@ -365,9 +366,9 @@ const UI: Record<Locale, UiText> = {
     buildBonus: { skola: "+5 % XP за тесты / уровень", herna: "+5 % XP в играх / уровень", obchod: "3 % баллов назад / уровень", namesti: "+1 балл за находку / уровень", pekarna: "+1 раунд мини-игры / уровень", knihovna: "+1 раунд мини-игры / уровень", hvezdarna: "+1 раунд мини-игры / уровень", kvetinarstvi: "+1 раунд мини-игры / уровень" },
     quest: { xp: "Набери {n} XP в тестах и играх", games: "Сыграй {n} игр в курсах", test: "Пройди тест", collect: "Собери {n} предметов в городке", mini: "Сыграй {n} мини-игр в городке", npc: "Ответь жителю на вопрос", escape: "Пройди квест-комнату" },
   },
-};
+});
 
-const PLACES: Record<Locale, Record<string, PlaceText>> = { cs: PLACES_CS, en: PLACES_EN, de: PLACES_DE, ru: PLACES_RU };
+const PLACES: Record<Locale, Record<string, PlaceText>> = withFallbacks({ cs: PLACES_CS, en: PLACES_EN, de: PLACES_DE, ru: PLACES_RU });
 
 export function getTown3dText(locale: Locale) {
   return { ui: UI[locale], places: PLACES[locale] };

@@ -1,3 +1,4 @@
+import { withFallbacks } from "@/i18n/config";
 // Katalog uživatelského obchodu. Nabídku sestavujeme my, vývojáři: nové zboží stačí
 // dopsat sem. Kupuje se za body z učení a koupená věc se uloží jako odemčení
 // (tabulka Unlock) s klíčem "<druh>:<ref>", stejně jako avatary a tituly z úspěchů.
@@ -22,7 +23,7 @@ export type ShopItem = {
   asset3d?: string;
 };
 
-const n = (cs: string, en: string, de: string, ru: string): Record<Locale, string> => ({ cs, en, de, ru });
+const n = (cs: string, en: string, de: string, ru: string): Record<Locale, string> => (withFallbacks({ cs, en, de, ru }));
 
 export const SHOP_ITEMS: ShopItem[] = [
   // --- avatary ---

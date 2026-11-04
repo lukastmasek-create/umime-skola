@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { ClassicSlug, GameSlug } from "@/lib/games";
 
@@ -13,7 +14,7 @@ export type ArcadeText = {
 export type ArcadeSlug = Exclude<GameSlug, "space-invaders" | ClassicSlug>;
 
 const T: Record<ArcadeSlug, Record<Locale, ArcadeText>> = {
-  "pac-man": {
+  "pac-man": withFallbacks({
     cs: {
       title: "Labyrint duchů",
       intro: "Projdi bludiště a sněz správnou odpověď. Špatná odpověď ubere život, duchům se vyhýbej. Žlutá pilulka je na chvíli zneškodní!",
@@ -42,8 +43,8 @@ const T: Record<ArcadeSlug, Record<Locale, ArcadeText>> = {
       action: "Вперёд",
       upgradeAction: "Скорость героя",
     },
-  },
-  snake: {
+  }),
+  snake: withFallbacks({
     cs: {
       title: "Had z džungle",
       intro: "Had má sníst správné jablko s odpovědí. Špatné jablko ubere život. Had po každé správné odpovědi roste a zrychluje, hra končí až ztratou všech životů. Pozor, ať se nekousneš do ocasu!",
@@ -72,8 +73,8 @@ const T: Record<ArcadeSlug, Record<Locale, ArcadeText>> = {
       action: "Вперёд",
       upgradeAction: "Скорость змейки",
     },
-  },
-  breakout: {
+  }),
+  breakout: withFallbacks({
     cs: {
       title: "Průlom hradeb",
       intro: "Odrážej míček pálkou a rozbij blok se správnou odpovědí. Špatný blok ubere život, stejně jako míček, který propadne.",
@@ -102,8 +103,8 @@ const T: Record<ArcadeSlug, Record<Locale, ArcadeText>> = {
       action: "Запустить мяч",
       upgradeAction: "Ширина ракетки",
     },
-  },
-  tetris: {
+  }),
+  tetris: withFallbacks({
     cs: {
       title: "Pád bloků",
       intro: "Dole jsou čtyři plochy s odpověďmi. Pohybuj padající kostkou, otoč ji a shoď ji na plochu se správnou odpovědí. Zóna, na kterou kostka dopadne, svítí. Špatná plocha ubere život a zavře se.",
@@ -132,8 +133,8 @@ const T: Record<ArcadeSlug, Record<Locale, ArcadeText>> = {
       action: "Сбросить",
       upgradeAction: "Управление блоками",
     },
-  },
-  kong: {
+  }),
+  kong: withFallbacks({
     cs: {
       title: "Výstup na sopku",
       intro: "Vylez po žebřících nahoru a vyskoč pod blok se správnou odpovědí, tak do něj narazíš hlavou. Skákej přes valící se sudy, špatný blok ubere život.",
@@ -162,8 +163,8 @@ const T: Record<ArcadeSlug, Record<Locale, ArcadeText>> = {
       action: "Прыжок",
       upgradeAction: "Скорость лазания",
     },
-  },
-  flappy: {
+  }),
+  flappy: withFallbacks({
     cs: {
       title: "Let přes útesy",
       intro: "Ptáček letí kolem čtyř průletů a u každého je odpověď. Proleť tím správným! Špatný průlet ubere život, stejně jako náraz do zdi nebo země.",
@@ -192,8 +193,8 @@ const T: Record<ArcadeSlug, Record<Locale, ArcadeText>> = {
       action: "Взмах",
       upgradeAction: "Сила крыльев",
     },
-  },
-  mole: {
+  }),
+  mole: withFallbacks({
     cs: {
       title: "Lov krtků",
       intro: "Z děr vykukují krtci a každý drží cedulku s odpovědí. Klepni kladivem na toho se správnou! Špatný krtek ubere život a na chvíli se schová.",
@@ -222,8 +223,8 @@ const T: Record<ArcadeSlug, Record<Locale, ArcadeText>> = {
       action: "Удар",
       upgradeAction: "Скорость молотка",
     },
-  },
-  ninja: {
+  }),
+  ninja: withFallbacks({
     cs: {
       title: "Stínový bojovník",
       intro: "Odpovědi vyletují vzduchem jako ovoce. Švihni po té správné a rozkrojíš ji! Špatnou neřež, ubere život. Propadlé ovoce nevadí, vyletí znovu.",
@@ -252,7 +253,7 @@ const T: Record<ArcadeSlug, Record<Locale, ArcadeText>> = {
       action: "Удар",
       upgradeAction: "Скорость клинка",
     },
-  },
+  }),
 };
 
 export function getArcadeText(game: ArcadeSlug, locale: Locale): ArcadeText {

@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 export type TestText = {
@@ -130,7 +131,7 @@ const ru: TestText = {
   strictNote: "Следи за длиной: i/í и y/ý считаются разными ответами.",
 };
 
-const texts: Record<Locale, TestText> = { cs, en, de, ru };
+const texts: Record<Locale, TestText> = withFallbacks({ cs, en, de, ru });
 
 export function getTestText(locale: Locale): TestText {
   return texts[locale];

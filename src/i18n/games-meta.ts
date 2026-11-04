@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { GameSlug } from "@/lib/games";
 
@@ -5,156 +6,156 @@ import type { GameSlug } from "@/lib/games";
 type Meta = { name: string; tag: string };
 
 const META: Record<GameSlug, Record<Locale, Meta>> = {
-  "space-invaders": {
+  "space-invaders": withFallbacks({
     cs: { name: "Obrana galaxie", tag: "Sestřel vetřelce se správnou odpovědí" },
     en: { name: "Galaxy Defence", tag: "Blast the alien with the right answer" },
     de: { name: "Galaxie-Abwehr", tag: "Schieß das Alien mit der richtigen Antwort ab" },
     ru: { name: "Защита галактики", tag: "Сбей пришельца с правильным ответом" },
-  },
-  "pac-man": {
+  }),
+  "pac-man": withFallbacks({
     cs: { name: "Labyrint duchů", tag: "Sněz správnou odpověď a uteč duchům" },
     en: { name: "Ghost Labyrinth", tag: "Eat the right answer and flee the ghosts" },
     de: { name: "Geisterlabyrinth", tag: "Friss die richtige Antwort, flieh vor den Geistern" },
     ru: { name: "Лабиринт призраков", tag: "Съешь правильный ответ и убеги от призраков" },
-  },
-  snake: {
+  }),
+  snake: withFallbacks({
     cs: { name: "Had z džungle", tag: "Nekonečná hra: roste se správnými odpověďmi" },
     en: { name: "Jungle Snake", tag: "Endless: grow with every right answer" },
     de: { name: "Dschungelschlange", tag: "Endlos: wachse mit jeder richtigen Antwort" },
     ru: { name: "Змея из джунглей", tag: "Бесконечная игра: расти с правильными ответами" },
-  },
-  breakout: {
+  }),
+  breakout: withFallbacks({
     cs: { name: "Průlom hradeb", tag: "Míčkem prorazíš cihlu se správnou odpovědí" },
     en: { name: "Wall Breaker", tag: "Smash the brick with the right answer" },
     de: { name: "Mauerbrecher", tag: "Triff den Ziegel mit der richtigen Antwort" },
     ru: { name: "Пролом стены", tag: "Разбей кирпич с правильным ответом" },
-  },
-  tetris: {
+  }),
+  tetris: withFallbacks({
     cs: { name: "Pád bloků", tag: "Shoď blok do sloupce se správnou odpovědí" },
     en: { name: "Falling Blocks", tag: "Drop the block onto the right answer" },
     de: { name: "Fallende Blöcke", tag: "Lass den Block auf die richtige Antwort fallen" },
     ru: { name: "Падающие блоки", tag: "Опусти блок на правильный ответ" },
-  },
-  kong: {
+  }),
+  kong: withFallbacks({
     cs: { name: "Výstup na sopku", tag: "Šplhej, uhýbej kamenům a seber správnou cedulku" },
     en: { name: "Volcano Climb", tag: "Climb, dodge rocks and grab the right sign" },
     de: { name: "Vulkanaufstieg", tag: "Klettere, weiche Steinen aus, schnapp dir das richtige Schild" },
     ru: { name: "Подъём на вулкан", tag: "Карабкайся, уворачивайся и хватай верную табличку" },
-  },
-  flappy: {
+  }),
+  flappy: withFallbacks({
     cs: { name: "Let přes útesy", tag: "Proleť mezerou se správnou odpovědí" },
     en: { name: "Cliff Flight", tag: "Fly through the gap with the right answer" },
     de: { name: "Klippenflug", tag: "Flieg durch die Lücke mit der richtigen Antwort" },
     ru: { name: "Полёт над скалами", tag: "Пролети в проём с правильным ответом" },
-  },
-  mole: {
+  }),
+  mole: withFallbacks({
     cs: { name: "Lov krtků", tag: "Klepni kladivem krtka se správnou cedulkou" },
     en: { name: "Mole Hunt", tag: "Bonk the mole holding the right sign" },
     de: { name: "Maulwurfjagd", tag: "Hau auf den Maulwurf mit dem richtigen Schild" },
     ru: { name: "Охота на кротов", tag: "Стукни крота с правильной табличкой" },
-  },
-  ninja: {
+  }),
+  ninja: withFallbacks({
     cs: { name: "Stínový bojovník", tag: "Rozsekni letící ovoce se správnou odpovědí" },
     en: { name: "Shadow Warrior", tag: "Slice the flying fruit with the right answer" },
     de: { name: "Schattenkrieger", tag: "Zerschneide die Frucht mit der richtigen Antwort" },
     ru: { name: "Теневой воин", tag: "Разруби летящий фрукт с правильным ответом" },
-  },
-  osmismerka: {
+  }),
+  osmismerka: withFallbacks({
     cs: { name: "Osmisměrka", tag: "Najdi odpovědi schované v mřížce písmen" },
     en: { name: "Word Search", tag: "Find the answers hidden in the letter grid" },
     de: { name: "Wortsuche", tag: "Finde die Antworten im Buchstabengitter" },
     ru: { name: "Филворд", tag: "Найди ответы в сетке букв" },
-  },
-  spojovani: {
+  }),
+  spojovani: withFallbacks({
     cs: { name: "Spojování", tag: "Spoj otázky se správnými odpověďmi" },
     en: { name: "Matching", tag: "Match the questions with their answers" },
     de: { name: "Zuordnen", tag: "Ordne Fragen und Antworten zu" },
     ru: { name: "Соедини пары", tag: "Соедини вопросы с ответами" },
-  },
-  pexeso: {
+  }),
+  pexeso: withFallbacks({
     cs: { name: "Pexeso", tag: "Najdi dvojice otázka a odpověď" },
     en: { name: "Memory", tag: "Find the question and answer pairs" },
     de: { name: "Memory", tag: "Finde die Paare aus Frage und Antwort" },
     ru: { name: "Мемори", tag: "Найди пары «вопрос — ответ»" },
-  },
-  sibenice: {
+  }),
+  sibenice: withFallbacks({
     cs: { name: "Šibenice", tag: "Hádej odpověď písmeno po písmenu" },
     en: { name: "Hangman", tag: "Guess the answer letter by letter" },
     de: { name: "Galgenmännchen", tag: "Errate die Antwort Buchstabe für Buchstabe" },
     ru: { name: "Виселица", tag: "Угадай ответ по буквам" },
-  },
-  trideni: {
+  }),
+  trideni: withFallbacks({
     cs: { name: "Třídění", tag: "Roztřiď tvrzení na správná a špatná" },
     en: { name: "Sorting", tag: "Sort the statements into right and wrong" },
     de: { name: "Sortieren", tag: "Sortiere die Aussagen in richtig und falsch" },
     ru: { name: "Сортировка", tag: "Раздели утверждения на верные и неверные" },
-  },
-  doplnovani: {
+  }),
+  doplnovani: withFallbacks({
     cs: { name: "Doplňování", tag: "Doplň chybějící slova do vět" },
     en: { name: "Fill the Gaps", tag: "Fill the missing words into sentences" },
     de: { name: "Lückentext", tag: "Setze die fehlenden Wörter ein" },
     ru: { name: "Вставь слово", tag: "Вставь пропущенные слова" },
-  },
-  milionar: {
+  }),
+  milionar: withFallbacks({
     cs: { name: "Výstup na vrchol", tag: "Stoupej po žebříčku otázek až na vrchol" },
     en: { name: "Summit Climb", tag: "Climb the question ladder to the summit" },
     de: { name: "Gipfelsturm", tag: "Steig die Fragenleiter bis zum Gipfel hinauf" },
     ru: { name: "Восхождение на вершину", tag: "Поднимайся по лестнице вопросов к вершине" },
-  },
-  presmycky: {
+  }),
+  presmycky: withFallbacks({
     cs: { name: "Přesmyčky", tag: "Poskládej odpověď ze zamíchaných písmen" },
     en: { name: "Anagrams", tag: "Unscramble the letters into the answer" },
     de: { name: "Buchstabensalat", tag: "Ordne die Buchstaben zur Antwort" },
     ru: { name: "Анаграммы", tag: "Собери ответ из перемешанных букв" },
-  },
-  blesk: {
+  }),
+  blesk: withFallbacks({
     cs: { name: "Bleskový kvíz", tag: "Co nejvíc správných odpovědí za minutu" },
     en: { name: "Lightning Quiz", tag: "As many right answers as you can in a minute" },
     de: { name: "Blitz-Quiz", tag: "So viele richtige Antworten wie möglich in einer Minute" },
     ru: { name: "Блиц-викторина", tag: "Как можно больше верных ответов за минуту" },
-  },
-  poklad: {
+  }),
+  poklad: withFallbacks({
     cs: { name: "Hon za pokladem", tag: "Odpovídej a odkopávej políčka s pokladem" },
     en: { name: "Treasure Hunt", tag: "Answer and dig up tiles hiding treasure" },
     de: { name: "Schatzsuche", tag: "Antworte und grab Felder mit Schätzen aus" },
     ru: { name: "Охота за сокровищами", tag: "Отвечай и раскапывай клетки с кладом" },
-  },
-  oblekani: {
+  }),
+  oblekani: withFallbacks({
     cs: { name: "Obleč panenku", tag: "Za každou správnou odpověď jeden kus oblečení" },
     en: { name: "Dress the Doll", tag: "One piece of clothing per right answer" },
     de: { name: "Puppe anziehen", tag: "Ein Kleidungsstück pro richtige Antwort" },
     ru: { name: "Наряди куклу", tag: "Одна вещь за каждый правильный ответ" },
-  },
-  obrana: {
+  }),
+  obrana: withFallbacks({
     cs: { name: "Obrana města", tag: "Odpovídej a ubraň hrad před vlnami nepřátel" },
     en: { name: "Castle Defence", tag: "Answer to defend the castle from waves of foes" },
     de: { name: "Burgverteidigung", tag: "Antworte und verteidige die Burg gegen Wellen" },
     ru: { name: "Оборона замка", tag: "Отвечай и защищай замок от волн врагов" },
-  },
-  krizovka: {
+  }),
+  krizovka: withFallbacks({
     cs: { name: "Křížovka", tag: "Vyplň křížovku odpověďmi na otázky" },
     en: { name: "Crossword", tag: "Fill the crossword with the answers" },
     de: { name: "Kreuzworträtsel", tag: "Füll das Rätsel mit den Antworten aus" },
     ru: { name: "Кроссворд", tag: "Заполни кроссворд ответами" },
-  },
-  pravda: {
+  }),
+  pravda: withFallbacks({
     cs: { name: "Pravda, nebo lež", tag: "Rychle rozhodni, jestli tvrzení platí" },
     en: { name: "True or False", tag: "Decide fast whether the statement is true" },
     de: { name: "Wahr oder falsch", tag: "Entscheide schnell, ob die Aussage stimmt" },
     ru: { name: "Правда или ложь", tag: "Быстро реши, верно ли утверждение" },
-  },
-  piskvorky: {
+  }),
+  piskvorky: withFallbacks({
     cs: { name: "Kvízové piškvorky", tag: "Políčko získáš jen za správnou odpověď" },
     en: { name: "Quiz Tic-Tac-Toe", tag: "Win a square only with a right answer" },
     de: { name: "Quiz-Tic-Tac-Toe", tag: "Ein Feld gibt es nur für eine richtige Antwort" },
     ru: { name: "Крестики-нолики", tag: "Клетка твоя только за верный ответ" },
-  },
-  bingo: {
+  }),
+  bingo: withFallbacks({
     cs: { name: "Bingo", tag: "Najdi odpověď na kartě a slož řadu" },
     en: { name: "Bingo", tag: "Find the answer on your card and complete a line" },
     de: { name: "Bingo", tag: "Finde die Antwort auf deiner Karte und vervollständige eine Reihe" },
     ru: { name: "Бинго", tag: "Найди ответ на карточке и собери ряд" },
-  },
+  }),
 };
 
 export function gameMeta(slug: GameSlug, locale: Locale): Meta {
@@ -178,7 +179,7 @@ export type GamesUiText = {
   hidden: string;
 };
 
-const UI: Record<Locale, GamesUiText> = {
+const UI: Record<Locale, GamesUiText> = withFallbacks({
   cs: {
     action: "Akční hry",
     actionHint: "Pohyb, rychlost a postřeh: správnou odpověď musíš trefit, sebrat nebo chytit.",
@@ -239,7 +240,7 @@ const UI: Record<Locale, GamesUiText> = {
     bestSoFar: "Твой рекорд",
     hidden: "Некоторых игр здесь нет: их нельзя собрать из ответов этого курса (например, филворд из чисел).",
   },
-};
+});
 
 export function getGamesUiText(locale: Locale): GamesUiText {
   return UI[locale];

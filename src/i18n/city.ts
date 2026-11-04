@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { CityCat, CityError } from "@/lib/idle/city";
 
@@ -339,7 +340,7 @@ const ru: CityText = {
   },
 };
 
-const texts: Record<Locale, CityText> = { cs, en, de, ru };
+const texts: Record<Locale, CityText> = withFallbacks({ cs, en, de, ru });
 
 export function getCityText(locale: Locale): CityText {
   return texts[locale];

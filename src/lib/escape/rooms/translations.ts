@@ -1,3 +1,4 @@
+import { withFallbacks } from "@/i18n/config";
 import type { Locale } from "@/i18n/config";
 import type { RoomKit } from "./kit";
 import { CASTLE_KIT } from "./castle";
@@ -8,12 +9,12 @@ import { OBSERVATORY_KIT } from "./observatory";
 // překládají se texty, popisky a nápovědy. Odpovědi, které jsou v jazyce slovo (např. planeta), mají varianty.
 type Kits = Partial<Record<Locale, RoomKit>>;
 
-const NOTE: Record<Locale, { name: string; description: string }> = {
+const NOTE: Record<Locale, { name: string; description: string }> = withFallbacks({
   cs: { name: "Poznámka {n}", description: "Papír s číslem {n}." },
   en: { name: "Note {n}", description: "A paper with the number {n}." },
   de: { name: "Notiz {n}", description: "Ein Zettel mit der Nummer {n}." },
   ru: { name: "Записка {n}", description: "Бумажка с номером {n}." },
-};
+});
 
 const library: Kits = {
   en: {

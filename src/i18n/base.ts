@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { BaseCat, BaseError, ShipType } from "@/lib/idle/base";
 
@@ -728,7 +729,7 @@ const ru: BaseText = {
   },
 };
 
-const T: Record<Locale, BaseText> = { cs, en, de, ru };
+const T: Record<Locale, BaseText> = withFallbacks({ cs, en, de, ru });
 
 export function getBaseText(locale: Locale): BaseText {
   return T[locale];

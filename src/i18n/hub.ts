@@ -1,8 +1,9 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { GameKey, MetricId } from "@/lib/idle/hub";
 
 type L4 = Record<Locale, string>;
-const n = (cs: string, en: string, de: string, ru: string): L4 => ({ cs, en, de, ru });
+const n = (cs: string, en: string, de: string, ru: string): L4 => (withFallbacks({ cs, en, de, ru }));
 
 export const HUB_TEXT = {
   title: n("Úkoly a úspěchy", "Quests and achievements", "Aufgaben und Erfolge", "Задания и достижения"),

@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 export type ReviewText = {
@@ -185,5 +186,5 @@ const ru: ReviewText = {
   progress: "Освоено курсов: {n}",
 };
 
-const texts: Record<Locale, ReviewText> = { cs, en, de, ru };
+const texts: Record<Locale, ReviewText> = withFallbacks({ cs, en, de, ru });
 export const getReviewText = (locale: Locale) => texts[locale];

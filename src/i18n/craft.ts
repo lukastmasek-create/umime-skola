@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { RecipeCategory, Rarity, World } from "@/lib/craft";
 
@@ -407,7 +408,7 @@ const ru: CraftText = {
   hintCraft: "Создай это в профиле в разделе Крафт.",
 };
 
-const texts: Record<Locale, CraftText> = { cs, en, de, ru };
+const texts: Record<Locale, CraftText> = withFallbacks({ cs, en, de, ru });
 
 export function getCraftText(locale: Locale): CraftText {
   return texts[locale] ?? cs;

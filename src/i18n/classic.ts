@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { ClassicSlug } from "@/lib/games";
 
@@ -333,7 +334,7 @@ const ru: ClassicText = {
   dress: { pick: "Выбери куклу", start: "Одевать", slots: { hair: "Причёска", outfit: "Наряд", shoes: "Обувь", makeup: "Макияж", accessory: "Аксессуар", topper: "Головной убор" }, dolls: { princess: "Принцесса", athlete: "Спортсменка", rocker: "Рокерша", fairy: "Фея", chef: "Повариха", astronaut: "Астронавтка" }, yay: "Ура, ей идёт!", oops: "Ой, неверно… и наряд изменился.", dressed: "Кукла одета", question: "Вопрос", wearing: "Следующее", changed: "Изменилось", choose: "Выбери: {slot}", option: "Вариант {n}", kinds: {"hair:long": "Длинные волосы", "hair:bob": "Каре", "hair:pony": "Хвост", "hair:curly": "Кудри", "hair:bun": "Пучок", "hair:braids": "Косички", "outfit:gown": "Бальное платье", "outfit:short": "Коктейльное платье", "outfit:mermaid": "Вечернее платье", "outfit:summer": "Летнее платье", "outfit:sport": "Спортивная форма", "outfit:rock": "Рок-наряд", "outfit:fairy": "Платье феи", "outfit:chef": "Поварской китель", "outfit:astro": "Скафандр", "shoes:heels": "Туфли", "shoes:sneaker": "Кроссовки", "shoes:boots": "Сапожки", "shoes:ballet": "Балетки", "shoes:clog": "Сабо", "shoes:moon": "Лунные ботинки", "makeup:0": "Классический", "makeup:1": "Естественный", "makeup:2": "Вечерний", "makeup:3": "Игривый блеск", "accessory:necklace": "Ожерелье", "accessory:glasses": "Очки", "accessory:bag": "Сумочка", "accessory:wand": "Волшебная палочка", "accessory:medal": "Медаль", "accessory:ladle": "Половник", "accessory:badge": "Значок", "topper:crown": "Диадема", "topper:headband": "Ободок", "topper:hat": "Шляпа", "topper:flowers": "Венок", "topper:cap": "Кепка", "topper:jacket": "Куртка", "topper:chefhat": "Поварской колпак", "topper:helmet": "Шлем"} },
 };
 
-const texts: Record<Locale, ClassicText> = { cs, en, de, ru };
+const texts: Record<Locale, ClassicText> = withFallbacks({ cs, en, de, ru });
 
 export function getClassicText(locale: Locale): ClassicText {
   return texts[locale];

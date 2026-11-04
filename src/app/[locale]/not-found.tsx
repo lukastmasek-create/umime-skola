@@ -1,10 +1,11 @@
 "use client";
+import { withFallbacks } from "@/i18n/config";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { defaultLocale, isLocale, type Locale } from "@/i18n/config";
 
-const TEXT: Record<Locale, { title: string; body: string; home: string; courses: string }> = {
+const TEXT: Record<Locale, { title: string; body: string; home: string; courses: string }> = withFallbacks({
   cs: {
     title: "Tahle stránka se ztratila",
     body: "Odkaz je starý, nebo stránka neexistuje. Zkus to od začátku.",
@@ -29,7 +30,7 @@ const TEXT: Record<Locale, { title: string; body: string; home: string; courses:
     home: "На главную",
     courses: "Смотреть курсы",
   },
-};
+});
 
 export default function NotFound() {
   // not-found nedostává params, jazyk proto vezmeme z první části adresy.

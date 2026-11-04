@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { SubjectValue } from "@/lib/taxonomy";
 
@@ -8,7 +9,7 @@ type SubjectText = {
   labels: Record<SubjectValue, string>;
 };
 
-const texts: Record<Locale, SubjectText> = {
+const texts: Record<Locale, SubjectText> = withFallbacks({
   cs: {
     all: "Všechny předměty",
     other: "Ostatní",
@@ -93,7 +94,7 @@ const texts: Record<Locale, SubjectText> = {
       FRANCOUZSTINA: "Французский",
     },
   },
-};
+});
 
 export function getSubjectText(locale: Locale): SubjectText {
   return texts[locale];

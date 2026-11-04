@@ -1,3 +1,4 @@
+import { withFallbacks } from "@/i18n/config";
 // Craftování: materiály, recepty a celá herní logika bez databáze a Reactu (testy: src/lib/craft.test.ts).
 //
 // Materiály mají svět (obecné, vesmír, moře, les, hrad, kouzla) a vzácnost (běžný, neobvyklý, vzácný, epický).
@@ -15,7 +16,7 @@
 import type { Locale } from "@/i18n/config";
 
 type Names = Record<Locale, string>;
-const n = (cs: string, en: string, de: string, ru: string): Names => ({ cs, en, de, ru });
+const n = (cs: string, en: string, de: string, ru: string): Names => (withFallbacks({ cs, en, de, ru }));
 
 // --- světy a vzácnosti ---
 

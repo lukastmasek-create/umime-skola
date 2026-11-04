@@ -1,3 +1,4 @@
+import { withFallbacks } from "@/i18n/config";
 // Herní logika Farmy. Čistý kód bez databáze a Reactu: stejný výpočet běží na serveru
 // (autoritativně) i v prohlížeči (odpočty a náhled).
 //
@@ -11,7 +12,7 @@
 
 import type { Locale } from "@/i18n/config";
 
-const n = (cs: string, en: string, de: string, ru: string): Record<Locale, string> => ({ cs, en, de, ru });
+const n = (cs: string, en: string, de: string, ru: string): Record<Locale, string> => (withFallbacks({ cs, en, de, ru }));
 
 export const MAX_PLOTS = 24;
 export const START_PLOTS = 6;

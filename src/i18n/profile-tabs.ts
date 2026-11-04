@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 // Hlavní záložky profilu a texty přehledu, sbírky a nového výběru barev.
@@ -18,7 +19,7 @@ export type ProfileTabsText = {
   shades: { light: string; bright: string; dark: string };
 };
 
-const T: Record<Locale, ProfileTabsText> = {
+const T: Record<Locale, ProfileTabsText> = withFallbacks({
   cs: {
     tabs: { overview: "Přehled", collection: "Sbírka", wardrobe: "Šatník", tasks: "Úkoly" },
     nextUnlocks: "Co odemkneš dál",
@@ -83,7 +84,7 @@ const T: Record<Locale, ProfileTabsText> = {
     custom: "Свой цвет",
     shades: { light: "Светлые", bright: "Яркие", dark: "Тёмные" },
   },
-};
+});
 
 export function getProfileTabsText(locale: Locale): ProfileTabsText {
   return T[locale];

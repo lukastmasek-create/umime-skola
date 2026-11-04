@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { ErrorCode, SpeciesId, UpgradeId } from "@/lib/idle/pets";
 
@@ -357,7 +358,7 @@ const ru: PetText = {
   },
 };
 
-const texts: Record<Locale, PetText> = { cs, en, de, ru };
+const texts: Record<Locale, PetText> = withFallbacks({ cs, en, de, ru });
 
 export function getPetText(locale: Locale): PetText {
   return texts[locale];

@@ -136,7 +136,7 @@ function isActiveTab(pathname: string | null, tab: Tab) {
 // Odkazy na jazyky: přepnou jazyk a zůstanou na stejné stránce.
 function LanguageLinks({ locale, className, onPick }: { locale: Locale; className: (active: boolean) => string; onPick?: () => void }) {
   const pathname = usePathname();
-  const rest = pathname?.replace(/^\/(cs|en|de|ru)/, "") || "";
+  const rest = pathname?.replace(/^\/(cs|en|de|ru|uk|ja|es|fr)/, "") || "";
   return (
     <>
       {locales.map((l) => (

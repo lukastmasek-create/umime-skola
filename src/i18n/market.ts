@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { StallKey, WorldId } from "@/lib/market-worlds";
 
@@ -179,7 +180,7 @@ const ru: MarketText = {
   parrot: ["Аррр! Золото, золото!", "Кто тут новенький? Аррр!", "Берегись крабов!", "Капитан всегда прав!", "Отличная вещь!"],
 };
 
-const texts: Record<Locale, MarketText> = { cs, en, de, ru };
+const texts: Record<Locale, MarketText> = withFallbacks({ cs, en, de, ru });
 export function getMarketText(locale: Locale): MarketText {
   return texts[locale];
 }

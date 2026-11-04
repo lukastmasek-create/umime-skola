@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 type ModeText = { name: string; description: string };
@@ -768,7 +769,7 @@ const ru: LiveText = {
   },
 };
 
-const texts: Record<Locale, LiveText> = { cs, en, de, ru };
+const texts: Record<Locale, LiveText> = withFallbacks({ cs, en, de, ru });
 
 export function getLiveText(locale: Locale): LiveText {
   return texts[locale] ?? cs;

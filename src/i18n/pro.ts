@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 export type ProText = {
@@ -139,7 +140,7 @@ const ru: ProText = {
   ctaText: "Есть вопрос или интерес к тарифу для школы или семьи? Напиши нам.",
 };
 
-const texts: Record<Locale, ProText> = { cs, en, de, ru };
+const texts: Record<Locale, ProText> = withFallbacks({ cs, en, de, ru });
 
 export function getProText(locale: Locale): ProText {
   return texts[locale] ?? cs;

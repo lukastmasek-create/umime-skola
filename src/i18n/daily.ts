@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { QuestId, WeeklyId } from "@/lib/gamify";
 
@@ -275,7 +276,7 @@ const ru: DailyText = {
   },
 };
 
-const texts: Record<Locale, DailyText> = { cs, en, de, ru };
+const texts: Record<Locale, DailyText> = withFallbacks({ cs, en, de, ru });
 
 export function getDailyText(locale: Locale): DailyText {
   return texts[locale];

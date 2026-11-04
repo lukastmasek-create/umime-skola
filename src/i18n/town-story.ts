@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 export type Line = { who: "hrdina" | "knihovnice" | "pekar" | "kluk" | "farmar" | "babicka"; text: string };
@@ -336,5 +337,5 @@ const ru: TownStoryText = {
   },
 };
 
-const texts: Record<Locale, TownStoryText> = { cs, en, de, ru };
+const texts: Record<Locale, TownStoryText> = withFallbacks({ cs, en, de, ru });
 export const getTownStoryText = (locale: Locale) => texts[locale];

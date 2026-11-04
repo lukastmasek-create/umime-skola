@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 export type DailyQuizText = {
@@ -242,5 +243,5 @@ const ru: DailyQuizText = {
   teaserOpen: "Рейтинг",
 };
 
-const texts: Record<Locale, DailyQuizText> = { cs, en, de, ru };
+const texts: Record<Locale, DailyQuizText> = withFallbacks({ cs, en, de, ru });
 export const getDailyQuizText = (locale: Locale) => texts[locale];

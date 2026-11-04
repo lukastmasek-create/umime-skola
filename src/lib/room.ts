@@ -1,10 +1,11 @@
+import { withFallbacks } from "@/i18n/config";
 import type { Locale } from "@/i18n/config";
 import layout from "./room-layout.json";
 
 export type FurnitureDef = { id: string; icon: string; price: number; names: Record<Locale, string>; /** Jen z craftování: v obchodě se nekupuje, vlastní se po vyrobení (Unlock "room:<id>"). */ craft?: boolean };
 
 const f = (id: string, icon: string, price: number, cs: string, en: string, de: string, ru: string): FurnitureDef => ({
-  id, icon, price, names: { cs, en, de, ru },
+  id, icon, price, names: withFallbacks({ cs, en, de, ru }),
 });
 
 export const FURNITURE: FurnitureDef[] = [

@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 export type HomeText = {
@@ -276,7 +277,253 @@ const ru: HomeText = {
   },
 };
 
-const texts: Record<Locale, HomeText> = { cs, en, de, ru };
+const uk: HomeText = {
+  more: "Ще",
+  menu: "Меню",
+  closeMenu: "Закрити меню",
+  learn: "Навчання",
+  play: "Ігри та спільнота",
+  groups: { courses: "Курси", settings: "Налаштування", games: "Ігри", shop: "Магазин", study: "Навчання", extras: "Додатково", together: "Грати разом", boards: "Таблиці лідерів" },
+  languages: "Мови",
+  index: "Колекція карток",
+  subjectsTitle: "Обери предмет",
+  subjectsHint: "Чотирнадцять предметів від 1 до 9 класу, у кожному курси від найлегших до найскладніших.",
+  allCourses: "Усі курси",
+  featuresTitle: "Що тут є",
+  features: [
+    { key: "courses", title: "Курси та тести", text: "Тренуйся за темами і перевір себе шкільним тестом, до кожної відповіді є пояснення.", cta: "Переглянути курси" },
+    { key: "games", title: "Ігри за бали", text: "Galaxy Defence, Ghost Labyrinth, Falling Blocks і класика на кшталт кросвордів, пошуку слів і пам'яті. За правильні відповіді отримуєш бали.", cta: "Спробувати" },
+    { key: "escape", title: "Квести-втечі", text: "Розв'язуй головоломки, знаходь предмети і втеч з лабораторії, поки не закінчився час.", cta: "Увійти" },
+    { key: "boards", title: "Таблиці лідерів", text: "Порівнюй себе з однокласниками, своєю школою та іншими школами по країні.", cta: "Таблиці лідерів" },
+  ],
+  stepsTitle: "Як це працює",
+  steps: [
+    { title: "Обери курс", text: "За предметом і класом. Кожен курс має п'ять рівнів складності." },
+    { title: "Тренуйся, граючи", text: "Отримуй бали за правильні відповіді та відкривай покращення." },
+    { title: "Прокачуйся", text: "Здобувай досвід, рівні, нові аватари та звання." },
+  ],
+  progressTitle: "Твій прогрес",
+  progressGuest: "Зареєструйся безкоштовно, щоб зберегти бали, рівні та час у квестах-втечах.",
+  progressLevel: "Рівень",
+  progressNext: "До наступного рівня: {n} XP",
+  progressPoints: "Бали",
+  continueLearning: "Продовжити навчання",
+  openProfile: "Відкрити профіль",
+  about: {
+    title: "Про нас",
+    lead: "Učíme se hrou (Вчимося грою) — освітній сайт для учнів 1–9 класів. Ми вважаємо, що найкраще вчаться тоді, коли це приносить задоволення, тому поєднуємо практику з іграми, балами та невеликими завданнями, а до кожної відповіді є пояснення.",
+    points: [
+      { title: "Що ми робимо", text: "Створюємо курси і тести для чотирнадцяти предметів 1–9 класів, у кожному п'ять рівнів складності." },
+      { title: "Чому через гру", text: "Правильні відповіді приносять бали, відкривають покращення і піднімають на новий рівень. Навчання схоже на гру, а не на обов'язок." },
+      { title: "Для кого це", text: "Для учнів, батьків і вчителів. Реєстрація безкоштовна, а твої бали, рівні та час у квестах-втечах зберігаються в обліковому записі." },
+    ],
+    contact: "Напиши нам",
+    why: {
+      title: "Навіщо ми це робимо",
+      text: "Ми вважаємо, що діти найкраще вчаться, коли це цікаво і коли бачать, що їхні зусилля мають результат. Хочемо, щоб практика була тим, чого діти чекають, а не тим, чого уникають.",
+    },
+    problem: {
+      title: "Яку проблему розв'язуємо",
+      text: "Практика закріплює знання, але звичайні вправи часто нудні і не дають зворотного зв'язку. Ми поєднуємо курси, тести з поясненням до кожної відповіді та ігри, за які нараховуються бали, щоб навчання було зрозумілим і приємним.",
+    },
+    email: "ucime.se.hrou@seznam.cz",
+    teamTitle: "Команда",
+    team: [
+      { name: "Natálie Majerová", role: "Маркетинг-менеджерка", bio: "Відповідає за маркетинг і стежить, щоб сайт доходив до дітей, батьків і вчителів." },
+      { name: "Lukáš Tomášek", role: "Головний розробник", bio: "Керує розвитком платформи: від курсів і ігор до облікових записів і таблиць лідерів." },
+      { name: "Lukáš Záhorský", role: "Інноватор", bio: "Приносить нові ідеї для ігор і способів навчання." },
+      { name: "Ondra Vrba", role: "Тестувальник / програміст", bio: "Тестує курси, ігри та квести-втечі, щоб усе працювало як слід." },
+    ],
+  },
+};
+
+const ja: HomeText = {
+  more: "もっと",
+  menu: "メニュー",
+  closeMenu: "メニューを閉じる",
+  learn: "学習",
+  play: "ゲームとコミュニティ",
+  groups: { courses: "コース", settings: "設定", games: "ゲーム", shop: "ショップ", study: "学習", extras: "その他", together: "みんなで遊ぶ", boards: "ランキング" },
+  languages: "言語",
+  index: "カードコレクション",
+  subjectsTitle: "教科を選ぶ",
+  subjectsHint: "小学1年生から中学3年生までの14教科。それぞれ、やさしい順から難しい順までのコースがあります。",
+  allCourses: "すべてのコース",
+  featuresTitle: "ここでできること",
+  features: [
+    { key: "courses", title: "コースとテスト", text: "テーマごとに練習して、学校のようなテストで力試し。どの答えにも解説がつきます。", cta: "コースを見る" },
+    { key: "games", title: "ポイントがためられるゲーム", text: "Galaxy Defence、Ghost Labyrinth、Falling Blocks、そしてクロスワードや単語さがし、神経衰弱などの定番ゲーム。正解するとポイントがたまります。", cta: "遊んでみる" },
+    { key: "escape", title: "脱出ルーム", text: "パズルを解き、アイテムを見つけて、時間内に研究所から脱出しよう。", cta: "入る" },
+    { key: "boards", title: "ランキング", text: "クラスメイトや自分の学校、全国の他の学校と比べてみよう。", cta: "ランキングを見る" },
+  ],
+  stepsTitle: "使い方",
+  steps: [
+    { title: "コースを選ぶ", text: "教科と学年で選べます。どのコースにも5つの難易度があります。" },
+    { title: "ゲームで練習", text: "正解するとポイントがたまり、パワーアップを解放できます。" },
+    { title: "レベルアップ", text: "経験値（XP）をためて、レベル、新しいアバターや称号を手に入れよう。" },
+  ],
+  progressTitle: "あなたの進み具合",
+  progressGuest: "無料登録すると、ポイント、レベル、脱出ルームの記録が保存されます。",
+  progressLevel: "レベル",
+  progressNext: "次のレベルまであと {n} XP",
+  progressPoints: "ポイント",
+  continueLearning: "学習を続ける",
+  openProfile: "プロフィールを開く",
+  about: {
+    title: "私たちについて",
+    lead: "Učíme se hrou（「遊びながら学ぼう」）は、小学1年生から中学3年生までの子どもたちのための学習サイトです。楽しいときこそ人はよく学べると考えているので、練習にゲーム、ポイント、小さなチャレンジを組み合わせ、どの答えにも解説をつけています。",
+    points: [
+      { title: "私たちの取り組み", text: "小学1年生から中学3年生までの14教科について、5つの難易度を持つコースとテストを作っています。" },
+      { title: "なぜ遊びながら？", text: "正解するとポイントがたまり、パワーアップを解放したり、レベルが上がったりします。勉強が作業ではなく、ゲームのように感じられます。" },
+      { title: "対象", text: "子どもたち、保護者、先生方。登録は無料で、ポイント、レベル、脱出ルームの記録はアカウントに保存されます。" },
+    ],
+    contact: "お問い合わせ",
+    why: {
+      title: "私たちがこれをする理由",
+      text: "子どもたちは、楽しく、努力が報われると感じられるときに一番よく学べると考えています。練習を、いやいややるものではなく、楽しみにできるものにしたいのです。",
+    },
+    problem: {
+      title: "私たちが解決したいこと",
+      text: "練習は知識を定着させますが、ふつうの練習問題は退屈で、フィードバックもないことが多いものです。コース、どの答えにも解説があるテスト、ポイントがたまるゲームを組み合わせ、学びを納得でき、楽しいものにしています。",
+    },
+    email: "ucime.se.hrou@seznam.cz",
+    teamTitle: "チーム",
+    team: [
+      { name: "Natálie Majerová", role: "マーケティング担当", bio: "マーケティングを担当し、子どもたち、保護者、先生方にサイトが届くよう取り組んでいます。" },
+      { name: "Lukáš Tomášek", role: "リード開発者", bio: "コースやゲームからアカウントやランキングまで、プラットフォームの開発を率いています。" },
+      { name: "Lukáš Záhorský", role: "イノベーター", bio: "ゲームや学びの方法に関する新しいアイデアを出しています。" },
+      { name: "Ondra Vrba", role: "テスター／プログラマー", bio: "コース、ゲーム、脱出ルームをテストし、すべてが正しく動くようにしています。" },
+    ],
+  },
+};
+
+const es: HomeText = {
+  more: "Más",
+  menu: "Menú",
+  closeMenu: "Cerrar menú",
+  learn: "Aprender",
+  play: "Juegos y comunidad",
+  groups: { courses: "Cursos", settings: "Ajustes", games: "Juegos", shop: "Tienda", study: "Estudiar", extras: "Extras", together: "Jugar juntos", boards: "Clasificaciones" },
+  languages: "Idiomas",
+  index: "Colección de cartas",
+  subjectsTitle: "Elige una asignatura",
+  subjectsHint: "Catorce asignaturas de 1.º a 9.º curso, cada una con cursos desde los más fáciles hasta los más difíciles.",
+  allCourses: "Todos los cursos",
+  featuresTitle: "Lo que encontrarás aquí",
+  features: [
+    { key: "courses", title: "Cursos y pruebas", text: "Practica por temas y ponte a prueba con un examen de estilo escolar, con una explicación para cada respuesta.", cta: "Ver cursos" },
+    { key: "games", title: "Juegos para ganar puntos", text: "Galaxy Defence, Ghost Labyrinth, Falling Blocks y clásicos como los crucigramas, la sopa de letras y la memoria. Las respuestas correctas te dan puntos.", cta: "Probar" },
+    { key: "escape", title: "Escape rooms", text: "Resuelve acertijos, encuentra objetos y escapa del laboratorio antes de que se acabe el tiempo.", cta: "Entrar" },
+    { key: "boards", title: "Clasificaciones", text: "Compárate con tus compañeros, tu colegio y otros colegios de todo el país.", cta: "Clasificaciones" },
+  ],
+  stepsTitle: "Cómo funciona",
+  steps: [
+    { title: "Elige un curso", text: "Por asignatura y curso. Cada curso tiene cinco niveles de dificultad." },
+    { title: "Practica jugando", text: "Gana puntos por las respuestas correctas y desbloquea mejoras." },
+    { title: "Sube de nivel", text: "Consigue XP, niveles, nuevos avatares y títulos." },
+  ],
+  progressTitle: "Tu progreso",
+  progressGuest: "Regístrate gratis para conservar tus puntos, niveles y tiempos de los escape rooms.",
+  progressLevel: "Nivel",
+  progressNext: "{n} XP para el siguiente nivel",
+  progressPoints: "Puntos",
+  continueLearning: "Seguir aprendiendo",
+  openProfile: "Abrir perfil",
+  about: {
+    title: "Sobre nosotros",
+    lead: "Učíme se hrou («Aprendemos jugando») es una web educativa para alumnos de 1.º a 9.º curso. Creemos que se aprende mejor cuando se disfruta, así que combinamos la práctica con juegos, puntos y pequeños retos, y cada respuesta viene con una explicación.",
+    points: [
+      { title: "Qué hacemos", text: "Creamos cursos y pruebas para catorce asignaturas de 1.º a 9.º curso, cada una con cinco niveles de dificultad." },
+      { title: "Por qué jugando", text: "Las respuestas correctas dan puntos, desbloquean mejoras y te hacen subir de nivel. Aprender se siente como un juego, no como una obligación." },
+      { title: "Para quién es", text: "Para alumnos, familias y docentes. El registro es gratuito, y tus puntos, niveles y tiempos de los escape rooms se guardan en tu cuenta." },
+    ],
+    contact: "Escríbenos",
+    why: {
+      title: "Por qué lo hacemos",
+      text: "Creemos que los niños aprenden mejor cuando es divertido y cuando ven que su esfuerzo da frutos. Queremos que la práctica sea algo que los niños esperen con ganas, no una tarea que evitan.",
+    },
+    problem: {
+      title: "Qué problema resolvemos",
+      text: "La práctica es lo que hace que el conocimiento se quede, pero los ejercicios habituales suelen ser aburridos y no dan ningún feedback. Combinamos cursos, pruebas con explicación para cada respuesta y juegos que dan puntos, para que aprender tenga sentido y sea agradable.",
+    },
+    email: "ucime.se.hrou@seznam.cz",
+    teamTitle: "Equipo",
+    team: [
+      { name: "Natálie Majerová", role: "Responsable de marketing", bio: "Se ocupa del marketing y de que la web llegue a niños, familias y docentes." },
+      { name: "Lukáš Tomášek", role: "Desarrollador principal", bio: "Dirige el desarrollo de la plataforma, desde los cursos y juegos hasta las cuentas y las clasificaciones." },
+      { name: "Lukáš Záhorský", role: "Innovador", bio: "Aporta ideas nuevas para los juegos y las formas de aprender." },
+      { name: "Ondra Vrba", role: "Tester / programador", bio: "Prueba cursos, juegos y escape rooms para que todo funcione como debe." },
+    ],
+  },
+};
+
+const fr: HomeText = {
+  more: "Plus",
+  menu: "Menu",
+  closeMenu: "Fermer le menu",
+  learn: "Apprendre",
+  play: "Jeux et communauté",
+  groups: { courses: "Cours", settings: "Réglages", games: "Jeux", shop: "Boutique", study: "Étude", extras: "Extras", together: "Jouer ensemble", boards: "Classements" },
+  languages: "Langues",
+  index: "Collection de cartes",
+  subjectsTitle: "Choisis une matière",
+  subjectsHint: "Quatorze matières de la 1re à la 9e année, chacune avec des cours du plus facile au plus difficile.",
+  allCourses: "Tous les cours",
+  featuresTitle: "Ce que tu trouveras ici",
+  features: [
+    { key: "courses", title: "Cours et tests", text: "Entraîne-toi par thème et teste-toi avec un contrôle façon école, avec une explication pour chaque réponse.", cta: "Parcourir les cours" },
+    { key: "games", title: "Jeux pour gagner des points", text: "Galaxy Defence, Ghost Labyrinth, Falling Blocks et des classiques comme les mots croisés, les mots mêlés et le memory. Les bonnes réponses te rapportent des points.", cta: "Essayer" },
+    { key: "escape", title: "Escape rooms", text: "Résous des énigmes, trouve des objets et échappe-toi du laboratoire avant la fin du temps.", cta: "Entrer" },
+    { key: "boards", title: "Classements", text: "Compare-toi à tes camarades, à ton école et à d'autres écoles du pays.", cta: "Classements" },
+  ],
+  stepsTitle: "Comment ça marche",
+  steps: [
+    { title: "Choisis un cours", text: "Par matière et par année. Chaque cours a cinq niveaux de difficulté." },
+    { title: "Entraîne-toi en jouant", text: "Gagne des points pour les bonnes réponses et débloque des améliorations." },
+    { title: "Monte de niveau", text: "Gagne de l'XP, des niveaux, de nouveaux avatars et des titres." },
+  ],
+  progressTitle: "Tes progrès",
+  progressGuest: "Inscris-toi gratuitement pour garder tes points, tes niveaux et tes temps dans les escape rooms.",
+  progressLevel: "Niveau",
+  progressNext: "{n} XP avant le niveau suivant",
+  progressPoints: "Points",
+  continueLearning: "Continuer à apprendre",
+  openProfile: "Ouvrir le profil",
+  about: {
+    title: "À propos de nous",
+    lead: "Učíme se hrou (« On apprend en jouant ») est un site éducatif pour les élèves de la 1re à la 9e année. Nous pensons qu'on apprend mieux quand on y prend plaisir : nous associons donc l'entraînement aux jeux, aux points et à de petits défis, et chaque réponse est accompagnée d'une explication.",
+    points: [
+      { title: "Ce que nous faisons", text: "Nous créons des cours et des tests pour quatorze matières de la 1re à la 9e année, chacune avec cinq niveaux de difficulté." },
+      { title: "Pourquoi en jouant", text: "Les bonnes réponses rapportent des points, débloquent des améliorations et font monter de niveau. Apprendre ressemble à un jeu, pas à une corvée." },
+      { title: "À qui ça s'adresse", text: "Aux élèves, aux parents et aux enseignants. L'inscription est gratuite, et tes points, tes niveaux et tes temps dans les escape rooms sont enregistrés sur ton compte." },
+    ],
+    contact: "Écris-nous",
+    why: {
+      title: "Pourquoi nous le faisons",
+      text: "Nous pensons que les enfants apprennent mieux quand c'est amusant et quand ils voient que leurs efforts portent leurs fruits. Nous voulons que l'entraînement soit quelque chose qu'ils attendent avec impatience, et non une corvée qu'ils évitent.",
+    },
+    problem: {
+      title: "Le problème que nous résolvons",
+      text: "L'entraînement est ce qui fixe les connaissances, mais les exercices ordinaires sont souvent ennuyeux et ne donnent aucun retour. Nous combinons des cours, des tests avec une explication pour chaque réponse et des jeux qui rapportent des points, pour que l'apprentissage ait du sens et soit agréable.",
+    },
+    email: "ucime.se.hrou@seznam.cz",
+    teamTitle: "Équipe",
+    team: [
+      { name: "Natálie Majerová", role: "Responsable marketing", bio: "Elle s'occupe du marketing et veille à ce que le site atteigne les enfants, les parents et les enseignants." },
+      { name: "Lukáš Tomášek", role: "Développeur principal", bio: "Il dirige le développement de la plateforme, des cours et jeux jusqu'aux comptes et aux classements." },
+      { name: "Lukáš Záhorský", role: "Innovateur", bio: "Il apporte de nouvelles idées pour les jeux et les façons d'apprendre." },
+      { name: "Ondra Vrba", role: "Testeur / programmeur", bio: "Il teste les cours, les jeux et les escape rooms pour que tout fonctionne comme prévu." },
+    ],
+  },
+};
+
+const texts: Record<Locale, HomeText> = {
+  ...withFallbacks({ cs, en, de, ru }),
+  uk,
+  ja,
+  es,
+  fr,
+};
 
 export function getHomeText(locale: Locale): HomeText {
   return texts[locale];

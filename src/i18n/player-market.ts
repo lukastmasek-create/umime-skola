@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 // Texty trhu mezi hráči (components/PlayerMarket).
@@ -127,5 +128,5 @@ const ru: PlayerMarketText = {
   more: { sortNew: "Новые", sortLow: "Дешёвые", sortHigh: "Дорогие", emptyCat: "В этой категории пусто.", pick: "Выбери вещь, чтобы продать или обменять.", seller: "Продавец" },
   swap: { sell: "За баллы", swap: "Обмен", want: "Хочу взамен", wants: "Хочет: {name}", button: "Обменять", done: "Обменено!", free: "Обмен без комиссии." },
 };
-const texts: Record<Locale, PlayerMarketText> = { cs, en, de, ru };
+const texts: Record<Locale, PlayerMarketText> = withFallbacks({ cs, en, de, ru });
 export const getPlayerMarketText = (locale: Locale) => texts[locale];

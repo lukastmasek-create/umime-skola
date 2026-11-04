@@ -1,3 +1,4 @@
+import { withFallbacks } from "@/i18n/config";
 // Herní logika Města. Čistý kód bez databáze a Reactu, stejný výpočet běží na
 // serveru (autoritativně) i v prohlížeči (okamžitá odezva při stavění).
 //
@@ -37,7 +38,7 @@ export type CityItemDef = {
   names: Record<Locale, string>;
 };
 
-const n = (cs: string, en: string, de: string, ru: string): Record<Locale, string> => ({ cs, en, de, ru });
+const n = (cs: string, en: string, de: string, ru: string): Record<Locale, string> => (withFallbacks({ cs, en, de, ru }));
 
 export const CITY_ITEMS: CityItemDef[] = [
   // --- doprava ---

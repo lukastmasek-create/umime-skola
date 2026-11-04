@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { ContactCategory, ContactField, ContactTopic } from "@/lib/contact";
 
@@ -255,7 +256,7 @@ const ru: ContactText = {
   },
 };
 
-const texts: Record<Locale, ContactText> = { cs, en, de, ru };
+const texts: Record<Locale, ContactText> = withFallbacks({ cs, en, de, ru });
 
 export function getContactText(locale: Locale): ContactText {
   return texts[locale] ?? cs;

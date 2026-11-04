@@ -1,3 +1,4 @@
+import { withFallbacks } from "@/i18n/config";
 import type { Locale } from "@/i18n/config";
 
 export type Rarity = "common" | "rare" | "epic";
@@ -5,7 +6,7 @@ export type Rarity = "common" | "rare" | "epic";
 export type CardDef = { id: string; icon: string; rarity: Rarity; names: Record<Locale, string> };
 
 const c = (id: string, icon: string, rarity: Rarity, cs: string, en: string, de: string, ru: string): CardDef => ({
-  id, icon, rarity, names: { cs, en, de, ru },
+  id, icon, rarity, names: withFallbacks({ cs, en, de, ru }),
 });
 
 export const CARDS: CardDef[] = [

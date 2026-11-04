@@ -1,4 +1,5 @@
 "use client";
+import { withFallbacks } from "@/i18n/config";
 
 import { useState, use } from "react";
 import { useRouter } from "next/navigation";
@@ -7,12 +8,12 @@ import { isLocale, type Locale } from "@/i18n/config";
 import { notFound } from "next/navigation";
 import { AuthShell, type AuthMood } from "@/components/AuthShell";
 
-const GREETING: Record<Locale, string> = {
+const GREETING: Record<Locale, string> = withFallbacks({
   cs: "Ahoj, jsem tvůj průvodce! Založ si účet a začneme.",
   en: "Hi, I'm your guide! Create an account and let's start.",
   de: "Hallo, ich bin dein Begleiter! Erstelle ein Konto und es geht los.",
   ru: "Привет, я твой проводник! Создай аккаунт, и начнём.",
-};
+});
 
 export default function RegistracePage({
   params,

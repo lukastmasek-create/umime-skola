@@ -1,4 +1,5 @@
 "use client";
+import { withFallbacks } from "@/i18n/config";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -21,12 +22,12 @@ type Item = {
   href?: string;
 };
 
-const TEXT: Record<Locale, Record<string, string>> = {
+const TEXT: Record<Locale, Record<string, string>> = withFallbacks({
   cs: { title: "Vitrína odměn", badge: "Odznak úrovně", trophy: "Pohár žebříčku", podium: "Stupně vítězů", rubin: "Avatary", safir: "Tituly", smaragd: "Vzhled", chest: "Denní truhla", coin: "Body", wheel: "Kolo štěstí", top3: "Buď v první trojce žebříčku", top10: "Dostaň se do první desítky", need: "Odemkni {n} pro tenhle drahokam", open: "Otevřít" },
   en: { title: "Trophy case", badge: "Level badge", trophy: "Leaderboard cup", podium: "Winners' podium", rubin: "Avatars", safir: "Titles", smaragd: "Looks", chest: "Daily chest", coin: "Points", wheel: "Wheel of fortune", top3: "Reach the top three of the leaderboard", top10: "Get into the top ten", need: "Unlock {n} for this gem", open: "Open" },
   de: { title: "Pokalvitrine", badge: "Level-Abzeichen", trophy: "Ranglisten-Pokal", podium: "Siegerpodest", rubin: "Avatare", safir: "Titel", smaragd: "Look", chest: "Tagestruhe", coin: "Punkte", wheel: "Glücksrad", top3: "Komm unter die ersten drei der Rangliste", top10: "Schaffe es in die Top Ten", need: "Schalte {n} für diesen Edelstein frei", open: "Öffnen" },
   ru: { title: "Витрина наград", badge: "Значок уровня", trophy: "Кубок рейтинга", podium: "Пьедестал", rubin: "Аватары", safir: "Титулы", smaragd: "Внешний вид", chest: "Ежедневный сундук", coin: "Очки", wheel: "Колесо удачи", top3: "Попади в тройку рейтинга", top10: "Попади в десятку лучших", need: "Открой {n}, чтобы получить этот камень", open: "Открыть" },
-};
+});
 
 export function ProfileShowcase({
   locale,

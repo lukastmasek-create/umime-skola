@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 export type ProfileText = {
@@ -305,7 +306,7 @@ const ru: ProfileText = {
   lockedCount: "Закрыто: {n}",
 };
 
-const texts: Record<Locale, ProfileText> = { cs, en, de, ru };
+const texts: Record<Locale, ProfileText> = withFallbacks({ cs, en, de, ru });
 
 export function getProfileText(locale: Locale): ProfileText {
   return texts[locale];

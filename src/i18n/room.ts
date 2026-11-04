@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 export type RoomText = {
@@ -125,5 +126,5 @@ const ru: RoomText = {
   notEnough: "Не хватает баллов.",
 };
 
-const texts: Record<Locale, RoomText> = { cs, en, de, ru };
+const texts: Record<Locale, RoomText> = withFallbacks({ cs, en, de, ru });
 export const getRoomText = (locale: Locale) => texts[locale];

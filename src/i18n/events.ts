@@ -1,7 +1,8 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 type L4 = Record<Locale, string>;
-const n = (cs: string, en: string, de: string, ru: string): L4 => ({ cs, en, de, ru });
+const n = (cs: string, en: string, de: string, ru: string): L4 => (withFallbacks({ cs, en, de, ru }));
 
 export const EVENT_NAMES: Record<string, L4> = {
   "spring-planting": n("Jarní setba", "Spring planting", "Frühjahrsaussaat", "Весенний сев"),

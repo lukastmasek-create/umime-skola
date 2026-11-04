@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { StallKey } from "@/lib/market-worlds";
 import { getMarketText } from "./market";
@@ -16,7 +17,7 @@ export type WorldText = {
 };
 export type UnlockText = { title: string; text: string; button: string; needLevel: string; needPoints: string; done: string; locked: string };
 
-const space: Record<Locale, WorldText> = {
+const space: Record<Locale, WorldText> = withFallbacks({
   cs: {
     title: "Vesmírná stanice",
     subtitle: "Promenáda na oběžné dráze: roboti, mimozemšťané a astronauti ti prodají vesmírné zboží za body z učení.",
@@ -89,10 +90,10 @@ const space: Record<Locale, WorldText> = {
       bot: { label: "Поговорить с роботом", lines: ["Бип буп, убираю!", "В космосе нет пыли… но я найду.", "Чистота — половина миссии!"] },
     },
   },
-};
+});
 
 
-const forest: Record<Locale, WorldText> = {
+const forest: Record<Locale, WorldText> = withFallbacks({
   cs: {
     title: "Pohádkový les",
     subtitle: "Mýtina plná světlušek: víly, hajní a lesní řemeslníci ti prodají kouzelné zboží za body z učení.",
@@ -165,9 +166,9 @@ const forest: Record<Locale, WorldText> = {
       kocka: { label: "Погладить кошку", lines: ["Мяу!", "Мур… почеши за ушком.", "Мяу мяу!"] },
     },
   },
-};
+});
 
-const castle: Record<Locale, WorldText> = {
+const castle: Record<Locale, WorldText> = withFallbacks({
   cs: {
     title: "Hrad a tržiště",
     subtitle: "Středověké tržiště pod hradbami: krejčí, král, kovář i sokolník prodávají zboží za body z učení.",
@@ -240,9 +241,9 @@ const castle: Record<Locale, WorldText> = {
       slepice: { label: "Поговорить с курицей", lines: ["Ко-ко!", "Сегодня снесу золотое яйцо.", "Куд-кудах!"] },
     },
   },
-};
+});
 
-const sea: Record<Locale, WorldText> = {
+const sea: Record<Locale, WorldText> = withFallbacks({
   cs: {
     title: "Podmořské město",
     subtitle: "Perleťové město na mořském dně: mořské panny, potápěči a mágové ti prodají mořské zboží za body z učení.",
@@ -315,14 +316,14 @@ const sea: Record<Locale, WorldText> = {
       krab: { label: "Поговорить с крабом", lines: ["Клац-клац!", "Боком ходить лучше всего.", "Осторожно, мои клешни!"] },
     },
   },
-};
+});
 
-const unlock: Record<Locale, UnlockText> = {
+const unlock: Record<Locale, UnlockText> = withFallbacks({
   cs: { title: "Odemknout svět", text: "Svět „{name}“ se odemkne na úrovni {level} a stojí {points} bodů.", button: "Odemknout za {points} ⭐", needLevel: "Chybí ti úroveň {level}", needPoints: "Chybí ti {n} bodů", done: "Svět je odemčený!", locked: "Zamčeno" },
   en: { title: "Unlock world", text: "The world “{name}” unlocks at level {level} and costs {points} points.", button: "Unlock for {points} ⭐", needLevel: "You need level {level}", needPoints: "You need {n} more points", done: "World unlocked!", locked: "Locked" },
   de: { title: "Welt freischalten", text: "Die Welt „{name}“ wird ab Level {level} freigeschaltet und kostet {points} Punkte.", button: "Für {points} ⭐ freischalten", needLevel: "Dir fehlt Level {level}", needPoints: "Dir fehlen {n} Punkte", done: "Welt freigeschaltet!", locked: "Gesperrt" },
   ru: { title: "Открыть мир", text: "Мир «{name}» откроется на уровне {level} и стоит {points} баллов.", button: "Открыть за {points} ⭐", needLevel: "Нужен уровень {level}", needPoints: "Не хватает {n} баллов", done: "Мир открыт!", locked: "Закрыто" },
-};
+});
 
 export function getUnlockText(locale: Locale): UnlockText {
   return unlock[locale];
@@ -345,7 +346,7 @@ export function getWorldText(locale: Locale, world: string): WorldText {
 }
 
 export type TownText = { tab: string; title: string; subtitle: string; walking: string; sheet: string; locked: string; talk: Record<string, { label: string; lines: string[] }> };
-const town: Record<Locale, TownText> = {
+const town: Record<Locale, TownText> = withFallbacks({
   cs: {
     tab: "Městečko",
     title: "Městečko",
@@ -402,16 +403,16 @@ const town: Record<Locale, TownText> = {
       kocka: { label: "Погладить кошку", lines: ["Мяу!", "Мур…", "Мяу мяу!"] },
     },
   },
-};
+});
 export function getTownText(locale: Locale): TownText {
   return town[locale];
 }
 
 export function getSkipText(locale: Locale): { skip: string; soundOn: string; soundOff: string } {
-  return {
+  return withFallbacks({
     cs: { skip: "Přeskočit", soundOn: "Vypnout zvuky", soundOff: "Zapnout zvuky" },
     en: { skip: "Skip", soundOn: "Mute sounds", soundOff: "Unmute sounds" },
     de: { skip: "Überspringen", soundOn: "Ton ausschalten", soundOff: "Ton einschalten" },
     ru: { skip: "Пропустить", soundOn: "Выключить звук", soundOff: "Включить звук" },
-  }[locale];
+  })[locale];
 }

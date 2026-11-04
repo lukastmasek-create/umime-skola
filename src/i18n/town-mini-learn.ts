@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 // Texty a data pro naučné minihry městečka (pokladna v pekárně, knihovna, hvězdárna, květinářství).
@@ -116,5 +117,5 @@ const ru: TownMiniLearnText = {
   words: ["арбуз", "банан", "волк", "гриб", "дом", "ёж", "жук", "замок", "игра", "книга", "кот", "лиса", "луна", "мама", "море", "мяч", "нос", "окно", "пирог", "рыба", "слон", "торт", "утка", "флаг", "хлеб", "цирк", "чай", "шар", "щука", "экран", "юла", "яблоко"],
 };
 
-const texts: Record<Locale, TownMiniLearnText> = { cs, en, de, ru };
+const texts: Record<Locale, TownMiniLearnText> = withFallbacks({ cs, en, de, ru });
 export const getTownMiniLearnText = (locale: Locale) => texts[locale];

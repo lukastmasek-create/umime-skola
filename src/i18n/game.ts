@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 export type GameQuestion = {
@@ -439,7 +440,7 @@ const ru: GameText = {
   ],
 };
 
-const texts: Record<Locale, GameText> = { cs, en, de, ru };
+const texts: Record<Locale, GameText> = withFallbacks({ cs, en, de, ru });
 
 export function getGameText(locale: Locale): GameText {
   return texts[locale];

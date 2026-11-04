@@ -10,10 +10,17 @@ import { PIRATE_KIT } from "./pirate";
 // Laboratoř má vlastní strukturu, její překlady jsou v translations-lab.ts.
 type Kits = Partial<Record<Locale, RoomKit>>;
 
-const NOTE: Record<Exclude<Locale, "cs">, { name: string; description: string }> = {
+const NOTE_TEXT = {
   en: { name: "Note {n}", description: "A paper with the number {n}." },
   de: { name: "Notiz {n}", description: "Ein Zettel mit der Nummer {n}." },
   ru: { name: "Записка {n}", description: "Бумажка с номером {n}." },
+};
+const NOTE: Record<Exclude<Locale, "cs">, { name: string; description: string }> = {
+  ...NOTE_TEXT,
+  uk: NOTE_TEXT.en,
+  ja: NOTE_TEXT.en,
+  es: NOTE_TEXT.en,
+  fr: NOTE_TEXT.en,
 };
 
 const museum: Kits = {

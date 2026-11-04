@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 export type IdleGame = { name: string; description: string };
@@ -76,7 +77,7 @@ const ru: IdleText = {
   ],
 };
 
-const texts: Record<Locale, IdleText> = { cs, en, de, ru };
+const texts: Record<Locale, IdleText> = withFallbacks({ cs, en, de, ru });
 
 export function getIdleText(locale: Locale): IdleText {
   return texts[locale];

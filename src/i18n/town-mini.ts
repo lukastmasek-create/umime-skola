@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { MiniId } from "@/lib/town-mini";
 
@@ -159,5 +160,5 @@ const ru: TownMiniText = {
   repeat: "Твоя очередь!",
   bakeOver: "Готово! Ты прошёл {n} раундов.",
 };
-const texts: Record<Locale, TownMiniText> = { cs, en, de, ru };
+const texts: Record<Locale, TownMiniText> = withFallbacks({ cs, en, de, ru });
 export const getTownMiniText = (locale: Locale) => texts[locale];

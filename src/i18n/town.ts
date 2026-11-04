@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 export type TownHubText = {
@@ -148,5 +149,5 @@ const ru: TownHubText = {
   collect: { title: "Сокровища дня", text: "Каждый день в городке прячутся восемь сокровищ. Найдёшь?", got: "+{n} баллов", all: "Всё собрано! Бонус за весь день.", login: "Сокровища собирают только вошедшие игроки.", left: "Осталось {n}" },
   mine: { title: "Мой городок", text: "Особые постройки из магазина стоят на твоих участках в городке.", empty: "Особых построек пока нет. Купи и построй их в магазине.", open: "Строить в городе" },
 };
-const T: Record<Locale, TownHubText> = { cs, en, de, ru };
+const T: Record<Locale, TownHubText> = withFallbacks({ cs, en, de, ru });
 export const getTownHubText = (locale: Locale): TownHubText => T[locale];

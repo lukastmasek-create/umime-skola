@@ -1,4 +1,5 @@
 "use client";
+import { withFallbacks } from "@/i18n/config";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -15,12 +16,12 @@ import type { Locale } from "@/i18n/config";
 const TIERS = ["bronz", "stribro", "zlato"] as const;
 const STORAGE = "umime-medals-seen";
 
-const TEXT: Record<Locale, Record<string, string>> = {
+const TEXT: Record<Locale, Record<string, string>> = withFallbacks({
   cs: { title: "Medaile předmětů", bronz: "Bronzová medaile", stribro: "Stříbrná medaile", zlato: "Zlatá medaile", locked: "Dokonči první kurz", next: "Do dalšího stupně: {n} kurzů", all: "Máš všechny kurzy!", congrats: "Nová medaile!", ok: "Super!", done: "Hotovo {done} z {total}", summary: "{m} medailí · {c} kurzů hotovo" },
   en: { title: "Subject medals", bronz: "Bronze medal", stribro: "Silver medal", zlato: "Gold medal", locked: "Finish your first course", next: "To the next tier: {n} courses", all: "You finished every course!", congrats: "New medal!", ok: "Awesome!", done: "{done} of {total} done", summary: "{m} medals · {c} courses done" },
   de: { title: "Fächer-Medaillen", bronz: "Bronzemedaille", stribro: "Silbermedaille", zlato: "Goldmedaille", locked: "Schließe deinen ersten Kurs ab", next: "Bis zur nächsten Stufe: {n} Kurse", all: "Alle Kurse geschafft!", congrats: "Neue Medaille!", ok: "Super!", done: "{done} von {total} fertig", summary: "{m} Medaillen · {c} Kurse fertig" },
   ru: { title: "Медали по предметам", bronz: "Бронзовая медаль", stribro: "Серебряная медаль", zlato: "Золотая медаль", locked: "Пройди первый курс", next: "До следующего уровня: {n} курсов", all: "Все курсы пройдены!", congrats: "Новая медаль!", ok: "Супер!", done: "Пройдено {done} из {total}", summary: "Медалей: {m} · курсов пройдено: {c}" },
-};
+});
 
 function tierOf(s: SubjectSummary | undefined): number {
   if (!s || s.total <= 0 || s.done <= 0) return -1;

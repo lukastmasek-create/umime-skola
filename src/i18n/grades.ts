@@ -1,11 +1,18 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { CategorySlug } from "@/lib/taxonomy";
 
 const allGrades: Record<Locale, string> = {
-  cs: "Všechny třídy",
-  en: "All grades",
-  de: "Alle Klassen",
-  ru: "Все классы",
+  ...withFallbacks({
+    cs: "Všechny třídy",
+    en: "All grades",
+    de: "Alle Klassen",
+    ru: "Все классы",
+  }),
+  uk: "Усі класи",
+  ja: "全学年",
+  es: "Todos los cursos",
+  fr: "Toutes les classes",
 };
 
 export function getAllGradesLabel(locale: Locale): string {
@@ -23,5 +30,13 @@ export function gradeLabel(locale: Locale, category: CategorySlug, n: number): s
       return secondary ? `${n}. Jahrgang` : `${n}. Klasse`;
     case "ru":
       return secondary ? `${n} курс` : `${n} класс`;
+    case "uk":
+      return secondary ? `${n} курс` : `${n} клас`;
+    case "ja":
+      return `${n}年生`;
+    case "es":
+      return `${n}.º curso`;
+    case "fr":
+      return `${n}e année`;
   }
 }

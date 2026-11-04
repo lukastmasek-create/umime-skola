@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { ShopKind } from "@/lib/shop";
 
@@ -196,7 +197,7 @@ const ru: ShopText = {
   },
 };
 
-const texts: Record<Locale, ShopText> = { cs, en, de, ru };
+const texts: Record<Locale, ShopText> = withFallbacks({ cs, en, de, ru });
 
 export function getShopText(locale: Locale): ShopText {
   return texts[locale];

@@ -24,7 +24,7 @@ export function LanguageSwitcher({ current }: { current: Locale }) {
   function switchTo(locale: Locale) {
     setOpen(false);
     setLocaleCookie(locale);
-    const rest = pathname?.replace(/^\/(cs|en|de|ru)/, "") || "";
+    const rest = pathname?.replace(/^\/(cs|en|de|ru|uk|ja|es|fr)/, "") || "";
     router.push(`/${locale}${rest}`);
   }
 

@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 // Texty nových částí Nastavení: animace, účet (e-mail, heslo) a rodičovská kontrola.
@@ -172,5 +173,5 @@ const ru: SettingsExtraText = {
   loginFirst: "Войди, чтобы пользоваться этими настройками.",
   sections: { graphics: "Графика", school: "Школа", account: "Аккаунт", parental: "Родительский контроль" },
 };
-const texts: Record<Locale, SettingsExtraText> = { cs, en, de, ru };
+const texts: Record<Locale, SettingsExtraText> = withFallbacks({ cs, en, de, ru });
 export const getSettingsExtraText = (locale: Locale) => texts[locale];

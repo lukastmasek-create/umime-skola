@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { GiftId, NpcKey } from "@/lib/town-npc";
 
@@ -265,7 +266,7 @@ const ru: TownLifeText = {
   evening: "Добрый вечер!",
 };
 
-const TEXTS: Record<Locale, TownLifeText> = { cs, en, de, ru };
+const TEXTS: Record<Locale, TownLifeText> = withFallbacks({ cs, en, de, ru });
 export function getTownLifeText(locale: Locale): TownLifeText {
   return TEXTS[locale] ?? cs;
 }

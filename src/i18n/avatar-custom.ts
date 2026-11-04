@@ -1,3 +1,4 @@
+import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 import type { Pattern, Slot, Toggle } from "@/lib/avatar-custom";
 
@@ -91,7 +92,7 @@ const ru: CustomText = {
   noParts: "Этого аватара пока нельзя изменить.",
 };
 
-const texts: Record<Locale, CustomText> = { cs, en, de, ru };
+const texts: Record<Locale, CustomText> = withFallbacks({ cs, en, de, ru });
 
 export function getCustomText(locale: Locale): CustomText {
   return texts[locale];
