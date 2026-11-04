@@ -466,8 +466,8 @@ export default function Avatar3D({
         // Kliknutí: klip z modelu (radost, salto, tanec…) a k tomu pohyb celé postavy, každé kliknutí jiné.
         playJoy = () => {
           if (reduceMotion) return;
-          // Náhodná reakce, nikdy stejná dvakrát po sobě. Model nemusí mít všechny klipy (postavy z craftování
-          // mají jen klid a radost), takže chybějící klip nahradí pohyb celé postavy, pokud k němu existuje.
+          // Náhodná reakce, nikdy stejná dvakrát po sobě. Model nemusí mít všechny klipy (starší modely mají jen
+          // klid a radost), takže chybějící klip nahradí pohyb celé postavy, pokud k němu existuje.
           const choices = CLICK_REACTIONS.map((r, i) => [r, i] as const).filter(([[name, g], i]) => i !== reaction && (actions.has(name) || g));
           if (choices.length === 0) return;
           const [[clipName, g], idx] = choices[Math.floor(Math.random() * choices.length)];
