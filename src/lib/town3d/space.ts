@@ -8,7 +8,7 @@ import { canvasTex, clamp01, createStage, lerp, makeHero, overlayFx, smooth, sof
 // Děj: hrdina (jeho 3D postava) dojde k věži, vyjede výtahem, přejde lávku a nastoupí poklopem; lávka odjede,
 // odpočet, start, průlet mraky do vesmíru, přílet ke stanici, brána se otevře a raketa vletí do hangáru.
 
-export type SpaceOpts = { look: number; onEnd: () => void };
+export type SpaceOpts = { look: number; onEnd: () => void; veil?: string };
 export type Handle = { stop: () => void; skip: () => void };
 
 // časová osa (s)
@@ -566,7 +566,7 @@ export function runSpace3D(container: HTMLElement, opts: SpaceOpts): Handle {
     return { stop: () => {}, skip: () => {} };
   }
   const { renderer } = stage;
-  const fx = overlayFx(stage);
+  const fx = overlayFx(stage, opts.veil);
   const finish = () => {
     if (ended) return;
     ended = true;

@@ -7,7 +7,7 @@ import { ease, forestTrees, glowSprite, gradientSky, ground, hero, noiseTex, pla
 // Velké stavby jsou detailní modely z Blenderu (public/mestecko3d: strom, hrad-scena, podmorske), okolí, voda,
 // částice a pohyblivé díly (padací most, mříž, ponorka, portál ve dveřích) se staví tady.
 
-export type FilmOpts = { look: number; onEnd: () => void };
+export type FilmOpts = { look: number; onEnd: () => void; veil?: string };
 export type Handle = { stop: () => void; skip: () => void };
 
 type Ctx = { scene: THREE.Scene; camera: THREE.PerspectiveCamera; look: THREE.Vector3; renderer: THREE.WebGLRenderer };
@@ -31,7 +31,7 @@ function runFilm(container: HTMLElement, opts: FilmOpts, build: (ctx: Ctx) => Fi
     return { stop: () => {}, skip: () => {} };
   }
   const { renderer } = stage;
-  const fx = overlayFx(stage);
+  const fx = overlayFx(stage, opts.veil);
   const finish = () => {
     if (ended) return;
     ended = true;

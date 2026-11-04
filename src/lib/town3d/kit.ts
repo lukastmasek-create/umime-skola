@@ -176,10 +176,11 @@ function disposeMat(m: THREE.Material) {
 }
 
 /** Filmové pruhy (0..1), číslo odpočtu a bílý záblesk na překryvu scény. */
-export function overlayFx(stage: Stage) {
+export function overlayFx(stage: Stage, veil = "#fff") {
   const bars = stage.overlay.querySelectorAll<HTMLElement>("[data-bar]");
   const count = stage.overlay.querySelector<HTMLElement>("[data-count]")!;
   const flash = stage.overlay.querySelector<HTMLElement>("[data-flash]")!;
+  flash.style.background = veil;
   return {
     bars(on: boolean) {
       bars.forEach((b) => (b.style.height = on ? "9%" : "0"));

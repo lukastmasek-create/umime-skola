@@ -8,7 +8,7 @@ import { Market3DView } from "@/components/Market3DView";
 import type { MarketSpot } from "@/lib/town3d/market3d";
 import { bannerCss, isFrameId } from "@/lib/cosmetics";
 import { BUNDLE_DISCOUNT, DEAL_DISCOUNT, SHOP_BUNDLES, SHOP_ITEMS, bundlePrice, dailyDealIds, dayKey, salePrice, type ShopItem } from "@/lib/shop";
-import { WORLDS, inWorld, type SceneDef, type StallKey, type WorldId } from "@/lib/market-worlds";
+import { WORLDS, WORLD_VEIL, inWorld, type SceneDef, type StallKey, type WorldId } from "@/lib/market-worlds";
 import { getMarketText } from "@/i18n/market";
 import { getShopText } from "@/i18n/shop";
 import { getShopExtraText } from "@/i18n/shop-extra";
@@ -304,7 +304,6 @@ function useScenery(stage: React.RefObject<HTMLDivElement | null>, back: React.R
   }, [stage, back, front, nightRef, def, data, enabled]);
 }
 
-const VEIL: Record<string, string> = { pirate: "#cfe8ff", space: "#9be8ff", forest: "#e8ffb0", castle: "#1a1020", sea: "#5fd0ee" };
 
 export function MarketWorld({ locale, initialWorld, film = false }: { locale: Locale; initialWorld?: WorldId; film?: boolean }) {
   const t = getShopText(locale);
@@ -316,7 +315,7 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
   const wanted = initialWorld && WORLDS.some((w) => w.id === initialWorld && w.ready) ? initialWorld : undefined;
   const [worldId, setWorldId] = useState<WorldId>(film && wanted ? wanted : "pirate");
   // po filmovém přechodu z městečka obraz zalévá závoj v barvě konce a pomalu se rozplyne
-  const [veil, setVeil] = useState<{ color: string; fade: boolean } | null>(film ? { color: VEIL[wanted ?? "pirate"] ?? "#cfe8ff", fade: false } : null);
+  const [veil, setVeil] = useState<{ color: string; fade: boolean } | null>(film ? { color: WORLD_VEIL[wanted ?? "pirate"], fade: false } : null);
   const wantedDone = useRef(false);
   const [unlockId, setUnlockId] = useState<WorldId | null>(null);
   const [open, setOpen] = useState<StallKey | null>(null);

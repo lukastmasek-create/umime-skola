@@ -25,6 +25,7 @@ import { getMarketText } from "@/i18n/market";
 import { getSkipText } from "@/i18n/market-world";
 import { getTownHubText } from "@/i18n/town";
 import { notifyAccountChanged } from "@/lib/account-events";
+import { WORLD_VEIL } from "@/lib/market-worlds";
 import type { Locale } from "@/i18n/config";
 import hubData from "./mesto-hub-kotvy.json";
 import { prefersReducedMotion } from "@/lib/motion";
@@ -967,7 +968,7 @@ export function TownHub({ locale }: { locale: Locale }) {
         void mod.then(({ runSpace3D }) => {
           const el = space3d.current;
           if (!alive || !el) return;
-          handle.current = runSpace3D(el, { look: getHeroLook(), onEnd: () => leave(`/${locale}/uzivatelsky-obchod?svet=space&film=1`) });
+          handle.current = runSpace3D(el, { look: getHeroLook(), veil: WORLD_VEIL.space, onEnd: () => leave(`/${locale}/uzivatelsky-obchod?svet=space&film=1`) });
         });
       }, false);
       return () => {
@@ -982,7 +983,7 @@ export function TownHub({ locale }: { locale: Locale }) {
         void mod.then(({ runPirate3D }) => {
           const el = space3d.current;
           if (!alive || !el) return;
-          handle.current = runPirate3D(el, { look: getHeroLook(), onEnd: () => leave(`/${locale}/uzivatelsky-obchod?svet=pirate&film=1`) });
+          handle.current = runPirate3D(el, { look: getHeroLook(), veil: WORLD_VEIL.pirate, onEnd: () => leave(`/${locale}/uzivatelsky-obchod?svet=pirate&film=1`) });
         });
       }, false);
       return () => {
@@ -999,7 +1000,7 @@ export function TownHub({ locale }: { locale: Locale }) {
           const el = space3d.current;
           if (!alive || !el) return;
           const run = world === "castle" ? films.runCastle3D : world === "sea" ? films.runSea3D : films.runForest3D;
-          handle.current = run(el, { look: getHeroLook(), onEnd: () => leave(`/${locale}/uzivatelsky-obchod?svet=${world}&film=1`) });
+          handle.current = run(el, { look: getHeroLook(), veil: WORLD_VEIL[world], onEnd: () => leave(`/${locale}/uzivatelsky-obchod?svet=${world}&film=1`) });
         });
       }, false);
       return () => {

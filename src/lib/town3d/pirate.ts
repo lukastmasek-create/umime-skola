@@ -8,7 +8,7 @@ import { canvasTex, clamp01, createStage, lerp, makeHero, makeLoop, makeModel, o
 // Děj: hrdina dojde po molu a lávce na palubu, kapitán u kormidla, lávka se stáhne, rumpál vytáhne kotvu,
 // plachty se nadmou a loď vypluje k ostrovům.
 
-export type PirateOpts = { look: number; onEnd: () => void };
+export type PirateOpts = { look: number; onEnd: () => void; veil?: string };
 export type Handle = { stop: () => void; skip: () => void };
 
 const T = { molo: 2.2, plank: 3.6, deck: 4.4, plankAway: 4.6, anchor: [4.8, 6.0], wind: [5.9, 6.8], sail: 6.8, fade: 11.0, end: 11.6 };
@@ -285,7 +285,7 @@ export function runPirate3D(container: HTMLElement, opts: PirateOpts): Handle {
     return { stop: () => {}, skip: () => {} };
   }
   const { renderer } = stage;
-  const fx = overlayFx(stage);
+  const fx = overlayFx(stage, opts.veil);
   const finish = () => {
     if (ended) return;
     ended = true;
