@@ -779,6 +779,19 @@ export function SpaceQuizGame({
             ⏸
           </button>
         )}
+        {phase === "intro" && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60 p-4 text-center backdrop-blur-[2px]">
+            <p className="max-w-md text-xs font-semibold text-white sm:text-sm">⌨️ {t.controls}</p>
+            <button
+              type="button"
+              onClick={() => startRun()}
+              autoFocus
+              className="btn-bouncy bg-[var(--brand-500)] px-6 py-2.5 text-sm font-bold text-white hover:bg-[var(--brand-600)]"
+            >
+              ▶ {t.start}
+            </button>
+          </div>
+        )}
         {paused && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/65 backdrop-blur-sm">
             <p className="text-2xl font-extrabold text-white" style={{ fontFamily: "var(--font-heading)" }}>
@@ -804,9 +817,8 @@ export function SpaceQuizGame({
       </div>
 
       {phase === "intro" && (
-        <div className="fs-panel flex flex-col gap-4">
+        <div className="flex flex-col gap-4">
           <p className="text-sm text-[var(--muted)]">{t.intro}</p>
-          <p className="text-xs text-[var(--faint)]">⌨️ {t.controls}</p>
           <div className="flex flex-wrap gap-2 text-xs font-semibold">
             {!endless && (
               <span className="pill bg-[var(--surface-muted)] px-3 py-1.5">
@@ -823,12 +835,6 @@ export function SpaceQuizGame({
           {game === "space-invaders" && <p className="text-xs text-[var(--faint)]">💡 {t.tipDodge}</p>}
           <DifficultyPicker t={t} value={difficulty} onChange={setDifficulty} />
           <UpgradeShop t={t} coins={coins} upgrades={upgrades} onBuy={buy} />
-          <button
-            onClick={() => startRun()}
-            className="fs-start btn-bouncy self-start rounded-full bg-[var(--brand-500)] px-6 py-3 text-sm font-semibold text-white hover:bg-[var(--brand-600)]"
-          >
-            {t.start}
-          </button>
           {!hasCourseQuestions && <p className="text-xs text-[var(--faint)]">{t.demoNote}</p>}
         </div>
       )}
