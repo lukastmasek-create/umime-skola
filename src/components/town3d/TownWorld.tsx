@@ -9,7 +9,7 @@ import { getHeroLook } from "@/lib/hero";
 import { useAccount } from "@/lib/use-account";
 import { notifyAccountChanged } from "@/lib/account-events";
 import { PLACES, WORLD_OF_PLACE } from "@/lib/town3d/layout";
-import type { WorldHandle } from "@/lib/town3d/world";
+import type { Near, WorldHandle } from "@/lib/town3d/world";
 import { Modal } from "@/components/ShopView";
 import { MiniGame } from "@/components/TownMini";
 import { getTownMiniText } from "@/i18n/town-mini";
@@ -63,6 +63,9 @@ export function TownWorld({ locale }: { locale: Locale }) {
   const shell = useRef<HTMLDivElement>(null);
   const labelsRef = useRef<HTMLDivElement>(null);
   const world = useRef<WorldHandle | null>(null);
+  // co je zrovna na dosah (budova nebo člověk): výzva s klávesou E, klávesa čte ref, výzva state
+  const [near, setNear] = useState<Near | null>(null);
+  const nearRef = useRef<Near | null>(null);
   const [account] = useAccount();
   const [state, setState] = useState<"loading" | "ready" | "failed">("loading");
   const [tab, setTab] = useState<Tab>("places");
@@ -159,6 +162,10 @@ export function TownWorld({ locale }: { locale: Locale }) {
       handle = createWorld(el, {
         look: getHeroLook(),
         onSelect: (id) => setSelected(id),
+        onNear: (n) => {
+          nearRef.current = n;
+          setNear(n);
+        },
         onArrive: (id) => say(`${ui.arrived}: ${names[id]?.name ?? id}`),
         onReady: () => setState("ready"),
         onCollect: async (slot) => {
@@ -288,6 +295,46 @@ export function TownWorld({ locale }: { locale: Locale }) {
       notifyAccountChanged();
     }
   }
+
+  // E (nebo klik na výzvu): u obyvatele promluví, u budovy otevře stránku / minihru, jinak k místu dojde
+  const interact = useCallback(
+    (n: Near) => {
+      if (n.kind === "person") {
+        const who = ui.people[n.id] ?? { name: names[n.id]?.name ?? n.id, line: names[n.id]?.desc ?? "" };
+        if (n.place) setSelected(n.place);
+        say(`${who.name}: ${who.line}`);
+        return;
+      }
+      const p = PLACES.find((x) => x.id === n.id);
+      if (!p) return;
+      setSelected(p.id);
+      const locked = !!openWorlds && !!WORLD_OF_PLACE[p.id] && !openWorlds.includes(WORLD_OF_PLACE[p.id]);
+      if (p.kind === "world") {
+        if (locked) say(ui.locked);
+        else setFilm(p.id);
+      } else if (p.href) router.push(`/${locale}${p.href}`);
+      else if (PLACE_MINI[p.id]) setMiniOpen(PLACE_MINI[p.id][0]);
+      else world.current?.walkTo(p.id);
+    },
+    [ui, names, openWorlds, say, router, locale],
+  );
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() !== "e" || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+      if ((e.target as HTMLElement | null)?.closest?.("input,textarea,select,[contenteditable]")) return;
+      const n = nearRef.current;
+      if (!n || miniOpen || film) return;
+      e.preventDefault();
+      interact(n);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [interact, miniOpen, film]);
+  const nearInfo = near
+    ? near.kind === "person"
+      ? { near, verb: ui.talk, label: (ui.people[near.id] ?? { name: names[near.id]?.name ?? near.id }).name }
+      : { near, verb: ui.open, label: names[near.id]?.name ?? near.id }
+    : null;
 
   function fullscreen() {
     const el = shell.current;
@@ -591,6 +638,17 @@ export function TownWorld({ locale }: { locale: Locale }) {
           ))}
         </div>
       </section>
+
+      {nearInfo && state === "ready" && !film && !miniOpen && (
+        <button
+          type="button"
+          onClick={() => interact(nearInfo.near)}
+          className="town3d-chip pointer-events-auto absolute bottom-4 left-1/2 z-[5] -translate-x-1/2 font-bold max-md:bottom-[calc(44%+12px)]"
+        >
+          <kbd className="mr-1.5 rounded border border-current px-1.5 text-xs">E</kbd>
+          {nearInfo.verb}: {nearInfo.label}
+        </button>
+      )}
 
       {film && (
         <div className="absolute inset-0 z-[70] bg-black">
