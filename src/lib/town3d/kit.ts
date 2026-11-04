@@ -199,6 +199,24 @@ export function overlayFx(stage: Stage, veil = "#fff") {
   };
 }
 
+/** Kruhová clona: scéna se z místa hrdiny rozevře (`at` v procentech plátna) a na konci se zavře do barvy závoje cíle. */
+export type Iris = [number, number];
+const IRIS_SHOW = "clip-path 1.1s cubic-bezier(.2,.7,.2,1), opacity .3s ease";
+export function irisIn(el: HTMLElement, at: Iris | undefined, veil: string) {
+  const [x, y] = at ?? [50, 50];
+  el.style.background = veil;
+  el.style.transition = "none";
+  el.style.clipPath = `circle(0% at ${x}% ${y}%)`;
+  el.style.opacity = "1";
+  void el.offsetWidth;
+  el.style.transition = IRIS_SHOW;
+  requestAnimationFrame(() => requestAnimationFrame(() => (el.style.clipPath = `circle(150% at ${x}% ${y}%)`)));
+}
+export function irisOut(el: HTMLElement, ms = 760) {
+  el.style.transition = `clip-path ${ms / 1000}s cubic-bezier(.6,0,.4,1)`;
+  el.style.clipPath = "circle(0% at 50% 46%)";
+}
+
 /** Plátno s nakreslenou texturou (sRGB). */
 export function canvasTex(w: number, h: number, draw: (g: CanvasRenderingContext2D) => void, repeat?: [number, number]) {
   const c = document.createElement("canvas");
