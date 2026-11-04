@@ -16,6 +16,8 @@ import { xpForLevel } from "@/lib/progression";
 export const FULL_ACCESS_EMAILS: ReadonlySet<string> = new Set([
   "lukaszahorda1011@gmail.com",
   "tuzitv@seznam.cz",
+  "ondrej.vrba@infis.cz",
+  "natalie.majerovainf@seznam.cz",
 ]);
 
 // Úroveň, kterou plný přístup dosazuje (XP se jen dopočítá, do databáze se nezapisuje).
