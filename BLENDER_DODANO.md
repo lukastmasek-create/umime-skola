@@ -149,6 +149,11 @@ na jazykovou verzi. Bez toho hra nenačetla `manifest.json`.
   v `src/lib/escape/rooms/<místnost>.ts`. Render `escape_assets.py`, kopírování `escape_publish.mjs`.
 - **Hry flappy, mole, ninja**: `public/game-sprites/<hra>/` a `public/game-models/<hra>/` (stejný formát
   jako u ostatních her). Render `game_sprites2.py`.
+- **Druhé místnosti únikovek** (`public/escape/<místnost>-2/`, všech devět: lab, museum, expedition, jungle, pirate,
+  kitchen, library, observatory, castle): `bg.webp` (1600 × 900), stavy `b_open`, `d_used`, `door_open` a předměty
+  `items/key|card|note1|note2|note3.webp` (128 × 128). Klikací místa a rozměry výřezů jsou v `src/lib/escape/rooms/inner.ts`
+  a `INNER_ART_PATCHES` v `src/lib/escape/art.ts`. Render `umime-art/scripts/escape_inner.py` (bpy: `blender -b --python`,
+  nebo `pip install bpy` a `python`), převod `umime-art/scripts/escape_inner_publish.py`.
 
 `src/proxy.ts`: přidána výjimka `escape/`.
 

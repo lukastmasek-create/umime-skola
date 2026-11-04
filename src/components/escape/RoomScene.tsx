@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ART_PATCHES, ART_ROOMS } from "@/lib/escape/art";
+import { ART_PATCHES, ART_ROOMS, INNER_ART_PATCHES, INNER_ART_ROOMS, type ArtPatch } from "@/lib/escape/art";
 import type { Hotspot, RoomTheme } from "@/lib/escape/types";
 
 const INK = "#16132b";
+type ArtKey = keyof typeof ART_PATCHES;
 const PROP_COLORS = ["#ffe3b0", "#c8f0c0", "#bfe3ff", "#ffc2d6", "#e3d4ff", "#fff0a8"];
 
 // Obecná scéna pro únikovky bez vlastní kresby: pozadí podle motivu místnosti a každé
@@ -30,13 +31,14 @@ export function RoomScene({
 }) {
   // Vyrenderovaná místnost (public/escape/<místnost>/). Když se obrázek nenačte, zůstane kreslená scéna.
   const [artOk, setArtOk] = useState(true);
-  const hasArt = artOk && ART_ROOMS.includes(roomId);
-  const artStates = [
-    solved.includes("b") && "b_open",
-    used.includes("d") && "d_used",
-    solved.includes("e") && "e_on",
-    solved.includes("door") && "door_open",
-  ].filter((key): key is keyof typeof ART_PATCHES => Boolean(key));
+  const inner = INNER_ART_ROOMS.includes(roomId);
+  const hasArt = artOk && (inner || ART_ROOMS.includes(roomId));
+  // Druhá místnost má jiné rozložení: panel (d) je hádanka, takže se aktivuje vyřešením, ne použitím předmětu.
+  const patches: Partial<Record<ArtKey, ArtPatch>> = inner ? INNER_ART_PATCHES : ART_PATCHES;
+  const states: (ArtKey | false)[] = inner
+    ? [solved.includes("b") && "b_open", solved.includes("d") && "d_used", solved.includes("door") && "door_open"]
+    : [solved.includes("b") && "b_open", used.includes("d") && "d_used", solved.includes("e") && "e_on", solved.includes("door") && "door_open"];
+  const artStates = states.filter((key): key is ArtKey => Boolean(key));
 
   return (
     <svg viewBox="0 0 800 450" className="block h-auto w-full" role="img" aria-label={theme.title}>
@@ -65,7 +67,8 @@ export function RoomScene({
             onError={() => setArtOk(false)}
           />
           {artStates.map((key) => {
-            const patch = ART_PATCHES[key];
+            const patch = patches[key];
+            if (!patch) return null;
             return (
               <image
                 key={key}
