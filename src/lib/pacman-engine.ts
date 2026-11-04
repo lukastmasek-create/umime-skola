@@ -427,7 +427,8 @@ export class PacmanEngine extends ArcadeEngine {
       const above = ay > 70;
       const ly = above ? ay - 22 : ay + 24;
       const lx = Math.max(maxW / 2 + 3, Math.min(W - maxW / 2 - 3, ax));
-      drawLabel(ctx, a.label, lx, ly, maxW, a.color, { alpha: 0.95 });
+      // Průhledný text: přes popisek je vidět zeď nebo chodba, takže je jasné, jestli cesta vede skrz.
+      drawLabel(ctx, a.label, lx, ly, maxW, a.color, { alpha: 0.5 });
     }
     if (this.scared > 0) {
       ctx.fillStyle = "#9fd3ff";

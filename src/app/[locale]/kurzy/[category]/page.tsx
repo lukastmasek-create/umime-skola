@@ -49,12 +49,14 @@ export default async function CategoryPage({
   const gradeNumber = Number(trida);
   const selectedGrade = availableGrades.includes(gradeNumber) ? gradeNumber : undefined;
 
+  // Po výběru předmětu se stránka posune rovnou na seznam kurzů (kotva), jinak je pod velkou mapou ostrovů.
+  const COURSES_ANCHOR = "vyber-kurzu";
   const filterHref = (subjectSlug?: string, grade?: number) => {
     const query = new URLSearchParams();
     if (subjectSlug) query.set("predmet", subjectSlug);
     if (grade) query.set("trida", String(grade));
     const qs = query.toString();
-    return `/${locale}/kurzy/${category.slug}${qs ? `?${qs}` : ""}`;
+    return `/${locale}/kurzy/${category.slug}${qs ? `?${qs}` : ""}${subjectSlug ? `#${COURSES_ANCHOR}` : ""}`;
   };
 
   const counts = new Map<string, number>();
@@ -152,6 +154,7 @@ export default async function CategoryPage({
         }))}
       />
 
+      <div id={COURSES_ANCHOR} className="scroll-mt-6">
       {courses.length === 0 ? (
         <div className="card p-10 text-center text-[var(--muted)]" role={loadFailed ? "alert" : undefined}>
           {loadFailed
@@ -225,6 +228,7 @@ export default async function CategoryPage({
           })}
         </div>
       )}
+      </div>
     </div>
   );
 }
