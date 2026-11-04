@@ -10,12 +10,18 @@ import { isLocale, type Locale } from "@/i18n/config";
 import { notFound } from "next/navigation";
 import { AuthShell, type AuthMood } from "@/components/AuthShell";
 
-const GREETING: Record<Locale, string> = withFallbacks({
+const GREETING: Record<Locale, string> = {
+  ...withFallbacks({
   cs: "Ahoj! Přihlas se a pokračuj ve hře.",
   en: "Hi! Log in and keep playing.",
   de: "Hallo! Melde dich an und spiel weiter.",
   ru: "Привет! Войди и продолжай играть.",
-});
+  }),
+  uk: "Привіт! Увійди і продовжуй гру.",
+  ja: "こんにちは！ログインしてゲームを続けよう。",
+  es: "¡Hola! Inicia sesión y sigue jugando.",
+  fr: "Salut ! Connecte-toi et continue de jouer.",
+};
 
 export default function PrihlaseniPage({
   params,
