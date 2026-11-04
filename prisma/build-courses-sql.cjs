@@ -51,7 +51,7 @@ for (const file of files) {
   const extra = {};
   if (fs.existsSync(extraSubdir)) {
     for (const part of fs.readdirSync(extraSubdir).filter((f) => f.endsWith(".cjs")).sort()) {
-      Object.assign(extra, require(path.join(extraSubdir, part)).extra || {});
+      for (const [slug, rows] of Object.entries(require(path.join(extraSubdir, part)).extra || {})) extra[slug] = [...(extra[slug] || []), ...rows];
     }
   }
   for (const slug of Object.keys(extra)) {
