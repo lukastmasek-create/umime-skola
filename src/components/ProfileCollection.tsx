@@ -89,7 +89,7 @@ export function ProfileCollection({
                 <span className="text-xs text-[var(--faint)]">{entry.current ? t.selected : t.choose}</span>
               ) : (
                 <span className="flex flex-col items-center gap-0.5 text-xs font-semibold text-[var(--accent-500)]">
-                  <span aria-hidden>🔒</span>
+                  <span aria-hidden></span>
                   {entry.hint?.text}
                   {entry.hint?.href && <span aria-hidden>→</span>}
                 </span>

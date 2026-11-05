@@ -53,7 +53,7 @@ export function ParentalGuard({ locale }: { locale: Locale }) {
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#16132b]/92 p-6 text-center text-white backdrop-blur">
       <div className="flex max-w-md flex-col items-center gap-3">
         <p className="text-5xl" aria-hidden>
-          {timeUp ? "⏰" : "👪"}
+          {timeUp ? "" : ""}
         </p>
         <h2 className="text-2xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
           {timeUp ? t.timeUp : t.parental}

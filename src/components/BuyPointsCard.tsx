@@ -38,7 +38,7 @@ export function BuyPointsCard({
         {dict.shop.buyButton}
       </button>
       {clicked && (
-        <p className="text-xs text-[var(--faint)]">{dict.shop.comingSoon} ✨</p>
+        <p className="text-xs text-[var(--faint)]">{dict.shop.comingSoon}</p>
       )}
     </div>
   );

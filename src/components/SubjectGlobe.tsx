@@ -932,7 +932,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
                   </span>
                   {sum && sum.due > 0 && (
                     <span className="absolute -right-1.5 -top-1.5 rounded-full border-2 border-[#16132b] bg-[#ffd24d] px-1.5 text-[11px] font-extrabold leading-5" title={fmt(t.review, { n: sum.due })}>
-                      🔁 {sum.due}
+                      {sum.due}
                     </span>
                   )}
                 </Link>
@@ -983,7 +983,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
             </Link>
             {summary && summary.due > 0 && (
               <Link href={`/${locale}/opakovani`} className="btn-bouncy bg-[var(--accent-yellow)] px-4 py-2 text-sm font-bold text-[#16132b]">
-                🔁 {fmt(t.review, { n: summary.due })}
+                {fmt(t.review, { n: summary.due })}
               </Link>
             )}
           </div>

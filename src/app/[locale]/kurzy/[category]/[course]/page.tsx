@@ -80,7 +80,7 @@ export default async function CoursePage({
                   : "bg-[var(--surface-muted)] text-[var(--faint)]"
               }`}
             >
-              {available ? n : "🔒"}
+              {available ? n : ""}
             </span>
             <h3 className="text-sm font-semibold">{t.difficulties[n - 1]}</h3>
             <p className="text-xs text-[var(--faint)]">

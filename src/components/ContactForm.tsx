@@ -17,7 +17,7 @@ import {
   type ContactTopic,
 } from "@/lib/contact";
 
-const ICON: Record<ContactCategory, string> = { support: "🛟", partner: "🤝", school: "🏫" };
+const ICON: Record<ContactCategory, string> = { support: "", partner: "", school: "" };
 const input = "w-full rounded-xl border-2 bg-[var(--surface)] px-3 py-2 text-sm";
 
 type Status = { kind: "idle" } | { kind: "sending" } | { kind: "sent"; email: string } | { kind: "error"; text: string; field?: string };
@@ -99,7 +99,7 @@ export function ContactForm({
     return (
       <section className="card flex flex-col items-start gap-3 p-6" role="status">
         <p className="text-4xl" aria-hidden>
-          ✉️
+          
         </p>
         <h2 className="text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
           {t.successTitle}

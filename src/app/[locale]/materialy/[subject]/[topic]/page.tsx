@@ -76,7 +76,7 @@ function BlockView({ block, labels, live }: { block: Block; labels: { examples: 
     case "tip":
       return (
         <div className="rounded-xl border-2 border-[var(--edge)] bg-[var(--accent-yellow)] p-4 text-[#16132b]">
-          <span className="font-bold">💡 {labels.tip}: </span>
+          <span className="font-bold">{labels.tip}: </span>
           {block.text}
         </div>
       );
@@ -138,7 +138,7 @@ export default async function MaterialTopicPage({ params }: { params: Promise<Pa
       </div>
 
       <aside className="card mt-10 border-l-8 p-5" style={{ borderLeftColor: subject.color }}>
-        <h2 className="mb-2 text-lg font-bold">✅ {t.remember}</h2>
+        <h2 className="mb-2 text-lg font-bold">{t.remember}</h2>
         <ul className="flex list-disc flex-col gap-1.5 pl-5 leading-relaxed">
           {topic.remember.map((item, i) => (
             <li key={i}>{item}</li>
@@ -154,7 +154,7 @@ export default async function MaterialTopicPage({ params }: { params: Promise<Pa
           <div className="flex flex-wrap gap-2">
             {courses.map((c) => (
               <Link key={c.slug} href={`/${locale}/kurzy/${c.category}/${c.slug}`} className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white">
-                🎮 {c.title}
+                {c.title}
               </Link>
             ))}
             <Link href={practiceHref} className={`btn-bouncy px-4 py-2 text-sm font-bold ${courses.length ? "bg-[var(--surface)]" : "bg-[var(--brand-500)] text-white"}`}>

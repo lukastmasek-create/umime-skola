@@ -55,7 +55,7 @@ export function EconomyNews({ locale }: { locale: Locale }) {
       {overtaken && (
         <div role="status" className="border-2 border-[var(--edge)] bg-[var(--accent-yellow)] px-4 py-3 text-[#16132b]">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-bold">
-            <span>🏁 {t.overtookYou.replace("{actor}", overtaken.actorName)}</span>
+            <span>{t.overtookYou.replace("{actor}", overtaken.actorName)}</span>
             <Link href={`/${locale}/stale-hry/ekonomika`} className="underline">
               {t.open}
             </Link>
@@ -67,14 +67,14 @@ export function EconomyNews({ locale }: { locale: Locale }) {
       )}
 
       <section className="card p-5">
-        <h2 className="mb-3 font-bold">📣 {t.title}</h2>
+        <h2 className="mb-3 font-bold">{t.title}</h2>
         {feed.events.length === 0 ? (
           <p className="text-sm text-[var(--muted)]">{t.empty}</p>
         ) : (
           <ul className="flex flex-col gap-2 text-sm">
             {feed.events.slice(0, 5).map((e) => (
               <li key={e.id}>
-                <span aria-hidden>{e.kind === "founded" ? "🏭" : "🏁"} </span>
+                <span aria-hidden>{e.kind === "founded" ? "" : ""} </span>
                 {text(e)}
               </li>
             ))}

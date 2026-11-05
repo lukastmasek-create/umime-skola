@@ -142,8 +142,8 @@ export function SocialView({ locale }: { locale: Locale }) {
               <p className="text-xs text-[var(--muted)]">{fill(t.leagueEnds, date(league.endsAt))}</p>
             </div>
           </div>
-          {league.movement > 0 && <p className="text-sm font-semibold">⬆️ {t.movedUp}</p>}
-          {league.movement < 0 && <p className="text-sm font-semibold">⬇️ {t.movedDown}</p>}
+          {league.movement > 0 && <p className="text-sm font-semibold">{t.movedUp}</p>}
+          {league.movement < 0 && <p className="text-sm font-semibold">{t.movedDown}</p>}
           <ol className="flex flex-col gap-1.5">
             {league.rows.map((row, i) => (
               <li key={row.id}>
@@ -220,7 +220,7 @@ export function SocialView({ locale }: { locale: Locale }) {
             </div>
             <div>
               <p className="text-sm font-semibold">
-                {fill(t.teamGoal, `${Math.min(g.total, g.target)} / ${g.target}`)} {g.done && `· 🎉 ${t.goalDone}`}
+                {fill(t.teamGoal, `${Math.min(g.total, g.target)} / ${g.target}`)} {g.done && `· ${t.goalDone}`}
               </p>
               <div className="mt-1 h-3 overflow-hidden rounded-full border-2 border-[var(--edge)] bg-[var(--surface-muted)]">
                 <div className="h-full bg-[var(--accent-500)]" style={{ width: `${Math.min(100, (g.total / g.target) * 100)}%` }} />
@@ -240,7 +240,7 @@ export function SocialView({ locale }: { locale: Locale }) {
                       onClick={() => act({ action: "challenge", opponentId: m.id })}
                       className="btn-bouncy bg-[var(--surface)] px-2 py-1 text-xs font-bold"
                     >
-                      ⚔️ {t.challenge}
+                      {t.challenge}
                     </button>
                   )}
                 </li>
@@ -253,7 +253,7 @@ export function SocialView({ locale }: { locale: Locale }) {
       <section className="flex flex-col gap-3">
         <div>
           <h2 className="text-xl font-extrabold" style={heading}>
-            ⚔️ {t.duels}
+            {t.duels}
           </h2>
           <p className="text-sm text-[var(--muted)]">{t.duelsHint}</p>
         </div>

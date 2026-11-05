@@ -282,7 +282,7 @@ export function ShopView({ locale }: { locale: Locale }) {
   const header = (
     <div className="mb-6">
       <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        🛍️ {t.title}
+        {t.title}
       </h1>
       <p className="max-w-3xl text-[var(--muted)]">{t.subtitle}</p>
     </div>
@@ -355,7 +355,7 @@ export function ShopView({ locale }: { locale: Locale }) {
             title={wished ? x.unfav : x.fav}
             className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--surface)] text-base leading-none transition-transform hover:scale-110"
           >
-            {wished ? "❤️" : "🤍"}
+            {wished ? "" : ""}
           </button>
         </div>
         <div>
@@ -374,7 +374,7 @@ export function ShopView({ locale }: { locale: Locale }) {
                 t.needPoints.replace("{n}", String(missing))
               ) : (
                 <>
-                  ⭐ {onSale && <s className="opacity-70">{item.price}</s>} {price} · {t.buy}
+                  {onSale && <s className="opacity-70">{item.price}</s>} {price} · {t.buy}
                 </>
               )}
             </button>
@@ -418,7 +418,7 @@ export function ShopView({ locale }: { locale: Locale }) {
                 }}
                 className="btn-bouncy flex-1 bg-[var(--surface)] px-2 py-1.5 text-xs font-bold"
               >
-                🎁 {x.gift}
+                {x.gift}
               </button>
             )}
           </div>
@@ -490,7 +490,7 @@ export function ShopView({ locale }: { locale: Locale }) {
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] p-4 shadow-[0_4px_0_var(--shadow-ink)]">
         {ready ? (
           <p className="text-lg font-extrabold">
-            ⭐ {t.yourPoints}: <span className="text-[var(--brand-600)]">{points.toLocaleString(locale)}</span>
+            {t.yourPoints}: <span className="text-[var(--brand-600)]">{points.toLocaleString(locale)}</span>
           </p>
         ) : (
           <p className="text-sm text-[var(--muted)]">{t.loginRequired}</p>
@@ -513,18 +513,18 @@ export function ShopView({ locale }: { locale: Locale }) {
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
           <div>
             <h2 className="text-xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
-              🔥 {x.dealsTitle}
+              {x.dealsTitle}
             </h2>
             <p className="text-sm text-[var(--muted)]">{x.dealsHint}</p>
           </div>
-          {msLeft !== null && <span className="pill bg-[var(--surface)] px-3 py-1 text-sm">⏳ {x.resetsIn.replace("{t}", formatLeft(msLeft))}</span>}
+          {msLeft !== null && <span className="pill bg-[var(--surface)] px-3 py-1 text-sm">{x.resetsIn.replace("{t}", formatLeft(msLeft))}</span>}
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{dealItems.map((item) => renderCard(item))}</div>
       </section>
 
       <section className="mb-8">
         <h2 className="text-xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
-          🎒 {x.bundlesTitle}
+          {x.bundlesTitle}
         </h2>
         <p className="mb-3 text-sm text-[var(--muted)]">{x.bundlesHint}</p>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -559,7 +559,7 @@ export function ShopView({ locale }: { locale: Locale }) {
                     x.bundleOwned
                   ) : (
                     <>
-                      ⭐ <s className="opacity-70">{full}</s> {price} · {x.bundleBuy}
+                      <s className="opacity-70">{full}</s> {price} · {x.bundleBuy}
                     </>
                   )}
                 </button>
@@ -595,7 +595,7 @@ export function ShopView({ locale }: { locale: Locale }) {
           </label>
         )}
         <label className="flex items-center gap-1.5 text-sm font-semibold">
-          <input type="checkbox" checked={onlyFav} onChange={(e) => setOnlyFav(e.target.checked)} /> ❤️ {x.onlyFav}
+          <input type="checkbox" checked={onlyFav} onChange={(e) => setOnlyFav(e.target.checked)} />{x.onlyFav}
         </label>
       </div>
 
@@ -637,7 +637,7 @@ export function ShopView({ locale }: { locale: Locale }) {
               }}
               className="btn-bouncy mt-4 w-full bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"
             >
-              {priceOf(previewItem) > points ? t.needPoints.replace("{n}", String(priceOf(previewItem) - points)) : `⭐ ${priceOf(previewItem)} · ${t.buy}`}
+              {priceOf(previewItem) > points ? t.needPoints.replace("{n}", String(priceOf(previewItem) - points)) : `${priceOf(previewItem)} · ${t.buy}`}
             </button>
           )}
         </Modal>
@@ -671,7 +671,7 @@ export function ShopView({ locale }: { locale: Locale }) {
                 disabled={busy !== null || priceOf(giftItem) > points}
                 className="btn-bouncy flex-[2] bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-45"
               >
-                🎁 {x.giftSend.replace("{n}", String(priceOf(giftItem)))}
+                {x.giftSend.replace("{n}", String(priceOf(giftItem)))}
               </button>
             </div>
           </form>
@@ -686,7 +686,7 @@ export function ShopView({ locale }: { locale: Locale }) {
             aria-expanded={historyOpen}
             className="btn-bouncy bg-[var(--surface)] px-4 py-2 text-sm font-bold"
           >
-            📜 {x.historyTitle} {historyOpen ? "▲" : "▼"}
+            {x.historyTitle} {historyOpen ? "▲" : "▼"}
           </button>
           {historyOpen && (
             <div className="card mt-3 p-4">
@@ -704,7 +704,7 @@ export function ShopView({ locale }: { locale: Locale }) {
                         <span className="block text-xs text-[var(--muted)]">{new Date(row.createdAt).toLocaleString(locale)}</span>
                       </span>
                       <span className={`shrink-0 font-extrabold ${row.amount < 0 ? "text-[var(--danger)]" : "text-[var(--accent-green)]"}`}>
-                        {row.amount === 0 ? "🎁" : `${row.amount > 0 ? "+" : ""}${row.amount} ⭐`}
+                        {row.amount === 0 ? "" : `${row.amount > 0 ? "+" : ""}${row.amount}`}
                       </span>
                     </li>
                   ))}

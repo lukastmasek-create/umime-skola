@@ -700,7 +700,7 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
           {/* odemčené budovy: zlatá aura a hvězdička nad dveřmi */}
           {doors.map((d, i) => (
             <span key={i} aria-hidden className="pointer-events-none absolute" style={{ ...at(d), width: "9%", aspectRatio: "1 / 1", transform: "translate(-50%,-70%)", opacity: reached > i ? 1 : 0, transition: "opacity 0.7s", background: "radial-gradient(circle, rgba(255,214,90,0.5), rgba(255,214,90,0) 65%)" }}>
-              <span className="town-pop absolute left-1/2 top-[8%] -translate-x-1/2 text-[clamp(14px,2.2vw,26px)]" style={{ animationPlayState: reached > i ? "running" : "paused" }}>⭐</span>
+              <span className="town-pop absolute left-1/2 top-[8%] -translate-x-1/2 text-[clamp(14px,2.2vw,26px)]" style={{ animationPlayState: reached > i ? "running" : "paused" }}></span>
             </span>
           ))}
           {/* kliknutelné budovy */}
@@ -757,10 +757,10 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
         {/* na telefonu dole (bubliny jsou nahoře), na větší obrazovce vpravo nahoře */}
         <div className="pointer-events-none absolute bottom-3 right-3 z-10 flex gap-2 sm:bottom-auto sm:top-3">
           {[
-            { k: "tod", icon: night ? "☀️" : "🌙", label: night ? labels.day : labels.night, on: false, act: () => setNight((v) => !v) },
-            { k: "snow", icon: "❄️", label: labels.snow, on: pick === "snow", act: () => setPick((p) => (p === "snow" ? "clear" : "snow")) },
-            { k: "rain", icon: "🌧️", label: labels.rain, on: pick === "rain", act: () => setPick((p) => (p === "rain" ? "clear" : "rain")) },
-            { k: "auto", icon: "🔄", label: labels.auto, on: pick === "auto", act: () => setPick("auto") },
+            { k: "tod", icon: night ? "" : "", label: night ? labels.day : labels.night, on: false, act: () => setNight((v) => !v) },
+            { k: "snow", icon: "", label: labels.snow, on: pick === "snow", act: () => setPick((p) => (p === "snow" ? "clear" : "snow")) },
+            { k: "rain", icon: "", label: labels.rain, on: pick === "rain", act: () => setPick((p) => (p === "rain" ? "clear" : "rain")) },
+            { k: "auto", icon: "", label: labels.auto, on: pick === "auto", act: () => setPick("auto") },
           ].map((b) => (
             <button
               key={b.k}

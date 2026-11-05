@@ -68,7 +68,7 @@ type Profile = {
 type Tab = "look" | "avatars" | "titles" | "frames" | "banners";
 type MainTab = "overview" | "collection" | "wardrobe" | "craft" | "tasks";
 const MAIN_TABS: MainTab[] = ["overview", "collection", "wardrobe", "craft", "tasks"];
-const MAIN_ICONS: Record<MainTab, string> = { overview: "🏠", collection: "🏆", wardrobe: "👕", craft: "⚒️", tasks: "✅" };
+const MAIN_ICONS: Record<MainTab, string> = { overview: "", collection: "", wardrobe: "", craft: "", tasks: "" };
 
 const HASH: Record<MainTab, string> = { overview: "prehled", collection: "sbirka", wardrobe: "satnik", craft: "craftovani", tasks: "ukoly" };
 
@@ -160,7 +160,7 @@ function ColorPicker({
         </button>
         <label className={`btn-bouncy flex cursor-pointer items-center gap-2 bg-[var(--surface-muted)] px-3 py-1.5 text-xs font-bold ${value && !inPalette ? ring : ""}`}>
           <span aria-hidden className="h-5 w-5 rounded-full border-2 border-[var(--edge)]" style={{ background: value && !inPalette ? value : "conic-gradient(#ff5d73, #ffd24d, #3ddc97, #3fc1ff, #a87bff, #ff5d73)" }} />
-          🎨 {customLabel}
+          {customLabel}
           <input
             type="color"
             className="sr-only"
@@ -373,16 +373,16 @@ export function ProfileView({ locale }: { locale: Locale }) {
       key: `t-${x.id}`,
       level: (x.unlock as { level: number }).level,
       name: x.names[locale],
-      preview: <span className="flex h-14 items-center text-3xl">🏷️</span>,
+      preview: <span className="flex h-14 items-center text-3xl"></span>,
     })),
   ]
     .sort((a, b) => a.level - b.level)
     .slice(0, 4);
   const collection: { id: keyof typeof pt.kinds; icon: string; have: number; total: number; tab: Tab }[] = [
-    { id: "avatars", icon: "🧑‍🚀", have: AVATARS.filter((a) => isAvatarUnlocked(a, level, unlocks)).length, total: AVATARS.length, tab: "avatars" },
-    { id: "titles", icon: "🏷️", have: TITLES.filter((x) => isTitleUnlocked(x, level, unlocks)).length, total: TITLES.length, tab: "titles" },
-    { id: "frames", icon: "🖼️", have: ownedFrames.length, total: FRAME_IDS.length, tab: "frames" },
-    { id: "banners", icon: "🌅", have: ownedBanners.length, total: Object.keys(BANNERS).length, tab: "banners" },
+    { id: "avatars", icon: "", have: AVATARS.filter((a) => isAvatarUnlocked(a, level, unlocks)).length, total: AVATARS.length, tab: "avatars" },
+    { id: "titles", icon: "", have: TITLES.filter((x) => isTitleUnlocked(x, level, unlocks)).length, total: TITLES.length, tab: "titles" },
+    { id: "frames", icon: "", have: ownedFrames.length, total: FRAME_IDS.length, tab: "frames" },
+    { id: "banners", icon: "", have: ownedBanners.length, total: Object.keys(BANNERS).length, tab: "banners" },
   ];
   const activeSlot: Slot | null = currentParts ? (slot && currentParts.slots.includes(slot) ? slot : (currentParts.slots[0] ?? null)) : null;
   const heading = { fontFamily: "var(--font-heading)" };
@@ -505,7 +505,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
                 className="rounded-2xl bg-white/90 p-3 text-[#16132b] shadow hover:bg-white"
               >
                 <p className="text-lg font-extrabold" style={heading}>
-                  🐾 {profile.pets?.owned ?? 0}
+                  {profile.pets?.owned ?? 0}
                 </p>
                 <p className="truncate text-[11px] opacity-70">
                   {profile.pets?.active ? `${profile.pets.name || profile.pets.active} · ${profile.pets.level}` : "—"}
@@ -516,9 +516,9 @@ export function ProfileView({ locale }: { locale: Locale }) {
                 className="rounded-2xl bg-white/90 p-3 text-[#16132b] shadow hover:bg-white"
               >
                 <p className="text-lg font-extrabold" style={heading}>
-                  🏙️ {profile.city?.buildings ?? 0}
+                  {profile.city?.buildings ?? 0}
                 </p>
-                <p className="truncate text-[11px] opacity-70">👥 {profile.city?.population ?? 0}</p>
+                <p className="truncate text-[11px] opacity-70">{profile.city?.population ?? 0}</p>
               </Link>
               {!profile.school && (
                 <Link
@@ -551,7 +551,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
           </button>
         ))}
         <Link href={`/${locale}/obchod`} className="btn-bouncy ml-auto bg-[var(--accent-yellow)] px-4 py-2.5 text-sm font-bold text-[#16132b]">
-          🛍️ {t.shop} →
+          {t.shop} →
         </Link>
       </nav>
 
@@ -560,7 +560,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
           <div className="grid gap-4 md:grid-cols-[2fr_1fr]">
             <section className="card p-5">
               <h2 className="text-xl font-bold" style={heading}>
-                🔓 {pt.nextUnlocks}
+                {pt.nextUnlocks}
               </h2>
               <p className="mb-4 text-sm text-[var(--muted)]">{pt.nextUnlocksHint}</p>
               {nextUnlocks.length === 0 ? (
@@ -579,14 +579,14 @@ export function ProfileView({ locale }: { locale: Locale }) {
             </section>
             <section className="card flex flex-col gap-2 p-5">
               <h2 className="mb-1 text-xl font-bold" style={heading}>
-                ⚡ {pt.quick}
+                {pt.quick}
               </h2>
               {(
                 [
-                  ["courses", "/kurzy", "📚"],
-                  ["review", "/opakovani", "🔁"],
-                  ["town", "/mestecko", "🏘️"],
-                  ["shop", "/obchod", "🛍️"],
+                  ["courses", "/kurzy", ""],
+                  ["review", "/opakovani", ""],
+                  ["town", "/mestecko", ""],
+                  ["shop", "/obchod", ""],
                 ] as const
               ).map(([k, href, icon]) => (
                 <Link key={k} href={`/${locale}${href}`} className="card-hover flex items-center gap-3 rounded-2xl bg-[var(--surface-muted)] px-4 py-3 font-bold">
@@ -615,7 +615,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
         <div className="flex flex-col gap-6">
           <section className="card p-5">
             <h2 className="text-xl font-bold" style={heading}>
-              🎒 {pt.collectionTitle}
+              {pt.collectionTitle}
             </h2>
             <p className="mb-4 text-sm text-[var(--muted)]">{pt.collectionHint}</p>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -679,7 +679,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
                   {saveState === "saving" ? c.saving : saveState === "saved" ? `✓ ${c.saved}` : ""}
                 </span>
                 <button onClick={randomize} className="btn-bouncy bg-[var(--surface-muted)] px-3 py-1.5 text-sm font-bold">
-                  🎲 {c.random}
+                  {c.random}
                 </button>
                 <button
                   onClick={() => updateCustom(() => EMPTY_CUSTOM)}

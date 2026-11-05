@@ -54,10 +54,10 @@ export function CourseMap({ locale, subjects }: { locale: Locale; subjects: MapS
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-center gap-3">
-        {loggedIn && <span className="pill bg-[var(--surface-muted)] px-3 py-1.5 text-sm font-bold">🏁 {fill(t.progress, done)}</span>}
+        {loggedIn && <span className="pill bg-[var(--surface-muted)] px-3 py-1.5 text-sm font-bold">{fill(t.progress, done)}</span>}
         {loggedIn && due > 0 && (
           <Link href={`/${locale}/opakovani`} className="btn-bouncy bg-[var(--accent-yellow)] px-4 py-2 text-sm font-bold text-[#16132b]">
-            🔁 {fill(t.reviewCta, due)}
+            {fill(t.reviewCta, due)}
           </Link>
         )}
       </div>

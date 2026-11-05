@@ -12,7 +12,7 @@ export function QuizBlock({ question, options, answer, why, labels }: { question
   const [picked, setPicked] = useState<number | null>(null);
   return (
     <div className="rounded-2xl border-2 border-[var(--edge)] bg-[var(--brand-50)] p-4">
-      <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[var(--brand-600)]">❓ {labels.check}</p>
+      <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[var(--brand-600)]">{labels.check}</p>
       <p className="mb-3 font-semibold">{question}</p>
       <div className="grid gap-2 sm:grid-cols-2">
         {order.map((i) => {
@@ -26,7 +26,7 @@ export function QuizBlock({ question, options, answer, why, labels }: { question
       </div>
       {picked !== null && (
         <p className="mt-3 text-sm font-semibold">
-          {picked === answer ? `✅ ${labels.right}` : `❌ ${labels.wrong} ${options[answer]}`}
+          {picked === answer ? `${labels.right}` : `${labels.wrong} ${options[answer]}`}
           {why && <span className="block font-normal text-[var(--muted)]">{why}</span>}
         </p>
       )}
@@ -38,7 +38,7 @@ export function CardsBlock({ items, labels }: { items: PracticeCard[]; labels: I
   const [open, setOpen] = useState<Set<number>>(new Set());
   return (
     <div>
-      <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">🃏 {labels.cards}</p>
+      <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{labels.cards}</p>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {items.map(([front, back], i) => {
           const on = open.has(i);
@@ -68,7 +68,7 @@ export function TopicPractice({ cards, questions, labels }: { cards: PracticeCar
   if (!cards.length && !questions.length) return null;
   return (
     <section className="card mt-10 flex flex-col gap-5 p-5">
-      <h2 className="text-lg font-bold">🧠 {labels.practice}</h2>
+      <h2 className="text-lg font-bold">{labels.practice}</h2>
       {questions.length > 0 &&
         (done ? (
           <div className="flex flex-wrap items-center gap-3">
@@ -80,7 +80,7 @@ export function TopicPractice({ cards, questions, labels }: { cards: PracticeCar
         ) : (
           <div>
             <p className="mb-2 text-xs font-bold text-[var(--muted)]">
-              {i + 1} / {questions.length} · ⭐ {score}
+              {i + 1} / {questions.length} · {score}
             </p>
             <p className="mb-3 font-semibold">{q.question}</p>
             <div className="grid gap-2 sm:grid-cols-2">

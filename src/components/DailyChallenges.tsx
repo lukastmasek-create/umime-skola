@@ -168,7 +168,7 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
         </h2>
         <div className="text-right">
           <p className="text-lg font-extrabold" style={heading}>
-            🔥 {fill(t.streak, streak.current)}
+            {fill(t.streak, streak.current)}
           </p>
           <p className="text-xs font-semibold text-[var(--muted)]">
             {streak.doneToday ? t.streakToday : t.streakIdle} · {fill(t.streakBest, streak.best)}
@@ -180,22 +180,22 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
 
       {(notice || streak.usedProtection || streak.rescuable || (pet && (pet.hunger < 50 || pet.happy < 40)) || cityCoins > 0) && (
         <ul className="flex flex-col gap-1.5 text-sm font-semibold">
-          {notice && <li>🃏 {notice}</li>}
+          {notice && <li>{notice}</li>}
           {streak.usedProtection && (
-            <li>🧊 {streak.usedProtection === "freeze" ? t.freezeUsed : t.rescueUsed}</li>
+            <li>{streak.usedProtection === "freeze" ? t.freezeUsed : t.rescueUsed}</li>
           )}
-          {streak.rescuable && <li>🛟 {t.rescueHint}</li>}
+          {streak.rescuable && <li>{t.rescueHint}</li>}
           {pet && (pet.hunger < 50 || pet.happy < 40) && (
             <li>
-              🐾{" "}
+              {" "}
               <Link href={`/${locale}/stale-hry/mazlicci`} className="underline">
-                {fill(t.petHungry, pet.name || "🐾")}
+                {fill(t.petHungry, pet.name || "")}
               </Link>
             </li>
           )}
           {cityCoins > 0 && (
             <li>
-              🏙️{" "}
+              {" "}
               <Link href={`/${locale}/stale-hry/mesto`} className="underline">
                 {fill(t.cityCoins, cityCoins)}
               </Link>
@@ -209,15 +209,15 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
           href={`/${locale}/opakovani`}
           className={`btn-bouncy px-4 py-2 text-sm font-bold ${reviewDue > 0 ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface)]"}`}
         >
-          🔁 {fill(getReviewText(locale).reviewCta, reviewDue)}
+          {fill(getReviewText(locale).reviewCta, reviewDue)}
         </Link>
         <Link href={`/${locale}/mapa`} className="btn-bouncy bg-[var(--surface)] px-4 py-2 text-sm font-bold">
-          🗺️ {getReviewText(locale).mapNav}
+          {getReviewText(locale).mapNav}
         </Link>
       </div>
 
       <div className="flex flex-wrap items-center gap-3 rounded-xl border-2 border-[var(--edge)] px-3 py-2">
-        <span className="text-sm font-semibold">🧊 {fill(t.freezes, `${streak.freezes}/${streak.maxFreezes}`)}</span>
+        <span className="text-sm font-semibold">{fill(t.freezes, `${streak.freezes}/${streak.maxFreezes}`)}</span>
         <span className="min-w-0 flex-1 text-xs text-[var(--muted)]">{t.freezeInfo}</span>
         <button
           type="button"
@@ -271,7 +271,7 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
           {milestones.map((m) => (
             <li key={m.id} className="flex items-center gap-3 rounded-xl border-2 border-[var(--edge)] px-3 py-2">
               <span className={m.reached ? "text-xl" : "text-xl grayscale"} aria-hidden>
-                🔥
+                
               </span>
               <span className="min-w-0 flex-1 text-sm font-semibold">
                 {fill(t.days, m.days)} <span className="text-xs text-[var(--accent-500)]">{fill(t.bonus, m.bonusXp)}</span>
@@ -342,7 +342,7 @@ export function DailyRecap({ locale, refreshKey = 0 }: { locale: Locale; refresh
     <div className="card flex flex-wrap items-center justify-between gap-3 p-4">
       <div>
         <p className="font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
-          🔥 {fill(t.streak, snap.streak.current)}
+          {fill(t.streak, snap.streak.current)}
         </p>
         {ready > 0 && <p className="text-xs font-semibold text-[var(--accent-500)]">{fill(t.recapClaimable, ready)}</p>}
       </div>

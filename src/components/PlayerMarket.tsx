@@ -16,7 +16,7 @@ type Row = { id: string; amount: number; reason: string; createdAt: string };
 type Sort = "new" | "low" | "high";
 type Draft = { itemId: string; price: number; want: string | null };
 
-const CAT_ICON: Record<Cat, string> = { all: "✨", avatar: "🧑", title: "🏷️", frame: "🖼️", banner: "🌅" };
+const CAT_ICON: Record<Cat, string> = { all: "", avatar: "", title: "", frame: "", banner: "" };
 const CATS: Cat[] = ["all", ...MARKET_KINDS];
 
 export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: () => void }) {
@@ -88,7 +88,7 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
   const grid = "grid grid-cols-2 gap-3 sm:grid-cols-3";
   const badge = "inline-flex items-center rounded-full bg-[var(--surface-muted)] px-2 py-0.5 text-[11px] font-bold text-[var(--muted)]";
   const price = (n: number) => (
-    <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-yellow)] px-2.5 py-0.5 text-sm font-extrabold text-[#16132b]">🪙 {n}</span>
+    <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent-yellow)] px-2.5 py-0.5 text-sm font-extrabold text-[#16132b]">{n}</span>
   );
   const empty = (text: string) => (
     <div className="rounded-2xl border-2 border-dashed border-[var(--edge)] px-4 py-10 text-center text-sm text-[var(--muted)]">{text}</div>
@@ -123,7 +123,7 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
 
       {msg && (
         <p role="status" className={`rounded-xl px-3 py-2 text-sm font-bold ${msg.ok ? "bg-emerald-100 text-emerald-900" : "bg-rose-100 text-rose-900"}`}>
-          {msg.ok ? "✅ " : "⚠️ "}
+          {msg.ok ? "" : ""}
           {msg.text}
         </p>
       )}
@@ -186,7 +186,7 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
                       <span className="truncate">{t.seller.replace("{name}", o.seller)}</span>
                     </p>
                     <div className="mt-auto flex items-center justify-between gap-2 pt-1">
-                      {want ? <span className="truncate text-xs font-bold">🔄 {want.names[locale]}</span> : price(o.price)}
+                      {want ? <span className="truncate text-xs font-bold">{want.names[locale]}</span> : price(o.price)}
                     </div>
                     <button
                       type="button"
@@ -194,7 +194,7 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
                       onClick={() => act({ action: "buy", id: o.id, seller: o.sellerId }, want ? t.swap.done : t.done.buy)}
                       className="btn-bouncy btn-primary px-3 py-1.5 text-sm font-bold disabled:opacity-50"
                     >
-                      {have ? t.owned : want ? `🔄 ${t.swap.button}` : t.buy}
+                      {have ? t.owned : want ? `${t.swap.button}` : t.buy}
                     </button>
                   </div>
                 </article>
@@ -216,7 +216,7 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
                   <Preview item={item} locale={locale} avatar={avatar} />
                   <div className="flex flex-1 flex-col gap-1.5 p-2.5">
                     <h3 className="truncate text-sm font-extrabold">{item.names[locale]}</h3>
-                    <div className="mt-auto pt-1">{want ? <span className="text-xs font-bold">🔄 {want.names[locale]}</span> : price(o.price)}</div>
+                    <div className="mt-auto pt-1">{want ? <span className="text-xs font-bold">{want.names[locale]}</span> : price(o.price)}</div>
                     <button type="button" disabled={busy} onClick={() => act({ action: "cancel", id: o.id }, t.done.cancel)} className="btn-bouncy bg-[var(--surface-muted)] px-3 py-1.5 text-sm font-bold disabled:opacity-50">
                       {t.cancel}
                     </button>
@@ -244,7 +244,7 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
                 <li key={x.id} className="flex items-center justify-between gap-2 rounded-xl bg-[var(--surface-muted)] px-3 py-1.5 text-sm">
                   <span className="truncate font-semibold">{text}</span>
                   <span className="shrink-0 text-xs text-[var(--muted)]">
-                    {x.amount !== 0 && `${x.amount > 0 ? "+" : ""}${x.amount} 🪙 · `}
+                    {x.amount !== 0 && `${x.amount > 0 ? "+" : ""}${x.amount} · `}
                     {new Date(x.createdAt).toLocaleDateString(locale)}
                   </span>
                 </li>
@@ -300,7 +300,7 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
                       onClick={() => setSell({ ...sell, want: isSwap ? (catalog.find((c) => c.id !== draftItem.id)?.id ?? null) : null })}
                       className={`flex-1 rounded-lg px-2 py-1.5 text-sm font-bold ${!!sell.want === isSwap ? "bg-[var(--surface)] ring-2 ring-[var(--edge)]" : "text-[var(--muted)]"}`}
                     >
-                      {isSwap ? `🔄 ${t.swap.swap}` : `🪙 ${t.swap.sell}`}
+                      {isSwap ? `${t.swap.swap}` : `${t.swap.sell}`}
                     </button>
                   ))}
                 </div>

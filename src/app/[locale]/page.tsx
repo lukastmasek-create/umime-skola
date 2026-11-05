@@ -89,7 +89,7 @@ export default async function Home({
                   href={`/${locale}/kurzy/zakladni`}
                   className="btn-bouncy btn-cta btn-primary btn-lg"
                 >
-                  🚀 {dict.home.browseCourses}
+                  {dict.home.browseCourses}
                 </Link>
                 <Link
                   href={`/${locale}/registrace`}
@@ -127,7 +127,7 @@ export default async function Home({
           <div className="reveal mb-8 flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
-                🌳 {h.subjectsTitle}
+                {h.subjectsTitle}
               </h2>
               <p className="mt-1 max-w-xl text-sm text-[var(--muted)]">{h.subjectsHint}</p>
             </div>
@@ -183,7 +183,7 @@ export default async function Home({
         <div className="relative z-10 pb-16 pt-16 sm:pb-32 sm:pt-24">
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <h2 className="reveal mb-6 text-2xl font-bold tracking-tight sm:mb-8 sm:text-3xl" style={heading}>
-              🏔️ {h.stepsTitle}
+              {h.stepsTitle}
             </h2>
           </div>
           {/* scéna jde přes celou sekci (až 1680 px), na telefonu od kraje ke kraji */}
@@ -207,7 +207,7 @@ export default async function Home({
         />
         <div className="relative z-10 mx-auto max-w-6xl px-4 pb-20 pt-24 sm:px-6">
           <h2 className="reveal mb-8 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
-            🌌 {dict.home.pickSection}
+            {dict.home.pickSection}
           </h2>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {CATEGORIES.map((cat, i) => {
@@ -243,7 +243,7 @@ export default async function Home({
         <Wave fill="#160a2c" />
         <div className="relative z-10 mx-auto max-w-6xl px-4 pb-24 pt-24 sm:px-6">
           <h2 className="reveal mb-4 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
-            👋 {h.about.title}
+            {h.about.title}
           </h2>
           <p className="reveal mb-10 max-w-3xl text-lg leading-relaxed text-[var(--muted)]">{h.about.lead}</p>
           <div className="grid gap-5 md:grid-cols-3">
@@ -286,7 +286,7 @@ export default async function Home({
               {h.about.contact} →
             </Link>
             <a href={`mailto:${h.about.email}`} className="font-semibold text-[var(--accent-green)] hover:underline">
-              ✉️ {h.about.email}
+              {h.about.email}
             </a>
           </div>
         </div>

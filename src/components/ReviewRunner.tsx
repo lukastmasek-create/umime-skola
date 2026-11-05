@@ -222,7 +222,7 @@ export function ReviewRunner({ locale, courseId }: { locale: Locale; courseId?: 
 
       {answered && (
         <div className="rounded-xl bg-[var(--surface-muted)] p-4 text-sm">
-          <p className="mb-1 font-bold">{checked ? `✅ ${t.correct}` : `❌ ${t.wrong}`}</p>
+          <p className="mb-1 font-bold">{checked ? `${t.correct}` : `${t.wrong}`}</p>
           <p className="mb-1">
             <span className="font-semibold">{t.correctAnswer}:</span>{" "}
             {isTyped ? gaps.reduce((text, part, i) => text + part + (q.answers[i] ?? ""), "") : q.options[q.correctIndex]}

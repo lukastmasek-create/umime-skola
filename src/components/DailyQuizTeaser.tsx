@@ -35,7 +35,7 @@ export function DailyQuizTeaser({ locale }: { locale: Locale }) {
   return (
     <div className="card flex flex-wrap items-center gap-4 p-5">
       <span className="text-3xl" aria-hidden>
-        📅
+        
       </span>
       <div className="min-w-0 flex-1">
         <h2 className="text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>

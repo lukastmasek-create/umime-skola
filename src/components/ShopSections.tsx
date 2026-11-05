@@ -73,7 +73,7 @@ export function ProCard() {
         </tbody>
       </table>
       <button disabled className="w-full cursor-not-allowed rounded-full bg-[var(--brand-500)] px-4 py-2 text-sm font-semibold text-white opacity-60">
-        Brzy dostupné ✨
+        Brzy dostupné
       </button>
     </div>
   );

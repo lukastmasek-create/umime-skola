@@ -34,7 +34,7 @@ export function WeakSpots({ locale }: { locale: Locale }) {
   return (
     <section className="mb-8">
       <h2 className="text-xl font-bold" style={heading}>
-        🎯 {t.weak.title}
+        {t.weak.title}
       </h2>
       <p className="mb-3 text-sm text-[var(--muted)]">{t.weak.subtitle}</p>
       {state.weak.length === 0 ? (

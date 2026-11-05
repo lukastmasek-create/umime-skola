@@ -51,7 +51,7 @@ export function EconomyTicker({ locale }: { locale: Locale }) {
     >
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-1.5 text-sm font-semibold sm:px-6">
         <span className="shrink-0 rounded-md border-2 border-[var(--edge)] bg-[#16132b] px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-[var(--accent-yellow)]">
-          📰 {t.label}
+          {t.label}
         </span>
         <div className="econ-ticker min-w-0 flex-1">
           <div className="econ-ticker-track" style={{ animationDuration: `${duration}s` }}>

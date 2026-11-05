@@ -45,7 +45,7 @@ export type DailyText = {
 };
 
 const cs: DailyText = {
-  goal: { title: "Dnešní cíl", progress: "{a} / {b} XP", done: "Cíl splněn! 🎉", levels: ["Pohoda", "Pravidelně", "Výzva"], hint: "Vyber si, kolik XP chceš dnes nasbírat." },
+  goal: { title: "Dnešní cíl", progress: "{a} / {b} XP", done: "Cíl splněn!", levels: ["Pohoda", "Pravidelně", "Výzva"], hint: "Vyber si, kolik XP chceš dnes nasbírat." },
   title: "Denní výzvy",
   nudgeStreak: "Tvoje série {n} dní dnes končí. Stačí jeden krátký test!",
   nudgeOpen: "Pokračovat",
@@ -103,7 +103,7 @@ const cs: DailyText = {
 };
 
 const en: DailyText = {
-  goal: { title: "Today's goal", progress: "{a} / {b} XP", done: "Goal reached! 🎉", levels: ["Easy", "Steady", "Challenge"], hint: "Pick how much XP you want to earn today." },
+  goal: { title: "Today's goal", progress: "{a} / {b} XP", done: "Goal reached!", levels: ["Easy", "Steady", "Challenge"], hint: "Pick how much XP you want to earn today." },
   title: "Daily challenges",
   nudgeStreak: "Your {n}-day streak ends today. One short test is enough!",
   nudgeOpen: "Continue",
@@ -161,7 +161,7 @@ const en: DailyText = {
 };
 
 const de: DailyText = {
-  goal: { title: "Tagesziel", progress: "{a} / {b} XP", done: "Ziel erreicht! 🎉", levels: ["Entspannt", "Regelmäßig", "Herausforderung"], hint: "Wähle, wie viel XP du heute sammeln willst." },
+  goal: { title: "Tagesziel", progress: "{a} / {b} XP", done: "Ziel erreicht!", levels: ["Entspannt", "Regelmäßig", "Herausforderung"], hint: "Wähle, wie viel XP du heute sammeln willst." },
   title: "Tägliche Aufgaben",
   nudgeStreak: "Deine Serie von {n} Tagen endet heute. Ein kurzer Test genügt!",
   nudgeOpen: "Weiter",
@@ -219,7 +219,7 @@ const de: DailyText = {
 };
 
 const ru: DailyText = {
-  goal: { title: "Цель на сегодня", progress: "{a} / {b} XP", done: "Цель достигнута! 🎉", levels: ["Спокойно", "Регулярно", "Вызов"], hint: "Выбери, сколько XP хочешь набрать сегодня." },
+  goal: { title: "Цель на сегодня", progress: "{a} / {b} XP", done: "Цель достигнута!", levels: ["Спокойно", "Регулярно", "Вызов"], hint: "Выбери, сколько XP хочешь набрать сегодня." },
   title: "Ежедневные задания",
   nudgeStreak: "Твоя серия в {n} дн. сегодня закончится. Хватит одного короткого теста!",
   nudgeOpen: "Продолжить",
@@ -277,7 +277,7 @@ const ru: DailyText = {
 };
 
 const uk: DailyText = {
-  goal: { title: "Ціль на сьогодні", progress: "{a} / {b} XP", done: "Ціль досягнуто! 🎉", levels: ["Спокійно", "Регулярно", "Виклик"], hint: "Обери, скільки XP хочеш набрати сьогодні." },
+  goal: { title: "Ціль на сьогодні", progress: "{a} / {b} XP", done: "Ціль досягнуто!", levels: ["Спокійно", "Регулярно", "Виклик"], hint: "Обери, скільки XP хочеш набрати сьогодні." },
   title: "Щоденні виклики",
   nudgeStreak: "Твоя серія з {n} дн. сьогодні закінчується. Вистачить одного короткого тесту!",
   nudgeOpen: "Продовжити",
@@ -335,7 +335,7 @@ const uk: DailyText = {
 };
 
 const ja: DailyText = {
-  goal: { title: "今日の目標", progress: "{a} / {b} XP", done: "目標達成！🎉", levels: ["のんびり", "こつこつ", "チャレンジ"], hint: "今日集めたい XP の量を選びましょう。" },
+  goal: { title: "今日の目標", progress: "{a} / {b} XP", done: "目標達成！", levels: ["のんびり", "こつこつ", "チャレンジ"], hint: "今日集めたい XP の量を選びましょう。" },
   title: "デイリーチャレンジ",
   nudgeStreak: "{n}日連続の記録が今日で途切れてしまいます。短いテストを1つ受けるだけでOKです！",
   nudgeOpen: "続ける",
@@ -393,7 +393,7 @@ const ja: DailyText = {
 };
 
 const es: DailyText = {
-  goal: { title: "Objetivo de hoy", progress: "{a} / {b} XP", done: "¡Objetivo cumplido! 🎉", levels: ["Tranquilo", "Constante", "Desafío"], hint: "Elige cuántos XP quieres conseguir hoy." },
+  goal: { title: "Objetivo de hoy", progress: "{a} / {b} XP", done: "¡Objetivo cumplido!", levels: ["Tranquilo", "Constante", "Desafío"], hint: "Elige cuántos XP quieres conseguir hoy." },
   title: "Retos diarios",
   nudgeStreak: "Tu racha de {n} días termina hoy. ¡Basta con un test corto!",
   nudgeOpen: "Continuar",
@@ -451,7 +451,7 @@ const es: DailyText = {
 };
 
 const fr: DailyText = {
-  goal: { title: "Objectif du jour", progress: "{a} / {b} XP", done: "Objectif atteint ! 🎉", levels: ["Tranquille", "Régulier", "Défi"], hint: "Choisis combien d'XP tu veux gagner aujourd'hui." },
+  goal: { title: "Objectif du jour", progress: "{a} / {b} XP", done: "Objectif atteint !", levels: ["Tranquille", "Régulier", "Défi"], hint: "Choisis combien d'XP tu veux gagner aujourd'hui." },
   title: "Défis quotidiens",
   nudgeStreak: "Ta série de {n} jours se termine aujourd'hui. Un seul petit test suffit !",
   nudgeOpen: "Continuer",

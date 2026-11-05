@@ -76,16 +76,16 @@ export function ReturnNudge({ locale }: { locale: Locale }) {
   return (
     <div className="border-b-2 border-[var(--edge)] bg-[var(--accent-yellow)] px-4 py-2 text-[#16132b]">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-1 text-sm font-bold">
-        <span>🔥 {fill(t.nudgeStreak, streak)}</span>
+        <span>{fill(t.nudgeStreak, streak)}</span>
         <Link href={`/${locale}/kurzy/zakladni`} className="underline">
           {t.nudgeOpen}
         </Link>
         {canNotify && !remind && (
           <button type="button" onClick={enable} className="underline">
-            🔔 {t.remindOn}
+            {t.remindOn}
           </button>
         )}
-        {remind && <span className="font-semibold">🔔 {t.remindOff}</span>}
+        {remind && <span className="font-semibold">{t.remindOff}</span>}
         <button
           type="button"
           onClick={() => {

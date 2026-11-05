@@ -34,7 +34,7 @@ export function ParentalSection({ locale }: { locale: Locale }) {
   return (
     <section className="card flex flex-col gap-3 p-6">
       <h2 className="text-lg font-bold" style={headingStyle}>
-        👪 {t.parental}
+        {t.parental}
       </h2>
       {loaded && !pc && <p className="text-sm text-[var(--muted)]">{t.loginFirst}</p>}
       {pc && (
@@ -50,7 +50,7 @@ export function ParentalSection({ locale }: { locale: Locale }) {
                 else say(r);
               }}
             >
-              <span className="text-sm font-semibold">🔒 {t.locked}</span>
+              <span className="text-sm font-semibold">{t.locked}</span>
               <input className={`${inputClass} max-w-[10rem]`} type="password" inputMode="numeric" placeholder={t.pin} value={pcForm.pin} onChange={(e) => setPcForm({ ...pcForm, pin: e.target.value })} />
               <button className={primaryButtonClass} type="submit">
                 {t.unlock}

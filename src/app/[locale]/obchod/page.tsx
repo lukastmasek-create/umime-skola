@@ -88,7 +88,7 @@ export default async function ShopPage({
         href={`/${locale}/trziste`}
         className="card card-hover mt-12 flex items-center gap-4 p-6"
       >
-        <span aria-hidden className="text-5xl">🤝</span>
+        <span aria-hidden className="text-5xl"></span>
         <span className="flex-1">
           <span className="block text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>{pm.title}</span>
           <span className="block text-sm text-[var(--muted)]">{pm.intro}</span>

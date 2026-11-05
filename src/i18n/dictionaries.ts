@@ -135,7 +135,7 @@ const cs: Dictionary = {
     settings: "Nastavení",
   },
   home: {
-    badge: "🚀 Nová platforma pro přípravu",
+    badge: "Nová platforma pro přípravu",
     titleLine1: "Připrav se na",
     titleLine2: "základku, střední, přijímačky i maturitu",
     subtitle:
@@ -190,7 +190,7 @@ const cs: Dictionary = {
     level: "Level",
     comingSoon: "Obsah brzy přibude",
     locked: "Uzamčeno",
-    moreLevelsSoon: "Další levely přibydou postupně ✨",
+    moreLevelsSoon: "Další levely přibydou postupně",
     notFound: "Kurz nebyl nalezen.",
   },
   auth: {
@@ -227,7 +227,7 @@ const cs: Dictionary = {
     loginToSpin: "Pro zatočení se musíš nejdřív přihlásit.",
     wonPrefix: "Vyhrál/a jsi",
     pointsSuffix: "bodů",
-    buyTitle: "💎 Dokoupit body",
+    buyTitle: "Dokoupit body",
     buyDesc: "Body si můžeš i koupit a použít je na odemčení odměn.",
     buyButton: "Koupit",
     comingSoon: "Platba brzy dostupná",
@@ -281,7 +281,7 @@ const en: Dictionary = {
     settings: "Settings",
   },
   home: {
-    badge: "🚀 A new way to prep",
+    badge: "A new way to prep",
     titleLine1: "Get ready for",
     titleLine2: "primary school, high school, entrance exams and finals",
     subtitle:
@@ -336,7 +336,7 @@ const en: Dictionary = {
     level: "Level",
     comingSoon: "Content coming soon",
     locked: "Locked",
-    moreLevelsSoon: "More levels are coming, one at a time ✨",
+    moreLevelsSoon: "More levels are coming, one at a time",
     notFound: "Course not found.",
   },
   auth: {
@@ -373,7 +373,7 @@ const en: Dictionary = {
     loginToSpin: "Log in first to spin the wheel.",
     wonPrefix: "You won",
     pointsSuffix: "points",
-    buyTitle: "💎 Buy more points",
+    buyTitle: "Buy more points",
     buyDesc: "You can also buy points and use them to unlock rewards.",
     buyButton: "Buy",
     comingSoon: "Checkout coming soon",
@@ -427,7 +427,7 @@ const de: Dictionary = {
     settings: "Einstellungen",
   },
   home: {
-    badge: "🚀 Eine neue Plattform zum Lernen",
+    badge: "Eine neue Plattform zum Lernen",
     titleLine1: "Bereite dich vor auf",
     titleLine2: "Grundschule, Mittelschule, Aufnahmeprüfungen und Abitur",
     subtitle:
@@ -482,7 +482,7 @@ const de: Dictionary = {
     level: "Level",
     comingSoon: "Inhalt folgt bald",
     locked: "Gesperrt",
-    moreLevelsSoon: "Weitere Levels folgen nach und nach ✨",
+    moreLevelsSoon: "Weitere Levels folgen nach und nach",
     notFound: "Kurs nicht gefunden.",
   },
   auth: {
@@ -519,7 +519,7 @@ const de: Dictionary = {
     loginToSpin: "Melde dich zuerst an, um das Rad zu drehen.",
     wonPrefix: "Du hast gewonnen:",
     pointsSuffix: "Punkte",
-    buyTitle: "💎 Punkte kaufen",
+    buyTitle: "Punkte kaufen",
     buyDesc: "Du kannst Punkte auch kaufen und sie zum Freischalten von Belohnungen nutzen.",
     buyButton: "Kaufen",
     comingSoon: "Bezahlung folgt bald",
@@ -573,7 +573,7 @@ const ru: Dictionary = {
     settings: "Настройки",
   },
   home: {
-    badge: "🚀 Новая платформа для подготовки",
+    badge: "Новая платформа для подготовки",
     titleLine1: "Готовься к",
     titleLine2: "начальной, средней школе, вступительным экзаменам и выпускным",
     subtitle:
@@ -628,7 +628,7 @@ const ru: Dictionary = {
     level: "Уровень",
     comingSoon: "Контент скоро появится",
     locked: "Заблокировано",
-    moreLevelsSoon: "Новые уровни будут добавляться постепенно ✨",
+    moreLevelsSoon: "Новые уровни будут добавляться постепенно",
     notFound: "Курс не найден.",
   },
   auth: {
@@ -665,7 +665,7 @@ const ru: Dictionary = {
     loginToSpin: "Сначала войди в аккаунт, чтобы крутить колесо.",
     wonPrefix: "Ты выиграл(а)",
     pointsSuffix: "баллов",
-    buyTitle: "💎 Купить баллы",
+    buyTitle: "Купить баллы",
     buyDesc: "Баллы можно также купить и использовать для открытия наград.",
     buyButton: "Купить",
     comingSoon: "Оплата скоро появится",
@@ -714,7 +714,7 @@ const ru: Dictionary = {
 const uk: Dictionary = {
   nav: { login: "Увійти", register: "Реєстрація", shop: "Магазин", settings: "Налаштування" },
   home: {
-    badge: "🚀 Новий спосіб підготовки",
+    badge: "Новий спосіб підготовки",
     titleLine1: "Готуйся до",
     titleLine2: "початкової школи, середньої школи, вступних іспитів і випускних",
     subtitle:
@@ -752,7 +752,7 @@ const uk: Dictionary = {
     level: "Рівень",
     comingSoon: "Контент скоро з'явиться",
     locked: "Заблоковано",
-    moreLevelsSoon: "Нові рівні додаватимуться поступово ✨",
+    moreLevelsSoon: "Нові рівні додаватимуться поступово",
     notFound: "Курс не знайдено.",
   },
   auth: {
@@ -789,7 +789,7 @@ const uk: Dictionary = {
     loginToSpin: "Спочатку увійди в обліковий запис, щоб крутити колесо.",
     wonPrefix: "Ти виграв(ла)",
     pointsSuffix: "балів",
-    buyTitle: "💎 Купити бали",
+    buyTitle: "Купити бали",
     buyDesc: "Бали також можна купити й використати, щоб відкривати нагороди.",
     buyButton: "Купити",
     comingSoon: "Оплата скоро з'явиться",
@@ -838,7 +838,7 @@ const uk: Dictionary = {
 const ja: Dictionary = {
   nav: { login: "ログイン", register: "新規登録", shop: "ショップ", settings: "設定" },
   home: {
-    badge: "🚀 新しい学習のかたち",
+    badge: "新しい学習のかたち",
     titleLine1: "いまから準備しよう",
     titleLine2: "小学校〜卒業試験",
     subtitle:
@@ -876,7 +876,7 @@ const ja: Dictionary = {
     level: "レベル",
     comingSoon: "コンテンツは近日公開",
     locked: "ロック中",
-    moreLevelsSoon: "新しいレベルは順次追加されます ✨",
+    moreLevelsSoon: "新しいレベルは順次追加されます",
     notFound: "コースが見つかりません。",
   },
   auth: {
@@ -913,7 +913,7 @@ const ja: Dictionary = {
     loginToSpin: "ルーレットを回すには、まずログインしてください。",
     wonPrefix: "当たり：",
     pointsSuffix: "ポイント",
-    buyTitle: "💎 ポイントを購入",
+    buyTitle: "ポイントを購入",
     buyDesc: "ポイントを購入して、ごほうびの解放に使うこともできます。",
     buyButton: "購入する",
     comingSoon: "決済機能は近日公開",
@@ -962,7 +962,7 @@ const ja: Dictionary = {
 const es: Dictionary = {
   nav: { login: "Iniciar sesión", register: "Registrarse", shop: "Tienda", settings: "Ajustes" },
   home: {
-    badge: "🚀 Una nueva forma de prepararte",
+    badge: "Una nueva forma de prepararte",
     titleLine1: "Prepárate para",
     titleLine2: "primaria, secundaria, pruebas de acceso y exámenes finales",
     subtitle:
@@ -1000,7 +1000,7 @@ const es: Dictionary = {
     level: "Nivel",
     comingSoon: "Contenido próximamente",
     locked: "Bloqueado",
-    moreLevelsSoon: "Habrá más niveles, uno a uno ✨",
+    moreLevelsSoon: "Habrá más niveles, uno a uno",
     notFound: "Curso no encontrado.",
   },
   auth: {
@@ -1037,7 +1037,7 @@ const es: Dictionary = {
     loginToSpin: "Inicia sesión primero para girar la ruleta.",
     wonPrefix: "Has ganado",
     pointsSuffix: "puntos",
-    buyTitle: "💎 Comprar más puntos",
+    buyTitle: "Comprar más puntos",
     buyDesc: "También puedes comprar puntos y usarlos para desbloquear recompensas.",
     buyButton: "Comprar",
     comingSoon: "El pago estará disponible pronto",
@@ -1086,7 +1086,7 @@ const es: Dictionary = {
 const fr: Dictionary = {
   nav: { login: "Se connecter", register: "S'inscrire", shop: "Boutique", settings: "Réglages" },
   home: {
-    badge: "🚀 Une nouvelle façon de se préparer",
+    badge: "Une nouvelle façon de se préparer",
     titleLine1: "Prépare-toi pour",
     titleLine2: "le primaire, le secondaire, les concours d'entrée et les examens finaux",
     subtitle:
@@ -1124,7 +1124,7 @@ const fr: Dictionary = {
     level: "Niveau",
     comingSoon: "Contenu bientôt disponible",
     locked: "Verrouillé",
-    moreLevelsSoon: "D'autres niveaux arrivent progressivement ✨",
+    moreLevelsSoon: "D'autres niveaux arrivent progressivement",
     notFound: "Cours introuvable.",
   },
   auth: {
@@ -1161,7 +1161,7 @@ const fr: Dictionary = {
     loginToSpin: "Connecte-toi d'abord pour faire tourner la roue.",
     wonPrefix: "Tu as gagné",
     pointsSuffix: "points",
-    buyTitle: "💎 Acheter des points",
+    buyTitle: "Acheter des points",
     buyDesc: "Tu peux aussi acheter des points et les utiliser pour débloquer des récompenses.",
     buyButton: "Acheter",
     comingSoon: "Paiement bientôt disponible",
