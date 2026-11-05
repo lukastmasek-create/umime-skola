@@ -113,7 +113,7 @@ Stránka `/kontakt` (odkaz v menu Nastavení, v patičce a u výběru školy): f
 
 - Před nasazením jednou spusť `prisma/sql/contact.sql` v databázi (nová tabulka `ContactMessage`).
 - Zprávy se ukládají do `ContactMessage` (stav `new`), čtou se zatím přímo v databázi (např. `npm run db:studio`).
-- Každá nová zpráva se zároveň pošle e-mailem týmu podpory (Resend, `src/lib/contact-mail.ts`). Adresa odesílatele je v Reply-To, takže se dá odpovědět přímo z e-mailu. Nastavení: secrety `RESEND_API_KEY`, `CONTACT_EMAIL_TO` a `CONTACT_EMAIL_FROM` (na Cloudflare např. `npx wrangler secret put RESEND_API_KEY`). `CONTACT_EMAIL_FROM` musí být na doméně ověřené v Resendu. Když něco chybí, e-mail se přeskočí a zpráva se uloží tak jako dřív.
+- Každá nová zpráva se zároveň pošle e-mailem týmu podpory (Resend, `src/lib/contact-mail.ts`). Adresa odesílatele je v Reply-To, takže se dá odpovědět přímo z e-mailu. Nastavení: `CONTACT_EMAIL_TO` je ve `wrangler.jsonc` (`ucimesehrou@seznam.cz`). Secrety `RESEND_API_KEY` a `CONTACT_EMAIL_FROM` nastav na Cloudflare, např. `npx wrangler secret put RESEND_API_KEY`. `CONTACT_EMAIL_FROM` musí být na doméně ověřené v Resendu. Když něco chybí, e-mail se přeskočí a zpráva se uloží tak jako dřív.
 - Témata a kontrola dat: `src/lib/contact.ts` (testy v `npm test`), e-maily: `src/lib/contact-mail-format.ts`, API: `src/app/api/kontakt/`, texty: `src/i18n/contact.ts`.
 
 ## Craftování

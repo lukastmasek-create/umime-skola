@@ -9,7 +9,8 @@
     "binding": "ASSETS"
   },
   "vars": {
-    "AUTH_TRUST_HOST": "true"
+    "AUTH_TRUST_HOST": "true",
+    "CONTACT_EMAIL_TO": "ucimesehrou@seznam.cz"
   },
   "observability": {
     "enabled": true
