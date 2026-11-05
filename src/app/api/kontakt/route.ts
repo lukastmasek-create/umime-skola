@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { RATE_LIMIT, RATE_WINDOW_MS, validateContact } from "@/lib/contact";
+import { notifySupportInBackground } from "@/lib/contact-mail";
 import { isLocale } from "@/i18n/config";
 import { clientIp, withinRateLimit } from "@/lib/rate-limit";
 import { verifyTurnstile } from "@/lib/turnstile";
@@ -34,7 +35,7 @@ export async function POST(request: Request) {
     });
     if (recent >= RATE_LIMIT) return NextResponse.json({ error: "rate" }, { status: 429 });
 
-    await prisma.contactMessage.create({
+    const saved = await prisma.contactMessage.create({
       data: {
         category: data.category,
         topic: data.topic,
@@ -46,6 +47,8 @@ export async function POST(request: Request) {
         userId,
       },
     });
+    // E-mail týmu podpory po uložení; výpadek pošty nesmí zprávu ani odpověď zkazit.
+    await notifySupportInBackground(data, saved.id, saved.createdAt);
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (error) {
     console.error("kontakt POST failed", error);
