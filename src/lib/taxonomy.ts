@@ -63,7 +63,8 @@ export type SubjectValue =
   | "CHEMIE"
   | "OBCANKA"
   | "HUDEBKA"
-  | "FRANCOUZSTINA";
+  | "FRANCOUZSTINA"
+  | "SPANELSTINA";
 
 export const SUBJECTS: { slug: string; value: SubjectValue; emoji: string; color: string }[] = [
   { slug: "cestina", value: "CESTINA", emoji: "📝", color: "#ffc933" },
@@ -80,6 +81,7 @@ export const SUBJECTS: { slug: string; value: SubjectValue; emoji: string; color
   { slug: "obcanka", value: "OBCANKA", emoji: "🏛️", color: "#7f9bff" },
   { slug: "hudebka", value: "HUDEBKA", emoji: "🎵", color: "#f2e76a" },
   { slug: "francouzstina", value: "FRANCOUZSTINA", emoji: "🥐", color: "#ff6f91" },
+  { slug: "spanelstina", value: "SPANELSTINA", emoji: "💃", color: "#ff5c5c" },
 ];
 
 export function getSubjectBySlug(slug: string | undefined) {

@@ -46,7 +46,7 @@ const orbit = (rho: number, incl: number, roll: number, th: number) => {
 type Spot = { lon: number; lat: number };
 
 // Hlavní město (nebo typické místo) země předmětu; pořadí id v mapě zemí (id.png) = pořadí zde.
-const ORDER = ["cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis", "fyzika", "chemie", "obcanka", "hudebka", "francouzstina"] as const;
+const ORDER = ["cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis", "fyzika", "chemie", "obcanka", "hudebka", "francouzstina", "spanelstina"] as const;
 const SPOTS: Record<string, Spot> = {
   cestina: { lon: 14.42, lat: 50.09 },
   literatura: { lon: -6.26, lat: 53.35 }, // Dublin
@@ -62,6 +62,7 @@ const SPOTS: Record<string, Spot> = {
   obcanka: { lon: 77.2, lat: 28.6 }, // Dillí
   hudebka: { lon: 151.2, lat: -33.87 }, // Sydney
   francouzstina: { lon: 2.35, lat: 48.86 }, // Paříž
+  spanelstina: { lon: -3.7, lat: 40.42 }, // Madrid
 };
 const LANDMARK: Record<string, string> = {
   cestina: "cestina",
@@ -78,6 +79,7 @@ const LANDMARK: Record<string, string> = {
   obcanka: "obcanka",
   hudebka: "hudebka",
   francouzstina: "francouzstina",
+  spanelstina: "spanelstina",
 };
 // Prohlídka jde od východu na západ (jako se otáčí Země), tedy podle klesající zeměpisné délky.
 const TOUR = [...ORDER].sort((a, b) => SPOTS[b].lon - SPOTS[a].lon);

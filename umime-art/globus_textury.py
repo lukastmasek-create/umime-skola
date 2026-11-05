@@ -44,6 +44,7 @@ SUBJECTS = [
     ("obcanka", "#7f9bff", "356"),
     ("hudebka", "#f2e76a", "036"),
     ("francouzstina", "#ff6f91", "250"),
+    ("spanelstina", "#ff5c5c", "724"),
 ]
 
 # oblasti: (délka, šířka, poloměr v délce, poloměr v šířce)

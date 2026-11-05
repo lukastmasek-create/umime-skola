@@ -328,7 +328,7 @@ def svet():
     if glob.glob(os.path.join(ROOT, "out", "svet_lod", "f_*.png")):
         strip("svet_lod", "../svet/plachetnice.webp", frames("svet_lod")[0].size, quality=84)
     gdir = os.path.join(DEST, "..", "globe")
-    for subject in ("cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis", "fyzika", "chemie", "obcanka", "hudebka", "francouzstina"):
+    for subject in ("cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis", "fyzika", "chemie", "obcanka", "hudebka", "francouzstina", "spanelstina"):
         if not glob.glob(os.path.join(ROOT, "out", "znacka_" + subject, "f_*.png")):
             continue  # vykresleno jen to, co se právě mění
         im = frames("znacka_" + subject)[0].resize((320, 320), Image.LANCZOS)
@@ -341,7 +341,7 @@ def globe():
     """Památky předmětů (pás 20 snímků) a školní předměty prstence pro SubjectGlobe do public/home/globe."""
     dest_dir = os.path.join(DEST, "..", "globe")
     os.makedirs(dest_dir, exist_ok=True)
-    for subject in ("cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis", "fyzika", "chemie", "obcanka", "hudebka", "francouzstina"):
+    for subject in ("cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis", "fyzika", "chemie", "obcanka", "hudebka", "francouzstina", "spanelstina"):
         if not glob.glob(os.path.join(ROOT, "out", "znacka_" + subject, "f_*.png")):
             continue  # vykresleno jen to, co se právě mění
         fr = frames("znacka_" + subject)

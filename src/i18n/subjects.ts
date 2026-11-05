@@ -30,6 +30,7 @@ const texts: Record<Locale, SubjectText> = {
       OBCANKA: "Občanská výchova",
       HUDEBKA: "Hudební výchova",
       FRANCOUZSTINA: "Francouzština",
+      SPANELSTINA: "Španělština",
     },
   },
   en: {
@@ -51,6 +52,7 @@ const texts: Record<Locale, SubjectText> = {
       OBCANKA: "Civics",
       HUDEBKA: "Music",
       FRANCOUZSTINA: "French",
+      SPANELSTINA: "Spanish",
     },
   },
   de: {
@@ -72,6 +74,7 @@ const texts: Record<Locale, SubjectText> = {
       OBCANKA: "Gesellschaftskunde",
       HUDEBKA: "Musik",
       FRANCOUZSTINA: "Französisch",
+      SPANELSTINA: "Spanisch",
     },
   },
   ru: {
@@ -93,6 +96,7 @@ const texts: Record<Locale, SubjectText> = {
       OBCANKA: "Обществознание",
       HUDEBKA: "Музыка",
       FRANCOUZSTINA: "Французский",
+      SPANELSTINA: "Испанский",
     },
   },
   }),
@@ -115,6 +119,7 @@ const texts: Record<Locale, SubjectText> = {
       OBCANKA: "Громадянська освіта",
       HUDEBKA: "Музика",
       FRANCOUZSTINA: "Французька",
+      SPANELSTINA: "Іспанська",
     },
   },
   ja: {
@@ -136,6 +141,7 @@ const texts: Record<Locale, SubjectText> = {
       OBCANKA: "公民",
       HUDEBKA: "音楽",
       FRANCOUZSTINA: "フランス語",
+      SPANELSTINA: "スペイン語",
     },
   },
   es: {
@@ -157,6 +163,7 @@ const texts: Record<Locale, SubjectText> = {
       OBCANKA: "Educación cívica",
       HUDEBKA: "Música",
       FRANCOUZSTINA: "Francés",
+      SPANELSTINA: "Español",
     },
   },
   fr: {
@@ -178,6 +185,7 @@ const texts: Record<Locale, SubjectText> = {
       OBCANKA: "Éducation civique",
       HUDEBKA: "Musique",
       FRANCOUZSTINA: "Français",
+      SPANELSTINA: "Espagnol",
     },
   },
 };

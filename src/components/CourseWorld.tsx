@@ -20,16 +20,16 @@ type Island = { slug: string; label: string; color: string; count: number; href:
 const WIDE: Record<string, [number, number]> = {
   cestina: [10, 24], literatura: [30, 19], anglictina: [50, 26], nemcina: [70, 20], rustina: [90, 25],
   matematika: [10, 52], dejepis: [30, 47], zemepis: [50, 54], prirodopis: [70, 48], fyzika: [90, 53],
-  chemie: [17, 80], obcanka: [39, 75], hudebka: [61, 81], francouzstina: [83, 76],
+  chemie: [17, 80], obcanka: [39, 75], hudebka: [61, 81], francouzstina: [83, 76], spanelstina: [50, 90],
 };
 const NARROW: Record<string, [number, number]> = {
   cestina: [21, 9], literatura: [50, 6], anglictina: [79, 10],
   nemcina: [21, 28], rustina: [50, 25], matematika: [79, 29],
   dejepis: [21, 47], zemepis: [50, 44], prirodopis: [79, 48],
   fyzika: [21, 66], chemie: [50, 63], obcanka: [79, 67],
-  hudebka: [33, 85], francouzstina: [67, 82],
+  hudebka: [33, 85], francouzstina: [67, 82], spanelstina: [50, 90],
 };
-const ORDER = ["cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis", "fyzika", "chemie", "obcanka", "hudebka", "francouzstina"];
+const ORDER = ["cestina", "literatura", "anglictina", "nemcina", "rustina", "matematika", "dejepis", "zemepis", "prirodopis", "fyzika", "chemie", "obcanka", "hudebka", "francouzstina", "spanelstina"];
 const N = ORDER.length;
 
 const VERT = `#version 300 es

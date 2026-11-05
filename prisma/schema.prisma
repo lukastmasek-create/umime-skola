@@ -309,6 +309,7 @@ enum Subject {
   OBCANKA
   HUDEBKA
   FRANCOUZSTINA
+  SPANELSTINA
 }
 
 // Kurz = jedno téma (např. "i/y", "Druhá světová válka", "Savci"), které se
