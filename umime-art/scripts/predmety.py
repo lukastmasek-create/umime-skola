@@ -822,6 +822,24 @@ def francouzstina():
     cyl("tycka", 0.018, 1.0, (-1.38, -0.7, 0.35), mat("tycka", (0.8, 0.82, 0.88), rough=0.25, metal=1.0), verts=12)
 
 
+def spanelstina():
+    """Španělská vlajka (červeno-žluto-červená) na tyči a pomeranč, symbol jižní Evropy."""
+    red = mat("cervena", (0.78, 0.07, 0.12), rough=0.45)
+    gold = mat("zluta", (1.0, 0.77, 0.0), rough=0.45)
+    orange = mat("pomeranc", (1.0, 0.5, 0.08), rough=0.35, coat=0.4, sss=0.1)
+    noise_bump(orange, 40, 0.03)
+    leaf = mat("list", (0.18, 0.55, 0.22), rough=0.55)
+    # vlajka: tři vodorovné pruhy bez mezer (červený 1/4, žlutý 1/2, červený 1/4), dolní hrana na z = -0.35
+    zb = -0.35
+    for name, m, h, c in (("pruh_s", red, 0.25, 0.125), ("pruh_z", gold, 0.5, 0.5), ("pruh_h", red, 0.25, 0.875)):
+        box(name, (0.95, 0.03, h), (-0.555, -0.7, zb + c), m, 0.0)
+    cyl("tycka", 0.018, 1.3, (-1.04, -0.7, 0.15), mat("tycka", (0.8, 0.82, 0.88), rough=0.25, metal=1.0), verts=12)
+    # pomeranč s listem vpravo, mimo vlajku
+    sph("pomeranc", 0.4, (0.55, -0.2, -0.45), orange, seg=48)
+    sph("stopka", 0.05, (0.55, -0.2, -0.04), leaf, scale=(1, 1, 0.5), seg=16)
+    sph("list", 0.15, (0.7, -0.2, 0.0), leaf, scale=(1.6, 0.6, 0.25), seg=24)
+
+
 BUILDERS = {
     "cestina": cestina,
     "literatura": literatura,
@@ -837,8 +855,9 @@ BUILDERS = {
     "obcanka": obcanka,
     "hudebka": hudebka,
     "francouzstina": francouzstina,
+    "spanelstina": spanelstina,
 }
-CAM = {"fyzika": (-18, 22), "chemie": (-18, 16), "obcanka": (-24, 18), "hudebka": (-14, 14), "francouzstina": (-20, 28), "cestina": (-14, 14), "dejepis": (-24, 24), "zemepis": (-20, 14), "prirodopis": (-20, 24), "matematika": (-22, 20), "anglictina": (-14, 10), "rustina": (-16, 8), "nemcina": (-6, 6), "literatura": (-30, 24)}
+CAM = {"fyzika": (-18, 22), "chemie": (-18, 16), "obcanka": (-24, 18), "hudebka": (-14, 14), "francouzstina": (-20, 28), "cestina": (-14, 14), "dejepis": (-24, 24), "zemepis": (-20, 14), "prirodopis": (-20, 24), "matematika": (-22, 20), "anglictina": (-14, 10), "rustina": (-16, 8), "nemcina": (-6, 6), "literatura": (-30, 24), "spanelstina": (-18, 20)}
 
 
 def render_all(builders, cams, only, out, prefix, size=512):
