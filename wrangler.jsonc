@@ -10,8 +10,17 @@
   },
   "vars": {
     "AUTH_TRUST_HOST": "true",
-    "CONTACT_EMAIL_TO": "ucimesehrou@seznam.cz"
+    "CONTACT_EMAIL_TO": "ucimesehrou@seznam.cz",
+    "CONTACT_EMAIL_FROM": "kontakt@ucimesehrou.org"
   },
+  // Odesílání e-mailů (Cloudflare Email Service). Doména ucimesehrou.org musí být
+  // onboardovaná v Email Service a odesílat lze jen na adresy z allowed_destination_addresses.
+  "send_email": [
+    {
+      "name": "EMAIL",
+      "allowed_destination_addresses": ["ucimesehrou@seznam.cz"]
+    }
+  ],
   "observability": {
     "enabled": true
   },

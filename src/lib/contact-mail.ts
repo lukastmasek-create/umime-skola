@@ -2,52 +2,56 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import type { ContactInput } from "@/lib/contact";
 import { buildSupportMail } from "@/lib/contact-mail-format";
 
-// Odeslání e-mailu týmu podpory přes Resend (HTTP API, bez závislostí).
-// Potřebné nastavení (secrety na Cloudflare nebo proměnné prostředí):
-//   RESEND_API_KEY     klíč z resend.com
-//   CONTACT_EMAIL_TO   kam zprávy přijdou, např. podpora@ucimesehrou.org
-//   CONTACT_EMAIL_FROM odesílatel na ověřené doméně, např. "Učíme se hrou <kontakt@ucimesehrou.org>"
-// Pokud něco chybí (lokální vývoj), e-mail se přeskočí a zaloguje se varování. Formulář tím neselže.
+// Odeslání e-mailu týmu podpory přes Cloudflare Email Service (binding `EMAIL`, Email Sending).
+// Nastavení ve wrangler.jsonc:
+//   send_email: [{ name: "EMAIL" }]   odesílání z workeru (vyžaduje Workers Paid a ověřenou doménu)
+//   CONTACT_EMAIL_TO                  kam zprávy přijdou
+//   CONTACT_EMAIL_FROM                odesílatel na doméně nakonfigurované v Email Service
+// Pokud binding nebo adresy chybí (lokální vývoj), e-mail se přeskočí a zaloguje se varování.
+// Formulář tím neselže.
 
-type MailEnv = { RESEND_API_KEY?: string; CONTACT_EMAIL_TO?: string; CONTACT_EMAIL_FROM?: string };
+type SendEmailBinding = {
+  send(message: {
+    from: { email: string; name: string };
+    to: string;
+    subject: string;
+    text: string;
+    replyTo: string;
+  }): Promise<{ messageId: string }>;
+};
+
+type MailEnv = { EMAIL?: SendEmailBinding; CONTACT_EMAIL_TO?: string; CONTACT_EMAIL_FROM?: string };
+
+const SENDER_NAME = "Učíme se hrou";
 
 function mailEnv(): MailEnv {
-  let env: MailEnv = {};
   try {
-    // Na Workers nemusí být secrety z dashboardu v process.env, proto se čtou z bindingů.
-    env = getCloudflareContext({ async: false }).env as MailEnv;
+    // Bindingy a proměnné z wrangler.jsonc jsou dostupné přes Cloudflare kontext.
+    return getCloudflareContext({ async: false }).env as MailEnv;
   } catch {
-    // Mimo požadavek na Workers kontext není k dispozici.
+    // Mimo požadavek na Workers kontext (lokální vývoj bez wrangleru).
+    return {};
   }
-  return {
-    RESEND_API_KEY: env.RESEND_API_KEY || process.env.RESEND_API_KEY,
-    CONTACT_EMAIL_TO: env.CONTACT_EMAIL_TO || process.env.CONTACT_EMAIL_TO,
-    CONTACT_EMAIL_FROM: env.CONTACT_EMAIL_FROM || process.env.CONTACT_EMAIL_FROM,
-  };
 }
 
 async function sendSupportMail(input: ContactInput, id: string, createdAt: Date): Promise<void> {
-  const { RESEND_API_KEY, CONTACT_EMAIL_TO, CONTACT_EMAIL_FROM } = mailEnv();
-  if (!RESEND_API_KEY || !CONTACT_EMAIL_TO || !CONTACT_EMAIL_FROM) {
-    console.warn("Kontakt: e-mail podpory není nastavený (RESEND_API_KEY, CONTACT_EMAIL_TO, CONTACT_EMAIL_FROM), přeskakuji.");
+  const { EMAIL, CONTACT_EMAIL_TO, CONTACT_EMAIL_FROM } = mailEnv();
+  if (!EMAIL || !CONTACT_EMAIL_TO || !CONTACT_EMAIL_FROM) {
+    console.warn("Kontakt: e-mail podpory není nastavený (binding EMAIL, CONTACT_EMAIL_TO, CONTACT_EMAIL_FROM), přeskakuji.");
     return;
   }
 
   const mail = buildSupportMail(input, id, createdAt);
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      from: CONTACT_EMAIL_FROM,
-      to: [CONTACT_EMAIL_TO],
+  try {
+    await EMAIL.send({
+      from: { email: CONTACT_EMAIL_FROM, name: SENDER_NAME },
+      to: CONTACT_EMAIL_TO,
       subject: mail.subject,
       text: mail.text,
-      reply_to: mail.replyTo,
-    }),
-  });
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    console.error(`Kontakt: odeslání e-mailu selhalo (${res.status})`, detail.slice(0, 300));
+      replyTo: mail.replyTo,
+    });
+  } catch (error) {
+    console.error("Kontakt: odeslání e-mailu přes Email Service selhalo", error);
   }
 }
 
