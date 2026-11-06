@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plakát 1 – Učení, které baví</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="poster.css">
+<style>
+  .poster {
+    background:
+      radial-gradient(900px 700px at 85% 8%, rgba(90, 108, 255, 0.55), transparent 60%),
+      radial-gradient(800px 700px at 5% 95%, rgba(255, 90, 60, 0.35), transparent 60%),
+      linear-gradient(180deg, #1a1640 0%, #12102a 100%);
+  }
+  .stars { position: absolute; inset: 0; z-index: 0; }
+  .star { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: #fff; opacity: .8; }
+  .hero-tiles { margin-top: 48px; }
+  .hero-tiles .tile { width: 118px; height: 118px; border-radius: 30px; font-size: 64px; box-shadow: 0 14px 0 rgba(0,0,0,.28); }
+  .badges { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 40px; }
+  .badge {
+    font-weight: 700; font-size: 30px; padding: 14px 26px; border-radius: 18px;
+    background: rgba(255,255,255,.08); border: 3px solid rgba(255,255,255,.16);
+  }
+  .cta-row { display: flex; gap: 18px; align-items: center; margin-top: 48px; }
+  .cta-row .ghost {
+    font-weight: 700; font-size: 30px; padding: 16px 30px; border-radius: 999px;
+    border: 3px solid var(--yellow); color: var(--yellow);
+  }
+</style>
+</head>
+<body>
+<div class="poster">
+  <div class="stars" aria-hidden="true">
+    <span class="star" style="left:8%;top:6%"></span>
+    <span class="star" style="left:22%;top:14%;width:4px;height:4px"></span>
+    <span class="star" style="left:71%;top:9%;width:5px;height:5px"></span>
+    <span class="star" style="left:90%;top:30%"></span>
+    <span class="star" style="left:14%;top:44%;width:4px;height:4px"></span>
+    <span class="star" style="left:60%;top:58%;width:5px;height:5px"></span>
+    <span class="star" style="left:94%;top:72%;width:4px;height:4px"></span>
+    <span class="star" style="left:6%;top:82%;width:5px;height:5px"></span>
+  </div>
+
+  <img class="logo" src="assets/logo-tmave.svg" alt="Učíme se hrou">
+
+
+  <div style="margin-top: 120px;">
+    <span class="kicker dot">Pro žáky 1.–9. třídy</span>
+  </div>
+
+  <h1 class="h-xl" style="margin-top: 36px;">
+    Učení, které<br>tě <span class="gradient-text">opravdu baví</span>
+  </h1>
+
+  <p class="lead" style="margin-top: 36px; max-width: 880px;">
+    Kurzy, testy a hry na jednom místě. Za každou správnou odpověď získáš body a postoupíš o úroveň výš.
+  </p>
+
+  <div class="badges">
+    <span class="badge">📚 Kurzy a testy</span>
+    <span class="badge">🎮 Hry za body</span>
+    <span class="badge">🔐 Únikovky</span>
+  </div>
+
+  <div class="footer">
+    <div>
+      <div class="url">ucimesehrou.org</div>
+      <div style="font-size:26px;color:var(--muted-dark);margin-top:8px;">Registrace je zdarma</div>
+    </div>
+    <span class="pill">Začni hned →</span>
+  </div>
+</div>
+</body>
+</html>

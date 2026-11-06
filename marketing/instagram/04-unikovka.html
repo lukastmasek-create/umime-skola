@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plakát 4 – Uteč z laboratoře</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="poster.css">
+<style>
+  .poster {
+    background:
+      radial-gradient(900px 700px at 50% 0%, rgba(23, 168, 100, 0.4), transparent 60%),
+      linear-gradient(180deg, #0f2a22 0%, #12102a 70%);
+  }
+  .room {
+    margin-top: 44px;
+    padding: 34px 36px 34px;
+    border-color: rgba(61, 220, 151, 0.45);
+    background: linear-gradient(180deg, #1c2d4a 0%, #142038 100%);
+    box-shadow: 0 26px 60px rgba(0, 0, 0, 0.35);
+  }
+  .room-top { display: flex; align-items: center; gap: 26px; }
+  .room-icon {
+    width: 124px; height: 124px; border-radius: 30px; flex: none;
+    background: var(--green); display: grid; place-items: center; font-size: 66px;
+    box-shadow: 0 12px 0 rgba(0,0,0,.3);
+  }
+  .room h3 { font-family: "Unbounded", sans-serif; font-weight: 800; font-size: 44px; line-height: 1.15; color: #fff; }
+  .room .sub { font-size: 26px; color: #7ee0b0; font-weight: 700; margin-top: 10px; }
+  .room p { font-size: 30px; line-height: 1.45; color: var(--muted-dark); margin: 30px 0 0; }
+  .lock-row { margin-top: 30px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .lock-row span {
+    font-weight: 700; font-size: 26px; padding: 12px 20px; border-radius: 14px;
+    background: rgba(255,255,255,.07); border: 2px solid rgba(255,255,255,.16);
+  }
+  .steps { margin-top: 48px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .step { padding: 26px 24px; font-size: 26px; line-height: 1.35; color: var(--muted-dark); }
+  .step b { display:block; font-family: "Unbounded", sans-serif; font-size: 40px; color: var(--yellow); margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<div class="poster">
+  <img class="logo" src="assets/logo-tmave.svg" alt="Učíme se hrou" style="height:64px">
+
+  <div style="margin-top: 56px;">
+    <span class="kicker" style="color:#7ee0b0;">Únikovky</span>
+  </div>
+
+  <h1 class="h-lg" style="margin-top: 30px;">
+    Uteč z laboratoře, <span class="gradient-text">než dojde čas</span>
+  </h1>
+
+  <p class="lead" style="margin-top: 26px; max-width: 900px;">
+    Zamčená místnost, hádanky z učiva a čas, který běží.
+  </p>
+
+  <div class="card room">
+    <div class="room-top">
+      <div class="room-icon">🧪</div>
+      <div>
+        <h3>Laboratoř doktora Atoma</h3>
+        <div class="sub">CHEMIE · PROTI ČASU</div>
+      </div>
+    </div>
+    <p>Reaktor se rozjíždí a dveře jsou zamčené. Najdi vodítka, namíchej správné látky a otevři kód.</p>
+    <div class="lock-row">
+      <span>🔎 Hledání předmětů</span>
+      <span>🧩 Hádanky z učiva</span>
+      <span>⏱️ Proti času</span>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div>
+      <div class="url">ucimesehrou.org</div>
+      <div style="font-size:26px;color:var(--muted-dark);margin-top:8px;">Zkus, jak rychle to zvládneš</div>
+    </div>
+    <span class="pill" style="background:var(--green); color:#fff;">Vstoupit do únikovky →</span>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,163 @@
+/* Sdílené styly pro plakáty na Instagram (1080 × 1350 px, formát 4:5).
+   Barvy a fonty převzaty z webu (src/app/globals.css, src/app/[locale]/layout.tsx). */
+
+:root {
+  --brand-500: #3248f0;
+  --brand-700: #1a2aa3;
+  --accent-500: #ff5a3c;
+  --yellow: #ffc933;
+  --green: #17a864;
+  --blue: #29a3ff;
+  --ink: #16132b;
+  --paper: #f6f4ee;
+  --night: #12102a;
+  --night-2: #1c1936;
+  --light-text: #f6f1e4;
+  --muted-dark: #cfc8e4;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #000;
+}
+
+.poster {
+  width: 1080px;
+  height: 1350px;
+  position: relative;
+  overflow: hidden;
+  font-family: "Onest", system-ui, sans-serif;
+  color: var(--light-text);
+  background: var(--night);
+  padding: 84px 84px 72px;
+  display: flex;
+  flex-direction: column;
+}
+
+.poster.light {
+  color: var(--ink);
+  background: var(--paper);
+}
+
+h1, h2, h3, .display {
+  font-family: "Unbounded", system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.kicker {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 12px 24px;
+  border-radius: 999px;
+  border: 3px solid currentColor;
+}
+
+.kicker.dot::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--yellow);
+  box-shadow: 0 0 18px var(--yellow);
+}
+
+.h-xl { font-size: 96px; line-height: 1.08; font-weight: 800; }
+.h-lg { font-size: 74px; line-height: 1.1; font-weight: 800; }
+
+.lead {
+  font-size: 38px;
+  line-height: 1.4;
+  margin: 0;
+  color: var(--muted-dark);
+  font-weight: 500;
+}
+.poster.light .lead { color: #4f4a66; }
+
+.gradient-text {
+  background: linear-gradient(90deg, var(--yellow), var(--accent-500) 55%, #ff7ab8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-top: 36px;
+  border-top: 3px solid rgba(255, 255, 255, 0.14);
+}
+.poster.light .footer { border-top-color: rgba(22, 19, 43, 0.14); }
+
+.url {
+  font-family: "Unbounded", sans-serif;
+  font-weight: 700;
+  font-size: 36px;
+  color: var(--yellow);
+}
+.poster.light .url { color: var(--brand-500); }
+
+.pill {
+  font-weight: 700;
+  font-size: 30px;
+  padding: 16px 30px;
+  border-radius: 999px;
+  background: var(--yellow);
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.logo { height: 84px; width: auto; display: block; }
+
+/* Dekorativní čtverečky z loga */
+.tiles { display: flex; gap: 14px; }
+.tile {
+  width: 62px;
+  height: 62px;
+  border-radius: 16px;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.25);
+  display: grid;
+  place-items: center;
+  font-family: "Unbounded", sans-serif;
+  font-weight: 800;
+  font-size: 34px;
+  color: #fff;
+}
+.tile.blue { background: var(--brand-500); }
+.tile.red { background: var(--accent-500); }
+.tile.yellow { background: var(--yellow); color: var(--ink); }
+.tile.green { background: var(--green); }
+
+/* Záře v pozadí */
+.glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+.poster > * { position: relative; z-index: 1; }
+.poster > .glow { position: absolute; z-index: 0; }
+
+.card {
+  background: var(--night-2);
+  border: 3px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+}
+.poster.light .card {
+  background: #fff;
+  border-color: rgba(22, 19, 43, 0.08);
+  color: var(--ink);
+}

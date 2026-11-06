@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plakát 2 – Vyber si předmět</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="poster.css">
+<style>
+  .poster {
+    background:
+      radial-gradient(900px 600px at 100% 0%, rgba(255, 201, 51, 0.45), transparent 60%),
+      radial-gradient(700px 600px at 0% 100%, rgba(41, 163, 255, 0.35), transparent 60%),
+      #f6f4ee;
+  }
+  .grid {
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .subj {
+    border-radius: 24px;
+    padding: 16px 20px 16px;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 8px;
+    height: 116px;
+    box-shadow: 0 7px 0 rgba(22, 19, 43, 0.9);
+    border: 3px solid var(--ink);
+  }
+  .subj .em { font-size: 42px; line-height: 1; }
+  .subj .nm { font-weight: 700; font-size: 27px; line-height: 1.15; }
+  .note { margin-top: 44px; font-size: 30px; color: #4f4a66; font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="poster light">
+  <img class="logo" src="assets/logo.svg" alt="Učíme se hrou" style="height:64px">
+
+  <div style="margin-top: 56px;">
+    <span class="kicker" style="color: var(--brand-500);">Od 1. do 9. třídy</span>
+  </div>
+
+  <h1 class="h-lg" style="margin-top: 30px;">
+    Vyber si<br><span style="color: var(--brand-500);">předmět</span>
+  </h1>
+
+  <div class="grid">
+    <div class="subj" style="background:#ffc933"><span class="em">📝</span><span class="nm">Čeština</span></div>
+    <div class="subj" style="background:#ff9ec7"><span class="em">📚</span><span class="nm">Literatura</span></div>
+    <div class="subj" style="background:#8fd0ff"><span class="em">💬</span><span class="nm">Angličtina</span></div>
+    <div class="subj" style="background:#ffb26b"><span class="em">🥨</span><span class="nm">Němčina</span></div>
+    <div class="subj" style="background:#ff8a6b"><span class="em">🪆</span><span class="nm">Ruština</span></div>
+    <div class="subj" style="background:#7ee0b0"><span class="em">➗</span><span class="nm">Matematika</span></div>
+    <div class="subj" style="background:#c9b8ff"><span class="em">🏛️</span><span class="nm">Dějepis</span></div>
+    <div class="subj" style="background:#7fdbd8"><span class="em">🌍</span><span class="nm">Zeměpis</span></div>
+    <div class="subj" style="background:#b6e36a"><span class="em">🦎</span><span class="nm">Přírodopis</span></div>
+    <div class="subj" style="background:#f58fa0"><span class="em">⚛️</span><span class="nm">Fyzika</span></div>
+    <div class="subj" style="background:#d98cff"><span class="em">🧪</span><span class="nm">Chemie</span></div>
+    <div class="subj" style="background:#7f9bff"><span class="em">🏛️</span><span class="nm">Občanka</span></div>
+    <div class="subj" style="background:#f2e76a"><span class="em">🎵</span><span class="nm">Hudebka</span></div>
+    <div class="subj" style="background:#ff6f91"><span class="em">🥐</span><span class="nm">Francouzština</span></div>
+    <div class="subj" style="background:#ff5c5c"><span class="em">💃</span><span class="nm">Španělština</span></div>
+  </div>
+
+  <div class="footer">
+    <div>
+      <div class="url">ucimesehrou.org</div>
+      <div style="font-size:26px;color:#4f4a66;margin-top:8px;">Vyber předmět a začni procvičovat</div>
+    </div>
+    <span class="pill" style="background: var(--brand-500); color:#fff;">Prohlédnout kurzy →</span>
+  </div>
+</div>
+</body>
+</html>

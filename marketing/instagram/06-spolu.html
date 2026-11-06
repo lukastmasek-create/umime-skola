@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plakát 6 – Hrajte spolu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="poster.css">
+<style>
+  .poster {
+    background:
+      radial-gradient(900px 700px at 100% 0%, rgba(255, 90, 60, 0.4), transparent 60%),
+      radial-gradient(900px 700px at 0% 100%, rgba(41, 163, 255, 0.35), transparent 60%),
+      linear-gradient(180deg, #1c1936 0%, #12102a 100%);
+  }
+  .modes { margin-top: 50px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .mode { padding: 26px 26px 24px; display: flex; flex-direction: column; gap: 8px; }
+  .mode .em { font-size: 52px; line-height: 1; }
+  .mode .nm { font-family: "Unbounded", sans-serif; font-weight: 800; font-size: 30px; color: #fff; }
+  .mode .tx { font-size: 24px; line-height: 1.35; color: var(--muted-dark); }
+
+  .code {
+    margin-top: 40px;
+    display: flex; align-items: center; justify-content: space-between; gap: 30px;
+    padding: 26px 34px; border-radius: 30px;
+    background: var(--yellow); color: var(--ink);
+    box-shadow: 0 12px 0 rgba(0,0,0,.35);
+  }
+  .code .big { font-family: "Unbounded", sans-serif; font-weight: 800; font-size: 40px; line-height: 1.15; }
+  .code .pin { display:flex; gap: 12px; }
+  .code .pin span {
+    width: 84px; height: 100px; border-radius: 18px; background: var(--ink); color: var(--yellow);
+    display: grid; place-items: center; font-family: "Unbounded", sans-serif; font-weight: 800; font-size: 56px;
+  }
+  .board { margin-top: 30px; padding: 26px 30px; display:flex; align-items:center; gap: 22px; }
+  .board .em { font-size: 60px; }
+  .board p { margin: 0; font-size: 30px; line-height: 1.4; color: var(--muted-dark); }
+  .board b { color: #fff; }
+</style>
+</head>
+<body>
+<div class="poster">
+  <img class="logo" src="assets/logo-tmave.svg" alt="Učíme se hrou" style="height:64px">
+
+  <div style="margin-top: 56px;">
+    <span class="kicker dot">Hrát společně</span>
+  </div>
+
+  <h1 class="h-lg" style="margin-top: 30px;">
+    Zahraj si <span class="gradient-text">s třídou</span>
+  </h1>
+
+
+  <div class="modes">
+    <div class="card mode"><span class="em">🧠</span><span class="nm">Klasický kvíz</span><span class="tx">Všichni na stejnou otázku proti času.</span></div>
+    <div class="card mode"><span class="em">🏁</span><span class="nm">Závod</span><span class="tx">Kdo první dosáhne cíle správných odpovědí.</span></div>
+    <div class="card mode"><span class="em">💰</span><span class="nm">Zlatá horečka</span><span class="tx">Správné odpovědi otevírají truhly. Pozor na pasti.</span></div>
+    <div class="card mode"><span class="em">👥</span><span class="nm">Týmy</span><span class="tx">Dva týmy, body se sčítají a vyhrává tým.</span></div>
+  </div>
+
+  <div class="code">
+    <div class="big">Připoj se<br>kódem</div>
+    <div class="pin"><span>4</span><span>7</span><span>2</span></div>
+  </div>
+
+  <div class="footer">
+    <div>
+      <div class="url">ucimesehrou.org</div>
+      <div style="font-size:26px;color:var(--muted-dark);margin-top:8px;">Žebříčky: porovnej se spolužáky i školou</div>
+    </div>
+    <span class="pill">Založit hru →</span>
+  </div>
+</div>
+</body>
+</html>

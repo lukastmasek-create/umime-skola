@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plakát 3 – Hraj a uč se</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="poster.css">
+<style>
+  .poster {
+    background:
+      radial-gradient(800px 700px at 0% 0%, rgba(201, 184, 255, 0.35), transparent 60%),
+      radial-gradient(800px 700px at 100% 100%, rgba(255, 201, 51, 0.22), transparent 60%),
+      linear-gradient(180deg, #1c1936 0%, #12102a 100%);
+  }
+  .grid { margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .game { padding: 20px 22px 20px; display: flex; flex-direction: column; gap: 8px; }
+  .game .em { font-size: 48px; line-height: 1; }
+  .game .nm { font-family: "Unbounded", sans-serif; font-weight: 800; font-size: 26px; line-height: 1.15; color: #fff; }
+  .game .tag { font-size: 22px; line-height: 1.35; color: var(--muted-dark); }
+  .game.accent-yellow { border-color: rgba(255, 201, 51, 0.55); }
+  .game.accent-green { border-color: rgba(61, 220, 151, 0.55); }
+  .game.accent-blue { border-color: rgba(90, 184, 255, 0.55); }
+  .game.accent-red { border-color: rgba(255, 122, 92, 0.55); }
+  .more {
+    margin-top: 26px; display: flex; flex-wrap: wrap; gap: 14px;
+  }
+  .more span {
+    font-weight: 700; font-size: 26px; padding: 12px 20px; border-radius: 999px;
+    background: rgba(255,255,255,.08); border: 2px solid rgba(255,255,255,.18);
+  }
+</style>
+</head>
+<body>
+<div class="poster">
+  <img class="logo" src="assets/logo-tmave.svg" alt="Učíme se hrou" style="height:64px">
+
+  <div style="margin-top: 56px;">
+    <span class="kicker dot">Hry za body</span>
+  </div>
+
+  <h1 class="h-lg" style="margin-top: 30px;">
+    Hraj a <span class="gradient-text">uč se</span>
+  </h1>
+
+  <div class="grid">
+    <div class="card game accent-blue"><span class="em">🚀</span><span class="nm">Obrana galaxie</span><span class="tag">Sestřel vetřelce se správnou odpovědí</span></div>
+    <div class="card game accent-red"><span class="em">👻</span><span class="nm">Labyrint duchů</span><span class="tag">Sněz správnou odpověď a uteč duchům</span></div>
+    <div class="card game accent-green"><span class="em">🐍</span><span class="nm">Had z džungle</span><span class="tag">Nekonečná hra: roste se správnými odpověďmi</span></div>
+    <div class="card game accent-yellow"><span class="em">🧱</span><span class="nm">Průlom hradeb</span><span class="tag">Míčkem prorazíš cihlu se správnou odpovědí</span></div>
+    <div class="card game accent-blue"><span class="em">🟪</span><span class="nm">Pád bloků</span><span class="tag">Shoď blok do sloupce se správnou odpovědí</span></div>
+    <div class="card game accent-green"><span class="em">🥷</span><span class="nm">Stínový bojovník</span><span class="tag">Rozsekni letící ovoce se správnou odpovědí</span></div>
+  </div>
+
+
+  <div class="footer">
+    <div>
+      <div class="url">ucimesehrou.org</div>
+      <div style="font-size:26px;color:var(--muted-dark);margin-top:8px;">Za správné odpovědi sbíráš body</div>
+    </div>
+    <span class="pill">Vyzkoušet →</span>
+  </div>
+</div>
+</body>
+</html>
