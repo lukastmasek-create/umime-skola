@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<title>Leták 2× na A4 – Učíme se hrou</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=Unbounded:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  
+  :root {
+    --brand-500: #3248f0; --accent: #ff5a3c; --yellow: #ffc933; --green: #17a864;
+    --blue: #29a3ff; --ink: #16132b; --paper: #f6f4ee; --muted: #4f4a66;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  .sheet {
+    width: 210mm; height: 297mm; position: relative; overflow: hidden;
+    background: var(--paper); color: var(--ink);
+    font-family: "Onest", system-ui, sans-serif;
+    padding: 14mm 14mm 12mm; display: flex; flex-direction: column;
+  }
+  h1, h2, h3, .display { font-family: "Unbounded", system-ui, sans-serif; letter-spacing: -0.02em; margin: 0; }
+  .top { display: flex; justify-content: space-between; align-items: center; }
+  .top img { height: 40px; }
+  .tag { font-weight: 700; font-size: 11pt; border: 2px solid var(--ink); border-radius: 999px; padding: 5px 14px; }
+  .hero { margin-top: 16mm; }
+  .hero h1 { font-size: 46pt; line-height: 1.08; font-weight: 800; }
+  .hero h1 span { color: var(--brand-500); }
+  .hero p { font-size: 16pt; line-height: 1.45; color: var(--muted); margin: 4mm 0 0; max-width: 165mm; }
+  .sec-title { font-family: "Unbounded", sans-serif; font-weight: 800; font-size: 14pt; margin: 5mm 0 2.5mm; }
+  .subjects { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2.2mm; }
+  .subj { border: 2px solid var(--ink); border-radius: 10px; padding: 2.2mm 2.4mm; font-weight: 700; font-size: 8.6pt; line-height: 1.2; color: var(--ink); }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+  .card { border: 2.5px solid var(--ink); border-radius: 16px; background: #fff; padding: 4mm 4.2mm; box-shadow: 0 2.5px 0 var(--ink); }
+  .card .em { font-size: 18pt; line-height: 1; }
+  .card h3 { font-size: 11pt; font-weight: 800; margin: 1.5mm 0 1mm; }
+  .card p { font-size: 9pt; line-height: 1.4; color: var(--muted); margin: 0; }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3.5mm; }
+  .step { border: 2.5px solid var(--ink); border-radius: 16px; background: #fff; padding: 4mm; text-align: left; }
+  .num { width: 9mm; height: 9mm; border-radius: 3mm; border: 2px solid var(--ink); display: grid; place-items: center; font-family: "Unbounded", sans-serif; font-weight: 800; font-size: 12pt; margin-bottom: 2mm; }
+  .step h3 { font-size: 10.5pt; font-weight: 800; }
+  .step p { font-size: 8.8pt; line-height: 1.35; color: var(--muted); margin: 1mm 0 0; }
+  .cta {
+    margin-top: auto; background: var(--brand-500); color: #fff; border-radius: 18px;
+    padding: 6mm 7mm; display: flex; justify-content: space-between; align-items: center; gap: 6mm;
+  }
+  .cta h2 { font-size: 16pt; font-weight: 800; line-height: 1.15; }
+  .cta p { font-size: 10pt; margin: 2mm 0 0; opacity: .92; }
+  .cta .url { font-family: "Unbounded", sans-serif; font-weight: 800; font-size: 15pt; color: var(--yellow); white-space: nowrap; }
+  .contact { margin-top: 4mm; display: flex; justify-content: space-between; font-size: 9pt; color: var(--muted); font-weight: 600; }
+  .lead-list { margin: 16mm 0 0; padding: 0; list-style: none; display: grid; gap: 8mm; }
+  .lead-list li { font-size: 18pt; font-weight: 600; display: flex; gap: 4mm; align-items: flex-start; }
+  .lead-list .em { font-size: 22pt; line-height: 1.1; }
+  .contact-box {
+    margin-top: auto; background: var(--brand-500); color: #fff; border-radius: 18px;
+    padding: 8mm 9mm; display: flex; flex-direction: column; gap: 3.5mm;
+  }
+  .contact-box h2 { font-size: 17pt; font-weight: 800; }
+  .contact-box .row { font-size: 15pt; font-weight: 700; }
+  .contact-box .row b { color: var(--yellow); font-family: "Unbounded", sans-serif; font-weight: 800; margin-right: 3mm; }
+  .web { margin-top: 5mm; display: flex; justify-content: space-between; align-items: center; font-size: 10pt; color: var(--muted); font-weight: 600; }
+  .web .url { font-family: "Unbounded", sans-serif; font-weight: 800; font-size: 14pt; color: var(--brand-500); }
+
+  /* Černobílá verze: čistě černá a bílá, žádné šedé plochy */
+  :root { --brand-500:#000; --accent:#000; --yellow:#fff; --green:#000; --blue:#000; --ink:#000; --paper:#fff; --muted:#222; }
+  .sheet { background:#fff; color:#000; }
+  .card, .step, .num, .subj { background:#fff !important; border-color:#000; box-shadow:0 2.5px 0 #000; }
+  .tag, .lead-list li { color:#000; }
+  .hero h1 span { color:#000; }
+  .hero p, .card p, .step p, .web { color:#000; }
+  .contact-box { background:#000; color:#fff; }
+  .contact-box .row b { color:#fff; border-bottom:2px solid #fff; }
+  .web .url { color:#000; }
+  .cta { background:#000; color:#fff; }
+  .lead-list .em { filter:grayscale(1) contrast(2); }
+  .top img { height: 40px; }
+  .brand-text { font-family:"Unbounded",sans-serif; font-weight:800; font-size:20pt; color:#000; letter-spacing:-0.02em; }
+  .slogan { font-family: "Unbounded", sans-serif; font-weight: 800; font-size: 20pt; color: var(--ink); margin-top: 6mm !important; }
+
+  /* Půl A4 (A5 na výšku): menší okraje a písmo, méně mezer */
+  @page { size: 148mm 210mm; margin: 0; }
+  .sheet { width:148mm; height:210mm; padding: 9mm 9mm 8mm; }
+  .top img { height: 26px; }
+  .tag { font-size: 8pt; padding: 3px 9px; }
+  .hero { margin-top: 6mm; }
+  .hero h1 { font-size: 27pt; }
+  .slogan { font-size: 13pt !important; margin-top: 3mm !important; }
+  .hero p { font-size: 10pt; margin-top: 2mm; }
+  .lead-list { margin-top: 6mm; gap: 3.5mm; }
+  .lead-list li { font-size: 11.5pt; }
+  .lead-list .em { font-size: 14pt; }
+  .contact-box { padding: 5mm 6mm; gap: 2mm; border-radius: 12px; }
+  .contact-box h2 { font-size: 12pt; }
+  .contact-box .row { font-size: 10pt; }
+  .contact-box .row b { font-size: 9pt; }
+  .contact-box { margin-top: 12mm !important; }
+  .web { margin-top: auto; font-size: 8pt; padding-top: 3mm; }
+  .web .url { font-size: 11pt; }
+  .lead-list .em { color:#000; font-family: "Unbounded", sans-serif; font-weight: 800; }
+
+  /* Dva letáky půl A4 vedle sebe na jeden list A4 na šířku */
+  @page { size: 297mm 210mm; margin: 0; }
+  html, body { width:297mm; height:210mm; }
+  .pair { width:297mm; height:210mm; display:grid; grid-template-columns: 148.5mm 148.5mm; position:relative; background:#fff; }
+  .pair .sheet { width:148.5mm !important; height:210mm !important; padding: 8mm 8mm 7mm !important; }
+  .pair .sheet + .sheet { border-left: 0.3mm dashed #000; }
+  .pair .sheet .hero h1 { font-size: 30pt !important; }
+  .pair .sheet .hero p { font-size: 11.5pt !important; }
+  .pair .sheet .slogan { font-size: 14pt !important; }
+  .pair .sheet .lead-list li { font-size: 12.5pt !important; }
+  .pair .sheet .contact-box .row { font-size: 11pt !important; }
+  .pair .sheet .top img { height: 34px !important; }
+  .pair .sheet .tag { font-size: 10pt !important; }
+  .pair .sheet .card, .pair .sheet .step { }
+  .pair .sheet .web { font-size: 10pt !important; }
+  .pair .sheet .web .url { font-size: 14pt !important; }
+  .pair .sheet .lead-list .em { font-size: 17pt !important; }
+</style>
+</head>
+<body>
+<div class="pair">
+<div class="sheet">
+  <div class="top">
+    <img src="../instagram/assets/logo-bw.svg" alt="Učíme se hrou">
+    <span class="tag">Pro žáky 1.–9. třídy</span>
+  </div>
+
+  <div class="hero">
+    <h1>Učení, které<br><span>tě opravdu baví</span></h1>
+    <p class="slogan">Měníme učení v zážitek.</p>
+    <p>Vzdělávací web s kurzy, testy a hrami pro žáky 1. až 9. třídy.</p>
+  </div>
+
+  <ul class="lead-list">
+    <li><span class="em">■</span><span>Kurzy a testy ke všem základním předmětům</span></li>
+    <li><span class="em">▲</span><span>Hry, za které získáváš body</span></li>
+    <li><span class="em">●</span><span>Únikovky a hry pro třídu</span></li>
+  </ul>
+
+  <div class="contact-box">
+    <h2>Kontakt</h2>
+    <div class="row"><b>TEL</b>770 637 969</div>
+    <div class="row"><b>E-MAIL</b>ucime.se.hrou@seznam.cz</div>
+    <div class="row"><b>INSTAGRAM</b>@ucime.se.hrou</div>
+    <div class="row"><b>WEB</b>ucimesehrou.org</div>
+  </div>
+
+  <div class="web">
+    <span>Registrace na webu je zdarma</span>
+    <span class="url">ucimesehrou.org</span>
+  </div>
+</div>
+<div class="sheet">
+  <div class="top">
+    <img src="../instagram/assets/logo-bw.svg" alt="Učíme se hrou">
+    <span class="tag">Pro žáky 1.–9. třídy</span>
+  </div>
+
+  <div class="hero">
+    <h1>Učení, které<br><span>tě opravdu baví</span></h1>
+    <p class="slogan">Měníme učení v zážitek.</p>
+    <p>Vzdělávací web s kurzy, testy a hrami pro žáky 1. až 9. třídy.</p>
+  </div>
+
+  <ul class="lead-list">
+    <li><span class="em">■</span><span>Kurzy a testy ke všem základním předmětům</span></li>
+    <li><span class="em">▲</span><span>Hry, za které získáváš body</span></li>
+    <li><span class="em">●</span><span>Únikovky a hry pro třídu</span></li>
+  </ul>
+
+  <div class="contact-box">
+    <h2>Kontakt</h2>
+    <div class="row"><b>TEL</b>770 637 969</div>
+    <div class="row"><b>E-MAIL</b>ucime.se.hrou@seznam.cz</div>
+    <div class="row"><b>INSTAGRAM</b>@ucime.se.hrou</div>
+    <div class="row"><b>WEB</b>ucimesehrou.org</div>
+  </div>
+
+  <div class="web">
+    <span>Registrace na webu je zdarma</span>
+    <span class="url">ucimesehrou.org</span>
+  </div>
+</div>
+</div>
+</body>
+</html>
