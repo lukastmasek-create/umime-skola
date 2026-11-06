@@ -47,6 +47,7 @@ precision highp float;
 uniform vec2 uRes;
 uniform float uTime;
 uniform vec3 uIsl[14];
+uniform vec4 uPond; // jezírko pod španělským ostrovem: střed (xy), poloměr (z)
 uniform float uSel;
 uniform vec3 uMouse;
 in vec2 vUv;
@@ -101,10 +102,19 @@ void main() {
     }
   }
 
+  // jezírko: mělká tyrkysová laguna s vlastním pěnovým okrajem
+  vec2 pc = uPond.xy * vec2(asp, 1.0);
+  float dp = length((p - pc) * vec2(1.0, 1.9)) - uPond.z;
+  float pondIn = smoothstep(0.004, -0.004, dp);
+  float pondRim = smoothstep(0.014, 0.0, abs(dp)) * (0.6 + 0.4 * sin(uTime * 2.0 + dp * 160.0));
+  foam += pondRim * 1.6;
+  dMin = min(dMin, dp + 0.02);
+
   float depth = smoothstep(0.0, 0.2, dMin);
   vec3 shallow = vec3(0.16, 0.78, 0.82), mid = vec3(0.07, 0.42, 0.78), deep = vec3(0.03, 0.14, 0.42);
   vec3 col = mix(shallow, mid, smoothstep(0.0, 0.1, dMin));
   col = mix(col, deep, smoothstep(0.08, 0.5, dMin));
+  col = mix(col, vec3(0.42, 0.95, 0.9), pondIn * 0.85);
 
   // světlo a třpyt
   vec3 L = normalize(vec3(-0.5, 0.6, 0.65));
@@ -234,6 +244,9 @@ export function CourseWorld({ locale, islands, allHref, allLabel, noteLabel }: {
           arr[i * 3 + 2] = narrowRef.current ? 0.042 : 0.034;
         });
         gl.uniform3fv(u("uIsl"), arr);
+        // jezírko se posouvá s ostrovem španělštiny (pod něj, o kousek níž)
+        const [sx, sy] = pos("spanelstina");
+        gl.uniform4f(u("uPond"), sx / 100, 1 - (sy + 4) / 100 - 0.075, 0.065, 0);
         gl.uniform1f(u("uTime"), reduced ? 3 : sec);
         gl.uniform1f(u("uSel"), selRef.current);
         gl.uniform3f(u("uMouse"), mouse.x, mouse.y, reduced ? -1 : (now - mouse.t) / 1000);
