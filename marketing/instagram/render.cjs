@@ -22,6 +22,13 @@ const files = ['01-uvod', '02-predmety', '03-hry', '04-unikovka', '05-jak-to-fun
     if (overflow > 0) console.warn(`${f}: obsah přetéká o ${overflow} px`);
     await (await page.$('.poster')).screenshot({ path: path.join(dir, f + '.png') });
     console.log('hotovo:', f + '.png');
+
+    // Černobílá varianta: stejný plakát, jen s odstíny šedé.
+    await page.addStyleTag({ content: '.poster { filter: grayscale(1); }' });
+    await page.waitForTimeout(100);
+    await (await page.$('.poster')).screenshot({ path: path.join(dir, f + '-bw.png') });
+    console.log('hotovo:', f + '-bw.png');
+    await page.reload({ waitUntil: 'networkidle' });
   }
   await browser.close();
 })().catch((e) => { console.error(e); process.exit(1); });
