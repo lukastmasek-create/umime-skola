@@ -6,7 +6,12 @@ sys.path.insert(0, os.path.dirname(__file__))
 from znacky_lib import *
 
 sc = setup("znacka_spanelstina", ortho=4.0, target_z=1.15, world=("#ffe9c9", 0.7))
-plinth("#e8b04a", "#fff3dc")
+# podstavec je jezírko jako u ostatních památek: modrá voda s bílým okrajem, na ní pevnina s náměstím
+water = material("water", "#2f9fd8", roughness=0.15)
+water_l = material("water_l", "#7fd6f5", roughness=0.2)
+plinth("#2f9fd8", "#ffffff")
+land = material("land", "#e8b04a", roughness=0.75)
+cyl((0, 0, 0.0), 0.98, 0.12, land, verts=64)  # vrch pevniny na Z0 + 0.02
 
 stucco = stone_material("stucco", "#f4e3c1", scale=30, strength=0.2)
 stucco_d = stone_material("stucco_d", "#e2c79c", scale=30, strength=0.22)
@@ -27,7 +32,7 @@ win = [glow("win%d" % i, "#ffd98a", 3.0) for i in range(5)]
 Z0 = 0.04  # horní hrana podstavce, na které stojí všechno
 
 # --- terén: dlažba a schody před arkádou ---
-cobbles(1.05, 80, cobble, z=Z0 + 0.01)
+cobbles(0.9, 80, cobble, z=Z0 + 0.03)
 for i in range(3):
     box((0, -0.78 - i * 0.07, Z0 + 0.025 * (2 - i) + 0.02), (0.9 - i * 0.04, 0.12, 0.05), stucco_d, bevel=0.006)
 
@@ -57,14 +62,15 @@ for x in TOWERS:
     bar((x - 0.03, 0.55, Z0 + 1.73), (x + 0.03, 0.55, Z0 + 1.73), 0.007, gold, verts=6)
 
 # --- pomerančovníky s plody po obou stranách ---
-for sx, sy in ((-1, -0.42), (1, -0.42), (-1.04, 0.45)):
-    tree(sx * 0.93, sy, 1.0, z=Z0, kind="round", leaf="#2f8f4f", trunk="#7a5636")
+for sx, sy in ((-1, -0.42), (1, -0.42), (-0.8, 0.45)):
+    tx = sx * 0.78 if sx > -0.9 else sx * 0.8
+    tree(tx, sy * 0.95, 1.0, z=Z0, kind="round", leaf="#2f8f4f", trunk="#7a5636")
     for dx, dy, dz in ((0.07, 0.04, 0.46), (-0.06, -0.03, 0.4), (0.02, 0.07, 0.34)):
-        sphere((sx * 0.93 + dx, sy + dy, Z0 + dz), 0.03, orange, seg=8, rings=6)
+        sphere((tx + dx, sy * 0.95 + dy, Z0 + dz), 0.03, orange, seg=8, rings=6)
 
 # --- dvě vlající španělské vlajky (červená, žlutá, červená) na tyčích ---
 flags = []
-for x in (-1.02, 1.0):
+for x in (-0.86, 0.86):
     pole((x, -0.5, Z0), (x, -0.5, Z0 + 0.6), r=0.012, ball=False)
     flags.append(Flag((x + 0.01, -0.5, Z0 + 0.56), 0.3, 0.2, [red, yellow], lambda u, v: 0 if v < 0.25 or v > 0.75 else 1, cols=16, rows=8, amp=0.05, waves=1.5, droop=0.01))
 
@@ -76,8 +82,17 @@ for k in range(10):
     RAYS.append(cone(SUN, 0.012, 0.0, 0.22, sun_m, verts=6))
 
 
+# vlnky na vodě kolem pevniny (jako u Sydney), mírně se zvedají a klesají
+ripples = []
+for i in range(7):
+    a = i * math.tau / 7 + 0.3
+    ripples.append((a, torus((1.12 * math.cos(a), 1.12 * math.sin(a) * 0.95, Z0 - 0.02), 0.1, 0.01, water_l)))
+
+
 def update(t):
     ph = t * math.tau
+    for k, (a, rp) in enumerate(ripples):
+        rp.location.z = Z0 - 0.02 + 0.012 * math.sin(ph * 2 + k * 0.9)
     # pulzující slunce a paprsky, které se točí kolem něj
     set_glow(sun_m, 4.0 + 2.0 * math.sin(ph * 2) ** 2)
     for k, ray in enumerate(RAYS):
