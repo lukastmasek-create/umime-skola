@@ -46,7 +46,7 @@ const FRAG = `#version 300 es
 precision highp float;
 uniform vec2 uRes;
 uniform float uTime;
-uniform vec3 uIsl[14];
+uniform vec3 uIsl[${N}];
 uniform float uSel;
 uniform vec3 uMouse;
 in vec2 vUv;
@@ -82,7 +82,7 @@ void main() {
   float dMin = 9.0;
   float foam = 0.0;
   float sel = 0.0;
-  for (int i = 0; i < 14; i++) {
+  for (int i = 0; i < ${N}; i++) {
     vec2 c = vec2(uIsl[i].x * asp, uIsl[i].y);
     float d = length((p - c) * vec2(1.0, 1.35));
     float r = uIsl[i].z;
