@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import { DAY_MS, dayKey } from "@/lib/gamify";
+import { DONE_PERCENT, REVIEW_GAME, coursesDoneBetween, normalizeReview } from "@/lib/review";
 
 // Rodičovská kontrola: PIN (bcrypt), denní limit času na webu (minuty, 0 = bez limitu), zákaz nákupů
 // v obchodech a zákaz společného hraní. Uloženo v IdleState pod hrou PARENTAL_GAME.
@@ -29,6 +31,21 @@ export function normalizeParental(raw: unknown): Parental {
 export async function readParental(userId: string): Promise<Parental> {
   const row = await prisma.idleState.findUnique({ where: { userId_game: { userId, game: PARENTAL_GAME } }, select: { data: true } });
   return normalizeParental(row?.data);
+}
+
+export const REPORT_DAYS = 7;
+
+/** Týdenní přehled pro rodiče: kolik kurzů dítě dokončilo za posledních 7 dní (včetně dneška). */
+export async function weeklyReport(userId: string, now = Date.now()) {
+  const row = await prisma.idleState.findUnique({ where: { userId_game: { userId, game: REVIEW_GAME } }, select: { data: true } });
+  const state = normalizeReview(row?.data);
+  const fromDay = dayKey(new Date(now - (REPORT_DAYS - 1) * DAY_MS));
+  const weekIds = coursesDoneBetween(state, fromDay);
+  const totalDone = coursesDoneBetween(state, "0000-00-00").length;
+  const titles = weekIds.length
+    ? (await prisma.course.findMany({ where: { id: { in: weekIds } }, select: { title: true }, orderBy: { title: "asc" } })).map((c) => c.title)
+    : [];
+  return { days: REPORT_DAYS, threshold: DONE_PERCENT, doneThisWeek: weekIds.length, doneTotal: totalDone, titles };
 }
 
 /** Smí hráč utrácet body v obchodech? (rodič mohl nákupy zakázat) */

@@ -3,9 +3,10 @@ import type { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { PARENTAL_GAME, normalizeParental, readParental, type Parental } from "@/lib/parental";
+import { PARENTAL_GAME, normalizeParental, readParental, weeklyReport, type Parental } from "@/lib/parental";
 
-// Rodičovská kontrola. GET: nastavení bez PINu. POST { action: "set" | "verify" | "disable", pin, newPin?, minutes, blockShop, blockTogether }.
+// Rodičovská kontrola. GET: nastavení bez PINu. POST { action: "set" | "verify" | "disable" | "report", pin, newPin?, minutes, blockShop, blockTogether }.
+// "report" vrátí týdenní přehled dokončených kurzů; stejně jako "verify" vyžaduje PIN.
 const PIN = /^\d{4,8}$/;
 // Po 5 chybných PINech se ověřování na 15 minut zamkne (PIN má jen 4–8 číslic, bez limitu by šel uhodnout).
 const LOCK_AFTER = 5;
@@ -51,10 +52,11 @@ export async function POST(request: Request) {
         : NextResponse.json({ error: "wrong-pin" }, { status: 400 });
     }
 
-    if (body.action === "verify") {
+    if (body.action === "verify" || body.action === "report") {
       if (!cur.pin) return NextResponse.json({ error: "wrong-pin" }, { status: 400 });
       if (cur.fails || cur.lockedUntil) await save(userId, { ...cur, fails: 0, lockedUntil: 0 });
-      return NextResponse.json({ ok: true });
+      if (body.action === "verify") return NextResponse.json({ ok: true });
+      return NextResponse.json({ ok: true, ...(await weeklyReport(userId, now)) });
     }
 
     // Správný PIN resetuje počítadlo chyb; klientská data o zámku se nepřebírají.

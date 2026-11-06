@@ -2,10 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { getSettingsExtraText } from "@/i18n/settings-extra";
-import type { Locale } from "@/i18n/config";
+import { withFallbacks, type Locale } from "@/i18n/config";
 import { inputClass, primaryButtonClass, headingStyle, post } from "./ui";
 
 type Parental = { enabled: boolean; minutes: number; blockShop: boolean; blockTogether: boolean };
+type Report = { days: number; threshold: number; doneThisWeek: number; doneTotal: number; titles: string[] };
+
+const REPORT_TEXT: Record<Locale, { title: string; done: string; none: string; total: string; hint: string }> = withFallbacks({
+  cs: { title: "Týdenní přehled", done: "Dokončené kurzy za posledních {days} dní: {n}", none: "Za posledních {days} dní zatím žádný kurz dokončen.", total: "Dokončeno celkem: {n}", hint: "Kurz se počítá jako dokončený, když má v testu aspoň {p} %." },
+  en: { title: "Weekly summary", done: "Courses completed in the last {days} days: {n}", none: "No course completed in the last {days} days yet.", total: "Completed in total: {n}", hint: "A course counts as completed with at least {p}% on its test." },
+  de: { title: "Wochenübersicht", done: "Abgeschlossene Kurse in den letzten {days} Tagen: {n}", none: "In den letzten {days} Tagen wurde noch kein Kurs abgeschlossen.", total: "Insgesamt abgeschlossen: {n}", hint: "Ein Kurs gilt als abgeschlossen, wenn der Test mindestens {p} % hat." },
+  ru: { title: "Недельная сводка", done: "Пройдено курсов за последние {days} дней: {n}", none: "За последние {days} дней курсы ещё не пройдены.", total: "Всего пройдено: {n}", hint: "Курс считается пройденным, если тест сдан на {p} % и выше." },
+});
+
+const fill = (s: string, vars: Record<string, string | number>) => Object.entries(vars).reduce((acc, [k, v]) => acc.replace(`{${k}}`, String(v)), s);
 
 // Sekce Rodičovská kontrola: PIN, denní limit a zákazy. Po zapnutí se změny dělají jen s PINem.
 export function ParentalSection({ locale }: { locale: Locale }) {
@@ -14,7 +24,9 @@ export function ParentalSection({ locale }: { locale: Locale }) {
   const [loaded, setLoaded] = useState(false);
   const [pcForm, setPcForm] = useState<Parental & { pin: string; newPin: string }>({ enabled: false, minutes: 0, blockShop: false, blockTogether: false, pin: "", newPin: "" });
   const [unlocked, setUnlocked] = useState(false);
+  const [report, setReport] = useState<Report | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const rt = REPORT_TEXT[locale];
 
   useEffect(() => {
     void fetch("/api/ucet/rodic")
@@ -45,9 +57,12 @@ export function ParentalSection({ locale }: { locale: Locale }) {
               className="flex flex-wrap items-center gap-2"
               onSubmit={async (e) => {
                 e.preventDefault();
-                const r = await post("/api/ucet/rodic", { action: "verify", pin: pcForm.pin });
-                if (r.ok) setUnlocked(true);
-                else say(r);
+                // Odemčení PINem zároveň načte týdenní přehled (server ho vrací jen s platným PINem).
+                const r = await post("/api/ucet/rodic", { action: "report", pin: pcForm.pin });
+                if (r.ok) {
+                  setUnlocked(true);
+                  setReport(r.data as unknown as Report);
+                } else say(r);
               }}
             >
               <span className="text-sm font-semibold">{t.locked}</span>
@@ -56,6 +71,23 @@ export function ParentalSection({ locale }: { locale: Locale }) {
                 {t.unlock}
               </button>
             </form>
+          )}
+          {pc.enabled && unlocked && report && (
+            <div className="flex flex-col gap-2 rounded-xl bg-[var(--surface-muted)] p-4">
+              <h3 className="text-base font-bold" style={headingStyle}>
+                {rt.title}
+              </h3>
+              <p className="text-sm font-semibold">{fill(report.doneThisWeek > 0 ? rt.done : rt.none, { days: report.days, n: report.doneThisWeek })}</p>
+              {report.titles.length > 0 && (
+                <ul className="list-disc pl-5 text-sm">
+                  {report.titles.map((title) => (
+                    <li key={title}>{title}</li>
+                  ))}
+                </ul>
+              )}
+              <p className="text-sm text-[var(--muted)]">{fill(rt.total, { n: report.doneTotal })}</p>
+              <p className="text-xs text-[var(--muted)]">{fill(rt.hint, { p: report.threshold })}</p>
+            </div>
           )}
           {editable && (
             <form
