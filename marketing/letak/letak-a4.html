@@ -24,10 +24,10 @@
   .top { display: flex; justify-content: space-between; align-items: center; }
   .top img { height: 40px; }
   .tag { font-weight: 700; font-size: 11pt; border: 2px solid var(--ink); border-radius: 999px; padding: 5px 14px; }
-  .hero { margin-top: 8mm; }
-  .hero h1 { font-size: 34pt; line-height: 1.08; font-weight: 800; }
+  .hero { margin-top: 16mm; }
+  .hero h1 { font-size: 46pt; line-height: 1.08; font-weight: 800; }
   .hero h1 span { color: var(--brand-500); }
-  .hero p { font-size: 12.5pt; line-height: 1.45; color: var(--muted); margin: 4mm 0 0; max-width: 165mm; }
+  .hero p { font-size: 16pt; line-height: 1.45; color: var(--muted); margin: 4mm 0 0; max-width: 165mm; }
   .sec-title { font-family: "Unbounded", sans-serif; font-weight: 800; font-size: 14pt; margin: 5mm 0 2.5mm; }
   .subjects { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2.2mm; }
   .subj { border: 2px solid var(--ink); border-radius: 10px; padding: 2.2mm 2.4mm; font-weight: 700; font-size: 8.6pt; line-height: 1.2; color: var(--ink); }
@@ -49,6 +49,18 @@
   .cta p { font-size: 10pt; margin: 2mm 0 0; opacity: .92; }
   .cta .url { font-family: "Unbounded", sans-serif; font-weight: 800; font-size: 15pt; color: var(--yellow); white-space: nowrap; }
   .contact { margin-top: 4mm; display: flex; justify-content: space-between; font-size: 9pt; color: var(--muted); font-weight: 600; }
+  .lead-list { margin: 16mm 0 0; padding: 0; list-style: none; display: grid; gap: 8mm; }
+  .lead-list li { font-size: 18pt; font-weight: 600; display: flex; gap: 4mm; align-items: flex-start; }
+  .lead-list .em { font-size: 22pt; line-height: 1.1; }
+  .contact-box {
+    margin-top: auto; background: var(--brand-500); color: #fff; border-radius: 18px;
+    padding: 8mm 9mm; display: flex; flex-direction: column; gap: 3.5mm;
+  }
+  .contact-box h2 { font-size: 17pt; font-weight: 800; }
+  .contact-box .row { font-size: 15pt; font-weight: 700; }
+  .contact-box .row b { color: var(--yellow); font-family: "Unbounded", sans-serif; font-weight: 800; margin-right: 3mm; }
+  .web { margin-top: 5mm; display: flex; justify-content: space-between; align-items: center; font-size: 10pt; color: var(--muted); font-weight: 600; }
+  .web .url { font-family: "Unbounded", sans-serif; font-weight: 800; font-size: 14pt; color: var(--brand-500); }
 </style>
 </head>
 <body>
@@ -60,54 +72,24 @@
 
   <div class="hero">
     <h1>Učení, které<br><span>tě opravdu baví</span></h1>
-    <p>Kurzy, testy a hry na jednom místě. U každé odpovědi máš vysvětlení a za každou správnou odpověď získáš body. Registrace je zdarma.</p>
+    <p>Vzdělávací web s kurzy, testy a hrami pro žáky 1. až 9. třídy.</p>
   </div>
 
-  <div class="sec-title">Vyber si předmět</div>
-  <div class="subjects">
-    <div class="subj" style="background:#ffc933">Čeština</div>
-    <div class="subj" style="background:#ff9ec7">Literatura</div>
-    <div class="subj" style="background:#8fd0ff">Angličtina</div>
-    <div class="subj" style="background:#ffb26b">Němčina</div>
-    <div class="subj" style="background:#ff8a6b">Ruština</div>
-    <div class="subj" style="background:#7ee0b0">Matematika</div>
-    <div class="subj" style="background:#c9b8ff">Dějepis</div>
-    <div class="subj" style="background:#7fdbd8">Zeměpis</div>
-    <div class="subj" style="background:#b6e36a">Přírodopis</div>
-    <div class="subj" style="background:#f58fa0">Fyzika</div>
-    <div class="subj" style="background:#d98cff">Chemie</div>
-    <div class="subj" style="background:#7f9bff">Občanka</div>
-    <div class="subj" style="background:#f2e76a">Hudebka</div>
-    <div class="subj" style="background:#ff6f91">Francouzština</div>
-    <div class="subj" style="background:#ff5c5c">Španělština</div>
+  <ul class="lead-list">
+    <li><span class="em">📚</span><span>Kurzy a testy ke všem základním předmětům</span></li>
+    <li><span class="em">🎮</span><span>Hry, za které získáváš body</span></li>
+    <li><span class="em">🔐</span><span>Únikovky a hry pro třídu</span></li>
+  </ul>
+
+  <div class="contact-box">
+    <h2>Kontakt</h2>
+    <div class="row"><b>TEL</b>770 637 969</div>
+    <div class="row"><b>E-MAIL</b>ucime.se.hrou@seznam.cz</div>
   </div>
 
-  <div class="sec-title">Co tu najdeš</div>
-  <div class="cols">
-    <div class="card"><div class="em">📚</div><h3>Kurzy a testy</h3><p>Procvičuj po tématech a ověř se v testu jako ve škole. Každý kurz má pět úrovní obtížnosti.</p></div>
-    <div class="card"><div class="em">🎮</div><h3>Hry za body</h3><p>Obrana galaxie, Labyrint duchů, Pád bloků, Had z džungle i pexeso či osmisměrka.</p></div>
-    <div class="card"><div class="em">🔐</div><h3>Únikovky</h3><p>Vyřeš hádanky z učiva, najdi vodítka a uteč z laboratoře dřív, než dojde čas.</p></div>
-    <div class="card"><div class="em">🏆</div><h3>Hrát společně a žebříčky</h3><p>Založ hru pro třídu, kamarádi se připojí kódem. Porovnej se spolužáky i školou.</p></div>
-  </div>
-
-  <div class="sec-title">Jak to funguje</div>
-  <div class="steps">
-    <div class="step"><div class="num" style="background:var(--yellow)">1</div><h3>Vyber kurz</h3><p>Podle předmětu a ročníku.</p></div>
-    <div class="step"><div class="num" style="background:#8fd0ff">2</div><h3>Procvičuj hrou</h3><p>Za správné odpovědi sbíráš body.</p></div>
-    <div class="step"><div class="num" style="background:#7ee0b0">3</div><h3>Rosteš</h3><p>Získáváš XP, úrovně, avatary a tituly.</p></div>
-  </div>
-
-  <div class="cta">
-    <div>
-      <h2>Založ si účet zdarma</h2>
-      <p>Body, úrovně i časy v únikovkách si uložíš na svůj účet.</p>
-    </div>
-    <div class="url">ucimesehrou.org</div>
-  </div>
-
-  <div class="contact">
-    <span>Otázky? ucime.se.hrou@seznam.cz</span>
-    <span>Učíme se hrou · vzdělávací web pro žáky 1.–9. třídy</span>
+  <div class="web">
+    <span>Registrace na webu je zdarma</span>
+    <span class="url">ucimesehrou.org</span>
   </div>
 </div>
 </body>
