@@ -74,23 +74,21 @@ export default async function LocaleLayout({
       >
         <header className="site-header sticky top-0 z-40 border-b-2 border-[var(--edge)] bg-[var(--surface)]">
           <HeaderScroll />
-          <div className="site-header-in mx-auto flex max-w-6xl flex-col gap-1 px-4 py-1.5 sm:px-6">
-            <div className="flex items-center justify-between gap-3">
-              <Link href={`/${locale}`} className="site-logo shrink-0">
-                <SiteLogo />
-              </Link>
-              <div className="flex items-center justify-end gap-1 text-sm sm:gap-1.5">
-                <LanguageSwitcher current={locale as Locale} />
-                <HeaderAccount
-                  locale={locale as Locale}
-                  loginLabel={dict.nav.login}
-                  registerLabel={dict.nav.register}
-                  linkClass={navLink}
-                />
-                <MobileMenu locale={locale as Locale} dict={dict} />
-              </div>
-            </div>
+          <div className="site-header-in mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-1.5 sm:px-6">
+            <Link href={`/${locale}`} className="site-logo shrink-0">
+              <SiteLogo />
+            </Link>
             <NavTabs locale={locale as Locale} dict={dict} />
+            <div className="flex shrink-0 items-center justify-end gap-1 text-sm sm:gap-1.5">
+              <LanguageSwitcher current={locale as Locale} />
+              <HeaderAccount
+                locale={locale as Locale}
+                loginLabel={dict.nav.login}
+                registerLabel={dict.nav.register}
+                linkClass={navLink}
+              />
+              <MobileMenu locale={locale as Locale} dict={dict} />
+            </div>
           </div>
         </header>
         <ReturnNudge locale={locale as Locale} />
