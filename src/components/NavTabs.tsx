@@ -129,6 +129,9 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
   return groups;
 }
 
+// Na širokých obrazovkách zůstávají v liště jen tyto skupiny, ostatní jsou v tlačítku Menu.
+const PRIMARY_GROUPS = new Set(["courses", "settings", "shop", "study"]);
+
 function isActiveTab(pathname: string | null, tab: Tab) {
   if (!pathname || tab.noActive) return false;
   const path = tab.href.split("?")[0];
@@ -159,8 +162,8 @@ function LanguageLinks({ locale, className, onPick }: { locale: Locale; classNam
   );
 }
 
-// Řada rozbalovacích skupin pod logem. Na širších obrazovkách se vejde celá,
-// na užších ji nahrazuje MobileMenu.
+// Řada hlavních rozbalovacích skupin pod logem (jen na širokých obrazovkách);
+// ostatní skupiny a celou navigaci na užších obrazovkách nabízí MobileMenu.
 export function NavTabs({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const pathname = usePathname();
   const [account] = useAccount();
@@ -196,8 +199,8 @@ export function NavTabs({ locale, dict }: { locale: Locale; dict: Dictionary }) 
     }`;
 
   return (
-    <nav ref={rootRef} aria-label="Hlavní navigace" className="hidden flex-wrap items-center gap-1 xl:flex">
-      {groups.map((group) => {
+    <nav ref={rootRef} aria-label="Hlavní navigace" className="hidden min-w-0 flex-nowrap items-center xl:flex">
+      {groups.filter((group) => PRIMARY_GROUPS.has(group.key)).map((group) => {
         const open = openKey === group.key;
         const active = group.items.some((tab) => isActiveTab(pathname, tab));
         return (
@@ -207,7 +210,7 @@ export function NavTabs({ locale, dict }: { locale: Locale; dict: Dictionary }) 
               aria-expanded={open}
               aria-haspopup="true"
               onClick={() => setOpenKey(open ? null : group.key)}
-              className={`nav-group flex items-center gap-1.5 whitespace-nowrap rounded-lg border-2 px-2.5 py-1.5 text-sm font-semibold ${
+              className={`nav-group flex items-center gap-1 whitespace-nowrap rounded-lg border-2 px-2 py-1.5 text-sm font-semibold ${
                 active || open
                   ? "border-[var(--edge)] bg-[var(--accent-yellow)] text-[#16132b]"
                   : "border-transparent text-[var(--muted)] hover:border-[var(--edge)] hover:text-[var(--foreground)]"
@@ -276,7 +279,7 @@ export function MobileMenu({ locale, dict }: { locale: Locale; dict: Dictionary 
     }`;
 
   return (
-    <div className="xl:hidden">
+    <div>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -298,7 +301,7 @@ export function MobileMenu({ locale, dict }: { locale: Locale; dict: Dictionary 
               const expanded = openKey === group.key;
               const active = group.items.some((tab) => isActiveTab(pathname, tab));
               return (
-                <div key={group.key}>
+                <div key={group.key} className={PRIMARY_GROUPS.has(group.key) ? "xl:hidden" : undefined}>
                   <button
                     type="button"
                     aria-expanded={expanded}
