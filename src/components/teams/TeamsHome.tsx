@@ -1,0 +1,96 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { call, errorCode } from "./api";
+import { getTeamsText, teamsError, tfill } from "@/i18n/teams";
+import type { Locale } from "@/i18n/config";
+
+
+type TeamRow = { id: string; name: string; role: string; code: string | null; members: number; assignments: number; open: number };
+
+export function TeamsHome({ locale }: { locale: Locale }) {
+  const t = getTeamsText(locale);
+  const router = useRouter();
+  const [teams, setTeams] = useState<TeamRow[] | null>(null);
+  const [auth, setAuth] = useState(true);
+  const [name, setName] = useState("");
+  const [teacher, setTeacher] = useState(false);
+  const [code, setCode] = useState("");
+  const [error, setError] = useState("");
+
+  const load = useCallback(async () => {
+    try {
+      setTeams((await call<{ teams: TeamRow[] }>("/api/tymy")).teams);
+    } catch (e) {
+      if (errorCode(e) === "login-required") setAuth(false);
+      else setError(teamsError(t, errorCode(e)));
+      setTeams([]);
+    }
+  }, [t]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load();
+  }, [load]);
+
+  async function act(body: object) {
+    setError("");
+    try {
+      const { id } = await call<{ id: string }>("/api/tymy", body);
+      router.push(`/${locale}/tymy/${id}`);
+    } catch (e) {
+      setError(teamsError(t, errorCode(e)));
+    }
+  }
+
+  if (!auth)
+    return (
+      <div className="card flex flex-col items-start gap-3 p-6">
+        <p className="text-[var(--muted)]">{t.loginNeeded}</p>
+        <Link href={`/${locale}/prihlaseni`} className="btn-bouncy bg-[var(--brand-500)] px-5 py-2.5 text-sm font-bold text-white">{t.login}</Link>
+      </div>
+    );
+
+  return (
+    <div className="flex flex-col gap-8">
+      {error && <p className="card p-3 text-sm font-semibold text-[var(--danger)]">{error}</p>}
+      <section className="grid gap-4 sm:grid-cols-2">
+        <form className="card flex flex-col gap-3 p-5" onSubmit={(e) => { e.preventDefault(); void act({ action: "create", name, asTeacher: teacher }); }}>
+          <h2 className="text-lg font-extrabold">{t.createTitle}</h2>
+          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} placeholder={t.namePh} aria-label={t.namePh} className="rounded-xl border-2 border-[var(--field-border)] bg-[var(--surface)] px-3 py-2 text-sm" />
+          <label className="flex items-center gap-2 text-sm font-semibold">
+            <input type="checkbox" checked={teacher} onChange={(e) => setTeacher(e.target.checked)} className="size-4" />
+            {t.iAmTeacher}
+          </label>
+          <button className="btn-bouncy self-start bg-[var(--brand-500)] px-5 py-2 text-sm font-bold text-white">{t.create}</button>
+        </form>
+        <form className="card flex flex-col gap-3 p-5" onSubmit={(e) => { e.preventDefault(); void act({ action: "join", code }); }}>
+          <h2 className="text-lg font-extrabold">{t.joinTitle}</h2>
+          <p className="text-sm text-[var(--muted)]">{t.joinHint}</p>
+          <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} maxLength={12} placeholder={t.codePh} aria-label={t.codePh} className="rounded-xl border-2 border-[var(--field-border)] bg-[var(--surface)] px-3 py-2 text-sm uppercase tracking-widest" />
+          <button className="btn-bouncy self-start bg-[var(--accent-green)] px-5 py-2 text-sm font-bold text-white">{t.join}</button>
+        </form>
+      </section>
+      <section className="flex flex-col gap-3">
+        <h2 className="text-xl font-extrabold">{t.myTeams}</h2>
+        {teams === null && <div className="card h-24 animate-pulse bg-[var(--surface-muted)]" aria-hidden />}
+        {teams?.length === 0 && <p className="text-[var(--muted)]">{t.noTeams}</p>}
+        <ul className="grid gap-3 sm:grid-cols-2">
+          {teams?.map((tm) => (
+            <li key={tm.id}>
+              <Link href={`/${locale}/tymy/${tm.id}`} className="card flex h-full flex-col gap-1 p-4 hover:-translate-y-0.5">
+                <span className="flex items-center justify-between gap-2">
+                  <b className="truncate text-lg">{tm.name}</b>
+                  <span className="rounded-full bg-[var(--brand-50)] px-2 py-0.5 text-xs font-bold text-[var(--brand-700)]">{tm.role === "TEACHER" ? t.teacher : t.student}</span>
+                </span>
+                <span className="text-sm text-[var(--muted)]">{tfill(t.teamStats, tm.members, tm.assignments)}{tm.role === "STUDENT" && tm.open > 0 ? tfill(t.teamOpen, tm.open) : ""}</span>
+                {tm.code && <span className="text-xs text-[var(--muted)]">{t.code}: <b className="tracking-widest">{tm.code}</b></span>}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  );
+}

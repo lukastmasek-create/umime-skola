@@ -52,6 +52,10 @@ model User {
   hostedRooms  LiveRoom[]
   livePlayers  LivePlayer[]
   contactMessages ContactMessage[]
+  teamMemberships TeamMember[]
+  teamMessages    TeamMessage[]
+  assignmentViews AssignmentView[]
+  assignmentAttempts AssignmentAttempt[]
 
   accounts Account[]
   sessions Session[]
@@ -585,4 +589,96 @@ model EconomyEvent {
 
   @@index([createdAt])
   @@index([targetUserId, targetSeen])
+}
+
+// --- Týmy pro učitele a žáky (třídy) ---
+// Tým má kód, chat a zadání. Role je na úrovni členství (TEACHER/STUDENT), ne účtu.
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @unique
+  createdAt DateTime @default(now())
+
+  members     TeamMember[]
+  assignments Assignment[]
+  messages    TeamMessage[]
+}
+
+model TeamMember {
+  id       String   @id @default(cuid())
+  role     String   @default("STUDENT") // TEACHER | STUDENT
+  joinedAt DateTime @default(now())
+
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([userId])
+}
+
+// Zadání drží snímek otázek (questions: [{prompt, options, correctIndex, answers, explanation}]),
+// takže pozdější úprava kurzu nebo sady nezmění už zadané. maxAttempts null = neomezeně.
+model Assignment {
+  id          String    @id @default(cuid())
+  title       String
+  description String    @default("")
+  questions   Json
+  maxAttempts Int?
+  passPercent Int       @default(50)
+  dueAt       DateTime?
+  createdAt   DateTime  @default(now())
+
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  views    AssignmentView[]
+  attempts AssignmentAttempt[]
+  messages TeamMessage[]
+
+  @@index([teamId, createdAt])
+}
+
+model AssignmentView {
+  id        String   @id @default(cuid())
+  viewedAt  DateTime @default(now())
+
+  assignmentId String
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, userId])
+}
+
+model AssignmentAttempt {
+  id        String   @id @default(cuid())
+  percent   Int
+  correct   Int
+  total     Int
+  createdAt DateTime @default(now())
+
+  assignmentId String
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([assignmentId, userId])
+}
+
+// assignmentId null = obecný chat týmu, jinak vlákno pod zadáním.
+model TeamMessage {
+  id        String   @id @default(cuid())
+  text      String
+  createdAt DateTime @default(now())
+
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  assignmentId String?
+  assignment   Assignment? @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([teamId, assignmentId, createdAt])
 }

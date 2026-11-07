@@ -11,6 +11,7 @@ import { getEscapeText } from "@/i18n/escape";
 import { getMaterialsText } from "@/i18n/materials";
 import { getHomeText } from "@/i18n/home";
 import { getTownHubText } from "@/i18n/town";
+import { getTeamsText } from "@/i18n/teams";
 import { getSocialText } from "@/i18n/social";
 import { getRoomText } from "@/i18n/room";
 import { getReviewText } from "@/i18n/review";
@@ -119,6 +120,7 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
       key: "boards",
       label: home.groups.boards,
       items: [
+        { key: "tymy", href: `/${locale}/tymy`, label: getTeamsText(locale).title },
         { key: "liga", href: `/${locale}/parta`, label: getSocialText(locale).league },
         { key: "zebricky", href: `/${locale}/zebricky`, label: community.navLeaderboards },
       ],
