@@ -129,6 +129,9 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
   return groups;
 }
 
+// Na širokých obrazovkách zůstávají v liště jen tyto skupiny, ostatní jsou v tlačítku Menu.
+const PRIMARY_GROUPS = new Set(["courses", "settings", "shop", "study"]);
+
 function isActiveTab(pathname: string | null, tab: Tab) {
   if (!pathname || tab.noActive) return false;
   const path = tab.href.split("?")[0];
@@ -159,8 +162,8 @@ function LanguageLinks({ locale, className, onPick }: { locale: Locale; classNam
   );
 }
 
-// Řada rozbalovacích skupin pod logem. Na širších obrazovkách se vejde celá,
-// na užších ji nahrazuje MobileMenu.
+// Řada hlavních rozbalovacích skupin pod logem (jen na širokých obrazovkách);
+// ostatní skupiny a celou navigaci na užších obrazovkách nabízí MobileMenu.
 export function NavTabs({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const pathname = usePathname();
   const [account] = useAccount();
@@ -197,7 +200,7 @@ export function NavTabs({ locale, dict }: { locale: Locale; dict: Dictionary }) 
 
   return (
     <nav ref={rootRef} aria-label="Hlavní navigace" className="hidden flex-wrap items-center gap-1 xl:flex">
-      {groups.map((group) => {
+      {groups.filter((group) => PRIMARY_GROUPS.has(group.key)).map((group) => {
         const open = openKey === group.key;
         const active = group.items.some((tab) => isActiveTab(pathname, tab));
         return (
@@ -276,7 +279,7 @@ export function MobileMenu({ locale, dict }: { locale: Locale; dict: Dictionary 
     }`;
 
   return (
-    <div className="xl:hidden">
+    <div>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -298,7 +301,7 @@ export function MobileMenu({ locale, dict }: { locale: Locale; dict: Dictionary 
               const expanded = openKey === group.key;
               const active = group.items.some((tab) => isActiveTab(pathname, tab));
               return (
-                <div key={group.key}>
+                <div key={group.key} className={PRIMARY_GROUPS.has(group.key) ? "xl:hidden" : undefined}>
                   <button
                     type="button"
                     aria-expanded={expanded}
