@@ -3,6 +3,8 @@ import { handle, readJson } from "@/lib/live/http";
 import { LiveError } from "@/lib/live/service";
 import { withinRateLimit } from "@/lib/rate-limit";
 import { attemptsLeft, cleanSnapshot, gradeAttempt, studentStatus, toPublic, type AnswerInput } from "@/lib/teams/logic";
+import { DAILY_ACTIVITY_XP_CAP, MAX_XP_PER_CLAIM } from "@/lib/progression";
+import { ACTIVITY_SOURCES } from "@/lib/gamify";
 import { loadAssignment, requireMember, requireUserId } from "@/lib/teams/server";
 
 export const dynamic = "force-dynamic";
@@ -33,7 +35,7 @@ export async function GET(_req: Request, ctx: Ctx) {
           const view = views.find((v) => v.userId === s.userId);
           return {
             userId: s.userId,
-            name: s.user.name || s.user.email || "Žák",
+            name: s.user.name || s.user.email || null,
             viewedAt: view?.viewedAt ?? null,
             attempts: at.length,
             best,
@@ -73,12 +75,24 @@ export async function POST(request: Request, ctx: Ctx) {
 
     // Pokus se zapisuje transakčně s kontrolou limitu (dvě rychlá odeslání nepřekročí limit).
     const saved = await prisma.$transaction(async (tx) => {
-      const used = await tx.assignmentAttempt.count({ where: { assignmentId: aid, userId } });
-      if (a.maxAttempts != null && used >= a.maxAttempts) return null;
+      const prev = await tx.assignmentAttempt.findMany({ where: { assignmentId: aid, userId }, select: { correct: true } });
+      if (a.maxAttempts != null && prev.length >= a.maxAttempts) return null;
       await tx.assignmentAttempt.create({ data: { assignmentId: aid, userId, percent: result.percent, correct: result.correct, total: result.total } });
-      return used + 1;
+      return { used: prev.length + 1, bestBefore: prev.reduce((m, x) => Math.max(m, x.correct), 0) };
     });
     if (saved == null) throw new LiveError("no-attempts-left", 409);
-    return { ...result, passed: result.percent >= a.passPercent, left: attemptsLeft(a.maxAttempts, saved) };
+
+    // XP jako u testů (5 za správnou odpověď), ale jen za zlepšení oproti dřívějším pokusům,
+    // takže opakováním stejného zadání se XP farmit nedá. Platí společný denní strop.
+    let gainedXp = 0;
+    const wanted = Math.max(0, result.correct - saved.bestBefore) * 5;
+    if (wanted > 0) {
+      const startOfDay = new Date();
+      startOfDay.setUTCHours(0, 0, 0, 0);
+      const usedToday = await prisma.xpEvent.aggregate({ where: { userId, source: { in: [...ACTIVITY_SOURCES] }, createdAt: { gte: startOfDay } }, _sum: { amount: true } });
+      gainedXp = Math.min(wanted, MAX_XP_PER_CLAIM, Math.max(0, DAILY_ACTIVITY_XP_CAP - (usedToday._sum.amount ?? 0)));
+      if (gainedXp > 0) await prisma.xpEvent.create({ data: { userId, amount: gainedXp, source: "test" } });
+    }
+    return { ...result, gainedXp, passed: result.percent >= a.passPercent, left: attemptsLeft(a.maxAttempts, saved.used) };
   });
 }

@@ -30,7 +30,7 @@ export async function GET(request: Request, ctx: Ctx) {
         text: m.text,
         createdAt: m.createdAt,
         userId: m.userId,
-        name: m.user.name || "Člen týmu",
+        name: m.user.name,
         teacher: roles.find((r) => r.userId === m.userId)?.role === "TEACHER",
       })),
     };
