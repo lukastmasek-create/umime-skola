@@ -16,6 +16,7 @@ import { ParentalGuard } from "@/components/ParentalGuard";
 import { EconomyTicker } from "@/components/EconomyTicker";
 import { getContactText } from "@/i18n/contact";
 import { getHomeText } from "@/i18n/home";
+import { CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL, getFooterLinks } from "@/i18n/legal";
 
 const heading = Unbounded({
   subsets: ["latin", "latin-ext", "cyrillic"],
@@ -73,7 +74,7 @@ export default async function LocaleLayout({
       >
         <header className="site-header sticky top-0 z-40 border-b-2 border-[var(--edge)] bg-[var(--surface)]">
           <HeaderScroll />
-          <div className="site-header-in mx-auto flex max-w-6xl flex-col gap-2 px-4 py-2.5 sm:px-6">
+          <div className="site-header-in mx-auto flex max-w-6xl flex-col gap-1 px-4 py-1.5 sm:px-6">
             <div className="flex items-center justify-between gap-3">
               <Link href={`/${locale}`} className="site-logo shrink-0">
                 <SiteLogo />
@@ -96,16 +97,32 @@ export default async function LocaleLayout({
         <ParentalGuard locale={locale as Locale} />
         <EconomyTicker locale={locale as Locale} />
         <main className="world flex-1">{children}</main>
-        <footer className="border-t-2 border-[var(--edge)] bg-[var(--surface)] py-6 text-center text-sm text-[var(--muted)]">
-          &copy; {new Date().getFullYear()} {dict.footer.rights}
-          <span aria-hidden> · </span>
-          <Link href={`/${locale}#o-nas`} className="font-semibold hover:text-[var(--foreground)] hover:underline">
-            {getHomeText(locale as Locale).about.title}
-          </Link>
-          <span aria-hidden> · </span>
-          <Link href={`/${locale}/kontakt`} className="font-semibold hover:text-[var(--foreground)] hover:underline">
-            {getContactText(locale as Locale).nav}
-          </Link>
+        <footer className="border-t-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-6 text-center text-sm text-[var(--muted)]">
+          <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 font-semibold">
+            <Link href={`/${locale}#o-nas`} className="hover:text-[var(--foreground)] hover:underline">
+              {getHomeText(locale as Locale).about.title}
+            </Link>
+            <Link href={`/${locale}/kontakt`} className="hover:text-[var(--foreground)] hover:underline">
+              {getContactText(locale as Locale).nav}
+            </Link>
+            <Link href={`/${locale}/ochrana-soukromi`} className="hover:text-[var(--foreground)] hover:underline">
+              {getFooterLinks(locale as Locale).privacy}
+            </Link>
+            <Link href={`/${locale}/podminky`} className="hover:text-[var(--foreground)] hover:underline">
+              {getFooterLinks(locale as Locale).terms}
+            </Link>
+          </nav>
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-[var(--foreground)] hover:underline">
+              {CONTACT_EMAIL}
+            </a>
+            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--foreground)] hover:underline">
+              Instagram @{INSTAGRAM_HANDLE}
+            </a>
+          </div>
+          <p className="mt-2">
+            &copy; {new Date().getFullYear()} {dict.footer.rights}
+          </p>
         </footer>
       </body>
     </html>

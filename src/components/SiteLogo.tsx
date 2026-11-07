@@ -7,7 +7,7 @@ const WIDTH = 943;
 const HEIGHT = 107;
 
 export function SiteLogo() {
-  const full = "h-[30px] w-auto sm:h-9";
+  const full = "h-[26px] w-auto sm:h-[30px]";
   return (
     <>
       <span className="hidden min-[460px]:inline-flex">
@@ -37,7 +37,7 @@ export function SiteLogo() {
         height={125}
         preload
         unoptimized
-        className="h-9 w-auto min-[460px]:hidden"
+        className="h-8 w-auto min-[460px]:hidden"
       />
     </>
   );

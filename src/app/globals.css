@@ -2982,8 +2982,8 @@ select[aria-invalid="true"] {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
 }
 .site-header[data-scrolled] .site-header-in {
-  padding-top: 0.3rem;
-  padding-bottom: 0.3rem;
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
 }
 .site-logo {
   position: relative;
