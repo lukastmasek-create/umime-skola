@@ -199,7 +199,7 @@ export function NavTabs({ locale, dict }: { locale: Locale; dict: Dictionary }) 
     }`;
 
   return (
-    <nav ref={rootRef} aria-label="Hlavní navigace" className="hidden flex-wrap items-center gap-1 xl:flex">
+    <nav ref={rootRef} aria-label="Hlavní navigace" className="hidden min-w-0 flex-nowrap items-center xl:flex">
       {groups.filter((group) => PRIMARY_GROUPS.has(group.key)).map((group) => {
         const open = openKey === group.key;
         const active = group.items.some((tab) => isActiveTab(pathname, tab));
@@ -210,7 +210,7 @@ export function NavTabs({ locale, dict }: { locale: Locale; dict: Dictionary }) 
               aria-expanded={open}
               aria-haspopup="true"
               onClick={() => setOpenKey(open ? null : group.key)}
-              className={`nav-group flex items-center gap-1.5 whitespace-nowrap rounded-lg border-2 px-2.5 py-1.5 text-sm font-semibold ${
+              className={`nav-group flex items-center gap-1 whitespace-nowrap rounded-lg border-2 px-2 py-1.5 text-sm font-semibold ${
                 active || open
                   ? "border-[var(--edge)] bg-[var(--accent-yellow)] text-[#16132b]"
                   : "border-transparent text-[var(--muted)] hover:border-[var(--edge)] hover:text-[var(--foreground)]"
