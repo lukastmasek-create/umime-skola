@@ -119,6 +119,7 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
       key: "boards",
       label: home.groups.boards,
       items: [
+        { key: "tymy", href: `/${locale}/tymy`, label: "Týmy a třídy" },
         { key: "liga", href: `/${locale}/parta`, label: getSocialText(locale).league },
         { key: "zebricky", href: `/${locale}/zebricky`, label: community.navLeaderboards },
       ],
