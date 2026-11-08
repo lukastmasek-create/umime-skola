@@ -1839,6 +1839,72 @@ select[aria-invalid="true"] {
   --w-size: 300px 300px;
   --w-opacity: 0.8;
 }
+/* Fyzika: laboratoř s oběžnými drahami a rastrem */
+.world:has([data-world="fyzika"]) {
+  --w-bg:
+    radial-gradient(ellipse 60% 45% at 80% 0%, rgba(245, 143, 160, 0.22), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 10% 100%, rgba(90, 140, 255, 0.18), transparent 70%),
+    linear-gradient(180deg, #1a0d24 0%, #2a1236 55%, #170c26 100%);
+  --w-pat:
+    repeating-radial-gradient(circle at 50% 50%, transparent 0 58px, rgba(245, 143, 160, 0.1) 58px 59px),
+    repeating-linear-gradient(0deg, transparent 0 39px, rgba(255, 255, 255, 0.04) 39px 40px);
+  --w-size: auto;
+  --w-opacity: 1;
+}
+/* Chemie: laboratoř se zelenofialovou září a bublinkami */
+.world:has([data-world="chemie"]) {
+  --w-bg:
+    radial-gradient(ellipse 60% 45% at 15% 5%, rgba(217, 140, 255, 0.24), transparent 70%),
+    radial-gradient(ellipse 60% 45% at 90% 100%, rgba(90, 240, 170, 0.18), transparent 70%),
+    linear-gradient(180deg, #170b2e 0%, #26104a 55%, #150a2b 100%);
+  --w-pat:
+    radial-gradient(5px 5px at 50px 90px, rgba(190, 255, 220, 0.35), transparent),
+    radial-gradient(3px 3px at 170px 40px, rgba(230, 190, 255, 0.45), transparent),
+    radial-gradient(7px 7px at 240px 200px, rgba(190, 255, 220, 0.25), transparent),
+    radial-gradient(4px 4px at 110px 250px, rgba(230, 190, 255, 0.4), transparent);
+  --w-size: 300px 300px;
+  --w-opacity: 0.9;
+}
+/* Občanka: radnice s mramorovými sloupy */
+.world:has([data-world="obcanka"]) {
+  --w-bg:
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(127, 155, 255, 0.24), transparent 70%),
+    linear-gradient(180deg, #0e1536 0%, #172254 55%, #0e1537 100%);
+  --w-pat: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0 26px, transparent 26px 60px, rgba(127, 155, 255, 0.07) 60px 62px, transparent 62px 120px);
+  --w-size: auto;
+  --w-opacity: 1;
+}
+/* Hudebka: koncertní sál s notovou osnovou */
+.world:has([data-world="hudebka"]) {
+  --w-bg:
+    radial-gradient(ellipse 60% 45% at 50% 0%, rgba(242, 231, 106, 0.2), transparent 70%),
+    linear-gradient(180deg, #1c1030 0%, #2b1844 55%, #1a0f2d 100%);
+  --w-pat: repeating-linear-gradient(0deg, transparent 0 14px, rgba(242, 231, 106, 0.14) 14px 15px, transparent 15px 80px);
+  --w-size: auto;
+  --w-opacity: 1;
+}
+/* Francouzština: pařížský soumrak, trikolóra a pruhy markýz */
+.world:has([data-world="francouzstina"]) {
+  --w-bg:
+    radial-gradient(ellipse 60% 40% at 85% 0%, rgba(255, 111, 145, 0.26), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 10% 100%, rgba(80, 130, 255, 0.2), transparent 70%),
+    linear-gradient(180deg, #12163f 0%, #1e1d58 55%, #13163a 100%);
+  --w-pat: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0 30px, transparent 30px 60px, rgba(255, 111, 145, 0.05) 60px 90px, transparent 90px 120px);
+  --w-size: auto;
+  --w-opacity: 1;
+}
+/* Španělština: žhavý večer s teplým světlem a mozaikou */
+.world:has([data-world="spanelstina"]) {
+  --w-bg:
+    radial-gradient(ellipse 70% 45% at 50% 100%, rgba(255, 92, 92, 0.32), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 85% 0%, rgba(255, 200, 80, 0.2), transparent 70%),
+    linear-gradient(180deg, #2c0f1c 0%, #4a1626 55%, #2a0e1a 100%);
+  --w-pat:
+    repeating-linear-gradient(45deg, rgba(255, 200, 80, 0.05) 0 2px, transparent 2px 22px),
+    repeating-linear-gradient(-45deg, rgba(255, 92, 92, 0.06) 0 2px, transparent 2px 22px);
+  --w-size: auto;
+  --w-opacity: 1;
+}
 
 /* --- Globus předmětů: animovaná památka (pás 20 snímků) a vyskočení při výběru --- */
 .globe-sprite {
