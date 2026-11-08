@@ -7,6 +7,7 @@ import { teamsAllError, type TeamsAll } from "@/i18n/teams-more";
 import { toCsv } from "@/lib/teams/logic";
 import type { Locale } from "@/i18n/config";
 import { linkBtn } from "./types";
+import { Badge, Pill, Progress } from "./ui";
 
 type Cell = { status: "done" | "tried" | "viewed" | "new"; best: number; attempts: number; late: boolean; overdue: boolean };
 type Overview = {
@@ -40,6 +41,12 @@ export function TeamResults({ t, locale, teamId, teamName }: { t: TeamsAll; loca
     return { done: mine.filter((c) => c.status === "done").length, total: mine.length, missing: mine.filter((c) => c.overdue).length };
   };
 
+  const totals = data.students.reduce((acc, st) => {
+    const x = summary(st.id);
+    return { done: acc.done + x.done, total: acc.total + x.total, missing: acc.missing + x.missing };
+  }, { done: 0, total: 0, missing: 0 });
+  const doneBy = (aid: string) => data.students.filter((st) => data.cells[aid]?.[st.id]?.status === "done").length;
+
   function exportCsv() {
     if (!data) return;
     const head = [t.colStudent, t.colGroup, ...data.assignments.flatMap((a) => [`${a.title} (%)`, `${a.title}: ${t.colStatus}`]), t.colDoneCount, t.colMissing];
@@ -70,13 +77,20 @@ export function TeamResults({ t, locale, teamId, teamName }: { t: TeamsAll; loca
         <p className="text-sm text-[var(--muted)]">{t.matrixHint}</p>
         <button onClick={exportCsv} className={linkBtn}>{t.exportCsv}</button>
       </div>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="card p-3 text-center" style={{ borderTop: "6px solid var(--brand-500)" }}><p className="text-2xl font-extrabold">{data.students.length}</p><p className="text-xs font-semibold text-[var(--muted)]">{t.colStudent}</p></div>
+        <div className="card p-3 text-center" style={{ borderTop: "6px solid var(--accent-blue)" }}><p className="text-2xl font-extrabold">{data.assignments.length}</p><p className="text-xs font-semibold text-[var(--muted)]">{t.tabTasks}</p></div>
+        <div className="card p-3 text-center" style={{ borderTop: "6px solid var(--accent-green)" }}><p className="text-2xl font-extrabold">{totals.done}/{totals.total}</p><p className="text-xs font-semibold text-[var(--muted)]">{t.colDoneCount}</p></div>
+        <div className="card p-3 text-center" style={{ borderTop: "6px solid var(--danger)" }}><p className="text-2xl font-extrabold text-[var(--danger)]">{totals.missing}</p><p className="text-xs font-semibold text-[var(--muted)]">{t.colMissing}</p></div>
+      </div>
+      <Progress value={totals.done} max={totals.total} color="var(--accent-green)" label={`${totals.done} / ${totals.total}`} />
       <div className="card overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b-2 border-[var(--border-soft)]">
               <th scope="col" className="sticky left-0 bg-[var(--surface)] p-3">{t.colStudent}</th>
               {data.assignments.map((a) => (
-                <th scope="col" key={a.id} className="max-w-40 p-3"><Link href={`/${locale}/tymy/${teamId}/zadani/${a.id}`} className="line-clamp-2 text-[var(--brand-600)]">{a.title}</Link></th>
+                <th scope="col" key={a.id} className="max-w-40 p-3"><Link href={`/${locale}/tymy/${teamId}/zadani/${a.id}`} className="line-clamp-2 text-[var(--brand-600)]">{a.title}</Link><span className="mt-1 block min-w-20"><Progress value={doneBy(a.id)} max={data.students.length} color="var(--accent-green)" /></span></th>
               ))}
               <th scope="col" className="p-3">{t.colDoneCount}</th>
             </tr>
@@ -86,7 +100,7 @@ export function TeamResults({ t, locale, teamId, teamName }: { t: TeamsAll; loca
               const sum = summary(s.id);
               return (
                 <tr key={s.id} className="border-b border-[var(--border-soft)] last:border-0">
-                  <th scope="row" className="sticky left-0 bg-[var(--surface)] p-3 text-left font-semibold">{s.name || t.student}{s.groupId && <span className="ml-2 text-xs font-normal text-[var(--muted)]">{groupName(s.groupId)}</span>}</th>
+                  <th scope="row" className="sticky left-0 bg-[var(--surface)] p-3 text-left font-semibold"><span className="flex items-center gap-2"><Badge name={s.name} size={28} round />{s.name || t.student}{s.groupId && <Pill tone="brand">{groupName(s.groupId)}</Pill>}</span></th>
                   {data.assignments.map((a) => {
                     const c = data.cells[a.id]?.[s.id];
                     if (!c) return <td key={a.id} className="p-3 text-[var(--muted)]" title={t.notAssigned}>–</td>;
@@ -98,7 +112,7 @@ export function TeamResults({ t, locale, teamId, teamName }: { t: TeamsAll; loca
                       </td>
                     );
                   })}
-                  <td className="p-3 font-bold">{sum.done}/{sum.total}{sum.missing > 0 && <span className="ml-2 text-xs text-[var(--danger)]">{tfillMissing(t, sum.missing)}</span>}</td>
+                  <td className="p-3 font-bold"><span className="flex min-w-24 flex-col gap-1">{sum.done}/{sum.total}<Progress value={sum.done} max={sum.total} color="var(--accent-green)" />{sum.missing > 0 && <span className="text-xs text-[var(--danger)]">{tfillMissing(t, sum.missing)}</span>}</span></td>
                 </tr>
               );
             })}
