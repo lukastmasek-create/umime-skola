@@ -3697,3 +3697,18 @@ button.town3d-chip[aria-pressed="true"] { background: #ffd24d; color: #1b1840; }
     break-inside: avoid;
   }
 }
+
+/* Hlavička profilu bez vlastního banneru: světlý gradient, který se pomalu přelévá (vypne se u pohybu sníženého). */
+.profile-hero-bg {
+  background: linear-gradient(120deg, #eef0ff 0%, #f4e9ff 35%, #ffe9f2 65%, #e9f4ff 100%);
+  background-size: 300% 300%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .profile-hero-bg {
+    animation: profile-hero-shift 16s ease-in-out infinite;
+  }
+}
+@keyframes profile-hero-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}

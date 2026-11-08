@@ -84,12 +84,24 @@ function DailyGoal({ t, xp }: { t: ReturnType<typeof getDailyText>; xp: number }
   );
 }
 
+type Section = "daily" | "weekly" | "more";
+
 // Denní série, výzvy s odměnou a úspěchy. Ukazuje se na úvodní stránce a v profilu.
-export function DailyChallenges({ locale, showAchievements = false }: { locale: Locale; showAchievements?: boolean }) {
+// variant "tabs" (profil) rozdělí obsah na podzáložky Denní / Týdenní / Milníky a úspěchy.
+export function DailyChallenges({
+  locale,
+  showAchievements = false,
+  variant = "stacked",
+}: {
+  locale: Locale;
+  showAchievements?: boolean;
+  variant?: "stacked" | "tabs";
+}) {
   const t = getDailyText(locale);
   const [state, setState] = useState<State>("loading");
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [section, setSection] = useState<Section>("daily");
 
   useEffect(() => {
     let cancelled = false;
@@ -141,6 +153,17 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
 
   const { streak, pet, cityCoins, reviewDue, todayXp, weekKey, quests, weekly, milestones, achievements } = state;
   const heading = { fontFamily: "var(--font-heading)" } as const;
+  const tabsMode = variant === "tabs";
+  const show = (s: Section) => !tabsMode || section === s;
+  const readyDaily = quests.filter((q) => q.done && !q.claimed).length;
+  const readyWeekly = weekly.filter((w) => w.done && !w.claimed).length;
+  const readyMore =
+    milestones.filter((m) => m.reached && !m.claimed).length + (showAchievements ? achievements.filter((a) => a.done && !a.claimed).length : 0);
+  const sections: { id: Section; label: string; ready: number }[] = [
+    { id: "daily", label: t.quests, ready: readyDaily },
+    { id: "weekly", label: t.weekly, ready: readyWeekly },
+    { id: "more", label: t.milestones, ready: readyMore },
+  ];
   const claimButton = (id: string, ready: boolean, claimed: boolean) =>
     // Pevná šířka sloupce, ať jsou ukazatele ve všech řádcích stejně dlouhé.
     (
@@ -176,9 +199,29 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
         </div>
       </div>
 
-      <DailyGoal t={t} xp={todayXp} />
+      {tabsMode && (
+        <div className="flex flex-wrap gap-2" role="tablist">
+          {sections.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              role="tab"
+              aria-selected={section === s.id}
+              onClick={() => setSection(s.id)}
+              className={`btn-bouncy flex items-center gap-2 px-3 py-1.5 text-sm font-bold ${
+                section === s.id ? "bg-[var(--brand-500)] text-white" : "bg-[var(--surface-muted)]"
+              }`}
+            >
+              {s.label}
+              {s.ready > 0 && <span className="rounded-full bg-[var(--accent-yellow)] px-1.5 text-xs text-[#16132b]">{s.ready}</span>}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {(notice || streak.usedProtection || streak.rescuable || (pet && (pet.hunger < 50 || pet.happy < 40)) || cityCoins > 0) && (
+      {show("daily") && <DailyGoal t={t} xp={todayXp} />}
+
+      {show("daily") && (notice || streak.usedProtection || streak.rescuable || (pet && (pet.hunger < 50 || pet.happy < 40)) || cityCoins > 0) && (
         <ul className="flex flex-col gap-1.5 text-sm font-semibold">
           {notice && <li>{notice}</li>}
           {streak.usedProtection && (
@@ -204,6 +247,8 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
         </ul>
       )}
 
+      {show("daily") && (
+        <>
       <div className="flex flex-wrap gap-2">
         <Link
           href={`/${locale}/opakovani`}
@@ -228,7 +273,10 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
           {fill(t.buyFreeze, streak.freezePrice)}
         </button>
       </div>
+        </>
+      )}
 
+      {show("daily") && (
       <section>
         <h3 className="mb-2 text-sm font-bold text-[var(--muted)]">{t.quests}</h3>
         <ul className="flex flex-col gap-2">
@@ -246,7 +294,9 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
           ))}
         </ul>
       </section>
+      )}
 
+      {show("weekly") && (
       <section>
         <h3 className="mb-2 text-sm font-bold text-[var(--muted)]">{t.weekly}</h3>
         <ul className="flex flex-col gap-2">
@@ -264,7 +314,9 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
           ))}
         </ul>
       </section>
+      )}
 
+      {show("more") && (
       <section>
         <h3 className="mb-2 text-sm font-bold text-[var(--muted)]">{t.milestones}</h3>
         <ul className="grid gap-2 sm:grid-cols-2">
@@ -281,8 +333,9 @@ export function DailyChallenges({ locale, showAchievements = false }: { locale: 
           ))}
         </ul>
       </section>
+      )}
 
-      {showAchievements && (
+      {showAchievements && show("more") && (
         <section>
           <h3 className="mb-2 text-sm font-bold text-[var(--muted)]">{t.achievements}</h3>
           <ul className="grid gap-2 sm:grid-cols-2">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { LevelBadge } from "@/components/LevelBadge";
@@ -8,8 +8,8 @@ import { ProfileCollection } from "@/components/ProfileCollection";
 import { ProfileShowcase } from "@/components/ProfileShowcase";
 import { SubjectMedals } from "@/components/SubjectMedals";
 import { DailyChallenges } from "@/components/DailyChallenges";
-import { pedestalUrl } from "@/lib/avatar-pedestal";
 import { ProfileAvatar } from "@/components/ProfileAvatar";
+import { getProfileHeroText } from "@/i18n/profile-hero";
 import { AVATARS, getAvatar, isAvatarUnlocked } from "@/lib/avatars";
 import { TITLES, getTitle, isTitleUnlocked } from "@/lib/titles";
 import { BANNERS, EMPTY_FAVORITES, FRAME_IDS, bannerAttrs, bannerCss, bannerLiveAttrs, isFrameId, type FavoriteKind, type Favorites, type FrameId } from "@/lib/cosmetics";
@@ -66,11 +66,27 @@ type Profile = {
 };
 
 type Tab = "look" | "avatars" | "titles" | "frames" | "banners";
-type MainTab = "overview" | "collection" | "wardrobe" | "craft" | "tasks";
-const MAIN_TABS: MainTab[] = ["overview", "collection", "wardrobe", "craft", "tasks"];
-const MAIN_ICONS: Record<MainTab, string> = { overview: "", collection: "", wardrobe: "", craft: "", tasks: "" };
+// Šatník je sloučený do Sbírky (nahoře „Co mám teď na sobě“), proto zůstávají čtyři hlavní záložky.
+type MainTab = "overview" | "collection" | "craft" | "tasks";
+const MAIN_TABS: MainTab[] = ["overview", "collection", "craft", "tasks"];
+const MAIN_ICONS: Record<MainTab, string> = { overview: "", collection: "", craft: "", tasks: "" };
 
-const HASH: Record<MainTab, string> = { overview: "prehled", collection: "sbirka", wardrobe: "satnik", craft: "craftovani", tasks: "ukoly" };
+const HASH: Record<MainTab, string> = { overview: "prehled", collection: "sbirka", craft: "craftovani", tasks: "ukoly" };
+
+// Staré odkazy na #satnik ukážou Sbírku, kde je Šatník teď.
+const LEGACY_HASH: Record<string, MainTab> = { satnik: "collection" };
+
+// Odemčení z klíče (frame:, banner:, acc:) na lidský název; ostatní klíče se nezobrazují.
+function unlockLabel(key: string, locale: Locale): string | null {
+  const i = key.indexOf(":");
+  if (i < 0) return null;
+  const kind = key.slice(0, i);
+  const id = key.slice(i + 1);
+  if (kind === "frame" && isFrameId(id)) return itemName("frame", id, locale);
+  if (kind === "banner" && BANNERS[id]) return itemName("banner", id, locale);
+  if (kind === "acc") return RECIPES.find((r) => r.ref === id && r.category === "avatar-acc")?.names[locale] ?? null;
+  return null;
+}
 
 const DEFAULT_BANNER = "linear-gradient(135deg, #5a6cff 0%, #7a5cff 55%, #ff6f91 100%)";
 
@@ -196,7 +212,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
   useEffect(() => {
     const fromHash = () => {
       const h = window.location.hash.replace("#", "");
-      const found = MAIN_TABS.find((x) => x === h || HASH[x] === h);
+      const found = LEGACY_HASH[h] ?? MAIN_TABS.find((x) => x === h || HASH[x] === h);
       if (found) setMainTabState(found);
     };
     fromHash();
@@ -211,6 +227,26 @@ export function ProfileView({ locale }: { locale: Locale }) {
 
   // Po vyrobení avataru, titulu nebo pozadí v Craftování se profil načte znovu, ať je věc hned v Šatníku.
   const [profileVersion, setProfileVersion] = useState(0);
+
+  // Tým žáka: undefined = ještě se načítá, null = žádný tým. Tlačítko podle toho ukáže můj tým, nebo založit / připojit.
+  const [team, setTeam] = useState<{ id: string; name: string } | null | undefined>(undefined);
+  const loggedIn = profile?.loggedIn ?? false;
+  useEffect(() => {
+    if (!loggedIn) return;
+    let cancelled = false;
+    fetch("/api/tymy")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((d) => {
+        const first = d?.teams?.[0];
+        if (!cancelled) setTeam(first ? { id: first.id, name: first.name } : null);
+      })
+      .catch(() => {
+        if (!cancelled) setTeam(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [loggedIn]);
 
   useEffect(() => {
     let cancelled = false;
@@ -352,32 +388,44 @@ export function ProfileView({ locale }: { locale: Locale }) {
   const unlocks = profile.unlocks ?? [];
   const remaining = (profile.neededForNext ?? 0) - (profile.intoLevel ?? 0);
   const frame: FrameId | null = isFrameId(profile.frame) ? profile.frame : null;
-  const banner = profile.banner && BANNERS[profile.banner] ? bannerCss(profile.banner) : DEFAULT_BANNER;
+  const ownBanner = !!profile.banner && !!BANNERS[profile.banner];
+  const banner = ownBanner && profile.banner ? bannerCss(profile.banner) : DEFAULT_BANNER;
   const ownedFrames = FRAME_IDS.filter((f) => unlocks.includes(`frame:${f}`));
   const ownedBanners = Object.keys(BANNERS).filter((b) => unlocks.includes(`banner:${b}`));
-  const unlockedCount =
-    AVATARS.filter((a) => isAvatarUnlocked(a, level, unlocks)).length +
-    TITLES.filter((x) => isTitleUnlocked(x, level, unlocks)).length +
-    ownedFrames.length +
-    ownedBanners.length;
+  const hx = getProfileHeroText(locale);
+  const ownedAvatars = AVATARS.filter((a) => isAvatarUnlocked(a, level, unlocks)).length;
+  const ownedTitles = TITLES.filter((x) => isTitleUnlocked(x, level, unlocks)).length;
   const currentParts = parts?.avatar === avatarId ? parts.parts : null;
-  // Nejbližší postavy a tituly, které se odemknou za úroveň.
-  const nextUnlocks = [
-    ...AVATARS.filter((a) => "level" in a.unlock && a.unlock.level > level).map((a) => ({
-      key: `a-${a.id}`,
-      level: (a.unlock as { level: number }).level,
-      name: a.names[locale],
-      preview: <Avatar id={a.id} size={56} />,
-    })),
-    ...TITLES.filter((x) => "level" in x.unlock && x.unlock.level > level).map((x) => ({
-      key: `t-${x.id}`,
-      level: (x.unlock as { level: number }).level,
-      name: x.names[locale],
-      preview: <span className="flex h-14 items-center text-3xl"></span>,
-    })),
-  ]
-    .sort((a, b) => a.level - b.level)
-    .slice(0, 4);
+  // Nejnovější odemčky (server je řadí od nejnovějšího), jen ty, které umíme pojmenovat.
+  const recentUnlocks = unlocks.map((k) => unlockLabel(k, locale)).filter((x): x is string => !!x).slice(0, 8);
+  // Oblíbené: u každého druhu se ukáže náhled, aby se dalo poznat, co je co.
+  const favRows: { key: string; name: string; preview: ReactNode }[] = [
+    ...favorites.avatar
+      .map((id) => AVATARS.find((a) => a.id === id))
+      .filter((a): a is (typeof AVATARS)[number] => !!a)
+      .map((a) => ({ key: `a-${a.id}`, name: a.names[locale], preview: <Avatar id={a.id} size={56} /> })),
+    ...favorites.title
+      .map((id) => TITLES.find((x) => x.id === id))
+      .filter((x): x is (typeof TITLES)[number] => !!x)
+      .map((x) => ({
+        key: `t-${x.id}`,
+        name: x.names[locale],
+        preview: <span className="pill bg-[var(--accent-yellow)] px-3 py-1 text-sm text-[#16132b]">{x.names[locale]}</span>,
+      })),
+    ...favorites.frame
+      .filter((f) => isFrameId(f))
+      .map((f) => ({ key: `f-${f}`, name: itemName("frame", f, locale), preview: <Avatar id={avatarId} icon={profile.icon} size={56} frame={f} /> })),
+    ...favorites.banner
+      .filter((b) => BANNERS[b])
+      .map((b) => ({
+        key: `b-${b}`,
+        name: itemName("banner", b, locale),
+        preview: <div className="h-12 w-20 rounded-xl" style={{ background: bannerCss(b) }} />,
+      })),
+  ];
+  const wornNames = (custom.worn ?? [])
+    .map((id) => RECIPES.find((r) => r.ref === id && r.category === "avatar-acc")?.names[locale])
+    .filter((x): x is string => !!x);
   const collection: { id: keyof typeof pt.kinds; icon: string; have: number; total: number; tab: Tab }[] = [
     { id: "avatars", icon: "", have: AVATARS.filter((a) => isAvatarUnlocked(a, level, unlocks)).length, total: AVATARS.length, tab: "avatars" },
     { id: "titles", icon: "", have: TITLES.filter((x) => isTitleUnlocked(x, level, unlocks)).length, total: TITLES.length, tab: "titles" },
@@ -407,130 +455,130 @@ export function ProfileView({ locale }: { locale: Locale }) {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Herní karta */}
+      {/* Hlavička: animované pozadí nahoře, avatar přes okraj, jméno, tým a statistiky */}
       <section className="card overflow-hidden p-0">
         <div
-          {...(profile.banner && BANNERS[profile.banner] ? { "data-banner": profile.banner } : {})}
-          className={`relative px-4 pb-6 pt-5 sm:px-8 ${profile.banner && BANNERS[profile.banner] ? bannerLiveAttrs(profile.banner).className : ""}`}
-          style={{ background: banner }}
+          data-banner={ownBanner ? profile.banner ?? undefined : undefined}
+          className={`relative h-36 sm:h-44 ${ownBanner ? bannerLiveAttrs(profile.banner ?? "").className : "profile-hero-bg"}`}
+          style={ownBanner ? { background: banner } : undefined}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/35" aria-hidden />
+          <div className="absolute right-4 top-4 flex items-center gap-2 sm:right-6">
+            <span title={t.titles} className="flex h-11 w-11 items-center justify-center rounded-full bg-[#ff7a3c] text-sm font-extrabold text-white shadow">
+              {ownedTitles}
+            </span>
+            <span title={t.avatars} className="flex h-11 w-11 items-center justify-center rounded-full bg-[#5a6cff] text-sm font-extrabold text-white shadow">
+              {ownedAvatars}
+            </span>
+            <span title={pt.kinds.frames} className="flex h-11 w-11 items-center justify-center rounded-full bg-[#16132b] text-sm font-extrabold text-white shadow">
+              {ownedFrames.length + ownedBanners.length}
+            </span>
+          </div>
+        </div>
 
-          <div className="relative flex flex-wrap items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-3 rounded-2xl bg-black/35 px-3 py-2 text-white backdrop-blur-sm">
-              <Avatar id={avatarId} icon={profile.icon} size={44} frame={frame} />
-              <div className="min-w-0">
-                <h1 className="truncate text-xl font-bold leading-tight" style={heading}>
-                  {profile.name || t.anonymous}
-                </h1>
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                  {profile.title && getTitle(profile.title) && (
-                    <span className="pill bg-[var(--accent-yellow)] px-2 py-0.5 text-[#16132b]">
-                      {getTitle(profile.title)?.names[locale]}
-                    </span>
-                  )}
-                  <span className="opacity-90">{profile.school ? profile.school.name : t.noSchool}</span>
-                </div>
-              </div>
+        <div className="relative grid gap-5 px-4 pb-6 sm:grid-cols-[auto_1fr_auto] sm:gap-8 sm:px-8">
+          <div className="-mt-20 flex flex-col items-center sm:-mt-28">
+            <ProfileAvatar
+              id={profile.avatar}
+              label={getAvatar(profile.avatar).names[locale]}
+              frame={frame}
+              custom={custom}
+              onParts={(p) => setParts({ avatar: avatarId, parts: p })}
+              snapshotRef={snapshotRef}
+              className="h-[230px] w-[190px] sm:h-[270px] sm:w-[230px]"
+              svgSize={150}
+            />
+            <p className="mt-1 text-center text-xs text-[var(--faint)]">
+              {getAvatar(profile.avatar).names[locale]} · {c.dragHint}
+            </p>
+          </div>
+
+          <div className="flex min-w-0 flex-col gap-3 pt-1 sm:pt-6">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="truncate text-3xl font-bold leading-tight" style={heading}>
+                {profile.name || t.anonymous}
+              </h1>
+              {profile.title && getTitle(profile.title) && (
+                <span className="pill bg-[var(--accent-yellow)] px-3 py-1 text-sm text-[#16132b]">{getTitle(profile.title)?.names[locale]}</span>
+              )}
             </div>
-            {profile.rank != null && (
-              <Link
-                href={`/${locale}/zebricky`}
-                className="rounded-2xl bg-black/35 px-4 py-2 text-center text-white backdrop-blur-sm hover:bg-black/50"
+            <p className="text-sm text-[var(--muted)]">{profile.school ? profile.school.name : t.noSchool}</p>
+            <div className="mt-1 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setMainTab("collection");
+                  setTab("look");
+                }}
+                className="btn-bouncy bg-[#16132b] px-5 py-2.5 text-sm font-bold text-white"
               >
-                <span className="block text-2xl font-extrabold leading-none" style={heading}>
-                  #{profile.rank}
-                </span>
-                <span className="text-[11px] uppercase tracking-wide opacity-90">
-                  {profile.players ? `/ ${profile.players}` : ""}
-                </span>
+                {hx.editProfile}
+              </button>
+              {team !== undefined &&
+                (team ? (
+                  <Link href={`/${locale}/tymy/${team.id}`} className="btn-bouncy border-2 border-[#16132b] px-5 py-2.5 text-sm font-bold">
+                    {hx.myTeam}: {team.name}
+                  </Link>
+                ) : (
+                  <Link href={`/${locale}/tymy`} className="btn-bouncy border-2 border-[#16132b] px-5 py-2.5 text-sm font-bold">
+                    {hx.joinTeam}
+                  </Link>
+                ))}
+            </div>
+            {!profile.school && (
+              <Link href={`/${locale}/nastaveni`} className="text-sm font-bold text-[var(--brand-600)]">
+                {t.chooseSchool} →
               </Link>
             )}
           </div>
 
-          <div className="relative mt-2 grid items-end gap-4 sm:grid-cols-[1fr_auto_1fr]">
-            <div className="order-2 flex flex-col gap-3 sm:order-1">
-              <div className="flex items-center gap-4 rounded-2xl bg-white/90 p-4 text-[#16132b] shadow">
-                <XpRing level={level} percent={profile.percent ?? 0} label={t.level} />
-                <p className="min-w-0 text-xs leading-snug opacity-80">
-                  <span className="block text-sm font-bold opacity-100">
-                    {profile.xp ?? 0} {t.xp}
-                  </span>
-                  {fill(t.toNext, remaining)}
-                </p>
-              </div>
-              <div className="rounded-2xl bg-white/90 p-3 text-[#16132b] shadow">
-                <LevelBadge level={level} locale={locale} size={64} />
-              </div>
-            </div>
-
-            <div className="order-1 flex flex-col items-center sm:order-2">
-              <div className="relative">
-                <span
-                  aria-hidden
-                  className="globe-sprite pointer-events-none absolute -bottom-[34%] left-1/2 h-[125%] w-[165%] -translate-x-1/2 scale-[0.7] drop-shadow-[0_10px_10px_rgba(0,0,0,0.3)] sm:scale-100"
-                  style={{ backgroundImage: `url(${pedestalUrl(profile.avatar)})` }}
-                />
-                <ProfileAvatar
-                  id={profile.avatar}
-                  label={getAvatar(profile.avatar).names[locale]}
-                  frame={frame}
-                  custom={custom}
-                  onParts={(p) => setParts({ avatar: avatarId, parts: p })}
-                  snapshotRef={snapshotRef}
-                  className="h-[320px] w-[250px] sm:h-[400px] sm:w-[300px]"
-                  svgSize={170}
-                />
-              </div>
-              <p className="mt-1 rounded-full bg-black/35 px-3 py-1 text-xs text-white backdrop-blur-sm">
-                {getAvatar(profile.avatar).names[locale]} · {c.dragHint}
+          <div className="grid grid-cols-3 gap-3 sm:w-52 sm:grid-cols-1 sm:pt-6">
+            <div className="rounded-2xl bg-[var(--surface-muted)] p-3 text-center sm:text-left">
+              <p className="text-2xl font-extrabold" style={heading}>
+                {profile.points ?? 0}
               </p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--faint)]">{hx.statPoints}</p>
             </div>
-
-            <div className="order-3 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl bg-white/90 p-3 text-center text-[#16132b] shadow">
-                <p className="text-2xl font-extrabold" style={heading}>
-                  {profile.points ?? 0}
-                </p>
-                <p className="text-[11px] font-semibold uppercase tracking-wide opacity-70">{t.points}</p>
-              </div>
-              <div className="rounded-2xl bg-white/90 p-3 text-center text-[#16132b] shadow">
-                <p className="text-2xl font-extrabold" style={heading}>
-                  {unlockedCount}
-                </p>
-                <p className="text-[11px] font-semibold uppercase tracking-wide opacity-70">{t.unlockedCount}</p>
-              </div>
-              <Link
-                href={`/${locale}/stale-hry`}
-                className="rounded-2xl bg-white/90 p-3 text-[#16132b] shadow hover:bg-white"
-              >
-                <p className="text-lg font-extrabold" style={heading}>
-                  {profile.pets?.owned ?? 0}
-                </p>
-                <p className="truncate text-[11px] opacity-70">
-                  {profile.pets?.active ? `${profile.pets.name || profile.pets.active} · ${profile.pets.level}` : "—"}
-                </p>
-              </Link>
-              <Link
-                href={`/${locale}/stale-hry`}
-                className="rounded-2xl bg-white/90 p-3 text-[#16132b] shadow hover:bg-white"
-              >
-                <p className="text-lg font-extrabold" style={heading}>
-                  {profile.city?.buildings ?? 0}
-                </p>
-                <p className="truncate text-[11px] opacity-70">{profile.city?.population ?? 0}</p>
-              </Link>
-              {!profile.school && (
-                <Link
-                  href={`/${locale}/nastaveni`}
-                  className="col-span-2 rounded-2xl bg-white/90 p-3 text-center text-sm font-bold text-[var(--brand-600)] shadow hover:bg-white"
-                >
-                  {t.chooseSchool} →
-                </Link>
-              )}
+            <Link href={`/${locale}/zebricky`} className="rounded-2xl bg-[var(--surface-muted)] p-3 text-center hover:bg-[var(--surface)] sm:text-left">
+              <p className="text-2xl font-extrabold" style={heading}>
+                {profile.rank != null ? `#${profile.rank}` : "—"}
+              </p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--faint)]">{hx.statRank}</p>
+            </Link>
+            <div className="rounded-2xl bg-[var(--surface-muted)] p-3 text-center sm:text-left">
+              <p className="text-2xl font-extrabold" style={heading}>
+                {profile.players ?? 0}
+              </p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--faint)]">{hx.statPlayers}</p>
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Úroveň a postup: samostatná karta, na mobilu nad hlavičkou */}
+      <section className="card order-first flex flex-wrap items-center gap-5 p-5 md:order-none">
+        <XpRing level={level} percent={profile.percent ?? 0} label={t.level} />
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <div
+            className="h-3 overflow-hidden rounded-full bg-[var(--surface-muted)]"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(profile.percent ?? 0)}
+            aria-label={t.level}
+          >
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[#ffd23a] to-[#ff7a3c]"
+              style={{ width: `${Math.max(0, Math.min(100, profile.percent ?? 0))}%` }}
+            />
+          </div>
+          <p className="text-sm text-[var(--muted)]">
+            <span className="font-bold text-[var(--foreground)]">
+              {profile.xp ?? 0} {t.xp}
+            </span>{" "}
+            · {fill(hx.xpToNext, remaining)}
+          </p>
+        </div>
+        <LevelBadge level={level} locale={locale} size={64} />
       </section>
 
       {profile.degraded && <p className="text-sm text-[var(--faint)]">{t.degraded}</p>}
@@ -557,55 +605,73 @@ export function ProfileView({ locale }: { locale: Locale }) {
 
       {mainTab === "overview" && (
         <div className="flex flex-col gap-6">
-          <div className="grid gap-4 md:grid-cols-[2fr_1fr]">
+          <div className="grid gap-4 md:grid-cols-2">
             <section className="card p-5">
               <h2 className="text-xl font-bold" style={heading}>
-                {pt.nextUnlocks}
+                {hx.recent}
               </h2>
-              <p className="mb-4 text-sm text-[var(--muted)]">{pt.nextUnlocksHint}</p>
-              {nextUnlocks.length === 0 ? (
-                <p className="text-sm font-semibold">{pt.allUnlocked}</p>
+              <p className="mb-4 text-sm text-[var(--muted)]">{hx.recentHint}</p>
+              {recentUnlocks.length === 0 ? (
+                <p className="text-sm text-[var(--muted)]">{hx.noRecent}</p>
               ) : (
-                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  {nextUnlocks.map((u) => (
-                    <li key={u.key} className="flex flex-col items-center gap-2 rounded-2xl bg-[var(--surface-muted)] p-3 text-center">
-                      {u.preview}
-                      <span className="text-sm font-bold leading-tight">{u.name}</span>
-                      <span className="pill bg-[var(--surface)] px-2 py-0.5 text-xs font-semibold">{pt.atLevel.replace("{n}", String(u.level))}</span>
+                <ul className="flex flex-wrap gap-2">
+                  {recentUnlocks.map((name, i) => (
+                    <li key={`${name}-${i}`} className="pill bg-[var(--surface-muted)] px-3 py-1.5 text-sm font-semibold">
+                      {name}
                     </li>
                   ))}
                 </ul>
               )}
             </section>
-            <section className="card flex flex-col gap-2 p-5">
-              <h2 className="mb-1 text-xl font-bold" style={heading}>
-                {pt.quick}
+
+            <section className="card p-5">
+              <h2 className="text-xl font-bold" style={heading}>
+                {hx.favorites}
               </h2>
+              <p className="mb-4 text-sm text-[var(--muted)]">{hx.favHint}</p>
+              {favRows.length === 0 ? (
+                <p className="text-sm text-[var(--muted)]">{hx.noFavorites}</p>
+              ) : (
+                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {favRows.map((r) => (
+                    <li key={r.key} className="flex flex-col items-center gap-2 rounded-2xl bg-[var(--surface-muted)] p-3 text-center">
+                      {r.preview}
+                      <span className="text-sm font-bold leading-tight">{r.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          </div>
+
+          <section className="card p-5">
+            <h2 className="mb-3 text-xl font-bold" style={heading}>
+              {pt.quick}
+            </h2>
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
               {(
                 [
-                  ["courses", "/kurzy", ""],
-                  ["review", "/opakovani", ""],
-                  ["town", "/mestecko", ""],
-                  ["shop", "/obchod", ""],
+                  ["courses", "/kurzy"],
+                  ["review", "/opakovani"],
+                  ["town", "/mestecko"],
+                  ["shop", "/obchod"],
                 ] as const
-              ).map(([k, href, icon]) => (
+              ).map(([k, href]) => (
                 <Link key={k} href={`/${locale}${href}`} className="card-hover flex items-center gap-3 rounded-2xl bg-[var(--surface-muted)] px-4 py-3 font-bold">
-                  <span className="text-xl" aria-hidden>
-                    {icon}
-                  </span>
                   {pt.quickLinks[k]}
                   <span className="ml-auto text-[var(--faint)]">→</span>
                 </Link>
               ))}
-            </section>
-          </div>
+            </div>
+          </section>
+
           <ProfileShowcase
             locale={locale}
             level={level}
             rank={profile.rank ?? null}
             points={profile.points ?? 0}
-            avatars={AVATARS.filter((a) => isAvatarUnlocked(a, level, unlocks)).length}
-            titles={TITLES.filter((x) => isTitleUnlocked(x, level, unlocks)).length}
+            avatars={ownedAvatars}
+            titles={ownedTitles}
             looks={ownedFrames.length + ownedBanners.length}
           />
         </div>
@@ -613,6 +679,37 @@ export function ProfileView({ locale }: { locale: Locale }) {
 
       {mainTab === "collection" && (
         <div className="flex flex-col gap-6">
+          {/* Co mám teď na sobě: nahoře sloučené Sbírky, odkud se hned dá upravit vzhled */}
+          <section className="card flex flex-wrap items-center gap-4 p-5">
+            <Avatar id={avatarId} icon={profile.icon} size={72} frame={frame} />
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--faint)]">{hx.wornNow}</p>
+              <p className="truncate text-lg font-extrabold" style={heading}>
+                {getAvatar(profile.avatar).names[locale]}
+              </p>
+              <div className="mt-1 flex flex-wrap gap-2 text-xs">
+                {profile.title && getTitle(profile.title) && (
+                  <span className="pill bg-[var(--accent-yellow)] px-2 py-0.5 text-[#16132b]">{getTitle(profile.title)?.names[locale]}</span>
+                )}
+                {frame && <span className="pill bg-[var(--surface-muted)] px-2 py-0.5 font-semibold">{itemName("frame", frame, locale)}</span>}
+                {ownBanner && profile.banner && (
+                  <span className="pill bg-[var(--surface-muted)] px-2 py-0.5 font-semibold">{itemName("banner", profile.banner, locale)}</span>
+                )}
+                {wornNames.map((n) => (
+                  <span key={n} className="pill bg-[var(--surface-muted)] px-2 py-0.5 font-semibold">
+                    {n}
+                  </span>
+                ))}
+                {!(profile.title && getTitle(profile.title)) && !frame && !ownBanner && wornNames.length === 0 && (
+                  <span className="text-[var(--faint)]">{hx.noWorn}</span>
+                )}
+              </div>
+            </div>
+            <button type="button" onClick={() => setTab("look")} className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white">
+              {hx.editLook}
+            </button>
+          </section>
+
           <section className="card p-5">
             <h2 className="text-xl font-bold" style={heading}>
               {pt.collectionTitle}
@@ -623,10 +720,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
                 <button
                   key={k.id}
                   type="button"
-                  onClick={() => {
-                    setTab(k.tab);
-                    setMainTab("wardrobe");
-                  }}
+                  onClick={() => setTab(k.tab)}
                   className="card-hover flex flex-col gap-2 rounded-2xl bg-[var(--surface-muted)] p-4 text-left"
                 >
                   <span className="text-sm font-bold">
@@ -643,16 +737,15 @@ export function ProfileView({ locale }: { locale: Locale }) {
               ))}
             </div>
           </section>
-          <SubjectMedals locale={locale} />
         </div>
       )}
 
-      {mainTab === "tasks" && <DailyChallenges locale={locale} showAchievements />}
+      {mainTab === "tasks" && <DailyChallenges locale={locale} showAchievements variant="tabs" />}
 
-      {mainTab === "craft" && <CraftPanel locale={locale} onUnlocked={() => setProfileVersion((v) => v + 1)} onWardrobe={() => setMainTab("wardrobe")} />}
+      {mainTab === "craft" && <CraftPanel locale={locale} onUnlocked={() => setProfileVersion((v) => v + 1)} onWardrobe={() => setMainTab("collection")} />}
 
       {/* Šatník */}
-      {mainTab === "wardrobe" && (
+      {mainTab === "collection" && (
       <section>
         <div className="mb-4 flex flex-wrap gap-2" role="tablist">
           {tabs.map((x) => (
@@ -979,6 +1072,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
 
       </section>
       )}
+      {mainTab === "collection" && <SubjectMedals locale={locale} />}
       {error && <p className="text-sm text-[var(--danger)]">{t.error}</p>}
     </div>
   );
