@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { CATEGORIES, SUBJECTS } from "@/lib/taxonomy";
 import { HomeProgress } from "@/components/HomeProgress";
-import { EconomyNews } from "@/components/EconomyNews";
-import { DailyChallenges } from "@/components/DailyChallenges";
 import { DailyQuizTeaser } from "@/components/DailyQuizTeaser";
 import { ArcadeDemo } from "@/components/ArcadeDemo";
 import { TeacherCta } from "@/components/TeacherCta";
@@ -122,10 +120,6 @@ export default async function Home({
 
         <section className="reveal relative mx-auto max-w-6xl px-4 pb-14 pt-4 sm:px-6">
           <HomeProgress locale={locale as Locale} registerLabel={dict.home.createAccount} />
-          <EconomyNews locale={locale as Locale} />
-          <div className="mt-4">
-            <DailyChallenges locale={locale as Locale} />
-          </div>
           <div className="mt-4">
             <DailyQuizTeaser locale={locale as Locale} />
           </div>
