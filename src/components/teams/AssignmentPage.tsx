@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { call, errorCode, fmtDate } from "./api";
@@ -8,9 +8,9 @@ import { tfill } from "@/i18n/teams";
 import { getTeamsAll, teamsAllError, type TeamsAll } from "@/i18n/teams-more";
 import type { Locale } from "@/i18n/config";
 import { TeamChat } from "./TeamChat";
-import { Badge, Pill, Progress, colorOf } from "./ui";
+import { Badge, Progress, colorOf } from "./ui";
 import { AudiencePicker } from "./AudiencePicker";
-import { dangerBtn, field, linkBtn, primaryBtn, type Audience, type Team } from "./types";
+import { field, primaryBtn, type Audience, type Team } from "./types";
 
 type Meta = { id: string; title: string; description: string; maxAttempts: number | null; passPercent: number; dueAt: string | null; groupIds?: string[]; userIds?: string[] };
 type PQ = { id: number; prompt: string; options: string[]; gaps: number };
@@ -57,23 +57,11 @@ export function AssignmentPage({ locale, teamId, assignmentId }: { locale: Local
   return (
     <div className="flex flex-col gap-5">
       {back}
-      <header
-        className="card flex flex-col gap-2 p-5"
-        style={{ background: data.role === "TEACHER" ? "linear-gradient(135deg, var(--brand-50), var(--surface))" : "linear-gradient(135deg, color-mix(in srgb, var(--accent-green) 16%, var(--surface)), var(--surface))", borderTop: `8px solid ${colorOf(team.name)}` }}
-      >
-        <p className="flex items-center gap-2 text-sm font-bold text-[var(--muted)]"><Badge name={team.name} size={24} />{team.name}</p>
-        <h1 className="text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>{a.title}</h1>
-        {a.description && <p className="whitespace-pre-wrap rounded-xl bg-[var(--surface)] p-3 text-sm">{a.description}</p>}
-        <div className="flex flex-wrap gap-2">
-          <Pill tone="good">{tfill(t.taskMeta, data.questions.length, a.passPercent)}</Pill>
-          <Pill>{a.maxAttempts == null ? t.attUnlimited : tfill(t.attMax, a.maxAttempts)}</Pill>
-          {a.dueAt && <Pill tone={overdue ? "danger" : "warn"}>{tfill(t.due, fmtDate(locale, a.dueAt))}{overdue && ` (${t.afterDeadline})`}</Pill>}
-        </div>
-      </header>
+      {data.role === "TEACHER" ? null : <TaskHeader t={t} locale={locale} team={team} meta={a} count={data.questions.length} overdue={overdue} />}
 
       {data.role === "TEACHER" ? (
         <>
-          <TeacherTools t={t} locale={locale} team={team} teamId={teamId} meta={a} onChanged={load} onDeleted={() => router.push(`/${locale}/tymy/${teamId}`)} />
+          <TeacherTools t={t} locale={locale} team={team} teamId={teamId} meta={a} onChanged={load} onDeleted={() => router.push(`/${locale}/tymy/${teamId}`)} header={(menu) => <TaskHeader t={t} locale={locale} team={team} meta={a} count={data.questions.length} overdue={overdue} actions={menu} />} />
           <Dashboard t={t} locale={locale} data={data} url={url} overdue={overdue} onRefresh={load} />
         </>
       ) : (
@@ -88,16 +76,35 @@ export function AssignmentPage({ locale, teamId, assignmentId }: { locale: Local
         </>
       )}
 
-      <section className="card flex flex-col gap-2 p-4">
-        <h2 className="text-lg font-extrabold">{t.discussion}</h2>
-        <TeamChat locale={locale} teamId={teamId} assignmentId={assignmentId} userId={team.userId} height="h-64" />
-      </section>
+      <details className="card p-4" open={data.role === "STUDENT"}>
+        <summary className="cursor-pointer text-lg font-extrabold">{t.discussion}</summary>
+        <div className="mt-3"><TeamChat locale={locale} teamId={teamId} assignmentId={assignmentId} userId={team.userId} height="h-64" /></div>
+      </details>
     </div>
   );
 }
 
+function TaskHeader({ t, locale, team, meta, count, overdue, actions }: { t: TeamsAll; locale: Locale; team: Team; meta: Meta; count: number; overdue: boolean; actions?: ReactNode }) {
+  return (
+    <header className="card flex flex-col gap-1.5 p-4" style={{ borderTop: `6px solid ${colorOf(team.name)}` }}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-col gap-1">
+          <p className="flex items-center gap-2 text-sm font-bold text-[var(--muted)]"><Badge name={team.name} size={22} />{team.name}</p>
+          <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>{meta.title}</h1>
+        </div>
+        {actions}
+      </div>
+      {meta.description && <p className="whitespace-pre-wrap text-sm">{meta.description}</p>}
+      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[var(--muted)]">
+        {tfill(t.taskMeta, count, meta.passPercent)} · {meta.maxAttempts == null ? t.attUnlimited : tfill(t.attMax, meta.maxAttempts)}
+        {meta.dueAt && <> · <span className={overdue ? "font-bold text-[var(--danger)]" : "font-semibold text-[var(--foreground)]"}>{tfill(t.due, fmtDate(locale, meta.dueAt))}{overdue && ` (${t.afterDeadline})`}</span></>}
+      </p>
+    </header>
+  );
+}
+
 /** Úprava, kopírování do jiné třídy a smazání zadání. */
-function TeacherTools({ t, locale, team, teamId, meta, onChanged, onDeleted }: { t: TeamsAll; locale: Locale; team: Team; teamId: string; meta: Meta; onChanged: () => void; onDeleted: () => void }) {
+function TeacherTools({ t, locale, team, teamId, meta, onChanged, onDeleted, header }: { t: TeamsAll; locale: Locale; team: Team; teamId: string; meta: Meta; onChanged: () => void; onDeleted: () => void; header: (menu: ReactNode) => ReactNode }) {
   const [mode, setMode] = useState<"" | "edit" | "copy">("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState<{ text: string; href: string } | null>(null);
@@ -131,12 +138,21 @@ function TeacherTools({ t, locale, team, teamId, meta, onChanged, onDeleted }: {
 
   return (
     <section className="flex flex-col gap-3">
-      <div className="flex flex-wrap gap-4">
-        <button onClick={() => setMode(mode === "edit" ? "" : "edit")} aria-expanded={mode === "edit"} className={linkBtn}>{t.editTask}</button>
-        <button onClick={() => setMode(mode === "copy" ? "" : "copy")} aria-expanded={mode === "copy"} className={linkBtn}>{t.copyTask}</button>
-        <button onClick={() => run({ action: "archiveAssignment", assignmentId: meta.id, archived: !archived }, onChanged)} className={linkBtn}>{archived ? t.unarchive : t.archive}</button>
-        <button onClick={() => confirm(t.confirmDeleteTask) && run({ action: "deleteAssignment", assignmentId: meta.id }, onDeleted)} className={dangerBtn}>{t.deleteTask}</button>
-      </div>
+      {header(
+        <details className="relative shrink-0">
+          <summary className="btn-bouncy cursor-pointer list-none bg-[var(--surface)] px-4 py-1.5 text-sm font-bold">{t.actions}</summary>
+          <div className="card absolute right-0 z-20 mt-2 flex w-56 flex-col p-1.5" role="menu">
+            {([
+              [t.editTask, () => setMode(mode === "edit" ? "" : "edit"), ""],
+              [t.copyTask, () => setMode(mode === "copy" ? "" : "copy"), ""],
+              [archived ? t.unarchive : t.archive, () => run({ action: "archiveAssignment", assignmentId: meta.id, archived: !archived }, onChanged), ""],
+              [t.deleteTask, () => confirm(t.confirmDeleteTask) && run({ action: "deleteAssignment", assignmentId: meta.id }, onDeleted), "text-[var(--danger)]"],
+            ] as [string, () => void, string][]).map(([label, fn, cls]) => (
+              <button key={label} role="menuitem" onClick={(e) => { (e.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open"); fn(); }} className={`rounded-lg px-3 py-2 text-left text-sm font-bold hover:bg-[var(--surface-muted)] ${cls}`}>{label}</button>
+            ))}
+          </div>
+        </details>,
+      )}
       {notice && <p role="status" className="text-sm font-semibold text-[var(--accent-green)]">{notice.text} <Link href={notice.href} className="underline">{t.openCopy}</Link></p>}
       {error && <p className="text-sm font-semibold text-[var(--danger)]">{error}</p>}
 
@@ -226,36 +242,40 @@ function Dashboard({ t, locale, data, url, overdue, onRefresh }: { t: TeamsAll; 
   return (
     <section className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-xl font-extrabold">{t.overview}</h2>
+        <h2 className="text-lg font-extrabold">{t.overview}</h2>
         <button onClick={onRefresh} className="text-sm font-bold text-[var(--brand-600)]">{t.refresh}</button>
       </div>
       {saved && <p role="status" className="text-sm font-semibold text-[var(--accent-green)]">{t.feedbackSaved}</p>}
       {!data.everyone && <p className="text-sm text-[var(--muted)]">{tfill(t.onlyFor, data.rows.length)}</p>}
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-        {(["done", "tried", "viewed", "new"] as const).map((s) => (
-          <div key={s} className="card p-3 text-center" style={{ borderTop: `6px solid ${TILE[s]}` }}><p className="text-2xl font-extrabold">{count(s)}</p><p className="text-xs font-semibold text-[var(--muted)]">{statusLabel(t, s)}</p></div>
+      <p className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
+        {(["done", "tried", "viewed", "new"] as const).map((k) => (
+          <span key={k} className="flex items-center gap-1.5"><span aria-hidden className="size-2.5 rounded-full" style={{ background: TILE[k] }} /><b>{count(k)}</b> <span className="text-[var(--muted)]">{statusLabel(t, k)}</span></span>
         ))}
-        {overdue && <div className="card p-3 text-center" style={{ borderTop: "6px solid var(--danger)" }}><p className="text-2xl font-extrabold text-[var(--danger)]">{data.rows.filter(missing).length}</p><p className="text-xs font-semibold text-[var(--muted)]">{t.sMissing}</p></div>}
-      </div>
-      {data.rows.length > 0 && <Progress value={count("done")} max={data.rows.length} color="var(--accent-green)" label={`${count("done")} / ${data.rows.length}`} />}
+        {overdue && <span className="flex items-center gap-1.5"><span aria-hidden className="size-2.5 rounded-full bg-[var(--danger)]" /><b className="text-[var(--danger)]">{data.rows.filter(missing).length}</b> <span className="text-[var(--muted)]">{t.sMissing}</span></span>}
+      </p>
+      {data.rows.length > 0 && <Progress value={count("done")} max={data.rows.length} color="var(--accent-green)" />}
       {data.rows.length === 0 && <p className="text-[var(--muted)]">{t.noStudents}</p>}
       <div className="card overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead><tr className="border-b-2 border-[var(--border-soft)]"><th scope="col" className="p-3">{t.colStudent}</th><th scope="col" className="p-3">{t.colStatus}</th><th scope="col" className="p-3">{t.colViewed}</th><th scope="col" className="p-3">{t.colAttempts}</th><th scope="col" className="p-3">{t.colBest}</th><th scope="col" className="p-3">{t.colLast}</th><th scope="col" className="p-3">{t.commentCol}</th></tr></thead>
+        <table className="w-full min-w-[640px] text-left text-sm">
+          <thead><tr className="border-b-2 border-[var(--border-soft)] text-xs uppercase tracking-wide text-[var(--muted)]"><th scope="col" className="px-4 py-3">{t.colStudent}</th><th scope="col" className="px-4 py-3">{t.colStatus}</th><th scope="col" className="px-4 py-3">{t.colAttempts}</th><th scope="col" className="px-4 py-3">{t.colBest}</th><th scope="col" className="px-4 py-3">{t.colLast}</th><th scope="col" className="px-4 py-3">{t.commentCol}</th></tr></thead>
           <tbody>
             {data.rows.map((r) => (
               <Fragment key={r.userId}>
               <tr className="border-b border-[var(--border-soft)] last:border-0">
-                <td className="p-3 font-semibold"><span className="flex items-center gap-2"><Badge name={r.name} size={28} round />{r.name || t.student}{groupName(r.groupId) && <Pill tone="brand">{groupName(r.groupId)}</Pill>}</span></td>
-                <td className="p-3">
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${missing(r) ? "bg-[var(--danger)] text-white" : STATUS_CLS[r.status]}`}>{missing(r) ? t.sMissing : statusLabel(t, r.status)}</span>
-                  {r.late && <span className="ml-1 rounded-full bg-[var(--accent-yellow)] px-2 py-0.5 text-xs font-bold">{t.late}</span>}
+                <td className="px-4 py-3">
+                  <span className="flex items-center gap-2.5">
+                    <Badge name={r.name} size={30} round />
+                    <span className="flex flex-col"><b>{r.name || t.student}</b>{groupName(r.groupId) && <span className="text-xs text-[var(--muted)]">{groupName(r.groupId)}</span>}</span>
+                  </span>
                 </td>
-                <td className="p-3">{r.viewedAt ? fmtDate(locale, r.viewedAt) : "—"}</td>
-                <td className="p-3">{r.attempts}</td>
-                <td className="p-3">{r.attempts ? <span className="block w-24"><Progress value={r.best} max={100} color={r.best >= 50 ? "var(--accent-green)" : "var(--accent-yellow)"} label={`${r.best} %`} /></span> : "—"}</td>
-                <td className="p-3">{r.last != null ? `${r.last} % (${fmtDate(locale, r.lastAt)})` : "—"}</td>
-                <td className="p-3">
+                <td className="px-4 py-3" title={r.viewedAt ? `${t.colViewed}: ${fmtDate(locale, r.viewedAt)}` : undefined}>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${missing(r) ? "bg-[var(--danger)] text-white" : STATUS_CLS[r.status]}`}>{missing(r) ? t.sMissing : statusLabel(t, r.status)}</span>
+                  {r.late && <span className="ml-1 rounded-full bg-[var(--accent-yellow)] px-2 py-0.5 text-xs font-bold text-[#16132b]">{t.late}</span>}
+                </td>
+                <td className="px-4 py-3">{r.attempts}</td>
+                <td className="px-4 py-3 font-bold">{r.attempts ? `${r.best} %` : <span className="font-normal text-[var(--muted)]">—</span>}</td>
+                <td className="px-4 py-3">{r.last != null ? <span className="flex flex-col"><span>{r.last} %</span><span className="text-xs text-[var(--muted)]">{fmtDate(locale, r.lastAt)}</span></span> : <span className="text-[var(--muted)]">—</span>}</td>
+                <td className="px-4 py-3">
                   <button onClick={() => { setEditing(editing === r.userId ? null : r.userId); setDraft(r.comment); setSaveError(""); }} aria-expanded={editing === r.userId} className="text-left text-xs font-bold text-[var(--brand-600)]">
                     {r.comment ? <span className="line-clamp-2 max-w-48 font-normal text-[var(--foreground)]">{r.comment}</span> : t.feedbackTitle}
                   </button>
@@ -263,7 +283,7 @@ function Dashboard({ t, locale, data, url, overdue, onRefresh }: { t: TeamsAll; 
               </tr>
               {editing === r.userId && (
                 <tr className="border-b border-[var(--border-soft)] bg-[var(--surface-muted)]">
-                  <td colSpan={7} className="p-3">
+                  <td colSpan={6} className="p-4">
                     <form className="flex flex-col gap-2" onSubmit={(e) => { e.preventDefault(); void saveComment(r.userId); }}>
                       <label className="text-sm font-semibold" htmlFor={`fb-${r.userId}`}>{t.feedbackTitle}: {r.name || t.student}</label>
                       <textarea id={`fb-${r.userId}`} value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={1000} rows={2} placeholder={t.feedbackPh} className={field} autoFocus />
@@ -279,10 +299,10 @@ function Dashboard({ t, locale, data, url, overdue, onRefresh }: { t: TeamsAll; 
         </table>
       </div>
 
-      <section className="card flex flex-col gap-2 p-4" aria-label={t.hardQuestions}>
-        <h3 className="text-lg font-extrabold">{t.hardQuestions}</h3>
-        {hard.length === 0 ? <p className="text-sm text-[var(--muted)]">{t.noMistakes}</p> : (
-          <ol className="flex flex-col gap-2">
+      <details className="card p-4" open={hard.length > 0}>
+        <summary className="cursor-pointer text-lg font-extrabold">{t.hardQuestions}</summary>
+        {hard.length === 0 ? <p className="mt-2 text-sm text-[var(--muted)]">{t.noMistakes}</p> : (
+          <ol className="mt-3 flex flex-col gap-3">
             {hard.slice(0, 10).map((q) => (
               <li key={q.i} className="text-sm">
                 <p className="flex items-baseline justify-between gap-3"><span className="min-w-0">{q.i + 1}. {q.prompt.replace(/___/g, "____")}</span><b className="shrink-0">{Math.round(q.rate * 100)} %</b></p>
@@ -292,9 +312,9 @@ function Dashboard({ t, locale, data, url, overdue, onRefresh }: { t: TeamsAll; 
             ))}
           </ol>
         )}
-      </section>
+      </details>
 
-      <details className="card p-4"><summary className="cursor-pointer font-bold">{tfill(t.qAndA, data.questions.length)}</summary>
+      <details className="card p-4"><summary className="cursor-pointer text-lg font-extrabold">{tfill(t.qAndA, data.questions.length)}</summary>
         <ol className="mt-2 list-decimal pl-5 text-sm">{data.questions.map((q, i) => <li key={i} className="mb-1">{q.prompt} → <b>{q.answer}</b></li>)}</ol>
       </details>
     </section>

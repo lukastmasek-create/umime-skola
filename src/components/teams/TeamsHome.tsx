@@ -137,7 +137,7 @@ export function TeamsHome({ locale }: { locale: Locale }) {
                   {(tm.overdue > 0 || tm.soon > 0) && (
                     <span className="flex flex-wrap gap-1.5">
                       {tm.overdue > 0 && <Pill tone="danger">{tfill(t.overdueN, tm.overdue)}</Pill>}
-                      {tm.soon > 0 && <Pill tone="warn">⏰ {tfill(t.soonN, tm.soon)}</Pill>}
+                      {tm.soon > 0 && <Pill tone="warn">{tfill(t.soonN, tm.soon)}</Pill>}
                     </span>
                   )}
                   {tm.code && <span className="text-xs text-[var(--muted)]">{t.code}: <b className="tracking-widest">{tm.code}</b></span>}

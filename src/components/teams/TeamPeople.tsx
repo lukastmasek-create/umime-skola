@@ -5,7 +5,7 @@ import { call, errorCode, fmtDate } from "./api";
 import { teamsAllError, type TeamsAll } from "@/i18n/teams-more";
 import { tfill } from "@/i18n/teams";
 import type { Locale } from "@/i18n/config";
-import { Badge, Pill } from "./ui";
+import { Badge } from "./ui";
 import { dangerBtn, field, linkBtn, primaryBtn, type Team } from "./types";
 
 type Post = (body: object) => Promise<boolean>;
@@ -32,7 +32,7 @@ export function TeamPeople({ t, locale, team, post, reload, teamId, onLeave }: {
       {teacher && team.pending.length > 0 && (
         <section className="card flex flex-col gap-2 border-2 border-[var(--accent-yellow)] p-4" aria-label={t.pendingTitle}>
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-lg font-extrabold">⏳ {tfill(t.pendingTitleN, team.pending.length)}</h2>
+            <h2 className="text-lg font-extrabold">{tfill(t.pendingTitleN, team.pending.length)}</h2>
             <button onClick={() => post({ action: "approve", all: true })} className={linkBtn}>{t.approveAll}</button>
           </div>
           <ul className="divide-y divide-[var(--border-soft)]">
@@ -49,8 +49,6 @@ export function TeamPeople({ t, locale, team, post, reload, teamId, onLeave }: {
         </section>
       )}
 
-      {teacher && <JoinSettings t={t} locale={locale} team={team} post={post} />}
-      {teacher && <BulkAdd t={t} teamId={teamId} onDone={reload} />}
 
       <div className="flex flex-wrap items-center gap-2">
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t.searchMember} aria-label={t.searchMember} className={`${field} min-w-0 flex-1`} type="search" />
@@ -80,7 +78,7 @@ export function TeamPeople({ t, locale, team, post, reload, teamId, onLeave }: {
       {[shown.filter((m) => m.role === "TEACHER"), shown.filter((m) => m.role !== "TEACHER")].map((list, gi) => list.length > 0 && (
         <section key={gi} className="flex flex-col gap-2">
           <h2 className="text-sm font-extrabold uppercase tracking-wide text-[var(--muted)]">{gi === 0 ? t.teacherLc : t.studentLc} · {list.length}</h2>
-          <ul className="card divide-y divide-[var(--border-soft)]" style={{ borderLeft: `8px solid ${gi === 0 ? "var(--brand-500)" : "var(--accent-green)"}` }}>
+          <ul className="card divide-y divide-[var(--border-soft)]">
             {list.map((m) => (
               <li key={m.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5">
                 <span className="flex min-w-0 items-center gap-3">
@@ -89,7 +87,7 @@ export function TeamPeople({ t, locale, team, post, reload, teamId, onLeave }: {
                   <span className="min-w-0 truncate">
                     <b>{m.name || m.email || t.memberFallback}</b>
                     {m.email && m.name && <span className="text-sm text-[var(--muted)]"> · {m.email}</span>}
-                    {groupName(m.groupId) && <span className="ml-2"><Pill tone="brand">{groupName(m.groupId)}</Pill></span>}
+                    {groupName(m.groupId) && <span className="ml-2 text-xs text-[var(--muted)]">{groupName(m.groupId)}</span>}
                   </span>
                 </span>
                 {teacher && m.id !== team.userId && (
@@ -103,6 +101,15 @@ export function TeamPeople({ t, locale, team, post, reload, teamId, onLeave }: {
           </ul>
         </section>
       ))}
+      {teacher && (
+        <details className="card p-4">
+          <summary className="cursor-pointer text-lg font-extrabold">{t.manageMembers}</summary>
+          <div className="mt-3 flex flex-col gap-4">
+            <JoinSettings t={t} locale={locale} team={team} post={post} />
+            <BulkAdd t={t} teamId={teamId} onDone={reload} />
+          </div>
+        </details>
+      )}
       <button onClick={onLeave} className="self-start text-sm font-bold text-[var(--danger)]">{t.leave}</button>
     </div>
   );
@@ -112,8 +119,8 @@ function JoinSettings({ t, locale, team, post }: { t: TeamsAll; locale: Locale; 
   const [copied, setCopied] = useState(false);
   const modes = [["OPEN", `${t.joinOpen}`], ["APPROVAL", `${t.joinApproval}`], ["CLOSED", `${t.joinClosed}`]] as const;
   return (
-    <section className="card flex flex-col gap-3 p-4">
-      <h2 className="text-lg font-extrabold">{t.joinSettings}</h2>
+    <section className="flex flex-col gap-3">
+      <h3 className="font-extrabold">{t.joinSettings}</h3>
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-sm">{t.codeForStudents}: <b className="tracking-widest">{team.code}</b></span>
         <button onClick={() => confirm(t.confirmRegen) && post({ action: "regenCode" })} className={linkBtn}>{t.regenCode}</button>
@@ -145,7 +152,7 @@ function BulkAdd({ t, teamId, onDone }: { t: TeamsAll; teamId: string; onDone: (
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   return (
     <form
-      className="card flex flex-col gap-2 p-4"
+      className="flex flex-col gap-2 border-t-2 border-[var(--border-soft)] pt-4"
       onSubmit={async (e) => {
         e.preventDefault();
         setBusy(true);
