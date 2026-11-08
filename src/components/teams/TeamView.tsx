@@ -73,6 +73,8 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
   ];
   const students = team.members.filter((m) => m.role === "STUDENT");
   const passedN = team.assignments.filter((a) => (a.used ?? 0) > 0 && (a.best ?? 0) >= a.passPercent).length;
+  const sumDone = team.assignments.reduce((n, a) => n + (a.done ?? 0), 0);
+  const sumTotal = team.assignments.reduce((n, a) => n + (a.students ?? 0), 0);
   const overdueN = team.assignments.filter((a) => a.due === "overdue").length;
   const myGroup = team.groups.find((g) => g.id === team.members.find((m) => m.id === team.userId)?.groupId);
 
@@ -81,7 +83,7 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
       <Link href={`/${locale}/tymy`} className="text-sm font-bold text-[var(--brand-600)]">{t.backTeams}</Link>
       <header
         className="card flex flex-wrap items-center gap-4 p-5"
-        style={{ background: teacher ? "linear-gradient(135deg, var(--brand-50), var(--surface))" : "linear-gradient(135deg, color-mix(in srgb, var(--accent-yellow) 30%, var(--surface)), var(--surface))", borderTop: `8px solid ${colorOf(team.name)}` }}
+        style={{ background: teacher ? "linear-gradient(135deg, var(--brand-50), var(--surface))" : "linear-gradient(135deg, color-mix(in srgb, var(--accent-green) 16%, var(--surface)), var(--surface))", borderTop: `8px solid ${colorOf(team.name)}` }}
       >
         <Badge name={team.name} size={64} />
         <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -107,10 +109,10 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
           {team.assignments.length > 0 && (
             <div className="max-w-md">
               <Progress
-                value={passedN}
-                max={team.assignments.length}
+                value={teacher ? sumDone : passedN}
+                max={teacher ? sumTotal : team.assignments.length}
                 color={teacher ? "var(--brand-500)" : "var(--accent-green)"}
-                label={teacher ? `${team.assignments.length} · ${students.length} ` : `${passedN} / ${team.assignments.length}`}
+                label={teacher ? tfill(t.doneOf, sumDone, sumTotal) : `${t.tabTasks}: ${passedN} / ${team.assignments.length}`}
               />
             </div>
           )}

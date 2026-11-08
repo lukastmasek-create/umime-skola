@@ -59,7 +59,7 @@ export function AssignmentPage({ locale, teamId, assignmentId }: { locale: Local
       {back}
       <header
         className="card flex flex-col gap-2 p-5"
-        style={{ background: data.role === "TEACHER" ? "linear-gradient(135deg, var(--brand-50), var(--surface))" : "linear-gradient(135deg, color-mix(in srgb, var(--accent-yellow) 30%, var(--surface)), var(--surface))", borderTop: `8px solid ${colorOf(team.name)}` }}
+        style={{ background: data.role === "TEACHER" ? "linear-gradient(135deg, var(--brand-50), var(--surface))" : "linear-gradient(135deg, color-mix(in srgb, var(--accent-green) 16%, var(--surface)), var(--surface))", borderTop: `8px solid ${colorOf(team.name)}` }}
       >
         <p className="flex items-center gap-2 text-sm font-bold text-[var(--muted)]"><Badge name={team.name} size={24} />{team.name}</p>
         <h1 className="text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>{a.title}</h1>
