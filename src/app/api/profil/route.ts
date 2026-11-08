@@ -27,7 +27,8 @@ export async function GET() {
         title: true,
         points: true,
         school: { select: { name: true, city: true } },
-        unlocks: { select: { key: true } },
+        // Nejnovější odemčky první (přehled profilu je ukazuje jako poslední získané).
+        unlocks: { select: { key: true }, orderBy: { createdAt: "desc" } },
       },
     });
     const xp = await getXp(userId);
