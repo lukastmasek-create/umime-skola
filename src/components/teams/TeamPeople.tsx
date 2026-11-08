@@ -5,6 +5,7 @@ import { call, errorCode, fmtDate } from "./api";
 import { teamsAllError, type TeamsAll } from "@/i18n/teams-more";
 import { tfill } from "@/i18n/teams";
 import type { Locale } from "@/i18n/config";
+import { Badge, Pill } from "./ui";
 import { dangerBtn, field, linkBtn, primaryBtn, type Team } from "./types";
 
 type Post = (body: object) => Promise<boolean>;
@@ -18,13 +19,13 @@ export function TeamPeople({ t, locale, team, post, reload, teamId, onLeave }: {
       {teacher && team.pending.length > 0 && (
         <section className="card flex flex-col gap-2 border-2 border-[var(--accent-yellow)] p-4" aria-label={t.pendingTitle}>
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-lg font-extrabold">{tfill(t.pendingTitleN, team.pending.length)}</h2>
+            <h2 className="text-lg font-extrabold">⏳ {tfill(t.pendingTitleN, team.pending.length)}</h2>
             <button onClick={() => post({ action: "approve", all: true })} className={linkBtn}>{t.approveAll}</button>
           </div>
           <ul className="divide-y divide-[var(--border-soft)]">
             {team.pending.map((p) => (
               <li key={p.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                <span className="min-w-0 truncate"><b>{p.name || p.email}</b>{p.name && p.email && <span className="text-sm text-[var(--muted)]"> · {p.email}</span>} <span className="text-xs text-[var(--muted)]">{fmtDate(locale, p.requestedAt)}</span></span>
+                <span className="flex min-w-0 items-center gap-2 truncate"><Badge name={p.name || p.email} size={32} round /><b>{p.name || p.email}</b>{p.name && p.email && <span className="text-sm text-[var(--muted)]"> · {p.email}</span>} <span className="text-xs text-[var(--muted)]">{fmtDate(locale, p.requestedAt)}</span></span>
                 <span className="flex gap-3">
                   <button onClick={() => post({ action: "approve", userId: p.id })} className={linkBtn}>{t.approve}</button>
                   <button onClick={() => post({ action: "reject", userId: p.id })} className={dangerBtn}>{t.reject}</button>
@@ -38,33 +39,38 @@ export function TeamPeople({ t, locale, team, post, reload, teamId, onLeave }: {
       {teacher && <JoinSettings t={t} team={team} post={post} />}
       {teacher && <BulkAdd t={t} teamId={teamId} onDone={reload} />}
 
-      <ul className="card divide-y divide-[var(--border-soft)]">
-        {team.members.map((m) => (
-          <li key={m.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5">
-            <span className="min-w-0 truncate">
-              <b>{m.name || m.email || t.memberFallback}</b>
-              {m.email && m.name && <span className="text-sm text-[var(--muted)]"> · {m.email}</span>}
-              {groupName(m.groupId) && <span className="ml-2 rounded-full bg-[var(--brand-50)] px-2 py-0.5 text-xs font-bold text-[var(--brand-700)]">{groupName(m.groupId)}</span>}
-            </span>
-            <span className="flex items-center gap-3">
-              <span className="text-xs font-bold text-[var(--muted)]">{m.role === "TEACHER" ? t.teacherLc : t.studentLc}</span>
-              {teacher && m.id !== team.userId && (
-                <>
-                  <button onClick={() => post({ action: "setRole", userId: m.id, role: m.role === "TEACHER" ? "STUDENT" : "TEACHER" })} className={linkBtn}>{m.role === "TEACHER" ? t.makeStudent : t.makeTeacher}</button>
-                  <button onClick={() => confirm(t.confirmRemove) && post({ action: "removeMember", userId: m.id })} className={dangerBtn}>{t.remove}</button>
-                </>
-              )}
-            </span>
-          </li>
-        ))}
-      </ul>
+      {[team.members.filter((m) => m.role === "TEACHER"), team.members.filter((m) => m.role !== "TEACHER")].map((list, gi) => list.length > 0 && (
+        <section key={gi} className="flex flex-col gap-2">
+          <h2 className="text-sm font-extrabold uppercase tracking-wide text-[var(--muted)]">{gi === 0 ? t.teacherLc : t.studentLc} · {list.length}</h2>
+          <ul className="card divide-y divide-[var(--border-soft)]" style={{ borderLeft: `8px solid ${gi === 0 ? "var(--brand-500)" : "var(--accent-green)"}` }}>
+            {list.map((m) => (
+              <li key={m.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5">
+                <span className="flex min-w-0 items-center gap-3">
+                  <Badge name={m.name || m.email} size={36} round />
+                  <span className="min-w-0 truncate">
+                    <b>{m.name || m.email || t.memberFallback}</b>
+                    {m.email && m.name && <span className="text-sm text-[var(--muted)]"> · {m.email}</span>}
+                    {groupName(m.groupId) && <span className="ml-2"><Pill tone="brand">{groupName(m.groupId)}</Pill></span>}
+                  </span>
+                </span>
+                {teacher && m.id !== team.userId && (
+                  <span className="flex items-center gap-3">
+                    <button onClick={() => post({ action: "setRole", userId: m.id, role: m.role === "TEACHER" ? "STUDENT" : "TEACHER" })} className={linkBtn}>{m.role === "TEACHER" ? t.makeStudent : t.makeTeacher}</button>
+                    <button onClick={() => confirm(t.confirmRemove) && post({ action: "removeMember", userId: m.id })} className={dangerBtn}>{t.remove}</button>
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
       <button onClick={onLeave} className="self-start text-sm font-bold text-[var(--danger)]">{t.leave}</button>
     </div>
   );
 }
 
 function JoinSettings({ t, team, post }: { t: TeamsAll; team: Team; post: Post }) {
-  const modes = [["OPEN", t.joinOpen], ["APPROVAL", t.joinApproval], ["CLOSED", t.joinClosed]] as const;
+  const modes = [["OPEN", `${t.joinOpen}`], ["APPROVAL", `${t.joinApproval}`], ["CLOSED", `${t.joinClosed}`]] as const;
   return (
     <section className="card flex flex-col gap-3 p-4">
       <h2 className="text-lg font-extrabold">{t.joinSettings}</h2>
@@ -96,7 +102,7 @@ function BulkAdd({ t, teamId, onDone }: { t: TeamsAll; teamId: string; onDone: (
         setMsg(null);
         try {
           const r = await call<{ added: number; notFound: string[] }>(`/api/tymy/${teamId}`, { action: "addMembers", emails, role });
-          setMsg({ ok: r.notFound.length === 0, text: tfill(t.bulkResult, r.added) + (r.notFound.length ? ` ${tfill(t.bulkNotFound, r.notFound.join(", "))}` : "") });
+          setMsg({ ok: r.notFound.length === 0, text: tfill(t.bulkResult, r.added) + (r.notFound.length ? `${tfill(t.bulkNotFound, r.notFound.join(", "))}` : "") });
           setEmails(r.notFound.join("\n"));
           onDone();
         } catch (err) {
