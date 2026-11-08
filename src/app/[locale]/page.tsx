@@ -8,9 +8,7 @@ import { ArcadeDemo } from "@/components/ArcadeDemo";
 import { TeacherCta } from "@/components/TeacherCta";
 import { Tilt } from "@/components/Tilt";
 import { ALIEN_ROW, Circuit, HomeArt, SpriteFrame, Wave } from "@/components/SpaceDecor";
-import { TownLife } from "@/components/TownLife";
-import { PlanetLive } from "@/components/PlanetLive";
-import { SubjectGlobe } from "@/components/SubjectGlobe";
+import { LazyPlanet, LazySubjectGlobe, LazyTownLife } from "@/components/HomeLazy";
 import { GlobeSky } from "@/components/GlobeSky";
 import { IslandHub } from "@/components/IslandHub";
 import { HeroSky } from "@/components/HeroSky";
@@ -59,7 +57,7 @@ export default async function Home({
       <div className="zone zone-space">
         <HeroSky />
         <section className="gradient-hero relative">
-          <PlanetLive
+          <LazyPlanet
             className="absolute -right-20 top-16 -z-10 hidden opacity-95 lg:block"
             size={500}
             dir="/home/planet-hero"
@@ -154,7 +152,7 @@ export default async function Home({
             </Link>
           </div>
           <div className="relative">
-          <SubjectGlobe
+          <LazySubjectGlobe
             locale={locale as Locale}
             subjects={SUBJECTS.map((subject) => ({
               slug: subject.slug,
@@ -203,7 +201,7 @@ export default async function Home({
           </div>
           {/* scéna jde přes celou sekci (až 1680 px), na telefonu od kraje ke kraji */}
           <div className="mx-auto w-full max-w-[1680px] px-2 sm:px-4 lg:px-6">
-            <TownLife steps={h.steps} locale={locale} />
+            <LazyTownLife steps={h.steps} locale={locale} />
           </div>
         </div>
       </section>
@@ -211,7 +209,7 @@ export default async function Home({
       {/* 5) Zpět do vesmíru: kategorie */}
       <section className="zone zone-space">
         <Wave fill="#160a2c" />
-        <PlanetLive className="absolute -bottom-10 -left-12 -z-10 hidden lg:block" size={520} />
+        <LazyPlanet className="absolute -bottom-10 -left-12 -z-10 hidden lg:block" size={520} />
         <SpriteFrame
           sheet="aliens"
           col={1}
