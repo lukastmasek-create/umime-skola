@@ -195,7 +195,7 @@ export default async function LeaderboardPage({
   const playerList = (
     <>
       <LeaderboardStage
-        entries={top.slice(0, 11).map((p) => ({ id: p.id, name: p.name || t.anonymous, avatar: p.avatar, value: String(p.points) }))}
+        entries={top.slice(0, 15).map((p) => ({ id: p.id, name: p.name || t.anonymous, avatar: p.avatar, value: String(p.points) }))}
         highlightId={userId}
         label={t.title}
         fallback={<Podium players={top} anonymous={t.anonymous} highlightId={userId} />}
@@ -246,7 +246,7 @@ export default async function LeaderboardPage({
       ) : (
         <>
         <LeaderboardStage
-          entries={escapeRows.slice(0, 11).map((r) => ({ id: r.id, name: r.name || t.anonymous, avatar: r.avatar, value: mmss(r.seconds) }))}
+          entries={escapeRows.slice(0, 15).map((r) => ({ id: r.id, name: r.name || t.anonymous, avatar: r.avatar, value: mmss(r.seconds) }))}
           highlightId={userId}
           label={t.title}
           fallback={null}

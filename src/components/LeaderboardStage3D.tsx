@@ -697,7 +697,7 @@ export default function LeaderboardStage3D({
     }
 
     // --- sedadla a stoly ---
-    const perSide = entries.length > 9 ? 4 : 3;
+    const perSide = entries.length > 13 ? 6 : entries.length > 9 ? 4 : 3;
     const seatCount = Math.max(0, entries.length - 3);
     // Na úzkém displeji sedí u každého stolu jen jeden, ať jsou postavy vidět; zbytek je v seznamu pod scénou.
     const narrow = el.clientWidth < 520;
