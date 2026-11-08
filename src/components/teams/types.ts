@@ -2,7 +2,7 @@ export type Assignment = {
   id: string; title: string; description: string; maxAttempts: number | null; passPercent: number; dueAt: string | null; questions: number;
   due: "none" | "ok" | "soon" | "overdue";
   students?: number; done?: number; viewed?: number; used?: number; best?: number;
-  groupIds?: string[]; userIds?: string[];
+  groupIds?: string[]; userIds?: string[]; archived?: boolean;
 };
 export type Member = { id: string; name: string | null; email: string | null; role: string; groupId: string | null };
 export type Pending = { id: string; name: string | null; email: string | null; requestedAt: string };

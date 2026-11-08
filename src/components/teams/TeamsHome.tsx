@@ -44,6 +44,12 @@ export function TeamsHome({ locale }: { locale: Locale }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [load]);
+  // Odkaz pozvánky (?kod=ABC123) předvyplní kód pro připojení.
+  useEffect(() => {
+    const k = new URLSearchParams(window.location.search).get("kod");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (k) setCode(k.toUpperCase().slice(0, 12));
+  }, []);
 
   async function act(body: object) {
     setError("");

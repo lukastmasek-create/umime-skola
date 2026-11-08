@@ -14,10 +14,33 @@ export function TeamGroups({ t, team, post }: { t: TeamsAll; team: Team; post: P
   const [name, setName] = useState("");
   const [count, setCount] = useState(3);
   const [renaming, setRenaming] = useState<{ id: string; name: string } | null>(null);
+  const [over, setOver] = useState<string | null>(null);
+  const drop = (groupId: string | null) => (e: React.DragEvent) => {
+    e.preventDefault();
+    setOver(null);
+    const uid = e.dataTransfer.getData("text/plain");
+    const st = students.find((x) => x.id === uid);
+    if (st && st.groupId !== groupId) void post({ action: "setGroup", userId: uid, groupId });
+  };
+  const zone = (key: string, groupId: string | null) => ({
+    onDragOver: (e: React.DragEvent) => { e.preventDefault(); setOver(key); },
+    onDragLeave: () => setOver((o) => (o === key ? null : o)),
+    onDrop: drop(groupId),
+  });
+  const chip = (s: (typeof students)[number]) => (
+    <li
+      key={s.id}
+      draggable
+      onDragStart={(e) => { e.dataTransfer.setData("text/plain", s.id); e.dataTransfer.effectAllowed = "move"; }}
+      className="flex cursor-grab items-center gap-1.5 rounded-full border border-[var(--border-soft)] bg-[var(--surface)] py-0.5 pl-0.5 pr-2.5 font-semibold active:cursor-grabbing"
+    >
+      <Badge name={s.name || s.email} size={22} round />{s.name || s.email || t.student}
+    </li>
+  );
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-[var(--muted)]">{t.groupsIntro}</p>
+      <p className="text-sm text-[var(--muted)]">{t.groupsIntro} {t.dragHint}</p>
       <div className="grid gap-3 sm:grid-cols-2">
         <form className="card flex flex-col gap-2 p-4" style={{ borderTop: "6px solid var(--brand-500)" }} onSubmit={async (e) => { e.preventDefault(); if (await post({ action: "createGroup", name })) setName(""); }}>
           <h2 className="text-lg font-extrabold">{t.newGroup}</h2>
@@ -47,7 +70,7 @@ export function TeamGroups({ t, team, post }: { t: TeamsAll; team: Team; post: P
       {team.groups.length === 0 && <p className="card p-6 text-center text-[var(--muted)]">{t.noGroups}</p>}
       <ul className="grid gap-3 sm:grid-cols-2">
         {team.groups.map((g) => (
-          <li key={g.id} className="card flex flex-col gap-3 p-4" style={{ borderLeft: `8px solid ${colorOf(g.name)}` }}>
+          <li key={g.id} {...zone(g.id, g.id)} className={`card flex flex-col gap-3 p-4 ${over === g.id ? "outline-dashed outline-2 outline-offset-2 outline-[var(--brand-500)]" : ""}`} style={{ borderLeft: `8px solid ${colorOf(g.name)}` }}>
             <div className="flex items-center justify-between gap-2">
               {renaming?.id === g.id ? (
                 <form className="flex min-w-0 flex-1 gap-2" onSubmit={async (e) => { e.preventDefault(); if (await post({ action: "renameGroup", groupId: g.id, name: renaming.name })) setRenaming(null); }}>
@@ -70,15 +93,18 @@ export function TeamGroups({ t, team, post }: { t: TeamsAll; team: Team; post: P
             </div>
             <Progress value={g.members} max={students.length} color={colorOf(g.name)} />
             <ul className="flex flex-wrap gap-1.5 text-sm">
-              {students.filter((s) => s.groupId === g.id).map((s) => (
-                <li key={s.id} className="flex items-center gap-1.5 rounded-full border border-[var(--border-soft)] bg-[var(--surface)] py-0.5 pl-0.5 pr-2.5 font-semibold">
-                  <Badge name={s.name || s.email} size={22} round />{s.name || s.email || t.student}
-                </li>
-              ))}
+              {students.filter((s) => s.groupId === g.id).map(chip)}
             </ul>
           </li>
         ))}
       </ul>
+
+      {students.length > 0 && team.groups.length > 0 && (
+        <section {...zone("none", null)} className={`card flex flex-col gap-2 p-4 ${over === "none" ? "outline-dashed outline-2 outline-offset-2 outline-[var(--brand-500)]" : ""}`} aria-label={t.ungrouped}>
+          <h2 className="text-sm font-extrabold uppercase tracking-wide text-[var(--muted)]">{t.ungrouped} · {students.filter((s) => !s.groupId).length}</h2>
+          <ul className="flex min-h-8 flex-wrap gap-1.5 text-sm">{students.filter((s) => !s.groupId).map(chip)}</ul>
+        </section>
+      )}
 
       {students.length > 0 && team.groups.length > 0 && (
         <section className="card p-4">

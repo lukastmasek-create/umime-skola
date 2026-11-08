@@ -30,6 +30,7 @@ export async function GET(_req: Request, ctx: Ctx) {
         prisma.assignmentAttempt.findMany({ where: { assignmentId: aid }, orderBy: { createdAt: "asc" }, select: { userId: true, percent: true, createdAt: true, wrong: true } }),
         prisma.assignmentView.findMany({ where: { assignmentId: aid }, select: { userId: true, viewedAt: true } }),
       ]);
+      const feedback = await prisma.assignmentFeedback.findMany({ where: { assignmentId: aid }, select: { userId: true, text: true } }).catch(() => []);
       const stats = questionStats(snap.length, attempts.filter((x) => students.some((s) => s.userId === x.userId)));
       return {
         role: "TEACHER",
@@ -43,6 +44,7 @@ export async function GET(_req: Request, ctx: Ctx) {
           const view = views.find((v) => v.userId === s.userId);
           return {
             userId: s.userId,
+            comment: feedback.find((f) => f.userId === s.userId)?.text ?? "",
             name: s.user.name || s.user.email || null,
             groupId: s.groupId,
             viewedAt: view?.viewedAt ?? null,
@@ -60,8 +62,10 @@ export async function GET(_req: Request, ctx: Ctx) {
     await requireAssigned(aid, me);
     await prisma.assignmentView.upsert({ where: { assignmentId_userId: { assignmentId: aid, userId } }, create: { assignmentId: aid, userId }, update: {} });
     const mine = await prisma.assignmentAttempt.findMany({ where: { assignmentId: aid, userId }, orderBy: { createdAt: "asc" }, select: { percent: true, createdAt: true } });
+    const feedback = await prisma.assignmentFeedback.findUnique({ where: { assignmentId_userId: { assignmentId: aid, userId } }, select: { text: true } }).catch(() => null);
     return {
       role: "STUDENT",
+      feedback: feedback?.text ?? "",
       assignment: meta,
       questions: toPublic(snap),
       attempts: mine,
@@ -76,7 +80,19 @@ export async function POST(request: Request, ctx: Ctx) {
   return handle(async () => {
     const userId = await requireUserId();
     const me = await requireMember(id, userId);
-    if (me.role === "TEACHER") throw new LiveError("teacher-cannot-submit", 403);
+    if (me.role === "TEACHER") {
+      // Učitel nepíše pokusy, ale může žákovi zanechat komentář k zadání.
+      const body = await readJson(request);
+      if (body.action !== "feedback") throw new LiveError("teacher-cannot-submit", 403);
+      await loadAssignment(id, aid);
+      const target = String(body.userId ?? "");
+      const student = await prisma.teamMember.findFirst({ where: { teamId: id, userId: target, role: "STUDENT", status: "ACTIVE" }, select: { userId: true } });
+      if (!student) throw new LiveError("user-not-found", 404);
+      const text = typeof body.text === "string" ? body.text.trim().slice(0, 1000) : "";
+      if (!text) await prisma.assignmentFeedback.deleteMany({ where: { assignmentId: aid, userId: target } });
+      else await prisma.assignmentFeedback.upsert({ where: { assignmentId_userId: { assignmentId: aid, userId: target } }, create: { assignmentId: aid, userId: target, text }, update: { text, updatedAt: new Date() } });
+      return { ok: true };
+    }
     if (!(await withinRateLimit(`team-attempt:${userId}`, 60, 600))) throw new LiveError("rate-limited", 429);
     await requireAssigned(aid, me);
     const a = await loadAssignment(id, aid);

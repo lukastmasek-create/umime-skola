@@ -57,6 +57,7 @@ model User {
   assignmentViews AssignmentView[]
   assignmentAttempts AssignmentAttempt[]
   assignmentTargets AssignmentTarget[]
+  assignmentFeedback AssignmentFeedback[]
 
   accounts Account[]
   sessions Session[]
@@ -660,6 +661,8 @@ model Assignment {
   attempts AssignmentAttempt[]
   messages TeamMessage[]
   targets  AssignmentTarget[]
+  feedback AssignmentFeedback[]
+  archive  AssignmentArchive?
 
   @@index([teamId, createdAt])
 }
@@ -690,6 +693,27 @@ model AssignmentAttempt {
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([assignmentId, userId])
+}
+
+// Komentář učitele k práci žáka na zadání (jeden na žáka a zadání).
+model AssignmentFeedback {
+  id        String   @id @default(cuid())
+  text      String
+  updatedAt DateTime @default(now())
+
+  assignmentId String
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, userId])
+}
+
+// Archivované zadání je skryté v seznamu, ale zůstává ve výsledcích.
+model AssignmentArchive {
+  assignmentId String     @id
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  archivedAt   DateTime   @default(now())
 }
 
 // Bez řádků je zadání pro celou třídu, jinak jen pro uvedené skupiny / žáky.

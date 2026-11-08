@@ -32,7 +32,9 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/tymy/[id]">) {
       orderBy: { createdAt: "desc" },
       select: { id: true, title: true, description: true, maxAttempts: true, passPercent: true, dueAt: true, createdAt: true, questions: true, targets: { select: { groupId: true, userId: true } } },
     });
-    const assignments = isTeacher ? assignmentsAll : assignmentsAll.filter((a) => isAssignedTo(a.targets, me));
+    // Archiv je v samostatné tabulce; chybí-li (starší databáze), nic není archivované.
+    const archived = new Set((await prisma.assignmentArchive.findMany({ select: { assignmentId: true }, where: { assignmentId: { in: assignmentsAll.map((a) => a.id) } } }).catch(() => [])).map((x) => x.assignmentId));
+    const assignments = (isTeacher ? assignmentsAll : assignmentsAll.filter((a) => isAssignedTo(a.targets, me) && !archived.has(a.id)));
     const ids = assignments.map((a) => a.id);
     const students = members.filter((m) => m.role === "STUDENT");
     const [attempts, views] = await Promise.all([
@@ -61,6 +63,7 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/tymy/[id]">) {
           createdAt: a.createdAt,
           questions: Array.isArray(a.questions) ? a.questions.length : 0,
           due: dueState(a.dueAt),
+          archived: archived.has(a.id),
         };
         if (isTeacher) {
           const mineStudents = students.filter((s) => isAssignedTo(a.targets, s)).map((s) => s.userId);
@@ -242,6 +245,24 @@ export async function POST(request: Request, ctx: RouteContext<"/api/tymy/[id]">
         if (groupId && !(await prisma.teamGroup.findFirst({ where: { id: groupId, teamId: id }, select: { id: true } }))) throw new LiveError("bad-target");
         const r = await prisma.teamMember.updateMany({ where: { teamId: id, userId: String(body.userId ?? ""), status: "ACTIVE", role: "STUDENT" }, data: { groupId } });
         if (!r.count) throw new LiveError("user-not-found", 404);
+        return { ok: true };
+      }
+      case "bulkSetGroup": {
+        const groupId = body.groupId ? String(body.groupId) : null;
+        if (groupId && !(await prisma.teamGroup.findFirst({ where: { id: groupId, teamId: id }, select: { id: true } }))) throw new LiveError("bad-target");
+        await prisma.teamMember.updateMany({ where: { teamId: id, userId: { in: idList(body.userIds) }, status: "ACTIVE", role: "STUDENT" }, data: { groupId } });
+        return { ok: true };
+      }
+      case "bulkRemove": {
+        const ids = idList(body.userIds).filter((u) => u !== userId);
+        await prisma.teamMember.deleteMany({ where: { teamId: id, userId: { in: ids } } });
+        return { ok: true };
+      }
+      case "archiveAssignment": {
+        const assignmentId = String(body.assignmentId ?? "");
+        if (!(await prisma.assignment.findFirst({ where: { id: assignmentId, teamId: id }, select: { id: true } }))) throw new LiveError("assignment-not-found", 404);
+        if (body.archived) await prisma.assignmentArchive.upsert({ where: { assignmentId }, create: { assignmentId }, update: {} });
+        else await prisma.assignmentArchive.deleteMany({ where: { assignmentId } });
         return { ok: true };
       }
       case "randomGroups": {

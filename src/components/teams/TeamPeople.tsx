@@ -14,6 +14,19 @@ type Post = (body: object) => Promise<boolean>;
 export function TeamPeople({ t, locale, team, post, reload, teamId, onLeave }: { t: TeamsAll; locale: Locale; team: Team; post: Post; reload: () => void; teamId: string; onLeave: () => void }) {
   const teacher = team.role === "TEACHER";
   const groupName = (id: string | null) => team.groups.find((g) => g.id === id)?.name;
+  const [q, setQ] = useState("");
+  const [sort, setSort] = useState<"name" | "group">("name");
+  const [sel, setSel] = useState<string[]>([]);
+  const [target, setTarget] = useState("");
+  const needle = q.trim().toLocaleLowerCase(locale);
+  const shown = team.members
+    .filter((m) => !needle || `${m.name ?? ""} ${m.email ?? ""} ${groupName(m.groupId) ?? ""}`.toLocaleLowerCase(locale).includes(needle))
+    .sort((a, b) => sort === "group"
+      ? (groupName(a.groupId) ?? "\uffff").localeCompare(groupName(b.groupId) ?? "\uffff", locale) || (a.name ?? "").localeCompare(b.name ?? "", locale)
+      : (a.name ?? a.email ?? "").localeCompare(b.name ?? b.email ?? "", locale));
+  const selectable = shown.filter((m) => m.id !== team.userId).map((m) => m.id);
+  const toggle = (id: string) => setSel((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+  const picked = sel.filter((id) => team.members.some((m) => m.id === id));
   return (
     <div className="flex flex-col gap-4">
       {teacher && team.pending.length > 0 && (
@@ -36,16 +49,42 @@ export function TeamPeople({ t, locale, team, post, reload, teamId, onLeave }: {
         </section>
       )}
 
-      {teacher && <JoinSettings t={t} team={team} post={post} />}
+      {teacher && <JoinSettings t={t} locale={locale} team={team} post={post} />}
       {teacher && <BulkAdd t={t} teamId={teamId} onDone={reload} />}
 
-      {[team.members.filter((m) => m.role === "TEACHER"), team.members.filter((m) => m.role !== "TEACHER")].map((list, gi) => list.length > 0 && (
+      <div className="flex flex-wrap items-center gap-2">
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t.searchMember} aria-label={t.searchMember} className={`${field} min-w-0 flex-1`} type="search" />
+        <select value={sort} onChange={(e) => setSort(e.target.value as "name" | "group")} aria-label={t.sortLabel} className={field}>
+          <option value="name">{t.sortByName}</option>
+          <option value="group">{t.sortByGroup}</option>
+        </select>
+        {teacher && selectable.length > 0 && (
+          <button onClick={() => setSel(picked.length === selectable.length ? [] : selectable)} className={linkBtn}>{picked.length === selectable.length ? t.clearSel : t.selectAll}</button>
+        )}
+      </div>
+      {teacher && picked.length > 0 && (
+        <div className="card flex flex-wrap items-center gap-3 p-3" style={{ borderTop: "6px solid var(--brand-500)" }} role="region" aria-label={tfill(t.selectedN, picked.length)}>
+          <b className="text-sm">{tfill(t.selectedN, picked.length)}</b>
+          {team.groups.length > 0 && (
+            <>
+              <select value={target} onChange={(e) => setTarget(e.target.value)} aria-label={t.bulkMove} className={field}>
+                <option value="">{t.noGroup}</option>
+                {team.groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+              </select>
+              <button onClick={async () => { if (await post({ action: "bulkSetGroup", userIds: picked, groupId: target || null })) setSel([]); }} className={primaryBtn}>{t.bulkMove}</button>
+            </>
+          )}
+          <button onClick={async () => { if (confirm(tfill(t.confirmBulkRemove, picked.length)) && (await post({ action: "bulkRemove", userIds: picked }))) setSel([]); }} className={dangerBtn}>{t.bulkRemove}</button>
+        </div>
+      )}
+      {[shown.filter((m) => m.role === "TEACHER"), shown.filter((m) => m.role !== "TEACHER")].map((list, gi) => list.length > 0 && (
         <section key={gi} className="flex flex-col gap-2">
           <h2 className="text-sm font-extrabold uppercase tracking-wide text-[var(--muted)]">{gi === 0 ? t.teacherLc : t.studentLc} · {list.length}</h2>
           <ul className="card divide-y divide-[var(--border-soft)]" style={{ borderLeft: `8px solid ${gi === 0 ? "var(--brand-500)" : "var(--accent-green)"}` }}>
             {list.map((m) => (
               <li key={m.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5">
                 <span className="flex min-w-0 items-center gap-3">
+                  {teacher && m.id !== team.userId && <input type="checkbox" checked={sel.includes(m.id)} onChange={() => toggle(m.id)} className="size-4" aria-label={m.name || m.email || t.memberFallback} />}
                   <Badge name={m.name || m.email} size={36} round />
                   <span className="min-w-0 truncate">
                     <b>{m.name || m.email || t.memberFallback}</b>
@@ -69,7 +108,8 @@ export function TeamPeople({ t, locale, team, post, reload, teamId, onLeave }: {
   );
 }
 
-function JoinSettings({ t, team, post }: { t: TeamsAll; team: Team; post: Post }) {
+function JoinSettings({ t, locale, team, post }: { t: TeamsAll; locale: Locale; team: Team; post: Post }) {
+  const [copied, setCopied] = useState(false);
   const modes = [["OPEN", `${t.joinOpen}`], ["APPROVAL", `${t.joinApproval}`], ["CLOSED", `${t.joinClosed}`]] as const;
   return (
     <section className="card flex flex-col gap-3 p-4">
@@ -77,6 +117,16 @@ function JoinSettings({ t, team, post }: { t: TeamsAll; team: Team; post: Post }
       <div className="flex flex-wrap items-center gap-3">
         <span className="text-sm">{t.codeForStudents}: <b className="tracking-widest">{team.code}</b></span>
         <button onClick={() => confirm(t.confirmRegen) && post({ action: "regenCode" })} className={linkBtn}>{t.regenCode}</button>
+        <button
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(`${window.location.origin}/${locale}/tymy?kod=${team.code}`);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2500);
+            } catch { /* schránka nedostupná */ }
+          }}
+          className={linkBtn}
+        >{copied ? t.inviteCopied : t.inviteLink}</button>
       </div>
       <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t.joinSettings}>
         {modes.map(([k, label]) => (

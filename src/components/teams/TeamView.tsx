@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { call, errorCode, fmtDate } from "./api";
@@ -44,6 +44,43 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
     void load();
   }, [load]);
 
+  // Odznak nepřečtených zpráv: jen v otevřené stránce (základ se bere při prvním načtení, po obnovení stránky zmizí).
+  const [unread, setUnread] = useState(0);
+  const tabRef = useRef<Tab>("tasks");
+  const seen = useRef<{ id: string | null; ready: boolean }>({ id: null, ready: false });
+  const hasTeam = team !== null && team !== "missing";
+  const myId = hasTeam ? team.userId : "";
+  useEffect(() => {
+    tabRef.current = tab;
+    if (tab === "chat") setUnread(0); // eslint-disable-line react-hooks/set-state-in-effect
+  }, [tab]);
+  useEffect(() => {
+    if (!hasTeam) return;
+    let live = true;
+    const poll = async () => {
+      if (document.hidden) return;
+      try {
+        const d = await call<{ messages: { id: string; userId: string }[] }>(`/api/tymy/${teamId}/chat`);
+        if (!live) return;
+        const ms = d.messages;
+        const last = ms.length ? ms[ms.length - 1].id : null;
+        if (!seen.current.ready || tabRef.current === "chat") {
+          seen.current = { id: last, ready: true };
+          setUnread(0);
+          return;
+        }
+        const idx = seen.current.id ? ms.findIndex((m) => m.id === seen.current.id) : -1;
+        const fresh = seen.current.id && idx < 0 ? ms : ms.slice(idx + 1);
+        setUnread(fresh.filter((m) => m.userId !== myId).length);
+      } catch {
+        /* další dotaz to zkusí znovu */
+      }
+    };
+    void poll();
+    const timer = setInterval(poll, 8000);
+    return () => { live = false; clearInterval(timer); };
+  }, [hasTeam, teamId, myId]);
+
   if (team === null) return <div className="card h-48 animate-pulse bg-[var(--surface-muted)]" aria-hidden />;
   if (team === "missing")
     return (
@@ -68,10 +105,13 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
   const tabs: [Tab, string, string, number][] = [
     ["tasks", t.tabTasks, "", 0],
     ...(teacher ? ([["results", t.tabResults, "", 0], ["groups", t.tabGroups, "", 0]] as [Tab, string, string, number][]) : []),
-    ["chat", t.tabChat, "", 0],
+    ["chat", t.tabChat, "", unread],
     ["people", t.tabPeople, "", team.pending.length],
   ];
-  const students = team.members.filter((m) => m.role === "STUDENT");
+  const active = team.assignments.filter((a) => !a.archived);
+  const archivedList = team.assignments.filter((a) => a.archived);
+  // Blížící se a prošlé termíny: žákovi jen nesplněná zadání, učiteli ta, kde ještě někdo chybí.
+  const urgent = active.filter((a) => (a.due === "soon" || a.due === "overdue") && (teacher ? (a.done ?? 0) < (a.students ?? 0) : !((a.used ?? 0) > 0 && (a.best ?? 0) >= a.passPercent)));
   const passedN = team.assignments.filter((a) => (a.used ?? 0) > 0 && (a.best ?? 0) >= a.passPercent).length;
   const sumDone = team.assignments.reduce((n, a) => n + (a.done ?? 0), 0);
   const sumTotal = team.assignments.reduce((n, a) => n + (a.students ?? 0), 0);
@@ -131,10 +171,28 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
       {tab === "tasks" && (
         <div className="flex flex-col gap-4">
           {teacher && <NewAssignment locale={locale} teamId={teamId} groups={team.groups} students={team.members.filter((m) => m.role === "STUDENT")} onCreated={load} />}
-          {team.assignments.length === 0 && <p className="card p-6 text-center text-[var(--muted)]">{teacher ? t.noTasksT : t.noTasksS}</p>}
+          {urgent.length > 0 && (
+            <p role="status" className="card flex flex-wrap items-center gap-2 p-3 text-sm" style={{ borderLeft: `8px solid ${urgent.some((a) => a.due === "overdue") ? "var(--danger)" : "var(--accent-yellow)"}` }}>
+              {urgent.map((a) => (
+                <Link key={a.id} href={`/${locale}/tymy/${teamId}/zadani/${a.id}`} className="flex items-center gap-1.5 hover:underline">
+                  <Pill tone={a.due === "overdue" ? "danger" : "warn"}>{a.due === "overdue" ? t.dueBannerLate : t.dueBannerSoon}</Pill>
+                  <b>{a.title}</b> <span className="text-[var(--muted)]">{tfill(t.due, fmtDate(locale, a.dueAt))}</span>
+                </Link>
+              ))}
+            </p>
+          )}
+          {active.length === 0 && <p className="card p-6 text-center text-[var(--muted)]">{teacher ? t.noTasksT : t.noTasksS}</p>}
           <ul className="flex flex-col gap-3">
-            {team.assignments.map((a) => <AssignmentCard key={a.id} a={a} teacher={teacher} locale={locale} teamId={teamId} groups={team.groups} members={team.members} />)}
+            {active.map((a) => <AssignmentCard key={a.id} a={a} teacher={teacher} locale={locale} teamId={teamId} groups={team.groups} members={team.members} />)}
           </ul>
+          {teacher && archivedList.length > 0 && (
+            <details className="card p-4">
+              <summary className="cursor-pointer font-bold">{tfill(t.archiveTitleN, archivedList.length)}</summary>
+              <ul className="mt-3 flex flex-col gap-3">
+                {archivedList.map((a) => <AssignmentCard key={a.id} a={a} teacher={teacher} locale={locale} teamId={teamId} groups={team.groups} members={team.members} />)}
+              </ul>
+            </details>
+          )}
         </div>
       )}
 
@@ -163,7 +221,7 @@ function AssignmentCard({ a, teacher, locale, teamId, groups, members }: { a: As
     <li>
       <Link href={`/${locale}/tymy/${teamId}/zadani/${a.id}`} className="card flex flex-col gap-2 p-4 hover:-translate-y-0.5" style={{ borderLeft: `8px solid ${a.due === "overdue" && !passed ? "var(--danger)" : passed ? "var(--accent-green)" : teacher ? "var(--brand-500)" : "var(--accent-yellow)"}` }}>
         <span className="flex flex-wrap items-center justify-between gap-2">
-          <b className="text-lg">{a.title}</b>
+          <b className="text-lg">{a.title}{a.archived && <> <Pill>{t.archivedBadge}</Pill></>}</b>
           {!teacher && (
             <span className="flex items-center gap-1.5">
               {!passed && a.due === "overdue" && <Pill tone="danger">{t.afterDeadline}</Pill>}
