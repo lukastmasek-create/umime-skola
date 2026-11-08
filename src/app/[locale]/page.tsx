@@ -14,6 +14,7 @@ import { GlobeSky } from "@/components/GlobeSky";
 import { IslandHub } from "@/components/IslandHub";
 import { HeroSky } from "@/components/HeroSky";
 import { getHomeText } from "@/i18n/home";
+import { getHomeAudienceText } from "@/i18n/home-teachers";
 import { getSubjectText } from "@/i18n/subjects";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, type Locale } from "@/i18n/config";
@@ -32,6 +33,8 @@ export default async function Home({
   const dict = getDictionary(locale as Locale);
   const badge = dict.home.badge.replace(/^[^\p{L}\p{N}]+/u, "");
   const h = getHomeText(locale as Locale);
+  const a = getHomeAudienceText(locale as Locale);
+  const sample = [{ who: "A. K.", pct: 100 }, { who: "T. N.", pct: 100 }, { who: "E. P.", pct: 60 }, { who: "J. S.", pct: 20 }];
   const subjectText = getSubjectText(locale as Locale);
   const featureLinks = {
     courses: { href: `/${locale}/kurzy/zakladni`, icon: "funkce-kurzy", color: "#8fd0ff", kind: "book" },
@@ -89,15 +92,21 @@ export default async function Home({
                   href={`/${locale}/kurzy/zakladni`}
                   className="btn-bouncy btn-cta btn-primary btn-lg"
                 >
-                  {dict.home.browseCourses}
+                  {a.playCta}
                 </Link>
                 <Link
-                  href={`/${locale}/registrace`}
+                  href={`/${locale}/tymy`}
                   className="btn-bouncy btn-secondary btn-lg"
                 >
-                  {dict.home.createAccount}
+                  {a.teacherCta}
                 </Link>
               </div>
+              <p className="hero-in text-sm text-[var(--muted)]" style={{ ["--d" as string]: "0.58s" }}>
+                {a.teacherHint}{" "}
+                <Link href={`/${locale}/registrace`} className="font-bold text-[var(--accent-green)] hover:underline">
+                  {a.accountLink} →
+                </Link>
+              </p>
             </div>
             <div className="hero-in-right">
               <Tilt max={6}>
@@ -238,9 +247,66 @@ export default async function Home({
         </div>
       </section>
 
-      {/* 6) O nás */}
-      <section id="o-nas" className="zone zone-tech scroll-mt-24">
+      {/* 6) Pro učitele */}
+      <section id="pro-ucitele" className="zone zone-tech scroll-mt-24">
         <Wave fill="#160a2c" />
+        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-20 pt-24 sm:px-6">
+          <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+            <div>
+              <p className="reveal mb-2 text-xs font-bold uppercase tracking-widest text-[var(--accent-green)]">{a.teachers.eyebrow}</p>
+              <h2 className="reveal mb-4 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
+                {a.teachers.title}
+              </h2>
+              <p className="reveal mb-8 max-w-xl text-lg leading-relaxed text-[var(--muted)]">{a.teachers.lead}</p>
+              <ul className="grid gap-4 sm:grid-cols-2">
+                {a.teachers.points.map((point) => (
+                  <li key={point.title} className="reveal card p-4">
+                    <h3 className="mb-1 font-bold">{point.title}</h3>
+                    <p className="text-sm leading-relaxed text-[var(--muted)]">{point.text}</p>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-8 flex flex-col items-start gap-2">
+                <Link href={`/${locale}/tymy`} className="btn-bouncy btn-cta btn-primary btn-lg">
+                  {a.teachers.cta}
+                </Link>
+                <p className="text-sm text-[var(--muted)]">{a.teachers.ctaHint}</p>
+              </div>
+            </div>
+            {/* Ilustrační ukázka přehledu výsledků (není to živá data) */}
+            <div aria-hidden className="reveal card p-5">
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-bold" style={heading}>{a.teachers.previewTitle}</p>
+                  <p className="text-xs text-[var(--muted)]">{a.teachers.previewDue}</p>
+                </div>
+                <span className="rounded-md border-2 border-[var(--edge)] px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-[var(--muted)]">
+                  {a.teachers.previewSample}
+                </span>
+              </div>
+              <ul className="space-y-3">
+                {sample.map((row) => (
+                  <li key={row.who} className="flex items-center gap-3">
+                    <span className="w-10 shrink-0 text-sm font-semibold">{row.who}</span>
+                    <span className="h-3 flex-1 overflow-hidden rounded-full bg-[var(--surface-muted)]">
+                      <span
+                        className="block h-full rounded-full"
+                        style={{ width: `${row.pct}%`, background: row.pct === 100 ? "var(--accent-green)" : "#ffc933" }}
+                      />
+                    </span>
+                    <span className="w-9 shrink-0 text-right text-xs font-bold text-[var(--muted)]">{row.pct} %</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-4 text-xs text-[var(--muted)]">2 / 4 {a.teachers.previewDone}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 7) O nás */}
+      <section id="o-nas" className="zone zone-tech scroll-mt-24">
+        <Wave fill="#071427" />
         <div className="relative z-10 mx-auto max-w-6xl px-4 pb-24 pt-24 sm:px-6">
           <h2 className="reveal mb-4 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
             {h.about.title}
