@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { call, errorCode, fmtDate } from "./api";
@@ -14,11 +14,11 @@ import { dangerBtn, field, linkBtn, primaryBtn, type Audience, type Team } from 
 
 type Meta = { id: string; title: string; description: string; maxAttempts: number | null; passPercent: number; dueAt: string | null; groupIds?: string[]; userIds?: string[] };
 type PQ = { id: number; prompt: string; options: string[]; gaps: number };
-type Row = { userId: string; name: string; groupId: string | null; viewedAt: string | null; attempts: number; best: number; last: number | null; lastAt: string | null; late: boolean; status: "done" | "tried" | "viewed" | "new" };
+type Row = { userId: string; comment: string; name: string; groupId: string | null; viewedAt: string | null; attempts: number; best: number; last: number | null; lastAt: string | null; late: boolean; status: "done" | "tried" | "viewed" | "new" };
 type TQ = { prompt: string; answer: string; attempts: number; wrong: number };
 type Data =
   | { role: "TEACHER"; assignment: Meta; groups: { id: string; name: string }[]; everyone: boolean; questions: TQ[]; rows: Row[] }
-  | { role: "STUDENT"; assignment: Meta; questions: PQ[]; attempts: { percent: number; createdAt: string }[]; left: number | null; best: number };
+  | { role: "STUDENT"; assignment: Meta; questions: PQ[]; attempts: { percent: number; createdAt: string }[]; left: number | null; best: number; feedback: string };
 type Result = { gainedXp?: number; correct: number; total: number; percent: number; passed: boolean; left: number | null; review: { id: number; correct: boolean; correctText: string; explanation: string }[] };
 
 const STATUS_CLS = { done: "bg-[var(--accent-green)] text-white", tried: "bg-[var(--accent-yellow)]", viewed: "bg-[var(--brand-50)]", new: "bg-[var(--surface-muted)]" } as const;
@@ -74,9 +74,19 @@ export function AssignmentPage({ locale, teamId, assignmentId }: { locale: Local
       {data.role === "TEACHER" ? (
         <>
           <TeacherTools t={t} locale={locale} team={team} teamId={teamId} meta={a} onChanged={load} onDeleted={() => router.push(`/${locale}/tymy/${teamId}`)} />
-          <Dashboard t={t} locale={locale} data={data} overdue={overdue} onRefresh={load} />
+          <Dashboard t={t} locale={locale} data={data} url={url} overdue={overdue} onRefresh={load} />
         </>
-      ) : <Runner t={t} data={data} url={url} onDone={load} />}
+      ) : (
+        <>
+          {data.feedback && (
+            <section className="card flex flex-col gap-1 p-4" style={{ borderLeft: "8px solid var(--accent-yellow)" }} aria-label={t.feedbackFrom}>
+              <h2 className="text-sm font-extrabold uppercase tracking-wide text-[var(--muted)]">{t.feedbackFrom}</h2>
+              <p className="whitespace-pre-wrap">{data.feedback}</p>
+            </section>
+          )}
+          <Runner t={t} data={data} url={url} onDone={load} />
+        </>
+      )}
 
       <section className="card flex flex-col gap-2 p-4">
         <h2 className="text-lg font-extrabold">{t.discussion}</h2>
@@ -98,6 +108,7 @@ function TeacherTools({ t, locale, team, teamId, meta, onChanged, onDeleted }: {
   const [targetTeam, setTargetTeam] = useState("");
   const [mine, setMine] = useState<{ id: string; name: string }[]>([]);
   const students = team.members.filter((m) => m.role === "STUDENT");
+  const archived = !!team.assignments.find((x) => x.id === meta.id)?.archived;
 
   useEffect(() => {
     if (mode !== "copy" || mine.length) return;
@@ -123,6 +134,7 @@ function TeacherTools({ t, locale, team, teamId, meta, onChanged, onDeleted }: {
       <div className="flex flex-wrap gap-4">
         <button onClick={() => setMode(mode === "edit" ? "" : "edit")} aria-expanded={mode === "edit"} className={linkBtn}>{t.editTask}</button>
         <button onClick={() => setMode(mode === "copy" ? "" : "copy")} aria-expanded={mode === "copy"} className={linkBtn}>{t.copyTask}</button>
+        <button onClick={() => run({ action: "archiveAssignment", assignmentId: meta.id, archived: !archived }, onChanged)} className={linkBtn}>{archived ? t.unarchive : t.archive}</button>
         <button onClick={() => confirm(t.confirmDeleteTask) && run({ action: "deleteAssignment", assignmentId: meta.id }, onDeleted)} className={dangerBtn}>{t.deleteTask}</button>
       </div>
       {notice && <p role="status" className="text-sm font-semibold text-[var(--accent-green)]">{notice.text} <Link href={notice.href} className="underline">{t.openCopy}</Link></p>}
@@ -187,7 +199,23 @@ function TeacherTools({ t, locale, team, teamId, meta, onChanged, onDeleted }: {
   );
 }
 
-function Dashboard({ t, locale, data, overdue, onRefresh }: { t: TeamsAll; locale: Locale; data: Extract<Data, { role: "TEACHER" }>; overdue: boolean; onRefresh: () => void }) {
+function Dashboard({ t, locale, data, url, overdue, onRefresh }: { t: TeamsAll; locale: Locale; data: Extract<Data, { role: "TEACHER" }>; url: string; overdue: boolean; onRefresh: () => void }) {
+  const [editing, setEditing] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+  const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  async function saveComment(userId: string) {
+    setSaveError("");
+    try {
+      await call(url, { action: "feedback", userId, text: draft });
+      setEditing(null);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+      onRefresh();
+    } catch (e) {
+      setSaveError(teamsAllError(t, errorCode(e)));
+    }
+  }
   const missing = (r: Row) => overdue && r.status !== "done";
   const count = (s: Row["status"]) => data.rows.filter((r) => r.status === s).length;
   const groupName = (id: string | null) => data.groups.find((g) => g.id === id)?.name;
@@ -201,6 +229,7 @@ function Dashboard({ t, locale, data, overdue, onRefresh }: { t: TeamsAll; local
         <h2 className="text-xl font-extrabold">{t.overview}</h2>
         <button onClick={onRefresh} className="text-sm font-bold text-[var(--brand-600)]">{t.refresh}</button>
       </div>
+      {saved && <p role="status" className="text-sm font-semibold text-[var(--accent-green)]">{t.feedbackSaved}</p>}
       {!data.everyone && <p className="text-sm text-[var(--muted)]">{tfill(t.onlyFor, data.rows.length)}</p>}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
         {(["done", "tried", "viewed", "new"] as const).map((s) => (
@@ -212,10 +241,11 @@ function Dashboard({ t, locale, data, overdue, onRefresh }: { t: TeamsAll; local
       {data.rows.length === 0 && <p className="text-[var(--muted)]">{t.noStudents}</p>}
       <div className="card overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead><tr className="border-b-2 border-[var(--border-soft)]"><th scope="col" className="p-3">{t.colStudent}</th><th scope="col" className="p-3">{t.colStatus}</th><th scope="col" className="p-3">{t.colViewed}</th><th scope="col" className="p-3">{t.colAttempts}</th><th scope="col" className="p-3">{t.colBest}</th><th scope="col" className="p-3">{t.colLast}</th></tr></thead>
+          <thead><tr className="border-b-2 border-[var(--border-soft)]"><th scope="col" className="p-3">{t.colStudent}</th><th scope="col" className="p-3">{t.colStatus}</th><th scope="col" className="p-3">{t.colViewed}</th><th scope="col" className="p-3">{t.colAttempts}</th><th scope="col" className="p-3">{t.colBest}</th><th scope="col" className="p-3">{t.colLast}</th><th scope="col" className="p-3">{t.commentCol}</th></tr></thead>
           <tbody>
             {data.rows.map((r) => (
-              <tr key={r.userId} className="border-b border-[var(--border-soft)] last:border-0">
+              <Fragment key={r.userId}>
+              <tr className="border-b border-[var(--border-soft)] last:border-0">
                 <td className="p-3 font-semibold"><span className="flex items-center gap-2"><Badge name={r.name} size={28} round />{r.name || t.student}{groupName(r.groupId) && <Pill tone="brand">{groupName(r.groupId)}</Pill>}</span></td>
                 <td className="p-3">
                   <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${missing(r) ? "bg-[var(--danger)] text-white" : STATUS_CLS[r.status]}`}>{missing(r) ? t.sMissing : statusLabel(t, r.status)}</span>
@@ -225,7 +255,25 @@ function Dashboard({ t, locale, data, overdue, onRefresh }: { t: TeamsAll; local
                 <td className="p-3">{r.attempts}</td>
                 <td className="p-3">{r.attempts ? <span className="block w-24"><Progress value={r.best} max={100} color={r.best >= 50 ? "var(--accent-green)" : "var(--accent-yellow)"} label={`${r.best} %`} /></span> : "—"}</td>
                 <td className="p-3">{r.last != null ? `${r.last} % (${fmtDate(locale, r.lastAt)})` : "—"}</td>
+                <td className="p-3">
+                  <button onClick={() => { setEditing(editing === r.userId ? null : r.userId); setDraft(r.comment); setSaveError(""); }} aria-expanded={editing === r.userId} className="text-left text-xs font-bold text-[var(--brand-600)]">
+                    {r.comment ? <span className="line-clamp-2 max-w-48 font-normal text-[var(--foreground)]">{r.comment}</span> : t.feedbackTitle}
+                  </button>
+                </td>
               </tr>
+              {editing === r.userId && (
+                <tr className="border-b border-[var(--border-soft)] bg-[var(--surface-muted)]">
+                  <td colSpan={7} className="p-3">
+                    <form className="flex flex-col gap-2" onSubmit={(e) => { e.preventDefault(); void saveComment(r.userId); }}>
+                      <label className="text-sm font-semibold" htmlFor={`fb-${r.userId}`}>{t.feedbackTitle}: {r.name || t.student}</label>
+                      <textarea id={`fb-${r.userId}`} value={draft} onChange={(e) => setDraft(e.target.value)} maxLength={1000} rows={2} placeholder={t.feedbackPh} className={field} autoFocus />
+                      {saveError && <p className="text-sm font-semibold text-[var(--danger)]">{saveError}</p>}
+                      <span className="flex gap-3"><button className={primaryBtn}>{t.save}</button><button type="button" onClick={() => setEditing(null)} className="text-sm font-bold">{t.cancel}</button></span>
+                    </form>
+                  </td>
+                </tr>
+              )}
+              </Fragment>
             ))}
           </tbody>
         </table>
@@ -275,6 +323,12 @@ function Runner({ t, data, url, onDone }: { t: TeamsAll; data: Extract<Data, { r
     }
   }
   const retry = () => { setAnswers({}); setResult(null); setStarted(true); };
+  const [practice, setPractice] = useState(false);
+
+  if (result && practice) {
+    const wrong = data.questions.filter((q) => !result.review[q.id].correct);
+    return <Practice t={t} questions={wrong} review={result.review} onBack={() => setPractice(false)} />;
+  }
 
   if (result) {
     return (
@@ -294,6 +348,7 @@ function Runner({ t, data, url, onDone }: { t: TeamsAll; data: Extract<Data, { r
           })}
         </ol>
         <p className="text-sm text-[var(--muted)]">{result.gainedXp ? <b>{tfill(t.xpGained, result.gainedXp)} · </b> : null}{result.left == null ? t.unlimitedAttempts : tfill(t.leftN, result.left)}</p>
+        {result.review.some((r) => !r.correct) && <button onClick={() => setPractice(true)} className="btn-bouncy self-start bg-[var(--accent-yellow)] px-5 py-2 text-sm font-bold text-[#16132b]">{t.practiceWrong}</button>}
         {(result.left == null || result.left > 0) && <button onClick={retry} className="btn-bouncy self-start bg-[var(--brand-500)] px-5 py-2 text-sm font-bold text-white">{t.retry}</button>}
       </section>
     );
@@ -343,6 +398,58 @@ function Runner({ t, data, url, onDone }: { t: TeamsAll; data: Extract<Data, { r
       </ol>
       {error && <p className="text-sm font-semibold text-[var(--danger)]">{error}</p>}
       <button disabled={busy} onClick={submit} className="btn-bouncy self-start bg-[var(--accent-green)] px-6 py-2.5 text-sm font-bold text-white disabled:opacity-60">{t.submit}</button>
+    </section>
+  );
+}
+
+/** Procvičení jen chybných otázek: hodnotí se v prohlížeči, do výsledků ani XP se nezapisuje. */
+function Practice({ t, questions, review, onBack }: { t: TeamsAll; questions: PQ[]; review: Result["review"]; onBack: () => void }) {
+  const [answers, setAnswers] = useState<Record<number, { choice?: number; typed?: string[] }>>({});
+  const [checked, setChecked] = useState(false);
+  const norm = (v: string) => v.trim().toLowerCase();
+  const ok = (q: PQ) => {
+    const a = answers[q.id];
+    const truth = review[q.id].correctText;
+    if (!a) return false;
+    if (q.gaps > 0) return truth.split(" / ").every((ans, i) => norm(a.typed?.[i] ?? "") === norm(ans));
+    return a.choice != null && norm(q.options[a.choice] ?? "") === norm(truth);
+  };
+  const right = questions.filter(ok).length;
+  const again = () => { setAnswers({}); setChecked(false); };
+  return (
+    <section className="card flex flex-col gap-4 p-5">
+      <h2 className="text-lg font-extrabold">{t.practiceTitle}</h2>
+      <ol className="flex flex-col gap-4">
+        {questions.map((q, n) => (
+          <li key={q.id} className={`flex flex-col gap-2 rounded-xl border-2 p-3 ${checked ? (ok(q) ? "border-[var(--accent-green)]" : "border-[var(--danger)]") : "border-[var(--border-soft)]"}`}>
+            {q.gaps > 0 ? (
+              <>
+                <p className="font-semibold">{n + 1}. {q.prompt.replace(/___/g, "____")}</p>
+                <div className="flex flex-wrap gap-2">
+                  {Array.from({ length: q.gaps }, (_, g) => (
+                    <input key={g} aria-label={tfill(t.fillAria, g + 1)} disabled={checked} value={answers[q.id]?.typed?.[g] ?? ""} onChange={(e) => setAnswers((p) => { const typed = [...(p[q.id]?.typed ?? Array(q.gaps).fill(""))]; typed[g] = e.target.value; return { ...p, [q.id]: { typed } }; })} className="rounded-xl border-2 border-[var(--field-border)] bg-[var(--surface)] px-3 py-1.5 text-sm" />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <fieldset className="flex flex-col gap-1.5" disabled={checked}>
+                <legend className="mb-1 font-semibold">{n + 1}. {q.prompt}</legend>
+                {q.options.map((o, i) => (
+                  <label key={i} className={`flex cursor-pointer items-center gap-2 rounded-xl border-2 px-3 py-1.5 text-sm ${answers[q.id]?.choice === i ? "border-[var(--edge)] bg-[var(--brand-50)]" : "border-[var(--border-soft)]"}`}>
+                    <input type="radio" name={`p${q.id}`} checked={answers[q.id]?.choice === i} onChange={() => setAnswers((p) => ({ ...p, [q.id]: { choice: i } }))} /> {o}
+                  </label>
+                ))}
+              </fieldset>
+            )}
+            {checked && !ok(q) && <p className="text-sm">{t.correctIs} <b>{review[q.id].correctText}</b></p>}
+          </li>
+        ))}
+      </ol>
+      {checked && <p className="text-lg font-extrabold">{tfill(t.practiceDone, right, questions.length)}</p>}
+      <div className="flex flex-wrap gap-3">
+        {!checked ? <button onClick={() => setChecked(true)} className="btn-bouncy bg-[var(--accent-green)] px-6 py-2.5 text-sm font-bold text-white">{t.practiceCheck}</button> : <button onClick={again} className="btn-bouncy bg-[var(--brand-500)] px-5 py-2 text-sm font-bold text-white">{t.practiceAgain}</button>}
+        <button onClick={onBack} className="text-sm font-bold">{t.practiceBack}</button>
+      </div>
     </section>
   );
 }

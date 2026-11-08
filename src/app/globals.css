@@ -3661,3 +3661,39 @@ button.town3d-chip[aria-pressed="true"] { background: #ffd24d; color: #1b1840; }
 [data-motion="off"] .econ-ticker { overflow-x: auto; }
 [data-motion="off"] .econ-ticker-track { animation: none; }
 [data-motion="off"] .econ-ticker-group[aria-hidden] { display: none; }
+
+/* Tisk přehledu týmu: jen oblast .print-area, světlé barvy, bez stínů. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #fff;
+    color: #000;
+    --surface: #fff;
+    --surface-muted: #eee;
+    --border-soft: #bbb;
+    --edge: #000;
+    --muted: #444;
+    --foreground: #000;
+    --brand-50: #e6eaff;
+    --brand-600: #1a2aa3;
+  }
+  .print-area,
+  .print-area * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .print-area .card {
+    box-shadow: none;
+    break-inside: avoid;
+  }
+}
