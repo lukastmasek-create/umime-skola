@@ -5,6 +5,7 @@ import { EconomyNews } from "@/components/EconomyNews";
 import { DailyChallenges } from "@/components/DailyChallenges";
 import { DailyQuizTeaser } from "@/components/DailyQuizTeaser";
 import { ArcadeDemo } from "@/components/ArcadeDemo";
+import { TeacherCta } from "@/components/TeacherCta";
 import { Tilt } from "@/components/Tilt";
 import { ALIEN_ROW, Circuit, HomeArt, SpriteFrame, Wave } from "@/components/SpaceDecor";
 import { TownLife } from "@/components/TownLife";
@@ -38,7 +39,7 @@ export default async function Home({
   const subjectText = getSubjectText(locale as Locale);
   const featureLinks = {
     courses: { href: `/${locale}/kurzy/zakladni`, icon: "funkce-kurzy", color: "#8fd0ff", kind: "book" },
-    games: { href: `/${locale}/kurzy/zakladni`, icon: "funkce-hry", color: "#c9b8ff", kind: "joystick" },
+    games: { href: `/${locale}/stale-hry`, icon: "funkce-hry", color: "#c9b8ff", kind: "joystick" },
     escape: { href: `/${locale}/unikovky`, icon: "funkce-unikovky", color: "#7ee0b0", kind: "door" },
     boards: { href: `/${locale}/zebricky`, icon: "funkce-zebricky", color: "#ffc933", kind: "trophy" },
   } as const satisfies Record<string, { href: string; icon: string; color: string; kind: string }>;
@@ -94,12 +95,9 @@ export default async function Home({
                 >
                   {a.playCta}
                 </Link>
-                <Link
-                  href={`/${locale}/tymy`}
-                  className="btn-bouncy btn-secondary btn-lg"
-                >
+                <TeacherCta locale={locale as Locale} className="btn-bouncy btn-secondary btn-lg">
                   {a.teacherCta}
-                </Link>
+                </TeacherCta>
               </div>
               <p className="hero-in text-sm text-[var(--muted)]" style={{ ["--d" as string]: "0.58s" }}>
                 {a.teacherHint}{" "}
@@ -267,9 +265,9 @@ export default async function Home({
                 ))}
               </ul>
               <div className="mt-8 flex flex-col items-start gap-2">
-                <Link href={`/${locale}/tymy`} className="btn-bouncy btn-cta btn-primary btn-lg">
+                <TeacherCta locale={locale as Locale} className="btn-bouncy btn-cta btn-primary btn-lg">
                   {a.teachers.cta}
-                </Link>
+                </TeacherCta>
                 <p className="text-sm text-[var(--muted)]">{a.teachers.ctaHint}</p>
               </div>
             </div>
