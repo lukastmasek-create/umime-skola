@@ -1700,6 +1700,10 @@ select[aria-invalid="true"] {
     display: none;
   }
 }
+[data-motion="off"] .planet-video,
+[data-motion="off"] .stars-video {
+  display: none;
+}
 /* --- Světy pro všechny stránky: stejný vesmírný základ jako úvodní stránka, u předmětů vlastní motiv ---
    Stránka předmětu dá kořenovému prvku data-world="<slug předmětu>"; <main> si podle toho vezme pozadí. */
 
@@ -3618,7 +3622,8 @@ button.town3d-chip[aria-pressed="true"] { background: #ffd24d; color: #1b1840; }
 .market3d-sign { position: absolute; left: 0; top: 0; pointer-events: auto; white-space: nowrap; border: 2px solid #16132b; border-radius: 0.4rem; background: #3a2a1a; color: #ffd76b; padding: 0.15rem 0.5rem; font-size: 0.75rem; font-weight: 800; line-height: 1.15; text-align: center; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.4); cursor: pointer; }
 .market3d-sign:hover { background: #4a3a24; }
 
-/* Nastavení → Animace vypnuté: CSS animace a přechody skončí hned (3D scény čtou prefersReducedMotion). */
+/* Nastavení → Animace vypnuté a systémové „omezit pohyb“: CSS animace a přechody skončí hned
+   (3D scény čtou prefersReducedMotion). Jeden společný pojistkový předpis pro všechny animace na webu. */
 [data-motion="off"] *,
 [data-motion="off"] *::before,
 [data-motion="off"] *::after {
@@ -3626,6 +3631,16 @@ button.town3d-chip[aria-pressed="true"] { background: #ffd24d; color: #1b1840; }
   animation-iteration-count: 1 !important;
   transition-duration: 0.001ms !important;
   scroll-behavior: auto !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Lišta „Zprávy z trhu“ (EconomyTicker): nekonečný posun zpráv, pauza najetím myši. */

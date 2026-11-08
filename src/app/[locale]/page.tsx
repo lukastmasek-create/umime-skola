@@ -5,22 +5,30 @@ import { EconomyNews } from "@/components/EconomyNews";
 import { DailyChallenges } from "@/components/DailyChallenges";
 import { DailyQuizTeaser } from "@/components/DailyQuizTeaser";
 import { ArcadeDemo } from "@/components/ArcadeDemo";
+import { TeacherCta } from "@/components/TeacherCta";
 import { Tilt } from "@/components/Tilt";
 import { ALIEN_ROW, Circuit, HomeArt, SpriteFrame, Wave } from "@/components/SpaceDecor";
-import { TownLife } from "@/components/TownLife";
-import { PlanetLive } from "@/components/PlanetLive";
-import { SubjectGlobe } from "@/components/SubjectGlobe";
+import { LazyPlanet, LazySubjectGlobe, LazyTownLife } from "@/components/HomeLazy";
 import { GlobeSky } from "@/components/GlobeSky";
 import { IslandHub } from "@/components/IslandHub";
 import { HeroSky } from "@/components/HeroSky";
 import { getHomeText } from "@/i18n/home";
+import { getHomeAudienceText } from "@/i18n/home-teachers";
 import { getSubjectText } from "@/i18n/subjects";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, type Locale } from "@/i18n/config";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { SITE_NAME, pageMetadata } from "@/lib/seo";
 
 const TILE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
 const GALAXY_ICONS = ["sekce-zakladni", "sekce-stredni", "sekce-prijimacky", "sekce-maturita"];
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isLocale(locale)) return {};
+  return pageMetadata(locale, "", SITE_NAME, getDictionary(locale).home.subtitle, { absoluteTitle: true });
+}
 
 export default async function Home({
   params,
@@ -32,10 +40,12 @@ export default async function Home({
   const dict = getDictionary(locale as Locale);
   const badge = dict.home.badge.replace(/^[^\p{L}\p{N}]+/u, "");
   const h = getHomeText(locale as Locale);
+  const a = getHomeAudienceText(locale as Locale);
+  const sample = [{ who: "A. K.", pct: 100 }, { who: "T. N.", pct: 100 }, { who: "E. P.", pct: 60 }, { who: "J. S.", pct: 20 }];
   const subjectText = getSubjectText(locale as Locale);
   const featureLinks = {
     courses: { href: `/${locale}/kurzy/zakladni`, icon: "funkce-kurzy", color: "#8fd0ff", kind: "book" },
-    games: { href: `/${locale}/kurzy/zakladni`, icon: "funkce-hry", color: "#c9b8ff", kind: "joystick" },
+    games: { href: `/${locale}/stale-hry`, icon: "funkce-hry", color: "#c9b8ff", kind: "joystick" },
     escape: { href: `/${locale}/unikovky`, icon: "funkce-unikovky", color: "#7ee0b0", kind: "door" },
     boards: { href: `/${locale}/zebricky`, icon: "funkce-zebricky", color: "#ffc933", kind: "trophy" },
   } as const satisfies Record<string, { href: string; icon: string; color: string; kind: string }>;
@@ -47,7 +57,7 @@ export default async function Home({
       <div className="zone zone-space">
         <HeroSky />
         <section className="gradient-hero relative">
-          <PlanetLive
+          <LazyPlanet
             className="absolute -right-20 top-16 -z-10 hidden opacity-95 lg:block"
             size={500}
             dir="/home/planet-hero"
@@ -89,15 +99,18 @@ export default async function Home({
                   href={`/${locale}/kurzy/zakladni`}
                   className="btn-bouncy btn-cta btn-primary btn-lg"
                 >
-                  {dict.home.browseCourses}
+                  {a.playCta}
                 </Link>
-                <Link
-                  href={`/${locale}/registrace`}
-                  className="btn-bouncy btn-secondary btn-lg"
-                >
-                  {dict.home.createAccount}
-                </Link>
+                <TeacherCta locale={locale as Locale} className="btn-bouncy btn-secondary btn-lg">
+                  {a.teacherCta}
+                </TeacherCta>
               </div>
+              <p className="hero-in text-sm text-[var(--muted)]" style={{ ["--d" as string]: "0.58s" }}>
+                {a.teacherHint}{" "}
+                <Link href={`/${locale}/registrace`} className="font-bold text-[var(--accent-green)] hover:underline">
+                  {a.accountLink} →
+                </Link>
+              </p>
             </div>
             <div className="hero-in-right">
               <Tilt max={6}>
@@ -139,7 +152,7 @@ export default async function Home({
             </Link>
           </div>
           <div className="relative">
-          <SubjectGlobe
+          <LazySubjectGlobe
             locale={locale as Locale}
             subjects={SUBJECTS.map((subject) => ({
               slug: subject.slug,
@@ -188,7 +201,7 @@ export default async function Home({
           </div>
           {/* scéna jde přes celou sekci (až 1680 px), na telefonu od kraje ke kraji */}
           <div className="mx-auto w-full max-w-[1680px] px-2 sm:px-4 lg:px-6">
-            <TownLife steps={h.steps} locale={locale} />
+            <LazyTownLife steps={h.steps} locale={locale} />
           </div>
         </div>
       </section>
@@ -196,7 +209,7 @@ export default async function Home({
       {/* 5) Zpět do vesmíru: kategorie */}
       <section className="zone zone-space">
         <Wave fill="#160a2c" />
-        <PlanetLive className="absolute -bottom-10 -left-12 -z-10 hidden lg:block" size={520} />
+        <LazyPlanet className="absolute -bottom-10 -left-12 -z-10 hidden lg:block" size={520} />
         <SpriteFrame
           sheet="aliens"
           col={1}
@@ -238,9 +251,66 @@ export default async function Home({
         </div>
       </section>
 
-      {/* 6) O nás */}
-      <section id="o-nas" className="zone zone-tech scroll-mt-24">
+      {/* 6) Pro učitele */}
+      <section id="pro-ucitele" className="zone zone-tech scroll-mt-24">
         <Wave fill="#160a2c" />
+        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-20 pt-24 sm:px-6">
+          <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+            <div>
+              <p className="reveal mb-2 text-xs font-bold uppercase tracking-widest text-[var(--accent-green)]">{a.teachers.eyebrow}</p>
+              <h2 className="reveal mb-4 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
+                {a.teachers.title}
+              </h2>
+              <p className="reveal mb-8 max-w-xl text-lg leading-relaxed text-[var(--muted)]">{a.teachers.lead}</p>
+              <ul className="grid gap-4 sm:grid-cols-2">
+                {a.teachers.points.map((point) => (
+                  <li key={point.title} className="reveal card p-4">
+                    <h3 className="mb-1 font-bold">{point.title}</h3>
+                    <p className="text-sm leading-relaxed text-[var(--muted)]">{point.text}</p>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-8 flex flex-col items-start gap-2">
+                <TeacherCta locale={locale as Locale} className="btn-bouncy btn-cta btn-primary btn-lg">
+                  {a.teachers.cta}
+                </TeacherCta>
+                <p className="text-sm text-[var(--muted)]">{a.teachers.ctaHint}</p>
+              </div>
+            </div>
+            {/* Ilustrační ukázka přehledu výsledků (není to živá data) */}
+            <div aria-hidden className="reveal card p-5">
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-bold" style={heading}>{a.teachers.previewTitle}</p>
+                  <p className="text-xs text-[var(--muted)]">{a.teachers.previewDue}</p>
+                </div>
+                <span className="rounded-md border-2 border-[var(--edge)] px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-[var(--muted)]">
+                  {a.teachers.previewSample}
+                </span>
+              </div>
+              <ul className="space-y-3">
+                {sample.map((row) => (
+                  <li key={row.who} className="flex items-center gap-3">
+                    <span className="w-10 shrink-0 text-sm font-semibold">{row.who}</span>
+                    <span className="h-3 flex-1 overflow-hidden rounded-full bg-[var(--surface-muted)]">
+                      <span
+                        className="block h-full rounded-full"
+                        style={{ width: `${row.pct}%`, background: row.pct === 100 ? "var(--accent-green)" : "#ffc933" }}
+                      />
+                    </span>
+                    <span className="w-9 shrink-0 text-right text-xs font-bold text-[var(--muted)]">{row.pct} %</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-4 text-xs text-[var(--muted)]">2 / 4 {a.teachers.previewDone}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 7) O nás */}
+      <section id="o-nas" className="zone zone-tech scroll-mt-24">
+        <Wave fill="#071427" />
         <div className="relative z-10 mx-auto max-w-6xl px-4 pb-24 pt-24 sm:px-6">
           <h2 className="reveal mb-4 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
             {h.about.title}

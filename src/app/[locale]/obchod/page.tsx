@@ -7,6 +7,7 @@ import { Wheel } from "@/components/Wheel";
 import { BuyPointsCard } from "@/components/BuyPointsCard";
 import { LimitedShop, MaterialShop, ProCard, ShopTabs } from "@/components/ShopSections";
 import { getPlayerMarketText } from "@/i18n/player-market";
+import { staticPageMetadata } from "@/lib/seo";
 
 export const revalidate = 0;
 
@@ -16,6 +17,8 @@ const POINT_PACKAGES = [
   { points: 300, price: "99 Kč", popular: true, image: "truhla" },
   { points: 1000, price: "249 Kč", popular: false, image: "poklad" },
 ];
+
+export const generateMetadata = staticPageMetadata("/obchod");
 
 export default async function ShopPage({
   params,

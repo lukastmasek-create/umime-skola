@@ -1,4 +1,5 @@
 "use client";
+import { readNext } from "@/lib/auth-next";
 import { withFallbacks } from "@/i18n/config";
 
 import { useState, use } from "react";
@@ -62,7 +63,7 @@ export default function PrihlaseniPage({
 
     notifyAccountChanged();
     await new Promise((r) => setTimeout(r, 700)); // maskot se stihne zaradovat
-    router.push(`/${locale}/kurzy`);
+    router.push(readNext(locale) ?? `/${locale}/kurzy`);
     router.refresh();
   }
 

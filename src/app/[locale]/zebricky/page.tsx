@@ -13,6 +13,7 @@ import { TROPHIES } from "@/lib/rewards";
 import { getEscapeText } from "@/i18n/escape";
 import { getIdleText } from "@/i18n/idle";
 import { ROOMS } from "@/lib/escape/rewards";
+import { staticPageMetadata } from "@/lib/seo";
 
 export const revalidate = 0;
 
@@ -50,6 +51,8 @@ function RankBadge({ position }: { position: number }) {
     </span>
   );
 }
+
+export const generateMetadata = staticPageMetadata("/zebricky");
 
 export default async function LeaderboardPage({
   params,

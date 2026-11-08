@@ -10,7 +10,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const t = getContactText(locale);
-  return { title: `${t.title} · Učíme se hrou`, description: t.subtitle };
+  return { title: t.title, description: t.subtitle };
 }
 
 export default async function ContactPage({

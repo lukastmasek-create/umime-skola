@@ -2,8 +2,11 @@ import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getPlayerMarketText } from "@/i18n/player-market";
 import { PlayerMarket } from "@/components/PlayerMarket";
+import { staticPageMetadata } from "@/lib/seo";
 
 // Samostatné okno tržiště hráčů (prodej a nákup věcí mezi hráči).
+export const generateMetadata = staticPageMetadata("/trziste");
+
 export default async function TrzistePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();

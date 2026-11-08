@@ -2,6 +2,9 @@ import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getRoomText } from "@/i18n/room";
 import { RoomView } from "@/components/RoomView";
+import { staticPageMetadata } from "@/lib/seo";
+
+export const generateMetadata = staticPageMetadata("/pokoj");
 
 export default async function Page({
   params,

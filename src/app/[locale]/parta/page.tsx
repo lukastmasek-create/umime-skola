@@ -2,6 +2,9 @@ import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getSocialText } from "@/i18n/social";
 import { SocialView } from "@/components/SocialView";
+import { staticPageMetadata } from "@/lib/seo";
+
+export const generateMetadata = staticPageMetadata("/parta");
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

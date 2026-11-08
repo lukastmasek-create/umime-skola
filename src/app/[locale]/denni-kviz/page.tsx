@@ -2,6 +2,9 @@ import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getDailyQuizText } from "@/i18n/daily-quiz";
 import { DailyQuiz } from "@/components/DailyQuiz";
+import { staticPageMetadata } from "@/lib/seo";
+
+export const generateMetadata = staticPageMetadata("/denni-kviz");
 
 export default async function DailyQuizPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

@@ -7,7 +7,7 @@ import { isLocale, type Locale } from "@/i18n/config";
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
-  return { title: `${getLegalPage("terms", locale).title} · Učíme se hrou` };
+  return { title: getLegalPage("terms", locale).title };
 }
 
 export default async function TermsPage({ params }: { params: Promise<{ locale: string }> }) {

@@ -52,7 +52,7 @@ const cs: HomeText = {
   featuresTitle: "Co tu najdeš",
   features: [
     { key: "courses", title: "Kurzy a testy", text: "Procvičuj po tématech a ověř se v testu jako ve škole, s vysvětlením každé odpovědi.", cta: "Prohlédnout kurzy" },
-    { key: "games", title: "Hry za body", text: "Obrana galaxie, Labyrint duchů, Pád bloků i klasiky jako křížovka, osmisměrka a pexeso. Za správné odpovědi sbíráš body.", cta: "Vyzkoušet" },
+    { key: "games", title: "Hry, které nikdy nekončí", text: "Stav si farmu, město a základnu a starej se o mazlíčky. Body za učení v nich pracují dál.", cta: "Zahrát si" },
     { key: "escape", title: "Únikovky", text: "Vyřeš hádanky, najdi předměty a uteč z laboratoře dřív, než dojde čas.", cta: "Do únikovky" },
     { key: "boards", title: "Žebříčky", text: "Porovnej se spolužáky, svou školou i ostatními školami v celé zemi.", cta: "Žebříčky" },
   ],
@@ -112,7 +112,7 @@ const en: HomeText = {
   featuresTitle: "What you'll find here",
   features: [
     { key: "courses", title: "Courses and tests", text: "Practise by topic and check yourself in a school-style test, with an explanation for every answer.", cta: "Browse courses" },
-    { key: "games", title: "Games for points", text: "Galaxy Defence, Ghost Labyrinth, Falling Blocks and classics like crosswords, word search and memory. Right answers earn you points.", cta: "Try it" },
+    { key: "games", title: "Games that never end", text: "Build a farm, a city and a base and look after pets. The points you earn from learning keep working for you.", cta: "Play" },
     { key: "escape", title: "Escape rooms", text: "Solve puzzles, find items and escape the lab before time runs out.", cta: "Enter" },
     { key: "boards", title: "Leaderboards", text: "Compare yourself with classmates, your school and other schools across the country.", cta: "Leaderboards" },
   ],
@@ -172,7 +172,7 @@ const de: HomeText = {
   featuresTitle: "Das findest du hier",
   features: [
     { key: "courses", title: "Kurse und Tests", text: "Übe nach Themen und teste dich wie in der Schule, mit Erklärung zu jeder Antwort.", cta: "Kurse ansehen" },
-    { key: "games", title: "Spiele für Punkte", text: "Galaxie-Abwehr, Geisterlabyrinth, Fallende Blöcke und Klassiker wie Kreuzworträtsel, Wortsuche und Memory. Für richtige Antworten gibt es Punkte.", cta: "Ausprobieren" },
+    { key: "games", title: "Spiele, die nie enden", text: "Baue eine Farm, eine Stadt und eine Basis und kümmere dich um Haustiere. Deine Lernpunkte arbeiten dort weiter für dich.", cta: "Spielen" },
     { key: "escape", title: "Escape Rooms", text: "Löse Rätsel, finde Gegenstände und entkomme dem Labor, bevor die Zeit abläuft.", cta: "Zum Escape Room" },
     { key: "boards", title: "Bestenlisten", text: "Vergleiche dich mit Mitschülern, deiner Schule und anderen Schulen im ganzen Land.", cta: "Bestenlisten" },
   ],
@@ -232,7 +232,7 @@ const ru: HomeText = {
   featuresTitle: "Что здесь есть",
   features: [
     { key: "courses", title: "Курсы и тесты", text: "Тренируйся по темам и проверяй себя в тесте как в школе, с объяснением каждого ответа.", cta: "Смотреть курсы" },
-    { key: "games", title: "Игры за баллы", text: "Защита галактики, Лабиринт призраков, Падающие блоки и классика: кроссворд, филворд и мемори. За верные ответы — баллы.", cta: "Попробовать" },
+    { key: "games", title: "Игры, которые не кончаются", text: "Строй ферму, город и базу и заботься о питомцах. Баллы за учёбу продолжают работать на тебя.", cta: "Играть" },
     { key: "escape", title: "Квесты", text: "Решай загадки, ищи предметы и выбирайся из лаборатории, пока не вышло время.", cta: "В квест" },
     { key: "boards", title: "Рейтинги", text: "Сравнивай себя с одноклассниками, своей школой и другими школами страны.", cta: "Рейтинги" },
   ],
@@ -292,7 +292,7 @@ const uk: HomeText = {
   featuresTitle: "Що тут є",
   features: [
     { key: "courses", title: "Курси та тести", text: "Тренуйся за темами і перевір себе шкільним тестом, до кожної відповіді є пояснення.", cta: "Переглянути курси" },
-    { key: "games", title: "Ігри за бали", text: "Galaxy Defence, Ghost Labyrinth, Falling Blocks і класика на кшталт кросвордів, пошуку слів і пам'яті. За правильні відповіді отримуєш бали.", cta: "Спробувати" },
+    { key: "games", title: "Ігри, що не закінчуються", text: "Будуй ферму, місто і базу та доглядай за улюбленцями. Бали за навчання працюють на тебе далі.", cta: "Грати" },
     { key: "escape", title: "Квести-втечі", text: "Розв'язуй головоломки, знаходь предмети і втеч з лабораторії, поки не закінчився час.", cta: "Увійти" },
     { key: "boards", title: "Таблиці лідерів", text: "Порівнюй себе з однокласниками, своєю школою та іншими школами по країні.", cta: "Таблиці лідерів" },
   ],
@@ -352,7 +352,7 @@ const ja: HomeText = {
   featuresTitle: "ここでできること",
   features: [
     { key: "courses", title: "コースとテスト", text: "テーマごとに練習して、学校のようなテストで力試し。どの答えにも解説がつきます。", cta: "コースを見る" },
-    { key: "games", title: "ポイントがためられるゲーム", text: "Galaxy Defence、Ghost Labyrinth、Falling Blocks、そしてクロスワードや単語さがし、神経衰弱などの定番ゲーム。正解するとポイントがたまります。", cta: "遊んでみる" },
+    { key: "games", title: "終わらないゲーム", text: "農場、街、基地をつくって、ペットのお世話をしよう。勉強で得たポイントがずっと働いてくれます。", cta: "遊ぶ" },
     { key: "escape", title: "脱出ルーム", text: "パズルを解き、アイテムを見つけて、時間内に研究所から脱出しよう。", cta: "入る" },
     { key: "boards", title: "ランキング", text: "クラスメイトや自分の学校、全国の他の学校と比べてみよう。", cta: "ランキングを見る" },
   ],
@@ -412,7 +412,7 @@ const es: HomeText = {
   featuresTitle: "Lo que encontrarás aquí",
   features: [
     { key: "courses", title: "Cursos y pruebas", text: "Practica por temas y ponte a prueba con un examen de estilo escolar, con una explicación para cada respuesta.", cta: "Ver cursos" },
-    { key: "games", title: "Juegos para ganar puntos", text: "Galaxy Defence, Ghost Labyrinth, Falling Blocks y clásicos como los crucigramas, la sopa de letras y la memoria. Las respuestas correctas te dan puntos.", cta: "Probar" },
+    { key: "games", title: "Juegos que nunca terminan", text: "Construye una granja, una ciudad y una base y cuida de tus mascotas. Los puntos que ganas estudiando siguen trabajando para ti.", cta: "Jugar" },
     { key: "escape", title: "Escape rooms", text: "Resuelve acertijos, encuentra objetos y escapa del laboratorio antes de que se acabe el tiempo.", cta: "Entrar" },
     { key: "boards", title: "Clasificaciones", text: "Compárate con tus compañeros, tu colegio y otros colegios de todo el país.", cta: "Clasificaciones" },
   ],
@@ -472,7 +472,7 @@ const fr: HomeText = {
   featuresTitle: "Ce que tu trouveras ici",
   features: [
     { key: "courses", title: "Cours et tests", text: "Entraîne-toi par thème et teste-toi avec un contrôle façon école, avec une explication pour chaque réponse.", cta: "Parcourir les cours" },
-    { key: "games", title: "Jeux pour gagner des points", text: "Galaxy Defence, Ghost Labyrinth, Falling Blocks et des classiques comme les mots croisés, les mots mêlés et le memory. Les bonnes réponses te rapportent des points.", cta: "Essayer" },
+    { key: "games", title: "Des jeux qui ne finissent jamais", text: "Construis une ferme, une ville et une base et occupe-toi de tes animaux. Les points gagnés en apprenant continuent de travailler pour toi.", cta: "Jouer" },
     { key: "escape", title: "Escape rooms", text: "Résous des énigmes, trouve des objets et échappe-toi du laboratoire avant la fin du temps.", cta: "Entrer" },
     { key: "boards", title: "Classements", text: "Compare-toi à tes camarades, à ton école et à d'autres écoles du pays.", cta: "Classements" },
   ],

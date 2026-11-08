@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ROOM_DIFFICULTY, escapeTimeLimit, getEscape } from "@/lib/escape/rewards";
 import { EscapeList, type EscapeCard } from "@/components/escape/EscapeList";
+import { staticPageMetadata } from "@/lib/seo";
 
 // Nejlepší hodnocení přihlášeného hráče v každé únikovce. Bez přihlášení nebo databáze je prázdné.
 // auth() zůstává mimo try/catch, aby Next poznal, že je stránka dynamická (čte cookies).
@@ -19,6 +20,8 @@ async function bestStars(): Promise<Record<string, number>> {
     return {};
   }
 }
+
+export const generateMetadata = staticPageMetadata("/unikovky");
 
 export default async function EscapeRoomsPage({
   params,

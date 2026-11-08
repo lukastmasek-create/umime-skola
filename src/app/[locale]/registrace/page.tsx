@@ -7,6 +7,9 @@ import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, type Locale } from "@/i18n/config";
 import { notFound } from "next/navigation";
 import { AuthShell, type AuthMood } from "@/components/AuthShell";
+import { signIn } from "next-auth/react";
+import { notifyAccountChanged } from "@/lib/account-events";
+import { readNext } from "@/lib/auth-next";
 import { TurnstileWidget, type TurnstileHandle } from "@/components/TurnstileWidget";
 
 const GREETING: Record<Locale, string> = {
@@ -66,7 +69,16 @@ export default function RegistracePage({
     setMood("joy");
     await new Promise((r) => setTimeout(r, 900)); // maskot se stihne zaradovat
 
-    router.push(`/${locale}/prihlaseni`);
+    const next = readNext(locale);
+    // Rovnou přihlásit stejnými údaji; když se to nepovede, uživatel dokončí přes přihlašovací formulář.
+    const login = await signIn("credentials", { email, password, redirect: false }).catch(() => null);
+    if (login && !login.error) {
+      notifyAccountChanged();
+      router.push(next ?? `/${locale}/kurzy`);
+      router.refresh();
+      return;
+    }
+    router.push(`/${locale}/prihlaseni${next ? `?next=${encodeURIComponent(next)}` : ""}`);
   }
 
   return (

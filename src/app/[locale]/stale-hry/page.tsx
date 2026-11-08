@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { IdleHub } from "@/components/idle/IdleHub";
 import { getIdleText } from "@/i18n/idle";
 import { isLocale, type Locale } from "@/i18n/config";
+import { staticPageMetadata } from "@/lib/seo";
 
 const COLORS = ["#8fd0ff", "#ff8a6b", "#7ee0b0", "#ffc933", "#c9a7ff"];
 // Hra na stejném pořadí jako v texty.games: Základna, Mazlíčci, Farma, Město. null = zatím se chystá.
@@ -10,6 +11,8 @@ const PATHS = ["zakladna", "mazlicci", "farma", "mesto", "ekonomika"] as const;
 
 // Vyrenderovaná diorámata (pás 24 snímků) ve stejném pořadí jako hry.
 const ART = ["zakladna", "mazlicci", "farma", "mesto", "ekonomika"] as const;
+
+export const generateMetadata = staticPageMetadata("/stale-hry");
 
 export default async function IdleGamesPage({
   params,

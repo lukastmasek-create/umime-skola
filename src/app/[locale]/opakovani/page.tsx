@@ -3,6 +3,9 @@ import { isLocale, type Locale } from "@/i18n/config";
 import { getReviewText } from "@/i18n/review";
 import { ReviewRunner } from "@/components/ReviewRunner";
 import { WeakSpots } from "@/components/WeakSpots";
+import { staticPageMetadata } from "@/lib/seo";
+
+export const generateMetadata = staticPageMetadata("/opakovani");
 
 export default async function ReviewPage({ params, searchParams }: { params: Promise<{ locale: string }>; searchParams: Promise<{ kurz?: string }> }) {
   const { locale } = await params;
