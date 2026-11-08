@@ -5,8 +5,11 @@ import { getSubjectText } from "@/i18n/subjects";
 import { getReviewText } from "@/i18n/review";
 import { isLocale, type Locale } from "@/i18n/config";
 import { CourseMap, type MapSubject } from "@/components/CourseMap";
+import { staticPageMetadata } from "@/lib/seo";
 
 export const revalidate = 0;
+
+export const generateMetadata = staticPageMetadata("/mapa");
 
 export default async function MapPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

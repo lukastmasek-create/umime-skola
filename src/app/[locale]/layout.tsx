@@ -17,6 +17,7 @@ import { EconomyTicker } from "@/components/EconomyTicker";
 import { getContactText } from "@/i18n/contact";
 import { getHomeText } from "@/i18n/home";
 import { CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL, getFooterLinks } from "@/i18n/legal";
+import { SITE_URL } from "@/lib/seo";
 
 const heading = Unbounded({
   subsets: ["latin", "latin-ext", "cyrillic"],
@@ -39,7 +40,8 @@ const SITE_DESCRIPTION = "Online příprava na základku, střední, přijímač
 // Ikony a favicon jsou souborové konvence v src/app (icon.svg, apple-icon.png, favicon.ico,
 // manifest.ts), náhled odkazu v této složce (opengraph-image.png, twitter-image.png).
 export const metadata: Metadata = {
-  title: SITE_NAME,
+  metadataBase: new URL(SITE_URL),
+  title: { default: SITE_NAME, template: `%s · ${SITE_NAME}` },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
   openGraph: { title: SITE_NAME, description: SITE_DESCRIPTION, siteName: SITE_NAME, type: "website" },

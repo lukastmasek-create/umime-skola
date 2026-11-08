@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/seo";
 
 // AI crawlery a SEO scrapery, které se vzdálí, když jim to robots.txt řekne.
 // Vyhledávače (Googlebot, Bingbot) nechávám povolené, aby web zůstal ve výsledcích hledání.
@@ -33,7 +34,8 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       { userAgent: BLOCKED_BOTS, disallow: "/" },
-      { userAgent: "*", allow: "/", disallow: ["/*/test/"] },
+      { userAgent: "*", allow: "/", disallow: ["/api/", "/*/test/"] },
     ],
+    sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }

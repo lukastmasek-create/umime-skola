@@ -2,6 +2,9 @@ import { notFound } from "next/navigation";
 import { MarketWorld } from "@/components/MarketWorld";
 import { ShopView } from "@/components/ShopView";
 import { isLocale, type Locale } from "@/i18n/config";
+import { staticPageMetadata } from "@/lib/seo";
+
+export const generateMetadata = staticPageMetadata("/uzivatelsky-obchod");
 
 export default async function MarketplacePage({
   params,

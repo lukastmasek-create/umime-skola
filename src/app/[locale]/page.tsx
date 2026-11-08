@@ -20,9 +20,17 @@ import { getSubjectText } from "@/i18n/subjects";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, type Locale } from "@/i18n/config";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { SITE_NAME, pageMetadata } from "@/lib/seo";
 
 const TILE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
 const GALAXY_ICONS = ["sekce-zakladni", "sekce-stredni", "sekce-prijimacky", "sekce-maturita"];
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isLocale(locale)) return {};
+  return pageMetadata(locale, "", SITE_NAME, getDictionary(locale).home.subtitle, { absoluteTitle: true });
+}
 
 export default async function Home({
   params,

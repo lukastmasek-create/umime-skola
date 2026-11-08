@@ -15,6 +15,8 @@ import { getAllGradesLabel, gradeLabel } from "@/i18n/grades";
 import { isLocale, type Locale } from "@/i18n/config";
 import { matchesCourseQuery } from "@/lib/course-search";
 import { CourseSearch } from "@/components/CourseSearch";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 
 export const revalidate = 0;
 
@@ -27,6 +29,13 @@ type Course = {
   section: string | null;
   grade: number | null;
 };
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string; category: string }> }): Promise<Metadata> {
+  const { locale, category: slug } = await params;
+  if (!isLocale(locale) || !getCategoryBySlug(slug)) return {};
+  const info = getDictionary(locale).categories[getCategoryBySlug(slug)!.slug];
+  return pageMetadata(locale, `/kurzy/${slug}`, info.label, info.description);
+}
 
 export default async function CategoryPage({
   params,

@@ -3,6 +3,9 @@ import { isLocale } from "@/i18n/config";
 import { getTeamsText } from "@/i18n/teams";
 import type { Locale } from "@/i18n/config";
 import { TeamsHome } from "@/components/teams/TeamsHome";
+import { staticPageMetadata } from "@/lib/seo";
+
+export const generateMetadata = staticPageMetadata("/tymy");
 
 export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

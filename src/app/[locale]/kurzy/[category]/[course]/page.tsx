@@ -5,10 +5,37 @@ import { SUBJECTS, getCategoryBySlug, type SubjectValue } from "@/lib/taxonomy";
 import { getDictionary } from "@/i18n/dictionaries";
 import { getTestText } from "@/i18n/test";
 import { isLocale, type Locale } from "@/i18n/config";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 
 export const revalidate = 0;
 
 const DIFFICULTIES = [1, 2, 3, 4, 5];
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; category: string; course: string }>;
+}): Promise<Metadata> {
+  const { locale, category: categorySlug, course: courseSlug } = await params;
+  const category = getCategoryBySlug(categorySlug);
+  if (!isLocale(locale) || !category) return {};
+  try {
+    const course = await prisma.course.findFirst({
+      where: { slug: courseSlug, category: category.value, published: true },
+      select: { title: true, description: true },
+    });
+    if (!course) return { robots: { index: false } };
+    return pageMetadata(
+      locale,
+      `/kurzy/${categorySlug}/${courseSlug}`,
+      course.title,
+      course.description || getDictionary(locale).categories[category.slug].description,
+    );
+  } catch {
+    return {};
+  }
+}
 
 export default async function CoursePage({
   params,
