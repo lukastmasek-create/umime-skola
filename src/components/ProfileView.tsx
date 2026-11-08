@@ -740,7 +740,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
         </div>
       )}
 
-      {mainTab === "tasks" && <DailyChallenges locale={locale} showAchievements />}
+      {mainTab === "tasks" && <DailyChallenges locale={locale} showAchievements variant="tabs" />}
 
       {mainTab === "craft" && <CraftPanel locale={locale} onUnlocked={() => setProfileVersion((v) => v + 1)} onWardrobe={() => setMainTab("collection")} />}
 
