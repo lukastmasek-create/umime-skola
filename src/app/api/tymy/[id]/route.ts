@@ -1,8 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { handle, readJson } from "@/lib/live/http";
 import { LiveError } from "@/lib/live/service";
-import { cleanMaxAttempts, cleanSnapshot, MAX_QUESTIONS, shuffle, type SnapQuestion } from "@/lib/teams/logic";
+import {
+  cleanJoinMode, cleanMaxAttempts, cleanSnapshot, dueState, isAssignedTo, MAX_GROUPS, MAX_QUESTIONS, MAX_TEAM_NAME, parseEmails, shuffle, splitRandomly,
+  type SnapQuestion, type Target,
+} from "@/lib/teams/logic";
 import { requireMember, requireUserId } from "@/lib/teams/server";
+import { randomCode } from "@/lib/social";
 import { cleanSetQuestions } from "@/lib/live/logic";
 
 export const dynamic = "force-dynamic";
@@ -14,18 +18,23 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/tymy/[id]">) {
     const me = await requireMember(id, userId);
     const team = await prisma.team.findUniqueOrThrow({ where: { id } });
     const isTeacher = me.role === "TEACHER";
-    const members = await prisma.teamMember.findMany({
-      where: { teamId: id },
-      include: { user: { select: { id: true, name: true, email: isTeacher } } },
-      orderBy: { joinedAt: "asc" },
-    });
-    const assignments = await prisma.assignment.findMany({
+    const [rows, groups] = await Promise.all([
+      prisma.teamMember.findMany({
+        where: { teamId: id },
+        include: { user: { select: { id: true, name: true, email: isTeacher } } },
+        orderBy: { joinedAt: "asc" },
+      }),
+      prisma.teamGroup.findMany({ where: { teamId: id }, orderBy: { createdAt: "asc" } }),
+    ]);
+    const members = rows.filter((m) => m.status === "ACTIVE");
+    const assignmentsAll = await prisma.assignment.findMany({
       where: { teamId: id },
       orderBy: { createdAt: "desc" },
-      select: { id: true, title: true, description: true, maxAttempts: true, passPercent: true, dueAt: true, createdAt: true, questions: true },
+      select: { id: true, title: true, description: true, maxAttempts: true, passPercent: true, dueAt: true, createdAt: true, questions: true, targets: { select: { groupId: true, userId: true } } },
     });
+    const assignments = isTeacher ? assignmentsAll : assignmentsAll.filter((a) => isAssignedTo(a.targets, me));
     const ids = assignments.map((a) => a.id);
-    const students = members.filter((m) => m.role === "STUDENT").map((m) => m.userId);
+    const students = members.filter((m) => m.role === "STUDENT");
     const [attempts, views] = await Promise.all([
       ids.length ? prisma.assignmentAttempt.findMany({ where: { assignmentId: { in: ids }, ...(isTeacher ? {} : { userId }) }, select: { assignmentId: true, userId: true, percent: true } }) : [],
       ids.length ? prisma.assignmentView.findMany({ where: { assignmentId: { in: ids }, ...(isTeacher ? {} : { userId }) }, select: { assignmentId: true, userId: true } }) : [],
@@ -36,7 +45,10 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/tymy/[id]">) {
       role: me.role,
       userId,
       code: isTeacher ? team.code : null,
-      members: members.map((m) => ({ id: m.userId, name: m.user.name, email: isTeacher ? m.user.email : null, role: m.role })),
+      joinMode: team.joinMode,
+      members: members.map((m) => ({ id: m.userId, name: m.user.name, email: isTeacher ? m.user.email : null, role: m.role, groupId: m.groupId })),
+      pending: isTeacher ? rows.filter((m) => m.status === "PENDING").map((m) => ({ id: m.userId, name: m.user.name, email: m.user.email, requestedAt: m.joinedAt })) : [],
+      groups: groups.map((g) => ({ id: g.id, name: g.name, members: members.filter((m) => m.groupId === g.id).length })),
       assignments: assignments.map((a) => {
         const mine = attempts.filter((x) => x.userId === userId && x.assignmentId === a.id);
         const base = {
@@ -48,12 +60,18 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/tymy/[id]">) {
           dueAt: a.dueAt,
           createdAt: a.createdAt,
           questions: Array.isArray(a.questions) ? a.questions.length : 0,
+          due: dueState(a.dueAt),
         };
         if (isTeacher) {
+          const mineStudents = students.filter((s) => isAssignedTo(a.targets, s)).map((s) => s.userId);
           const at = attempts.filter((x) => x.assignmentId === a.id);
-          const done = students.filter((s) => at.some((x) => x.userId === s && x.percent >= a.passPercent)).length;
-          const viewed = students.filter((s) => views.some((v) => v.userId === s && v.assignmentId === a.id)).length;
-          return { ...base, students: students.length, done, viewed };
+          const done = mineStudents.filter((s) => at.some((x) => x.userId === s && x.percent >= a.passPercent)).length;
+          const viewed = mineStudents.filter((s) => views.some((v) => v.userId === s && v.assignmentId === a.id)).length;
+          return {
+            ...base, students: mineStudents.length, done, viewed,
+            groupIds: a.targets.flatMap((t) => (t.groupId ? [t.groupId] : [])),
+            userIds: a.targets.flatMap((t) => (t.userId ? [t.userId] : [])),
+          };
         }
         return {
           ...base,
@@ -65,6 +83,28 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/tymy/[id]">) {
     };
   });
 }
+
+const MAX_IDS = 200;
+const idList = (raw: unknown): string[] => (Array.isArray(raw) ? [...new Set(raw.filter((x): x is string => typeof x === "string"))].slice(0, MAX_IDS) : []);
+
+/** Publikum zadání: prázdné = celá třída. Neplatné cíle zadání nezúží potichu na všechny, ale odmítnou. */
+async function resolveAudience(teamId: string, raw: unknown): Promise<Target[]> {
+  const a = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const groupIds = idList(a.groupIds);
+  const userIds = idList(a.userIds);
+  if (!groupIds.length && !userIds.length) return [];
+  const [groups, users] = await Promise.all([
+    groupIds.length ? prisma.teamGroup.findMany({ where: { teamId, id: { in: groupIds } }, select: { id: true } }) : [],
+    userIds.length ? prisma.teamMember.findMany({ where: { teamId, status: "ACTIVE", role: "STUDENT", userId: { in: userIds } }, select: { userId: true } }) : [],
+  ]);
+  if (groups.length !== groupIds.length || users.length !== userIds.length) throw new LiveError("bad-target");
+  return [...groups.map((g) => ({ groupId: g.id, userId: null })), ...users.map((u) => ({ groupId: null, userId: u.userId }))];
+}
+
+const cleanDue = (raw: unknown): Date | null => {
+  const d = typeof raw === "string" && raw ? new Date(raw) : null;
+  return d && !Number.isNaN(d.getTime()) ? d : null;
+};
 
 async function buildQuestions(body: Record<string, unknown>, userId: string): Promise<{ questions: SnapQuestion[]; title: string }> {
   const count = Math.min(MAX_QUESTIONS, Math.max(1, Math.floor(Number(body.count)) || 10));
@@ -114,14 +154,18 @@ export async function POST(request: Request, ctx: RouteContext<"/api/tymy/[id]">
     }
     await requireMember(id, userId, true);
     switch (action) {
-      case "addMember": {
-        const email = typeof body.email === "string" ? body.email.trim() : "";
-        if (!email) throw new LiveError("invalid-email");
-        const user = await prisma.user.findFirst({ where: { email: { equals: email, mode: "insensitive" } }, select: { id: true } });
-        if (!user) throw new LiveError("user-not-found", 404);
+      case "addMembers": {
+        const { valid, invalid } = parseEmails(body.emails);
+        if (!valid.length && !invalid.length) throw new LiveError("invalid-email");
         const role = body.role === "TEACHER" ? "TEACHER" : "STUDENT";
-        await prisma.teamMember.upsert({ where: { teamId_userId: { teamId: id, userId: user.id } }, create: { teamId: id, userId: user.id, role }, update: {} });
-        return { ok: true };
+        const users = valid.length ? await prisma.user.findMany({ where: { OR: valid.map((email) => ({ email: { equals: email, mode: "insensitive" as const } })) }, select: { id: true, email: true } }) : [];
+        const found = new Set(users.map((u) => u.email?.toLowerCase()));
+        const notFound = [...valid.filter((e) => !found.has(e.toLowerCase())), ...invalid];
+        for (const u of users) {
+          // Kdo čekal na schválení, je přidáním učitelem rovnou členem.
+          await prisma.teamMember.upsert({ where: { teamId_userId: { teamId: id, userId: u.id } }, create: { teamId: id, userId: u.id, role }, update: { status: "ACTIVE" } });
+        }
+        return { added: users.length, notFound };
       }
       case "removeMember": {
         const target = String(body.userId ?? "");
@@ -129,27 +173,136 @@ export async function POST(request: Request, ctx: RouteContext<"/api/tymy/[id]">
         await prisma.teamMember.deleteMany({ where: { teamId: id, userId: target } });
         return { ok: true };
       }
+      case "setRole": {
+        const target = String(body.userId ?? "");
+        if (target === userId) throw new LiveError("use-leave");
+        const role = body.role === "TEACHER" ? "TEACHER" : "STUDENT";
+        const r = await prisma.teamMember.updateMany({ where: { teamId: id, userId: target, status: "ACTIVE" }, data: { role, ...(role === "TEACHER" ? { groupId: null } : {}) } });
+        if (!r.count) throw new LiveError("user-not-found", 404);
+        return { ok: true };
+      }
+      case "approve": {
+        const target = body.all === true ? undefined : String(body.userId ?? "");
+        await prisma.teamMember.updateMany({ where: { teamId: id, status: "PENDING", ...(target ? { userId: target } : {}) }, data: { status: "ACTIVE" } });
+        return { ok: true };
+      }
+      case "reject": {
+        await prisma.teamMember.deleteMany({ where: { teamId: id, status: "PENDING", userId: String(body.userId ?? "") } });
+        return { ok: true };
+      }
+      case "setJoinMode": {
+        const joinMode = cleanJoinMode(body.joinMode);
+        if (!joinMode) throw new LiveError("bad-action");
+        await prisma.team.update({ where: { id }, data: { joinMode } });
+        return { ok: true };
+      }
+      case "regenCode": {
+        for (let i = 0; i < 5; i++) {
+          try {
+            const t = await prisma.team.update({ where: { id }, data: { code: randomCode() }, select: { code: true } });
+            return { code: t.code };
+          } catch (e) {
+            if ((e as { code?: string }).code !== "P2002") throw e;
+          }
+        }
+        throw new LiveError("unavailable", 503);
+      }
       case "rename": {
-        const name = typeof body.name === "string" ? body.name.trim().slice(0, 40) : "";
+        const name = typeof body.name === "string" ? body.name.replace(/\s+/g, " ").trim().slice(0, MAX_TEAM_NAME) : "";
         if (name.length < 2) throw new LiveError("invalid-name");
         await prisma.team.update({ where: { id }, data: { name } });
         return { ok: true };
       }
+      case "createGroup": {
+        const name = typeof body.name === "string" ? body.name.replace(/\s+/g, " ").trim().slice(0, 40) : "";
+        if (name.length < 1) throw new LiveError("invalid-name");
+        if ((await prisma.teamGroup.count({ where: { teamId: id } })) >= MAX_GROUPS) throw new LiveError("too-many-groups");
+        const g = await prisma.teamGroup.create({ data: { teamId: id, name } });
+        return { id: g.id };
+      }
+      case "renameGroup": {
+        const name = typeof body.name === "string" ? body.name.replace(/\s+/g, " ").trim().slice(0, 40) : "";
+        if (name.length < 1) throw new LiveError("invalid-name");
+        await prisma.teamGroup.updateMany({ where: { id: String(body.groupId ?? ""), teamId: id }, data: { name } });
+        return { ok: true };
+      }
+      case "deleteGroup": {
+        const groupId = String(body.groupId ?? "");
+        const own = await prisma.assignmentTarget.findMany({ where: { groupId, assignment: { teamId: id } }, select: { assignmentId: true } });
+        if (own.length) {
+          // Zadání určené jen téhle skupině by smazáním cíle potichu platilo pro celou třídu.
+          const others = await prisma.assignmentTarget.findMany({ where: { assignmentId: { in: own.map((o) => o.assignmentId) }, NOT: { groupId } }, select: { assignmentId: true } });
+          if (own.some((o) => !others.some((x) => x.assignmentId === o.assignmentId))) throw new LiveError("group-in-use", 409);
+        }
+        await prisma.teamGroup.deleteMany({ where: { id: groupId, teamId: id } });
+        return { ok: true };
+      }
+      case "setGroup": {
+        const groupId = body.groupId ? String(body.groupId) : null;
+        if (groupId && !(await prisma.teamGroup.findFirst({ where: { id: groupId, teamId: id }, select: { id: true } }))) throw new LiveError("bad-target");
+        const r = await prisma.teamMember.updateMany({ where: { teamId: id, userId: String(body.userId ?? ""), status: "ACTIVE", role: "STUDENT" }, data: { groupId } });
+        if (!r.count) throw new LiveError("user-not-found", 404);
+        return { ok: true };
+      }
+      case "randomGroups": {
+        const count = Math.min(MAX_GROUPS, Math.max(2, Math.floor(Number(body.count)) || 2));
+        const prefix = typeof body.prefix === "string" && body.prefix.trim() ? body.prefix.trim().slice(0, 30) : "Group";
+        const existing = await prisma.teamGroup.findMany({ where: { teamId: id }, orderBy: { createdAt: "asc" }, take: count });
+        const groups = [...existing];
+        // Použije stávající skupiny a chybějící založí, aby se nerozbila zadání určená skupinám.
+        for (let i = existing.length; i < count; i++) groups.push(await prisma.teamGroup.create({ data: { teamId: id, name: `${prefix} ${i + 1}` } }));
+        const students = await prisma.teamMember.findMany({ where: { teamId: id, status: "ACTIVE", role: "STUDENT" }, select: { userId: true } });
+        const parts = splitRandomly(students.map((s) => s.userId), count);
+        await prisma.$transaction(parts.map((ids, i) => prisma.teamMember.updateMany({ where: { teamId: id, userId: { in: ids } }, data: { groupId: groups[i].id } })));
+        return { ok: true };
+      }
       case "createAssignment": {
+        const targets = await resolveAudience(id, body.audience);
         const { questions, title: srcTitle } = await buildQuestions(body, userId);
         if (questions.length === 0) throw new LiveError("no-questions");
         const title = typeof body.title === "string" && body.title.trim() ? body.title.trim().slice(0, 80) : srcTitle.slice(0, 80);
         const description = typeof body.description === "string" ? body.description.trim().slice(0, 1000) : "";
         const pass = Math.min(100, Math.max(0, Math.floor(Number(body.passPercent)) || 0));
-        const due = typeof body.dueAt === "string" && body.dueAt ? new Date(body.dueAt) : null;
         const a = await prisma.assignment.create({
           data: {
             teamId: id, title, description, questions, passPercent: pass,
             maxAttempts: cleanMaxAttempts(body.maxAttempts),
-            dueAt: due && !Number.isNaN(due.getTime()) ? due : null,
+            dueAt: cleanDue(body.dueAt),
+            targets: { create: targets },
           },
         });
         return { id: a.id };
+      }
+      case "updateAssignment": {
+        const assignmentId = String(body.assignmentId ?? "");
+        const a = await prisma.assignment.findFirst({ where: { id: assignmentId, teamId: id }, select: { id: true } });
+        if (!a) throw new LiveError("assignment-not-found", 404);
+        const data: Record<string, unknown> = {};
+        if (typeof body.title === "string") {
+          const title = body.title.trim().slice(0, 80);
+          if (!title) throw new LiveError("invalid-name");
+          data.title = title;
+        }
+        if (typeof body.description === "string") data.description = body.description.trim().slice(0, 1000);
+        if ("passPercent" in body) data.passPercent = Math.min(100, Math.max(0, Math.floor(Number(body.passPercent)) || 0));
+        if ("maxAttempts" in body) data.maxAttempts = cleanMaxAttempts(body.maxAttempts);
+        if ("dueAt" in body) data.dueAt = cleanDue(body.dueAt);
+        const targets = "audience" in body ? await resolveAudience(id, body.audience) : null;
+        await prisma.$transaction([
+          prisma.assignment.update({ where: { id: assignmentId }, data }),
+          ...(targets ? [prisma.assignmentTarget.deleteMany({ where: { assignmentId } }), prisma.assignmentTarget.createMany({ data: targets.map((t) => ({ ...t, assignmentId })) })] : []),
+        ]);
+        return { ok: true };
+      }
+      case "copyAssignment": {
+        const a = await prisma.assignment.findFirst({ where: { id: String(body.assignmentId ?? ""), teamId: id } });
+        if (!a) throw new LiveError("assignment-not-found", 404);
+        const targetTeamId = String(body.targetTeamId ?? "");
+        if (targetTeamId !== id) await requireMember(targetTeamId, userId, true);
+        const copy = await prisma.assignment.create({
+          data: { teamId: targetTeamId, title: a.title, description: a.description, questions: cleanSnapshot(a.questions), passPercent: a.passPercent, maxAttempts: a.maxAttempts, dueAt: a.dueAt },
+        });
+        return { id: copy.id, teamId: targetTeamId };
       }
       case "deleteAssignment": {
         await prisma.assignment.deleteMany({ where: { id: String(body.assignmentId ?? ""), teamId: id } });

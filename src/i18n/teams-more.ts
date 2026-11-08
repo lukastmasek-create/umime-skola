@@ -1,0 +1,201 @@
+// Texty rozšířených týmů a tříd (skupiny, schvalování, přehledy, termíny).
+// Zatím česky a anglicky, ostatní jazyky se vracejí k angličtině.
+import type { Locale } from "./config";
+import { getTeamsText, teamsError, type TeamsText } from "./teams";
+
+const cs = {
+  "rename": "Přejmenovat",
+  "save": "Uložit",
+  "tabResults": "Výsledky",
+  "tabGroups": "Skupiny",
+  "yourGroup": "Tvoje skupina",
+
+  "afterDeadline": "po termínu",
+  "dueSoon": "brzy končí",
+  "late": "pozdě",
+  "sMissing": "nesplněno po termínu",
+  "soonN": "Brzy končí: {0}",
+  "overdueN": "Po termínu: {0}",
+  "urgentTitle": "Co ti hoří",
+
+  "requestSent": "Žádost o připojení je odeslaná. Učitel ji musí schválit.",
+  "waitingApproval": "čeká na schválení učitelem",
+  "cancelRequest": "Zrušit žádost",
+  "pendingTitle": "Žádosti o připojení",
+  "pendingTitleN": "Čeká na schválení: {0}",
+  "approve": "Schválit",
+  "approveAll": "Schválit všechny",
+  "reject": "Zamítnout",
+
+  "joinSettings": "Připojování kódem",
+  "joinOpen": "Otevřené",
+  "joinApproval": "Se schválením",
+  "joinClosed": "Zavřené",
+  "joinOpenHint": "Kdo zná kód, se připojí hned.",
+  "joinApprovalHint": "Kdo zadá kód, čeká, až ho schválíš.",
+  "joinClosedHint": "Nikdo nový se kódem nepřipojí. Žáky můžeš přidat e-mailem.",
+  "regenCode": "Nový kód",
+  "confirmRegen": "Starý kód přestane fungovat. Už připojení žáci zůstanou. Vytvořit nový kód?",
+
+  "bulkTitle": "Přidat podle e-mailů (jeden nebo víc)",
+  "bulkPh": "jana@skola.cz, petr@skola.cz\nnebo každý e-mail na nový řádek",
+  "bulkResult": "Přidáno: {0}.",
+  "bulkNotFound": "Bez účtu nebo neplatné: {0}.",
+  "makeTeacher": "Udělat učitelem",
+  "makeStudent": "Udělat žákem",
+
+  "groupsIntro": "Skupiny slouží pro soutěže a skupinovou práci. Zadání můžeš určit jen vybraným skupinám a žákům.",
+  "newGroup": "Nová skupina",
+  "groupNamePh": "Název skupiny",
+  "randomGroups": "Náhodně rozlosovat",
+  "groupCount": "Počet skupin",
+  "shuffle": "Rozlosovat žáky",
+  "groupPrefix": "Skupina",
+  "confirmShuffle": "Žáci se přeřadí do skupin znovu. Pokračovat?",
+  "confirmDeleteGroup": "Smazat skupinu? Žáci ve třídě zůstanou.",
+  "noGroups": "Zatím žádné skupiny.",
+  "noGroup": "Bez skupiny",
+  "assignToGroups": "Zařazení žáků",
+
+  "audience": "Pro koho zadání platí",
+  "audAll": "Celá třída",
+  "audPickStudents": "Vybrat jednotlivé žáky",
+  "audHint": "Zadání uvidí jen vybrané skupiny a žáci.",
+  "onlyFor": "Zadání je jen pro vybrané žáky ({0}).",
+  "onlyForNames": "Jen pro: {0}",
+
+  "editTask": "Upravit zadání",
+  "deleteTask": "Smazat zadání",
+  "confirmDeleteTask": "Smazat zadání i s výsledky a diskuzí? Nejde to vrátit.",
+  "copyTask": "Zkopírovat do třídy",
+  "copyTo": "Vyber třídu",
+  "copyBtn": "Zkopírovat",
+  "copied": "Zadání je zkopírované.",
+  "openCopy": "Otevřít třídu",
+  "thisClass": "tato třída",
+
+  "matrixHint": "Řádky jsou žáci, sloupce zadání. Klikni na název zadání pro podrobnosti.",
+  "exportCsv": "Stáhnout CSV",
+  "colGroup": "Skupina",
+  "colDoneCount": "Splněno",
+  "colMissing": "Chybí po termínu",
+  "missingN": "chybí {0}",
+  "notAssigned": "Nezadáno",
+
+  "hardQuestions": "Nejobtížnější otázky",
+  "noMistakes": "Zatím žádné chyby, nebo ještě nikdo zadání nezkusil.",
+  "wrongOf": "Chyb: {0} z {1} pokusů",
+
+  "e_closed": "Do téhle třídy se kódem teď nikdo nepřipojí.",
+  "e_groups": "Skupin už je maximum.",
+  "e_groupUse": "Skupina je jediný cíl některého zadání. Nejdřív zadání uprav.",
+  "e_target": "Vybraná skupina nebo žák už ve třídě není.",
+} as const;
+
+export type TeamsMore = Record<keyof typeof cs, string>;
+
+const en: TeamsMore = {
+  "rename": "Rename",
+  "save": "Save",
+  "tabResults": "Results",
+  "tabGroups": "Groups",
+  "yourGroup": "Your group",
+
+  "afterDeadline": "past due",
+  "dueSoon": "due soon",
+  "late": "late",
+  "sMissing": "missing after deadline",
+  "soonN": "Due soon: {0}",
+  "overdueN": "Past due: {0}",
+  "urgentTitle": "Needs your attention",
+
+  "requestSent": "Join request sent. The teacher has to approve it.",
+  "waitingApproval": "waiting for teacher approval",
+  "cancelRequest": "Cancel request",
+  "pendingTitle": "Join requests",
+  "pendingTitleN": "Waiting for approval: {0}",
+  "approve": "Approve",
+  "approveAll": "Approve all",
+  "reject": "Reject",
+
+  "joinSettings": "Joining with the code",
+  "joinOpen": "Open",
+  "joinApproval": "With approval",
+  "joinClosed": "Closed",
+  "joinOpenHint": "Anyone with the code joins right away.",
+  "joinApprovalHint": "Anyone entering the code waits until you approve them.",
+  "joinClosedHint": "Nobody new can join with the code. You can still add students by e-mail.",
+  "regenCode": "New code",
+  "confirmRegen": "The old code stops working. Students who already joined stay. Create a new code?",
+
+  "bulkTitle": "Add by e-mail (one or many)",
+  "bulkPh": "jane@school.org, peter@school.org\nor one e-mail per line",
+  "bulkResult": "Added: {0}.",
+  "bulkNotFound": "No account or invalid: {0}.",
+  "makeTeacher": "Make teacher",
+  "makeStudent": "Make student",
+
+  "groupsIntro": "Groups are for competitions and group work. You can set an assignment for selected groups and students only.",
+  "newGroup": "New group",
+  "groupNamePh": "Group name",
+  "randomGroups": "Draw randomly",
+  "groupCount": "Number of groups",
+  "shuffle": "Draw students",
+  "groupPrefix": "Group",
+  "confirmShuffle": "Students will be reassigned to groups. Continue?",
+  "confirmDeleteGroup": "Delete the group? Students stay in the class.",
+  "noGroups": "No groups yet.",
+  "noGroup": "No group",
+  "assignToGroups": "Student placement",
+
+  "audience": "Who gets this assignment",
+  "audAll": "Whole class",
+  "audPickStudents": "Pick individual students",
+  "audHint": "Only the selected groups and students will see the assignment.",
+  "onlyFor": "This assignment is for selected students only ({0}).",
+  "onlyForNames": "Only for: {0}",
+
+  "editTask": "Edit assignment",
+  "deleteTask": "Delete assignment",
+  "confirmDeleteTask": "Delete the assignment with its results and discussion? This cannot be undone.",
+  "copyTask": "Copy to a class",
+  "copyTo": "Choose a class",
+  "copyBtn": "Copy",
+  "copied": "Assignment copied.",
+  "openCopy": "Open the class",
+  "thisClass": "this class",
+
+  "matrixHint": "Rows are students, columns are assignments. Click an assignment title for details.",
+  "exportCsv": "Download CSV",
+  "colGroup": "Group",
+  "colDoneCount": "Completed",
+  "colMissing": "Missing after deadline",
+  "missingN": "{0} missing",
+  "notAssigned": "Not assigned",
+
+  "hardQuestions": "Hardest questions",
+  "noMistakes": "No mistakes yet, or nobody has tried the assignment.",
+  "wrongOf": "Wrong: {0} of {1} attempts",
+
+  "e_closed": "Nobody can join this class with the code right now.",
+  "e_groups": "Maximum number of groups reached.",
+  "e_groupUse": "The group is the only audience of some assignment. Edit that assignment first.",
+  "e_target": "The selected group or student is no longer in the class.",
+};
+
+export type TeamsAll = TeamsText & TeamsMore;
+
+const more: Partial<Record<Locale, TeamsMore>> = { cs, en };
+
+export function getTeamsAll(locale: Locale): TeamsAll {
+  return { ...getTeamsText(locale), ...(more[locale] ?? en) };
+}
+
+const MORE_ERRORS: Record<string, keyof TeamsMore> = {
+  "join-closed": "e_closed", "too-many-groups": "e_groups", "group-in-use": "e_groupUse", "bad-target": "e_target",
+};
+
+export function teamsAllError(t: TeamsAll, code?: string): string {
+  const key = MORE_ERRORS[code ?? ""];
+  return key ? t[key] : teamsError(t, code);
+}

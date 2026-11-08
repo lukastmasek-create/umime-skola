@@ -100,3 +100,106 @@ export function shuffle<T>(items: T[]): T[] {
   }
   return c;
 }
+
+// --- Třídy 2: připojení, skupiny, cílení zadání, termíny, přehledy ---
+
+export const JOIN_MODES = ["OPEN", "APPROVAL", "CLOSED"] as const;
+export type JoinMode = (typeof JOIN_MODES)[number];
+export const MAX_GROUPS = 12;
+export const MAX_BULK_EMAILS = 100;
+export const SOON_HOURS = 72;
+
+export function cleanJoinMode(raw: unknown): JoinMode | null {
+  return JOIN_MODES.find((m) => m === raw) ?? null;
+}
+
+/** Stav připojení kódem podle režimu týmu: rovnou člen, čeká na schválení, nebo zamítnuto. */
+export function joinOutcome(mode: string): "active" | "pending" | "closed" {
+  if (mode === "CLOSED") return "closed";
+  return mode === "APPROVAL" ? "pending" : "active";
+}
+
+/** E-maily z vloženého textu (oddělené čárkou, středníkem, mezerou nebo novým řádkem), bez duplicit. */
+export function parseEmails(raw: unknown): { valid: string[]; invalid: string[] } {
+  const parts = typeof raw === "string" ? raw.split(/[\s,;]+/).map((p) => p.trim()).filter(Boolean) : [];
+  const seen = new Set<string>();
+  const valid: string[] = [];
+  const invalid: string[] = [];
+  for (const p of parts) {
+    const key = p.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p) && p.length <= 254) valid.push(p);
+    else invalid.push(p);
+  }
+  return { valid: valid.slice(0, MAX_BULK_EMAILS), invalid };
+}
+
+export type Target = { groupId: string | null; userId: string | null };
+
+/** Je zadání pro daného žáka? Bez cílů platí pro celou třídu. */
+export function isAssignedTo(targets: Target[], member: { userId: string; groupId: string | null }): boolean {
+  if (targets.length === 0) return true;
+  return targets.some((t) => (t.userId != null && t.userId === member.userId) || (t.groupId != null && t.groupId === member.groupId));
+}
+
+/** Rozdělí id náhodně do `count` skupin co nejrovnoměrněji. */
+export function splitRandomly<T>(items: T[], count: number): T[][] {
+  const n = Math.max(1, Math.floor(count));
+  const out: T[][] = Array.from({ length: n }, () => []);
+  shuffle(items).forEach((item, i) => out[i % n].push(item));
+  return out;
+}
+
+export type DueState = "none" | "ok" | "soon" | "overdue";
+
+export function dueState(dueAt: Date | string | null, now: Date = new Date()): DueState {
+  if (!dueAt) return "none";
+  const ms = new Date(dueAt).getTime() - now.getTime();
+  if (Number.isNaN(ms)) return "none";
+  if (ms < 0) return "overdue";
+  return ms <= SOON_HOURS * 3600_000 ? "soon" : "ok";
+}
+
+/** Splněno po termínu = první úspěšný pokus byl po dueAt. */
+export function completedLate(attempts: { percent: number; createdAt: Date | string }[], passPercent: number, dueAt: Date | string | null): boolean {
+  if (!dueAt) return false;
+  const due = new Date(dueAt).getTime();
+  const firstPass = attempts
+    .filter((a) => a.percent >= passPercent)
+    .map((a) => new Date(a.createdAt).getTime())
+    .sort((a, b) => a - b)[0];
+  return firstPass != null && firstPass > due;
+}
+
+/** Indexy špatně zodpovězených otázek z výsledku hodnocení. */
+export function wrongIndexes(review: { id: number; correct: boolean }[]): number[] {
+  return review.filter((r) => !r.correct).map((r) => r.id);
+}
+
+export type QuestionStat = { index: number; attempts: number; wrong: number };
+
+/** Chybovost po otázkách. Pokusy bez zaznamenaných chyb (starší) se nepočítají. */
+export function questionStats(total: number, attempts: { wrong: unknown }[]): QuestionStat[] {
+  const stats: QuestionStat[] = Array.from({ length: total }, (_, index) => ({ index, attempts: 0, wrong: 0 }));
+  for (const a of attempts) {
+    if (!Array.isArray(a.wrong)) continue;
+    const wrong = new Set(a.wrong.filter((n): n is number => Number.isInteger(n)));
+    for (const s of stats) {
+      s.attempts++;
+      if (wrong.has(s.index)) s.wrong++;
+    }
+  }
+  return stats;
+}
+
+/** Hodnota buňky CSV; chrání před vložením vzorce do Excelu (=, +, -, @). */
+export function csvCell(v: string | number | null | undefined): string {
+  let s = v == null ? "" : String(v);
+  if (/^[=+\-@\t\r]/.test(s) && Number.isNaN(Number(s))) s = `'${s}`;
+  return /[",;\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+export function toCsv(rows: (string | number | null | undefined)[][]): string {
+  return rows.map((r) => r.map(csvCell).join(";")).join("\r\n");
+}
