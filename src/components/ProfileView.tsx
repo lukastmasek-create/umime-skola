@@ -572,7 +572,7 @@ export function ProfileView({ locale }: { locale: Locale }) {
             />
           </div>
           <p className="text-sm text-[var(--muted)]">
-            <span className="font-bold text-[#16132b]">
+            <span className="font-bold text-[var(--foreground)]">
               {profile.xp ?? 0} {t.xp}
             </span>{" "}
             · {fill(hx.xpToNext, remaining)}
