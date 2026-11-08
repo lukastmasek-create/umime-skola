@@ -187,8 +187,17 @@ export type TeamsAll = TeamsText & TeamsMore;
 
 const more: Partial<Record<Locale, TeamsMore>> = { cs, en };
 
+// Objekt musí být pro jazyk pořád stejný: komponenty ho mají v závislostech hooků,
+// nový objekt při každém renderu by spouštěl donekonečna načítání.
+const cache = new Map<Locale, TeamsAll>();
+
 export function getTeamsAll(locale: Locale): TeamsAll {
-  return { ...getTeamsText(locale), ...(more[locale] ?? en) };
+  let all = cache.get(locale);
+  if (!all) {
+    all = { ...getTeamsText(locale), ...(more[locale] ?? en) };
+    cache.set(locale, all);
+  }
+  return all;
 }
 
 const MORE_ERRORS: Record<string, keyof TeamsMore> = {
