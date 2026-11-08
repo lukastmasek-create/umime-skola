@@ -8,6 +8,7 @@ import { tfill } from "@/i18n/teams";
 import { getTeamsAll, teamsAllError } from "@/i18n/teams-more";
 import { fmtDate } from "./api";
 import type { Locale } from "@/i18n/config";
+import { Badge, Pill, colorOf } from "./ui";
 
 
 type TeamRow = { id: string; name: string; role: string; code: string | null; members: number; assignments: number; open: number; soon: number; overdue: number };
@@ -119,15 +120,22 @@ export function TeamsHome({ locale }: { locale: Locale }) {
         <ul className="grid gap-3 sm:grid-cols-2">
           {teams?.map((tm) => (
             <li key={tm.id}>
-              <Link href={`/${locale}/tymy/${tm.id}`} className="card flex h-full flex-col gap-1 p-4 hover:-translate-y-0.5">
-                <span className="flex items-center justify-between gap-2">
-                  <b className="truncate text-lg">{tm.name}</b>
-                  <span className="rounded-full bg-[var(--brand-50)] px-2 py-0.5 text-xs font-bold text-[var(--brand-700)]">{tm.role === "TEACHER" ? t.teacher : t.student}</span>
+              <Link href={`/${locale}/tymy/${tm.id}`} className="card flex h-full items-start gap-3 p-4 hover:-translate-y-0.5" style={{ borderLeft: `8px solid ${colorOf(tm.name)}` }}>
+                <Badge name={tm.name} size={52} />
+                <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+                  <span className="flex items-center justify-between gap-2">
+                    <b className="truncate text-lg">{tm.name}</b>
+                    <Pill tone={tm.role === "TEACHER" ? "brand" : "good"}>{tm.role === "TEACHER" ? `${t.teacher}` : `${t.student}`}</Pill>
+                  </span>
+                  <span className="text-sm text-[var(--muted)]">{tfill(t.teamStats, tm.members, tm.assignments)}{tm.role === "STUDENT" && tm.open > 0 ? tfill(t.teamOpen, tm.open) : ""}</span>
+                  {(tm.overdue > 0 || tm.soon > 0) && (
+                    <span className="flex flex-wrap gap-1.5">
+                      {tm.overdue > 0 && <Pill tone="danger">{tfill(t.overdueN, tm.overdue)}</Pill>}
+                      {tm.soon > 0 && <Pill tone="warn">⏰ {tfill(t.soonN, tm.soon)}</Pill>}
+                    </span>
+                  )}
+                  {tm.code && <span className="text-xs text-[var(--muted)]">{t.code}: <b className="tracking-widest">{tm.code}</b></span>}
                 </span>
-                <span className="text-sm text-[var(--muted)]">{tfill(t.teamStats, tm.members, tm.assignments)}{tm.role === "STUDENT" && tm.open > 0 ? tfill(t.teamOpen, tm.open) : ""}</span>
-                {tm.overdue > 0 && <span className="w-fit rounded-full bg-[var(--danger)] px-2 py-0.5 text-xs font-bold text-white">{tfill(t.overdueN, tm.overdue)}</span>}
-                {tm.soon > 0 && <span className="w-fit rounded-full bg-[var(--accent-yellow)] px-2 py-0.5 text-xs font-bold">{tfill(t.soonN, tm.soon)}</span>}
-                {tm.code && <span className="text-xs text-[var(--muted)]">{t.code}: <b className="tracking-widest">{tm.code}</b></span>}
               </Link>
             </li>
           ))}

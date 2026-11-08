@@ -14,6 +14,7 @@ import { TeamPeople } from "./TeamPeople";
 import { TeamGroups } from "./TeamGroups";
 import { TeamResults } from "./TeamResults";
 import { AudiencePicker } from "./AudiencePicker";
+import { Badge, Pill, Progress, colorOf } from "./ui";
 import { field, linkBtn, type Audience, type Assignment, type Group, type Member, type Team } from "./types";
 
 type Course = { slug: string; title: string; subject: string; grade: number | null; questions: number };
@@ -64,19 +65,28 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
       return false;
     }
   };
-  const tabs: [Tab, string][] = [
-    ["tasks", t.tabTasks],
-    ...(teacher ? ([["results", t.tabResults], ["groups", t.tabGroups]] as [Tab, string][]) : []),
-    ["chat", t.tabChat],
-    ["people", team.pending.length ? `${t.tabPeople} (${team.pending.length})` : t.tabPeople],
+  const tabs: [Tab, string, string, number][] = [
+    ["tasks", t.tabTasks, "", 0],
+    ...(teacher ? ([["results", t.tabResults, "", 0], ["groups", t.tabGroups, "", 0]] as [Tab, string, string, number][]) : []),
+    ["chat", t.tabChat, "", 0],
+    ["people", t.tabPeople, "", team.pending.length],
   ];
+  const students = team.members.filter((m) => m.role === "STUDENT");
+  const passedN = team.assignments.filter((a) => (a.used ?? 0) > 0 && (a.best ?? 0) >= a.passPercent).length;
+  const sumDone = team.assignments.reduce((n, a) => n + (a.done ?? 0), 0);
+  const sumTotal = team.assignments.reduce((n, a) => n + (a.students ?? 0), 0);
+  const overdueN = team.assignments.filter((a) => a.due === "overdue").length;
   const myGroup = team.groups.find((g) => g.id === team.members.find((m) => m.id === team.userId)?.groupId);
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <Link href={`/${locale}/tymy`} className="text-sm font-bold text-[var(--brand-600)]">{t.backTeams}</Link>
+      <Link href={`/${locale}/tymy`} className="text-sm font-bold text-[var(--brand-600)]">{t.backTeams}</Link>
+      <header
+        className="card flex flex-wrap items-center gap-4 p-5"
+        style={{ background: teacher ? "linear-gradient(135deg, var(--brand-50), var(--surface))" : "linear-gradient(135deg, color-mix(in srgb, var(--accent-green) 16%, var(--surface)), var(--surface))", borderTop: `8px solid ${colorOf(team.name)}` }}
+      >
+        <Badge name={team.name} size={64} />
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
           {renaming !== null ? (
             <form className="flex items-center gap-2" onSubmit={async (e) => { e.preventDefault(); if (await post({ action: "rename", name: renaming })) setRenaming(null); }}>
               <input value={renaming} onChange={(e) => setRenaming(e.target.value)} maxLength={40} aria-label={t.namePh} className={`${field} text-xl font-bold`} autoFocus />
@@ -84,29 +94,44 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
               <button type="button" onClick={() => setRenaming(null)} className="text-xs font-bold">{t.cancel}</button>
             </form>
           ) : (
-            <h1 className="flex items-center gap-3 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+            <h1 className="flex flex-wrap items-center gap-3 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
               {team.name}
               {teacher && <button onClick={() => setRenaming(team.name)} className={linkBtn} aria-label={t.rename}>{t.rename}</button>}
             </h1>
           )}
-          <p className="text-sm text-[var(--muted)]">
-            {teacher ? t.youTeacher : t.youStudent} · {tfill(t.membersN, team.members.length)}
-            {team.code && <> · {t.codeForStudents}: <b className="tracking-widest">{team.code}</b></>}
-            {!teacher && myGroup && <> · {t.yourGroup}: <b>{myGroup.name}</b></>}
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <Pill tone={teacher ? "brand" : "good"}>{teacher ? `${t.youTeacher}` : `${t.youStudent}`}</Pill>
+            <Pill>{tfill(t.membersN, team.members.length)}</Pill>
+            {team.code && <Pill>{t.codeForStudents}: <b className="tracking-widest">{team.code}</b></Pill>}
+            {!teacher && myGroup && <Pill tone="warn">{t.yourGroup}: {myGroup.name}</Pill>}
+            {teacher && overdueN > 0 && <Pill tone="danger">{tfill(t.overdueN, overdueN)}</Pill>}
+          </div>
+          {team.assignments.length > 0 && (
+            <div className="max-w-md">
+              <Progress
+                value={teacher ? sumDone : passedN}
+                max={teacher ? sumTotal : team.assignments.length}
+                color={teacher ? "var(--brand-500)" : "var(--accent-green)"}
+                label={teacher ? tfill(t.doneOf, sumDone, sumTotal) : `${t.tabTasks}: ${passedN} / ${team.assignments.length}`}
+              />
+            </div>
+          )}
         </div>
-      </div>
+      </header>
       {error && <p role="alert" className="card p-3 text-sm font-semibold text-[var(--danger)]">{error}</p>}
       <div role="tablist" className="flex flex-wrap gap-2">
-        {tabs.map(([k, label]) => (
-          <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`rounded-full border-2 px-4 py-1.5 text-sm font-bold ${tab === k ? "border-[var(--edge)] bg-[var(--brand-500)] text-white" : "border-[var(--border-soft)] bg-[var(--surface)]"}`}>{label}</button>
+        {tabs.map(([k, label, icon, badge]) => (
+          <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`relative flex items-center gap-1.5 rounded-full border-2 px-4 py-1.5 text-sm font-bold ${tab === k ? "border-[var(--edge)] bg-[var(--brand-500)] text-white" : "border-[var(--border-soft)] bg-[var(--surface)] hover:border-[var(--edge)]"}`}>
+            <span aria-hidden>{icon}</span>{label}
+            {badge > 0 && <span className="grid min-w-5 place-items-center rounded-full bg-[var(--accent-500)] px-1 text-xs font-extrabold text-white" aria-label={String(badge)}>{badge}</span>}
+          </button>
         ))}
       </div>
 
       {tab === "tasks" && (
         <div className="flex flex-col gap-4">
           {teacher && <NewAssignment locale={locale} teamId={teamId} groups={team.groups} students={team.members.filter((m) => m.role === "STUDENT")} onCreated={load} />}
-          {team.assignments.length === 0 && <p className="text-[var(--muted)]">{teacher ? t.noTasksT : t.noTasksS}</p>}
+          {team.assignments.length === 0 && <p className="card p-6 text-center text-[var(--muted)]">{teacher ? t.noTasksT : t.noTasksS}</p>}
           <ul className="flex flex-col gap-3">
             {team.assignments.map((a) => <AssignmentCard key={a.id} a={a} teacher={teacher} locale={locale} teamId={teamId} groups={team.groups} members={team.members} />)}
           </ul>
@@ -136,25 +161,31 @@ function AssignmentCard({ a, teacher, locale, teamId, groups, members }: { a: As
   const dueCls = a.due === "overdue" ? "font-bold text-[var(--danger)]" : a.due === "soon" ? "font-bold" : "";
   return (
     <li>
-      <Link href={`/${locale}/tymy/${teamId}/zadani/${a.id}`} className="card flex flex-col gap-1 p-4 hover:-translate-y-0.5">
+      <Link href={`/${locale}/tymy/${teamId}/zadani/${a.id}`} className="card flex flex-col gap-2 p-4 hover:-translate-y-0.5" style={{ borderLeft: `8px solid ${a.due === "overdue" && !passed ? "var(--danger)" : passed ? "var(--accent-green)" : teacher ? "var(--brand-500)" : "var(--accent-yellow)"}` }}>
         <span className="flex flex-wrap items-center justify-between gap-2">
           <b className="text-lg">{a.title}</b>
-          {teacher ? (
-            <span className="text-sm font-bold">{tfill(t.doneOf, a.done ?? 0, a.students ?? 0)} · {tfill(t.viewedOf, a.viewed ?? 0, a.students ?? 0)}</span>
-          ) : (
+          {!teacher && (
             <span className="flex items-center gap-1.5">
-              {!passed && a.due === "overdue" && <span className="rounded-full bg-[var(--danger)] px-2 py-0.5 text-xs font-bold text-white">{t.afterDeadline}</span>}
-              {!passed && a.due === "soon" && <span className="rounded-full bg-[var(--accent-yellow)] px-2 py-0.5 text-xs font-bold">{t.dueSoon}</span>}
-              <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${passed ? "bg-[var(--accent-green)] text-white" : !a.viewed ? "bg-[var(--accent-yellow)]" : "bg-[var(--surface-muted)]"}`}>
+              {!passed && a.due === "overdue" && <Pill tone="danger">{t.afterDeadline}</Pill>}
+              {!passed && a.due === "soon" && <Pill tone="warn">⏰ {t.dueSoon}</Pill>}
+              <Pill tone={passed ? "good" : !a.viewed ? "warn" : "plain"}>
                 {passed ? tfill(t.stDone, a.best ?? 0) : (a.used ?? 0) > 0 ? tfill(t.stTried, a.best ?? 0) : !a.viewed ? t.stNew : t.stViewed}
-              </span>
+              </Pill>
             </span>
           )}
         </span>
+        {teacher ? (
+          <span className="grid gap-2 sm:grid-cols-2">
+            <Progress value={a.done ?? 0} max={a.students ?? 0} color="var(--accent-green)" label={`${tfill(t.doneOf, a.done ?? 0, a.students ?? 0)}`} />
+            <Progress value={a.viewed ?? 0} max={a.students ?? 0} color="var(--accent-blue)" label={`${tfill(t.viewedOf, a.viewed ?? 0, a.students ?? 0)}`} />
+          </span>
+        ) : (
+          (a.used ?? 0) > 0 && <Progress value={Math.min(a.best ?? 0, 100)} max={Math.max(a.passPercent, 1)} color={passed ? "var(--accent-green)" : "var(--accent-yellow)"} label={`${a.best ?? 0} % / ${a.passPercent} %`} />
+        )}
         <span className="text-sm text-[var(--muted)]">
           {tfill(t.taskMeta, a.questions, a.passPercent)} · {a.maxAttempts == null ? t.attUnlimited : tfill(t.attMax, a.maxAttempts)}
           {!teacher && a.maxAttempts != null && ` (${tfill(t.attLeft, Math.max(0, a.maxAttempts - (a.used ?? 0)))})`}
-          {a.dueAt && <> · <span className={dueCls}>{tfill(t.due, fmtDate(locale, a.dueAt))}</span></>}
+          {a.dueAt && <> ·  <span className={dueCls}>{tfill(t.due, fmtDate(locale, a.dueAt))}</span></>}
         </span>
         {teacher && audience.length > 0 && <span className="text-xs font-semibold text-[var(--brand-700)]">{tfill(t.onlyForNames, audience.join(", "))}</span>}
       </Link>

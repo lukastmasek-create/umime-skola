@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { tfill } from "@/i18n/teams";
 import type { TeamsAll } from "@/i18n/teams-more";
+import { Badge, Pill, Progress, colorOf } from "./ui";
 import { dangerBtn, field, linkBtn, primaryBtn, type Team } from "./types";
 
 type Post = (body: object) => Promise<boolean>;
@@ -18,7 +19,7 @@ export function TeamGroups({ t, team, post }: { t: TeamsAll; team: Team; post: P
     <div className="flex flex-col gap-4">
       <p className="text-sm text-[var(--muted)]">{t.groupsIntro}</p>
       <div className="grid gap-3 sm:grid-cols-2">
-        <form className="card flex flex-col gap-2 p-4" onSubmit={async (e) => { e.preventDefault(); if (await post({ action: "createGroup", name })) setName(""); }}>
+        <form className="card flex flex-col gap-2 p-4" style={{ borderTop: "6px solid var(--brand-500)" }} onSubmit={async (e) => { e.preventDefault(); if (await post({ action: "createGroup", name })) setName(""); }}>
           <h2 className="text-lg font-extrabold">{t.newGroup}</h2>
           <div className="flex gap-2">
             <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} placeholder={t.groupNamePh} aria-label={t.groupNamePh} className={`${field} min-w-0 flex-1`} required />
@@ -27,6 +28,7 @@ export function TeamGroups({ t, team, post }: { t: TeamsAll; team: Team; post: P
         </form>
         <form
           className="card flex flex-col gap-2 p-4"
+          style={{ borderTop: "6px solid var(--accent-yellow)" }}
           onSubmit={async (e) => {
             e.preventDefault();
             if (students.length === 0) return;
@@ -42,10 +44,10 @@ export function TeamGroups({ t, team, post }: { t: TeamsAll; team: Team; post: P
         </form>
       </div>
 
-      {team.groups.length === 0 && <p className="text-[var(--muted)]">{t.noGroups}</p>}
+      {team.groups.length === 0 && <p className="card p-6 text-center text-[var(--muted)]">{t.noGroups}</p>}
       <ul className="grid gap-3 sm:grid-cols-2">
         {team.groups.map((g) => (
-          <li key={g.id} className="card flex flex-col gap-2 p-4">
+          <li key={g.id} className="card flex flex-col gap-3 p-4" style={{ borderLeft: `8px solid ${colorOf(g.name)}` }}>
             <div className="flex items-center justify-between gap-2">
               {renaming?.id === g.id ? (
                 <form className="flex min-w-0 flex-1 gap-2" onSubmit={async (e) => { e.preventDefault(); if (await post({ action: "renameGroup", groupId: g.id, name: renaming.name })) setRenaming(null); }}>
@@ -54,7 +56,11 @@ export function TeamGroups({ t, team, post }: { t: TeamsAll; team: Team; post: P
                 </form>
               ) : (
                 <>
-                  <b className="truncate text-lg">{g.name} <span className="text-sm font-normal text-[var(--muted)]">· {tfill(t.membersN, g.members)}</span></b>
+                  <span className="flex min-w-0 items-center gap-2">
+                    <Badge name={g.name} size={36} />
+                    <b className="truncate text-lg">{g.name}</b>
+                    <Pill>{tfill(t.membersN, g.members)}</Pill>
+                  </span>
                   <span className="flex gap-3">
                     <button onClick={() => setRenaming({ id: g.id, name: g.name })} className={linkBtn}>{t.rename}</button>
                     <button onClick={() => confirm(t.confirmDeleteGroup) && post({ action: "deleteGroup", groupId: g.id })} className={dangerBtn}>{t.remove}</button>
@@ -62,8 +68,13 @@ export function TeamGroups({ t, team, post }: { t: TeamsAll; team: Team; post: P
                 </>
               )}
             </div>
+            <Progress value={g.members} max={students.length} color={colorOf(g.name)} />
             <ul className="flex flex-wrap gap-1.5 text-sm">
-              {students.filter((s) => s.groupId === g.id).map((s) => <li key={s.id} className="rounded-full bg-[var(--brand-50)] px-2.5 py-0.5 font-semibold">{s.name || s.email || t.student}</li>)}
+              {students.filter((s) => s.groupId === g.id).map((s) => (
+                <li key={s.id} className="flex items-center gap-1.5 rounded-full border border-[var(--border-soft)] bg-[var(--surface)] py-0.5 pl-0.5 pr-2.5 font-semibold">
+                  <Badge name={s.name || s.email} size={22} round />{s.name || s.email || t.student}
+                </li>
+              ))}
             </ul>
           </li>
         ))}
@@ -75,7 +86,7 @@ export function TeamGroups({ t, team, post }: { t: TeamsAll; team: Team; post: P
           <ul className="divide-y divide-[var(--border-soft)]">
             {students.map((s) => (
               <li key={s.id} className="flex items-center justify-between gap-2 py-1.5">
-                <span className="min-w-0 truncate font-semibold">{s.name || s.email || t.student}</span>
+                <span className="flex min-w-0 items-center gap-2 truncate font-semibold"><Badge name={s.name || s.email} size={28} round />{s.name || s.email || t.student}</span>
                 <select value={s.groupId ?? ""} onChange={(e) => post({ action: "setGroup", userId: s.id, groupId: e.target.value || null })} aria-label={s.name || s.email || t.student} className={field}>
                   <option value="">{t.noGroup}</option>
                   {team.groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
