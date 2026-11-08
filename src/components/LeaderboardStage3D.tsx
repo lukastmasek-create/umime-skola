@@ -35,6 +35,7 @@ const PODIUM_COLOR = ["#f5c542", "#c9d3df", "#d9955a"];
 const STAND_H = 1.05;
 const SEAT_H = 0.95;
 const SEAT_Y = 0.3;
+const TABLE_TOP = 0.62;
 const SEAT_GAP = 0.9;
 
 const std = (color: string | number, rough = 0.55, metal = 0) => new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal });
@@ -709,13 +710,22 @@ export default function LeaderboardStage3D({
       const cx = side * (2.2 + tableW / 2);
       t.position.set(cx, 0, 0.85);
       t.rotation.y = -side * 0.42;
+      const wood = std("#c98b4f", 0.55);
       const darkWood = std("#8d5a2b", 0.6);
-      // Stoly jsou pryč, zůstává jen lavice, na které postavy sedí.
+      const top = box(tableW, 0.07, 0.8, wood, 0.03);
+      top.position.set(0, TABLE_TOP - 0.035, 0.55);
+      const apron = box(tableW, TABLE_TOP - 0.07, 0.06, darkWood, 0.02);
+      apron.position.set(0, (TABLE_TOP - 0.07) / 2, 0.93);
       const bench = box(tableW, 0.07, 0.42, darkWood, 0.03);
       bench.position.set(0, SEAT_Y - 0.035, -0.12);
       const benchSide = box(tableW, SEAT_Y - 0.07, 0.06, darkWood, 0.02);
       benchSide.position.set(0, (SEAT_Y - 0.07) / 2, -0.12);
-      t.add(bench, benchSide);
+      t.add(top, apron, bench, benchSide);
+      for (const lx of [-tableW / 2 + 0.1, tableW / 2 - 0.1]) {
+        const leg = box(0.08, TABLE_TOP, 0.08, darkWood, 0.02);
+        leg.position.set(lx, TABLE_TOP / 2, 0.45);
+        t.add(leg);
+      }
       stage.add(t);
       tables.push(t);
     }
@@ -795,7 +805,14 @@ export default function LeaderboardStage3D({
         }
         const activity: ActorState["activity"] = slot.kind === "podium" ? (["champion", "second", "third"] as const)[slot.rank - 1] : ACTIVITIES[(slot.rank - 4) % ACTIVITIES.length];
         let prop: Prop | null = null;
-        // Bez stolů nejsou ani rekvizity na nich.
+        if (slot.kind === "seat" && activity !== "champion" && activity !== "second" && activity !== "third") {
+          prop = PROPS[activity]();
+          prop.group.position.set(slot.x, TABLE_TOP, 0.52);
+          prop.group.traverse((o) => {
+            if ((o as THREE.Mesh).isMesh) o.castShadow = true;
+          });
+          slot.parent.add(prop.group);
+        }
         // Činnost u stolu je klip ve smyčce; rychlost se přizpůsobí obdobím rekvizit (sousta, doušky, blesk).
         let base = idle;
         let loopClip = false;
