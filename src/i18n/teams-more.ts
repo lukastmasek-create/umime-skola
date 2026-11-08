@@ -130,6 +130,8 @@ const cs = {
   "practiceBack": "Zpět na výsledek",
   "dueBannerSoon": "Blíží se termín",
   "dueBannerLate": "Po termínu",
+  "actions": "Akce",
+  "manageMembers": "Přidat členy a nastavit připojování",
 } as const;
 
 export type TeamsMore = Record<keyof typeof cs, string>;
@@ -261,6 +263,8 @@ const en: TeamsMore = {
   "practiceBack": "Back to result",
   "dueBannerSoon": "Deadline approaching",
   "dueBannerLate": "Past deadline",
+  "actions": "Actions",
+  "manageMembers": "Add members and joining settings",
 };
 
 export type TeamsAll = TeamsText & TeamsMore;

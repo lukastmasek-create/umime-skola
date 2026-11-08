@@ -7,8 +7,8 @@ import { teamsAllError, type TeamsAll } from "@/i18n/teams-more";
 import { toCsv } from "@/lib/teams/logic";
 import { buildXlsx } from "@/lib/teams/xlsx";
 import type { Locale } from "@/i18n/config";
-import { field, linkBtn } from "./types";
-import { Badge, Pill, Progress } from "./ui";
+import { field } from "./types";
+import { Badge, Progress } from "./ui";
 
 type Cell = { status: "done" | "tried" | "viewed" | "new"; best: number; attempts: number; late: boolean; overdue: boolean };
 type Overview = {
@@ -97,28 +97,26 @@ export function TeamResults({ t, locale, teamId, teamName }: { t: TeamsAll; loca
   const exportXlsx = () => download(new Blob([buildXlsx(table() as never, teamName) as BlobPart], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), "xlsx");
 
   return (
-    <section className="print-area flex flex-col gap-3">
+    <section className="print-area flex flex-col gap-4">
       <h2 className="hidden text-xl font-extrabold print:block">{teamName}</h2>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-[var(--muted)]">{t.matrixHint}</p>
-        <span className="flex gap-4 print:hidden">
-          <button onClick={exportCsv} className={linkBtn}>{t.exportCsv}</button>
-          <button onClick={exportXlsx} className={linkBtn}>{t.exportXlsx}</button>
-          <button onClick={() => window.print()} className={linkBtn}>{t.printPdf}</button>
-        </span>
+      <div className="flex flex-col gap-2">
+        <p className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
+          <span><b>{data.students.length}</b> <span className="text-[var(--muted)]">{t.colStudent}</span></span>
+          <span><b>{data.assignments.length}</b> <span className="text-[var(--muted)]">{t.tabTasks}</span></span>
+          <span><b>{totals.done}/{totals.total}</b> <span className="text-[var(--muted)]">{t.colDoneCount}</span></span>
+          {totals.missing > 0 && <span><b className="text-[var(--danger)]">{totals.missing}</b> <span className="text-[var(--muted)]">{t.colMissing}</span></span>}
+        </p>
+        <Progress value={totals.done} max={totals.total} color="var(--accent-green)" />
       </div>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <div className="card p-3 text-center" style={{ borderTop: "6px solid var(--brand-500)" }}><p className="text-2xl font-extrabold">{data.students.length}</p><p className="text-xs font-semibold text-[var(--muted)]">{t.colStudent}</p></div>
-        <div className="card p-3 text-center" style={{ borderTop: "6px solid var(--accent-blue)" }}><p className="text-2xl font-extrabold">{data.assignments.length}</p><p className="text-xs font-semibold text-[var(--muted)]">{t.tabTasks}</p></div>
-        <div className="card p-3 text-center" style={{ borderTop: "6px solid var(--accent-green)" }}><p className="text-2xl font-extrabold">{totals.done}/{totals.total}</p><p className="text-xs font-semibold text-[var(--muted)]">{t.colDoneCount}</p></div>
-        <div className="card p-3 text-center" style={{ borderTop: "6px solid var(--danger)" }}><p className="text-2xl font-extrabold text-[var(--danger)]">{totals.missing}</p><p className="text-xs font-semibold text-[var(--muted)]">{t.colMissing}</p></div>
-      </div>
-      <Progress value={totals.done} max={totals.total} color="var(--accent-green)" label={`${totals.done} / ${totals.total}`} />
-      <section className="card flex flex-col gap-2 p-4" aria-label={t.chartTitle}>
-        <h3 className="text-lg font-extrabold">{t.chartTitle}</h3>
-        <TrendChart points={trend} />
-        <p className="text-xs text-[var(--muted)]">{t.chartHint}</p>
-      </section>
+
+      <details className="card p-4 print:hidden">
+        <summary className="cursor-pointer text-lg font-extrabold">{t.chartTitle}</summary>
+        <div className="mt-3 flex flex-col gap-2">
+          <TrendChart points={trend} />
+          <p className="text-xs text-[var(--muted)]">{t.chartHint}</p>
+        </div>
+      </details>
+
       <div className="flex flex-wrap items-center gap-2 print:hidden">
         <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} aria-label={t.sortLabel} className={field}>
           <option value="name">{t.sortName}</option>
@@ -133,16 +131,28 @@ export function TeamResults({ t, locale, teamId, teamName }: { t: TeamsAll; loca
           <option value="">{t.allStatuses}</option>
           {(["done", "tried", "viewed", "new"] as const).map((k) => <option key={k} value={k}>{({ done: t.sDone, tried: t.sTried, viewed: t.sViewed, new: t.sNew })[k]}</option>)}
         </select>
+        <details className="relative ml-auto">
+          <summary className="btn-bouncy cursor-pointer list-none bg-[var(--surface)] px-4 py-2 text-sm font-bold">Export</summary>
+          <div className="card absolute right-0 z-20 mt-2 flex w-52 flex-col p-1.5" role="menu">
+            {([[t.exportCsv, exportCsv], [t.exportXlsx, exportXlsx], [t.printPdf, () => window.print()]] as [string, () => void][]).map(([label, fn]) => (
+              <button key={label} role="menuitem" onClick={(e) => { (e.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open"); fn(); }} className="rounded-lg px-3 py-2 text-left text-sm font-bold hover:bg-[var(--surface-muted)]">{label}</button>
+            ))}
+          </div>
+        </details>
       </div>
+
       <div className="card overflow-x-auto">
-        <table className="w-full text-left text-sm">
+        <table className="w-full min-w-[560px] text-left text-sm">
           <thead>
             <tr className="border-b-2 border-[var(--border-soft)]">
-              <th scope="col" className="sticky left-0 bg-[var(--surface)] p-3">{t.colStudent}</th>
+              <th scope="col" className="sticky left-0 bg-[var(--surface)] px-4 py-3 text-xs uppercase tracking-wide text-[var(--muted)]">{t.colStudent}</th>
               {data.assignments.map((a) => (
-                <th scope="col" key={a.id} className="max-w-40 p-3"><Link href={`/${locale}/tymy/${teamId}/zadani/${a.id}`} className="line-clamp-2 text-[var(--brand-600)]">{a.title}</Link><span className="mt-1 block min-w-20"><Progress value={doneBy(a.id)} max={data.students.length} color="var(--accent-green)" /></span></th>
+                <th scope="col" key={a.id} className="max-w-40 px-3 py-3">
+                  <Link href={`/${locale}/tymy/${teamId}/zadani/${a.id}`} className="line-clamp-2 text-[var(--brand-600)]">{a.title}</Link>
+                  <span className="mt-0.5 block text-xs font-normal text-[var(--muted)]">{doneBy(a.id)}/{data.students.length}</span>
+                </th>
               ))}
-              <th scope="col" className="p-3">{t.colDoneCount}</th>
+              <th scope="col" className="px-4 py-3 text-xs uppercase tracking-wide text-[var(--muted)]">{t.colDoneCount}</th>
             </tr>
           </thead>
           <tbody>
@@ -150,25 +160,32 @@ export function TeamResults({ t, locale, teamId, teamName }: { t: TeamsAll; loca
               const sum = summary(s.id);
               return (
                 <tr key={s.id} className="border-b border-[var(--border-soft)] last:border-0">
-                  <th scope="row" className="sticky left-0 bg-[var(--surface)] p-3 text-left font-semibold"><span className="flex items-center gap-2"><Badge name={s.name} size={28} round />{s.name || t.student}{s.groupId && <Pill tone="brand">{groupName(s.groupId)}</Pill>}</span></th>
+                  <th scope="row" className="sticky left-0 bg-[var(--surface)] px-4 py-3 text-left font-semibold">
+                    <span className="flex items-center gap-2.5">
+                      <Badge name={s.name} size={30} round />
+                      <span className="flex flex-col">{s.name || t.student}{s.groupId && <span className="text-xs font-normal text-[var(--muted)]">{groupName(s.groupId)}</span>}</span>
+                    </span>
+                  </th>
                   {data.assignments.map((a) => {
                     const c = data.cells[a.id]?.[s.id];
-                    if (!c) return <td key={a.id} className="p-3 text-[var(--muted)]" title={t.notAssigned}>–</td>;
+                    if (!c) return <td key={a.id} className="px-3 py-3 text-[var(--muted)]" title={t.notAssigned}>–</td>;
+                    const strong = c.overdue || c.attempts > 0;
                     return (
-                      <td key={a.id} className="p-2">
-                        <span className={`inline-block min-w-14 rounded-lg px-2 py-1 text-center text-xs font-bold ${c.overdue ? "bg-[var(--danger)] text-white" : CLS[c.status]}`} title={c.overdue ? t.sMissing : label(c)}>
+                      <td key={a.id} className="px-3 py-3">
+                        <span className={`inline-block min-w-14 rounded-lg px-2 py-1 text-center text-xs font-bold ${c.overdue ? "bg-[var(--danger)] text-white" : strong ? CLS[c.status] : "font-normal text-[var(--muted)]"}`} title={c.overdue ? t.sMissing : label(c)}>
                           {c.overdue ? t.sMissing : c.attempts ? `${c.best} %` : label(c)}{c.late && c.status === "done" ? ` · ${t.late}` : ""}
                         </span>
                       </td>
                     );
                   })}
-                  <td className="p-3 font-bold"><span className="flex min-w-24 flex-col gap-1">{sum.done}/{sum.total}<Progress value={sum.done} max={sum.total} color="var(--accent-green)" />{sum.missing > 0 && <span className="text-xs text-[var(--danger)]">{tfillMissing(t, sum.missing)}</span>}</span></td>
+                  <td className="px-4 py-3 font-bold">{sum.done}/{sum.total}{sum.missing > 0 && <span className="block text-xs font-normal text-[var(--danger)]">{tfillMissing(t, sum.missing)}</span>}</td>
                 </tr>
               );
             })}
           </tbody>
         </table>
       </div>
+      <p className="text-xs text-[var(--muted)]">{t.matrixHint}</p>
     </section>
   );
 }
