@@ -3,7 +3,7 @@ import { handle, readJson } from "@/lib/live/http";
 import { LiveError } from "@/lib/live/service";
 import { randomCode } from "@/lib/social";
 import { withinRateLimit } from "@/lib/rate-limit";
-import { MAX_TEAM_NAME } from "@/lib/teams/logic";
+import { dueState, isAssignedTo, joinOutcome, MAX_TEAM_NAME, SOON_HOURS } from "@/lib/teams/logic";
 import { requireUserId } from "@/lib/teams/server";
 
 export const dynamic = "force-dynamic";
@@ -15,31 +15,51 @@ export async function GET() {
     const rows = await prisma.teamMember.findMany({
       where: { userId },
       orderBy: { joinedAt: "asc" },
-      include: { team: { include: { _count: { select: { members: true, assignments: true } } } } },
+      include: { team: { select: { id: true, name: true, code: true } } },
     });
-    const teams = await Promise.all(
-      rows.map(async (m) => {
-        // Žákovi: kolik zadání ještě nesplnil (žádný pokus).
-        let open = 0;
-        if (m.role === "STUDENT") {
-          const a = await prisma.assignment.findMany({ where: { teamId: m.teamId }, select: { id: true, passPercent: true } });
-          const done = a.length
-            ? await prisma.assignmentAttempt.findMany({ where: { userId, assignmentId: { in: a.map((x) => x.id) } }, select: { assignmentId: true, percent: true } })
-            : [];
-          open = a.filter((x) => !done.some((d) => d.assignmentId === x.id && d.percent >= x.passPercent)).length;
-        }
-        return {
-          id: m.teamId,
-          name: m.team.name,
-          role: m.role,
-          code: m.role === "TEACHER" ? m.team.code : null,
-          members: m.team._count.members,
-          assignments: m.team._count.assignments,
-          open,
-        };
+    const activeRows = rows.filter((m) => m.status === "ACTIVE");
+    const teamIds = activeRows.map((m) => m.teamId);
+    const [counts, assignments, attempts] = await Promise.all([
+      prisma.teamMember.groupBy({ by: ["teamId"], where: { teamId: { in: teamIds }, status: "ACTIVE" }, _count: { _all: true } }),
+      prisma.assignment.findMany({
+        where: { teamId: { in: teamIds } },
+        select: { id: true, teamId: true, title: true, passPercent: true, dueAt: true, targets: { select: { groupId: true, userId: true } } },
       }),
-    );
-    return { teams };
+      prisma.assignmentAttempt.findMany({ where: { userId, assignment: { teamId: { in: teamIds } } }, select: { assignmentId: true, percent: true } }),
+    ]);
+
+    const now = new Date();
+    const urgent: { teamId: string; teamName: string; assignmentId: string; title: string; dueAt: Date; overdue: boolean }[] = [];
+    const teams = activeRows.map((m) => {
+      const mine = assignments.filter((a) => a.teamId === m.teamId && (m.role === "TEACHER" || isAssignedTo(a.targets, m)));
+      let open = 0;
+      let soon = 0;
+      let overdue = 0;
+      if (m.role === "STUDENT") {
+        for (const a of mine) {
+          if (attempts.some((x) => x.assignmentId === a.id && x.percent >= a.passPercent)) continue;
+          open++;
+          const state = dueState(a.dueAt, now);
+          if (state === "soon") soon++;
+          if (state === "overdue") overdue++;
+          if (a.dueAt && (state === "soon" || state === "overdue")) urgent.push({ teamId: m.teamId, teamName: m.team.name, assignmentId: a.id, title: a.title, dueAt: a.dueAt, overdue: state === "overdue" });
+        }
+      }
+      return {
+        id: m.teamId,
+        name: m.team.name,
+        role: m.role,
+        code: m.role === "TEACHER" ? m.team.code : null,
+        members: counts.find((c) => c.teamId === m.teamId)?._count._all ?? 0,
+        assignments: mine.length,
+        open,
+        soon,
+        overdue,
+      };
+    });
+    urgent.sort((a, b) => a.dueAt.getTime() - b.dueAt.getTime());
+    const pending = rows.filter((m) => m.status === "PENDING").map((m) => ({ id: m.teamId, name: m.team.name }));
+    return { teams, pending, urgent: urgent.slice(0, 8), soonHours: SOON_HOURS };
   });
 }
 
@@ -67,13 +87,18 @@ export async function POST(request: Request) {
       const code = typeof body.code === "string" ? body.code.trim().toUpperCase().slice(0, 12) : "";
       const team = await prisma.team.findUnique({ where: { code } });
       if (!team) throw new LiveError("unknown-code", 404);
+      const existing = await prisma.teamMember.findUnique({ where: { teamId_userId: { teamId: team.id, userId } } });
+      if (existing?.status === "ACTIVE") return { id: team.id };
+      if (existing) return { id: team.id, pending: true };
+      const outcome = joinOutcome(team.joinMode);
+      if (outcome === "closed") throw new LiveError("join-closed", 403);
       if ((await prisma.teamMember.count({ where: { userId } })) >= MAX_TEAMS_PER_USER) throw new LiveError("too-many-teams");
-      await prisma.teamMember.upsert({
-        where: { teamId_userId: { teamId: team.id, userId } },
-        create: { teamId: team.id, userId, role: "STUDENT" },
-        update: {},
-      });
-      return { id: team.id };
+      await prisma.teamMember.create({ data: { teamId: team.id, userId, role: "STUDENT", status: outcome === "pending" ? "PENDING" : "ACTIVE" } });
+      return outcome === "pending" ? { id: team.id, pending: true } : { id: team.id };
+    }
+    if (body.action === "cancelRequest") {
+      await prisma.teamMember.deleteMany({ where: { teamId: String(body.teamId ?? ""), userId, status: "PENDING" } });
+      return { ok: true };
     }
     throw new LiveError("bad-action");
   });

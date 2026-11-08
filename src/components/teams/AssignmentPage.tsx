@@ -2,35 +2,43 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { call, errorCode, fmtDate } from "./api";
-import { getTeamsText, teamsError, tfill, type TeamsText } from "@/i18n/teams";
+import { tfill } from "@/i18n/teams";
+import { getTeamsAll, teamsAllError, type TeamsAll } from "@/i18n/teams-more";
 import type { Locale } from "@/i18n/config";
 import { TeamChat } from "./TeamChat";
+import { AudiencePicker } from "./AudiencePicker";
+import { dangerBtn, field, linkBtn, primaryBtn, type Audience, type Team } from "./types";
 
-type Meta = { id: string; title: string; description: string; maxAttempts: number | null; passPercent: number; dueAt: string | null };
+type Meta = { id: string; title: string; description: string; maxAttempts: number | null; passPercent: number; dueAt: string | null; groupIds?: string[]; userIds?: string[] };
 type PQ = { id: number; prompt: string; options: string[]; gaps: number };
-type Row = { userId: string; name: string; viewedAt: string | null; attempts: number; best: number; last: number | null; lastAt: string | null; status: "done" | "tried" | "viewed" | "new" };
+type Row = { userId: string; name: string; groupId: string | null; viewedAt: string | null; attempts: number; best: number; last: number | null; lastAt: string | null; late: boolean; status: "done" | "tried" | "viewed" | "new" };
+type TQ = { prompt: string; answer: string; attempts: number; wrong: number };
 type Data =
-  | { role: "TEACHER"; assignment: Meta; questions: { prompt: string; answer: string }[]; rows: Row[] }
+  | { role: "TEACHER"; assignment: Meta; groups: { id: string; name: string }[]; everyone: boolean; questions: TQ[]; rows: Row[] }
   | { role: "STUDENT"; assignment: Meta; questions: PQ[]; attempts: { percent: number; createdAt: string }[]; left: number | null; best: number };
 type Result = { gainedXp?: number; correct: number; total: number; percent: number; passed: boolean; left: number | null; review: { id: number; correct: boolean; correctText: string; explanation: string }[] };
 
 const STATUS_CLS = { done: "bg-[var(--accent-green)] text-white", tried: "bg-[var(--accent-yellow)]", viewed: "bg-[var(--brand-50)]", new: "bg-[var(--surface-muted)]" } as const;
-const statusLabel = (t: TeamsText, s: Row["status"]) => ({ done: t.sDone, tried: t.sTried, viewed: t.sViewed, new: t.sNew })[s];
+const statusLabel = (t: TeamsAll, s: Row["status"]) => ({ done: t.sDone, tried: t.sTried, viewed: t.sViewed, new: t.sNew })[s];
+const isOverdue = (dueAt: string | null) => !!dueAt && new Date(dueAt).getTime() < Date.now();
 
 export function AssignmentPage({ locale, teamId, assignmentId }: { locale: Locale; teamId: string; assignmentId: string }) {
-  const t = getTeamsText(locale);
+  const t = getTeamsAll(locale);
+  const router = useRouter();
   const [data, setData] = useState<Data | null>(null);
-  const [userId, setUserId] = useState("");
+  const [team, setTeam] = useState<Team | null>(null);
   const [error, setError] = useState("");
   const url = `/api/tymy/${teamId}/zadani/${assignmentId}`;
 
   const load = useCallback(async () => {
     try {
-      setData(await call<Data>(url));
-      setUserId((await call<{ userId: string }>(`/api/tymy/${teamId}`)).userId);
+      const [d, tm] = await Promise.all([call<Data>(url), call<Team>(`/api/tymy/${teamId}`)]);
+      setData(d);
+      setTeam(tm);
     } catch (e) {
-      setError(teamsError(t, errorCode(e)));
+      setError(teamsAllError(t, errorCode(e)));
     }
   }, [url, teamId, t]);
   useEffect(() => {
@@ -40,8 +48,9 @@ export function AssignmentPage({ locale, teamId, assignmentId }: { locale: Local
 
   const back = <Link href={`/${locale}/tymy/${teamId}`} className="text-sm font-bold text-[var(--brand-600)]">{t.backTeam}</Link>;
   if (error) return <div className="card p-6">{back}<p className="mt-2 text-[var(--muted)]">{error}</p></div>;
-  if (!data) return <div className="card h-48 animate-pulse bg-[var(--surface-muted)]" aria-hidden />;
+  if (!data || !team) return <div className="card h-48 animate-pulse bg-[var(--surface-muted)]" aria-hidden />;
   const a = data.assignment;
+  const overdue = isOverdue(a.dueAt);
 
   return (
     <div className="flex flex-col gap-5">
@@ -49,41 +58,161 @@ export function AssignmentPage({ locale, teamId, assignmentId }: { locale: Local
         {back}
         <h1 className="text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>{a.title}</h1>
         {a.description && <p className="mt-1 whitespace-pre-wrap text-[var(--muted)]">{a.description}</p>}
-        <p className="mt-1 text-sm text-[var(--muted)]">{tfill(t.taskMeta, data.questions.length, a.passPercent)} · {a.maxAttempts == null ? t.attUnlimited : tfill(t.attMax, a.maxAttempts)}{a.dueAt && ` · ${tfill(t.due, fmtDate(locale, a.dueAt))}`}</p>
+        <p className="mt-1 text-sm text-[var(--muted)]">
+          {tfill(t.taskMeta, data.questions.length, a.passPercent)} · {a.maxAttempts == null ? t.attUnlimited : tfill(t.attMax, a.maxAttempts)}
+          {a.dueAt && <> · <span className={overdue ? "font-bold text-[var(--danger)]" : ""}>{tfill(t.due, fmtDate(locale, a.dueAt))}{overdue && ` (${t.afterDeadline})`}</span></>}
+        </p>
       </div>
 
-      {data.role === "TEACHER" ? <Dashboard t={t} locale={locale} data={data} onRefresh={load} /> : <Runner t={t} data={data} url={url} onDone={load} />}
+      {data.role === "TEACHER" ? (
+        <>
+          <TeacherTools t={t} locale={locale} team={team} teamId={teamId} meta={a} onChanged={load} onDeleted={() => router.push(`/${locale}/tymy/${teamId}`)} />
+          <Dashboard t={t} locale={locale} data={data} overdue={overdue} onRefresh={load} />
+        </>
+      ) : <Runner t={t} data={data} url={url} onDone={load} />}
 
       <section className="card flex flex-col gap-2 p-4">
         <h2 className="text-lg font-extrabold">{t.discussion}</h2>
-        {userId && <TeamChat locale={locale} teamId={teamId} assignmentId={assignmentId} userId={userId} height="h-64" />}
+        <TeamChat locale={locale} teamId={teamId} assignmentId={assignmentId} userId={team.userId} height="h-64" />
       </section>
     </div>
   );
 }
 
-function Dashboard({ t, locale, data, onRefresh }: { t: TeamsText; locale: Locale; data: Extract<Data, { role: "TEACHER" }>; onRefresh: () => void }) {
+/** Úprava, kopírování do jiné třídy a smazání zadání. */
+function TeacherTools({ t, locale, team, teamId, meta, onChanged, onDeleted }: { t: TeamsAll; locale: Locale; team: Team; teamId: string; meta: Meta; onChanged: () => void; onDeleted: () => void }) {
+  const [mode, setMode] = useState<"" | "edit" | "copy">("");
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState<{ text: string; href: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const toLocalInput = (v: string | null) => (v ? new Date(new Date(v).getTime() - new Date(v).getTimezoneOffset() * 60000).toISOString().slice(0, 16) : "");
+  const [f, setF] = useState({ title: meta.title, description: meta.description, passPercent: meta.passPercent, unlimited: meta.maxAttempts == null, maxAttempts: meta.maxAttempts ?? 3, dueAt: toLocalInput(meta.dueAt) });
+  const [aud, setAud] = useState<Audience>({ groupIds: meta.groupIds ?? [], userIds: meta.userIds ?? [] });
+  const [targetTeam, setTargetTeam] = useState("");
+  const [mine, setMine] = useState<{ id: string; name: string }[]>([]);
+  const students = team.members.filter((m) => m.role === "STUDENT");
+
+  useEffect(() => {
+    if (mode !== "copy" || mine.length) return;
+    call<{ teams: { id: string; name: string; role: string }[] }>("/api/tymy").then((d) => setMine(d.teams.filter((x) => x.role === "TEACHER"))).catch(() => {});
+  }, [mode, mine.length]);
+
+  async function run(body: object, after: () => void) {
+    setBusy(true);
+    setError("");
+    try {
+      await call(`/api/tymy/${teamId}`, body);
+      after();
+    } catch (e) {
+      setError(teamsAllError(t, errorCode(e)));
+    } finally {
+      setBusy(false);
+    }
+  }
+  const audienceKey = (v: Audience) => JSON.stringify([[...v.groupIds].sort(), [...v.userIds].sort()]);
+
+  return (
+    <section className="flex flex-col gap-3">
+      <div className="flex flex-wrap gap-4">
+        <button onClick={() => setMode(mode === "edit" ? "" : "edit")} aria-expanded={mode === "edit"} className={linkBtn}>{t.editTask}</button>
+        <button onClick={() => setMode(mode === "copy" ? "" : "copy")} aria-expanded={mode === "copy"} className={linkBtn}>{t.copyTask}</button>
+        <button onClick={() => confirm(t.confirmDeleteTask) && run({ action: "deleteAssignment", assignmentId: meta.id }, onDeleted)} className={dangerBtn}>{t.deleteTask}</button>
+      </div>
+      {notice && <p role="status" className="text-sm font-semibold text-[var(--accent-green)]">{notice.text} <Link href={notice.href} className="underline">{t.openCopy}</Link></p>}
+      {error && <p className="text-sm font-semibold text-[var(--danger)]">{error}</p>}
+
+      {mode === "edit" && (
+        <form
+          className="card flex flex-col gap-3 p-5"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void run(
+              {
+                action: "updateAssignment", assignmentId: meta.id, title: f.title, description: f.description, passPercent: f.passPercent,
+                maxAttempts: f.unlimited ? null : f.maxAttempts, dueAt: f.dueAt ? new Date(f.dueAt).toISOString() : "",
+                ...(audienceKey(aud) !== audienceKey({ groupIds: meta.groupIds ?? [], userIds: meta.userIds ?? [] }) ? { audience: aud } : {}),
+              },
+              () => { setMode(""); onChanged(); },
+            );
+          }}
+        >
+          <h2 className="text-lg font-extrabold">{t.editTask}</h2>
+          <input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} maxLength={80} aria-label={t.taskTitlePh} className={field} required />
+          <textarea value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} maxLength={1000} rows={2} aria-label={t.instrPh} placeholder={t.instrPh} className={field} />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="flex flex-col gap-1 text-sm font-semibold">{t.passLabel}<input type="number" min={0} max={100} value={f.passPercent} onChange={(e) => setF({ ...f, passPercent: Number(e.target.value) })} className={field} /></label>
+            <div className="flex flex-col gap-1 text-sm font-semibold">
+              {t.attemptsLabel}
+              <div className="flex items-center gap-2">
+                <label className="flex items-center gap-1"><input type="checkbox" checked={f.unlimited} onChange={(e) => setF({ ...f, unlimited: e.target.checked })} className="size-4" /> {t.unlimited}</label>
+                {!f.unlimited && <input type="number" min={1} max={20} value={f.maxAttempts} onChange={(e) => setF({ ...f, maxAttempts: Number(e.target.value) })} aria-label={t.attemptsLabel} className={`${field} w-24`} />}
+              </div>
+            </div>
+            <label className="flex flex-col gap-1 text-sm font-semibold">{t.dueLabel}<input type="datetime-local" value={f.dueAt} onChange={(e) => setF({ ...f, dueAt: e.target.value })} className={field} /></label>
+          </div>
+          <AudiencePicker t={t} groups={team.groups} students={students} value={aud} onChange={setAud} />
+          <div className="flex gap-2">
+            <button disabled={busy} className={primaryBtn}>{t.save}</button>
+            <button type="button" onClick={() => setMode("")} className="px-3 text-sm font-bold">{t.cancel}</button>
+          </div>
+        </form>
+      )}
+
+      {mode === "copy" && (
+        <form
+          className="card flex flex-wrap items-center gap-2 p-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void run({ action: "copyAssignment", assignmentId: meta.id, targetTeamId: targetTeam }, () => {
+              setNotice({ text: t.copied, href: `/${locale}/tymy/${targetTeam}` });
+              setMode("");
+            });
+          }}
+        >
+          <select value={targetTeam} onChange={(e) => setTargetTeam(e.target.value)} aria-label={t.copyTo} className={`${field} min-w-0 flex-1`} required>
+            <option value="">{t.copyTo}</option>
+            {mine.map((m) => <option key={m.id} value={m.id}>{m.name}{m.id === teamId ? ` (${t.thisClass})` : ""}</option>)}
+          </select>
+          <button disabled={busy || !targetTeam} className={primaryBtn}>{t.copyBtn}</button>
+        </form>
+      )}
+    </section>
+  );
+}
+
+function Dashboard({ t, locale, data, overdue, onRefresh }: { t: TeamsAll; locale: Locale; data: Extract<Data, { role: "TEACHER" }>; overdue: boolean; onRefresh: () => void }) {
+  const missing = (r: Row) => overdue && r.status !== "done";
   const count = (s: Row["status"]) => data.rows.filter((r) => r.status === s).length;
+  const groupName = (id: string | null) => data.groups.find((g) => g.id === id)?.name;
+  const hard = data.questions
+    .map((q, i) => ({ ...q, i, rate: q.attempts ? q.wrong / q.attempts : 0 }))
+    .filter((q) => q.attempts > 0 && q.wrong > 0)
+    .sort((a, b) => b.rate - a.rate);
   return (
     <section className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-xl font-extrabold">{t.overview}</h2>
         <button onClick={onRefresh} className="text-sm font-bold text-[var(--brand-600)]">{t.refresh}</button>
       </div>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      {!data.everyone && <p className="text-sm text-[var(--muted)]">{tfill(t.onlyFor, data.rows.length)}</p>}
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
         {(["done", "tried", "viewed", "new"] as const).map((s) => (
           <div key={s} className="card p-3 text-center"><p className="text-2xl font-extrabold">{count(s)}</p><p className="text-xs font-semibold text-[var(--muted)]">{statusLabel(t, s)}</p></div>
         ))}
+        {overdue && <div className="card p-3 text-center"><p className="text-2xl font-extrabold text-[var(--danger)]">{data.rows.filter(missing).length}</p><p className="text-xs font-semibold text-[var(--muted)]">{t.sMissing}</p></div>}
       </div>
       {data.rows.length === 0 && <p className="text-[var(--muted)]">{t.noStudents}</p>}
       <div className="card overflow-x-auto">
         <table className="w-full text-left text-sm">
-          <thead><tr className="border-b-2 border-[var(--border-soft)]"><th className="p-3">{t.colStudent}</th><th className="p-3">{t.colStatus}</th><th className="p-3">{t.colViewed}</th><th className="p-3">{t.colAttempts}</th><th className="p-3">{t.colBest}</th><th className="p-3">{t.colLast}</th></tr></thead>
+          <thead><tr className="border-b-2 border-[var(--border-soft)]"><th scope="col" className="p-3">{t.colStudent}</th><th scope="col" className="p-3">{t.colStatus}</th><th scope="col" className="p-3">{t.colViewed}</th><th scope="col" className="p-3">{t.colAttempts}</th><th scope="col" className="p-3">{t.colBest}</th><th scope="col" className="p-3">{t.colLast}</th></tr></thead>
           <tbody>
             {data.rows.map((r) => (
               <tr key={r.userId} className="border-b border-[var(--border-soft)] last:border-0">
-                <td className="p-3 font-semibold">{r.name || t.student}</td>
-                <td className="p-3"><span className={`rounded-full px-2 py-0.5 text-xs font-bold ${STATUS_CLS[r.status]}`}>{statusLabel(t, r.status)}</span></td>
+                <td className="p-3 font-semibold">{r.name || t.student}{groupName(r.groupId) && <span className="ml-2 text-xs font-normal text-[var(--muted)]">{groupName(r.groupId)}</span>}</td>
+                <td className="p-3">
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${missing(r) ? "bg-[var(--danger)] text-white" : STATUS_CLS[r.status]}`}>{missing(r) ? t.sMissing : statusLabel(t, r.status)}</span>
+                  {r.late && <span className="ml-1 rounded-full bg-[var(--accent-yellow)] px-2 py-0.5 text-xs font-bold">{t.late}</span>}
+                </td>
                 <td className="p-3">{r.viewedAt ? fmtDate(locale, r.viewedAt) : "—"}</td>
                 <td className="p-3">{r.attempts}</td>
                 <td className="p-3">{r.attempts ? `${r.best} %` : "—"}</td>
@@ -93,6 +222,22 @@ function Dashboard({ t, locale, data, onRefresh }: { t: TeamsText; locale: Local
           </tbody>
         </table>
       </div>
+
+      <section className="card flex flex-col gap-2 p-4" aria-label={t.hardQuestions}>
+        <h3 className="text-lg font-extrabold">{t.hardQuestions}</h3>
+        {hard.length === 0 ? <p className="text-sm text-[var(--muted)]">{t.noMistakes}</p> : (
+          <ol className="flex flex-col gap-2">
+            {hard.slice(0, 10).map((q) => (
+              <li key={q.i} className="text-sm">
+                <p className="flex items-baseline justify-between gap-3"><span className="min-w-0">{q.i + 1}. {q.prompt.replace(/___/g, "____")}</span><b className="shrink-0">{Math.round(q.rate * 100)} %</b></p>
+                <div className="mt-1 h-2 overflow-hidden rounded-full bg-[var(--surface-muted)]" role="img" aria-label={tfill(t.wrongOf, q.wrong, q.attempts)}><div className="h-full bg-[var(--danger)]" style={{ width: `${Math.round(q.rate * 100)}%` }} /></div>
+                <p className="text-xs text-[var(--muted)]">{tfill(t.wrongOf, q.wrong, q.attempts)} · {t.correctIs} <b>{q.answer}</b></p>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+
       <details className="card p-4"><summary className="cursor-pointer font-bold">{tfill(t.qAndA, data.questions.length)}</summary>
         <ol className="mt-2 list-decimal pl-5 text-sm">{data.questions.map((q, i) => <li key={i} className="mb-1">{q.prompt} → <b>{q.answer}</b></li>)}</ol>
       </details>
@@ -100,7 +245,7 @@ function Dashboard({ t, locale, data, onRefresh }: { t: TeamsText; locale: Local
   );
 }
 
-function Runner({ t, data, url, onDone }: { t: TeamsText; data: Extract<Data, { role: "STUDENT" }>; url: string; onDone: () => void }) {
+function Runner({ t, data, url, onDone }: { t: TeamsAll; data: Extract<Data, { role: "STUDENT" }>; url: string; onDone: () => void }) {
   const [started, setStarted] = useState(false);
   const [answers, setAnswers] = useState<Record<string, { choice?: number; typed?: string[] }>>({});
   const [result, setResult] = useState<Result | null>(null);
@@ -116,7 +261,7 @@ function Runner({ t, data, url, onDone }: { t: TeamsText; data: Extract<Data, { 
       setStarted(false);
       onDone();
     } catch (e) {
-      setError(teamsError(t, errorCode(e)));
+      setError(teamsAllError(t, errorCode(e)));
     } finally {
       setBusy(false);
     }

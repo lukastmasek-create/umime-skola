@@ -4,28 +4,38 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { call, errorCode } from "./api";
-import { getTeamsText, teamsError, tfill } from "@/i18n/teams";
+import { tfill } from "@/i18n/teams";
+import { getTeamsAll, teamsAllError } from "@/i18n/teams-more";
+import { fmtDate } from "./api";
 import type { Locale } from "@/i18n/config";
 
 
-type TeamRow = { id: string; name: string; role: string; code: string | null; members: number; assignments: number; open: number };
+type TeamRow = { id: string; name: string; role: string; code: string | null; members: number; assignments: number; open: number; soon: number; overdue: number };
+type Urgent = { teamId: string; teamName: string; assignmentId: string; title: string; dueAt: string; overdue: boolean };
+type Pending = { id: string; name: string };
 
 export function TeamsHome({ locale }: { locale: Locale }) {
-  const t = getTeamsText(locale);
+  const t = getTeamsAll(locale);
   const router = useRouter();
   const [teams, setTeams] = useState<TeamRow[] | null>(null);
   const [auth, setAuth] = useState(true);
   const [name, setName] = useState("");
   const [teacher, setTeacher] = useState(false);
   const [code, setCode] = useState("");
+  const [pending, setPending] = useState<Pending[]>([]);
+  const [urgent, setUrgent] = useState<Urgent[]>([]);
+  const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
     try {
-      setTeams((await call<{ teams: TeamRow[] }>("/api/tymy")).teams);
+      const d = await call<{ teams: TeamRow[]; pending: Pending[]; urgent: Urgent[] }>("/api/tymy");
+      setTeams(d.teams);
+      setPending(d.pending);
+      setUrgent(d.urgent);
     } catch (e) {
       if (errorCode(e) === "login-required") setAuth(false);
-      else setError(teamsError(t, errorCode(e)));
+      else setError(teamsAllError(t, errorCode(e)));
       setTeams([]);
     }
   }, [t]);
@@ -36,11 +46,19 @@ export function TeamsHome({ locale }: { locale: Locale }) {
 
   async function act(body: object) {
     setError("");
+    setNotice("");
     try {
-      const { id } = await call<{ id: string }>("/api/tymy", body);
+      const { id, pending: waiting } = await call<{ id: string; pending?: boolean }>("/api/tymy", body);
+      if (waiting) {
+        // Učitel má připojování se schvalováním: žák zůstane na seznamu a čeká.
+        setCode("");
+        setNotice(t.requestSent);
+        await load();
+        return;
+      }
       router.push(`/${locale}/tymy/${id}`);
     } catch (e) {
-      setError(teamsError(t, errorCode(e)));
+      setError(teamsAllError(t, errorCode(e)));
     }
   }
 
@@ -54,7 +72,23 @@ export function TeamsHome({ locale }: { locale: Locale }) {
 
   return (
     <div className="flex flex-col gap-8">
-      {error && <p className="card p-3 text-sm font-semibold text-[var(--danger)]">{error}</p>}
+      {error && <p role="alert" className="card p-3 text-sm font-semibold text-[var(--danger)]">{error}</p>}
+      {notice && <p role="status" className="card p-3 text-sm font-semibold text-[var(--accent-green)]">{notice}</p>}
+      {urgent.length > 0 && (
+        <section className="card flex flex-col gap-2 border-2 border-[var(--accent-yellow)] p-4" aria-label={t.urgentTitle}>
+          <h2 className="text-lg font-extrabold">{t.urgentTitle}</h2>
+          <ul className="divide-y divide-[var(--border-soft)]">
+            {urgent.map((u) => (
+              <li key={u.assignmentId}>
+                <Link href={`/${locale}/tymy/${u.teamId}/zadani/${u.assignmentId}`} className="flex flex-wrap items-center justify-between gap-2 py-2 hover:underline">
+                  <span className="min-w-0 truncate"><b>{u.title}</b> <span className="text-sm text-[var(--muted)]">· {u.teamName}</span></span>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${u.overdue ? "bg-[var(--danger)] text-white" : "bg-[var(--accent-yellow)]"}`}>{u.overdue ? `${t.afterDeadline} · ` : ""}{tfill(t.due, fmtDate(locale, u.dueAt))}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <section className="grid gap-4 sm:grid-cols-2">
         <form className="card flex flex-col gap-3 p-5" onSubmit={(e) => { e.preventDefault(); void act({ action: "create", name, asTeacher: teacher }); }}>
           <h2 className="text-lg font-extrabold">{t.createTitle}</h2>
@@ -75,7 +109,13 @@ export function TeamsHome({ locale }: { locale: Locale }) {
       <section className="flex flex-col gap-3">
         <h2 className="text-xl font-extrabold">{t.myTeams}</h2>
         {teams === null && <div className="card h-24 animate-pulse bg-[var(--surface-muted)]" aria-hidden />}
-        {teams?.length === 0 && <p className="text-[var(--muted)]">{t.noTeams}</p>}
+        {teams?.length === 0 && pending.length === 0 && <p className="text-[var(--muted)]">{t.noTeams}</p>}
+        {pending.map((p) => (
+          <div key={p.id} className="card flex flex-wrap items-center justify-between gap-2 p-4">
+            <span><b>{p.name}</b> <span className="text-sm text-[var(--muted)]">· {t.waitingApproval}</span></span>
+            <button onClick={async () => { await call("/api/tymy", { action: "cancelRequest", teamId: p.id }).catch(() => {}); await load(); }} className="text-xs font-bold text-[var(--danger)]">{t.cancelRequest}</button>
+          </div>
+        ))}
         <ul className="grid gap-3 sm:grid-cols-2">
           {teams?.map((tm) => (
             <li key={tm.id}>
@@ -85,6 +125,8 @@ export function TeamsHome({ locale }: { locale: Locale }) {
                   <span className="rounded-full bg-[var(--brand-50)] px-2 py-0.5 text-xs font-bold text-[var(--brand-700)]">{tm.role === "TEACHER" ? t.teacher : t.student}</span>
                 </span>
                 <span className="text-sm text-[var(--muted)]">{tfill(t.teamStats, tm.members, tm.assignments)}{tm.role === "STUDENT" && tm.open > 0 ? tfill(t.teamOpen, tm.open) : ""}</span>
+                {tm.overdue > 0 && <span className="w-fit rounded-full bg-[var(--danger)] px-2 py-0.5 text-xs font-bold text-white">{tfill(t.overdueN, tm.overdue)}</span>}
+                {tm.soon > 0 && <span className="w-fit rounded-full bg-[var(--accent-yellow)] px-2 py-0.5 text-xs font-bold">{tfill(t.soonN, tm.soon)}</span>}
                 {tm.code && <span className="text-xs text-[var(--muted)]">{t.code}: <b className="tracking-widest">{tm.code}</b></span>}
               </Link>
             </li>
