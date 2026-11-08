@@ -24,7 +24,6 @@ type Result = { gainedXp?: number; correct: number; total: number; percent: numb
 const STATUS_CLS = { done: "bg-[var(--accent-green)] text-white", tried: "bg-[var(--accent-yellow)]", viewed: "bg-[var(--brand-50)]", new: "bg-[var(--surface-muted)]" } as const;
 const statusLabel = (t: TeamsAll, s: Row["status"]) => ({ done: t.sDone, tried: t.sTried, viewed: t.sViewed, new: t.sNew })[s];
 const TILE = { done: "var(--accent-green)", tried: "var(--accent-yellow)", viewed: "var(--accent-blue)", new: "var(--border-soft)" } as const;
-const ICON = { done: "✅", tried: "🔄", viewed: "👁", new: "🆕" } as const;
 const isOverdue = (dueAt: string | null) => !!dueAt && new Date(dueAt).getTime() < Date.now();
 
 export function AssignmentPage({ locale, teamId, assignmentId }: { locale: Locale; teamId: string; assignmentId: string }) {
@@ -63,12 +62,12 @@ export function AssignmentPage({ locale, teamId, assignmentId }: { locale: Local
         style={{ background: data.role === "TEACHER" ? "linear-gradient(135deg, var(--brand-50), var(--surface))" : "linear-gradient(135deg, color-mix(in srgb, var(--accent-yellow) 30%, var(--surface)), var(--surface))", borderTop: `8px solid ${colorOf(team.name)}` }}
       >
         <p className="flex items-center gap-2 text-sm font-bold text-[var(--muted)]"><Badge name={team.name} size={24} />{team.name}</p>
-        <h1 className="text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>{data.role === "TEACHER" ? "📝" : "🎯"} {a.title}</h1>
-        {a.description && <p className="whitespace-pre-wrap rounded-xl bg-[var(--surface)] p-3 text-sm">💡 {a.description}</p>}
+        <h1 className="text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>{a.title}</h1>
+        {a.description && <p className="whitespace-pre-wrap rounded-xl bg-[var(--surface)] p-3 text-sm">{a.description}</p>}
         <div className="flex flex-wrap gap-2">
-          <Pill tone="good">🏆 {tfill(t.taskMeta, data.questions.length, a.passPercent)}</Pill>
-          <Pill>🔁 {a.maxAttempts == null ? t.attUnlimited : tfill(t.attMax, a.maxAttempts)}</Pill>
-          {a.dueAt && <Pill tone={overdue ? "danger" : "warn"}>📅 {tfill(t.due, fmtDate(locale, a.dueAt))}{overdue && ` (${t.afterDeadline})`}</Pill>}
+          <Pill tone="good">{tfill(t.taskMeta, data.questions.length, a.passPercent)}</Pill>
+          <Pill>{a.maxAttempts == null ? t.attUnlimited : tfill(t.attMax, a.maxAttempts)}</Pill>
+          {a.dueAt && <Pill tone={overdue ? "danger" : "warn"}>{tfill(t.due, fmtDate(locale, a.dueAt))}{overdue && ` (${t.afterDeadline})`}</Pill>}
         </div>
       </header>
 
@@ -80,7 +79,7 @@ export function AssignmentPage({ locale, teamId, assignmentId }: { locale: Local
       ) : <Runner t={t} data={data} url={url} onDone={load} />}
 
       <section className="card flex flex-col gap-2 p-4">
-        <h2 className="text-lg font-extrabold">💬 {t.discussion}</h2>
+        <h2 className="text-lg font-extrabold">{t.discussion}</h2>
         <TeamChat locale={locale} teamId={teamId} assignmentId={assignmentId} userId={team.userId} height="h-64" />
       </section>
     </div>
@@ -122,9 +121,9 @@ function TeacherTools({ t, locale, team, teamId, meta, onChanged, onDeleted }: {
   return (
     <section className="flex flex-col gap-3">
       <div className="flex flex-wrap gap-4">
-        <button onClick={() => setMode(mode === "edit" ? "" : "edit")} aria-expanded={mode === "edit"} className={linkBtn}>✏️ {t.editTask}</button>
-        <button onClick={() => setMode(mode === "copy" ? "" : "copy")} aria-expanded={mode === "copy"} className={linkBtn}>📋 {t.copyTask}</button>
-        <button onClick={() => confirm(t.confirmDeleteTask) && run({ action: "deleteAssignment", assignmentId: meta.id }, onDeleted)} className={dangerBtn}>🗑 {t.deleteTask}</button>
+        <button onClick={() => setMode(mode === "edit" ? "" : "edit")} aria-expanded={mode === "edit"} className={linkBtn}>{t.editTask}</button>
+        <button onClick={() => setMode(mode === "copy" ? "" : "copy")} aria-expanded={mode === "copy"} className={linkBtn}>{t.copyTask}</button>
+        <button onClick={() => confirm(t.confirmDeleteTask) && run({ action: "deleteAssignment", assignmentId: meta.id }, onDeleted)} className={dangerBtn}>{t.deleteTask}</button>
       </div>
       {notice && <p role="status" className="text-sm font-semibold text-[var(--accent-green)]">{notice.text} <Link href={notice.href} className="underline">{t.openCopy}</Link></p>}
       {error && <p className="text-sm font-semibold text-[var(--danger)]">{error}</p>}
@@ -199,17 +198,17 @@ function Dashboard({ t, locale, data, overdue, onRefresh }: { t: TeamsAll; local
   return (
     <section className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-xl font-extrabold">📊 {t.overview}</h2>
+        <h2 className="text-xl font-extrabold">{t.overview}</h2>
         <button onClick={onRefresh} className="text-sm font-bold text-[var(--brand-600)]">{t.refresh}</button>
       </div>
       {!data.everyone && <p className="text-sm text-[var(--muted)]">{tfill(t.onlyFor, data.rows.length)}</p>}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
         {(["done", "tried", "viewed", "new"] as const).map((s) => (
-          <div key={s} className="card p-3 text-center" style={{ borderTop: `6px solid ${TILE[s]}` }}><p className="text-2xl font-extrabold">{ICON[s]} {count(s)}</p><p className="text-xs font-semibold text-[var(--muted)]">{statusLabel(t, s)}</p></div>
+          <div key={s} className="card p-3 text-center" style={{ borderTop: `6px solid ${TILE[s]}` }}><p className="text-2xl font-extrabold">{count(s)}</p><p className="text-xs font-semibold text-[var(--muted)]">{statusLabel(t, s)}</p></div>
         ))}
-        {overdue && <div className="card p-3 text-center" style={{ borderTop: "6px solid var(--danger)" }}><p className="text-2xl font-extrabold text-[var(--danger)]">⚠️ {data.rows.filter(missing).length}</p><p className="text-xs font-semibold text-[var(--muted)]">{t.sMissing}</p></div>}
+        {overdue && <div className="card p-3 text-center" style={{ borderTop: "6px solid var(--danger)" }}><p className="text-2xl font-extrabold text-[var(--danger)]">{data.rows.filter(missing).length}</p><p className="text-xs font-semibold text-[var(--muted)]">{t.sMissing}</p></div>}
       </div>
-      {data.rows.length > 0 && <Progress value={count("done")} max={data.rows.length} color="var(--accent-green)" label={`✅ ${count("done")} / ${data.rows.length}`} />}
+      {data.rows.length > 0 && <Progress value={count("done")} max={data.rows.length} color="var(--accent-green)" label={`${count("done")} / ${data.rows.length}`} />}
       {data.rows.length === 0 && <p className="text-[var(--muted)]">{t.noStudents}</p>}
       <div className="card overflow-x-auto">
         <table className="w-full text-left text-sm">
@@ -233,7 +232,7 @@ function Dashboard({ t, locale, data, overdue, onRefresh }: { t: TeamsAll; local
       </div>
 
       <section className="card flex flex-col gap-2 p-4" aria-label={t.hardQuestions}>
-        <h3 className="text-lg font-extrabold">🔥 {t.hardQuestions}</h3>
+        <h3 className="text-lg font-extrabold">{t.hardQuestions}</h3>
         {hard.length === 0 ? <p className="text-sm text-[var(--muted)]">{t.noMistakes}</p> : (
           <ol className="flex flex-col gap-2">
             {hard.slice(0, 10).map((q) => (
@@ -280,14 +279,14 @@ function Runner({ t, data, url, onDone }: { t: TeamsAll; data: Extract<Data, { r
   if (result) {
     return (
       <section className="card flex flex-col gap-3 p-5">
-        <h2 className={`rounded-xl p-3 text-2xl font-extrabold ${result.passed ? "bg-[var(--accent-green)] text-white" : "bg-[var(--accent-yellow)] text-[#16132b]"}`}>{result.passed ? "🎉" : "💪"} {tfill(t.resultLine, result.correct, result.total, result.percent, result.passed ? t.passed : t.notPassed)}</h2>
+        <h2 className={`rounded-xl p-3 text-2xl font-extrabold ${result.passed ? "bg-[var(--accent-green)] text-white" : "bg-[var(--accent-yellow)] text-[#16132b]"}`}>{tfill(t.resultLine, result.correct, result.total, result.percent, result.passed ? t.passed : t.notPassed)}</h2>
         <Progress value={result.correct} max={result.total} color={result.passed ? "var(--accent-green)" : "var(--accent-yellow)"} />
         <ol className="flex flex-col gap-2">
           {data.questions.map((q) => {
             const r = result.review[q.id];
             return (
               <li key={q.id} className={`rounded-xl border-2 p-3 text-sm ${r.correct ? "border-[var(--accent-green)]" : "border-[var(--danger)]"}`}>
-                <p className="font-semibold">{r.correct ? "✅" : "❌"} {q.prompt.replace(/___/g, "____")}</p>
+                <p className="font-semibold">{q.prompt.replace(/___/g, "____")}</p>
                 {!r.correct && <p>{t.correctIs} <b>{r.correctText}</b></p>}
                 {r.explanation && <p className="text-[var(--muted)]">{r.explanation}</p>}
               </li>
@@ -303,8 +302,8 @@ function Runner({ t, data, url, onDone }: { t: TeamsAll; data: Extract<Data, { r
   if (!started) {
     return (
       <section className="card flex flex-col gap-3 p-5">
-        <p className="text-sm">{data.attempts.length ? "🕑 " : "🚀 "}{data.attempts.length ? tfill(t.prevAttempts, data.attempts.map((a) => `${a.percent} %`).join(", "), data.best) : t.notTried}</p>
-        {data.attempts.length > 0 && <Progress value={Math.min(data.best, 100)} max={Math.max(data.assignment.passPercent, 1)} color={data.best >= data.assignment.passPercent ? "var(--accent-green)" : "var(--accent-yellow)"} label={`🏆 ${data.best} % / ${data.assignment.passPercent} %`} />}
+        <p className="text-sm">{data.attempts.length ? " " : " "}{data.attempts.length ? tfill(t.prevAttempts, data.attempts.map((a) => `${a.percent} %`).join(", "), data.best) : t.notTried}</p>
+        {data.attempts.length > 0 && <Progress value={Math.min(data.best, 100)} max={Math.max(data.assignment.passPercent, 1)} color={data.best >= data.assignment.passPercent ? "var(--accent-green)" : "var(--accent-yellow)"} label={`${data.best} % / ${data.assignment.passPercent} %`} />}
         <p className="text-sm text-[var(--muted)]">{data.left == null ? t.unlimitedAttempts : tfill(t.leftN, data.left)}</p>
         {out ? <p className="font-bold text-[var(--danger)]">{t.outOfAttempts}</p> : <button onClick={() => setStarted(true)} className="btn-bouncy self-start bg-[var(--brand-500)] px-5 py-2.5 text-sm font-bold text-white">{data.attempts.length ? t.next : t.start}</button>}
       </section>
@@ -315,7 +314,7 @@ function Runner({ t, data, url, onDone }: { t: TeamsAll; data: Extract<Data, { r
     <section className="card flex flex-col gap-4 p-5">
       {data.left != null && <p className="text-sm font-semibold text-[var(--muted)]">{tfill(t.thisAttempt, data.left)}</p>}
       <div className="sticky top-2 z-10 rounded-xl bg-[var(--surface)] p-2">
-        <Progress value={data.questions.filter((q) => { const x = answers[q.id]; return x && (x.choice != null || x.typed?.some((v) => v.trim())); }).length} max={data.questions.length} color="var(--brand-500)" label={`✍️ ${data.questions.filter((q) => { const x = answers[q.id]; return x && (x.choice != null || x.typed?.some((v) => v.trim())); }).length} / ${data.questions.length}`} />
+        <Progress value={data.questions.filter((q) => { const x = answers[q.id]; return x && (x.choice != null || x.typed?.some((v) => v.trim())); }).length} max={data.questions.length} color="var(--brand-500)" label={`${data.questions.filter((q) => { const x = answers[q.id]; return x && (x.choice != null || x.typed?.some((v) => v.trim())); }).length} / ${data.questions.length}`} />
       </div>
       <ol className="flex flex-col gap-4">
         {data.questions.map((q) => (
