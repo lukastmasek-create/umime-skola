@@ -1,4 +1,4 @@
-import type { ChestOutcome, LiveMode, LiveQuestion, SetQuestion, LiveSettings, LiveStatus, StoredStatus } from "./types";
+import type { ChestOutcome, CrosswordItem, LiveMode, LiveQuestion, OrderItem, PairsItem, SetItem, SetQuestion, LiveSettings, LiveStatus, StoredStatus } from "./types";
 
 export const MODES: LiveMode[] = ["QUIZ", "RACE", "GOLD", "STREAK", "SURVIVAL", "TEAMS"];
 
@@ -65,15 +65,58 @@ export function cleanImage(raw: unknown): string | undefined {
   return typeof raw === "string" && raw.length <= MAX_IMAGE_CHARS && IMAGE_RE.test(raw) ? raw : undefined;
 }
 
-/** Otázky vlastní sady: stejné jako `cleanQuestions`, ale zachová obrázek. */
-export function cleanSetQuestions(raw: unknown): SetQuestion[] {
+function cleanOrderItem(raw: Record<string, unknown>): OrderItem | null {
+  const prompt = typeof raw.prompt === "string" ? raw.prompt.trim().slice(0, 300) : "";
+  if (!prompt || !Array.isArray(raw.items) || raw.items.length !== 4) return null;
+  const items = raw.items.map((o) => (typeof o === "string" ? o.trim().slice(0, 120) : ""));
+  if (items.some((o) => !o)) return null;
+  return { kind: "order", prompt, items };
+}
+
+export function isChoice(item: SetItem): item is SetQuestion {
+  return !("kind" in item);
+}
+
+function cleanPairsItem(raw: Record<string, unknown>): PairsItem | null {
+  if (!Array.isArray(raw.pairs)) return null;
+  const pairs: PairsItem["pairs"] = [];
+  for (const p of raw.pairs) {
+    if (!p || typeof p !== "object") return null;
+    const r = p as Record<string, unknown>;
+    const left = typeof r.left === "string" ? r.left.trim().slice(0, 80) : "";
+    const right = typeof r.right === "string" ? r.right.trim().slice(0, 80) : "";
+    if (!left || !right) return null;
+    pairs.push({ left, right });
+  }
+  if (pairs.length < 4 || pairs.length > 8) return null;
+  return { kind: "pairs", pairs };
+}
+
+function cleanCrosswordItem(raw: Record<string, unknown>): CrosswordItem | null {
+  const word = typeof raw.word === "string" ? raw.word.trim() : "";
+  const clue = typeof raw.clue === "string" ? raw.clue.trim().slice(0, 300) : "";
+  if (!/^\p{L}{3,11}$/u.test(word) || !clue) return null;
+  return { kind: "word", word, clue };
+}
+
+/** Položky vlastní sady: stejné jako `cleanQuestions` pro otázky, plus spojování a slova do křížovky. Zachová obrázky. */
+export function cleanSetQuestions(raw: unknown): SetItem[] {
   if (!Array.isArray(raw)) return [];
-  const out: SetQuestion[] = [];
+  const out: SetItem[] = [];
   for (const item of raw) {
-    const q = cleanQuestion(item);
+    if (!item || typeof item !== "object") continue;
+    const r = item as Record<string, unknown>;
+    let q: SetItem | null;
+    if (r.kind === "pairs") q = cleanPairsItem(r);
+    else if (r.kind === "word") q = cleanCrosswordItem(r);
+    else if (r.kind === "order") q = cleanOrderItem(r);
+    else {
+      const base = cleanQuestion(item);
+      const image = base ? cleanImage(r.image) : undefined;
+      q = base && image ? { ...base, image } : base;
+    }
     if (!q) continue;
-    const image = cleanImage((item as Record<string, unknown>).image);
-    out.push(image ? { ...q, image } : q);
+    out.push(q);
     if (out.length >= LIMITS.questions[1]) break;
   }
   return out;
@@ -81,8 +124,8 @@ export function cleanSetQuestions(raw: unknown): SetQuestion[] {
 
 /** Součet všech obrázků sady (aby tělo požadavku zůstalo v rozumné velikosti). */
 export const MAX_SET_IMAGE_CHARS = 3_000_000;
-export function imagesFit(questions: SetQuestion[]): boolean {
-  return questions.reduce((sum, q) => sum + (q.image?.length ?? 0), 0) <= MAX_SET_IMAGE_CHARS;
+export function imagesFit(questions: SetItem[]): boolean {
+  return questions.reduce((sum, q) => sum + (isChoice(q) ? (q.image?.length ?? 0) : 0), 0) <= MAX_SET_IMAGE_CHARS;
 }
 
 export function generatePin(rnd: () => number = Math.random): string {

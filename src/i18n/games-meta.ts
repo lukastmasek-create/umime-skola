@@ -282,6 +282,16 @@ const META: Record<GameSlug, Record<Locale, Meta>> = {
     es: { name: "Bingo", tag: "Encuentra la respuesta en tu cartón y completa una línea" },
     fr: { name: "Bingo", tag: "Trouve la réponse sur ta carte et complète une ligne" },
   },
+  razeni: {
+    cs: { name: "Seřaď", tag: "Seřaď položky do správného pořadí" },
+    en: { name: "Put in Order", tag: "Arrange the items in the right order" },
+    de: { name: "Reihenfolge", tag: "Bring die Elemente in die richtige Reihenfolge" },
+    ru: { name: "Порядок", tag: "Расставь элементы в правильном порядке" },
+    uk: { name: "Порядок", tag: "Розстав елементи в правильному порядку" },
+    ja: { name: "ならべかえ", tag: "正しい順番に並べよう" },
+    es: { name: "Ordenar", tag: "Pon los elementos en el orden correcto" },
+    fr: { name: "Remettre en ordre", tag: "Remets les éléments dans le bon ordre" },
+  },
 };
 
 export function gameMeta(slug: GameSlug, locale: Locale): Meta {

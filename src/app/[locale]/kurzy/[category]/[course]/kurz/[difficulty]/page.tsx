@@ -44,7 +44,7 @@ export default async function CourseGamesPage({
 
   const courseHref = `/${locale}/kurzy/${categorySlug}/${courseSlug}`;
   // Hry, které se z odpovědí kurzu nedají sestavit (osmisměrka z čísel apod.), se nenabízejí.
-  const playable = ACTIVE_GAMES.filter((g) => g.available && canPlay(g.slug, questions, difficulty));
+  const playable = ACTIVE_GAMES.filter((g) => g.available && !g.setOnly && canPlay(g.slug, questions, difficulty));
   const hiddenSome = playable.length < ACTIVE_GAMES.filter((g) => g.available).length;
   const sections: { kind: GameInfo["kind"]; title: string; hint: string; icon: string }[] = [
     { kind: "action", title: ui.action, hint: ui.actionHint, icon: "🕹️" },

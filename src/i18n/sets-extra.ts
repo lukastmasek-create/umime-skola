@@ -27,6 +27,21 @@ export type SetsExtraText = {
   counter: string;
   unsaved: string;
   needFour: string;
+  kindLabel: string;
+  kindChoice: string;
+  kindPairs: string;
+  kindWord: string;
+  kindOrder: string;
+  orderPrompt: string;
+  orderHint: string;
+  orderItem: string;
+  wordLabel: string;
+  clueLabel: string;
+  pairsHint: string;
+  pairLeft: string;
+  pairRight: string;
+  addPair: string;
+  removePair: string;
 };
 
 const cs: SetsExtraText = {
@@ -55,6 +70,21 @@ const cs: SetsExtraText = {
   counter: "{n} z 100 otázek",
   unsaved: "Máš neuložené změny. Opravdu odejít?",
   needFour: "Do hraní se berou jen otázky se čtyřmi možnostmi.",
+  kindLabel: "Typ položky",
+  kindChoice: "Otázka se čtyřmi možnostmi",
+  kindPairs: "Spojování (dvojice)",
+  kindWord: "Slovo do křížovky",
+  kindOrder: "Seřazení (4 položky)",
+  orderPrompt: "Zadání (např. Seřaď události od nejstarší)",
+  orderHint: "Zapiš 4 položky ve správném pořadí, první nahoře. Ve hře se zamíchají.",
+  orderItem: "{n}. položka (ve správném pořadí)",
+  wordLabel: "Slovo (jen písmena, 3 až 11)",
+  clueLabel: "Nápověda (zadání)",
+  pairsHint: "Zadej 4 až 8 dvojic: vlevo zadání, vpravo správná odpověď. Ve hře se promíchají.",
+  pairLeft: "Vlevo",
+  pairRight: "Vpravo",
+  addPair: "Přidat dvojici",
+  removePair: "Odebrat dvojici",
 };
 
 const en: SetsExtraText = {
@@ -83,6 +113,21 @@ const en: SetsExtraText = {
   counter: "{n} of 100 questions",
   unsaved: "You have unsaved changes. Leave anyway?",
   needFour: "Only questions with four options are used for playing.",
+  kindLabel: "Item type",
+  kindChoice: "Multiple-choice question",
+  kindPairs: "Matching (pairs)",
+  kindWord: "Crossword word",
+  kindOrder: "Ordering (4 items)",
+  orderPrompt: "Task (e.g. Put these events in order, oldest first)",
+  orderHint: "Enter 4 items in the correct order, first at the top. The game shuffles them.",
+  orderItem: "Item {n} (in correct order)",
+  wordLabel: "Word (letters only, 3 to 11)",
+  clueLabel: "Clue",
+  pairsHint: "Enter 4 to 8 pairs: left is the prompt, right is the correct answer. The game shuffles them.",
+  pairLeft: "Left",
+  pairRight: "Right",
+  addPair: "Add pair",
+  removePair: "Remove pair",
 };
 
 export function getSetsExtraText(locale: Locale): SetsExtraText {

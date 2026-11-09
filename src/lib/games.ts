@@ -21,7 +21,8 @@ export type GameSlug =
   | "krizovka"
   | "pravda"
   | "piskvorky"
-  | "bingo";
+  | "bingo"
+  | "razeni";
 
 // Klasické hry bez enginu: hrají se na otázkách kurzu (src/components/classic).
 export const CLASSIC_SLUGS = [
@@ -41,6 +42,7 @@ export const CLASSIC_SLUGS = [
   "pravda",
   "piskvorky",
   "bingo",
+  "razeni",
 ] as const;
 export type ClassicSlug = (typeof CLASSIC_SLUGS)[number];
 
@@ -51,7 +53,8 @@ export function isClassicSlug(slug: string): slug is ClassicSlug {
 // `kind`: akční hry běží na plátně (src/lib/*-engine.ts), klasické jsou kvízové (src/components/classic).
 // `isNew`: na seznamu her dostane štítek „Nové“.
 // `archived`: hra je schovaná (nenabízí se a adresa vrací 404), kód i obrázky zůstávají a jde ji vrátit smazáním příznaku.
-export type GameInfo = { slug: GameSlug; emoji: string; name: string; kind: "action" | "classic"; available: boolean; isNew?: boolean; archived?: boolean };
+// `setOnly`: hra jde jen nad vlastní sadou (seřadí se položky, které kurz nemá), v kurzech se nenabízí.
+export type GameInfo = { slug: GameSlug; emoji: string; name: string; kind: "action" | "classic"; available: boolean; isNew?: boolean; archived?: boolean; setOnly?: boolean };
 
 export const GAMES: GameInfo[] = [
   { slug: "space-invaders", emoji: "🚀", name: "Obrana galaxie", kind: "action", available: true },
@@ -77,6 +80,7 @@ export const GAMES: GameInfo[] = [
   { slug: "pravda", emoji: "⚖️", name: "Pravda, nebo lež", kind: "classic", available: true, isNew: true },
   { slug: "piskvorky", emoji: "⭕", name: "Kvízové piškvorky", kind: "classic", available: true, isNew: true },
   { slug: "bingo", emoji: "🎱", name: "Bingo", kind: "classic", available: true, isNew: true },
+  { slug: "razeni", emoji: "🔢", name: "Seřaď", kind: "classic", available: true, isNew: true, setOnly: true },
 ];
 
 // Hry, které se nabízejí hráčům (bez archivovaných).

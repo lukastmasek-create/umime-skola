@@ -111,3 +111,35 @@ test("cleanSetQuestions zachová platný obrázek a zahodí podvržený", async 
   assert.equal(cleanQuestions([{ ...base, image: good }])[0].image, undefined);
   assert.equal(imagesFit([a]), true);
 });
+
+test("cleanSetQuestions přijme spojování a křížovku, zahodí neplatné a živé hry je přeskočí", async () => {
+  const { cleanSetQuestions, cleanQuestions, isChoice } = await import("./logic.ts");
+  const pair = (n: number) => ({ left: `L${n}`, right: `R${n}` });
+  const items = cleanSetQuestions([
+    { kind: "pairs", pairs: [pair(1), pair(2), pair(3), pair(4)] },
+    { kind: "pairs", pairs: [pair(1), pair(2), pair(3)] }, // málo dvojic
+    { kind: "pairs", pairs: [pair(1), { left: "", right: "x" }, pair(3), pair(4)] }, // prázdná strana
+    { kind: "word", word: "KOČKA", clue: "Zvíře, které mňouká" },
+    { kind: "word", word: "AB", clue: "Krátké" }, // moc krátké
+    { kind: "word", word: "POČET2", clue: "Číslice" }, // číslice
+    { prompt: "Q", options: ["a", "b", "c", "d"], correctIndex: 1 },
+  ]);
+  assert.equal(items.length, 3);
+  assert.equal(items[0].kind, "pairs");
+  assert.equal(items[1].kind, "word");
+  assert.equal(isChoice(items[2]), true);
+  // Živé hry berou jen otázky se zadáním a možnostmi, spojování a slova se do nich nedostanou.
+  assert.equal(cleanQuestions(items).length, 1);
+});
+
+test("cleanSetQuestions přijme seřazení se čtyřmi položkami a zahodí jiný počet", async () => {
+  const { cleanSetQuestions, isChoice } = await import("./logic.ts");
+  const items = cleanSetQuestions([
+    { kind: "order", prompt: "Seřaď od nejstarší", items: ["1918", "1939", "1945", "1989"] },
+    { kind: "order", prompt: "Málo položek", items: ["a", "b", "c"] },
+    { kind: "order", prompt: "Prázdná položka", items: ["a", "", "c", "d"] },
+  ]);
+  assert.equal(items.length, 1);
+  assert.equal(items[0].kind, "order");
+  assert.equal(isChoice(items[0]), false);
+});
