@@ -1,4 +1,6 @@
+@import "@savvycal/calendar/preset.css";
 @import "tailwindcss";
+@import "@savvycal/calendar/components.css";
 
 :root {
   color-scheme: light;
@@ -3747,4 +3749,10 @@ html.pencil-scroll::-webkit-scrollbar {
 }
 .pencil-thumb[data-dragging] {
   cursor: grabbing;
+}
+
+/* Krátké potvrzení v Týmech: zmizí samo a ukazuje zbývající čas progress barem. */
+@keyframes toast-shrink {
+  from { width: 100%; }
+  to { width: 0%; }
 }

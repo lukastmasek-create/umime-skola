@@ -8,7 +8,8 @@ import { tfill } from "@/i18n/teams";
 import { getTeamsAll, teamsAllError } from "@/i18n/teams-more";
 import { fmtDate } from "./api";
 import type { Locale } from "@/i18n/config";
-import { Badge, Pill, Progress, Reorderable, ReorderItem, SideLayout, colorOf } from "./ui";
+import { Badge, Pill, Progress, ProgressToast, Reorderable, ReorderItem, SideLayout, colorOf } from "./ui";
+import { TeamDeadlines, type Deadline } from "./TeamDeadlines";
 
 // Gradient pro progress bar postupu (fialová → zelená, jako v gamifikovaném vzhledu).
 const PROGRESS_GRADIENT = "linear-gradient(90deg, var(--brand-500), var(--accent-green))";
@@ -27,12 +28,14 @@ export function TeamsHome({ locale }: { locale: Locale }) {
   const [code, setCode] = useState("");
   const [pending, setPending] = useState<Pending[]>([]);
   const [urgent, setUrgent] = useState<Urgent[]>([]);
+  const [deadlines, setDeadlines] = useState<Deadline[]>([]);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
     try {
-      const d = await call<{ teams: TeamRow[]; pending: Pending[]; urgent: Urgent[] }>("/api/tymy");
+      const d = await call<{ teams: TeamRow[]; pending: Pending[]; urgent: Urgent[]; deadlines: Deadline[] }>("/api/tymy");
+      setDeadlines(d.deadlines ?? []);
       setTeams(d.teams);
       setPending(d.pending);
       setUrgent(d.urgent);
@@ -136,7 +139,7 @@ export function TeamsHome({ locale }: { locale: Locale }) {
       }
     >
       {error && <p role="alert" className="card p-3 text-sm font-semibold text-[var(--danger)]">{error}</p>}
-      {notice && <p role="status" className="card p-3 text-sm font-semibold text-[var(--accent-green)]">{notice}</p>}
+      {notice && <ProgressToast key={notice} message={notice} onDone={() => setNotice("")} closeLabel={t.closeToast} />}
       <Reorderable storageKey="teams:home:main" t={t} className="flex flex-col gap-5">
       {urgent.length > 0 && (
         <ReorderItem id="urgent">
@@ -155,6 +158,9 @@ export function TeamsHome({ locale }: { locale: Locale }) {
         </section>
         </ReorderItem>
       )}
+      <ReorderItem id="deadlines">
+        <TeamDeadlines locale={locale} items={deadlines} />
+      </ReorderItem>
       <ReorderItem id="list">
       <section className="flex flex-col gap-3">
         <h2 className="text-xl font-extrabold">{t.myTeams}</h2>

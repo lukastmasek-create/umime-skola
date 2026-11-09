@@ -30,6 +30,7 @@ export async function GET() {
 
     const now = new Date();
     const urgent: { teamId: string; teamName: string; assignmentId: string; title: string; dueAt: Date; overdue: boolean }[] = [];
+    const deadlines: { teamId: string; teamName: string; assignmentId: string; title: string; dueAt: string; done: boolean }[] = [];
     const teams = activeRows.map((m) => {
       const mine = assignments.filter((a) => a.teamId === m.teamId && (m.role === "TEACHER" || isAssignedTo(a.targets, m)));
       let open = 0;
@@ -37,7 +38,9 @@ export async function GET() {
       let overdue = 0;
       if (m.role === "STUDENT") {
         for (const a of mine) {
-          if (attempts.some((x) => x.assignmentId === a.id && x.percent >= a.passPercent)) continue;
+          const passed = attempts.some((x) => x.assignmentId === a.id && x.percent >= a.passPercent);
+          if (a.dueAt) deadlines.push({ teamId: m.teamId, teamName: m.team.name, assignmentId: a.id, title: a.title, dueAt: a.dueAt.toISOString(), done: passed });
+          if (passed) continue;
           open++;
           const state = dueState(a.dueAt, now);
           if (state === "soon") soon++;
@@ -60,7 +63,8 @@ export async function GET() {
     });
     urgent.sort((a, b) => a.dueAt.getTime() - b.dueAt.getTime());
     const pending = rows.filter((m) => m.status === "PENDING").map((m) => ({ id: m.teamId, name: m.team.name }));
-    return { teams, pending, urgent: urgent.slice(0, 8), soonHours: SOON_HOURS };
+    deadlines.sort((x, y) => x.dueAt.localeCompare(y.dueAt));
+    return { teams, pending, urgent: urgent.slice(0, 8), deadlines, soonHours: SOON_HOURS };
   });
 }
 
