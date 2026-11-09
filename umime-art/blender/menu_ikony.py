@@ -1,5 +1,5 @@
 """3D ikony skupin hlavního menu (public/brand/menu/<klic>.webp): osm malých hračkových předmětů.
-Spuštění: python menu_ikony.py -- kurzy | nastaveni | hry | obchod | studium | extra | spolu | zebricky
+Spuštění: python menu_ikony.py -- kurzy | nastaveni | hry | obchod | studium | extra | spolu | zebricky | info | mestecko
 Jeden snímek 256 × 256, průhledné pozadí, ortografická kamera mírně shora.
 """
 import sys, os
@@ -98,6 +98,16 @@ def zebricky():
     sphere((0, -0.4, 1.0), 0.14, M("star", "#fff3a0", roughness=0.3), scale=(1, 0.25, 1), seg=14, rings=8)
 
 
+def info():
+    # bublina s písmenem i: nafouknutá modrá bublina s ocasem a bílým "i" na přední straně
+    bubble = M("bubble", "#3248f0", roughness=0.35)
+    white_i = M("info_i", "#ffffff", roughness=0.3)
+    sphere((0, 0, 0.78), 0.7, bubble, scale=(1.2, 0.7, 0.8), seg=32, rings=16)
+    cone((-0.28, 0.0, 0.1), 0.2, 0.0, 0.45, bubble, verts=16, rot=(0, math.radians(-25), math.radians(-30)))
+    sphere((0, -0.5, 1.12), 0.1, white_i, scale=(1, 0.5, 1), seg=16, rings=10)
+    box((0, -0.5, 0.78), (0.14, 0.12, 0.4), white_i, bevel=0.03)
+
+
 def mestecko():
     wall = M("wall", "#fff1d6", roughness=0.6)
     roof = M("roof", "#e8503a", roughness=0.45)
@@ -113,7 +123,7 @@ def mestecko():
     cyl((0.9, -0.3, 0.2), 0.14, 0.4, M("tree", "#2fae55", roughness=0.6), verts=16)
 
 
-{"mestecko": mestecko, "kurzy": kurzy, "nastaveni": nastaveni, "hry": hry, "obchod": obchod, "studium": studium, "extra": extra, "spolu": spolu, "zebricky": zebricky}[KEY]()
+{"mestecko": mestecko, "kurzy": kurzy, "nastaveni": nastaveni, "hry": hry, "obchod": obchod, "studium": studium, "extra": extra, "spolu": spolu, "zebricky": zebricky, "info": info}[KEY]()
 
 
 def update(t):

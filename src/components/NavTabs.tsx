@@ -39,6 +39,7 @@ const GROUP_ICON: Record<string, string> = {
   extras: "extra",
   together: "spolu",
   boards: "zebricky",
+  info: "info",
 };
 
 function GroupIcon({ id, size }: { id: string; size: number }) {
