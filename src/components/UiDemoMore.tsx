@@ -5,7 +5,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Popover from "@radix-ui/react-popover";
 import * as Accordion from "@radix-ui/react-accordion";
-import * as RSwitch from "@radix-ui/react-switch";
+
 import * as Slider from "@radix-ui/react-slider";
 import * as Select from "@radix-ui/react-select";
 import * as Avatar from "@radix-ui/react-avatar";
@@ -34,11 +34,10 @@ import { useCounter, useMediaQuery, useToggle } from "usehooks-ts";
 import { Howl } from "howler";
 import { Icon } from "@iconify/react";
 import { toast } from "sonner";
-import { Gift, Star, Bell, Settings, Volume2, Plus, Minus, Sparkles } from "lucide-react";
+import { Bell, Settings, Volume2, Plus, Minus, Sparkles } from "lucide-react";
 import { clsx } from "clsx";
 
 const card = "rounded-[var(--radius-card)] border-2 border-[var(--edge)] bg-[var(--surface)] shadow-[0_4px_0_var(--shadow-ink)]";
-const sectionTitle = "flex items-center gap-2 text-lg font-bold";
 const inputCls = "w-full rounded-lg border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-500)]";
 const selectItem = "cursor-pointer rounded-md px-3 py-2 text-sm outline-none data-[highlighted]:bg-[var(--surface-muted)]";
 const popup = "z-50 rounded-xl border-2 border-[var(--edge)] bg-[var(--surface)] p-1 shadow-[0_4px_0_var(--shadow-ink)]";
@@ -472,7 +471,7 @@ function ControlsExample() {
         <h3 className="font-bold">Karusel stránek (Swiper)</h3>
         <Swiper spaceBetween={12} slidesPerView={1.2} className="w-full">
           {["Základna", "Mazlíčci", "Farma", "Město", "Ekonomika"].map((name) => (
-            <SwiperSlide key={name} style={{ height: 96 }} className="flex items-center justify-center rounded-xl border-2 border-[var(--edge)] bg-[var(--surface-muted)] font-bold">
+            <SwiperSlide key={name} style={{ height: 96, display: "flex", alignItems: "center", justifyContent: "center" }} className="rounded-xl border-2 border-[var(--edge)] bg-[var(--surface-muted)] font-bold">
               {name}
             </SwiperSlide>
           ))}

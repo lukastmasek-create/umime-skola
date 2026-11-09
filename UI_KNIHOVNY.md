@@ -90,3 +90,18 @@ Pro layouty a komponenty je používej místo vlastního kódu, pokud dávají s
 ## Pravidlo pro aktualizace
 
 Nová verze se přidá jen tehdy, je-li starší než dva týdny od vydání. Verze se připíná přesně, bez `^` ani `~`.
+
+## Pohyb a další komponenty (přidáno později)
+
+| Knihovna | Verze |
+|---|---|
+| `@floating-ui/react` | 0.27.20 |
+| `react-circular-progressbar` | 2.2.0 |
+| `react-loading-skeleton` | 3.5.0 |
+| `react-rough-notation` | 1.0.8 |
+| `react-parallax-tilt` | 1.7.349 |
+| `@radix-ui/react-scroll-area` | 1.4.0 |
+| `react-dropzone` | 20.1.4 |
+| `lenis` | 1.3.27 |
+
+`typewriter-effect` jsme vynechali: nemá vlastní typy a rozbíjel by TypeScript build.

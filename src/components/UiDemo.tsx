@@ -16,12 +16,13 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip as ChartTool
 import { createColumnHelper, flexRender, getCoreRowModel, getSortedRowModel, useReactTable, type SortingState } from "@tanstack/react-table";
 import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { Gift, Gamepad2, Trophy, Star, Sparkles, Search, GripVertical, ChartColumn, Table2, ListOrdered, Settings, Volume2 } from "lucide-react";
+import { Gift, Gamepad2, Trophy, Star, Sparkles, Search, GripVertical, ChartColumn, Table2, ListOrdered, Settings, Volume2, Upload } from "lucide-react";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { NuqsAdapter } from "nuqs/adapters/react";
 import { FormsTab, AnimationsTab, DataTab, ControlsTab } from "./UiDemoMore";
+import { MotionTab, MoreOssTab } from "./UiDemoMotion";
 
 type Game = { id: string; name: string; tag: string; kind: "action" | "classic"; progress: number };
 
@@ -418,6 +419,8 @@ export function UiDemo() {
               { v: "animace", label: "Animace", icon: Sparkles },
               { v: "data", label: "Data", icon: Table2 },
               { v: "ovladani", label: "Ovládání", icon: Volume2 },
+              { v: "pohyb", label: "Pohyb", icon: Sparkles },
+              { v: "oss", label: "Další knihovny", icon: Upload },
             ].map(({ v, label, icon: Icon }) => (
               <Tabs.Trigger
                 key={v}
@@ -438,6 +441,8 @@ export function UiDemo() {
           <Tabs.Content value="animace"><AnimationsTab /></Tabs.Content>
           <Tabs.Content value="data"><DataTab /></Tabs.Content>
           <Tabs.Content value="ovladani"><ControlsTab /></Tabs.Content>
+          <Tabs.Content value="pohyb"><MotionTab /></Tabs.Content>
+          <Tabs.Content value="oss"><MoreOssTab /></Tabs.Content>
         </Tabs.Root>
 
         <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
