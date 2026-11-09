@@ -3712,3 +3712,34 @@ button.town3d-chip[aria-pressed="true"] { background: #ffd24d; color: #1b1840; }
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
 }
+
+/* Posuvník ve tvaru tužky (src/components/PencilScrollbar.tsx): nativní schovaný jen na myších */
+html.pencil-scroll {
+  scrollbar-width: none;
+}
+html.pencil-scroll::-webkit-scrollbar {
+  display: none;
+}
+.pencil-track {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+}
+.pencil-track[data-hidden] {
+  display: none;
+}
+.pencil-thumb {
+  position: absolute;
+  top: 0;
+  left: 2px;
+  width: 12px;
+  background: url(/scroll/tuzka.webp) center / 100% 100% no-repeat;
+  cursor: grab;
+  touch-action: none;
+  will-change: transform;
+}
+.pencil-thumb[data-dragging] {
+  cursor: grabbing;
+}
