@@ -50,18 +50,23 @@ export function PencilScrollbar() {
       if (head <= 0) return;
 
       const cx = w / 2;
-      ctx.strokeStyle = "rgba(38, 38, 48, 0.82)";
-      ctx.lineWidth = 1.6;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
-      ctx.beginPath();
-      // Mírně kolísavá čára, jako když píše ruka
-      for (let y = 0; y <= head; y += 2) {
-        const x = cx + Math.sin(y * 0.31) * 2.2 + Math.sin(y * 0.077) * 1.4;
-        if (y === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
+      // Výraznější čára: tlustší a tmavší, s kolísáním jako když píše ruka.
+      // Dva průchody s mírně odlišným vlněním dají grafitu hustší vzhled.
+      const pass = (amp: number, freq: number, width: number, color: string) => {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        for (let y = 0; y <= head; y += 1.5) {
+          const x = cx + Math.sin(y * freq) * amp + Math.sin(y * 0.11) * amp * 0.5;
+          if (y === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      };
+      pass(3.6, 0.29, 3.0, "rgba(24, 24, 32, 0.55)");
+      pass(3.0, 0.33, 1.6, "rgba(18, 18, 26, 0.95)");
     };
 
     const render = () => {
