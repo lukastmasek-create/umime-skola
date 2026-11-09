@@ -19,7 +19,14 @@ export default async function TeachersPage({ params }: { params: Promise<{ local
       <h1 className="mb-3 text-3xl font-bold tracking-tight sm:text-4xl" style={heading}>
         {t.title}
       </h1>
-      <p className="mb-10 max-w-2xl text-lg leading-relaxed text-[var(--muted)]">{t.subtitle}</p>
+      <p className="mb-6 max-w-2xl text-lg leading-relaxed text-[var(--muted)]">{t.subtitle}</p>
+
+      <div className="mb-10 flex flex-col items-start gap-2">
+        <TeacherCta locale={locale as Locale} className="btn-bouncy btn-cta btn-primary btn-lg">
+          {t.cta}
+        </TeacherCta>
+        <p className="text-sm text-[var(--muted)]">{t.ctaHint}</p>
+      </div>
 
       <ul className="mb-12 grid gap-4 sm:grid-cols-2">
         {t.points.map((point) => (

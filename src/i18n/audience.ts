@@ -58,7 +58,7 @@ const cs: AudiencePagesText = {
     ],
     stepsTitle: "Jak to funguje",
     steps: [
-      { title: "Založ třídu", text: "Vytvoř tým a dostaneš kód, který žáci zadají při připojení." },
+      { title: "Založ třídu", text: "V sekci Týmy založ třídu a dostaneš kód, který žáci zadají při připojení." },
       { title: "Zadej úkol", text: "Vyber kurz nebo test, nastav termín a rozhodni, pro koho úkol je." },
       { title: "Sleduj výsledky", text: "Uvidíš, kdo úkol otevřel, kdo ho splnil a kolikrát to zkoušel." },
     ],
@@ -105,7 +105,7 @@ const en: AudiencePagesText = {
     ],
     stepsTitle: "How it works",
     steps: [
-      { title: "Create a class", text: "Make a team and you get a class code that pupils enter when they join." },
+      { title: "Create a class", text: "In the Teams section, create a class. You get a code that pupils enter when they join." },
       { title: "Assign a task", text: "Pick a course or test, set a deadline and decide who the task is for." },
       { title: "Track the results", text: "See who opened the task, who completed it and how many attempts it took." },
     ],
@@ -152,7 +152,7 @@ const de: AudiencePagesText = {
     ],
     stepsTitle: "So funktioniert's",
     steps: [
-      { title: "Klasse anlegen", text: "Erstelle ein Team, dann bekommst du einen Klassencode, mit dem sich die Schüler anmelden." },
+      { title: "Klasse anlegen", text: "Lege im Bereich Teams eine Klasse an. Du bekommst einen Code, mit dem sich die Schüler anmelden." },
       { title: "Aufgabe stellen", text: "Wähle einen Kurs oder Test, setze eine Frist und lege fest, für wen die Aufgabe ist." },
       { title: "Ergebnisse ansehen", text: "Du siehst, wer die Aufgabe geöffnet, wer sie erledigt und wie oft er es versucht hat." },
     ],
@@ -199,7 +199,7 @@ const ru: AudiencePagesText = {
     ],
     stepsTitle: "Как это работает",
     steps: [
-      { title: "Создайте класс", text: "Создайте команду и получите код класса, с которым ученики присоединяются." },
+      { title: "Создайте класс", text: "В разделе «Команды» создайте класс. Вы получите код, с которым ученики присоединяются." },
       { title: "Задайте задание", text: "Выберите курс или тест, задайте срок и решите, для кого задание." },
       { title: "Следите за результатами", text: "Видно, кто открыл задание, кто его выполнил и сколько попыток потребовалось." },
     ],
@@ -246,7 +246,7 @@ const uk: AudiencePagesText = {
     ],
     stepsTitle: "Як це працює",
     steps: [
-      { title: "Створіть клас", text: "Створіть команду, і ви отримаєте код класу, яким учні приєднуються." },
+      { title: "Створіть клас", text: "У розділі «Команди» створіть клас. Ви отримаєте код, яким учні приєднуються." },
       { title: "Задайте завдання", text: "Оберіть курс або тест, встановіть термін і вирішіть, для кого завдання." },
       { title: "Слідкуйте за результатами", text: "Видно, хто відкрив завдання, хто його виконав і скільки спроб було." },
     ],
@@ -293,7 +293,7 @@ const ja: AudiencePagesText = {
     ],
     stepsTitle: "使い方",
     steps: [
-      { title: "クラスを作る", text: "チームを作成すると、生徒が参加に使うクラスコードが発行されます。" },
+      { title: "クラスを作る", text: "「チーム」セクションでクラスを作成すると、生徒が参加に使うクラスコードが発行されます。" },
       { title: "課題を出す", text: "コースやテストを選び、期限と対象を決めます。" },
       { title: "結果を見る", text: "課題を開いた生徒、完了した生徒、挑戦した回数がわかります。" },
     ],
@@ -340,7 +340,7 @@ const es: AudiencePagesText = {
     ],
     stepsTitle: "Cómo funciona",
     steps: [
-      { title: "Crea una clase", text: "Crea un equipo y recibirás un código de clase que los alumnos usan para unirse." },
+      { title: "Crea una clase", text: "En la sección Equipos, crea una clase. Recibirás un código que los alumnos usan para unirse." },
       { title: "Asigna una tarea", text: "Elige un curso o test, pon una fecha límite y decide para quién es." },
       { title: "Revisa los resultados", text: "Verás quién abrió la tarea, quién la completó y cuántos intentos hizo." },
     ],
@@ -387,7 +387,7 @@ const fr: AudiencePagesText = {
     ],
     stepsTitle: "Comment ça marche",
     steps: [
-      { title: "Créez une classe", text: "Créez une équipe : vous obtenez un code de classe que les élèves saisissent pour rejoindre." },
+      { title: "Créez une classe", text: "Dans la rubrique Équipes, créez une classe : vous obtenez un code que les élèves saisissent pour rejoindre." },
       { title: "Donnez une tâche", text: "Choisissez un cours ou un test, fixez une échéance et décidez à qui s'adresse la tâche." },
       { title: "Suivez les résultats", text: "Vous voyez qui a ouvert la tâche, qui l'a terminée et combien d'essais il a fallu." },
     ],
