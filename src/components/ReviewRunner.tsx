@@ -22,6 +22,12 @@ type Load = { state: "loading" } | { state: "guest" } | { state: "error" } | { s
 
 const normalize = (value: string) => value.trim().toLowerCase();
 
+function judge(q: Question, typed: string[], choice: number | null) {
+  return q.answers.length > 0
+    ? q.answers.every((a, i) => normalize(typed[i] ?? "") === normalize(a))
+    : choice === q.correctIndex;
+}
+
 // Opakování otázek, které hráč dřív zkazil: po jedné, s okamžitou kontrolou.
 export function ReviewRunner({ locale, courseId }: { locale: Locale; courseId?: string }) {
   const t = getReviewText(locale);
@@ -64,6 +70,29 @@ export function ReviewRunner({ locale, courseId }: { locale: Locale; courseId?: 
   }
 
   const heading = { fontFamily: "var(--font-heading)" } as const;
+
+  // Enter zkontroluje odpověď, jakmile je vybraná (nebo vyplněná). Hook musí být před ranými návraty.
+  const currentQ = load.state === "ready" ? load.questions[index] : undefined;
+  const currentTyped = !!currentQ && currentQ.answers.length > 0;
+  const canCheck =
+    !!currentQ &&
+    checked === null &&
+    !finished &&
+    (currentTyped ? currentQ.answers.every((_, i) => (typed[i] ?? "").trim() !== "") : choice !== null);
+
+  useEffect(() => {
+    if (!canCheck || !currentQ) return;
+    const q = currentQ;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Enter" || e.repeat) return;
+      e.preventDefault();
+      const ok = judge(q, typed, choice);
+      setChecked(ok);
+      setResults((r) => [...r, { id: q.id, correct: ok }]);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [canCheck, currentQ, typed, choice]);
 
   if (load.state === "loading") return <div className="card h-48 animate-pulse bg-[var(--surface-muted)]" aria-hidden />;
   if (load.state === "error") return <p className="card p-6 text-[var(--muted)]">{t.loadError}</p>;
@@ -141,9 +170,7 @@ export function ReviewRunner({ locale, courseId }: { locale: Locale; courseId?: 
   const last = index + 1 >= questions.length;
 
   function check() {
-    const ok = isTyped
-      ? q.answers.every((a, i) => normalize(typed[i] ?? "") === normalize(a))
-      : choice === q.correctIndex;
+    const ok = judge(q, typed, choice);
     setChecked(ok);
     setResults((r) => [...r, { id: q.id, correct: ok }]);
   }
@@ -238,13 +265,16 @@ export function ReviewRunner({ locale, courseId }: { locale: Locale; courseId?: 
 
       <div>
         {!answered ? (
-          <button
-            onClick={check}
-            disabled={isTyped ? q.answers.some((_, i) => !(typed[i] ?? "").trim()) : choice === null}
-            className="btn-bouncy bg-[var(--brand-500)] px-6 py-2.5 text-sm font-bold text-white disabled:opacity-40"
-          >
-            {t.check}
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={check}
+              disabled={isTyped ? q.answers.some((_, i) => !(typed[i] ?? "").trim()) : choice === null}
+              className="btn-bouncy bg-[var(--brand-500)] px-6 py-2.5 text-sm font-bold text-white disabled:opacity-40"
+            >
+              {t.check}
+            </button>
+            <kbd className="rounded-md border border-[var(--border-soft)] px-2 py-0.5 text-xs font-semibold text-[var(--muted)]">Enter</kbd>
+          </div>
         ) : (
           <button onClick={next} className="btn-bouncy bg-[var(--brand-500)] px-6 py-2.5 text-sm font-bold text-white">
             {last ? t.finish : t.next}
