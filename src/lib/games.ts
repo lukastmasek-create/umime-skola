@@ -6,6 +6,7 @@ export type GameSlug =
   | "tetris"
   | "mole"
   | "ninja"
+  | "minesweeper"
   | "osmismerka"
   | "spojovani"
   | "pexeso"
@@ -61,6 +62,7 @@ export const GAMES: GameInfo[] = [
   { slug: "tetris", emoji: "🟪", name: "Pád bloků", kind: "action", available: true },
   { slug: "mole", emoji: "🔨", name: "Lov krtků", kind: "action", available: true },
   { slug: "ninja", emoji: "🥷", name: "Stínový bojovník", kind: "action", available: true },
+  { slug: "minesweeper", emoji: "💣", name: "Hledání min", kind: "action", available: true, isNew: true },
   { slug: "osmismerka", emoji: "🔤", name: "Osmisměrka", kind: "classic", available: true },
   { slug: "spojovani", emoji: "🔗", name: "Spojování", kind: "classic", available: true },
   { slug: "pexeso", emoji: "🃏", name: "Pexeso", kind: "classic", available: true },

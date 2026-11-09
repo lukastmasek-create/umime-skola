@@ -8,6 +8,8 @@ export type EngineCallbacks = {
   onMiss: () => void;
   // Hráče zasáhla nepřátelská střela (neukončuje otázku, jen ubírá život).
   onDamage?: () => void;
+  // Hra si sama vyžádá otázku (Hledání min: hráč vybral políčko).
+  onPick?: (cell: number) => void;
 };
 
 export type EngineConfig = {
