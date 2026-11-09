@@ -51,9 +51,15 @@ function Row({
   locale: Locale;
 }) {
   return (
-    <li className={`flex flex-col gap-2 rounded-xl border-2 p-3 ${done && !claimed ? "border-[var(--accent-green)]" : "border-[var(--border-soft)]"} bg-[var(--surface)]`}>
+    <li
+      className={`flex flex-col gap-2.5 rounded-xl border-2 p-4 transition-colors ${
+        done && !claimed
+          ? "border-[var(--accent-green)] bg-[color-mix(in_srgb,var(--accent-green)_12%,var(--surface))]"
+          : "border-[var(--border-soft)] bg-[var(--surface)]"
+      } ${claimed ? "opacity-70" : ""}`}
+    >
       <div className="flex items-start justify-between gap-3">
-        <p className={`text-sm font-semibold ${claimed ? "text-[var(--muted)] line-through" : ""}`}>{text}</p>
+        <p className={`text-sm font-semibold leading-snug ${claimed ? "text-[var(--muted)] line-through" : ""}`}>{text}</p>
         <span className="pill shrink-0 bg-[var(--accent-yellow)] px-2 py-0.5 text-[#16132b]">+{reward} {tr(HUB_TEXT.points, locale)}</span>
       </div>
       <Bar value={value} max={target} done={done} />
@@ -64,7 +70,12 @@ function Row({
         {claimed ? (
           <span className="text-xs font-bold text-[var(--accent-green)]">✓ {tr(HUB_TEXT.claimed, locale)}</span>
         ) : (
-          <button type="button" onClick={onClaim} disabled={!done || busy} className="btn-bouncy bg-[var(--brand-500)] px-3 py-1 text-xs font-bold text-white disabled:opacity-40">
+          <button
+            type="button"
+            onClick={onClaim}
+            disabled={!done || busy}
+            className={`btn-bouncy px-3 py-1.5 text-xs font-bold text-white disabled:opacity-40 ${done ? "bg-[var(--accent-green)]" : "bg-[var(--brand-500)]"}`}
+          >
             {tr(HUB_TEXT.claim, locale)}
           </button>
         )}

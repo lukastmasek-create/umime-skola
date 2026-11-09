@@ -70,12 +70,16 @@ export default async function CourseGamesPage({
       {sections.map((sec) => {
         const list = playable.filter((g) => g.kind === sec.kind);
         if (list.length === 0) return null;
+        const isAction = sec.kind === "action";
         return (
-          <section key={sec.kind} className="mb-10">
-            <h2 className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-              {sec.icon} {sec.title}
-            </h2>
-            <p className="mb-4 text-sm text-[var(--muted)]">{sec.hint}</p>
+          <section key={sec.kind} className="mb-12 last:mb-0">
+            <div className="mb-1 flex flex-wrap items-center gap-3">
+              <h2 className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+                <span aria-hidden>{sec.icon}</span> {sec.title}
+              </h2>
+              <span className="pill bg-[var(--surface-muted)] px-2.5 py-0.5 text-xs font-bold text-[var(--muted)]">{list.length}</span>
+            </div>
+            <p className="mb-5 max-w-2xl text-sm text-[var(--muted)]">{sec.hint}</p>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {list.map((game) => {
                 const meta = gameMeta(game.slug, locale as Locale);
@@ -83,7 +87,7 @@ export default async function CourseGamesPage({
                   <Link
                     key={game.slug}
                     href={`${courseHref}/kurz/${difficulty}/hra/${game.slug}`}
-                    className="game-tile card card-hover relative flex items-center gap-4 p-4"
+                    className="game-tile card card-hover group relative flex items-center gap-4 p-4 pr-5 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[var(--brand-500)]"
                   >
                     {game.isNew && (
                       <span className="pill absolute right-3 top-3 bg-[var(--accent-yellow)] px-2 py-0.5 text-xs font-extrabold text-[#16132b]">
@@ -91,16 +95,22 @@ export default async function CourseGamesPage({
                       </span>
                     )}
                     <span
-                      className="game-tile-emoji flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-4xl"
-                      style={{ background: sec.kind === "action" ? "rgba(124,108,255,0.18)" : "rgba(34,197,94,0.16)" }}
+                      className="game-tile-emoji flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-4xl transition-transform"
+                      style={{ background: isAction ? "rgba(124,108,255,0.18)" : "rgba(34,197,94,0.16)" }}
                       aria-hidden
                     >
                       {game.emoji}
                     </span>
-                    <span className="flex min-w-0 flex-col gap-1">
-                      <span className="pr-10 font-bold leading-tight">{meta.name}</span>
-                      <span className="text-xs leading-snug text-[var(--muted)]">{meta.tag}</span>
+                    <span className="flex min-w-0 flex-1 flex-col gap-1">
+                      <span className="pr-14 font-bold leading-tight">{meta.name}</span>
+                      <span className="line-clamp-2 text-xs leading-snug text-[var(--muted)]">{meta.tag}</span>
                       <GameBestBadge game={game.slug} course={courseSlug} level={difficulty} label={ui.best} />
+                    </span>
+                    <span
+                      aria-hidden
+                      className="shrink-0 text-lg font-bold text-[var(--faint)] transition-transform group-hover:translate-x-1 group-hover:text-[var(--brand-600)]"
+                    >
+                      →
                     </span>
                   </Link>
                 );

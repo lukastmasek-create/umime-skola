@@ -25,19 +25,21 @@ export default async function IdleGamesPage({
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-16">
-      <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        {t.title}
-      </h1>
-      <p className="mb-8 max-w-2xl text-[var(--muted)]">{t.subtitle}</p>
+      <header className="mb-10 flex flex-col gap-3">
+        <h1 className="text-3xl font-bold sm:text-4xl" style={{ fontFamily: "var(--font-heading)" }}>
+          {t.title}
+        </h1>
+        <p className="max-w-2xl text-base text-[var(--muted)]">{t.subtitle}</p>
+      </header>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {t.games.map((game, i) => {
           const path = PATHS[i];
           const href = path ? `/${locale}/stale-hry/${path}` : null;
           const body = (
             <>
               <div
-                className="relative flex h-32 items-end justify-between overflow-hidden rounded-xl border-2 border-[var(--edge)] p-3"
+                className="relative flex h-36 items-end justify-between overflow-hidden rounded-xl border-2 border-[var(--edge)] p-3"
                 style={{ background: COLORS[i % COLORS.length] }}
               >
                 {ART[i] ? (
@@ -63,25 +65,32 @@ export default async function IdleGamesPage({
                   {href ? t.play : t.soon}
                 </span>
               </div>
-              <div>
-                <h2 className="mb-1 text-lg font-bold">{game.name}</h2>
-                <p className="text-sm text-[var(--muted)]">{game.description}</p>
+              <div className="flex flex-col gap-1.5">
+                <h2 className="text-lg font-bold leading-snug">{game.name}</h2>
+                <p className="text-sm leading-relaxed text-[var(--muted)]">{game.description}</p>
               </div>
             </>
           );
           return href ? (
-            <Link key={game.name} href={href} className="card card-hover flex flex-col gap-4 p-5">
+            <Link
+              key={game.name}
+              href={href}
+              className="card card-hover focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[var(--brand-500)] flex flex-col gap-4 p-5"
+            >
               {body}
             </Link>
           ) : (
-            <div key={game.name} className="card flex flex-col gap-4 p-5">
+            <div
+              key={game.name}
+              className="flex flex-col gap-4 rounded-[var(--radius-card)] border-2 border-dashed border-[var(--border-soft)] bg-[var(--surface-muted)] p-5 opacity-80"
+            >
               {body}
             </div>
           );
         })}
       </div>
 
-      <p className="mt-8 text-sm text-[var(--faint)]">{t.note}</p>
+      <p className="mt-10 rounded-xl bg-[var(--surface-muted)] px-4 py-3 text-sm text-[var(--faint)]">{t.note}</p>
 
       <IdleHub locale={locale as Locale} />
     </div>
