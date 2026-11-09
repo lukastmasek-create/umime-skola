@@ -60,7 +60,11 @@ export default async function IdleGamesPage({
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <span
-                  className={`pill relative px-2.5 py-1 ${href ? "bg-[var(--accent-500)] text-white" : "bg-[var(--surface)]"}`}
+                  className={`relative inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-extrabold tracking-wide ${
+                    href
+                      ? "btn-bouncy border-2 border-[var(--edge)] bg-[var(--accent-500)] text-white shadow-[0_4px_0_var(--edge)]"
+                      : "pill bg-[var(--surface)] px-2.5 py-1 text-xs font-semibold"
+                  }`}
                 >
                   {href ? t.play : t.soon}
                 </span>
