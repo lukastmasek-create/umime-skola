@@ -26,6 +26,7 @@ import { MotionTab, MoreOssTab } from "./UiDemoMotion";
 import { DashboardTab, PricingTab } from "./UiDemoDashboard";
 import { SettingsTab } from "./UiDemoSettings";
 import { BankTab } from "./UiDemoBank";
+import { LobbyTab } from "./UiDemoLobby";
 
 type Game = { id: string; name: string; tag: string; kind: "action" | "classic"; progress: number };
 
@@ -428,6 +429,7 @@ export function UiDemo() {
               { v: "cenik", label: "Ceník", icon: Gift },
               { v: "nastaveni", label: "Nastavení", icon: Settings },
               { v: "banka", label: "Banka", icon: Wallet },
+              { v: "lobby", label: "Lobby", icon: Gamepad2 },
             ].map(({ v, label, icon: Icon }) => (
               <Tabs.Trigger
                 key={v}
@@ -454,6 +456,7 @@ export function UiDemo() {
           <Tabs.Content value="cenik"><PricingTab /></Tabs.Content>
           <Tabs.Content value="nastaveni"><SettingsTab /></Tabs.Content>
           <Tabs.Content value="banka"><BankTab /></Tabs.Content>
+          <Tabs.Content value="lobby"><LobbyTab /></Tabs.Content>
         </Tabs.Root>
 
         <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
