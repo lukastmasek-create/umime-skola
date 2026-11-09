@@ -2,6 +2,8 @@
 @import "tailwindcss";
 @import "@savvycal/calendar/components.css";
 
+@custom-variant dark (&:is(.dark *));
+
 :root {
   color-scheme: light;
 
@@ -104,7 +106,48 @@ html[data-font="classic"] {
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   --font-heading: var(--font-heading);
   --font-body: var(--font-body);
-}
+  --animate-meteor: meteor 5s linear infinite;
+  @keyframes meteor {
+  0% {
+    transform: rotate(var(--angle)) translateX(0);
+    opacity: 1;
+    }
+  70% {
+    opacity: 1;
+    }
+  100% {
+    transform: rotate(var(--angle)) translateX(-500px);
+    opacity: 0;
+    }
+  }
+  --animate-blink-cursor: blink-cursor 1.2s step-end infinite
+;
+  @keyframes blink-cursor {
+  0%, 49% {
+    opacity: 1;
+    }
+  50%, 100% {
+    opacity: 0;
+    }
+  }
+  --animate-line-shadow: line-shadow 15s linear infinite;
+  @keyframes line-shadow {
+  0% {
+    background-position: 0 0;
+    }
+  100% {
+    background-position: 100% -100%;
+    }
+  }
+  --animate-ripple: ripple var(--duration,2s) ease calc(var(--i, 0)*.2s) infinite;
+  @keyframes ripple {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    }
+  50% {
+    transform: translate(-50%, -50%) scale(0.9);
+    }
+  }}
 
 body {
   background: var(--background);
@@ -1298,7 +1341,6 @@ select[aria-invalid="true"] {
     animation: none !important;
   }
 }
-
 
 /* ---------- Animace úvodní stránky (3D animace z Blenderu v public/home/anim) ---------- */
 
@@ -2562,7 +2604,6 @@ select[aria-invalid="true"] {
   right: 0.75rem;
   z-index: 200;
 }
-
 
 /* Bubliny kroků ve scéně městečka */
 .town-bubble {
