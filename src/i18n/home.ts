@@ -92,7 +92,7 @@ const cs: HomeText = {
       { name: "Natálie Majerová", role: "Marketing Manažer", bio: "Stará se o marketing a o to, aby se web dostal k dětem, rodičům a učitelům." },
       { name: "Lukáš Tomášek", role: "Hlavní Developer", bio: "Vede vývoj platformy, od kurzů a her po účty a žebříčky." },
       { name: "Lukáš Záhorský", role: "Inovátor", bio: "Přichází s novými nápady na hry a způsoby učení." },
-      { name: "Ondra Vrba", role: "Tester / programátor", bio: "Testuje kurzy, hry a únikovky, aby všechno fungovalo tak, jak má." },
+      { name: "Ondrej Vrba", role: "Tester / programátor", bio: "Testuje kurzy, hry a únikovky, aby všechno fungovalo tak, jak má." },
     ],
   },
 };
@@ -152,7 +152,7 @@ const en: HomeText = {
       { name: "Natálie Majerová", role: "Marketing Manager", bio: "Looks after marketing and makes sure the site reaches kids, parents and teachers." },
       { name: "Lukáš Tomášek", role: "Lead Developer", bio: "Leads the platform's development, from courses and games to accounts and leaderboards." },
       { name: "Lukáš Záhorský", role: "Innovator", bio: "Brings new ideas for games and ways of learning." },
-      { name: "Ondra Vrba", role: "Tester / Programmer", bio: "Tests courses, games and escape rooms so that everything works as it should." },
+      { name: "Ondrej Vrba", role: "Tester / Programmer", bio: "Tests courses, games and escape rooms so that everything works as it should." },
     ],
   },
 };
@@ -212,7 +212,7 @@ const de: HomeText = {
       { name: "Natálie Majerová", role: "Marketing-Managerin", bio: "Kümmert sich um Marketing und darum, dass die Seite Kinder, Eltern und Lehrkräfte erreicht." },
       { name: "Lukáš Tomášek", role: "Hauptentwickler", bio: "Leitet die Entwicklung der Plattform, von Kursen und Spielen bis zu Konten und Ranglisten." },
       { name: "Lukáš Záhorský", role: "Innovator", bio: "Bringt neue Ideen für Spiele und Lernweisen ein." },
-      { name: "Ondra Vrba", role: "Tester / Programmierer", bio: "Testet Kurse, Spiele und Escape Rooms, damit alles so funktioniert, wie es soll." },
+      { name: "Ondrej Vrba", role: "Tester / Programmierer", bio: "Testet Kurse, Spiele und Escape Rooms, damit alles so funktioniert, wie es soll." },
     ],
   },
 };
@@ -272,7 +272,7 @@ const ru: HomeText = {
       { name: "Natálie Majerová", role: "Маркетинг-менеджер", bio: "Отвечает за маркетинг и за то, чтобы сайт дошёл до детей, родителей и учителей." },
       { name: "Lukáš Tomášek", role: "Главный разработчик", bio: "Руководит разработкой платформы: от курсов и игр до аккаунтов и рейтингов." },
       { name: "Lukáš Záhorský", role: "Инноватор", bio: "Приносит новые идеи для игр и способов обучения." },
-      { name: "Ondra Vrba", role: "Тестировщик / программист", bio: "Тестирует курсы, игры и квесты, чтобы всё работало как надо." },
+      { name: "Ondrej Vrba", role: "Тестировщик / программист", bio: "Тестирует курсы, игры и квесты, чтобы всё работало как надо." },
     ],
   },
 };
@@ -332,7 +332,7 @@ const uk: HomeText = {
       { name: "Natálie Majerová", role: "Маркетинг-менеджерка", bio: "Відповідає за маркетинг і стежить, щоб сайт доходив до дітей, батьків і вчителів." },
       { name: "Lukáš Tomášek", role: "Головний розробник", bio: "Керує розвитком платформи: від курсів і ігор до облікових записів і таблиць лідерів." },
       { name: "Lukáš Záhorský", role: "Інноватор", bio: "Приносить нові ідеї для ігор і способів навчання." },
-      { name: "Ondra Vrba", role: "Тестувальник / програміст", bio: "Тестує курси, ігри та квести-втечі, щоб усе працювало як слід." },
+      { name: "Ondrej Vrba", role: "Тестувальник / програміст", bio: "Тестує курси, ігри та квести-втечі, щоб усе працювало як слід." },
     ],
   },
 };
@@ -392,7 +392,7 @@ const ja: HomeText = {
       { name: "Natálie Majerová", role: "マーケティング担当", bio: "マーケティングを担当し、子どもたち、保護者、先生方にサイトが届くよう取り組んでいます。" },
       { name: "Lukáš Tomášek", role: "リード開発者", bio: "コースやゲームからアカウントやランキングまで、プラットフォームの開発を率いています。" },
       { name: "Lukáš Záhorský", role: "イノベーター", bio: "ゲームや学びの方法に関する新しいアイデアを出しています。" },
-      { name: "Ondra Vrba", role: "テスター／プログラマー", bio: "コース、ゲーム、脱出ルームをテストし、すべてが正しく動くようにしています。" },
+      { name: "Ondrej Vrba", role: "テスター／プログラマー", bio: "コース、ゲーム、脱出ルームをテストし、すべてが正しく動くようにしています。" },
     ],
   },
 };
@@ -452,7 +452,7 @@ const es: HomeText = {
       { name: "Natálie Majerová", role: "Responsable de marketing", bio: "Se ocupa del marketing y de que la web llegue a niños, familias y docentes." },
       { name: "Lukáš Tomášek", role: "Desarrollador principal", bio: "Dirige el desarrollo de la plataforma, desde los cursos y juegos hasta las cuentas y las clasificaciones." },
       { name: "Lukáš Záhorský", role: "Innovador", bio: "Aporta ideas nuevas para los juegos y las formas de aprender." },
-      { name: "Ondra Vrba", role: "Tester / programador", bio: "Prueba cursos, juegos y escape rooms para que todo funcione como debe." },
+      { name: "Ondrej Vrba", role: "Tester / programador", bio: "Prueba cursos, juegos y escape rooms para que todo funcione como debe." },
     ],
   },
 };
@@ -512,7 +512,7 @@ const fr: HomeText = {
       { name: "Natálie Majerová", role: "Responsable marketing", bio: "Elle s'occupe du marketing et veille à ce que le site atteigne les enfants, les parents et les enseignants." },
       { name: "Lukáš Tomášek", role: "Développeur principal", bio: "Il dirige le développement de la plateforme, des cours et jeux jusqu'aux comptes et aux classements." },
       { name: "Lukáš Záhorský", role: "Innovateur", bio: "Il apporte de nouvelles idées pour les jeux et les façons d'apprendre." },
-      { name: "Ondra Vrba", role: "Testeur / programmeur", bio: "Il teste les cours, les jeux et les escape rooms pour que tout fonctionne comme prévu." },
+      { name: "Ondrej Vrba", role: "Testeur / programmeur", bio: "Il teste les cours, les jeux et les escape rooms pour que tout fonctionne comme prévu." },
     ],
   },
 };
