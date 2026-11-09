@@ -20,6 +20,7 @@ import { getDailyQuizText } from "@/i18n/daily-quiz";
 import { getContactText } from "@/i18n/contact";
 import { getProText } from "@/i18n/pro";
 import { getPlayerMarketText } from "@/i18n/player-market";
+import { getAudiencePagesText } from "@/i18n/audience";
 import { useAccount } from "@/lib/use-account";
 import { locales, localeNames, type Locale } from "@/i18n/config";
 import { setLocaleCookie } from "@/lib/locale-cookie";
@@ -97,6 +98,8 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
         { key: "mapa", href: `/${locale}/mapa`, label: review.mapNav },
         { key: "opakovani", href: `/${locale}/opakovani`, label: review.reviewNav },
         { key: "materialy", href: `/${locale}/materialy`, label: getMaterialsText(locale).nav },
+        { key: "zaci", href: `/${locale}/zaci`, label: getAudiencePagesText(locale).students.nav },
+        { key: "ucitele", href: `/${locale}/ucitele`, label: getAudiencePagesText(locale).teachers.nav },
       ],
     },
     {

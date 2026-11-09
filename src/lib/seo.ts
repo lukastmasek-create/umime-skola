@@ -12,6 +12,7 @@ import { getReviewText } from "@/i18n/review";
 import { getLiveText } from "@/i18n/live";
 import { getDailyQuizText } from "@/i18n/daily-quiz";
 import { getPlayerMarketText } from "@/i18n/player-market";
+import { getAudiencePagesText } from "@/i18n/audience";
 
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://ucimesehrou.org").replace(/\/$/, "");
 export const SITE_NAME = "Učíme se hrou";
@@ -61,6 +62,8 @@ const STATIC_PAGES = {
   "/uzivatelsky-obchod": (l) => ({ title: getCommunityText(l).navMarketplace }),
   "/pokoj": (l) => ({ title: getRoomText(l).nav }),
   "/mestecko": (l) => ({ title: getTownHubText(l).nav }),
+  "/ucitele": (l) => ({ title: getAudiencePagesText(l).teachers.nav, description: getAudiencePagesText(l).teachers.subtitle }),
+  "/zaci": (l) => ({ title: getAudiencePagesText(l).students.nav, description: getAudiencePagesText(l).students.subtitle }),
 } satisfies Record<string, PageInfo>;
 
 export type StaticPagePath = keyof typeof STATIC_PAGES;

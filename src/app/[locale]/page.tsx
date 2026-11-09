@@ -12,6 +12,7 @@ import { IslandHub } from "@/components/IslandHub";
 import { HeroSky } from "@/components/HeroSky";
 import { getHomeText } from "@/i18n/home";
 import { getHomeAudienceText } from "@/i18n/home-teachers";
+import { getAudiencePagesText } from "@/i18n/audience";
 import { getSubjectText } from "@/i18n/subjects";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, type Locale } from "@/i18n/config";
@@ -39,6 +40,7 @@ export default async function Home({
   const badge = dict.home.badge.replace(/^[^\p{L}\p{N}]+/u, "");
   const h = getHomeText(locale as Locale);
   const a = getHomeAudienceText(locale as Locale);
+  const audience = getAudiencePagesText(locale as Locale);
   const sample = [{ who: "A. K.", pct: 100 }, { who: "T. N.", pct: 100 }, { who: "E. P.", pct: 60 }, { who: "J. S.", pct: 20 }];
   const subjectText = getSubjectText(locale as Locale);
   const featureLinks = {
@@ -269,6 +271,9 @@ export default async function Home({
                   {a.teachers.cta}
                 </TeacherCta>
                 <p className="text-sm text-[var(--muted)]">{a.teachers.ctaHint}</p>
+                <Link href={`/${locale}/ucitele`} className="text-sm font-bold text-[var(--accent-green)] hover:underline">
+                  {audience.teachers.homeLink}
+                </Link>
               </div>
             </div>
             {/* Ilustrační ukázka přehledu výsledků (není to živá data) */}
