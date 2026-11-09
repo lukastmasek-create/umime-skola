@@ -78,6 +78,18 @@ const META: Record<GameSlug, Record<Locale, Meta>> = {
     es: { name: "Caza de topos", tag: "Golpea al topo que sostiene el cartel correcto" },
     fr: { name: "Chasse aux taupes", tag: "Tape la taupe qui tient le bon panneau" },
   },
+  minesweeper: {
+    ...withFallbacks({
+      cs: { name: "Hledání min", tag: "Odkryj políčko správnou odpovědí a vyhni se minám" },
+      en: { name: "Minesweeper", tag: "Reveal tiles with right answers and avoid the mines" },
+      de: { name: "Minensucher", tag: "Decke Felder mit richtigen Antworten auf und meide die Minen" },
+      ru: { name: "Сапёр", tag: "Открывай клетки верными ответами и обходи мины" },
+    }),
+    uk: { name: "Сапер", tag: "Відкривай клітинки правильними відповідями і оминай міни" },
+    ja: { name: "マインスイーパー", tag: "正しい答えでマスを開いて、地雷をさけよう" },
+    es: { name: "Buscaminas", tag: "Descubre casillas con respuestas correctas y evita las minas" },
+    fr: { name: "Démineur", tag: "Révèle les cases avec les bonnes réponses et évite les mines" },
+  },
   ninja: {
     ...withFallbacks({
       cs: { name: "Stínový bojovník", tag: "Rozsekni letící ovoce se správnou odpovědí" },
