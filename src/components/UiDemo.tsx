@@ -16,7 +16,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip as ChartTool
 import { createColumnHelper, flexRender, getCoreRowModel, getSortedRowModel, useReactTable, type SortingState } from "@tanstack/react-table";
 import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { Gift, Gamepad2, Trophy, Star, Sparkles, Search, GripVertical, ChartColumn, Table2, ListOrdered, Settings, Volume2, Upload, Layers, Wallet } from "lucide-react";
+import { Gift, Gamepad2, Trophy, Star, Sparkles, Search, GripVertical, ChartColumn, Table2, ListOrdered, Settings, Volume2, Upload, Layers, Wallet, BookOpen } from "lucide-react";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -27,6 +27,7 @@ import { DashboardTab, PricingTab } from "./UiDemoDashboard";
 import { SettingsTab } from "./UiDemoSettings";
 import { BankTab } from "./UiDemoBank";
 import { LobbyTab } from "./UiDemoLobby";
+import { LibraryTab } from "./UiDemoLibrary";
 
 type Game = { id: string; name: string; tag: string; kind: "action" | "classic"; progress: number };
 
@@ -430,6 +431,7 @@ export function UiDemo() {
               { v: "nastaveni", label: "Nastavení", icon: Settings },
               { v: "banka", label: "Banka", icon: Wallet },
               { v: "lobby", label: "Lobby", icon: Gamepad2 },
+              { v: "knihovna", label: "Knihovna", icon: BookOpen },
             ].map(({ v, label, icon: Icon }) => (
               <Tabs.Trigger
                 key={v}
@@ -457,6 +459,7 @@ export function UiDemo() {
           <Tabs.Content value="nastaveni"><SettingsTab /></Tabs.Content>
           <Tabs.Content value="banka"><BankTab /></Tabs.Content>
           <Tabs.Content value="lobby"><LobbyTab /></Tabs.Content>
+          <Tabs.Content value="knihovna"><LibraryTab /></Tabs.Content>
         </Tabs.Root>
 
         <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
