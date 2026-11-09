@@ -87,25 +87,28 @@ export function TeamsHome({ locale }: { locale: Locale }) {
     <SideLayout
       side={
         <>
-          <section aria-label={t.progressTitle} className="grid grid-cols-3 gap-3 lg:grid-cols-1">
-            <div className="card flex flex-col gap-1 p-4">
-              <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.summaryTeams}</p>
-              <p className="text-2xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>{teams?.length ?? 0}</p>
+          {/* Přehled ve stylu Trophy StreakCard: velké číslo, pod ním čárkovaně oddělené doplňkové údaje. */}
+          <section aria-label={t.progressTitle} className="card flex flex-col gap-4 p-5">
+            <div>
+              <p className="text-sm font-semibold text-[var(--muted)]">{t.summaryOpen}</p>
+              <p className="text-5xl font-extrabold leading-none" style={{ fontFamily: "var(--font-heading)" }}>{openSum}</p>
             </div>
-            <div className="card flex flex-col gap-1 p-4">
-              <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.summaryOpen}</p>
-              <p className="text-2xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>{openSum}</p>
-            </div>
-            <div className="card flex min-w-0 flex-col gap-1 p-4">
-              <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.summaryNext}</p>
-              {nextDue ? (
-                <Link href={`/${locale}/tymy/${nextDue.teamId}/zadani/${nextDue.assignmentId}`} className="flex min-w-0 flex-col hover:underline">
-                  <span className="truncate text-sm font-bold">{nextDue.title}</span>
-                  <span className="text-xs text-[var(--muted)]">{fmtDate(locale, nextDue.dueAt)}</span>
-                </Link>
-              ) : (
-                <span className="text-sm font-semibold text-[var(--muted)]">{t.summaryNone}</span>
-              )}
+            <div className="grid grid-cols-2 gap-4 border-t border-dashed border-[var(--border-soft)] pt-4">
+              <div className="min-w-0">
+                <p className="text-sm text-[var(--muted)]">{t.summaryTeams}</p>
+                <p className="text-2xl font-extrabold leading-tight">{teams?.length ?? 0}</p>
+              </div>
+              <div className="min-w-0 text-right">
+                <p className="text-sm text-[var(--muted)]">{t.summaryNext}</p>
+                {nextDue ? (
+                  <Link href={`/${locale}/tymy/${nextDue.teamId}/zadani/${nextDue.assignmentId}`} className="flex min-w-0 flex-col items-end hover:underline">
+                    <span className="max-w-full truncate text-sm font-bold">{nextDue.title}</span>
+                    <span className="text-xs text-[var(--muted)]">{fmtDate(locale, nextDue.dueAt)}</span>
+                  </Link>
+                ) : (
+                  <span className="text-sm font-semibold text-[var(--muted)]">{t.summaryNone}</span>
+                )}
+              </div>
             </div>
           </section>
           <form className="card flex flex-col gap-3 p-5" onSubmit={(e) => { e.preventDefault(); void act({ action: "create", name, asTeacher: teacher }); }}>

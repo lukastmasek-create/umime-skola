@@ -146,12 +146,15 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
         {teacher && overdueN > 0 && <Pill tone="danger">{tfill(t.overdueN, overdueN)}</Pill>}
       </header>
       {active.length > 0 && (
-        <section className="card flex flex-col gap-2 p-4" aria-label={teacher ? t.teamProgress : t.progressTitle}>
-          {teacher ? (
-            <Progress value={sumDone} max={sumTotal} color="linear-gradient(90deg, var(--brand-500), var(--accent-green))" label={`${t.teamProgress}: ${tfill(t.doneOf, sumDone, sumTotal)}`} />
-          ) : (
-            <Progress value={passedN} max={active.length} color="linear-gradient(90deg, var(--brand-500), var(--accent-green))" label={`${t.progressTitle}: ${passedN} / ${active.length}`} />
-          )}
+        // Karta postupu ve stylu Trophy: velké číslo nahoře, pod ním progress bar z TailGrids.
+        <section className="card flex flex-col gap-3 p-5" aria-label={teacher ? t.teamProgress : t.progressTitle}>
+          <div>
+            <p className="text-sm font-semibold text-[var(--muted)]">{teacher ? t.teamProgress : t.progressTitle}</p>
+            <p className="text-4xl font-extrabold leading-none" style={{ fontFamily: "var(--font-heading)" }}>
+              {teacher ? sumDone : passedN} <span className="text-2xl font-bold text-[var(--muted)]">/ {teacher ? sumTotal : active.length}</span>
+            </p>
+          </div>
+          <Progress value={teacher ? sumDone : passedN} max={teacher ? sumTotal : active.length} color="linear-gradient(90deg, var(--brand-500), var(--accent-green))" />
         </section>
       )}
       </aside>
