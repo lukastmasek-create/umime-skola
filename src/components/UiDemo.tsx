@@ -28,6 +28,7 @@ import { SettingsTab } from "./UiDemoSettings";
 import { BankTab } from "./UiDemoBank";
 import { LobbyTab } from "./UiDemoLobby";
 import { LibraryTab } from "./UiDemoLibrary";
+import { LmsTab } from "./UiDemoLms";
 
 type Game = { id: string; name: string; tag: string; kind: "action" | "classic"; progress: number };
 
@@ -432,6 +433,7 @@ export function UiDemo() {
               { v: "banka", label: "Banka", icon: Wallet },
               { v: "lobby", label: "Lobby", icon: Gamepad2 },
               { v: "knihovna", label: "Knihovna", icon: BookOpen },
+              { v: "lms", label: "LMS", icon: Layers },
             ].map(({ v, label, icon: Icon }) => (
               <Tabs.Trigger
                 key={v}
@@ -460,6 +462,7 @@ export function UiDemo() {
           <Tabs.Content value="banka"><BankTab /></Tabs.Content>
           <Tabs.Content value="lobby"><LobbyTab /></Tabs.Content>
           <Tabs.Content value="knihovna"><LibraryTab /></Tabs.Content>
+          <Tabs.Content value="lms"><LmsTab /></Tabs.Content>
         </Tabs.Root>
 
         <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
