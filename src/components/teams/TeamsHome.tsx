@@ -8,11 +8,10 @@ import { tfill } from "@/i18n/teams";
 import { getTeamsAll, teamsAllError } from "@/i18n/teams-more";
 import { fmtDate } from "./api";
 import type { Locale } from "@/i18n/config";
-import { Badge, Pill, Progress, colorOf } from "./ui";
+import { Badge, Pill, Progress, SideLayout, colorOf } from "./ui";
 
 // Gradient pro progress bar postupu (fialová → zelená, jako v gamifikovaném vzhledu).
 const PROGRESS_GRADIENT = "linear-gradient(90deg, var(--brand-500), var(--accent-green))";
-
 
 type TeamRow = { id: string; name: string; role: string; code: string | null; members: number; assignments: number; done: number; open: number; soon: number; overdue: number };
 type Urgent = { teamId: string; teamName: string; assignmentId: string; title: string; dueAt: string; overdue: boolean };
@@ -72,7 +71,7 @@ export function TeamsHome({ locale }: { locale: Locale }) {
     }
   }
 
-  // Souhrn nahoře: nesplněná zadání žáka napříč týmy a nejbližší termín (API je řadí podle data).
+  // Souhrn v levém sloupci: nesplněná zadání žáka napříč týmy a nejbližší termín (API je řadí podle data).
   const openSum = (teams ?? []).reduce((n, tm) => n + (tm.role === "STUDENT" ? tm.open : 0), 0);
   const nextDue = urgent[0];
 
@@ -85,7 +84,48 @@ export function TeamsHome({ locale }: { locale: Locale }) {
     );
 
   return (
-    <div className="flex flex-col gap-8">
+    <SideLayout
+      side={
+        <>
+          <section aria-label={t.progressTitle} className="grid grid-cols-3 gap-3 lg:grid-cols-1">
+            <div className="card flex flex-col gap-1 p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.summaryTeams}</p>
+              <p className="text-2xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>{teams?.length ?? 0}</p>
+            </div>
+            <div className="card flex flex-col gap-1 p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.summaryOpen}</p>
+              <p className="text-2xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>{openSum}</p>
+            </div>
+            <div className="card flex min-w-0 flex-col gap-1 p-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.summaryNext}</p>
+              {nextDue ? (
+                <Link href={`/${locale}/tymy/${nextDue.teamId}/zadani/${nextDue.assignmentId}`} className="flex min-w-0 flex-col hover:underline">
+                  <span className="truncate text-sm font-bold">{nextDue.title}</span>
+                  <span className="text-xs text-[var(--muted)]">{fmtDate(locale, nextDue.dueAt)}</span>
+                </Link>
+              ) : (
+                <span className="text-sm font-semibold text-[var(--muted)]">{t.summaryNone}</span>
+              )}
+            </div>
+          </section>
+          <form className="card flex flex-col gap-3 p-5" onSubmit={(e) => { e.preventDefault(); void act({ action: "create", name, asTeacher: teacher }); }}>
+            <h2 className="text-lg font-extrabold">{t.createTitle}</h2>
+            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} placeholder={t.namePh} aria-label={t.namePh} className="rounded-xl border-2 border-[var(--field-border)] bg-[var(--surface)] px-3 py-2 text-sm" />
+            <label className="flex items-center gap-2 text-sm font-semibold">
+              <input type="checkbox" checked={teacher} onChange={(e) => setTeacher(e.target.checked)} className="size-4" />
+              {t.iAmTeacher}
+            </label>
+            <button className="btn-bouncy self-start bg-[var(--brand-500)] px-5 py-2 text-sm font-bold text-white">{t.create}</button>
+          </form>
+          <form className="card flex flex-col gap-3 p-5" onSubmit={(e) => { e.preventDefault(); void act({ action: "join", code }); }}>
+            <h2 className="text-lg font-extrabold">{t.joinTitle}</h2>
+            <p className="text-sm text-[var(--muted)]">{t.joinHint}</p>
+            <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} maxLength={12} placeholder={t.codePh} aria-label={t.codePh} className="rounded-xl border-2 border-[var(--field-border)] bg-[var(--surface)] px-3 py-2 text-sm uppercase tracking-widest" />
+            <button className="btn-bouncy self-start bg-[var(--accent-green)] px-5 py-2 text-sm font-bold text-white">{t.join}</button>
+          </form>
+        </>
+      }
+    >
       {error && <p role="alert" className="card p-3 text-sm font-semibold text-[var(--danger)]">{error}</p>}
       {notice && <p role="status" className="card p-3 text-sm font-semibold text-[var(--accent-green)]">{notice}</p>}
       {urgent.length > 0 && (
@@ -103,44 +143,6 @@ export function TeamsHome({ locale }: { locale: Locale }) {
           </ul>
         </section>
       )}
-      <section aria-label={t.progressTitle} className="grid grid-cols-3 gap-3">
-        <div className="card flex flex-col gap-1 p-4">
-          <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.summaryTeams}</p>
-          <p className="text-2xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>{teams?.length ?? 0}</p>
-        </div>
-        <div className="card flex flex-col gap-1 p-4">
-          <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.summaryOpen}</p>
-          <p className="text-2xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>{openSum}</p>
-        </div>
-        <div className="card flex min-w-0 flex-col gap-1 p-4">
-          <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.summaryNext}</p>
-          {nextDue ? (
-            <Link href={`/${locale}/tymy/${nextDue.teamId}/zadani/${nextDue.assignmentId}`} className="flex min-w-0 flex-col hover:underline">
-              <span className="truncate text-sm font-bold">{nextDue.title}</span>
-              <span className="text-xs text-[var(--muted)]">{fmtDate(locale, nextDue.dueAt)}</span>
-            </Link>
-          ) : (
-            <span className="text-sm font-semibold text-[var(--muted)]">{t.summaryNone}</span>
-          )}
-        </div>
-      </section>
-      <section className="grid gap-4 sm:grid-cols-2">
-        <form className="card flex flex-col gap-3 p-5" onSubmit={(e) => { e.preventDefault(); void act({ action: "create", name, asTeacher: teacher }); }}>
-          <h2 className="text-lg font-extrabold">{t.createTitle}</h2>
-          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} placeholder={t.namePh} aria-label={t.namePh} className="rounded-xl border-2 border-[var(--field-border)] bg-[var(--surface)] px-3 py-2 text-sm" />
-          <label className="flex items-center gap-2 text-sm font-semibold">
-            <input type="checkbox" checked={teacher} onChange={(e) => setTeacher(e.target.checked)} className="size-4" />
-            {t.iAmTeacher}
-          </label>
-          <button className="btn-bouncy self-start bg-[var(--brand-500)] px-5 py-2 text-sm font-bold text-white">{t.create}</button>
-        </form>
-        <form className="card flex flex-col gap-3 p-5" onSubmit={(e) => { e.preventDefault(); void act({ action: "join", code }); }}>
-          <h2 className="text-lg font-extrabold">{t.joinTitle}</h2>
-          <p className="text-sm text-[var(--muted)]">{t.joinHint}</p>
-          <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} maxLength={12} placeholder={t.codePh} aria-label={t.codePh} className="rounded-xl border-2 border-[var(--field-border)] bg-[var(--surface)] px-3 py-2 text-sm uppercase tracking-widest" />
-          <button className="btn-bouncy self-start bg-[var(--accent-green)] px-5 py-2 text-sm font-bold text-white">{t.join}</button>
-        </form>
-      </section>
       <section className="flex flex-col gap-3">
         <h2 className="text-xl font-extrabold">{t.myTeams}</h2>
         {teams === null && <div className="card h-24 animate-pulse bg-[var(--surface-muted)]" aria-hidden />}
@@ -179,6 +181,6 @@ export function TeamsHome({ locale }: { locale: Locale }) {
           ))}
         </ul>
       </section>
-    </div>
+    </SideLayout>
   );
 }

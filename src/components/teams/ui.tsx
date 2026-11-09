@@ -46,3 +46,14 @@ export function Pill({ children, tone = "plain" }: { children: ReactNode; tone?:
   }[tone];
   return <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${cls}`}>{children}</span>;
 }
+
+/** Dvousloupcový layout sdílený v sekci Týmy: vedlejší sloupec vlevo (na širokém displeji), hlavní obsah vpravo.
+ *  Na úzkém displeji jde hlavní obsah nahoru a vedlejší sloupec pod něj. */
+export function SideLayout({ side, children }: { side: ReactNode; children: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start lg:gap-6">
+      <aside className="order-last flex flex-col gap-4 lg:order-none lg:sticky lg:top-24">{side}</aside>
+      <div className="flex min-w-0 flex-col gap-5">{children}</div>
+    </div>
+  );
+}

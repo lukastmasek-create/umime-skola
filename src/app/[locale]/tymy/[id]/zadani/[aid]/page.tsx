@@ -6,7 +6,7 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   const { locale, id, aid } = await params;
   if (!isLocale(locale)) notFound();
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-16">
+    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
       <AssignmentPage locale={locale as Locale} teamId={id} assignmentId={aid} />
     </div>
   );
