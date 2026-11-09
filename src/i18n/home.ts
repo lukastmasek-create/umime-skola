@@ -7,7 +7,7 @@ export type HomeText = {
   closeMenu: string;
   learn: string;
   play: string;
-  groups: { courses: string; settings: string; games: string; shop: string; study: string; extras: string; together: string; boards: string };
+  groups: { courses: string; settings: string; games: string; shop: string; study: string; extras: string; together: string; boards: string; info: string };
   languages: string;
   index: string;
   subjectsTitle: string;
@@ -43,7 +43,7 @@ const cs: HomeText = {
   closeMenu: "Zavřít menu",
   learn: "Učení",
   play: "Hry a komunita",
-  groups: { courses: "Kurzy", settings: "Nastavení", games: "Hry", shop: "Obchod", study: "Učivo", extras: "Přídavky", together: "Společné hry", boards: "Žebříčky" },
+  groups: { courses: "Kurzy", settings: "Nastavení", games: "Hry", shop: "Obchod", study: "Učivo", extras: "Přídavky", together: "Společné hry", boards: "Žebříčky", info: "Info" },
   languages: "Jazyky",
   index: "Sbírka karet",
   subjectsTitle: "Vyber si předmět",
@@ -103,7 +103,7 @@ const en: HomeText = {
   closeMenu: "Close menu",
   learn: "Learn",
   play: "Games and community",
-  groups: { courses: "Courses", settings: "Settings", games: "Games", shop: "Shop", study: "Study", extras: "Extras", together: "Play together", boards: "Leaderboards" },
+  groups: { courses: "Courses", settings: "Settings", games: "Games", shop: "Shop", study: "Study", extras: "Extras", together: "Play together", boards: "Leaderboards", info: "Info" },
   languages: "Languages",
   index: "Card collection",
   subjectsTitle: "Pick a subject",
@@ -163,7 +163,7 @@ const de: HomeText = {
   closeMenu: "Menü schließen",
   learn: "Lernen",
   play: "Spiele und Community",
-  groups: { courses: "Kurse", settings: "Einstellungen", games: "Spiele", shop: "Shop", study: "Lernstoff", extras: "Extras", together: "Gemeinsam spielen", boards: "Ranglisten" },
+  groups: { courses: "Kurse", settings: "Einstellungen", games: "Spiele", shop: "Shop", study: "Lernstoff", extras: "Extras", together: "Gemeinsam spielen", boards: "Ranglisten", info: "Info" },
   languages: "Sprachen",
   index: "Kartensammlung",
   subjectsTitle: "Wähle ein Fach",
@@ -223,7 +223,7 @@ const ru: HomeText = {
   closeMenu: "Закрыть меню",
   learn: "Обучение",
   play: "Игры и сообщество",
-  groups: { courses: "Курсы", settings: "Настройки", games: "Игры", shop: "Магазин", study: "Материал", extras: "Бонусы", together: "Играть вместе", boards: "Рейтинги" },
+  groups: { courses: "Курсы", settings: "Настройки", games: "Игры", shop: "Магазин", study: "Материал", extras: "Бонусы", together: "Играть вместе", boards: "Рейтинги", info: "Инфо" },
   languages: "Языки",
   index: "Коллекция карточек",
   subjectsTitle: "Выбери предмет",
@@ -283,7 +283,7 @@ const uk: HomeText = {
   closeMenu: "Закрити меню",
   learn: "Навчання",
   play: "Ігри та спільнота",
-  groups: { courses: "Курси", settings: "Налаштування", games: "Ігри", shop: "Магазин", study: "Навчання", extras: "Додатково", together: "Грати разом", boards: "Таблиці лідерів" },
+  groups: { courses: "Курси", settings: "Налаштування", games: "Ігри", shop: "Магазин", study: "Навчання", extras: "Додатково", together: "Грати разом", boards: "Таблиці лідерів", info: "Інфо" },
   languages: "Мови",
   index: "Колекція карток",
   subjectsTitle: "Обери предмет",
@@ -343,7 +343,7 @@ const ja: HomeText = {
   closeMenu: "メニューを閉じる",
   learn: "学習",
   play: "ゲームとコミュニティ",
-  groups: { courses: "コース", settings: "設定", games: "ゲーム", shop: "ショップ", study: "学習", extras: "その他", together: "みんなで遊ぶ", boards: "ランキング" },
+  groups: { courses: "コース", settings: "設定", games: "ゲーム", shop: "ショップ", study: "学習", extras: "その他", together: "みんなで遊ぶ", boards: "ランキング", info: "情報" },
   languages: "言語",
   index: "カードコレクション",
   subjectsTitle: "教科を選ぶ",
@@ -403,7 +403,7 @@ const es: HomeText = {
   closeMenu: "Cerrar menú",
   learn: "Aprender",
   play: "Juegos y comunidad",
-  groups: { courses: "Cursos", settings: "Ajustes", games: "Juegos", shop: "Tienda", study: "Estudiar", extras: "Extras", together: "Jugar juntos", boards: "Clasificaciones" },
+  groups: { courses: "Cursos", settings: "Ajustes", games: "Juegos", shop: "Tienda", study: "Estudiar", extras: "Extras", together: "Jugar juntos", boards: "Clasificaciones", info: "Info" },
   languages: "Idiomas",
   index: "Colección de cartas",
   subjectsTitle: "Elige una asignatura",
@@ -463,7 +463,7 @@ const fr: HomeText = {
   closeMenu: "Fermer le menu",
   learn: "Apprendre",
   play: "Jeux et communauté",
-  groups: { courses: "Cours", settings: "Réglages", games: "Jeux", shop: "Boutique", study: "Étude", extras: "Extras", together: "Jouer ensemble", boards: "Classements" },
+  groups: { courses: "Cours", settings: "Réglages", games: "Jeux", shop: "Boutique", study: "Étude", extras: "Extras", together: "Jouer ensemble", boards: "Classements", info: "Infos" },
   languages: "Langues",
   index: "Collection de cartes",
   subjectsTitle: "Choisis une matière",

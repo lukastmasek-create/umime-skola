@@ -128,6 +128,15 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
         { key: "zebricky", href: `/${locale}/zebricky`, label: community.navLeaderboards },
       ],
     },
+    {
+      key: "info",
+      label: home.groups.info,
+      items: [
+        { key: "info-tymy", href: `/${locale}/tymy`, label: getTeamsText(locale).title },
+        { key: "info-ucitele", href: `/${locale}/ucitele`, label: getAudiencePagesText(locale).teachers.nav },
+        { key: "info-zaci", href: `/${locale}/zaci`, label: getAudiencePagesText(locale).students.nav },
+      ],
+    },
   ];
   return groups;
 }
