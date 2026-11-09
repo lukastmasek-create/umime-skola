@@ -13,6 +13,15 @@ export type LiveQuestion = {
 /** Otázka ve vlastní sadě: navíc může mít obrázek (zmenšený JPEG/PNG/WebP jako data URL). Do živých her se obrázek nekopíruje. */
 export type SetQuestion = LiveQuestion & { image?: string };
 
+/** Spojování ve vlastní sadě: 4 až 8 dvojic (levá strana ↔ pravá strana). */
+export type PairsItem = { kind: "pairs"; pairs: { left: string; right: string }[] };
+
+/** Křížovka ve vlastní sadě: jedno slovo (3 až 11 písmen) s nápovědou. */
+export type CrosswordItem = { kind: "word"; word: string; clue: string };
+
+/** Položka vlastní sady: klasická otázka se čtyřmi možnostmi, nebo spojování, nebo slovo do křížovky. */
+export type SetItem = SetQuestion | PairsItem | CrosswordItem;
+
 export type LiveSettings = {
   /** Čas na otázku v klasickém kvízu (sekundy). */
   seconds: number;

@@ -7,7 +7,7 @@ import {
 } from "@/lib/teams/logic";
 import { requireMember, requireUserId } from "@/lib/teams/server";
 import { randomCode } from "@/lib/social";
-import { cleanSetQuestions } from "@/lib/live/logic";
+import { cleanSetQuestions, isChoice } from "@/lib/live/logic";
 
 export const dynamic = "force-dynamic";
 
@@ -117,7 +117,7 @@ async function buildQuestions(body: Record<string, unknown>, userId: string): Pr
   if (source === "set") {
     const set = await prisma.questionSet.findFirst({ where: { id: String(body.setId ?? ""), ownerId: userId } });
     if (!set) throw new LiveError("set-not-found", 404);
-    const qs = cleanSetQuestions(set.questions).map((q) => ({ prompt: q.prompt, options: q.options, correctIndex: q.correctIndex, answers: [], explanation: q.explanation ?? "" }));
+    const qs = cleanSetQuestions(set.questions).filter(isChoice).map((q) => ({ prompt: q.prompt, options: q.options, correctIndex: q.correctIndex, answers: [], explanation: q.explanation ?? "" }));
     return { questions: cleanSnapshot(qs), title: set.title };
   }
   if (source === "course") {

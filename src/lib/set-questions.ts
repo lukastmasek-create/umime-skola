@@ -1,17 +1,30 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { GameQuestion } from "@/i18n/game";
-import { cleanSetQuestions } from "@/lib/live/logic";
+import type { GameSlug } from "@/lib/games";
+import { cleanSetQuestions, isChoice } from "@/lib/live/logic";
+import type { SetItem } from "@/lib/live/types";
 
-// Vlastní sada přihlášeného uživatele převedená na otázky pro klasické hry (jen čtyři možnosti, bez id,
-// takže se chyby nezapisují do opakování kurzů).
-export async function loadOwnSet(id: string): Promise<{ title: string; questions: GameQuestion[] } | "login" | null> {
+const FILL = "–";
+
+// Vlastní sada přihlášeného uživatele. Položky zůstávají tak, jak jsou uložené (otázky, spojování, slova).
+export async function loadOwnSet(id: string): Promise<{ title: string; items: SetItem[] } | "login" | null> {
   const session = await auth().catch(() => null);
   const ownerId = session?.user?.id;
   if (!ownerId) return "login";
   const set = await prisma.questionSet.findFirst({ where: { id, ownerId } });
   if (!set) return null;
-  const questions: GameQuestion[] = cleanSetQuestions(set.questions)
+  return { title: set.title, items: cleanSetQuestions(set.questions) };
+}
+
+/**
+ * Otázky pro jednu klasickou hru. Klasické hry berou `GameQuestion`: u spojování je levá strana zadání
+ * a pravá správná odpověď, u křížovky je nápověda zadání a slovo správná odpověď. Hry s možnostmi
+ * dostanou jen otázky se čtyřmi možnostmi, jako dřív.
+ */
+export function poolFor(slug: GameSlug, items: SetItem[]): GameQuestion[] {
+  const choice: GameQuestion[] = items
+    .filter(isChoice)
     .filter((q) => q.options.length === 4)
     .map((q) => ({
       prompt: q.prompt,
@@ -20,5 +33,20 @@ export async function loadOwnSet(id: string): Promise<{ title: string; questions
       explanation: q.explanation ?? "",
       ...(q.image ? { image: q.image } : {}),
     }));
-  return { title: set.title, questions };
+  const pairs: GameQuestion[] = items.flatMap((item) =>
+    !isChoice(item) && item.kind === "pairs"
+      ? item.pairs.map((p) => ({ prompt: p.left, options: [p.right, FILL, FILL, FILL] as [string, string, string, string], correctIndex: 0, explanation: "" }))
+      : [],
+  );
+  const words: GameQuestion[] = items.flatMap((item) =>
+    !isChoice(item) && item.kind === "word" ? [{ prompt: item.clue, options: [item.word, FILL, FILL, FILL] as [string, string, string, string], correctIndex: 0, explanation: "" }] : [],
+  );
+  switch (slug) {
+    case "krizovka":
+      return [...words, ...choice];
+    case "spojovani":
+      return [...pairs, ...choice];
+    default:
+      return choice;
+  }
 }

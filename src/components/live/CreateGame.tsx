@@ -1,17 +1,17 @@
 "use client";
 
-import { MODES, isSyncMode } from "@/lib/live/logic";
+import { MODES, isChoice, isSyncMode } from "@/lib/live/logic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { fmt, getLiveText } from "@/i18n/live";
 import type { Locale } from "@/i18n/config";
-import type { LiveMode, LiveQuestion } from "@/lib/live/types";
+import type { LiveMode, SetItem } from "@/lib/live/types";
 import { liveApi, saveHost } from "./api";
 import { errorText } from "./LiveRoom";
 
 type Course = { slug: string; title: string; category: string; subject: string | null; grade: number | null; questions: number };
-type SetRow = { id: string; title: string; questions: LiveQuestion[] };
+type SetRow = { id: string; title: string; questions: SetItem[] };
 
 const MODE_ICON: Record<LiveMode, string> = { QUIZ: "⏱️", RACE: "🏁", GOLD: "🪙", STREAK: "🔥", SURVIVAL: "❤️", TEAMS: "🤝" };
 
@@ -55,7 +55,7 @@ export function CreateGame({ locale }: { locale: Locale }) {
 
   const chosenCourse = courses?.find((c) => c.slug === slug);
   const chosenSet = Array.isArray(sets) ? sets.find((s) => s.id === setId) : undefined;
-  const available = source === "course" ? chosenCourse?.questions : chosenSet?.questions.length;
+  const available = source === "course" ? chosenCourse?.questions : chosenSet?.questions.filter(isChoice).length;
   const ready = source === "course" ? !!slug : !!setId;
 
   async function submit(e: FormEvent) {

@@ -6,7 +6,7 @@ import { gameMeta } from "@/i18n/games-meta";
 import { getSetsExtraText } from "@/i18n/sets-extra";
 import { canPlay } from "@/lib/game-fit";
 import { CLASSIC_SLUGS, GAMES } from "@/lib/games";
-import { loadOwnSet } from "@/lib/set-questions";
+import { loadOwnSet, poolFor } from "@/lib/set-questions";
 
 export const revalidate = 0;
 const DIFFICULTY = 3;
@@ -47,7 +47,7 @@ export default async function PlaySetPage({ params }: { params: Promise<{ locale
             {games.map((g) => {
               if (!g) return null;
               const meta = gameMeta(g.slug, locale as Locale);
-              const ok = canPlay(g.slug, set.questions, DIFFICULTY);
+              const ok = canPlay(g.slug, poolFor(g.slug, set.items), DIFFICULTY);
               const body = (
                 <>
                   <span className="text-3xl" aria-hidden>

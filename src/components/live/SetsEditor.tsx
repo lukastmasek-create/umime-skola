@@ -5,28 +5,67 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { fmt, getLiveText } from "@/i18n/live";
 import { getSetsExtraText } from "@/i18n/sets-extra";
 import type { Locale } from "@/i18n/config";
-import { MAX_IMAGE_CHARS } from "@/lib/live/logic";
-import type { SetQuestion } from "@/lib/live/types";
+import { MAX_IMAGE_CHARS, isChoice } from "@/lib/live/logic";
+import type { SetItem } from "@/lib/live/types";
 import { liveApi } from "./api";
 import { errorText } from "./LiveRoom";
 import { OPTION_STYLES } from "./shared";
 
-type SetRow = { id: string; title: string; questions: SetQuestion[] };
-type DraftQuestion = { uid: number; prompt: string; options: string[]; correctIndex: number; explanation: string; image: string };
+type SetRow = { id: string; title: string; questions: SetItem[] };
+type Kind = "choice" | "pairs" | "word";
+type PairRow = { left: string; right: string };
+type DraftQuestion = {
+  uid: number;
+  kind: Kind;
+  prompt: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+  image: string;
+  pairs: PairRow[];
+  word: string;
+};
 type Draft = { id: string | null; title: string; questions: DraftQuestion[] };
 
 const MAX_QUESTIONS = 100;
 let uidCounter = 0;
 const nextUid = () => ++uidCounter;
-const blankQuestion = (): DraftQuestion => ({ uid: nextUid(), prompt: "", options: ["", "", "", ""], correctIndex: 0, explanation: "", image: "" });
-const fromStored = (q: SetQuestion): DraftQuestion => ({
-  uid: nextUid(),
-  prompt: q.prompt,
-  options: [...q.options, "", "", "", ""].slice(0, 4),
-  correctIndex: q.correctIndex,
-  explanation: q.explanation ?? "",
-  image: q.image ?? "",
-});
+const blankPairs = (): PairRow[] => [0, 1, 2, 3].map(() => ({ left: "", right: "" }));
+const blankQuestion = (): DraftQuestion => ({ uid: nextUid(), kind: "choice", prompt: "", options: ["", "", "", ""], correctIndex: 0, explanation: "", image: "", pairs: blankPairs(), word: "" });
+const fromStored = (q: SetItem): DraftQuestion => {
+  if (isChoice(q)) {
+    return { ...blankQuestion(), prompt: q.prompt, options: [...q.options, "", "", "", ""].slice(0, 4), correctIndex: q.correctIndex, explanation: q.explanation ?? "", image: q.image ?? "" };
+  }
+  if (q.kind === "pairs") return { ...blankQuestion(), kind: "pairs", pairs: q.pairs.map((p) => ({ ...p })) };
+  return { ...blankQuestion(), kind: "word", word: q.word, prompt: q.clue };
+};
+
+const WORD_RE = /^\p{L}{3,11}$/u;
+
+/** Rozpracovaná otázka jako položka sady, nebo null, když něco chybí. */
+function toPayload(q: DraftQuestion): SetItem | null {
+  if (q.kind === "pairs") {
+    const rows = q.pairs.map((p) => ({ left: p.left.trim(), right: p.right.trim() }));
+    if (rows.length < 4 || rows.length > 8 || rows.some((p) => !p.left || !p.right)) return null;
+    return { kind: "pairs", pairs: rows };
+  }
+  if (q.kind === "word") {
+    const word = q.word.trim();
+    const clue = q.prompt.trim();
+    return WORD_RE.test(word) && clue ? { kind: "word", word, clue } : null;
+  }
+  const prompt = q.prompt.trim();
+  const options = q.options.map((o) => o.trim());
+  if (!prompt || options.some((o) => !o)) return null;
+  const explanation = q.explanation.trim();
+  return {
+    prompt,
+    options,
+    correctIndex: q.correctIndex,
+    ...(explanation ? { explanation } : {}),
+    ...(q.image ? { image: q.image } : {}),
+  };
+}
 
 /** Načte obrázek, zmenší ho (delší strana max 640 px) a vrátí JPEG jako data URL, které se vejde do limitu. */
 async function shrinkImage(file: File): Promise<string | null> {
@@ -75,6 +114,9 @@ function parseBulk(text: string): DraftQuestion[] {
       correctIndex: order.indexOf(0),
       explanation: "",
       image: "",
+      kind: "choice",
+      pairs: blankPairs(),
+      word: "",
     });
   }
   return out;
@@ -133,14 +175,9 @@ export function SetsEditor({ locale }: { locale: Locale }) {
 
   async function save() {
     if (!draft || busy) return;
-    const questions = draft.questions.map((q) => ({
-      prompt: q.prompt.trim(),
-      options: q.options.map((o) => o.trim()),
-      correctIndex: q.correctIndex,
-      ...(q.explanation.trim() ? { explanation: q.explanation.trim() } : {}),
-      ...(q.image ? { image: q.image } : {}),
-    }));
-    if (!draft.title.trim() || questions.length === 0 || questions.some((q) => !q.prompt || q.options.some((o) => !o))) {
+    const payload = draft.questions.map(toPayload);
+    const questions = payload.filter((q): q is SetItem => q !== null);
+    if (!draft.title.trim() || questions.length === 0 || questions.length !== payload.length) {
       setError("invalid");
       return;
     }
@@ -207,7 +244,7 @@ export function SetsEditor({ locale }: { locale: Locale }) {
     };
     const duplicate = (i: number) => {
       if (draft.questions.length >= MAX_QUESTIONS) return;
-      const copy = { ...draft.questions[i], uid: nextUid(), options: [...draft.questions[i].options] };
+      const copy = { ...draft.questions[i], uid: nextUid(), options: [...draft.questions[i].options], pairs: draft.questions[i].pairs.map((p) => ({ ...p })) };
       focusUid.current = copy.uid;
       update({ questions: [...draft.questions.slice(0, i + 1), copy, ...draft.questions.slice(i + 1)] });
     };
@@ -285,6 +322,46 @@ export function SetsEditor({ locale }: { locale: Locale }) {
               )}
             </div>
             <label className="flex flex-col gap-1 text-sm font-semibold">
+              {x.kindLabel}
+              <select value={q.kind} onChange={(e) => setQ(i, { kind: e.target.value as Kind })} className={field}>
+                <option value="choice">{x.kindChoice}</option>
+                <option value="pairs">{x.kindPairs}</option>
+                <option value="word">{x.kindWord}</option>
+              </select>
+            </label>
+            {q.kind === "pairs" && (
+              <div className="flex flex-col gap-2">
+                <p className="text-sm text-[var(--muted)]">{x.pairsHint}</p>
+                {q.pairs.map((p, k) => (
+                  <div key={k} className="flex flex-wrap items-center gap-2">
+                    <input value={p.left} onChange={(e) => setQ(i, { pairs: q.pairs.map((v, n) => (n === k ? { ...v, left: e.target.value } : v)) })} placeholder={x.pairLeft} aria-label={`${x.pairLeft} ${k + 1}`} maxLength={80} className={`${field} min-w-0 flex-1`} />
+                    <span aria-hidden className="text-[var(--faint)]">↔</span>
+                    <input value={p.right} onChange={(e) => setQ(i, { pairs: q.pairs.map((v, n) => (n === k ? { ...v, right: e.target.value } : v)) })} placeholder={x.pairRight} aria-label={`${x.pairRight} ${k + 1}`} maxLength={80} className={`${field} min-w-0 flex-1`} />
+                    <button type="button" disabled={q.pairs.length <= 4} onClick={() => setQ(i, { pairs: q.pairs.filter((_, n) => n !== k) })} className="btn-bouncy bg-[var(--surface)] px-3 py-1 text-sm font-bold disabled:opacity-40" aria-label={x.removePair} title={x.removePair}>
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                <button type="button" disabled={q.pairs.length >= 8} onClick={() => setQ(i, { pairs: [...q.pairs, { left: "", right: "" }] })} className="btn-bouncy btn-secondary self-start px-4 py-2 text-sm font-bold disabled:opacity-40">
+                  + {x.addPair}
+                </button>
+              </div>
+            )}
+            {q.kind === "word" && (
+              <>
+                <label className="flex flex-col gap-1 text-sm font-semibold">
+                  {x.wordLabel}
+                  <input value={q.word} onChange={(e) => setQ(i, { word: e.target.value.replace(/[^\p{L}]/gu, "") })} maxLength={11} className={field} />
+                </label>
+                <label className="flex flex-col gap-1 text-sm font-semibold">
+                  {x.clueLabel}
+                  <input data-f={`${q.uid}-0`} value={q.prompt} onChange={(e) => setQ(i, { prompt: e.target.value })} onKeyDown={(e) => onKeyDown(e, i, 0)} maxLength={300} className={field} />
+                </label>
+              </>
+            )}
+            {q.kind === "choice" && (
+              <>
+            <label className="flex flex-col gap-1 text-sm font-semibold">
               {t.sets.prompt} {i + 1}
               <input data-f={`${q.uid}-0`} value={q.prompt} onChange={(e) => setQ(i, { prompt: e.target.value })} onKeyDown={(e) => onKeyDown(e, i, 0)} maxLength={300} className={field} />
             </label>
@@ -345,6 +422,8 @@ export function SetsEditor({ locale }: { locale: Locale }) {
               {t.sets.explanation}
               <input data-f={`${q.uid}-5`} value={q.explanation} onChange={(e) => setQ(i, { explanation: e.target.value })} onKeyDown={(e) => onKeyDown(e, i, 5)} maxLength={400} className={field} />
             </label>
+              </>
+            )}
           </fieldset>
         ))}
         <p className="text-sm text-[var(--faint)]">{x.imageHint}</p>
@@ -417,7 +496,7 @@ export function SetsEditor({ locale }: { locale: Locale }) {
                 <p className="font-bold">{s.title}</p>
                 <p className="text-sm text-[var(--muted)]">
                   {fmt(t.sets.questions, { n: s.questions.length })}
-                  {s.questions.some((q) => q.image) ? " · 🖼" : ""}
+                  {s.questions.some((q) => isChoice(q) && q.image) ? " · 🖼" : ""}
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
