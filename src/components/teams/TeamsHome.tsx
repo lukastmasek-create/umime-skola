@@ -8,7 +8,7 @@ import { tfill } from "@/i18n/teams";
 import { getTeamsAll, teamsAllError } from "@/i18n/teams-more";
 import { fmtDate } from "./api";
 import type { Locale } from "@/i18n/config";
-import { Badge, Pill, Progress, SideLayout, colorOf } from "./ui";
+import { Badge, Pill, Progress, Reorderable, ReorderItem, SideLayout, colorOf } from "./ui";
 
 // Gradient pro progress bar postupu (fialová → zelená, jako v gamifikovaném vzhledu).
 const PROGRESS_GRADIENT = "linear-gradient(90deg, var(--brand-500), var(--accent-green))";
@@ -86,8 +86,9 @@ export function TeamsHome({ locale }: { locale: Locale }) {
   return (
     <SideLayout
       side={
-        <>
+        <Reorderable storageKey="teams:home:side" t={t} className="flex flex-col gap-4">
           {/* Přehled ve stylu Trophy StreakCard: velké číslo, pod ním čárkovaně oddělené doplňkové údaje. */}
+          <ReorderItem id="summary">
           <section aria-label={t.progressTitle} className="card flex flex-col gap-4 p-5">
             <div>
               <p className="text-sm font-semibold text-[var(--muted)]">{t.summaryOpen}</p>
@@ -111,6 +112,8 @@ export function TeamsHome({ locale }: { locale: Locale }) {
               </div>
             </div>
           </section>
+          </ReorderItem>
+          <ReorderItem id="create">
           <form className="card flex flex-col gap-3 p-5" onSubmit={(e) => { e.preventDefault(); void act({ action: "create", name, asTeacher: teacher }); }}>
             <h2 className="text-lg font-extrabold">{t.createTitle}</h2>
             <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} placeholder={t.namePh} aria-label={t.namePh} className="rounded-xl border-2 border-[var(--field-border)] bg-[var(--surface)] px-3 py-2 text-sm" />
@@ -120,18 +123,23 @@ export function TeamsHome({ locale }: { locale: Locale }) {
             </label>
             <button className="btn-bouncy self-start bg-[var(--brand-500)] px-5 py-2 text-sm font-bold text-white">{t.create}</button>
           </form>
+          </ReorderItem>
+          <ReorderItem id="join">
           <form className="card flex flex-col gap-3 p-5" onSubmit={(e) => { e.preventDefault(); void act({ action: "join", code }); }}>
             <h2 className="text-lg font-extrabold">{t.joinTitle}</h2>
             <p className="text-sm text-[var(--muted)]">{t.joinHint}</p>
             <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} maxLength={12} placeholder={t.codePh} aria-label={t.codePh} className="rounded-xl border-2 border-[var(--field-border)] bg-[var(--surface)] px-3 py-2 text-sm uppercase tracking-widest" />
             <button className="btn-bouncy self-start bg-[var(--accent-green)] px-5 py-2 text-sm font-bold text-white">{t.join}</button>
           </form>
-        </>
+          </ReorderItem>
+        </Reorderable>
       }
     >
       {error && <p role="alert" className="card p-3 text-sm font-semibold text-[var(--danger)]">{error}</p>}
       {notice && <p role="status" className="card p-3 text-sm font-semibold text-[var(--accent-green)]">{notice}</p>}
+      <Reorderable storageKey="teams:home:main" t={t} className="flex flex-col gap-5">
       {urgent.length > 0 && (
+        <ReorderItem id="urgent">
         <section className="card flex flex-col gap-2 border-2 border-[var(--accent-yellow)] p-4" aria-label={t.urgentTitle}>
           <h2 className="text-lg font-extrabold">{t.urgentTitle}</h2>
           <ul className="divide-y divide-[var(--border-soft)]">
@@ -145,7 +153,9 @@ export function TeamsHome({ locale }: { locale: Locale }) {
             ))}
           </ul>
         </section>
+        </ReorderItem>
       )}
+      <ReorderItem id="list">
       <section className="flex flex-col gap-3">
         <h2 className="text-xl font-extrabold">{t.myTeams}</h2>
         {teams === null && <div className="card h-24 animate-pulse bg-[var(--surface-muted)]" aria-hidden />}
@@ -184,6 +194,8 @@ export function TeamsHome({ locale }: { locale: Locale }) {
           ))}
         </ul>
       </section>
+      </ReorderItem>
+      </Reorderable>
     </SideLayout>
   );
 }

@@ -14,7 +14,7 @@ import { TeamPeople } from "./TeamPeople";
 import { TeamGroups } from "./TeamGroups";
 import { TeamResults } from "./TeamResults";
 import { AudiencePicker } from "./AudiencePicker";
-import { Badge, Pill, Progress, colorOf } from "./ui";
+import { Badge, Pill, Progress, Reorderable, ReorderItem, colorOf } from "./ui";
 import { field, linkBtn, type Audience, type Assignment, type Group, type Member, type Team } from "./types";
 
 type Course = { slug: string; title: string; subject: string; grade: number | null; questions: number };
@@ -122,6 +122,8 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
     <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start lg:gap-6">
       <aside className="flex flex-col gap-4 lg:sticky lg:top-24">
       <Link href={`/${locale}/tymy`} className="text-sm font-bold text-[var(--brand-600)]">{t.backTeams}</Link>
+      <Reorderable storageKey={`teams:team:${teamId}:side`} t={t} className="flex flex-col gap-4">
+      <ReorderItem id="header">
       <header className="card flex flex-wrap items-center gap-3 p-4" style={{ borderTop: `6px solid ${colorOf(team.name)}` }}>
         <Badge name={team.name} size={44} />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -145,8 +147,9 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
         </div>
         {teacher && overdueN > 0 && <Pill tone="danger">{tfill(t.overdueN, overdueN)}</Pill>}
       </header>
+      </ReorderItem>
       {active.length > 0 && (
-        // Karta postupu ve stylu Trophy: velké číslo nahoře, pod ním progress bar z TailGrids.
+        <ReorderItem id="progress">
         <section className="card flex flex-col gap-3 p-5" aria-label={teacher ? t.teamProgress : t.progressTitle}>
           <div>
             <p className="text-sm font-semibold text-[var(--muted)]">{teacher ? t.teamProgress : t.progressTitle}</p>
@@ -156,18 +159,23 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
           </div>
           <Progress value={teacher ? sumDone : passedN} max={teacher ? sumTotal : active.length} color="linear-gradient(90deg, var(--brand-500), var(--accent-green))" />
         </section>
+        </ReorderItem>
       )}
-      </aside>
-      <div className="flex min-w-0 flex-col gap-5">
-      {error && <p role="alert" className="card p-3 text-sm font-semibold text-[var(--danger)]">{error}</p>}
-      <div role="tablist" className="-mt-2 flex flex-wrap gap-x-5 gap-y-1 border-b-2 border-[var(--border-soft)]">
+      <ReorderItem id="nav">
+      {/* Navigace v levém sloupci: svislé menu místo vodorovných záložek. */}
+      <div role="tablist" aria-orientation="vertical" className="card flex flex-col gap-1 p-2">
         {tabs.map(([k, label, , badge]) => (
-          <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`-mb-0.5 flex items-center gap-1.5 border-b-4 px-1 py-2 text-sm font-bold ${tab === k ? "border-[var(--brand-500)]" : "border-transparent text-[var(--muted)] hover:text-[var(--foreground)]"}`}>
-            {label}
-            {badge > 0 && <span className="grid min-w-5 place-items-center rounded-full bg-[var(--accent-500)] px-1 text-xs font-extrabold text-white" aria-label={String(badge)}>{badge}</span>}
+          <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-sm font-bold transition-colors ${tab === k ? "bg-[var(--surface-muted)] text-[var(--foreground)]" : "text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"}`}>
+            <span>{label}</span>
+            {badge > 0 && <span className="grid min-w-5 place-items-center rounded-full bg-[var(--accent-500)] px-1.5 text-xs font-extrabold text-white" aria-label={String(badge)}>{badge}</span>}
           </button>
         ))}
       </div>
+      </ReorderItem>
+      </Reorderable>
+      </aside>
+      <div className="flex min-w-0 flex-col gap-5">
+      {error && <p role="alert" className="card p-3 text-sm font-semibold text-[var(--danger)]">{error}</p>}
 
       {tab === "tasks" && (
         <div className="flex flex-col gap-4">
@@ -187,15 +195,19 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
             </p>
           )}
           {active.length === 0 && <p className="card p-6 text-center text-[var(--muted)]">{teacher ? t.noTasksT : t.noTasksS}</p>}
-          <ul className="flex flex-col gap-2.5">
-            {active.map((a) => <AssignmentCard key={a.id} a={a} teacher={teacher} locale={locale} teamId={teamId} groups={team.groups} members={team.members} />)}
-          </ul>
+          <Reorderable storageKey={`teams:team:${teamId}:assignments`} t={t} className="flex flex-col gap-2.5">
+            {active.map((a) => (
+              <ReorderItem key={a.id} id={a.id}>
+                <AssignmentCard a={a} teacher={teacher} locale={locale} teamId={teamId} groups={team.groups} members={team.members} />
+              </ReorderItem>
+            ))}
+          </Reorderable>
           {teacher && archivedList.length > 0 && (
             <details>
               <summary className="cursor-pointer text-sm font-bold text-[var(--muted)]">{tfill(t.archiveTitleN, archivedList.length)}</summary>
-              <ul className="mt-3 flex flex-col gap-2.5">
+              <div className="mt-3 flex flex-col gap-2.5">
                 {archivedList.map((a) => <AssignmentCard key={a.id} a={a} teacher={teacher} locale={locale} teamId={teamId} groups={team.groups} members={team.members} />)}
-              </ul>
+              </div>
             </details>
           )}
         </div>
@@ -224,7 +236,7 @@ function AssignmentCard({ a, teacher, locale, teamId, groups, members }: { a: As
   ].filter(Boolean);
   const dueCls = a.due === "overdue" ? "font-bold text-[var(--danger)]" : a.due === "soon" ? "font-bold" : "";
   return (
-    <li>
+    <div>
       <Link href={`/${locale}/tymy/${teamId}/zadani/${a.id}`} className="card flex flex-col gap-1.5 p-4 hover:-translate-y-0.5" style={a.due === "overdue" && !passed ? { borderLeft: "6px solid var(--danger)" } : passed ? { borderLeft: "6px solid var(--accent-green)" } : undefined}>
         <span className="flex flex-wrap items-center justify-between gap-2">
           <b className="text-lg">{a.title}{a.archived && <> <Pill>{t.archivedBadge}</Pill></>}</b>
@@ -253,7 +265,7 @@ function AssignmentCard({ a, teacher, locale, teamId, groups, members }: { a: As
           {teacher && audience.length > 0 && <> · <span className="font-semibold text-[var(--brand-700)]">{tfill(t.onlyForNames, audience.join(", "))}</span></>}
         </span>
       </Link>
-    </li>
+    </div>
   );
 }
 
