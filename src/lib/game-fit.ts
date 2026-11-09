@@ -33,6 +33,8 @@ export function canPlay(slug: GameSlug, questions: GameQuestion[], difficulty: n
       return n >= 12;
     case "piskvorky":
       return n >= 8;
+    case "razeni":
+      return n >= 3; // položky sady, každá je jedno pořadí (viz poolFor)
     case "poklad":
     case "oblekani":
       return n >= 6;

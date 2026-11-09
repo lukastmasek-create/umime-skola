@@ -38,6 +38,7 @@ export type ClassicText = {
   sort: { right: string; wrong: string; hint: string; card: string; wasRight: string; wasWrong: string; correctIs: string; review: string };
   fill: { bank: string; check: string; placeholder: string; attemptsLeft: string; revealed: string; correctIs: string; pickWord: string };
   matching: { questions: string; answers: string };
+  ordering: { hint: string; round: string; next: string; wrong: string; done: string };
   defense: { wave: string; hearts: string; gold: string; kills: string; ready: string; waveClear: string; shop: string; heal: string; slow: string; next: string; win: string; lose: string; waiting: string };
   dress: { pick: string; start: string; slots: Record<"hair" | "outfit" | "shoes" | "makeup" | "accessory" | "topper", string>; dolls: Record<"princess" | "athlete" | "rocker" | "fairy" | "chef" | "astronaut", string>; yay: string; oops: string; dressed: string; question: string; wearing: string; changed: string; choose: string; option: string; kinds: Record<string, string> };
 };
@@ -66,6 +67,7 @@ const cs: ClassicText = {
   rightAnswer: "Správně",
   controlsLabel: "Ovládání",
   controls: {
+    razeni: "Klikej na položky od prvního po poslední, nebo použij klávesy 1–4.",
     osmismerka: "Přejeď myší nebo prstem přes písmena. Nebo klepni na první a pak na poslední písmeno slova.",
     spojovani: "Klikni na otázku vlevo, pak na její správnou odpověď vpravo.",
     pexeso: "Klikni na kartu a otoč ji. Najdi dvojici: otázku a její správnou odpověď.",
@@ -84,6 +86,7 @@ const cs: ClassicText = {
     bingo: "Klikni na správnou odpověď na své kartě.",
   },
   games: {
+    razeni: { title: "Seřaď", intro: "Položky dostaneš zamíchané. Klikej na ně od prvního po poslední. Špatný klik se počítá jako chyba." },
     osmismerka: { title: "Osmisměrka", intro: "Najdi v tabulce odpovědi na otázky. Slova vedou vodorovně, svisle i úhlopříčně. Táhni prstem nebo myší přes písmena, případně klepni na první a pak na poslední písmeno." },
     spojovani: { title: "Spojování", intro: "Klikni na otázku vlevo a pak na její správnou odpověď vpravo. Spoj všechny dvojice co nejrychleji a s co nejméně chybami." },
     pexeso: { title: "Pexeso", intro: "Otáčej karty a hledej dvojice: otázku a její správnou odpověď. Pamatuj si, kde co leží." },
@@ -102,6 +105,7 @@ const cs: ClassicText = {
     bingo: { title: "Bingo", intro: "Na kartě máš odpovědi. Přečti si otázku a klikni na správnou odpověď na kartě. Slož celou řadu, sloupec nebo úhlopříčku a máš BINGO! Pozor, za tři chyby hra končí." },
   },
   matching: { questions: "Otázky", answers: "Odpovědi" },
+  ordering: { hint: "Klikni na položky od prvního po poslední (nebo použij klávesy 1–4).", round: "Kolo", next: "Další kolo", wrong: "Tohle ještě nepatří na tuhle pozici.", done: "Správné pořadí!" },
   cross: { across: "Vodorovně", down: "Svisle", check: "Zkontrolovat", reveal: "Odkrýt písmeno", giveUp: "Ukázat řešení", hintsLeft: "Nápovědy", wrongCells: "Špatná políčka jsou červeně, oprav je.", allRight: "Všechno sedí!" },
   tf: { truth: "Pravda", lie: "Lež", keys: "← lež · pravda →", question: "Otázka", claim: "Odpověď", combo: "Série", wasTrue: "Byla to pravda", wasLie: "Byla to lež" },
   ttt: { you: "Ty", bot: "Počítač", pick: "Vyber si políčko", answer: "Odpověz správně a políčko je tvoje", botTurn: "Počítač přemýšlí…", win: "Vyhrál jsi! 🎉", lose: "Počítač tě porazil.", draw: "Remíza!", inRow: "{n} v řadě vyhrává", lost: "Špatně, tah propadá počítači.", won: "Správně, políčko je tvoje!" },
@@ -139,6 +143,7 @@ const en: ClassicText = {
   rightAnswer: "Correct",
   controlsLabel: "Controls",
   controls: {
+    razeni: "Click the items from first to last, or use keys 1–4.",
     osmismerka: "Drag the mouse or your finger across the letters. Or tap the first letter and then the last one.",
     spojovani: "Click a question on the left, then its right answer on the right.",
     pexeso: "Click a card to flip it. Find a pair: a question and its right answer.",
@@ -157,6 +162,7 @@ const en: ClassicText = {
     bingo: "Click the right answer on your card.",
   },
   games: {
+    razeni: { title: "Put in Order", intro: "You get the items shuffled. Click them from first to last. A wrong click counts as a mistake." },
     osmismerka: { title: "Word search", intro: "Find the answers to the questions in the grid. Words run across, down and diagonally. Drag over the letters, or tap the first and then the last letter." },
     spojovani: { title: "Matching", intro: "Click a question on the left and then its right answer on the right. Match all the pairs fast and with as few mistakes as possible." },
     pexeso: { title: "Memory", intro: "Flip cards to find pairs: a question and its right answer. Remember where everything is." },
@@ -175,6 +181,7 @@ const en: ClassicText = {
     bingo: { title: "Bingo", intro: "Your card is full of answers. Read the question and click the right answer on your card. Complete a row, column or diagonal for BINGO! Careful, three mistakes end the game." },
   },
   matching: { questions: "Questions", answers: "Answers" },
+  ordering: { hint: "Click the items from first to last (or press keys 1–4).", round: "Round", next: "Next round", wrong: "That's not the right spot yet.", done: "Correct order!" },
   cross: { across: "Across", down: "Down", check: "Check", reveal: "Reveal a letter", giveUp: "Show solution", hintsLeft: "Hints", wrongCells: "Wrong squares are red, fix them.", allRight: "All correct!" },
   tf: { truth: "True", lie: "False", keys: "← false · true →", question: "Question", claim: "Answer", combo: "Streak", wasTrue: "It was true", wasLie: "It was false" },
   ttt: { you: "You", bot: "Computer", pick: "Pick a square", answer: "Answer right and the square is yours", botTurn: "The computer is thinking…", win: "You won! 🎉", lose: "The computer beat you.", draw: "Draw!", inRow: "{n} in a row wins", lost: "Wrong, the computer gets the turn.", won: "Right, the square is yours!" },
@@ -212,6 +219,7 @@ const de: ClassicText = {
   rightAnswer: "Richtig",
   controlsLabel: "Steuerung",
   controls: {
+    razeni: "Klicke die Elemente von erstens bis letztens an oder nutze die Tasten 1–4.",
     osmismerka: "Zieh mit der Maus oder dem Finger über die Buchstaben. Oder tippe den ersten und dann den letzten Buchstaben an.",
     spojovani: "Klicke links auf eine Frage und dann rechts auf die richtige Antwort.",
     pexeso: "Klicke auf eine Karte, um sie umzudrehen. Finde ein Paar: Frage und richtige Antwort.",
@@ -230,6 +238,7 @@ const de: ClassicText = {
     bingo: "Klicke auf deiner Karte die richtige Antwort an.",
   },
   games: {
+    razeni: { title: "Reihenfolge", intro: "Du bekommst die Elemente durcheinander. Klicke sie von erstens bis letztens an. Ein falscher Klick zählt als Fehler." },
     osmismerka: { title: "Wortsuche", intro: "Finde die Antworten auf die Fragen im Gitter. Die Wörter laufen waagerecht, senkrecht und diagonal. Zieh über die Buchstaben oder tippe den ersten und dann den letzten an." },
     spojovani: { title: "Zuordnen", intro: "Klicke links auf eine Frage und rechts auf die richtige Antwort. Ordne alle Paare schnell und mit möglichst wenig Fehlern zu." },
     pexeso: { title: "Memory", intro: "Dreh Karten um und finde Paare: eine Frage und ihre richtige Antwort. Merk dir, wo was liegt." },
@@ -248,6 +257,7 @@ const de: ClassicText = {
     bingo: { title: "Bingo", intro: "Auf deiner Karte stehen Antworten. Lies die Frage und klick die richtige Antwort an. Mach eine Reihe, Spalte oder Diagonale voll und du hast BINGO! Achtung, drei Fehler beenden das Spiel." },
   },
   matching: { questions: "Fragen", answers: "Antworten" },
+  ordering: { hint: "Klicke die Elemente von erstens bis letztens (oder drücke die Tasten 1–4).", round: "Runde", next: "Nächste Runde", wrong: "Noch nicht die richtige Stelle.", done: "Richtige Reihenfolge!" },
   cross: { across: "Waagerecht", down: "Senkrecht", check: "Prüfen", reveal: "Buchstabe aufdecken", giveUp: "Lösung zeigen", hintsLeft: "Hilfen", wrongCells: "Falsche Felder sind rot, korrigiere sie.", allRight: "Alles richtig!" },
   tf: { truth: "Wahr", lie: "Falsch", keys: "← falsch · wahr →", question: "Frage", claim: "Antwort", combo: "Serie", wasTrue: "Es war wahr", wasLie: "Es war falsch" },
   ttt: { you: "Du", bot: "Computer", pick: "Wähl ein Feld", answer: "Antworte richtig und das Feld gehört dir", botTurn: "Der Computer überlegt…", win: "Gewonnen! 🎉", lose: "Der Computer hat gewonnen.", draw: "Unentschieden!", inRow: "{n} in einer Reihe gewinnt", lost: "Falsch, der Computer ist dran.", won: "Richtig, das Feld gehört dir!" },
@@ -285,6 +295,7 @@ const ru: ClassicText = {
   rightAnswer: "Верно",
   controlsLabel: "Управление",
   controls: {
+    razeni: "Нажимай элементы от первого к последнему или используй клавиши 1–4.",
     osmismerka: "Проведи мышкой или пальцем по буквам. Или нажми на первую букву, а потом на последнюю.",
     spojovani: "Нажми на вопрос слева, потом на правильный ответ справа.",
     pexeso: "Нажми на карточку, чтобы её перевернуть. Найди пару: вопрос и его правильный ответ.",
@@ -303,6 +314,7 @@ const ru: ClassicText = {
     bingo: "Нажми на правильный ответ на своей карте.",
   },
   games: {
+    razeni: { title: "Порядок", intro: "Элементы перемешаны. Нажимай их от первого к последнему. Неверный клик считается ошибкой." },
     osmismerka: { title: "Поиск слов", intro: "Найди в таблице ответы на вопросы. Слова идут по горизонтали, вертикали и диагонали. Проведи пальцем или мышью по буквам либо коснись первой и последней буквы." },
     spojovani: { title: "Соединение", intro: "Нажми на вопрос слева, а затем на правильный ответ справа. Соедини все пары быстро и с минимумом ошибок." },
     pexeso: { title: "Мемори", intro: "Переворачивай карточки и ищи пары: вопрос и его правильный ответ. Запоминай, что где лежит." },
@@ -321,6 +333,7 @@ const ru: ClassicText = {
     bingo: { title: "Бинго", intro: "На карточке — ответы. Прочитай вопрос и нажми на верный ответ. Собери ряд, столбец или диагональ — и у тебя БИНГО! Осторожно, три ошибки — конец игры." },
   },
   matching: { questions: "Вопросы", answers: "Ответы" },
+  ordering: { hint: "Нажимай элементы от первого до последнего (или клавиши 1–4).", round: "Раунд", next: "Следующий раунд", wrong: "Пока не на том месте.", done: "Верный порядок!" },
   cross: { across: "По горизонтали", down: "По вертикали", check: "Проверить", reveal: "Открыть букву", giveUp: "Показать решение", hintsLeft: "Подсказки", wrongCells: "Неверные клетки красные, исправь их.", allRight: "Всё верно!" },
   tf: { truth: "Правда", lie: "Ложь", keys: "← ложь · правда →", question: "Вопрос", claim: "Ответ", combo: "Серия", wasTrue: "Это была правда", wasLie: "Это была ложь" },
   ttt: { you: "Ты", bot: "Компьютер", pick: "Выбери клетку", answer: "Ответь верно — и клетка твоя", botTurn: "Компьютер думает…", win: "Ты победил! 🎉", lose: "Компьютер победил.", draw: "Ничья!", inRow: "{n} в ряд побеждает", lost: "Неверно, ход переходит компьютеру.", won: "Верно, клетка твоя!" },
@@ -358,6 +371,7 @@ const uk: ClassicText = {
   rightAnswer: "Правильно",
   controlsLabel: "Керування",
   controls: {
+    razeni: "Натискай елементи від першого до останнього або користуйся клавішами 1–4.",
     osmismerka: "Проведи мишею або пальцем по літерах. Або натисни першу літеру, а потім останню.",
     spojovani: "Клацни запитання ліворуч, а потім його правильну відповідь праворуч.",
     pexeso: "Клацни картку, щоб її перевернути. Знайди пару: запитання і його правильну відповідь.",
@@ -376,6 +390,7 @@ const uk: ClassicText = {
     bingo: "Клацни правильну відповідь на своїй картці.",
   },
   games: {
+    razeni: { title: "Порядок", intro: "Елементи перемішані. Натискай їх від першого до останнього. Помилковий клік рахується як помилка." },
     osmismerka: { title: "Пошук слів", intro: "Знайди відповіді на запитання в сітці. Слова йдуть горизонтально, вертикально і по діагоналі. Проведи по літерах або натисни першу і потім останню літеру." },
     spojovani: { title: "З'єднування", intro: "Клацни запитання ліворуч, а потім його правильну відповідь праворуч. З'єднай усі пари швидко і з якомога меншою кількістю помилок." },
     pexeso: { title: "Memory", intro: "Перевертай картки, щоб знайти пари: запитання і його правильну відповідь. Запам'ятовуй, де що лежить." },
@@ -394,6 +409,7 @@ const uk: ClassicText = {
     bingo: { title: "Бінго", intro: "На твоїй картці самі відповіді. Прочитай запитання і клацни правильну відповідь на картці. Заповни рядок, стовпець або діагональ — і це БІНГО! Обережно: три помилки завершують гру." },
   },
   matching: { questions: "Запитання", answers: "Відповіді" },
+  ordering: { hint: "Натискай елементи від першого до останнього (або клавіші 1–4).", round: "Раунд", next: "Наступний раунд", wrong: "Поки не на тому місці.", done: "Правильний порядок!" },
   cross: { across: "По горизонталі", down: "По вертикалі", check: "Перевірити", reveal: "Відкрити літеру", giveUp: "Показати розв'язок", hintsLeft: "Підказки", wrongCells: "Неправильні клітинки червоні, виправ їх.", allRight: "Усе правильно!" },
   tf: { truth: "Правда", lie: "Неправда", keys: "← неправда · правда →", question: "Запитання", claim: "Твердження", combo: "Серія", wasTrue: "Це була правда", wasLie: "Це була неправда" },
   ttt: { you: "Ти", bot: "Комп'ютер", pick: "Вибери клітинку", answer: "Правильна відповідь — і клітинка твоя", botTurn: "Комп'ютер думає…", win: "Ти переміг! 🎉", lose: "Комп'ютер переміг.", draw: "Нічия!", inRow: "{n} в ряд перемагає", lost: "Неправильно, хід переходить до комп'ютера.", won: "Правильно, клітинка твоя!" },
@@ -431,6 +447,7 @@ const ja: ClassicText = {
   rightAnswer: "正解",
   controlsLabel: "操作方法",
   controls: {
+    razeni: "最初から順番にクリックしてください。1〜4のキーも使えます。",
     osmismerka: "マウスや指をドラッグして文字をなぞってください。最初の文字をタップしてから最後の文字をタップすることもできます。",
     spojovani: "左の問題をクリックし、次に右側の正しい答えをクリックしてください。",
     pexeso: "カードをクリックしてめくります。問題と正しい答えのペアを見つけてね。",
@@ -449,6 +466,7 @@ const ja: ClassicText = {
     bingo: "カードの中から正しい答えをクリックしてください。",
   },
   games: {
+    razeni: { title: "ならべかえ", intro: "項目がバラバラに並んでいます。最初から順番にクリックしてください。間違えると失敗として数えられます。" },
     osmismerka: { title: "ワードサーチ", intro: "表の中から問題の答えを探してください。単語は横、縦、斜めに並んでいます。文字の上をドラッグするか、最初と最後の文字をタップしてください。" },
     spojovani: { title: "マッチング", intro: "左の問題をクリックしてから、右の正しい答えをクリックしてください。すべてのペアを素早く、できるだけ少ないまちがいで見つけましょう。" },
     pexeso: { title: "神経衰弱", intro: "カードをめくって、問題と正しい答えのペアを見つけましょう。どこに何があったか覚えておいてね。" },
@@ -467,6 +485,7 @@ const ja: ClassicText = {
     bingo: { title: "ビンゴ", intro: "あなたのカードには答えがいっぱい並んでいます。問題を読んで、カードの中から正しい答えをクリックしてください。一列、縦、斜めのどれかをそろえるとビンゴ！ 3回まちがえるとゲーム終了なので気をつけてね。" },
   },
   matching: { questions: "問題", answers: "答え" },
+  ordering: { hint: "最初から順にクリックしてください（1〜4のキーも使えます）。", round: "ラウンド", next: "次のラウンド", wrong: "まだその位置ではありません。", done: "正しい順番！" },
   cross: { across: "よこ", down: "たて", check: "確認", reveal: "文字を明かす", giveUp: "答えを見る", hintsLeft: "ヒント", wrongCells: "まちがったマスは赤くなるので、直してね。", allRight: "全部正解！" },
   tf: { truth: "正しい", lie: "まちがい", keys: "← まちがい · 正しい →", question: "問題", claim: "文章", combo: "連続", wasTrue: "正しい文章でした", wasLie: "まちがいの文章でした" },
   ttt: { you: "あなた", bot: "コンピューター", pick: "マスを選んでください", answer: "正解するとそのマスはあなたのものになります", botTurn: "コンピューターが考えています…", win: "あなたの勝ち！ 🎉", lose: "コンピューターの勝ちです。", draw: "引き分け！", inRow: "{n} つ並べると勝ち", lost: "不正解なので、コンピューターの番です。", won: "正解！そのマスはあなたのものです！" },
@@ -504,6 +523,7 @@ const es: ClassicText = {
   rightAnswer: "Correcta",
   controlsLabel: "Controles",
   controls: {
+    razeni: "Haz clic en los elementos del primero al último o usa las teclas 1–4.",
     osmismerka: "Arrastra el ratón o el dedo sobre las letras. O toca la primera letra y luego la última.",
     spojovani: "Haz clic en una pregunta de la izquierda y luego en su respuesta correcta de la derecha.",
     pexeso: "Haz clic en una carta para darle la vuelta. Encuentra una pareja: una pregunta y su respuesta correcta.",
@@ -522,6 +542,7 @@ const es: ClassicText = {
     bingo: "Haz clic en la respuesta correcta de tu cartón.",
   },
   games: {
+    razeni: { title: "Ordenar", intro: "Los elementos aparecen desordenados. Haz clic en ellos del primero al último. Un clic equivocado cuenta como error." },
     osmismerka: { title: "Sopa de letras", intro: "Encuentra las respuestas a las preguntas en la cuadrícula. Las palabras van en horizontal, vertical y diagonal. Arrastra sobre las letras, o toca la primera y luego la última." },
     spojovani: { title: "Emparejar", intro: "Haz clic en una pregunta de la izquierda y luego en su respuesta correcta de la derecha. Empareja todas las parejas rápido y con los menos errores posibles." },
     pexeso: { title: "Memoria", intro: "Da la vuelta a las cartas para encontrar parejas: una pregunta y su respuesta correcta. Recuerda dónde está cada cosa." },
@@ -540,6 +561,7 @@ const es: ClassicText = {
     bingo: { title: "Bingo", intro: "Tu cartón está lleno de respuestas. Lee la pregunta y haz clic en la respuesta correcta de tu cartón. ¡Completa una fila, columna o diagonal para BINGO! Cuidado: tres errores terminan el juego." },
   },
   matching: { questions: "Preguntas", answers: "Respuestas" },
+  ordering: { hint: "Haz clic en los elementos del primero al último (o pulsa las teclas 1–4).", round: "Ronda", next: "Siguiente ronda", wrong: "Todavía no es ese lugar.", done: "¡Orden correcto!" },
   cross: { across: "Horizontales", down: "Verticales", check: "Comprobar", reveal: "Revelar una letra", giveUp: "Mostrar solución", hintsLeft: "Pistas", wrongCells: "Las casillas incorrectas están en rojo, arréglalas.", allRight: "¡Todo correcto!" },
   tf: { truth: "Verdadero", lie: "Falso", keys: "← falso · verdadero →", question: "Pregunta", claim: "Afirmación", combo: "Racha", wasTrue: "Era verdadero", wasLie: "Era falso" },
   ttt: { you: "Tú", bot: "Ordenador", pick: "Elige una casilla", answer: "Si aciertas, la casilla es tuya", botTurn: "El ordenador está pensando…", win: "¡Has ganado! 🎉", lose: "El ordenador te ha ganado.", draw: "¡Empate!", inRow: "{n} seguidas ganan", lost: "Fallaste, le toca al ordenador.", won: "¡Correcto, la casilla es tuya!" },
@@ -577,6 +599,7 @@ const fr: ClassicText = {
   rightAnswer: "Correct",
   controlsLabel: "Commandes",
   controls: {
+    razeni: "Clique sur les éléments du premier au dernier ou utilise les touches 1–4.",
     osmismerka: "Fais glisser la souris ou ton doigt sur les lettres. Ou touche la première lettre puis la dernière.",
     spojovani: "Clique sur une question à gauche, puis sur sa bonne réponse à droite.",
     pexeso: "Clique sur une carte pour la retourner. Trouve une paire : une question et sa bonne réponse.",
@@ -595,6 +618,7 @@ const fr: ClassicText = {
     bingo: "Clique sur la bonne réponse sur ta carte.",
   },
   games: {
+    razeni: { title: "Remettre en ordre", intro: "Les éléments sont mélangés. Clique-les du premier au dernier. Un mauvais clic compte comme une erreur." },
     osmismerka: { title: "Mots mêlés", intro: "Trouve les réponses aux questions dans la grille. Les mots vont horizontalement, verticalement et en diagonale. Fais glisser sur les lettres, ou touche la première puis la dernière." },
     spojovani: { title: "Association", intro: "Clique sur une question à gauche, puis sur sa bonne réponse à droite. Associe toutes les paires vite et avec le moins d'erreurs possible." },
     pexeso: { title: "Mémoire", intro: "Retourne les cartes pour trouver les paires : une question et sa bonne réponse. Retiens où se trouve chaque chose." },
@@ -613,6 +637,7 @@ const fr: ClassicText = {
     bingo: { title: "Bingo", intro: "Ta carte est pleine de réponses. Lis la question et clique sur la bonne réponse sur ta carte. Complète une ligne, une colonne ou une diagonale pour BINGO ! Attention, trois erreurs terminent la partie." },
   },
   matching: { questions: "Questions", answers: "Réponses" },
+  ordering: { hint: "Clique sur les éléments du premier au dernier (ou appuie sur les touches 1–4).", round: "Manche", next: "Manche suivante", wrong: "Ce n'est pas encore le bon endroit.", done: "Bon ordre !" },
   cross: { across: "Horizontal", down: "Vertical", check: "Vérifier", reveal: "Révéler une lettre", giveUp: "Afficher la solution", hintsLeft: "Indices", wrongCells: "Les cases fausses sont en rouge, corrige-les.", allRight: "Tout est juste !" },
   tf: { truth: "Vrai", lie: "Faux", keys: "← faux · vrai →", question: "Question", claim: "Affirmation", combo: "Série", wasTrue: "C'était vrai", wasLie: "C'était faux" },
   ttt: { you: "Toi", bot: "Ordinateur", pick: "Choisis une case", answer: "Si c'est juste, la case est à toi", botTurn: "L'ordinateur réfléchit…", win: "Tu as gagné ! 🎉", lose: "L'ordinateur t'a battu.", draw: "Égalité !", inRow: "{n} alignées gagnent", lost: "Faux, c'est à l'ordinateur de jouer.", won: "Juste, la case est à toi !" },

@@ -131,3 +131,15 @@ test("cleanSetQuestions přijme spojování a křížovku, zahodí neplatné a �
   // Živé hry berou jen otázky se zadáním a možnostmi, spojování a slova se do nich nedostanou.
   assert.equal(cleanQuestions(items).length, 1);
 });
+
+test("cleanSetQuestions přijme seřazení se čtyřmi položkami a zahodí jiný počet", async () => {
+  const { cleanSetQuestions, isChoice } = await import("./logic.ts");
+  const items = cleanSetQuestions([
+    { kind: "order", prompt: "Seřaď od nejstarší", items: ["1918", "1939", "1945", "1989"] },
+    { kind: "order", prompt: "Málo položek", items: ["a", "b", "c"] },
+    { kind: "order", prompt: "Prázdná položka", items: ["a", "", "c", "d"] },
+  ]);
+  assert.equal(items.length, 1);
+  assert.equal(items[0].kind, "order");
+  assert.equal(isChoice(items[0]), false);
+});

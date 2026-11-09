@@ -43,6 +43,7 @@ export default async function CourseGamePage({
     !game ||
     !game.available ||
     game.archived ||
+    game.setOnly ||
     !Number.isInteger(difficulty) ||
     difficulty < 1 ||
     difficulty > 5

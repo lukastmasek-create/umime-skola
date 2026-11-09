@@ -17,6 +17,7 @@ import { Hangman } from "./classic/Hangman";
 import { Matching } from "./classic/Matching";
 import { Memory } from "./classic/Memory";
 import { Millionaire } from "./classic/Millionaire";
+import { Ordering } from "./classic/Ordering";
 import { Scramble } from "./classic/Scramble";
 import { Defense } from "./classic/Defense";
 import { Sorting } from "./classic/Sorting";
@@ -157,5 +158,7 @@ function ClassicGameBody({
       return <TicTacToe t={t} questions={questions} difficulty={difficulty} backHref={backHref} />;
     case "bingo":
       return <Bingo t={t} questions={questions} difficulty={difficulty} backHref={backHref} />;
+    case "razeni":
+      return <Ordering t={t} questions={questions} backHref={backHref} />;
   }
 }

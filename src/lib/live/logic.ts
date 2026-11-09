@@ -1,4 +1,4 @@
-import type { ChestOutcome, CrosswordItem, LiveMode, LiveQuestion, PairsItem, SetItem, SetQuestion, LiveSettings, LiveStatus, StoredStatus } from "./types";
+import type { ChestOutcome, CrosswordItem, LiveMode, LiveQuestion, OrderItem, PairsItem, SetItem, SetQuestion, LiveSettings, LiveStatus, StoredStatus } from "./types";
 
 export const MODES: LiveMode[] = ["QUIZ", "RACE", "GOLD", "STREAK", "SURVIVAL", "TEAMS"];
 
@@ -65,6 +65,14 @@ export function cleanImage(raw: unknown): string | undefined {
   return typeof raw === "string" && raw.length <= MAX_IMAGE_CHARS && IMAGE_RE.test(raw) ? raw : undefined;
 }
 
+function cleanOrderItem(raw: Record<string, unknown>): OrderItem | null {
+  const prompt = typeof raw.prompt === "string" ? raw.prompt.trim().slice(0, 300) : "";
+  if (!prompt || !Array.isArray(raw.items) || raw.items.length !== 4) return null;
+  const items = raw.items.map((o) => (typeof o === "string" ? o.trim().slice(0, 120) : ""));
+  if (items.some((o) => !o)) return null;
+  return { kind: "order", prompt, items };
+}
+
 export function isChoice(item: SetItem): item is SetQuestion {
   return !("kind" in item);
 }
@@ -101,6 +109,7 @@ export function cleanSetQuestions(raw: unknown): SetItem[] {
     let q: SetItem | null;
     if (r.kind === "pairs") q = cleanPairsItem(r);
     else if (r.kind === "word") q = cleanCrosswordItem(r);
+    else if (r.kind === "order") q = cleanOrderItem(r);
     else {
       const base = cleanQuestion(item);
       const image = base ? cleanImage(r.image) : undefined;

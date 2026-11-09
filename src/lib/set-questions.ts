@@ -41,7 +41,13 @@ export function poolFor(slug: GameSlug, items: SetItem[]): GameQuestion[] {
   const words: GameQuestion[] = items.flatMap((item) =>
     !isChoice(item) && item.kind === "word" ? [{ prompt: item.clue, options: [item.word, FILL, FILL, FILL] as [string, string, string, string], correctIndex: 0, explanation: "" }] : [],
   );
+  // Seřaď bere jen položky typu seřazení: každá je jedna hra, správné pořadí jsou položky v pořadí zápisu.
+  const orders: GameQuestion[] = items.flatMap((item) =>
+    !isChoice(item) && item.kind === "order" ? [{ prompt: item.prompt, options: item.items as [string, string, string, string], correctIndex: 0, explanation: "" }] : [],
+  );
   switch (slug) {
+    case "razeni":
+      return orders;
     case "krizovka":
       return [...words, ...choice];
     case "spojovani":

@@ -19,8 +19,11 @@ export type PairsItem = { kind: "pairs"; pairs: { left: string; right: string }[
 /** Křížovka ve vlastní sadě: jedno slovo (3 až 11 písmen) s nápovědou. */
 export type CrosswordItem = { kind: "word"; word: string; clue: string };
 
-/** Položka vlastní sady: klasická otázka se čtyřmi možnostmi, nebo spojování, nebo slovo do křížovky. */
-export type SetItem = SetQuestion | PairsItem | CrosswordItem;
+/** Seřaď ve vlastní sadě: zadání a čtyři položky, zapsané ve správném pořadí (první nahoře). */
+export type OrderItem = { kind: "order"; prompt: string; items: string[] };
+
+/** Položka vlastní sady: klasická otázka se čtyřmi možnostmi, spojování, slovo do křížovky, nebo seřazení. */
+export type SetItem = SetQuestion | PairsItem | CrosswordItem | OrderItem;
 
 export type LiveSettings = {
   /** Čas na otázku v klasickém kvízu (sekundy). */

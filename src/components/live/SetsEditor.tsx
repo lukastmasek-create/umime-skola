@@ -12,7 +12,7 @@ import { errorText } from "./LiveRoom";
 import { OPTION_STYLES } from "./shared";
 
 type SetRow = { id: string; title: string; questions: SetItem[] };
-type Kind = "choice" | "pairs" | "word";
+type Kind = "choice" | "pairs" | "word" | "order";
 type PairRow = { left: string; right: string };
 type DraftQuestion = {
   uid: number;
@@ -24,6 +24,7 @@ type DraftQuestion = {
   image: string;
   pairs: PairRow[];
   word: string;
+  ordered: string[];
 };
 type Draft = { id: string | null; title: string; questions: DraftQuestion[] };
 
@@ -31,13 +32,14 @@ const MAX_QUESTIONS = 100;
 let uidCounter = 0;
 const nextUid = () => ++uidCounter;
 const blankPairs = (): PairRow[] => [0, 1, 2, 3].map(() => ({ left: "", right: "" }));
-const blankQuestion = (): DraftQuestion => ({ uid: nextUid(), kind: "choice", prompt: "", options: ["", "", "", ""], correctIndex: 0, explanation: "", image: "", pairs: blankPairs(), word: "" });
+const blankQuestion = (): DraftQuestion => ({ uid: nextUid(), kind: "choice", prompt: "", options: ["", "", "", ""], correctIndex: 0, explanation: "", image: "", pairs: blankPairs(), word: "", ordered: ["", "", "", ""] });
 const fromStored = (q: SetItem): DraftQuestion => {
   if (isChoice(q)) {
     return { ...blankQuestion(), prompt: q.prompt, options: [...q.options, "", "", "", ""].slice(0, 4), correctIndex: q.correctIndex, explanation: q.explanation ?? "", image: q.image ?? "" };
   }
   if (q.kind === "pairs") return { ...blankQuestion(), kind: "pairs", pairs: q.pairs.map((p) => ({ ...p })) };
-  return { ...blankQuestion(), kind: "word", word: q.word, prompt: q.clue };
+  if (q.kind === "word") return { ...blankQuestion(), kind: "word", word: q.word, prompt: q.clue };
+  return { ...blankQuestion(), kind: "order", prompt: q.prompt, ordered: [...q.items] };
 };
 
 const WORD_RE = /^\p{L}{3,11}$/u;
@@ -48,6 +50,11 @@ function toPayload(q: DraftQuestion): SetItem | null {
     const rows = q.pairs.map((p) => ({ left: p.left.trim(), right: p.right.trim() }));
     if (rows.length < 4 || rows.length > 8 || rows.some((p) => !p.left || !p.right)) return null;
     return { kind: "pairs", pairs: rows };
+  }
+  if (q.kind === "order") {
+    const prompt = q.prompt.trim();
+    const items = q.ordered.map((o) => o.trim());
+    return prompt && items.every((o) => o) ? { kind: "order", prompt, items } : null;
   }
   if (q.kind === "word") {
     const word = q.word.trim();
@@ -117,6 +124,7 @@ function parseBulk(text: string): DraftQuestion[] {
       kind: "choice",
       pairs: blankPairs(),
       word: "",
+      ordered: ["", "", "", ""],
     });
   }
   return out;
@@ -244,7 +252,7 @@ export function SetsEditor({ locale }: { locale: Locale }) {
     };
     const duplicate = (i: number) => {
       if (draft.questions.length >= MAX_QUESTIONS) return;
-      const copy = { ...draft.questions[i], uid: nextUid(), options: [...draft.questions[i].options], pairs: draft.questions[i].pairs.map((p) => ({ ...p })) };
+      const copy = { ...draft.questions[i], uid: nextUid(), options: [...draft.questions[i].options], pairs: draft.questions[i].pairs.map((p) => ({ ...p })), ordered: [...draft.questions[i].ordered] };
       focusUid.current = copy.uid;
       update({ questions: [...draft.questions.slice(0, i + 1), copy, ...draft.questions.slice(i + 1)] });
     };
@@ -327,6 +335,7 @@ export function SetsEditor({ locale }: { locale: Locale }) {
                 <option value="choice">{x.kindChoice}</option>
                 <option value="pairs">{x.kindPairs}</option>
                 <option value="word">{x.kindWord}</option>
+                <option value="order">{x.kindOrder}</option>
               </select>
             </label>
             {q.kind === "pairs" && (
@@ -358,6 +367,26 @@ export function SetsEditor({ locale }: { locale: Locale }) {
                   <input data-f={`${q.uid}-0`} value={q.prompt} onChange={(e) => setQ(i, { prompt: e.target.value })} onKeyDown={(e) => onKeyDown(e, i, 0)} maxLength={300} className={field} />
                 </label>
               </>
+            )}
+            {q.kind === "order" && (
+              <div className="flex flex-col gap-2">
+                <label className="flex flex-col gap-1 text-sm font-semibold">
+                  {x.orderPrompt}
+                  <input data-f={`${q.uid}-0`} value={q.prompt} onChange={(e) => setQ(i, { prompt: e.target.value })} onKeyDown={(e) => onKeyDown(e, i, 0)} maxLength={300} className={field} />
+                </label>
+                <p className="text-sm text-[var(--muted)]">{x.orderHint}</p>
+                {q.ordered.map((o, k) => (
+                  <input
+                    key={k}
+                    value={o}
+                    onChange={(e) => setQ(i, { ordered: q.ordered.map((v, n) => (n === k ? e.target.value : v)) })}
+                    placeholder={fmt(x.orderItem, { n: k + 1 })}
+                    aria-label={fmt(x.orderItem, { n: k + 1 })}
+                    maxLength={120}
+                    className={field}
+                  />
+                ))}
+              </div>
             )}
             {q.kind === "choice" && (
               <>

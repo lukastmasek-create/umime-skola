@@ -31,6 +31,10 @@ export type SetsExtraText = {
   kindChoice: string;
   kindPairs: string;
   kindWord: string;
+  kindOrder: string;
+  orderPrompt: string;
+  orderHint: string;
+  orderItem: string;
   wordLabel: string;
   clueLabel: string;
   pairsHint: string;
@@ -70,6 +74,10 @@ const cs: SetsExtraText = {
   kindChoice: "Otázka se čtyřmi možnostmi",
   kindPairs: "Spojování (dvojice)",
   kindWord: "Slovo do křížovky",
+  kindOrder: "Seřazení (4 položky)",
+  orderPrompt: "Zadání (např. Seřaď události od nejstarší)",
+  orderHint: "Zapiš 4 položky ve správném pořadí, první nahoře. Ve hře se zamíchají.",
+  orderItem: "{n}. položka (ve správném pořadí)",
   wordLabel: "Slovo (jen písmena, 3 až 11)",
   clueLabel: "Nápověda (zadání)",
   pairsHint: "Zadej 4 až 8 dvojic: vlevo zadání, vpravo správná odpověď. Ve hře se promíchají.",
@@ -109,6 +117,10 @@ const en: SetsExtraText = {
   kindChoice: "Multiple-choice question",
   kindPairs: "Matching (pairs)",
   kindWord: "Crossword word",
+  kindOrder: "Ordering (4 items)",
+  orderPrompt: "Task (e.g. Put these events in order, oldest first)",
+  orderHint: "Enter 4 items in the correct order, first at the top. The game shuffles them.",
+  orderItem: "Item {n} (in correct order)",
   wordLabel: "Word (letters only, 3 to 11)",
   clueLabel: "Clue",
   pairsHint: "Enter 4 to 8 pairs: left is the prompt, right is the correct answer. The game shuffles them.",
