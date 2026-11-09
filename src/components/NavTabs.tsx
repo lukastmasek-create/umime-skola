@@ -70,7 +70,15 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
   const groups: Group[] = [
     { key: "town", label: getTownHubText(locale).nav, items: [{ key: "mestecko", href: `/${locale}/mestecko`, label: getTownHubText(locale).nav }] },
     { key: "courses", label: home.groups.courses, items: courses },
-    { key: "settings", label: home.groups.settings, items: settings },
+    {
+      key: "info",
+      label: home.groups.info,
+      items: [
+        { key: "info-tymy", href: `/${locale}/tymy`, label: getTeamsText(locale).title },
+        { key: "info-ucitele", href: `/${locale}/ucitele`, label: getAudiencePagesText(locale).teachers.nav },
+        { key: "info-zaci", href: `/${locale}/zaci`, label: getAudiencePagesText(locale).students.nav },
+      ],
+    },
     {
       key: "games",
       label: home.groups.games,
@@ -128,21 +136,13 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
         { key: "zebricky", href: `/${locale}/zebricky`, label: community.navLeaderboards },
       ],
     },
-    {
-      key: "info",
-      label: home.groups.info,
-      items: [
-        { key: "info-tymy", href: `/${locale}/tymy`, label: getTeamsText(locale).title },
-        { key: "info-ucitele", href: `/${locale}/ucitele`, label: getAudiencePagesText(locale).teachers.nav },
-        { key: "info-zaci", href: `/${locale}/zaci`, label: getAudiencePagesText(locale).students.nav },
-      ],
-    },
+    { key: "settings", label: home.groups.settings, items: settings },
   ];
   return groups;
 }
 
 // Na širokých obrazovkách zůstávají v liště jen tyto skupiny, ostatní jsou v tlačítku Menu.
-const PRIMARY_GROUPS = new Set(["courses", "settings", "shop", "study"]);
+const PRIMARY_GROUPS = new Set(["courses", "info", "shop", "study"]);
 
 function isActiveTab(pathname: string | null, tab: Tab) {
   if (!pathname || tab.noActive) return false;
