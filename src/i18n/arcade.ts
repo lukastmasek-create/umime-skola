@@ -314,6 +314,66 @@ const T: Record<ArcadeSlug, Record<Locale, ArcadeText>> = {
       upgradeAction: "Vitesse du marteau",
     },
   },
+  minesweeper: {
+    ...withFallbacks({
+      cs: {
+        title: "Hledání min",
+        intro: "Klepni na zakryté políčko a odpověz na otázku. Správná odpověď ho odkryje a ukáže, kolik min leží okolo. Špatná odpověď nic nestojí, přijde další otázka. Mina, kterou odhalíš, ubere život.",
+        controls: "klepni nebo klikni na políčko, pak na odpověď",
+        action: "Odkrýt",
+        upgradeAction: "Rychlost prstu",
+      },
+      en: {
+        title: "Minesweeper",
+        intro: "Tap a hidden tile, then answer the question. A right answer reveals it and shows how many mines are around it. A wrong answer costs nothing, another question comes. Reveal a mine and you lose a life.",
+        controls: "tap or click a tile, then an answer",
+        action: "Reveal",
+        upgradeAction: "Finger speed",
+      },
+      de: {
+        title: "Minensucher",
+        intro: "Tippe auf ein verdecktes Feld und beantworte die Frage. Eine richtige Antwort deckt es auf und zeigt, wie viele Minen daneben liegen. Eine falsche kostet nichts, es kommt eine neue Frage. Wenn du eine Mine aufdeckst, verlierst du ein Leben.",
+        controls: "auf ein Feld tippen oder klicken, dann eine Antwort",
+        action: "Aufdecken",
+        upgradeAction: "Fingertempo",
+      },
+      ru: {
+        title: "Сапёр",
+        intro: "Нажми на закрытую клетку и ответь на вопрос. Верный ответ открывает клетку и показывает, сколько мин рядом. Неверный ответ ничего не стоит, придёт новый вопрос. Если откроешь мину, потеряешь жизнь.",
+        controls: "нажми или кликни на клетку, затем на ответ",
+        action: "Открыть",
+        upgradeAction: "Скорость пальца",
+      },
+    }),
+    uk: {
+      title: "Сапер",
+      intro: "Натисни закриту клітинку і відповідай на питання. Правильна відповідь відкриває клітинку і показує, скільки мін поруч. Неправильна нічого не коштує, прийде нове питання. Якщо відкриєш міну, втратиш життя.",
+      controls: "натисни або клікни клітинку, потім відповідь",
+      action: "Відкрити",
+      upgradeAction: "Швидкість пальця",
+    },
+    ja: {
+      title: "マインスイーパー",
+      intro: "伏せられたマスをタップして、問題に答えよう。正解するとマスが開き、周りの地雷の数がわかる。不正解でもペナルティはなく、次の問題が出る。地雷を開いてしまうとライフが減るよ。",
+      controls: "マスをタップかクリックして、次に答えを選ぶ",
+      action: "開ける",
+      upgradeAction: "指の速さ",
+    },
+    es: {
+      title: "Buscaminas",
+      intro: "Toca una casilla oculta y responde la pregunta. Una respuesta correcta la descubre y muestra cuántas minas hay alrededor. Una respuesta equivocada no cuesta nada, sale otra pregunta. Si descubres una mina, pierdes una vida.",
+      controls: "toca o haz clic en una casilla y luego en una respuesta",
+      action: "Descubrir",
+      upgradeAction: "Velocidad del dedo",
+    },
+    fr: {
+      title: "Démineur",
+      intro: "Touche une case cachée puis réponds à la question. Une bonne réponse la révèle et indique combien de mines l'entourent. Une mauvaise réponse ne coûte rien, une autre question arrive. Si tu révèles une mine, tu perds une vie.",
+      controls: "touche ou clique une case, puis une réponse",
+      action: "Révéler",
+      upgradeAction: "Vitesse du doigt",
+    },
+  },
   ninja: {
     ...withFallbacks({
       cs: {

@@ -9,6 +9,7 @@ import { BreakoutEngine } from "@/lib/breakout-engine";
 import { TetrisEngine } from "@/lib/tetris-engine";
 import { MoleEngine } from "@/lib/mole-engine";
 import { NinjaEngine } from "@/lib/ninja-engine";
+import { MinesweeperEngine } from "@/lib/minesweeper-engine";
 import type { HeldKey } from "@/lib/arcade-base";
 import { GAMES, runLength, type GameSlug } from "@/lib/games";
 import { readBest, saveBest, starsFor, type Best } from "@/lib/game-best";
@@ -27,6 +28,9 @@ type QuizEngine = {
   popText(text: string, color?: string): void;
   // Vyřadí špatné odpovědi z hry (nápověda 50:50); hra je z plátna odstraní.
   setHint?(eliminated: number[]): void;
+  // Hledání min: nová mřížka min a dotaz, zda jsou všechna bezpečná políčka odkryta.
+  newBoard?(): void;
+  isCleared?(): boolean;
 };
 
 type Phase = "intro" | "playing" | "explain" | "result";
@@ -223,6 +227,8 @@ export function SpaceQuizGame({
   const ui = getGamesUiText(locale);
   // Had je nekonečná hra: otázky se opakují, dokud hráč nepřijde o všechny životy.
   const endless = game === "snake";
+  // Hledání min: hráč si volí políčko, otázky se berou z kola a po špatné odpovědi přijde další.
+  const isMine = game === "minesweeper";
   const arcade = isArcadeSlug(game) ? getArcadeText(game, locale) : null;
   const emoji = GAMES.find((g) => g.slug === game)?.emoji ?? "🎮";
   const pad = PADS[game];
@@ -244,10 +250,11 @@ export function SpaceQuizGame({
   const explainSinceRef = useRef(0);
   const nextStepRef = useRef<() => void>(() => {});
   const engineRef = useRef<QuizEngine | null>(null);
-  const handlersRef = useRef<{ onHit: (c: boolean) => void; onMiss: () => void; onDamage: () => void }>({
+  const handlersRef = useRef<{ onHit: (c: boolean) => void; onMiss: () => void; onDamage: () => void; onPick: () => void }>({
     onHit: () => {},
     onMiss: () => {},
     onDamage: () => {},
+    onPick: () => {},
   });
 
   const [difficulty, setDifficultyState] = useState<Difficulty>("easy");
@@ -265,6 +272,8 @@ export function SpaceQuizGame({
   const [combo, setCombo] = useState(0);
   const [bestCombo, setBestCombo] = useState(0);
   const answersRef = useRef<{ id: string; correct: boolean }[]>([]);
+  const mineNextRef = useRef(0);
+  const finishRef = useRef<(survived: boolean) => void>(() => {});
   const [coins, setCoins] = useState(0);
   const [upgrades, setUpgrades] = useState<Upgrades>(EMPTY_UPGRADES);
   const [resolved, setResolved] = useState<Resolved | null>(null);
@@ -312,6 +321,7 @@ export function SpaceQuizGame({
       onHit: (_i: number, correct: boolean) => handlersRef.current.onHit(correct),
       onMiss: () => handlersRef.current.onMiss(),
       onDamage: () => handlersRef.current.onDamage(),
+      onPick: () => handlersRef.current.onPick(),
     };
     const engine: QuizEngine =
       game === "pac-man"
@@ -326,7 +336,9 @@ export function SpaceQuizGame({
                   ? new MoleEngine(canvas, callbacks)
                   : game === "ninja"
                     ? new NinjaEngine(canvas, callbacks)
-                    : new SpaceEngine(canvas, callbacks);
+                    : game === "minesweeper"
+                      ? new MinesweeperEngine(canvas, callbacks)
+                      : new SpaceEngine(canvas, callbacks);
     engineRef.current = engine;
     // Testovací háček: automatické testy (umime-art/../tests) si přes něj vezmou engine.
     if ((window as unknown as { __QUIZ_TEST__?: boolean }).__QUIZ_TEST__) (window as unknown as { __quizEngine?: QuizEngine }).__quizEngine = engine;
@@ -400,7 +412,9 @@ export function SpaceQuizGame({
     setToast(null);
     unlockAudio();
     const pool = only && only.length > 0 ? only : source;
-    const newRun = endless
+    const newRun = isMine
+      ? Array.from({ length: 6 }, () => prepareRun(pool, pool.length)).flat()
+      : endless
       ? Array.from({ length: 6 }, () => prepareRun(pool, pool.length)).flat()
       : prepareRun(pool, Math.min(only && only.length > 0 ? only.length : runLength(level), pool.length));
     setMistakes([]);
@@ -418,7 +432,14 @@ export function SpaceQuizGame({
     setFlash(null);
     setCompleted(false);
     setXpGained(0);
-    loadQuestion(newRun[0], 0, newRun.length);
+    if (isMine) {
+      // Na začátku je hrací pole prázdné: otázka přijde až po výběru políčka.
+      engineRef.current?.newBoard?.();
+      mineNextRef.current = 0;
+      engineRef.current?.loadQuestion([], 0, { fireCooldown: BASE_FIRE_COOLDOWN, alienSpeedFactor: 1 });
+    } else {
+      loadQuestion(newRun[0], 0, newRun.length);
+    }
     engineRef.current?.setRunning(true);
     setPaused(false);
     setPhase("playing");
@@ -478,6 +499,15 @@ export function SpaceQuizGame({
     setPhase("result");
   }
 
+  // Hledání min: další otázka pro právě vybrané políčko (po výběru i po špatné odpovědi).
+  function loadMineQuestion() {
+    if (run.length === 0) return;
+    const idx = mineNextRef.current % run.length;
+    mineNextRef.current += 1;
+    setQIndex(idx);
+    loadQuestion(run[idx], idx, 0);
+  }
+
   function nextStep() {
     const last = qIndex + 1 >= run.length;
     if (lives <= 0 || last) {
@@ -529,10 +559,36 @@ export function SpaceQuizGame({
 
   useEffect(() => {
     nextStepRef.current = nextStep;
+    finishRef.current = finishRun;
     pauseToggleRef.current = () => (paused ? resumeGame() : pauseGame());
     pausedRef.current = paused;
     handlersRef.current = {
       onHit: (correct) => {
+        if (isMine) {
+          const q = run[qIndex];
+          recordAnswer(q?.id, correct);
+          setAsked((n) => n + 1);
+          if (correct) {
+            const pts = Math.round(10 * DIFFICULTIES[difficulty].mult);
+            setScore((s) => s + pts);
+            setCombo((c) => c + 1);
+            setBestCombo((b) => Math.max(b, combo + 1));
+            engineRef.current?.popText(`+${pts}`, "#7ee0b0");
+            if (engineRef.current?.isCleared?.()) {
+              // Všechna bezpečná políčka jsou odkrytá: kolo je vyhrané.
+              engineRef.current?.setRunning(false);
+              window.setTimeout(() => finishRef.current(true), 700);
+            }
+            return;
+          }
+          // Špatná odpověď nic nestojí: přijde další otázka pro stejné políčko.
+          noteMistake(q);
+          setCombo(0);
+          setFlash("❌");
+          window.setTimeout(() => setFlash(null), 900);
+          loadMineQuestion();
+          return;
+        }
         recordAnswer(run[qIndex]?.id, correct);
         const earn = () => Math.max(1, Math.round((10 + Math.min(combo, 4) * 5) * DIFFICULTIES[difficulty].mult * (hintUsedRef.current ? 0.5 : 1)));
         if (correct && endless) {
@@ -575,6 +631,8 @@ export function SpaceQuizGame({
         }
       },
       onMiss: () => {
+        // Hledání min nemá časový limit, takže timeout nenastane; kdyby ano, nic se nestane.
+        if (isMine) return;
         recordAnswer(run[qIndex]?.id, false);
         noteMistake(run[qIndex]);
         setAsked((n) => n + 1);
@@ -591,6 +649,9 @@ export function SpaceQuizGame({
         setCombo(0);
         setResolved({ kind: "missed" });
         enterExplain();
+      },
+      onPick: () => {
+        if (isMine && phase === "playing" && !pausedRef.current) loadMineQuestion();
       },
       onDamage: () => {
         const remaining = lives - 1;
