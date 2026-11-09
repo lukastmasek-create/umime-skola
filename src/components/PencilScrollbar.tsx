@@ -10,9 +10,8 @@ import { useEffect, useRef } from "react";
 const THUMB_W = 16;
 const THUMB_H = 96;
 const TRACK_W = 40;
-// Hrot a guma nejsou přesně na okrajích obrázku (tužka má kolem sebe průhledný okraj 24 z 288 px)
-const TIP_Y = THUMB_H * (264 / 288);
-const ERASER_Y = THUMB_H * (24 / 288);
+// Tužka je otočená hrotem nahoru. Hrot je kousek od horního okraje obrázku (průhledný okraj 24 z 288 px).
+const TIP_Y = THUMB_H * (24 / 288);
 
 export function PencilScrollbar() {
   const trackRef = useRef<HTMLDivElement>(null);
@@ -65,23 +64,16 @@ export function PencilScrollbar() {
       ctx.stroke();
     };
 
-    let lastY = window.scrollY;
-    let movingDown = true;
-
     const render = () => {
       const max = maxScroll();
       track.toggleAttribute("data-hidden", max <= 0);
       const progress = max > 0 ? window.scrollY / max : 0;
       const top = progress * travel();
-      thumb.style.transform = `translate3d(0, ${top}px, 0)`;
+      // Otočení o 180° kolem středu: hrot je nahoře
+      thumb.style.transform = `translate3d(0, ${top}px, 0) rotate(180deg)`;
 
-      const delta = window.scrollY - lastY;
-      if (delta > 0) movingDown = true;
-      else if (delta < 0) movingDown = false;
-      lastY = window.scrollY;
-
-      // Při jízdě dolů píše hrot, při jízdě nahoru guma
-      drawTrail(movingDown ? top + TIP_Y : top + ERASER_Y);
+      // Stopa končí u hrotu: při jízdě dolů přibývá (píše se), nahoru ubývá (guma maže)
+      drawTrail(top + TIP_Y);
     };
 
     let frame = 0;
