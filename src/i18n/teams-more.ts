@@ -144,6 +144,12 @@ const cs = {
   "moveCard": "Přesunout",
   "moveUp": "Posunout nahoru",
   "moveDown": "Posunout dolů",
+  "statMembers": "Členové",
+  "statGroups": "Skupiny",
+  "doneLabel": "Splnilo",
+  "statTried": "Zkoušelo",
+  "statMissing": "Chybí po termínu",
+  "statAverage": "Průměr výsledků",
 } as const;
 
 export type TeamsMore = Record<keyof typeof cs, string>;
@@ -289,6 +295,12 @@ const en: TeamsMore = {
   "moveCard": "Move",
   "moveUp": "Move up",
   "moveDown": "Move down",
+  "statMembers": "Members",
+  "statGroups": "Groups",
+  "doneLabel": "Completed",
+  "statTried": "Tried",
+  "statMissing": "Missing after deadline",
+  "statAverage": "Average result",
 };
 
 export type TeamsAll = TeamsText & TeamsMore;

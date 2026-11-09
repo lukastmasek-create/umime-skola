@@ -124,7 +124,7 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
       <Link href={`/${locale}/tymy`} className="text-sm font-bold text-[var(--brand-600)]">{t.backTeams}</Link>
       <Reorderable storageKey={`teams:team:${teamId}:side`} t={t} className="flex flex-col gap-4">
       <ReorderItem id="header">
-      <header className="card flex flex-wrap items-center gap-3 p-4" style={{ borderTop: `6px solid ${colorOf(team.name)}` }}>
+      <header className="card flex flex-col items-start gap-3 p-4" style={{ borderTop: `6px solid ${colorOf(team.name)}` }}>
         <Badge name={team.name} size={44} />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           {renaming !== null ? (

@@ -8,7 +8,7 @@ import { toCsv } from "@/lib/teams/logic";
 import { buildXlsx } from "@/lib/teams/xlsx";
 import type { Locale } from "@/i18n/config";
 import { field } from "./types";
-import { Badge, Progress } from "./ui";
+import { Badge, Progress, StatCard } from "./ui";
 
 type Cell = { status: "done" | "tried" | "viewed" | "new"; best: number; attempts: number; late: boolean; overdue: boolean };
 type Overview = {
@@ -96,8 +96,21 @@ export function TeamResults({ t, locale, teamId, teamName }: { t: TeamsAll; loca
   const exportCsv = () => download(new Blob(["\ufeff" + toCsv(table())], { type: "text/csv;charset=utf-8" }), "csv");
   const exportXlsx = () => download(new Blob([buildXlsx(table() as never, teamName) as BlobPart], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), "xlsx");
 
+  const allDone = data.students.reduce((n, st) => n + summary(st.id).done, 0);
+  const allTotal = data.students.reduce((n, st) => n + summary(st.id).total, 0);
+  const allMissing = data.students.reduce((n, st) => n + summary(st.id).missing, 0);
+  const scored = trend.filter((x) => x.avg != null);
+  const overallAvg = scored.length ? Math.round(scored.reduce((n, x) => n + (x.avg ?? 0), 0) / scored.length) : null;
   return (
     <section className="print-area flex flex-col gap-4">
+      <StatCard
+        label={t.statAverage}
+        value={overallAvg == null ? "–" : `${overallAvg} %`}
+        stats={[
+          { label: t.doneLabel, value: `${allDone} / ${allTotal}` },
+          { label: t.statMissing, value: allMissing },
+        ]}
+      />
       <h2 className="hidden text-xl font-extrabold print:block">{teamName}</h2>
       <div className="flex flex-col gap-2">
         <p className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">

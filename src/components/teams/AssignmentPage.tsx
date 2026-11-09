@@ -8,7 +8,7 @@ import { tfill } from "@/i18n/teams";
 import { getTeamsAll, teamsAllError, type TeamsAll } from "@/i18n/teams-more";
 import type { Locale } from "@/i18n/config";
 import { TeamChat } from "./TeamChat";
-import { Badge, Progress, SideLayout, colorOf } from "./ui";
+import { Badge, Progress, SideLayout, StatCard, colorOf } from "./ui";
 import { AudiencePicker } from "./AudiencePicker";
 import { field, primaryBtn, type Audience, type Team } from "./types";
 
@@ -250,6 +250,14 @@ function Dashboard({ t, locale, data, url, overdue, onRefresh }: { t: TeamsAll; 
       </div>
       {saved && <p role="status" className="text-sm font-semibold text-[var(--accent-green)]">{t.feedbackSaved}</p>}
       {!data.everyone && <p className="text-sm text-[var(--muted)]">{tfill(t.onlyFor, data.rows.length)}</p>}
+      <StatCard
+        label={t.doneLabel}
+        value={`${count("done")} / ${data.rows.length}`}
+        stats={[
+          { label: t.statTried, value: count("tried") },
+          { label: t.statMissing, value: data.rows.filter(missing).length },
+        ]}
+      />
       <p className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
         {(["done", "tried", "viewed", "new"] as const).map((k) => (
           <span key={k} className="flex items-center gap-1.5"><span aria-hidden className="size-2.5 rounded-full" style={{ background: TILE[k] }} /><b>{count(k)}</b> <span className="text-[var(--muted)]">{statusLabel(t, k)}</span></span>
