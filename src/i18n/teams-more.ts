@@ -150,6 +150,18 @@ const cs = {
   "statTried": "Zkoušelo",
   "statMissing": "Chybí po termínu",
   "statAverage": "Průměr výsledků",
+  "filterAll": "Vše",
+  "filterOpen": "Nesplněná",
+  "filterDone": "Splněná",
+  "filterLate": "Po termínu",
+  "sortManual": "Moje pořadí",
+  "sortDue": "Podle termínu",
+  "statBest": "Nejlepší",
+  "statAttempts": "Pokusy",
+  "statDue": "Termín",
+  "statNoDue": "bez termínu",
+  "statViewed": "Zobrazilo",
+  "noMatch": "Žádné zadání neodpovídá filtru.",
 } as const;
 
 export type TeamsMore = Record<keyof typeof cs, string>;
@@ -264,7 +276,6 @@ const en: TeamsMore = {
   "dragHint": "Drag students between groups with the mouse.",
   "ungrouped": "No group",
   "sortLabel": "Sort",
-  "sortName": "By name",
   "sortDone": "By completion",
   "sortMissing": "By missing",
   "allGroups": "All groups",
@@ -301,6 +312,19 @@ const en: TeamsMore = {
   "statTried": "Tried",
   "statMissing": "Missing after deadline",
   "statAverage": "Average result",
+  "filterAll": "All",
+  "filterOpen": "Open",
+  "filterDone": "Done",
+  "filterLate": "Past deadline",
+  "sortManual": "My order",
+  "sortDue": "By deadline",
+  "statBest": "Best",
+  "statAttempts": "Attempts",
+  "statDue": "Deadline",
+  "statNoDue": "no deadline",
+  "statViewed": "Viewed",
+  "noMatch": "No assignment matches this filter.",
+  "sortName": "By name",
 };
 
 export type TeamsAll = TeamsText & TeamsMore;

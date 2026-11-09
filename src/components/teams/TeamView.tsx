@@ -30,6 +30,8 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
   const [tab, setTab] = useState<Tab>("tasks");
   const [error, setError] = useState("");
   const [renaming, setRenaming] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"all" | "open" | "done" | "late">("all");
+  const [sort, setSort] = useState<"manual" | "due" | "name">("manual");
 
   const load = useCallback(async () => {
     try {
@@ -109,6 +111,10 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
     ["people", t.tabPeople, "", team.pending.length],
   ];
   const active = team.assignments.filter((a) => !a.archived);
+  const isDone = (a: Assignment) => (teacher ? (a.students ?? 0) > 0 && (a.done ?? 0) >= (a.students ?? 0) : (a.used ?? 0) > 0 && (a.best ?? 0) >= a.passPercent);
+  const visible = active
+    .filter((a) => (filter === "all" ? true : filter === "done" ? isDone(a) : filter === "late" ? a.due === "overdue" && !isDone(a) : !isDone(a)))
+    .sort((x, y) => (sort === "name" ? x.title.localeCompare(y.title, locale) : (x.dueAt ?? "9999").localeCompare(y.dueAt ?? "9999")));
   const archivedList = team.assignments.filter((a) => a.archived);
   // Blížící se a prošlé termíny: žákovi jen nesplněná zadání, učiteli ta, kde ještě někdo chybí.
   const urgent = active.filter((a) => (a.due === "soon" || a.due === "overdue") && (teacher ? (a.done ?? 0) < (a.students ?? 0) : !((a.used ?? 0) > 0 && (a.best ?? 0) >= a.passPercent)));
@@ -195,13 +201,32 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
             </p>
           )}
           {active.length === 0 && <p className="card p-6 text-center text-[var(--muted)]">{teacher ? t.noTasksT : t.noTasksS}</p>}
-          <Reorderable storageKey={`teams:team:${teamId}:assignments`} t={t} className="flex flex-col gap-2.5">
-            {active.map((a) => (
-              <ReorderItem key={a.id} id={a.id}>
-                <AssignmentCard a={a} teacher={teacher} locale={locale} teamId={teamId} groups={team.groups} members={team.members} />
-              </ReorderItem>
+          <div className="flex flex-wrap items-center gap-2">
+            {([["all", t.filterAll], ["open", t.filterOpen], ["done", t.filterDone], ["late", t.filterLate]] as const).map(([k, label]) => (
+              <button key={k} type="button" aria-pressed={filter === k} onClick={() => setFilter(k)} className={`rounded-full border-2 px-3 py-1 text-sm font-bold ${filter === k ? "border-[var(--edge)] bg-[var(--brand-50)]" : "border-[var(--border-soft)]"}`}>{label}</button>
             ))}
-          </Reorderable>
+            <select value={sort} onChange={(e) => setSort(e.target.value as "manual" | "due" | "name")} aria-label={t.sortManual} className={`${field} ml-auto`}>
+              <option value="manual">{t.sortManual}</option>
+              <option value="due">{t.sortDue}</option>
+              <option value="name">{t.sortName}</option>
+            </select>
+          </div>
+          {sort === "manual" ? (
+            <Reorderable storageKey={`teams:team:${teamId}:assignments`} t={t} className="flex flex-col gap-2.5">
+              {visible.map((a) => (
+                <ReorderItem key={a.id} id={a.id}>
+                  <AssignmentCard a={a} teacher={teacher} locale={locale} teamId={teamId} groups={team.groups} members={team.members} />
+                </ReorderItem>
+              ))}
+            </Reorderable>
+          ) : (
+            <div className="flex flex-col gap-2.5">
+              {visible.map((a) => (
+                <AssignmentCard key={a.id} a={a} teacher={teacher} locale={locale} teamId={teamId} groups={team.groups} members={team.members} />
+              ))}
+            </div>
+          )}
+          {visible.length === 0 && active.length > 0 && <p className="card p-4 text-center text-[var(--muted)]">{t.noMatch}</p>}
           {teacher && archivedList.length > 0 && (
             <details>
               <summary className="cursor-pointer text-sm font-bold text-[var(--muted)]">{tfill(t.archiveTitleN, archivedList.length)}</summary>
@@ -264,6 +289,25 @@ function AssignmentCard({ a, teacher, locale, teamId, groups, members }: { a: As
           {a.dueAt && <> · <span className={dueCls}>{tfill(t.due, fmtDate(locale, a.dueAt))}</span></>}
           {teacher && audience.length > 0 && <> · <span className="font-semibold text-[var(--brand-700)]">{tfill(t.onlyForNames, audience.join(", "))}</span></>}
         </span>
+        <dl className="grid grid-cols-3 gap-2 border-t border-dashed border-[var(--border-soft)] pt-2 text-sm">
+          {(teacher
+            ? [
+                [t.doneLabel, `${a.done ?? 0} / ${a.students ?? 0}`],
+                [t.statViewed, `${a.viewed ?? 0} / ${a.students ?? 0}`],
+                [t.statDue, a.dueAt ? fmtDate(locale, a.dueAt) : t.statNoDue],
+              ]
+            : [
+                [t.statBest, `${a.best ?? 0} %`],
+                [t.statAttempts, `${a.used ?? 0}${a.maxAttempts != null ? ` / ${a.maxAttempts}` : ""}`],
+                [t.statDue, a.dueAt ? fmtDate(locale, a.dueAt) : t.statNoDue],
+              ]
+          ).map(([label, value]) => (
+            <div key={label} className="min-w-0">
+              <dt className="text-xs capitalize text-[var(--muted)]">{label}</dt>
+              <dd className="truncate font-bold">{value}</dd>
+            </div>
+          ))}
+        </dl>
       </Link>
     </div>
   );
