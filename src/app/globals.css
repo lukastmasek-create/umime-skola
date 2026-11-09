@@ -3730,11 +3730,16 @@ html.pencil-scroll::-webkit-scrollbar {
 .pencil-track[data-hidden] {
   display: none;
 }
+.pencil-trail {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
 .pencil-thumb {
   position: absolute;
   top: 0;
-  left: 2px;
-  width: 12px;
   background: url(/scroll/tuzka.webp) center / 100% 100% no-repeat;
   cursor: grab;
   touch-action: none;
