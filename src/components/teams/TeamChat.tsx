@@ -5,7 +5,7 @@ import { call, fmtDate } from "./api";
 import type { Locale } from "@/i18n/config";
 import { getTeamsText, teamsError } from "@/i18n/teams";
 import { errorCode } from "./api";
-import { Badge } from "./ui";
+import { Badge, AvatarStack, Pill } from "./ui";
 
 type Msg = { id: string; text: string; createdAt: string; userId: string; name: string | null; teacher: boolean };
 
@@ -61,8 +61,14 @@ export function TeamChat({ locale, teamId, assignmentId, userId, height = "h-80"
     await load();
   }
 
+  // Hlavička ve stylu TailGrids avatar group: kdo ve vlákně psal a kolik je zpráv.
+  const people = Array.from(new Map((msgs ?? []).map((m) => [m.userId, m.name || ""])).values());
   return (
     <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between gap-2">
+        <AvatarStack names={people} />
+        <Pill>{msgs?.length ?? 0}</Pill>
+      </div>
       <div ref={box} className={`${height} overflow-y-auto rounded-xl border-2 border-[var(--border-soft)] bg-[var(--surface-muted)] p-3`} aria-live="polite">
         {msgs === null && <p className="text-sm text-[var(--muted)]">{t.loading}</p>}
         {msgs?.length === 0 && <p className="py-6 text-center text-sm text-[var(--muted)]">{t.chatEmpty}</p>}

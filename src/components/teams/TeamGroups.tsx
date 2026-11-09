@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { tfill } from "@/i18n/teams";
 import type { TeamsAll } from "@/i18n/teams-more";
-import { Badge, Pill } from "./ui";
+import { Badge, Pill, AvatarStack, StatCard } from "./ui";
 import { dangerBtn, field, linkBtn, primaryBtn, type Team } from "./types";
 
 type Post = (body: object) => Promise<boolean>;
@@ -40,6 +40,14 @@ export function TeamGroups({ t, team, post }: { t: TeamsAll; team: Team; post: P
 
   return (
     <div className="flex flex-col gap-4">
+      <StatCard
+        label={t.statGroups}
+        value={team.groups.length}
+        stats={[
+          { label: t.ungrouped, value: students.filter((x) => !x.groupId).length },
+          { label: t.studentLc, value: students.length },
+        ]}
+      />
       <p className="text-sm text-[var(--muted)]">{t.groupsIntro} {t.dragHint}</p>
       <div className="card flex flex-wrap items-end gap-x-6 gap-y-3 p-4">
         <form className="flex min-w-0 flex-1 flex-col gap-1" onSubmit={async (e) => { e.preventDefault(); if (await post({ action: "createGroup", name })) setName(""); }}>
@@ -90,6 +98,7 @@ export function TeamGroups({ t, team, post }: { t: TeamsAll; team: Team; post: P
                 </>
               )}
             </div>
+            <AvatarStack names={students.filter((s) => s.groupId === g.id).map((s) => s.name || s.email)} />
             <ul className="flex flex-wrap gap-1.5 text-sm">
               {students.filter((s) => s.groupId === g.id).map(chip)}
             </ul>

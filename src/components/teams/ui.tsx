@@ -158,3 +158,43 @@ export function Reorderable({ storageKey, t, className, children }: { storageKey
     </div>
   );
 }
+
+/** Karta se statistikou ve stylu Trophy StreakCard: velké číslo, pod ním čárkovaně oddělené doplňkové údaje. */
+export function StatCard({ label, value, stats, className = "", children }: { label: string; value: ReactNode; stats?: { label: string; value: ReactNode }[]; className?: string; children?: ReactNode }) {
+  return (
+    <section className={`card flex flex-col gap-4 p-5 ${className}`} aria-label={label}>
+      <div>
+        <p className="text-sm font-semibold text-[var(--muted)]">{label}</p>
+        <p className="text-5xl font-extrabold leading-none" style={{ fontFamily: "var(--font-heading)" }}>{value}</p>
+      </div>
+      {children}
+      {stats && stats.length > 0 && (
+        <dl className={`grid gap-4 border-t border-dashed border-[var(--border-soft)] pt-4 ${stats.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
+          {stats.map((s) => (
+            <div key={s.label} className="min-w-0">
+              <dt className="text-sm capitalize text-[var(--muted)]">{s.label}</dt>
+              <dd className="text-2xl font-extrabold leading-tight">{s.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+    </section>
+  );
+}
+
+/** Skupina avatarů s překryvem ve stylu TailGrids avatar group. */
+export function AvatarStack({ names, max = 5 }: { names: (string | null | undefined)[]; max?: number }) {
+  const shown = names.slice(0, max);
+  const extra = names.length - shown.length;
+  if (names.length === 0) return null;
+  return (
+    <span className="flex items-center -space-x-2" aria-label={`${names.length}`}>
+      {shown.map((n, i) => (
+        <span key={i} className="rounded-full border-2 border-[var(--surface)]"><Badge name={n} size={28} round /></span>
+      ))}
+      {extra > 0 && (
+        <span className="grid size-7 place-items-center rounded-full border-2 border-[var(--surface)] bg-[var(--surface-muted)] text-xs font-extrabold">+{extra}</span>
+      )}
+    </span>
+  );
+}

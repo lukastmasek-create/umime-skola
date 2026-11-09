@@ -5,7 +5,7 @@ import { call, errorCode, fmtDate } from "./api";
 import { teamsAllError, type TeamsAll } from "@/i18n/teams-more";
 import { tfill } from "@/i18n/teams";
 import type { Locale } from "@/i18n/config";
-import { Badge } from "./ui";
+import { Badge, StatCard } from "./ui";
 import { dangerBtn, field, linkBtn, primaryBtn, type Team } from "./types";
 
 type Post = (body: object) => Promise<boolean>;
@@ -29,6 +29,14 @@ export function TeamPeople({ t, locale, team, post, reload, teamId, onLeave }: {
   const picked = sel.filter((id) => team.members.some((m) => m.id === id));
   return (
     <div className="flex flex-col gap-4">
+      <StatCard
+        label={t.statMembers}
+        value={team.members.length}
+        stats={[
+          { label: t.teacherLc, value: team.members.filter((m) => m.role === "TEACHER").length },
+          { label: t.studentLc, value: team.members.filter((m) => m.role !== "TEACHER").length },
+        ]}
+      />
       {teacher && team.pending.length > 0 && (
         <section className="card flex flex-col gap-2 border-2 border-[var(--accent-yellow)] p-4" aria-label={t.pendingTitle}>
           <div className="flex items-center justify-between gap-2">
