@@ -32,6 +32,14 @@ export type AudiencePagesText = {
     ctaHint: string;
     studentsLink: string;
     homeLink: string;
+    featuresTitle: string;
+    features: Item[];
+    previewBadge: string;
+    previewTitle: string;
+    previewDue: string;
+    previewCaption: string;
+    faqTitle: string;
+    faq: { q: string; a: string }[];
   };
   students: {
     nav: string;
@@ -66,6 +74,26 @@ const cs: AudiencePagesText = {
     ctaHint: "Stačí se zaregistrovat a v sekci Týmy vytvořit třídu.",
     studentsLink: "Jsi žák? Podívej se, co na webu najdeš →",
     homeLink: "Víc o funkcích pro učitele →",
+    featuresTitle: "Co v aplikaci najdeš",
+    features: [
+      { title: "Třídy s kódem", text: "Každá třída má vlastní kód. Stačí ho žákům sdělit a připojí se sami." },
+      { title: "Schvalování žáků", text: "Můžeš zvolit, zda se žáci připojí hned, až po tvém schválení, nebo zda je třída zavřená." },
+      { title: "Úkoly pro třídu, skupinu i žáka", text: "Zadání může dostat celá třída, jedna skupina nebo jednotlivec, každé s vlastním termínem." },
+      { title: "Přehled výsledků", text: "Vidíš, kdo úkol otevřel, kdo ho splnil a u kterých otázek se třída zasekává." },
+      { title: "Chat třídy", text: "Krátké zprávy přímo v týmu, aby se dalo rychle domluvit." },
+      { title: "Rodičovský zámek", text: "Rodiče nastaví PIN, denní limit času a mohou zakázat nákupy nebo společné hraní." },
+    ],
+    previewBadge: "Ukázka",
+    previewTitle: "Zlomky, 5. třída",
+    previewDue: "Termín: pátek",
+    previewCaption: "Ilustrační ukázka, ne živá data.",
+    faqTitle: "Časté dotazy",
+    faq: [
+      { q: "Je to opravdu zdarma?", a: "Ano. Registrace, třídy i úkoly jsou zdarma a bez reklam." },
+      { q: "Potřebují žáci účet?", a: "Hrát a učit se mohou i bez účtu. Pro připojení do třídy se ale musí přihlásit, aby se jejich postup uložil." },
+      { q: "Můžu přijmout jen některé žáky?", a: "Ano. Když zapneš schvalování, každou žádost uvidíš a přijmeš ji sám." },
+      { q: "Jak funguje rodičovský zámek?", a: "Rodiče nastaví PIN a denní limit času a mohou zakázat nákupy v obchodě i společné hraní." },
+    ],
   },
   students: {
     nav: "Pro žáky",
@@ -113,6 +141,26 @@ const en: AudiencePagesText = {
     ctaHint: "Just sign up and create a class in the Teams section.",
     studentsLink: "Are you a pupil? See what you'll find here →",
     homeLink: "More about features for teachers →",
+    featuresTitle: "What's inside",
+    features: [
+      { title: "Classes with a code", text: "Every class gets its own code. Share it with pupils and they join by themselves." },
+      { title: "Approve pupils", text: "Choose whether pupils join straight away, only after you approve them, or whether the class is closed." },
+      { title: "Tasks for a class, group or pupil", text: "Give a task to the whole class, one group or a single pupil, each with its own deadline." },
+      { title: "Overview of results", text: "See who opened the task, who completed it and which questions the class struggles with." },
+      { title: "Class chat", text: "Short messages right inside the team, so you can sort things out quickly." },
+      { title: "Parental lock", text: "Parents set a PIN and a daily time limit, and can block shop purchases or playing together." },
+    ],
+    previewBadge: "Example",
+    previewTitle: "Fractions, grade 5",
+    previewDue: "Due: Friday",
+    previewCaption: "Illustrative example, not live data.",
+    faqTitle: "Frequently asked questions",
+    faq: [
+      { q: "Is it really free?", a: "Yes. Registration, classes and tasks are free, with no ads." },
+      { q: "Do pupils need an account?", a: "They can play and learn without one. To join a class they need to sign in, so their progress is saved." },
+      { q: "Can I accept only some pupils?", a: "Yes. If you turn on approval, you see each request and accept it yourself." },
+      { q: "How does the parental lock work?", a: "Parents set a PIN and a daily time limit, and can block shop purchases and playing together." },
+    ],
   },
   students: {
     nav: "For students",
@@ -160,6 +208,26 @@ const de: AudiencePagesText = {
     ctaHint: "Einfach registrieren und im Bereich Teams eine Klasse erstellen.",
     studentsLink: "Bist du Schüler? Hier findest du alles →",
     homeLink: "Mehr zu den Funktionen für Lehrkräfte →",
+    featuresTitle: "Was drin steckt",
+    features: [
+      { title: "Klassen mit Code", text: "Jede Klasse hat einen eigenen Code. Teile ihn mit den Schülern, dann treten sie selbst bei." },
+      { title: "Schüler bestätigen", text: "Lege fest, ob Schüler sofort beitreten, erst nach deiner Bestätigung, oder ob die Klasse geschlossen ist." },
+      { title: "Aufgaben für Klasse, Gruppe oder einzelne Schüler", text: "Gib eine Aufgabe der ganzen Klasse, einer Gruppe oder einem einzelnen Schüler, jeweils mit eigener Frist." },
+      { title: "Übersicht der Ergebnisse", text: "Sieh, wer die Aufgabe geöffnet und wer sie erledigt hat und bei welchen Fragen die Klasse hängt." },
+      { title: "Klassenchat", text: "Kurze Nachrichten direkt im Team, damit ihr schnell etwas klären könnt." },
+      { title: "Kindersicherung", text: "Eltern legen eine PIN und ein tägliches Zeitlimit fest und können Einkäufe im Shop oder gemeinsames Spielen sperren." },
+    ],
+    previewBadge: "Beispiel",
+    previewTitle: "Brüche, 5. Klasse",
+    previewDue: "Frist: Freitag",
+    previewCaption: "Illustratives Beispiel, keine Live-Daten.",
+    faqTitle: "Häufige Fragen",
+    faq: [
+      { q: "Ist das wirklich kostenlos?", a: "Ja. Registrierung, Klassen und Aufgaben sind kostenlos und werbefrei." },
+      { q: "Brauchen Schüler ein Konto?", a: "Spielen und lernen können sie auch ohne Konto. Für den Beitritt zur Klasse müssen sie sich anmelden, damit ihr Fortschritt gespeichert wird." },
+      { q: "Kann ich nur einige Schüler aufnehmen?", a: "Ja. Wenn du die Bestätigung einschaltest, siehst du jede Anfrage und kannst sie selbst annehmen." },
+      { q: "Wie funktioniert die Kindersicherung?", a: "Eltern legen eine PIN und ein tägliches Zeitlimit fest und können Einkäufe im Shop und gemeinsames Spielen sperren." },
+    ],
   },
   students: {
     nav: "Für Schüler",
@@ -207,6 +275,26 @@ const ru: AudiencePagesText = {
     ctaHint: "Достаточно зарегистрироваться и создать класс в разделе «Команды».",
     studentsLink: "Ты ученик? Посмотри, что здесь есть →",
     homeLink: "Подробнее о функциях для учителей →",
+    featuresTitle: "Что внутри",
+    features: [
+      { title: "Классы с кодом", text: "У каждого класса свой код. Передайте его ученикам, и они присоединятся сами." },
+      { title: "Подтверждение учеников", text: "Выберите, входят ли ученики сразу, только после вашего подтверждения или класс закрыт." },
+      { title: "Задания для класса, группы или ученика", text: "Задание можно дать всему классу, одной группе или отдельному ученику, у каждого свой срок." },
+      { title: "Обзор результатов", text: "Видно, кто открыл задание, кто его выполнил и на каких вопросах класс застревает." },
+      { title: "Чат класса", text: "Короткие сообщения прямо в команде, чтобы быстро всё согласовать." },
+      { title: "Родительский замок", text: "Родители задают PIN и дневной лимит времени и могут запретить покупки в магазине или совместную игру." },
+    ],
+    previewBadge: "Пример",
+    previewTitle: "Дроби, 5 класс",
+    previewDue: "Срок: пятница",
+    previewCaption: "Иллюстративный пример, не реальные данные.",
+    faqTitle: "Частые вопросы",
+    faq: [
+      { q: "Это правда бесплатно?", a: "Да. Регистрация, классы и задания бесплатны, без рекламы." },
+      { q: "Нужен ли ученикам аккаунт?", a: "Играть и учиться можно и без аккаунта. Чтобы войти в класс, нужно войти в аккаунт, так сохранится прогресс." },
+      { q: "Можно принять только некоторых учеников?", a: "Да. Если включить подтверждение, вы видите каждую заявку и принимаете её сами." },
+      { q: "Как работает родительский замок?", a: "Родители задают PIN и дневной лимит времени и могут запретить покупки в магазине и совместную игру." },
+    ],
   },
   students: {
     nav: "Для учеников",
@@ -254,6 +342,26 @@ const uk: AudiencePagesText = {
     ctaHint: "Достатньо зареєструватися й створити клас у розділі «Команди».",
     studentsLink: "Ви учень? Подивіться, що тут є →",
     homeLink: "Детальніше про функції для вчителів →",
+    featuresTitle: "Що всередині",
+    features: [
+      { title: "Класи з кодом", text: "Кожен клас має свій код. Передайте його учням, і вони приєднаються самі." },
+      { title: "Підтвердження учнів", text: "Оберіть, чи учні приєднуються одразу, лише після вашого підтвердження, чи клас закритий." },
+      { title: "Завдання для класу, групи або учня", text: "Завдання можна дати всьому класу, одній групі або окремому учневі, кожному зі своїм терміном." },
+      { title: "Огляд результатів", text: "Видно, хто відкрив завдання, хто його виконав і на яких питаннях клас застряє." },
+      { title: "Чат класу", text: "Короткі повідомлення просто в команді, щоб швидко все узгодити." },
+      { title: "Батьківський замок", text: "Батьки задають PIN, денний ліміт часу та можуть заборонити покупки в магазині або спільну гру." },
+    ],
+    previewBadge: "Приклад",
+    previewTitle: "Дроби, 5 клас",
+    previewDue: "Термін: п'ятниця",
+    previewCaption: "Ілюстративний приклад, не реальні дані.",
+    faqTitle: "Часті питання",
+    faq: [
+      { q: "Це справді безкоштовно?", a: "Так. Реєстрація, класи й завдання безкоштовні, без реклами." },
+      { q: "Чи потрібен учням обліковий запис?", a: "Грати й учитися можна і без нього. Щоб приєднатися до класу, потрібно увійти, тоді зберігається прогрес." },
+      { q: "Чи можна прийняти лише деяких учнів?", a: "Так. Якщо ввімкнути підтвердження, ви бачите кожну заявку й приймаєте її самі." },
+      { q: "Як працює батьківський замок?", a: "Батьки задають PIN і денний ліміт часу та можуть заборонити покупки в магазині й спільну гру." },
+    ],
   },
   students: {
     nav: "Для учнів",
@@ -301,6 +409,26 @@ const ja: AudiencePagesText = {
     ctaHint: "登録してから「チーム」でクラスを作成するだけです。",
     studentsLink: "生徒の方はこちら →",
     homeLink: "教師向け機能の詳細 →",
+    featuresTitle: "アプリでできること",
+    features: [
+      { title: "コード付きのクラス", text: "クラスごとに専用のコードがあります。生徒に伝えるだけで、生徒が自分で参加できます。" },
+      { title: "生徒の参加を承認", text: "参加をすぐ許可するか、先生の承認後にするか、またはクラスを閉じるかを選べます。" },
+      { title: "クラス・グループ・個人への課題", text: "課題はクラス全体、グループ、または個人に出せます。それぞれ期限を設定できます。" },
+      { title: "結果の確認", text: "誰が課題を開いたか、誰が完了したか、クラスがどの問題でつまずいているかがわかります。" },
+      { title: "クラスのチャット", text: "チーム内で短いメッセージをやり取りでき、すぐに連絡が取れます。" },
+      { title: "保護者向けのロック", text: "保護者がPINと1日の利用時間の上限を設定し、ショップでの購入や一緒に遊ぶことを禁止できます。" },
+    ],
+    previewBadge: "例",
+    previewTitle: "分数・5年生",
+    previewDue: "期限：金曜日",
+    previewCaption: "イメージ例で、実際のデータではありません。",
+    faqTitle: "よくある質問",
+    faq: [
+      { q: "本当に無料ですか？", a: "はい。登録、クラス、課題は無料で、広告もありません。" },
+      { q: "生徒にアカウントは必要ですか？", a: "アカウントなしでも遊んで学べます。クラスに参加するにはログインが必要で、進み具合が保存されます。" },
+      { q: "一部の生徒だけを受け入れられますか？", a: "はい。承認をオンにすると、届いた参加申請を一件ずつ確認して受け入れられます。" },
+      { q: "保護者向けのロックはどう機能しますか？", a: "保護者がPINと1日の利用時間の上限を設定し、ショップでの購入や一緒に遊ぶことを禁止できます。" },
+    ],
   },
   students: {
     nav: "生徒の方へ",
@@ -348,6 +476,26 @@ const es: AudiencePagesText = {
     ctaHint: "Solo tienes que registrarte y crear una clase en la sección Equipos.",
     studentsLink: "¿Eres alumno? Mira lo que encontrarás aquí →",
     homeLink: "Más sobre las funciones para docentes →",
+    featuresTitle: "Qué encontrarás",
+    features: [
+      { title: "Clases con código", text: "Cada clase tiene su propio código. Compártelo con los alumnos y se unen por su cuenta." },
+      { title: "Aprueba a los alumnos", text: "Elige si los alumnos entran al momento, solo después de tu aprobación o si la clase está cerrada." },
+      { title: "Tareas para la clase, un grupo o un alumno", text: "Asigna una tarea a toda la clase, a un grupo o a un solo alumno, cada una con su fecha límite." },
+      { title: "Resumen de resultados", text: "Ve quién abrió la tarea, quién la completó y en qué preguntas se atasca la clase." },
+      { title: "Chat de la clase", text: "Mensajes cortos dentro del equipo para resolver las cosas rápido." },
+      { title: "Bloqueo parental", text: "Los padres fijan un PIN y un límite de tiempo diario, y pueden bloquear las compras en la tienda o el juego en grupo." },
+    ],
+    previewBadge: "Ejemplo",
+    previewTitle: "Fracciones, 5.º curso",
+    previewDue: "Fecha límite: viernes",
+    previewCaption: "Ejemplo ilustrativo, no son datos reales.",
+    faqTitle: "Preguntas frecuentes",
+    faq: [
+      { q: "¿De verdad es gratis?", a: "Sí. El registro, las clases y las tareas son gratuitos y sin anuncios." },
+      { q: "¿Los alumnos necesitan una cuenta?", a: "Pueden jugar y aprender sin cuenta. Para unirse a una clase deben iniciar sesión, así se guarda su progreso." },
+      { q: "¿Puedo aceptar solo a algunos alumnos?", a: "Sí. Si activas la aprobación, ves cada solicitud y la aceptas tú." },
+      { q: "¿Cómo funciona el bloqueo parental?", a: "Los padres fijan un PIN y un límite de tiempo diario, y pueden bloquear las compras en la tienda y el juego en grupo." },
+    ],
   },
   students: {
     nav: "Para alumnos",
@@ -395,6 +543,26 @@ const fr: AudiencePagesText = {
     ctaHint: "Inscrivez-vous, puis créez une classe dans la rubrique Équipes.",
     studentsLink: "Tu es élève ? Découvre ce que tu trouveras ici →",
     homeLink: "En savoir plus sur les fonctions pour enseignants →",
+    featuresTitle: "Ce que vous y trouverez",
+    features: [
+      { title: "Classes avec code", text: "Chaque classe a son propre code. Partagez-le avec les élèves, ils rejoignent seuls." },
+      { title: "Validez les élèves", text: "Choisissez si les élèves entrent tout de suite, seulement après votre validation, ou si la classe est fermée." },
+      { title: "Tâches pour la classe, un groupe ou un élève", text: "Donnez une tâche à toute la classe, à un groupe ou à un seul élève, chacune avec son échéance." },
+      { title: "Aperçu des résultats", text: "Voyez qui a ouvert la tâche, qui l'a terminée et sur quelles questions la classe bloque." },
+      { title: "Chat de classe", text: "Des messages courts directement dans l'équipe, pour régler les choses vite." },
+      { title: "Verrou parental", text: "Les parents définissent un code PIN et une limite de temps quotidienne, et peuvent bloquer les achats dans la boutique ou le jeu à plusieurs." },
+    ],
+    previewBadge: "Exemple",
+    previewTitle: "Fractions, 5e",
+    previewDue: "Échéance : vendredi",
+    previewCaption: "Exemple illustratif, pas de données réelles.",
+    faqTitle: "Questions fréquentes",
+    faq: [
+      { q: "C'est vraiment gratuit ?", a: "Oui. L'inscription, les classes et les tâches sont gratuites, sans publicité." },
+      { q: "Les élèves ont-ils besoin d'un compte ?", a: "Ils peuvent jouer et apprendre sans compte. Pour rejoindre une classe, ils doivent se connecter, ce qui sauvegarde leur progression." },
+      { q: "Puis-je n'accepter que certains élèves ?", a: "Oui. Si vous activez la validation, vous voyez chaque demande et l'acceptez vous-même." },
+      { q: "Comment fonctionne le verrou parental ?", a: "Les parents définissent un code PIN et une limite de temps quotidienne, et peuvent bloquer les achats dans la boutique et le jeu à plusieurs." },
+    ],
   },
   students: {
     nav: "Pour les élèves",
