@@ -76,16 +76,16 @@ const HASH: Record<MainTab, string> = { overview: "prehled", collection: "sbirka
 // Staré odkazy na #satnik ukážou Sbírku, kde je Šatník teď.
 const LEGACY_HASH: Record<string, MainTab> = { satnik: "collection" };
 
-// Odemčení z klíče (frame:, banner:, acc:) na lidský název; ostatní klíče se nezobrazují.
+// Odemčení z klíče (avatar:, title:, frame:, banner:, pet:, city:, acc:) na lidský název.
 function unlockLabel(key: string, locale: Locale): string | null {
   const i = key.indexOf(":");
   if (i < 0) return null;
   const kind = key.slice(0, i);
   const id = key.slice(i + 1);
-  if (kind === "frame" && isFrameId(id)) return itemName("frame", id, locale);
-  if (kind === "banner" && BANNERS[id]) return itemName("banner", id, locale);
   if (kind === "acc") return RECIPES.find((r) => r.ref === id && r.category === "avatar-acc")?.names[locale] ?? null;
-  return null;
+  if (kind === "avatar") return AVATARS.find((a) => a.id === id)?.names[locale] ?? shopItemName(kind, id, locale);
+  if (kind === "title") return TITLES.find((x) => x.id === id)?.names[locale] ?? shopItemName(kind, id, locale);
+  return shopItemName(kind, id, locale);
 }
 
 const DEFAULT_BANNER = "linear-gradient(135deg, #5a6cff 0%, #7a5cff 55%, #ff6f91 100%)";
@@ -191,6 +191,10 @@ function ColorPicker({
 
 function itemName(kind: "frame" | "banner", ref: string, locale: Locale) {
   return SHOP_ITEMS.find((i) => i.kind === kind && i.ref === ref)?.names[locale] ?? ref;
+}
+
+function shopItemName(kind: string, ref: string, locale: Locale): string | null {
+  return SHOP_ITEMS.find((i) => i.kind === kind && i.ref === ref)?.names[locale] ?? null;
 }
 
 export function ProfileView({ locale }: { locale: Locale }) {
