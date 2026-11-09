@@ -8,7 +8,7 @@ import { tfill } from "@/i18n/teams";
 import { getTeamsAll, teamsAllError, type TeamsAll } from "@/i18n/teams-more";
 import type { Locale } from "@/i18n/config";
 import { TeamChat } from "./TeamChat";
-import { Badge, Progress, colorOf } from "./ui";
+import { Badge, Progress, SideLayout, colorOf } from "./ui";
 import { AudiencePicker } from "./AudiencePicker";
 import { field, primaryBtn, type Audience, type Team } from "./types";
 
@@ -55,7 +55,14 @@ export function AssignmentPage({ locale, teamId, assignmentId }: { locale: Local
   const overdue = isOverdue(a.dueAt);
 
   return (
-    <div className="flex flex-col gap-5">
+    <SideLayout
+      side={
+        <section className="card flex flex-col gap-2 p-4" aria-label={t.discussion}>
+          <h2 className="text-lg font-extrabold">{t.discussion}</h2>
+          <TeamChat locale={locale} teamId={teamId} assignmentId={assignmentId} userId={team.userId} height="h-96" />
+        </section>
+      }
+    >
       {back}
       {data.role === "TEACHER" ? null : <TaskHeader t={t} locale={locale} team={team} meta={a} count={data.questions.length} overdue={overdue} />}
 
@@ -76,11 +83,7 @@ export function AssignmentPage({ locale, teamId, assignmentId }: { locale: Local
         </>
       )}
 
-      <details className="card p-4" open={data.role === "STUDENT"}>
-        <summary className="cursor-pointer text-lg font-extrabold">{t.discussion}</summary>
-        <div className="mt-3"><TeamChat locale={locale} teamId={teamId} assignmentId={assignmentId} userId={team.userId} height="h-64" /></div>
-      </details>
-    </div>
+    </SideLayout>
   );
 }
 

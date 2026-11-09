@@ -141,6 +141,9 @@ const cs = {
   "progressTitle": "Tvůj postup",
   "teamProgress": "Postup týmu",
   "openTeam": "Otevřít",
+  "moveCard": "Přesunout",
+  "moveUp": "Posunout nahoru",
+  "moveDown": "Posunout dolů",
 } as const;
 
 export type TeamsMore = Record<keyof typeof cs, string>;
@@ -283,6 +286,9 @@ const en: TeamsMore = {
   "progressTitle": "Your progress",
   "teamProgress": "Team progress",
   "openTeam": "Open",
+  "moveCard": "Move",
+  "moveUp": "Move up",
+  "moveDown": "Move down",
 };
 
 export type TeamsAll = TeamsText & TeamsMore;
