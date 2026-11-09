@@ -16,9 +16,12 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip as ChartTool
 import { createColumnHelper, flexRender, getCoreRowModel, getSortedRowModel, useReactTable, type SortingState } from "@tanstack/react-table";
 import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { Gift, Gamepad2, Trophy, Star, Sparkles, Search, GripVertical, ChartColumn, Table2, ListOrdered } from "lucide-react";
+import { Gift, Gamepad2, Trophy, Star, Sparkles, Search, GripVertical, ChartColumn, Table2, ListOrdered, Settings, Volume2 } from "lucide-react";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { NuqsAdapter } from "nuqs/adapters/react";
+import { FormsTab, AnimationsTab, DataTab, ControlsTab } from "./UiDemoMore";
 
 type Game = { id: string; name: string; tag: string; kind: "action" | "classic"; progress: number };
 
@@ -368,6 +371,7 @@ function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (
 
 export function UiDemo() {
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [queryClient] = useState(() => new QueryClient());
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -381,6 +385,8 @@ export function UiDemo() {
   }, []);
 
   return (
+    <QueryClientProvider client={queryClient}>
+    <NuqsAdapter>
     <Tooltip.Provider delayDuration={150}>
       <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-10 sm:px-6">
         <header className="flex flex-col gap-3">
@@ -408,6 +414,10 @@ export function UiDemo() {
               { v: "poradi", label: "Pořadí", icon: ListOrdered },
               { v: "odmeny", label: "Odměny", icon: Gift },
               { v: "profil", label: "Profil", icon: Trophy },
+              { v: "formulare", label: "Formuláře", icon: Settings },
+              { v: "animace", label: "Animace", icon: Sparkles },
+              { v: "data", label: "Data", icon: Table2 },
+              { v: "ovladani", label: "Ovládání", icon: Volume2 },
             ].map(({ v, label, icon: Icon }) => (
               <Tabs.Trigger
                 key={v}
@@ -424,11 +434,17 @@ export function UiDemo() {
           <Tabs.Content value="poradi"><OrderTab /></Tabs.Content>
           <Tabs.Content value="odmeny"><RewardsTab /></Tabs.Content>
           <Tabs.Content value="profil"><ProfileTab /></Tabs.Content>
+          <Tabs.Content value="formulare"><FormsTab /></Tabs.Content>
+          <Tabs.Content value="animace"><AnimationsTab /></Tabs.Content>
+          <Tabs.Content value="data"><DataTab /></Tabs.Content>
+          <Tabs.Content value="ovladani"><ControlsTab /></Tabs.Content>
         </Tabs.Root>
 
         <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
         <Toaster position="bottom-center" richColors />
       </div>
     </Tooltip.Provider>
+    </NuqsAdapter>
+    </QueryClientProvider>
   );
 }
