@@ -22,6 +22,22 @@ const FEATURE_PATH: Record<FeatureKey, string> = {
   team: "/tymy",
 };
 
+// Emoji ikona na každé kartě, ať se karty na první pohled liší.
+const FEATURE_ICON: Record<FeatureKey, string> = {
+  courses: "📚",
+  daily: "⚡",
+  idle: "🌱",
+  escape: "🔐",
+  together: "🎮",
+  review: "🗺️",
+  materials: "📖",
+  profile: "🏅",
+  boards: "🏆",
+  shop: "🛍️",
+  town: "🏘️",
+  team: "👥",
+};
+
 export default async function StudentsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
@@ -44,7 +60,10 @@ export default async function StudentsPage({ params }: { params: Promise<{ local
           const feature = t.features[key];
           return (
             <li key={key}>
-              <Link href={`/${locale}${FEATURE_PATH[key]}`} className="card card-hover flex h-full flex-col gap-2 p-5">
+              <Link href={`/${locale}${FEATURE_PATH[key]}`} className="card card-hover flex h-full flex-col gap-3 p-5">
+                <span className="text-3xl leading-none" aria-hidden="true">
+                  {FEATURE_ICON[key]}
+                </span>
                 <h3 className="text-lg font-bold" style={heading}>
                   {feature.title}
                 </h3>
