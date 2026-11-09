@@ -39,13 +39,16 @@ export default async function StudentsPage({ params }: { params: Promise<{ local
       <h2 className="mb-5 text-xl font-bold sm:text-2xl" style={heading}>
         {t.cardsTitle}
       </h2>
-      <ul className="mb-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="mb-12 flex flex-col gap-3">
         {FEATURE_KEYS.map((key) => {
           const feature = t.features[key];
           return (
             <li key={key}>
-              <Link href={`/${locale}${FEATURE_PATH[key]}`} className="card card-hover flex h-full flex-col gap-2 p-5">
-                <h3 className="text-lg font-bold" style={heading}>
+              <Link
+                href={`/${locale}${FEATURE_PATH[key]}`}
+                className="card card-hover flex flex-col gap-1 px-5 py-4 sm:flex-row sm:items-center sm:gap-6"
+              >
+                <h3 className="text-lg font-bold sm:w-56 sm:shrink-0" style={heading}>
                   {feature.title}
                 </h3>
                 <p className="text-sm leading-relaxed text-[var(--muted)]">{feature.text}</p>
