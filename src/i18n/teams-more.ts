@@ -162,6 +162,9 @@ const cs = {
   "statNoDue": "bez termínu",
   "statViewed": "Zobrazilo",
   "noMatch": "Žádné zadání neodpovídá filtru.",
+  "closeToast": "Zavřít",
+  "deadlinesTitle": "Kalendář termínů",
+  "deadlinesEmpty": "Žádné termíny v následujících 14 dnech.",
 } as const;
 
 export type TeamsMore = Record<keyof typeof cs, string>;
@@ -325,6 +328,9 @@ const en: TeamsMore = {
   "statViewed": "Viewed",
   "noMatch": "No assignment matches this filter.",
   "sortName": "By name",
+  "closeToast": "Close",
+  "deadlinesTitle": "Deadline calendar",
+  "deadlinesEmpty": "No deadlines in the next 14 days.",
 };
 
 export type TeamsAll = TeamsText & TeamsMore;

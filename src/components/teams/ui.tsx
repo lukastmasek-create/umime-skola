@@ -1,4 +1,4 @@
-import { Children, isValidElement, useEffect, useState, type ReactNode } from "react";
+import { Children, isValidElement, useEffect, useRef, useState, type ReactNode } from "react";
 
 // Sdílené stavební kameny vzhledu týmů: barevný znak týmu, progress bar, iniciálový avatar.
 const PALETTE = ["#3248f0", "#ff5a3c", "#17a864", "#29a3ff", "#8b5cf6", "#e0a100", "#e0409a", "#0f9fa8"];
@@ -196,5 +196,22 @@ export function AvatarStack({ names, max = 5 }: { names: (string | null | undefi
         <span className="grid size-7 place-items-center rounded-full border-2 border-[var(--surface)] bg-[var(--surface-muted)] text-xs font-extrabold">+{extra}</span>
       )}
     </span>
+  );
+}
+
+/** Krátké potvrzení s progress barem, které samo zmizí (ukazuje zbývající čas). */
+export function ProgressToast({ message, durationMs = 4000, onDone, closeLabel }: { message: ReactNode; durationMs?: number; onDone: () => void; closeLabel: string }) {
+  const done = useRef(onDone);
+  useEffect(() => { done.current = onDone; }, [onDone]);
+  useEffect(() => {
+    const id = setTimeout(() => done.current(), durationMs);
+    return () => clearTimeout(id);
+  }, [durationMs]);
+  return (
+    <div role="status" className="card relative overflow-hidden p-3 pr-10 text-sm font-semibold text-[var(--accent-green)]">
+      {message}
+      <button type="button" onClick={onDone} aria-label={closeLabel} className="absolute right-2 top-1.5 grid size-6 place-items-center rounded-md text-[var(--muted)] hover:text-[var(--foreground)]">×</button>
+      <span aria-hidden className="absolute bottom-0 left-0 h-1 bg-[var(--accent-green)]" style={{ animation: `toast-shrink ${durationMs}ms linear forwards` }} />
+    </div>
   );
 }
