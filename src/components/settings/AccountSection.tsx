@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getSettingsExtraText } from "@/i18n/settings-extra";
 import type { Locale } from "@/i18n/config";
 import { inputClass, primaryButtonClass, headingStyle, post } from "./ui";
+import { notifyAccountChanged } from "@/lib/account-events";
 
 // Sekce Účet: změna e-mailu a hesla.
 export function AccountSection({ locale }: { locale: Locale }) {
@@ -15,6 +16,8 @@ export function AccountSection({ locale }: { locale: Locale }) {
   const [cur, setCur] = useState("");
   const [next, setNext] = useState("");
   const [msg, setMsg] = useState<{ part: string; text: string } | null>(null);
+  const [name, setName] = useState("");
+  const [nameLoaded, setNameLoaded] = useState(false);
 
   useEffect(() => {
     void fetch("/api/ucet/email")
@@ -24,6 +27,17 @@ export function AccountSection({ locale }: { locale: Locale }) {
         if (d.loggedIn) setAcct({ email: d.email, hasPassword: d.hasPassword });
       })
       .catch(() => {});
+  }, []);
+
+  // Aktuální jméno z profilu, aby formulář ukázal, co už je uložené.
+  useEffect(() => {
+    void fetch("/api/profil")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.loggedIn) setName(d.name ?? "");
+      })
+      .catch(() => {})
+      .finally(() => setNameLoaded(true));
   }, []);
 
   const say = (part: string, r: { ok: boolean; data: Record<string, unknown> }) =>
@@ -37,6 +51,40 @@ export function AccountSection({ locale }: { locale: Locale }) {
       {!loggedIn && <p className="text-sm text-[var(--muted)]">{t.loginFirst}</p>}
       {acct && (
         <>
+          <form
+            className="flex flex-col gap-2"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const r = await post("/api/profil", { name: name.trim() });
+              say("name", r);
+              if (r.ok) {
+                setName(String(r.data.name ?? name.trim()));
+                notifyAccountChanged();
+              }
+            }}
+          >
+            <label className="text-sm font-bold" htmlFor="profile-name">
+              {t.profileName}
+            </label>
+            <p className="text-xs text-[var(--muted)]">{t.nameHint}</p>
+            <input
+              id="profile-name"
+              className={inputClass}
+              type="text"
+              required
+              maxLength={40}
+              disabled={!nameLoaded}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoComplete="nickname"
+            />
+            <div className="flex items-center gap-3">
+              <button className={primaryButtonClass} type="submit" disabled={!nameLoaded}>
+                {t.saveName}
+              </button>
+              {msg?.part === "name" && <span className="text-sm font-semibold">{msg.text}</span>}
+            </div>
+          </form>
           <form
             className="flex flex-col gap-2"
             onSubmit={async (e) => {

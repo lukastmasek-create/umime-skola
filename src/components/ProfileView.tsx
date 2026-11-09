@@ -503,16 +503,9 @@ export function ProfileView({ locale }: { locale: Locale }) {
             </div>
             <p className="text-sm text-[var(--muted)]">{profile.school ? profile.school.name : t.noSchool}</p>
             <div className="mt-1 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setMainTab("collection");
-                  setTab("look");
-                }}
-                className="btn-bouncy bg-[#16132b] px-5 py-2.5 text-sm font-bold text-white"
-              >
+              <Link href={`/${locale}/nastaveni`} className="btn-bouncy bg-[#16132b] px-5 py-2.5 text-sm font-bold text-white">
                 {hx.editProfile}
-              </button>
+              </Link>
               {team !== undefined &&
                 (team ? (
                   <Link href={`/${locale}/tymy/${team.id}`} className="btn-bouncy border-2 border-[#16132b] px-5 py-2.5 text-sm font-bold">

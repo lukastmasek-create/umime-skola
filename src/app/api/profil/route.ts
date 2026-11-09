@@ -198,6 +198,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ [key]: value });
     }
 
+    if (typeof body?.name === "string") {
+      // Zobrazované jméno: bez úvodních/koncových mezer, 1–40 znaků, nemusí být unikátní.
+      const name = body.name.replace(/\s+/g, " ").trim();
+      if (name.length < 1 || name.length > 40) {
+        return NextResponse.json({ error: "bad-name" }, { status: 400 });
+      }
+      await prisma.user.update({ where: { id: userId }, data: { name } });
+      return NextResponse.json({ name });
+    }
+
     return NextResponse.json({ error: "Neplatný požadavek." }, { status: 400 });
   } catch {
     return NextResponse.json({ error: "Databáze není dostupná." }, { status: 503 });
