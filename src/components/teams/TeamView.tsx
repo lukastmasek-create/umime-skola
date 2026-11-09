@@ -119,7 +119,8 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
   const myGroup = team.groups.find((g) => g.id === team.members.find((m) => m.id === team.userId)?.groupId);
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start lg:gap-6">
+      <aside className="flex flex-col gap-4 lg:sticky lg:top-24">
       <Link href={`/${locale}/tymy`} className="text-sm font-bold text-[var(--brand-600)]">{t.backTeams}</Link>
       <header className="card flex flex-wrap items-center gap-3 p-4" style={{ borderTop: `6px solid ${colorOf(team.name)}` }}>
         <Badge name={team.name} size={44} />
@@ -144,6 +145,17 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
         </div>
         {teacher && overdueN > 0 && <Pill tone="danger">{tfill(t.overdueN, overdueN)}</Pill>}
       </header>
+      {active.length > 0 && (
+        <section className="card flex flex-col gap-2 p-4" aria-label={teacher ? t.teamProgress : t.progressTitle}>
+          {teacher ? (
+            <Progress value={sumDone} max={sumTotal} color="linear-gradient(90deg, var(--brand-500), var(--accent-green))" label={`${t.teamProgress}: ${tfill(t.doneOf, sumDone, sumTotal)}`} />
+          ) : (
+            <Progress value={passedN} max={active.length} color="linear-gradient(90deg, var(--brand-500), var(--accent-green))" label={`${t.progressTitle}: ${passedN} / ${active.length}`} />
+          )}
+        </section>
+      )}
+      </aside>
+      <div className="flex min-w-0 flex-col gap-5">
       {error && <p role="alert" className="card p-3 text-sm font-semibold text-[var(--danger)]">{error}</p>}
       <div role="tablist" className="-mt-2 flex flex-wrap gap-x-5 gap-y-1 border-b-2 border-[var(--border-soft)]">
         {tabs.map(([k, label, , badge]) => (
@@ -156,18 +168,11 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
 
       {tab === "tasks" && (
         <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            {active.length > 0 && (
-              <div className="min-w-[12rem] flex-1">
-                {teacher ? (
-                  <Progress value={sumDone} max={sumTotal} color="linear-gradient(90deg, var(--brand-500), var(--accent-green))" label={`${t.teamProgress}: ${tfill(t.doneOf, sumDone, sumTotal)}`} />
-                ) : (
-                  <Progress value={passedN} max={active.length} color="linear-gradient(90deg, var(--brand-500), var(--accent-green))" label={`${t.progressTitle}: ${passedN} / ${active.length}`} />
-                )}
-              </div>
-            )}
-            {teacher && <NewAssignment locale={locale} teamId={teamId} groups={team.groups} students={team.members.filter((m) => m.role === "STUDENT")} onCreated={load} />}
-          </div>
+          {teacher && (
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              <NewAssignment locale={locale} teamId={teamId} groups={team.groups} students={team.members.filter((m) => m.role === "STUDENT")} onCreated={load} />
+            </div>
+          )}
           {urgent.length > 0 && (
             <p role="status" className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl bg-[var(--surface-muted)] px-3 py-2 text-sm">
               {urgent.map((a) => (
@@ -202,6 +207,7 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
           onLeave={async () => { if (confirm(t.confirmLeave) && (await post({ action: "leave" }))) router.push(`/${locale}/tymy`); }}
         />
       )}
+      </div>
     </div>
   );
 }
