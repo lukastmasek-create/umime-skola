@@ -8,10 +8,13 @@ import { tfill } from "@/i18n/teams";
 import { getTeamsAll, teamsAllError } from "@/i18n/teams-more";
 import { fmtDate } from "./api";
 import type { Locale } from "@/i18n/config";
-import { Badge, Pill, colorOf } from "./ui";
+import { Badge, Pill, Progress, colorOf } from "./ui";
+
+// Gradient pro progress bar postupu (fialová → zelená, jako v gamifikovaném vzhledu).
+const PROGRESS_GRADIENT = "linear-gradient(90deg, var(--brand-500), var(--accent-green))";
 
 
-type TeamRow = { id: string; name: string; role: string; code: string | null; members: number; assignments: number; open: number; soon: number; overdue: number };
+type TeamRow = { id: string; name: string; role: string; code: string | null; members: number; assignments: number; done: number; open: number; soon: number; overdue: number };
 type Urgent = { teamId: string; teamName: string; assignmentId: string; title: string; dueAt: string; overdue: boolean };
 type Pending = { id: string; name: string };
 
@@ -69,6 +72,10 @@ export function TeamsHome({ locale }: { locale: Locale }) {
     }
   }
 
+  // Souhrn nahoře: nesplněná zadání žáka napříč týmy a nejbližší termín (API je řadí podle data).
+  const openSum = (teams ?? []).reduce((n, tm) => n + (tm.role === "STUDENT" ? tm.open : 0), 0);
+  const nextDue = urgent[0];
+
   if (!auth)
     return (
       <div className="card flex flex-col items-start gap-3 p-6">
@@ -96,6 +103,27 @@ export function TeamsHome({ locale }: { locale: Locale }) {
           </ul>
         </section>
       )}
+      <section aria-label={t.progressTitle} className="grid grid-cols-3 gap-3">
+        <div className="card flex flex-col gap-1 p-4">
+          <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.summaryTeams}</p>
+          <p className="text-2xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>{teams?.length ?? 0}</p>
+        </div>
+        <div className="card flex flex-col gap-1 p-4">
+          <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.summaryOpen}</p>
+          <p className="text-2xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>{openSum}</p>
+        </div>
+        <div className="card flex min-w-0 flex-col gap-1 p-4">
+          <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.summaryNext}</p>
+          {nextDue ? (
+            <Link href={`/${locale}/tymy/${nextDue.teamId}/zadani/${nextDue.assignmentId}`} className="flex min-w-0 flex-col hover:underline">
+              <span className="truncate text-sm font-bold">{nextDue.title}</span>
+              <span className="text-xs text-[var(--muted)]">{fmtDate(locale, nextDue.dueAt)}</span>
+            </Link>
+          ) : (
+            <span className="text-sm font-semibold text-[var(--muted)]">{t.summaryNone}</span>
+          )}
+        </div>
+      </section>
       <section className="grid gap-4 sm:grid-cols-2">
         <form className="card flex flex-col gap-3 p-5" onSubmit={(e) => { e.preventDefault(); void act({ action: "create", name, asTeacher: teacher }); }}>
           <h2 className="text-lg font-extrabold">{t.createTitle}</h2>
@@ -126,7 +154,7 @@ export function TeamsHome({ locale }: { locale: Locale }) {
         <ul className="grid gap-3 sm:grid-cols-2">
           {teams?.map((tm) => (
             <li key={tm.id}>
-              <Link href={`/${locale}/tymy/${tm.id}`} className="card flex h-full items-start gap-3 p-4 hover:-translate-y-0.5" style={{ borderLeft: `8px solid ${colorOf(tm.name)}` }}>
+              <Link href={`/${locale}/tymy/${tm.id}`} className="card flex h-full items-start gap-3 p-4 hover:-translate-y-0.5" style={{ borderTop: `6px solid ${colorOf(tm.name)}` }}>
                 <Badge name={tm.name} size={52} />
                 <span className="flex min-w-0 flex-1 flex-col gap-1.5">
                   <span className="flex items-center justify-between gap-2">
@@ -140,7 +168,11 @@ export function TeamsHome({ locale }: { locale: Locale }) {
                       {tm.soon > 0 && <Pill tone="warn">{tfill(t.soonN, tm.soon)}</Pill>}
                     </span>
                   )}
+                  {tm.role === "STUDENT" && tm.assignments > 0 && (
+                    <Progress value={tm.done} max={tm.assignments} color={PROGRESS_GRADIENT} label={tfill(t.summaryDone, tm.done, tm.assignments)} />
+                  )}
                   {tm.code && <span className="text-xs text-[var(--muted)]">{t.code}: <b className="tracking-widest">{tm.code}</b></span>}
+                  <span className="mt-auto pt-1 text-sm font-bold text-[var(--brand-600)]">{t.openTeam} →</span>
                 </span>
               </Link>
             </li>

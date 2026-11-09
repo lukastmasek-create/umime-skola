@@ -157,7 +157,15 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
       {tab === "tasks" && (
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            {active.length > 0 && <p className="text-sm font-semibold text-[var(--muted)]">{teacher ? tfill(t.doneOf, sumDone, sumTotal) : `${t.tabTasks}: ${passedN} / ${active.length}`}</p>}
+            {active.length > 0 && (
+              <div className="min-w-[12rem] flex-1">
+                {teacher ? (
+                  <Progress value={sumDone} max={sumTotal} color="linear-gradient(90deg, var(--brand-500), var(--accent-green))" label={`${t.teamProgress}: ${tfill(t.doneOf, sumDone, sumTotal)}`} />
+                ) : (
+                  <Progress value={passedN} max={active.length} color="linear-gradient(90deg, var(--brand-500), var(--accent-green))" label={`${t.progressTitle}: ${passedN} / ${active.length}`} />
+                )}
+              </div>
+            )}
             {teacher && <NewAssignment locale={locale} teamId={teamId} groups={team.groups} students={team.members.filter((m) => m.role === "STUDENT")} onCreated={load} />}
           </div>
           {urgent.length > 0 && (

@@ -52,6 +52,7 @@ export async function GET() {
         code: m.role === "TEACHER" ? m.team.code : null,
         members: counts.find((c) => c.teamId === m.teamId)?._count._all ?? 0,
         assignments: mine.length,
+        done: m.role === "STUDENT" ? mine.length - open : 0,
         open,
         soon,
         overdue,

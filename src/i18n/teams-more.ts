@@ -132,6 +132,15 @@ const cs = {
   "dueBannerLate": "Po termínu",
   "actions": "Akce",
   "manageMembers": "Přidat členy a nastavit připojování",
+
+  "summaryTeams": "Týmy",
+  "summaryOpen": "Nesplněná zadání",
+  "summaryNext": "Nejbližší termín",
+  "summaryNone": "Žádný blížící se termín",
+  "summaryDone": "Splněno {0} z {1}",
+  "progressTitle": "Tvůj postup",
+  "teamProgress": "Postup týmu",
+  "openTeam": "Otevřít",
 } as const;
 
 export type TeamsMore = Record<keyof typeof cs, string>;
@@ -265,6 +274,15 @@ const en: TeamsMore = {
   "dueBannerLate": "Past deadline",
   "actions": "Actions",
   "manageMembers": "Add members and joining settings",
+
+  "summaryTeams": "Teams",
+  "summaryOpen": "Open assignments",
+  "summaryNext": "Next deadline",
+  "summaryNone": "No deadline coming up",
+  "summaryDone": "{0} of {1} done",
+  "progressTitle": "Your progress",
+  "teamProgress": "Team progress",
+  "openTeam": "Open",
 };
 
 export type TeamsAll = TeamsText & TeamsMore;
