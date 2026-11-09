@@ -16,7 +16,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip as ChartTool
 import { createColumnHelper, flexRender, getCoreRowModel, getSortedRowModel, useReactTable, type SortingState } from "@tanstack/react-table";
 import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { Gift, Gamepad2, Trophy, Star, Sparkles, Search, GripVertical, ChartColumn, Table2, ListOrdered, Settings, Volume2, Upload, Layers } from "lucide-react";
+import { Gift, Gamepad2, Trophy, Star, Sparkles, Search, GripVertical, ChartColumn, Table2, ListOrdered, Settings, Volume2, Upload, Layers, Wallet } from "lucide-react";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -25,6 +25,7 @@ import { FormsTab, AnimationsTab, DataTab, ControlsTab } from "./UiDemoMore";
 import { MotionTab, MoreOssTab } from "./UiDemoMotion";
 import { DashboardTab, PricingTab } from "./UiDemoDashboard";
 import { SettingsTab } from "./UiDemoSettings";
+import { BankTab } from "./UiDemoBank";
 
 type Game = { id: string; name: string; tag: string; kind: "action" | "classic"; progress: number };
 
@@ -426,6 +427,7 @@ export function UiDemo() {
               { v: "dashboard", label: "Dashboard", icon: Layers },
               { v: "cenik", label: "Ceník", icon: Gift },
               { v: "nastaveni", label: "Nastavení", icon: Settings },
+              { v: "banka", label: "Banka", icon: Wallet },
             ].map(({ v, label, icon: Icon }) => (
               <Tabs.Trigger
                 key={v}
@@ -451,6 +453,7 @@ export function UiDemo() {
           <Tabs.Content value="dashboard"><DashboardTab /></Tabs.Content>
           <Tabs.Content value="cenik"><PricingTab /></Tabs.Content>
           <Tabs.Content value="nastaveni"><SettingsTab /></Tabs.Content>
+          <Tabs.Content value="banka"><BankTab /></Tabs.Content>
         </Tabs.Root>
 
         <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
