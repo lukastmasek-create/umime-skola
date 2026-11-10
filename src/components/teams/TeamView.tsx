@@ -15,6 +15,7 @@ import { TeamGroups } from "./TeamGroups";
 import { TeamResults } from "./TeamResults";
 import { AudiencePicker } from "./AudiencePicker";
 import { EdxSidebar } from "./EdxSidebar";
+import { EdxAssignments } from "./EdxAssignments";
 import { Badge, Pill, Progress, Reorderable, ReorderItem } from "./ui";
 import { field, linkBtn, type Audience, type Assignment, type Group, type Member, type Team } from "./types";
 
@@ -207,21 +208,7 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
               <option value="name">{t.sortName}</option>
             </select>
           </div>
-          {sort === "manual" ? (
-            <Reorderable storageKey={`teams:team:${teamId}:assignments`} t={t} className="flex flex-col gap-2.5">
-              {visible.map((a) => (
-                <ReorderItem key={a.id} id={a.id}>
-                  <AssignmentCard a={a} teacher={teacher} locale={locale} teamId={teamId} groups={team.groups} members={team.members} />
-                </ReorderItem>
-              ))}
-            </Reorderable>
-          ) : (
-            <div className="flex flex-col gap-2.5">
-              {visible.map((a) => (
-                <AssignmentCard key={a.id} a={a} teacher={teacher} locale={locale} teamId={teamId} groups={team.groups} members={team.members} />
-              ))}
-            </div>
-          )}
+          <EdxAssignments locale={locale} teamId={teamId} teacher={teacher} active={active} visible={visible} students={team.members.filter((m) => m.role === "STUDENT").length} isDone={isDone} />
           {visible.length === 0 && active.length > 0 && <p className="card p-4 text-center text-[var(--muted)]">{t.noMatch}</p>}
           {teacher && archivedList.length > 0 && (
             <details>
@@ -235,7 +222,7 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
       )}
 
       {tab === "results" && teacher && <TeamResults t={t} locale={locale} teamId={teamId} teamName={team.name} />}
-      {tab === "groups" && teacher && <TeamGroups t={t} team={team} post={post} />}
+      {tab === "groups" && teacher && <TeamGroups t={t} team={team} post={post} locale={locale} />}
       {tab === "chat" && <section className="card p-4"><TeamChat locale={locale} teamId={teamId} userId={team.userId} height="h-96" /></section>}
       {tab === "people" && (
         <TeamPeople

@@ -333,7 +333,8 @@ function Dashboard({ t, locale, data, url, overdue, onRefresh }: { t: TeamsAll; 
 }
 
 function Runner({ t, data, url, onDone }: { t: TeamsAll; data: Extract<Data, { role: "STUDENT" }>; url: string; onDone: () => void }) {
-  const [started, setStarted] = useState(false);
+  // ?hrat=1 (tlačítko Hrát v seznamu zadání) začne kvíz hned, pokud zbývá pokus. Runner se vykresluje až po načtení dat v prohlížeči.
+  const [started, setStarted] = useState(() => data.left !== 0 && typeof window !== "undefined" && new URLSearchParams(window.location.search).get("hrat") === "1");
   const [answers, setAnswers] = useState<Record<string, { choice?: number; typed?: string[] }>>({});
   const [result, setResult] = useState<Result | null>(null);
   const [error, setError] = useState("");

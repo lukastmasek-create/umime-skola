@@ -16,6 +16,13 @@ const cs = {
   pointsTitle: "Splněno po týmech",
   schTitle: "Termíny a zadání", schFilter: "Filtr", schAll: "Všechny týmy", schWeek: "Týden", schMonth: "Měsíc", schNone: "Žádný termín",
   schDone: "Hotovo", schPlanned: "Naplánováno", schPrev: "Předchozí", schNext: "Další", schToday: "Dnes",
+  stStudents: "Aktivní žáci", stTasks: "Zadání", stDoneOf: "Splněno {0} z {1}", stWaiting: "Čeká na splnění", stAvg: "Průměr nejlepších výsledků",
+  listTitle: "Zadání v týmu", listSub: "Výsledek a splnění u každého zadání", play: "Hrát", openTask: "Otevřít zadání", missing: "Chybí {0}",
+  dBest: "Nejlepší výsledek", dAttempts: "Pokusy", dDue: "Termín", dLeft: "Zbývá pokusů", noDue: "Bez termínu", pickTask: "Vyber zadání ze seznamu.",
+  rDonut: "Splnění zadání", rDonutSub: "všech zadání žáků", rRadar: "Průměr po zadáních", rBars: "Splnění podle skupin", rNoGroup: "Bez skupiny",
+  rDone: "Splněno", rTried: "Zkoušeli", rWaiting: "Čeká", rMissing: "Chybí", rAll: "Vše", rMid: "Rozpracováno", rSearch: "Hledat žáka…",
+  rColValue: "Splněno", rColRange: "Průměr a hranice splnění", rColStatus: "Stav", rMatrix: "Podrobně po zadáních", rAvg: "Průměr", rNoData: "Bez výsledků",
+  gSearch: "Hledat skupinu…", gAdd: "Přidat skupinu", gAssignments: "Zadání skupině", gMembers: "Členů", gMenu: "Menu skupiny", gDrop: "Přetáhni sem žáky", gStudents: "žáků", gCancel: "Zrušit",
 } as const;
 export type TeamsEdx = Record<keyof typeof cs, string>;
 
@@ -33,6 +40,13 @@ const en: TeamsEdx = {
   pointsTitle: "Completed per team",
   schTitle: "Deadlines & assignments", schFilter: "Filter", schAll: "All teams", schWeek: "Week", schMonth: "Month", schNone: "No deadline",
   schDone: "Done", schPlanned: "Planned", schPrev: "Previous", schNext: "Next", schToday: "Today",
+  stStudents: "Active students", stTasks: "Assignments", stDoneOf: "{0} of {1} done", stWaiting: "Waiting to be done", stAvg: "Average best score",
+  listTitle: "Team assignments", listSub: "Score and completion for each assignment", play: "Play", openTask: "Open assignment", missing: "{0} missing",
+  dBest: "Best score", dAttempts: "Attempts", dDue: "Deadline", dLeft: "Attempts left", noDue: "No deadline", pickTask: "Pick an assignment from the list.",
+  rDonut: "Assignment completion", rDonutSub: "student assignments", rRadar: "Average by assignment", rBars: "Completion by group", rNoGroup: "No group",
+  rDone: "Done", rTried: "Tried", rWaiting: "Waiting", rMissing: "Missing", rAll: "All", rMid: "In progress", rSearch: "Search students…",
+  rColValue: "Done", rColRange: "Average and pass threshold", rColStatus: "Status", rMatrix: "Details by assignment", rAvg: "Average", rNoData: "No results",
+  gSearch: "Search groups…", gAdd: "Add group", gAssignments: "Assignments for group", gMembers: "Members", gMenu: "Group menu", gDrop: "Drag students here", gStudents: "students", gCancel: "Cancel",
 };
 
 const more: Partial<Record<Locale, TeamsEdx>> = { cs, en };
