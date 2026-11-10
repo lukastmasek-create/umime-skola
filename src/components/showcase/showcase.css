@@ -1,0 +1,156 @@
+/* Sekce „Vyzkoušej si to“ na úvodní stránce. Všechny třídy mají předponu sc-. */
+.sc-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); align-items: start; }
+.sc-card {
+  display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 16px; border-radius: 18px;
+  color: #fff; background: rgba(255, 255, 255, 0.07); border: 1.5px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(6px);
+}
+.sc-card.wide { grid-column: 1 / -1; }
+.sc-card h3 { margin: 0; font-size: 0.95rem; font-weight: 800; letter-spacing: 0.01em; }
+.sc-stage {
+  position: relative; display: grid; place-items: center; min-height: 150px; overflow: hidden; border-radius: 14px;
+  background: rgba(8, 6, 28, 0.55); border: 1px dashed rgba(255, 255, 255, 0.18); padding: 14px;
+}
+.sc-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.sc-hint { font-size: 0.78rem; color: rgba(255, 255, 255, 0.7); }
+.sc-btn {
+  border: 2px solid rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.1); color: #fff; border-radius: 12px;
+  padding: 7px 14px; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: transform 0.15s, background 0.2s, border-color 0.2s;
+}
+.sc-btn:hover { background: rgba(255, 255, 255, 0.2); }
+.sc-btn:active { transform: translateY(1px) scale(0.98); }
+.sc-btn.primary { background: var(--accent-yellow); border-color: var(--accent-yellow); color: #1a1530; }
+.sc-btn.good { background: var(--accent-green); border-color: var(--accent-green); color: #06241a; }
+.sc-btn.bad { background: #e5584b; border-color: #e5584b; color: #fff; }
+.sc-btn:focus-visible, .sc-seg button:focus-visible, .sc-fold:focus-visible, .sc-list:focus-visible { outline: 2px solid var(--accent-yellow); outline-offset: 2px; }
+.sc-seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 12px; background: rgba(255, 255, 255, 0.1); }
+.sc-seg button { border: 0; background: transparent; color: #fff; padding: 6px 12px; border-radius: 9px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+.sc-seg button[aria-pressed="true"] { background: var(--accent-yellow); color: #1a1530; }
+
+/* Vlny */
+.sc-ripple { position: relative; width: 150px; height: 150px; display: grid; place-items: center; }
+.sc-ripple i { position: absolute; inset: 0; margin: auto; border-radius: 50%; border: 2px solid var(--accent-blue); opacity: 0; animation: sc-ripple 3.6s ease-out infinite; }
+.sc-ripple i:nth-child(2) { animation-delay: 0.7s; } .sc-ripple i:nth-child(3) { animation-delay: 1.4s; }
+.sc-ripple i:nth-child(4) { animation-delay: 2.1s; } .sc-ripple i:nth-child(5) { animation-delay: 2.8s; }
+.sc-ripple b { z-index: 1; width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; font-size: 1.5rem; background: var(--accent-500); box-shadow: 0 0 28px var(--accent-500); }
+@keyframes sc-ripple { 0% { width: 54px; height: 54px; opacity: 0.9; } 100% { width: 150px; height: 150px; opacity: 0; } }
+
+/* Částice, dither */
+.sc-canvas { display: block; width: 100%; height: 150px; border-radius: 12px; touch-action: none; }
+
+/* Psaní */
+.sc-typing { font-size: 1.35rem; font-weight: 800; min-height: 1.6em; text-align: center; }
+.sc-caret { display: inline-block; width: 3px; height: 1.1em; margin-left: 3px; vertical-align: -0.15em; background: var(--accent-yellow); animation: sc-blink 1s steps(1) infinite; }
+@keyframes sc-blink { 50% { opacity: 0; } }
+
+/* Číselný automat */
+.sc-ticker { font-size: 2.6rem; font-weight: 800; color: var(--accent-yellow); font-variant-numeric: tabular-nums; }
+
+/* Tečka zaplaví tlačítko */
+.sc-fill { position: relative; overflow: hidden; display: inline-grid; place-items: center; min-width: 190px; height: 52px; padding: 0 28px; border-radius: 999px; border: 2px solid #fff; background: transparent; color: #fff; font-weight: 800; cursor: pointer; }
+.sc-fill .d { position: absolute; left: 22px; top: 50%; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: var(--accent-yellow); transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.sc-fill .t1, .sc-fill .t2 { grid-area: 1 / 1; position: relative; z-index: 1; transition: transform 0.35s, opacity 0.35s; }
+.sc-fill .t2 { opacity: 0; transform: translateX(14px); color: #1a1530; }
+.sc-fill:hover .d, .sc-fill:focus-visible .d { transform: scale(40); }
+.sc-fill:hover .t1, .sc-fill:focus-visible .t1 { opacity: 0; transform: translateX(-14px); }
+.sc-fill:hover .t2, .sc-fill:focus-visible .t2 { opacity: 1; transform: none; }
+
+/* Životy a kombo */
+.sc-hearts { display: flex; gap: 8px; min-height: 36px; }
+.sc-heart { font-size: 1.7rem; line-height: 1; transition: transform 0.3s, filter 0.3s; }
+.sc-heart.lost { filter: grayscale(1) opacity(0.35); transform: scale(0.8) rotate(-12deg); }
+.sc-combo { display: flex; align-items: center; gap: 12px; }
+.sc-combo .x { font-size: 2.2rem; font-weight: 800; color: var(--accent-yellow); font-variant-numeric: tabular-nums; }
+.sc-flame { font-size: 2rem; transition: transform 0.25s, filter 0.25s; filter: grayscale(1) opacity(0.4); }
+.sc-flame.on { filter: none; animation: sc-flame 0.9s ease-in-out infinite; }
+@keyframes sc-flame { 50% { transform: scale(1.18) rotate(4deg); } }
+
+/* Dock */
+.sc-dock { display: flex; align-items: flex-end; gap: 8px; padding: 10px 14px; border-radius: 22px; background: rgba(255, 255, 255, 0.1); border: 1.5px solid rgba(255, 255, 255, 0.25); height: 78px; max-width: 100%; }
+.sc-dock button { flex: none; width: 40px; height: 40px; border: 0; border-radius: 12px; font-size: 1.15rem; cursor: pointer; display: grid; place-items: center; transform-origin: bottom; transition: transform 0.12s ease-out; color: #1a1530; }
+
+/* Ostrůvek */
+.sc-island { background: #000; color: #fff; border-radius: 26px; padding: 10px 18px; overflow: hidden; width: 160px; height: 46px; transition: width 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), height 0.45s cubic-bezier(0.2, 0.8, 0.2, 1); display: flex; flex-direction: column; justify-content: center; gap: 6px; font-size: 0.85rem; }
+.sc-island[data-s="timer"] { width: 230px; } .sc-island[data-s="score"] { width: 250px; height: 62px; } .sc-island[data-s="full"] { width: 270px; height: 104px; }
+.sc-island .bar { height: 8px; border-radius: 99px; background: rgba(255, 255, 255, 0.18); overflow: hidden; }
+.sc-island .bar i { display: block; height: 100%; width: 68%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-500)); }
+.sc-island .live { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green); margin-right: 8px; animation: sc-blink 1.2s steps(1) infinite; }
+
+/* Seznam se zkratkami */
+.sc-list { position: relative; list-style: none; margin: 0; padding: 4px; width: 100%; max-width: 300px; border-radius: 14px; background: rgba(255, 255, 255, 0.07); }
+.sc-list .bg { position: absolute; left: 4px; right: 4px; top: 4px; height: 38px; border-radius: 10px; background: rgba(255, 255, 255, 0.18); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); pointer-events: none; }
+.sc-list li { position: relative; display: flex; justify-content: space-between; align-items: center; height: 38px; padding: 0 12px; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
+.sc-list li.bg { position: absolute; left: 4px; right: 4px; top: 4px; height: 38px; padding: 0; cursor: default; }
+.sc-list kbd { font: 700 0.68rem ui-monospace, monospace; opacity: 0.7; border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 6px; padding: 1px 6px; }
+
+/* Složka */
+.sc-fold { position: relative; width: 150px; height: 120px; border: 0; background: none; cursor: pointer; padding: 0; color: #1a1530; }
+.sc-fold .back { position: absolute; left: 6px; right: 6px; bottom: 10px; height: 82px; border-radius: 6px 12px 12px 12px; background: #d98a2b; }
+.sc-fold .back::before { content: ""; position: absolute; left: 0; top: -12px; width: 52px; height: 14px; border-radius: 8px 8px 0 0; background: #d98a2b; }
+.sc-fold .pp { position: absolute; left: 22px; right: 22px; bottom: 26px; height: 54px; padding: 6px 8px; font-size: 0.66rem; font-weight: 700; border-radius: 6px; background: #fff; border: 1px solid #ddd; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.sc-fold .front { position: absolute; left: 0; right: 0; bottom: 6px; height: 66px; display: grid; place-items: center; border-radius: 10px; background: #ffb347; border: 2px solid #1a1530; font-weight: 800; font-size: 0.85rem; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); transform-origin: bottom; }
+.sc-fold .cnt { position: absolute; right: -6px; top: 6px; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: #ff6b6b; color: #fff; font-size: 0.75rem; font-weight: 800; border: 2px solid #1a1530; }
+.sc-fold[aria-expanded="true"] .front { transform: perspective(300px) rotateX(-22deg); }
+.sc-fold[aria-expanded="true"] .pp:nth-of-type(1) { transform: translate(-30px, -48px) rotate(-10deg); }
+.sc-fold[aria-expanded="true"] .pp:nth-of-type(2) { transform: translate(0, -62px); }
+.sc-fold[aria-expanded="true"] .pp:nth-of-type(3) { transform: translate(30px, -48px) rotate(10deg); }
+
+/* Lampa */
+.sc-lamp { position: relative; width: 100%; min-height: 170px; display: grid; place-items: center; overflow: hidden; background: #0a0820; border-radius: 12px; }
+.sc-lamp .bar { position: absolute; top: 0; left: 50%; height: 4px; width: 50px; transform: translateX(-50%); background: var(--accent-blue); border-radius: 0 0 4px 4px; box-shadow: 0 0 24px var(--accent-blue); }
+
+.sc-lamp .cone { position: absolute; top: 0; left: 50%; height: 150px; width: 0; transform: translateX(-50%); opacity: 0; clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%); background: linear-gradient(180deg, rgba(130, 150, 255, 0.75), rgba(130, 150, 255, 0.05)); }
+.sc-lamp .glow { position: absolute; top: -20px; left: 50%; width: 220px; height: 90px; transform: translateX(-50%); background: radial-gradient(ellipse, rgba(120, 140, 255, 0.6), transparent 70%); opacity: 0; filter: blur(14px); }
+.sc-lamp h4 { position: relative; margin: 20px 0 0; font-size: 1.5rem; font-weight: 800; text-align: center; padding: 0 12px; background: linear-gradient(180deg, #fff, #8d9bff); -webkit-background-clip: text; background-clip: text; color: transparent; opacity: 0; transform: translateY(24px); }
+.sc-lamp.go .bar { animation: sc-lamp-bar 0.9s 0.2s both ease-out; }
+.sc-lamp.go .cone { animation: sc-lamp-cone 0.9s 0.2s both ease-out; }
+.sc-lamp.go .glow { animation: sc-lamp-glow 1s 0.2s both ease-out; }
+.sc-lamp.go h4 { animation: sc-lamp-h 0.8s 0.6s both ease-out; }
+@keyframes sc-lamp-bar { from { width: 20px; } to { width: 170px; } }
+@keyframes sc-lamp-cone { from { width: 0; opacity: 0; } to { width: 300px; opacity: 1; } }
+@keyframes sc-lamp-glow { to { opacity: 1; } }
+@keyframes sc-lamp-h { to { opacity: 1; transform: none; } }
+
+/* Příprava kola */
+.sc-steps { display: grid; gap: 10px; width: 100%; max-width: 280px; }
+.sc-step { display: flex; align-items: center; gap: 10px; font-weight: 700; opacity: 0.35; transition: opacity 0.3s; }
+.sc-step.on { opacity: 1; }
+.sc-step i { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 0.8rem; border: 2px solid rgba(255, 255, 255, 0.5); }
+.sc-step.done i { background: var(--accent-green); border-color: var(--accent-green); color: #06241a; }
+.sc-step.cur i { border-top-color: var(--accent-yellow); animation: sc-spin 0.8s linear infinite; }
+@keyframes sc-spin { to { transform: rotate(360deg); } }
+
+/* LED */
+.sc-led { padding: 8px; border-radius: 12px; background: #050310; border: 2px solid rgba(255, 255, 255, 0.2); }
+.sc-led canvas { display: block; width: 100%; max-width: 420px; height: auto; aspect-ratio: 420 / 132; }
+
+/* Historie bodů */
+.sc-tx { display: grid; gap: 8px; }
+.sc-tx li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; background: rgba(255, 255, 255, 0.07); animation: sc-in 0.35s both; }
+.sc-tx .l { flex: 1; min-width: 0; font-weight: 700; font-size: 0.86rem; }
+.sc-tx .l small { display: block; font-weight: 500; opacity: 0.65; font-size: 0.72rem; }
+.sc-tx .a { font-weight: 800; font-variant-numeric: tabular-nums; }
+.sc-tx .a.pos { color: var(--accent-green); } .sc-tx .a.neg { color: #ff8f84; }
+@keyframes sc-in { from { opacity: 0; transform: translateY(8px); } }
+
+/* Mapa aktivity */
+.sc-heat { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 18px); grid-auto-columns: 18px; gap: 4px; }
+.sc-heat i { border-radius: 5px; background: #26224a; transition: transform 0.12s; cursor: default; }
+.sc-heat i:hover, .sc-heat i:focus-visible { transform: scale(1.35); outline: 2px solid #fff; }
+.sc-heat i[data-l="1"] { background: #245f49; } .sc-heat i[data-l="2"] { background: #2f9a72; }
+.sc-heat i[data-l="3"] { background: #3ddc97; } .sc-heat i[data-l="4"] { background: #b8ffd9; }
+.sc-legend { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; opacity: 0.8; }
+.sc-legend i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+/* Studijní čas */
+.sc-study { display: grid; gap: 10px; width: 100%; max-width: 280px; }
+.sc-study .tm { font-size: 2rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.sc-study .bars { display: flex; gap: 6px; height: 58px; align-items: flex-end; }
+.sc-study .bars i { flex: 1 1 0; min-width: 8px; border-radius: 8px; transition: flex-grow 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.sc-study .lg { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 0.75rem; font-weight: 700; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-ripple i, .sc-caret, .sc-flame.on, .sc-island .live, .sc-step.cur i { animation: none; }
+  .sc-lamp.go * { animation-duration: 0.01ms !important; animation-delay: 0s !important; }
+  .sc-fill .d, .sc-fill .t1, .sc-fill .t2, .sc-list .bg, .sc-study .bars i, .sc-fold .pp, .sc-fold .front { transition: none; }
+}
