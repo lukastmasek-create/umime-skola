@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "ucimesehrou",
-  "main": ".open-next/worker.js",
+  "main": "worker.ts",
   "compatibility_date": "2026-10-13",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
@@ -25,6 +25,9 @@
   "ai": {
     "binding": "AI"
   },
+  // Každou hodinu rozešle e-mailové připomínky termínů zadání (worker.ts → /api/cron/pripominky).
+  // Vyžaduje secret CRON_SECRET (alespoň 16 znaků): npx wrangler secret put CRON_SECRET
+  "triggers": { "crons": ["0 * * * *"] },
   "observability": {
     "enabled": true
   },
