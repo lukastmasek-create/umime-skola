@@ -7,6 +7,7 @@ import { ALIEN_ROW, HomeArt, SpriteFrame, Wave } from "@/components/SpaceDecor";
 import { LazyPlanet, LazySubjectGlobe, LazyTownLife } from "@/components/HomeLazy";
 import { GlobeSky } from "@/components/GlobeSky";
 import { HeroSky } from "@/components/HeroSky";
+import { HeroTitle } from "@/components/HeroTitle";
 import { ExpandCard } from "@/components/ExpandCard";
 import { HomeLobby } from "@/components/HomeLobby";
 import { getHomeLobbyText } from "@/i18n/home-lobby";
@@ -61,11 +62,10 @@ export default async function Home({
                 {badge}
               </span>
               <h1
-                className="hero-in text-4xl font-extrabold leading-[1.25] tracking-tight sm:text-5xl lg:text-6xl"
-                style={{ ...heading, ["--d" as string]: "0.18s" }}
+                className="hero-in neon-h1 text-4xl leading-[1.3] sm:text-5xl lg:text-6xl"
+                style={{ ["--d" as string]: "0.18s" }}
               >
-                {dict.home.titleLine1}{" "}
-                <span className="gradient-text">{dict.home.titleLine2}</span>
+                <HeroTitle line1={dict.home.titleLine1} line2={dict.home.titleLine2} />
               </h1>
               <p className="hero-in max-w-xl text-lg leading-relaxed text-[var(--muted)]" style={{ ["--d" as string]: "0.32s" }}>{dict.home.subtitle}</p>
               <div className="hero-in flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:gap-4" style={{ ["--d" as string]: "0.46s" }}>
