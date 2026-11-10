@@ -7,7 +7,8 @@ import type { Locale } from "@/i18n/config";
 // tok „hry → Umíme školu → třída“ a žebříček třídy. Je to jen ukázka, proto aria-hidden.
 type Subject = { slug: string; label: string; color: string };
 
-// Vykreslené 3D animace her z Blenderu (pás 24 snímků po 384 px) a statická únikovka.
+// Realistické 3D rendery z Blenderu (umime-art/blender/hero_hry.py a hero_predmety.py).
+// Hry jsou pásy 24 snímků po 384 px, únikovka zatím zůstává statická.
 const GAME_CHIPS = [
   { key: "farm", strip: "farma", frames: 24 },
   { key: "town", strip: "mesto", frames: 24 },
@@ -15,7 +16,7 @@ const GAME_CHIPS = [
   { key: "pets", strip: "mazlicci", frames: 24 },
 ] as const;
 
-const CHIP = 54;
+const CHIP = 58;
 
 const BOARD = [
   { avatar: "astronaut", name: "A. K.", pct: 100 },
@@ -58,7 +59,7 @@ export function HeroShowcase({ t, subjects, locale }: { t: HomeHeroText; subject
                 style={{ ["--c" as string]: s.color }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/home/predmet-${s.slug}.webp`} alt="" width={40} height={40} draggable={false} className="hs-tile-img" />
+                <img src={`/home/hero3d/predmety/${s.slug}.webp`} alt="" width={40} height={40} draggable={false} className="hs-tile-img" />
                 <span className="hs-tile-label">{s.label}</span>
               </div>
             ))}
@@ -76,7 +77,7 @@ export function HeroShowcase({ t, subjects, locale }: { t: HomeHeroText; subject
                       {
                         width: CHIP,
                         height: CHIP,
-                        backgroundImage: `url(/home/hry/${g.strip}.webp)`,
+                        backgroundImage: `url(/home/hero3d/hry/${g.strip}.webp)`,
                         backgroundSize: `${CHIP * g.frames}px ${CHIP}px`,
                         "--fw": `${CHIP}px`,
                         "--n": g.frames,
