@@ -24,15 +24,43 @@ _setup = p.setup_scene
 def setup_hq(res=1024):
     _setup(1152)
     sc = p.bpy.context.scene
-    sc.cycles.samples = 160
-    sc.cycles.max_bounces = 8
+    sc.cycles.samples = 220
+    sc.cycles.max_bounces = 10
+    sc.cycles.sample_clamp_indirect = 8
     sc.view_settings.view_transform = "AgX"
+    sc.view_settings.exposure = 0.45
     try:
         sc.view_settings.look = "AgX - Punchy"
     except TypeError:
         pass
 
 
+_frame = p.frame_camera
+
+
+def frame_with_shadow(*a, **k):
+    """Kamera se spočítá z modelu; až potom se pod něj přidá měkký stín na průhledné plátno."""
+    _frame(*a, **k)
+    zs = [(o.matrix_world @ p.Vector(c)).z for o in p.bpy.context.scene.objects if o.type in {"MESH", "CURVE", "FONT"} for c in o.bound_box]
+    p.bpy.ops.mesh.primitive_plane_add(size=30, location=(0, 0, min(zs) - 0.01))
+    p.bpy.context.object.is_shadow_catcher = True
+
+
 p.setup_scene = setup_hq
+p.frame_camera = frame_with_shadow
 os.makedirs(out, exist_ok=True)
 p.render_all(p.BUILDERS, p.CAM, only, out, "")
+
+# AgX je střídmé, tak po renderu barvy a kontrast mírně přidáme (alfa zůstane)
+from PIL import Image, ImageEnhance
+
+for slug in only:
+    f = os.path.join(out, slug + ".webp")
+    im = Image.open(f).convert("RGBA")
+    a = im.getchannel("A")
+    rgb = ImageEnhance.Contrast(ImageEnhance.Color(im.convert("RGB")).enhance(1.3)).enhance(1.05)
+    rgb.putalpha(a)
+    rgb.save(f, quality=90, method=6)
+    png = os.path.join(out, slug + ".png")
+    if os.path.exists(png):
+        os.remove(png)
