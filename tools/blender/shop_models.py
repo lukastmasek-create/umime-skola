@@ -234,7 +234,7 @@ def m_silver():
 
 def m_gold():
     gold = mat("gold", (1.0, 0.78, 0.25), metal=1, rough=0.14)
-    cyl(0.8, 0.16, rot=(math.pi / 2, 0, 0), m=gold, verts=96, bevel=0.02)
+    cyl(0.8, 0.16, rot=(math.pi / 2 + 0.35, 0, 0), m=gold, verts=96, bevel=0.02)
     torus(0.74, 0.07, rot=(math.pi / 2, 0, 0), m=gold)
     cyl(0.45, 0.04, loc=(0, -0.09, 0), rot=(math.pi / 2, 0, 0), m=gold, verts=5, smooth=False)
     cyl(0.45, 0.04, loc=(0, 0.09, 0), rot=(math.pi / 2, 0, 0), m=gold, verts=5, smooth=False)
@@ -252,8 +252,8 @@ def m_meteorite():
     displaced(0.75, (0, 0, 0), rock, strength=0.28, scale=1.1, seed=3, flat=(1.1, 0.9, 0.85))
     glow = mat("glow", (1, 0.3, 0.05), emit=(1, 0.35, 0.05), emit_strength=6.0)
     for k in range(5):
-        a = k * 1.3
-        sphere(0.07, (0.62 * math.cos(a), 0.6 * math.sin(a) * 0.9, 0.3 * math.sin(a * 2)), scale=(1, 1, 0.4), m=glow, seg=16)
+        a = k * 1.1 + 0.3
+        sphere(0.09, (0.8 * math.cos(a) * 0.95, -0.55 - 0.1 * k % 0.2, 0.55 * math.sin(a * 1.7)), scale=(1.2, 0.6, 0.8), m=glow, seg=16)
 
 
 def m_star_crystal():
@@ -265,27 +265,27 @@ def m_star_crystal():
 
 
 def m_comet_core():
-    ice = mat("ice", (0.7, 0.9, 1.0), rough=0.2, trans=0.5, emit=(0.4, 0.8, 1.0), emit_strength=1.5, bump=0.4, noise=30)
-    displaced(0.55, (0, 0, 0.1), ice, strength=0.1, scale=1.2, seed=4)
-    fire = mat("tail", (0.5, 0.85, 1.0), emit=(0.4, 0.8, 1.0), emit_strength=3.0, trans=0.5, rough=0.4)
-    cyl(0.5, 1.4, loc=(0.4, 0.4, -0.5), rot=(-0.6, 0.6, 0), m=fire, r2=0.02)
+    ice = mat("ice", (0.75, 0.92, 1.0), rough=0.25, trans=0.4, emit=(0.2, 0.55, 1.0), emit_strength=0.5, bump=0.5, noise=30)
+    displaced(0.5, (-0.35, -0.1, 0.3), ice, strength=0.12, scale=1.2, seed=4)
+    for k in range(7):
+        r = 0.36 - k * 0.04
+        sphere(r, (0.0 + k * 0.17, 0.0 + k * 0.05, -0.0 - k * 0.14), m=mat(f"tail{k}", (0.35, 0.7, 1.0), rough=0.4, trans=0.3, emit=(0.2, 0.55, 1.0), emit_strength=1.0 - k * 0.1), seg=20)
+
+
+def fan(m, name="fan", lift=0.0):
+    def f(u, v):
+        a = (u - 0.5) * math.pi * 0.95
+        r = v * 1.0
+        ridge = 1 + 0.05 * math.sin(u * 30)
+        return (math.sin(a) * r * ridge, -(r * r) * 0.38 - 0.03 * math.sin(u * 30) * r, math.cos(a) * r * ridge * 0.95 - 0.55)
+
+    return surface(f, 64, 20, m, name=name)
 
 
 def m_shell():
-    pink = mat("shell", (0.96, 0.78, 0.72), rough=0.3, coat=0.6, bump=0.15, noise=30)
-
-    def f(u, v):
-        a = u * math.pi * 0.95 - math.pi * 0.475
-        r = v * 1.0
-        ridge = 1 + 0.06 * math.sin(u * 28)
-        x = math.sin(a) * r * ridge
-        y = -math.cos(a) * r * 0.55 + 0.4
-        z = r * r * 0.5 * (1 + 0.1 * math.sin(u * 28)) - 0.3
-        return (x, z, y - 0.4)
-
-    o = surface(f, 60, 20, pink, name="scallop")
-    o.rotation_euler = (math.pi / 2, 0, 0)
-    o.location = (0, 0, -0.1)
+    pink = mat("shell", (0.96, 0.62, 0.52), rough=0.3, coat=0.6, bump=0.15, noise=30)
+    fan(pink, "scallop")
+    cyl(0.2, 0.06, loc=(0, 0.02, -0.55), m=pink, r2=0.28, verts=24)
 
 
 def m_coral():
@@ -299,22 +299,13 @@ def m_coral():
 
 
 def m_pearl():
-    shell = mat("nacre", (0.9, 0.85, 0.85), rough=0.25, coat=0.4, sheen=0.5)
-    pearl = mat("pearl", (0.97, 0.95, 0.92), rough=0.08, coat=1.0, sheen=1.0, metal=0.15)
-
-    def half(sign):
-        def f(u, v):
-            a = u * math.pi * 0.98 - math.pi * 0.49
-            r = v
-            return (math.sin(a) * r * 0.9, sign * (0.05 + r * r * 0.35), -math.cos(a) * r * 0.9 + 0.55)
-
-        return f
-
-    for s in (1, -1):
-        o = surface(half(s), 48, 16, shell, name="half")
-        o.rotation_euler = (0, 0, 0)
-        o.location = (0, 0, -0.1 + (0.0 if s < 0 else 0.0))
-    sphere(0.36, (0, 0, 0.05), m=pearl)
+    shell = mat("nacre", (0.85, 0.5, 0.45), rough=0.35, coat=0.05, sheen=0.1)
+    pearl = mat("pearl", (0.9, 0.88, 0.85), rough=0.1, coat=0.5, sheen=0.4, metal=0.1)
+    o = fan(shell, "back")
+    o.scale = (0.95, 0.95, 0.95)
+    o.rotation_euler = (-0.5, 0, 0)
+    o.location = (0, 0.25, -0.1)
+    sphere(0.36, (0, -0.28, -0.35), m=pearl)
 
 
 def m_ocean_heart():
@@ -326,7 +317,6 @@ def m_ocean_heart():
         pts.append((x / 22, z / 22 + 0.05))
     glass = mat("ocean", (0.1, 0.5, 1.0), rough=0.02, trans=1.0, ior=1.6, absorb=(0.0, 0.35, 1.0, 4.0))
     o = prism_from_polygon(pts, 0.45, glass, bevel=0.1)
-    o.rotation_euler = (math.pi / 2, 0, 0)
     sphere(0.12, (0, 0, 0), m=mat("core", (0.3, 0.9, 1), emit=(0.3, 0.9, 1), emit_strength=8), seg=24)
 
 
@@ -586,12 +576,19 @@ def m_windmill():
     cyl(0.62, 1.4, loc=(0, 0, -0.3), m=stone, r2=0.42)
     cyl(0.55, 0.55, loc=(0, 0, 0.7), m=red, r2=0.02)
     cube((0.2, 0.05, 0.35), (0, -0.62, -0.7), mat("mdoor", (0.35, 0.2, 0.1), rough=0.6), bevel=0.01)
-    wood = mat("blade", (0.9, 0.85, 0.75), rough=0.8)
+    wood = mat("blade", (0.92, 0.88, 0.78), rough=0.8)
+    arm_m = mat("arm", (0.4, 0.25, 0.12), rough=0.8)
+    hub = Vector((0, -0.55, 0.35))
+    for k in range(2):
+        a = k * math.pi / 2 + 0.4
+        arm = cube((0.06, 0.06, 1.7), tuple(hub), arm_m, bevel=0.01)
+        arm.rotation_euler = (0, a, 0)
     for k in range(4):
         a = k * math.pi / 2 + 0.4
-        arm = cube((0.06, 0.06, 1.4), (0, -0.5, 0.35), mat("arm", (0.4, 0.25, 0.12), rough=0.8), bevel=0.01)
-        arm.rotation_euler = (0, a, 0)
-        sail = cube((0.3, 0.02, 0.7), (0.5 * math.sin(a) * 1.05 + 0.15 * math.cos(a), -0.55, 0.35 + 0.5 * math.cos(a) * 1.05 - 0.15 * math.sin(a)), wood, bevel=0.0)
+        d = Vector((math.sin(a), 0, math.cos(a)))
+        pr = Vector((math.cos(a), 0, -math.sin(a)))
+        pos = hub + d * 0.55 + pr * 0.16 + Vector((0, -0.04, 0))
+        sail = cube((0.3, 0.02, 0.6), tuple(pos), wood, bevel=0.0)
         sail.rotation_euler = (0, a, 0)
     sphere(0.1, (0, -0.52, 0.35), m=mat("hub", (0.3, 0.2, 0.1), rough=0.6), seg=16)
 
@@ -747,7 +744,8 @@ def setup_render():
     sc.render.film_transparent = True
     sc.render.image_settings.file_format = "PNG"
     sc.render.image_settings.color_mode = "RGBA"
-    sc.view_settings.view_transform = "Filmic" if "Filmic" in [e.identifier for e in sc.view_settings.bl_rna.properties["view_transform"].enum_items] else "AgX"
+    sc.view_settings.view_transform = "Standard"
+    sc.view_settings.exposure = -0.6
     w = bpy.data.worlds.new("w")
     sc.world = w
     w.use_nodes = True
@@ -763,9 +761,9 @@ def setup_render():
     ramp.color_ramp.elements[1].position = 0.75
     ramp.color_ramp.elements[1].color = (1.0, 1.0, 1.0, 1)
     nt.links.new(ramp.outputs["Color"], bg.inputs["Color"])
-    bg.inputs["Strength"].default_value = 1.2
+    bg.inputs["Strength"].default_value = 0.9
     # softboxy: viditelné jen v odrazech, ne přímo v obraze
-    for loc, size, strength, color in [((-4, -3, 3), (3, 1.2), 25, (1, 1, 1)), ((4.5, -2, 1), (1.2, 3), 18, (0.8, 1, 0.9)), ((0, 4, 3), (4, 1.0), 14, (0.9, 0.95, 1.0)), ((0, -6, 2), (5, 3), 16, (1, 1, 1))]:
+    for loc, size, strength, color in [((-4, -3, 3), (3, 1.2), 25, (1, 1, 1)), ((4.5, -2, 1), (1.2, 3), 18, (0.8, 1, 0.9)), ((0, 4, 3), (4, 1.0), 14, (0.9, 0.95, 1.0)), ((0, -6, 2), (5, 3), 5, (1, 1, 1))]:
         bpy.ops.mesh.primitive_plane_add(size=1, location=loc)
         pl = bpy.context.active_object
         pl.scale = (size[0], size[1], 1)
