@@ -3922,3 +3922,48 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
   border-color: rgba(255, 255, 255, 0.07);
   background: #0a0e20;
 }
+
+/* Pozadí podle Lobby a Knihovny: jednotná tmavě modrá, jemné záře a jemná mřížka.
+   Bez vlnek, bez oranžového západu slunce, hvězd jen náznak. */
+.zone > svg[viewBox="0 0 1440 60"] { display: none; }
+.zone { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06); }
+
+.zone-space {
+  background:
+    radial-gradient(ellipse 60% 45% at 12% 0%, rgba(59, 91, 255, 0.22), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 95% 100%, rgba(255, 138, 107, 0.10), transparent 70%),
+    linear-gradient(180deg, #0b1024 0%, #0d1430 100%);
+}
+.zone-space::before { opacity: 0.35; }
+.zone-space::after { opacity: 0.5; animation: none; }
+
+.zone-globe {
+  background:
+    radial-gradient(ellipse 55% 60% at 30% 50%, rgba(59, 91, 255, 0.20), transparent 70%),
+    radial-gradient(ellipse 40% 40% at 95% 10%, rgba(30, 197, 255, 0.10), transparent 70%),
+    linear-gradient(180deg, #0d1430 0%, #0a1230 100%);
+}
+
+.zone-tech {
+  background-color: #0a1128;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(59, 91, 255, 0.18), transparent 70%),
+    linear-gradient(rgba(142, 162, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(142, 162, 255, 0.045) 1px, transparent 1px);
+  background-size: auto, 40px 40px, 40px 40px;
+}
+
+.zone-peak {
+  background:
+    radial-gradient(ellipse 60% 50% at 80% 100%, rgba(255, 138, 107, 0.26), transparent 70%),
+    radial-gradient(ellipse 60% 45% at 10% 0%, rgba(59, 91, 255, 0.16), transparent 70%),
+    linear-gradient(180deg, #0b1024 0%, #151a45 70%, #2a1a40 100%);
+}
+
+.world {
+  --w-bg:
+    radial-gradient(ellipse 60% 40% at 12% 0%, rgba(59, 91, 255, 0.20), transparent 70%),
+    radial-gradient(ellipse 50% 35% at 92% 30%, rgba(255, 138, 107, 0.08), transparent 70%),
+    linear-gradient(180deg, #0b1024 0%, #0d1430 100%);
+  --w-opacity: 0.25;
+}
