@@ -63,7 +63,7 @@ export default async function TeachersPage({ params }: { params: Promise<{ local
         {/* Tři kroky jako zvýrazněné karty; prostřední je vybraná */}
         <section className="mb-16">
           <p className="mb-2 text-center text-xs font-bold uppercase tracking-widest text-[var(--accent-green)]">{t.stepsTitle}</p>
-          <ol className="mt-8 grid gap-6 md:grid-cols-3">
+          <ol className="gcard-cycle mt-8 grid gap-6 md:grid-cols-3">
             {t.steps.map((step, i) => {
               const featured = i === 1;
               return (
@@ -87,7 +87,7 @@ export default async function TeachersPage({ params }: { params: Promise<{ local
           </ol>
         </section>
 
-        <ul className="mb-12 grid gap-4 sm:grid-cols-2">
+        <ul className="gcard-cycle mb-12 grid gap-4 sm:grid-cols-2">
           {t.points.map((point) => (
             <li key={point.title} className="gcard gcard-hover p-5">
               <h2 className="gcard-title mb-1 text-lg" style={heading}>
@@ -108,7 +108,7 @@ export default async function TeachersPage({ params }: { params: Promise<{ local
           <h2 className="mb-5 text-xl font-bold sm:text-2xl" style={heading}>
             {t.featuresTitle}
           </h2>
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="gcard-cycle grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {t.features.map((feature) => (
               <li key={feature.title} className="gcard gcard-hover p-5">
                 <h3 className="gcard-title mb-1">{feature.title}</h3>
@@ -124,7 +124,7 @@ export default async function TeachersPage({ params }: { params: Promise<{ local
           </h2>
           <div className="grid gap-3">
             {t.faq.map((item) => (
-              <details key={item.q} className="gcard group p-5">
+              <details key={item.q} className="gcard gcard-soft group p-5">
                 <summary className="cursor-pointer font-bold">{item.q}</summary>
                 <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">{item.a}</p>
               </details>
@@ -133,7 +133,7 @@ export default async function TeachersPage({ params }: { params: Promise<{ local
         </section>
 
         {/* Závěrečný CTA pás */}
-        <section className="gcard gcard-on flex flex-col items-center gap-4 p-8 text-center">
+        <section className="gcard flex flex-col items-center gap-4 p-8 text-center" style={{ ["--gc" as string]: "#6ee7b7" }}>
           <p className="max-w-xl text-base text-[var(--muted)]">{t.ctaHint}</p>
           <TeacherCta locale={locale as Locale} className="btn-bouncy btn-cta btn-primary btn-lg">
             {t.cta}

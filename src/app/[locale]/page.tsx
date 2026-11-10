@@ -183,17 +183,17 @@ export default async function Home({
                 <Link
                   key={cat.slug}
                   href={`/${locale}/kurzy/${cat.slug}`}
-                  className="reveal gcard relative flex min-h-36 flex-col justify-between gap-4 p-5 text-white sm:min-h-44 sm:gap-6"
+                  className="reveal gcard relative flex min-h-36 flex-col justify-between gap-4 p-5 sm:min-h-44 sm:gap-6"
                   style={{ ["--gc" as string]: color }}
                 >
                   <HomeArt name={GALAXY_ICONS[i % GALAXY_ICONS.length]} size={128} className="absolute -right-4 -top-5 opacity-95" />
-                  <span className="gcard-num text-5xl" style={heading}>
+                  <span className="gcard-num text-6xl" style={heading}>
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <div className="flex items-end justify-between gap-3">
                     <div>
                       <h3 className="gcard-title mb-1 text-lg">{dict.categories[cat.slug].label}</h3>
-                      <p className="text-sm text-white/75">{dict.categories[cat.slug].description}</p>
+                      <p className="text-sm text-[var(--muted)]">{dict.categories[cat.slug].description}</p>
                     </div>
                     <span aria-hidden className="gcard-chip">→</span>
                   </div>
@@ -215,7 +215,7 @@ export default async function Home({
                 {a.teachers.title}
               </h2>
               <p className="reveal mb-8 max-w-xl text-lg leading-relaxed text-[var(--muted)]">{a.teachers.lead}</p>
-              <ul className="grid gap-4 sm:grid-cols-2">
+              <ul className="gcard-cycle grid gap-4 sm:grid-cols-2">
                 {a.teachers.points.map((point) => (
                   <li key={point.title} className="reveal gcard gcard-hover p-4">
                     <h3 className="gcard-title mb-1">{point.title}</h3>

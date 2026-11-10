@@ -38,6 +38,8 @@ const COVER: Record<FeatureKey, { color: string; height: number }> = {
   team: { color: "var(--cat-1)", height: 156 },
 };
 
+const BENTO = ["#ffd24d", "#ff8a6b", "#7cc4ff", "#6ee7b7", "#c4b5fd"];
+
 // Ozdobné sloupečky v kartě (stejné při každém renderu, odvozené z klíče)
 function barHeights(key: string): number[] {
   let seed = 0;
@@ -78,7 +80,7 @@ export default async function StudentsPage({ params }: { params: Promise<{ local
 
         {/* Masonry: karty se skládají do sloupců a mají různé výšky */}
         <ul className="mb-14 columns-1 gap-6 sm:columns-2 lg:columns-3">
-          {FEATURE_KEYS.filter((key) => key !== "town").map((key) => {
+          {FEATURE_KEYS.filter((key) => key !== "town").map((key, idx) => {
             const feature = t.features[key];
             const cover = COVER[key];
             return (
@@ -86,7 +88,8 @@ export default async function StudentsPage({ params }: { params: Promise<{ local
                 <Link
                   href={`/${locale}${FEATURE_PATH[key]}`}
                   className="gcard group block"
-                  style={{ ["--gc" as string]: cover.color }}
+                  style={{ ["--gc" as string]: BENTO[idx % BENTO.length] }}
+                  
                 >
                   <div className="gcard-bars px-5 pt-5" style={{ height: cover.height }} aria-hidden="true">
                     {barHeights(key).map((h, n, arr) => (

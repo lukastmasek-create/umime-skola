@@ -20,7 +20,7 @@ export function ResultsPreview({
   const avg = Math.round(rows.reduce((s, r) => s + r.pct, 0) / Math.max(rows.length, 1));
   const done = rows.filter((r) => r.pct === 100).length;
   return (
-    <div aria-hidden className={`gcard p-5 sm:p-6 ${className}`}>
+    <div aria-hidden style={{ ["--gc" as string]: "#6ee7b7" }} className={`gcard gcard-dark p-5 sm:p-6 ${className}`}>
       <div className="mb-5 flex items-start justify-between gap-3">
         <div>
           <p className="gcard-title text-lg" style={heading}>{title}</p>
@@ -39,7 +39,7 @@ export function ResultsPreview({
             <li key={row.who}>
               <div className="mb-1 flex items-center justify-between text-sm">
                 <span className="flex items-center gap-2 font-semibold">
-                  <span className="h-2 w-2 rounded-full" style={{ background: full ? "var(--accent-green)" : "var(--accent-yellow)" }} />
+                  <span className="h-2 w-2 rounded-full" style={{ background: full ? "#6ee7b7" : "#ffd24d" }} />
                   {row.who}
                 </span>
                 <span className="text-xs font-bold text-[var(--muted)]">{row.pct} %</span>
@@ -47,7 +47,7 @@ export function ResultsPreview({
               <span className="gcard-track block">
                 <span
                   className="gcard-fill"
-                  style={{ width: `${row.pct}%`, ["--fc" as string]: full ? "var(--accent-green)" : "var(--accent-yellow)" }}
+                  style={{ width: `${row.pct}%`, ["--fc" as string]: full ? "#6ee7b7" : "#ffd24d" }}
                 />
               </span>
             </li>
