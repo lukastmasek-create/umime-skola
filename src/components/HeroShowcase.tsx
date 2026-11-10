@@ -1,4 +1,6 @@
+import { HeroProgressCard } from "@/components/HeroProgressCard";
 import type { HomeHeroText } from "@/i18n/home-hero";
+import type { Locale } from "@/i18n/config";
 
 // Plovoucí karty kolem hero textu na úvodní stránce: postup, bezpečí, předměty,
 // tok „hry → Umíme školu → třída“ a žebříček třídy. Je to jen ukázka, proto aria-hidden.
@@ -19,7 +21,7 @@ const BOARD = [
 
 const portrait = (slug: string) => `/avatars-3d/${slug}-portret.webp`;
 
-export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subject[] }) {
+export function HeroShowcase({ t, subjects, locale }: { t: HomeHeroText; subjects: Subject[]; locale: Locale }) {
   return (
     <div className="hs-stage" aria-hidden="true">
       <svg className="hs-guides" viewBox="0 0 1000 600" preserveAspectRatio="none">
@@ -28,19 +30,7 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
         <path d="M500 330 V600" />
       </svg>
 
-      <div className="hs-card hs-progress space-float">
-        <div className="hs-row">
-          <span className="hs-level">7</span>
-          <div className="hs-grow">
-            <div className="hs-label">{t.progressTitle}</div>
-            <div className="hs-bar"><span style={{ width: "68%" }} /></div>
-          </div>
-        </div>
-        <div className="hs-row hs-streak">
-          <span>🔥</span>
-          <span className="hs-label">{t.streak}</span>
-        </div>
-      </div>
+      <HeroProgressCard t={t} locale={locale} />
 
       <div className="hs-card hs-safe space-float" style={{ animationDelay: "-2s" }}>
         <div className="hs-label hs-safe-head">
