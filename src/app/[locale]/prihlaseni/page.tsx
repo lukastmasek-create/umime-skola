@@ -26,10 +26,10 @@ const GREETING: Record<Locale, string> = {
 
 // Doplňkové texty formuláře (pole s plovoucími popisky, zobrazení hesla, stav tlačítka).
 const FORM_TEXT = withFallbacks({
-  cs: { badEmail: "Zadej platný e-mail", showPass: "Zobrazit heslo", hidePass: "Skrýt heslo", done: "Přihlášeno", who: "Kdo se přihlašuje", roles: ["Žák", "Učitel", "Rodič"], streak: "Série 7 dní", streakSub: "Dneska ještě jedna lekce", unlocked: "Odemčeno: Zeměpis Evropy", unlockedSub: "Za splněný kvíz na 70 %" },
-  en: { badEmail: "Enter a valid e-mail", showPass: "Show password", hidePass: "Hide password", done: "Logged in", who: "Who is logging in", roles: ["Student", "Teacher", "Parent"], streak: "7-day streak", streakSub: "One more lesson today", unlocked: "Unlocked: Geography of Europe", unlockedSub: "For a quiz passed at 70 %" },
-  de: { badEmail: "Gib eine gültige E-Mail ein", showPass: "Passwort anzeigen", hidePass: "Passwort verbergen", done: "Angemeldet", who: "Wer meldet sich an", roles: ["Schüler", "Lehrer", "Eltern"], streak: "7 Tage in Folge", streakSub: "Heute noch eine Lektion", unlocked: "Freigeschaltet: Geografie Europas", unlockedSub: "Für ein Quiz mit 70 %" },
-  ru: { badEmail: "Введи действительный e-mail", showPass: "Показать пароль", hidePass: "Скрыть пароль", done: "Вход выполнен", who: "Кто входит", roles: ["Ученик", "Учитель", "Родитель"], streak: "Серия 7 дней", streakSub: "Сегодня ещё один урок", unlocked: "Открыто: География Европы", unlockedSub: "За тест на 70 %" },
+  cs: { badEmail: "Zadej platný e-mail", showPass: "Zobrazit heslo", hidePass: "Skrýt heslo", done: "Přihlášeno", who: "Kdo se přihlašuje", roles: ["Žák", "Učitel", "Rodič"] },
+  en: { badEmail: "Enter a valid e-mail", showPass: "Show password", hidePass: "Hide password", done: "Logged in", who: "Who is logging in", roles: ["Student", "Teacher", "Parent"] },
+  de: { badEmail: "Gib eine gültige E-Mail ein", showPass: "Passwort anzeigen", hidePass: "Passwort verbergen", done: "Angemeldet", who: "Wer meldet sich an", roles: ["Schüler", "Lehrer", "Eltern"] },
+  ru: { badEmail: "Введи действительный e-mail", showPass: "Показать пароль", hidePass: "Скрыть пароль", done: "Вход выполнен", who: "Кто входит", roles: ["Ученик", "Учитель", "Родитель"] },
 });
 const ROLES = ["student", "teacher", "parent"] as const;
 // Kam se po přihlášení jde, když nepřišel odkaz s cílem: podle zvolené role.
@@ -94,19 +94,6 @@ export default function PrihlaseniPage({
     <AuthShell
       mood={mood}
       greeting={GREETING[locale as Locale]}
-      aside={
-        <div className="lg-aside mt-4 hidden w-full max-w-[16rem] flex-col gap-3 md:flex" aria-hidden="true">
-          <div className="lg-float rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] p-3 shadow-[0_4px_0_var(--shadow-ink)]">
-            <b className="block text-sm">🔥 {f.streak}</b>
-            <small className="text-[var(--muted)]">{f.streakSub}</small>
-            <span className="mt-2 block h-2 overflow-hidden rounded-full bg-[var(--surface-muted)]"><i className="lg-meter block h-full rounded-full" /></span>
-          </div>
-          <div className="lg-float lg-float-b rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] p-3 shadow-[0_4px_0_var(--shadow-ink)]">
-            <b className="block text-sm">🌍 {f.unlocked}</b>
-            <small className="text-[var(--muted)]">{f.unlockedSub}</small>
-          </div>
-        </div>
-      }
     >
       <div className="card auth-card w-full p-8">
         <h1 className="mb-1 text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
