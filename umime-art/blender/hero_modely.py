@@ -235,7 +235,7 @@ def pivot():
 
 # ---------------------------------------------------------------- modely
 def model_stit():
-    """Štít „bez reklam“: zlatý lem, zelený smaltovaný střed, sklem krytý bílý háček."""
+    """Štít „bez reklam“: zlatý lem, zelený smaltovaný střed, bílý keramický háček."""
     root = pivot()
     # symetrický „heater“ štít: rovný vršek, boky se zužují do špičky
     steps = 28
@@ -247,19 +247,16 @@ def model_stit():
     outline = right + left[1:]
 
     base = obj_from_bmesh(plate(outline, 0.30), "stit-lem", GOLD(), bevel=0.06, subsurf=1)
-    mid = obj_from_bmesh(plate(inset_points(outline, 0.80), 0.34), "stit-stred", enamel("#13a85c"), bevel=0.04, subsurf=1)
+    mid = obj_from_bmesh(plate(inset_points(outline, 0.80), 0.34), "stit-stred", enamel("#0a8a48"), bevel=0.04, subsurf=1)
     mid.location.y = -0.03
-    inner = obj_from_bmesh(plate(inset_points(outline, 0.62), 0.36), "stit-vnitrni", enamel("#1fcf7a"), bevel=0.05, subsurf=1)
+    inner = obj_from_bmesh(plate(inset_points(outline, 0.62), 0.36), "stit-vnitrni", enamel("#14b866"), bevel=0.05, subsurf=1)
     inner.location.y = -0.06
     # háček z bílé keramiky
     chk = pbr("hacek", "#ffffff", rough=0.15, coat=1.0)
     pts = [(-0.52, -0.02), (-0.28, 0.22), (-0.10, -0.00), (0.42, 0.60), (0.64, 0.38), (-0.10, -0.46)]
     tick = obj_from_bmesh(plate(pts, 0.12), "hacek", chk, bevel=0.035, subsurf=1)
     tick.location = (0, -0.16, 0.0)
-    # sklo přes celý střed (lom světla)
-    glass = obj_from_bmesh(plate(inset_points(outline, 0.80), 0.02), "stit-sklo", GLASS("#dfffee"), bevel=0.02)
-    glass.location.y = -0.20
-    parent_all([base, mid, inner, tick, glass], root)
+    parent_all([base, mid, inner, tick], root)
     root.location = (0, 0, 0.1)
     root.scale = (1.15, 1.15, 1.15)
     return root
@@ -275,7 +272,7 @@ def model_odznak():
         r = 1.0 + 0.045 * (1 if (i // 2) % 2 == 0 else -1)
         rim.append((r * math.cos(a), r * math.sin(a)))
     gold = obj_from_bmesh(plate(rim, 0.22), "odznak-zlato", GOLD(), bevel=0.04, subsurf=1)
-    face = cylinder_y(0.78, 0.08, enamel("#2f4bff"), y=-0.04, bevel=0.02)
+    face = cylinder_y(0.78, 0.08, enamel("#1b34d8"), y=-0.04, bevel=0.02)
     ring = torus_y(0.80, 0.045, GOLD_SATIN(), y=-0.07)
     star = obj_from_bmesh(plate(star_points(5, 0.5, 0.21), 0.10), "odznak-hvezda", GOLD(), bevel=0.025, subsurf=1)
     star.location.y = -0.14
@@ -283,7 +280,7 @@ def model_odznak():
     # lesklá kapka skla nahoře jako odlesk
     gl = cylinder_y(0.74, 0.012, GLASS("#ffffff"), y=-0.20, bevel=0.004)
     # stuhy
-    ribbon = enamel("#1a2fd6")
+    ribbon = enamel("#1226b0")
     objs = [gold, face, ring, star, gl]
     for sx in (-1, 1):
         pts = [(0.0, 0.0), (0.38 * sx, 0.0), (0.62 * sx, -0.95), (0.30 * sx, -0.78), (0.0, -0.95)]
@@ -316,7 +313,7 @@ def model_mince():
         objs.append(c)
     parent_all(objs, root)
     root.location = (0, 0, 0.35)
-    root.scale = (1.4, 1.4, 1.4)
+    root.scale = (1.1, 1.1, 1.1)
     return root
 
 
