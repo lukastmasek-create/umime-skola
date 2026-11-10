@@ -223,7 +223,26 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
 
       {tab === "results" && teacher && <TeamResults t={t} locale={locale} teamId={teamId} teamName={team.name} />}
       {tab === "groups" && teacher && <TeamGroups t={t} team={team} post={post} locale={locale} />}
-      {tab === "chat" && <section className="card p-4"><TeamChat locale={locale} teamId={teamId} userId={team.userId} height="h-96" /></section>}
+      {tab === "chat" && (
+        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_15rem]">
+          <section className="card p-5" aria-label={t.tabChat}>
+            <h2 className="mb-3 text-xl font-extrabold">{t.tabChat}</h2>
+            <TeamChat locale={locale} teamId={teamId} userId={team.userId} height="h-[26rem]" />
+          </section>
+          <aside className="card flex flex-col gap-3 p-5" aria-label={t.tabPeople}>
+            <h3 className="flex items-baseline justify-between text-sm font-bold text-[var(--muted)]">{t.tabPeople}<span>{team.members.length}</span></h3>
+            <ul className="flex max-h-[24rem] flex-col gap-2.5 overflow-y-auto">
+              {team.members.map((m) => (
+                <li key={m.id} className="flex items-center gap-2.5 text-sm">
+                  <Badge name={m.name || m.email} size={30} round />
+                  <span className="min-w-0 flex-1 truncate font-semibold">{m.name || m.email || t.student}</span>
+                  {m.role === "TEACHER" && <Pill tone="brand">{t.teacherBadge}</Pill>}
+                </li>
+              ))}
+            </ul>
+          </aside>
+        </div>
+      )}
       {tab === "people" && (
         <TeamPeople
           t={t} locale={locale} team={team} post={post} reload={load} teamId={teamId}
