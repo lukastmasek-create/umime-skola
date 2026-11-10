@@ -11,7 +11,7 @@ export type AuthMood = "idle" | "joy" | "oops";
 
 const FLOATERS = ["cestina", "matematika", "anglictina", "zemepis", "fyzika", "chemie", "hudebka", "dejepis"];
 
-export function AuthShell({ mood, greeting, children }: { mood: AuthMood; greeting: string; children: ReactNode }) {
+export function AuthShell({ mood, greeting, aside, children }: { mood: AuthMood; greeting: string; aside?: ReactNode; children: ReactNode }) {
   const [look, setLook] = useState(0);
   useEffect(() => {
     const id = window.setTimeout(() => setLook(getHeroLook()), 0);
@@ -44,6 +44,7 @@ export function AuthShell({ mood, greeting, children }: { mood: AuthMood; greeti
             />
             <span aria-hidden className="auth-shadow" />
           </div>
+          {aside}
         </div>
         <div className="w-full max-w-sm">{children}</div>
       </div>

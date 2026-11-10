@@ -3776,3 +3776,17 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
   .sm-pre { opacity: 1; }
   .sm-in, main.sm-page, .sm-ring { animation: none; }
 }
+
+/* Přihlášení: volba role s klouzavým jezdcem a plovoucí karty u maskota */
+.lg-roles { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); padding: 4px; border-radius: 14px; background: var(--surface-muted); border: 2px solid var(--edge); }
+.lg-roles button { position: relative; z-index: 1; border: 0; background: none; padding: 7px 4px; font-size: 0.85rem; font-weight: 700; color: var(--muted); cursor: pointer; transition: color 0.2s; }
+.lg-roles button[aria-checked="true"] { color: #fff; }
+.lg-thumb { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / 3); border-radius: 10px; background: var(--brand-500); transform: translateX(calc(var(--i, 0) * 100%)); transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.lg-float { animation: lg-bob 5s ease-in-out infinite; }
+.lg-float-b { animation-delay: -2.5s; margin-left: 1.25rem; }
+.lg-meter { width: 0; background: linear-gradient(90deg, var(--brand-500), var(--accent-green)); animation: lg-fill 1.6s 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+@keyframes lg-bob { 50% { transform: translateY(-6px) rotate(-0.6deg); } }
+@keyframes lg-fill { to { width: 70%; } }
+@media (prefers-reduced-motion: reduce) { .lg-float { animation: none; } .lg-meter { animation: none; width: 70%; } .lg-thumb { transition: none; } }
+:root[data-motion="off"] .lg-float { animation: none; }
+:root[data-motion="off"] .lg-meter { animation: none; width: 70%; }
