@@ -62,6 +62,7 @@ import {
 } from "@/lib/idle/economy";
 import { CompanyTab, fill, formatLeft, type Payload } from "./CompanyPanel";
 import { HustleTab } from "./HustleTab";
+import { BankTab } from "../UiDemoBank";
 import { InvestPanel } from "./InvestPanel";
 import type { Locale } from "@/i18n/config";
 
@@ -70,7 +71,7 @@ type Load = "loading" | "login" | "unavailable" | "ready";
 // Ikony potřeb v záložce Potřeby.
 const NEED_EMOJI: Record<NeedId, string> = { food: "🍎", drink: "🥤", clothing: "👕", housing: "🏠", transport: "🚌", health: "🩺", leisure: "🎬" };
 
-type Tab = "overview" | "work" | "needs" | "companies" | "invest" | "hustle" | "board";
+type Tab = "overview" | "work" | "needs" | "companies" | "invest" | "bank" | "hustle" | "board";
 type OvTab = "summary" | "earnings" | "assets" | "education" | "materials";
 type Board = { top: { rank: number; name: string; country: string | null; best: number; runs: number; me: boolean }[]; me: { rank: number; best: number } | null };
 // Výřez z /api/craft: materiály a denní limit nákupu.
@@ -430,7 +431,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
       : null;
   const eventText = (p: Payload) => (p.event ? fill(w.events[p.event], { n: m(p.gained?.cash ?? 0) }) : t.toast.bought);
 
-  const tabs: Tab[] = ["overview", "work", "needs", "companies", "invest", "hustle", "board"];
+  const tabs: Tab[] = ["overview", "work", "needs", "companies", "invest", "bank", "hustle", "board"];
 
   return (
     <div>
@@ -483,7 +484,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
             onClick={() => setTab(id)}
             className={`btn-bouncy px-4 py-2 text-sm font-bold ${tab === id ? "bg-[var(--brand-500)] text-white" : "bg-[var(--surface)]"}`}
           >
-            {t.tabs[id]}
+            {id === "bank" ? "🏦 Banka" : t.tabs[id]}
             {id === "hustle" && readyHustles > 0 ? ` (${readyHustles})` : ""}
           </button>
         ))}
@@ -1126,6 +1127,8 @@ export function EconomyGame({ locale }: { locale: Locale }) {
       {tab === "companies" && (
         <CompanyTab state={state} clock={clock} multiplier={r.multiplier} t={t} m={m} busy={busy} act={act} />
       )}
+
+      {tab === "bank" && <BankTab />}
 
       {tab === "invest" && (
         <InvestPanel

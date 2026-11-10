@@ -16,6 +16,7 @@ type FontStyle = "playful" | "classic";
 type FontSize = "small" | "medium" | "large";
 type Section = "graphics" | "school" | "account" | "parental";
 const SECTIONS: Section[] = ["graphics", "school", "account", "parental"];
+const SECTION_ICON: Record<Section, string> = { graphics: "🎨", school: "🏫", account: "👤", parental: "🔒" };
 
 function OptionButton({
   active,
@@ -128,15 +129,26 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <nav className="flex flex-wrap gap-2" aria-label={dict.settings.title}>
+    <div className="overflow-hidden rounded-[20px] border-2 border-[var(--edge)] bg-[var(--surface)]">
+    <div className="grid md:grid-cols-[14rem_minmax(0,1fr)]">
+      <nav className="flex flex-wrap gap-1.5 border-b-2 border-[var(--edge)] bg-[var(--surface-muted)] p-3 md:flex-col md:border-b-0 md:border-r-2" aria-label={dict.settings.title}>
         {SECTIONS.map((s) => (
-          <OptionButton key={s} active={section === s} onClick={() => setSection(s)}>
+          <button
+            key={s}
+            type="button"
+            onClick={() => setSection(s)}
+            aria-current={section === s ? "page" : undefined}
+            className={`flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-left text-sm font-bold transition-colors ${
+              section === s ? "bg-[var(--brand-500)] text-white" : "text-[var(--muted)] hover:bg-[var(--surface-muted)]"
+            }`}
+          >
+            <span aria-hidden>{SECTION_ICON[s]}</span>
             {sectionLabels[s]}
-          </OptionButton>
+          </button>
         ))}
       </nav>
 
+      <div className="flex min-w-0 flex-col gap-8 p-5 sm:p-6">
       {section === "graphics" && (
         <>
           <section className="card p-6">
@@ -144,8 +156,8 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
               {dict.settings.appearance}
             </h2>
 
-            <div className="mb-5">
-              <p className="mb-2 text-sm font-medium text-[var(--muted)]">{dict.settings.theme}</p>
+            <div className="flex flex-col gap-2 border-b border-[var(--border-soft)] py-4 first:pt-0 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm font-bold">{dict.settings.theme}</p>
               <div className="flex flex-wrap gap-2">
                 <OptionButton active={theme === "light"} onClick={() => applyTheme("light")}>
                   {dict.settings.themeLight}
@@ -159,8 +171,8 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
               </div>
             </div>
 
-            <div className="mb-5">
-              <p className="mb-2 text-sm font-medium text-[var(--muted)]">{dict.settings.fontStyle}</p>
+            <div className="flex flex-col gap-2 border-b border-[var(--border-soft)] py-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm font-bold">{dict.settings.fontStyle}</p>
               <div className="flex flex-wrap gap-2">
                 <OptionButton active={font === "playful"} onClick={() => applyFont("playful")}>
                   {dict.settings.fontPlayful}
@@ -171,8 +183,8 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
               </div>
             </div>
 
-            <div>
-              <p className="mb-2 text-sm font-medium text-[var(--muted)]">{dict.settings.fontSize}</p>
+            <div className="flex flex-col gap-2 pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm font-bold">{dict.settings.fontSize}</p>
               <div className="flex flex-wrap gap-2">
                 <OptionButton active={fontSize === "small"} onClick={() => applyFontSize("small")}>
                   {dict.settings.fontSizeSmall}
@@ -215,12 +227,15 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
       {section === "parental" && <ParentalSection locale={locale} />}
 
       <p
+        role="status"
         className={`text-sm font-medium text-[var(--brand-600)] transition-opacity ${
           saved ? "opacity-100" : "opacity-0"
         }`}
       >
         {dict.settings.saved}
       </p>
+      </div>
+    </div>
     </div>
   );
 }

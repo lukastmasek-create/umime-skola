@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { hasPro } from "@/lib/pro-server";
+import { PricingTab } from "@/components/UiDemoDashboard";
 import { getProText } from "@/i18n/pro";
 import { isLocale, type Locale } from "@/i18n/config";
 
@@ -31,7 +32,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
   const tiers = [t.tiers.individual, t.tiers.family, t.tiers.school];
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-16">
+    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-16">
       <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
         {t.title}
       </h1>
@@ -82,6 +83,10 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
             </article>
           ))}
         </div>
+      </section>
+
+      <section className="mb-8">
+        <PricingTab />
       </section>
 
       <p className="mb-6 text-sm text-[var(--muted)]">{t.availability}</p>

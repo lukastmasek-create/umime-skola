@@ -10,6 +10,7 @@ import { fmtDate } from "./api";
 import type { Locale } from "@/i18n/config";
 import { Badge, Pill, Progress, ProgressToast, Reorderable, ReorderItem, SideLayout, colorOf } from "./ui";
 import { TeamDeadlines, type Deadline } from "./TeamDeadlines";
+import { TeacherOverview } from "./TeacherOverview";
 
 // Gradient pro progress bar postupu (fialová → zelená, jako v gamifikovaném vzhledu).
 const PROGRESS_GRADIENT = "linear-gradient(90deg, var(--brand-500), var(--accent-green))";
@@ -77,6 +78,7 @@ export function TeamsHome({ locale }: { locale: Locale }) {
   // Souhrn v levém sloupci: nesplněná zadání žáka napříč týmy a nejbližší termín (API je řadí podle data).
   const openSum = (teams ?? []).reduce((n, tm) => n + (tm.role === "STUDENT" ? tm.open : 0), 0);
   const nextDue = urgent[0];
+  const teachingTeams = (teams ?? []).filter((tm) => tm.role === "TEACHER").map((tm) => ({ id: tm.id, name: tm.name }));
 
   if (!auth)
     return (
@@ -140,6 +142,8 @@ export function TeamsHome({ locale }: { locale: Locale }) {
     >
       {error && <p role="alert" className="card p-3 text-sm font-semibold text-[var(--danger)]">{error}</p>}
       {notice && <ProgressToast key={notice} message={notice} onDone={() => setNotice("")} closeLabel={t.closeToast} />}
+      {/* Učitelský přehled jen tomu, kdo je alespoň v jednom týmu učitelem */}
+      {teachingTeams.length > 0 && <TeacherOverview locale={locale} teams={teachingTeams} />}
       <Reorderable storageKey="teams:home:main" t={t} className="flex flex-col gap-5">
       {urgent.length > 0 && (
         <ReorderItem id="urgent">
