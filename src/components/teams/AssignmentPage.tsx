@@ -8,7 +8,7 @@ import { tfill } from "@/i18n/teams";
 import { getTeamsAll, teamsAllError, type TeamsAll } from "@/i18n/teams-more";
 import type { Locale } from "@/i18n/config";
 import { TeamChat } from "./TeamChat";
-import { Badge, Progress, SideLayout, StatCard, colorOf } from "./ui";
+import { Badge, Progress, SideLayout, StatCard } from "./ui";
 import { AudiencePicker } from "./AudiencePicker";
 import { field, primaryBtn, type Audience, type Team } from "./types";
 
@@ -89,7 +89,7 @@ export function AssignmentPage({ locale, teamId, assignmentId }: { locale: Local
 
 function TaskHeader({ t, locale, team, meta, count, overdue, actions }: { t: TeamsAll; locale: Locale; team: Team; meta: Meta; count: number; overdue: boolean; actions?: ReactNode }) {
   return (
-    <header className="card flex flex-col gap-1.5 p-4" style={{ borderTop: `6px solid ${colorOf(team.name)}` }}>
+    <header className="card flex flex-col gap-1.5 p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-1">
           <p className="flex items-center gap-2 text-sm font-bold text-[var(--muted)]"><Badge name={team.name} size={22} />{team.name}</p>

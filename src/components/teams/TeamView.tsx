@@ -14,7 +14,7 @@ import { TeamPeople } from "./TeamPeople";
 import { TeamGroups } from "./TeamGroups";
 import { TeamResults } from "./TeamResults";
 import { AudiencePicker } from "./AudiencePicker";
-import { Badge, Pill, Progress, Reorderable, ReorderItem, colorOf } from "./ui";
+import { Badge, Pill, Progress, Reorderable, ReorderItem } from "./ui";
 import { field, linkBtn, type Audience, type Assignment, type Group, type Member, type Team } from "./types";
 
 type Course = { slug: string; title: string; subject: string; grade: number | null; questions: number };
@@ -130,7 +130,7 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
       <Link href={`/${locale}/tymy`} className="text-sm font-bold text-[var(--brand-600)]">{t.backTeams}</Link>
       <Reorderable storageKey={`teams:team:${teamId}:side`} t={t} className="flex flex-col gap-4">
       <ReorderItem id="header">
-      <header className="card flex flex-col items-start gap-3 p-4" style={{ borderTop: `6px solid ${colorOf(team.name)}` }}>
+      <header className="card flex flex-col items-start gap-3 p-4">
         <Badge name={team.name} size={44} />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           {renaming !== null ? (
@@ -169,9 +169,9 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
       )}
       <ReorderItem id="nav">
       {/* Navigace v levém sloupci: svislé menu místo vodorovných záložek. */}
-      <div role="tablist" aria-orientation="vertical" className="card flex flex-col gap-1 p-2">
+      <div role="tablist" aria-orientation="vertical" className="card flex flex-col gap-1 rounded-[28px] p-2">
         {tabs.map(([k, label, , badge]) => (
-          <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-sm font-bold transition-colors ${tab === k ? "bg-[var(--surface-muted)] text-[var(--foreground)]" : "text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"}`}>
+          <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`flex items-center justify-between gap-2 rounded-full px-4 py-2.5 text-left text-sm font-bold transition-colors ${tab === k ? "bg-[var(--brand-500)] text-white" : "text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"}`}>
             <span>{label}</span>
             {badge > 0 && <span className="grid min-w-5 place-items-center rounded-full bg-[var(--accent-500)] px-1.5 text-xs font-extrabold text-white" aria-label={String(badge)}>{badge}</span>}
           </button>
@@ -203,7 +203,7 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
           {active.length === 0 && <p className="card p-6 text-center text-[var(--muted)]">{teacher ? t.noTasksT : t.noTasksS}</p>}
           <div className="flex flex-wrap items-center gap-2">
             {([["all", t.filterAll], ["open", t.filterOpen], ["done", t.filterDone], ["late", t.filterLate]] as const).map(([k, label]) => (
-              <button key={k} type="button" aria-pressed={filter === k} onClick={() => setFilter(k)} className={`rounded-full border-2 px-3 py-1 text-sm font-bold ${filter === k ? "border-[var(--edge)] bg-[var(--brand-50)]" : "border-[var(--border-soft)]"}`}>{label}</button>
+              <button key={k} type="button" aria-pressed={filter === k} onClick={() => setFilter(k)} className={`rounded-full px-4 py-1.5 text-sm font-bold ${filter === k ? "bg-[var(--brand-500)] text-white" : "bg-[var(--surface)] text-[var(--muted)]"}`}>{label}</button>
             ))}
             <select value={sort} onChange={(e) => setSort(e.target.value as "manual" | "due" | "name")} aria-label={t.sortManual} className={`${field} ml-auto`}>
               <option value="manual">{t.sortManual}</option>
@@ -357,7 +357,7 @@ function NewAssignment({ locale, teamId, groups, students, onCreated }: { locale
       <h2 className="text-lg font-extrabold">{t.newTaskTitle}</h2>
       <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t.srcCourse}>
         {([["course", t.srcCourse], ["set", t.srcSet], ["subject", t.srcSubject]] as const).map(([k, l]) => (
-          <button type="button" key={k} role="radio" aria-checked={source === k} onClick={() => setSource(k)} className={`rounded-full border-2 px-3 py-1 text-sm font-bold ${source === k ? "border-[var(--edge)] bg-[var(--brand-50)]" : "border-[var(--border-soft)]"}`}>{l}</button>
+          <button type="button" key={k} role="radio" aria-checked={source === k} onClick={() => setSource(k)} className={`rounded-full px-4 py-1.5 text-sm font-bold ${source === k ? "bg-[var(--brand-500)] text-white" : "bg-[var(--surface-muted)] text-[var(--muted)]"}`}>{l}</button>
         ))}
       </div>
       {source === "course" && (

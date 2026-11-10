@@ -1,13 +1,15 @@
 import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@/i18n/config";
+import { EdxShell } from "@/components/teams/EdxShell";
+import { getTeamsText } from "@/i18n/teams";
 import { TeamView } from "@/components/teams/TeamView";
 
 export default async function Page({ params }: { params: Promise<{ locale: string; id: string }> }) {
   const { locale, id } = await params;
   if (!isLocale(locale)) notFound();
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
+    <EdxShell locale={locale as Locale} title={getTeamsText(locale as Locale).title}>
       <TeamView locale={locale as Locale} teamId={id} />
-    </div>
+    </EdxShell>
   );
 }

@@ -8,7 +8,7 @@ import { tfill } from "@/i18n/teams";
 import { getTeamsAll, teamsAllError } from "@/i18n/teams-more";
 import { fmtDate } from "./api";
 import type { Locale } from "@/i18n/config";
-import { Badge, Pill, Progress, ProgressToast, Reorderable, ReorderItem, SideLayout, colorOf } from "./ui";
+import { Badge, Pill, Progress, ProgressToast, Reorderable, ReorderItem, SideLayout } from "./ui";
 import { TeamDeadlines, type Deadline } from "./TeamDeadlines";
 import { TeacherOverview } from "./TeacherOverview";
 
@@ -18,6 +18,17 @@ const PROGRESS_GRADIENT = "linear-gradient(90deg, var(--brand-500), var(--accent
 type TeamRow = { id: string; name: string; role: string; code: string | null; members: number; assignments: number; done: number; open: number; soon: number; overdue: number };
 type Urgent = { teamId: string; teamName: string; assignmentId: string; title: string; dueAt: string; overdue: boolean };
 type Pending = { id: string; name: string };
+
+function Icon({ d, filled = false }: { d: string; filled?: boolean }) {
+  return (
+    <span aria-hidden className={`grid size-9 place-items-center rounded-full ${filled ? "bg-[var(--brand-500)] text-white" : "text-[var(--foreground)]"}`}>
+      <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        {filled && <circle cx="12" cy="12" r="9" />}
+        <path d={d} />
+      </svg>
+    </span>
+  );
+}
 
 export function TeamsHome({ locale }: { locale: Locale }) {
   const t = getTeamsAll(locale);
@@ -78,6 +89,11 @@ export function TeamsHome({ locale }: { locale: Locale }) {
   // Souhrn v levém sloupci: nesplněná zadání žáka napříč týmy a nejbližší termín (API je řadí podle data).
   const openSum = (teams ?? []).reduce((n, tm) => n + (tm.role === "STUDENT" ? tm.open : 0), 0);
   const nextDue = urgent[0];
+  const mine = (teams ?? []).filter((tm) => tm.role === "STUDENT");
+  const sumAll = mine.reduce((n, tm) => n + tm.assignments, 0);
+  const sumDone = mine.reduce((n, tm) => n + tm.done, 0);
+  const sumSoon = mine.reduce((n, tm) => n + tm.soon, 0);
+  const pct = sumAll > 0 ? Math.round((sumDone / sumAll) * 100) : 0;
   const teachingTeams = (teams ?? []).filter((tm) => tm.role === "TEACHER").map((tm) => ({ id: tm.id, name: tm.name }));
 
   if (!auth)
@@ -95,11 +111,29 @@ export function TeamsHome({ locale }: { locale: Locale }) {
           {/* Přehled ve stylu Trophy StreakCard: velké číslo, pod ním čárkovaně oddělené doplňkové údaje. */}
           <ReorderItem id="summary">
           <section aria-label={t.progressTitle} className="card flex flex-col gap-4 p-5">
-            <div>
-              <p className="text-sm font-semibold text-[var(--muted)]">{t.summaryOpen}</p>
-              <p className="text-5xl font-extrabold leading-none" style={{ fontFamily: "var(--font-heading)" }}>{openSum}</p>
+            <div className="flex items-end gap-3">
+              <p className="text-6xl font-extrabold leading-none" style={{ fontFamily: "var(--font-heading)" }}>{pct}%</p>
+              <p className="pb-1 text-sm font-semibold text-[var(--muted)]">{t.progressTitle}</p>
             </div>
-            <div className="grid grid-cols-2 gap-4 border-t border-dashed border-[var(--border-soft)] pt-4">
+            <Progress value={sumDone} max={sumAll} color={PROGRESS_GRADIENT} />
+            <div className="edx-tile grid grid-cols-3 gap-1 p-2 text-center">
+              <div className="flex flex-col items-center gap-0.5 py-2">
+                <Icon d="M12 7v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z" />
+                <b className="text-xl">{openSum}</b>
+                <span className="text-xs text-[var(--muted)]">{t.filterOpen}</span>
+              </div>
+              <div className="flex flex-col items-center gap-0.5 py-2">
+                <Icon d="M7 3v3M17 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" />
+                <b className="text-xl">{sumSoon}</b>
+                <span className="text-xs text-[var(--muted)]">{t.dueSoon}</span>
+              </div>
+              <div className="flex flex-col items-center gap-0.5 py-2">
+                <Icon d="M8 12.5l3 3 5-6" filled />
+                <b className="text-xl">{sumDone}</b>
+                <span className="text-xs text-[var(--muted)]">{t.filterDone}</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div className="min-w-0">
                 <p className="text-sm text-[var(--muted)]">{t.summaryTeams}</p>
                 <p className="text-2xl font-extrabold leading-tight">{teams?.length ?? 0}</p>
@@ -177,9 +211,13 @@ export function TeamsHome({ locale }: { locale: Locale }) {
           </div>
         ))}
         <ul className="grid gap-3 sm:grid-cols-2">
-          {teams?.map((tm) => (
+          {teams?.map((tm) => {
+            // Barva karty podle naléhavosti (jako priorita v rozvrhu): fialová = po termínu, limetková = brzy končí.
+            const tone = tm.overdue > 0 ? "high" : tm.soon > 0 ? "low" : "plain";
+            const toneCls = { high: "!bg-[var(--brand-500)] text-white [--foreground:#fff] [--muted:#e4d8ff]", low: "!bg-[var(--accent-yellow)] text-[#17142b] [--muted:#44501a]", plain: "" }[tone];
+            return (
             <li key={tm.id}>
-              <Link href={`/${locale}/tymy/${tm.id}`} className="card flex h-full items-start gap-3 p-4 hover:-translate-y-0.5" style={{ borderTop: `6px solid ${colorOf(tm.name)}` }}>
+              <Link href={`/${locale}/tymy/${tm.id}`} className={`card flex h-full items-start gap-3 p-4 hover:-translate-y-0.5 ${toneCls}`}>
                 <Badge name={tm.name} size={52} />
                 <span className="flex min-w-0 flex-1 flex-col gap-1.5">
                   <span className="flex items-center justify-between gap-2">
@@ -194,14 +232,15 @@ export function TeamsHome({ locale }: { locale: Locale }) {
                     </span>
                   )}
                   {tm.role === "STUDENT" && tm.assignments > 0 && (
-                    <Progress value={tm.done} max={tm.assignments} color={PROGRESS_GRADIENT} label={tfill(t.summaryDone, tm.done, tm.assignments)} />
+                    <Progress value={tm.done} max={tm.assignments} color={tone === "high" ? "var(--accent-yellow)" : tone === "low" ? "var(--brand-500)" : PROGRESS_GRADIENT} label={tfill(t.summaryDone, tm.done, tm.assignments)} />
                   )}
                   {tm.code && <span className="text-xs text-[var(--muted)]">{t.code}: <b className="tracking-widest">{tm.code}</b></span>}
-                  <span className="mt-auto pt-1 text-sm font-bold text-[var(--brand-600)]">{t.openTeam} →</span>
+                  <span className={`mt-auto pt-1 text-sm font-bold ${tone === "plain" ? "text-[var(--brand-600)]" : ""}`}>{t.openTeam} →</span>
                 </span>
               </Link>
             </li>
-          ))}
+            );
+          })}
         </ul>
       </section>
       </ReorderItem>
