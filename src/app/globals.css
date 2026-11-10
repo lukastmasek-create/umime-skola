@@ -4045,3 +4045,20 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 .gs-pop kbd { display: inline-block; min-width: 20px; padding: 1px 6px; border-radius: 6px; background: #3b5bff; font: 700 12px/1.5 var(--font-mono); text-align: center; }
 @keyframes gs-in { from { opacity: 0; transform: translate(-50%, 8px); } }
 @media (prefers-reduced-motion: reduce) { .lobby-live { animation: none; } .gs-pop { animation: none; } .lobby-island { transition: none; } }
+
+/* Přístupnost (Nastavení → Přístupnost) */
+:root[data-contrast="high"] {
+  --muted: var(--foreground);
+  --faint: var(--foreground);
+  --edge: var(--foreground);
+  --border-soft: var(--field-border);
+}
+:root[data-links="underline"] a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+:root[data-spacing="wide"] body {
+  line-height: 1.8;
+  letter-spacing: 0.04em;
+  word-spacing: 0.12em;
+}

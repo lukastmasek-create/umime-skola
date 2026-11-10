@@ -9,6 +9,8 @@ import { SchoolPicker } from "@/components/SchoolPicker";
 import { getSettingsExtraText } from "@/i18n/settings-extra";
 import { MotionSetting } from "@/components/settings/MotionSetting";
 import { AccountSection } from "@/components/settings/AccountSection";
+import { AccessibilitySection } from "@/components/settings/AccessibilitySection";
+import { ShortcutsSection } from "@/components/settings/ShortcutsSection";
 import { ParentalSection } from "@/components/settings/ParentalSection";
 import { PreviewCard, SegmentedPills, SettingRow, ThemeMini } from "@/components/settings/ui-kit";
 import { getSettingsLookText } from "@/i18n/settings-look";
@@ -17,9 +19,9 @@ import { ACCENT_PRESETS, DEFAULT_ACCENT, applyAccent, normalizeHex } from "@/lib
 type Theme = "light" | "dark" | "system";
 type FontStyle = "playful" | "classic";
 type FontSize = "small" | "medium" | "large";
-type Section = "graphics" | "school" | "account" | "parental";
-const SECTIONS: Section[] = ["graphics", "school", "account", "parental"];
-const SECTION_ICON: Record<Section, string> = { graphics: "🎨", school: "🏫", account: "👤", parental: "🔒" };
+type Section = "graphics" | "a11y" | "shortcuts" | "school" | "account" | "parental";
+const SECTIONS: Section[] = ["graphics", "a11y", "shortcuts", "school", "account", "parental"];
+const SECTION_ICON: Record<Section, string> = { graphics: "🎨", a11y: "♿", shortcuts: "⌨️", school: "🏫", account: "👤", parental: "🔒" };
 
 function OptionButton({
   active,
@@ -55,8 +57,8 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
   const [accentInput, setAccentInput] = useState(DEFAULT_ACCENT.slice(1));
   const [saved, setSaved] = useState(false);
   const [section, setSection] = useState<Section>("graphics");
-  const sectionLabels = getSettingsExtraText(locale).sections;
   const look = getSettingsLookText(locale);
+  const sectionLabels = { ...getSettingsExtraText(locale).sections, a11y: look.a11y, shortcuts: look.shortcuts };
 
   useEffect(() => {
     // Hydrating from localStorage after mount — server has no access to it,
@@ -156,7 +158,7 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
     <div className="overflow-hidden rounded-[28px] border border-[var(--border-soft)] bg-[var(--surface)] shadow-xl">
     <div className="grid md:grid-cols-[17rem_minmax(0,1fr)]">
       <nav className="flex flex-wrap gap-1.5 border-b border-[var(--border-soft)] p-4 md:flex-col md:border-b-0 md:border-r md:p-5" aria-label={dict.settings.title}>
-        <h2 className="mb-3 hidden px-1 text-2xl font-bold md:block" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2 className="mb-3 w-full px-1 text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
           {dict.settings.title}
         </h2>
         {SECTIONS.map((s) => (
@@ -269,6 +271,10 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
           </SettingRow>
         </div>
       )}
+
+      {section === "a11y" && <AccessibilitySection locale={locale} onChange={flashSaved} />}
+
+      {section === "shortcuts" && <ShortcutsSection locale={locale} />}
 
       {section === "school" && <SchoolPicker locale={locale} />}
 

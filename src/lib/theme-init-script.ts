@@ -19,6 +19,9 @@ export const THEME_INIT_SCRIPT = `(function(){
       st.setProperty('--brand-50', 'color-mix(in srgb, ' + accent + ' 12%, var(--surface))');
       st.setProperty('--brand-100', 'color-mix(in srgb, ' + accent + ' 24%, var(--surface))');
     }
+    if (localStorage.getItem('contrast') === 'high') root.setAttribute('data-contrast', 'high');
+    if (localStorage.getItem('links') === 'underline') root.setAttribute('data-links', 'underline');
+    if (localStorage.getItem('spacing') === 'wide') root.setAttribute('data-spacing', 'wide');
     if (localStorage.getItem('motion') === 'off') root.setAttribute('data-motion', 'off');
   } catch (e) {}
 })();`;
