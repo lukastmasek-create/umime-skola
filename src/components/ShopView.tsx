@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { MarketBanner } from "@/components/MarketBanner";
+import { X } from "lucide-react";
+import { ShopModel } from "@/components/ShopModel";
 import { PetArt } from "@/components/idle/PetArt";
 import { bannerAttrs, bannerCss, isFrameId } from "@/lib/cosmetics";
 import {
@@ -53,7 +55,7 @@ export function Modal({ title, onClose, closeLabel, children }: { title: string;
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
       <div role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()} className="card relative max-h-[90vh] w-full max-w-md overflow-y-auto p-5">
         <button type="button" onClick={onClose} aria-label={closeLabel} className="absolute right-3 top-3 rounded-lg px-2 py-1 text-lg font-bold text-[var(--muted)] hover:bg-[var(--surface-muted)]">
-          ✕
+          <X aria-hidden className="h-4 w-4" />
         </button>
         <h2 className="mb-3 pr-8 text-lg font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
           {title}
@@ -65,14 +67,15 @@ export function Modal({ title, onClose, closeLabel, children }: { title: string;
 }
 type State = { status: "loading" } | { status: "unavailable" } | { status: "guest" } | { status: "ready"; data: Snapshot };
 
-const CITY_PREVIEW: Record<string, { emoji: string; color: string }> = {
-  christmas_tree: { emoji: "🎄", color: "#7ee0b0" },
-  windmill: { emoji: "🌾", color: "#ffc933" },
-  ferris_wheel: { emoji: "🎡", color: "#8fd0ff" },
-  carousel: { emoji: "🎠", color: "#ffd0ec" },
-  lighthouse: { emoji: "🗼", color: "#bfe6ff" },
-  rocket_pad: { emoji: "🚀", color: "#e3c8ff" },
+const CITY_PREVIEW: Record<string, string> = {
+  christmas_tree: "#1d4a37",
+  windmill: "#5a4a22",
+  ferris_wheel: "#1d3f5a",
+  carousel: "#5a2a45",
+  lighthouse: "#1d3f5a",
+  rocket_pad: "#33285a",
 };
+const CITY_MODELS = new Set(["christmas_tree", "windmill", "ferris_wheel", "carousel", "lighthouse", "rocket_pad"]);
 
 export function Preview({ item, locale, avatar, heightClass = "h-28" }: { item: ShopItem; locale: Locale; avatar: string | null; heightClass?: string }) {
   const box = `flex ${heightClass} items-center justify-center rounded-xl border-2 border-[var(--edge)]`;
@@ -104,12 +107,10 @@ export function Preview({ item, locale, avatar, heightClass = "h-28" }: { item: 
         </div>
       );
     case "city": {
-      const p = CITY_PREVIEW[item.ref] ?? { emoji: "🏛️", color: "#c9b8ff" };
+      const model = CITY_MODELS.has(item.ref) ? item.ref : "town_hall";
       return (
-        <div className={box} style={{ background: p.color }}>
-          <span className="text-5xl" aria-hidden>
-            {p.emoji}
-          </span>
+        <div className={box} style={{ background: CITY_PREVIEW[item.ref] ?? "#2c3550" }}>
+          <ShopModel id={model} size={104} />
         </div>
       );
     }

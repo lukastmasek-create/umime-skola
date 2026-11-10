@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { BUY_PER_DAY, BUY_PRICE, CASH_PRICE, MATERIALS } from "@/lib/craft";
 import { LIMITED_ITEMS } from "@/lib/limited";
+import { ShopModel } from "@/components/ShopModel";
 import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
 
@@ -132,9 +133,7 @@ export function MaterialShop({ locale, loggedIn }: { locale: Locale; loggedIn: b
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
         {forSale.map((m) => (
           <div key={m.id} className="card flex flex-col items-center gap-1 p-4 text-center">
-            <span className="text-3xl" aria-hidden>
-              {m.icon}
-            </span>
+            <ShopModel id={m.id} size={72} />
             <p className="text-sm font-semibold">{m.names[locale] ?? m.names.cs}</p>
             <p className="text-xs text-[var(--faint)]">{m.rarity === "common" ? "Běžný" : "Neobvyklý"}{view?.mats?.[m.id] ? ` · máš ${view.mats[m.id]}` : ""}</p>
             <button
