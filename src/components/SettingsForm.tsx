@@ -10,6 +10,9 @@ import { getSettingsExtraText } from "@/i18n/settings-extra";
 import { MotionSetting } from "@/components/settings/MotionSetting";
 import { AccountSection } from "@/components/settings/AccountSection";
 import { ParentalSection } from "@/components/settings/ParentalSection";
+import { PreviewCard, SegmentedPills, SettingRow, ThemeMini } from "@/components/settings/ui-kit";
+import { getSettingsLookText } from "@/i18n/settings-look";
+import { ACCENT_PRESETS, DEFAULT_ACCENT, applyAccent, normalizeHex } from "@/lib/accent";
 
 type Theme = "light" | "dark" | "system";
 type FontStyle = "playful" | "classic";
@@ -48,9 +51,12 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
   const [theme, setTheme] = useState<Theme>("system");
   const [font, setFont] = useState<FontStyle>("playful");
   const [fontSize, setFontSize] = useState<FontSize>("medium");
+  const [accent, setAccent] = useState<string | null>(null);
+  const [accentInput, setAccentInput] = useState(DEFAULT_ACCENT.slice(1));
   const [saved, setSaved] = useState(false);
   const [section, setSection] = useState<Section>("graphics");
   const sectionLabels = getSettingsExtraText(locale).sections;
+  const look = getSettingsLookText(locale);
 
   useEffect(() => {
     // Hydrating from localStorage after mount — server has no access to it,
@@ -63,6 +69,11 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
       if (storedFont === "classic") setFont("classic");
       const storedSize = localStorage.getItem("fontSize");
       if (storedSize === "small" || storedSize === "large") setFontSize(storedSize);
+      const storedAccent = localStorage.getItem("accent");
+      if (storedAccent && /^#[0-9a-f]{6}$/.test(storedAccent)) {
+        setAccent(storedAccent);
+        setAccentInput(storedAccent.slice(1));
+      }
     } catch {
       // localStorage may be unavailable (private mode) — defaults stay.
     }
@@ -122,6 +133,19 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
     flashSaved();
   }
 
+  function applyAccentColor(hex: string | null) {
+    setAccent(hex);
+    if (hex) setAccentInput(hex.slice(1));
+    try {
+      if (hex) localStorage.setItem("accent", hex);
+      else localStorage.removeItem("accent");
+    } catch {
+      // ignore
+    }
+    applyAccent(hex);
+    flashSaved();
+  }
+
   function switchLanguage(next: Locale) {
     setLocaleCookie(next);
     const rest = pathname?.replace(/^\/(cs|en|de|ru|uk|ja|es|fr)/, "") || "";
@@ -129,17 +153,20 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
   }
 
   return (
-    <div className="overflow-hidden rounded-[20px] border-2 border-[var(--edge)] bg-[var(--surface)]">
-    <div className="grid md:grid-cols-[14rem_minmax(0,1fr)]">
-      <nav className="flex flex-wrap gap-1.5 border-b-2 border-[var(--edge)] bg-[var(--surface-muted)] p-3 md:flex-col md:border-b-0 md:border-r-2" aria-label={dict.settings.title}>
+    <div className="overflow-hidden rounded-[28px] border border-[var(--border-soft)] bg-[var(--surface)] shadow-xl">
+    <div className="grid md:grid-cols-[17rem_minmax(0,1fr)]">
+      <nav className="flex flex-wrap gap-1.5 border-b border-[var(--border-soft)] p-4 md:flex-col md:border-b-0 md:border-r md:p-5" aria-label={dict.settings.title}>
+        <h2 className="mb-3 hidden px-1 text-2xl font-bold md:block" style={{ fontFamily: "var(--font-heading)" }}>
+          {dict.settings.title}
+        </h2>
         {SECTIONS.map((s) => (
           <button
             key={s}
             type="button"
             onClick={() => setSection(s)}
             aria-current={section === s ? "page" : undefined}
-            className={`flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-left text-sm font-bold transition-colors ${
-              section === s ? "bg-[var(--brand-500)] text-white" : "text-[var(--muted)] hover:bg-[var(--surface-muted)]"
+            className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-left text-sm font-semibold transition-colors ${
+              section === s ? "bg-[var(--brand-50)] text-[var(--brand-600)]" : "text-[var(--foreground)] hover:bg-[var(--surface-muted)]"
             }`}
           >
             <span aria-hidden>{SECTION_ICON[s]}</span>
@@ -148,59 +175,99 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
         ))}
       </nav>
 
-      <div className="flex min-w-0 flex-col gap-8 p-5 sm:p-6">
+      <div className="flex min-w-0 flex-col gap-8 p-5 sm:p-8">
       {section === "graphics" && (
-        <>
-          <section className="card p-6">
-            <h2 className="mb-4 text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-              {dict.settings.appearance}
-            </h2>
-
-            <div className="flex flex-col gap-2 border-b border-[var(--border-soft)] py-4 first:pt-0 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm font-bold">{dict.settings.theme}</p>
-              <div className="flex flex-wrap gap-2">
-                <OptionButton active={theme === "light"} onClick={() => applyTheme("light")}>
-                  {dict.settings.themeLight}
-                </OptionButton>
-                <OptionButton active={theme === "dark"} onClick={() => applyTheme("dark")}>
-                  {dict.settings.themeDark}
-                </OptionButton>
-                <OptionButton active={theme === "system"} onClick={() => applyTheme("system")}>
-                  {dict.settings.themeSystem}
-                </OptionButton>
-              </div>
+        <div>
+          <SettingRow title={look.themes} hint={look.themesHint}>
+            <div role="radiogroup" aria-label={look.themes} className="grid gap-3 sm:grid-cols-3">
+              <PreviewCard active={theme === "light"} onClick={() => applyTheme("light")} label={dict.settings.themeLight}>
+                <ThemeMini mode="light" />
+              </PreviewCard>
+              <PreviewCard active={theme === "dark"} onClick={() => applyTheme("dark")} label={dict.settings.themeDark}>
+                <ThemeMini mode="dark" />
+              </PreviewCard>
+              <PreviewCard active={theme === "system"} onClick={() => applyTheme("system")} label={dict.settings.themeSystem}>
+                <ThemeMini mode="split" />
+              </PreviewCard>
             </div>
+          </SettingRow>
 
-            <div className="flex flex-col gap-2 border-b border-[var(--border-soft)] py-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm font-bold">{dict.settings.fontStyle}</p>
-              <div className="flex flex-wrap gap-2">
-                <OptionButton active={font === "playful"} onClick={() => applyFont("playful")}>
-                  {dict.settings.fontPlayful}
-                </OptionButton>
-                <OptionButton active={font === "classic"} onClick={() => applyFont("classic")}>
-                  {dict.settings.fontClassic}
-                </OptionButton>
+          <SettingRow
+            title={look.accent}
+            hint={look.accentHint}
+            control={
+              <div className="flex items-center gap-2.5">
+                {ACCENT_PRESETS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    aria-label={c}
+                    aria-pressed={accent === c}
+                    onClick={() => applyAccentColor(c)}
+                    className={`h-6 w-6 rounded-full transition-transform hover:scale-110 ${accent === c ? "ring-2 ring-[var(--foreground)] ring-offset-2 ring-offset-[var(--surface)]" : ""}`}
+                    style={{ background: c }}
+                  />
+                ))}
               </div>
+            }
+          >
+            <div className="flex items-center justify-end gap-2.5">
+              <span className="text-xs text-[var(--faint)]">{look.customColor}</span>
+              <label className="flex items-center gap-1 rounded-lg border border-[var(--field-border)] bg-[var(--surface)] px-2.5 py-1.5 text-sm font-medium">
+                #
+                <input
+                  value={accentInput}
+                  maxLength={6}
+                  inputMode="text"
+                  aria-label={look.customColor}
+                  onChange={(e) => {
+                    setAccentInput(e.target.value.replace(/[^0-9a-fA-F]/g, ""));
+                    const hex = normalizeHex(e.target.value);
+                    if (hex && e.target.value.replace(/^#/, "").length === 6) applyAccentColor(hex);
+                  }}
+                  className="w-16 bg-transparent uppercase outline-none"
+                />
+              </label>
+              <button
+                type="button"
+                aria-label={look.customColor}
+                onClick={() => applyAccentColor(normalizeHex(accentInput) ?? DEFAULT_ACCENT)}
+                className="h-6 w-6 rounded-full ring-2 ring-[var(--foreground)] ring-offset-2 ring-offset-[var(--surface)]"
+                style={{ background: normalizeHex(accentInput) ?? DEFAULT_ACCENT }}
+              />
+              {accent && (
+                <button type="button" onClick={() => applyAccentColor(null)} className="text-xs font-medium text-[var(--brand-600)] underline">
+                  ✕
+                </button>
+              )}
             </div>
-
-            <div className="flex flex-col gap-2 pt-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm font-bold">{dict.settings.fontSize}</p>
-              <div className="flex flex-wrap gap-2">
-                <OptionButton active={fontSize === "small"} onClick={() => applyFontSize("small")}>
-                  {dict.settings.fontSizeSmall}
-                </OptionButton>
-                <OptionButton active={fontSize === "medium"} onClick={() => applyFontSize("medium")}>
-                  {dict.settings.fontSizeMedium}
-                </OptionButton>
-                <OptionButton active={fontSize === "large"} onClick={() => applyFontSize("large")}>
-                  {dict.settings.fontSizeLarge}
-                </OptionButton>
-              </div>
-            </div>
-          </section>
+          </SettingRow>
 
           <MotionSetting locale={locale} />
-        </>
+
+          <SettingRow title={dict.settings.fontStyle} hint={look.fontStyleHint}>
+            <SegmentedPills
+              value={font}
+              onChange={applyFont}
+              options={[
+                { id: "playful", label: dict.settings.fontPlayful },
+                { id: "classic", label: dict.settings.fontClassic },
+              ]}
+            />
+          </SettingRow>
+
+          <SettingRow title={dict.settings.fontSize} hint={look.fontSizeHint}>
+            <SegmentedPills
+              value={fontSize}
+              onChange={applyFontSize}
+              options={[
+                { id: "small", label: dict.settings.fontSizeSmall },
+                { id: "medium", label: dict.settings.fontSizeMedium },
+                { id: "large", label: dict.settings.fontSizeLarge },
+              ]}
+            />
+          </SettingRow>
+        </div>
       )}
 
       {section === "school" && <SchoolPicker locale={locale} />}
