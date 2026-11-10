@@ -125,6 +125,16 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
   const myGroup = team.groups.find((g) => g.id === team.members.find((m) => m.id === team.userId)?.groupId);
 
   return (
+    <div className="flex flex-col gap-5">
+      {/* Záložky jako pilulky nahoře (jako hlavní navigace v dashboardu). */}
+      <div role="tablist" className="edx-pill-nav max-w-full self-start overflow-x-auto">
+        {tabs.map(([k, label, , badge]) => (
+          <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`flex items-center gap-2 whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-bold transition-colors ${tab === k ? "bg-[var(--brand-500)] text-white" : "text-[var(--muted)] hover:text-[var(--foreground)]"}`}>
+            <span>{label}</span>
+            {badge > 0 && <span className="grid min-w-5 place-items-center rounded-full bg-[var(--accent-500)] px-1.5 text-xs font-extrabold text-white" aria-label={String(badge)}>{badge}</span>}
+          </button>
+        ))}
+      </div>
     <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start lg:gap-6">
       <aside className="flex flex-col gap-4 lg:sticky lg:top-24">
       <Link href={`/${locale}/tymy`} className="text-sm font-bold text-[var(--brand-600)]">{t.backTeams}</Link>
@@ -167,17 +177,6 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
         </section>
         </ReorderItem>
       )}
-      <ReorderItem id="nav">
-      {/* Navigace v levém sloupci: svislé menu místo vodorovných záložek. */}
-      <div role="tablist" aria-orientation="vertical" className="card flex flex-col gap-1 rounded-[28px] p-2">
-        {tabs.map(([k, label, , badge]) => (
-          <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`flex items-center justify-between gap-2 rounded-full px-4 py-2.5 text-left text-sm font-bold transition-colors ${tab === k ? "bg-[var(--brand-500)] text-white" : "text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"}`}>
-            <span>{label}</span>
-            {badge > 0 && <span className="grid min-w-5 place-items-center rounded-full bg-[var(--accent-500)] px-1.5 text-xs font-extrabold text-white" aria-label={String(badge)}>{badge}</span>}
-          </button>
-        ))}
-      </div>
-      </ReorderItem>
       </Reorderable>
       </aside>
       <div className="flex min-w-0 flex-col gap-5">
@@ -249,6 +248,7 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
       )}
       </div>
     </div>
+    </div>
   );
 }
 
@@ -259,10 +259,10 @@ function AssignmentCard({ a, teacher, locale, teamId, groups, members }: { a: As
     ...(a.groupIds ?? []).map((id) => groups.find((g) => g.id === id)?.name),
     ...(a.userIds ?? []).map((id) => members.find((m) => m.id === id)?.name),
   ].filter(Boolean);
-  const dueCls = a.due === "overdue" ? "font-bold text-[var(--danger)]" : a.due === "soon" ? "font-bold" : "";
+  const dueCls = a.due === "overdue" || a.due === "soon" ? "font-bold" : "";
   return (
     <div>
-      <Link href={`/${locale}/tymy/${teamId}/zadani/${a.id}`} className="card flex flex-col gap-1.5 p-4 hover:-translate-y-0.5" style={a.due === "overdue" && !passed ? { borderLeft: "6px solid var(--danger)" } : passed ? { borderLeft: "6px solid var(--accent-green)" } : undefined}>
+      <Link href={`/${locale}/tymy/${teamId}/zadani/${a.id}`} className={`card flex flex-col gap-1.5 p-4 hover:-translate-y-0.5 ${a.due === "overdue" && !passed ? "!bg-[var(--brand-500)] text-white [--foreground:#fff] [--muted:#e4d8ff]" : a.due === "soon" && !passed ? "!bg-[var(--accent-yellow)] text-[#17142b] [--foreground:#17142b] [--muted:#44501a]" : ""}`}>
         <span className="flex flex-wrap items-center justify-between gap-2">
           <b className="text-lg">{a.title}{a.archived && <> <Pill>{t.archivedBadge}</Pill></>}</b>
           {teacher ? (

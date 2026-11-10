@@ -4050,6 +4050,32 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
    Světlý panel v zaoblené schránce na fialovém pozadí, bílé karty bez tvrdých okrajů,
    fialová jako hlavní barva a limetková jako zvýraznění (--accent-yellow). Platí jen uvnitř .edx. */
 .edx {
+  color-scheme: dark;
+  --background: #0f0d24;
+  --foreground: #f4f1ff;
+  --muted: #b3add3;
+  --faint: #8f89b3;
+  --brand-50: #2a2160;
+  --brand-100: #3a2f85;
+  --brand-500: #7a35f5;
+  --brand-600: #a98aff;
+  --brand-700: #c8b4ff;
+  --accent-yellow: #c9f43a;
+  --accent-green: #34d58a;
+  --surface: #1c1940;
+  --surface-muted: #2a2655;
+  --border-soft: #36306a;
+  --edge: #36306a;
+  --shadow-ink: transparent;
+  --danger: #f0555a;
+  --field-border: #4a4388;
+  --radius-card: 24px;
+  --radius-btn: 999px;
+  background: #15122e;
+  color: var(--foreground);
+}
+/* Světlá varianta jen na výslovnou volbu v nastavení (jinak je web tmavý). */
+:root[data-theme="light"] .edx {
   color-scheme: light;
   --background: #f3f3f7;
   --foreground: #17142b;
@@ -4060,19 +4086,14 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
   --brand-500: #6c1ff0;
   --brand-600: #5b14d6;
   --brand-700: #4a0fb0;
-  --accent-yellow: #c9f43a;
   --accent-green: #16a05c;
   --surface: #ffffff;
   --surface-muted: #f3f3f7;
   --border-soft: #e7e6ee;
   --edge: #e7e6ee;
-  --shadow-ink: transparent;
   --danger: #d6291f;
   --field-border: #d9d8e3;
-  --radius-card: 24px;
-  --radius-btn: 999px;
   background: #fff;
-  color: var(--foreground);
 }
 .edx .card {
   border: 0;

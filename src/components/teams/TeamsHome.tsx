@@ -6,29 +6,19 @@ import { useRouter } from "next/navigation";
 import { call, errorCode } from "./api";
 import { tfill } from "@/i18n/teams";
 import { getTeamsAll, teamsAllError } from "@/i18n/teams-more";
-import { fmtDate } from "./api";
 import type { Locale } from "@/i18n/config";
-import { Badge, Pill, Progress, ProgressToast, Reorderable, ReorderItem, SideLayout } from "./ui";
-import { TeamDeadlines, type Deadline } from "./TeamDeadlines";
+import { Badge, Pill, Progress, ProgressToast } from "./ui";
+import { EdxAssistant } from "./EdxAssistant";
+import { EdxGroupTasks, EdxPoints, EdxProCard, EdxProductivity, EdxProgress } from "./EdxWidgets";
+import { EdxSchedule } from "./EdxSchedule";
+import type { Deadline, TeamRow, Urgent } from "./types";
+
+type Pending = { id: string; name: string };
 import { TeacherOverview } from "./TeacherOverview";
 
 // Gradient pro progress bar postupu (fialová → zelená, jako v gamifikovaném vzhledu).
 const PROGRESS_GRADIENT = "linear-gradient(90deg, var(--brand-500), var(--accent-green))";
 
-type TeamRow = { id: string; name: string; role: string; code: string | null; members: number; assignments: number; done: number; open: number; soon: number; overdue: number };
-type Urgent = { teamId: string; teamName: string; assignmentId: string; title: string; dueAt: string; overdue: boolean };
-type Pending = { id: string; name: string };
-
-function Icon({ d, filled = false }: { d: string; filled?: boolean }) {
-  return (
-    <span aria-hidden className={`grid size-9 place-items-center rounded-full ${filled ? "bg-[var(--brand-500)] text-white" : "text-[var(--foreground)]"}`}>
-      <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        {filled && <circle cx="12" cy="12" r="9" />}
-        <path d={d} />
-      </svg>
-    </span>
-  );
-}
 
 export function TeamsHome({ locale }: { locale: Locale }) {
   const t = getTeamsAll(locale);
@@ -86,14 +76,7 @@ export function TeamsHome({ locale }: { locale: Locale }) {
     }
   }
 
-  // Souhrn v levém sloupci: nesplněná zadání žáka napříč týmy a nejbližší termín (API je řadí podle data).
-  const openSum = (teams ?? []).reduce((n, tm) => n + (tm.role === "STUDENT" ? tm.open : 0), 0);
   const nextDue = urgent[0];
-  const mine = (teams ?? []).filter((tm) => tm.role === "STUDENT");
-  const sumAll = mine.reduce((n, tm) => n + tm.assignments, 0);
-  const sumDone = mine.reduce((n, tm) => n + tm.done, 0);
-  const sumSoon = mine.reduce((n, tm) => n + tm.soon, 0);
-  const pct = sumAll > 0 ? Math.round((sumDone / sumAll) * 100) : 0;
   const teachingTeams = (teams ?? []).filter((tm) => tm.role === "TEACHER").map((tm) => ({ id: tm.id, name: tm.name }));
 
   if (!auth)
@@ -105,54 +88,79 @@ export function TeamsHome({ locale }: { locale: Locale }) {
     );
 
   return (
-    <SideLayout
-      side={
-        <Reorderable storageKey="teams:home:side" t={t} className="flex flex-col gap-4">
-          {/* Přehled ve stylu Trophy StreakCard: velké číslo, pod ním čárkovaně oddělené doplňkové údaje. */}
-          <ReorderItem id="summary">
-          <section aria-label={t.progressTitle} className="card flex flex-col gap-4 p-5">
-            <div className="flex items-end gap-3">
-              <p className="text-6xl font-extrabold leading-none" style={{ fontFamily: "var(--font-heading)" }}>{pct}%</p>
-              <p className="pb-1 text-sm font-semibold text-[var(--muted)]">{t.progressTitle}</p>
+    <div className="flex flex-col gap-5">
+      {error && <p role="alert" className="card p-3 text-sm font-semibold text-[var(--danger)]">{error}</p>}
+      {notice && <ProgressToast key={notice} message={notice} onDone={() => setNotice("")} closeLabel={t.closeToast} />}
+      {teams === null ? (
+        <div className="card h-64 animate-pulse bg-[var(--surface-muted)]" aria-hidden />
+      ) : (
+        <>
+          {/* Dashboard: vlevo asistent + PRO a produktivita, rozvrh pod nimi; vpravo postup, naléhavé úkoly a body. */}
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+            <div className="flex min-w-0 flex-col gap-5">
+              <div className="grid gap-5 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                <div className="flex flex-col gap-5">
+                  <EdxAssistant locale={locale} teams={teams} urgent={urgent} />
+                  <EdxProCard locale={locale} />
+                </div>
+                <EdxProductivity locale={locale} teams={teams} />
+              </div>
+              <EdxSchedule locale={locale} items={deadlines} />
             </div>
-            <Progress value={sumDone} max={sumAll} color={PROGRESS_GRADIENT} />
-            <div className="edx-tile grid grid-cols-3 gap-1 p-2 text-center">
-              <div className="flex flex-col items-center gap-0.5 py-2">
-                <Icon d="M12 7v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z" />
-                <b className="text-xl">{openSum}</b>
-                <span className="text-xs text-[var(--muted)]">{t.filterOpen}</span>
-              </div>
-              <div className="flex flex-col items-center gap-0.5 py-2">
-                <Icon d="M7 3v3M17 3v3M4 8h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" />
-                <b className="text-xl">{sumSoon}</b>
-                <span className="text-xs text-[var(--muted)]">{t.dueSoon}</span>
-              </div>
-              <div className="flex flex-col items-center gap-0.5 py-2">
-                <Icon d="M8 12.5l3 3 5-6" filled />
-                <b className="text-xl">{sumDone}</b>
-                <span className="text-xs text-[var(--muted)]">{t.filterDone}</span>
-              </div>
+            <div className="flex min-w-0 flex-col gap-5">
+              <EdxProgress locale={locale} teams={teams} nextDue={nextDue} />
+              <EdxGroupTasks locale={locale} urgent={urgent} />
+              <EdxPoints locale={locale} teams={teams} />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="min-w-0">
-                <p className="text-sm text-[var(--muted)]">{t.summaryTeams}</p>
-                <p className="text-2xl font-extrabold leading-tight">{teams?.length ?? 0}</p>
-              </div>
-              <div className="min-w-0 text-right">
-                <p className="text-sm text-[var(--muted)]">{t.summaryNext}</p>
-                {nextDue ? (
-                  <Link href={`/${locale}/tymy/${nextDue.teamId}/zadani/${nextDue.assignmentId}`} className="flex min-w-0 flex-col items-end hover:underline">
-                    <span className="max-w-full truncate text-sm font-bold">{nextDue.title}</span>
-                    <span className="text-xs text-[var(--muted)]">{fmtDate(locale, nextDue.dueAt)}</span>
+          </div>
+          {/* Učitelský přehled jen tomu, kdo je alespoň v jednom týmu učitelem */}
+          {teachingTeams.length > 0 && <TeacherOverview locale={locale} teams={teachingTeams} />}
+        </>
+      )}
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-start">
+        <section className="flex flex-col gap-3">
+          <h2 className="text-xl font-extrabold">{t.myTeams}</h2>
+          {teams?.length === 0 && pending.length === 0 && <p className="text-[var(--muted)]">{t.noTeams}</p>}
+          {pending.map((p) => (
+            <div key={p.id} className="card flex flex-wrap items-center justify-between gap-2 p-4">
+              <span><b>{p.name}</b> <span className="text-sm text-[var(--muted)]">· {t.waitingApproval}</span></span>
+              <button onClick={async () => { await call("/api/tymy", { action: "cancelRequest", teamId: p.id }).catch(() => {}); await load(); }} className="text-xs font-bold text-[var(--danger)]">{t.cancelRequest}</button>
+            </div>
+          ))}
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {teams?.map((tm) => {
+              // Barva karty podle naléhavosti (jako priorita v rozvrhu): fialová = po termínu, limetková = brzy končí.
+              const tone = tm.overdue > 0 ? "high" : tm.soon > 0 ? "low" : "plain";
+              const toneCls = { high: "!bg-[var(--brand-500)] text-white [--foreground:#fff] [--muted:#e4d8ff]", low: "!bg-[var(--accent-yellow)] text-[#17142b] [--foreground:#17142b] [--muted:#44501a]", plain: "" }[tone];
+              return (
+                <li key={tm.id}>
+                  <Link href={`/${locale}/tymy/${tm.id}`} className={`card flex h-full items-start gap-3 p-4 hover:-translate-y-0.5 ${toneCls}`}>
+                    <Badge name={tm.name} size={52} />
+                    <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+                      <span className="flex items-center justify-between gap-2">
+                        <b className="truncate text-lg">{tm.name}</b>
+                        <Pill tone={tm.role === "TEACHER" ? "brand" : "good"}>{tm.role === "TEACHER" ? `${t.teacher}` : `${t.student}`}</Pill>
+                      </span>
+                      <span className="text-sm text-[var(--muted)]">{tfill(t.teamStats, tm.members, tm.assignments)}{tm.role === "STUDENT" && tm.open > 0 ? tfill(t.teamOpen, tm.open) : ""}</span>
+                      {(tm.overdue > 0 || tm.soon > 0) && (
+                        <span className="flex flex-wrap gap-1.5">
+                          {tm.overdue > 0 && <Pill tone="danger">{tfill(t.overdueN, tm.overdue)}</Pill>}
+                          {tm.soon > 0 && <Pill tone="warn">{tfill(t.soonN, tm.soon)}</Pill>}
+                        </span>
+                      )}
+                      {tm.role === "STUDENT" && tm.assignments > 0 && (
+                        <Progress value={tm.done} max={tm.assignments} color={tone === "high" ? "var(--accent-yellow)" : tone === "low" ? "var(--brand-500)" : PROGRESS_GRADIENT} label={tfill(t.summaryDone, tm.done, tm.assignments)} />
+                      )}
+                      {tm.code && <span className="text-xs text-[var(--muted)]">{t.code}: <b className="tracking-widest">{tm.code}</b></span>}
+                      <span className={`mt-auto pt-1 text-sm font-bold ${tone === "plain" ? "text-[var(--brand-600)]" : ""}`}>{t.openTeam} →</span>
+                    </span>
                   </Link>
-                ) : (
-                  <span className="text-sm font-semibold text-[var(--muted)]">{t.summaryNone}</span>
-                )}
-              </div>
-            </div>
-          </section>
-          </ReorderItem>
-          <ReorderItem id="create">
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+        <div className="flex flex-col gap-5">
           <form className="card flex flex-col gap-3 p-5" onSubmit={(e) => { e.preventDefault(); void act({ action: "create", name, asTeacher: teacher }); }}>
             <h2 className="text-lg font-extrabold">{t.createTitle}</h2>
             <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} placeholder={t.namePh} aria-label={t.namePh} className="rounded-xl border-2 border-[var(--field-border)] bg-[var(--surface)] px-3 py-2 text-sm" />
@@ -162,89 +170,14 @@ export function TeamsHome({ locale }: { locale: Locale }) {
             </label>
             <button className="btn-bouncy self-start bg-[var(--brand-500)] px-5 py-2 text-sm font-bold text-white">{t.create}</button>
           </form>
-          </ReorderItem>
-          <ReorderItem id="join">
           <form className="card flex flex-col gap-3 p-5" onSubmit={(e) => { e.preventDefault(); void act({ action: "join", code }); }}>
             <h2 className="text-lg font-extrabold">{t.joinTitle}</h2>
             <p className="text-sm text-[var(--muted)]">{t.joinHint}</p>
             <input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} maxLength={12} placeholder={t.codePh} aria-label={t.codePh} className="rounded-xl border-2 border-[var(--field-border)] bg-[var(--surface)] px-3 py-2 text-sm uppercase tracking-widest" />
-            <button className="btn-bouncy self-start bg-[var(--accent-green)] px-5 py-2 text-sm font-bold text-white">{t.join}</button>
+            <button className="btn-bouncy self-start bg-[var(--accent-yellow)] px-5 py-2 text-sm font-bold text-[#17142b]">{t.join}</button>
           </form>
-          </ReorderItem>
-        </Reorderable>
-      }
-    >
-      {error && <p role="alert" className="card p-3 text-sm font-semibold text-[var(--danger)]">{error}</p>}
-      {notice && <ProgressToast key={notice} message={notice} onDone={() => setNotice("")} closeLabel={t.closeToast} />}
-      {/* Učitelský přehled jen tomu, kdo je alespoň v jednom týmu učitelem */}
-      {teachingTeams.length > 0 && <TeacherOverview locale={locale} teams={teachingTeams} />}
-      <Reorderable storageKey="teams:home:main" t={t} className="flex flex-col gap-5">
-      {urgent.length > 0 && (
-        <ReorderItem id="urgent">
-        <section className="card flex flex-col gap-2 border-2 border-[var(--accent-yellow)] p-4" aria-label={t.urgentTitle}>
-          <h2 className="text-lg font-extrabold">{t.urgentTitle}</h2>
-          <ul className="divide-y divide-[var(--border-soft)]">
-            {urgent.map((u) => (
-              <li key={u.assignmentId}>
-                <Link href={`/${locale}/tymy/${u.teamId}/zadani/${u.assignmentId}`} className="flex flex-wrap items-center justify-between gap-2 py-2 hover:underline">
-                  <span className="min-w-0 truncate"><b>{u.title}</b> <span className="text-sm text-[var(--muted)]">· {u.teamName}</span></span>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${u.overdue ? "bg-[var(--danger)] text-white" : "bg-[var(--accent-yellow)]"}`}>{u.overdue ? `${t.afterDeadline} · ` : ""}{tfill(t.due, fmtDate(locale, u.dueAt))}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-        </ReorderItem>
-      )}
-      <ReorderItem id="deadlines">
-        <TeamDeadlines locale={locale} items={deadlines} />
-      </ReorderItem>
-      <ReorderItem id="list">
-      <section className="flex flex-col gap-3">
-        <h2 className="text-xl font-extrabold">{t.myTeams}</h2>
-        {teams === null && <div className="card h-24 animate-pulse bg-[var(--surface-muted)]" aria-hidden />}
-        {teams?.length === 0 && pending.length === 0 && <p className="text-[var(--muted)]">{t.noTeams}</p>}
-        {pending.map((p) => (
-          <div key={p.id} className="card flex flex-wrap items-center justify-between gap-2 p-4">
-            <span><b>{p.name}</b> <span className="text-sm text-[var(--muted)]">· {t.waitingApproval}</span></span>
-            <button onClick={async () => { await call("/api/tymy", { action: "cancelRequest", teamId: p.id }).catch(() => {}); await load(); }} className="text-xs font-bold text-[var(--danger)]">{t.cancelRequest}</button>
-          </div>
-        ))}
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {teams?.map((tm) => {
-            // Barva karty podle naléhavosti (jako priorita v rozvrhu): fialová = po termínu, limetková = brzy končí.
-            const tone = tm.overdue > 0 ? "high" : tm.soon > 0 ? "low" : "plain";
-            const toneCls = { high: "!bg-[var(--brand-500)] text-white [--foreground:#fff] [--muted:#e4d8ff]", low: "!bg-[var(--accent-yellow)] text-[#17142b] [--muted:#44501a]", plain: "" }[tone];
-            return (
-            <li key={tm.id}>
-              <Link href={`/${locale}/tymy/${tm.id}`} className={`card flex h-full items-start gap-3 p-4 hover:-translate-y-0.5 ${toneCls}`}>
-                <Badge name={tm.name} size={52} />
-                <span className="flex min-w-0 flex-1 flex-col gap-1.5">
-                  <span className="flex items-center justify-between gap-2">
-                    <b className="truncate text-lg">{tm.name}</b>
-                    <Pill tone={tm.role === "TEACHER" ? "brand" : "good"}>{tm.role === "TEACHER" ? `${t.teacher}` : `${t.student}`}</Pill>
-                  </span>
-                  <span className="text-sm text-[var(--muted)]">{tfill(t.teamStats, tm.members, tm.assignments)}{tm.role === "STUDENT" && tm.open > 0 ? tfill(t.teamOpen, tm.open) : ""}</span>
-                  {(tm.overdue > 0 || tm.soon > 0) && (
-                    <span className="flex flex-wrap gap-1.5">
-                      {tm.overdue > 0 && <Pill tone="danger">{tfill(t.overdueN, tm.overdue)}</Pill>}
-                      {tm.soon > 0 && <Pill tone="warn">{tfill(t.soonN, tm.soon)}</Pill>}
-                    </span>
-                  )}
-                  {tm.role === "STUDENT" && tm.assignments > 0 && (
-                    <Progress value={tm.done} max={tm.assignments} color={tone === "high" ? "var(--accent-yellow)" : tone === "low" ? "var(--brand-500)" : PROGRESS_GRADIENT} label={tfill(t.summaryDone, tm.done, tm.assignments)} />
-                  )}
-                  {tm.code && <span className="text-xs text-[var(--muted)]">{t.code}: <b className="tracking-widest">{tm.code}</b></span>}
-                  <span className={`mt-auto pt-1 text-sm font-bold ${tone === "plain" ? "text-[var(--brand-600)]" : ""}`}>{t.openTeam} →</span>
-                </span>
-              </Link>
-            </li>
-            );
-          })}
-        </ul>
-      </section>
-      </ReorderItem>
-      </Reorderable>
-    </SideLayout>
+        </div>
+      </div>
+    </div>
   );
 }
