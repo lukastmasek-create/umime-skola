@@ -11,6 +11,8 @@ import { GlobeSky } from "@/components/GlobeSky";
 import { IslandHub } from "@/components/IslandHub";
 import { HeroSky } from "@/components/HeroSky";
 import { ExpandCard } from "@/components/ExpandCard";
+import { HomeLobby } from "@/components/HomeLobby";
+import { getHomeLobbyText } from "@/i18n/home-lobby";
 import { HeroParticles } from "@/components/HeroParticles";
 import { TypingLine } from "@/components/TypingLine";
 import { getHomeText } from "@/i18n/home";
@@ -135,6 +137,11 @@ export default async function Home({
             <DailyQuizTeaser locale={locale as Locale} />
           </div>
         </section>
+      </div>
+
+      {/* 1b) Lobby: co dnes zahrajeme */}
+      <div className="zone zone-space pt-4">
+        <HomeLobby locale={locale} t={getHomeLobbyText(locale as Locale)} />
       </div>
 
       {/* 2) Příroda: předměty */}
