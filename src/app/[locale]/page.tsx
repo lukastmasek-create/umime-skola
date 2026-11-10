@@ -2,9 +2,7 @@ import Link from "next/link";
 import { CATEGORIES, SUBJECTS } from "@/lib/taxonomy";
 import { HomeProgress } from "@/components/HomeProgress";
 import { DailyQuizTeaser } from "@/components/DailyQuizTeaser";
-import { ArcadeDemo } from "@/components/ArcadeDemo";
 import { TeacherCta } from "@/components/TeacherCta";
-import { Tilt } from "@/components/Tilt";
 import { ALIEN_ROW, Circuit, HomeArt, SpriteFrame, Wave } from "@/components/SpaceDecor";
 import { LazyPlanet, LazySubjectGlobe, LazyTownLife } from "@/components/HomeLazy";
 import { GlobeSky } from "@/components/GlobeSky";
@@ -13,8 +11,8 @@ import { HeroSky } from "@/components/HeroSky";
 import { ExpandCard } from "@/components/ExpandCard";
 import { HomeLobby } from "@/components/HomeLobby";
 import { getHomeLobbyText } from "@/i18n/home-lobby";
-import { HeroParticles } from "@/components/HeroParticles";
-import { TypingLine } from "@/components/TypingLine";
+import { HeroShowcase } from "@/components/HeroShowcase";
+import { getHomeHeroText } from "@/i18n/home-hero";
 import { getHomeText } from "@/i18n/home";
 import { getHomeAudienceText } from "@/i18n/home-teachers";
 import { getAudiencePagesText } from "@/i18n/audience";
@@ -62,49 +60,19 @@ export default async function Home({
       <div className="zone zone-space">
         <HeroSky />
         <section className="gradient-hero relative">
-          <HeroParticles />
-          <LazyPlanet
-            className="absolute -right-20 top-16 -z-10 hidden opacity-95 lg:block"
-            size={500}
-            dir="/home/planet-hero"
-            still="/home/planeta.webp"
-            spinSeconds={64}
-            glow="drop-shadow(0 0 40px rgba(180,120,255,0.35))"
-          />
-          <SpriteFrame
-            sheet="aliens"
-            col={0}
-            row={ALIEN_ROW.krab}
-            size={96}
-            className="space-float absolute left-[46%] top-6 hidden lg:block"
-          />
-          <SpriteFrame
-            sheet="aliens"
-            col={1}
-            row={ALIEN_ROW.ufo}
-            size={110}
-            className="space-float absolute right-[8%] top-10 hidden md:block"
-            style={{ animationDelay: "-2s" }}
-          />
-
-          <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 py-10 sm:px-6 sm:py-16 lg:grid-cols-[1.15fr_0.85fr] lg:py-24">
-            <div className="flex flex-col items-start gap-6">
+          <div className="relative mx-auto flex max-w-6xl flex-col items-center px-4 pb-10 pt-12 sm:px-6 sm:pt-16 lg:pb-16 lg:pt-20">
+            <div className="flex max-w-3xl flex-col items-center gap-6 text-center">
               <span style={{ ["--d" as string]: "0.05s" }} className="hero-in rounded-md border-2 border-[var(--edge)] bg-[var(--surface)]/80 px-2.5 py-1 text-xs font-bold uppercase tracking-widest shadow-[0_0_18px_rgba(124,108,255,0.45)]">
                 {badge}
               </span>
               <h1
-                className="hero-in text-3xl font-extrabold leading-[1.3] tracking-tight sm:text-4xl lg:text-5xl"
+                className="hero-in text-4xl font-extrabold leading-[1.25] tracking-tight sm:text-5xl lg:text-6xl"
                 style={{ ...heading, ["--d" as string]: "0.18s" }}
               >
                 {dict.home.titleLine1}{" "}
                 <span className="gradient-text">{dict.home.titleLine2}</span>
               </h1>
               <p className="hero-in max-w-xl text-lg leading-relaxed text-[var(--muted)]" style={{ ["--d" as string]: "0.32s" }}>{dict.home.subtitle}</p>
-              <TypingLine
-                className="hero-in text-base font-semibold text-white/85"
-                prefix={subjectText.all + ":"}
-                words={SUBJECTS.slice(0, 8).map((sj) => subjectText.labels[sj.value])}
-              />
               <div className="hero-in flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:gap-4" style={{ ["--d" as string]: "0.46s" }}>
                 <Link
                   href={`/${locale}/kurzy/zakladni`}
@@ -123,10 +91,11 @@ export default async function Home({
                 </Link>
               </p>
             </div>
-            <div className="hero-in-right">
-              <Tilt max={6}>
-                <ArcadeDemo />
-              </Tilt>
+            <div className="hero-in-right w-full">
+              <HeroShowcase
+                t={getHomeHeroText(locale as Locale)}
+                subjects={SUBJECTS.map((sj) => ({ slug: sj.slug, emoji: sj.emoji, color: sj.color, label: subjectText.labels[sj.value] }))}
+              />
             </div>
           </div>
         </section>
