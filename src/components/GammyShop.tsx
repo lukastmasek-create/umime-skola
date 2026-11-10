@@ -16,6 +16,7 @@ import {
   type ShopItem,
   type ShopKind,
 } from "@/lib/shop";
+import { SHOP_BUNDLES } from "@/lib/shop";
 import { VOUCHERS } from "@/lib/vouchers";
 import { getShopText } from "@/i18n/shop";
 import { getShopExtraText } from "@/i18n/shop-extra";
@@ -32,6 +33,26 @@ const MORE_TABS: { id: More; label: string }[] = [
 
 const KIND_ICON: Record<ShopKind, string> = { avatar: "🧑‍🚀", title: "🏷️", frame: "🖼️", banner: "🌄", pet: "🐾", city: "🏙️" };
 const MARQUEE = ["Body", "Voucher", "Dárek", "Kolo štěstí", "Materiály", "Limitky", "Avatary", "Sady"];
+
+const WISHLIST_KEY = "shop-wishlist";
+type Review = { average: number; count: number; mine: { stars: number; text: string | null } | null; latest: { stars: number; text: string | null; name: string }[] };
+type HistoryRow = { id: string; amount: number; reason: string; createdAt: string };
+
+function Stars({ value, size = "text-base" }: { value: number; size?: string }) {
+  return (
+    <span className={`${size} tracking-tight text-[var(--g-accent)]`} aria-label={`${value.toFixed(1)} z 5`}>
+      {[1, 2, 3, 4, 5].map((n) => (n <= Math.round(value) ? "★" : "☆"))}
+    </span>
+  );
+}
+
+// Hit týdne: stejná věc pro všechny, mění se každé pondělí.
+function weeklyHit(): ShopItem {
+  const week = Math.floor((Date.now() - 4 * 86400000) / (7 * 86400000));
+  const pool = SHOP_ITEMS.filter((i) => i.tag === "popular");
+  const list = pool.length ? pool : SHOP_ITEMS;
+  return list[week % list.length];
+}
 
 const VOUCHER_ERRORS: Record<string, string> = {
   "unknown-code": "Tenhle kód neznáme.",
@@ -70,6 +91,94 @@ export function GammyShop({
   const [giftEmail, setGiftEmail] = useState("");
   const [code, setCode] = useState("");
   const [shown, setShown] = useState(15);
+  const [wishlist, setWishlist] = useState<string[]>([]);
+  const [onlyFav, setOnlyFav] = useState(false);
+  const [previewId, setPreviewId] = useState<string | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [history, setHistory] = useState<HistoryRow[] | null>(null);
+  const [review, setReview] = useState<Review | null>(null);
+  const [myStars, setMyStars] = useState(0);
+  const [myText, setMyText] = useState("");
+  const [hit, setHit] = useState<ShopItem | null>(null);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      try {
+        const raw = JSON.parse(window.localStorage.getItem(WISHLIST_KEY) ?? "[]");
+        if (Array.isArray(raw)) setWishlist(raw.filter((v): v is string => typeof v === "string"));
+      } catch {}
+      setHit(weeklyHit());
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, []);
+
+  function toggleWish(id: string) {
+    setWishlist((list) => {
+      const next = list.includes(id) ? list.filter((v) => v !== id) : [...list, id];
+      try {
+        window.localStorage.setItem(WISHLIST_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }
+
+  const loadReview = useCallback(async () => {
+    try {
+      const res = await fetch("/api/shop/hodnoceni");
+      const json = await res.json().catch(() => null);
+      if (res.ok && json) {
+        setReview(json);
+        if (json.mine) {
+          setMyStars(json.mine.stars);
+          setMyText(json.mine.text ?? "");
+        }
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    const id = window.setTimeout(loadReview, 0);
+    return () => window.clearTimeout(id);
+  }, [loadReview]);
+
+  async function sendReview() {
+    if (!myStars) return toast("Vyber počet hvězdiček.");
+    try {
+      const res = await fetch("/api/shop/hodnoceni", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ stars: myStars, text: myText }) });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) return toast(json.error === "login-required" ? "Nejdřív se přihlas." : json.error === "rate" ? "Moc pokusů, zkus to později." : "Hodnocení se nepovedlo uložit.");
+      toast("Díky za hodnocení!", true);
+      void loadReview();
+    } catch {
+      toast("Hodnocení se nepovedlo uložit.");
+    }
+  }
+
+  const loadHistory = useCallback(async () => {
+    try {
+      const res = await fetch("/api/shop?history=1");
+      const json = await res.json().catch(() => ({}));
+      setHistory(res.ok && Array.isArray(json.history) ? json.history : []);
+    } catch {
+      setHistory([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!historyOpen) return;
+    const id = window.setTimeout(() => void loadHistory(), 0);
+    return () => window.clearTimeout(id);
+  }, [historyOpen, loadHistory]);
+
+  function historyLine(row: HistoryRow): string {
+    const [, k, ref, who] = row.reason.split(":");
+    if (k === "voucher") return `Voucher ${ref}`;
+    if (k === "bundle") return x.historyBundle.replace("{name}", SHOP_BUNDLES.find((b) => b.id === ref)?.names[locale] ?? x.historyUnknown);
+    const name = getShopItem(ref)?.names[locale] ?? x.historyUnknown;
+    if (k === "gift") return x.historyGift.replace("{name}", name).replace("{who}", who ?? "?");
+    if (k === "received") return x.historyReceived.replace("{name}", name);
+    return x.historyBuy.replace("{name}", name);
+  }
 
   const toast = useCallback((text: string, ok = false) => {
     setMsg({ text, ok });
@@ -156,7 +265,9 @@ export function GammyShop({
   const points = snap?.points ?? 0;
   const deals = new Set(dailyDealIds(day));
   const q = query.trim().toLowerCase();
-  const items = SHOP_ITEMS.filter((i) => (kind === "all" || i.kind === kind) && (!q || i.names[locale].toLowerCase().includes(q)));
+  const items = SHOP_ITEMS.filter((i) => (kind === "all" || i.kind === kind) && (!onlyFav || wishlist.includes(i.id)) && (!q || i.names[locale].toLowerCase().includes(q)));
+  const previewItem = previewId ? getShopItem(previewId) : undefined;
+  const dealItems = [...deals].map((id) => getShopItem(id)).filter((i): i is ShopItem => !!i);
   const giftItem = giftId ? getShopItem(giftId) : undefined;
   const loginHref = `/${locale}/prihlaseni`;
   const heroAvatars = ["avatar-astronaut", "avatar-pirate", "avatar-wizard"].map((id) => getShopItem(id)?.ref).filter((v): v is string => !!v);
@@ -172,6 +283,15 @@ export function GammyShop({
       <article key={item.id} className="gammy-panel flex flex-col gap-3 p-3 transition-transform hover:-translate-y-1">
         <div className="relative">
           <Preview item={item} locale={locale} avatar={snap?.equipped.avatar ?? null} />
+          <button
+            type="button"
+            onClick={() => toggleWish(item.id)}
+            aria-pressed={wishlist.includes(item.id)}
+            aria-label={wishlist.includes(item.id) ? x.unfav : x.fav}
+            className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full border border-[var(--g-line)] bg-[var(--g-bg)] text-base leading-none transition-transform hover:scale-110"
+          >
+            {wishlist.includes(item.id) ? "❤️" : "🤍"}
+          </button>
           {(sale || item.tag) && (
             <span className="absolute left-2 top-2 rounded-full bg-[var(--g-accent)] px-2 py-0.5 text-[11px] font-bold text-[var(--g-accent-ink)]">
               {sale ? `-${Math.round(DEAL_DISCOUNT * 100)} %` : item.tag === "new" ? t.tagNew : t.tagPopular}
@@ -210,18 +330,23 @@ export function GammyShop({
               {price} · {t.buy}
             </Link>
           )}
-          {loggedIn && !have && (
-            <button
-              type="button"
-              onClick={() => {
-                setGiftEmail("");
-                setGiftId(item.id);
-              }}
-              className="text-xs font-semibold text-[var(--muted)] hover:text-[var(--g-accent)]"
-            >
-              {x.gift}
+          <div className="flex justify-center gap-4 text-xs font-semibold text-[var(--muted)]">
+            <button type="button" onClick={() => setPreviewId(item.id)} className="hover:text-[var(--g-accent)]">
+              👁 {x.preview}
             </button>
-          )}
+            {loggedIn && !have && (
+              <button
+                type="button"
+                onClick={() => {
+                  setGiftEmail("");
+                  setGiftId(item.id);
+                }}
+                className="hover:text-[var(--g-accent)]"
+              >
+                {x.gift}
+              </button>
+            )}
+          </div>
         </div>
       </article>
     );
@@ -261,6 +386,13 @@ export function GammyShop({
               </div>
               <span className="text-[var(--muted)]">{players ? `${players.toLocaleString("cs-CZ")} hráčů` : "Hráči"}</span>
             </div>
+            <button type="button" onClick={() => scrollTo("hodnoceni")} className="flex items-center gap-2" aria-label="Hodnocení obchodu">
+              <span className="text-2xl font-bold">{review && review.count ? review.average.toFixed(1).replace(".", ",") : "–"}</span>
+              <span className="flex flex-col items-start leading-tight">
+                <Stars value={review?.average ?? 0} size="text-sm" />
+                <span className="text-[11px] text-[var(--faint)]">{review?.count ?? 0} hodnocení</span>
+              </span>
+            </button>
             <span className="text-[var(--muted)]">
               <b className="text-[var(--foreground)]">{SHOP_ITEMS.length}</b> věcí v nabídce
             </span>
@@ -399,7 +531,47 @@ export function GammyShop({
             className="w-44 rounded-full border border-[var(--g-line)] bg-[var(--g-bg)] px-4 py-1.5 text-sm outline-none focus:border-[var(--g-accent)]"
           />
         </div>
+        {(hit || dealItems.length > 0) && (
+          <div className="mb-6 grid gap-3 md:grid-cols-[1fr_2fr]">
+            {hit && (
+              <div className="gammy-panel flex flex-col gap-2 p-3">
+                <p className="text-xs font-extrabold uppercase tracking-wide text-[var(--g-accent)]">🔥 Hit týdne</p>
+                <Preview item={hit} locale={locale} avatar={snap?.equipped.avatar ?? null} />
+                <p className="text-sm font-bold">{hit.names[locale]}</p>
+                <button type="button" onClick={() => setPreviewId(hit.id)} className="rounded-full bg-[var(--g-accent)] px-3 py-1.5 text-xs font-bold text-[var(--g-accent-ink)]">
+                  {salePrice(hit, day)} · {x.preview}
+                </button>
+              </div>
+            )}
+            {dealItems.length > 0 && (
+              <div className="gammy-panel p-3">
+                <p className="mb-2 text-xs font-extrabold uppercase tracking-wide text-[var(--g-accent)]">⚡ Denní slevy −{Math.round(DEAL_DISCOUNT * 100)} %</p>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {dealItems.map((i) => (
+                    <button key={i.id} type="button" onClick={() => setPreviewId(i.id)} className="rounded-xl border border-[var(--g-line)] p-2 text-left text-xs hover:border-[var(--g-accent)]">
+                      <span className="block font-bold leading-tight">{i.names[locale]}</span>
+                      <span className="text-[var(--muted)]"><s>{i.price}</s> <b className="text-[var(--g-accent)]">{salePrice(i, day)}</b></span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         <div role="tablist" className="mb-5 flex flex-wrap gap-2">
+          <button
+            type="button"
+            aria-pressed={onlyFav}
+            onClick={() => { setOnlyFav((v) => !v); setShown(15); }}
+            className={`rounded-full px-4 py-1.5 text-xs font-bold ${onlyFav ? "bg-[var(--g-accent)] text-[var(--g-accent-ink)]" : "border border-[var(--g-line)] text-[var(--muted)]"}`}
+          >
+            ❤️ Oblíbené ({wishlist.length})
+          </button>
+          {loggedIn && (
+            <button type="button" onClick={() => setHistoryOpen(true)} className="rounded-full border border-[var(--g-line)] px-4 py-1.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--g-accent)]">
+              🧾 Historie nákupů
+            </button>
+          )}
           {(["all", ...SHOP_KINDS] as const).map((k) => (
             <button
               key={k}
@@ -450,10 +622,101 @@ export function GammyShop({
         {more === "pro" && <ProCard />}
       </section>
 
+      <section id="hodnoceni" className="scroll-mt-4 px-5 pb-12 sm:px-10">
+        <h2 className={`${heading} mb-4`} style={headingFont}>Hodnocení obchodu</h2>
+        <div className="grid gap-5 md:grid-cols-2">
+          <div className="gammy-panel p-5">
+            <div className="flex items-center gap-3">
+              <span className="text-4xl font-bold">{review && review.count ? review.average.toFixed(1).replace(".", ",") : "–"}</span>
+              <div>
+                <Stars value={review?.average ?? 0} size="text-xl" />
+                <p className="text-xs text-[var(--faint)]">{review?.count ?? 0} hodnocení</p>
+              </div>
+            </div>
+            {loggedIn ? (
+              <form
+                className="mt-4 flex flex-col gap-3"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  void sendReview();
+                }}
+              >
+                <p className="text-sm font-semibold">{review?.mine ? "Tvoje hodnocení (můžeš ho změnit)" : "Ohodnoť obchod"}</p>
+                <div role="radiogroup" aria-label="Počet hvězdiček" className="flex gap-1 text-3xl">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <button key={n} type="button" role="radio" aria-checked={myStars === n} aria-label={`${n} z 5`} onClick={() => setMyStars(n)} className="text-[var(--g-accent)] transition-transform hover:scale-110">
+                      {n <= myStars ? "★" : "☆"}
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  value={myText}
+                  onChange={(e) => setMyText(e.target.value)}
+                  maxLength={280}
+                  rows={3}
+                  placeholder="Napiš, co se ti líbí nebo co chybí (nepovinné)"
+                  aria-label="Text hodnocení"
+                  className="rounded-2xl border border-[var(--g-line)] bg-[var(--g-bg)] px-4 py-2 text-sm outline-none focus:border-[var(--g-accent)]"
+                />
+                <button type="submit" className="self-start rounded-full bg-[var(--g-accent)] px-6 py-2 text-sm font-bold text-[var(--g-accent-ink)]">Odeslat hodnocení</button>
+              </form>
+            ) : (
+              <p className="mt-4 text-sm text-[var(--muted)]">
+                Hodnotit můžeš po přihlášení. <Link href={loginHref} className="font-bold text-[var(--g-accent)] hover:underline">Přihlásit se</Link>
+              </p>
+            )}
+          </div>
+          <div className="gammy-panel p-5">
+            <h3 className="mb-3 text-sm font-bold">Co říkají hráči</h3>
+            {review && review.latest.length > 0 ? (
+              <ul className="flex flex-col gap-3">
+                {review.latest.map((r, i) => (
+                  <li key={i} className="border-b border-[var(--g-line)] pb-3 last:border-0">
+                    <Stars value={r.stars} size="text-sm" /> <span className="text-xs font-bold">{r.name}</span>
+                    <p className="text-sm text-[var(--muted)]">{r.text}</p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-[var(--muted)]">Zatím tu nejsou žádné texty. Buď první!</p>
+            )}
+          </div>
+        </div>
+      </section>
+
       {msg && (
         <div role="status" className={`fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-full px-5 py-2 text-sm font-bold shadow-lg ${msg.ok ? "bg-[var(--g-accent)] text-[var(--g-accent-ink)]" : "bg-[#3a1212] text-[#ffb4b4]"}`}>
           {msg.text}
         </div>
+      )}
+
+      {previewItem && (
+        <Modal title={previewItem.names[locale]} onClose={() => setPreviewId(null)} closeLabel="×">
+          <div className="scale-110 py-4">
+            <Preview item={previewItem} locale={locale} avatar={snap?.equipped.avatar ?? null} />
+          </div>
+          <p className="mt-3 text-xs text-[var(--muted)]">{t.tabs[previewItem.kind]} · {salePrice(previewItem, day)} bodů</p>
+          {x.previewHint && <p className="mt-1 text-xs text-[var(--faint)]">{x.previewHint}</p>}
+        </Modal>
+      )}
+
+      {historyOpen && (
+        <Modal title="Historie nákupů" onClose={() => setHistoryOpen(false)} closeLabel="×">
+          {history === null ? (
+            <p className="text-sm text-[var(--muted)]">Načítám…</p>
+          ) : history.length === 0 ? (
+            <p className="text-sm text-[var(--muted)]">Zatím nic. První nákup tě čeká.</p>
+          ) : (
+            <ul className="flex flex-col gap-2 text-sm">
+              {history.map((r) => (
+                <li key={r.id} className="flex justify-between gap-3 border-b border-[var(--g-line)] pb-2">
+                  <span>{historyLine(r)}</span>
+                  <span className={r.amount > 0 ? "font-bold text-[var(--g-accent)]" : "text-[var(--muted)]"}>{r.amount > 0 ? "+" : ""}{r.amount}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Modal>
       )}
 
       {giftItem && (
