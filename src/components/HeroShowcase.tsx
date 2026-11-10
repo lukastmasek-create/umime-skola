@@ -1,3 +1,4 @@
+import { HeroStrip } from "@/components/HeroStrip";
 import { HeroProgressCard } from "@/components/HeroProgressCard";
 import type { HomeHeroText } from "@/i18n/home-hero";
 import type { Locale } from "@/i18n/config";
@@ -40,8 +41,7 @@ export function HeroShowcase({ t, subjects, locale }: { t: HomeHeroText; subject
           <span className="hs-shield">✓</span> {t.safeTitle}
         </div>
         <div className="hs-safe-orb">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/rewards/odznak_diamant.webp" alt="" width={72} height={72} draggable={false} />
+          <HeroStrip src="/home/hero3d/stit.webp" frames={16} size={92} seconds={5} />
         </div>
         <div className="hs-label hs-center">{t.safeText}</div>
       </div>

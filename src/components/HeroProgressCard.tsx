@@ -1,5 +1,6 @@
 "use client";
 
+import { HeroStrip } from "@/components/HeroStrip";
 import { useAccount } from "@/lib/use-account";
 import { fill } from "@/i18n/profile";
 import { getHomeText } from "@/i18n/home";
@@ -17,8 +18,7 @@ export function HeroProgressCard({ t, locale }: { t: { progressTitle: string }; 
     <div className="hs-card hs-progress space-float">
       <div className="hs-row">
         <span className="hs-level">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/rewards/odznak_zlato.webp" alt="" width={44} height={44} draggable={false} />
+          <HeroStrip src="/home/hero3d/odznak.webp" frames={16} size={52} seconds={5} />
           <b>{level}</b>
         </span>
         <div className="hs-grow">
@@ -27,8 +27,7 @@ export function HeroProgressCard({ t, locale }: { t: { progressTitle: string }; 
         </div>
       </div>
       <div className="hs-row hs-streak">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/rewards/mince.webp" alt="" width={22} height={22} draggable={false} />
+        <HeroStrip src="/home/hero3d/mince.webp" frames={16} size={26} seconds={4} />
         <span className="hs-label">
           {`${h.progressPoints}: ${real ? real.points : 1240}`}
         </span>
