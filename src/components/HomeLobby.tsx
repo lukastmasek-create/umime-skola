@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { Gamepad2, Flame, Users, Play, Trophy, RotateCcw, ShoppingBag, CalendarCheck } from "lucide-react";
+import { DitherBg } from "@/components/DitherBg";
 import type { HomeLobbyText } from "@/i18n/home-lobby";
 
 type TabKey = "play" | "challenge" | "together";
@@ -28,9 +29,47 @@ function useUntilMidnight() {
   return t;
 }
 
+// Ostrůvek, který mění tvar: klid, časovač do konce dne, podíl dne.
+function Island({ left, endsIn, promo }: { left: string; endsIn: string; promo: string }) {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setI((x) => (x + 1) % 3), 3500);
+    return () => clearInterval(id);
+  }, []);
+  const pct = (() => {
+    if (!left) return 0;
+    const [h, m, sec] = left.split(":").map(Number);
+    return Math.round(100 - ((h * 3600 + m * 60 + sec) / 86400) * 100);
+  })();
+  return (
+    <div className="lobby-island" data-s={i} aria-live="off">
+      {i === 0 && <span>⚡ Umíme</span>}
+      {i === 1 && <span><i className="lobby-live" /> {endsIn} <b>{left || "--:--:--"}</b></span>}
+      {i === 2 && (<>
+        <span><i className="lobby-live" /> <b>{promo}</b></span>
+        <span className="lobby-bar"><i style={{ width: `${pct}%` }} /></span>
+      </>)}
+    </div>
+  );
+}
+
 export function HomeLobby({ locale, t }: { locale: string; t: HomeLobbyText }) {
   const [tab, setTab] = useState<TabKey>("play");
   const left = useUntilMidnight();
+  const dock = useRef<HTMLDivElement>(null);
+  const dockMove = (e: React.PointerEvent) => {
+    const kids = dock.current?.children;
+    if (!kids || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    for (const el of Array.from(kids) as HTMLElement[]) {
+      const r = el.getBoundingClientRect();
+      const d = Math.abs(e.clientX - (r.left + r.width / 2));
+      el.style.transform = `translateY(${-Math.max(0, 1 - d / 120) * 8}px) scale(${1 + Math.max(0, 1 - d / 120) * 0.14})`;
+    }
+  };
+  const dockReset = () => {
+    const kids = dock.current?.children;
+    if (kids) for (const el of Array.from(kids) as HTMLElement[]) el.style.transform = "";
+  };
   const l = `/${locale}`;
 
   const cards: Record<TabKey, Card[]> = {
@@ -73,6 +112,7 @@ export function HomeLobby({ locale, t }: { locale: string; t: HomeLobbyText }) {
           <h2 id="lobby-title" className="text-2xl font-bold tracking-tight sm:text-3xl" style={{ fontFamily: "var(--font-heading)" }}>
             {t.title}
           </h2>
+          <div className="hidden md:block"><Island left={left} endsIn={t.endsIn} promo={t.promoTitle} /></div>
           <div role="tablist" aria-label={t.title} className="lobby-tabs">
             {tabs.map(([k, label, Icon]) => (
               <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className="lobby-tab">
@@ -92,6 +132,7 @@ export function HomeLobby({ locale, t }: { locale: string; t: HomeLobbyText }) {
             viewport={{ once: true }}
             className="lobby-promo"
           >
+            <DitherBg dot="rgba(255,235,220,0.28)" />
             <span className="lobby-promo-glow" aria-hidden />
             <p className="relative text-xs font-bold uppercase tracking-widest text-[#ffd9cc]">{t.promoTag}</p>
             <h3 className="relative mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl" style={{ fontFamily: "var(--font-heading)" }}>
@@ -131,7 +172,7 @@ export function HomeLobby({ locale, t }: { locale: string; t: HomeLobbyText }) {
           </AnimatePresence>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div ref={dock} onPointerMove={dockMove} onPointerLeave={dockReset} className="mt-4 flex flex-wrap gap-2">
           {t.quick.map(({ key, label }) => {
             const { href, Icon } = quick[key];
             return (
