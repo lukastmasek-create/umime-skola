@@ -27,6 +27,20 @@ export type SettingsLookText = {
   scBoards: string;
   scShop: string;
   scSettings: string;
+  plan: string;
+  planHint: string;
+  planPro: string;
+  planFree: string;
+  planUnknown: string;
+  planLogin: string;
+  planCta: string;
+  privacy: string;
+  privacyHint: string;
+  privacyPolicy: string;
+  terms: string;
+  resetTitle: string;
+  resetHint: string;
+  resetBtn: string;
 };
 
 const texts = withFallbacks<SettingsLookText>({
@@ -50,6 +64,20 @@ const texts = withFallbacks<SettingsLookText>({
     shortcutsHint: "Rychlé přepínání mezi stránkami bez myši.",
     shortcutsHow: "Stiskni G a pak písmeno:",
     scHome: "Domů", scCourses: "Kurzy", scQuiz: "Denní kvíz", scBoards: "Žebříčky", scShop: "Obchod", scSettings: "Nastavení",
+    plan: "Předplatné",
+    planHint: "Tvůj aktuální tarif.",
+    planPro: "Máš PRO. Díky!",
+    planFree: "Používáš zdarma verzi.",
+    planUnknown: "Tarif se teď nepodařilo zjistit.",
+    planLogin: "Přihlas se, ať vidíme tvůj tarif.",
+    planCta: "Zobrazit PRO",
+    privacy: "Soukromí",
+    privacyHint: "Co o tobě web ukládá a jak s tím nakládáme.",
+    privacyPolicy: "Zásady ochrany soukromí",
+    terms: "Podmínky použití",
+    resetTitle: "Místní nastavení",
+    resetHint: "Vzhled, akcentní barva, přístupnost a animace se ukládají jen v tomto prohlížeči. Tady je smažeš.",
+    resetBtn: "Obnovit výchozí nastavení",
   },
   en: {
     themes: "Themes",
@@ -71,6 +99,20 @@ const texts = withFallbacks<SettingsLookText>({
     shortcutsHint: "Jump between pages without a mouse.",
     shortcutsHow: "Press G, then a letter:",
     scHome: "Home", scCourses: "Courses", scQuiz: "Daily quiz", scBoards: "Leaderboards", scShop: "Shop", scSettings: "Settings",
+    plan: "Plans & upgrades",
+    planHint: "Your current plan.",
+    planPro: "You have PRO. Thanks!",
+    planFree: "You are on the free version.",
+    planUnknown: "We could not check your plan right now.",
+    planLogin: "Log in so we can show your plan.",
+    planCta: "See PRO",
+    privacy: "Privacy",
+    privacyHint: "What the site stores about you and how it is handled.",
+    privacyPolicy: "Privacy policy",
+    terms: "Terms of use",
+    resetTitle: "Local settings",
+    resetHint: "Appearance, accent color, accessibility and animations are stored only in this browser. Clear them here.",
+    resetBtn: "Restore default settings",
   },
   de: {
     themes: "Designs",
@@ -92,6 +134,20 @@ const texts = withFallbacks<SettingsLookText>({
     shortcutsHint: "Ohne Maus zwischen Seiten wechseln.",
     shortcutsHow: "Drücke G und dann einen Buchstaben:",
     scHome: "Start", scCourses: "Kurse", scQuiz: "Tagesquiz", scBoards: "Bestenlisten", scShop: "Shop", scSettings: "Einstellungen",
+    plan: "Abo",
+    planHint: "Dein aktueller Tarif.",
+    planPro: "Du hast PRO. Danke!",
+    planFree: "Du nutzt die kostenlose Version.",
+    planUnknown: "Der Tarif konnte gerade nicht geprüft werden.",
+    planLogin: "Melde dich an, um deinen Tarif zu sehen.",
+    planCta: "PRO ansehen",
+    privacy: "Datenschutz",
+    privacyHint: "Was die Seite über dich speichert und wie damit umgegangen wird.",
+    privacyPolicy: "Datenschutzerklärung",
+    terms: "Nutzungsbedingungen",
+    resetTitle: "Lokale Einstellungen",
+    resetHint: "Aussehen, Akzentfarbe, Barrierefreiheit und Animationen werden nur in diesem Browser gespeichert. Hier löschst du sie.",
+    resetBtn: "Standardeinstellungen wiederherstellen",
   },
   ru: {
     themes: "Темы",
@@ -113,6 +169,20 @@ const texts = withFallbacks<SettingsLookText>({
     shortcutsHint: "Быстрый переход между страницами без мыши.",
     shortcutsHow: "Нажми G, затем букву:",
     scHome: "Главная", scCourses: "Курсы", scQuiz: "Квиз дня", scBoards: "Рейтинги", scShop: "Магазин", scSettings: "Настройки",
+    plan: "Подписка",
+    planHint: "Твой текущий тариф.",
+    planPro: "У тебя PRO. Спасибо!",
+    planFree: "Ты используешь бесплатную версию.",
+    planUnknown: "Сейчас не удалось проверить тариф.",
+    planLogin: "Войди, чтобы увидеть свой тариф.",
+    planCta: "Смотреть PRO",
+    privacy: "Конфиденциальность",
+    privacyHint: "Что сайт хранит о тебе и как с этим обращается.",
+    privacyPolicy: "Политика конфиденциальности",
+    terms: "Условия использования",
+    resetTitle: "Локальные настройки",
+    resetHint: "Внешний вид, акцентный цвет, доступность и анимации хранятся только в этом браузере. Здесь их можно стереть.",
+    resetBtn: "Сбросить настройки",
   },
 });
 export const getSettingsLookText = (locale: Locale) => texts[locale];
