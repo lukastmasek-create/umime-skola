@@ -23,6 +23,8 @@ import type { Metadata } from "next";
 import { SITE_NAME, pageMetadata } from "@/lib/seo";
 
 const TILE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
+// Sekce „Jak to funguje“ je archivovaná (skrytá). Pro návrat stačí přepnout na true.
+const SHOW_HOW_IT_WORKS = false;
 const GALAXY_ICONS = ["sekce-zakladni", "sekce-stredni", "sekce-prijimacky", "sekce-maturita"];
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -140,20 +142,22 @@ export default async function Home({
       </section>
 
       {/* 4) Hory: jak to funguje */}
-      <section className="zone zone-peak">
-        <Wave fill="#071427" />
-        <div className="relative z-10 pb-16 pt-16 sm:pb-32 sm:pt-24">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6">
-            <h2 className="reveal mb-6 text-2xl font-bold tracking-tight sm:mb-8 sm:text-3xl" style={heading}>
-              {h.stepsTitle}
-            </h2>
+      {SHOW_HOW_IT_WORKS && (
+        <section className="zone zone-peak">
+          <Wave fill="#071427" />
+          <div className="relative z-10 pb-16 pt-16 sm:pb-32 sm:pt-24">
+            <div className="mx-auto max-w-6xl px-4 sm:px-6">
+              <h2 className="reveal mb-6 text-2xl font-bold tracking-tight sm:mb-8 sm:text-3xl" style={heading}>
+                {h.stepsTitle}
+              </h2>
+            </div>
+            {/* scéna jde přes celou sekci (až 1680 px), na telefonu od kraje ke kraji */}
+            <div className="mx-auto w-full max-w-[1680px] px-2 sm:px-4 lg:px-6">
+              <LazyTownLife steps={h.steps} locale={locale} />
+            </div>
           </div>
-          {/* scéna jde přes celou sekci (až 1680 px), na telefonu od kraje ke kraji */}
-          <div className="mx-auto w-full max-w-[1680px] px-2 sm:px-4 lg:px-6">
-            <LazyTownLife steps={h.steps} locale={locale} />
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* 5) Zpět do vesmíru: kategorie */}
       <section className="zone zone-space">
