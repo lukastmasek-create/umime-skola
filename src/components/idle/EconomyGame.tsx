@@ -505,7 +505,13 @@ export function EconomyGame({ locale }: { locale: Locale }) {
   const tabs: Tab[] = ["overview", "work", "needs", "companies", "invest", "bank", "hustle", "board"];
 
   return (
-    <div className={tab === "bank" ? "rounded-[32px] bg-[#0b0c10] p-3 transition-colors sm:p-6" : "transition-colors"}>
+    <div className="relative overflow-hidden rounded-[32px] bg-[#0b0c10] p-3 text-white sm:p-6">
+      <div className="bk-aurora" aria-hidden>
+        <i />
+        <i />
+        <i />
+      </div>
+      <div className="relative">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
@@ -1256,6 +1262,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
       )}
 
       {toast && <Toast toast={toast} />}
+      </div>
     </div>
   );
 }

@@ -11,6 +11,8 @@ import { GlobeSky } from "@/components/GlobeSky";
 import { IslandHub } from "@/components/IslandHub";
 import { HeroSky } from "@/components/HeroSky";
 import { HomeShowcase } from "@/components/showcase/HomeShowcase";
+import { HeroParticles } from "@/components/HeroParticles";
+import { TypingLine } from "@/components/TypingLine";
 import { getHomeShowcaseText } from "@/i18n/home-showcase";
 import { getHomeText } from "@/i18n/home";
 import { getHomeAudienceText } from "@/i18n/home-teachers";
@@ -60,6 +62,7 @@ export default async function Home({
       <div className="zone zone-space">
         <HeroSky />
         <section className="gradient-hero relative">
+          <HeroParticles />
           <LazyPlanet
             className="absolute -right-20 top-16 -z-10 hidden opacity-95 lg:block"
             size={500}
@@ -97,10 +100,15 @@ export default async function Home({
                 <span className="gradient-text">{dict.home.titleLine2}</span>
               </h1>
               <p className="hero-in max-w-xl text-lg leading-relaxed text-[var(--muted)]" style={{ ["--d" as string]: "0.32s" }}>{dict.home.subtitle}</p>
+              <TypingLine
+                className="hero-in text-base font-semibold text-white/85"
+                prefix={subjectText.all + ":"}
+                words={SUBJECTS.slice(0, 8).map((sj) => subjectText.labels[sj.value])}
+              />
               <div className="hero-in flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:gap-4" style={{ ["--d" as string]: "0.46s" }}>
                 <Link
                   href={`/${locale}/kurzy/zakladni`}
-                  className="btn-bouncy btn-cta btn-primary btn-lg"
+                  className="btn-bouncy btn-cta btn-primary btn-lg btn-dot"
                 >
                   {a.playCta}
                 </Link>

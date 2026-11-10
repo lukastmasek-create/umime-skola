@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import NumberFlow from "@number-flow/react";
 import { Avatar } from "@/components/Avatar";
 import { fill, getProfileText } from "@/i18n/profile";
 import { getHomeText } from "@/i18n/home";
@@ -11,6 +13,12 @@ import type { Locale } from "@/i18n/config";
 // ostatním pozvánku k registraci.
 export function HomeProgress({ locale, registerLabel }: { locale: Locale; registerLabel: string }) {
   const [account] = useAccount();
+  // Ukazatel a body se po načtení rozběhnou od nuly.
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const id = window.setTimeout(() => setShown(true), 150);
+    return () => window.clearTimeout(id);
+  }, []);
   const t = getHomeText(locale);
   const p = getProfileText(locale);
 
@@ -57,7 +65,7 @@ export function HomeProgress({ locale, registerLabel }: { locale: Locale; regist
         <div className="flex items-baseline justify-between gap-2 text-xs font-semibold text-[var(--muted)]">
           <span>{fill(t.progressNext, toNext)}</span>
           <span>
-            {t.progressPoints}: <strong className="text-[var(--foreground)]">{account.points}</strong>
+            {t.progressPoints}: <strong className="text-[var(--foreground)]"><NumberFlow value={shown ? account.points : 0} /></strong>
           </span>
         </div>
         <div
@@ -67,7 +75,7 @@ export function HomeProgress({ locale, registerLabel }: { locale: Locale; regist
           aria-valuemin={0}
           aria-valuemax={100}
         >
-          <div className="h-full bg-[var(--accent-500)]" style={{ width: `${account.percent}%` }} />
+          <div className="h-full bg-[var(--accent-500)] transition-[width] duration-1000 ease-out" style={{ width: `${shown ? account.percent : 0}%` }} />
         </div>
       </div>
 

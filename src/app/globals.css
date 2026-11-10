@@ -3783,3 +3783,19 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 .lg-roles button[aria-checked="true"] { color: #fff; }
 .lg-thumb { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / 3); border-radius: 10px; background: var(--brand-500); transform: translateX(calc(var(--i, 0) * 100%)); transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
 @media (prefers-reduced-motion: reduce) { .lg-thumb { transition: none; } }
+
+/* Tlačítko, které při najetí zaplaví žlutá tečka (hlavní výzvy na úvodní stránce). Nemění rozložení. */
+.btn-dot {
+  background-image: radial-gradient(circle closest-side, var(--accent-yellow) 98%, transparent 100%);
+  background-repeat: no-repeat;
+  background-size: 8px 8px;
+  background-position: left 11px center;
+  transition: background-size 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), background-position 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.3s, transform 0.12s ease, box-shadow 0.12s ease;
+}
+.btn-dot:hover, .btn-dot:focus-visible {
+  background-size: 900px 900px;
+  background-position: left calc(11px - 450px) center;
+  color: #16132b;
+}
+@media (prefers-reduced-motion: reduce) { .btn-dot { transition: none; } }
+:root[data-motion="off"] .btn-dot { transition: none; }
