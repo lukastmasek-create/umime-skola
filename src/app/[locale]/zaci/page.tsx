@@ -71,7 +71,7 @@ export default async function StudentsPage({ params }: { params: Promise<{ local
 
         {/* Masonry: karty se skládají do sloupců a mají různé výšky */}
         <ul className="mb-14 columns-1 gap-6 sm:columns-2 lg:columns-3">
-          {FEATURE_KEYS.map((key) => {
+          {FEATURE_KEYS.filter((key) => key !== "town").map((key) => {
             const feature = t.features[key];
             const cover = COVER[key];
             return (

@@ -3,10 +3,9 @@ import { CATEGORIES, SUBJECTS } from "@/lib/taxonomy";
 import { HomeProgress } from "@/components/HomeProgress";
 import { DailyQuizTeaser } from "@/components/DailyQuizTeaser";
 import { TeacherCta } from "@/components/TeacherCta";
-import { ALIEN_ROW, Circuit, HomeArt, SpriteFrame, Wave } from "@/components/SpaceDecor";
+import { ALIEN_ROW, HomeArt, SpriteFrame, Wave } from "@/components/SpaceDecor";
 import { LazyPlanet, LazySubjectGlobe, LazyTownLife } from "@/components/HomeLazy";
 import { GlobeSky } from "@/components/GlobeSky";
-import { IslandHub } from "@/components/IslandHub";
 import { HeroSky } from "@/components/HeroSky";
 import { ExpandCard } from "@/components/ExpandCard";
 import { HomeLobby } from "@/components/HomeLobby";
@@ -46,12 +45,6 @@ export default async function Home({
   const audience = getAudiencePagesText(locale as Locale);
   const sample = [{ who: "A. K.", pct: 100 }, { who: "T. N.", pct: 100 }, { who: "E. P.", pct: 60 }, { who: "J. S.", pct: 20 }];
   const subjectText = getSubjectText(locale as Locale);
-  const featureLinks = {
-    courses: { href: `/${locale}/kurzy/zakladni`, icon: "funkce-kurzy", color: "#8fd0ff", kind: "book" },
-    games: { href: `/${locale}/stale-hry`, icon: "funkce-hry", color: "#c9b8ff", kind: "joystick" },
-    escape: { href: `/${locale}/unikovky`, icon: "funkce-unikovky", color: "#7ee0b0", kind: "door" },
-    boards: { href: `/${locale}/zebricky`, icon: "funkce-zebricky", color: "#ffc933", kind: "trophy" },
-  } as const satisfies Record<string, { href: string; icon: string; color: string; kind: string }>;
   const heading = { fontFamily: "var(--font-heading)" };
 
   return (
@@ -143,31 +136,6 @@ export default async function Home({
             }))}
           />
           </div>
-        </div>
-      </section>
-
-      {/* 3) Technika: co tu najdeš */}
-      <section className="zone zone-tech">
-        <Wave fill="#0c0a24" />
-        <Circuit className="right-0 top-20 hidden h-44 w-80 lg:block" />
-        <Circuit className="bottom-6 left-0 hidden h-44 w-80 lg:block" flip />
-        <div className="lobby-panel relative z-10">
-          <h2 className="reveal mb-2 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
-            {h.featuresTitle}
-          </h2>
-          <p className="mb-10 font-mono text-xs uppercase tracking-[0.3em] text-[#35d0ff]/80">
-            <span className="tech-blink">●</span> 01 — 0{h.features.length}
-          </p>
-          <IslandHub
-            features={h.features.map((feature) => ({
-              key: feature.key,
-              title: feature.title,
-              text: feature.text,
-              cta: feature.cta,
-              href: featureLinks[feature.key].href,
-              color: featureLinks[feature.key].color,
-            }))}
-          />
         </div>
       </section>
 

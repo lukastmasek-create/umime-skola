@@ -10,7 +10,6 @@ import { getIdleText } from "@/i18n/idle";
 import { getEscapeText } from "@/i18n/escape";
 import { getMaterialsText } from "@/i18n/materials";
 import { getHomeText } from "@/i18n/home";
-import { getTownHubText } from "@/i18n/town";
 import { getTeamsText } from "@/i18n/teams";
 import { getSocialText } from "@/i18n/social";
 import { getRoomText } from "@/i18n/room";
@@ -69,7 +68,6 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
   settings.push({ key: "o-nas", href: `/${locale}#o-nas`, label: home.about.title, noActive: true });
   settings.push({ key: "kontakt", href: `/${locale}/kontakt`, label: getContactText(locale).nav });
   const groups: Group[] = [
-    { key: "town", label: getTownHubText(locale).nav, items: [{ key: "mestecko", href: `/${locale}/mestecko`, label: getTownHubText(locale).nav }] },
     { key: "courses", label: home.groups.courses, items: courses },
     {
       key: "info",
