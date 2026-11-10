@@ -39,7 +39,7 @@ export function ResultsPreview({
             <li key={row.who}>
               <div className="mb-1 flex items-center justify-between text-sm">
                 <span className="flex items-center gap-2 font-semibold">
-                  <span className="h-2 w-2 rounded-full" style={{ background: full ? "#6ee7b7" : "#ffd24d" }} />
+                  <span className="h-2 w-2 rounded-full" style={{ background: full ? "#6ee7b7" : "#f6f1e4" }} />
                   {row.who}
                 </span>
                 <span className="text-xs font-bold text-[var(--muted)]">{row.pct} %</span>
@@ -47,7 +47,7 @@ export function ResultsPreview({
               <span className="gcard-track block">
                 <span
                   className="gcard-fill"
-                  style={{ width: `${row.pct}%`, ["--fc" as string]: full ? "#6ee7b7" : "#ffd24d" }}
+                  style={{ width: `${row.pct}%`, ["--fc" as string]: full ? "#6ee7b7" : "#f6f1e4" }}
                 />
               </span>
             </li>
