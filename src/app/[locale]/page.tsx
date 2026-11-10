@@ -112,7 +112,7 @@ export default async function Home({
       <section className="zone zone-space zone-globe">
         <Wave fill="#0c0a24" />
         <GlobeSky />
-        <div className="lobby-panel relative z-10">
+        <div className="lobby-panel lobby-panel-wide relative z-10">
           <div className="reveal mb-8 flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
