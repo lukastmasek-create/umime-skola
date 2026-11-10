@@ -4075,6 +4075,12 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 @media (prefers-reduced-motion: reduce) { .lobby-promo-glow { animation: none; } .lobby-card, .lobby-emoji, .lobby-play, .lobby-chip { transition: none; } }
 
 /* Panel sekce: stejný vzhled jako lobby (celá stránka) */
+.lobby-panel-wide {
+  width: calc(100% - 1rem) !important;
+  max-width: none !important;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
 .lobby-panel {
   width: min(calc(100% - 2rem), 72rem);
   margin: 2.5rem auto;
