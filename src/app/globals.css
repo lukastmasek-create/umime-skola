@@ -4102,6 +4102,7 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
   .gammy-marquee-track {
     animation: none;
   }
+}
 
 /* Přístupnost (Nastavení → Přístupnost) */
 :root[data-contrast="high"] {
