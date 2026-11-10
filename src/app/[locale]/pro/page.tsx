@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { hasPro } from "@/lib/pro-server";
+import { ExpandCard } from "@/components/ExpandCard";
 import { PricingTab } from "@/components/UiDemoDashboard";
 import { getProText } from "@/i18n/pro";
 import { isLocale, type Locale } from "@/i18n/config";
@@ -76,11 +77,17 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
           {t.tiersTitle}
         </h2>
         <div className="grid gap-4 sm:grid-cols-3">
-          {tiers.map((tier) => (
-            <article key={tier.title} className="card p-5">
-              <h3 className="mb-2 font-bold">{tier.title}</h3>
-              <p className="text-sm text-[var(--muted)]">{tier.text}</p>
-            </article>
+          {tiers.map((tier, i) => (
+            <ExpandCard key={tier.title} index={`0${i + 1}`} title={tier.title} lead={tier.text} color={["#35d0ff", "#ffd23f", "#7cf29a"][i]}>
+              <ul className="grid gap-2">
+                {t.rows.map((row) => (
+                  <li key={row.what} className="flex justify-between gap-3 border-t border-[var(--edge)] pt-2">
+                    <span className="text-[var(--muted)]">{row.what}</span>
+                    <span className="text-right font-semibold">{row.pro}</span>
+                  </li>
+                ))}
+              </ul>
+            </ExpandCard>
           ))}
         </div>
       </section>

@@ -10,6 +10,7 @@ import { LazyPlanet, LazySubjectGlobe, LazyTownLife } from "@/components/HomeLaz
 import { GlobeSky } from "@/components/GlobeSky";
 import { IslandHub } from "@/components/IslandHub";
 import { HeroSky } from "@/components/HeroSky";
+import { ExpandCard } from "@/components/ExpandCard";
 import { HeroParticles } from "@/components/HeroParticles";
 import { TypingLine } from "@/components/TypingLine";
 import { getHomeText } from "@/i18n/home";
@@ -324,19 +325,20 @@ export default async function Home({
           </h2>
           <p className="reveal mb-10 max-w-3xl text-lg leading-relaxed text-[var(--muted)]">{h.about.lead}</p>
           <div className="grid gap-5 md:grid-cols-3">
-            {h.about.points.map((point) => (
-              <article key={point.title} className="reveal card p-6">
-                <h3 className="mb-2 text-lg font-bold">{point.title}</h3>
-                <p className="text-sm leading-relaxed text-[var(--muted)]">{point.text}</p>
-              </article>
+            {h.about.points.map((point, i) => (
+              <ExpandCard
+                key={point.title}
+                className="reveal"
+                index={String(i + 1).padStart(2, "0")}
+                title={point.title}
+                lead={point.text}
+                color={TILE_COLORS[i % TILE_COLORS.length]}
+              />
             ))}
           </div>
           <div className="reveal mt-12 grid gap-5 md:grid-cols-2">
-            {[h.about.why, h.about.problem].map((block) => (
-              <div key={block.title} className="card p-6">
-                <h3 className="mb-2 text-lg font-bold">{block.title}</h3>
-                <p className="text-sm leading-relaxed text-[var(--muted)]">{block.text}</p>
-              </div>
+            {[h.about.why, h.about.problem].map((block, i) => (
+              <ExpandCard key={block.title} title={block.title} lead={block.text} color={TILE_COLORS[(i + 3) % TILE_COLORS.length]} />
             ))}
           </div>
           <div className="reveal mt-12">
@@ -344,16 +346,11 @@ export default async function Home({
               {h.about.teamTitle}
             </h3>
             <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {h.about.team.map((member) => (
-                <li key={member.name} className="card flex items-start gap-4 p-4">
-                  <span aria-hidden className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--surface-muted)] text-xl font-extrabold" style={heading}>
-                    {member.name.charAt(0)}
-                  </span>
-                  <div>
-                    <p className="font-bold">{member.name}</p>
-                    <p className="text-sm font-semibold text-[var(--accent-green)]">{member.role}</p>
-                    <p className="mt-1 text-sm leading-relaxed text-[var(--muted)]">{member.bio}</p>
-                  </div>
+              {h.about.team.map((member, i) => (
+                <li key={member.name} className="contents">
+                  <ExpandCard title={member.name} lead={member.role} color={TILE_COLORS[i % TILE_COLORS.length]}>
+                    <p className="text-[var(--muted)]">{member.bio}</p>
+                  </ExpandCard>
                 </li>
               ))}
             </ul>
