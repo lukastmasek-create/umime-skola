@@ -650,7 +650,6 @@ export function ProfileView({ locale }: { locale: Locale }) {
                 [
                   ["courses", "/kurzy"],
                   ["review", "/opakovani"],
-                  ["town", "/mestecko"],
                   ["shop", "/obchod"],
                 ] as const
               ).map(([k, href]) => (
