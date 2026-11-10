@@ -16,11 +16,7 @@ export default function NastaveniPage({
   const dict = getDictionary(locale as Locale);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-16">
-      <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        {dict.settings.title}
-      </h1>
-      <p className="mb-10 text-[var(--muted)]">{dict.settings.subtitle}</p>
+    <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-12">
       <SettingsForm locale={locale as Locale} dict={dict} />
     </div>
   );

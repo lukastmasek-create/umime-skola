@@ -4102,4 +4102,20 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
   .gammy-marquee-track {
     animation: none;
   }
+
+/* Přístupnost (Nastavení → Přístupnost) */
+:root[data-contrast="high"] {
+  --muted: var(--foreground);
+  --faint: var(--foreground);
+  --edge: var(--foreground);
+  --border-soft: var(--field-border);
+}
+:root[data-links="underline"] a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+:root[data-spacing="wide"] body {
+  line-height: 1.8;
+  letter-spacing: 0.04em;
+  word-spacing: 0.12em;
 }

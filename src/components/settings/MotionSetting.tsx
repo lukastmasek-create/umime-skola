@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { getSettingsExtraText } from "@/i18n/settings-extra";
 import type { Locale } from "@/i18n/config";
-import { headingStyle } from "./ui";
+import { SettingRow, Switch } from "./ui-kit";
 
 export function MotionSetting({ locale }: { locale: Locale }) {
   const t = getSettingsExtraText(locale);
@@ -19,34 +19,19 @@ export function MotionSetting({ locale }: { locale: Locale }) {
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
-  function toggleMotion(off: boolean) {
-    setMotionOff(off);
+  function toggleMotion(on: boolean) {
+    setMotionOff(!on);
     try {
-      if (off) localStorage.setItem("motion", "off");
+      if (!on) localStorage.setItem("motion", "off");
       else localStorage.removeItem("motion");
     } catch {
       // ignorovat
     }
-    if (off) document.documentElement.setAttribute("data-motion", "off");
+    if (!on) document.documentElement.setAttribute("data-motion", "off");
     else document.documentElement.removeAttribute("data-motion");
   }
 
-  const opt = (on: boolean) => `btn-bouncy rounded-full px-4 py-2 text-sm font-medium ${on ? "bg-[var(--brand-500)] text-white" : "bg-[var(--surface-muted)] text-[var(--muted)]"}`;
-
   return (
-    <section className="card p-6">
-      <h2 className="mb-2 text-lg font-bold" style={headingStyle}>
-        {t.motion}
-      </h2>
-      <p className="mb-3 text-sm text-[var(--muted)]">{t.motionHint}</p>
-      <div className="flex gap-2">
-        <button type="button" className={opt(!motionOff)} onClick={() => toggleMotion(false)}>
-          {t.motionOn}
-        </button>
-        <button type="button" className={opt(motionOff)} onClick={() => toggleMotion(true)}>
-          {t.motionOff}
-        </button>
-      </div>
-    </section>
+    <SettingRow title={t.motion} hint={t.motionHint} control={<Switch checked={!motionOff} onChange={toggleMotion} label={t.motion} />} />
   );
 }
