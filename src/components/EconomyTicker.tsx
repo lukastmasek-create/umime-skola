@@ -28,6 +28,18 @@ function write(value: string) {
 // do změny TICKER_VERSION. Bez localStorage se lišta prostě ukáže znovu po každém načtení.
 const noSubscribe = () => () => {};
 
+// Úvod zprávy před prvním „: “ se zvýrazní tučně, zbytek zůstane běžným písmem.
+function TickerText({ text }: { text: string }) {
+  const i = text.indexOf(": ");
+  if (i < 1 || i > 40) return <span>{text}</span>;
+  return (
+    <span>
+      <span className="econ-ticker-lead">{text.slice(0, i + 1)}</span>
+      {text.slice(i + 1)}
+    </span>
+  );
+}
+
 export function EconomyTicker({ locale }: { locale: Locale }) {
   const t = getEconomyTickerText(locale);
   // Na serveru i při hydrataci se lišta skryje; po načtení v prohlížeči se ukáže, pokud ji hráč nezavřel.
@@ -58,14 +70,14 @@ export function EconomyTicker({ locale }: { locale: Locale }) {
             <div className="econ-ticker-group">
               {t.items.map((item) => (
                 <span key={item} className="econ-ticker-item">
-                  {item}
+                  <TickerText text={item} />
                 </span>
               ))}
             </div>
             <div className="econ-ticker-group" aria-hidden>
               {t.items.map((item) => (
                 <span key={item} className="econ-ticker-item">
-                  {item}
+                  <TickerText text={item} />
                 </span>
               ))}
             </div>

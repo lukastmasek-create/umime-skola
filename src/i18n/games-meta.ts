@@ -81,7 +81,7 @@ const META: Record<GameSlug, Record<Locale, Meta>> = {
   minesweeper: {
     ...withFallbacks({
       cs: { name: "Hledání min", tag: "Odkryj políčko správnou odpovědí a vyhni se minám" },
-      en: { name: "Minesweeper", tag: "Reveal tiles with right answers and avoid the mines" },
+      en: { name: "Mine Finder", tag: "Reveal tiles with right answers and avoid the mines" },
       de: { name: "Minensucher", tag: "Decke Felder mit richtigen Antworten auf und meide die Minen" },
       ru: { name: "Сапёр", tag: "Открывай клетки верными ответами и обходи мины" },
     }),
@@ -454,4 +454,15 @@ const UI: Record<Locale, GamesUiText> = {
 
 export function getGamesUiText(locale: Locale): GamesUiText {
   return UI[locale];
+}
+
+const CALM_NOTE: Partial<Record<Locale, string>> & { en: string } = {
+  cs: "U složitých úkolů nabízíme jen klidné hry bez tlaku na čas a bez rychlých akcí, ať máš prostor přemýšlet.",
+  en: "Complex tasks only offer calm games with no time pressure or fast action, so you have room to think.",
+  de: "Bei schwierigen Aufgaben gibt es nur ruhige Spiele ohne Zeitdruck und ohne schnelle Action, damit du in Ruhe nachdenken kannst.",
+  ru: "В сложных заданиях доступны только спокойные игры без спешки и быстрых действий, чтобы можно было подумать.",
+};
+
+export function getCalmNote(locale: Locale): string {
+  return CALM_NOTE[locale] ?? CALM_NOTE.en;
 }

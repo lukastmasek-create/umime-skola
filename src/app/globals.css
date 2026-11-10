@@ -189,7 +189,7 @@ select[aria-invalid="true"] {
   border: 2px solid var(--edge);
   border-radius: var(--radius-card);
   box-shadow: 0 4px 0 var(--shadow-ink);
-  transition: transform 0.14s ease, box-shadow 0.14s ease;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
 }
 
 .card-hover:hover {
@@ -217,7 +217,7 @@ select[aria-invalid="true"] {
   border: 2px solid var(--edge);
   border-radius: var(--radius-btn);
   box-shadow: 0 4px 0 var(--shadow-ink);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
 }
 
 .btn-bouncy:hover {
@@ -255,7 +255,7 @@ select[aria-invalid="true"] {
 }
 
 .level-card {
-  transition: transform 0.14s ease, box-shadow 0.14s ease;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
 }
 
 .level-card.is-unlocked:hover {
@@ -3034,7 +3034,7 @@ select[aria-invalid="true"] {
 }
 .nav-item {
   animation: nav-item-in 0.28s ease-out var(--d, 0ms) both;
-  transition: transform 0.15s;
+  transition: transform 0.2s ease-out;
 }
 .nav-item:hover {
   transform: translateX(4px);
@@ -3428,7 +3428,7 @@ select[aria-invalid="true"] {
 .mini-marker { position: absolute; top: 0; bottom: 0; width: 0.5rem; margin-left: -0.25rem; background: #ff5d73; border-radius: 4px; }
 .mini-hole { height: 5.2rem; border-radius: 1rem; font-size: 2.6rem; background: radial-gradient(ellipse at 50% 70%, #5a3b20 0 55%, #7a5a34 56% 100%); border: 2px solid var(--edge); display: flex; align-items: center; justify-content: center; }
 .mini-pop { animation: mini-jump 0.25s ease-out 1; display: inline-block; }
-.mini-ing { height: 6rem; border-radius: 1.25rem; font-size: 3rem; border: 2px solid var(--edge); background: var(--surface-muted); transition: transform 0.12s, background 0.12s; }
+.mini-ing { height: 6rem; border-radius: 1.25rem; font-size: 3rem; border: 2px solid var(--edge); background: var(--surface-muted); transition: transform 0.2s ease-out, background 0.2s ease-out; }
 .mini-ing-lit { background: var(--accent-yellow); transform: scale(1.08); box-shadow: 0 0 18px rgba(255, 210, 63, 0.8); }
 @keyframes mini-bob { from { transform: translateX(-50%) translateY(0); } to { transform: translateX(-50%) translateY(6px); } }
 @keyframes mini-dip { from { transform: translateX(-50%) translateY(0); } to { transform: translateX(-50%) translateY(14px); } }
@@ -3437,13 +3437,13 @@ select[aria-invalid="true"] {
 @keyframes mini-pop-in { 0% { transform: translateY(14px) scale(0.5); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .mini-float, .mini-bite, .mini-alert, .mini-catch, .mini-pop { animation: none; } }
 /* Naučné minihry: odpovědi, knihy na poličce, kartička s věcí k zařazení. */
-.mini-opt { min-height: 3.25rem; padding: 0.5rem 0.75rem; border-radius: 1rem; border: 2px solid var(--edge); background: var(--surface-muted); font-weight: 800; font-size: 1.05rem; box-shadow: 0 3px 0 var(--shadow-ink); transition: transform 0.12s, background 0.15s; }
+.mini-opt { min-height: 3.25rem; padding: 0.5rem 0.75rem; border-radius: 1rem; border: 2px solid var(--edge); background: var(--surface-muted); font-weight: 800; font-size: 1.05rem; box-shadow: 0 3px 0 var(--shadow-ink); transition: transform 0.2s ease-out, background 0.2s ease-out; }
 .mini-opt:not(:disabled):hover { transform: translateY(-2px); background: var(--surface); }
 .mini-opt-ok { background: #3fbf6a !important; color: #fff; border-color: #2a8a4a; }
 .mini-opt-bad { background: #e5484d !important; color: #fff; border-color: #a8262b; animation: mini-shake 0.35s; }
 @keyframes mini-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 .mini-shelf { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.4rem; padding: 0.75rem 0.75rem 0; min-height: 9rem; border-bottom: 0.6rem solid #8a5a34; border-radius: 0.75rem 0.75rem 0.25rem 0.25rem; background: linear-gradient(#f6ead4, #ead6b0); }
-.mini-book { writing-mode: vertical-rl; transform: rotate(180deg); padding: 0.6rem 0.35rem; border-radius: 0.35rem 0.35rem 0.15rem 0.15rem; color: #fff; font-weight: 800; font-size: 1rem; letter-spacing: 0.02em; box-shadow: inset -4px 0 0 rgba(0, 0, 0, 0.18), 0 2px 0 rgba(0, 0, 0, 0.25); transition: transform 0.15s, opacity 0.2s; }
+.mini-book { writing-mode: vertical-rl; transform: rotate(180deg); padding: 0.6rem 0.35rem; border-radius: 0.35rem 0.35rem 0.15rem 0.15rem; color: #fff; font-weight: 800; font-size: 1rem; letter-spacing: 0.02em; box-shadow: inset -4px 0 0 rgba(0, 0, 0, 0.18), 0 2px 0 rgba(0, 0, 0, 0.25); transition: transform 0.2s ease-out, opacity 0.2s ease-out; }
 .mini-book:not(:disabled):hover { transform: rotate(180deg) translateY(6px); }
 .mini-book:disabled { opacity: 0.35; }
 .mini-card { display: grid; place-items: center; min-height: 7rem; border-radius: 1.25rem; border: 2px solid var(--edge); background: var(--surface-muted); font-size: 4rem; line-height: 1; }
@@ -3646,15 +3646,30 @@ button.town3d-chip[aria-pressed="true"] { background: #ffd24d; color: #1b1840; }
 }
 
 /* Lišta „Zprávy z trhu“ (EconomyTicker): nekonečný posun zpráv, pauza najetím myši. */
-.econ-ticker { overflow: hidden; }
+.econ-ticker {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 1.25rem, #000 calc(100% - 1.25rem), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 1.25rem, #000 calc(100% - 1.25rem), transparent 100%);
+}
 .econ-ticker-track { display: flex; width: max-content; animation: econ-ticker linear infinite; }
 .econ-ticker:hover .econ-ticker-track { animation-play-state: paused; }
 .econ-ticker-group { display: flex; flex-shrink: 0; }
-.econ-ticker-item { padding-right: 3rem; white-space: nowrap; }
+.econ-ticker-item { display: inline-flex; align-items: center; gap: 0.75rem; padding-right: 0.75rem; white-space: nowrap; }
+.econ-ticker-item::after {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-left: 0.25rem;
+  border-radius: 999px;
+  background: #16132b;
+  opacity: 0.45;
+}
+.econ-ticker-lead { font-weight: 800; }
 @keyframes econ-ticker {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
+/* Ručně posouvatelná varianta (omezený pohyb): tenký posuvník v barvě lišty. */
 @media (prefers-reduced-motion: reduce) {
   .econ-ticker { overflow-x: auto; }
   .econ-ticker-track { animation: none; }
@@ -3663,6 +3678,11 @@ button.town3d-chip[aria-pressed="true"] { background: #ffd24d; color: #1b1840; }
 [data-motion="off"] .econ-ticker { overflow-x: auto; }
 [data-motion="off"] .econ-ticker-track { animation: none; }
 [data-motion="off"] .econ-ticker-group[aria-hidden] { display: none; }
+.econ-ticker { scrollbar-width: thin; scrollbar-color: #16132b rgba(22, 19, 43, 0.15); }
+.econ-ticker::-webkit-scrollbar { height: 6px; }
+.econ-ticker::-webkit-scrollbar-track { background: rgba(22, 19, 43, 0.15); border-radius: 999px; }
+.econ-ticker::-webkit-scrollbar-thumb { background: #16132b; border-radius: 999px; border: 1px solid var(--accent-yellow); }
+.econ-ticker::-webkit-scrollbar-thumb:hover { background: #3a3470; }
 
 /* Tisk přehledu týmu: jen oblast .print-area, světlé barvy, bez stínů. */
 @media print {
@@ -4045,3 +4065,57 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 .gs-pop kbd { display: inline-block; min-width: 20px; padding: 1px 6px; border-radius: 6px; background: #3b5bff; font: 700 12px/1.5 var(--font-mono); text-align: center; }
 @keyframes gs-in { from { opacity: 0; transform: translate(-50%, 8px); } }
 @media (prefers-reduced-motion: reduce) { .lobby-live { animation: none; } .gs-pop { animation: none; } .lobby-island { transition: none; } }
+
+
+/* ── Hladší animace všude: jednotné přechody ~0,2 s u ovládacích prvků, plynulé okna a načítání ── */
+@layer base {
+  a, button, input, select, textarea, summary, [role="button"], [role="tab"] {
+    transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+    transition-duration: 0.2s;
+    transition-timing-function: ease-out;
+  }
+}
+/* prvky s vlastním přechodem (např. .btn-bouncy, .card) si ho ponechají díky vyšší specificitě třídy */
+.btn-bouncy, .card, .level-card { transition-duration: 0.2s; }
+
+@keyframes modal-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modal-rise { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
+.modal-backdrop { animation: modal-fade 0.2s ease-out both; }
+.modal-pop { animation: modal-rise 0.2s ease-out both; }
+
+/* Načítání: kroužek a jemně pulzující kostra */
+@keyframes spin-ring { to { transform: rotate(360deg); } }
+.spinner {
+  display: inline-block;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  border: 4px solid var(--surface-muted);
+  border-top-color: var(--accent-500);
+  animation: spin-ring 0.8s linear infinite;
+}
+.page-enter { animation: modal-fade 0.2s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation-duration: 2s; }
+  .modal-backdrop, .modal-pop, .page-enter { animation: none; }
+}
+
+/* Tlačítko „Napiš nám“ na úvodní stránce */
+.btn-contact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.4rem;
+  font-weight: 800;
+  background: var(--accent-yellow);
+  color: #16132b;
+  border: 2px solid var(--edge);
+  border-radius: 999px;
+  box-shadow: 0 4px 0 var(--shadow-ink);
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, background-color 0.2s ease-out;
+}
+.btn-contact:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--shadow-ink); }
+.btn-contact:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--shadow-ink); }
+.btn-contact:focus-visible { outline: 3px solid var(--accent-blue); outline-offset: 3px; }
+.btn-contact-arrow { display: inline-block; transition: transform 0.2s ease-out; }
+.btn-contact:hover .btn-contact-arrow { transform: translateX(4px); }

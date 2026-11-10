@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCategoryBySlug } from "@/lib/taxonomy";
-import { ACTIVE_GAMES, runLength, type GameInfo } from "@/lib/games";
+import { ACTIVE_GAMES, COMPLEX_LEVEL, gameAllowedAt, runLength, type GameInfo } from "@/lib/games";
 import { canPlay } from "@/lib/game-fit";
 import { loadGameQuestions } from "@/lib/game-questions";
 import { getGameText } from "@/i18n/game";
-import { gameMeta, getGamesUiText } from "@/i18n/games-meta";
+import { gameMeta, getCalmNote, getGamesUiText } from "@/i18n/games-meta";
 import { getTestText } from "@/i18n/test";
 import { isLocale, type Locale } from "@/i18n/config";
 import type { GameQuestion } from "@/i18n/game";
@@ -44,8 +44,8 @@ export default async function CourseGamesPage({
 
   const courseHref = `/${locale}/kurzy/${categorySlug}/${courseSlug}`;
   // Hry, které se z odpovědí kurzu nedají sestavit (osmisměrka z čísel apod.), se nenabízejí.
-  const playable = ACTIVE_GAMES.filter((g) => g.available && !g.setOnly && canPlay(g.slug, questions, difficulty));
-  const hiddenSome = playable.length < ACTIVE_GAMES.filter((g) => g.available).length;
+  const playable = ACTIVE_GAMES.filter((g) => g.available && !g.setOnly && gameAllowedAt(g.slug, difficulty) && canPlay(g.slug, questions, difficulty));
+  const hiddenSome = playable.length < ACTIVE_GAMES.filter((g) => g.available && gameAllowedAt(g.slug, difficulty)).length;
   const sections: { kind: GameInfo["kind"]; title: string; hint: string; icon: string }[] = [
     { kind: "action", title: ui.action, hint: ui.actionHint, icon: "🕹️" },
     { kind: "classic", title: ui.classic, hint: ui.classicHint, icon: "🧠" },
@@ -66,6 +66,12 @@ export default async function CourseGamesPage({
       <p className="mb-8 text-sm text-[var(--faint)]">
         {ui.length}: {runLength(difficulty)} {ui.questions}
       </p>
+
+      {difficulty >= COMPLEX_LEVEL && (
+        <p role="note" className="mb-8 rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface-muted)] px-4 py-3 text-sm font-semibold">
+          🧘 {getCalmNote(locale as Locale)}
+        </p>
+      )}
 
       {sections.map((sec) => {
         const list = playable.filter((g) => g.kind === sec.kind);

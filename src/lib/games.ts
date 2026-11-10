@@ -97,3 +97,19 @@ const RUN_LENGTH = [6, 7, 8, 10, 12];
 export function runLength(level: number): number {
   return RUN_LENGTH[Math.min(5, Math.max(1, Math.round(level))) - 1];
 }
+
+// Složité úkoly (obtížnost 4–5) se hrají jen v klidných hrách: bez tlaku na čas, vln nepřátel
+// a jiného zhoršení mechaniky, aby žák přemýšlel nad zadáním, ne nad rychlostí. Akční hry
+// a hry s časovým limitem nebo útočícími vlnami (blesk, obrana) se tam nenabízejí.
+export const COMPLEX_LEVEL = 4;
+const PRESSURE_CLASSIC: readonly GameSlug[] = ["blesk", "obrana"];
+
+export function isCalmGame(slug: GameSlug): boolean {
+  const g = getGame(slug);
+  return !!g && g.kind === "classic" && !PRESSURE_CLASSIC.includes(slug);
+}
+
+// Smí se hra hrát v dané obtížnosti kurzu (1–5)?
+export function gameAllowedAt(slug: GameSlug, level: number): boolean {
+  return level < COMPLEX_LEVEL || isCalmGame(slug);
+}

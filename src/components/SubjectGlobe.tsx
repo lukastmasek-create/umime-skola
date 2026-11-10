@@ -426,7 +426,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
           tilt = Math.max(-1.25, Math.min(1.25, tilt + tvel * dt));
           spinTar = spin;
           tiltTar = tilt;
-          const decay = Math.exp(-dt * 2.4);
+          const decay = Math.exp(-dt * 1.7);
           vel *= decay;
           tvel *= decay;
         }
@@ -622,8 +622,10 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
         tiltTar = tilt;
         const dtm = Math.max(0.008, (e.timeStamp - lastMoveAt) / 1000);
         lastMoveAt = e.timeStamp;
-        vel = Math.max(-8, Math.min(8, vel * 0.5 + (dSpin / dtm) * 0.5));
-        tvel = Math.max(-8, Math.min(8, tvel * 0.5 + (dTilt / dtm) * 0.5));
+        // vyhlazená rychlost: čím delší krok mezi událostmi, tím menší váha okamžité hodnoty
+        const w = 1 - Math.exp(-dtm / 0.06);
+        vel = Math.max(-6, Math.min(6, vel + (dSpin / dtm - vel) * w));
+        tvel = Math.max(-6, Math.min(6, tvel + (dTilt / dtm - tvel) * w));
       }
       bump();
     };
@@ -631,7 +633,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
       pointers.delete(e.pointerId);
       if (pointers.size < 2) pinch0 = 0;
       // kdo před puštěním zastavil, žádný švih nechce
-      if (e.timeStamp - lastMoveAt > 90) {
+      if (e.type !== "pointercancel" && e.timeStamp - lastMoveAt > 90) {
         vel = 0;
         tvel = 0;
       }

@@ -363,8 +363,10 @@ export default async function Home({
             </ul>
           </div>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link href={`/${locale}/kontakt`} className="btn-bouncy btn-secondary inline-flex">
-              {h.about.contact} →
+            <Link href={`/${locale}/kontakt`} className="btn-contact">
+              <span aria-hidden>✉️</span>
+              {h.about.contact}
+              <span aria-hidden className="btn-contact-arrow">→</span>
             </Link>
             <a href={`mailto:${h.about.email}`} className="font-semibold text-[var(--accent-green)] hover:underline">
               {h.about.email}

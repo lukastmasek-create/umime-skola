@@ -324,7 +324,7 @@ const T: Record<ArcadeSlug, Record<Locale, ArcadeText>> = {
         upgradeAction: "Rychlost prstu",
       },
       en: {
-        title: "Minesweeper",
+        title: "Mine Finder",
         intro: "Tap a hidden tile, then answer the question. A right answer reveals it and shows how many mines are around it. A wrong answer costs nothing, another question comes. Reveal a mine and you lose a life.",
         controls: "tap or click a tile, then an answer",
         action: "Reveal",

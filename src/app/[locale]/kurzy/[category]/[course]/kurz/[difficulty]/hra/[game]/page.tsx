@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { loadGameQuestions } from "@/lib/game-questions";
 import { getCategoryBySlug } from "@/lib/taxonomy";
-import { getGame, isClassicSlug } from "@/lib/games";
+import { gameAllowedAt, getGame, isClassicSlug } from "@/lib/games";
 import { isLocale, type Locale } from "@/i18n/config";
 import type { GameQuestion } from "@/i18n/game";
 import { getTestText } from "@/i18n/test";
@@ -44,6 +44,7 @@ export default async function CourseGamePage({
     !game.available ||
     game.archived ||
     game.setOnly ||
+    !gameAllowedAt(game.slug, Number(difficultyParam)) ||
     !Number.isInteger(difficulty) ||
     difficulty < 1 ||
     difficulty > 5

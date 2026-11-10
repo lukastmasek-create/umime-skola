@@ -68,6 +68,8 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
   settings.push({ key: "nastaveni", href: `/${locale}/nastaveni`, label: dict.nav.settings });
   settings.push({ key: "o-nas", href: `/${locale}#o-nas`, label: home.about.title, noActive: true });
   settings.push({ key: "kontakt", href: `/${locale}/kontakt`, label: getContactText(locale).nav });
+  // „Pro učitele“ vede nepřihlášeného rovnou na registraci (po ní do Týmů), přihlášeného do Týmů.
+  const teacherHref = loggedIn ? `/${locale}/tymy` : `/${locale}/registrace?next=${encodeURIComponent(`/${locale}/tymy`)}`;
   const groups: Group[] = [
     { key: "town", label: getTownHubText(locale).nav, items: [{ key: "mestecko", href: `/${locale}/mestecko`, label: getTownHubText(locale).nav }] },
     { key: "courses", label: home.groups.courses, items: courses },
@@ -76,7 +78,7 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
       label: home.groups.info,
       items: [
         { key: "info-tymy", href: `/${locale}/tymy`, label: getTeamsText(locale).title },
-        { key: "info-ucitele", href: `/${locale}/ucitele`, label: getAudiencePagesText(locale).teachers.nav },
+        { key: "info-ucitele", href: teacherHref, label: getAudiencePagesText(locale).teachers.nav },
         { key: "info-zaci", href: `/${locale}/zaci`, label: getAudiencePagesText(locale).students.nav },
       ],
     },
@@ -108,7 +110,7 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
         { key: "opakovani", href: `/${locale}/opakovani`, label: review.reviewNav },
         { key: "materialy", href: `/${locale}/materialy`, label: getMaterialsText(locale).nav },
         { key: "zaci", href: `/${locale}/zaci`, label: getAudiencePagesText(locale).students.nav },
-        { key: "ucitele", href: `/${locale}/ucitele`, label: getAudiencePagesText(locale).teachers.nav },
+        { key: "ucitele", href: teacherHref, label: getAudiencePagesText(locale).teachers.nav },
       ],
     },
     {

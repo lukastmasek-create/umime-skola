@@ -50,8 +50,8 @@ export function Modal({ title, onClose, closeLabel, children }: { title: string;
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
-      <div role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()} className="card relative max-h-[90vh] w-full max-w-md overflow-y-auto p-5">
+    <div className="modal-backdrop fixed inset-0 z-[250] flex items-end justify-center overflow-hidden bg-black/60 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-[max(0.75rem,env(safe-area-inset-top))] sm:items-center sm:p-4" onClick={onClose}>
+      <div role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()} className="card modal-pop relative max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto overscroll-contain p-4 sm:max-h-[90dvh] sm:p-5">
         <button type="button" onClick={onClose} aria-label={closeLabel} className="absolute right-3 top-3 rounded-lg px-2 py-1 text-lg font-bold text-[var(--muted)] hover:bg-[var(--surface-muted)]">
           ✕
         </button>

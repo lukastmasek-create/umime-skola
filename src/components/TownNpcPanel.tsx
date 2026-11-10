@@ -161,8 +161,8 @@ export function TownNpcPanel({
   const btn = "btn-bouncy bg-[var(--surface)] px-3 py-2 text-sm font-bold disabled:opacity-50";
 
   return (
-    <div role="dialog" aria-label={text.name} className="town-panel-in pointer-events-auto absolute inset-x-2 bottom-2 z-[80] sm:inset-x-8">
-      <div className="mx-auto flex max-w-3xl gap-3 rounded-3xl border-2 border-[var(--edge)] bg-[var(--surface)] p-3 shadow-[0_6px_0_var(--shadow-ink)] sm:p-4">
+    <div role="dialog" aria-label={text.name} className="town-panel-in pointer-events-auto absolute inset-x-2 bottom-[max(0.5rem,env(safe-area-inset-bottom))] z-[80] sm:inset-x-8">
+      <div className="mx-auto flex max-h-[calc(78dvh-1rem)] max-w-3xl overflow-y-auto overscroll-contain gap-3 rounded-3xl border-2 border-[var(--edge)] bg-[var(--surface)] p-3 shadow-[0_6px_0_var(--shadow-ink)] sm:p-4">
         <div className="flex shrink-0 flex-col items-center gap-1">
           <Portrait art={art} talking={!typed.done} className="h-20 w-20 sm:h-24 sm:w-24" />
           <div className="text-center text-[11px] font-extrabold leading-tight">
