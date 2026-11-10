@@ -24,7 +24,6 @@ type FontStyle = "playful" | "classic";
 type FontSize = "small" | "medium" | "large";
 type Section = "graphics" | "a11y" | "shortcuts" | "notify" | "plan" | "privacy" | "school" | "account" | "parental";
 const SECTIONS: Section[] = ["graphics", "a11y", "shortcuts", "notify", "plan", "privacy", "school", "account", "parental"];
-const SECTION_ICON: Record<Section, string> = { graphics: "🎨", a11y: "♿", shortcuts: "⌨️", notify: "🔔", plan: "💳", privacy: "🛡️", school: "🏫", account: "👤", parental: "🔒" };
 
 function OptionButton({
   active,
@@ -174,7 +173,6 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
               section === s ? "bg-[var(--brand-50)] text-[var(--brand-600)]" : "text-[var(--foreground)] hover:bg-[var(--surface-muted)]"
             }`}
           >
-            <span aria-hidden>{SECTION_ICON[s]}</span>
             {sectionLabels[s]}
           </button>
         ))}
