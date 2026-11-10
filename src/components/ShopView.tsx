@@ -74,8 +74,8 @@ const CITY_PREVIEW: Record<string, { emoji: string; color: string }> = {
   rocket_pad: { emoji: "🚀", color: "#e3c8ff" },
 };
 
-export function Preview({ item, locale, avatar }: { item: ShopItem; locale: Locale; avatar: string | null }) {
-  const box = "flex h-28 items-center justify-center rounded-xl border-2 border-[var(--edge)]";
+export function Preview({ item, locale, avatar, heightClass = "h-28" }: { item: ShopItem; locale: Locale; avatar: string | null; heightClass?: string }) {
+  const box = `flex ${heightClass} items-center justify-center rounded-xl border-2 border-[var(--edge)]`;
   switch (item.kind) {
     case "avatar":
       return (
