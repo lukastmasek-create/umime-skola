@@ -10,10 +10,8 @@ import { LazyPlanet, LazySubjectGlobe, LazyTownLife } from "@/components/HomeLaz
 import { GlobeSky } from "@/components/GlobeSky";
 import { IslandHub } from "@/components/IslandHub";
 import { HeroSky } from "@/components/HeroSky";
-import { HomeShowcase } from "@/components/showcase/HomeShowcase";
 import { HeroParticles } from "@/components/HeroParticles";
 import { TypingLine } from "@/components/TypingLine";
-import { getHomeShowcaseText } from "@/i18n/home-showcase";
 import { getHomeText } from "@/i18n/home";
 import { getHomeAudienceText } from "@/i18n/home-teachers";
 import { getAudiencePagesText } from "@/i18n/audience";
@@ -45,7 +43,6 @@ export default async function Home({
   const h = getHomeText(locale as Locale);
   const a = getHomeAudienceText(locale as Locale);
   const audience = getAudiencePagesText(locale as Locale);
-  const showcase = getHomeShowcaseText(locale as Locale);
   const sample = [{ who: "A. K.", pct: 100 }, { who: "T. N.", pct: 100 }, { who: "E. P.", pct: 60 }, { who: "J. S.", pct: 20 }];
   const subjectText = getSubjectText(locale as Locale);
   const featureLinks = {
@@ -316,12 +313,6 @@ export default async function Home({
             </div>
           </div>
         </div>
-      </section>
-
-      {/* 6b) Vyzkoušej si to: ukázky interakcí */}
-      <section id="vyzkousej" className="zone zone-space scroll-mt-24">
-        <Wave fill="#160a2c" />
-        <HomeShowcase t={showcase} />
       </section>
 
       {/* 7) O nás */}
