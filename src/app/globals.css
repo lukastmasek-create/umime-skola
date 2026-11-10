@@ -4373,3 +4373,75 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 @media (prefers-reduced-motion: reduce) {
   .hs-stage .space-float { animation: none; }
 }
+
+/* ===== Glass karty (dashboard styl): tmavé sklo, jemný okraj, barevná záře ===== */
+.gcard {
+  --gc: var(--accent-green);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+  background:
+    radial-gradient(70% 90% at 100% 0%, color-mix(in srgb, var(--gc) 16%, transparent), transparent 70%),
+    linear-gradient(160deg, color-mix(in srgb, var(--surface) 96%, white), color-mix(in srgb, var(--surface) 88%, black));
+  box-shadow: 0 18px 40px -26px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+:root:not([data-theme="light"]) .gcard {
+  background:
+    radial-gradient(70% 90% at 100% 0%, color-mix(in srgb, var(--gc) 20%, transparent), transparent 70%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015)),
+    #0d0f16;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+a.gcard:hover, .gcard-hover:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--gc) 65%, transparent);
+  box-shadow: 0 24px 46px -22px color-mix(in srgb, var(--gc) 60%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.gcard-on {
+  border-color: color-mix(in srgb, var(--gc) 70%, transparent);
+  box-shadow: 0 24px 50px -24px color-mix(in srgb, var(--gc) 65%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.gcard-title { font-weight: 700; letter-spacing: -0.01em; }
+.gcard-sub { font-size: 0.8rem; color: var(--muted); }
+.gcard-chip {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 38px; height: 38px; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--foreground) 14%, transparent);
+  background: color-mix(in srgb, var(--foreground) 7%, transparent);
+  color: var(--foreground); font-size: 1rem; font-weight: 700;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+a.gcard:hover .gcard-chip { transform: translateX(3px); background: color-mix(in srgb, var(--gc) 30%, transparent); }
+.gcard-big {
+  font-family: var(--font-heading); font-weight: 700; line-height: 1; letter-spacing: -0.03em;
+  font-size: clamp(2.6rem, 6vw, 3.6rem); font-variant-numeric: tabular-nums;
+}
+.gcard-big small { font-size: 0.4em; font-weight: 600; color: var(--muted); margin-left: 0.15em; letter-spacing: 0; }
+.gcard-tag {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--gc); border: 1px solid color-mix(in srgb, var(--gc) 35%, transparent);
+  background: color-mix(in srgb, var(--gc) 12%, transparent);
+}
+.gcard-track { height: 8px; border-radius: 999px; overflow: hidden; background: color-mix(in srgb, var(--foreground) 12%, transparent); }
+.gcard-fill {
+  display: block; height: 100%; border-radius: 999px;
+  background: var(--fc, var(--gc)); box-shadow: 0 0 12px color-mix(in srgb, var(--fc, var(--gc)) 55%, transparent);
+}
+.gcard-bars { display: flex; align-items: flex-end; gap: 7px; }
+.gcard-bars i {
+  flex: 1; border-radius: 999px; min-width: 8px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--gc) 85%, transparent), color-mix(in srgb, var(--gc) 8%, transparent));
+}
+.gcard-bars i.is-hi { background: var(--gc); box-shadow: 0 0 16px color-mix(in srgb, var(--gc) 60%, transparent); }
+.gcard-num {
+  font-family: var(--font-heading); font-weight: 800; line-height: 1; color: var(--gc);
+  font-variant-numeric: tabular-nums;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gcard, .gcard-chip { transition: none; }
+  a.gcard:hover, .gcard-hover:hover { transform: none; }
+}

@@ -11,6 +11,7 @@ import { HeroTitle } from "@/components/HeroTitle";
 import { ExpandCard } from "@/components/ExpandCard";
 import { HomeLobby } from "@/components/HomeLobby";
 import { getHomeLobbyText } from "@/i18n/home-lobby";
+import { ResultsPreview } from "@/components/ResultsPreview";
 import { HeroShowcase } from "@/components/HeroShowcase";
 import { getHomeHeroText } from "@/i18n/home-hero";
 import { getHomeText } from "@/i18n/home";
@@ -182,20 +183,19 @@ export default async function Home({
                 <Link
                   key={cat.slug}
                   href={`/${locale}/kurzy/${cat.slug}`}
-                  className="reveal card card-hover relative flex min-h-36 flex-col justify-between gap-4 sm:min-h-44 sm:gap-6 overflow-hidden p-5 text-white"
-                  style={{
-                    background: `radial-gradient(circle at 85% 12%, ${color}66, transparent 55%), linear-gradient(160deg, #1d1848, #0d0a26)`,
-                    borderColor: color,
-                    ["--glow" as string]: `${color}55`,
-                  }}
+                  className="reveal gcard relative flex min-h-36 flex-col justify-between gap-4 p-5 text-white sm:min-h-44 sm:gap-6"
+                  style={{ ["--gc" as string]: color }}
                 >
                   <HomeArt name={GALAXY_ICONS[i % GALAXY_ICONS.length]} size={128} className="absolute -right-4 -top-5 opacity-95" />
-                  <span className="text-4xl font-extrabold leading-none" style={{ ...heading, color }}>
+                  <span className="gcard-num text-5xl" style={heading}>
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <div>
-                    <h3 className="mb-1 text-lg font-bold">{dict.categories[cat.slug].label}</h3>
-                    <p className="text-sm text-white/75">{dict.categories[cat.slug].description}</p>
+                  <div className="flex items-end justify-between gap-3">
+                    <div>
+                      <h3 className="gcard-title mb-1 text-lg">{dict.categories[cat.slug].label}</h3>
+                      <p className="text-sm text-white/75">{dict.categories[cat.slug].description}</p>
+                    </div>
+                    <span aria-hidden className="gcard-chip">→</span>
                   </div>
                 </Link>
               );
@@ -217,8 +217,8 @@ export default async function Home({
               <p className="reveal mb-8 max-w-xl text-lg leading-relaxed text-[var(--muted)]">{a.teachers.lead}</p>
               <ul className="grid gap-4 sm:grid-cols-2">
                 {a.teachers.points.map((point) => (
-                  <li key={point.title} className="reveal card p-4">
-                    <h3 className="mb-1 font-bold">{point.title}</h3>
+                  <li key={point.title} className="reveal gcard gcard-hover p-4">
+                    <h3 className="gcard-title mb-1">{point.title}</h3>
                     <p className="text-sm leading-relaxed text-[var(--muted)]">{point.text}</p>
                   </li>
                 ))}
@@ -234,32 +234,14 @@ export default async function Home({
               </div>
             </div>
             {/* Ilustrační ukázka přehledu výsledků (není to živá data) */}
-            <div aria-hidden className="reveal card p-5">
-              <div className="mb-4 flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-bold" style={heading}>{a.teachers.previewTitle}</p>
-                  <p className="text-xs text-[var(--muted)]">{a.teachers.previewDue}</p>
-                </div>
-                <span className="rounded-md border-2 border-[var(--edge)] px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-[var(--muted)]">
-                  {a.teachers.previewSample}
-                </span>
-              </div>
-              <ul className="space-y-3">
-                {sample.map((row) => (
-                  <li key={row.who} className="flex items-center gap-3">
-                    <span className="w-10 shrink-0 text-sm font-semibold">{row.who}</span>
-                    <span className="h-3 flex-1 overflow-hidden rounded-full bg-[var(--surface-muted)]">
-                      <span
-                        className="block h-full rounded-full"
-                        style={{ width: `${row.pct}%`, background: row.pct === 100 ? "var(--accent-green)" : "#ffc933" }}
-                      />
-                    </span>
-                    <span className="w-9 shrink-0 text-right text-xs font-bold text-[var(--muted)]">{row.pct} %</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-4 text-xs text-[var(--muted)]">2 / 4 {a.teachers.previewDone}</p>
-            </div>
+            <ResultsPreview
+              className="reveal"
+              title={a.teachers.previewTitle}
+              due={a.teachers.previewDue}
+              badge={a.teachers.previewSample}
+              doneLabel={a.teachers.previewDone}
+              rows={sample}
+            />
           </div>
         </div>
       </section>
