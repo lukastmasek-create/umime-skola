@@ -9,6 +9,7 @@ import { ReturnNudge } from "@/components/ReturnNudge";
 import { SiteLogo } from "@/components/SiteLogo";
 import { HeaderScroll } from "@/components/HeaderScroll";
 import { PencilScrollbar } from "@/components/PencilScrollbar";
+import { SiteMotion } from "@/components/SiteMotion";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, locales, type Locale } from "@/i18n/config";
 import { notFound } from "next/navigation";
@@ -98,6 +99,7 @@ export default async function LocaleLayout({
         <ParentalGuard locale={locale as Locale} />
         <EconomyTicker locale={locale as Locale} />
         <PencilScrollbar />
+        <SiteMotion />
         <main className="world flex-1">{children}</main>
         <footer className="border-t-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-6 text-center text-sm text-[var(--muted)]">
           <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 font-semibold">

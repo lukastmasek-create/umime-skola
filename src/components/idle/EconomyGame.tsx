@@ -62,7 +62,9 @@ import {
 } from "@/lib/idle/economy";
 import { CompanyTab, fill, formatLeft, type Payload } from "./CompanyPanel";
 import { HustleTab } from "./HustleTab";
-import { BankTab } from "../UiDemoBank";
+import { BankTab, type BankData } from "../UiDemoBank";
+import { getEconomyBankText } from "@/i18n/economy-bank";
+import { BarChart3, Briefcase, Home, Layers, Trophy } from "lucide-react";
 import { InvestPanel } from "./InvestPanel";
 import type { Locale } from "@/i18n/config";
 
@@ -152,6 +154,7 @@ function Donut({ parts, centerLabel, centerValue, shareLabel }: { parts: DonutPa
 export function EconomyGame({ locale }: { locale: Locale }) {
   const t = getEconomyText(locale);
   const ct = getCraftText(locale);
+  const bt = getEconomyBankText(locale);
   const [load, setLoad] = useState<Load>("loading");
   const [view, setView] = useState<View | null>(null);
   const [tab, setTab] = useState<Tab>("overview");
@@ -172,6 +175,10 @@ export function EconomyGame({ locale }: { locale: Locale }) {
     family: "middle",
   });
   const busyRef = useRef(false);
+  // Banka: poslední známý stav hotovosti (z něj se pozná změna po akci), historie transakcí a počet „oslav“.
+  const lastCashRef = useRef<{ cash: number; rate: number; now: number } | null>(null);
+  const [bankLog, setBankLog] = useState<{ id: string; name: string; at: number; amount: number }[]>([]);
+  const [bankPulse, setBankPulse] = useState(0);
 
   const errorText = useCallback(
     (code?: string) => getEconomyWork(locale).errors[code ?? ""] ?? t.errors[code ?? "generic"] ?? t.errors.generic,
@@ -187,7 +194,9 @@ export function EconomyGame({ locale }: { locale: Locale }) {
       const res = await fetch("/api/stale-hry/ekonomika");
       if (res.status === 401) return setLoad("login");
       if (!res.ok) return setLoad((c) => (c === "ready" ? c : "unavailable"));
-      setView({ data: (await res.json()) as Payload, receivedAt: Date.now() });
+      const fresh = (await res.json()) as Payload;
+      lastCashRef.current = { cash: fresh.state.cash, rate: fresh.rates.net, now: fresh.now };
+      setView({ data: fresh, receivedAt: Date.now() });
       setLoad("ready");
     } catch {
       setLoad((c) => (c === "ready" ? c : "unavailable"));
@@ -239,6 +248,20 @@ export function EconomyGame({ locale }: { locale: Locale }) {
           return;
         }
         const data = json as Payload;
+        const before = lastCashRef.current;
+        if (body.action === "restart" || body.action === "create") {
+          setBankLog([]);
+        } else if (before) {
+          // Změna hotovosti způsobená samotnou akcí, bez příjmu, který mezitím naběhl.
+          const expected = before.cash + (before.rate * (data.now - before.now)) / 3_600_000;
+          const delta = data.state.cash - expected;
+          if (Math.abs(delta) >= 1) {
+            const name = bt.actions[String(body.action)] ?? bt.actions.other;
+            setBankLog((l) => [{ id: `${data.now}-${l.length}`, name, at: data.now, amount: delta }, ...l].slice(0, 20));
+            if (delta > 0) setBankPulse((n) => n + 1);
+          }
+        }
+        lastCashRef.current = { cash: data.state.cash, rate: data.rates.net, now: data.now };
         setView({ data, receivedAt: Date.now() });
         setNowMs(Date.now());
         if (okText) say(okText(data), true);
@@ -250,7 +273,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
         setBusy(false);
       }
     },
-    [errorText, refresh, say, t.errors.generic],
+    [errorText, refresh, say, t.errors.generic, bt.actions],
   );
 
   // Materiály: načtou se až při otevření záložky. Nákup za peníze řeší server (/api/craft, akce buyCash) v jedné transakci s Ekonomikou.
@@ -431,10 +454,58 @@ export function EconomyGame({ locale }: { locale: Locale }) {
       : null;
   const eventText = (p: Payload) => (p.event ? fill(w.events[p.event], { n: m(p.gained?.cash ?? 0) }) : t.toast.bought);
 
+  // Banka: skutečné údaje z hry ve stejném vzhledu jako ukázka.
+  const bankIncome = r.salary * r.multiplier + r.companies * r.multiplier + r.passive * r.multiplier;
+  const bankCosts = r.living + r.companyCosts;
+  const rounded = (n: number) => Math.round(n).toLocaleString(t.numberLocale);
+  const signed = (n: number) => `${n >= 0 ? "+" : "−"} ${rounded(Math.abs(n))} ${cur}`;
+  const timeFmt = (ms: number) => `${new Date(ms).toLocaleDateString(t.numberLocale, { day: "numeric", month: "numeric" })} · ${new Date(ms).toLocaleTimeString(t.numberLocale, { hour: "2-digit", minute: "2-digit" })}`;
+  const cashShare = worth > 0 ? Math.max(0, Math.min(100, Math.round((liveCash / worth) * 100))) : 100;
+  const bankData: BankData = {
+    locale: t.numberLocale,
+    currency: cur,
+    cents: false,
+    avatar: ch.name.slice(0, 2).toUpperCase(),
+    nav: [
+      { label: bt.nav.overview, icon: Home, active: true },
+      { label: bt.nav.work, icon: Briefcase, onClick: () => setTab("work") },
+      { label: bt.nav.companies, icon: Layers, onClick: () => setTab("companies") },
+      { label: bt.nav.invest, icon: BarChart3, onClick: () => setTab("invest") },
+      { label: bt.nav.board, icon: Trophy, onClick: () => setTab("board") },
+    ],
+    labels: { income: bt.income, expenses: bt.expenses, budget: bt.budget, balance: bt.balance, goal: bt.goal, extra: bt.net, quick: bt.quick, history: bt.history, filterAll: bt.filters.all, filterIncome: bt.filters.income, filterSpend: bt.filters.spend, filterBtn: bt.historyHint, empty: bt.empty },
+    income: { value: Math.round(bankIncome), note: bt.perHour },
+    expenses: { value: Math.round(bankCosts), note: bt.perHour },
+    chart: {
+      xKey: "m",
+      stacked: false,
+      data: [
+        { m: bt.sources.salary, v: Math.round(r.salary * r.multiplier) },
+        { m: bt.sources.companies, v: Math.round(r.companies * r.multiplier) },
+        { m: bt.sources.passive, v: Math.round(r.passive * r.multiplier) },
+        { m: bt.sources.living, v: Math.round(r.living) },
+        { m: bt.sources.costs, v: Math.round(r.companyCosts) },
+      ],
+      series: [{ key: "v", name: bt.chartName, color: "#e8f1ff" }],
+      cellColors: ["#7fb4ff", "#9aa3ff", "#7ee2a8", "#ff8f84", "#ffb199"],
+    },
+    balance: { value: Math.round(liveCash), pills: [`${r.net >= 0 ? "↑" : "↓"} ${rounded(Math.abs(r.net))} ${cur} ${bt.perHour}`, `${signed(r.net * 24)} ${bt.perDay}`] },
+    goal: { value: worth, target: state.peak, targetText: bt.goalOf },
+    extra: { value: Math.round(r.net * 24) },
+    quick: [
+      { label: bt.nav.work, initials: "", onClick: () => setTab("work") },
+      { label: bt.nav.companies, initials: "", onClick: () => setTab("companies") },
+      { label: bt.nav.invest, initials: "", onClick: () => setTab("invest") },
+    ],
+    tx: bankLog.map((x) => ({ id: x.id, name: x.name, date: timeFmt(x.at), amount: x.amount, kind: x.amount > 0 ? ("income" as const) : ("spending" as const) })),
+    card: { brand: bt.wealth, value: Math.round(worth), chips: [`${bt.chips.cash} ${cashShare} %`, `${bt.chips.assets} ${100 - cashShare} %`] },
+    celebrate: bankPulse,
+  };
+
   const tabs: Tab[] = ["overview", "work", "needs", "companies", "invest", "bank", "hustle", "board"];
 
   return (
-    <div>
+    <div className={tab === "bank" ? "rounded-[32px] bg-[#0b0c10] p-3 transition-colors sm:p-6" : "transition-colors"}>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
@@ -484,7 +555,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
             onClick={() => setTab(id)}
             className={`btn-bouncy px-4 py-2 text-sm font-bold ${tab === id ? "bg-[var(--brand-500)] text-white" : "bg-[var(--surface)]"}`}
           >
-            {id === "bank" ? "🏦 Banka" : t.tabs[id]}
+            {id === "bank" ? bt.tab : t.tabs[id]}
             {id === "hustle" && readyHustles > 0 ? ` (${readyHustles})` : ""}
           </button>
         ))}
@@ -1128,7 +1199,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
         <CompanyTab state={state} clock={clock} multiplier={r.multiplier} t={t} m={m} busy={busy} act={act} />
       )}
 
-      {tab === "bank" && <BankTab />}
+      {tab === "bank" && <BankTab data={bankData} />}
 
       {tab === "invest" && (
         <InvestPanel

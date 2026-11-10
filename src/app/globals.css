@@ -3756,3 +3756,23 @@ html.pencil-scroll::-webkit-scrollbar {
   from { width: 100%; }
   to { width: 0%; }
 }
+
+/* Pohyb po celém webu (komponenta SiteMotion). Nic nemění rozložení. */
+.card {
+  /* Světlo za kurzorem: vrstva přes pozadí, mimo kartu není vidět. Karty s vlastním pozadím ji prostě nemají. */
+  background-image: radial-gradient(220px circle at var(--mx, -999px) var(--my, -999px), color-mix(in srgb, var(--brand-500) 16%, transparent), transparent 70%);
+}
+.sm-pre { opacity: 0; }
+.sm-in { animation: sm-up 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: var(--sm-d, 0ms); }
+@keyframes sm-up { from { opacity: 0; translate: 0 18px; } to { opacity: 1; translate: 0 0; } }
+main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes sm-page { from { opacity: 0; translate: 0 10px; } to { opacity: 1; translate: 0 0; } }
+.sm-ring {
+  position: fixed; z-index: 9999; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; pointer-events: none;
+  border: 2px solid var(--accent-yellow); animation: sm-ring 0.6s ease-out forwards;
+}
+@keyframes sm-ring { to { transform: scale(5); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .sm-pre { opacity: 1; }
+  .sm-in, main.sm-page, .sm-ring { animation: none; }
+}

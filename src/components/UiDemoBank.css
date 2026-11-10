@@ -1,0 +1,28 @@
+/* Banka: pohyb převzatý z animačních artefaktů (aurora, světlo za kurzorem, náběh karet). Předpona bk-. */
+.bk-aurora { position: absolute; inset: 0; overflow: hidden; pointer-events: none; border-radius: inherit; }
+.bk-aurora i { position: absolute; width: 46%; aspect-ratio: 1; border-radius: 50%; filter: blur(70px); opacity: 0.4; animation: bk-drift 18s ease-in-out infinite alternate; }
+.bk-aurora i:nth-child(1) { left: -10%; top: -20%; background: #4a63ff; }
+.bk-aurora i:nth-child(2) { right: -12%; top: 10%; background: #7a3dff; animation-delay: -6s; animation-duration: 22s; }
+.bk-aurora i:nth-child(3) { left: 30%; bottom: -30%; background: #12a87a; animation-delay: -11s; opacity: 0.28; }
+@keyframes bk-drift { to { transform: translate(14%, 10%) scale(1.15); } }
+
+/* Světlo, které sleduje kurzor po kartě (vnitřní záře). */
+.bk-glow { position: relative; isolation: isolate; }
+.bk-glow::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(140, 160, 255, 0.22), transparent 65%);
+}
+.bk-glow:hover::before { opacity: 1; }
+
+.bk-in { animation: bk-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(var(--i, 0) * 70ms); }
+@keyframes bk-in { from { opacity: 0; transform: translateY(16px) scale(0.98); } }
+
+.bk-spark span { transition: height 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.bk-pop { animation: bk-pop 0.6s ease-out; }
+@keyframes bk-pop { 40% { transform: scale(1.04); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .bk-aurora i, .bk-in, .bk-pop { animation: none; }
+  .bk-glow::before { transition: none; }
+}
+:root[data-motion="off"] .bk-aurora i, :root[data-motion="off"] .bk-in, :root[data-motion="off"] .bk-pop { animation: none; }
