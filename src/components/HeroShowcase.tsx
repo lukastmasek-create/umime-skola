@@ -33,7 +33,7 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
   const loggedIn = !!account && account.loggedIn;
   const [streak, setStreak] = useState<number | null>(null);
   const [team, setTeam] = useState<LiveTeam | null>(null);
-  const [students, setStudents] = useState<string[]>([]);
+  const [students, setStudents] = useState<{ name: string; points: number }[]>([]);
 
   useEffect(() => {
     if (!loggedIn) {
@@ -58,8 +58,9 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
           return fetch(`/api/tymy/${first.id}/prehled`)
             .then((r) => r.json())
             .then((p) => {
-              const names: string[] = (p?.students ?? []).map((x: { name: string | null }) => x.name ?? "?");
-              if (!cancelled) setStudents(names);
+              const list = (p?.students ?? []).map((x: { name: string | null; points?: number }) => ({ name: x.name ?? "?", points: x.points ?? 0 }));
+              list.sort((a: { points: number }, b: { points: number }) => b.points - a.points);
+              if (!cancelled) setStudents(list);
             });
         }
       })
@@ -71,6 +72,7 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
   const streakLabel = !loggedIn ? t.streak.replace("{n}", "12") : streak === null ? t.streak.replace("{n}", "…") : streak > 0 ? tpl(t.streak, streak) : t.streakNone;
   // Bez skutečné třídy (host, nebo přihlášený bez týmu) zůstává ukázková karta.
   const demoClass = !team;
+  const top = students.reduce((m, x) => Math.max(m, x.points), 0);
 
   return (
     <div className="hs-stage" aria-hidden="true">
@@ -165,11 +167,13 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
           ) : (
             <ul className="hs-board">
               <li><span className="hs-name" style={{ width: "auto" }}>{tpl(t.members, team.members)}</span></li>
-              {students.slice(0, 3).map((name, i) => (
-                <li key={`${name}-${i}`}>
+              {students.slice(0, 3).map((st, i) => (
+                <li key={`${st.name}-${i}`}>
                   <span className="hs-rank">{i + 1}</span>
                   <img src={portrait(BOARD[i % BOARD.length].avatar)} alt="" width={28} height={28} className="hs-avatar" />
-                  <span className="hs-name" style={{ width: "auto", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</span>
+                  <span className="hs-name" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{st.name}</span>
+                  <span className="hs-meter"><span style={{ width: `${top > 0 ? Math.round((st.points / top) * 100) : 0}%` }} /></span>
+                  <span className="hs-pct">{st.points} {t.points}</span>
                 </li>
               ))}
               {students.length > 3 && (
