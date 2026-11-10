@@ -5,6 +5,12 @@ import type { Locale } from "./config";
 export type HomeHeroText = {
   progressTitle: string;
   level: string;
+  streak: string; // šablona s {n}
+  streakNone: string;
+  members: string; // šablona s {n}
+  openTasks: string; // šablona s {n}
+  noTasks: string;
+  student: string;
   safeTitle: string;
   safeText: string;
   subjectsTitle: string;
@@ -18,6 +24,12 @@ export type HomeHeroText = {
 const cs: HomeHeroText = {
   progressTitle: "Tvůj postup",
   level: "Úroveň 7",
+  streak: "{n} dní v řadě",
+  streakNone: "Začni sérii dnes",
+  members: "{n} členů",
+  openTasks: "{n} otevřených zadání",
+  noTasks: "Vše splněno",
+  student: "Žák",
   safeTitle: "Bez reklam",
   safeText: "Bezpečné pro děti",
   subjectsTitle: "Tvoje předměty",
@@ -31,6 +43,12 @@ const cs: HomeHeroText = {
 const en: HomeHeroText = {
   progressTitle: "Your progress",
   level: "Level 7",
+  streak: "{n}-day streak",
+  streakNone: "Start a streak today",
+  members: "{n} members",
+  openTasks: "{n} open tasks",
+  noTasks: "All done",
+  student: "Student",
   safeTitle: "No ads",
   safeText: "Safe for kids",
   subjectsTitle: "Your subjects",
@@ -44,6 +62,12 @@ const en: HomeHeroText = {
 const de: HomeHeroText = {
   progressTitle: "Dein Fortschritt",
   level: "Level 7",
+  streak: "{n} Tage in Folge",
+  streakNone: "Starte heute eine Serie",
+  members: "{n} Mitglieder",
+  openTasks: "{n} offene Aufgaben",
+  noTasks: "Alles erledigt",
+  student: "Schüler/in",
   safeTitle: "Ohne Werbung",
   safeText: "Sicher für Kinder",
   subjectsTitle: "Deine Fächer",
@@ -57,6 +81,12 @@ const de: HomeHeroText = {
 const ru: HomeHeroText = {
   progressTitle: "Твой прогресс",
   level: "Уровень 7",
+  streak: "{n} дней подряд",
+  streakNone: "Начни серию сегодня",
+  members: "{n} участников",
+  openTasks: "{n} открытых заданий",
+  noTasks: "Всё выполнено",
+  student: "Ученик",
   safeTitle: "Без рекламы",
   safeText: "Безопасно для детей",
   subjectsTitle: "Твои предметы",

@@ -20,7 +20,6 @@ import forestScene from "./les-kotvy.json";
 import castleScene from "./hrad-kotvy.json";
 import seaScene from "./more-kotvy.json";
 import { getWorldText, getUnlockText } from "@/i18n/market-world";
-import { getTownHubText } from "@/i18n/town";
 import { drawSea, drawForest, drawForestFront, drawCastle, drawCastleFront, drawDeep, drawDeepFront, wave } from "@/lib/market-scenery";
 import { prefersReducedMotion } from "@/lib/motion";
 
@@ -310,7 +309,6 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
   const x = getShopExtraText(locale);
   const m = getMarketText(locale);
   const ut = getUnlockText(locale);
-  const town = getTownHubText(locale);
   const [state, setState] = useState<State>({ status: "loading" });
   const wanted = initialWorld && WORLDS.some((w) => w.id === initialWorld && w.ready) ? initialWorld : undefined;
   const [worldId, setWorldId] = useState<WorldId>(film && wanted ? wanted : "pirate");
@@ -550,10 +548,6 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
       </div>
 
       <div className="mb-3 flex flex-wrap items-center gap-2" role="tablist" aria-label={m.title}>
-        <Link href={`/${locale}/mestecko`} className="btn-bouncy flex items-center gap-1.5 bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
-          <span aria-hidden>🏘️</span>
-          {town.nav}
-        </Link>
         {WORLDS.map((w) => {
           const on = w.id === worldId;
           const lock = w.ready && !unlocked(w.id);

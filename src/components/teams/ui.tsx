@@ -41,7 +41,7 @@ export function Pill({ children, tone = "plain" }: { children: ReactNode; tone?:
     plain: "bg-[var(--surface-muted)]",
     danger: "bg-[var(--danger)] text-white",
     warn: "bg-[var(--accent-yellow)] text-[#16132b]",
-    good: "bg-[var(--accent-green)] text-white",
+    good: "bg-[var(--accent-green)] text-[#0d1f14]",
     brand: "bg-[var(--brand-50)] text-[var(--brand-700)]",
   }[tone];
   return <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${cls}`}>{children}</span>;

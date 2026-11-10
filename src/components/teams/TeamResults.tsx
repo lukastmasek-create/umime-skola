@@ -8,7 +8,8 @@ import { toCsv } from "@/lib/teams/logic";
 import { buildXlsx } from "@/lib/teams/xlsx";
 import type { Locale } from "@/i18n/config";
 import { field } from "./types";
-import { Badge, Progress, StatCard } from "./ui";
+import { Badge } from "./ui";
+import { getTeamsEdx } from "@/i18n/teams-edx";
 
 type Cell = { status: "done" | "tried" | "viewed" | "new"; best: number; attempts: number; late: boolean; overdue: boolean };
 type Overview = {
@@ -26,7 +27,9 @@ export function TeamResults({ t, locale, teamId, teamName }: { t: TeamsAll; loca
   const [error, setError] = useState("");
   const [sort, setSort] = useState<"name" | "done" | "missing">("name");
   const [groupF, setGroupF] = useState("");
-  const [statusF, setStatusF] = useState("");
+  const [pill, setPill] = useState<"all" | "ok" | "mid" | "out">("all");
+  const [q, setQ] = useState("");
+  const e = getTeamsEdx(locale);
 
   useEffect(() => {
     let live = true;
@@ -45,15 +48,45 @@ export function TeamResults({ t, locale, teamId, teamName }: { t: TeamsAll; loca
     return { done: mine.filter((c) => c.status === "done").length, total: mine.length, missing: mine.filter((c) => c.overdue).length };
   };
 
-  const totals = data.students.reduce((acc, st) => {
-    const x = summary(st.id);
-    return { done: acc.done + x.done, total: acc.total + x.total, missing: acc.missing + x.missing };
-  }, { done: 0, total: 0, missing: 0 });
+  // Stav žáka: chybí = má zadání po termínu, splněno = má hotová všechna, jinak rozpracováno.
+  const state = (sid: string): "ok" | "mid" | "out" => {
+    const x = summary(sid);
+    return x.missing > 0 ? "out" : x.total > 0 && x.done === x.total ? "ok" : "mid";
+  };
+  const avgOf = (sid: string) => {
+    const got = data.assignments.map((a) => data.cells[a.id]?.[sid]).filter((c): c is Cell => !!c && c.attempts > 0);
+    return got.length ? Math.round(got.reduce((n, c) => n + c.best, 0) / got.length) : null;
+  };
+  const passOf = (sid: string) => {
+    const mine = data.assignments.filter((a) => data.cells[a.id]?.[sid]);
+    return mine.length ? Math.round(mine.reduce((n, a) => n + a.passPercent, 0) / mine.length) : 0;
+  };
+  const counts = { all: data.students.length, ok: 0, mid: 0, out: 0 };
+  for (const st of data.students) counts[state(st.id)]++;
+  // Rozpad všech buněk žák × zadání pro prstencový graf.
+  const split = { done: 0, tried: 0, waiting: 0, missing: 0 };
+  for (const a of data.assignments) for (const st of data.students) {
+    const c = data.cells[a.id]?.[st.id];
+    if (!c) continue;
+    if (c.status === "done") split.done++;
+    else if (c.overdue) split.missing++;
+    else if (c.status === "tried") split.tried++;
+    else split.waiting++;
+  }
+  const byGroup = [...data.groups.map((g) => ({ id: g.id, name: g.name })), { id: "", name: e.rNoGroup }]
+    .map((g) => {
+      const ids = data.students.filter((st) => (st.groupId ?? "") === g.id).map((st) => st.id);
+      const sums = ids.map(summary);
+      const total = sums.reduce((n, x) => n + x.total, 0);
+      return { name: g.name, pct: total ? Math.round((sums.reduce((n, x) => n + x.done, 0) / total) * 100) : 0, n: ids.length };
+    })
+    .filter((g) => g.n > 0);
   const doneBy = (aid: string) => data.students.filter((st) => data.cells[aid]?.[st.id]?.status === "done").length;
 
   const visible = [...data.students]
     .filter((st) => !groupF || st.groupId === groupF)
-    .filter((st) => !statusF || data.assignments.some((a) => data.cells[a.id]?.[st.id]?.status === statusF))
+    .filter((st) => pill === "all" || state(st.id) === pill)
+    .filter((st) => !q.trim() || (st.name ?? "").toLowerCase().includes(q.trim().toLowerCase()))
     .sort((a, b) => {
       if (sort === "done") return summary(b.id).done - summary(a.id).done || (a.name ?? "").localeCompare(b.name ?? "", locale);
       if (sort === "missing") return summary(b.id).missing - summary(a.id).missing || (a.name ?? "").localeCompare(b.name ?? "", locale);
@@ -96,64 +129,131 @@ export function TeamResults({ t, locale, teamId, teamName }: { t: TeamsAll; loca
   const exportCsv = () => download(new Blob(["\ufeff" + toCsv(table())], { type: "text/csv;charset=utf-8" }), "csv");
   const exportXlsx = () => download(new Blob([buildXlsx(table() as never, teamName) as BlobPart], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), "xlsx");
 
-  const allDone = data.students.reduce((n, st) => n + summary(st.id).done, 0);
-  const allTotal = data.students.reduce((n, st) => n + summary(st.id).total, 0);
-  const allMissing = data.students.reduce((n, st) => n + summary(st.id).missing, 0);
   const scored = trend.filter((x) => x.avg != null);
   const overallAvg = scored.length ? Math.round(scored.reduce((n, x) => n + (x.avg ?? 0), 0) / scored.length) : null;
+  const donut = [
+    { key: "done", v: split.done, c: "var(--accent-green)", label: e.rDone },
+    { key: "tried", v: split.tried, c: "var(--accent-yellow)", label: e.rTried },
+    { key: "waiting", v: split.waiting, c: "var(--border-soft)", label: e.rWaiting },
+    { key: "missing", v: split.missing, c: "var(--danger)", label: e.rMissing },
+  ];
+  const donutTotal = donut.reduce((n, d) => n + d.v, 0);
+  const chip = { ok: "bg-[color-mix(in_srgb,var(--accent-green)_18%,transparent)] text-[var(--accent-green)]", mid: "bg-[color-mix(in_srgb,var(--accent-yellow)_22%,transparent)] text-[var(--foreground)]", out: "bg-[color-mix(in_srgb,var(--danger)_18%,transparent)] text-[var(--danger)]" } as const;
+  const chipLabel = { ok: e.rDone, mid: e.rMid, out: e.rMissing } as const;
   return (
-    <section className="print-area flex flex-col gap-4">
-      <StatCard
-        label={t.statAverage}
-        value={overallAvg == null ? "–" : `${overallAvg} %`}
-        stats={[
-          { label: t.doneLabel, value: `${allDone} / ${allTotal}` },
-          { label: t.statMissing, value: allMissing },
-        ]}
-      />
-      <h2 className="hidden text-xl font-extrabold print:block">{teamName}</h2>
-      <div className="flex flex-col gap-2">
-        <p className="flex flex-wrap items-center gap-x-5 gap-y-1 text-sm">
-          <span><b>{data.students.length}</b> <span className="text-[var(--muted)]">{t.colStudent}</span></span>
-          <span><b>{data.assignments.length}</b> <span className="text-[var(--muted)]">{t.tabTasks}</span></span>
-          <span><b>{totals.done}/{totals.total}</b> <span className="text-[var(--muted)]">{t.colDoneCount}</span></span>
-          {totals.missing > 0 && <span><b className="text-[var(--danger)]">{totals.missing}</b> <span className="text-[var(--muted)]">{t.colMissing}</span></span>}
-        </p>
-        <Progress value={totals.done} max={totals.total} color="var(--accent-green)" />
-      </div>
-
-      <details className="card p-4 print:hidden">
-        <summary className="cursor-pointer text-lg font-extrabold">{t.chartTitle}</summary>
-        <div className="mt-3 flex flex-col gap-2">
-          <TrendChart points={trend} />
-          <p className="text-xs text-[var(--muted)]">{t.chartHint}</p>
+    <section className="print-area flex flex-col gap-5">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>{t.tabResults}</h2>
+          <p className="text-sm text-[var(--muted)]">{teamName} · {new Date().toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" })}{overallAvg != null && <> · {e.rAvg}: <b className="text-[var(--foreground)]">{overallAvg} %</b></>}</p>
         </div>
-      </details>
-
-      <div className="flex flex-wrap items-center gap-2 print:hidden">
-        <select value={sort} onChange={(e) => setSort(e.target.value as typeof sort)} aria-label={t.sortLabel} className={field}>
-          <option value="name">{t.sortName}</option>
-          <option value="done">{t.sortDone}</option>
-          <option value="missing">{t.sortMissing}</option>
-        </select>
-        <select value={groupF} onChange={(e) => setGroupF(e.target.value)} aria-label={t.colGroup} className={field}>
-          <option value="">{t.allGroups}</option>
-          {data.groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-        </select>
-        <select value={statusF} onChange={(e) => setStatusF(e.target.value)} aria-label={t.colStatus} className={field}>
-          <option value="">{t.allStatuses}</option>
-          {(["done", "tried", "viewed", "new"] as const).map((k) => <option key={k} value={k}>{({ done: t.sDone, tried: t.sTried, viewed: t.sViewed, new: t.sNew })[k]}</option>)}
-        </select>
-        <details className="relative ml-auto">
-          <summary className="btn-bouncy cursor-pointer list-none bg-[var(--surface)] px-4 py-2 text-sm font-bold">Export</summary>
+        <details className="relative print:hidden">
+          <summary className="btn-bouncy cursor-pointer list-none bg-[var(--brand-500)] px-5 py-2.5 text-sm font-bold text-white">Export</summary>
           <div className="card absolute right-0 z-20 mt-2 flex w-52 flex-col p-1.5" role="menu">
             {([[t.exportCsv, exportCsv], [t.exportXlsx, exportXlsx], [t.printPdf, () => window.print()]] as [string, () => void][]).map(([label, fn]) => (
-              <button key={label} role="menuitem" onClick={(e) => { (e.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open"); fn(); }} className="rounded-lg px-3 py-2 text-left text-sm font-bold hover:bg-[var(--surface-muted)]">{label}</button>
+              <button key={label} role="menuitem" onClick={(ev) => { (ev.currentTarget.closest("details") as HTMLDetailsElement | null)?.removeAttribute("open"); fn(); }} className="rounded-lg px-3 py-2 text-left text-sm font-bold hover:bg-[var(--surface-muted)]">{label}</button>
             ))}
           </div>
         </details>
       </div>
 
+      <div className="grid gap-5 lg:grid-cols-3">
+        <section className="card flex flex-col gap-3 p-5" aria-label={e.rDonut}>
+          <h3 className="text-sm font-bold text-[var(--muted)]">{e.rDonut}</h3>
+          <div className="relative mx-auto size-40">
+            <svg viewBox="0 0 120 120" className="size-full -rotate-90" role="img" aria-label={donut.map((d) => `${d.label}: ${d.v}`).join(", ")}>
+              <circle cx="60" cy="60" r="48" fill="none" stroke="var(--surface-muted)" strokeWidth="14" />
+              {(() => {
+                let off = 0;
+                const C = 2 * Math.PI * 48;
+                return donut.filter((d) => d.v > 0).map((d) => {
+                  const len = (d.v / donutTotal) * C;
+                  const el = <circle key={d.key} cx="60" cy="60" r="48" fill="none" stroke={d.c} strokeWidth="14" strokeDasharray={`${Math.max(len - 2, 0)} ${C}`} strokeDashoffset={-off} />;
+                  off += len;
+                  return el;
+                });
+              })()}
+            </svg>
+            <div className="absolute inset-0 grid place-content-center text-center">
+              <span className="text-4xl font-extrabold leading-none">{donutTotal}</span>
+              <span className="mt-1 text-[10px] text-[var(--muted)]">{e.rDonutSub}</span>
+            </div>
+          </div>
+          <ul className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-[var(--muted)]">
+            {donut.map((d) => <li key={d.key} className="flex items-center gap-1.5"><span aria-hidden className="size-2 rounded-full" style={{ background: d.c }} />{d.label} <b className="text-[var(--foreground)]">{d.v}</b></li>)}
+          </ul>
+        </section>
+
+        <section className="card flex flex-col gap-3 p-5" aria-label={e.rRadar}>
+          <h3 className="text-sm font-bold text-[var(--muted)]">{e.rRadar}</h3>
+          {trend.length >= 3 ? <Radar points={trend} /> : <TrendChart points={trend} />}
+        </section>
+
+        <section className="card flex flex-col gap-4 p-5" aria-label={e.rBars}>
+          <h3 className="text-sm font-bold text-[var(--muted)]">{e.rBars}</h3>
+          {byGroup.slice(0, 4).map((g) => (
+            <div key={g.name} className="flex flex-col gap-1.5">
+              <div className="flex items-baseline justify-between text-sm"><b className="truncate">{g.name}</b><span className="text-xs text-[var(--muted)]">{g.pct}%</span></div>
+              <div className="grid grid-cols-10 gap-1" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={g.pct}>
+                {Array.from({ length: 10 }, (_, i) => <span key={i} className={`h-2 rounded-sm ${g.pct > i * 10 ? "bg-[var(--brand-500)]" : "bg-[var(--surface-muted)]"}`} />)}
+              </div>
+            </div>
+          ))}
+        </section>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 print:hidden">
+        {([["all", e.rAll], ["ok", e.rDone], ["mid", e.rMid], ["out", e.rMissing]] as const).map(([k, label]) => (
+          <button key={k} type="button" aria-pressed={pill === k} onClick={() => setPill(k)} className={`rounded-full px-4 py-1.5 text-sm font-bold ${pill === k ? "bg-[var(--brand-500)] text-white" : "bg-[var(--surface)] text-[var(--muted)]"}`}>{label} <span className="opacity-70">{counts[k]}</span></button>
+        ))}
+        <select value={sort} onChange={(ev) => setSort(ev.target.value as typeof sort)} aria-label={t.sortLabel} className={`${field} ml-auto`}>
+          <option value="name">{t.sortName}</option>
+          <option value="done">{t.sortDone}</option>
+          <option value="missing">{t.sortMissing}</option>
+        </select>
+        {data.groups.length > 0 && (
+          <select value={groupF} onChange={(ev) => setGroupF(ev.target.value)} aria-label={t.colGroup} className={field}>
+            <option value="">{t.allGroups}</option>
+            {data.groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+          </select>
+        )}
+        <input value={q} onChange={(ev) => setQ(ev.target.value)} placeholder={e.rSearch} aria-label={e.rSearch} className={`${field} w-48`} />
+      </div>
+
+      <section className="card p-2 sm:p-4" aria-label={t.colStudent}>
+        <div className="hidden grid-cols-[minmax(0,1.4fr)_5rem_minmax(0,2fr)_7.5rem] gap-4 px-3 pb-2 text-xs text-[var(--muted)] md:grid">
+          <span>{t.colStudent}</span><span className="text-right">{e.rColValue}</span><span>{e.rColRange}</span><span className="text-center">{e.rColStatus}</span>
+        </div>
+        <ul className="divide-y divide-[var(--border-soft)]">
+          {visible.map((s) => {
+            const sum = summary(s.id);
+            const avg = avgOf(s.id);
+            const pass = passOf(s.id);
+            const st = state(s.id);
+            return (
+              <li key={s.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 px-3 py-3 md:grid-cols-[minmax(0,1.4fr)_5rem_minmax(0,2fr)_7.5rem]">
+                <span className="flex min-w-0 items-center gap-2.5">
+                  <Badge name={s.name} size={30} round />
+                  <span className="flex min-w-0 flex-col text-sm font-semibold"><span className="truncate">{s.name || t.student}</span>{s.groupId && <span className="truncate text-xs font-normal text-[var(--muted)]">{groupName(s.groupId)}</span>}</span>
+                </span>
+                <span className="hidden text-right text-sm md:block"><b>{sum.done}</b><span className="text-xs text-[var(--muted)]">/{sum.total}</span></span>
+                <span className="relative hidden h-5 items-center md:flex" role="img" aria-label={avg == null ? e.rNoData : `${e.rAvg} ${avg} %, ${pass} %`}>
+                  <span className="absolute inset-x-0 h-0.5 rounded bg-[var(--border-soft)]" />
+                  <span className="absolute h-0.5 rounded bg-[var(--accent-green)] opacity-70" style={{ left: `${pass}%`, right: 0 }} />
+                  {avg != null && <span className="absolute size-3 -translate-x-1/2 rounded-full border-2 border-[var(--surface)]" style={{ left: `${Math.min(avg, 100)}%`, background: avg >= pass ? "var(--accent-green)" : "var(--accent-yellow)" }} title={`${avg} %`} />}
+                  <span className="absolute -bottom-3 left-0 text-[10px] text-[var(--muted)]">0</span>
+                  <span className="absolute -bottom-3 text-[10px] text-[var(--muted)]" style={{ left: `${pass}%` }}>{pass}</span>
+                  <span className="absolute -bottom-3 right-0 text-[10px] text-[var(--muted)]">100</span>
+                </span>
+                <span className="justify-self-end md:justify-self-center"><span className={`inline-block rounded-full px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide ${chip[st]}`}>{chipLabel[st]}</span></span>
+              </li>
+            );
+          })}
+          {visible.length === 0 && <li className="px-3 py-6 text-center text-sm text-[var(--muted)]">{e.rNoData}</li>}
+        </ul>
+      </section>
+
+      <h3 className="text-lg font-extrabold">{e.rMatrix}</h3>
       <div className="card overflow-x-auto">
         <table className="w-full min-w-[560px] text-left text-sm">
           <thead>
@@ -204,6 +304,27 @@ export function TeamResults({ t, locale, teamId, teamName }: { t: TeamsAll; loca
 }
 
 const tfillMissing = (t: TeamsAll, n: number) => t.missingN.replace("{0}", String(n));
+
+/** Paprskový graf: průměrný nejlepší výsledek třídy v každém zadání (osy = zadání). */
+function Radar({ points }: { points: { id: string; title: string; avg: number | null }[] }) {
+  const S = 220, c = S / 2, R = 70;
+  const n = points.length;
+  const at = (i: number, r: number) => [c + r * Math.sin((2 * Math.PI * i) / n), c - r * Math.cos((2 * Math.PI * i) / n)] as const;
+  const ring = (f: number) => points.map((_, i) => at(i, R * f).join(",")).join(" ");
+  const shape = points.map((p, i) => at(i, (R * (p.avg ?? 0)) / 100).join(",")).join(" ");
+  return (
+    <svg viewBox={`0 0 ${S} ${S}`} className="mx-auto h-auto w-full max-w-60" role="img" aria-label={points.map((p) => `${p.title}: ${p.avg ?? "-"} %`).join(", ")}>
+      {[0.25, 0.5, 0.75, 1].map((f) => <polygon key={f} points={ring(f)} fill="none" stroke="var(--border-soft)" />)}
+      {points.map((_, i) => <line key={i} x1={c} y1={c} x2={at(i, R)[0]} y2={at(i, R)[1]} stroke="var(--border-soft)" />)}
+      <polygon points={shape} fill="var(--brand-500)" fillOpacity={0.3} stroke="var(--brand-500)" strokeWidth="2" />
+      {points.map((p, i) => {
+        const [x, y] = at(i, R + 14);
+        const label = p.title.length > 11 ? `${p.title.slice(0, 10)}…` : p.title;
+        return <text key={p.id} x={x} y={y} textAnchor={Math.abs(x - c) < 4 ? "middle" : x > c ? "start" : "end"} dominantBaseline="middle" fontSize="8" fill="var(--muted)">{label}</text>;
+      })}
+    </svg>
+  );
+}
 
 /** Průměrný nejlepší výsledek třídy po zadáních (sloupcový graf v SVG, bez knihovny). */
 function TrendChart({ points }: { points: { id: string; title: string; avg: number | null; n: number }[] }) {
