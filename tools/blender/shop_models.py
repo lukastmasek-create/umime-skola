@@ -20,7 +20,7 @@ OUT = os.path.join(ROOT, "public", "shop-models")
 FRAMES = os.environ.get("SHOP_FRAMES_DIR", "/tmp/shop-frames")
 N = 24  # snímků ve smyčce
 SIZE = int(os.environ.get("SHOP_SIZE", "320"))
-SAMPLES = int(os.environ.get("SHOP_SAMPLES", "64"))
+SAMPLES = int(os.environ.get("SHOP_SAMPLES", "32"))
 MINZ = [-1.0]
 
 
@@ -346,7 +346,7 @@ def m_moon_dust():
 def m_meteorite():
     rock = mat("meteor", (0.05, 0.045, 0.045), metal=0.5, rough=0.55, tint2=(0.2, 0.17, 0.15), tscale=8, rvar=0.3, bump=1.4, noise=25, crack=(1.0, 0.3, 0.04), crack_scale=3.0, emit_strength=7.0)
     displaced(0.75, (0, 0, 0), rock, strength=0.28, scale=1.1, seed=3, flat=(1.1, 0.9, 0.85))
-    glow = mat("glow", (1, 0.3, 0.05), emit=(1, 0.35, 0.05), emit_strength=6.0)
+    glow = mat("glow", (1, 0.3, 0.05), emit=(1, 0.3, 0.04), emit_strength=2.0)
     for k in range(5):
         a = k * 1.1 + 0.3
         sphere(0.09, (0.8 * math.cos(a) * 0.95, -0.55 - 0.1 * k % 0.2, 0.55 * math.sin(a * 1.7)), scale=(1.2, 0.6, 0.8), m=glow, seg=16)
@@ -845,7 +845,7 @@ def setup_render():
     sc.render.image_settings.file_format = "PNG"
     sc.render.image_settings.color_mode = "RGBA"
     sc.view_settings.view_transform = "Standard"
-    sc.view_settings.exposure = -0.6
+    sc.view_settings.exposure = -1.2
     w = bpy.data.worlds.new("w")
     sc.world = w
     w.use_nodes = True
