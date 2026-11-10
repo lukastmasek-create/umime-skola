@@ -95,7 +95,7 @@ export default async function Home({
               <HeroShowcase
                 locale={locale as Locale}
                 t={getHomeHeroText(locale as Locale)}
-                subjects={SUBJECTS.map((sj) => ({ slug: sj.slug, emoji: sj.emoji, color: sj.color, label: subjectText.labels[sj.value] }))}
+                subjects={SUBJECTS.map((sj) => ({ slug: sj.slug, color: sj.color, label: subjectText.labels[sj.value] }))}
               />
             </div>
           </div>

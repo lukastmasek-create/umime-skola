@@ -5,7 +5,6 @@ import type { Locale } from "./config";
 export type HomeHeroText = {
   progressTitle: string;
   level: string;
-  streak: string;
   safeTitle: string;
   safeText: string;
   subjectsTitle: string;
@@ -19,7 +18,6 @@ export type HomeHeroText = {
 const cs: HomeHeroText = {
   progressTitle: "Tvůj postup",
   level: "Úroveň 7",
-  streak: "12 dní v řadě",
   safeTitle: "Bez reklam",
   safeText: "Bezpečné pro děti",
   subjectsTitle: "Tvoje předměty",
@@ -33,7 +31,6 @@ const cs: HomeHeroText = {
 const en: HomeHeroText = {
   progressTitle: "Your progress",
   level: "Level 7",
-  streak: "12-day streak",
   safeTitle: "No ads",
   safeText: "Safe for kids",
   subjectsTitle: "Your subjects",
@@ -47,7 +44,6 @@ const en: HomeHeroText = {
 const de: HomeHeroText = {
   progressTitle: "Dein Fortschritt",
   level: "Level 7",
-  streak: "12 Tage in Folge",
   safeTitle: "Ohne Werbung",
   safeText: "Sicher für Kinder",
   subjectsTitle: "Deine Fächer",
@@ -61,7 +57,6 @@ const de: HomeHeroText = {
 const ru: HomeHeroText = {
   progressTitle: "Твой прогресс",
   level: "Уровень 7",
-  streak: "12 дней подряд",
   safeTitle: "Без рекламы",
   safeText: "Безопасно для детей",
   subjectsTitle: "Твои предметы",
