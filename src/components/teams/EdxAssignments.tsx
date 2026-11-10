@@ -9,10 +9,8 @@ import { tfill } from "@/i18n/teams";
 import { fmtDate } from "./api";
 import { Pill } from "./ui";
 import type { Assignment } from "./types";
+import { EdxStats, StatIcon as Icon, type Stat } from "./EdxStats";
 
-const Icon = ({ children }: { children: ReactNode }) => (
-  <svg aria-hidden viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{children}</svg>
-);
 const ICON_DOC = <><path d="M7 3h7l4 4v14H7z" /><path d="M14 3v4h4M9.5 12h5M9.5 16h5" /></>;
 const ICON_PLAY = <path d="M8 5v14l11-7z" fill="currentColor" />;
 
@@ -30,7 +28,7 @@ export function EdxAssignments({ locale, teamId, teacher, active, visible, stude
   const passedN = active.filter(isDone).length;
   const tried = active.filter((a) => (a.used ?? 0) > 0);
   const avg = tried.length ? Math.round(tried.reduce((n, a) => n + Math.min(a.best ?? 0, 100), 0) / tried.length) : 0;
-  const stats: { icon: ReactNode; value: string; label: string }[] = teacher
+  const stats: Stat[] = teacher
     ? [
         { icon: <><circle cx="9" cy="8" r="3" /><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M17 9a2.4 2.4 0 1 0 0-.1M16.5 14.2c2.5.2 4.5 2.4 4.5 5.8" /></>, value: String(students), label: e.stStudents },
         { icon: ICON_DOC, value: String(active.length), label: e.stTasks },
@@ -68,17 +66,7 @@ export function EdxAssignments({ locale, teamId, teacher, active, visible, stude
 
   return (
     <div className="flex flex-col gap-5">
-      <section className="card grid grid-cols-2 gap-y-4 p-5 lg:grid-cols-4 lg:divide-x lg:divide-[var(--border-soft)]" aria-label={e.stTasks}>
-        {stats.map((s) => (
-          <div key={s.label} className="flex min-w-0 items-center gap-3 lg:px-5 lg:first:pl-0">
-            <span aria-hidden className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[var(--surface-muted)] text-[var(--muted)]"><Icon>{s.icon}</Icon></span>
-            <div className="min-w-0">
-              <p className="truncate text-2xl font-extrabold leading-none">{s.value}</p>
-              <p className="mt-1 truncate text-xs text-[var(--muted)]">{s.label}</p>
-            </div>
-          </div>
-        ))}
-      </section>
+      <EdxStats stats={stats} label={e.stTasks} />
 
       {visible.length > 0 && cur && (
         <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
