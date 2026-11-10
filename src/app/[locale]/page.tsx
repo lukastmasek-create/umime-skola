@@ -148,7 +148,7 @@ export default async function Home({
       <section className="zone zone-space zone-globe">
         <Wave fill="#0c0a24" />
         <GlobeSky />
-        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-20 pt-24 sm:px-6">
+        <div className="lobby-panel relative z-10">
           <div className="reveal mb-8 flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
@@ -182,7 +182,7 @@ export default async function Home({
         <Wave fill="#0c0a24" />
         <Circuit className="right-0 top-20 hidden h-44 w-80 lg:block" />
         <Circuit className="bottom-6 left-0 hidden h-44 w-80 lg:block" flip />
-        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-24 pt-24 sm:px-6">
+        <div className="lobby-panel relative z-10">
           <h2 className="reveal mb-2 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
             {h.featuresTitle}
           </h2>
@@ -230,7 +230,7 @@ export default async function Home({
           className="space-float absolute right-8 top-20 hidden sm:block"
           style={{ animationDelay: "-2.5s" }}
         />
-        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-20 pt-24 sm:px-6">
+        <div className="lobby-panel relative z-10">
           <h2 className="reveal mb-8 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
             {dict.home.pickSection}
           </h2>
@@ -266,7 +266,7 @@ export default async function Home({
       {/* 6) Pro učitele */}
       <section id="pro-ucitele" className="zone zone-tech scroll-mt-24">
         <Wave fill="#160a2c" />
-        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-20 pt-24 sm:px-6">
+        <div className="lobby-panel relative z-10">
           <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
             <div>
               <p className="reveal mb-2 text-xs font-bold uppercase tracking-widest text-[var(--accent-green)]">{a.teachers.eyebrow}</p>
@@ -326,7 +326,7 @@ export default async function Home({
       {/* 7) O nás */}
       <section id="o-nas" className="zone zone-tech scroll-mt-24">
         <Wave fill="#071427" />
-        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-24 pt-24 sm:px-6">
+        <div className="lobby-panel relative z-10">
           <h2 className="reveal mb-4 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
             {h.about.title}
           </h2>
