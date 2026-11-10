@@ -16,7 +16,7 @@ const GAME_CHIPS = [
   { key: "pets", strip: "mazlicci", frames: 24 },
 ] as const;
 
-const CHIP = 58;
+const CHIP = 68;
 
 const BOARD = [
   { avatar: "astronaut", name: "A. K.", pct: 100 },

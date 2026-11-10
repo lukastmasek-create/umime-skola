@@ -24,7 +24,7 @@ _setup = p.setup_scene
 def setup_hq(res=1024):
     _setup(1152)
     sc = p.bpy.context.scene
-    sc.cycles.samples = 220
+    sc.cycles.samples = 170
     sc.cycles.max_bounces = 10
     sc.cycles.sample_clamp_indirect = 8
     sc.view_settings.view_transform = "AgX"
@@ -35,19 +35,8 @@ def setup_hq(res=1024):
         pass
 
 
-_frame = p.frame_camera
-
-
-def frame_with_shadow(*a, **k):
-    """Kamera se spočítá z modelu; až potom se pod něj přidá měkký stín na průhledné plátno."""
-    _frame(*a, **k)
-    zs = [(o.matrix_world @ p.Vector(c)).z for o in p.bpy.context.scene.objects if o.type in {"MESH", "CURVE", "FONT"} for c in o.bound_box]
-    p.bpy.ops.mesh.primitive_plane_add(size=30, location=(0, 0, min(zs) - 0.01))
-    p.bpy.context.object.is_shadow_catcher = True
-
-
 p.setup_scene = setup_hq
-p.frame_camera = frame_with_shadow
+
 os.makedirs(out, exist_ok=True)
 p.render_all(p.BUILDERS, p.CAM, only, out, "")
 
