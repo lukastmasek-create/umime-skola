@@ -11,6 +11,8 @@ import { Badge, Pill, Progress, ProgressToast } from "./ui";
 import { EdxAssistant } from "./EdxAssistant";
 import { EdxGroupTasks, EdxPoints, EdxProCard, EdxProductivity, EdxProgress } from "./EdxWidgets";
 import { EdxSchedule } from "./EdxSchedule";
+import { EdxSidebar } from "./EdxSidebar";
+import { getTeamsEdx } from "@/i18n/teams-edx";
 import type { Deadline, TeamRow, Urgent } from "./types";
 
 type Pending = { id: string; name: string };
@@ -32,6 +34,8 @@ export function TeamsHome({ locale }: { locale: Locale }) {
   const [urgent, setUrgent] = useState<Urgent[]>([]);
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
   const [notice, setNotice] = useState("");
+  const [tab, setTab] = useState<"dashboard" | "schedule" | "teams">("dashboard");
+  const e = getTeamsEdx(locale);
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
@@ -55,7 +59,7 @@ export function TeamsHome({ locale }: { locale: Locale }) {
   useEffect(() => {
     const k = new URLSearchParams(window.location.search).get("kod");
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (k) setCode(k.toUpperCase().slice(0, 12));
+    if (k) { setCode(k.toUpperCase().slice(0, 12)); setTab("teams"); }
   }, []);
 
   async function act(body: object) {
@@ -87,37 +91,47 @@ export function TeamsHome({ locale }: { locale: Locale }) {
       </div>
     );
 
+  const dashboard = teams && (
+    <>
+      <div className="grid gap-5 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <div className="flex flex-col gap-5">
+          <EdxAssistant locale={locale} teams={teams} urgent={urgent} />
+          <EdxProCard locale={locale} />
+        </div>
+        <EdxProductivity locale={locale} teams={teams} />
+      </div>
+      <div className="grid items-start gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <EdxProgress locale={locale} teams={teams} nextDue={nextDue} />
+        <EdxGroupTasks locale={locale} urgent={urgent} />
+        <EdxPoints locale={locale} teams={teams} />
+      </div>
+      {/* Učitelský přehled jen tomu, kdo je alespoň v jednom týmu učitelem */}
+      {teachingTeams.length > 0 && <TeacherOverview locale={locale} teams={teachingTeams} />}
+    </>
+  );
+
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[14rem_minmax(0,1fr)] lg:items-start lg:gap-6">
+      <aside className="lg:sticky lg:top-24">
+        <EdxSidebar
+          label={t.title}
+          value={tab}
+          onChange={setTab}
+          items={[
+            { key: "dashboard", label: e.navDashboard, icon: "dashboard" },
+            { key: "schedule", label: e.navSchedule, icon: "schedule" },
+            { key: "teams", label: e.navTeams, icon: "teams", badge: pending.length },
+          ]}
+        />
+      </aside>
+      <div className="flex min-w-0 flex-col gap-5">
       {error && <p role="alert" className="card p-3 text-sm font-semibold text-[var(--danger)]">{error}</p>}
       {notice && <ProgressToast key={notice} message={notice} onDone={() => setNotice("")} closeLabel={t.closeToast} />}
-      {teams === null ? (
-        <div className="card h-64 animate-pulse bg-[var(--surface-muted)]" aria-hidden />
-      ) : (
-        <>
-          {/* Dashboard: vlevo asistent + PRO a produktivita, rozvrh pod nimi; vpravo postup, naléhavé úkoly a body. */}
-          <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-            <div className="flex min-w-0 flex-col gap-5">
-              <div className="grid gap-5 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-                <div className="flex flex-col gap-5">
-                  <EdxAssistant locale={locale} teams={teams} urgent={urgent} />
-                  <EdxProCard locale={locale} />
-                </div>
-                <EdxProductivity locale={locale} teams={teams} />
-              </div>
-              <EdxSchedule locale={locale} items={deadlines} />
-            </div>
-            <div className="flex min-w-0 flex-col gap-5">
-              <EdxProgress locale={locale} teams={teams} nextDue={nextDue} />
-              <EdxGroupTasks locale={locale} urgent={urgent} />
-              <EdxPoints locale={locale} teams={teams} />
-            </div>
-          </div>
-          {/* Učitelský přehled jen tomu, kdo je alespoň v jednom týmu učitelem */}
-          {teachingTeams.length > 0 && <TeacherOverview locale={locale} teams={teachingTeams} />}
-        </>
-      )}
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-start">
+      {teams === null && <div className="card h-64 animate-pulse bg-[var(--surface-muted)]" aria-hidden />}
+      {teams && tab === "dashboard" && dashboard}
+      {teams && tab === "schedule" && <EdxSchedule locale={locale} items={deadlines} />}
+      {tab === "teams" && (
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_17rem] xl:items-start">
         <section className="flex flex-col gap-3">
           <h2 className="text-xl font-extrabold">{t.myTeams}</h2>
           {teams?.length === 0 && pending.length === 0 && <p className="text-[var(--muted)]">{t.noTeams}</p>}
@@ -177,6 +191,8 @@ export function TeamsHome({ locale }: { locale: Locale }) {
             <button className="btn-bouncy self-start bg-[var(--accent-yellow)] px-5 py-2 text-sm font-bold text-[#17142b]">{t.join}</button>
           </form>
         </div>
+      </div>
+      )}
       </div>
     </div>
   );

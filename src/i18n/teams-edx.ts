@@ -3,7 +3,7 @@
 import type { Locale } from "./config";
 
 const cs = {
-  navCourses: "Kurzy", navTeams: "Týmy", navRating: "Žebříčky", navTeachers: "Učitelé",
+  navDashboard: "Přehled", navSchedule: "Rozvrh", navCourses: "Kurzy", navTeams: "Týmy", navRating: "Žebříčky", navTeachers: "Učitelé",
   aiTitle: "AI asistent", aiToday: "Dnes", aiPh: "Napiš odpověď…", aiSend: "Odeslat",
   aiMorning: "Dobré ráno, jsi připravený na hodinu?", aiDay: "Dobrý den, jsi připravený na hodinu?", aiEve: "Dobrý večer, pojďme se podívat, co tě čeká.",
   aiNext: "Nejbližší termín: {0} ({1}).", aiNone: "Žádný blížící se termín, máš volno.", aiOpen: "Máš {0} nesplněných zadání.",
@@ -20,7 +20,7 @@ const cs = {
 export type TeamsEdx = Record<keyof typeof cs, string>;
 
 const en: TeamsEdx = {
-  navCourses: "Courses", navTeams: "Teams", navRating: "Rating", navTeachers: "Teachers",
+  navDashboard: "Dashboard", navSchedule: "Schedule", navCourses: "Courses", navTeams: "Teams", navRating: "Rating", navTeachers: "Teachers",
   aiTitle: "AI assistant", aiToday: "Today", aiPh: "Write your answer…", aiSend: "Send",
   aiMorning: "Good morning, are you ready for class?", aiDay: "Good afternoon, are you ready for class?", aiEve: "Good evening, let's see what is coming up.",
   aiNext: "Next deadline: {0} ({1}).", aiNone: "No deadline coming up, you are free.", aiOpen: "You have {0} open assignments.",

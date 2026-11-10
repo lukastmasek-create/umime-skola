@@ -14,6 +14,7 @@ import { TeamPeople } from "./TeamPeople";
 import { TeamGroups } from "./TeamGroups";
 import { TeamResults } from "./TeamResults";
 import { AudiencePicker } from "./AudiencePicker";
+import { EdxSidebar } from "./EdxSidebar";
 import { Badge, Pill, Progress, Reorderable, ReorderItem } from "./ui";
 import { field, linkBtn, type Audience, type Assignment, type Group, type Member, type Team } from "./types";
 
@@ -125,19 +126,15 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
   const myGroup = team.groups.find((g) => g.id === team.members.find((m) => m.id === team.userId)?.groupId);
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* Záložky jako pilulky nahoře (jako hlavní navigace v dashboardu). */}
-      <div role="tablist" className="edx-pill-nav max-w-full self-start overflow-x-auto">
-        {tabs.map(([k, label, , badge]) => (
-          <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`flex items-center gap-2 whitespace-nowrap rounded-full px-5 py-2.5 text-sm font-bold transition-colors ${tab === k ? "bg-[var(--brand-500)] text-white" : "text-[var(--muted)] hover:text-[var(--foreground)]"}`}>
-            <span>{label}</span>
-            {badge > 0 && <span className="grid min-w-5 place-items-center rounded-full bg-[var(--accent-500)] px-1.5 text-xs font-extrabold text-white" aria-label={String(badge)}>{badge}</span>}
-          </button>
-        ))}
-      </div>
     <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start lg:gap-6">
       <aside className="flex flex-col gap-4 lg:sticky lg:top-24">
       <Link href={`/${locale}/tymy`} className="text-sm font-bold text-[var(--brand-600)]">{t.backTeams}</Link>
+      <EdxSidebar
+        label={team.name}
+        value={tab}
+        onChange={setTab}
+        items={tabs.map(([k, label, , badge]) => ({ key: k, label, badge, icon: k }))}
+      />
       <Reorderable storageKey={`teams:team:${teamId}:side`} t={t} className="flex flex-col gap-4">
       <ReorderItem id="header">
       <header className="card flex flex-col items-start gap-3 p-4">
@@ -247,7 +244,6 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
         />
       )}
       </div>
-    </div>
     </div>
   );
 }
