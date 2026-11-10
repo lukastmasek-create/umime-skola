@@ -11,6 +11,7 @@ import { MotionSetting } from "@/components/settings/MotionSetting";
 import { AccountSection } from "@/components/settings/AccountSection";
 import { AccessibilitySection } from "@/components/settings/AccessibilitySection";
 import { ShortcutsSection } from "@/components/settings/ShortcutsSection";
+import { NotificationsSection } from "@/components/settings/NotificationsSection";
 import { PlanSection } from "@/components/settings/PlanSection";
 import { PrivacySection } from "@/components/settings/PrivacySection";
 import { ParentalSection } from "@/components/settings/ParentalSection";
@@ -21,9 +22,9 @@ import { ACCENT_PRESETS, DEFAULT_ACCENT, applyAccent, normalizeHex } from "@/lib
 type Theme = "light" | "dark" | "system";
 type FontStyle = "playful" | "classic";
 type FontSize = "small" | "medium" | "large";
-type Section = "graphics" | "a11y" | "shortcuts" | "plan" | "privacy" | "school" | "account" | "parental";
-const SECTIONS: Section[] = ["graphics", "a11y", "shortcuts", "plan", "privacy", "school", "account", "parental"];
-const SECTION_ICON: Record<Section, string> = { graphics: "🎨", a11y: "♿", shortcuts: "⌨️", plan: "💳", privacy: "🛡️", school: "🏫", account: "👤", parental: "🔒" };
+type Section = "graphics" | "a11y" | "shortcuts" | "notify" | "plan" | "privacy" | "school" | "account" | "parental";
+const SECTIONS: Section[] = ["graphics", "a11y", "shortcuts", "notify", "plan", "privacy", "school", "account", "parental"];
+const SECTION_ICON: Record<Section, string> = { graphics: "🎨", a11y: "♿", shortcuts: "⌨️", notify: "🔔", plan: "💳", privacy: "🛡️", school: "🏫", account: "👤", parental: "🔒" };
 
 function OptionButton({
   active,
@@ -60,7 +61,7 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
   const [saved, setSaved] = useState(false);
   const [section, setSection] = useState<Section>("graphics");
   const look = getSettingsLookText(locale);
-  const sectionLabels = { ...getSettingsExtraText(locale).sections, a11y: look.a11y, shortcuts: look.shortcuts, plan: look.plan, privacy: look.privacy };
+  const sectionLabels = { ...getSettingsExtraText(locale).sections, a11y: look.a11y, shortcuts: look.shortcuts, notify: look.notify, plan: look.plan, privacy: look.privacy };
 
   useEffect(() => {
     // Hydrating from localStorage after mount — server has no access to it,
@@ -277,6 +278,8 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
       {section === "a11y" && <AccessibilitySection locale={locale} onChange={flashSaved} />}
 
       {section === "shortcuts" && <ShortcutsSection locale={locale} />}
+
+      {section === "notify" && <NotificationsSection locale={locale} onSaved={flashSaved} />}
 
       {section === "plan" && <PlanSection locale={locale} />}
 

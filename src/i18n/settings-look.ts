@@ -41,6 +41,12 @@ export type SettingsLookText = {
   resetTitle: string;
   resetHint: string;
   resetBtn: string;
+  notify: string;
+  notifyHint: string;
+  notifyDeadline: string;
+  notifyDeadlineHint: string;
+  notifyNoEmail: string;
+  notifyLogin: string;
 };
 
 const texts = withFallbacks<SettingsLookText>({
@@ -78,6 +84,12 @@ const texts = withFallbacks<SettingsLookText>({
     resetTitle: "Místní nastavení",
     resetHint: "Vzhled, akcentní barva, přístupnost a animace se ukládají jen v tomto prohlížeči. Tady je smažeš.",
     resetBtn: "Obnovit výchozí nastavení",
+    notify: "Oznámení",
+    notifyHint: "E-mailové připomínky. Ve výchozím stavu jsou vypnuté.",
+    notifyDeadline: "Připomínky termínů zadání",
+    notifyDeadlineHint: "Žák dostane e-mail den před termínem, pokud zadání ještě nesplnil. Učitel dostane po termínu souhrn, kolik žáků zadání splnilo.",
+    notifyNoEmail: "K účtu nemáš e-mail. Přidej ho v sekci Účet, jinak nemáme kam psát.",
+    notifyLogin: "Pro oznámení se přihlas.",
   },
   en: {
     themes: "Themes",
@@ -113,6 +125,12 @@ const texts = withFallbacks<SettingsLookText>({
     resetTitle: "Local settings",
     resetHint: "Appearance, accent color, accessibility and animations are stored only in this browser. Clear them here.",
     resetBtn: "Restore default settings",
+    notify: "Notifications",
+    notifyHint: "Email reminders. They are off by default.",
+    notifyDeadline: "Assignment deadline reminders",
+    notifyDeadlineHint: "Students get an email a day before the deadline if they have not completed the assignment. Teachers get a summary after the deadline of how many students completed it.",
+    notifyNoEmail: "Your account has no email. Add one in Account, otherwise we have nowhere to write.",
+    notifyLogin: "Log in to use notifications.",
   },
   de: {
     themes: "Designs",
@@ -148,6 +166,12 @@ const texts = withFallbacks<SettingsLookText>({
     resetTitle: "Lokale Einstellungen",
     resetHint: "Aussehen, Akzentfarbe, Barrierefreiheit und Animationen werden nur in diesem Browser gespeichert. Hier löschst du sie.",
     resetBtn: "Standardeinstellungen wiederherstellen",
+    notify: "Benachrichtigungen",
+    notifyHint: "E-Mail-Erinnerungen. Standardmäßig ausgeschaltet.",
+    notifyDeadline: "Erinnerungen an Abgabetermine",
+    notifyDeadlineHint: "Schüler erhalten einen Tag vor dem Termin eine E-Mail, wenn sie die Aufgabe noch nicht erledigt haben. Lehrer erhalten nach dem Termin eine Zusammenfassung, wie viele Schüler sie erledigt haben.",
+    notifyNoEmail: "Dein Konto hat keine E-Mail. Füge sie unter Konto hinzu, sonst können wir nicht schreiben.",
+    notifyLogin: "Melde dich für Benachrichtigungen an.",
   },
   ru: {
     themes: "Темы",
@@ -183,6 +207,12 @@ const texts = withFallbacks<SettingsLookText>({
     resetTitle: "Локальные настройки",
     resetHint: "Внешний вид, акцентный цвет, доступность и анимации хранятся только в этом браузере. Здесь их можно стереть.",
     resetBtn: "Сбросить настройки",
+    notify: "Уведомления",
+    notifyHint: "Напоминания по e-mail. По умолчанию выключены.",
+    notifyDeadline: "Напоминания о сроках заданий",
+    notifyDeadlineHint: "Ученик получает письмо за день до срока, если ещё не выполнил задание. Учитель после срока получает сводку, сколько учеников выполнили задание.",
+    notifyNoEmail: "У аккаунта нет e-mail. Добавь его в разделе «Аккаунт», иначе нам некуда писать.",
+    notifyLogin: "Войди, чтобы использовать уведомления.",
   },
 });
 export const getSettingsLookText = (locale: Locale) => texts[locale];
