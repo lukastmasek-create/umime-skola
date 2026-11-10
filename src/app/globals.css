@@ -1238,7 +1238,9 @@ select[aria-invalid="true"] {
 }
 .neon-c {
   display: inline-block;
-  animation: neon-type 0.01s steps(1) both;
+  /* steps(1, start): písmeno se ukáže hned, jak mu začne čas. S běžným steps(1) zůstávala
+     část písmen kvůli zaokrouhlení časů neviditelná. */
+  animation: neon-type 0.01s steps(1, start) both;
   animation-delay: calc(0.35s + var(--i) * 55ms);
 }
 .neon-hl {

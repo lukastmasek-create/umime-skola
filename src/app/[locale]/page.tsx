@@ -63,7 +63,7 @@ export default async function Home({
                 {badge}
               </span>
               <h1
-                className="hero-in neon-h1 text-4xl leading-[1.3] sm:text-5xl lg:text-6xl"
+                className="hero-in neon-h1 text-4xl leading-[1.3] sm:text-5xl lg:text-[3.25rem]"
                 style={{ ["--d" as string]: "0.18s" }}
               >
                 <HeroTitle line1={dict.home.titleLine1} line2={dict.home.titleLine2} />
