@@ -19,8 +19,9 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 OUT = os.path.join(ROOT, "public", "shop-models")
 FRAMES = os.environ.get("SHOP_FRAMES_DIR", "/tmp/shop-frames")
 N = 24  # snímků ve smyčce
-SIZE = 256
-SAMPLES = int(os.environ.get("SHOP_SAMPLES", "40"))
+SIZE = int(os.environ.get("SHOP_SIZE", "320"))
+SAMPLES = int(os.environ.get("SHOP_SAMPLES", "64"))
+MINZ = [-1.0]
 
 
 # ---------------------------------------------------------------- pomocné funkce
@@ -28,10 +29,14 @@ def reset():
     bpy.ops.wm.read_factory_settings(use_empty=True)
 
 
-def mat(name, color, metal=0.0, rough=0.5, trans=0.0, ior=1.45, emit=None, emit_strength=0.0, coat=0.0, sheen=0.0, bump=0.0, noise=40.0, absorb=None):
+def mat(name, color, metal=0.0, rough=0.5, trans=0.0, ior=1.45, emit=None, emit_strength=0.0, coat=0.0, sheen=0.0, bump=0.0, noise=40.0, absorb=None,
+        tint2=None, tscale=5.0, rvar=0.0, voro=0.0, vscale=12.0, crack=None, crack_scale=4.0, rings=None, brick=None):
+    """PBR materiál. tint2 = druhá barva míchaná šumem, rvar = kolísání drsnosti (škrábance, otěr),
+    voro = buňkový reliéf (kámen, šupiny), crack = zářící praskliny, rings = letokruhy, brick = šindele."""
     m = bpy.data.materials.new(name)
     m.use_nodes = True
-    bsdf = m.node_tree.nodes["Principled BSDF"]
+    t = m.node_tree
+    bsdf = t.nodes["Principled BSDF"]
     bsdf.inputs["Base Color"].default_value = (*color, 1)
     bsdf.inputs["Metallic"].default_value = metal
     bsdf.inputs["Roughness"].default_value = rough
@@ -47,20 +52,94 @@ def mat(name, color, metal=0.0, rough=0.5, trans=0.0, ior=1.45, emit=None, emit_
         bsdf.inputs["Emission Color"].default_value = (*emit, 1)
         bsdf.inputs["Emission Strength"].default_value = emit_strength
     if absorb:
-        t = m.node_tree
         v = t.nodes.new("ShaderNodeVolumeAbsorption")
         v.inputs["Color"].default_value = (*absorb[:3], 1)
         v.inputs["Density"].default_value = absorb[3]
         t.links.new(v.outputs["Volume"], t.nodes["Material Output"].inputs["Volume"])
+
+    def mix_colors(fac_socket, a, b_):
+        mx = t.nodes.new("ShaderNodeMix")
+        mx.data_type = "RGBA"
+        t.links.new(fac_socket, mx.inputs[0])
+        mx.inputs[6].default_value = (*a, 1)
+        mx.inputs[7].default_value = (*b_, 1)
+        return mx.outputs[2]
+
+    if rings:
+        w = t.nodes.new("ShaderNodeTexWave")
+        w.wave_type = "RINGS"
+        w.rings_direction = "Z"
+        w.inputs["Scale"].default_value = 7
+        w.inputs["Distortion"].default_value = 3
+        w.inputs["Detail"].default_value = 3
+        t.links.new(mix_colors(w.outputs["Fac"], color, rings), bsdf.inputs["Base Color"])
+    elif brick and tint2:
+        br = t.nodes.new("ShaderNodeTexBrick")
+        br.inputs["Scale"].default_value = brick
+        br.inputs["Color1"].default_value = (*color, 1)
+        br.inputs["Color2"].default_value = (*tint2, 1)
+        br.inputs["Mortar"].default_value = (color[0] * 0.4, color[1] * 0.4, color[2] * 0.4, 1)
+        br.inputs["Mortar Size"].default_value = 0.02
+        t.links.new(br.outputs["Color"], bsdf.inputs["Base Color"])
+        bb = t.nodes.new("ShaderNodeBump")
+        bb.inputs["Strength"].default_value = 0.5
+        t.links.new(br.outputs["Fac"], bb.inputs["Height"])
+        t.links.new(bb.outputs["Normal"], bsdf.inputs["Normal"])
+    elif tint2:
+        n = t.nodes.new("ShaderNodeTexNoise")
+        n.inputs["Scale"].default_value = tscale
+        n.inputs["Detail"].default_value = 8
+        cr = t.nodes.new("ShaderNodeValToRGB")
+        cr.color_ramp.elements[0].position = 0.35
+        cr.color_ramp.elements[1].position = 0.65
+        t.links.new(n.outputs["Fac"], cr.inputs["Fac"])
+        t.links.new(mix_colors(cr.outputs["Color"], color, tint2), bsdf.inputs["Base Color"])
+    if rvar:
+        n = t.nodes.new("ShaderNodeTexNoise")
+        n.inputs["Scale"].default_value = 28
+        n.inputs["Detail"].default_value = 10
+        ma = t.nodes.new("ShaderNodeMath")
+        ma.operation = "MULTIPLY_ADD"
+        t.links.new(n.outputs["Fac"], ma.inputs[0])
+        ma.inputs[1].default_value = rvar
+        ma.inputs[2].default_value = max(rough - rvar / 2, 0.02)
+        t.links.new(ma.outputs[0], bsdf.inputs["Roughness"])
+    nrm = None
     if bump:
-        t = m.node_tree
         n = t.nodes.new("ShaderNodeTexNoise")
         n.inputs["Scale"].default_value = noise
-        n.inputs["Detail"].default_value = 8
+        n.inputs["Detail"].default_value = 10
         b = t.nodes.new("ShaderNodeBump")
         b.inputs["Strength"].default_value = bump
         t.links.new(n.outputs["Fac"], b.inputs["Height"])
-        t.links.new(b.outputs["Normal"], bsdf.inputs["Normal"])
+        nrm = b.outputs["Normal"]
+    if voro:
+        vn = t.nodes.new("ShaderNodeTexVoronoi")
+        vn.inputs["Scale"].default_value = vscale
+        vb = t.nodes.new("ShaderNodeBump")
+        vb.inputs["Strength"].default_value = voro
+        t.links.new(vn.outputs["Distance"], vb.inputs["Height"])
+        if nrm is not None:
+            t.links.new(nrm, vb.inputs["Normal"])
+        nrm = vb.outputs["Normal"]
+    if nrm is not None and not brick:
+        t.links.new(nrm, bsdf.inputs["Normal"])
+    if crack:
+        cv = t.nodes.new("ShaderNodeTexVoronoi")
+        cv.feature = "DISTANCE_TO_EDGE"
+        cv.inputs["Scale"].default_value = crack_scale
+        cr = t.nodes.new("ShaderNodeValToRGB")
+        cr.color_ramp.elements[0].position = 0.0
+        cr.color_ramp.elements[0].color = (1, 1, 1, 1)
+        cr.color_ramp.elements[1].position = 0.05
+        cr.color_ramp.elements[1].color = (0, 0, 0, 1)
+        t.links.new(cv.outputs["Distance"], cr.inputs["Fac"])
+        ms = t.nodes.new("ShaderNodeMath")
+        ms.operation = "MULTIPLY"
+        t.links.new(cr.outputs["Color"], ms.inputs[0])
+        ms.inputs[1].default_value = emit_strength or 8.0
+        t.links.new(ms.outputs[0], bsdf.inputs["Emission Strength"])
+        bsdf.inputs["Emission Color"].default_value = (*crack, 1)
     return m
 
 
@@ -171,24 +250,41 @@ def prism_from_polygon(poly, depth, m, bevel=0.02, name="poly"):
 
 
 def gem(top_r, mid_r, depth, crown, m, facets=10, loc=(0, 0, 0)):
-    """Brilantově broušený kámen: korunka, rondist a hrot."""
-    pts = [(0, 0, crown + depth * 0)]
-    ring_top, ring_mid = [], []
-    for k in range(facets):
-        a = 2 * math.pi * k / facets
-        ring_top.append((top_r * math.cos(a), top_r * math.sin(a), 0))
-        ring_mid.append((mid_r * math.cos(a), mid_r * math.sin(a), -0.01))
-    pts += ring_top + ring_mid + [(0, 0, -depth)]
-    faces = []
+    """Brilantový brus: deska, korunka s fasetami, rondist a hrot s fasetami."""
     n = facets
+    pts = []
     for k in range(n):
-        k2 = (k + 1) % n
-        faces.append((0, 1 + k, 1 + k2))  # horní plocha
-        faces.append((1 + k, 1 + n + k, 1 + n + k2, 1 + k2))  # rondist
-        faces.append((1 + n + k, 1 + 2 * n, 1 + n + k2))  # hrot
-    # korunka: horní střed zvednout
-    pts[0] = (0, 0, crown)
-    o = from_points(pts, [tuple(f) for f in faces], m, "gem", smooth=False)
+        a = 2 * math.pi * k / n
+        pts.append((top_r * 0.55 * math.cos(a), top_r * 0.55 * math.sin(a), crown))
+    for z in (0.0, -0.07):
+        for k in range(2 * n):
+            a = 2 * math.pi * k / (2 * n)
+            r = mid_r if k % 2 == 0 else mid_r * 0.97
+            pts.append((r * math.cos(a), r * math.sin(a), z))
+    for k in range(n):
+        a = 2 * math.pi * (k + 0.5) / n
+        pts.append((mid_r * 0.42 * math.cos(a), mid_r * 0.42 * math.sin(a), -depth * 0.62))
+    pts.append((0, 0, -depth))
+    T, G1, G2, P = 0, n, 3 * n, 5 * n
+    apex = len(pts) - 1
+    M = 2 * n
+    faces = [tuple(range(n))[::-1]]
+    for k in range(n):
+        k1 = (k + 1) % n
+        faces.append((T + k, G1 + 2 * k, G1 + 2 * k + 1))
+        faces.append((T + k, G1 + 2 * k + 1, G1 + (2 * k + 2) % M))
+        faces.append((T + k, G1 + (2 * k + 2) % M, T + k1))
+    for k in range(M):
+        k1 = (k + 1) % M
+        faces.append((G1 + k, G2 + k, G2 + k1, G1 + k1))
+    for k in range(n):
+        k1 = (k + 1) % n
+        faces.append((G2 + (2 * k - 1) % M, G2 + 2 * k, P + k))
+        faces.append((G2 + 2 * k, G2 + 2 * k + 1, P + k))
+        faces.append((G2 + 2 * k + 1, G2 + (2 * k + 2) % M, P + k))
+        faces.append((P + k, G2 + (2 * k + 2) % M, P + k1))
+        faces.append((P + k, P + k1, apex))
+    o = from_points(pts, faces, m, "gem", smooth=False)
     o.location = loc
     return o
 
@@ -208,8 +304,8 @@ def leaf_poly(length=1.0, width=0.5, pts=18):
 
 # ---------------------------------------------------------------- modely
 def m_wood():
-    bark = mat("bark", (0.22, 0.12, 0.06), rough=0.9, bump=0.8, noise=18)
-    cut = mat("cut", (0.78, 0.55, 0.32), rough=0.7, bump=0.15, noise=60)
+    bark = mat("bark", (0.2, 0.11, 0.05), rough=0.95, tint2=(0.38, 0.27, 0.17), tscale=9, bump=2.0, noise=10, voro=0.8, vscale=7)
+    cut = mat("cut", (0.86, 0.66, 0.4), rough=0.65, rings=(0.55, 0.34, 0.16), bump=0.1, noise=90)
     o = cyl(0.55, 1.2, rot=(math.pi / 2, 0, 0), m=bark, verts=64)
     o.data.materials.append(cut)
     for p in o.data.polygons:
@@ -219,7 +315,7 @@ def m_wood():
 
 
 def m_iron():
-    iron = mat("iron", (0.35, 0.36, 0.38), metal=1, rough=0.35, bump=0.1, noise=90)
+    iron = mat("iron", (0.33, 0.34, 0.36), metal=1, rough=0.4, tint2=(0.5, 0.35, 0.25), tscale=6, rvar=0.3, bump=0.15, noise=90)
     cyl(0.45, 0.35, loc=(0, 0, 0.45), m=iron, verts=6, bevel=0.03, smooth=False)
     cyl(0.2, 1.1, loc=(0, 0, -0.2), m=iron, verts=32)
     for i in range(7):
@@ -233,7 +329,7 @@ def m_silver():
 
 
 def m_gold():
-    gold = mat("gold", (1.0, 0.78, 0.25), metal=1, rough=0.14)
+    gold = mat("gold", (1.0, 0.78, 0.25), metal=1, rough=0.2, rvar=0.12)
     cyl(0.8, 0.16, rot=(math.pi / 2 + 0.35, 0, 0), m=gold, verts=96, bevel=0.02)
     torus(0.74, 0.07, rot=(math.pi / 2, 0, 0), m=gold)
     cyl(0.45, 0.04, loc=(0, -0.09, 0), rot=(math.pi / 2, 0, 0), m=gold, verts=5, smooth=False)
@@ -241,14 +337,14 @@ def m_gold():
 
 
 def m_moon_dust():
-    dust = mat("dust", (0.55, 0.55, 0.57), rough=1.0, bump=1.0, noise=120)
+    dust = mat("dust", (0.4, 0.4, 0.42), rough=1.0, tint2=(0.62, 0.61, 0.6), tscale=6, bump=1.2, noise=140, voro=0.7, vscale=4)
     displaced(0.75, (0, 0, 0), dust, strength=0.18, scale=1.4, seed=2)
     for i, (x, y, z, r) in enumerate([(0.3, -0.6, 0.3, 0.12), (-0.4, -0.55, -0.2, 0.18), (0.1, -0.7, -0.4, 0.1)]):
         sphere(r, (x, y, z), m=mat(f"crater{i}", (0.4, 0.4, 0.42), rough=1.0))
 
 
 def m_meteorite():
-    rock = mat("meteor", (0.08, 0.07, 0.07), metal=0.6, rough=0.6, bump=1.0, noise=25)
+    rock = mat("meteor", (0.05, 0.045, 0.045), metal=0.5, rough=0.55, tint2=(0.2, 0.17, 0.15), tscale=8, rvar=0.3, bump=1.4, noise=25, crack=(1.0, 0.3, 0.04), crack_scale=3.0, emit_strength=7.0)
     displaced(0.75, (0, 0, 0), rock, strength=0.28, scale=1.1, seed=3, flat=(1.1, 0.9, 0.85))
     glow = mat("glow", (1, 0.3, 0.05), emit=(1, 0.35, 0.05), emit_strength=6.0)
     for k in range(5):
@@ -283,13 +379,13 @@ def fan(m, name="fan", lift=0.0):
 
 
 def m_shell():
-    pink = mat("shell", (0.96, 0.62, 0.52), rough=0.3, coat=0.6, bump=0.15, noise=30)
+    pink = mat("shell", (0.92, 0.5, 0.42), rough=0.3, coat=0.6, tint2=(1.0, 0.9, 0.8), tscale=3, bump=0.15, noise=30)
     fan(pink, "scallop")
     cyl(0.2, 0.06, loc=(0, 0.02, -0.55), m=pink, r2=0.28, verts=24)
 
 
 def m_coral():
-    c = mat("coral", (1.0, 0.38, 0.35), rough=0.55, bump=0.5, noise=60)
+    c = mat("coral", (0.95, 0.3, 0.28), rough=0.6, tint2=(1.0, 0.65, 0.5), tscale=5, bump=0.5, noise=60, voro=1.0, vscale=30)
     cyl(0.18, 0.5, loc=(0, 0, -0.55), m=c, r2=0.22)
     branches = [(0, 0, 0.0, 0.9), (0.28, 0.0, 0.5, 0.7), (-0.3, 0.1, -0.5, 0.7), (0.05, 0.3, 0.2, 0.6), (0.0, -0.3, -0.3, 0.6)]
     for bx, by, tilt, ln in branches:
@@ -321,8 +417,8 @@ def m_ocean_heart():
 
 
 def m_acorn():
-    nut = mat("nut", (0.55, 0.32, 0.12), rough=0.35, coat=0.5)
-    capm = mat("cap", (0.32, 0.2, 0.1), rough=0.8, bump=1.0, noise=140)
+    nut = mat("nut", (0.5, 0.28, 0.1), rough=0.4, coat=0.5, tint2=(0.75, 0.5, 0.22), tscale=3, rvar=0.2, bump=0.15, noise=60)
+    capm = mat("cap", (0.28, 0.17, 0.08), rough=0.85, tint2=(0.42, 0.28, 0.14), tscale=10, bump=0.6, noise=120, voro=1.4, vscale=16)
     sphere(0.5, (0, 0, -0.1), scale=(1, 1, 1.3), m=nut)
     cap = sphere(0.56, (0, 0, 0.3), scale=(1, 1, 0.65), m=capm)
     cyl(0.05, 0.3, loc=(0, 0, 0.72), m=capm)
@@ -354,12 +450,12 @@ def m_golden_leaf():
 
 
 def m_stone():
-    s = mat("stone", (0.38, 0.38, 0.4), rough=0.95, bump=1.0, noise=30)
+    s = mat("stone", (0.3, 0.3, 0.32), rough=0.9, tint2=(0.5, 0.48, 0.45), tscale=4, rvar=0.3, bump=1.6, noise=22, voro=0.5, vscale=5)
     displaced(0.8, (0, 0, 0), s, strength=0.4, scale=1.0, seed=7, flat=(1.1, 0.9, 0.75), sub=5)
 
 
 def m_steel():
-    s = mat("steel", (0.6, 0.64, 0.7), metal=1, rough=0.28, bump=0.05, noise=200)
+    s = mat("steel", (0.6, 0.64, 0.7), metal=1, rough=0.3, rvar=0.3, bump=0.08, noise=200)
     teeth = 10
     pts = []
     for k in range(teeth):
@@ -393,7 +489,7 @@ def m_royal_seal():
 
 def m_herb():
     stem = mat("stem", (0.2, 0.45, 0.15), rough=0.6)
-    lf = mat("herb", (0.25, 0.62, 0.2), rough=0.5, sheen=0.4)
+    lf = mat("herb", (0.16, 0.5, 0.14), rough=0.5, sheen=0.5, tint2=(0.4, 0.68, 0.2), tscale=7, bump=0.25, noise=70)
     cyl(0.03, 1.5, loc=(0, 0, 0), m=stem, verts=12)
     for k in range(6):
         side = 1 if k % 2 == 0 else -1
@@ -514,8 +610,8 @@ def m_cat_pet():
 
 
 def m_cat_city():
-    wall = mat("wall", (0.96, 0.88, 0.72), rough=0.85, bump=0.15, noise=80)
-    roof = mat("roofm", (0.75, 0.22, 0.15), rough=0.7, bump=0.3, noise=60)
+    wall = mat("wall", (0.95, 0.85, 0.68), rough=0.9, tint2=(0.85, 0.76, 0.6), tscale=5, bump=0.35, noise=110)
+    roof = mat("roofm", (0.62, 0.18, 0.12), rough=0.75, tint2=(0.78, 0.3, 0.2), brick=14)
     cube((1.3, 1.1, 0.9), (0, 0, -0.2), wall, bevel=0.02)
     poly = [(-0.8, 0), (0.8, 0), (0, 0.65)]
     o = prism_from_polygon(poly, 1.3, roof, bevel=0.02)
@@ -711,6 +807,7 @@ def build(name):
         o.parent = root
         o.matrix_parent_inverse = root.matrix_world.inverted()
     s = 1.0 / radius * 1.05
+    MINZ[0] = (lo.z - center.z) * s
     for o in parts:
         o.location = (o.location - center) * s
         o.scale = o.scale * s
@@ -738,7 +835,10 @@ def setup_render():
     sc.cycles.device = "CPU"
     sc.cycles.samples = SAMPLES
     sc.cycles.use_denoising = True
-    sc.cycles.max_bounces = 8
+    sc.cycles.max_bounces = 12
+    sc.cycles.transmission_bounces = 12
+    sc.cycles.caustics_reflective = False
+    sc.cycles.caustics_refractive = False
     sc.render.resolution_x = SIZE
     sc.render.resolution_y = SIZE
     sc.render.film_transparent = True
@@ -776,6 +876,9 @@ def setup_render():
         eb.inputs["Emission Strength"].default_value = strength
         pl.data.materials.append(em)
         pl.visible_camera = False
+    bpy.ops.mesh.primitive_plane_add(size=9, location=(0, 0, MINZ[0] - 0.12))
+    ground = bpy.context.active_object
+    ground.is_shadow_catcher = True
     cam = bpy.data.cameras.new("cam")
     cam.lens = 60
     co = bpy.data.objects.new("cam", cam)
