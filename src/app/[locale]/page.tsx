@@ -3,10 +3,9 @@ import { CATEGORIES, SUBJECTS } from "@/lib/taxonomy";
 import { HomeProgress } from "@/components/HomeProgress";
 import { DailyQuizTeaser } from "@/components/DailyQuizTeaser";
 import { TeacherCta } from "@/components/TeacherCta";
-import { ALIEN_ROW, Circuit, HomeArt, SpriteFrame, Wave } from "@/components/SpaceDecor";
+import { ALIEN_ROW, HomeArt, SpriteFrame, Wave } from "@/components/SpaceDecor";
 import { LazyPlanet, LazySubjectGlobe, LazyTownLife } from "@/components/HomeLazy";
 import { GlobeSky } from "@/components/GlobeSky";
-import { IslandHub } from "@/components/IslandHub";
 import { HeroSky } from "@/components/HeroSky";
 import { ExpandCard } from "@/components/ExpandCard";
 import { HomeLobby } from "@/components/HomeLobby";
@@ -24,6 +23,8 @@ import type { Metadata } from "next";
 import { SITE_NAME, pageMetadata } from "@/lib/seo";
 
 const TILE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
+// Sekce „Jak to funguje“ je archivovaná (skrytá). Pro návrat stačí přepnout na true.
+const SHOW_HOW_IT_WORKS = false;
 const GALAXY_ICONS = ["sekce-zakladni", "sekce-stredni", "sekce-prijimacky", "sekce-maturita"];
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -46,12 +47,6 @@ export default async function Home({
   const audience = getAudiencePagesText(locale as Locale);
   const sample = [{ who: "A. K.", pct: 100 }, { who: "T. N.", pct: 100 }, { who: "E. P.", pct: 60 }, { who: "J. S.", pct: 20 }];
   const subjectText = getSubjectText(locale as Locale);
-  const featureLinks = {
-    courses: { href: `/${locale}/kurzy/zakladni`, icon: "funkce-kurzy", color: "#8fd0ff", kind: "book" },
-    games: { href: `/${locale}/stale-hry`, icon: "funkce-hry", color: "#c9b8ff", kind: "joystick" },
-    escape: { href: `/${locale}/unikovky`, icon: "funkce-unikovky", color: "#7ee0b0", kind: "door" },
-    boards: { href: `/${locale}/zebricky`, icon: "funkce-zebricky", color: "#ffc933", kind: "trophy" },
-  } as const satisfies Record<string, { href: string; icon: string; color: string; kind: string }>;
   const heading = { fontFamily: "var(--font-heading)" };
 
   return (
@@ -146,46 +141,23 @@ export default async function Home({
         </div>
       </section>
 
-      {/* 3) Technika: co tu najdeš */}
-      <section className="zone zone-tech">
-        <Wave fill="#0c0a24" />
-        <Circuit className="right-0 top-20 hidden h-44 w-80 lg:block" />
-        <Circuit className="bottom-6 left-0 hidden h-44 w-80 lg:block" flip />
-        <div className="lobby-panel relative z-10">
-          <h2 className="reveal mb-2 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
-            {h.featuresTitle}
-          </h2>
-          <p className="mb-10 font-mono text-xs uppercase tracking-[0.3em] text-[#35d0ff]/80">
-            <span className="tech-blink">●</span> 01 — 0{h.features.length}
-          </p>
-          <IslandHub
-            features={h.features.map((feature) => ({
-              key: feature.key,
-              title: feature.title,
-              text: feature.text,
-              cta: feature.cta,
-              href: featureLinks[feature.key].href,
-              color: featureLinks[feature.key].color,
-            }))}
-          />
-        </div>
-      </section>
-
       {/* 4) Hory: jak to funguje */}
-      <section className="zone zone-peak">
-        <Wave fill="#071427" />
-        <div className="relative z-10 pb-16 pt-16 sm:pb-32 sm:pt-24">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6">
-            <h2 className="reveal mb-6 text-2xl font-bold tracking-tight sm:mb-8 sm:text-3xl" style={heading}>
-              {h.stepsTitle}
-            </h2>
+      {SHOW_HOW_IT_WORKS && (
+        <section className="zone zone-peak">
+          <Wave fill="#071427" />
+          <div className="relative z-10 pb-16 pt-16 sm:pb-32 sm:pt-24">
+            <div className="mx-auto max-w-6xl px-4 sm:px-6">
+              <h2 className="reveal mb-6 text-2xl font-bold tracking-tight sm:mb-8 sm:text-3xl" style={heading}>
+                {h.stepsTitle}
+              </h2>
+            </div>
+            {/* scéna jde přes celou sekci (až 1680 px), na telefonu od kraje ke kraji */}
+            <div className="mx-auto w-full max-w-[1680px] px-2 sm:px-4 lg:px-6">
+              <LazyTownLife steps={h.steps} locale={locale} />
+            </div>
           </div>
-          {/* scéna jde přes celou sekci (až 1680 px), na telefonu od kraje ke kraji */}
-          <div className="mx-auto w-full max-w-[1680px] px-2 sm:px-4 lg:px-6">
-            <LazyTownLife steps={h.steps} locale={locale} />
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* 5) Zpět do vesmíru: kategorie */}
       <section className="zone zone-space">

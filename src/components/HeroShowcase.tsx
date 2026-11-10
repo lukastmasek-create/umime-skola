@@ -1,7 +1,12 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useAccount } from "@/lib/use-account";
 import type { HomeHeroText } from "@/i18n/home-hero";
 
 // Plovoucí karty kolem hero textu na úvodní stránce: postup, bezpečí, předměty,
-// tok „hry → Umíme školu → třída“ a žebříček třídy. Je to jen ukázka, proto aria-hidden.
+// tok „hry → Umíme školu → třída“ a žebříček třídy. Je to ukázka, proto aria-hidden.
+// Úroveň, série a třída jsou pro přihlášeného skutečné (/api/profil, /api/denni-vyzvy, /api/tymy).
 type Subject = { slug: string; label: string; emoji: string; color: string };
 
 const GAME_CHIPS = [
@@ -19,7 +24,54 @@ const BOARD = [
 
 const portrait = (slug: string) => `/avatars-3d/${slug}-portret.webp`;
 
+type LiveTeam = { id: string; name: string; role: string; members: number; open: number };
+
+const tpl = (s: string, n: number) => s.replace("{n}", String(n));
+
 export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subject[] }) {
+  const [account] = useAccount();
+  const loggedIn = !!account && account.loggedIn;
+  const [streak, setStreak] = useState<number | null>(null);
+  const [team, setTeam] = useState<LiveTeam | null>(null);
+  const [students, setStudents] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!loggedIn) {
+      setStreak(null);
+      setTeam(null);
+      setStudents([]);
+      return;
+    }
+    let cancelled = false;
+    fetch("/api/denni-vyzvy")
+      .then((r) => r.json())
+      .then((d) => { if (!cancelled && typeof d?.streak?.current === "number") setStreak(d.streak.current); })
+      .catch(() => {});
+    fetch("/api/tymy")
+      .then((r) => r.json())
+      .then((d) => {
+        const teams: LiveTeam[] | undefined = d?.teams;
+        const first = teams?.[0] ?? null;
+        if (!cancelled) setTeam(first);
+        // Jména žáků vidí jen učitel (přehled třídy je jen pro něj).
+        if (first?.role === "TEACHER") {
+          return fetch(`/api/tymy/${first.id}/prehled`)
+            .then((r) => r.json())
+            .then((p) => {
+              const names: string[] = (p?.students ?? []).map((x: { name: string | null }) => x.name ?? "?");
+              if (!cancelled) setStudents(names);
+            });
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [loggedIn]);
+
+  const level = account && account.loggedIn ? account : null;
+  const streakLabel = !loggedIn ? t.streak.replace("{n}", "12") : streak === null ? t.streak.replace("{n}", "…") : streak > 0 ? tpl(t.streak, streak) : t.streakNone;
+  // Bez skutečné třídy (host, nebo přihlášený bez týmu) zůstává ukázková karta.
+  const demoClass = !team;
+
   return (
     <div className="hs-stage" aria-hidden="true">
       <svg className="hs-guides" viewBox="0 0 1000 600" preserveAspectRatio="none">
@@ -30,15 +82,15 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
 
       <div className="hs-card hs-progress space-float">
         <div className="hs-row">
-          <span className="hs-level">7</span>
+          <span className="hs-level">{level ? level.level : 7}</span>
           <div className="hs-grow">
             <div className="hs-label">{t.progressTitle}</div>
-            <div className="hs-bar"><span style={{ width: "68%" }} /></div>
+            <div className="hs-bar"><span style={{ width: `${level ? level.percent : 68}%` }} /></div>
           </div>
         </div>
         <div className="hs-row hs-streak">
           <span>🔥</span>
-          <span className="hs-label">{t.streak}</span>
+          <span className="hs-label">{streakLabel}</span>
         </div>
       </div>
 
@@ -94,21 +146,40 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
           <div className="hs-teacher">
             <img src={portrait("wizard")} alt="" width={44} height={44} className="hs-avatar hs-avatar-lg" />
             <div>
-              <div className="hs-label">{t.classTitle}</div>
-              <div className="hs-sub">{t.teacher}</div>
+              <div className="hs-label">{team ? team.name : t.classTitle}</div>
+              <div className="hs-sub">{team ? (team.role === "TEACHER" ? t.teacher : t.student) : t.teacher}</div>
             </div>
           </div>
-          <ul className="hs-board">
-            {BOARD.map((r, i) => (
-              <li key={r.name}>
-                <span className="hs-rank">{i + 1}</span>
-                <img src={portrait(r.avatar)} alt="" width={28} height={28} className="hs-avatar" />
-                <span className="hs-name">{r.name}</span>
-                <span className="hs-meter"><span style={{ width: `${r.pct}%` }} /></span>
-                <span className="hs-pct">{r.pct * 12} {t.points}</span>
-              </li>
-            ))}
-          </ul>
+          {demoClass ? (
+            <ul className="hs-board">
+              {BOARD.map((r, i) => (
+                <li key={r.name}>
+                  <span className="hs-rank">{i + 1}</span>
+                  <img src={portrait(r.avatar)} alt="" width={28} height={28} className="hs-avatar" />
+                  <span className="hs-name">{r.name}</span>
+                  <span className="hs-meter"><span style={{ width: `${r.pct}%` }} /></span>
+                  <span className="hs-pct">{r.pct * 12} {t.points}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <ul className="hs-board">
+              <li><span className="hs-name" style={{ width: "auto" }}>{tpl(t.members, team.members)}</span></li>
+              {students.slice(0, 3).map((name, i) => (
+                <li key={`${name}-${i}`}>
+                  <span className="hs-rank">{i + 1}</span>
+                  <img src={portrait(BOARD[i % BOARD.length].avatar)} alt="" width={28} height={28} className="hs-avatar" />
+                  <span className="hs-name" style={{ width: "auto", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</span>
+                </li>
+              ))}
+              {students.length > 3 && (
+                <li><span className="hs-sub">+{students.length - 3}</span></li>
+              )}
+              {team.role !== "TEACHER" && (
+                <li><span className="hs-name" style={{ width: "auto" }}>{team.open > 0 ? tpl(t.openTasks, team.open) : t.noTasks}</span></li>
+              )}
+            </ul>
+          )}
         </div>
       </div>
     </div>
