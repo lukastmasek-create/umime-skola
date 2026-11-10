@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Preview } from "@/components/ShopView";
 import { SHOP_BUNDLES, SHOP_ITEMS, bundlePrice, getShopItem, type ShopBundle, type ShopItem } from "@/lib/shop";
 import { getPlayerMarketText } from "@/i18n/player-market";
@@ -67,6 +67,7 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [onlyFav, setOnlyFav] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const draftRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
     const [o, s, h] = await Promise.all([
@@ -620,34 +621,8 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
           <p className="text-xs text-[var(--muted)]">
             {t.fee.replace("{p}", String(Math.round(MARKET_FEE * 100)))} {t.limit.replace("{n}", String(MAX_LISTINGS))} {mine.length}/{MAX_LISTINGS}
           </p>
-          {sellable.length === 0 ? (
-            empty(t.sellEmpty)
-          ) : sellShown.length === 0 ? (
-            empty(t.more.emptyCat)
-          ) : (
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-              {sellShown.map((item) => {
-                const on = sell?.itemId === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    aria-pressed={on}
-                    onClick={() => setSell({ itemId: item.id, price: item.price, want: null })}
-                    className={`${tile} text-left ${on ? "ring-4 ring-[var(--accent-yellow)]" : ""} ${ring}`}
-                  >
-                    <div className="p-2">
-                      <Preview item={item} locale={locale} avatar={avatar} heightClass="h-32" />
-                    </div>
-                    <span className="truncate px-3 pb-3 text-center text-sm font-extrabold">{item.names[locale]}</span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
           {draftItem && sell ? (
-            <div className="flex flex-col gap-3 rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] p-3 shadow-[0_3px_0_var(--shadow-ink)] sm:flex-row">
+            <div ref={draftRef} className="flex scroll-mt-4 flex-col gap-3 rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] p-3 shadow-[0_3px_0_var(--shadow-ink)] sm:flex-row">
               <div className="sm:w-44 sm:shrink-0">
                 <Preview item={draftItem} locale={locale} avatar={avatar} />
               </div>
@@ -710,6 +685,35 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
           ) : (
             sellShown.length > 0 && <p className="text-center text-xs text-[var(--muted)]">{t.more.pick}</p>
           )}
+          {sellable.length === 0 ? (
+            empty(t.sellEmpty)
+          ) : sellShown.length === 0 ? (
+            empty(t.more.emptyCat)
+          ) : (
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+              {sellShown.map((item) => {
+                const on = sell?.itemId === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => {
+                      setSell({ itemId: item.id, price: item.price, want: null });
+                      window.setTimeout(() => draftRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 0);
+                    }}
+                    className={`${tile} text-left ${on ? "ring-4 ring-[var(--accent-yellow)]" : ""} ${ring}`}
+                  >
+                    <div className="p-2">
+                      <Preview item={item} locale={locale} avatar={avatar} heightClass="h-32" />
+                    </div>
+                    <span className="truncate px-3 pb-3 text-center text-sm font-extrabold">{item.names[locale]}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
         </>
       )}
     </div>
