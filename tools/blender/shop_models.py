@@ -28,7 +28,7 @@ def reset():
     bpy.ops.wm.read_factory_settings(use_empty=True)
 
 
-def mat(name, color, metal=0.0, rough=0.5, trans=0.0, ior=1.45, emit=None, emit_strength=0.0, coat=0.0, sheen=0.0, bump=0.0, noise=40.0):
+def mat(name, color, metal=0.0, rough=0.5, trans=0.0, ior=1.45, emit=None, emit_strength=0.0, coat=0.0, sheen=0.0, bump=0.0, noise=40.0, absorb=None):
     m = bpy.data.materials.new(name)
     m.use_nodes = True
     bsdf = m.node_tree.nodes["Principled BSDF"]
@@ -46,6 +46,12 @@ def mat(name, color, metal=0.0, rough=0.5, trans=0.0, ior=1.45, emit=None, emit_
     if emit:
         bsdf.inputs["Emission Color"].default_value = (*emit, 1)
         bsdf.inputs["Emission Strength"].default_value = emit_strength
+    if absorb:
+        t = m.node_tree
+        v = t.nodes.new("ShaderNodeVolumeAbsorption")
+        v.inputs["Color"].default_value = (*absorb[:3], 1)
+        v.inputs["Density"].default_value = absorb[3]
+        t.links.new(v.outputs["Volume"], t.nodes["Material Output"].inputs["Volume"])
     if bump:
         t = m.node_tree
         n = t.nodes.new("ShaderNodeTexNoise")
@@ -227,7 +233,7 @@ def m_silver():
 
 
 def m_gold():
-    gold = mat("gold", (1.0, 0.72, 0.16), metal=1, rough=0.22)
+    gold = mat("gold", (1.0, 0.78, 0.25), metal=1, rough=0.14)
     cyl(0.8, 0.16, rot=(math.pi / 2, 0, 0), m=gold, verts=96, bevel=0.02)
     torus(0.74, 0.07, rot=(math.pi / 2, 0, 0), m=gold)
     cyl(0.45, 0.04, loc=(0, -0.09, 0), rot=(math.pi / 2, 0, 0), m=gold, verts=5, smooth=False)
@@ -251,7 +257,7 @@ def m_meteorite():
 
 
 def m_star_crystal():
-    c = mat("crystal", (0.35, 0.85, 1.0), rough=0.04, trans=1.0, ior=1.55, emit=(0.2, 0.7, 1.0), emit_strength=0.6)
+    c = mat("crystal", (0.35, 0.85, 1.0), rough=0.03, trans=1.0, ior=1.55, emit=(0.1, 0.5, 0.9), emit_strength=0.3, absorb=(0.1, 0.6, 1.0, 3.0))
     specs = [(0, 0, 0, 0.0, 0.0, 1.6, 0.28), (0.3, 0.1, -0.1, 0.4, 0.2, 1.1, 0.2), (-0.3, -0.1, -0.1, -0.45, -0.1, 1.0, 0.2), (0.05, -0.3, -0.15, 0.1, -0.55, 0.9, 0.17)]
     for x, y, z, rx, ry, h, r in specs:
         cyl(r, h, loc=(x, y, z + h / 2 - 0.5), rot=(rx, ry, 0), m=c, verts=6, bevel=0.01, smooth=False)
@@ -318,7 +324,7 @@ def m_ocean_heart():
         x = 16 * math.sin(t) ** 3
         z = 13 * math.cos(t) - 5 * math.cos(2 * t) - 2 * math.cos(3 * t) - math.cos(4 * t)
         pts.append((x / 22, z / 22 + 0.05))
-    glass = mat("ocean", (0.1, 0.5, 1.0), rough=0.03, trans=1.0, ior=1.6, emit=(0.0, 0.4, 1.0), emit_strength=1.2)
+    glass = mat("ocean", (0.1, 0.5, 1.0), rough=0.02, trans=1.0, ior=1.6, absorb=(0.0, 0.35, 1.0, 4.0))
     o = prism_from_polygon(pts, 0.45, glass, bevel=0.1)
     o.rotation_euler = (math.pi / 2, 0, 0)
     sphere(0.12, (0, 0, 0), m=mat("core", (0.3, 0.9, 1), emit=(0.3, 0.9, 1), emit_strength=8), seg=24)
@@ -333,14 +339,14 @@ def m_acorn():
 
 
 def m_resin():
-    r = mat("resin", (0.95, 0.55, 0.08), rough=0.05, trans=0.9, ior=1.5, emit=(1, 0.5, 0.05), emit_strength=0.4)
+    r = mat("resin", (0.95, 0.55, 0.08), rough=0.03, trans=1.0, ior=1.5, absorb=(1.0, 0.4, 0.0, 2.5))
     sphere(0.6, (0, 0, 0), scale=(1, 1, 0.8), m=r)
     cyl(0.18, 0.8, loc=(0.15, 0, -0.55), m=r, r2=0.1)
     sphere(0.1, (0.15, 0, -0.98), scale=(1, 1, 1.3), m=r, seg=24)
 
 
 def m_amber():
-    a = mat("amber", (1.0, 0.5, 0.05), rough=0.08, trans=0.85, ior=1.55, emit=(1, 0.45, 0.02), emit_strength=0.5)
+    a = mat("amber", (1.0, 0.55, 0.05), rough=0.05, trans=1.0, ior=1.55, absorb=(1.0, 0.5, 0.0, 5.0))
     gem(0.55, 0.78, 0.8, 0.55, a, facets=7)
     bug = mat("inc", (0.1, 0.05, 0.02), rough=0.6)
     sphere(0.08, (0.15, 0.1, 0.12), scale=(1, 1.6, 0.8), m=bug, seg=16)
@@ -377,7 +383,7 @@ def m_steel():
 
 
 def m_ruby():
-    r = mat("ruby", (0.85, 0.02, 0.1), rough=0.02, trans=1.0, ior=1.77, emit=(0.9, 0.0, 0.1), emit_strength=0.5)
+    r = mat("ruby", (0.9, 0.0, 0.05), rough=0.0, trans=1.0, ior=1.77, absorb=(1.0, 0.0, 0.03, 14.0))
     g = gem(0.75, 0.95, 1.0, 0.45, r, facets=8)
 
 
@@ -451,8 +457,8 @@ def m_cat_avatar():
     white = mat("suit", (0.92, 0.93, 0.95), rough=0.35, coat=0.2)
     visor = mat("visor", (0.02, 0.04, 0.1), rough=0.02, metal=0.6, coat=1.0)
     sphere(0.75, (0, 0, 0.1), m=white)
-    sphere(0.55, (0, -0.32, 0.12), scale=(1.1, 0.6, 0.85), m=visor)
-    sphere(0.12, (0.28, -0.7, 0.35), m=mat("refl", (1, 1, 1), emit=(1, 1, 1), emit_strength=3), scale=(1, 0.3, 0.6), seg=16)
+    sphere(0.5, (0, -0.5, 0.1), scale=(1.15, 0.55, 0.85), m=visor)
+    sphere(0.1, (0.25, -0.93, 0.28), m=mat("refl", (1, 1, 1), emit=(1, 1, 1), emit_strength=3), scale=(1, 0.3, 0.6), seg=16)
     torus(0.62, 0.14, loc=(0, 0, -0.62), m=mat("ring", (0.35, 0.45, 0.95), rough=0.4))
     cyl(0.5, 0.3, loc=(0, 0, -0.85), m=white, r2=0.62)
 
@@ -745,15 +751,39 @@ def setup_render():
     w = bpy.data.worlds.new("w")
     sc.world = w
     w.use_nodes = True
-    bg = w.node_tree.nodes["Background"]
-    bg.inputs["Color"].default_value = (0.55, 0.7, 0.65, 1)
-    bg.inputs["Strength"].default_value = 0.7
+    nt = w.node_tree
+    bg = nt.nodes["Background"]
+    tc = nt.nodes.new("ShaderNodeTexCoord")
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    ramp = nt.nodes.new("ShaderNodeValToRGB")
+    nt.links.new(tc.outputs["Generated"], sep.inputs["Vector"])
+    nt.links.new(sep.outputs["Z"], ramp.inputs["Fac"])
+    ramp.color_ramp.elements[0].position = 0.1
+    ramp.color_ramp.elements[0].color = (0.12, 0.18, 0.16, 1)
+    ramp.color_ramp.elements[1].position = 0.75
+    ramp.color_ramp.elements[1].color = (1.0, 1.0, 1.0, 1)
+    nt.links.new(ramp.outputs["Color"], bg.inputs["Color"])
+    bg.inputs["Strength"].default_value = 1.2
+    # softboxy: viditelné jen v odrazech, ne přímo v obraze
+    for loc, size, strength, color in [((-4, -3, 3), (3, 1.2), 25, (1, 1, 1)), ((4.5, -2, 1), (1.2, 3), 18, (0.8, 1, 0.9)), ((0, 4, 3), (4, 1.0), 14, (0.9, 0.95, 1.0)), ((0, -6, 2), (5, 3), 16, (1, 1, 1))]:
+        bpy.ops.mesh.primitive_plane_add(size=1, location=loc)
+        pl = bpy.context.active_object
+        pl.scale = (size[0], size[1], 1)
+        pl.rotation_euler = (Vector((0, 0, 0)) - Vector(loc)).to_track_quat("Z", "Y").to_euler()
+        em = bpy.data.materials.new("box")
+        em.use_nodes = True
+        eb = em.node_tree.nodes["Principled BSDF"]
+        eb.inputs["Base Color"].default_value = (*color, 1)
+        eb.inputs["Emission Color"].default_value = (*color, 1)
+        eb.inputs["Emission Strength"].default_value = strength
+        pl.data.materials.append(em)
+        pl.visible_camera = False
     cam = bpy.data.cameras.new("cam")
     cam.lens = 60
     co = bpy.data.objects.new("cam", cam)
     bpy.context.collection.objects.link(co)
-    co.location = (0, -4.6, 1.5)
-    co.rotation_euler = (math.radians(75), 0, 0)
+    co.location = (0, -4.2, 2.2)
+    co.rotation_euler = (math.radians(62), 0, 0)
     sc.camera = co
     for loc, energy, color in [((-3, -3, 4), 400, (1, 0.97, 0.9)), ((3.5, -2, 1.5), 180, (0.6, 1.0, 0.8)), ((0, 3, 3), 220, (0.7, 0.8, 1.0))]:
         ld = bpy.data.lights.new("l", "AREA")
