@@ -4045,3 +4045,61 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 .gs-pop kbd { display: inline-block; min-width: 20px; padding: 1px 6px; border-radius: 6px; background: #3b5bff; font: 700 12px/1.5 var(--font-mono); text-align: center; }
 @keyframes gs-in { from { opacity: 0; transform: translate(-50%, 8px); } }
 @media (prefers-reduced-motion: reduce) { .lobby-live { animation: none; } .gs-pop { animation: none; } .lobby-island { transition: none; } }
+
+/* Obchod ve stylu Gammy: tmavě zelený povrch s neonovou zelenou. Přepisuje proměnné jen uvnitř .gammy,
+   takže se vloženým částem (materiály, limitky, kolo štěstí) změní barvy samy. */
+.gammy {
+  --g-bg: #03130f;
+  --g-panel: #082019;
+  --g-panel-2: #0c2b22;
+  --g-line: rgba(61, 255, 160, 0.14);
+  --g-accent: #26e88c;
+  --g-accent-ink: #02150d;
+  --background: var(--g-bg);
+  --surface: var(--g-panel);
+  --surface-muted: var(--g-panel-2);
+  --brand-50: #0c2b22;
+  --brand-100: #12402f;
+  --brand-500: #26e88c;
+  --brand-600: #5df2ac;
+  --brand-700: #9af7cb;
+  --accent-yellow: #26e88c;
+  --edge: rgba(61, 255, 160, 0.3);
+  --shadow-ink: rgba(0, 0, 0, 0.55);
+  --border-soft: var(--g-line);
+  --muted: #a9c9bc;
+  --faint: #7ea595;
+  background: radial-gradient(1200px 600px at 20% -10%, #0d3a2b 0%, transparent 60%), var(--g-bg);
+  color: #eafff5;
+  border: 1px solid var(--g-line);
+  border-radius: 28px;
+}
+.gammy .btn-bouncy.text-white,
+.gammy .bg-\[var\(--brand-500\)\] {
+  color: var(--g-accent-ink);
+}
+.gammy-panel {
+  background: linear-gradient(180deg, var(--g-panel-2), var(--g-panel));
+  border: 1px solid var(--g-line);
+  border-radius: 20px;
+}
+.gammy-marquee {
+  overflow: hidden;
+  background: var(--g-accent);
+  color: var(--g-accent-ink);
+}
+.gammy-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: gammy-marquee 28s linear infinite;
+}
+@keyframes gammy-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gammy-marquee-track {
+    animation: none;
+  }
+}
