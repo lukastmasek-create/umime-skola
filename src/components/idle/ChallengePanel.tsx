@@ -6,6 +6,7 @@ import { Avatar } from "@/components/Avatar";
 import { fillTokens, getChallengeText } from "@/i18n/challenge";
 import { BOSS_LIVES, BOSS_QUESTIONS, CHAPTERS, FAST_MS, MAX_HINTS, MAX_SHIELDS, comboMultiplier, type ChGame } from "@/lib/idle/challenge";
 import type { Locale } from "@/i18n/config";
+import { EmojiText, Ico } from "./eco-icons";
 
 type Meta = { streak: number; best: number; shield: number; hints: number; boostUntil: number; chapter: number; bossWins: number; correct: number; total: number };
 type GameView = {
@@ -147,7 +148,7 @@ export function ChallengePanel({ game, locale, onChange }: { game: ChGame; local
     return (
       <section className="card mt-6 p-5">
         <h2 className="text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          {ICON[game]} {t.title}
+          <Ico e={ICON[game]} /> {t.title}
         </h2>
         <p className="mt-1 text-sm text-[var(--muted)]">{t.loginRequired}</p>
         <Link href={`/${locale}/prihlaseni`} className="btn-bouncy mt-3 inline-block bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white">
@@ -201,14 +202,14 @@ export function ChallengePanel({ game, locale, onChange }: { game: ChGame; local
             {t.chapterLabel.replace("{n}", String(p.boss.chapter))} · {chapters[p.boss.chapter - 1]?.name}
           </span>
           <span>{fillTokens(t.bossQuestion, { i: Math.min(BOSS_QUESTIONS, p.boss.idx + 1), n: BOSS_QUESTIONS })}</span>
-          <span aria-label={t.lives}>{Array.from({ length: BOSS_LIVES }, (_, i) => (i < p.boss!.lives ? "❤️" : "🖤")).join(" ")}</span>
+          <span aria-label={t.lives}>{Array.from({ length: BOSS_LIVES }, (_, i) => <Ico key={i} e={i < p.boss!.lives ? "❤" : "🖤"} />)}</span>
         </div>
       )}
       {intro && p.boss && <p className="mb-3 rounded-lg bg-[var(--surface-muted)] p-3 text-sm italic text-[var(--muted)]">{intro}</p>}
       <div className="mb-2 flex flex-wrap items-center gap-2 text-xs font-semibold text-[var(--muted)]">
         <span>{fillTokens(t.course, { n: p.q.course })}</span>
         {p.q.weak && <span className="pill bg-[var(--accent-pink)] px-2 py-0.5 text-white">{t.weakBadge}</span>}
-        {timeLeft > 0 && <span className="pill bg-[var(--accent-yellow)] px-2 py-0.5 text-[#16132b]">⚡ {t.fastBadge} · {fillTokens(t.seconds, { n: Math.ceil(timeLeft / 1000) })}</span>}
+        {timeLeft > 0 && <span className="pill bg-[var(--accent-yellow)] px-2 py-0.5 text-[#16132b]"><Ico e="⚡" /> {t.fastBadge} · {fillTokens(t.seconds, { n: Math.ceil(timeLeft / 1000) })}</span>}
       </div>
       <p className="mb-3 text-lg font-bold">{p.q.prompt}</p>
       <div className="grid gap-2 sm:grid-cols-2">
@@ -234,7 +235,7 @@ export function ChallengePanel({ game, locale, onChange }: { game: ChGame; local
           onClick={() => void post({ action: "hint" })}
           className="btn-bouncy bg-[var(--accent-yellow)] px-3 py-1.5 text-sm font-bold text-[#16132b] disabled:opacity-40"
         >
-          💡 {t.useHint} ({g.meta.hints})
+          <Ico e="💡" /> {t.useHint} ({g.meta.hints})
         </button>
         <button type="button" disabled={busy} onClick={() => void post({ action: "abort" })} className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
           {t.giveUp}
@@ -248,16 +249,16 @@ export function ChallengePanel({ game, locale, onChange }: { game: ChGame; local
   const resultCard = (r: Result) => (
     <div className={`rounded-2xl border-2 p-4 ${r.correct ? "border-[var(--accent-green)] bg-[var(--accent-green)]/10" : "border-[var(--accent-pink)] bg-[var(--accent-pink)]/10"}`} role="status">
       <p className="text-lg font-extrabold">
-        {r.correct ? `✅ ${t.correct}` : `❌ ${t.wrong}`} {r.fast && <span className="text-sm">⚡ {t.fastBadge}</span>}
+        <EmojiText text={r.correct ? `✅ ${t.correct}` : `❌ ${t.wrong}`} /> {r.fast && <span className="text-sm"><Ico e="⚡" /> {t.fastBadge}</span>}
       </p>
-      {r.shielded && <p className="text-sm font-semibold">🛡️ {t.shieldSaved}</p>}
+      {r.shielded && <p className="text-sm font-semibold"><Ico e="🛡" /> {t.shieldSaved}</p>}
       {r.explanation && <p className="mt-1 text-sm text-[var(--muted)]">{r.explanation}</p>}
       {(r.reward.coins > 0 || r.reward.xp > 0 || r.reward.points > 0) && <p className="mt-2 font-bold">{rewardLine(r.reward)}</p>}
-      {r.gained.shield && <p className="text-sm font-semibold">🛡️ {t.gainedShield}</p>}
-      {r.gained.hint && <p className="text-sm font-semibold">💡 {t.gainedHint}</p>}
+      {r.gained.shield && <p className="text-sm font-semibold"><Ico e="🛡" /> {t.gainedShield}</p>}
+      {r.gained.hint && <p className="text-sm font-semibold"><Ico e="💡" /> {t.gainedHint}</p>}
       {r.boss?.done && (
         <div className="mt-3 rounded-xl bg-[var(--surface)] p-3">
-          <p className="font-extrabold">{r.boss.won ? `🏆 ${t.bossWon}` : t.bossLost}</p>
+          <p className="font-extrabold">{r.boss.won ? <><Ico e="🏆" /> {t.bossWon}</> : t.bossLost}</p>
           {r.boss.won && <p className="mt-1 text-sm">{chapters[r.boss.chapter - 1]?.win}</p>}
           {r.boss.won && r.boss.lives >= BOSS_LIVES && <p className="text-sm font-semibold">{t.flawless}</p>}
         </div>
@@ -275,7 +276,7 @@ export function ChallengePanel({ game, locale, onChange }: { game: ChGame; local
     </div>
   );
 
-  const stat = (label: string) => <span className="pill bg-[var(--surface-muted)] px-3 py-1 text-xs font-bold">{label}</span>;
+  const stat = (label: string) => <span className="pill bg-[var(--surface-muted)] px-3 py-1 text-xs font-bold"><EmojiText text={label} /></span>;
 
   const tabs: { id: Tab; label: string }[] = [
     { id: "quiz", label: t.tabs.quiz },
@@ -290,7 +291,7 @@ export function ChallengePanel({ game, locale, onChange }: { game: ChGame; local
   return (
     <section className="card mt-6 p-4 sm:p-5" aria-label={t.title}>
       <h2 className="text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        {ICON[game]} {t.title}
+        <Ico e={ICON[game]} /> {t.title}
       </h2>
       <p className="mb-3 text-sm text-[var(--muted)]">{t.subtitle}</p>
 
@@ -316,7 +317,7 @@ export function ChallengePanel({ game, locale, onChange }: { game: ChGame; local
       )}
       {otherPending && (
         <p className="mb-3 rounded-lg bg-[var(--surface-muted)] px-3 py-2 text-sm">
-          {ICON[otherPending.game]} {t.errors.pending}
+          <Ico e={ICON[otherPending.game]} /> {t.errors.pending}
         </p>
       )}
 
@@ -330,7 +331,7 @@ export function ChallengePanel({ game, locale, onChange }: { game: ChGame; local
             {stat(`🎯 ${fillTokens(t.accuracy, { n: Math.round(data.accuracy * 100) })}`)}
           </div>
           <p className="mb-3 text-sm font-semibold">
-            {boostLeft > 0 && g.boost > 0 ? `⚡ ${fillTokens(t.boost, { n: Math.round(g.boost * 100), m: boostLeft })}` : t.noBoost}
+            <EmojiText text={boostLeft > 0 && g.boost > 0 ? `⚡ ${fillTokens(t.boost, { n: Math.round(g.boost * 100), m: boostLeft })}` : t.noBoost} />
           </p>
           {!g.started ? (
             <p className="rounded-lg bg-[var(--surface-muted)] p-3 text-sm">{t.needsGame}</p>
@@ -342,7 +343,7 @@ export function ChallengePanel({ game, locale, onChange }: { game: ChGame; local
             <div>
               <p className="mb-3 text-sm text-[var(--muted)]">{t.quickHint}</p>
               <button type="button" disabled={busy || !!pending} onClick={() => void startQuick()} className="btn-bouncy bg-[var(--brand-500)] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-45">
-                ❓ {t.ask}
+                <Ico e="❓" /> {t.ask}
               </button>
               <p className="mt-3 text-xs text-[var(--faint)]">{t.adaptive}</p>
             </div>
@@ -363,7 +364,7 @@ export function ChallengePanel({ game, locale, onChange }: { game: ChGame; local
                 <li key={n} className={`rounded-xl border-2 p-3 ${done ? "border-[var(--accent-green)] bg-[var(--accent-green)]/10" : next ? "border-[var(--edge)]" : "border-transparent bg-[var(--surface-muted)] opacity-70"}`}>
                   <p className="flex items-center justify-between gap-2 text-sm font-extrabold">
                     <span>
-                      {done ? "✅" : next ? "⚔️" : "🔒"} {t.chapterLabel.replace("{n}", String(n))}: {c.name}
+                      <Ico e={done ? "✅" : next ? "⚔️" : "🔒"} /> {t.chapterLabel.replace("{n}", String(n))}: {c.name}
                     </span>
                     {!done && <span className="text-xs font-semibold text-[var(--muted)]">{fillTokens(t.need[game], { n: g.requirements[i] })}</span>}
                   </p>
@@ -372,7 +373,7 @@ export function ChallengePanel({ game, locale, onChange }: { game: ChGame; local
                     <div className="mt-2">
                       {ready && g.started ? (
                         <button type="button" disabled={busy || !!pending} onClick={() => void startBoss()} className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white disabled:opacity-45">
-                          ⚔️ {t.fight}
+                          <Ico e="⚔" /> {t.fight}
                         </button>
                       ) : (
                         <p className="text-xs font-semibold text-[var(--faint)]">{fillTokens(t.locked, { n: fillTokens(t.need[game], { n: g.requirements[i] }) })}</p>
@@ -391,7 +392,7 @@ export function ChallengePanel({ game, locale, onChange }: { game: ChGame; local
       {tab === "compete" && (
         <div className="grid gap-5">
           <div>
-            <h3 className="mb-2 font-bold">🏆 {t.boardTitle}</h3>
+            <h3 className="mb-2 font-bold"><Ico e="🏆" /> {t.boardTitle}</h3>
             {!board ? (
               <div className="h-20 animate-pulse rounded-xl bg-[var(--surface-muted)]" />
             ) : board.rows.length === 0 ? (
@@ -414,7 +415,7 @@ export function ChallengePanel({ game, locale, onChange }: { game: ChGame; local
           </div>
 
           <div>
-            <h3 className="mb-1 font-bold">🗓️ {t.weekTitle}</h3>
+            <h3 className="mb-1 font-bold"><Ico e="🗓" /> {t.weekTitle}</h3>
             <p className="text-sm font-semibold">
               {fillTokens(t.weekScore, { n: data.week.score })} · {fillTokens(t.weekEnds, { d: days, h: hours })}
             </p>
@@ -422,7 +423,7 @@ export function ChallengePanel({ game, locale, onChange }: { game: ChGame; local
               {data.week.tiers.map((x, i) => (
                 <div key={x.id} className={`rounded-xl border-2 p-2 text-sm ${data.week.tier > i ? "border-[var(--accent-green)] bg-[var(--accent-green)]/10" : "border-[var(--edge)]"}`}>
                   <p className="font-extrabold">
-                    {data.week.tier > i ? "✅" : "🎯"} {t.tier[x.id]} · {x.score}
+                    <Ico e={data.week.tier > i ? "✅" : "🎯"} /> {t.tier[x.id]} · {x.score}
                   </p>
                   <p className="text-xs text-[var(--muted)]">{fillTokens(t.tierReward, { points: x.points, xp: x.xp })}</p>
                 </div>
@@ -456,7 +457,7 @@ export function ChallengePanel({ game, locale, onChange }: { game: ChGame; local
           </div>
 
           <div>
-            <h3 className="mb-2 font-bold">👥 {t.partyTitle}</h3>
+            <h3 className="mb-2 font-bold"><Ico e="👥" /> {t.partyTitle}</h3>
             {data.party.groups.length === 0 ? (
               <p className="text-sm text-[var(--muted)]">{t.partyEmpty}</p>
             ) : (
@@ -505,7 +506,7 @@ export function ChallengePanel({ game, locale, onChange }: { game: ChGame; local
 
           {data.party.groups.length > 0 && (
             <div>
-              <h3 className="mb-1 font-bold">🎁 {t.giftsTitle}</h3>
+              <h3 className="mb-1 font-bold"><Ico e="🎁" /> {t.giftsTitle}</h3>
               <p className="mb-2 text-sm text-[var(--muted)]">{fillTokens(t.giftsHint, { n: data.gifts.left })}</p>
               {data.party.friends.length > 0 && (
                 <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -547,7 +548,7 @@ export function ChallengePanel({ game, locale, onChange }: { game: ChGame; local
                   {data.inbox.map((gift) => (
                     <li key={gift.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-[var(--surface-muted)] px-3 py-1.5 text-sm">
                       <span>
-                        {ICON[gift.game]} {fillTokens(t.giftFrom, { name: gift.fromName })} · <b>{gift.amount.toLocaleString(locale)}</b> {t.currency[gift.game]}
+                        <Ico e={ICON[gift.game]} /> {fillTokens(t.giftFrom, { name: gift.fromName })} · <b>{gift.amount.toLocaleString(locale)}</b> {t.currency[gift.game]}
                       </span>
                       <button
                         type="button"
