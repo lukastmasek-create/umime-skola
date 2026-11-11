@@ -4485,3 +4485,41 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
   .pcard { transition: none; }
   .pcard:hover { transform: rotate(var(--r)); }
 }
+
+/* ===== Panel se zavěšenými štítky ===== */
+.hang-panel {
+  position: relative; overflow: hidden; display: grid; grid-template-columns: 1fr; align-items: center;
+  min-height: 340px; border-radius: 32px; padding: 32px;
+  background: radial-gradient(70% 90% at 80% 20%, rgba(90, 80, 220, 0.38), transparent 70%), linear-gradient(135deg, #12123a 0%, #1a1a52 55%, #0d0d26 100%);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) inset, 0 30px 60px -30px #000;
+}
+.hang-title { font-size: clamp(2rem, 5vw, 3rem); font-weight: 600; line-height: 1.05; color: #c9c6ff; margin-bottom: 14px; }
+.hang-lead { max-width: 340px; color: rgba(236, 234, 255, 0.85); line-height: 1.45; }
+.hang-tags { position: relative; height: 220px; margin-top: 24px; }
+.hang-str {
+  position: absolute; top: -40px; width: 1px; background: linear-gradient(180deg, transparent, rgba(160, 150, 255, 0.7));
+  transform-origin: top center; animation: hang-sway 5s ease-in-out infinite alternate;
+}
+.hang-str::after {
+  content: ""; position: absolute; bottom: -3px; left: -3px; width: 7px; height: 7px; border-radius: 50%;
+  background: #8f86ff; box-shadow: 0 0 10px #8f86ff;
+}
+.hang-tag {
+  position: absolute; top: 100%; left: 50%; transform: translateX(-50%) rotate(var(--tr, -6deg)); transform-origin: top center;
+  margin-top: 4px; white-space: nowrap; padding: 8px 14px; border-radius: 10px; font-size: 0.85rem; color: #eceaff;
+  background: linear-gradient(180deg, rgba(60, 60, 150, 0.85), rgba(30, 30, 95, 0.9));
+  box-shadow: 0 0 0 1px rgba(150, 140, 255, 0.35) inset, 0 8px 16px -8px #000;
+}
+.hang-str-1 { left: 30%; height: 120px; --tr: -8deg; animation-delay: -1s; }
+.hang-str-2 { left: 38%; height: 70px;  --tr: 6deg;  animation-delay: -2.4s; }
+.hang-str-3 { left: 58%; height: 150px; --tr: -5deg; animation-delay: -0.5s; }
+.hang-str-4 { left: 80%; height: 100px; --tr: 7deg;  animation-delay: -3.2s; }
+.hang-str-5 { left: 22%; height: 175px; --tr: 4deg;  animation-delay: -1.8s; }
+.hang-str-2 .hang-tag { background: linear-gradient(180deg, #5a5ff0, #3a3ab8); }
+@keyframes hang-sway { from { transform: rotate(-2.5deg); } to { transform: rotate(2.5deg); } }
+@media (min-width: 768px) {
+  .hang-panel { grid-template-columns: 1fr 1.1fr; padding: 48px; min-height: 360px; }
+  .hang-tags { height: 280px; margin-top: 0; }
+  .hang-str-1 { left: 8%; height: 150px; } .hang-str-3 { height: 190px; } .hang-str-5 { height: 225px; }
+}
+@media (prefers-reduced-motion: reduce) { .hang-str { animation: none; } }

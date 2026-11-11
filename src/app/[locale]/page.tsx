@@ -14,6 +14,7 @@ import { getHomeLobbyText } from "@/i18n/home-lobby";
 import { ResultsPreview } from "@/components/ResultsPreview";
 import { HeroShowcase } from "@/components/HeroShowcase";
 import { getHomeHeroText } from "@/i18n/home-hero";
+import { getHomeHangText } from "@/i18n/home-hang";
 import { getHomeText } from "@/i18n/home";
 import { getHomeAudienceText } from "@/i18n/home-teachers";
 import { getAudiencePagesText } from "@/i18n/audience";
@@ -159,6 +160,23 @@ export default async function Home({
           </div>
         </section>
       )}
+
+      {/* 4b) Panel se zavěšenými štítky */}
+      <section className="zone zone-space">
+        <div className="hang-panel reveal mx-auto max-w-5xl">
+          <div className="hang-copy">
+            <h2 className="hang-title" style={heading}>{getHomeHangText(locale as Locale).title}</h2>
+            <p className="hang-lead">{getHomeHangText(locale as Locale).lead}</p>
+          </div>
+          <div className="hang-tags" aria-hidden>
+            {getHomeHangText(locale as Locale).tags.map((tag, i) => (
+              <div key={tag} className={`hang-str hang-str-${i + 1}`}>
+                <span className="hang-tag">{tag}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* 5) Zpět do vesmíru: kategorie */}
       <section className="zone zone-space">
