@@ -1,4 +1,4 @@
-// Prasklý rám úvodní karty obchodu (střepy, trhliny, zlatá záře, mince). Kosmonauta jako sekvenci 3D snímků
+// Prasklý rám úvodní karty obchodu (trhliny, zlatá záře, mince; střepy a výbuch jsou v ShopHeroStage). Kosmonauta jako sekvenci 3D snímků
 // přehrává ShopHeroStage. SVG je zakotvené k pravému hornímu rohu karty; zubatá hrana (JAG) musí sedět
 // s clip-path `.gs-hero-card` v globals.css.
 const INK = "#14132a";
@@ -12,23 +12,6 @@ const JAG: [number, number][] = [
 ];
 const pt = ([r, y]: [number, number]) => `${W - r},${y + TOP}`;
 const EDGE = JAG.map(pt).join(" ");
-
-// Střepy karty: [x, y, velikost, rotace, zpoždění]
-const SHARDS: [number, number, number, number, number][] = [
-  [330, 40, 1, 24, 0], [376, 120, 0.7, -38, 0.8], [250, 6, 0.8, 70, 1.4], [350, 190, 0.55, 12, 0.4], [116, 22, 0.6, -20, 1.9],
-];
-
-function Shard({ x, y, s, r, d }: { x: number; y: number; s: number; r: number; d: number }) {
-  return (
-    <g transform={`translate(${x} ${y}) rotate(${r}) scale(${s})`}>
-      <g className="gs-shard" style={{ animationDelay: `${-d}s` }}>
-        <path d="M-22 -10 L8 -26 L30 -4 L14 22 L-14 18Z" fill="url(#sha-card)" stroke={INK} strokeWidth="3.4" strokeLinejoin="round" />
-        <path d="M-22 -10 L8 -26 L30 -4" fill="none" stroke="#e8e3ff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" opacity=".8" />
-        <path d="M-8 -2 L10 -10 M2 6 L14 2" stroke="#ffc933" strokeWidth="1.4" strokeLinecap="round" opacity=".55" />
-      </g>
-    </g>
-  );
-}
 
 function Coin({ x, y, r = 11, d = 0 }: { x: number; y: number; r?: number; d?: number }) {
   return (
@@ -74,18 +57,21 @@ export function ShopHeroArt() {
         ))}
       </g>
 
-      {/* pavučina trhlin těsně před prorazem (nad hlavou kosmonauta) */}
-      <g className="gs-web" fill="none" stroke={INK} strokeLinecap="round" strokeLinejoin="round">
-        {[
-          "M210 190 L168 150 L150 112", "M210 190 L214 128 L196 86", "M210 190 L256 150 L282 116", "M210 190 L186 232 L150 250",
-          "M210 190 L250 226 L292 236", "M168 150 L132 158", "M256 150 L290 170", "M214 128 L240 102",
-        ].map((d) => (
-          <g key={d}>
-            <path d={d} stroke={INK} strokeWidth="7" />
-            <path d={d} stroke="#fff3b8" strokeWidth="2.6" pathLength={100} className="gs-webline" />
-          </g>
-        ))}
-      </g>
+      {/* trhliny ve třech stupních kolem místa nárazu hlavou (200, 122): po 1. skoku, po 2. skoku a před prorazem */}
+      {[
+        ["gs-web1", ["M200 122 L172 100 L160 76", "M200 122 L212 90 L206 64", "M200 122 L232 104 L244 84", "M200 122 L186 150 L170 160"]],
+        ["gs-web2", ["M172 100 L140 108", "M212 90 L238 70", "M232 104 L262 112", "M186 150 L180 184 L160 196", "M160 76 L134 64", "M244 84 L270 76"]],
+        ["gs-web3", ["M200 122 L226 156 L262 168 L290 160", "M140 108 L112 96 L96 74", "M206 64 L196 34 L212 10", "M270 76 L296 58", "M160 196 L130 210 L116 236", "M180 184 L200 214 L196 246"]],
+      ].map(([cls, paths]) => (
+        <g key={cls as string} className={`gs-web ${cls}`} fill="none" strokeLinecap="round" strokeLinejoin="round">
+          {(paths as string[]).map((d) => (
+            <g key={d}>
+              <path d={d} stroke={INK} strokeWidth="7" />
+              <path d={d} stroke="#fff3b8" strokeWidth="2.6" pathLength={100} className="gs-webline" />
+            </g>
+          ))}
+        </g>
+      ))}
       {/* hrana prasklého rámu: tmavý lem, světlý odlesk a zlatá žhavá linka */}
       <polyline points={EDGE} fill="none" stroke={INK} strokeWidth="10" strokeLinejoin="round" strokeLinecap="round" />
       <polyline points={EDGE} fill="none" stroke="#e8e3ff" strokeWidth="3.6" strokeLinejoin="round" strokeLinecap="round" opacity=".85" />
@@ -107,19 +93,12 @@ export function ShopHeroArt() {
         ))}
       </g>
 
-      {/* střepy a mince */}
-      {SHARDS.map(([x, y, s, r, d], i) => (
-        <Shard key={i} x={x} y={y} s={s} r={r} d={d} />
-      ))}
+      {/* mince */}
       <Coin x={52} y={112} r={11} d={0.3} />
       <Coin x={370} y={64} r={9} d={1.1} />
       <Coin x={302} y={96} r={8} d={1.7} />
       <Coin x={30} y={196} r={8} d={0.9} />
 
-      {/* prach u trhliny */}
-      {[[108, 128, 14], [168, 150, 11], [244, 138, 16], [306, 154, 10], [60, 150, 9]].map(([x, y, r], i) => (
-        <circle key={i} className="gs-dust" cx={x} cy={y + 10} r={r} fill="#f6f1e4" fillOpacity=".55" style={{ animationDelay: `${-i * 0.7}s` }} />
-      ))}
       <Spark x={36} y={60} s={1.2} d={0} />
       <Spark x={382} y={22} s={1} d={1} />
       <Spark x={150} y={14} s={0.8} d={1.6} />
