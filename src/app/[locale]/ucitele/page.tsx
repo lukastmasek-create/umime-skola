@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ResultsPreview } from "@/components/ResultsPreview";
+import { FaqItem } from "@/components/FaqItem";
 import { getHomeAudienceText } from "@/i18n/home-teachers";
 import LiveCardItem from "@/components/LiveCardItem";
 import TeacherArt, { type TeacherArtKind } from "@/components/TeacherArt";
@@ -126,10 +127,7 @@ export default async function TeachersPage({ params }: { params: Promise<{ local
           </h2>
           <div className="grid gap-3">
             {t.faq.map((item) => (
-              <details key={item.q} className="gcard gcard-soft group p-5">
-                <summary className="cursor-pointer font-bold">{item.q}</summary>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">{item.a}</p>
-              </details>
+              <FaqItem key={item.q} q={item.q} a={item.a} />
             ))}
           </div>
         </section>

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import type { PointerEvent } from "react";
 import { useReveal } from "./useReveal";
+import { tiltLeave, tiltMove } from "./cardTilt";
 import StudentArt from "./StudentArt";
 import type { FeatureKey } from "@/i18n/audience";
 
@@ -17,15 +17,9 @@ type Props = {
 };
 
 // Karta pro žáky: postupné vyjetí při scrollu, rostoucí sloupečky
-// a světlo, které sleduje kurzor. Vše se vypíná při prefers-reduced-motion.
+// a 3D náklon za kurzorem. Vše se vypíná při prefers-reduced-motion.
 export default function StudentFeatureCard({ href, title, text, accent, coverHeight, art, index }: Props) {
   const { ref, shown } = useReveal<HTMLLIElement>();
-
-  function onMove(e: PointerEvent<HTMLAnchorElement>) {
-    const r = e.currentTarget.getBoundingClientRect();
-    e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
-    e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
-  }
 
   return (
     <li
@@ -38,7 +32,8 @@ export default function StudentFeatureCard({ href, title, text, accent, coverHei
         href={href}
         className="gcard gcard-live group block"
         style={{ ["--ga" as string]: accent }}
-        onPointerMove={onMove}
+        onPointerMove={tiltMove}
+        onPointerLeave={tiltLeave}
       >
         <span className="gcard-glow" aria-hidden="true" />
         <div className="gcard-cover" style={{ height: coverHeight }}>

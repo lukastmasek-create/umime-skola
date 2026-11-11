@@ -4741,6 +4741,139 @@ a.gcard-live:hover .gcard-bars i.is-hi { background: var(--ga); }
   .gcard-live.gcard-hover:hover { transform: none; }
 }
 
+/* ===== Tištěný vzhled karet (žáci, učitelé): plochá barva, krémový obrys, tloušťka karty a 3D náklon ===== */
+.gcard-live {
+  --rx: 0deg; --ry: 0deg; --lift: 0px; --cr: 0deg;
+  --edge: rgba(244, 239, 227, 0.88); --slab: #0d0c20;
+  border: 2px solid var(--edge); border-radius: 22px;
+  background: color-mix(in srgb, var(--ga) 12%, #1b1a30);
+  /* „tloušťka" karty: řada tvrdých stínů skládá kvádr, ne rozmazaný stín */
+  box-shadow: 1px 1px 0 var(--slab), 2px 2px 0 var(--slab), 3px 3px 0 var(--slab), 4px 4px 0 var(--slab), 5px 5px 0 var(--slab), 6px 6px 0 var(--slab), 8px 10px 0 rgba(8, 8, 24, 0.5);
+  transform: rotate(var(--cr)) perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) translateY(var(--lift));
+  transition: transform 0.18s ease-out, box-shadow 0.25s ease, background 0.25s ease;
+}
+.gcard-live::after { border-radius: inherit; }
+.gc-item:nth-child(odd) .gcard-live { --cr: -0.6deg; }
+.gc-item:nth-child(even) .gcard-live { --cr: 0.6deg; }
+.gcard-live.gcard-on { background: color-mix(in srgb, var(--ga) 24%, #1b1a30); border-color: var(--ga); }
+.gcard-glow { display: none; }
+/* lepicí páska přes horní okraj ilustrace; je uvnitř karty, protože pseudoelement na <li> se ve sloupcích
+   (zaci) objevoval na dně sousedního sloupce, a karta musí mít overflow hidden kvůli break-inside: avoid */
+.gcard-live::before {
+  content: ""; position: absolute; top: 6px; left: 50%; width: 64px; height: 18px; margin-left: -32px; z-index: 3; pointer-events: none;
+  background: color-mix(in srgb, var(--ga) 80%, transparent); rotate: var(--tp, -4deg);
+  clip-path: polygon(0 0, 100% 0, 98% 25%, 100% 50%, 98% 75%, 100% 100%, 0 100%, 2% 75%, 0 50%, 2% 25%);
+}
+.gc-item:nth-child(odd) .gcard-live { --tp: -4deg; }
+.gc-item:nth-child(even) .gcard-live { --tp: 5deg; }
+/* hover: karta se zvedne a tloušťka naroste, náklon řídí myš */
+a.gcard-live:hover, .gcard-live.gcard-hover:hover, a.gcard-live:focus-visible {
+  --lift: -7px;
+  transform: rotate(calc(var(--cr) * 0.3)) perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) translateY(var(--lift));
+  background: color-mix(in srgb, var(--ga) 20%, #1b1a30);
+  box-shadow: 1px 1px 0 var(--slab), 2px 2px 0 var(--slab), 3px 3px 0 var(--slab), 4px 4px 0 var(--slab), 5px 5px 0 var(--slab), 6px 6px 0 var(--slab), 7px 7px 0 var(--slab), 8px 8px 0 var(--slab), 13px 17px 0 rgba(8, 8, 24, 0.5);
+}
+a.gcard-live:active { --lift: -2px; transform: rotate(var(--cr)) perspective(900px) translateY(var(--lift)); transition-duration: 0.1s; }
+a.gcard-live:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+/* panel s ilustrací: plochá barevná plocha oddělená linkou */
+.gcard-live .gcard-cover {
+  background: color-mix(in srgb, var(--ga) 22%, #1b1a30); border-bottom: 2px solid var(--edge); border-radius: 20px 20px 0 0;
+}
+.gcard-live .gcard-art { translate: calc(var(--px, 0) * 7px) calc(var(--py, 0) * 5px); transition: translate 0.18s ease-out; }
+.gcard-live .gcard-chip { background: var(--ga); color: #14132a; border: 2px solid #14132a; }
+a.gcard-live:hover .gcard-chip { background: var(--ga); }
+@media (hover: none) {
+  a.gcard-live:hover, .gcard-live.gcard-hover:hover { --lift: 0px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gcard-live, a.gcard-live:hover, .gcard-live.gcard-hover:hover, a.gcard-live:active { transform: rotate(var(--cr)); transition: none; }
+  .gcard-live .gcard-art { translate: none; transition: none; }
+}
+
+/* ===== Ukázka výsledků: vjezd prvků a plynulé dorůstání sloupců ===== */
+.rp-card { --ga: #6ee7b7; }
+.rp-card.gcard-live { background: color-mix(in srgb, var(--ga) 9%, #15162b); border-color: color-mix(in srgb, var(--ga) 70%, #f4efe3); }
+.rp-head, .rp-row { opacity: 0; translate: 0 10px; transition: opacity 0.6s ease, translate 0.7s cubic-bezier(0.22, 1, 0.36, 1); transition-delay: var(--d, 0ms); }
+.rp-card.is-in .rp-head, .rp-row.is-in { opacity: 1; translate: 0 0; }
+.rp-fill { position: relative; overflow: hidden; transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1); }
+.rp-fill::after { /* jemný lesk, který občas přejede po sloupci */
+  content: ""; position: absolute; inset: 0; translate: -100% 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  animation: rp-shine 4.2s ease-in-out 2.4s infinite;
+}
+@keyframes rp-shine { 0%, 55% { translate: -100% 0; } 100% { translate: 100% 0; } }
+.rp-av, .rp-ico { flex-shrink: 0; transition: rotate 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.rp-ico { rotate: -4deg; }
+.rp-card:hover .rp-ico { rotate: 4deg; }
+.rp-row:hover .rp-av { rotate: -10deg; }
+.rp-st { flex-shrink: 0; }
+.rp-arc { transition: stroke-dashoffset 1.9s cubic-bezier(0.22, 1, 0.36, 1) 0.25s; }
+.rp-tick { stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset 0.6s ease 1.8s; }
+.rp-row.is-in .rp-tick { stroke-dashoffset: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .rp-head, .rp-row, .rp-fill { opacity: 1; translate: none; transition: none; }
+  .rp-fill::after { display: none; }
+  .rp-arc, .rp-av, .rp-ico { transition: none; }
+  .rp-tick { stroke-dashoffset: 0; transition: none; }
+}
+
+/* ===== FAQ: plynulé rozbalování, otáčející se šipka, tištěný vzhled ===== */
+.faq-item {
+  --ga: #6ee7b7; overflow: hidden; padding: 18px 20px; border: 2px solid rgba(244, 239, 227, 0.88); border-radius: 18px;
+  background: #1b1a30; color: #f6f1e4; box-shadow: 1px 1px 0 #0d0c20, 2px 2px 0 #0d0c20, 3px 3px 0 #0d0c20, 4px 4px 0 #0d0c20, 6px 8px 0 rgba(8, 8, 24, 0.5);
+  transition: background 0.3s ease, box-shadow 0.3s ease, translate 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.faq-item:hover { translate: 0 -2px; box-shadow: 1px 1px 0 #0d0c20, 2px 2px 0 #0d0c20, 3px 3px 0 #0d0c20, 4px 4px 0 #0d0c20, 5px 5px 0 #0d0c20, 8px 11px 0 rgba(8, 8, 24, 0.5); }
+.faq-item[open]:not([data-closing]) { background: color-mix(in srgb, var(--ga) 12%, #1b1a30); }
+.faq-item summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; font-weight: 700; list-style: none; }
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary:focus-visible { outline: 3px solid #fff; outline-offset: 6px; border-radius: 6px; }
+.faq-chev { flex-shrink: 0; color: var(--ga); transition: rotate 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.faq-item[open]:not([data-closing]) .faq-chev { rotate: 180deg; }
+.faq-a { margin-top: 10px; font-size: 0.875rem; line-height: 1.6; color: var(--muted, rgba(246, 241, 228, 0.66)); }
+@media (prefers-reduced-motion: reduce) { .faq-item, .faq-chev { transition: none; } .faq-item:hover { translate: none; } }
+
+/* ===== Hravost jen pro ukázku výsledků a FAQ: pružné vjezdy, kývání a plynulé návraty =====
+   Pružina = cubic-bezier s přeletem. Karty na /zaci a /ucitele zůstávají beze změny. */
+/* ukázka výsledků: pružné dorůstání, vyskakující avatary a ikony, kývající se podložka */
+.rp-head, .rp-row { transition: none; translate: none; opacity: 0; }
+.rp-card.is-in .rp-head, .rp-row.is-in { animation: rp-in 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) var(--d, 0ms) both; }
+@keyframes rp-in { from { opacity: 0; translate: -16px 10px; rotate: -1.4deg; } to { opacity: 1; translate: 0 0; rotate: 0deg; } }
+.rp-row { transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.rp-row:hover { transform: translateX(6px); }
+.rp-fill { transition: width 1.7s cubic-bezier(0.34, 1.25, 0.64, 1); }
+.rp-arc { transition: stroke-dashoffset 2s cubic-bezier(0.34, 1.2, 0.64, 1) 0.25s; }
+.rp-av { scale: 0; transition: rotate 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), scale 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--d, 0ms) + 250ms); }
+.rp-row.is-in .rp-av { scale: 1; }
+.rp-st { scale: 0; transition: scale 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--d, 0ms) + 1500ms); }
+.rp-row.is-in .rp-st { scale: 1; }
+.rp-row:hover .rp-av { rotate: -14deg; scale: 1.12; transition-delay: 0s; }
+.rp-ring { transition: scale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.rp-card:hover .rp-ring { scale: 1.08; }
+.rp-card.is-in .gcard-big { animation: rp-pop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 2.2s both; transform-origin: 0 70%; }
+@keyframes rp-pop { 0% { scale: 1; } 40% { scale: 1.1; } 100% { scale: 1; } }
+.rp-ico { animation: rp-wiggle 7s ease-in-out 3.5s infinite; }
+@keyframes rp-wiggle { 0%, 86%, 100% { rotate: -4deg; } 90% { rotate: 9deg; } 94% { rotate: -11deg; } 97% { rotate: 5deg; } }
+.rp-card.gcard-live { transition: transform 0.75s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease, background 0.3s ease; }
+
+/* FAQ: otevřená položka se lehce natočí, otázka dostane barvu, šipka se pružně otočí */
+.faq-item { --fr: -0.5deg; rotate: 0deg; transition: background 0.35s ease, box-shadow 0.35s ease, translate 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), rotate 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.faq-item:nth-child(even) { --fr: 0.5deg; }
+.faq-item[open]:not([data-closing]) { rotate: var(--fr); translate: 0 -2px; }
+.faq-item summary span { transition: color 0.3s ease, translate 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.faq-item[open]:not([data-closing]) summary span { color: var(--ga); translate: 4px 0; }
+.faq-item:active { scale: 0.985; }
+.faq-item:hover .faq-chev { translate: 0 2px; }
+.faq-chev { transition: rotate 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), translate 0.3s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rp-ico, .rp-card.is-in .gcard-big { animation: none; }
+  .rp-head, .rp-row { opacity: 1; animation: none !important; transition: none; }
+  .rp-av, .rp-st { scale: 1; transition: none; }
+  .rp-row:hover { transform: none; }
+  .faq-item[open]:not([data-closing]) { rotate: 0deg; }
+}
+
 /* SVG ilustrace v hlavičce karet pro žáky */
 .gcard-cover { position: relative; overflow: hidden; }
 .gcard-art { display: block; width: 100%; height: 100%; overflow: hidden; }

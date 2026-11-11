@@ -19,16 +19,26 @@ export function Pop({ d, float, spin, children }: { d: number; float?: boolean; 
   );
 }
 
-export function Sparkle({ x, y, s = 1, d }: { x: number; y: number; s?: number; d: number }) {
+// Třpytky jsme z ilustrací vyřadili (působily strojově); komponenta zůstala, ať se nemusí měnit scény.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function Sparkle(_props: { x: number; y: number; s?: number; d: number }) {
+  return null;
+}
+
+// Ruční vystřižený okraj: tvary se jemně rozvlní a dostanou tmavý obrys (stejně jako u karet kategorií).
+export function ArtRough() {
   return (
-    <Pop d={d}>
-      <g className="sv-idle" style={{ ["--d" as string]: d }}>
-        <path
-          d={`M${x} ${y - 7 * s} Q${x} ${y} ${x + 7 * s} ${y} Q${x} ${y} ${x} ${y + 7 * s} Q${x} ${y} ${x - 7 * s} ${y} Q${x} ${y} ${x} ${y - 7 * s}Z`}
-          fill={A}
-        />
-      </g>
-    </Pop>
+    <filter id="sv-rough" x="-4%" y="-6%" width="108%" height="112%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="5" result="n" />
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G" result="d" />
+      <feMorphology in="d" operator="dilate" radius="1.25" result="o" />
+      <feFlood floodColor="#14132a" />
+      <feComposite in2="o" operator="in" result="ink" />
+      <feMerge>
+        <feMergeNode in="ink" />
+        <feMergeNode in="d" />
+      </feMerge>
+    </filter>
   );
 }
 

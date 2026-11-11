@@ -1,9 +1,10 @@
 "use client";
 
-import type { PointerEvent, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useReveal } from "./useReveal";
+import { tiltLeave, tiltMove } from "./cardTilt";
 
-// Položka seznamu s kartou: postupný vjezd při scrollu a světlo za kurzorem.
+// Položka seznamu s kartou: postupný vjezd při scrollu a 3D náklon za kurzorem.
 // Vjezd běží na <li>, hover na vnitřní kartě, aby se transformace nepralaly.
 export default function LiveCardItem({
   index,
@@ -18,18 +19,13 @@ export default function LiveCardItem({
 }) {
   const { ref, shown } = useReveal<HTMLLIElement>();
 
-  function onMove(e: PointerEvent<HTMLDivElement>) {
-    const r = e.currentTarget.getBoundingClientRect();
-    e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
-    e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
-  }
-
   return (
     <li ref={ref} className={`gc-item${shown ? " is-in" : ""}`} style={{ ["--i" as string]: index % 6 }}>
       <div
         className={`gcard gcard-live gcard-hover ${className}`}
         style={accent ? { ["--ga" as string]: accent } : undefined}
-        onPointerMove={onMove}
+        onPointerMove={tiltMove}
+        onPointerLeave={tiltLeave}
       >
         <span className="gcard-glow" aria-hidden="true" />
         {children}
