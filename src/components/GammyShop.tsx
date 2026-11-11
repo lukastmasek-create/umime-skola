@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Asterisk, Check, Eye, Flame, Heart, Receipt, Star, Zap } from "lucide-react";
 import { ShopModel } from "@/components/ShopModel";
+import { Icon } from "@/components/Icon";
 import { Avatar } from "@/components/Avatar";
 import { Modal, Preview, type Snapshot } from "@/components/ShopView";
 import { MaterialShop, LimitedShop, ProCard } from "@/components/ShopSections";
@@ -410,11 +411,7 @@ export function GammyShop({
           </div>
         </div>
         <div className="relative mx-auto flex h-64 w-full max-w-md items-end justify-center overflow-hidden rounded-3xl bg-[var(--g-accent)] sm:h-80">
-          <span
-            aria-hidden
-            className="globe-sprite block h-64 w-64 drop-shadow-[0_8px_8px_rgba(0,0,0,0.35)] sm:h-80 sm:w-80"
-            style={{ backgroundImage: "url(/home/obchod/stanek-poklad.webp)" }}
-          />
+          <Icon name="balicek-poklad" size={300} className="mb-2 h-60 w-60 drop-shadow-[0_8px_8px_rgba(0,0,0,0.3)] sm:h-72 sm:w-72" />
         </div>
       </section>
 

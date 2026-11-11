@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Icon } from "@/components/Icon";
 import type { Dictionary } from "@/i18n/dictionaries";
 
 export function BuyPointsCard({
@@ -23,11 +24,7 @@ export function BuyPointsCard({
           {dict.shop.mostPopular}
         </span>
       )}
-      <span
-        aria-hidden
-        className="globe-sprite -mx-4 -mt-4 block h-48 w-48 drop-shadow-[0_8px_8px_rgba(0,0,0,0.35)] group-hover:[animation-duration:0.9s]"
-        style={{ backgroundImage: `url(/home/obchod/stanek-${pkg.image}.webp)` }}
-      />
+      <Icon name={`balicek-${pkg.image}`} size={176} className="-mt-2 drop-shadow-[0_6px_6px_rgba(0,0,0,0.3)] transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3" />
       <p className="text-2xl font-bold">{pkg.points}</p>
       <p className="text-sm text-[var(--faint)]">{dict.shop.pointsSuffix}</p>
       <p className="mt-2 text-lg font-semibold text-[var(--brand-600)]">{pkg.price}</p>
