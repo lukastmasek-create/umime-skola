@@ -4451,3 +4451,55 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
   .gcard, .gcard-chip { transition: none; }
   a.gcard:hover, .gcard-hover:hover, a.gcard:hover .gcard-chip { transform: none; }
 }
+
+/* ===== Karty pro žáky: vjezd, rostoucí sloupečky, světlo za kurzorem ===== */
+.gcard-live {
+  --mx: 50%;
+  --my: 0%;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
+  will-change: transform;
+}
+.gcard-glow {
+  position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0;
+  background: radial-gradient(260px circle at var(--mx) var(--my), color-mix(in srgb, var(--ga) 30%, transparent), transparent 70%);
+  transition: opacity 0.4s ease;
+}
+a.gcard-live:hover .gcard-glow, a.gcard-live:focus-visible .gcard-glow { opacity: 1; }
+a.gcard-live:hover { transform: translateY(-6px) scale(1.012); }
+a.gcard-live:active { transform: translateY(-2px) scale(0.99); transition-duration: 0.12s; }
+a.gcard-live:focus-visible { outline: 2px solid var(--ga); outline-offset: 3px; }
+.gcard-live .gcard-title { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), color 0.3s ease; }
+a.gcard-live:hover .gcard-title { transform: translateX(4px); }
+.gcard-live .gcard-chip { transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease; }
+a.gcard-live:hover .gcard-chip { transform: rotate(-45deg) scale(1.1); }
+.gcard-live .gcard-bars i {
+  transform-origin: 50% 100%;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease;
+  transition-delay: calc(var(--n) * 25ms);
+}
+a.gcard-live:hover .gcard-bars i { transform: scaleY(1.1); background: rgba(255, 255, 255, 0.22); }
+a.gcard-live:hover .gcard-bars i.is-hi { background: var(--ga); }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Skryté, dokud karta nevjede do záběru (bez JS se ukáže přes noscript níž) */
+  .gc-item { opacity: 0; transform: translateY(28px) scale(0.97); }
+  .gc-item.is-in {
+    opacity: 1; transform: none;
+    transition: opacity 0.7s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: calc(var(--i, 0) * 80ms);
+  }
+  .gc-item .gcard-bars i { transform: scaleY(0); }
+  .gc-item.is-in .gcard-bars i {
+    transform: scaleY(1);
+    transition: transform 0.9s cubic-bezier(0.34, 1.3, 0.64, 1), background 0.3s ease;
+    transition-delay: calc(var(--i, 0) * 80ms + 250ms + var(--n) * 60ms);
+  }
+  .gc-item.is-in a.gcard-live:hover .gcard-bars i { transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease; transition-delay: calc(var(--n) * 25ms); transform: scaleY(1.1); }
+  /* Zvýrazněný sloupec jemně dýchá */
+  .gc-item.is-in .gcard-bars i.is-hi { animation: gc-breathe 3.2s ease-in-out 1.6s infinite; }
+}
+@keyframes gc-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+@media (prefers-reduced-motion: reduce) {
+  .gcard-live, .gcard-live .gcard-title, .gcard-live .gcard-chip, .gcard-live .gcard-bars i, .gcard-glow { transition: none; }
+  a.gcard-live:hover, a.gcard-live:active, a.gcard-live:hover .gcard-title, a.gcard-live:hover .gcard-bars i { transform: none; }
+}
