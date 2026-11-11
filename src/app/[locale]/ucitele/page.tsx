@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ResultsPreview } from "@/components/ResultsPreview";
 import { getHomeAudienceText } from "@/i18n/home-teachers";
+import LiveCardItem from "@/components/LiveCardItem";
 import { TeacherCta } from "@/components/TeacherCta";
 import { getAudiencePagesText } from "@/i18n/audience";
 import { isLocale, type Locale } from "@/i18n/config";
@@ -59,6 +60,10 @@ export default async function TeachersPage({ params }: { params: Promise<{ local
         </div>
       </section>
 
+      <noscript>
+        <style>{".gc-item{opacity:1!important;transform:none!important}"}</style>
+      </noscript>
+
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-16">
         {/* Tři kroky jako zvýrazněné karty; prostřední je vybraná */}
         <section className="mb-16">
@@ -67,9 +72,10 @@ export default async function TeachersPage({ params }: { params: Promise<{ local
             {t.steps.map((step, i) => {
               const featured = i === 1;
               return (
-                <li
+                <LiveCardItem
                   key={step.title}
-                  className={`gcard relative flex flex-col p-6 ${featured ? "gcard-on md:-translate-y-4" : ""}`}
+                  index={i}
+                  className={`relative flex h-full flex-col p-6 ${featured ? "gcard-on md:-translate-y-4" : ""}`}
                 >
                   <span className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--surface-muted)] text-[var(--accent-green)]">
                     {stepIcons[i]}
@@ -81,20 +87,20 @@ export default async function TeachersPage({ params }: { params: Promise<{ local
                     {step.title}
                   </h2>
                   <p className="text-sm leading-relaxed text-[var(--muted)]">{step.text}</p>
-                </li>
+                </LiveCardItem>
               );
             })}
           </ol>
         </section>
 
         <ul className="gcard-cycle mb-12 grid gap-4 sm:grid-cols-2">
-          {t.points.map((point) => (
-            <li key={point.title} className="gcard gcard-hover p-5">
+          {t.points.map((point, i) => (
+            <LiveCardItem key={point.title} index={i} className="h-full p-5">
               <h2 className="gcard-title mb-1 text-lg" style={heading}>
                 {point.title}
               </h2>
               <p className="text-sm leading-relaxed text-[var(--muted)]">{point.text}</p>
-            </li>
+            </LiveCardItem>
           ))}
         </ul>
 
@@ -109,11 +115,11 @@ export default async function TeachersPage({ params }: { params: Promise<{ local
             {t.featuresTitle}
           </h2>
           <ul className="gcard-cycle grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {t.features.map((feature) => (
-              <li key={feature.title} className="gcard gcard-hover p-5">
+            {t.features.map((feature, i) => (
+              <LiveCardItem key={feature.title} index={i} className="h-full p-5">
                 <h3 className="gcard-title mb-1">{feature.title}</h3>
                 <p className="text-sm leading-relaxed text-[var(--muted)]">{feature.text}</p>
-              </li>
+              </LiveCardItem>
             ))}
           </ul>
         </section>

@@ -4503,3 +4503,10 @@ a.gcard-live:hover .gcard-bars i.is-hi { background: var(--ga); }
   .gcard-live, .gcard-live .gcard-title, .gcard-live .gcard-chip, .gcard-live .gcard-bars i, .gcard-glow { transition: none; }
   a.gcard-live:hover, a.gcard-live:active, a.gcard-live:hover .gcard-title, a.gcard-live:hover .gcard-bars i { transform: none; }
 }
+
+/* Statické karty (učitelé): stejný hover jako u odkazů */
+.gcard-live.gcard-hover:hover { transform: translateY(-6px) scale(1.012); }
+.gcard-live.gcard-hover:hover .gcard-glow { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .gcard-live.gcard-hover:hover { transform: none; }
+}

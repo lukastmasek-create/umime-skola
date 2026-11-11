@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type PointerEvent } from "react";
+import type { PointerEvent } from "react";
+import { useReveal } from "./useReveal";
 
 type Props = {
   href: string;
@@ -17,28 +18,7 @@ type Props = {
 // Karta pro žáky: postupné vyjetí při scrollu, rostoucí sloupečky
 // a světlo, které sleduje kurzor. Vše se vypíná při prefers-reduced-motion.
 export default function StudentFeatureCard({ href, title, text, accent, coverHeight, bars, hiBar, index }: Props) {
-  const ref = useRef<HTMLLIElement>(null);
-  const [shown, setShown] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    if (typeof IntersectionObserver === "undefined") {
-      setShown(true);
-      return;
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          setShown(true);
-          io.disconnect();
-        }
-      },
-      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
+  const { ref, shown } = useReveal<HTMLLIElement>();
 
   function onMove(e: PointerEvent<HTMLAnchorElement>) {
     const r = e.currentTarget.getBoundingClientRect();
