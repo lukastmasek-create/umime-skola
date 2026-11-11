@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 136 136" width="256" height="256"><defs>
+<radialGradient id="bg" cx=".4" cy=".3" r=".9"><stop offset="0" stop-color="#ffe8b8"/><stop offset=".6" stop-color="#ffc977"/><stop offset="1" stop-color="#e08f3a"/></radialGradient>
+<radialGradient id="pd" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#ffc2d1"/><stop offset=".55" stop-color="#ff8fab"/><stop offset="1" stop-color="#d9547a"/></radialGradient>
+<radialGradient id="sh"><stop offset="0" stop-color="#000" stop-opacity=".35"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<filter id="stk" filterUnits="userSpaceOnUse" x="-4" y="-4" width="136" height="136"><feMorphology in="SourceAlpha" operator="dilate" radius="3.2" result="d"/><feFlood flood-color="#fffdf5"/><feComposite in2="d" operator="in" result="w"/><feMerge><feMergeNode in="w"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><style>.bob{transform-origin:64px 110px;animation:bob 2.8s ease-in-out infinite}@keyframes bob{0%,100%{transform:translateY(0) rotate(-1.6deg)}50%{transform:translateY(-3.5px) rotate(1.6deg)}}.tw{transform-box:fill-box;transform-origin:center;animation:tw 1.8s ease-in-out infinite}.tw:nth-of-type(2n){animation-delay:.6s}@keyframes tw{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.55);opacity:.55}}@media (prefers-reduced-motion:reduce){.bob,.tw{animation:none}}</style><g class="bob"><g filter="url(#stk)">
+<ellipse cx="64" cy="120" rx="38" ry="6" fill="url(#sh)"/>
+<circle cx="64" cy="64" r="54" fill="url(#bg)" stroke="#553729" stroke-width="3.88"/>
+<g stroke="#e9a85a" stroke-width="2" stroke-linecap="round" opacity=".6"><path d="M20 40q6-4 10-1M98 30q6-3 10 0M16 78q6 3 11 0M100 92q6 3 10 0M44 14q3 5 8 5M80 112q3-5 8-5"/></g>
+<g stroke="#5c2347" stroke-width="3.41" stroke-linejoin="round">
+<path d="M64 60c-16 0-30 14-30 26 0 12 10 16 18 14 6-1 8-3 12-3s6 2 12 3c8 2 18-2 18-14 0-12-14-26-30-26z" fill="url(#pd)"/>
+<ellipse cx="34" cy="56" rx="9" ry="12" transform="rotate(-24 34 56)" fill="url(#pd)"/>
+<ellipse cx="50" cy="38" rx="9.5" ry="13" transform="rotate(-8 50 38)" fill="url(#pd)"/>
+<ellipse cx="78" cy="38" rx="9.5" ry="13" transform="rotate(8 78 38)" fill="url(#pd)"/>
+<ellipse cx="94" cy="56" rx="9" ry="12" transform="rotate(24 94 56)" fill="url(#pd)"/>
+</g>
+<g fill="#fff" opacity=".6"><ellipse cx="52" cy="76" rx="9" ry="4.5" transform="rotate(-30 52 76)"/><ellipse cx="46" cy="33" rx="3" ry="5" transform="rotate(-8 46 33)"/><ellipse cx="74" cy="33" rx="3" ry="5" transform="rotate(8 74 33)"/><ellipse cx="30" cy="51" rx="2.6" ry="4.4" transform="rotate(-24 30 51)"/><ellipse cx="90" cy="51" rx="2.6" ry="4.4" transform="rotate(24 90 51)"/></g>
+</g></g></svg>

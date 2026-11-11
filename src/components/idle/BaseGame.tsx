@@ -30,6 +30,7 @@ import { cellAt, drawBase, moduleIcon, planetImage, shipIcon, CAT_COLORS } from 
 import { notifyAccountChanged } from "@/lib/account-events";
 import { ChallengePanel } from "@/components/idle/ChallengePanel";
 import type { Locale } from "@/i18n/config";
+import { EmojiText, Ico } from "./eco-icons";
 
 type Stats = {
   energyProduced: number;
@@ -67,7 +68,6 @@ type Tab = "build" | "fleet" | "map" | "codex";
 type Tool = { kind: "none" } | { kind: "module"; id: string } | { kind: "demolish" } | { kind: "move"; from: { x: number; y: number } };
 
 const SYNC_EVERY_MS = 60_000;
-const SHIP_ICONS = { probe: "🛰️", shuttle: "🚀", explorer: "🛸" } as const;
 
 // 3D render z public/base (modul, loď); čistě ozdobný, název stojí vždy vedle.
 function Art({ src, size }: { src: string; size: number }) {
@@ -91,7 +91,7 @@ function Meter({ label, value, note, ok }: { label: string; value: number; note:
   return (
     <div className="min-w-[8.5rem] flex-1">
       <div className="flex items-baseline justify-between text-xs font-bold">
-        <span>{label}</span>
+        <span><EmojiText text={label} /></span>
         <span className="font-semibold text-[var(--muted)]">{note}</span>
       </div>
       <div className="mt-1 h-2.5 overflow-hidden rounded-full border-2 border-[var(--edge)] bg-[var(--surface-muted)]">
@@ -119,7 +119,7 @@ function LessonCard({ t, locale, id }: { t: BaseText; locale: Locale; id: string
         <Art src={moduleIcon(id)} size={40} />
         {def.names[locale]}
       </p>
-      {bits.length > 0 && <p className="mt-1 text-xs font-semibold text-[var(--muted)]">{bits.join("  ·  ")}</p>}
+      {bits.length > 0 && <p className="mt-1 text-xs font-semibold text-[var(--muted)]"><EmojiText text={bits.join("  ·  ")} /></p>}
       <p className="mt-3 text-xs font-bold uppercase tracking-wide text-[var(--accent-500)]">{t.build.howTitle}</p>
       <p className="mt-1">{lesson.how}</p>
       <p className="mt-3 text-xs font-bold uppercase tracking-wide text-[var(--accent-500)]">{t.build.factTitle}</p>
@@ -430,9 +430,9 @@ export function BaseGame({ locale }: { locale: Locale }) {
       {/* zdroje */}
       <div className="card flex flex-col gap-3 p-4">
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-bold">
-          <span>💰 {fmt(state.credits)} <span className="text-xs font-semibold text-[var(--muted)]">{t.stats.credits} (+{fmt(stats.creditsPerHour)} {t.stats.perHour})</span></span>
-          <span>🔬 {fmt(state.science)} <span className="text-xs font-semibold text-[var(--muted)]">{t.stats.science} (+{stats.sciencePerHour.toFixed(1)} {t.stats.perHour})</span></span>
-          <span>⭐ {fmt(data.points)} <span className="text-xs font-semibold text-[var(--muted)]">{t.stats.points}</span></span>
+          <span><Ico e="💰" /> {fmt(state.credits)} <span className="text-xs font-semibold text-[var(--muted)]">{t.stats.credits} (+{fmt(stats.creditsPerHour)} {t.stats.perHour})</span></span>
+          <span><Ico e="🔬" /> {fmt(state.science)} <span className="text-xs font-semibold text-[var(--muted)]">{t.stats.science} (+{stats.sciencePerHour.toFixed(1)} {t.stats.perHour})</span></span>
+          <span><Ico e="⭐" /> {fmt(data.points)} <span className="text-xs font-semibold text-[var(--muted)]">{t.stats.points}</span></span>
           <span className="text-xs font-semibold text-[var(--muted)]">
             {t.stats.bonuses}: {t.stats.learning} {pct(bonus.learning)} · {t.stats.pet} {pct(bonus.pet)} · {t.stats.city} {pct(bonus.city)}
           </span>
@@ -511,7 +511,7 @@ export function BaseGame({ locale }: { locale: Locale }) {
                     <Art src={moduleIcon(m.id)} size={40} />
                     <span className="font-bold">{moduleName(m)}</span>
                     <span className="text-[11px] opacity-80">
-                      {locked ? `${t.build.needLevel} ${m.level}` : `💰 ${fmt(m.cost)}${m.pointsCost ? ` · ⭐ ${m.pointsCost}` : ""}`}
+                      {locked ? `${t.build.needLevel} ${m.level}` : `💰 ${fmt(m.cost)}${m.pointsCost ? ` · <Ico e="⭐" /> ${m.pointsCost}` : ""}`}
                     </span>
                   </button>
                 );
@@ -520,7 +520,7 @@ export function BaseGame({ locale }: { locale: Locale }) {
 
             <div className="flex flex-wrap gap-2">
               <button type="button" onClick={() => setTool({ kind: "demolish" })} aria-pressed={tool.kind === "demolish"} className={`btn-bouncy px-3 py-1.5 text-xs font-bold ${tool.kind === "demolish" ? "bg-[var(--danger)] text-white" : "bg-[var(--surface)]"}`}>
-                🗑 {t.build.demolish}
+                <Ico e="🗑" /> {t.build.demolish}
               </button>
               <button type="button" onClick={() => setRot((r) => (r === 0 ? 1 : 0))} className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-xs font-bold">
                 ⟳ {t.build.rotate} (R)
@@ -532,11 +532,11 @@ export function BaseGame({ locale }: { locale: Locale }) {
                 aria-pressed={tool.kind === "move"}
                 className={`btn-bouncy px-3 py-1.5 text-xs font-bold disabled:opacity-50 ${tool.kind === "move" ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface)]"}`}
               >
-                🚚 {t.build.move}
+                <Ico e="🚚" /> {t.build.move}
               </button>
               {tool.kind !== "none" && (
                 <button type="button" onClick={() => setTool({ kind: "none" })} className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-xs font-bold">
-                  ✕ {t.build.cancel}
+                  <Ico e="✕" /> {t.build.cancel}
                 </button>
               )}
             </div>
@@ -606,7 +606,7 @@ export function BaseGame({ locale }: { locale: Locale }) {
             })}
             {arrived > 0 && (
               <button type="button" onClick={() => act({ action: "collect" })} className="btn-bouncy self-start bg-[var(--accent-yellow)] px-5 py-2 font-bold text-[#16132b]">
-                🎁 {t.fleet.collect} ({arrived})
+                <Ico e="🎁" /> {t.fleet.collect} ({arrived})
               </button>
             )}
           </div>
@@ -626,7 +626,7 @@ export function BaseGame({ locale }: { locale: Locale }) {
                   <p className="text-xs text-[var(--muted)]">{t.ships[s.id].desc}</p>
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-semibold">
-                      💰 {fmt(s.cost)}{s.pointsCost ? ` · ⭐ ${s.pointsCost}` : ""} · {t.fleet.buildTime} {s.buildMinutes} {t.units.minutes}
+                      <Ico e="💰" /> {fmt(s.cost)}{s.pointsCost ? ` · ⭐ ${s.pointsCost}` : ""} · {t.fleet.buildTime} {s.buildMinutes} {t.units.minutes}
                     </span>
                     <button
                       type="button"
@@ -671,7 +671,7 @@ export function BaseGame({ locale }: { locale: Locale }) {
                   {known && (
                     <>
                       <p className="mt-1">{t.modules[m.id].how}</p>
-                      <p className="mt-2 text-xs text-[var(--muted)]">💡 {t.modules[m.id].fact}</p>
+                      <p className="mt-2 text-xs text-[var(--muted)]"><Ico e="💡" /> {t.modules[m.id].fact}</p>
                     </>
                   )}
                 </div>
@@ -691,7 +691,7 @@ export function BaseGame({ locale }: { locale: Locale }) {
                   {known && (
                     <>
                       <p className="mt-1">{t.dests[d.id].blurb}</p>
-                      <p className="mt-2 text-xs text-[var(--muted)]">💡 {t.dests[d.id].fact}</p>
+                      <p className="mt-2 text-xs text-[var(--muted)]"><Ico e="💡" /> {t.dests[d.id].fact}</p>
                     </>
                   )}
                 </div>
@@ -849,7 +849,7 @@ function SpaceMap({
                   opacity={open ? 1 : 0.45}
                 />
                 <text x={p.x} y={p.y + 30} fontSize="11" fill={open ? "#fff" : "#9a98b8"} textAnchor="middle">{d.names[locale]}</text>
-                {!open && <text x={p.x} y={p.y + 4} fontSize="12" fill="#fff" textAnchor="middle">🔒</text>}
+                {!open && <Ico e="🔒" x={p.x - 6} y={p.y - 6} size={12} />}
               </g>
             );
           })}
@@ -880,9 +880,9 @@ function SpaceMap({
           {dest.names[locale]}
         </p>
         <p>{text.blurb}</p>
-        <p className="text-xs text-[var(--muted)]">💡 {text.fact}</p>
+        <p className="text-xs text-[var(--muted)]"><Ico e="💡" /> {text.fact}</p>
         <p className="text-xs font-semibold">
-          {t.map.reward}: 💰 {fmt(dest.credits)} · 🔬 {dest.science} · {t.map.travel}: {formatDuration(dest.baseMinutes * 60_000, t.units)} ({t.fleet.tier} {dest.tier}+)
+          {t.map.reward}: <Ico e="💰" /> {fmt(dest.credits)} · <Ico e="🔬" /> {dest.science} · {t.map.travel}: {formatDuration(dest.baseMinutes * 60_000, t.units)} ({t.fleet.tier} {dest.tier}+)
         </p>
         {!unlocked && (
           <button
@@ -891,7 +891,7 @@ function SpaceMap({
             onClick={() => onResearch(dest.id)}
             className="btn-bouncy bg-[var(--accent-500)] px-4 py-2 font-bold text-white disabled:opacity-50"
           >
-            🔬 {t.map.research} ({dest.researchCost})
+            <Ico e="🔬" /> {t.map.research} ({dest.researchCost})
             {state.science < dest.researchCost ? ` · ${t.map.needScience}` : ""}
           </button>
         )}
@@ -904,7 +904,7 @@ function SpaceMap({
               <div className="flex flex-wrap items-center gap-2">
                 <select aria-label={t.map.chooseShip} value={chosen?.id} onChange={(e) => setShipId(e.target.value)} className="rounded-xl border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1.5 text-sm font-semibold">
                   {ready.map((s) => (
-                    <option key={s.id} value={s.id}>{SHIP_ICONS[s.type]} {getShip(s.type)!.names[locale]}</option>
+                    <option key={s.id} value={s.id}>{getShip(s.type)!.names[locale]}</option>
                   ))}
                 </select>
                 <button type="button" onClick={() => chosen && onSend(chosen.id, dest.id)} className="btn-bouncy bg-[var(--brand-500)] px-4 py-1.5 font-bold text-white">

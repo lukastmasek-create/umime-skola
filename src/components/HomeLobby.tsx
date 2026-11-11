@@ -1,5 +1,6 @@
 "use client";
 
+import { Icon } from "@/components/Icon";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
@@ -8,7 +9,7 @@ import { DitherBg } from "@/components/DitherBg";
 import type { HomeLobbyText } from "@/i18n/home-lobby";
 
 type TabKey = "play" | "challenge" | "together";
-type Card = { key: string; href: string; emoji: string; grad: string };
+type Card = { key: string; href: string; icon: string; grad: string };
 
 // Zbývá do půlnoci (denní výzva se mění o půlnoci); před načtením prázdné, ať nedojde k nesouladu při hydrataci.
 function useUntilMidnight() {
@@ -74,22 +75,22 @@ export function HomeLobby({ locale, t }: { locale: string; t: HomeLobbyText }) {
 
   const cards: Record<TabKey, Card[]> = {
     play: [
-      { key: "farm", href: `${l}/stale-hry/farma`, emoji: "🌱", grad: "from-[#2fae6d] to-[#0c3b2c]" },
-      { key: "city", href: `${l}/stale-hry/mesto`, emoji: "🏙️", grad: "from-[#3b5bff] to-[#0e1a5c]" },
-      { key: "economy", href: `${l}/stale-hry/ekonomika`, emoji: "💰", grad: "from-[#e0584a] to-[#5a1f2b]" },
-      { key: "pets", href: `${l}/stale-hry/mazlicci`, emoji: "🐾", grad: "from-[#7b3dff] to-[#1a0d4d]" },
+      { key: "farm", href: `${l}/stale-hry/farma`, icon: "farm", grad: "from-[#2fae6d] to-[#0c3b2c]" },
+      { key: "city", href: `${l}/stale-hry/mesto`, icon: "city", grad: "from-[#3b5bff] to-[#0e1a5c]" },
+      { key: "economy", href: `${l}/stale-hry/ekonomika`, icon: "economy", grad: "from-[#e0584a] to-[#5a1f2b]" },
+      { key: "pets", href: `${l}/stale-hry/mazlicci`, icon: "pets", grad: "from-[#7b3dff] to-[#1a0d4d]" },
     ],
     challenge: [
-      { key: "daily", href: `${l}/denni-kviz`, emoji: "🧠", grad: "from-[#3b5bff] to-[#0e1a5c]" },
-      { key: "escape", href: `${l}/unikovky`, emoji: "🗝️", grad: "from-[#1ec5ff] to-[#0a2b4d]" },
-      { key: "review", href: `${l}/opakovani`, emoji: "🔁", grad: "from-[#f2a35e] to-[#7a2a2a]" },
-      { key: "boards", href: `${l}/zebricky`, emoji: "🏆", grad: "from-[#ffc933] to-[#7a4a0a]" },
+      { key: "daily", href: `${l}/denni-kviz`, icon: "daily", grad: "from-[#3b5bff] to-[#0e1a5c]" },
+      { key: "escape", href: `${l}/unikovky`, icon: "escape", grad: "from-[#1ec5ff] to-[#0a2b4d]" },
+      { key: "review", href: `${l}/opakovani`, icon: "review", grad: "from-[#f2a35e] to-[#7a2a2a]" },
+      { key: "boards", href: `${l}/zebricky`, icon: "boards", grad: "from-[#ffc933] to-[#7a4a0a]" },
     ],
     together: [
-      { key: "together", href: `${l}/hrat-spolecne`, emoji: "👥", grad: "from-[#e0584a] to-[#5a1f2b]" },
-      { key: "boards", href: `${l}/zebricky`, emoji: "🏆", grad: "from-[#ffc933] to-[#7a4a0a]" },
-      { key: "shop", href: `${l}/obchod`, emoji: "🛍️", grad: "from-[#7b3dff] to-[#1a0d4d]" },
-      { key: "escape", href: `${l}/unikovky`, emoji: "🗝️", grad: "from-[#1ec5ff] to-[#0a2b4d]" },
+      { key: "together", href: `${l}/hrat-spolecne`, icon: "together", grad: "from-[#e0584a] to-[#5a1f2b]" },
+      { key: "boards", href: `${l}/zebricky`, icon: "boards", grad: "from-[#ffc933] to-[#7a4a0a]" },
+      { key: "shop", href: `${l}/obchod`, icon: "shop-bag", grad: "from-[#7b3dff] to-[#1a0d4d]" },
+      { key: "escape", href: `${l}/unikovky`, icon: "escape", grad: "from-[#1ec5ff] to-[#0a2b4d]" },
     ],
   };
 
@@ -159,7 +160,7 @@ export function HomeLobby({ locale, t }: { locale: string; t: HomeLobbyText }) {
               {cards[tab].map((c, i) => (
                 <motion.li key={c.key + i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
                   <Link href={c.href} className={`lobby-card bg-gradient-to-br ${c.grad}`}>
-                    <span aria-hidden className="lobby-emoji">{c.emoji}</span>
+                    <Icon name={c.icon} size={84} className="lobby-emoji" />
                     <span className="lobby-play" aria-hidden><Play className="h-4 w-4" /></span>
                     <span className="relative mt-auto block">
                       <span className="block text-lg font-bold leading-tight">{t.games[c.key].name}</span>

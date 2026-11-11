@@ -451,7 +451,7 @@ export function GammyShop({
           ))}
           {MORE_TABS.slice(0, 2).map((m) => (
             <button key={m.id} type="button" onClick={() => { setMore(m.id); scrollTo("dalsi"); }} className="gammy-panel flex flex-col items-center gap-2 p-4 text-center transition-transform hover:-translate-y-1">
-              <ShopModel id={m.id === "materialy" ? "iron" : "cat-limited"} size={72} />
+              <ShopModel id={m.id === "materialy" ? "cat-materials" : "cat-limited"} size={72} />
               <span className="text-xs font-bold">{m.label}</span>
               <span className="text-[11px] text-[var(--faint)]">za body</span>
             </button>

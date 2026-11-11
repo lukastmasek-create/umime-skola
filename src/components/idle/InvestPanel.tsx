@@ -17,6 +17,7 @@ import {
 import type { EconomyText } from "@/i18n/economy";
 import { fill, formatLeft, type Payload } from "./CompanyPanel";
 import { PriceChart, type ChartPoint } from "./PriceChart";
+import { EmojiText, Ico } from "./eco-icons";
 
 type Act = (body: Record<string, unknown>, okText?: (p: Payload) => string) => Promise<void>;
 type OrderKind = "buyBelow" | "sellBelow" | "sellAbove" | "buyAbove";
@@ -124,7 +125,7 @@ export function InvestPanel({ state, clock, liveCash, netWorth, rates, arbitrage
 
       {assetEvent && (
         <p className="card flex flex-wrap items-center justify-between gap-2 p-3 text-sm font-semibold">
-          <span>📰 {fill(ti.eventNow, { name: ti.events[assetEvent.id] ?? assetEvent.id })}</span>
+          <span><Ico e="📰" /> {fill(ti.eventNow, { name: ti.events[assetEvent.id] ?? assetEvent.id })}</span>
           <span className="text-[var(--muted)]">{fill(ti.eventEnds, { t: formatLeft(Math.max(0, assetEvent.endsAt - clock), t) })}</span>
         </p>
       )}
@@ -151,7 +152,7 @@ export function InvestPanel({ state, clock, liveCash, netWorth, rates, arbitrage
       </div>
 
       <article className="card p-4">
-        <h3 className="mb-2 font-bold">📈 {ti.chart}</h3>
+        <h3 className="mb-2 font-bold"><Ico e="📈" /> {ti.chart}</h3>
         {chart.length < 2 ? (
           <p className="text-sm text-[var(--muted)]">{ti.chartEmpty}</p>
         ) : (
@@ -178,7 +179,7 @@ export function InvestPanel({ state, clock, liveCash, netWorth, rates, arbitrage
             onClick={() => setCat(id)}
             className={`btn-bouncy px-3 py-1.5 text-sm font-bold ${cat === id ? "bg-[var(--brand-500)] text-white" : "bg-[var(--surface)]"}`}
           >
-            {id === "all" ? ti.all : `${CAT_EMOJI[id]} ${t.assetCategories[id]}`}
+            {id === "all" ? ti.all : <><Ico e={CAT_EMOJI[id]} /> {t.assetCategories[id]}</>}
           </button>
         ))}
       </div>
@@ -229,7 +230,7 @@ export function InvestPanel({ state, clock, liveCash, netWorth, rates, arbitrage
                 </p>
               )}
               {locked ? (
-                <p className="text-sm font-semibold">🔒 {t.locked1990}</p>
+                <p className="text-sm font-semibold"><Ico e="🔒" /> {t.locked1990}</p>
               ) : (
                 <>
                   <div className="mt-auto flex flex-wrap gap-2">
@@ -350,7 +351,7 @@ export function InvestPanel({ state, clock, liveCash, netWorth, rates, arbitrage
 
       <div className="grid gap-4 lg:grid-cols-2">
         <article className="card flex flex-col gap-3 p-4">
-          <h3 className="font-bold">🎯 {ti.orders}</h3>
+          <h3 className="font-bold"><Ico e="🎯" /> {ti.orders}</h3>
           <p className="text-xs text-[var(--muted)]">{ti.ordersHint}</p>
           {state.orders.length === 0 ? (
             <p className="text-sm text-[var(--muted)]">{ti.ordersEmpty}</p>
@@ -381,14 +382,14 @@ export function InvestPanel({ state, clock, liveCash, netWorth, rates, arbitrage
         </article>
 
         <article className="card flex flex-col gap-3 p-4">
-          <h3 className="font-bold">🗞️ {ti.news}</h3>
+          <h3 className="font-bold"><Ico e="🗞" /> {ti.news}</h3>
           {state.news.length === 0 ? (
             <p className="text-sm text-[var(--muted)]">{ti.newsEmpty}</p>
           ) : (
             <ul className="flex flex-col gap-2 text-sm">
               {[...state.news].reverse().slice(0, 8).map((n, i) => (
                 <li key={`${n.t}-${n.asset}-${i}`} className="rounded-lg bg-[var(--surface-muted)] p-2.5">
-                  {newsLine(n)}
+                  <EmojiText text={newsLine(n)} />
                 </li>
               ))}
             </ul>
@@ -399,7 +400,7 @@ export function InvestPanel({ state, clock, liveCash, netWorth, rates, arbitrage
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <article className="card flex flex-col gap-2 p-4">
-          <h3 className="font-bold">⚖️ {t.arbitrage}</h3>
+          <h3 className="font-bold"><Ico e="⚖" /> {t.arbitrage}</h3>
           <p className="text-xs text-[var(--muted)]">{t.arbitrageHint}</p>
           <p className="text-sm font-semibold">
             {fill(t.spread, { n: (arbitrage.spread * 100).toFixed(2) })} <span className="text-[var(--muted)]">(−{(ARB_FEE * 100).toFixed(1)} %)</span>

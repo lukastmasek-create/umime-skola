@@ -1,5 +1,6 @@
 import type { SpeciesId } from "@/lib/idle/pets";
 import { darken, lighten } from "@/lib/color";
+import { Ico } from "./eco-icons";
 
 const INK = "#16132b";
 
@@ -460,16 +461,16 @@ export function PetArt({
               <rect x="80" y="46" width="12" height="17" rx="5" fill="#7c6cff" stroke={INK} strokeWidth="2.2" />
             </>
           )}
-          {mood === "hungry" && <text x="86" y="30" fontSize="18">🍖</text>}
-          {mood === "sad" && <text x="82" y="46" fontSize="14">💧</text>}
-          {mood === "happy" && <text x="84" y="26" fontSize="14">💖</text>}
+          {mood === "hungry" && <Ico e="🍖" x={86} y={13} size={18} />}
+          {mood === "sad" && <Ico e="💧" x={82} y={34} size={14} />}
+          {mood === "happy" && <Ico e="💖" x={84} y={14} size={14} />}
           {maxed && !hasHeadHat ? (
             <g>
               <path d="M48 31 L49 18 L54 23 L60 13 L66 23 L71 18 L72 31 Z" fill="#ffd24d" stroke={INK} strokeWidth="2.2" strokeLinejoin="round" />
               <circle cx="60" cy="25" r="2" fill="#e5484d" />
             </g>
           ) : stage === 3 ? (
-            <text x="84" y="20" fontSize="14">✨</text>
+            <Ico e="✨" x={84} y={8} size={14} />
           ) : null}
         </g>
       </g>

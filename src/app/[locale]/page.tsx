@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { CATEGORIES, SUBJECTS } from "@/lib/taxonomy";
+import { Icon } from "@/components/Icon";
 import { HomeProgress } from "@/components/HomeProgress";
 import { DailyQuizTeaser } from "@/components/DailyQuizTeaser";
 import { TeacherCta } from "@/components/TeacherCta";
-import { ALIEN_ROW, HomeArt, SpriteFrame, Wave } from "@/components/SpaceDecor";
+import { ALIEN_ROW, SpriteFrame, Wave } from "@/components/SpaceDecor";
 import { LazyPlanet, LazySubjectGlobe, LazyTownLife } from "@/components/HomeLazy";
 import { GlobeSky } from "@/components/GlobeSky";
 import { HeroSky } from "@/components/HeroSky";
@@ -27,7 +28,6 @@ import { SITE_NAME, pageMetadata } from "@/lib/seo";
 const TILE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
 // Sekce „Jak to funguje“ je archivovaná (skrytá). Pro návrat stačí přepnout na true.
 const SHOW_HOW_IT_WORKS = false;
-const GALAXY_ICONS = ["sekce-zakladni", "sekce-stredni", "sekce-prijimacky", "sekce-maturita"];
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -186,7 +186,7 @@ export default async function Home({
                   className="reveal gcard relative flex min-h-36 flex-col justify-between gap-4 p-5 sm:min-h-44 sm:gap-6"
                   style={{ ["--gc" as string]: color }}
                 >
-                  <HomeArt name={GALAXY_ICONS[i % GALAXY_ICONS.length]} size={128} className="absolute -right-4 -top-5 opacity-95" />
+                  <Icon name={cat.slug} size={100} className="absolute right-2 top-2" />
                   <span className="gcard-num text-6xl" style={heading}>
                     {String(i + 1).padStart(2, "0")}
                   </span>

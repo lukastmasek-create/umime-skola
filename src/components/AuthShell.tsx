@@ -25,7 +25,7 @@ export function AuthShell({ mood, greeting, aside, children }: { mood: AuthMood;
           // eslint-disable-next-line @next/next/no-img-element
           <img
             key={s}
-            src={`/home/predmet-${s}.webp`}
+            src={`/ikony/${s}.svg`}
             alt=""
             draggable={false}
             className="auth-float absolute hidden w-14 opacity-80 sm:block lg:w-20"

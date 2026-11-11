@@ -27,6 +27,8 @@ export const CAT_COLORS: Record<BaseCat, string> = {
   ships: "#9a86f0",
 };
 
+import { iconImage } from "./eco-icon-image";
+
 export const MODULE_ICONS: Record<string, string> = {
   core: "🛰️",
   corridor: "▫️",
@@ -249,11 +251,9 @@ function drawModule(
   // ikona
   const icon = MODULE_ICONS[id];
   if (icon && id !== "corridor") {
-    ctx.font = `${Math.min(cell * 0.9, Math.min(pw, ph) * 0.7)}px system-ui, "Apple Color Emoji", "Segoe UI Emoji", sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText(icon, cx, cy + 1);
+    const size = Math.min(cell * 0.9, Math.min(pw, ph) * 0.7);
+    const img = iconImage(icon);
+    if (img) ctx.drawImage(img, cx - size / 2, cy - size / 2 + 1, size, size);
   }
 
   if (idle) drawIdle(ctx, px, py, pw, ph, cx, cell, time);

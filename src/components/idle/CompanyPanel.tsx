@@ -51,6 +51,7 @@ import {
   type Rates,
   type SettingKey,
 } from "@/lib/idle/economy";
+import { Ico } from "./eco-icons";
 
 export type Payload = {
   state: EconomyState;
@@ -133,25 +134,25 @@ export function CompanyTab(props: Common) {
           <>
             {d.danger && (
               <div className="card mb-4 flex flex-col gap-1 border-2 border-[var(--danger)] p-4">
-                <h3 className="font-bold">⚠️ {t.distress.title}</h3>
+                <h3 className="font-bold"><Ico e="⚠" /> {t.distress.title}</h3>
                 <p className="text-sm">{t.distress.text}</p>
                 <p className="text-sm font-bold">{fill(t.distress.left, { t: formatLeft(d.leftMs, t) })}</p>
               </div>
             )}
             {recent && last && (
-              <div className="card mb-4 p-4 text-sm font-bold">💥 {fill(t.distress.bankrupt, { c: t.companies[last] })}</div>
+              <div className="card mb-4 p-4 text-sm font-bold"><Ico e="💥" /> {fill(t.distress.bankrupt, { c: t.companies[last] })}</div>
             )}
           </>
         );
       })()}
       <div className="card mb-6 flex flex-col gap-3 p-4">
-        <h3 className="font-bold">🏗️ {t.phase.title}</h3>
+        <h3 className="font-bold"><Ico e="🏗" /> {t.phase.title}</h3>
         <p className="text-sm">
           <b>{fill(t.phase.now, { n: phase, name: t.phase.names[phase - 1] })}</b>
         </p>
         <p className="text-xs text-[var(--muted)]">{fill(t.phase.rates, { r: Math.round(rate.rent * 100), t: Math.round(rate.tax * 100) })}</p>
         {phase >= MAX_PHASE ? (
-          <p className="text-sm font-semibold">✓ {t.phase.max}</p>
+          <p className="text-sm font-semibold"><Ico e="✓" /> {t.phase.max}</p>
         ) : (
           <>
             <p className="text-sm text-[var(--muted)]">{fill(t.phase.need, { v: m(nextNeed) })}</p>
@@ -184,7 +185,7 @@ export function CompanyTab(props: Common) {
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <span className="text-3xl" aria-hidden>
-                    {style.emoji}
+                    <Ico e={style.emoji} />
                   </span>
                   <h3 className="font-bold leading-tight">{t.companies[c.id]}</h3>
                 </div>
@@ -207,9 +208,9 @@ export function CompanyTab(props: Common) {
               </p>
               {(threatened || campaign || rival) && (
                 <div className="flex flex-wrap gap-1.5 text-xs font-bold">
-                  {threatened && <span className="pill bg-[var(--danger)] px-2 py-0.5 text-white">⚠️ {t.events[ev!.def.id].title}</span>}
-                  {rival && <span className="pill bg-[var(--danger)] px-2 py-0.5 text-white">🎯 {t.detail.rivalTitle}</span>}
-                  {campaign && <span className="pill bg-[var(--accent-yellow)] px-2 py-0.5 text-[#16132b]">📣 {t.detail.campaign}</span>}
+                  {threatened && <span className="pill bg-[var(--danger)] px-2 py-0.5 text-white"><Ico e="⚠" /> {t.events[ev!.def.id].title}</span>}
+                  {rival && <span className="pill bg-[var(--danger)] px-2 py-0.5 text-white"><Ico e="🎯" /> {t.detail.rivalTitle}</span>}
+                  {campaign && <span className="pill bg-[var(--accent-yellow)] px-2 py-0.5 text-[#16132b]"><Ico e="📣" /> {t.detail.campaign}</span>}
                 </div>
               )}
               <div className="mt-auto flex flex-wrap gap-2">
@@ -220,7 +221,7 @@ export function CompanyTab(props: Common) {
                     className="btn-bouncy flex-1 bg-[var(--surface)] px-3 py-2 text-sm font-bold"
                     aria-expanded={selected === c.id}
                   >
-                    ⚙️ {selected === c.id ? t.detail.close : t.detail.open}
+                    <Ico e="⚙" /> {selected === c.id ? t.detail.close : t.detail.open}
                   </button>
                 )}
                 <button
@@ -230,7 +231,7 @@ export function CompanyTab(props: Common) {
                   className="btn-bouncy flex-1 px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
                   style={{ background: style.color }}
                 >
-                  {locked ? `🔒 ${t.locked1990}` : fill(t.buy, { n: m(price) })}
+                  {locked ? <><Ico e="🔒" /> {t.locked1990}</> : fill(t.buy, { n: m(price) })}
                 </button>
               </div>
             </article>
@@ -354,7 +355,7 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, act, onClose 
     <section className="card mt-6 flex flex-col gap-6 p-5" style={{ borderTop: `6px solid ${style.color}` }}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="flex items-center gap-2 text-xl font-bold">
-          <span aria-hidden>{style.emoji}</span> {t.companies[id]} · {fill(t.owned, { n: owned })}
+          <span aria-hidden><Ico e={style.emoji} /></span> {t.companies[id]} · {fill(t.owned, { n: owned })}
         </h2>
         <button type="button" onClick={onClose} className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
           {t.detail.close}
@@ -409,7 +410,7 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, act, onClose 
       </div>
 
       <div className="flex flex-col gap-2 rounded-xl border-2 border-[var(--edge)] p-3">
-        <h3 className="font-bold">⚠️ {t.detail.eventTitle}</h3>
+        <h3 className="font-bold"><Ico e="⚠" /> {t.detail.eventTitle}</h3>
         {!ev || !eventCopy ? (
           <p className="text-sm text-[var(--muted)]">{t.detail.eventNone}</p>
         ) : (
@@ -422,7 +423,7 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, act, onClose 
               <p className="text-sm text-[var(--muted)]">{t.detail.eventNoAction}</p>
             ) : isNegativeEvent(ev.def) ? (
               funded ? (
-                <p className="text-sm font-semibold">✓ {t.detail.eventFunded}</p>
+                <p className="text-sm font-semibold"><Ico e="✓" /> {t.detail.eventFunded}</p>
               ) : (
                 <button
                   type="button"
@@ -439,17 +440,17 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, act, onClose 
       </div>
 
       <div className="flex flex-col gap-2 rounded-xl border-2 border-[var(--edge)] p-3">
-        <h3 className="font-bold">🎯 {t.detail.rivalTitle}</h3>
+        <h3 className="font-bold"><Ico e="🎯" /> {t.detail.rivalTitle}</h3>
         <p className="text-sm">{rivalHere ? t.detail.rivalNow : t.detail.rivalNone}</p>
         {rivalHere && <p className="text-xs text-[var(--muted)]">{t.detail.rivalShield}</p>}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="flex flex-col gap-2">
-          <h3 className="font-bold">🔬 {t.detail.researchTitle}</h3>
+          <h3 className="font-bold"><Ico e="🔬" /> {t.detail.researchTitle}</h3>
           <p className="text-xs text-[var(--muted)]">{t.detail.researchHint}</p>
           {level >= MAX_RESEARCH ? (
-            <p className="text-sm font-semibold">✓ {t.detail.researchMax}</p>
+            <p className="text-sm font-semibold"><Ico e="✓" /> {t.detail.researchMax}</p>
           ) : (
             <button
               type="button"
@@ -462,7 +463,7 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, act, onClose 
           )}
         </div>
         <div className="flex flex-col gap-2">
-          <h3 className="font-bold">📝 {t.detail.contractTitle}</h3>
+          <h3 className="font-bold"><Ico e="📝" /> {t.detail.contractTitle}</h3>
           <p className="text-xs text-[var(--muted)]">{t.detail.contractHint}</p>
           {contractOn ? (
             <p className="text-sm font-semibold">{fill(t.detail.contractRunning, { t: formatLeft(contractLeft, t) })}</p>
@@ -480,7 +481,7 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, act, onClose 
       </div>
 
       <div className="flex flex-col gap-2">
-        <h3 className="font-bold">💱 {t.detail.sellTitle}</h3>
+        <h3 className="font-bold"><Ico e="💱" /> {t.detail.sellTitle}</h3>
         <p className="text-xs text-[var(--muted)]">{t.detail.sellHint}</p>
         <button
           type="button"
@@ -495,10 +496,10 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, act, onClose 
       </div>
 
       <div className="flex flex-col gap-2">
-        <h3 className="font-bold">🚀 {t.detail.upgrade}</h3>
+        <h3 className="font-bold"><Ico e="🚀" /> {t.detail.upgrade}</h3>
         <p className="text-xs text-[var(--muted)]">{t.detail.upgradeHint}</p>
         {s.upgraded ? (
-          <p className="text-sm font-semibold">✓ {t.detail.upgradeDone}</p>
+          <p className="text-sm font-semibold"><Ico e="✓" /> {t.detail.upgradeDone}</p>
         ) : (
           <button
             type="button"
@@ -513,18 +514,18 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, act, onClose 
 
       <div className="flex flex-col gap-2">
         <h3 className="font-bold">
-          👥 {t.detail.staff} · {s.staff}/{maxStaff}
+          <Ico e="👥" /> {t.detail.staff} · {s.staff}/{maxStaff}
         </h3>
         <p className="text-xs text-[var(--muted)]">{t.detail.staffHint}</p>
         {clock < s.rookieUntil && <p className="text-xs font-semibold">{fill(t.detail.rookie, { t: formatLeft(s.rookieUntil - clock, t) })}</p>}
-        {isSick(id, clock) && roles.producer > 0 && <p className="text-xs font-semibold">🤒 {t.detail.sick}</p>}
+        {isSick(id, clock) && roles.producer > 0 && <p className="text-xs font-semibold"><Ico e="🤒" /> {t.detail.sick}</p>}
         <p className="text-xs">
           {t.detail.moraleLabel}: <b>{Math.round(y.morale * 100)} %</b>
         </p>
-        {y.strike && <p className="pill w-fit bg-[var(--danger)] px-2 py-0.5 text-xs font-bold text-white">✊ {t.detail.strikeNow}</p>}
+        {y.strike && <p className="pill w-fit bg-[var(--danger)] px-2 py-0.5 text-xs font-bold text-white"><Ico e="✊" /> {t.detail.strikeNow}</p>}
         {s.staff >= UNION_MIN_STAFF && (
           <div className="flex flex-col gap-1 rounded-xl bg-[var(--surface-muted)] p-3">
-            <p className="text-sm font-bold">🤝 {t.detail.unionTitle}</p>
+            <p className="text-sm font-bold"><Ico e="🤝" /> {t.detail.unionTitle}</p>
             <p className="text-xs text-[var(--muted)]">{t.detail.unionHint}</p>
             {s.unionUntil > clock ? (
               <p className="text-sm font-semibold">{fill(t.detail.unionActive, { t: formatLeft(s.unionUntil - clock, t) })}</p>
@@ -573,12 +574,12 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, act, onClose 
       </div>
 
       <div className="flex flex-col gap-2">
-        <h3 className="font-bold">📦 {t.detail.stockTitle}</h3>
+        <h3 className="font-bold"><Ico e="📦" /> {t.detail.stockTitle}</h3>
         <p className="text-xs text-[var(--muted)]">{fill(t.detail.stockHint, { h: INPUT_BATCH_HOURS })}</p>
         <p className="text-sm">
           <b>{fill(t.detail.stockLevel, { s: Math.floor(s.stock), c: stockCap })}</b>
         </p>
-        {s.stock <= 0 && <p className="pill w-fit bg-[var(--danger)] px-2 py-0.5 text-xs font-bold text-white">⚠️ {fill(t.detail.stockEmpty, { p: Math.round(NO_STOCK_OUTPUT * 100) })}</p>}
+        {s.stock <= 0 && <p className="pill w-fit bg-[var(--danger)] px-2 py-0.5 text-xs font-bold text-white"><Ico e="⚠" /> {fill(t.detail.stockEmpty, { p: Math.round(NO_STOCK_OUTPUT * 100) })}</p>}
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -600,7 +601,7 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, act, onClose 
       </div>
 
       <div className="flex flex-col gap-2">
-        <h3 className="font-bold">📣 {t.detail.campaign}</h3>
+        <h3 className="font-bold"><Ico e="📣" /> {t.detail.campaign}</h3>
         <p className="text-xs text-[var(--muted)]">{t.detail.campaignHint}</p>
         <button
           type="button"
@@ -614,7 +615,7 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, act, onClose 
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="flex flex-col gap-2">
-          <h3 className="font-bold">📖 {t.detail.lessonsTitle}</h3>
+          <h3 className="font-bold"><Ico e="📖" /> {t.detail.lessonsTitle}</h3>
           <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm">
             {t.detail.rules.map((rule) => (
               <li key={rule}>{rule}</li>
@@ -622,7 +623,7 @@ function CompanyDetail({ id, state, clock, multiplier, t, m, busy, act, onClose 
           </ul>
         </div>
         <div className="flex flex-col gap-2">
-          <h3 className="font-bold">✅ {t.detail.tasksTitle}</h3>
+          <h3 className="font-bold"><Ico e="✅" /> {t.detail.tasksTitle}</h3>
           <ul className="flex flex-col gap-2 text-sm">
             {tasks.map((task) => (
               <li key={task.text} className="flex items-start gap-2">
