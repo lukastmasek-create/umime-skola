@@ -135,7 +135,7 @@ export function QuizTemplateDemo({
             </div>
             <button
               onClick={reset}
-              className="btn-bouncy self-start text-sm font-semibold text-[var(--brand-600)] hover:underline"
+              className="btn-bouncy btn-secondary self-start px-4 py-2 text-sm font-semibold text-[var(--brand-600)]"
             >
               {dict.templates.nextQuestion}
             </button>
