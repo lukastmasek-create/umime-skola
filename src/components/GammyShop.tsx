@@ -592,7 +592,7 @@ export function GammyShop({
           <p className="gammy-panel p-6 text-sm text-[var(--muted)]">Nic jsme nenašli.</p>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">{items.slice(0, shown).map(card)}</div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-6">{items.slice(0, shown).map(card)}</div>
             {items.length > shown && (
               <div className="mt-6 text-center">
                 <button type="button" onClick={() => setShown((n) => n + 15)} className="rounded-full bg-[var(--g-accent)] px-6 py-2 text-sm font-bold text-[var(--g-accent-ink)]">
