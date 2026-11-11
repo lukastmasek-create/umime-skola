@@ -4173,31 +4173,30 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 .edx-tile { background: var(--surface-muted); border-radius: 20px; }
 .edx-pill-nav { display: inline-flex; gap: 0.25rem; padding: 0.25rem; border-radius: 999px; background: var(--surface-muted); }
 
-/* Obchod ve stylu Gammy: tmavě zelený povrch s neonovou zelenou. Přepisuje proměnné jen uvnitř .gammy,
+/* Obchod ve stylu Gammy: tmavý povrch v barvách webu (indigo + modrý akcent). Přepisuje proměnné jen uvnitř .gammy,
    takže se vloženým částem (materiály, limitky, kolo štěstí) změní barvy samy. */
 .gammy {
-  --g-bg: #03130f;
-  --g-panel: #082019;
-  --g-panel-2: #0c2b22;
-  --g-line: rgba(61, 255, 160, 0.14);
-  --g-accent: #26e88c;
-  --g-accent-ink: #02150d;
+  --g-bg: #12102a;
+  --g-panel: #1c1936;
+  --g-panel-2: #26224a;
+  --g-line: #35305f;
+  --g-accent: #5a6cff;
+  --g-accent-ink: #ffffff;
   --background: var(--g-bg);
   --surface: var(--g-panel);
   --surface-muted: var(--g-panel-2);
-  --brand-50: #0c2b22;
-  --brand-100: #12402f;
-  --brand-500: #26e88c;
-  --brand-600: #5df2ac;
-  --brand-700: #9af7cb;
-  --accent-yellow: #26e88c;
-  --edge: rgba(61, 255, 160, 0.3);
-  --shadow-ink: rgba(0, 0, 0, 0.55);
+  --brand-50: #272a63;
+  --brand-100: #353b86;
+  --brand-500: #5a6cff;
+  --brand-600: #8d99ff;
+  --brand-700: #b8c1ff;
+  --edge: #6a63ad;
+  --shadow-ink: #05040f;
   --border-soft: var(--g-line);
-  --muted: #a9c9bc;
-  --faint: #7ea595;
-  background: radial-gradient(1200px 600px at 20% -10%, #0d3a2b 0%, transparent 60%), var(--g-bg);
-  color: #eafff5;
+  --muted: #cfc8e4;
+  --faint: #9d96bf;
+  background: radial-gradient(1200px 600px at 20% -10%, #353b86 0%, transparent 60%), var(--g-bg);
+  color: #f6f1e4;
   border: 1px solid var(--g-line);
   border-radius: 28px;
 }
