@@ -235,6 +235,29 @@ select[aria-invalid="true"] {
   box-shadow: 0 4px 0 var(--shadow-ink);
 }
 
+/* Ikony hry Ekonomika: lehce si poskočí, když na ně (nebo na jejich tlačítko) najedeš. */
+.eco-ico {
+  transition: transform 0.25s cubic-bezier(0.3, 1.8, 0.5, 1);
+  transform-origin: 50% 70%;
+}
+button:not(:disabled):hover .eco-ico,
+a:hover .eco-ico,
+.eco-ico:hover {
+  animation: eco-wiggle 0.5s ease-in-out;
+}
+@keyframes eco-wiggle {
+  0% { transform: rotate(0) scale(1); }
+  25% { transform: rotate(-12deg) scale(1.18); }
+  55% { transform: rotate(9deg) scale(1.12); }
+  80% { transform: rotate(-4deg) scale(1.05); }
+  100% { transform: rotate(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled):hover .eco-ico,
+  a:hover .eco-ico,
+  .eco-ico:hover { animation: none; }
+}
+
 .btn-primary {
   background: var(--brand-500);
   color: #fff;
