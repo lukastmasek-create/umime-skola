@@ -291,7 +291,7 @@ export default async function Home({
             </ul>
           </div>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link href={`/${locale}/kontakt`} className="btn-bouncy btn-secondary inline-flex">
+            <Link href={`/${locale}/kontakt`} className="btn-bouncy btn-secondary btn-lg">
               {h.about.contact} →
             </Link>
             <a href={`mailto:${h.about.email}`} className="font-semibold text-[var(--accent-green)] hover:underline">

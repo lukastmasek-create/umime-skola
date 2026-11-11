@@ -331,13 +331,13 @@ export function Crossword({
           {checked && !done && <p className="text-sm font-semibold">{allFilled() && allRight(typed) ? t.cross.allRight : t.cross.wrongCells}</p>}
           {!done && (
             <div className="flex flex-wrap gap-2">
-              <button type="button" onClick={check} className="btn-bouncy btn-primary">
+              <button type="button" onClick={check} className="btn-bouncy btn-primary btn-lg">
                 ✔ {t.cross.check}
               </button>
-              <button type="button" onClick={reveal} disabled={hints <= 0} className="btn-bouncy btn-secondary disabled:opacity-40">
+              <button type="button" onClick={reveal} disabled={hints <= 0} className="btn-bouncy btn-secondary btn-lg disabled:opacity-40">
                 💡 {t.cross.reveal} ({hints})
               </button>
-              <button type="button" onClick={giveUp} className="btn-bouncy btn-secondary">
+              <button type="button" onClick={giveUp} className="btn-bouncy btn-secondary btn-lg">
                 🏳️ {t.cross.giveUp}
               </button>
             </div>

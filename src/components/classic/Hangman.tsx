@@ -165,7 +165,7 @@ export function Hangman({ t, questions, backHref }: { t: ClassicText; questions:
                 {won ? `✓ ${t.rightAnswer}` : `✗ ${t.gameOver}`} — {item.answer}
               </p>
               <p className="text-[var(--muted)]">{item.explanation}</p>
-              <button type="button" onClick={next} className="btn-bouncy btn-primary">
+              <button type="button" onClick={next} className="btn-bouncy btn-primary btn-lg">
                 {index + 1 >= items.length ? t.finish : t.nextRound}
               </button>
             </div>
