@@ -10,11 +10,14 @@ import { GlobeSky } from "@/components/GlobeSky";
 import { HeroSky } from "@/components/HeroSky";
 import { HeroTitle } from "@/components/HeroTitle";
 import { ExpandCard } from "@/components/ExpandCard";
+import { TearCard } from "@/components/TearCard";
+import { HangTags } from "@/components/HangTags";
 import { HomeLobby } from "@/components/HomeLobby";
 import { getHomeLobbyText } from "@/i18n/home-lobby";
 import { ResultsPreview } from "@/components/ResultsPreview";
 import { HeroShowcase } from "@/components/HeroShowcase";
 import { getHomeHeroText } from "@/i18n/home-hero";
+import { getHomeHangText } from "@/i18n/home-hang";
 import { getHomeText } from "@/i18n/home";
 import { getHomeAudienceText } from "@/i18n/home-teachers";
 import { getAudiencePagesText } from "@/i18n/audience";
@@ -160,6 +163,17 @@ export default async function Home({
         </section>
       )}
 
+      {/* 4b) Panel se zavěšenými štítky */}
+      <section className="zone zone-space">
+        <div className="hang-panel reveal mx-auto max-w-5xl">
+          <div className="hang-copy">
+            <h2 className="hang-title" style={heading}>{getHomeHangText(locale as Locale).title}</h2>
+            <p className="hang-lead">{getHomeHangText(locale as Locale).lead}</p>
+          </div>
+          <HangTags tags={getHomeHangText(locale as Locale).tags} />
+        </div>
+      </section>
+
       {/* 5) Zpět do vesmíru: kategorie */}
       <section className="zone zone-space">
         <Wave fill="#160a2c" />
@@ -173,33 +187,24 @@ export default async function Home({
           style={{ animationDelay: "-2.5s" }}
         />
         <div className="lobby-panel relative z-10">
-          <h2 className="reveal mb-8 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
+          <h2 className="reveal mb-10 text-center text-3xl font-bold tracking-tight sm:text-4xl" style={heading}>
             {dict.home.pickSection}
           </h2>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {CATEGORIES.map((cat, i) => {
-              const color = TILE_COLORS[i % TILE_COLORS.length];
-              return (
-                <Link
-                  key={cat.slug}
-                  href={`/${locale}/kurzy/${cat.slug}`}
-                  className="reveal gcard relative flex min-h-36 flex-col justify-between gap-4 p-5 sm:min-h-44 sm:gap-6"
-                  style={{ ["--gc" as string]: color }}
-                >
-                  <Icon name={cat.slug} size={100} className="absolute right-2 top-2" />
-                  <span className="gcard-num text-6xl" style={heading}>
-                    {String(i + 1).padStart(2, "0")}
+          <div className="pcard-pile">
+            {CATEGORIES.map((cat, i) => (
+              <TearCard key={cat.slug} href={`/${locale}/kurzy/${cat.slug}`} className="reveal pcard" accent={TILE_COLORS[i % TILE_COLORS.length]}>
+                <span className="pcard-in">
+                  <span className="pcard-num" aria-hidden>{String(i + 1).padStart(2, "0")}</span>
+                  <span className="pcard-iconwrap">
+                    <Icon name={cat.slug} size={92} className="pcard-icon" />
                   </span>
-                  <div className="flex items-end justify-between gap-3">
-                    <div>
-                      <h3 className="gcard-title mb-1 text-lg">{dict.categories[cat.slug].label}</h3>
-                      <p className="text-sm text-[var(--muted)]">{dict.categories[cat.slug].description}</p>
-                    </div>
-                    <span aria-hidden className="gcard-chip">→</span>
-                  </div>
-                </Link>
-              );
-            })}
+                  <h3 className="pcard-title">{dict.categories[cat.slug].label}</h3>
+                  <p className="pcard-text">{dict.categories[cat.slug].description}</p>
+                  <span className="pcard-go" aria-hidden>→</span>
+                  <span className="pcard-glare" aria-hidden />
+                </span>
+              </TearCard>
+            ))}
           </div>
         </div>
       </section>
@@ -286,7 +291,7 @@ export default async function Home({
             </ul>
           </div>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <Link href={`/${locale}/kontakt`} className="btn-bouncy btn-secondary inline-flex">
+            <Link href={`/${locale}/kontakt`} className="btn-bouncy btn-secondary btn-lg">
               {h.about.contact} →
             </Link>
             <a href={`mailto:${h.about.email}`} className="font-semibold text-[var(--accent-green)] hover:underline">

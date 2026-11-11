@@ -4473,3 +4473,257 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
   .gcard, .gcard-chip { transition: none; }
   a.gcard:hover, .gcard-hover:hover, a.gcard:hover .gcard-chip { transform: none; }
 }
+
+/* ===== Hromádka naklopených skleněných karet (kategorie na homepage) ===== */
+.pcard-pile { display: grid; grid-template-columns: 1fr; gap: 18px; max-width: 600px; margin: 0 auto; padding-bottom: 8px; }
+.pcard-slot { --r: 0deg; --ac: #8f86ff; position: relative; }
+/* prázdné místo po odtažené kartě */
+.pcard-ghost {
+  position: absolute; inset: 0; border-radius: 28px; transform: rotate(var(--r)); pointer-events: none;
+  border: 2px dashed color-mix(in srgb, var(--ac) 55%, transparent); background: color-mix(in srgb, var(--ac) 7%, transparent);
+  opacity: 0; transition: opacity 0.25s ease;
+}
+.pcard-slot.is-away .pcard-ghost { opacity: 1; }
+.pcard {
+  position: relative; display: block; border-radius: 28px; color: #f4f3ff;
+  transform: rotate(calc(var(--r) + var(--dr, 0deg)));
+  touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: grab;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  box-shadow: 0 24px 40px -24px #000;
+}
+.pcard-in {
+  --rx: 0deg; --ry: 0deg; --gx: 50%; --gy: 0%;
+  position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; overflow: hidden;
+  padding: 22px 26px 30px; border-radius: 28px;
+  background:
+    radial-gradient(90% 60% at 50% 0%, color-mix(in srgb, var(--ac) 20%, transparent), transparent 72%),
+    linear-gradient(180deg, rgba(32, 32, 44, 0.97) 0%, rgba(40, 40, 92, 0.94) 100%);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) inset, 0 1px 0 0 color-mix(in srgb, var(--ac) 70%, white) inset;
+  transform: perspective(700px) rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 0.18s ease-out, background 0.3s ease, box-shadow 0.3s ease;
+}
+.pcard-in::before { /* jemný šum jako u skla */
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.06; mix-blend-mode: screen;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+.pcard-glare { /* odlesk se pohybuje za kurzorem */
+  position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.25s ease;
+  background: radial-gradient(220px circle at var(--gx) var(--gy), rgba(255, 255, 255, 0.22), transparent 65%);
+}
+.pcard:hover .pcard-glare { opacity: 1; }
+.pcard-num {
+  position: absolute; top: 14px; left: 18px; font: 800 0.9rem/1 var(--font-heading); letter-spacing: 0.08em; color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--ac) 80%, white);
+}
+.pcard-iconwrap {
+  position: relative; display: grid; place-items: center; width: 112px; height: 112px; margin-bottom: 6px; border-radius: 30px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--ac) 34%, rgba(255,255,255,.08)), rgba(255, 255, 255, 0.04));
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.16) inset, 0 14px 30px -12px var(--ac);
+}
+.pcard-iconwrap::after { /* lesklý pruh přes dlaždici */
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(115deg, rgba(255,255,255,.28) 0%, rgba(255,255,255,0) 38%);
+}
+.pcard-icon { position: relative; z-index: 1; filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.45)); animation: pcard-bob 4.6s ease-in-out infinite; }
+.pcard-slot:nth-child(2) .pcard-icon { animation-delay: -1.1s; }
+.pcard-slot:nth-child(3) .pcard-icon { animation-delay: -2.3s; }
+.pcard-slot:nth-child(4) .pcard-icon { animation-delay: -3.4s; }
+@keyframes pcard-bob { 0%, 100% { transform: translateY(2px) rotate(-2deg); } 50% { transform: translateY(-5px) rotate(2deg); } }
+.pcard-title { font-size: 1.2rem; font-weight: 700; margin: 8px 0; letter-spacing: -0.01em; }
+.pcard-text { font-size: 0.95rem; line-height: 1.5; color: rgba(244, 243, 255, 0.72); max-width: 250px; }
+.pcard-go {
+  display: grid; place-items: center; width: 36px; height: 36px; margin-top: 14px; border-radius: 999px; font-weight: 700;
+  background: rgba(255, 255, 255, 0.12); color: #fff; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease, color 0.2s ease;
+}
+.pcard:hover .pcard-go { transform: translateX(4px) scale(1.1); background: #fff; color: #1a1a52; }
+.pcard:hover, .pcard:focus-visible { z-index: 5; }
+.pcard:hover .pcard-in, .pcard:focus-visible .pcard-in {
+  background:
+    radial-gradient(90% 60% at 50% 0%, color-mix(in srgb, var(--ac) 38%, transparent), transparent 72%),
+    linear-gradient(180deg, #4a4fe0 0%, #2f2f93 100%);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3) inset, 0 30px 50px -22px var(--ac);
+}
+.pcard:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+@media (min-width: 640px) {
+  .pcard-pile { grid-template-columns: 1fr 1fr; gap: 0; max-width: 640px; }
+  .pcard-slot:nth-child(1) { --r: -3deg; margin-right: -12px; }
+  .pcard-slot:nth-child(2) { --r: 3deg; margin-top: 6px; }
+  .pcard-slot:nth-child(3) { --r: 3deg; margin-top: -26px; margin-left: -36px; margin-right: 24px; }
+  .pcard-slot:nth-child(4) { --r: -3deg; margin-top: -14px; margin-left: 12px; margin-right: -30px; }
+}
+@media (max-width: 639px) {
+  .pcard-slot:nth-child(odd) { --r: -1.6deg; }
+  .pcard-slot:nth-child(even) { --r: 1.6deg; }
+  .pcard-in { padding: 18px 20px 24px; }
+  .pcard-iconwrap { width: 96px; height: 96px; }
+}
+@media (prefers-reduced-motion: reduce) { .pcard, .pcard-in { transition: none; } .pcard-icon { animation: none; } }
+
+/* ===== Panel se zavěšenými štítky ===== */
+.hang-panel {
+  position: relative; overflow: hidden; display: grid; grid-template-columns: 1fr; align-items: center;
+  min-height: 340px; border-radius: 32px; padding: 32px;
+  background: radial-gradient(70% 90% at 80% 20%, rgba(90, 80, 220, 0.38), transparent 70%), linear-gradient(135deg, #12123a 0%, #1a1a52 55%, #0d0d26 100%);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) inset, 0 30px 60px -30px #000;
+}
+.hang-title { font-size: clamp(2rem, 5vw, 3rem); font-weight: 600; line-height: 1.05; color: #c9c6ff; margin-bottom: 14px; }
+.hang-lead { max-width: 340px; color: rgba(236, 234, 255, 0.85); line-height: 1.45; }
+.hang-tags { position: relative; height: 220px; margin-top: 24px; }
+
+/* Životní cyklus jednoho štítku (15 s): přiletí shora -> houpe se -> utrhne se a spadne -> prázdno.
+   Zpoždění jsou řetězená tak, že když jeden štítek padá, jiný přilétá shora. */
+.hang-str {
+  --d: 0s; --dur: 15s;
+  position: absolute; top: -44px; width: 1px; height: var(--h, 120px);
+  animation: hang-life var(--dur) cubic-bezier(0.3, 0, 0.3, 1) var(--d) infinite both;
+}
+.hang-sway {
+  position: absolute; inset: 0; transform-origin: top center;
+  background: linear-gradient(180deg, transparent, rgba(160, 150, 255, 0.75));
+  animation: hang-sway var(--sw, 4.5s) ease-in-out calc(var(--d) + 1.5s) infinite alternate;
+}
+.hang-sway::after {
+  content: ""; position: absolute; bottom: -3px; left: -3px; width: 7px; height: 7px; border-radius: 50%;
+  background: #8f86ff; box-shadow: 0 0 10px #8f86ff;
+  animation: hang-dot var(--dur) linear var(--d) infinite both;
+}
+.hang-tag {
+  position: absolute; top: 100%; left: 50%; transform: translateX(-50%) rotate(var(--tr, -6deg)); transform-origin: top center;
+  margin-top: 4px; white-space: nowrap; padding: 8px 14px; border-radius: 10px; font-size: 0.85rem; color: #eceaff;
+  background: linear-gradient(180deg, rgba(60, 60, 150, 0.85), rgba(30, 30, 95, 0.9));
+  box-shadow: 0 0 0 1px rgba(150, 140, 255, 0.35) inset, 0 8px 16px -8px #000;
+  animation: hang-wobble var(--dur) ease-out var(--d) infinite both;
+}
+.hang-str-1 { left: 30%; --h: 120px; --tr: -8deg; --d: 0s;    --sw: 4.2s; }
+.hang-str-2 { left: 38%; --h: 70px;  --tr: 6deg;  --d: 10.5s; --sw: 5.1s; }
+.hang-str-3 { left: 58%; --h: 150px; --tr: -5deg; --d: 6s;    --sw: 4.7s; }
+.hang-str-4 { left: 80%; --h: 100px; --tr: 7deg;  --d: 1.5s;  --sw: 5.6s; }
+.hang-str-5 { left: 22%; --h: 175px; --tr: 4deg;  --d: 12s;   --sw: 3.9s; }
+.hang-str-2 .hang-tag { background: linear-gradient(180deg, #5a5ff0, #3a3ab8); }
+
+/* přilétne shora s odrazem, drží, pak se utrhne a spadne dolů */
+@keyframes hang-life {
+  0%    { transform: translateY(-420px); opacity: 0; }
+  1%    { opacity: 1; }
+  5%    { transform: translateY(14px); }
+  7%    { transform: translateY(-6px); }
+  9%    { transform: translateY(0); }
+  68%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  70%   { transform: translateY(-8px) rotate(-2deg); }
+  80%   { transform: translateY(420px) rotate(28deg); opacity: 1; }
+  84%   { transform: translateY(440px) rotate(34deg); opacity: 0; }
+  100%  { transform: translateY(-420px); opacity: 0; }
+}
+/* po dopadu se štítek rozhoupe a postupně utichne; těsně před pádem zavrtí */
+@keyframes hang-wobble {
+  0%, 5% { transform: translateX(-50%) rotate(var(--tr)); }
+  8%     { transform: translateX(-50%) rotate(calc(var(--tr) + 22deg)); }
+  12%    { transform: translateX(-50%) rotate(calc(var(--tr) - 14deg)); }
+  16%    { transform: translateX(-50%) rotate(calc(var(--tr) + 8deg)); }
+  21%    { transform: translateX(-50%) rotate(calc(var(--tr) - 4deg)); }
+  27%, 62% { transform: translateX(-50%) rotate(var(--tr)); }
+  64%    { transform: translateX(-50%) rotate(calc(var(--tr) + 5deg)); }
+  66%    { transform: translateX(-50%) rotate(calc(var(--tr) - 5deg)); }
+  68%    { transform: translateX(-50%) rotate(calc(var(--tr) + 7deg)); }
+  100%   { transform: translateX(-50%) rotate(var(--tr)); }
+}
+/* tečka na konci nitě se při přichycení rozsvítí */
+@keyframes hang-dot {
+  0%, 8% { transform: scale(0); }
+  10%    { transform: scale(2.6); box-shadow: 0 0 22px #b6afff; }
+  16%    { transform: scale(1); }
+  66%    { transform: scale(1); box-shadow: 0 0 10px #8f86ff; }
+  70%    { transform: scale(0); }
+  100%   { transform: scale(0); }
+}
+@keyframes hang-sway { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
+@media (min-width: 768px) {
+  .hang-panel { grid-template-columns: 1fr 1.1fr; padding: 48px; min-height: 360px; }
+  .hang-tags { height: 280px; margin-top: 0; }
+  .hang-str-1 { left: 8%; --h: 150px; } .hang-str-3 { --h: 190px; } .hang-str-5 { --h: 225px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hang-str, .hang-sway, .hang-sway::after, .hang-tag { animation: none; }
+}
+
+/* Interakce: štítky jdou chytit a rozhoupat, při silném zatažení se přetrhnou */
+.hang-tag { cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; transition: filter 0.2s ease; }
+.hang-tag:hover { filter: brightness(1.25); }
+.hang-str.is-held, .hang-str.is-swing, .hang-str.is-free { animation: none; opacity: 1; }
+.is-held, .is-swing, .is-free { z-index: 5; }
+.is-held .hang-sway, .is-swing .hang-sway, .is-free .hang-sway,
+.is-held .hang-sway::after, .is-swing .hang-sway::after,
+.is-held .hang-tag, .is-swing .hang-tag, .is-free .hang-tag { animation: none; }
+.is-held .hang-tag, .is-swing .hang-tag { transform: translateX(-50%) rotate(var(--tr, -6deg)); }
+.is-held .hang-tag { cursor: grabbing; }
+.is-held .hang-sway, .is-swing .hang-sway { filter: brightness(calc(1 + var(--tn, 0) * 1.4)); }
+.is-held .hang-sway::after, .is-swing .hang-sway::after { transform: scale(calc(1 + var(--tn, 0) * 2.4)); }
+.is-free .hang-sway { background: none; }
+.is-free .hang-sway::after { display: none; }
+
+/* tažení karet kategorií */
+.pcard.is-lift { transform: rotate(calc(var(--r) + var(--dr, 0deg))) scale(1.05); box-shadow: 0 30px 50px -20px #000; }
+.pcard.is-drag { transition: none; cursor: grabbing; z-index: 30; transform: rotate(calc(var(--r) + var(--dr, 0deg))) scale(1.05); box-shadow: 0 40px 60px -20px #000; }
+.pcard.is-drag .pcard-in, .pcard.is-lift .pcard-in { transform: none; background: radial-gradient(90% 60% at 50% 0%, color-mix(in srgb, var(--ac) 26%, transparent), transparent 72%), linear-gradient(180deg, #20202c 0%, #28285c 100%); }
+.pcard.is-tear .pcard-in { background: radial-gradient(90% 60% at 50% 0%, color-mix(in srgb, var(--ac) 55%, transparent), transparent 72%), linear-gradient(180deg, #6a52ff 0%, #3b2fb0 100%); box-shadow: 0 0 0 2px #fff inset, 0 0 44px 6px color-mix(in srgb, var(--ac) 70%, transparent); animation: pcard-shake 0.12s linear infinite; }
+@keyframes pcard-shake { 0%, 100% { translate: 0 0; } 25% { translate: -1.5px 1px; } 75% { translate: 1.5px -1px; } }
+.pcard.is-fly { transition: none; z-index: 30; pointer-events: none; }
+
+/* ===== Karty pro žáky: vjezd, rostoucí sloupečky, světlo za kurzorem ===== */
+.gcard-live {
+  --mx: 50%;
+  --my: 0%;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
+  will-change: transform;
+}
+.gcard-glow {
+  position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0;
+  background: radial-gradient(260px circle at var(--mx) var(--my), color-mix(in srgb, var(--ga) 30%, transparent), transparent 70%);
+  transition: opacity 0.4s ease;
+}
+a.gcard-live:hover .gcard-glow, a.gcard-live:focus-visible .gcard-glow { opacity: 1; }
+a.gcard-live:hover { transform: translateY(-6px) scale(1.012); }
+a.gcard-live:active { transform: translateY(-2px) scale(0.99); transition-duration: 0.12s; }
+a.gcard-live:focus-visible { outline: 2px solid var(--ga); outline-offset: 3px; }
+.gcard-live .gcard-title { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), color 0.3s ease; }
+a.gcard-live:hover .gcard-title { transform: translateX(4px); }
+.gcard-live .gcard-chip { transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease; }
+a.gcard-live:hover .gcard-chip { transform: rotate(-45deg) scale(1.1); }
+.gcard-live .gcard-bars i {
+  transform-origin: 50% 100%;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease;
+  transition-delay: calc(var(--n) * 25ms);
+}
+a.gcard-live:hover .gcard-bars i { transform: scaleY(1.1); background: rgba(255, 255, 255, 0.22); }
+a.gcard-live:hover .gcard-bars i.is-hi { background: var(--ga); }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Skryté, dokud karta nevjede do záběru (bez JS se ukáže přes noscript níž) */
+  .gc-item { opacity: 0; transform: translateY(28px) scale(0.97); }
+  .gc-item.is-in {
+    opacity: 1; transform: none;
+    transition: opacity 0.7s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: calc(var(--i, 0) * 80ms);
+  }
+  .gc-item .gcard-bars i { transform: scaleY(0); }
+  .gc-item.is-in .gcard-bars i {
+    transform: scaleY(1);
+    transition: transform 0.9s cubic-bezier(0.34, 1.3, 0.64, 1), background 0.3s ease;
+    transition-delay: calc(var(--i, 0) * 80ms + 250ms + var(--n) * 60ms);
+  }
+  .gc-item.is-in a.gcard-live:hover .gcard-bars i { transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease; transition-delay: calc(var(--n) * 25ms); transform: scaleY(1.1); }
+  /* Zvýrazněný sloupec jemně dýchá */
+  .gc-item.is-in .gcard-bars i.is-hi { animation: gc-breathe 3.2s ease-in-out 1.6s infinite; }
+}
+@keyframes gc-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+@media (prefers-reduced-motion: reduce) {
+  .gcard-live, .gcard-live .gcard-title, .gcard-live .gcard-chip, .gcard-live .gcard-bars i, .gcard-glow { transition: none; }
+  a.gcard-live:hover, a.gcard-live:active, a.gcard-live:hover .gcard-title, a.gcard-live:hover .gcard-bars i { transform: none; }
+}
+
+/* Statické karty (učitelé): stejný hover jako u odkazů */
+.gcard-live.gcard-hover:hover { transform: translateY(-6px) scale(1.012); }
+.gcard-live.gcard-hover:hover .gcard-glow { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .gcard-live.gcard-hover:hover { transform: none; }
+}
