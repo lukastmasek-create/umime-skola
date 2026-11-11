@@ -9,6 +9,7 @@ import { GlobeSky } from "@/components/GlobeSky";
 import { HeroSky } from "@/components/HeroSky";
 import { HeroTitle } from "@/components/HeroTitle";
 import { ExpandCard } from "@/components/ExpandCard";
+import { HangTags } from "@/components/HangTags";
 import { HomeLobby } from "@/components/HomeLobby";
 import { getHomeLobbyText } from "@/i18n/home-lobby";
 import { ResultsPreview } from "@/components/ResultsPreview";
@@ -168,13 +169,7 @@ export default async function Home({
             <h2 className="hang-title" style={heading}>{getHomeHangText(locale as Locale).title}</h2>
             <p className="hang-lead">{getHomeHangText(locale as Locale).lead}</p>
           </div>
-          <div className="hang-tags" aria-hidden>
-            {getHomeHangText(locale as Locale).tags.map((tag, i) => (
-              <div key={tag} className={`hang-str hang-str-${i + 1}`}>
-                <div className="hang-sway"><span className="hang-tag">{tag}</span></div>
-              </div>
-            ))}
-          </div>
+          <HangTags tags={getHomeHangText(locale as Locale).tags} />
         </div>
       </section>
 

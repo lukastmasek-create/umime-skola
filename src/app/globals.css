@@ -4572,3 +4572,18 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
 @media (prefers-reduced-motion: reduce) {
   .hang-str, .hang-sway, .hang-sway::after, .hang-tag { animation: none; }
 }
+
+/* Interakce: štítky jdou chytit a rozhoupat, při silném zatažení se přetrhnou */
+.hang-tag { cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; transition: filter 0.2s ease; }
+.hang-tag:hover { filter: brightness(1.25); }
+.hang-str.is-held, .hang-str.is-swing, .hang-str.is-free { animation: none; opacity: 1; }
+.is-held, .is-swing, .is-free { z-index: 5; }
+.is-held .hang-sway, .is-swing .hang-sway, .is-free .hang-sway,
+.is-held .hang-sway::after, .is-swing .hang-sway::after,
+.is-held .hang-tag, .is-swing .hang-tag, .is-free .hang-tag { animation: none; }
+.is-held .hang-tag, .is-swing .hang-tag { transform: translateX(-50%) rotate(var(--tr, -6deg)); }
+.is-held .hang-tag { cursor: grabbing; }
+.is-held .hang-sway, .is-swing .hang-sway { filter: brightness(calc(1 + var(--tn, 0) * 1.4)); }
+.is-held .hang-sway::after, .is-swing .hang-sway::after { transform: scale(calc(1 + var(--tn, 0) * 2.4)); }
+.is-free .hang-sway { background: none; }
+.is-free .hang-sway::after { display: none; }
