@@ -186,7 +186,7 @@ export default async function Home({
                   className="reveal gcard relative flex min-h-36 flex-col justify-between gap-4 p-5 sm:min-h-44 sm:gap-6"
                   style={{ ["--gc" as string]: color }}
                 >
-                  <Icon name={cat.slug} size={104} className="absolute right-3 top-3" />
+                  <Icon name={cat.slug} size={92} className="absolute right-3 top-3" />
                   <span className="gcard-num text-6xl" style={heading}>
                     {String(i + 1).padStart(2, "0")}
                   </span>
