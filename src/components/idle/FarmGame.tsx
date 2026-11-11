@@ -45,6 +45,7 @@ import {
 import { EventPill, type EventInfo } from "@/components/idle/EventPill";
 import { ChallengePanel } from "@/components/idle/ChallengePanel";
 import type { Locale } from "@/i18n/config";
+import { EmojiText, Ico } from "./eco-icons";
 
 type Payload = {
   state: FarmState;
@@ -75,7 +76,7 @@ function Sprite({ src, name, className = "" }: { src: string; name: string; clas
   if (failed) {
     return (
       <span aria-hidden className={`flex items-center justify-center text-4xl ${className}`}>
-        {EMOJI[name] ?? "🌱"}
+        <Ico e={EMOJI[name] ?? "🌱"} size="1em" />
       </span>
     );
   }
@@ -212,7 +213,7 @@ export function FarmGame({ locale }: { locale: Locale }) {
         ← {t.back}
       </Link>
       <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        🌾 {t.title}
+        <Ico e="🌾" /> {t.title}
       </h1>
       <p className="mb-6 max-w-2xl text-[var(--muted)]">{t.subtitle}</p>
     </>
@@ -281,10 +282,10 @@ export function FarmGame({ locale }: { locale: Locale }) {
 
       <div className="card mb-5 flex flex-wrap items-center gap-x-6 gap-y-3 p-4">
         <p className="text-lg font-extrabold">
-          🪙 {state.coins.toLocaleString(locale)} <span className="text-sm font-semibold text-[var(--muted)]">{t.coins}</span>
+          <Ico e="🪙" /> {state.coins.toLocaleString(locale)} <span className="text-sm font-semibold text-[var(--muted)]">{t.coins}</span>
         </p>
         <p className="text-lg font-extrabold">
-          ⭐ {points.toLocaleString(locale)} <span className="text-sm font-semibold text-[var(--muted)]">{t.points}</span>
+          <Ico e="⭐" /> {points.toLocaleString(locale)} <span className="text-sm font-semibold text-[var(--muted)]">{t.points}</span>
         </p>
         <div className="min-w-48 flex-1">
           <div className="mb-1 flex justify-between text-xs font-semibold text-[var(--muted)]">
@@ -304,17 +305,17 @@ export function FarmGame({ locale }: { locale: Locale }) {
         <EventPill event={view.data.event} locale={locale} />
         {learningBonus > 0 && (
           <span className="pill flex-wrap gap-x-2 bg-[var(--accent-yellow)] px-3 py-1 text-sm text-[#16132b]" title={t.speedHint}>
-            <span>⚡ {fill(t.speedBonus, { n: Math.round(learningBonus * 100) })}</span>
+            <span><Ico e="⚡" /> {fill(t.speedBonus, { n: Math.round(learningBonus * 100) })}</span>
             {bonuses && (
               <span className="text-xs font-medium opacity-80">
-                {[
+                <EmojiText text={[
                   bonuses.learning > 0 && `📚 ${fill(t.bonusLearning, { n: Math.round(bonuses.learning * 100) })}`,
                   bonuses.pet > 0 && `🐾 ${fill(t.bonusPet, { n: Math.round(bonuses.pet * 100) })}`,
                   bonuses.city > 0 && `🏙️ ${fill(t.bonusCity, { n: Math.round(bonuses.city * 100) })}`,
                   (bonuses.event ?? 0) > 0 && `🎉 ${Math.round((bonuses.event ?? 0) * 100)} %`,
                 ]
                   .filter(Boolean)
-                  .join(" · ")}
+                  .join(" · ")} />
               </span>
             )}
           </span>
@@ -364,7 +365,7 @@ export function FarmGame({ locale }: { locale: Locale }) {
                   <span>
                     <span className="block font-bold">{c.names[locale]}</span>
                     <span className="block">
-                      {locked ? `🔒 ${fill(t.levelNeeded, { n: c.level })}` : `🪙 ${c.seed} · ${c.minutes >= 60 ? fill(t.hours, { n: +(c.minutes / 60).toFixed(1) }) : fill(t.minutes, { n: c.minutes })}`}
+                      <EmojiText text={locked ? `🔒 ${fill(t.levelNeeded, { n: c.level })}` : `🪙 ${c.seed} · ${c.minutes >= 60 ? fill(t.hours, { n: +(c.minutes / 60).toFixed(1) }) : fill(t.minutes, { n: c.minutes })}`} />
                     </span>
                   </span>
                 </button>
@@ -379,14 +380,14 @@ export function FarmGame({ locale }: { locale: Locale }) {
               onClick={() => act({ action: "harvestAll" }, (s, n, b) => harvestAll(s, n, b), (g) => fill(t.toast.harvested, { n: g.items ?? 0 }))}
               className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white disabled:opacity-45"
             >
-              🧺 {t.harvestAll} {ripeCount > 0 && `(${ripeCount})`}
+              <Ico e="🧺" /> {t.harvestAll} {ripeCount > 0 && `(${ripeCount})`}
             </button>
             <button
               type="button"
               onClick={() => act({ action: "plantAll", crop: seed }, (s, n) => plantAll(s, seed, n), () => t.toast.planted)}
               className="btn-bouncy bg-[var(--surface)] px-4 py-2 text-sm font-bold"
             >
-              🌱 {t.plantAll}
+              <Ico e="🌱" /> {t.plantAll}
             </button>
           </div>
 
@@ -418,7 +419,7 @@ export function FarmGame({ locale }: { locale: Locale }) {
                       className={`h-full w-full ${ripe ? "farm-ripe" : ""}`}
                     />
                     <span className="absolute inset-x-0 bottom-0 bg-black/45 px-1 py-0.5 text-center text-[11px] font-bold text-white">
-                      {!plot ? t.emptyPlot : ripe ? `✓ ${t.ripe}` : formatLeft(left, t)}
+                      <EmojiText text={!plot ? t.emptyPlot : ripe ? `✓ ${t.ripe}` : formatLeft(left, t)} />
                     </span>
                   </button>
                   {plot && !ripe && points >= FERTILIZE_POINTS_COST && (
@@ -429,7 +430,7 @@ export function FarmGame({ locale }: { locale: Locale }) {
                       onClick={() => act({ action: "fertilize", plot: i }, undefined, () => t.toast.fertilized)}
                       className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-[var(--edge)] bg-[var(--accent-yellow)] text-sm leading-none hover:scale-110"
                     >
-                      ⚡
+                      <Ico e="⚡" />
                     </button>
                   )}
                 </div>
@@ -442,8 +443,8 @@ export function FarmGame({ locale }: { locale: Locale }) {
                 disabled={level < plotLevel(state.plots.length)}
                 className="flex aspect-square flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-[var(--edge)]/60 p-2 text-center text-xs font-bold text-[var(--muted)] hover:border-[var(--edge)] disabled:opacity-50"
               >
-                <span className="text-2xl">➕</span>
-                {level < plotLevel(state.plots.length) ? `🔒 ${fill(t.levelNeeded, { n: plotLevel(state.plots.length) })}` : fill(t.buyPlot, { n: `🪙 ${plotCost(state.plots.length)}` })}
+                <span className="text-2xl"><Ico e="➕" /></span>
+                <EmojiText text={level < plotLevel(state.plots.length) ? `🔒 ${fill(t.levelNeeded, { n: plotLevel(state.plots.length) })}` : fill(t.buyPlot, { n: `🪙 ${plotCost(state.plots.length)}` })} />
               </button>
             )}
           </div>
@@ -465,7 +466,7 @@ export function FarmGame({ locale }: { locale: Locale }) {
               onClick={() => act({ action: "collectAll" }, (s, n, b) => collectAll(s, n, b), (g) => fill(t.toast.collected, { n: g.items ?? 0 }))}
               className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white disabled:opacity-45"
             >
-              🧺 {t.collectAll}
+              <Ico e="🧺" /> {t.collectAll}
             </button>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -515,7 +516,7 @@ export function FarmGame({ locale }: { locale: Locale }) {
                       onClick={() => act({ action: "buyAnimal", animal: a.id }, undefined, () => t.toast.bought)}
                       className="btn-bouncy flex-1 bg-[var(--surface)] px-3 py-2 text-sm font-bold disabled:opacity-45"
                     >
-                      {locked ? `🔒 ${fill(t.levelNeeded, { n: a.level })}` : owned >= MAX_ANIMALS_PER_KIND ? t.maxAnimals : fill(t.buyAnimal, { n: `🪙 ${price}` })}
+                      <EmojiText text={locked ? `🔒 ${fill(t.levelNeeded, { n: a.level })}` : owned >= MAX_ANIMALS_PER_KIND ? t.maxAnimals : fill(t.buyAnimal, { n: `🪙 ${price}` })} />
                     </button>
                   </div>
                 </article>
@@ -542,7 +543,7 @@ export function FarmGame({ locale }: { locale: Locale }) {
                 onClick={() => act({ action: "sell", item: "all" }, (s) => sell(s, "all"), (g) => fill(t.toast.sold, { n: g.coins ?? 0 }))}
                 className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white disabled:opacity-45"
               >
-                💰 {fill(t.sellAll, { n: stockValue })}
+                <Ico e="💰" /> {fill(t.sellAll, { n: stockValue })}
               </button>
               <button
                 type="button"
@@ -550,7 +551,7 @@ export function FarmGame({ locale }: { locale: Locale }) {
                 onClick={() => act({ action: "upgradeSilo" }, undefined, () => t.toast.upgraded)}
                 className="btn-bouncy bg-[var(--surface)] px-4 py-2 text-sm font-bold disabled:opacity-45"
               >
-                {state.siloUpgrades >= MAX_SILO_UPGRADES ? t.maxSilo : `🏗️ ${fill(t.upgradeSilo, { n: `🪙 ${siloUpgradeCost(state.siloUpgrades)}`, cap: SILO_STEP })}`}
+                <EmojiText text={state.siloUpgrades >= MAX_SILO_UPGRADES ? t.maxSilo : `🏗️ ${fill(t.upgradeSilo, { n: `🪙 ${siloUpgradeCost(state.siloUpgrades)}`, cap: SILO_STEP })}`} />
               </button>
             </div>
           </div>
@@ -565,14 +566,14 @@ export function FarmGame({ locale }: { locale: Locale }) {
                     <p className="font-bold leading-tight">
                       {itemName(id)} <span className="text-[var(--muted)]">×{qty}</span>
                     </p>
-                    <p className="text-xs text-[var(--muted)]">{fill(t.each, { n: `🪙 ${itemPrice(id)}` })}</p>
+                    <p className="text-xs text-[var(--muted)]"><EmojiText text={fill(t.each, { n: `🪙 ${itemPrice(id)}` })} /></p>
                   </div>
                   <button
                     type="button"
                     onClick={() => act({ action: "sell", item: id }, (s) => sell(s, id), (g) => fill(t.toast.sold, { n: g.coins ?? 0 }))}
                     className="btn-bouncy shrink-0 bg-[var(--accent-yellow)] px-3 py-1.5 text-xs font-bold text-[#16132b]"
                   >
-                    {fill(t.sell, { n: `🪙 ${itemPrice(id) * qty}` })}
+                    <EmojiText text={fill(t.sell, { n: `🪙 ${itemPrice(id) * qty}` })} />
                   </button>
                 </div>
               ))}
@@ -608,7 +609,7 @@ export function FarmGame({ locale }: { locale: Locale }) {
                     })}
                   </ul>
                   <p className="text-sm font-semibold">
-                    {t.reward}: 🪙 {o.coins} · ✨ {o.xp}
+                    {t.reward}: <Ico e="🪙" /> {o.coins} · <Ico e="✨" /> {o.xp}
                   </p>
                   <button
                     type="button"
@@ -616,7 +617,7 @@ export function FarmGame({ locale }: { locale: Locale }) {
                     onClick={() => act({ action: "deliver", order: o.id }, undefined, (g) => fill(t.toast.delivered, { n: g.coins ?? o.coins }))}
                     className="btn-bouncy mt-auto bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white disabled:opacity-45"
                   >
-                    📦 {t.deliver}
+                    <Ico e="📦" /> {t.deliver}
                   </button>
                 </article>
               );

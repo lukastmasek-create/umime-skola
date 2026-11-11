@@ -31,6 +31,7 @@ import { SHOP_ITEMS } from "@/lib/shop";
 import { RECIPES, petAccessoryRef } from "@/lib/craft";
 import { ChallengePanel } from "@/components/idle/ChallengePanel";
 import type { Locale } from "@/i18n/config";
+import { Ico } from "./eco-icons";
 
 type Payload = {
   state: PetGameState;
@@ -164,7 +165,7 @@ export function PetGame({ locale }: { locale: Locale }) {
         {t.back}
       </Link>
       <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        🐾 {t.title}
+        <Ico e="🐾" /> {t.title}
       </h1>
       <p className="mb-8 max-w-2xl text-[var(--muted)]">{t.subtitle}</p>
     </>
@@ -233,7 +234,7 @@ export function PetGame({ locale }: { locale: Locale }) {
               <PetArt species={s.id} stage={2} mood="happy" size={92} />
               <p className="font-bold">{t.species[s.id]}</p>
               <p className="text-xs text-[var(--muted)]">
-                {owned ? "✓" : s.pointsCost === 0 ? t.free : fillN(t.pointsCost, s.pointsCost)}
+                {owned ? <Ico e="✓" /> : s.pointsCost === 0 ? t.free : fillN(t.pointsCost, s.pointsCost)}
               </p>
               <button
                 type="button"
@@ -317,10 +318,10 @@ export function PetGame({ locale }: { locale: Locale }) {
         <section className="card flex flex-col gap-4 p-5">
           <div className="flex flex-wrap items-center gap-2">
             <span className="pill bg-[var(--accent-yellow)] px-3 py-1.5 text-sm text-[#16132b]">
-              🪙 {coins.toLocaleString(locale)} {t.coins}
+              <Ico e="🪙" /> {coins.toLocaleString(locale)} {t.coins}
             </span>
             <span className="pill bg-[var(--surface-muted)] px-3 py-1.5 text-sm">
-              ⭐ {data.points.toLocaleString(locale)} {t.points}
+              <Ico e="⭐" /> {data.points.toLocaleString(locale)} {t.points}
             </span>
           </div>
 
@@ -352,7 +353,7 @@ export function PetGame({ locale }: { locale: Locale }) {
             <EventPill event={data.event} locale={locale} />
             {bonusPercent > 0 && (
               <span className="pill bg-[var(--accent-green)] px-3 py-1.5 text-[#16132b]" title={t.learningHint}>
-                📚 {fillN(t.learningBonus, bonusPercent)}
+                <Ico e="📚" /> {fillN(t.learningBonus, bonusPercent)}
               </span>
             )}
           </div>
@@ -367,7 +368,7 @@ export function PetGame({ locale }: { locale: Locale }) {
               onClick={() => act({ action: "feed" })}
               className="btn-bouncy bg-[var(--brand-500)] px-3 py-2.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
             >
-              🍖 {fillN(t.feed, feedPrice)}
+              <Ico e="🍖" /> {fillN(t.feed, feedPrice)}
             </button>
             <button
               type="button"
@@ -375,7 +376,7 @@ export function PetGame({ locale }: { locale: Locale }) {
               onClick={() => act({ action: "play" })}
               className="btn-bouncy bg-[var(--accent-500)] px-3 py-2.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
             >
-              🎾 {cooldownLeft > 0 ? fillN(t.playIn, cooldownLeft) : t.play}
+              <Ico e="🎾" /> {cooldownLeft > 0 ? fillN(t.playIn, cooldownLeft) : t.play}
             </button>
             <button
               type="button"
@@ -384,7 +385,7 @@ export function PetGame({ locale }: { locale: Locale }) {
               title={t.treatHint}
               className="btn-bouncy bg-[var(--accent-yellow)] px-3 py-2.5 text-sm font-bold text-[#16132b] disabled:cursor-not-allowed disabled:opacity-40"
             >
-              🍰 {fillN(t.treat, TREAT_POINTS_COST)}
+              <Ico e="🍰" /> {fillN(t.treat, TREAT_POINTS_COST)}
             </button>
           </div>
         </section>
@@ -392,7 +393,7 @@ export function PetGame({ locale }: { locale: Locale }) {
 
       <section className="card mt-5 p-5">
         <h2 className="mb-1 text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          🌾 {t.farmFeedTitle}
+          <Ico e="🌾" /> {t.farmFeedTitle}
         </h2>
         <p className="mb-3 text-sm text-[var(--muted)]">{t.farmFeedHint}</p>
         {(() => {
@@ -448,7 +449,7 @@ export function PetGame({ locale }: { locale: Locale }) {
                   onClick={() => act({ action: "upgrade", upgrade: id })}
                   className="btn-bouncy w-full bg-[var(--brand-500)] px-3 py-1.5 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  {maxed ? t.maxed : `🪙 ${fillN(t.buy, cost)}`}
+                  {maxed ? t.maxed : <><Ico e="🪙" /> {fillN(t.buy, cost)}</>}
                 </button>
               </div>
             );

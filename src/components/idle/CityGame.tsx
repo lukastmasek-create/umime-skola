@@ -28,6 +28,7 @@ import { createTraffic, updateTraffic } from "@/components/idle/city-traffic";
 import { EventPill, type EventInfo } from "@/components/idle/EventPill";
 import { ChallengePanel } from "@/components/idle/ChallengePanel";
 import type { Locale } from "@/i18n/config";
+import { EmojiText, Ico } from "./eco-icons";
 
 type Payload = {
   state: CityState;
@@ -95,7 +96,7 @@ function ToolButton({ label, icon, active = false, onClick }: { label: string; i
         active ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface)] hover:bg-[var(--surface-muted)]"
       }`}
     >
-      {icon}
+      <Ico e={icon} />
     </button>
   );
 }
@@ -650,7 +651,7 @@ export function CityGame({ locale }: { locale: Locale }) {
         {t.back}
       </Link>
       <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        🏙️ {t.title}
+        <Ico e="🏙" /> {t.title}
       </h1>
       <p className="mb-6 max-w-3xl text-[var(--muted)]">{t.subtitle}</p>
     </>
@@ -706,7 +707,7 @@ export function CityGame({ locale }: { locale: Locale }) {
   const statBox = (label: string, value: string, sub?: string) => (
     <div className="rounded-xl border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-2">
       <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">{label}</p>
-      <p className="text-lg font-extrabold leading-tight">{value}</p>
+      <p className="text-lg font-extrabold leading-tight"><EmojiText text={value} /></p>
       {sub && <p className="text-[11px] text-[var(--muted)]">{sub}</p>}
     </div>
   );
@@ -766,11 +767,11 @@ export function CityGame({ locale }: { locale: Locale }) {
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">{t.selected}</p>
                 <p className="text-lg font-extrabold">
-                  {EMOJI[selectedDef.id]} {selectedDef.names[locale]}
+                  <Ico e={EMOJI[selectedDef.id]} /> {selectedDef.names[locale]}
                 </p>
               </div>
               <button type="button" onClick={() => setSelected(null)} aria-label={t.close} className="rounded-lg px-2 py-1 text-sm font-bold hover:bg-[var(--surface-muted)]">
-                ✕
+                <Ico e="✕" />
               </button>
             </div>
             <ul className="mt-1 space-y-0.5 text-sm text-[var(--muted)]">
@@ -802,19 +803,19 @@ export function CityGame({ locale }: { locale: Locale }) {
                 </li>
               ) : null}
               <li className={notWorking.has(selected) ? "font-semibold text-[var(--danger)]" : "font-semibold text-[var(--accent-green)]"}>
-                {notWorking.has(selected) ? (selectedDef.needsRail ? `${t.notConnected} ${t.needsRail}` : t.notConnected) : `✓ ${t.working}`}
+                {notWorking.has(selected) ? (selectedDef.needsRail ? `${t.notConnected} ${t.needsRail}` : t.notConnected) : <><Ico e="✓" /> {t.working}</>}
               </li>
             </ul>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button type="button" onClick={() => startMove(selectedEntry)} className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
-                🚚 {t.move}
+                <Ico e="🚚" /> {t.move}
               </button>
               <button
                 type="button"
                 onClick={() => commitDemolish([{ x: selectedEntry[1], y: selectedEntry[2] }])}
                 className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-sm font-bold text-[var(--danger)]"
               >
-                🧹 {fillTokens(t.demolish, { n: Math.floor(selectedDef.cost * 0.5) })}
+                <Ico e="🧹" /> {fillTokens(t.demolish, { n: Math.floor(selectedDef.cost * 0.5) })}
               </button>
             </div>
           </div>
@@ -859,7 +860,7 @@ export function CityGame({ locale }: { locale: Locale }) {
               >
                 <span className="flex w-full items-center justify-between">
                   <span className="text-2xl" aria-hidden>
-                    {EMOJI[def.id]}
+                    <Ico e={EMOJI[def.id]} />
                   </span>
                   <span className="text-[11px] font-semibold text-[var(--muted)]">
                     {def.size[0]}×{def.size[1]}
@@ -867,9 +868,9 @@ export function CityGame({ locale }: { locale: Locale }) {
                 </span>
                 <span className="text-sm font-bold leading-tight">{def.names[locale]}</span>
                 <span className={`text-xs font-semibold ${poor ? "text-[var(--danger)]" : "text-[var(--muted)]"}`}>
-                  {locked
+                  <EmojiText text={locked
                     ? `🔒 ${needsShop ? t.lockedShop : fillTokens(t.lockedLevel, { n: def.level })}`
-                    : [def.cost > 0 ? `🪙 ${def.cost.toLocaleString(locale)}` : "", def.pointsCost ? `⭐ ${fillTokens(t.pointsCost, { n: def.pointsCost })}` : ""].filter(Boolean).join(" · ")}
+                    : [def.cost > 0 ? `🪙 ${def.cost.toLocaleString(locale)}` : "", def.pointsCost ? `⭐ ${fillTokens(t.pointsCost, { n: def.pointsCost })}` : ""].filter(Boolean).join(" · ")} />
                 </span>
               </button>
             );
