@@ -192,10 +192,17 @@ export default async function Home({
           </h2>
           <div className="pcard-pile">
             {CATEGORIES.map((cat, i) => (
-              <TearCard key={cat.slug} href={`/${locale}/kurzy/${cat.slug}`} className="reveal pcard">
-                <HomeArt name={GALAXY_ICONS[i % GALAXY_ICONS.length]} size={96} className="pcard-icon" />
-                <h3 className="pcard-title">{dict.categories[cat.slug].label}</h3>
-                <p className="pcard-text">{dict.categories[cat.slug].description}</p>
+              <TearCard key={cat.slug} href={`/${locale}/kurzy/${cat.slug}`} className="reveal pcard" accent={TILE_COLORS[i % TILE_COLORS.length]}>
+                <span className="pcard-in">
+                  <span className="pcard-num" aria-hidden>{String(i + 1).padStart(2, "0")}</span>
+                  <span className="pcard-iconwrap">
+                    <HomeArt name={GALAXY_ICONS[i % GALAXY_ICONS.length]} size={92} className="pcard-icon" />
+                  </span>
+                  <h3 className="pcard-title">{dict.categories[cat.slug].label}</h3>
+                  <p className="pcard-text">{dict.categories[cat.slug].description}</p>
+                  <span className="pcard-go" aria-hidden>→</span>
+                  <span className="pcard-glare" aria-hidden />
+                </span>
               </TearCard>
             ))}
           </div>
