@@ -4762,3 +4762,15 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
   }
 }
 @keyframes sv-idle { from { transform: translateY(-2px) scale(0.92); opacity: 0.75; } to { transform: translateY(3px) scale(1.08); opacity: 1; } }
+
+/* Hover ilustrací i na statických kartách (učitelé) */
+.gcard-live.gcard-hover:hover .sv-float { transform: translateY(-6px); }
+.gcard-live.gcard-hover:hover .sv-spin { transform: rotate(120deg); }
+.gcard-live.gcard-hover:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
+@media (prefers-reduced-motion: reduce) {
+  .gcard-live.gcard-hover:hover .sv-float, .gcard-live.gcard-hover:hover .sv-spin, .gcard-live.gcard-hover:hover .sv-halo { transform: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .gc-item.is-in .gcard-live.gcard-hover:hover .sv-float { transform: translateY(-6px); transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1); transition-delay: 0s; }
+  .gc-item.is-in .gcard-live.gcard-hover:hover .sv-spin { transform: rotate(120deg); transition: transform 1.1s cubic-bezier(0.22, 1, 0.36, 1); transition-delay: 0s; }
+}

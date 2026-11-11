@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ResultsPreview } from "@/components/ResultsPreview";
 import { getHomeAudienceText } from "@/i18n/home-teachers";
 import LiveCardItem from "@/components/LiveCardItem";
+import TeacherArt, { type TeacherArtKind } from "@/components/TeacherArt";
 import { TeacherCta } from "@/components/TeacherCta";
 import { getAudiencePagesText } from "@/i18n/audience";
 import { isLocale, type Locale } from "@/i18n/config";
@@ -18,22 +19,10 @@ const sample = [
   { who: "Dana", pct: 20 },
 ];
 
-// Ikony pro tři kroky (stejné pořadí jako t.steps): skupina, úkol, výsledky.
-const stepIcons = [
-  <svg key="users" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-    <circle cx="9" cy="7" r="4" />
-    <path d="M2 21v-2a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v2" />
-    <path d="M16 3.5a4 4 0 0 1 0 7M22 21v-2a5 5 0 0 0-3-4.6" />
-  </svg>,
-  <svg key="task" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-    <rect x="5" y="4" width="14" height="17" rx="2" />
-    <path d="M9 2.5h6v3H9zM9 12l2 2 4-4M9 18h6" />
-  </svg>,
-  <svg key="chart" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-    <path d="M3 3v18h18" />
-    <path d="M7 15l4-4 3 3 5-6" />
-  </svg>,
-];
+const ACCENTS = ["#ffd24d", "#ff8a6b", "#7cc4ff", "#6ee7b7", "#c4b5fd"];
+const STEP_ART: TeacherArtKind[] = ["class", "assign", "chart"];
+const POINT_ART: TeacherArtKind[] = ["minute", "deadline", "overview", "shield"];
+const FEATURE_ART: TeacherArtKind[] = ["code", "approve", "targets", "weak", "chat", "pin"];
 
 export default async function TeachersPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -75,18 +64,19 @@ export default async function TeachersPage({ params }: { params: Promise<{ local
                 <LiveCardItem
                   key={step.title}
                   index={i}
-                  className={`relative flex h-full flex-col p-6 ${featured ? "gcard-on md:-translate-y-4" : ""}`}
+                  accent={ACCENTS[i]}
+                  className={`relative flex h-full flex-col pb-6 ${featured ? "gcard-on md:-translate-y-4" : ""}`}
                 >
-                  <span className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--surface-muted)] text-[var(--accent-green)]">
-                    {stepIcons[i]}
-                  </span>
-                  <span aria-hidden className="gcard-num absolute right-5 top-4 text-5xl opacity-90">
+                  <div className="gcard-cover mb-5" style={{ height: 150 }}>
+                    <TeacherArt kind={STEP_ART[i]} />
+                  </div>
+                  <span aria-hidden className="gcard-num absolute right-5 top-4 text-4xl opacity-90">
                     {i + 1}
                   </span>
-                  <h2 className="mb-2 text-xl font-bold" style={heading}>
+                  <h2 className="mb-2 px-6 text-xl font-bold" style={heading}>
                     {step.title}
                   </h2>
-                  <p className="text-sm leading-relaxed text-[var(--muted)]">{step.text}</p>
+                  <p className="px-6 text-sm leading-relaxed text-[var(--muted)]">{step.text}</p>
                 </LiveCardItem>
               );
             })}
@@ -95,11 +85,14 @@ export default async function TeachersPage({ params }: { params: Promise<{ local
 
         <ul className="gcard-cycle mb-12 grid gap-4 sm:grid-cols-2">
           {t.points.map((point, i) => (
-            <LiveCardItem key={point.title} index={i} className="h-full p-5">
-              <h2 className="gcard-title mb-1 text-lg" style={heading}>
+            <LiveCardItem key={point.title} index={i} accent={ACCENTS[(i + 3) % 5]} className="h-full pb-5">
+              <div className="gcard-cover mb-4" style={{ height: 132 }}>
+                <TeacherArt kind={POINT_ART[i]} />
+              </div>
+              <h2 className="gcard-title mb-1 px-5 text-lg" style={heading}>
                 {point.title}
               </h2>
-              <p className="text-sm leading-relaxed text-[var(--muted)]">{point.text}</p>
+              <p className="px-5 text-sm leading-relaxed text-[var(--muted)]">{point.text}</p>
             </LiveCardItem>
           ))}
         </ul>
@@ -116,9 +109,12 @@ export default async function TeachersPage({ params }: { params: Promise<{ local
           </h2>
           <ul className="gcard-cycle grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {t.features.map((feature, i) => (
-              <LiveCardItem key={feature.title} index={i} className="h-full p-5">
-                <h3 className="gcard-title mb-1">{feature.title}</h3>
-                <p className="text-sm leading-relaxed text-[var(--muted)]">{feature.text}</p>
+              <LiveCardItem key={feature.title} index={i} accent={ACCENTS[(i + 1) % 5]} className="h-full pb-5">
+                <div className="gcard-cover mb-4" style={{ height: 124 }}>
+                  <TeacherArt kind={FEATURE_ART[i]} />
+                </div>
+                <h3 className="gcard-title mb-1 px-5">{feature.title}</h3>
+                <p className="px-5 text-sm leading-relaxed text-[var(--muted)]">{feature.text}</p>
               </LiveCardItem>
             ))}
           </ul>
