@@ -2,14 +2,17 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Locale } from "@/i18n/config";
 import { getTeamsEdx } from "@/i18n/teams-edx";
+import { HeroSky } from "@/components/HeroSky";
 
-/** Rám sekce Týmy ve stylu EducateXpert: zaoblený panel na fialovém pozadí s hlavičkou a šedým tělem. */
+/** Rám sekce Týmy ve stylu EducateXpert: zaoblený panel s hlavičkou a tmavým tělem na pozadí jako hero úvodní stránky. */
 export function EdxShell({ locale, title, subtitle, children }: { locale: Locale; title: string; subtitle?: string; children: ReactNode }) {
   const t = getTeamsEdx(locale);
   const links = [["kurzy", t.navCourses], ["tymy", t.navTeams], ["zebricky", t.navRating], ["ucitele", t.navTeachers]] as const;
   return (
-    <div className="bg-[#6a1bf0] px-3 py-6 sm:px-8 sm:py-12">
-      <div className="edx mx-auto max-w-6xl overflow-hidden rounded-[32px]">
+    // Pozadí stejné jako hero na úvodní stránce (mlhovina, hvězdy, kometa, loď); panel je nad lodí, ať přes obsah neletí.
+    <div className="zone zone-space px-3 py-6 sm:px-8 sm:py-12">
+      <HeroSky />
+      <div className="edx relative z-30 mx-auto max-w-6xl overflow-hidden rounded-[32px] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.7)]">
         <header className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 px-5 py-4 sm:px-8">
           <div className="min-w-0">
             <h1 className="text-2xl font-extrabold text-[var(--brand-500)]" style={{ fontFamily: "var(--font-heading)" }}>{title}</h1>
