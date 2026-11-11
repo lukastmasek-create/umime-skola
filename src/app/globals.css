@@ -4496,30 +4496,79 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
 .hang-title { font-size: clamp(2rem, 5vw, 3rem); font-weight: 600; line-height: 1.05; color: #c9c6ff; margin-bottom: 14px; }
 .hang-lead { max-width: 340px; color: rgba(236, 234, 255, 0.85); line-height: 1.45; }
 .hang-tags { position: relative; height: 220px; margin-top: 24px; }
+
+/* Životní cyklus jednoho štítku (15 s): přiletí shora -> houpe se -> utrhne se a spadne -> prázdno.
+   Zpoždění jsou řetězená tak, že když jeden štítek padá, jiný přilétá shora. */
 .hang-str {
-  position: absolute; top: -40px; width: 1px; background: linear-gradient(180deg, transparent, rgba(160, 150, 255, 0.7));
-  transform-origin: top center; animation: hang-sway 5s ease-in-out infinite alternate;
+  --d: 0s; --dur: 15s;
+  position: absolute; top: -44px; width: 1px; height: var(--h, 120px);
+  animation: hang-life var(--dur) cubic-bezier(0.3, 0, 0.3, 1) var(--d) infinite both;
 }
-.hang-str::after {
+.hang-sway {
+  position: absolute; inset: 0; transform-origin: top center;
+  background: linear-gradient(180deg, transparent, rgba(160, 150, 255, 0.75));
+  animation: hang-sway var(--sw, 4.5s) ease-in-out calc(var(--d) + 1.5s) infinite alternate;
+}
+.hang-sway::after {
   content: ""; position: absolute; bottom: -3px; left: -3px; width: 7px; height: 7px; border-radius: 50%;
   background: #8f86ff; box-shadow: 0 0 10px #8f86ff;
+  animation: hang-dot var(--dur) linear var(--d) infinite both;
 }
 .hang-tag {
   position: absolute; top: 100%; left: 50%; transform: translateX(-50%) rotate(var(--tr, -6deg)); transform-origin: top center;
   margin-top: 4px; white-space: nowrap; padding: 8px 14px; border-radius: 10px; font-size: 0.85rem; color: #eceaff;
   background: linear-gradient(180deg, rgba(60, 60, 150, 0.85), rgba(30, 30, 95, 0.9));
   box-shadow: 0 0 0 1px rgba(150, 140, 255, 0.35) inset, 0 8px 16px -8px #000;
+  animation: hang-wobble var(--dur) ease-out var(--d) infinite both;
 }
-.hang-str-1 { left: 30%; height: 120px; --tr: -8deg; animation-delay: -1s; }
-.hang-str-2 { left: 38%; height: 70px;  --tr: 6deg;  animation-delay: -2.4s; }
-.hang-str-3 { left: 58%; height: 150px; --tr: -5deg; animation-delay: -0.5s; }
-.hang-str-4 { left: 80%; height: 100px; --tr: 7deg;  animation-delay: -3.2s; }
-.hang-str-5 { left: 22%; height: 175px; --tr: 4deg;  animation-delay: -1.8s; }
+.hang-str-1 { left: 30%; --h: 120px; --tr: -8deg; --d: 0s;    --sw: 4.2s; }
+.hang-str-2 { left: 38%; --h: 70px;  --tr: 6deg;  --d: 10.5s; --sw: 5.1s; }
+.hang-str-3 { left: 58%; --h: 150px; --tr: -5deg; --d: 6s;    --sw: 4.7s; }
+.hang-str-4 { left: 80%; --h: 100px; --tr: 7deg;  --d: 1.5s;  --sw: 5.6s; }
+.hang-str-5 { left: 22%; --h: 175px; --tr: 4deg;  --d: 12s;   --sw: 3.9s; }
 .hang-str-2 .hang-tag { background: linear-gradient(180deg, #5a5ff0, #3a3ab8); }
-@keyframes hang-sway { from { transform: rotate(-2.5deg); } to { transform: rotate(2.5deg); } }
+
+/* přilétne shora s odrazem, drží, pak se utrhne a spadne dolů */
+@keyframes hang-life {
+  0%    { transform: translateY(-420px); opacity: 0; }
+  1%    { opacity: 1; }
+  5%    { transform: translateY(14px); }
+  7%    { transform: translateY(-6px); }
+  9%    { transform: translateY(0); }
+  68%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  70%   { transform: translateY(-8px) rotate(-2deg); }
+  80%   { transform: translateY(420px) rotate(28deg); opacity: 1; }
+  84%   { transform: translateY(440px) rotate(34deg); opacity: 0; }
+  100%  { transform: translateY(-420px); opacity: 0; }
+}
+/* po dopadu se štítek rozhoupe a postupně utichne; těsně před pádem zavrtí */
+@keyframes hang-wobble {
+  0%, 5% { transform: translateX(-50%) rotate(var(--tr)); }
+  8%     { transform: translateX(-50%) rotate(calc(var(--tr) + 22deg)); }
+  12%    { transform: translateX(-50%) rotate(calc(var(--tr) - 14deg)); }
+  16%    { transform: translateX(-50%) rotate(calc(var(--tr) + 8deg)); }
+  21%    { transform: translateX(-50%) rotate(calc(var(--tr) - 4deg)); }
+  27%, 62% { transform: translateX(-50%) rotate(var(--tr)); }
+  64%    { transform: translateX(-50%) rotate(calc(var(--tr) + 5deg)); }
+  66%    { transform: translateX(-50%) rotate(calc(var(--tr) - 5deg)); }
+  68%    { transform: translateX(-50%) rotate(calc(var(--tr) + 7deg)); }
+  100%   { transform: translateX(-50%) rotate(var(--tr)); }
+}
+/* tečka na konci nitě se při přichycení rozsvítí */
+@keyframes hang-dot {
+  0%, 8% { transform: scale(0); }
+  10%    { transform: scale(2.6); box-shadow: 0 0 22px #b6afff; }
+  16%    { transform: scale(1); }
+  66%    { transform: scale(1); box-shadow: 0 0 10px #8f86ff; }
+  70%    { transform: scale(0); }
+  100%   { transform: scale(0); }
+}
+@keyframes hang-sway { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
 @media (min-width: 768px) {
   .hang-panel { grid-template-columns: 1fr 1.1fr; padding: 48px; min-height: 360px; }
   .hang-tags { height: 280px; margin-top: 0; }
-  .hang-str-1 { left: 8%; height: 150px; } .hang-str-3 { height: 190px; } .hang-str-5 { height: 225px; }
+  .hang-str-1 { left: 8%; --h: 150px; } .hang-str-3 { --h: 190px; } .hang-str-5 { --h: 225px; }
 }
-@media (prefers-reduced-motion: reduce) { .hang-str { animation: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .hang-str, .hang-sway, .hang-sway::after, .hang-tag { animation: none; }
+}

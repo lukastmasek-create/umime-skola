@@ -171,7 +171,7 @@ export default async function Home({
           <div className="hang-tags" aria-hidden>
             {getHomeHangText(locale as Locale).tags.map((tag, i) => (
               <div key={tag} className={`hang-str hang-str-${i + 1}`}>
-                <span className="hang-tag">{tag}</span>
+                <div className="hang-sway"><span className="hang-tag">{tag}</span></div>
               </div>
             ))}
           </div>
