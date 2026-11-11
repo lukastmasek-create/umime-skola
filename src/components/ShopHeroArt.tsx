@@ -63,15 +63,25 @@ export function ShopHeroArt() {
         ["gs-web2", ["M172 100 L140 108", "M212 90 L238 70", "M232 104 L262 112", "M186 150 L180 184 L160 196", "M160 76 L134 64", "M244 84 L270 76"]],
         ["gs-web3", ["M200 122 L226 156 L262 168 L290 160", "M140 108 L112 96 L96 74", "M206 64 L196 34 L212 10", "M270 76 L296 58", "M160 196 L130 210 L116 236", "M180 184 L200 214 L196 246"]],
       ].map(([cls, paths]) => (
-        <g key={cls as string} className={`gs-web ${cls}`} fill="none" strokeLinecap="round" strokeLinejoin="round">
+        <g key={cls as string} className={`gs-web ${cls}`} clipPath="url(#sha-incard)" fill="none" strokeLinecap="round" strokeLinejoin="round">
           {(paths as string[]).map((d) => (
             <g key={d}>
               <path d={d} stroke={INK} strokeWidth="7" />
-              <path d={d} stroke="#fff3b8" strokeWidth="2.6" pathLength={100} className="gs-webline" />
+              <path d={d} stroke="#ffd36a" strokeWidth="2.8" pathLength={100} className="gs-webline" />
             </g>
           ))}
         </g>
       ))}
+      {/* spáleniny kolem trhliny */}
+      <defs>
+        <clipPath id="sha-incard"><rect x="-40" y={TOP} width={W + 80} height={520 - TOP} /></clipPath>
+        <radialGradient id="sha-scorch" cx=".5" cy=".5" r=".5"><stop offset="0" stopColor="#000" stopOpacity=".6" /><stop offset=".6" stopColor="#0a0820" stopOpacity=".28" /><stop offset="1" stopColor="#0a0820" stopOpacity="0" /></radialGradient>
+      </defs>
+      <g className="gs-scorch">
+        <ellipse cx="210" cy={TOP + 110} rx="190" ry="62" fill="url(#sha-scorch)" />
+        <ellipse cx="120" cy={TOP + 90} rx="80" ry="40" fill="url(#sha-scorch)" />
+        <ellipse cx="300" cy={TOP + 96} rx="70" ry="36" fill="url(#sha-scorch)" />
+      </g>
       {/* hrana prasklého rámu: tmavý lem, světlý odlesk a zlatá žhavá linka */}
       <polyline points={EDGE} fill="none" stroke={INK} strokeWidth="10" strokeLinejoin="round" strokeLinecap="round" />
       <polyline points={EDGE} fill="none" stroke="#e8e3ff" strokeWidth="3.6" strokeLinejoin="round" strokeLinecap="round" opacity=".85" />

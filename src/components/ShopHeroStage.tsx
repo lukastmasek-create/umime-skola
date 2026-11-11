@@ -11,9 +11,11 @@ const D = 300; // velikost snímku kosmonauta na stránce
 type Sheet = { src: string; n: number; cols: number; rows: number };
 const INTRO_SHEETS: Sheet[] = [1, 2, 3, 4, 5].map((i) => ({ src: `/home/obchod/kosmonaut-intro-${i}.webp`, n: 56, cols: 7, rows: 8 }));
 const LOOP_SHEETS: Sheet[] = [1, 2].map((i) => ({ src: `/home/obchod/kosmonaut-smycka-${i}.webp`, n: 60, cols: 10, rows: 6 }));
-const BURST: Sheet = { src: "/home/obchod/kosmonaut-vybuch.webp", n: 45, cols: 5, rows: 9 };
+const BURST: Sheet = { src: "/home/obchod/kosmonaut-vybuch.webp", n: 84, cols: 7, rows: 12 };
 const INTRO_FPS = 40, LOOP_FPS = 30, BURST_FPS = 30;
 const INTRO_END = 7.0;
+// Výkon trysek podle snímku (vyčteno z renderu): řídí oranžové světlo na kartě a prosvítání ohně trhlinami.
+const FLAME = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.22,0.39,0.34,0.29,0.26,0.22,0.19,0.16,0.2,0.24,0.28,0.32,0.36,0.4,0.45,0.49,0.53,0.57,0.61,0.65,0.68,0.71,0.74,0.76,0.78,0.79,0.8,0.8,0.8,0.8,0.8,0.8,0.81,0.82,0.84,0.85,0.86,0.88,0.89,0.9,0.91,0.92,0.94,0.95,0.96,0.98,0.99,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0.99,0.98,0.97,0.95,0.93,0.91,0.88,0.85,0.83,0.79,0.76,0.73,0.7,0.67,0.64,0.61,0.57,0.55,0.52,0.49,0.47,0.45,0.43,0.42,0.41,0.12,0.01,0.34,0.18,0.08,0.28,0.02,0.04,0.11,0.01,0.05,0.01,0,0,0,0,0,0,0,0,0,0,0,0,0];
 const BREAK_AT = 4.5;
 const HITS = [1.22, 1.85]; // nárazy hlavou do horní hrany
 const CRACK3_AT = 3.7;
@@ -63,8 +65,9 @@ const total = (s: Sheet[]) => s.reduce((a, b) => a + b.n, 0);
 export function ShopHeroStage() {
   const box = useRef<HTMLSpanElement>(null);
   const burst = useRef<HTMLSpanElement>(null);
+  const glow = useRef<HTMLSpanElement>(null);
   useEffect(() => {
-    const el = box.current, bu = burst.current;
+    const el = box.current, bu = burst.current, gl = glow.current;
     const card = el?.closest<HTMLElement>(".gs-hero-card");
     if (!el || !bu || !card) return;
     const wide = window.matchMedia("(min-width: 900px)");
@@ -99,7 +102,7 @@ export function ShopHeroStage() {
         if (t >= CRACK3_AT) once("c3", () => card.classList.add("is-crack3"));
         if (t >= BREAK_AT) once("br", () => {
           card.classList.add("is-broken");
-          shake("gs-quake", 620);
+          shake("gs-quake", 700);
           bu.style.opacity = "1";
         });
         if (t >= BREAK_AT) {
@@ -109,10 +112,21 @@ export function ShopHeroStage() {
         if (t < INTRO_END) {
           const [xr, y] = pathAt(t);
           place(xr, y);
-          paint(el, INTRO_SHEETS, Math.min(introN - 1, Math.floor(t * INTRO_FPS)));
+          const fi = Math.min(introN - 1, Math.floor(t * INTRO_FPS));
+          paint(el, INTRO_SHEETS, fi);
+          // světlo ohně na kartě (posouvá se s kosmonautem), prosvítání trhlinami a jejich postupné plazení
+          const fl = FLAME[fi] ?? 0;
+          if (gl) { gl.style.right = `${xr - 260}px`; gl.style.top = `${y - 230}px`; gl.style.opacity = String(Math.min(1, fl * 1.1)); }
+          card.style.setProperty("--leak", fl.toFixed(2));
+          card.style.setProperty("--bulge", String(t < BREAK_AT ? Math.min(1, Math.max(0, (t - 3.5) / 1.0)) : 0));
+          card.style.setProperty("--cp3", String(Math.min(1, Math.max(0, (t - CRACK3_AT) / (BREAK_AT - CRACK3_AT)) ** 0.8)));
+          card.style.setProperty("--cp2", String(Math.min(1, Math.max(0, (t - HITS[1]) / 1.4))));
+          card.style.setProperty("--cp1", String(Math.min(1, Math.max(0, (t - HITS[0]) / 0.9))));
         } else {
           place(last[1], last[2]);
           paint(el, LOOP_SHEETS, Math.floor((t - INTRO_END) * LOOP_FPS) % loopN);
+          if (gl) gl.style.opacity = "0";
+          card.style.setProperty("--leak", "0");
         }
         el.style.opacity = "1";
         raf = requestAnimationFrame(tick);
@@ -149,11 +163,13 @@ export function ShopHeroStage() {
       timers.forEach(clearTimeout);
       cleanups.forEach((f) => f());
       card.classList.remove("is-crack1", "is-crack2", "is-crack3", "is-broken", "gs-hit", "gs-quake");
+      for (const v of ["--leak", "--bulge", "--cp1", "--cp2", "--cp3"]) card.style.removeProperty(v);
     };
   }, []);
 
   return (
     <>
+      <span ref={glow} aria-hidden className="gs-fireglow" />
       <span ref={burst} aria-hidden className="gs-burst" />
       <span ref={box} aria-hidden className="gs-stage" style={{ width: D, height: D }} />
     </>

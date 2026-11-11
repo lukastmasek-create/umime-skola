@@ -5260,8 +5260,12 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 .gs-hero-card.is-broken .gs-web { visibility: hidden; }
 .gs-hero-card.is-crack1 .gs-hero-art, .gs-hero-card.is-crack2 .gs-hero-art, .gs-hero-card.is-crack3 .gs-hero-art { opacity: 1; }
 .gs-webline { stroke-dasharray: 100; stroke-dashoffset: 100; }
-.gs-hero-card.is-crack1 .gs-web1 .gs-webline, .gs-hero-card.is-crack2 .gs-web2 .gs-webline, .gs-hero-card.is-crack3 .gs-web3 .gs-webline { animation: gs-webdraw 0.5s ease-out forwards; }
-@keyframes gs-webdraw { to { stroke-dashoffset: 0; } }
+.gs-hero-card .gs-web1 .gs-webline { stroke-dashoffset: calc(100 - var(--cp1, 0) * 100); }
+.gs-hero-card .gs-web2 .gs-webline { stroke-dashoffset: calc(100 - var(--cp2, 0) * 100); }
+.gs-hero-card .gs-web3 .gs-webline { stroke-dashoffset: calc(100 - var(--cp3, 0) * 100); }
+/* oheň zespodu prosvítá trhlinami: čím silnější trysky, tím žhavější světlo */
+.gs-hero-card .gs-webline { filter: drop-shadow(0 0 calc(2px + var(--leak, 0) * 7px) rgba(255, 170, 60, calc(0.35 + var(--leak, 0) * 0.65))); }
+.gs-hero-card:not(.is-broken)::before { translate: 0 calc(var(--bulge, 0) * -3px); }
 .gs-hero-card.is-broken .gs-glow { animation: gs-flash 0.7s ease-out both, gs-pulse 3.4s ease-in-out 0.7s infinite; }
 @keyframes gs-flash { from { transform: scale(0.2); opacity: 1; } to { transform: scale(1); opacity: 0.9; } }
 .gs-burst { display: block; position: absolute; right: -60px; top: -300px; width: 580px; height: 500px; z-index: 5; pointer-events: none; opacity: 0; background-repeat: no-repeat; background-size: 500% 900%; }
@@ -5272,3 +5276,16 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 @keyframes gs-quake { 0% { transform: translate(0, 0) rotate(0); } 10% { transform: translate(-5px, 4px) rotate(-0.25deg); } 22% { transform: translate(6px, -5px) rotate(0.3deg); } 36% { transform: translate(-4px, 3px) rotate(-0.15deg); } 52% { transform: translate(3px, -2px) rotate(0.1deg); } 75% { transform: translate(-1px, 1px); } 100% { transform: translate(0, 0) rotate(0); } }
 @media (prefers-reduced-motion: reduce) { .gs-hero-card.gs-hit, .gs-hero-card.gs-quake { animation: none; } }
 @media (max-width: 899px) { .gs-burst, .gs-stage { display: none; } }
+
+/* oranžové světlo ohně na kartě pod kosmonautem */
+.gs-fireglow { display: block; position: absolute; z-index: 3; width: 520px; height: 520px; pointer-events: none; opacity: 0; mix-blend-mode: screen;
+  background: radial-gradient(closest-side, rgba(255, 168, 70, 0.55), rgba(255, 110, 30, 0.22) 45%, rgba(255, 90, 20, 0) 75%); }
+@media (max-width: 899px) { .gs-fireglow { display: none; } }
+/* žhavé okraje po prorazu pomalu stydnou, spáleniny zůstanou, text se otřese setrvačností */
+.gs-scorch { opacity: 0; transition: opacity 0.6s ease-out; }
+.gs-hero-card.is-broken .gs-scorch { opacity: 1; }
+.gs-hero-card.is-broken .gs-hot { animation: gs-cool 4.5s ease-out forwards !important; }
+@keyframes gs-cool { 0% { opacity: 1; stroke: #fff3b8; } 18% { stroke: #ffc933; } 100% { opacity: 0.22; stroke: #b2561f; } }
+.gs-hero-card.gs-quake .gs-hero-text { animation: gs-textjolt 0.7s ease-out; }
+@keyframes gs-textjolt { 0% { transform: translate(0, 0); } 12% { transform: translate(-5px, 6px); } 30% { transform: translate(5px, -4px); } 55% { transform: translate(-2px, 2px); } 100% { transform: translate(0, 0); } }
+@media (prefers-reduced-motion: reduce) { .gs-hero-card.gs-quake .gs-hero-text { animation: none; } .gs-fireglow { display: none; } }
