@@ -11,6 +11,7 @@ import { HeroSky } from "@/components/HeroSky";
 import { HeroTitle } from "@/components/HeroTitle";
 import { ExpandCard } from "@/components/ExpandCard";
 import { TearCard } from "@/components/TearCard";
+import { PcardArt, PcardRing, PcardTape } from "@/components/PcardArt";
 import { HangTags } from "@/components/HangTags";
 import { HomeLobby } from "@/components/HomeLobby";
 import { getHomeLobbyText } from "@/i18n/home-lobby";
@@ -194,15 +195,17 @@ export default async function Home({
             {CATEGORIES.map((cat, i) => (
               <TearCard key={cat.slug} href={`/${locale}/kurzy/${cat.slug}`} className="reveal pcard" accent={TILE_COLORS[i % TILE_COLORS.length]}>
                 <span className="pcard-in">
+                  <PcardArt slug={cat.slug} />
                   <span className="pcard-num" aria-hidden>{String(i + 1).padStart(2, "0")}</span>
                   <span className="pcard-iconwrap">
+                    <PcardRing />
                     <Icon name={cat.slug} size={92} className="pcard-icon" />
                   </span>
                   <h3 className="pcard-title">{dict.categories[cat.slug].label}</h3>
                   <p className="pcard-text">{dict.categories[cat.slug].description}</p>
                   <span className="pcard-go" aria-hidden>→</span>
-                  <span className="pcard-glare" aria-hidden />
                 </span>
+                <PcardTape />
               </TearCard>
             ))}
           </div>

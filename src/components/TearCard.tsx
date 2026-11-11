@@ -108,10 +108,13 @@ export function TearCard({ href, className, accent, children }: { href: string; 
     inner.style.setProperty("--ry", `${(px - 0.5) * 16}deg`);
     inner.style.setProperty("--gx", `${px * 100}%`);
     inner.style.setProperty("--gy", `${py * 100}%`);
+    // bezrozměrné -1..1 pro paralaxu vrstev (pozadí, ikona, hvězdičky) a posun stínu
+    inner.style.setProperty("--px", ((px - 0.5) * 2).toFixed(3));
+    inner.style.setProperty("--py", ((py - 0.5) * 2).toFixed(3));
   };
   const untilt = () => {
     const inner = ref.current?.firstElementChild as HTMLElement | null;
-    ["--rx", "--ry", "--gx", "--gy"].forEach((p) => inner?.style.removeProperty(p));
+    ["--rx", "--ry", "--gx", "--gy", "--px", "--py"].forEach((p) => inner?.style.removeProperty(p));
   };
 
   const grab = (e: RPE<HTMLAnchorElement>) => {
