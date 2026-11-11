@@ -42,7 +42,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
       <div className="card mb-8 flex flex-wrap items-center justify-between gap-3 p-5">
         <p className="font-semibold">{t.status[status]}</p>
         {status === "guest" && (
-          <Link href={`/${locale}/prihlaseni`} className="btn-bouncy btn-secondary inline-flex">
+          <Link href={`/${locale}/prihlaseni`} className="btn-bouncy btn-secondary btn-lg">
             {t.status.login}
           </Link>
         )}
@@ -100,7 +100,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
 
       <div className="card flex flex-wrap items-center justify-between gap-3 p-5">
         <p className="text-sm">{t.ctaText}</p>
-        <Link href={`/${locale}/kontakt`} className="btn-bouncy btn-secondary inline-flex">
+        <Link href={`/${locale}/kontakt`} className="btn-bouncy btn-secondary btn-lg">
           {t.cta}
         </Link>
       </div>
