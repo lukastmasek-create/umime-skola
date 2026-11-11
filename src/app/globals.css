@@ -4494,7 +4494,7 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
 .pcard-in {
   --rx: 0deg; --ry: 0deg; --gx: 50%; --gy: 0%;
   position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; overflow: hidden;
-  padding: 22px 26px 30px; border-radius: 28px;
+  padding: 22px 26px 126px; border-radius: 28px;
   background:
     radial-gradient(90% 60% at 50% 0%, color-mix(in srgb, var(--ac) 20%, transparent), transparent 72%),
     linear-gradient(180deg, rgba(32, 32, 44, 0.97) 0%, rgba(40, 40, 92, 0.94) 100%);
@@ -4532,7 +4532,7 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
 .pcard-title { font-size: 1.2rem; font-weight: 700; margin: 8px 0; letter-spacing: -0.01em; }
 .pcard-text { font-size: 0.95rem; line-height: 1.5; color: rgba(244, 243, 255, 0.72); max-width: 250px; }
 .pcard-go {
-  display: grid; place-items: center; width: 36px; height: 36px; margin-top: 14px; border-radius: 999px; font-weight: 700;
+  position: absolute; top: 14px; right: 16px; display: grid; place-items: center; width: 36px; height: 36px; margin: 0; border-radius: 999px; font-weight: 700;
   background: rgba(255, 255, 255, 0.12); color: #fff; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease, color 0.2s ease;
 }
 .pcard:hover .pcard-go { transform: translateX(4px) scale(1.1); background: #fff; color: #1a1a52; }
@@ -4554,7 +4554,7 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
 @media (max-width: 639px) {
   .pcard-slot:nth-child(odd) { --r: -1.6deg; }
   .pcard-slot:nth-child(even) { --r: 1.6deg; }
-  .pcard-in { padding: 18px 20px 24px; }
+  .pcard-in { padding: 18px 20px 118px; }
   .pcard-iconwrap { width: 96px; height: 96px; }
 }
 @media (prefers-reduced-motion: reduce) { .pcard, .pcard-in { transition: none; } .pcard-icon { animation: none; } }
@@ -4591,9 +4591,29 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
 .pcard.is-drag .pcard-frame-run, .pcard.is-lift .pcard-frame-run { opacity: 1; stroke-dasharray: 100 0; animation: none; }
 @keyframes pcard-run { to { stroke-dashoffset: -100; } }
 
+/* ilustrační scénka (PcardScenes) */
+.pcard-scene { position: absolute; left: 0; bottom: 0; width: 100%; height: auto; z-index: 1; pointer-events: none; translate: calc(var(--px, 0) * -4px) calc(var(--py, 0) * -2px); transition: translate 0.18s ease-out; }
+.pcard:hover .pcard-scene { filter: saturate(1.15) brightness(1.06); }
+.pcard-march { stroke-dashoffset: 0; animation: pcard-march 2.4s linear infinite; }
+@keyframes pcard-march { to { stroke-dashoffset: -14; } }
+.pcard-sunrays { transform-origin: 248px 40px; animation: pcard-spin 40s linear infinite; }
+.pcard-plane { animation: pcard-fly 5s ease-in-out infinite alternate; }
+@keyframes pcard-fly { from { translate: 0 2px; rotate: -2deg; } to { translate: 4px -5px; rotate: 3deg; } }
+.pcard-bub { transform-box: fill-box; transform-origin: center; animation: pcard-bub 2.6s ease-in infinite; }
+@keyframes pcard-bub { 0% { translate: 0 0; opacity: 0; } 15% { opacity: 1; } 100% { translate: 1px -30px; opacity: 0; } }
+.pcard-atom { transform-origin: 266px 46px; animation: pcard-spin 16s linear infinite; }
+.pcard-wave { transform-origin: 263px 34px; animation: pcard-wave 2.8s ease-in-out infinite alternate; }
+@keyframes pcard-wave { from { transform: skewY(-3deg) scaleX(1); } to { transform: skewY(3deg) scaleX(0.94); } }
+.pcard-thunk { animation: pcard-thunk 6s ease-out infinite; }
+@keyframes pcard-thunk { 0% { translate: 34px 0; opacity: 0; } 6% { opacity: 1; } 11% { translate: -2px 0; } 14%, 90% { translate: 0 0; opacity: 1; } 100% { translate: 0 0; opacity: 0; } }
+.pcard-sway { transform-origin: 116px 58px; animation: pcard-sway 3.4s ease-in-out infinite alternate; }
+@keyframes pcard-sway { from { transform: rotate(-6deg); } to { transform: rotate(6deg); } }
+.pcard-shine { animation: pcard-shine 3.6s ease-in-out infinite; }
+@keyframes pcard-shine { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+
 /* obsah nad vrstvami SVG */
 .pcard-num, .pcard-title, .pcard-text, .pcard-go { z-index: 2; }
-.pcard-title, .pcard-text, .pcard-go { position: relative; }
+.pcard-title, .pcard-text { position: relative; }
 .pcard-iconwrap { z-index: 2; translate: calc(var(--px, 0) * 6px) calc(var(--py, 0) * 6px); transition: translate 0.18s ease-out; }
 
 /* prstenec kolem ikony */
@@ -4645,7 +4665,7 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
 .pcard-slot:has(.pcard:hover) .pcard-ghost { opacity: 0; }
 
 @media (prefers-reduced-motion: reduce) {
-  .pcard-motif, .pcard-draw, .pcard-spark, .pcard-frame-run, .pcard-ring-a, .pcard-ring-b, .pcard-orbit, .pcard-in::after { animation: none; }
+  .pcard-motif, .pcard-march, .pcard-sunrays, .pcard-plane, .pcard-bub, .pcard-atom, .pcard-wave, .pcard-thunk, .pcard-sway, .pcard-shine, .pcard-draw, .pcard-spark, .pcard-frame-run, .pcard-ring-a, .pcard-ring-b, .pcard-orbit, .pcard-in::after { animation: none; }
   .pcard-draw { stroke-dashoffset: 0; }
   .pcard-spark { opacity: 0.7; transform: scale(0.8); }
   .pcard-back, .pcard-sparks, .pcard-iconwrap, .pcard-tape { transition: none; }
