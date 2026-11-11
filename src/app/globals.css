@@ -4599,8 +4599,8 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
 .hang-items, .hang-crawler { translate: calc(var(--px, 0) * -7px) calc(var(--py, 0) * -3px); }
 .hang-badge, .hang-feed, .hang-tags, .hang-spark, .hang-items, .hang-crawler { transition: translate 0.18s ease-out; }
 .hang-defs { position: absolute; pointer-events: none; }
-.hang-rope { position: absolute; left: -4px; top: 0; width: 8px; height: 100%; pointer-events: none; overflow: hidden;
-  filter: drop-shadow(1px 2px 0 rgba(3, 3, 14, 0.5)); -webkit-mask-image: linear-gradient(transparent, #000 36px); mask-image: linear-gradient(transparent, #000 36px); }
+.hang-rope { position: absolute; left: -5px; top: 0; width: 10px; height: 100%; pointer-events: none; overflow: hidden;
+  filter: drop-shadow(2px 3px 1px rgba(3, 3, 14, 0.55)); -webkit-mask-image: linear-gradient(transparent, #000 36px); mask-image: linear-gradient(transparent, #000 36px); }
 .is-free .hang-rope { display: none; }
 .hang-in::before { /* papírové zrno */
   content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.1; mix-blend-mode: screen;
@@ -4703,7 +4703,7 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
 }
 .hang-sway::after {
   content: ""; position: absolute; z-index: 1; bottom: -4px; left: -5px; width: 10px; height: 10px; border-radius: 50%;
-  background: #dcb77c; border: 2px solid #14132a; box-shadow: inset -1.5px -1.5px 0 #a37a45;
+  background: radial-gradient(circle at 34% 28%, #fbe9c0 0%, #dcb77c 28%, #9c7240 62%, #4a3015 100%); border: 1.5px solid #1b0f05; box-shadow: 2px 3px 2px rgba(3, 3, 14, 0.6);
   animation: hang-dot var(--dur) linear var(--d) infinite both;
 }
 .hang-tag {
@@ -4711,7 +4711,11 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
   margin-top: 0; line-height: 0; white-space: nowrap;
   animation: hang-wobble var(--dur) ease-out var(--d) infinite both;
 }
-.hang-card { display: block; overflow: visible; }
+.hang-card { display: block; overflow: visible; transform-origin: 50% 0; animation: hang-turn 5.5s ease-in-out infinite alternate; }
+.hang-tag { perspective: 520px; }
+/* štítek se na niti lehce otáčí kolem svislé osy, takže je vidět jeho tloušťka */
+@keyframes hang-turn { from { transform: rotateY(-16deg); } to { transform: rotateY(16deg); } }
+.is-held .hang-card, .is-swing .hang-card { animation-play-state: paused; }
 .hang-str-1 { left: 30%; --h: 120px; --tr: -8deg; --d: 0s;    --sw: 4.2s; }
 .hang-str-2 { left: 38%; --h: 70px;  --tr: 6deg;  --d: 10.5s; --sw: 5.1s; }
 .hang-str-3 { left: 58%; --h: 150px; --tr: -5deg; --d: 6s;    --sw: 4.7s; }
@@ -4760,7 +4764,7 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
   .hang-str-1 { left: 8%; --h: 150px; } .hang-str-3 { --h: 190px; } .hang-str-5 { --h: 225px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hang-str, .hang-sway, .hang-sway::after, .hang-tag { animation: none; }
+  .hang-str, .hang-sway, .hang-sway::after, .hang-tag, .hang-card { animation: none; }
   .hang-in { transform: none; }
   .hang-badge, .hang-badge .pcard-ring, .hang-badge-bug, .hang-msg, .hang-msg-ic, .hang-msg-tx, .hang-spark,
   .hang-item, .hang-crawler, .hang-crawler-bug, .hang-crawler-ok, .hang-legs { animation: none; }

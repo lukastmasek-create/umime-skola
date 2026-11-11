@@ -151,24 +151,34 @@ export function HangTags({ tags }: { tags: string[] }) {
             <feComposite in2="o" operator="in" result="ink" />
             <feMerge><feMergeNode in="ink" /><feMergeNode in="d" /></feMerge>
           </filter>
-          {/* propletený provaz: dva prameny se střídavě překrývají; vzor se opakuje po šesti pixelech */}
-          <pattern id="hang-rope" width="8" height="6" patternUnits="userSpaceOnUse">
-            {[-6, 0, 6].map((o) => (
+          {/* propletený provaz: dva prameny se střídavě překrývají, každý ze čtyř vrstev (drážka, tělo, světlo, lesk) */}
+          <pattern id="hang-rope" width="10" height="7" patternUnits="userSpaceOnUse">
+            {[-7, 0, 7].map((o) => (
               <g key={o} transform={`translate(0 ${o})`} strokeLinecap="round" fill="none">
-                <path d="M-2 10L10 2" stroke="#14132a" strokeWidth="4.6" />
-                <path d="M-2 7L10 -1" stroke="#14132a" strokeWidth="4.6" />
-                <path d="M-2 10L10 2" stroke="#a37a45" strokeWidth="3" />
-                <path d="M-2 7L10 -1" stroke="#dcb77c" strokeWidth="3" />
-                <path d="M-2 6.3L10 -1.7" stroke="#f6e4bb" strokeWidth="0.9" opacity=".85" />
+                {[3.5, 0].map((d) => (
+                  <g key={d} transform={`translate(0 ${d})`}>
+                    <path d="M-2 9L12 1" stroke="#24150a" strokeWidth="5" />
+                    <path d="M-2 9L12 1" stroke={d ? "#8a6232" : "#b78a4d"} strokeWidth="3.6" />
+                    <path d="M-2 8.5L12 .5" stroke={d ? "#b88d52" : "#dcb77c"} strokeWidth="2.2" />
+                    <path d="M-2 7.8L12 -.2" stroke="#fbe9c0" strokeWidth=".8" opacity={d ? 0.55 : 0.9} />
+                  </g>
+                ))}
               </g>
             ))}
           </pattern>
+          {/* válcové stínování přes celou šířku provazu: světlo zleva, stín vpravo */}
+          <linearGradient id="hang-rope-shade" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0" stopColor="#fff" stopOpacity=".28" />
+            <stop offset=".3" stopColor="#fff" stopOpacity="0" />
+            <stop offset=".62" stopColor="#000" stopOpacity=".12" />
+            <stop offset="1" stopColor="#000" stopOpacity=".6" />
+          </linearGradient>
         </defs>
       </svg>
       {tags.map((tag, i) => (
         <div key={tag} className={`hang-str hang-str-${i + 1}`} style={{ ["--tc" as string]: HANG_COLORS[i % HANG_COLORS.length] }}>
           <div className="hang-sway">
-            <svg className="hang-rope" width="8" height="100%" aria-hidden focusable="false"><rect width="8" height="100%" fill="url(#hang-rope)" /></svg>
+            <svg className="hang-rope" width="10" height="100%" aria-hidden focusable="false"><rect width="10" height="100%" fill="url(#hang-rope)" /><rect width="10" height="100%" fill="url(#hang-rope-shade)" /></svg>
             <span className="hang-tag" onPointerDown={down(i)} onPointerMove={move(i)} onPointerUp={up(i)} onPointerCancel={up(i)}>
               <TagCard text={tag} kind={TAG_ICONS[i % TAG_ICONS.length]} />
             </span>
@@ -192,6 +202,7 @@ function TagCard({ text, kind }: { text: string; kind: (typeof TAG_ICONS)[number
     <svg className="hang-card" width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-label={text} role="img">
       <rect x="6" y="10" width={W - 6} height="36" rx="11" fill="#000" opacity=".5" />
       <g filter="url(#hang-rough)">
+        <rect x="3" y="9.5" width={W - 6} height="36" rx="11" fill="#07060f" stroke="rgba(244,239,227,.4)" strokeWidth="2" />
         <rect x="3" y="6" width={W - 6} height="36" rx="11" style={{ fill: "color-mix(in srgb, var(--tc) 17%, #141329)" }} stroke="rgba(244,239,227,.8)" strokeWidth="2" />
         <path d={`M5 17a11 11 0 0 1 11-9h${W - 32}a11 11 0 0 1 11 9z`} fill="#fff" opacity=".1" />
         <path d={`M3 31H${W - 3}A11 11 0 0 1 ${W - 14} 42H14A11 11 0 0 1 3 31Z`} fill="#000" opacity=".25" />
