@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, type PointerEvent as RPE, type ReactNode } from "react";
-import { PcardTape } from "./PcardArt";
 
 // Obal panelu s 3D nakláněním jako u karet kategorií: vnitřek se za kurzorem naklání v perspektivě
 // a vrstvy (odznak, štítky, zem, jiskry) se posouvají různě rychle (--px / --py), takže vzniká hloubka.
@@ -31,7 +30,6 @@ export function HangPanel({ children }: { children: ReactNode }) {
         {children}
         <span className="hang-sheen" aria-hidden />
       </div>
-      <PcardTape />
     </div>
   );
 }
