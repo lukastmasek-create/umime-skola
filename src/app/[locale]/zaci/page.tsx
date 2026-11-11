@@ -26,27 +26,20 @@ const FEATURE_PATH: Record<FeatureKey, string> = {
 // Barevná plocha nahoře na kartě. Různé výšky dávají masonry rytmus (jako na obrázku).
 const COVER: Record<FeatureKey, { color: string; height: number }> = {
   courses: { color: "var(--cat-1)", height: 150 },
-  daily: { color: "var(--cat-4)", height: 96 },
+  daily: { color: "var(--cat-4)", height: 128 },
   idle: { color: "var(--cat-3)", height: 176 },
   escape: { color: "var(--cat-5)", height: 124 },
-  together: { color: "var(--cat-2)", height: 108 },
+  together: { color: "var(--cat-2)", height: 138 },
   review: { color: "var(--cat-1)", height: 164 },
-  materials: { color: "var(--cat-3)", height: 116 },
+  materials: { color: "var(--cat-3)", height: 134 },
   profile: { color: "var(--cat-5)", height: 142 },
-  boards: { color: "var(--cat-4)", height: 98 },
+  boards: { color: "var(--cat-4)", height: 134 },
   shop: { color: "var(--cat-2)", height: 170 },
   town: { color: "var(--cat-3)", height: 128 },
   team: { color: "var(--cat-1)", height: 156 },
 };
 
 const BENTO = ["#ffd24d", "#ff8a6b", "#7cc4ff", "#6ee7b7", "#c4b5fd"];
-
-// Ozdobné sloupečky v kartě (stejné při každém renderu, odvozené z klíče)
-function barHeights(key: string): number[] {
-  let seed = 0;
-  for (const ch of key) seed = (seed * 31 + ch.charCodeAt(0)) % 9973;
-  return Array.from({ length: 7 }, (_, n) => 28 + ((seed * (n + 3) * 17) % 62));
-}
 
 export default async function StudentsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -80,7 +73,7 @@ export default async function StudentsPage({ params }: { params: Promise<{ local
         </h2>
 
         <noscript>
-          <style>{".gc-item{opacity:1!important;transform:none!important}.gc-item .gcard-bars i{transform:none!important}"}</style>
+          <style>{".gc-item{opacity:1!important;transform:none!important}.gc-item .sv-pop{transform:none!important}"}</style>
         </noscript>
 
         {/* Masonry: karty se skládají do sloupců a mají různé výšky */}
@@ -88,7 +81,6 @@ export default async function StudentsPage({ params }: { params: Promise<{ local
           {FEATURE_KEYS.filter((key) => key !== "town").map((key, idx) => {
             const feature = t.features[key];
             const cover = COVER[key];
-            const bars = barHeights(key);
             return (
               <StudentFeatureCard
                 key={key}
@@ -97,8 +89,7 @@ export default async function StudentsPage({ params }: { params: Promise<{ local
                 text={feature.text}
                 accent={BENTO[idx % BENTO.length]}
                 coverHeight={cover.height}
-                bars={bars}
-                hiBar={bars.length - 1 - (key.length % 3)}
+                art={key}
                 index={idx}
               />
             );
