@@ -1,6 +1,6 @@
-// Ilustrace úvodní karty obchodu: kosmonaut Umíme prorazí rám karty zevnitř (kolem se sypou střepy,
-// z trhliny září zlaté světlo a lítají mince). SVG je zakotvené k pravému hornímu rohu karty;
-// zubatá hrana (JAG) musí sedět s clip-path `.gs-hero-card` v globals.css.
+// Prasklý rám úvodní karty obchodu (střepy, trhliny, zlatá záře, mince). Kosmonauta jako sekvenci 3D snímků
+// přehrává ShopHeroStage. SVG je zakotvené k pravému hornímu rohu karty; zubatá hrana (JAG) musí sedět
+// s clip-path `.gs-hero-card` v globals.css.
 const INK = "#14132a";
 const GOLD = "#ffc933";
 
@@ -50,88 +50,6 @@ function Spark({ x, y, s = 1, d = 0 }: { x: number; y: number; s?: number; d?: n
   );
 }
 
-function Astronaut() {
-  return (
-    <g>
-      {/* batoh */}
-      <rect x="-60" y="104" width="120" height="96" rx="22" fill="url(#sha-dark)" stroke={INK} strokeWidth="4.4" />
-      <rect x="-50" y="116" width="100" height="10" rx="5" fill="#4c4f9c" opacity=".7" />
-      <circle cx="-42" cy="176" r="5" fill="#ff7a96" stroke={INK} strokeWidth="2" />
-      <circle cx="-26" cy="176" r="5" fill="#6ee7b7" stroke={INK} strokeWidth="2" />
-      {/* nohy */}
-      {[-1, 1].map((k) => (
-        <g key={k}>
-          <path d={`M${k * 8 - 17} 250 H${k * 8 + 17} L${k * 8 + 19} 340 H${k * 8 - 19}Z`} fill="url(#sha-suit)" stroke={INK} strokeWidth="4.4" strokeLinejoin="round" />
-          <rect x={k * 8 - 17} y="282" width="34" height="14" rx="6" fill="#d8d6ee" stroke={INK} strokeWidth="3" />
-          <path d={`M${k * 8 - 22} 338 H${k * 8 + 22} Q${k * 8 + 26} 354 ${k * 8 + 20} 368 H${k * 8 - 20} Q${k * 8 - 26} 354 ${k * 8 - 22} 338Z`} fill="url(#sha-dark)" stroke={INK} strokeWidth="4.4" strokeLinejoin="round" />
-          <path d={`M${k * 8 - 22} 349 H${k * 8 + 22}`} stroke={GOLD} strokeWidth="4" strokeLinecap="round" />
-        </g>
-      ))}
-      {/* levá ruka nahoru s mincí */}
-      <path d="M-50 132 Q-86 112 -98 66" fill="none" stroke={INK} strokeWidth="36" strokeLinecap="round" />
-      <path d="M-50 132 Q-86 112 -98 66" fill="none" stroke="url(#sha-suit)" strokeWidth="27" strokeLinecap="round" />
-      <path d="M-70 112 Q-82 104 -88 92" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" opacity=".6" />
-      <circle cx="-98" cy="60" r="19" fill="url(#sha-dark)" stroke={INK} strokeWidth="4.4" />
-      <g className="gs-bigcoin">
-        <circle cx="-98" cy="14" r="34" fill="url(#sha-gold)" stroke={INK} strokeWidth="4.6" />
-        <circle cx="-98" cy="14" r="25" fill="#ffb938" stroke={INK} strokeWidth="3.4" />
-        <circle cx="-98" cy="14" r="30" fill="none" stroke="#e8a020" strokeWidth="2.4" strokeDasharray="3.4 4.6" />
-        <path d="M-98 -2 L-93.6 8.6 L-82 10 L-90.6 17.6 L-88 29 L-98 23 L-108 29 L-105.4 17.6 L-114 10 L-102.4 8.6Z" fill="#fff3b8" stroke={INK} strokeWidth="2.6" strokeLinejoin="round" />
-        <path d="M-120 2 A30 30 0 0 1 -104 -14" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" opacity=".7" />
-      </g>
-      {/* trup */}
-      <path d="M-52 112 Q-52 100 -38 100 H38 Q52 100 52 112 L46 262 Q46 276 32 276 H-32 Q-46 276 -46 262Z" fill="url(#sha-suit)" stroke={INK} strokeWidth="4.6" strokeLinejoin="round" />
-      <path d="M-44 112 Q-46 180 -40 262" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round" opacity=".55" />
-      <path d="M40 112 Q44 190 38 268" fill="none" stroke="#8b86c8" strokeWidth="6" strokeLinecap="round" opacity=".45" />
-      <rect x="-30" y="132" width="60" height="50" rx="12" fill="url(#sha-dark)" stroke={INK} strokeWidth="3.6" />
-      <rect x="-22" y="140" width="28" height="12" rx="4" fill="#6ee7b7" stroke={INK} strokeWidth="2" />
-      <path d="M-19 146 h5 l3 -3 l4 6 l3 -3 h4" fill="none" stroke={INK} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="14" cy="146" r="5" fill="#ff7a96" stroke={INK} strokeWidth="2" />
-      <circle cx="-14" cy="168" r="4.6" fill={GOLD} stroke={INK} strokeWidth="2" />
-      <circle cx="0" cy="168" r="4.6" fill="#7fd3ff" stroke={INK} strokeWidth="2" />
-      <circle cx="14" cy="168" r="4.6" fill="#c3a6ff" stroke={INK} strokeWidth="2" />
-      <rect x="-46" y="236" width="92" height="16" rx="7" fill="url(#sha-gold)" stroke={INK} strokeWidth="3.6" />
-      <rect x="-9" y="232" width="18" height="24" rx="5" fill="#ffd24d" stroke={INK} strokeWidth="3" />
-      <path d="M-38 241 H-16" stroke="#fff" strokeWidth="3" strokeLinecap="round" opacity=".6" />
-      {/* pravá ruka s drahokamem */}
-      <path d="M48 128 Q84 140 96 178" fill="none" stroke={INK} strokeWidth="36" strokeLinecap="round" />
-      <path d="M48 128 Q84 140 96 178" fill="none" stroke="url(#sha-suit)" strokeWidth="27" strokeLinecap="round" />
-      <path d="M62 128 Q82 134 92 154" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" opacity=".55" />
-      <g className="gs-gem">
-        <path d="M82 190 L92 172 H122 L132 190 L107 226Z" fill="#6ee7b7" stroke={INK} strokeWidth="4" strokeLinejoin="round" />
-        <path d="M82 190 H132 M92 172 L99 190 L107 226 L115 190 L122 172" fill="none" stroke={INK} strokeWidth="2.2" strokeLinejoin="round" opacity=".5" />
-        <path d="M115 190 L107 226 L132 190Z" fill="#22b987" opacity=".55" />
-        <path d="M94 177 H104 L100 186 H89Z" fill="#fff" opacity=".8" />
-      </g>
-      <circle cx="96" cy="184" r="19" fill="url(#sha-dark)" stroke={INK} strokeWidth="4.4" />
-      {/* přilba */}
-      <rect x="-26" y="86" width="52" height="22" rx="9" fill="#8b86c8" stroke={INK} strokeWidth="4" />
-      <path d="M-24 94 H24" stroke="#fff" strokeWidth="2.6" opacity=".4" />
-      <path d="M0 6 V-22" stroke={INK} strokeWidth="9" strokeLinecap="round" />
-      <path d="M0 6 V-22" stroke="#d8d6ee" strokeWidth="4" strokeLinecap="round" />
-      <circle cx="0" cy="-26" r="9" fill="#ff7a96" stroke={INK} strokeWidth="3.6" />
-      <circle cx="-3" cy="-29" r="2.4" fill="#fff" opacity=".85" />
-      <circle cx="0" cy="50" r="52" fill="url(#sha-helmet)" stroke={INK} strokeWidth="4.8" />
-      <rect x="-60" y="38" width="14" height="30" rx="7" fill="#b9b4e6" stroke={INK} strokeWidth="3.6" />
-      <rect x="46" y="38" width="14" height="30" rx="7" fill="#b9b4e6" stroke={INK} strokeWidth="3.6" />
-      <path d="M-40 22 Q-30 8 -12 4" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" opacity=".75" />
-      <ellipse cx="0" cy="52" rx="39" ry="32" fill="url(#sha-visor)" stroke={INK} strokeWidth="4.4" />
-      <path d="M-30 38 Q-22 26 -6 24" fill="none" stroke="#fff" strokeWidth="4.4" strokeLinecap="round" opacity=".85" />
-      <path d="M14 30 Q24 34 28 44" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" opacity=".45" />
-      <circle cx="22" cy="68" r="2.4" fill="#fff" opacity=".6" />
-      <circle cx="-26" cy="64" r="1.8" fill="#fff" opacity=".6" />
-      {/* veselý obličej za sklem */}
-      <g className="gs-eyes">
-        <path d="M-17 52 Q-11 42 -5 52" fill="none" stroke="#fff" strokeWidth="4.2" strokeLinecap="round" />
-        <path d="M5 52 Q11 42 17 52" fill="none" stroke="#fff" strokeWidth="4.2" strokeLinecap="round" />
-      </g>
-      <path d="M-8 62 Q0 72 8 62" fill="#ff7a96" stroke="#fff" strokeWidth="2.4" strokeLinejoin="round" strokeLinecap="round" />
-      <ellipse cx="-22" cy="62" rx="5" ry="3" fill="#ff8a8a" opacity=".55" />
-      <ellipse cx="22" cy="62" rx="5" ry="3" fill="#ff8a8a" opacity=".55" />
-    </g>
-  );
-}
-
 export function ShopHeroArt() {
   return (
     <svg className="gs-hero-art" viewBox={`0 0 ${W} 520`} width={W} height={520} aria-hidden focusable="false">
@@ -156,6 +74,18 @@ export function ShopHeroArt() {
         ))}
       </g>
 
+      {/* pavučina trhlin těsně před prorazem (nad hlavou kosmonauta) */}
+      <g className="gs-web" fill="none" stroke={INK} strokeLinecap="round" strokeLinejoin="round">
+        {[
+          "M210 190 L168 150 L150 112", "M210 190 L214 128 L196 86", "M210 190 L256 150 L282 116", "M210 190 L186 232 L150 250",
+          "M210 190 L250 226 L292 236", "M168 150 L132 158", "M256 150 L290 170", "M214 128 L240 102",
+        ].map((d) => (
+          <g key={d}>
+            <path d={d} stroke={INK} strokeWidth="7" />
+            <path d={d} stroke="#fff3b8" strokeWidth="2.6" pathLength={100} className="gs-webline" />
+          </g>
+        ))}
+      </g>
       {/* hrana prasklého rámu: tmavý lem, světlý odlesk a zlatá žhavá linka */}
       <polyline points={EDGE} fill="none" stroke={INK} strokeWidth="10" strokeLinejoin="round" strokeLinecap="round" />
       <polyline points={EDGE} fill="none" stroke="#e8e3ff" strokeWidth="3.6" strokeLinejoin="round" strokeLinecap="round" opacity=".85" />
@@ -185,13 +115,6 @@ export function ShopHeroArt() {
       <Coin x={370} y={64} r={9} d={1.1} />
       <Coin x={302} y={96} r={8} d={1.7} />
       <Coin x={30} y={196} r={8} d={0.9} />
-
-      {/* kosmonaut: vylétá z trhliny */}
-      <g transform={`translate(200 ${TOP - 70})`}>
-        <g className="gs-astro">
-          <Astronaut />
-        </g>
-      </g>
 
       {/* prach u trhliny */}
       {[[108, 128, 14], [168, 150, 11], [244, 138, 16], [306, 154, 10], [60, 150, 9]].map(([x, y, r], i) => (

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowUpRight, Asterisk, Check, Eye, Flame, Heart, Receipt, Star, Zap } from "lucide-react";
 import { ShopModel } from "@/components/ShopModel";
 import { ShopHeroArt } from "@/components/ShopHeroArt";
+import { ShopHeroStage } from "@/components/ShopHeroStage";
 import { Avatar } from "@/components/Avatar";
 import { Modal, Preview, type Snapshot } from "@/components/ShopView";
 import { MaterialShop, LimitedShop, ProCard } from "@/components/ShopSections";
@@ -412,6 +413,7 @@ export function GammyShop({
           </div>
         </div>
           <ShopHeroArt />
+          <ShopHeroStage />
         </div>
       </section>
 
