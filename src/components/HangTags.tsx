@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useRef, type PointerEvent as RPE } from "react";
+import { HANG_COLORS, HangIcon } from "./HangDecor";
+
+const TAG_ICONS = ["search", "pulse", "check", "bug", "flag"] as const;
 
 // Zavěšené štítky: dají se chytit myší/prstem a rozhoupat; při silném zatažení se nit přetrhne
 // a štítek spadne. Za chvíli se shora vrátí (přebírá ho zpět CSS animace).
@@ -138,10 +141,11 @@ export function HangTags({ tags }: { tags: string[] }) {
   return (
     <div className="hang-tags">
       {tags.map((tag, i) => (
-        <div key={tag} className={`hang-str hang-str-${i + 1}`}>
+        <div key={tag} className={`hang-str hang-str-${i + 1}`} style={{ ["--tc" as string]: HANG_COLORS[i % HANG_COLORS.length] }}>
           <div className="hang-sway">
             <span className="hang-tag" onPointerDown={down(i)} onPointerMove={move(i)} onPointerUp={up(i)} onPointerCancel={up(i)}>
-              {tag}
+              <span className="hang-ic"><HangIcon kind={TAG_ICONS[i % TAG_ICONS.length]} size={16} /></span>
+              <span>{tag}</span>
             </span>
           </div>
         </div>
