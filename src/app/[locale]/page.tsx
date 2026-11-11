@@ -173,33 +173,21 @@ export default async function Home({
           style={{ animationDelay: "-2.5s" }}
         />
         <div className="lobby-panel relative z-10">
-          <h2 className="reveal mb-8 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
+          <h2 className="reveal mb-10 text-center text-3xl font-bold tracking-tight sm:text-4xl" style={heading}>
             {dict.home.pickSection}
           </h2>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {CATEGORIES.map((cat, i) => {
-              const color = TILE_COLORS[i % TILE_COLORS.length];
-              return (
-                <Link
-                  key={cat.slug}
-                  href={`/${locale}/kurzy/${cat.slug}`}
-                  className="reveal gcard relative flex min-h-36 flex-col justify-between gap-4 p-5 sm:min-h-44 sm:gap-6"
-                  style={{ ["--gc" as string]: color }}
-                >
-                  <HomeArt name={GALAXY_ICONS[i % GALAXY_ICONS.length]} size={128} className="absolute -right-4 -top-5 opacity-95" />
-                  <span className="gcard-num text-6xl" style={heading}>
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <div className="flex items-end justify-between gap-3">
-                    <div>
-                      <h3 className="gcard-title mb-1 text-lg">{dict.categories[cat.slug].label}</h3>
-                      <p className="text-sm text-[var(--muted)]">{dict.categories[cat.slug].description}</p>
-                    </div>
-                    <span aria-hidden className="gcard-chip">→</span>
-                  </div>
-                </Link>
-              );
-            })}
+          <div className="pcard-pile">
+            {CATEGORIES.map((cat, i) => (
+              <Link
+                key={cat.slug}
+                href={`/${locale}/kurzy/${cat.slug}`}
+                className="reveal pcard"
+              >
+                <HomeArt name={GALAXY_ICONS[i % GALAXY_ICONS.length]} size={96} className="pcard-icon" />
+                <h3 className="pcard-title">{dict.categories[cat.slug].label}</h3>
+                <p className="pcard-text">{dict.categories[cat.slug].description}</p>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
