@@ -71,7 +71,6 @@ const SCENES: Record<TeacherArtKind, () => ReactNode> = {
         <circle cx="216" cy="46" r="15" fill={A} />
         <path d="M209 50 l7 -7 m-2 0 h7 v7" fill="none" stroke={INK} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
       </Pop>
-      <Pop d={3}><path d="M86 124 q64 22 128 0" fill="none" stroke={SOFT} strokeWidth="2" strokeDasharray="2 7" strokeLinecap="round" /></Pop>
       <Sparkle x={48} y={86} s={0.9} d={4} />
       <Sparkle x={256} y={100} s={0.8} d={5} />
     </>
@@ -101,55 +100,50 @@ const SCENES: Record<TeacherArtKind, () => ReactNode> = {
       <Sparkle x={246} y={34} s={0.9} d={5} />
     </>
   ),
-  // Termín: kalendář s vlajkou u data a dlaždice kurzů
+  // Termín: kalendář s vlajkou u data
   deadline: () => (
     <>
       <Ground cx={150} cy={136} rx={88} />
       <Pop d={0}>
-        <rect x="80" y="34" width="140" height="94" rx="16" fill={F} stroke={S} strokeWidth="2" />
-        <path d="M80 50 a16 16 0 0 1 16 -16 H204 a16 16 0 0 1 16 16 V60 H80Z" fill={A} />
-        <path d="M112 26 V40 M188 26 V40" stroke={PAPER} strokeWidth="6" strokeLinecap="round" />
-        <rect x="88" y="38" width="124" height="5" rx="2.5" fill={HI} />
+        <rect x="64" y="34" width="140" height="94" rx="16" fill={F} stroke={S} strokeWidth="2" />
+        <path d="M64 50 a16 16 0 0 1 16 -16 H188 a16 16 0 0 1 16 16 V60 H64Z" fill={A} />
+        <path d="M96 26 V40 M172 26 V40" stroke={PAPER} strokeWidth="6" strokeLinecap="round" />
+        <rect x="72" y="38" width="124" height="5" rx="2.5" fill={HI} />
       </Pop>
       {[0, 1, 2, 3, 4].map((c) => (
         <Pop key={c} d={1 + c * 0.25}>
-          <circle cx={104 + c * 23} cy={82} r="6" fill="none" stroke={SOFT} strokeWidth="2" />
+          <circle cx={88 + c * 23} cy={82} r="6" fill="none" stroke={SOFT} strokeWidth="2" />
         </Pop>
       ))}
       {[0, 1, 2, 3, 4].map((c) => (
         <Pop key={c} d={2.2 + c * 0.25}>
-          <circle cx={104 + c * 23} cy={106} r={c === 4 ? 9 : 6} fill={c === 4 ? A : "none"} stroke={c === 4 ? "none" : SOFT} strokeWidth="2" />
+          <circle cx={88 + c * 23} cy={106} r={c === 4 ? 9 : 6} fill={c === 4 ? A : "none"} stroke={c === 4 ? "none" : SOFT} strokeWidth="2" />
         </Pop>
       ))}
       <Pop d={4} float>
-        <path d="M196 106 V70" stroke={PAPER} strokeWidth="3" strokeLinecap="round" />
-        <path d="M196 70 L220 78 L196 86Z" fill={A} />
+        <path d="M232 128 V50" stroke={PAPER} strokeWidth="4" strokeLinecap="round" />
+        <path d="M232 50 L262 62 L232 74Z" fill={A} strokeLinejoin="round" />
       </Pop>
-      <Pop d={5} float>
-        <rect x="236" y="48" width="34" height="26" rx="8" fill={PAPER} />
-        <path d="M244 58 h18 M244 65 h11" stroke={INK} strokeWidth="3" strokeLinecap="round" opacity="0.7" />
-      </Pop>
-      <Sparkle x={48} y={64} s={0.9} d={6} />
     </>
   ),
   // Komu zadat: úkol míří na třídu, skupinu a jednotlivce
   targets: () => (
     <>
+      <Ground cx={150} cy={138} rx={92} />
       <Pop d={0} float>
-        <rect x="42" y="50" width="54" height="64" rx="11" fill={A} />
-        <rect x="46" y="54" width="46" height="5" rx="2.5" fill={HI} />
-        <path d="M54 76 h30 M54 88 h22 M54 100 h26" stroke={INK} strokeWidth="4" strokeLinecap="round" opacity="0.7" />
+        <rect x="44" y="52" width="54" height="64" rx="11" fill={A} />
+        <rect x="48" y="56" width="46" height="5" rx="2.5" fill={HI} />
+        <path d="M56 78 h30 M56 90 h22 M56 102 h26" stroke={INK} strokeWidth="4" strokeLinecap="round" opacity="0.7" />
       </Pop>
-      {[28, 80, 132].map((y, i) => (
+      {[36, 84, 132].map((y, i) => (
         <Pop key={i} d={1 + i * 0.7}>
-          <path d={`M98 82 C130 82 130 ${y} 160 ${y}`} fill="none" stroke={SOFT} strokeWidth="2" strokeDasharray="3 6" strokeLinecap="round" />
-          <rect x="160" y={y - 17} width={[100, 74, 40][i]} height="34" rx="17" fill={F} stroke={S} strokeWidth="2" />
+          <path d={`M100 84 C130 84 130 ${y} 164 ${y}`} fill="none" stroke={SOFT} strokeWidth="2" strokeDasharray="3 6" strokeLinecap="round" />
+          <rect x="164" y={y - 15} width="96" height="30" rx="15" fill={F} stroke={S} strokeWidth="2" />
           {Array.from({ length: [4, 3, 1][i] }).map((_, n) => (
-            <circle key={n} cx={178 + n * 22} cy={y} r="8" fill={n === 0 ? A : PAPER} opacity={n === 0 ? 1 : 0.85} />
+            <circle key={n} cx={182 + n * 22} cy={y} r="7" fill={n === 0 ? A : PAPER} opacity={n === 0 ? 1 : 0.85} />
           ))}
         </Pop>
       ))}
-      <Sparkle x={120} y={50} s={0.8} d={5} />
     </>
   ),
   // Výsledky: sloupcový graf a trend
@@ -240,22 +234,21 @@ const SCENES: Record<TeacherArtKind, () => ReactNode> = {
       <Sparkle x={262} y={104} s={0.9} d={4} />
     </>
   ),
-  // Chat: dvě bubliny a psaní
+  // Chat: dvě bubliny
   chat: () => (
     <>
-      <Ground cx={150} cy={138} rx={80} />
+      <Ground cx={150} cy={146} rx={86} />
       <Pop d={0} float>
-        <path d="M60 36 h110 a14 14 0 0 1 14 14 v22 a14 14 0 0 1 -14 14 h-76 l-18 16 v-16 h-16 a14 14 0 0 1 -14 -14 v-22 a14 14 0 0 1 14 -14z" fill={F} stroke={S} strokeWidth="2" />
-        <path d="M76 54 h78 M76 66 h46" stroke={S} strokeWidth="4" strokeLinecap="round" opacity="0.8" />
+        <path d="M70 26 h102 a14 14 0 0 1 14 14 v20 a14 14 0 0 1 -14 14 h-64 l-20 16 v-16 h-18 a14 14 0 0 1 -14 -14 v-20 a14 14 0 0 1 14 -14z" fill={F} stroke={S} strokeWidth="2" />
+        <path d="M72 42 h78 M72 54 h46" stroke={S} strokeWidth="4" strokeLinecap="round" opacity="0.8" />
       </Pop>
       <Pop d={1} float>
-        <path d="M130 90 h110 a14 14 0 0 1 14 14 v14 a14 14 0 0 1 -14 14 h-12 v16 l-18 -16 h-80 a14 14 0 0 1 -14 -14 v-14 a14 14 0 0 1 14 -14z" fill={A} transform="translate(0 -14)" />
-        <path d="M146 100 h72" stroke={INK} strokeWidth="4" strokeLinecap="round" opacity="0.7" transform="translate(0 4)" />
+        <path d="M128 76 h102 a14 14 0 0 1 14 14 v20 a14 14 0 0 1 -14 14 h-18 v16 l-20 -16 h-64 a14 14 0 0 1 -14 -14 v-20 a14 14 0 0 1 14 -14z" fill={A} />
+        <path d="M130 92 h78" stroke={INK} strokeWidth="4" strokeLinecap="round" opacity="0.7" />
       </Pop>
       {[0, 1, 2].map((i) => (
-        <Pop key={i} d={2.5 + i * 0.3}><circle cx={74 + i * 12} cy={122} r="3.6" fill={S} opacity="0.7" /></Pop>
+        <Pop key={i} d={2.5 + i * 0.3}><circle cx={132 + i * 13} cy={108} r="3.4" fill={INK} opacity="0.7" /></Pop>
       ))}
-      <Sparkle x={256} y={48} s={0.9} d={4} />
     </>
   ),
   // Bezpečně: štít s odškrtnutím

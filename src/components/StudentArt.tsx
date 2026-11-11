@@ -246,7 +246,7 @@ const SCENES: Record<FeatureKey, () => ReactNode> = {
         <rect x="104" y="116" width="62" height="9" rx="4.5" fill={A} />
         <rect x="108" y="118" width="54" height="2.5" rx="1.25" fill={HI} />
       </Pop>
-      <Pop d={4} float><rect x="90" y="46" width="22" height="14" rx="7" fill={F} stroke={S} strokeWidth="1.5" /><text x="101" y="57" textAnchor="middle" fontSize="9" fontWeight="800" fill={PAPER}>LVL</text></Pop>
+      <Pop d={4} float><rect x="72" y="50" width="30" height="16" rx="8" fill={F} stroke={S} strokeWidth="1.5" /><text x="87" y="61.5" textAnchor="middle" fontSize="9" fontWeight="800" fill={PAPER}>LVL</text></Pop>
       <Sparkle x={236} y={92} s={0.9} d={5} />
     </>
   ),
@@ -273,10 +273,10 @@ const SCENES: Record<FeatureKey, () => ReactNode> = {
       <Pop d={3} float><circle cx="101" cy="76" r="9" fill={PAPER} opacity="0.9" /><path d="M89 91 a12 9 0 0 1 24 0z" fill={PAPER} opacity="0.9" /></Pop>
       <Pop d={3.5} float><circle cx="199" cy="86" r="9" fill={PAPER} opacity="0.9" /><path d="M187 101 a12 9 0 0 1 24 0z" fill={PAPER} opacity="0.9" /></Pop>
       <Pop d={4} float>
-        <circle cx="150" cy="50" r="10" fill={PAPER} />
-        <path d="M134 36 l5 -16 l11 9 l11 -9 l5 16z" fill={PAPER} />
-        <path d="M134 36 h32" stroke={A} strokeWidth="3" />
-        <circle cx="139" cy="19" r="2.5" fill={A} /><circle cx="150" cy="27" r="2.5" fill={A} /><circle cx="161" cy="19" r="2.5" fill={A} />
+        <circle cx="150" cy="52" r="10" fill={PAPER} />
+        <path d="M136 67 a14 11 0 0 1 28 0z" fill={PAPER} />
+        <path d="M136 46 l4 -14 l10 8 l10 -8 l4 14z" fill={A} />
+        <path d="M136 46 h28" stroke={INK} strokeWidth="2" strokeLinecap="round" opacity="0.5" />
       </Pop>
       {[[64, 50, 0, 20], [236, 56, 1, -25], [84, 32, 2, 40], [220, 32, 3, -10], [258, 96, 4, 30], [44, 96, 5, -35]].map(([x, y, n, r]) => (
         <Pop key={n} d={5 + n * 0.3}>
@@ -289,7 +289,6 @@ const SCENES: Record<FeatureKey, () => ReactNode> = {
   shop: () => (
     <>
       <Ground cx={150} cy={140} rx={78} />
-      <Pop d={0}><path d="M122 58 Q90 20 66 52 T88 78" fill="none" stroke={A} strokeWidth="4" strokeLinecap="round" /></Pop>
       <Pop d={1} float>
         <path d="M108 44 H160 L212 96 Q217 101 212 106 L174 144 Q169 149 164 144 L108 90 Z" fill={F} stroke={S} strokeWidth="2" strokeLinejoin="round" />
         <path d="M116 52 H157 L204 99 L170 134 L116 86 Z" fill="none" stroke={SOFT} strokeWidth="1.8" strokeDasharray="4 5" strokeLinejoin="round" />
