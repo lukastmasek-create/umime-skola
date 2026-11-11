@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 // Výzdoba panelu „Chyby se dějí každý den“: SVG ikony, odznak brouk -> fajfka, jiskry a zem s lezoucím broučkem.
 // Čistě dekorativní (aria-hidden), bez stavu, takže jde použít na serveru i v klientských komponentách.
 
@@ -6,8 +8,8 @@ const ink = "#14132a";
 export const HANG_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0", "#c9a8ff"];
 
 // Malé ikony pro štítky a zprávy (24x24, obrys).
-export function HangIcon({ kind, size = 18 }: { kind: "search" | "pulse" | "check" | "bug" | "flag" | "bolt" | "star" | "bulb"; size?: number }) {
-  const common = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2.2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true, focusable: false };
+export function HangIcon({ kind, size = 18, x, y, style }: { kind: "search" | "pulse" | "check" | "bug" | "flag" | "bolt" | "star" | "bulb"; size?: number; x?: number; y?: number; style?: CSSProperties }) {
+  const common = { x, y, style, width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2.2, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true, focusable: false };
   switch (kind) {
     case "search":
       return (<svg {...common}><circle cx="10.5" cy="10.5" r="6" /><path d="M15 15l6 6" /><path d="M8 10.5l2 2 3.2-3.6" strokeWidth="1.8" /></svg>);
@@ -81,7 +83,7 @@ export function HangGround() {
   return (
     <>
       <svg className="pcard-scene hang-ground" viewBox="0 0 600 90" preserveAspectRatio="none" aria-hidden focusable="false">
-        <path d="M0 40C60 28 120 46 200 38C280 30 340 48 420 40C490 33 550 44 600 36V90H0Z" fill="#2c2a5c" stroke="rgba(244,239,227,.7)" strokeWidth="2" strokeLinejoin="round" />
+        <path d="M0 40C60 28 120 46 200 38C280 30 340 48 420 40C490 33 550 44 600 36V90H0Z" fill="#17153a" stroke="rgba(244,239,227,.7)" strokeWidth="2" strokeLinejoin="round" />
         <path d="M0 62C80 54 160 68 260 60C360 52 460 66 600 58" fill="none" stroke="rgba(244,239,227,.14)" strokeWidth="2" strokeDasharray="6 9" strokeLinecap="round" />
       </svg>
       <span className="hang-items" aria-hidden>

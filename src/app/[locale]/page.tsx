@@ -14,6 +14,7 @@ import { TearCard } from "@/components/TearCard";
 import { PcardArt, PcardRing, PcardTape } from "@/components/PcardArt";
 import { HangTags } from "@/components/HangTags";
 import { HangFeed } from "@/components/HangFeed";
+import { HangPanel } from "@/components/HangPanel";
 import { HangBadge, HangGround, HangSparks } from "@/components/HangDecor";
 import { HomeLobby } from "@/components/HomeLobby";
 import { getHomeLobbyText } from "@/i18n/home-lobby";
@@ -168,20 +169,17 @@ export default async function Home({
 
       {/* 4b) Panel se zavěšenými štítky */}
       <section className="zone zone-space">
-        <div className="hang-panel reveal mx-auto max-w-5xl">
-          <div className="hang-in">
-            <HangSparks />
-            <div className="hang-copy">
-              <HangBadge />
-              <h2 className="hang-title" style={heading}>{getHomeHangText(locale as Locale).title}</h2>
-              <p className="hang-lead">{getHomeHangText(locale as Locale).lead}</p>
-              <HangFeed messages={getHomeHangText(locale as Locale).feed} />
-            </div>
-            <HangTags tags={getHomeHangText(locale as Locale).tags} />
-            <HangGround />
+        <HangPanel>
+          <HangSparks />
+          <div className="hang-copy">
+            <HangBadge />
+            <h2 className="hang-title" style={heading}>{getHomeHangText(locale as Locale).title}</h2>
+            <p className="hang-lead">{getHomeHangText(locale as Locale).lead}</p>
+            <HangFeed messages={getHomeHangText(locale as Locale).feed} />
           </div>
-          <PcardTape />
-        </div>
+          <HangTags tags={getHomeHangText(locale as Locale).tags} />
+          <HangGround />
+        </HangPanel>
       </section>
 
       {/* 5) Zpět do vesmíru: kategorie */}

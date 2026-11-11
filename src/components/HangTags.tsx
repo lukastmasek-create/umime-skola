@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type PointerEvent as RPE } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as RPE } from "react";
 import { HANG_COLORS, HangIcon } from "./HangDecor";
 
 const TAG_ICONS = ["search", "pulse", "check", "bug", "flag"] as const;
@@ -75,9 +75,9 @@ export function HangTags({ tags }: { tags: string[] }) {
     if (!el || states.current.get(i)?.mode === "free") return;
     const sway = el.querySelector(".hang-sway") as HTMLElement;
     const tag = e.currentTarget as HTMLElement;
-    const box = el.parentElement!.getBoundingClientRect();
     const r = el.getBoundingClientRect();
-    if (Math.abs(r.top - (box.top - 44)) > 8) return; // právě přilétá nebo padá: nejde chytit
+    // právě přilétá nebo padá: nejde chytit (měří se vlastní posun, takže nenaklonění panelu nevadí)
+    if (Math.abs(new DOMMatrixReadOnly(getComputedStyle(el).transform).f) > 8) return;
     const m = new DOMMatrixReadOnly(getComputedStyle(sway).transform);
     const th = Math.atan2(m.b, m.a);
     let s = states.current.get(i);
@@ -122,6 +122,7 @@ export function HangTags({ tags }: { tags: string[] }) {
       s.el.classList.remove("is-held");
       s.el.classList.add("is-free");
       s.tag.releasePointerCapture?.(e.pointerId);
+      burst(e.clientX, e.clientY, getComputedStyle(s.el).getPropertyValue("--tc").trim() || "#ffc933");
       kick();
     }
   };
@@ -140,16 +141,79 @@ export function HangTags({ tags }: { tags: string[] }) {
 
   return (
     <div className="hang-tags">
+      <svg width="0" height="0" className="hang-defs" aria-hidden focusable="false">
+        <defs>
+          <filter id="hang-rough" x="-6%" y="-12%" width="112%" height="128%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="7" result="n" />
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2" xChannelSelector="R" yChannelSelector="G" result="d" />
+            <feMorphology in="d" operator="dilate" radius="1.2" result="o" />
+            <feFlood floodColor="#0a0918" />
+            <feComposite in2="o" operator="in" result="ink" />
+            <feMerge><feMergeNode in="ink" /><feMergeNode in="d" /></feMerge>
+          </filter>
+        </defs>
+      </svg>
       {tags.map((tag, i) => (
         <div key={tag} className={`hang-str hang-str-${i + 1}`} style={{ ["--tc" as string]: HANG_COLORS[i % HANG_COLORS.length] }}>
           <div className="hang-sway">
             <span className="hang-tag" onPointerDown={down(i)} onPointerMove={move(i)} onPointerUp={up(i)} onPointerCancel={up(i)}>
-              <span className="hang-ic"><HangIcon kind={TAG_ICONS[i % TAG_ICONS.length]} size={16} /></span>
-              <span>{tag}</span>
+              <TagCard text={tag} kind={TAG_ICONS[i % TAG_ICONS.length]} />
             </span>
           </div>
         </div>
       ))}
     </div>
   );
+}
+
+// Jeden štítek nakreslený celý v SVG: nerovně vystřižená karta, tři tóny, očko na nit a ikona v čtverečku.
+function TagCard({ text, kind }: { text: string; kind: (typeof TAG_ICONS)[number] }) {
+  const t = useRef<SVGTextElement>(null);
+  const [tw, setTw] = useState(() => text.length * 8.4);
+  useLayoutEffect(() => {
+    const w = t.current?.getComputedTextLength?.();
+    if (w && Math.abs(w - tw) > 0.5) setTw(w);
+  }, [text, tw]);
+  const W = Math.ceil(tw) + 58, H = 50, c = W / 2;
+  return (
+    <svg className="hang-card" width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-label={text} role="img">
+      <rect x="6" y="10" width={W - 6} height="36" rx="11" fill="#000" opacity=".5" />
+      <g filter="url(#hang-rough)">
+        <rect x="3" y="6" width={W - 6} height="36" rx="11" style={{ fill: "color-mix(in srgb, var(--tc) 17%, #141329)" }} stroke="rgba(244,239,227,.8)" strokeWidth="2" />
+        <path d={`M5 17a11 11 0 0 1 11-9h${W - 32}a11 11 0 0 1 11 9z`} fill="#fff" opacity=".1" />
+        <path d={`M3 31H${W - 3}A11 11 0 0 1 ${W - 14} 42H14A11 11 0 0 1 3 31Z`} fill="#000" opacity=".25" />
+        <rect x="9" y="12" width="26" height="26" rx="8" style={{ fill: "var(--tc)" }} stroke="rgba(244,239,227,.85)" strokeWidth="2" />
+        <path d="M11 20a8 8 0 0 1 8-6h8" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" opacity=".5" />
+        <HangIcon kind={kind} size={18} x={13} y={16} style={{ color: "#14132a" }} />
+        <text ref={t} x="43" y="29.5" fontSize="14" fontWeight="800" fill="#f4f3ff" fontFamily="var(--font-heading), system-ui, sans-serif">{text}</text>
+        <circle cx={c} cy="7" r="5" fill="#f4efe3" stroke="#14132a" strokeWidth="1.6" />
+        <circle cx={c} cy="7" r="2" fill="#14132a" />
+      </g>
+    </svg>
+  );
+}
+
+// Při utržení se rozlétnou malé SVG hvězdičky v barvě štítku.
+function burst(x: number, y: number, color: string) {
+  const ns = "http://www.w3.org/2000/svg";
+  for (let i = 0; i < 14; i++) {
+    const size = 8 + Math.random() * 12;
+    const sv = document.createElementNS(ns, "svg");
+    sv.setAttribute("viewBox", "0 0 24 24");
+    sv.setAttribute("width", String(size)); sv.setAttribute("height", String(size));
+    const p = document.createElementNS(ns, "path");
+    p.setAttribute("d", "M12 1l2.6 8.4L23 12l-8.4 2.6L12 23l-2.6-8.4L1 12l8.4-2.6z");
+    p.setAttribute("fill", i % 3 ? color : "#fff");
+    sv.appendChild(p);
+    Object.assign(sv.style, { position: "fixed", left: `${x}px`, top: `${y}px`, pointerEvents: "none", zIndex: "9999" });
+    document.body.appendChild(sv);
+    const a = Math.random() * Math.PI * 2, d = 40 + Math.random() * 100;
+    sv.animate(
+      [
+        { transform: "translate(-50%,-50%) scale(1) rotate(0deg)", opacity: 1 },
+        { transform: `translate(${Math.cos(a) * d}px, ${Math.sin(a) * d + 50}px) scale(0.1) rotate(${Math.random() * 360}deg)`, opacity: 0 },
+      ],
+      { duration: 600 + Math.random() * 400, easing: "cubic-bezier(.2,.7,.3,1)" },
+    ).onfinish = () => sv.remove();
+  }
 }
