@@ -3,6 +3,8 @@
 import Link from "next/link";
 import type { PointerEvent } from "react";
 import { useReveal } from "./useReveal";
+import StudentArt from "./StudentArt";
+import type { FeatureKey } from "@/i18n/audience";
 
 type Props = {
   href: string;
@@ -10,14 +12,13 @@ type Props = {
   text: string;
   accent: string;
   coverHeight: number;
-  bars: number[];
-  hiBar: number;
+  art: FeatureKey;
   index: number;
 };
 
 // Karta pro žáky: postupné vyjetí při scrollu, rostoucí sloupečky
 // a světlo, které sleduje kurzor. Vše se vypíná při prefers-reduced-motion.
-export default function StudentFeatureCard({ href, title, text, accent, coverHeight, bars, hiBar, index }: Props) {
+export default function StudentFeatureCard({ href, title, text, accent, coverHeight, art, index }: Props) {
   const { ref, shown } = useReveal<HTMLLIElement>();
 
   function onMove(e: PointerEvent<HTMLAnchorElement>) {
@@ -40,14 +41,8 @@ export default function StudentFeatureCard({ href, title, text, accent, coverHei
         onPointerMove={onMove}
       >
         <span className="gcard-glow" aria-hidden="true" />
-        <div className="gcard-bars px-5 pt-5" style={{ height: coverHeight }} aria-hidden="true">
-          {bars.map((h, n) => (
-            <i
-              key={n}
-              className={n === hiBar ? "is-hi" : ""}
-              style={{ height: `${h}%`, ["--n" as string]: n }}
-            />
-          ))}
+        <div className="gcard-cover" style={{ height: coverHeight }}>
+          <StudentArt kind={art} />
         </div>
         <div className="flex items-end justify-between gap-3 p-5">
           <div className="flex flex-col gap-2">
