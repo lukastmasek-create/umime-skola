@@ -5,7 +5,8 @@ import type { ReactNode } from "react";
 //  · světlo shora zleva: každý předmět má světlý okraj vlevo/nahoře a tmavší stranu vpravo/dole,
 //  · tři tóny na předmět (základ, světlo, stín), žádné obrysy, jen plochy a jemné přechody,
 //  · všechno stojí na společné zemi (y ≈ 105) a vrhá pod sebe měkký stín,
-//  · malé pohyblivé detaily (bubliny, vlajka, střela, střapec, třpyt) pro život scény.
+//  · všechno prochází filtrem Rough (nerovný okraj + tmavý obrys), aby to nevypadalo strojově,
+//  · jen pár pohyblivých detailů (bubliny, vlajka, střela, střapec).
 
 const Shadow = ({ cx, cy, rx, ry = 2.6 }: { cx: number; cy: number; rx: number; ry?: number }) => (
   <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill="#000" opacity=".3" />
@@ -39,6 +40,24 @@ function Block({ x, y, s = 26, f, t, r, ch }: { x: number; y: number; s?: number
   );
 }
 
+
+// Ruční vystřižený okraj: tvary se jemně rozvlní a dostanou tmavý obrys, jako nalepená vystřižená ilustrace.
+function Rough({ id, seed }: { id: string; seed: number }) {
+  return (
+    <filter id={id} x="-4%" y="-6%" width="108%" height="112%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed={seed} result="n" />
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.4" xChannelSelector="R" yChannelSelector="G" result="d" />
+      <feMorphology in="d" operator="dilate" radius="1.25" result="o" />
+      <feFlood floodColor="#14132a" />
+      <feComposite in2="o" operator="in" result="ink" />
+      <feMerge>
+        <feMergeNode in="ink" />
+        <feMergeNode in="d" />
+      </feMerge>
+    </filter>
+  );
+}
+
 function Zakladni(): ReactNode {
   return (
     <>
@@ -47,21 +66,20 @@ function Zakladni(): ReactNode {
         <linearGradient id="sc-z-pencil" x1="0" x2="1"><stop offset="0" stopColor="#ffe48a" /><stop offset=".55" stopColor="#ffc933" /><stop offset="1" stopColor="#e09a14" /></linearGradient>
         <linearGradient id="sc-z-hill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ffc933" stopOpacity=".4" /><stop offset="1" stopColor="#ffc933" stopOpacity=".06" /></linearGradient>
       </defs>
-      <circle cx="248" cy="40" r="34" fill="url(#sc-z-sun)" />
-      <g className="pcard-sunrays" stroke="#ffe58a" strokeWidth="2" strokeLinecap="round" opacity=".8">
+      <g stroke="#ffe58a" strokeWidth="2" strokeLinecap="round" opacity=".8">
         {Array.from({ length: 10 }, (_, i) => (
           <line key={i} x1="248" y1="18" x2="248" y2="12" transform={`rotate(${i * 36} 248 40)`} />
         ))}
       </g>
       <circle cx="248" cy="40" r="12.5" fill="#ffe58a" />
       <circle cx="244.5" cy="36.5" r="5" fill="#fff8d0" opacity=".7" />
-      <path d="M0 84C46 60 92 68 134 80S214 62 300 76V120H0Z" fill="url(#sc-z-hill)" />
+      <path d="M0 84C46 60 92 68 134 80S214 62 300 76V120H0Z" fill="#ffc933" fillOpacity=".3" />
       <path d="M0 102C64 90 118 106 188 98S262 92 300 99V120H0Z" fill="#ffc933" opacity=".2" />
       <path d="M0 102C64 90 118 106 188 98S262 92 300 99" fill="none" stroke="#fff" strokeOpacity=".28" strokeWidth="1.2" />
 
       {/* papírová vlaštovka s čárkovanou stopou */}
-      <path d="M96 58C112 62 118 40 134 36S150 30 160 22" fill="none" stroke="#fff" strokeOpacity=".5" strokeWidth="1.4" strokeDasharray="2 5" strokeLinecap="round" className="pcard-march" />
-      <g className="pcard-plane" transform="translate(162 22) rotate(-22)">
+      <path d="M96 58C112 62 118 40 134 36S150 30 160 22" fill="none" stroke="#fff" strokeOpacity=".5" strokeWidth="1.4" strokeDasharray="2 5" strokeLinecap="round" />
+      <g transform="translate(162 22) rotate(-22)">
         <path d="M0 0L28 -2L10 9Z" fill="#f6f1e4" />
         <path d="M10 9L28 -2L12 17Z" fill="#cfc8b4" />
         <path d="M0 0L28 -2L8 4Z" fill="#fff" opacity=".7" />
@@ -108,7 +126,7 @@ function Stredni(): ReactNode {
         <linearGradient id="sc-s-glass" x1="0" x2="1"><stop offset="0" stopColor="#fff" stopOpacity=".34" /><stop offset=".5" stopColor="#fff" stopOpacity=".08" /><stop offset="1" stopColor="#fff" stopOpacity=".16" /></linearGradient>
         <linearGradient id="sc-s-desk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ff8a6b" stopOpacity=".42" /><stop offset="1" stopColor="#ff8a6b" stopOpacity=".12" /></linearGradient>
       </defs>
-      <rect x="0" y="105" width="300" height="15" fill="url(#sc-s-desk)" />
+      <rect x="0" y="105" width="300" height="15" fill="#ff8a6b" fillOpacity=".34" />
       <line x1="0" y1="105.5" x2="300" y2="105.5" stroke="#fff" strokeOpacity=".32" strokeWidth="1.2" />
 
       {/* baňka s bublajícím roztokem */}
@@ -142,7 +160,7 @@ function Stredni(): ReactNode {
       </g>
 
       {/* atom */}
-      <g className="pcard-atom" fill="none" stroke="#8fd0ff" strokeWidth="1.3">
+      <g fill="none" stroke="#8fd0ff" strokeWidth="1.3">
         <ellipse cx="266" cy="46" rx="22" ry="8" opacity=".8" />
         <ellipse cx="266" cy="46" rx="22" ry="8" transform="rotate(60 266 46)" opacity=".8" />
         <ellipse cx="266" cy="46" rx="22" ry="8" transform="rotate(-60 266 46)" opacity=".8" />
@@ -164,12 +182,12 @@ function Prijimacky(): ReactNode {
         <linearGradient id="sc-p-flag" x1="0" x2="1"><stop offset="0" stopColor="#ffd766" /><stop offset="1" stopColor="#f0a91c" /></linearGradient>
         <linearGradient id="sc-p-board" x1="0" x2="1"><stop offset="0" stopColor="#d08c4c" /><stop offset="1" stopColor="#a8693a" /></linearGradient>
       </defs>
-      <path d="M0 86C50 70 100 82 150 76S250 54 300 62V120H0Z" fill="url(#sc-p-hill)" />
+      <path d="M0 86C50 70 100 82 150 76S250 54 300 62V120H0Z" fill="#8fd0ff" fillOpacity=".28" />
       <path d="M0 104C70 94 140 108 210 98S270 96 300 100V120H0Z" fill="#8fd0ff" opacity=".24" />
       <path d="M0 104C70 94 140 108 210 98S270 96 300 100" fill="none" stroke="#fff" strokeOpacity=".28" strokeWidth="1.2" />
 
       {/* cíl: vlajka na kopci a čárkovaná cesta k ní */}
-      <path d="M196 76C216 76 230 56 258 46" fill="none" stroke="#fff" strokeOpacity=".5" strokeWidth="1.5" strokeDasharray="2 5" strokeLinecap="round" className="pcard-march" />
+      <path d="M196 76C216 76 230 56 258 46" fill="none" stroke="#fff" strokeOpacity=".5" strokeWidth="1.5" strokeDasharray="2 5" strokeLinecap="round" />
       <Shadow cx={262} cy={64} rx={9} ry={2} />
       <line x1="262" y1="24" x2="262" y2="64" stroke="#e9e8f6" strokeWidth="2.2" strokeLinecap="round" />
       <circle cx="262" cy="22.6" r="2.6" fill="#ffd766" />
@@ -234,7 +252,6 @@ function Maturita(): ReactNode {
         <linearGradient id="sc-m-gold" x1="0" x2="1"><stop offset="0" stopColor="#ffeaa0" /><stop offset=".5" stopColor="#ffc933" /><stop offset="1" stopColor="#c98a0e" /></linearGradient>
         <linearGradient id="sc-m-paper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#fffaf0" /><stop offset="1" stopColor="#e7dcc0" /></linearGradient>
       </defs>
-      <polygon points="150,-6 82,120 218,120" fill="url(#sc-m-spot)" />
       <ellipse cx="150" cy="108" rx="146" ry="12" fill="#7ee0b0" opacity=".2" />
       <ellipse cx="150" cy="106" rx="120" ry="8" fill="#7ee0b0" opacity=".16" />
 
@@ -285,7 +302,7 @@ function Maturita(): ReactNode {
         <path d="M-17 28H17C17 50 8 58 0 58C-8 58 -17 50 -17 28Z" fill="url(#sc-m-gold)" />
         <ellipse cx="0" cy="28" rx="17" ry="3.6" fill="#ffeaa0" />
         <ellipse cx="0" cy="28.6" rx="13.6" ry="2.4" fill="#b87a0c" opacity=".55" />
-        <path d="M-12 33C-12 44 -8 51 -3 54" fill="none" stroke="#fff" strokeOpacity=".6" strokeWidth="2.2" strokeLinecap="round" className="pcard-shine" />
+        <path d="M-12 33C-12 44 -8 51 -3 54" fill="none" stroke="#fff" strokeOpacity=".6" strokeWidth="2.2" strokeLinecap="round" />
         <path d="M0 37.4l2.3 4.7 5.2.8-3.8 3.6.9 5.1-4.6-2.5-4.6 2.5.9-5.1-3.8-3.6 5.2-.8Z" fill="#fff" fillOpacity=".92" transform="translate(0 -2) scale(.9)" />
         <rect x="-3" y="57" width="6" height="12" fill="#c98a0e" />
         <ellipse cx="0" cy="63" rx="5.6" ry="2.6" fill="url(#sc-m-gold)" />
@@ -299,9 +316,16 @@ function Maturita(): ReactNode {
 }
 
 export function PcardScene({ slug }: { slug: string }) {
+  const id = `rough-${slug}`;
+  const seed = slug === "stredni" ? 7 : slug === "prijimacky" ? 3 : slug === "maturita" ? 11 : 5;
   return (
     <svg className="pcard-scene" viewBox="0 0 300 120" preserveAspectRatio="xMidYMax meet" aria-hidden focusable="false">
-      {slug === "stredni" ? <Stredni /> : slug === "prijimacky" ? <Prijimacky /> : slug === "maturita" ? <Maturita /> : <Zakladni />}
+      <defs>
+        <Rough id={id} seed={seed} />
+      </defs>
+      <g filter={`url(#${id})`}>
+        {slug === "stredni" ? <Stredni /> : slug === "prijimacky" ? <Prijimacky /> : slug === "maturita" ? <Maturita /> : <Zakladni />}
+      </g>
     </svg>
   );
 }

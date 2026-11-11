@@ -204,8 +204,6 @@ export default async function Home({
                   <h3 className="pcard-title">{dict.categories[cat.slug].label}</h3>
                   <p className="pcard-text">{dict.categories[cat.slug].description}</p>
                   <span className="pcard-go" aria-hidden>→</span>
-                  <span className="pcard-foil" aria-hidden />
-                  <span className="pcard-glare" aria-hidden />
                 </span>
                 <PcardTape />
               </TearCard>
