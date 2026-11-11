@@ -26,7 +26,11 @@ export function FaqItem({ q, a }: { q: string; a: string }) {
   const run = (d: HTMLDetailsElement, from: number, to: number, open: boolean) => {
     d.style.overflow = "hidden";
     d.style.height = `${from}px`;
-    anim.current = d.animate({ height: [`${from}px`, `${to}px`] }, { duration: 420, easing: "cubic-bezier(0.22, 1, 0.36, 1)" });
+    // otevření má mírný přelet (pružina), zavření je klidné
+    anim.current = d.animate(
+      { height: [`${from}px`, `${to}px`] },
+      { duration: open ? 560 : 360, easing: open ? "cubic-bezier(0.34, 1.3, 0.64, 1)" : "cubic-bezier(0.22, 1, 0.36, 1)" },
+    );
     fade.current = body.current?.animate(
       open
         ? [{ opacity: 0, transform: "translateY(-6px)" }, { opacity: 1, transform: "none" }]
