@@ -151,11 +151,24 @@ export function HangTags({ tags }: { tags: string[] }) {
             <feComposite in2="o" operator="in" result="ink" />
             <feMerge><feMergeNode in="ink" /><feMergeNode in="d" /></feMerge>
           </filter>
+          {/* propletený provaz: dva prameny se střídavě překrývají; vzor se opakuje po šesti pixelech */}
+          <pattern id="hang-rope" width="8" height="6" patternUnits="userSpaceOnUse">
+            {[-6, 0, 6].map((o) => (
+              <g key={o} transform={`translate(0 ${o})`} strokeLinecap="round" fill="none">
+                <path d="M-2 10L10 2" stroke="#14132a" strokeWidth="4.6" />
+                <path d="M-2 7L10 -1" stroke="#14132a" strokeWidth="4.6" />
+                <path d="M-2 10L10 2" stroke="#a37a45" strokeWidth="3" />
+                <path d="M-2 7L10 -1" stroke="#dcb77c" strokeWidth="3" />
+                <path d="M-2 6.3L10 -1.7" stroke="#f6e4bb" strokeWidth="0.9" opacity=".85" />
+              </g>
+            ))}
+          </pattern>
         </defs>
       </svg>
       {tags.map((tag, i) => (
         <div key={tag} className={`hang-str hang-str-${i + 1}`} style={{ ["--tc" as string]: HANG_COLORS[i % HANG_COLORS.length] }}>
           <div className="hang-sway">
+            <svg className="hang-rope" width="8" height="100%" aria-hidden focusable="false"><rect width="8" height="100%" fill="url(#hang-rope)" /></svg>
             <span className="hang-tag" onPointerDown={down(i)} onPointerMove={move(i)} onPointerUp={up(i)} onPointerCancel={up(i)}>
               <TagCard text={tag} kind={TAG_ICONS[i % TAG_ICONS.length]} />
             </span>
