@@ -143,6 +143,15 @@ def mat(name, color, metal=0.0, rough=0.5, trans=0.0, ior=1.45, emit=None, emit_
     return m
 
 
+def apply_scale(o):
+    """Zapeče jen měřítko tohoto objektu (dřív se zapékala poloha a natočení i všech dřívějších objektů)."""
+    bpy.ops.object.select_all(action="DESELECT")
+    bpy.context.view_layer.objects.active = o
+    o.select_set(True)
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    o.select_set(False)
+
+
 def finish(obj, m, smooth=True, bevel=0.0, subsurf=0):
     obj.data.materials.clear()
     obj.data.materials.append(m)
@@ -166,7 +175,7 @@ def cube(size=(1, 1, 1), loc=(0, 0, 0), m=None, bevel=0.03):
     bpy.ops.mesh.primitive_cube_add(location=loc)
     o = bpy.context.active_object
     o.scale = (size[0] / 2, size[1] / 2, size[2] / 2)
-    bpy.ops.object.transform_apply(scale=True)
+    apply_scale(o)
     return finish(o, m, smooth=False, bevel=bevel)
 
 
@@ -174,7 +183,7 @@ def sphere(r=0.5, loc=(0, 0, 0), scale=(1, 1, 1), m=None, seg=48):
     bpy.ops.mesh.primitive_uv_sphere_add(radius=r, location=loc, segments=seg, ring_count=seg // 2)
     o = bpy.context.active_object
     o.scale = scale
-    bpy.ops.object.transform_apply(scale=True)
+    apply_scale(o)
     return finish(o, m)
 
 
@@ -196,7 +205,7 @@ def displaced(r, loc, m, strength=0.15, scale=2.0, seed=1, flat=(1, 1, 1), sub=5
     bpy.ops.mesh.primitive_ico_sphere_add(radius=r, location=loc, subdivisions=sub)
     o = bpy.context.active_object
     o.scale = flat
-    bpy.ops.object.transform_apply(scale=True)
+    apply_scale(o)
     tex = bpy.data.textures.new(f"t{seed}", "CLOUDS")
     tex.noise_scale = 1.0 / scale
     tex.noise_depth = 3
