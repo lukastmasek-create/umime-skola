@@ -7,10 +7,12 @@ import { useReveal } from "./useReveal";
 // Vjezd běží na <li>, hover na vnitřní kartě, aby se transformace nepralaly.
 export default function LiveCardItem({
   index,
+  accent,
   className = "",
   children,
 }: {
   index: number;
+  accent?: string;
   className?: string;
   children: ReactNode;
 }) {
@@ -24,7 +26,11 @@ export default function LiveCardItem({
 
   return (
     <li ref={ref} className={`gc-item${shown ? " is-in" : ""}`} style={{ ["--i" as string]: index % 6 }}>
-      <div className={`gcard gcard-live gcard-hover ${className}`} onPointerMove={onMove}>
+      <div
+        className={`gcard gcard-live gcard-hover ${className}`}
+        style={accent ? { ["--ga" as string]: accent } : undefined}
+        onPointerMove={onMove}
+      >
         <span className="gcard-glow" aria-hidden="true" />
         {children}
       </div>
