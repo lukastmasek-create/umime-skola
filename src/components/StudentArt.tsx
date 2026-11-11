@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { FeatureKey } from "@/i18n/audience";
-import { A, F, HI, INK, PAPER, S, SH, SOFT, Ground, Person, Pop, Sparkle } from "./artKit";
+import { ArtRough, A, F, HI, INK, PAPER, S, SH, SOFT, Ground, Person, Pop, Sparkle } from "./artKit";
 
 // SVG ilustrace do hlavičky karet pro žáky. Barvy se berou z karty (--ga).
 
@@ -363,9 +363,13 @@ export default function StudentArt({ kind }: { kind: FeatureKey }) {
       aria-hidden="true"
       focusable="false"
     >
-      <circle className="sv-halo" cx="150" cy="80" r="76" fill={A} opacity="0.14" />
-      <circle cx="150" cy="80" r="94" fill="none" stroke={SOFT} strokeWidth="1" strokeDasharray="1 7" strokeLinecap="round" opacity="0.5" />
-      {SCENES[kind]()}
+      <defs>
+        <ArtRough />
+      </defs>
+      <g filter="url(#sv-rough)">
+        <circle className="sv-halo" cx="150" cy="80" r="70" fill={A} opacity="0.22" />
+        {SCENES[kind]()}
+      </g>
     </svg>
   );
 }

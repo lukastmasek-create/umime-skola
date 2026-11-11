@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { A, F, HI, INK, PAPER, S, SH, SOFT, Ground, Person, Pop, Sparkle } from "./artKit";
+import { ArtRough, A, F, HI, INK, PAPER, S, SH, SOFT, Ground, Person, Pop, Sparkle } from "./artKit";
 
 // SVG ilustrace do karet na stránce pro učitele. Barvy se berou z karty (--ga).
 export type TeacherArtKind =
@@ -302,9 +302,13 @@ const SCENES: Record<TeacherArtKind, () => ReactNode> = {
 export default function TeacherArt({ kind }: { kind: TeacherArtKind }) {
   return (
     <svg viewBox="0 0 300 160" preserveAspectRatio="xMidYMid meet" className="gcard-art" aria-hidden="true" focusable="false">
-      <circle className="sv-halo" cx="150" cy="80" r="76" fill={A} opacity="0.14" />
-      <circle cx="150" cy="80" r="94" fill="none" stroke={SOFT} strokeWidth="1" strokeDasharray="1 7" strokeLinecap="round" opacity="0.5" />
-      {SCENES[kind]()}
+      <defs>
+        <ArtRough />
+      </defs>
+      <g filter="url(#sv-rough)">
+        <circle className="sv-halo" cx="150" cy="80" r="70" fill={A} opacity="0.22" />
+        {SCENES[kind]()}
+      </g>
     </svg>
   );
 }
