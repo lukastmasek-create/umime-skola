@@ -51,7 +51,7 @@ export function AssignmentPage({ locale, teamId, assignmentId }: { locale: Local
     void load();
   }, [load]);
 
-  const back = <Link href={`/${locale}/tymy/${teamId}`} className="text-sm font-bold text-[var(--brand-600)]">{t.backTeam}</Link>;
+  const back = <Link href={`/${locale}/tymy/${teamId}`} className="inline-flex items-center gap-1 text-sm font-bold text-[var(--brand-600)]"><Glyph name="arrowLeft" />{t.backTeam}</Link>;
   if (error) return <div className="card p-6">{back}<p className="mt-2 text-[var(--muted)]">{error}</p></div>;
   if (!data || !team) return <div className="card h-48 animate-pulse bg-[var(--surface-muted)]" aria-hidden />;
   const a = data.assignment;
@@ -381,7 +381,7 @@ function Runner({ t, locale, data, url, onDone }: { t: TeamsAll; locale: Locale;
   if (result) {
     return (
       <section className="card flex flex-col gap-3 p-5">
-        <h2 className={`rounded-2xl p-4 text-2xl font-extrabold ${result.passed ? "bg-[var(--accent-green)] text-[#0d1f14]" : "bg-[var(--accent-yellow)] text-[#16132b]"}`}>{tfill(t.resultLine, result.correct, result.total, result.percent, result.passed ? t.passed : t.notPassed)}</h2>
+        <h2 className={`rounded-2xl p-4 text-2xl font-extrabold ${result.passed ? "bg-[var(--accent-green)] text-[#0d1f14]" : "bg-[var(--accent-yellow)] text-[#16132b]"}`}>{tfill(t.resultLine, result.correct, result.total, result.percent, result.passed ? t.passed : t.notPassed)}{result.passed && <> <Glyph name="party" className="size-[1em]" /></>}</h2>
         <Progress value={result.correct} max={result.total} color={result.passed ? "var(--accent-green)" : "var(--accent-yellow)"} />
         <ol className="flex flex-col gap-2">
           {data.questions.map((q) => {

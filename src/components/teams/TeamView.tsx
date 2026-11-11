@@ -1,5 +1,6 @@
 "use client";
 
+import { Glyph } from "./Glyph";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -90,7 +91,7 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
     return (
       <div className="card p-6">
         <p className="mb-3 text-[var(--muted)]">{error || t.e_team}</p>
-        <Link href={`/${locale}/tymy`} className="font-bold text-[var(--brand-600)]">{t.backTeams}</Link>
+        <Link href={`/${locale}/tymy`} className="inline-flex items-center gap-1 font-bold text-[var(--brand-600)]"><Glyph name="arrowLeft" />{t.backTeams}</Link>
       </div>
     );
 
@@ -129,7 +130,7 @@ export function TeamView({ locale, teamId }: { locale: Locale; teamId: string })
   return (
     <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start lg:gap-6">
       <aside className="flex flex-col gap-4 lg:sticky lg:top-24">
-      <Link href={`/${locale}/tymy`} className="text-sm font-bold text-[var(--brand-600)]">{t.backTeams}</Link>
+      <Link href={`/${locale}/tymy`} className="inline-flex items-center gap-1 text-sm font-bold text-[var(--brand-600)]"><Glyph name="arrowLeft" />{t.backTeams}</Link>
       <EdxSidebar
         label={team.name}
         value={tab}
