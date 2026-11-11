@@ -1,11 +1,11 @@
-import { ECO_EMOJI } from "./eco-icon-list";
+import { ECO_BARE, ECO_ICON_SVG } from "./eco-icon-data";
 
 /**
  * Ikony her (Ekonomika, Město, Farma, Základna, Mazlíčci, Výzvy).
  *
- * Kreslí je Fluent Emoji (Color) od Microsoftu, licence MIT, viz
- * public/icons/eco/LICENSE.txt. Každá ikona je samostatný soubor v
- * public/icons/eco, takže se stáhne až ve chvíli, kdy se někde zobrazí.
+ * Vlastní sada: barevná dlaždice s přechodem a bílý duotónový symbol. Symboly jsou
+ * z Lucide (ISC), chybějící (zvířata, plodiny) jsou nakreslené ve stejném stylu.
+ * Data generuje tools/eco-icons/gen.py; tam se ikony i barvy upravují.
  *
  * Klíčem je původní emoji znak (bez variačního selektoru U+FE0F), takže
  * `<Ico e="🍎" />` i `<EmojiText>` fungují nad stávajícími daty a překlady.
@@ -13,57 +13,49 @@ import { ECO_EMOJI } from "./eco-icon-list";
  */
 
 const norm = (e: string) => e.replace(/️/g, "");
-const KNOWN = new Set(ECO_EMOJI);
-
-/** Název souboru: kódové body znaku oddělené pomlčkou. */
-const codeOf = (e: string) =>
-  Array.from(norm(e))
-    .map((ch) => ch.codePointAt(0)!.toString(16))
-    .join("-");
-
-/** Adresa souboru s ikonou, nebo null, když pro znak žádná není. */
-export function iconUrl(e: string): string | null {
-  return KNOWN.has(norm(e)) ? `/icons/eco/${codeOf(e)}.svg` : null;
-}
+const KEYS = Object.keys(ECO_ICON_SVG);
+const BARE = new Set(ECO_BARE);
 
 export function hasIcon(e: string): boolean {
-  return KNOWN.has(norm(e));
+  return norm(e) in ECO_ICON_SVG;
+}
+
+/** Celé SVG ikony jako řetězec (pro canvas a další místa mimo React). */
+export function iconSvg(e: string, size = 96): string | null {
+  const inner = ECO_ICON_SVG[norm(e)];
+  if (!inner) return null;
+  const color = BARE.has(norm(e)) ? ' color="#1e1b4b"' : "";
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${size}" height="${size}"${color}>${inner}</svg>`;
 }
 
 /**
  * Jedna ikona. Se `x`/`y` se kreslí uvnitř jiného `<svg>` (např. v obrázku mazlíčka),
- * jinak jako běžný řádkový obrázek, který sedí na účaří textu.
+ * jinak jako řádkový obrázek, který sedí na účaří textu.
  */
-export function Ico({ e, size = "1.2em", className = "", x, y }: { e: string; size?: number | string; className?: string; x?: number; y?: number }) {
-  const url = iconUrl(e);
-  if (!url) return <span aria-hidden>{e}</span>;
+export function Ico({ e, size = "1.25em", className = "", x, y }: { e: string; size?: number | string; className?: string; x?: number; y?: number }) {
+  const inner = ECO_ICON_SVG[norm(e)];
+  if (!inner) return <span aria-hidden>{e}</span>;
   if (x !== undefined && y !== undefined) {
-    return <image href={url} x={x} y={y} width={size} height={size} aria-hidden="true" />;
+    return <svg x={x} y={y} width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" dangerouslySetInnerHTML={{ __html: inner }} />;
   }
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={url}
-      alt=""
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
       aria-hidden="true"
-      draggable={false}
-      loading="lazy"
-      decoding="async"
-      width={typeof size === "number" ? size : undefined}
-      style={{ width: size, height: size }}
-      className={`eco-ico inline-block shrink-0 align-[-0.25em] ${className}`}
+      focusable="false"
+      className={`eco-ico inline-block shrink-0 align-[-0.3em] ${className}`}
+      dangerouslySetInnerHTML={{ __html: inner }}
     />
   );
 }
 
 // Pro texty z překladů: nahradí v řetězci všechny známé emoji ikonami.
 const SPLIT = new RegExp(
-  `(${[...ECO_EMOJI]
+  `(${[...KEYS]
     .sort((a, b) => b.length - a.length)
-    .map((k) => {
-      const [first, ...rest] = Array.from(k);
-      return [first, ...rest].map((ch) => ch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("\\uFE0F?");
-    })
+    .map((k) => Array.from(k).map((ch) => ch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("\\uFE0F?"))
     .join("|")})\\uFE0F?`,
   "u",
 );
@@ -78,4 +70,4 @@ export function EmojiText({ text }: { text: string }) {
 }
 
 /** Seznam všech znaků s ikonou (pro náhledy a testy). */
-export const ALL: string[] = ECO_EMOJI;
+export const ALL: string[] = KEYS;
