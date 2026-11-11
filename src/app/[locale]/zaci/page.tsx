@@ -38,6 +38,15 @@ const COVER: Record<FeatureKey, { color: string; height: number }> = {
   team: { color: "var(--cat-1)", height: 156 },
 };
 
+const BENTO = ["#ffd24d", "#ff8a6b", "#7cc4ff", "#6ee7b7", "#c4b5fd"];
+
+// Ozdobné sloupečky v kartě (stejné při každém renderu, odvozené z klíče)
+function barHeights(key: string): number[] {
+  let seed = 0;
+  for (const ch of key) seed = (seed * 31 + ch.charCodeAt(0)) % 9973;
+  return Array.from({ length: 7 }, (_, n) => 28 + ((seed * (n + 3) * 17) % 62));
+}
+
 export default async function StudentsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
@@ -71,37 +80,30 @@ export default async function StudentsPage({ params }: { params: Promise<{ local
 
         {/* Masonry: karty se skládají do sloupců a mají různé výšky */}
         <ul className="mb-14 columns-1 gap-6 sm:columns-2 lg:columns-3">
-          {FEATURE_KEYS.map((key) => {
+          {FEATURE_KEYS.filter((key) => key !== "town").map((key, idx) => {
             const feature = t.features[key];
             const cover = COVER[key];
             return (
               <li key={key} className="mb-6 break-inside-avoid">
                 <Link
                   href={`/${locale}${FEATURE_PATH[key]}`}
-                  className="group block overflow-hidden rounded-[22px] bg-[var(--surface)] shadow-[0_12px_32px_-14px_rgba(22,19,43,0.45)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_20px_40px_-14px_rgba(22,19,43,0.55)]"
+                  className="gcard group block"
+                  style={{ ["--gc" as string]: BENTO[idx % BENTO.length] }}
+                  
                 >
-                  <div
-                    className="relative w-full overflow-hidden"
-                    style={{
-                      height: cover.height,
-                      background: `linear-gradient(135deg, ${cover.color}, var(--brand-500))`,
-                    }}
-                    aria-hidden="true"
-                  >
-                    <span className="absolute -right-6 -top-6 h-28 w-28 rounded-full bg-white/15" />
-                    <span className="absolute -bottom-10 left-6 h-24 w-24 rounded-full bg-white/10" />
+                  <div className="gcard-bars px-5 pt-5" style={{ height: cover.height }} aria-hidden="true">
+                    {barHeights(key).map((h, n, arr) => (
+                      <i key={n} className={n === arr.length - 1 - (key.length % 3) ? "is-hi" : ""} style={{ height: `${h}%` }} />
+                    ))}
                   </div>
-                  <div className="flex flex-col gap-2 p-5">
-                    <h3 className="text-lg font-bold leading-snug" style={heading}>
-                      {feature.title}
-                    </h3>
-                    <p className="text-sm leading-relaxed text-[var(--muted)]">{feature.text}</p>
-                    <span
-                      aria-hidden="true"
-                      className="mt-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-50)] text-[var(--brand-600)] transition group-hover:translate-x-1"
-                    >
-                      →
-                    </span>
+                  <div className="flex items-end justify-between gap-3 p-5">
+                    <div className="flex flex-col gap-2">
+                      <h3 className="gcard-title text-lg leading-snug" style={heading}>
+                        {feature.title}
+                      </h3>
+                      <p className="text-sm leading-relaxed text-[var(--muted)]">{feature.text}</p>
+                    </div>
+                    <span aria-hidden="true" className="gcard-chip">→</span>
                   </div>
                 </Link>
               </li>

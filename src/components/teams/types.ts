@@ -17,3 +17,7 @@ export const field = "rounded-xl border-2 border-[var(--field-border)] bg-[var(-
 export const primaryBtn = "btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white disabled:opacity-60";
 export const linkBtn = "text-xs font-bold text-[var(--brand-600)]";
 export const dangerBtn = "text-xs font-bold text-[var(--danger)]";
+
+export type TeamRow = { id: string; name: string; role: string; code: string | null; members: number; assignments: number; done: number; open: number; soon: number; overdue: number };
+export type Urgent = { teamId: string; teamName: string; assignmentId: string; title: string; dueAt: string; overdue: boolean };
+export type Deadline = { teamId: string; teamName: string; assignmentId: string; title: string; dueAt: string; done: boolean };

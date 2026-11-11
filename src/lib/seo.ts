@@ -61,7 +61,6 @@ const STATIC_PAGES = {
   "/trziste": (l) => ({ title: getPlayerMarketText(l).title }),
   "/uzivatelsky-obchod": (l) => ({ title: getCommunityText(l).navMarketplace }),
   "/pokoj": (l) => ({ title: getRoomText(l).nav }),
-  "/mestecko": (l) => ({ title: getTownHubText(l).nav }),
   "/ucitele": (l) => ({ title: getAudiencePagesText(l).teachers.nav, description: getAudiencePagesText(l).teachers.subtitle }),
   "/zaci": (l) => ({ title: getAudiencePagesText(l).students.nav, description: getAudiencePagesText(l).students.subtitle }),
 } satisfies Record<string, PageInfo>;

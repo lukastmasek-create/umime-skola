@@ -761,13 +761,13 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
   const stageHidden = fallback ? "hidden" : "";
 
   return (
-    <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+    <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,0.9fr)]">
       <div
         ref={stage}
         role="group"
         aria-label={t.label}
         tabIndex={0}
-        className="relative mx-auto aspect-square w-full max-w-[600px] cursor-grab touch-pan-y select-none rounded-3xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/70 active:cursor-grabbing"
+        className="relative mx-auto aspect-square w-full max-w-[900px] cursor-grab touch-pan-y select-none rounded-3xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-white/70 active:cursor-grabbing"
         onPointerLeave={() => pin(null)}
       >
         {fallback ? (

@@ -3,14 +3,15 @@ import { CATEGORIES, SUBJECTS } from "@/lib/taxonomy";
 import { HomeProgress } from "@/components/HomeProgress";
 import { DailyQuizTeaser } from "@/components/DailyQuizTeaser";
 import { TeacherCta } from "@/components/TeacherCta";
-import { ALIEN_ROW, Circuit, HomeArt, SpriteFrame, Wave } from "@/components/SpaceDecor";
+import { ALIEN_ROW, HomeArt, SpriteFrame, Wave } from "@/components/SpaceDecor";
 import { LazyPlanet, LazySubjectGlobe, LazyTownLife } from "@/components/HomeLazy";
 import { GlobeSky } from "@/components/GlobeSky";
-import { IslandHub } from "@/components/IslandHub";
 import { HeroSky } from "@/components/HeroSky";
+import { HeroTitle } from "@/components/HeroTitle";
 import { ExpandCard } from "@/components/ExpandCard";
 import { HomeLobby } from "@/components/HomeLobby";
 import { getHomeLobbyText } from "@/i18n/home-lobby";
+import { ResultsPreview } from "@/components/ResultsPreview";
 import { HeroShowcase } from "@/components/HeroShowcase";
 import { getHomeHeroText } from "@/i18n/home-hero";
 import { getHomeText } from "@/i18n/home";
@@ -24,6 +25,8 @@ import type { Metadata } from "next";
 import { SITE_NAME, pageMetadata } from "@/lib/seo";
 
 const TILE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
+// Sekce „Jak to funguje“ je archivovaná (skrytá). Pro návrat stačí přepnout na true.
+const SHOW_HOW_IT_WORKS = false;
 const GALAXY_ICONS = ["sekce-zakladni", "sekce-stredni", "sekce-prijimacky", "sekce-maturita"];
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -46,12 +49,6 @@ export default async function Home({
   const audience = getAudiencePagesText(locale as Locale);
   const sample = [{ who: "A. K.", pct: 100 }, { who: "T. N.", pct: 100 }, { who: "E. P.", pct: 60 }, { who: "J. S.", pct: 20 }];
   const subjectText = getSubjectText(locale as Locale);
-  const featureLinks = {
-    courses: { href: `/${locale}/kurzy/zakladni`, icon: "funkce-kurzy", color: "#8fd0ff", kind: "book" },
-    games: { href: `/${locale}/stale-hry`, icon: "funkce-hry", color: "#c9b8ff", kind: "joystick" },
-    escape: { href: `/${locale}/unikovky`, icon: "funkce-unikovky", color: "#7ee0b0", kind: "door" },
-    boards: { href: `/${locale}/zebricky`, icon: "funkce-zebricky", color: "#ffc933", kind: "trophy" },
-  } as const satisfies Record<string, { href: string; icon: string; color: string; kind: string }>;
   const heading = { fontFamily: "var(--font-heading)" };
 
   return (
@@ -66,11 +63,10 @@ export default async function Home({
                 {badge}
               </span>
               <h1
-                className="hero-in text-4xl font-extrabold leading-[1.25] tracking-tight sm:text-5xl lg:text-6xl"
-                style={{ ...heading, ["--d" as string]: "0.18s" }}
+                className="hero-in neon-h1 text-4xl leading-[1.3] sm:text-5xl lg:text-[3.25rem]"
+                style={{ ["--d" as string]: "0.18s" }}
               >
-                {dict.home.titleLine1}{" "}
-                <span className="gradient-text">{dict.home.titleLine2}</span>
+                <HeroTitle line1={dict.home.titleLine1} line2={dict.home.titleLine2} />
               </h1>
               <p className="hero-in max-w-xl text-lg leading-relaxed text-[var(--muted)]" style={{ ["--d" as string]: "0.32s" }}>{dict.home.subtitle}</p>
               <div className="hero-in flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:gap-4" style={{ ["--d" as string]: "0.46s" }}>
@@ -94,7 +90,7 @@ export default async function Home({
             <div className="hero-in-right w-full">
               <HeroShowcase
                 t={getHomeHeroText(locale as Locale)}
-                subjects={SUBJECTS.map((sj) => ({ slug: sj.slug, emoji: sj.emoji, color: sj.color, label: subjectText.labels[sj.value] }))}
+                subjects={SUBJECTS.map((sj) => ({ slug: sj.slug, color: sj.color, label: subjectText.labels[sj.value] }))}
               />
             </div>
           </div>
@@ -117,7 +113,7 @@ export default async function Home({
       <section className="zone zone-space zone-globe">
         <Wave fill="#0c0a24" />
         <GlobeSky />
-        <div className="lobby-panel relative z-10">
+        <div className="lobby-panel lobby-panel-wide relative z-10">
           <div className="reveal mb-8 flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
@@ -146,46 +142,23 @@ export default async function Home({
         </div>
       </section>
 
-      {/* 3) Technika: co tu najdeš */}
-      <section className="zone zone-tech">
-        <Wave fill="#0c0a24" />
-        <Circuit className="right-0 top-20 hidden h-44 w-80 lg:block" />
-        <Circuit className="bottom-6 left-0 hidden h-44 w-80 lg:block" flip />
-        <div className="lobby-panel relative z-10">
-          <h2 className="reveal mb-2 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
-            {h.featuresTitle}
-          </h2>
-          <p className="mb-10 font-mono text-xs uppercase tracking-[0.3em] text-[#35d0ff]/80">
-            <span className="tech-blink">●</span> 01 — 0{h.features.length}
-          </p>
-          <IslandHub
-            features={h.features.map((feature) => ({
-              key: feature.key,
-              title: feature.title,
-              text: feature.text,
-              cta: feature.cta,
-              href: featureLinks[feature.key].href,
-              color: featureLinks[feature.key].color,
-            }))}
-          />
-        </div>
-      </section>
-
       {/* 4) Hory: jak to funguje */}
-      <section className="zone zone-peak">
-        <Wave fill="#071427" />
-        <div className="relative z-10 pb-16 pt-16 sm:pb-32 sm:pt-24">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6">
-            <h2 className="reveal mb-6 text-2xl font-bold tracking-tight sm:mb-8 sm:text-3xl" style={heading}>
-              {h.stepsTitle}
-            </h2>
+      {SHOW_HOW_IT_WORKS && (
+        <section className="zone zone-peak">
+          <Wave fill="#071427" />
+          <div className="relative z-10 pb-16 pt-16 sm:pb-32 sm:pt-24">
+            <div className="mx-auto max-w-6xl px-4 sm:px-6">
+              <h2 className="reveal mb-6 text-2xl font-bold tracking-tight sm:mb-8 sm:text-3xl" style={heading}>
+                {h.stepsTitle}
+              </h2>
+            </div>
+            {/* scéna jde přes celou sekci (až 1680 px), na telefonu od kraje ke kraji */}
+            <div className="mx-auto w-full max-w-[1680px] px-2 sm:px-4 lg:px-6">
+              <LazyTownLife steps={h.steps} locale={locale} />
+            </div>
           </div>
-          {/* scéna jde přes celou sekci (až 1680 px), na telefonu od kraje ke kraji */}
-          <div className="mx-auto w-full max-w-[1680px] px-2 sm:px-4 lg:px-6">
-            <LazyTownLife steps={h.steps} locale={locale} />
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* 5) Zpět do vesmíru: kategorie */}
       <section className="zone zone-space">
@@ -210,20 +183,19 @@ export default async function Home({
                 <Link
                   key={cat.slug}
                   href={`/${locale}/kurzy/${cat.slug}`}
-                  className="reveal card card-hover relative flex min-h-36 flex-col justify-between gap-4 sm:min-h-44 sm:gap-6 overflow-hidden p-5 text-white"
-                  style={{
-                    background: `radial-gradient(circle at 85% 12%, ${color}66, transparent 55%), linear-gradient(160deg, #1d1848, #0d0a26)`,
-                    borderColor: color,
-                    ["--glow" as string]: `${color}55`,
-                  }}
+                  className="reveal gcard relative flex min-h-36 flex-col justify-between gap-4 p-5 sm:min-h-44 sm:gap-6"
+                  style={{ ["--gc" as string]: color }}
                 >
                   <HomeArt name={GALAXY_ICONS[i % GALAXY_ICONS.length]} size={128} className="absolute -right-4 -top-5 opacity-95" />
-                  <span className="text-4xl font-extrabold leading-none" style={{ ...heading, color }}>
+                  <span className="gcard-num text-6xl" style={heading}>
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <div>
-                    <h3 className="mb-1 text-lg font-bold">{dict.categories[cat.slug].label}</h3>
-                    <p className="text-sm text-white/75">{dict.categories[cat.slug].description}</p>
+                  <div className="flex items-end justify-between gap-3">
+                    <div>
+                      <h3 className="gcard-title mb-1 text-lg">{dict.categories[cat.slug].label}</h3>
+                      <p className="text-sm text-[var(--muted)]">{dict.categories[cat.slug].description}</p>
+                    </div>
+                    <span aria-hidden className="gcard-chip">→</span>
                   </div>
                 </Link>
               );
@@ -243,10 +215,10 @@ export default async function Home({
                 {a.teachers.title}
               </h2>
               <p className="reveal mb-8 max-w-xl text-lg leading-relaxed text-[var(--muted)]">{a.teachers.lead}</p>
-              <ul className="grid gap-4 sm:grid-cols-2">
+              <ul className="gcard-cycle grid gap-4 sm:grid-cols-2">
                 {a.teachers.points.map((point) => (
-                  <li key={point.title} className="reveal card p-4">
-                    <h3 className="mb-1 font-bold">{point.title}</h3>
+                  <li key={point.title} className="reveal gcard gcard-hover p-4">
+                    <h3 className="gcard-title mb-1">{point.title}</h3>
                     <p className="text-sm leading-relaxed text-[var(--muted)]">{point.text}</p>
                   </li>
                 ))}
@@ -262,32 +234,14 @@ export default async function Home({
               </div>
             </div>
             {/* Ilustrační ukázka přehledu výsledků (není to živá data) */}
-            <div aria-hidden className="reveal card p-5">
-              <div className="mb-4 flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-bold" style={heading}>{a.teachers.previewTitle}</p>
-                  <p className="text-xs text-[var(--muted)]">{a.teachers.previewDue}</p>
-                </div>
-                <span className="rounded-md border-2 border-[var(--edge)] px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-[var(--muted)]">
-                  {a.teachers.previewSample}
-                </span>
-              </div>
-              <ul className="space-y-3">
-                {sample.map((row) => (
-                  <li key={row.who} className="flex items-center gap-3">
-                    <span className="w-10 shrink-0 text-sm font-semibold">{row.who}</span>
-                    <span className="h-3 flex-1 overflow-hidden rounded-full bg-[var(--surface-muted)]">
-                      <span
-                        className="block h-full rounded-full"
-                        style={{ width: `${row.pct}%`, background: row.pct === 100 ? "var(--accent-green)" : "#ffc933" }}
-                      />
-                    </span>
-                    <span className="w-9 shrink-0 text-right text-xs font-bold text-[var(--muted)]">{row.pct} %</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-4 text-xs text-[var(--muted)]">2 / 4 {a.teachers.previewDone}</p>
-            </div>
+            <ResultsPreview
+              className="reveal"
+              title={a.teachers.previewTitle}
+              due={a.teachers.previewDue}
+              badge={a.teachers.previewSample}
+              doneLabel={a.teachers.previewDone}
+              rows={sample}
+            />
           </div>
         </div>
       </section>

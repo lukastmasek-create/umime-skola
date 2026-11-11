@@ -12,7 +12,7 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/tymy/[id]/prehl
     const userId = await requireUserId();
     await requireMember(id, userId, true);
     const [members, groups, assignments] = await Promise.all([
-      prisma.teamMember.findMany({ where: { teamId: id, role: "STUDENT", status: "ACTIVE" }, include: { user: { select: { name: true, email: true } } }, orderBy: { joinedAt: "asc" } }),
+      prisma.teamMember.findMany({ where: { teamId: id, role: "STUDENT", status: "ACTIVE" }, include: { user: { select: { name: true, email: true, points: true } } }, orderBy: { joinedAt: "asc" } }),
       prisma.teamGroup.findMany({ where: { teamId: id }, orderBy: { createdAt: "asc" }, select: { id: true, name: true } }),
       prisma.assignment.findMany({
         where: { teamId: id },
@@ -42,7 +42,7 @@ export async function GET(_req: Request, ctx: RouteContext<"/api/tymy/[id]/prehl
       cells[a.id] = row;
     }
     return {
-      students: members.map((s) => ({ id: s.userId, name: s.user.name || s.user.email || null, groupId: s.groupId })),
+      students: members.map((s) => ({ id: s.userId, name: s.user.name || s.user.email || null, groupId: s.groupId, points: s.user.points })),
       groups,
       assignments: assignments.map((a) => ({ id: a.id, title: a.title, passPercent: a.passPercent, dueAt: a.dueAt })),
       cells,
