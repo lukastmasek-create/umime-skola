@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { FEATURE_KEYS, getAudiencePagesText, type FeatureKey } from "@/i18n/audience";
 import { isLocale, type Locale } from "@/i18n/config";
 import { staticPageMetadata } from "@/lib/seo";
+import StudentFeatureCard from "@/components/StudentFeatureCard";
 
 export const generateMetadata = staticPageMetadata("/zaci");
 
@@ -78,35 +79,28 @@ export default async function StudentsPage({ params }: { params: Promise<{ local
           {t.cardsTitle}
         </h2>
 
+        <noscript>
+          <style>{".gc-item{opacity:1!important;transform:none!important}.gc-item .gcard-bars i{transform:none!important}"}</style>
+        </noscript>
+
         {/* Masonry: karty se skládají do sloupců a mají různé výšky */}
         <ul className="mb-14 columns-1 gap-6 sm:columns-2 lg:columns-3">
           {FEATURE_KEYS.filter((key) => key !== "town").map((key, idx) => {
             const feature = t.features[key];
             const cover = COVER[key];
+            const bars = barHeights(key);
             return (
-              <li key={key} className="mb-6 break-inside-avoid">
-                <Link
-                  href={`/${locale}${FEATURE_PATH[key]}`}
-                  className="gcard group block"
-                  style={{ ["--gc" as string]: BENTO[idx % BENTO.length] }}
-                  
-                >
-                  <div className="gcard-bars px-5 pt-5" style={{ height: cover.height }} aria-hidden="true">
-                    {barHeights(key).map((h, n, arr) => (
-                      <i key={n} className={n === arr.length - 1 - (key.length % 3) ? "is-hi" : ""} style={{ height: `${h}%` }} />
-                    ))}
-                  </div>
-                  <div className="flex items-end justify-between gap-3 p-5">
-                    <div className="flex flex-col gap-2">
-                      <h3 className="gcard-title text-lg leading-snug" style={heading}>
-                        {feature.title}
-                      </h3>
-                      <p className="text-sm leading-relaxed text-[var(--muted)]">{feature.text}</p>
-                    </div>
-                    <span aria-hidden="true" className="gcard-chip">→</span>
-                  </div>
-                </Link>
-              </li>
+              <StudentFeatureCard
+                key={key}
+                href={`/${locale}${FEATURE_PATH[key]}`}
+                title={feature.title}
+                text={feature.text}
+                accent={BENTO[idx % BENTO.length]}
+                coverHeight={cover.height}
+                bars={bars}
+                hiBar={bars.length - 1 - (key.length % 3)}
+                index={idx}
+              />
             );
           })}
         </ul>
