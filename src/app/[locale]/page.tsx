@@ -9,13 +9,12 @@ import { LazyPlanet, LazySubjectGlobe, LazyTownLife } from "@/components/HomeLaz
 import { GlobeSky } from "@/components/GlobeSky";
 import { HeroSky } from "@/components/HeroSky";
 import { HeroTitle } from "@/components/HeroTitle";
-import { ExpandCard } from "@/components/ExpandCard";
 import { TearCard } from "@/components/TearCard";
 import { PcardArt, PcardRing, PcardTape } from "@/components/PcardArt";
 import { HangTags } from "@/components/HangTags";
 import { HangFeed } from "@/components/HangFeed";
 import { HangPanel } from "@/components/HangPanel";
-import { HangBadge, HangGround, HangSparks } from "@/components/HangDecor";
+import { HangBadge, HangGround, HangIcon, HangSparks } from "@/components/HangDecor";
 import { HomeLobby } from "@/components/HomeLobby";
 import { getHomeLobbyText } from "@/i18n/home-lobby";
 import { ResultsPreview } from "@/components/ResultsPreview";
@@ -265,48 +264,60 @@ export default async function Home({
       <section id="o-nas" className="zone zone-tech scroll-mt-24">
         <Wave fill="#071427" />
         <div className="lobby-panel relative z-10">
-          <h2 className="reveal mb-4 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
-            {h.about.title}
-          </h2>
-          <p className="reveal mb-10 max-w-3xl text-lg leading-relaxed text-[var(--muted)]">{h.about.lead}</p>
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className="about-top">
+            <div className="reveal">
+              <h2 className="about-title" style={heading}>{h.about.title}</h2>
+              <p className="about-lead">{h.about.lead}</p>
+            </div>
+            <aside className="about-note reveal" style={{ ["--ac" as string]: TILE_COLORS[0] }}>
+              <PcardTape />
+              <span className="about-note-ic"><HangIcon kind="flag" size={22} /></span>
+              <h3 style={heading}>{h.about.why.title}</h3>
+              <p>{h.about.why.text}</p>
+            </aside>
+          </div>
+
+          <ol className="about-points">
             {h.about.points.map((point, i) => (
-              <ExpandCard
-                key={point.title}
-                className="reveal"
-                index={String(i + 1).padStart(2, "0")}
-                title={point.title}
-                lead={point.text}
-                color={TILE_COLORS[i % TILE_COLORS.length]}
-              />
+              <li key={point.title} className="about-point reveal" style={{ ["--ac" as string]: TILE_COLORS[i % TILE_COLORS.length] }}>
+                <span className="about-num" aria-hidden>{String(i + 1).padStart(2, "0")}</span>
+                <span className="about-pic"><HangIcon kind={(["bulb", "bolt", "star"] as const)[i % 3]} size={22} /></span>
+                <h3 style={heading}>{point.title}</h3>
+                <p>{point.text}</p>
+              </li>
             ))}
+          </ol>
+
+          <div className="about-problem reveal" style={{ ["--ac" as string]: TILE_COLORS[2] }}>
+            <span className="about-pic"><HangIcon kind="search" size={22} /></span>
+            <div>
+              <h3 style={heading}>{h.about.problem.title}</h3>
+              <p>{h.about.problem.text}</p>
+            </div>
           </div>
-          <div className="reveal mt-12 grid gap-5 md:grid-cols-2">
-            {[h.about.why, h.about.problem].map((block, i) => (
-              <ExpandCard key={block.title} title={block.title} lead={block.text} color={TILE_COLORS[(i + 3) % TILE_COLORS.length]} />
+
+          <h3 className="about-team-title reveal" style={heading}>{h.about.teamTitle}</h3>
+          <ul className="about-team">
+            {h.about.team.map((member, i) => (
+              <li key={member.name} className="about-person reveal" style={{ ["--ac" as string]: TILE_COLORS[i % TILE_COLORS.length] }}>
+                <span className="about-avatar" aria-hidden>
+                  {member.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}
+                </span>
+                <h4 style={heading}>{member.name}</h4>
+                <span className="about-role">{member.role}</span>
+                <p>{member.bio}</p>
+              </li>
             ))}
-          </div>
-          <div className="reveal mt-12">
-            <h3 className="mb-4 text-xl font-bold" style={heading}>
-              {h.about.teamTitle}
-            </h3>
-            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {h.about.team.map((member, i) => (
-                <li key={member.name} className="contents">
-                  <ExpandCard title={member.name} lead={member.role} color={TILE_COLORS[i % TILE_COLORS.length]}>
-                    <p className="text-[var(--muted)]">{member.bio}</p>
-                  </ExpandCard>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
+          </ul>
+
+          <div className="about-contact reveal">
+            <span className="about-pic"><HangIcon kind="pulse" size={22} /></span>
+            <div className="about-contact-txt">
+              <a href={`mailto:${h.about.email}`}>{h.about.email}</a>
+            </div>
             <Link href={`/${locale}/kontakt`} className="btn-bouncy btn-secondary btn-lg">
               {h.about.contact} →
             </Link>
-            <a href={`mailto:${h.about.email}`} className="font-semibold text-[var(--accent-green)] hover:underline">
-              {h.about.email}
-            </a>
           </div>
         </div>
       </section>
