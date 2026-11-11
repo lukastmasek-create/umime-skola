@@ -9,6 +9,7 @@ import { GlobeSky } from "@/components/GlobeSky";
 import { HeroSky } from "@/components/HeroSky";
 import { HeroTitle } from "@/components/HeroTitle";
 import { ExpandCard } from "@/components/ExpandCard";
+import { TearCard } from "@/components/TearCard";
 import { HangTags } from "@/components/HangTags";
 import { HomeLobby } from "@/components/HomeLobby";
 import { getHomeLobbyText } from "@/i18n/home-lobby";
@@ -191,15 +192,11 @@ export default async function Home({
           </h2>
           <div className="pcard-pile">
             {CATEGORIES.map((cat, i) => (
-              <Link
-                key={cat.slug}
-                href={`/${locale}/kurzy/${cat.slug}`}
-                className="reveal pcard"
-              >
+              <TearCard key={cat.slug} href={`/${locale}/kurzy/${cat.slug}`} className="reveal pcard">
                 <HomeArt name={GALAXY_ICONS[i % GALAXY_ICONS.length]} size={96} className="pcard-icon" />
                 <h3 className="pcard-title">{dict.categories[cat.slug].label}</h3>
                 <p className="pcard-text">{dict.categories[cat.slug].description}</p>
-              </Link>
+              </TearCard>
             ))}
           </div>
         </div>

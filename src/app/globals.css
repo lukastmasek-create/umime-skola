@@ -4463,14 +4463,15 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
   padding: 22px 26px 28px; border-radius: 28px; color: #f4f3ff;
   background: linear-gradient(180deg, rgba(32, 32, 44, 0.96) 0%, rgba(44, 44, 96, 0.92) 100%);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) inset, 0 24px 40px -24px #000;
-  transform: rotate(var(--r));
+  transform: rotate(calc(var(--r) + var(--dr, 0deg)));
+  touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: grab;
   transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, box-shadow 0.3s ease;
 }
 .pcard-icon { margin-bottom: 8px; filter: drop-shadow(0 10px 14px rgba(70, 70, 200, 0.45)); }
 .pcard-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 8px; }
 .pcard-text { font-size: 0.95rem; line-height: 1.5; color: rgba(244, 243, 255, 0.72); max-width: 240px; }
 .pcard:hover, .pcard:focus-visible {
-  transform: rotate(var(--r)) translateY(-8px) scale(1.03); z-index: 5;
+  transform: rotate(calc(var(--r) + var(--dr, 0deg))) translateY(-8px) scale(1.03); z-index: 5;
   background: linear-gradient(180deg, #4a4fe0 0%, #2f2f93 100%);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3) inset, 0 30px 50px -22px #4a4fe0;
 }
@@ -4587,3 +4588,8 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
 .is-held .hang-sway::after, .is-swing .hang-sway::after { transform: scale(calc(1 + var(--tn, 0) * 2.4)); }
 .is-free .hang-sway { background: none; }
 .is-free .hang-sway::after { display: none; }
+
+/* tažení karet kategorií */
+.pcard.is-drag { transition: none; cursor: grabbing; z-index: 30; transform: rotate(calc(var(--r) + var(--dr, 0deg))) scale(1.04); box-shadow: 0 0 0 1px rgba(255,255,255,.3) inset, 0 40px 60px -20px #000; }
+.pcard.is-tear { background: linear-gradient(180deg, #6a52ff 0%, #3b2fb0 100%); box-shadow: 0 0 0 2px #b6afff inset, 0 0 40px 4px rgba(120,100,255,.6); }
+.pcard.is-fly { transition: none; z-index: 30; pointer-events: none; }
