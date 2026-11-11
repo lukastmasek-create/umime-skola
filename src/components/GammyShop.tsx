@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Asterisk, Check, Eye, Flame, Heart, Receipt, Star, Zap } from "lucide-react";
 import { ShopModel } from "@/components/ShopModel";
-import { Icon } from "@/components/Icon";
+import { ShopHeroArt } from "@/components/ShopHeroArt";
 import { Avatar } from "@/components/Avatar";
 import { Modal, Preview, type Snapshot } from "@/components/ShopView";
 import { MaterialShop, LimitedShop, ProCard } from "@/components/ShopSections";
@@ -363,8 +363,9 @@ export function GammyShop({
   return (
     <div className="gammy overflow-hidden">
       {/* Hero */}
-      <section className="grid items-center gap-8 px-5 py-10 sm:px-10 md:grid-cols-2">
-        <div>
+      <section className="gs-hero px-5 pb-10 pt-8 sm:px-10 md:pt-28">
+        <div className="gs-hero-card">
+        <div className="gs-hero-text">
           <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-[var(--g-line)] px-3 py-1 text-xs text-[var(--muted)]">
             <span className="h-2 w-2 rounded-full bg-[var(--g-accent)]" /> Uč se. Vydělávej. Užívej si.
           </p>
@@ -410,8 +411,7 @@ export function GammyShop({
             )}
           </div>
         </div>
-        <div className="relative mx-auto flex h-64 w-full max-w-md items-end justify-center overflow-hidden rounded-3xl bg-[var(--g-accent)] sm:h-80">
-          <Icon name="balicek-poklad" size={300} className="mb-2 h-60 w-60 drop-shadow-[0_8px_8px_rgba(0,0,0,0.3)] sm:h-72 sm:w-72" />
+          <ShopHeroArt />
         </div>
       </section>
 
