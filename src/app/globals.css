@@ -4475,7 +4475,7 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
 }
 
 /* ===== Hromádka naklopených skleněných karet (kategorie na homepage) ===== */
-.pcard-pile { display: grid; grid-template-columns: 1fr; gap: 18px; max-width: 600px; margin: 0 auto; padding-bottom: 8px; }
+.pcard-pile { display: grid; grid-template-columns: 1fr; gap: 30px; max-width: 600px; margin: 0 auto; padding-bottom: 8px; }
 .pcard-slot { --r: 0deg; --ac: #8f86ff; position: relative; }
 /* prázdné místo po odtažené kartě */
 .pcard-ghost {
@@ -4545,11 +4545,11 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
 }
 .pcard:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
 @media (min-width: 640px) {
-  .pcard-pile { grid-template-columns: 1fr 1fr; gap: 0; max-width: 640px; }
-  .pcard-slot:nth-child(1) { --r: -3deg; margin-right: -12px; }
-  .pcard-slot:nth-child(2) { --r: 3deg; margin-top: 6px; }
-  .pcard-slot:nth-child(3) { --r: 3deg; margin-top: -26px; margin-left: -36px; margin-right: 24px; }
-  .pcard-slot:nth-child(4) { --r: -3deg; margin-top: -14px; margin-left: 12px; margin-right: -30px; }
+  .pcard-pile { grid-template-columns: 1fr 1fr; gap: 34px 30px; max-width: 760px; }
+  .pcard-slot:nth-child(1) { --r: -3deg; }
+  .pcard-slot:nth-child(2) { --r: 3deg; margin-top: 18px; }
+  .pcard-slot:nth-child(3) { --r: 3deg; margin-top: -6px; }
+  .pcard-slot:nth-child(4) { --r: -3deg; margin-top: 8px; }
 }
 @media (max-width: 639px) {
   .pcard-slot:nth-child(odd) { --r: -1.6deg; }
