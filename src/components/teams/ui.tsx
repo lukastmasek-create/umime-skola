@@ -1,3 +1,4 @@
+import { Glyph } from "./Glyph";
 import { Children, isValidElement, useEffect, useRef, useState, type ReactNode } from "react";
 
 // Sdílené stavební kameny vzhledu týmů: barevný znak týmu, progress bar, iniciálový avatar.
@@ -146,10 +147,10 @@ export function Reorderable({ storageKey, t, className, children }: { storageKey
                 onDragEnd={() => setDragging(null)}
                 className="cursor-grab select-none px-1 text-sm leading-none text-[var(--muted)]"
               >
-                ⠿
+                <Glyph name="grip" className="size-4" />
               </span>
-              <button type="button" className={btn} onClick={() => step(id, -1)} disabled={idx === 0} aria-label={t.moveUp} title={t.moveUp}>↑</button>
-              <button type="button" className={btn} onClick={() => step(id, 1)} disabled={idx === order.length - 1} aria-label={t.moveDown} title={t.moveDown}>↓</button>
+              <button type="button" className={btn} onClick={() => step(id, -1)} disabled={idx === 0} aria-label={t.moveUp} title={t.moveUp}><Glyph name="arrowUp" className="size-4" /></button>
+              <button type="button" className={btn} onClick={() => step(id, 1)} disabled={idx === order.length - 1} aria-label={t.moveDown} title={t.moveDown}><Glyph name="arrowDown" className="size-4" /></button>
             </div>
             {it.node}
           </div>

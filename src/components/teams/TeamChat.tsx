@@ -1,5 +1,6 @@
 "use client";
 
+import { Glyph } from "./Glyph";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { call } from "./api";
 import type { Locale } from "@/i18n/config";
@@ -100,7 +101,7 @@ export function TeamChat({ locale, teamId, assignmentId, userId, height = "h-80"
                   <span className="mb-1 flex shrink-0 items-center gap-1.5 text-[10px] text-[var(--muted)]">
                     {hm(m.createdAt)}
                     {(mine || mod) && (
-                      <button type="button" onClick={() => remove(m.id)} className="opacity-0 hover:text-[var(--danger)] focus-visible:opacity-100 group-hover:opacity-100" aria-label={t.deleteMsg}>✕</button>
+                      <button type="button" onClick={() => remove(m.id)} className="opacity-0 hover:text-[var(--danger)] focus-visible:opacity-100 group-hover:opacity-100" aria-label={t.deleteMsg}><Glyph name="close" className="size-4" /></button>
                     )}
                   </span>
                 </div>

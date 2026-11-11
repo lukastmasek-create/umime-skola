@@ -1,5 +1,6 @@
 "use client";
 
+import { Glyph } from "./Glyph";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import NumberFlow from "@number-flow/react";
@@ -212,7 +213,7 @@ export function TeacherOverview({ locale, teams }: { locale: Locale; teams: { id
                 ))}
               </ul>
             )}
-            <Link href={`/${locale}/tymy/${open.teamId}`} className="btn-bouncy mt-auto bg-[var(--brand-500)] px-4 py-2.5 text-center text-sm font-bold text-white">{t.detail.open} →</Link>
+            <Link href={`/${locale}/tymy/${open.teamId}`} className="btn-bouncy mt-auto inline-flex items-center justify-center gap-1.5 bg-[var(--brand-500)] px-4 py-2.5 text-center text-sm font-bold text-white">{t.detail.open} <Glyph name="arrowRight" /></Link>
           </aside>
         </div>
       )}

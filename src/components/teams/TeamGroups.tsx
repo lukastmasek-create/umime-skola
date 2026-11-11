@@ -1,5 +1,6 @@
 "use client";
 
+import { Glyph } from "./Glyph";
 import { useState, type ReactNode } from "react";
 import { DndContext, DragOverlay, KeyboardSensor, PointerSensor, TouchSensor, useDraggable, useDroppable, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
 import { tfill } from "@/i18n/teams";
@@ -87,7 +88,7 @@ export function TeamGroups({ t, team, post, locale }: { t: TeamsAll; team: Team;
           >
             <input type="number" min={2} max={12} value={count} onChange={(ev) => setCount(Number(ev.target.value))} aria-label={t.groupCount} className="w-12 !border-0 bg-transparent text-center text-sm font-bold" />
             <button disabled={students.length < 2} className="rounded-full bg-[var(--accent-yellow)] px-4 py-2 text-sm font-bold text-[#17142b] disabled:opacity-50">
-              <span aria-hidden>🎲 </span>{t.shuffle}
+              <Glyph name="dice" className="mr-1.5 size-[1.1em]" />{t.shuffle}
             </button>
           </form>
           <button type="button" onClick={() => setAdding((v) => !v)} aria-expanded={adding} className="rounded-full bg-[var(--brand-500)] px-5 py-2.5 text-sm font-bold text-white">+ {e.gAdd}</button>

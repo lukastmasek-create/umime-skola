@@ -1,5 +1,6 @@
 "use client";
 
+import { Glyph } from "./Glyph";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -166,7 +167,7 @@ export function TeamsHome({ locale }: { locale: Locale }) {
                         <Progress value={tm.done} max={tm.assignments} color={tone === "high" ? "var(--accent-yellow)" : tone === "low" ? "var(--brand-500)" : PROGRESS_GRADIENT} label={tfill(t.summaryDone, tm.done, tm.assignments)} />
                       )}
                       {tm.code && <span className="text-xs text-[var(--muted)]">{t.code}: <b className="tracking-widest">{tm.code}</b></span>}
-                      <span className={`mt-auto pt-1 text-sm font-bold ${tone === "plain" ? "text-[var(--brand-600)]" : ""}`}>{t.openTeam} →</span>
+                      <span className={`mt-auto inline-flex items-center gap-1 pt-1 text-sm font-bold ${tone === "plain" ? "text-[var(--brand-600)]" : ""}`}>{t.openTeam} <Glyph name="arrowRight" /></span>
                     </span>
                   </Link>
                 </li>

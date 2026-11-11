@@ -1,5 +1,6 @@
 "use client";
 
+import { Glyph } from "./Glyph";
 import { useState } from "react";
 import Link from "next/link";
 import type { Locale } from "@/i18n/config";
@@ -128,9 +129,9 @@ export function EdxSchedule({ locale, items }: { locale: Locale; items: Deadline
         </div>
       </div>
       <div className="flex items-center justify-between gap-2 text-sm font-bold">
-        <button type="button" onClick={() => setOffset(offset - 1)} aria-label={t.schPrev} className="grid size-9 place-items-center rounded-full bg-[var(--surface-muted)]">←</button>
+        <button type="button" onClick={() => setOffset(offset - 1)} aria-label={t.schPrev} className="grid size-9 place-items-center rounded-full bg-[var(--surface-muted)]"><Glyph name="arrowLeft" /></button>
         <button type="button" onClick={() => setOffset(0)} className="rounded-full px-3 py-1 hover:bg-[var(--surface-muted)]" title={t.schToday}>{head}</button>
-        <button type="button" onClick={() => setOffset(offset + 1)} aria-label={t.schNext} className="grid size-9 place-items-center rounded-full bg-[var(--surface-muted)]">→</button>
+        <button type="button" onClick={() => setOffset(offset + 1)} aria-label={t.schNext} className="grid size-9 place-items-center rounded-full bg-[var(--surface-muted)]"><Glyph name="arrowRight" /></button>
       </div>
       {body}
     </section>

@@ -1,5 +1,6 @@
 "use client";
 
+import { Glyph } from "./Glyph";
 import { Fragment, useCallback, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -341,7 +342,7 @@ function Dashboard({ t, locale, data, url, overdue, onRefresh }: { t: TeamsAll; 
       </details>
 
       <details className="card p-4"><summary className="cursor-pointer text-lg font-extrabold">{tfill(t.qAndA, data.questions.length)}</summary>
-        <ol className="mt-2 list-decimal pl-5 text-sm">{data.questions.map((q, i) => <li key={i} className="mb-1">{q.prompt} → <b>{q.answer}</b></li>)}</ol>
+        <ol className="mt-2 list-decimal pl-5 text-sm">{data.questions.map((q, i) => <li key={i} className="mb-1">{q.prompt} <Glyph name="arrowRight" className="size-3.5" /> <b>{q.answer}</b></li>)}</ol>
       </details>
     </section>
   );
