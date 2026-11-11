@@ -5289,3 +5289,14 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 .gs-hero-card.gs-quake .gs-hero-text { animation: gs-textjolt 0.7s ease-out; }
 @keyframes gs-textjolt { 0% { transform: translate(0, 0); } 12% { transform: translate(-5px, 6px); } 30% { transform: translate(5px, -4px); } 55% { transform: translate(-2px, 2px); } 100% { transform: translate(0, 0); } }
 @media (prefers-reduced-motion: reduce) { .gs-hero-card.gs-quake .gs-hero-text { animation: none; } .gs-fireglow { display: none; } }
+
+/* kosmonaut reaguje na myš: neviditelná zásahová plocha, déšť mincí a záblesk fotoaparátu */
+.gs-hitbox { display: none; position: absolute; z-index: 7; width: 110px; height: 150px; cursor: pointer; }
+@media (min-width: 900px) { .gs-hitbox { display: block; } }
+.gs-coinfall { position: absolute; z-index: 6; pointer-events: none; display: block; animation: gs-coinfall 1.9s cubic-bezier(0.4, 0, 0.9, 0.7) both; }
+.gs-coinfall img { display: block; width: 100%; height: 100%; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35)); animation: gs-coinspin 0.7s linear infinite; }
+@keyframes gs-coinfall { 0% { transform: translate(0, 0); opacity: 0; } 12% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translate(var(--dx, 0), var(--fall, 240px)); opacity: 0; } }
+@keyframes gs-coinspin { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+.gs-flashbulb { position: absolute; z-index: 8; pointer-events: none; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 70%); animation: gs-flashbulb 0.5s ease-out both; }
+@keyframes gs-flashbulb { 0% { transform: scale(0.3); opacity: 0; } 20% { opacity: 1; } 100% { transform: scale(2.4); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .gs-coinfall, .gs-flashbulb { display: none; } }
