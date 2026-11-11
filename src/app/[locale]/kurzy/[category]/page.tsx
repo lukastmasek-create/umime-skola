@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Icon } from "@/components/Icon";
 import { prisma } from "@/lib/prisma";
 import {
   GRADES,
@@ -198,7 +199,7 @@ export default async function CategoryPage({
                     className="flex h-11 w-11 items-center justify-center rounded-xl border-2 border-[var(--edge)] text-2xl"
                     style={{ background: subject?.color ?? "var(--surface-muted)" }}
                   >
-                    {subject?.emoji ?? "📖"}
+                    <Icon name={subject?.slug ?? "literatura"} size={32} />
                   </span>
                   {subject ? subjectText.labels[subject.value] : subjectText.other}
                   <span className="pill bg-[var(--surface-muted)] px-2.5 py-1 text-xs text-[var(--muted)]">

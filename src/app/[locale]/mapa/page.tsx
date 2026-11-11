@@ -28,7 +28,7 @@ export default async function MapPage({ params }: { params: Promise<{ locale: st
     subjects = SUBJECTS.map((s) => ({
       value: s.value,
       label: labels[s.value],
-      emoji: s.emoji,
+      slug: s.slug,
       color: s.color,
       courses: courses.filter((c) => c.subject === s.value).map(({ id, title, slug, grade }) => ({ id, title, slug, grade })),
     })).filter((s) => s.courses.length > 0);

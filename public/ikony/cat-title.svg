@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 136 136" width="256" height="256"><defs>
+<linearGradient id="gd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff2a8"/><stop offset=".45" stop-color="#ffd24d"/><stop offset="1" stop-color="#c98a10"/></linearGradient>
+<linearGradient id="gd2" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2a8"/><stop offset=".5" stop-color="#f2b92a"/><stop offset="1" stop-color="#a86e08"/></linearGradient>
+<linearGradient id="rb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8f78"/><stop offset="1" stop-color="#d9412a"/></linearGradient>
+<radialGradient id="sh"><stop offset="0" stop-color="#000" stop-opacity=".35"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<filter id="stk" filterUnits="userSpaceOnUse" x="-4" y="-4" width="136" height="136"><feMorphology in="SourceAlpha" operator="dilate" radius="3.2" result="d"/><feFlood flood-color="#fffdf5"/><feComposite in2="d" operator="in" result="w"/><feMerge><feMergeNode in="w"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><style>.bob{transform-origin:64px 110px;animation:bob 2.8s ease-in-out infinite}@keyframes bob{0%,100%{transform:translateY(0) rotate(-1.6deg)}50%{transform:translateY(-3.5px) rotate(1.6deg)}}.tw{transform-box:fill-box;transform-origin:center;animation:tw 1.8s ease-in-out infinite}.tw:nth-of-type(2n){animation-delay:.6s}@keyframes tw{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.55);opacity:.55}}@media (prefers-reduced-motion:reduce){.bob,.tw{animation:none}}</style><g class="bob"><g filter="url(#stk)">
+<ellipse cx="64" cy="120" rx="34" ry="6" fill="url(#sh)"/>
+<path d="M36 4l22 46 14-8L52 4z" fill="url(#rb)" stroke="#501f28" stroke-width="2" stroke-linejoin="round"/>
+<path d="M92 4L70 50l-14-8L76 4z" fill="url(#rb)" stroke="#501f28" stroke-width="2" stroke-linejoin="round" opacity=".95"/>
+<path d="M44 8l14 30" stroke="#ffc4b5" stroke-width="2" opacity=".6"/>
+<circle cx="64" cy="78" r="38" fill="url(#gd)" stroke="#4e3723" stroke-width="3.88"/>
+<circle cx="64" cy="78" r="38" fill="none" stroke="#fff6c7" stroke-width="2" stroke-dasharray="2 4.4" opacity=".7" transform="rotate(8 64 78)"/>
+<circle cx="64" cy="78" r="30" fill="url(#gd2)" stroke="#a16a08" stroke-width="2"/>
+<path d="M64 52l7.5 15.4 17 2.4-12.3 11.9 3 16.8L64 90.4 48.8 98.5l3-16.8L39.5 69.8l17-2.4z" fill="#fff4b8" stroke="#a16a08" stroke-width="2" stroke-linejoin="round"/>
+<path d="M64 58l5 10.4 11.4 1.6-8.3 8" fill="none" stroke="#fff" stroke-width="3.41" stroke-linecap="round" opacity=".8"/>
+<path d="M30 62a36 36 0 0 1 26-22" fill="none" stroke="#fff" stroke-width="6.20" stroke-linecap="round" opacity=".55"/>
+</g></g></svg>

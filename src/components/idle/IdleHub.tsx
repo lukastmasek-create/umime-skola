@@ -7,6 +7,7 @@ import { ACHIEVEMENT_TEXT, DAILY_TEXT, GAME_ICON, GAME_LABEL, HUB_TEXT, WEEKLY_T
 import { EVENT_TEXT, eventLabel } from "@/i18n/events";
 import { notifyAccountChanged } from "@/lib/account-events";
 import type { AchievementView, DailyView, GameKey } from "@/lib/idle/hub";
+import { Ico } from "./eco-icons";
 
 type EventBonus = { total: number; events: string[]; focus: boolean };
 type Payload = {
@@ -68,7 +69,7 @@ function Row({
           {fmtNum(value)} / {fmtNum(target)}
         </span>
         {claimed ? (
-          <span className="text-xs font-bold text-[var(--accent-green)]">✓ {tr(HUB_TEXT.claimed, locale)}</span>
+          <span className="text-xs font-bold text-[var(--accent-green)]"><Ico e="✓" /> {tr(HUB_TEXT.claimed, locale)}</span>
         ) : (
           <button
             type="button"
@@ -163,7 +164,7 @@ export function IdleHub({ locale }: { locale: Locale }) {
 
       {data.events && (
         <div className="flex flex-col gap-2">
-          <h3 className="text-lg font-bold">🎉 {tr(EVENT_TEXT.title, locale)}</h3>
+          <h3 className="text-lg font-bold"><Ico e="🎉" /> {tr(EVENT_TEXT.title, locale)}</h3>
           {(["farm", "city", "base", "pets"] as const).filter((g) => data.events![g].total > 0).length === 0 ? (
             <p className="text-sm text-[var(--muted)]">{tr(EVENT_TEXT.none, locale)}</p>
           ) : (
@@ -225,7 +226,7 @@ export function IdleHub({ locale }: { locale: Locale }) {
           return (
             <div key={g} className="flex flex-col gap-2">
               <h4 className="text-sm font-bold text-[var(--muted)]">
-                <span aria-hidden>{GAME_ICON[g]}</span> {tr(GAME_LABEL[g], locale)}
+                <span aria-hidden><Ico e={GAME_ICON[g]} /></span> {tr(GAME_LABEL[g], locale)}
               </h4>
               <ul className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                 {list.map((a) => (

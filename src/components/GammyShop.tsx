@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { ArrowUpRight, Asterisk, Check, Eye, Flame, Heart, Receipt, Star, Zap } from "lucide-react";
+import { ShopModel } from "@/components/ShopModel";
 import { Avatar } from "@/components/Avatar";
 import { Modal, Preview, type Snapshot } from "@/components/ShopView";
 import { MaterialShop, LimitedShop, ProCard } from "@/components/ShopSections";
@@ -31,7 +33,7 @@ const MORE_TABS: { id: More; label: string }[] = [
   { id: "pro", label: "Umíme PRO" },
 ];
 
-const KIND_ICON: Record<ShopKind, string> = { avatar: "🧑‍🚀", title: "🏷️", frame: "🖼️", banner: "🌄", pet: "🐾", city: "🏙️" };
+const KIND_MODEL: Record<ShopKind, string> = { avatar: "cat-avatar", title: "cat-title", frame: "cat-frame", banner: "cat-banner", pet: "cat-pet", city: "cat-city" };
 const MARQUEE = ["Body", "Voucher", "Dárek", "Kolo štěstí", "Materiály", "Limitky", "Avatary", "Sady"];
 
 const WISHLIST_KEY = "shop-wishlist";
@@ -41,7 +43,9 @@ type HistoryRow = { id: string; amount: number; reason: string; createdAt: strin
 function Stars({ value, size = "text-base" }: { value: number; size?: string }) {
   return (
     <span className={`${size} tracking-tight text-[var(--g-accent)]`} aria-label={`${value.toFixed(1)} z 5`}>
-      {[1, 2, 3, 4, 5].map((n) => (n <= Math.round(value) ? "★" : "☆"))}
+      {[1, 2, 3, 4, 5].map((n) => (
+        <Star key={n} aria-hidden className="inline h-[1em] w-[1em]" fill={n <= Math.round(value) ? "currentColor" : "none"} />
+      ))}
     </span>
   );
 }
@@ -290,7 +294,7 @@ export function GammyShop({
             aria-label={wishlist.includes(item.id) ? x.unfav : x.fav}
             className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full border border-[var(--g-line)] bg-[var(--g-bg)] text-base leading-none transition-transform hover:scale-110"
           >
-            {wishlist.includes(item.id) ? "❤️" : "🤍"}
+            <Heart aria-hidden className="h-4 w-4" fill={wishlist.includes(item.id) ? "currentColor" : "none"} style={{ color: "var(--g-accent)" }} />
           </button>
           {(sale || item.tag) && (
             <span className="absolute left-2 top-2 rounded-full bg-[var(--g-accent)] px-2 py-0.5 text-[11px] font-bold text-[var(--g-accent-ink)]">
@@ -311,10 +315,10 @@ export function GammyShop({
                 onClick={() => equip(item, on && (item.kind === "frame" || item.kind === "banner"))}
                 className="rounded-full border border-[var(--g-accent)] px-3 py-2 text-sm font-bold text-[var(--g-accent)] disabled:opacity-50"
               >
-                {on ? (item.kind === "frame" || item.kind === "banner" ? t.unequip : `✓ ${t.equipped}`) : t.equip}
+                {on ? (item.kind === "frame" || item.kind === "banner" ? t.unequip : <><Check aria-hidden className="inline h-4 w-4" /> {t.equipped}</>) : t.equip}
               </button>
             ) : (
-              <p className="text-center text-sm font-semibold text-[var(--g-accent)]">✓ {t.owned}</p>
+              <p className="text-center text-sm font-semibold text-[var(--g-accent)]"><Check aria-hidden className="inline h-4 w-4" /> {t.owned}</p>
             )
           ) : loggedIn ? (
             <button
@@ -332,7 +336,7 @@ export function GammyShop({
           )}
           <div className="flex justify-center gap-4 text-xs font-semibold text-[var(--muted)]">
             <button type="button" onClick={() => setPreviewId(item.id)} className="hover:text-[var(--g-accent)]">
-              👁 {x.preview}
+              <Eye aria-hidden className="mr-1 inline h-3.5 w-3.5" />{x.preview}
             </button>
             {loggedIn && !have && (
               <button
@@ -371,7 +375,7 @@ export function GammyShop({
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <button type="button" onClick={() => scrollTo("zbozi")} className="rounded-full bg-[var(--g-accent)] px-6 py-2.5 text-sm font-bold text-[var(--g-accent-ink)]">
-              Nakupovat ↗
+              Nakupovat <ArrowUpRight aria-hidden className="inline h-4 w-4" />
             </button>
             <button type="button" onClick={() => scrollTo("proc")} className="text-sm font-semibold text-[var(--muted)] hover:text-[var(--g-accent)]">
               Jak to funguje?
@@ -421,7 +425,7 @@ export function GammyShop({
             <div key={n} className="flex shrink-0 items-center">
               {MARQUEE.map((w) => (
                 <span key={w + n} className="flex items-center gap-6 px-6 text-sm font-extrabold">
-                  {w} <span>✳</span>
+                  {w} <Asterisk aria-hidden className="h-4 w-4" />
                 </span>
               ))}
             </div>
@@ -440,14 +444,14 @@ export function GammyShop({
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
           {SHOP_KINDS.map((k) => (
             <button key={k} type="button" onClick={() => { setKind(k); setShown(15); scrollTo("zbozi"); }} className="gammy-panel flex flex-col items-center gap-2 p-4 text-center transition-transform hover:-translate-y-1">
-              <span className="text-4xl" aria-hidden>{KIND_ICON[k]}</span>
+              <ShopModel id={KIND_MODEL[k]} size={72} />
               <span className="text-xs font-bold">{t.tabs[k]}</span>
               <span className="text-[11px] text-[var(--faint)]">{SHOP_ITEMS.filter((i) => i.kind === k).length} věcí</span>
             </button>
           ))}
           {MORE_TABS.slice(0, 2).map((m) => (
             <button key={m.id} type="button" onClick={() => { setMore(m.id); scrollTo("dalsi"); }} className="gammy-panel flex flex-col items-center gap-2 p-4 text-center transition-transform hover:-translate-y-1">
-              <span className="text-4xl" aria-hidden>{m.id === "materialy" ? "🧱" : "💎"}</span>
+              <ShopModel id={m.id === "materialy" ? "cat-materials" : "cat-limited"} size={72} />
               <span className="text-xs font-bold">{m.label}</span>
               <span className="text-[11px] text-[var(--faint)]">za body</span>
             </button>
@@ -499,7 +503,7 @@ export function GammyShop({
       <section id="proc" className="scroll-mt-4 px-5 pb-10 sm:px-10">
         <div className="gammy-panel grid items-center gap-6 p-6 md:grid-cols-[auto_1fr]">
           <div className="hidden h-44 w-44 items-center justify-center rounded-3xl bg-[var(--g-accent)] md:flex">
-            <span className="text-7xl" aria-hidden>🛒</span>
+            <ShopModel id="shop-bag" size={150} />
           </div>
           <div>
             <h2 className={heading} style={headingFont}>Proč nakupovat v Umíme?</h2>
@@ -507,12 +511,12 @@ export function GammyShop({
             <div className="mt-4 flex flex-wrap gap-2">
               {["Body za učení", "Denní slevy", "Dárky kamarádům", "Rodičovská kontrola", "Limitované edice"].map((f) => (
                 <span key={f} className="rounded-full border border-[var(--g-line)] bg-[var(--g-bg)] px-4 py-2 text-xs font-bold">
-                  <span className="text-[var(--g-accent)]">✓</span> {f}
+                  <Check aria-hidden className="mr-1 inline h-3.5 w-3.5 text-[var(--g-accent)]" /> {f}
                 </span>
               ))}
             </div>
             <div className="mt-5 flex gap-3">
-              <Link href={`/${locale}/kurzy`} className="rounded-full bg-[var(--g-accent)] px-5 py-2 text-xs font-bold text-[var(--g-accent-ink)]">Vydělat body ↗</Link>
+              <Link href={`/${locale}/kurzy`} className="rounded-full bg-[var(--g-accent)] px-5 py-2 text-xs font-bold text-[var(--g-accent-ink)]">Vydělat body <ArrowUpRight aria-hidden className="inline h-3.5 w-3.5" /></Link>
               <Link href={`/${locale}/trziste`} className="rounded-full border border-[var(--g-accent)] px-5 py-2 text-xs font-bold text-[var(--g-accent)]">Tržiště hráčů</Link>
             </div>
           </div>
@@ -535,7 +539,7 @@ export function GammyShop({
           <div className="mb-6 grid gap-3 md:grid-cols-[1fr_2fr]">
             {hit && (
               <div className="gammy-panel flex flex-col gap-2 p-3">
-                <p className="text-xs font-extrabold uppercase tracking-wide text-[var(--g-accent)]">🔥 Hit týdne</p>
+                <p className="text-xs font-extrabold uppercase tracking-wide text-[var(--g-accent)]"><Flame aria-hidden className="mr-1 inline h-4 w-4" />Hit týdne</p>
                 <Preview item={hit} locale={locale} avatar={snap?.equipped.avatar ?? null} />
                 <p className="text-sm font-bold">{hit.names[locale]}</p>
                 <button type="button" onClick={() => setPreviewId(hit.id)} className="rounded-full bg-[var(--g-accent)] px-3 py-1.5 text-xs font-bold text-[var(--g-accent-ink)]">
@@ -545,7 +549,7 @@ export function GammyShop({
             )}
             {dealItems.length > 0 && (
               <div className="gammy-panel p-3">
-                <p className="mb-2 text-xs font-extrabold uppercase tracking-wide text-[var(--g-accent)]">⚡ Denní slevy −{Math.round(DEAL_DISCOUNT * 100)} %</p>
+                <p className="mb-2 text-xs font-extrabold uppercase tracking-wide text-[var(--g-accent)]"><Zap aria-hidden className="mr-1 inline h-4 w-4" />Denní slevy −{Math.round(DEAL_DISCOUNT * 100)} %</p>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {dealItems.map((i) => (
                     <button key={i.id} type="button" onClick={() => setPreviewId(i.id)} className="rounded-xl border border-[var(--g-line)] p-2 text-left text-xs hover:border-[var(--g-accent)]">
@@ -565,11 +569,11 @@ export function GammyShop({
             onClick={() => { setOnlyFav((v) => !v); setShown(15); }}
             className={`rounded-full px-4 py-1.5 text-xs font-bold ${onlyFav ? "bg-[var(--g-accent)] text-[var(--g-accent-ink)]" : "border border-[var(--g-line)] text-[var(--muted)]"}`}
           >
-            ❤️ Oblíbené ({wishlist.length})
+            <Heart aria-hidden className="mr-1 inline h-3.5 w-3.5" fill="currentColor" />Oblíbené ({wishlist.length})
           </button>
           {loggedIn && (
             <button type="button" onClick={() => setHistoryOpen(true)} className="rounded-full border border-[var(--g-line)] px-4 py-1.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--g-accent)]">
-              🧾 Historie nákupů
+              <Receipt aria-hidden className="mr-1 inline h-3.5 w-3.5" />Historie nákupů
             </button>
           )}
           {(["all", ...SHOP_KINDS] as const).map((k) => (
@@ -588,7 +592,7 @@ export function GammyShop({
           <p className="gammy-panel p-6 text-sm text-[var(--muted)]">Nic jsme nenašli.</p>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">{items.slice(0, shown).map(card)}</div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-6">{items.slice(0, shown).map(card)}</div>
             {items.length > shown && (
               <div className="mt-6 text-center">
                 <button type="button" onClick={() => setShown((n) => n + 15)} className="rounded-full bg-[var(--g-accent)] px-6 py-2 text-sm font-bold text-[var(--g-accent-ink)]">
@@ -642,10 +646,10 @@ export function GammyShop({
                 }}
               >
                 <p className="text-sm font-semibold">{review?.mine ? "Tvoje hodnocení (můžeš ho změnit)" : "Ohodnoť obchod"}</p>
-                <div role="radiogroup" aria-label="Počet hvězdiček" className="flex gap-1 text-3xl">
+                <div role="radiogroup" aria-label="Počet hvězdiček" className="flex gap-1">
                   {[1, 2, 3, 4, 5].map((n) => (
                     <button key={n} type="button" role="radio" aria-checked={myStars === n} aria-label={`${n} z 5`} onClick={() => setMyStars(n)} className="text-[var(--g-accent)] transition-transform hover:scale-110">
-                      {n <= myStars ? "★" : "☆"}
+                      <Star aria-hidden className="h-8 w-8" fill={n <= myStars ? "currentColor" : "none"} />
                     </button>
                   ))}
                 </div>

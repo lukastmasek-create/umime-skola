@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Icon } from "@/components/Icon";
 import { fill } from "@/i18n/profile";
 import { getReviewText } from "@/i18n/review";
 import { gradeLabel } from "@/i18n/grades";
@@ -9,7 +10,7 @@ import { courseStatus, type CourseProgress, type CourseStatus } from "@/lib/revi
 import type { Locale } from "@/i18n/config";
 
 export type MapCourse = { id: string; title: string; slug: string; grade: number | null };
-export type MapSubject = { value: string; label: string; emoji: string; color: string; courses: MapCourse[] };
+export type MapSubject = { value: string; slug: string; label: string; color: string; courses: MapCourse[] };
 
 const STATUS_ICON: Record<CourseStatus, string> = { new: "○", started: "◐", done: "●" };
 
@@ -75,9 +76,7 @@ export function CourseMap({ locale, subjects }: { locale: Locale; subjects: MapS
                   className="card card-hover flex items-center gap-3 p-4"
                   style={{ borderColor: subject.color }}
                 >
-                  <span className="text-3xl" aria-hidden>
-                    {subject.emoji}
-                  </span>
+                  <Icon name={subject.slug} size={44} />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-bold">{course.title}</span>
                     <span className="text-xs text-[var(--muted)]">
@@ -106,9 +105,7 @@ export function CourseMap({ locale, subjects }: { locale: Locale; subjects: MapS
         return (
           <details key={subject.value} className="card p-4 sm:p-5" open={touched.includes(subject)}>
             <summary className="flex cursor-pointer items-center gap-3">
-              <span className="text-2xl" aria-hidden>
-                {subject.emoji}
-              </span>
+              <Icon name={subject.slug} size={36} />
               <span className="flex-1 text-lg font-extrabold" style={heading}>
                 {subject.label}
               </span>

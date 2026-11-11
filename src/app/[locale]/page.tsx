@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { CATEGORIES, SUBJECTS } from "@/lib/taxonomy";
+import { Icon } from "@/components/Icon";
 import { HomeProgress } from "@/components/HomeProgress";
 import { DailyQuizTeaser } from "@/components/DailyQuizTeaser";
 import { TeacherCta } from "@/components/TeacherCta";
-import { ALIEN_ROW, HomeArt, SpriteFrame, Wave } from "@/components/SpaceDecor";
+import { ALIEN_ROW, SpriteFrame, Wave } from "@/components/SpaceDecor";
 import { LazyPlanet, LazySubjectGlobe, LazyTownLife } from "@/components/HomeLazy";
 import { GlobeSky } from "@/components/GlobeSky";
 import { HeroSky } from "@/components/HeroSky";
@@ -30,7 +31,6 @@ import { SITE_NAME, pageMetadata } from "@/lib/seo";
 const TILE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
 // Sekce „Jak to funguje“ je archivovaná (skrytá). Pro návrat stačí přepnout na true.
 const SHOW_HOW_IT_WORKS = false;
-const GALAXY_ICONS = ["sekce-zakladni", "sekce-stredni", "sekce-prijimacky", "sekce-maturita"];
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -196,7 +196,7 @@ export default async function Home({
                 <span className="pcard-in">
                   <span className="pcard-num" aria-hidden>{String(i + 1).padStart(2, "0")}</span>
                   <span className="pcard-iconwrap">
-                    <HomeArt name={GALAXY_ICONS[i % GALAXY_ICONS.length]} size={92} className="pcard-icon" />
+                    <Icon name={cat.slug} size={92} className="pcard-icon" />
                   </span>
                   <h3 className="pcard-title">{dict.categories[cat.slug].label}</h3>
                   <p className="pcard-text">{dict.categories[cat.slug].description}</p>

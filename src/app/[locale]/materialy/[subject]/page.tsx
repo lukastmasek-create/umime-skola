@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Icon } from "@/components/Icon";
 import type { Metadata } from "next";
 import { getMaterialSubject, getTopics, materialSubjectLabel } from "@/lib/materials";
 import { getMaterialsText } from "@/i18n/materials";
@@ -35,7 +36,7 @@ export default async function MaterialsSubjectPage({ params }: { params: Promise
           className="flex h-12 w-12 items-center justify-center rounded-xl border-2 border-[var(--edge)] text-2xl"
           style={{ background: subject.color }}
         >
-          {subject.emoji}
+          <Icon name={subject.slug} size={36} />
         </span>
         {label}
       </h1>

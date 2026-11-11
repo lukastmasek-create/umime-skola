@@ -67,6 +67,7 @@ import { getEconomyBankText } from "@/i18n/economy-bank";
 import { BarChart3, Briefcase, Home, Layers, Trophy } from "lucide-react";
 import { InvestPanel } from "./InvestPanel";
 import type { Locale } from "@/i18n/config";
+import { EmojiText, Ico } from "./eco-icons";
 
 type View = { data: Payload; receivedAt: number };
 type Load = "loading" | "login" | "unavailable" | "ready";
@@ -321,7 +322,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
     return (
       <div className="card flex flex-col items-center gap-3 p-8 text-center">
         <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          💰 {t.title}
+          <Ico e="💰" /> {t.title}
         </h1>
         <p className="max-w-md text-[var(--muted)]">{t.loginHint}</p>
         <Link href={`/${locale}/prihlaseni`} className="btn-bouncy bg-[var(--brand-500)] px-5 py-2 font-bold text-white">
@@ -344,7 +345,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
     return (
       <div>
         <h1 className="text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          💰 {t.title}
+          <Ico e="💰" /> {t.title}
         </h1>
         <p className="mb-5 max-w-2xl text-[var(--muted)]">{t.intro}</p>
         <section className="card flex max-w-2xl flex-col gap-4 p-5">
@@ -515,7 +516,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-            💰 {t.title}
+            <Ico e="💰" /> {t.title}
           </h1>
           <p className="text-sm text-[var(--muted)]">
             {ch.name} · {t.countries[ch.country]}, {t.cities[ch.city]} · {t.eras[ch.era]} · {t.families[ch.family]}
@@ -523,19 +524,19 @@ export function EconomyGame({ locale }: { locale: Locale }) {
         </div>
         <div className="flex flex-wrap gap-2">
           <span className="pill bg-[var(--accent-yellow)] px-3 py-1.5 text-sm font-extrabold text-[#16132b]">
-            💵 {m(liveCash)}
+            <Ico e="💵" /> {m(liveCash)}
           </span>
           <span className="pill bg-[var(--surface)] px-3 py-1.5 text-sm font-bold">
-            🏆 {t.netWorth}: {m(worth)}
+            <Ico e="🏆" /> {t.netWorth}: {m(worth)}
           </span>
         </div>
       </div>
       <p className="mb-3 text-sm font-semibold text-[var(--muted)]">
-        {fill(t.perHour, { n: `${r.net >= 0 ? "+" : ""}${m(r.net)}` })} · ⭐ {data.points}
+        {fill(t.perHour, { n: `${r.net >= 0 ? "+" : ""}${m(r.net)}` })} · <Ico e="⭐" /> {data.points}
       </p>
 
       <div className="mb-4 flex flex-wrap items-center gap-2" aria-label={t.timeSpeed}>
-        <span className="text-sm font-bold">⏩ {t.timeSpeed}</span>
+        <span className="text-sm font-bold"><Ico e="⏩" /> {t.timeSpeed}</span>
         {SPEEDS.map((sp) => (
           <button
             key={sp}
@@ -561,7 +562,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
             onClick={() => setTab(id)}
             className={`btn-bouncy px-4 py-2 text-sm font-bold ${tab === id ? "bg-[var(--brand-500)] text-white" : "bg-[var(--surface)]"}`}
           >
-            {id === "bank" ? bt.tab : t.tabs[id]}
+            {id === "bank" ? <EmojiText text={bt.tab} /> : t.tabs[id]}
             {id === "hustle" && readyHustles > 0 ? ` (${readyHustles})` : ""}
           </button>
         ))}
@@ -590,13 +591,13 @@ export function EconomyGame({ locale }: { locale: Locale }) {
               <div className="card flex flex-col gap-4 p-5 md:col-span-2">
                 <div className="flex flex-wrap items-end justify-between gap-3">
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">🏆 {t.netWorth}</p>
+                    <p className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]"><Ico e="🏆" /> {t.netWorth}</p>
                     <p className="text-4xl font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
                       {m(worth)}
                     </p>
                   </div>
                   <span className={`pill px-3 py-1.5 text-sm font-bold ${atPeak ? "bg-[var(--accent-green)] text-[#16132b]" : "bg-[var(--surface)]"}`}>
-                    {atPeak ? t.atPeak : `${m(worth - state.peak)} ${t.vsPeak}`}
+                    {atPeak ? <EmojiText text={t.atPeak} /> : `${m(worth - state.peak)} ${t.vsPeak}`}
                   </span>
                 </div>
                 <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -608,7 +609,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                   ].map((s) => (
                     <div key={s.label} className="rounded-xl bg-[var(--surface-muted)] p-3">
                       <dt className="text-xs text-[var(--muted)]">
-                        {s.icon} {s.label}
+                        <Ico e={s.icon} /> {s.label}
                       </dt>
                       <dd className="font-bold">{s.value}</dd>
                     </div>
@@ -628,7 +629,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                   ].map((s) => (
                     <div key={s.label} className="rounded-xl bg-[var(--surface-muted)] p-3">
                       <dt className="text-xs text-[var(--muted)]">
-                        {s.icon} {s.label}
+                        <Ico e={s.icon} /> {s.label}
                       </dt>
                       <dd className="font-bold">{s.value}</dd>
                     </div>
@@ -649,7 +650,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                   }}
                   className="btn-bouncy w-fit bg-[var(--surface)] px-4 py-2 text-sm font-bold"
                 >
-                  🔄 {t.restart}
+                  <Ico e="🔄" /> {t.restart}
                 </button>
               </div>
             </div>
@@ -679,7 +680,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                   <div key={p.label} className="flex flex-col gap-1">
                     <div className="flex justify-between text-sm">
                       <span>
-                        {p.icon} {p.label}
+                        <Ico e={p.icon} /> {p.label}
                       </span>
                       <b className={p.cost ? "text-[var(--danger)]" : ""}>
                         {p.cost ? "−" : "+"}
@@ -696,11 +697,11 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                 ))}
                 <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t-2 border-dashed border-[var(--edge)] pt-3 text-sm">
                   <span>
-                    ✖️ {t.multiplier}: <b>×{r.multiplier.toFixed(2)}</b>
+                    <Ico e="✖" /> {t.multiplier}: <b>×{r.multiplier.toFixed(2)}</b>
                     {data.learning > 0 && (
                       <>
                         {" "}
-                        · 📚 {t.learning}: <b>+{Math.round(data.learning * 100)} %</b>
+                        · <Ico e="📚" /> {t.learning}: <b>+{Math.round(data.learning * 100)} %</b>
                       </>
                     )}
                   </span>
@@ -721,7 +722,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                 ].map((s) => (
                   <div key={s.label} className="card p-4">
                     <p className="text-xs text-[var(--muted)]">
-                      {s.icon} {s.label}
+                      <Ico e={s.icon} /> {s.label}
                     </p>
                     <p className="font-bold">{s.value}</p>
                   </div>
@@ -734,7 +735,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
             <div className="grid gap-4 md:grid-cols-2">
               {/* Koláč majetku */}
               <div className="card flex flex-col gap-3 p-5">
-                <h2 className="font-bold">🧺 {t.assetsTitle}</h2>
+                <h2 className="font-bold"><Ico e="🧺" /> {t.assetsTitle}</h2>
                 <Donut
                   parts={assetParts}
                   centerLabel={t.centerAssets}
@@ -745,7 +746,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
 
               {/* Sloupcový graf firem: výnos za hodinu */}
               <div className="card flex flex-col gap-3 p-5">
-                <h2 className="font-bold">🏭 {t.companiesPerHour}</h2>
+                <h2 className="font-bold"><Ico e="🏭" /> {t.companiesPerHour}</h2>
                 {companyRows.length === 0 ? (
                   <p className="text-sm text-[var(--muted)]">{t.noCompany}</p>
                 ) : (
@@ -753,7 +754,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                     <div key={c.id} className="flex flex-col gap-1">
                       <div className="flex justify-between text-sm">
                         <span>
-                          {EMOJI[c.id]} {t.companies[c.id]} × {c.count}
+                          <Ico e={EMOJI[c.id]} /> {t.companies[c.id]} × {c.count}
                         </span>
                         <b>{m(c.perHour)} {t.perHourShort}</b>
                       </div>
@@ -768,11 +769,11 @@ export function EconomyGame({ locale }: { locale: Locale }) {
               <div className="card flex flex-col gap-3 p-5 md:col-span-2">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-xl bg-[var(--surface-muted)] p-3">
-                    <p className="text-xs text-[var(--muted)]">🏭 {t.companiesOwned}</p>
+                    <p className="text-xs text-[var(--muted)]"><Ico e="🏭" /> {t.companiesOwned}</p>
                     <p className="font-bold">{companiesOwned}</p>
                   </div>
                   <div className="rounded-xl bg-[var(--surface-muted)] p-3">
-                    <p className="text-xs text-[var(--muted)]">🎯 {t.hustlesRunning}</p>
+                    <p className="text-xs text-[var(--muted)]"><Ico e="🎯" /> {t.hustlesRunning}</p>
                     <p className="font-bold">{runningHustles}</p>
                   </div>
                 </div>
@@ -785,7 +786,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                     {holdings.map((h) => (
                       <li key={h.id} className="flex justify-between">
                         <span>
-                          {EMOJI[h.id]} {t.assets[h.id]}
+                          <Ico e={EMOJI[h.id]} /> {t.assets[h.id]}
                         </span>
                         <b>{m(h.value)}</b>
                       </li>
@@ -799,7 +800,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
           {ov === "education" && (
             <div className="card flex flex-col gap-3 p-5">
               <div className="flex items-center justify-between gap-2">
-                <h2 className="font-bold">🎓 {t.education}</h2>
+                <h2 className="font-bold"><Ico e="🎓" /> {t.education}</h2>
                 <span className="text-sm font-bold">
                   {state.edu} / {MAX_EDU}
                 </span>
@@ -819,8 +820,8 @@ export function EconomyGame({ locale }: { locale: Locale }) {
 
               <div className="mt-2 flex flex-col gap-3 border-t-2 border-[var(--border-soft)] pt-4">
                 <h3 className="flex flex-wrap items-center gap-2 font-bold">
-                  💱 {t.exchange.title}
-                  <span className="text-sm font-bold text-[var(--muted)]">⭐ {data.points}</span>
+                  <Ico e="💱" /> {t.exchange.title}
+                  <span className="text-sm font-bold text-[var(--muted)]"><Ico e="⭐" /> {data.points}</span>
                 </h3>
                 <p className="text-sm text-[var(--muted)]">{t.exchange.hint}</p>
                 <label className="flex items-center gap-2 text-sm font-bold">
@@ -868,7 +869,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
           {ov === "materials" && (
             <div className="card flex flex-col gap-4 p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="font-bold">🧱 {t.materials.title}</h2>
+                <h2 className="font-bold"><Ico e="🧱" /> {t.materials.title}</h2>
                 {craft?.buyLeft !== undefined && <span className="text-sm font-bold">{fill(ct.buyLeft, { n: craft.buyLeft })}</span>}
               </div>
               <p className="text-sm text-[var(--muted)]">{t.materials.hint}</p>
@@ -882,7 +883,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                   return (
                     <div key={w} className="flex flex-col gap-2">
                       <h3 className="text-sm font-bold">
-                        {WORLD_ICON[w]} {ct.worlds[w]}
+                        <Ico e={WORLD_ICON[w]} /> {ct.worlds[w]}
                       </h3>
                       <ul className="grid gap-2 sm:grid-cols-2">
                         {list.map((x) => {
@@ -890,7 +891,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                           return (
                             <li key={x.id} className="flex items-center gap-2 rounded-md border-2 border-[var(--border-soft)] p-2">
                               <span className="text-xl" aria-hidden>
-                                {x.icon}
+                                <Ico e={x.icon} />
                               </span>
                               <span className="min-w-0 flex-1">
                                 <span className="block truncate text-sm font-bold">{x.names[locale]}</span>
@@ -904,7 +905,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                                 onClick={() => void buyMaterial(x.id, x.names[locale])}
                                 className="btn-bouncy shrink-0 bg-[var(--accent-yellow)] px-2.5 py-1.5 text-xs font-bold text-[#16132b] disabled:opacity-45"
                               >
-                                🛒 {m(price)}
+                                <Ico e="🛒" /> {m(price)}
                               </button>
                             </li>
                           );
@@ -970,7 +971,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
               <div key={id} className="card flex flex-col gap-3 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h2 className="font-bold">
-                    {NEED_EMOJI[id]} {def.name}
+                    <Ico e={NEED_EMOJI[id]} /> {def.name}
                   </h2>
                   <span className="rounded-full border border-[var(--line)] px-2 py-0.5 text-xs">
                     {NEED_DEF[id].essential ? nd.essential : nd.common}
@@ -978,7 +979,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                 </div>
                 <p className="text-sm text-[var(--muted)]">{def.hint}</p>
                 <p className={`rounded-lg px-3 py-2 text-sm ${empty ? "bg-[var(--surface)] font-semibold text-[var(--danger)]" : "bg-[var(--surface)] text-[var(--muted)]"}`}>
-                  {empty ? "⚠ " : ""}
+                  {empty ? <><Ico e="⚠" />{" "}</> : null}
                   {def.effect}
                 </p>
                 <div>
@@ -1024,14 +1025,14 @@ export function EconomyGame({ locale }: { locale: Locale }) {
 
           <div className="card flex flex-col gap-3 p-4">
             <p className="font-semibold">
-              {t.currentJob}: {job ? `${EMOJI[job.id]} ${t.jobs[job.id]}` : t.noJob}
+              {t.currentJob}: {job ? <><Ico e={EMOJI[job.id]} /> {t.jobs[job.id]}</> : t.noJob}
             </p>
             {job && (
               <>
                 <div className="flex flex-wrap gap-2 text-sm">
                   <span className="rounded-full border border-[var(--line)] px-2 py-0.5">
                     {fill(w.rank, { n: job.rank })}
-                    {job.rank >= MAX_JOB_RANK ? " ★" : ""}
+                    {job.rank >= MAX_JOB_RANK ? <>{" "}<Ico e="★" /></> : null}
                   </span>
                   <span className="text-[var(--muted)]">
                     {w.passive}: {m(r.salary)} {t.perHourShort}
@@ -1046,10 +1047,10 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                     <div className="h-full bg-[var(--accent-green)]" style={{ width: `${job.rank >= MAX_JOB_RANK ? 100 : Math.min(100, (job.points / nextPoints) * 100)}%` }} />
                   </div>
                 </div>
-                {sick && <p className="text-sm font-semibold">🤒 {fill(w.sick, { t: formatLeft(state.sickUntil - clock, t) })}</p>}
-                {onVacation && <p className="text-sm font-semibold">🏖️ {formatLeft(state.vacationUntil - clock, t)}</p>}
-                {crisisText && <p className="text-sm font-semibold">📉 {crisisText}</p>}
-                {job.warned && <p className="text-sm font-semibold">⚠️ {w.warned}</p>}
+                {sick && <p className="text-sm font-semibold"><Ico e="🤒" /> {fill(w.sick, { t: formatLeft(state.sickUntil - clock, t) })}</p>}
+                {onVacation && <p className="text-sm font-semibold"><Ico e="🏖" /> {formatLeft(state.vacationUntil - clock, t)}</p>}
+                {crisisText && <p className="text-sm font-semibold"><Ico e="📉" /> {crisisText}</p>}
+                {job.warned && <p className="text-sm font-semibold"><Ico e="⚠" /> {w.warned}</p>}
               </>
             )}
           </div>
@@ -1174,7 +1175,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
               return (
                 <article key={j.id} className={`card flex flex-col gap-2 p-4 ${current ? "border-[var(--accent-green)]" : ""} ${locked ? "opacity-70" : ""}`}>
                   <h3 className="font-bold">
-                    {EMOJI[j.id]} {t.jobs[j.id]}
+                    <Ico e={EMOJI[j.id]} /> {t.jobs[j.id]}
                   </h3>
                   <p className="text-sm text-[var(--muted)]">
                     {m(j.salary * INCOME_SPEED * COUNTRY_DEF[ch.country].salary)} {t.perHourShort} · {j.fee > 0 ? fill(t.fee, { n: m(j.fee) }) : t.free}
@@ -1191,7 +1192,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                       onClick={() => void act({ action: "takeJob", id: j.id }, () => t.toast.job)}
                       className="btn-bouncy mt-auto bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white disabled:opacity-45"
                     >
-                      {locked ? `🔒 ${fill(w.eduReq, { n: j.edu })}` : t.take}
+                      {locked ? <><Ico e="🔒" /> {fill(w.eduReq, { n: j.edu })}</> : t.take}
                     </button>
                   )}
                 </article>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 136 136" width="256" height="256"><defs>
+<linearGradient id="d1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".5" stop-color="#c9e9ff"/><stop offset="1" stop-color="#7fb6f0"/></linearGradient>
+<linearGradient id="d2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e6d6ff"/><stop offset="1" stop-color="#9ab5ff"/></linearGradient>
+<linearGradient id="d3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a6d8ff"/><stop offset="1" stop-color="#4f8fe0"/></linearGradient>
+<linearGradient id="d4" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fc7ff"/><stop offset="1" stop-color="#3466c9"/></linearGradient>
+<radialGradient id="gl"><stop offset="0" stop-color="#9ab5ff" stop-opacity=".55"/><stop offset="1" stop-color="#9ab5ff" stop-opacity="0"/></radialGradient>
+<radialGradient id="sh"><stop offset="0" stop-color="#000" stop-opacity=".35"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<path id="sp" d="M0-10C1.2-3 3-1.2 10 0 3 1.2 1.2 3 0 10-1.2 3-3 1.2-10 0-3-1.2-1.2-3 0-10z"/>
+<filter id="stk" filterUnits="userSpaceOnUse" x="-4" y="-4" width="136" height="136"><feMorphology in="SourceAlpha" operator="dilate" radius="3.2" result="d"/><feFlood flood-color="#fffdf5"/><feComposite in2="d" operator="in" result="w"/><feMerge><feMergeNode in="w"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><style>.bob{transform-origin:64px 110px;animation:bob 2.8s ease-in-out infinite}@keyframes bob{0%,100%{transform:translateY(0) rotate(-1.6deg)}50%{transform:translateY(-3.5px) rotate(1.6deg)}}.tw{transform-box:fill-box;transform-origin:center;animation:tw 1.8s ease-in-out infinite}.tw:nth-of-type(2n){animation-delay:.6s}@keyframes tw{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.55);opacity:.55}}@media (prefers-reduced-motion:reduce){.bob,.tw{animation:none}}</style><g class="bob"><g filter="url(#stk)">
+<ellipse cx="64" cy="120" rx="34" ry="5" fill="url(#sh)"/>
+<circle cx="64" cy="62" r="56" fill="url(#gl)"/>
+<g stroke="#1e2b62" stroke-width="3.41" stroke-linejoin="round">
+<path d="M30 46L42 28h44l12 18z" fill="url(#d1)"/>
+<path d="M30 46h68L64 112z" fill="url(#d3)"/>
+</g>
+<g stroke="#1e2b62" stroke-width="1.8" stroke-linejoin="round">
+<path d="M42 28l-12 18 17 0 7-18z" fill="#fff" opacity=".0"/>
+<path d="M30 46l17 0L56 28 42 28z" fill="#fff" opacity=".85"/>
+<path d="M56 28l-9 18h34l-9-18z" fill="url(#d2)"/>
+<path d="M72 28l9 18h17L86 28z" fill="#d9ecff"/>
+<path d="M30 46l34 66-17-66z" fill="url(#d4)" opacity=".95"/>
+<path d="M47 46l17 66 17-66z" fill="url(#d3)"/>
+<path d="M81 46l-17 66 34-66z" fill="#2f5fbf"/>
+</g>
+<path d="M42 28L56 28 47 46 30 46z" fill="none"/>
+<path d="M34 44l10-14" stroke="#fff" stroke-width="4.65" stroke-linecap="round" opacity=".8"/>
+<use href="#sp" x="100" y="26" fill="#fff" stroke="#9ab5ff" stroke-width="1.5"/>
+<use href="#sp" x="22" y="64" fill="#fff" stroke="#9ab5ff" stroke-width="1.5" transform="translate(0 0) scale(.7)" />
+<use href="#sp" x="30" y="18" fill="#ffd24d" stroke="#c98a10" stroke-width="1.5" transform="translate(21 6) scale(.55)"/>
+<g transform="translate(88 86) rotate(-12)"><rect x="-17" y="-9" width="34" height="18" rx="9" fill="#ffd24d" stroke="#4e3723" stroke-width="2"/><text x="0" y="4.5" text-anchor="middle" font-family="Onest,Arial,sans-serif" font-weight="800" font-size="11" fill="#5a3a05">#007</text></g>
+</g></g></svg>

@@ -14,6 +14,7 @@ import {
 } from "@/lib/idle/economy";
 import type { HustleText } from "@/i18n/economy-hustle";
 import type { Payload } from "./CompanyPanel";
+import { Ico } from "./eco-icons";
 
 const EMOJI: Record<HustleId, string> = {
   lemonade: "🍋",
@@ -112,7 +113,7 @@ export function HustleTab({ state, clock, liveCash, busy, t, m, fill, left, x, a
         <div>
           <p className="text-xs uppercase tracking-wide text-[var(--muted)]">{t.running}</p>
           <p className="text-2xl font-bold">
-            {running.length} {dueCount > 0 && <span className="text-base text-[var(--accent-yellow)]">· {dueCount} ✓</span>}
+            {running.length} {dueCount > 0 && <span className="text-base text-[var(--accent-yellow)]">· {dueCount} <Ico e="✓" /></span>}
           </p>
         </div>
         <div>
@@ -139,7 +140,7 @@ export function HustleTab({ state, clock, liveCash, busy, t, m, fill, left, x, a
             <article key={h.id} className={`card flex flex-col gap-4 p-5 ${due ? "ring-2 ring-[var(--accent-yellow)]" : ""}`}>
               <header className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-4xl" aria-hidden>{EMOJI[h.id]}</span>
+                  <span className="text-4xl" aria-hidden><Ico e={EMOJI[h.id]} /></span>
                   <div>
                     <h3 className="text-lg font-bold">{t.names[h.id]}</h3>
                     <p className="text-sm text-[var(--muted)]">{t.phases[slot.round] ?? ""} · {fill(t.phaseOf, { n: Math.min(slot.round + 1, HUSTLE_PHASES) })}</p>
@@ -172,7 +173,7 @@ export function HustleTab({ state, clock, liveCash, busy, t, m, fill, left, x, a
                               : "bg-[var(--surface-muted)] text-[var(--muted)]"
                         }`}
                       >
-                        {done ? "✓" : i + 1}
+                        {done ? <Ico e="✓" /> : i + 1}
                       </span>
                       <span className="text-xs font-bold">{name}</span>
                       <span className="min-h-4 text-xs text-[var(--muted)]">{done && mult !== undefined ? `×${x(mult)}` : ""}</span>
@@ -187,7 +188,7 @@ export function HustleTab({ state, clock, liveCash, busy, t, m, fill, left, x, a
                     {t.situations[h.id][slot.round]}
                   </p>
                   {hint && (
-                    <p className="text-sm font-semibold">{hint.up ? "📈 " + t.hintUp : "📉 " + t.hintDown}</p>
+                    <p className="text-sm font-semibold">{hint.up ? <><Ico e="📈" /> {t.hintUp}</> : <><Ico e="📉" /> {t.hintDown}</>}</p>
                   )}
                   {last && !hint && <p className="text-sm text-[var(--muted)]">{exp > 0 ? t.marketHidden : t.hintNone}</p>}
                   <div className="grid gap-2 sm:grid-cols-2">
@@ -203,7 +204,7 @@ export function HustleTab({ state, clock, liveCash, busy, t, m, fill, left, x, a
                           className="btn-bouncy flex flex-col gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-3 text-left disabled:opacity-45"
                         >
                           <span className="flex items-center justify-between gap-2">
-                            <span className="font-bold">{c.event ? "✨ " : ""}{name}</span>
+                            <span className="font-bold">{c.event ? <><Ico e="✨" />{" "}</> : null}{name}</span>
                             {c.cost > 0 && <span className="text-xs text-[var(--muted)]">−{Math.round(c.cost * 100)} %</span>}
                           </span>
                           <span className="text-xs text-[var(--muted)]">{hintText}</span>
@@ -230,7 +231,7 @@ export function HustleTab({ state, clock, liveCash, busy, t, m, fill, left, x, a
               <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-3">
                 <div className="flex flex-wrap gap-3 text-xs text-[var(--muted)]">
                   <span>{t.stakeTotal}: <b className="text-[var(--ink)]">{m(slot.stake)}</b></span>
-                  {slot.streak > 0 && <span>🔥 {fill(t.streak, { n: slot.streak })}</span>}
+                  {slot.streak > 0 && <span><Ico e="🔥" /> {fill(t.streak, { n: slot.streak })}</span>}
                   <span className="flex items-center gap-1.5">{t.chips.experience}: <Dots n={exp} /></span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -275,7 +276,7 @@ export function HustleTab({ state, clock, liveCash, busy, t, m, fill, left, x, a
             return (
               <article key={h.id} className={`card flex flex-col gap-3 p-5 ${locked ? "opacity-70" : ""}`}>
                 <div className="flex items-start gap-3">
-                  <span className="text-4xl" aria-hidden>{EMOJI[h.id]}</span>
+                  <span className="text-4xl" aria-hidden><Ico e={EMOJI[h.id]} /></span>
                   <div className="min-w-0">
                     <h4 className="font-bold">{t.names[h.id]}</h4>
                     <p className="text-sm text-[var(--muted)]">{t.desc[h.id]}</p>
@@ -303,7 +304,7 @@ export function HustleTab({ state, clock, liveCash, busy, t, m, fill, left, x, a
                   <span className="flex items-center gap-1.5">{t.chips.experience}: <Dots n={exp} /></span>
                   {h.upkeep > 0 && <span>{t.chips.upkeep}: {Math.round(h.upkeep * 100)} %</span>}
                 </div>
-                {locked && <p className="text-sm font-bold">🔒 {fill(t.locked, { n: h.edu })}</p>}
+                {locked && <p className="text-sm font-bold"><Ico e="🔒" /> {fill(t.locked, { n: h.edu })}</p>}
                 {!locked && (
                   <>
                     <button
@@ -313,7 +314,7 @@ export function HustleTab({ state, clock, liveCash, busy, t, m, fill, left, x, a
                       onClick={() => setOpenStart(open ? null : h.id)}
                       className="btn-bouncy rounded-lg border border-[var(--border)] px-3 py-2 text-sm font-bold disabled:opacity-45"
                     >
-                      {busyHere ? "✓ " + t.running : open ? "▲ " + t.openCard : "▼ " + t.openCard}
+                      {busyHere ? <><Ico e="✓" /> {t.running}</> : open ? <><Ico e="▲" /> {t.openCard}</> : <><Ico e="▼" /> {t.openCard}</>}
                     </button>
                     {open && !busyHere && (
                       <div className="flex flex-col gap-2 border-t border-[var(--border)] pt-3">
