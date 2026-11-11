@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { prefersReducedMotion } from "@/lib/motion";
-import { tiltLeave, tiltMove } from "./cardTilt";
+import { PcardRing, PcardTape } from "./PcardArt";
 import { useReveal } from "./useReveal";
 
 // Ilustrační ukázka přehledu výsledků ve stylu dashboardu (není to živá data).
@@ -106,8 +106,8 @@ function RowItem({ row, index, run }: { row: Row; index: number; run: boolean })
           <StatusIcon full={full} />
         </span>
       </div>
-      <span className="gcard-track block">
-        <span className="gcard-fill rp-fill" style={{ width: run ? `${row.pct}%` : "0%", transitionDelay: `${delay}ms` }} />
+      <span className="rp-track block">
+        <span className="rp-fill" style={{ width: run ? `${row.pct}%` : "0%", transitionDelay: `${delay}ms` }} />
       </span>
     </li>
   );
@@ -138,24 +138,26 @@ export function ResultsPreview({
     <div
       ref={ref}
       aria-hidden
-      style={{ ["--gc" as string]: "#6ee7b7", ["--ga" as string]: "#6ee7b7" }}
-      className={`gcard gcard-dark gcard-live rp-card${shown ? " is-in" : ""} p-5 sm:p-6 ${className}`}
-      onPointerMove={tiltMove}
-      onPointerLeave={tiltLeave}
+      style={{ ["--ac" as string]: "#6ee7b7" }}
+      className={`rp-card rp-paper${shown ? " is-in" : ""} ${className}`}
     >
+      <PcardTape />
       <div className="rp-head mb-5 flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <ClipboardIcon />
+          <span className="rp-iconwrap">
+            <PcardRing />
+            <ClipboardIcon />
+          </span>
           <div>
-            <p className="gcard-title text-lg" style={heading}>{title}</p>
-            <p className="gcard-sub">{due}</p>
+            <p className="rp-title" style={heading}>{title}</p>
+            <p className="rp-sub">{due}</p>
           </div>
         </div>
-        <span className="gcard-tag">{badge}</span>
+        <span className="rp-tag">{badge}</span>
       </div>
       <div className="rp-head mb-5 flex items-center gap-4" style={{ ["--d" as string]: "120ms" }}>
-        <p className="gcard-big tabular-nums">{avgShown}<small>%</small></p>
-        <span className="gcard-tag tabular-nums">
+        <p className="rp-big tabular-nums" style={heading}>{avgShown}<small>%</small></p>
+        <span className="rp-tag tabular-nums">
           <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden focusable="false" className="mr-1 inline-block align-[-2px]">
             <circle cx="8" cy="8" r="7" fill="#6ee7b7" />
             <path d="M4.6 8.2l2.4 2.4 4.4-5" fill="none" stroke={INK} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />

@@ -5109,3 +5109,37 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 }
 @media (hover: none) { .about-person:hover { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .about-person { transition: none; } }
+
+/* Ukázka přehledu výsledků ve stylu karet kategorií: plochý papír, tmavý obrys, tvrdý stín, lepicí páska */
+.rp-paper {
+  --ink: rgba(244, 239, 227, 0.88);
+  position: relative; padding: 24px 24px 22px; border-radius: 22px; border: 2px solid var(--ink); color: #f4f3ff;
+  background: color-mix(in srgb, var(--ac) 12%, #1b1a30);
+  box-shadow: 7px 9px 0 rgba(8, 8, 24, 0.55); rotate: 1.4deg;
+  transition: rotate 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), translate 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+}
+.rp-paper::before { /* papírové zrno */
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0.1; mix-blend-mode: screen;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+.rp-paper:hover { rotate: 0.4deg; translate: 0 -6px; box-shadow: 11px 14px 0 rgba(8, 8, 24, 0.55); }
+.rp-paper > .pcard-tape { --r: 0deg; --tp: -5deg; }
+.rp-paper .pcard-tape { color: var(--ac); }
+.rp-iconwrap {
+  position: relative; display: grid; place-items: center; flex-shrink: 0; width: 64px; height: 64px; border-radius: 18px;
+  background: color-mix(in srgb, var(--ac) 42%, #1b1a30); border: 2px solid var(--ink); box-shadow: 3px 4px 0 rgba(8, 8, 24, 0.5);
+  rotate: -3deg; --ir: -3deg;
+}
+.rp-iconwrap .pcard-ring { left: -7px; top: -7px; width: calc(100% + 14px); height: calc(100% + 14px); }
+.rp-title { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.01em; }
+.rp-sub { font-size: 0.85rem; color: rgba(244, 243, 255, 0.7); }
+.rp-tag {
+  display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em;
+  background: var(--ac); color: #14132a; border: 2px solid #14132a; white-space: nowrap;
+}
+.rp-big { font-size: 3rem; font-weight: 800; line-height: 1; color: var(--ac); }
+.rp-big small { font-size: 1.4rem; margin-left: 2px; }
+.rp-track { height: 12px; border-radius: 999px; background: rgba(8, 8, 24, 0.55); border: 2px solid #14132a; overflow: hidden; }
+.rp-fill { display: block; height: 100%; border-radius: 999px; background: var(--fc, #f6f1e4); }
+@media (max-width: 1023px) { .rp-paper { rotate: 0.8deg; } }
+@media (prefers-reduced-motion: reduce) { .rp-paper, .rp-paper:hover { transition: none; translate: none; } }
