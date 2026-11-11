@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { HeroStrip } from "@/components/HeroStrip";
+import { Icon } from "@/components/Icon";
 import { useAccount } from "@/lib/use-account";
 import type { HomeHeroText } from "@/i18n/home-hero";
 
@@ -10,13 +10,12 @@ import type { HomeHeroText } from "@/i18n/home-hero";
 // Úroveň, série a třída jsou pro přihlášeného skutečné (/api/profil, /api/denni-vyzvy, /api/tymy).
 type Subject = { slug: string; label: string; color: string };
 
-// Realistické 3D rendery z Blenderu (umime-art/blender/hero_*.py): hry jsou pásy 24 snímků po 384 px,
-// únikovka zatím zůstává statická.
+// Ploché SVG nálepky z public/ikony (stejná sada jako jinde na webu).
 const GAME_CHIPS = [
-  { key: "farm", strip: "farma", frames: 24 },
-  { key: "town", strip: "mesto", frames: 24 },
-  { key: "escape", still: "funkce-unikovky" },
-  { key: "pets", strip: "mazlicci", frames: 24 },
+  { key: "farm", icon: "farm" },
+  { key: "town", icon: "city" },
+  { key: "escape", icon: "escape" },
+  { key: "pets", icon: "pets" },
 ] as const;
 
 const BOARD = [
@@ -88,7 +87,7 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
       <div className="hs-card hs-progress space-float">
         <div className="hs-row">
           <span className="hs-level">
-            <HeroStrip src="/home/hero3d/odznak.webp" frames={16} size={52} seconds={5} />
+            <Icon name="hero-odznak" size={52} />
             <b>{level ? level.level : 7}</b>
           </span>
           <div className="hs-grow">
@@ -97,7 +96,7 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
           </div>
         </div>
         <div className="hs-row hs-streak">
-          <HeroStrip src="/home/hero3d/mince.webp" frames={16} size={26} seconds={4} />
+          <Icon name="hero-mince" size={26} />
           <span className="hs-label">{streakLabel}</span>
         </div>
       </div>
@@ -107,7 +106,7 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
           <span className="hs-shield">✓</span> {t.safeTitle}
         </div>
         <div className="hs-safe-orb">
-          <HeroStrip src="/home/hero3d/stit.webp" frames={16} size={92} seconds={5} />
+          <Icon name="hero-stit" size={84} />
         </div>
         <div className="hs-label hs-center">{t.safeText}</div>
       </div>
@@ -123,8 +122,7 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
                 data-active={i === 1 || i === 5 ? "true" : undefined}
                 style={{ ["--c" as string]: s.color }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/home/hero3d/predmety/${s.slug}.webp`} alt="" width={40} height={40} draggable={false} className="hs-tile-img" />
+                <Icon name={s.slug} size={40} className="hs-tile-img" />
                 <span className="hs-tile-label">{s.label}</span>
               </div>
             ))}
@@ -135,12 +133,7 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
           <div className="hs-chips">
             {GAME_CHIPS.map((g) => (
               <span key={g.key} className="hs-chip" title={t.games[g.key]}>
-                {"strip" in g ? (
-                  <HeroStrip src={`/home/hero3d/hry/${g.strip}.webp`} frames={g.frames} size={68} seconds={3} />
-                ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={`/home/${g.still}.webp`} alt="" width={68} height={68} draggable={false} />
-                )}
+                <Icon name={g.icon} size={68} />
               </span>
             ))}
           </div>
