@@ -222,14 +222,14 @@ export default async function Home({
       <section id="pro-ucitele" className="zone zone-tech scroll-mt-24">
         <Wave fill="#160a2c" />
         <div className="lobby-panel relative z-10">
-          <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="grid gap-12">
             <div>
               <p className="reveal mb-2 text-xs font-bold uppercase tracking-widest text-[var(--accent-green)]">{a.teachers.eyebrow}</p>
               <h2 className="reveal mb-4 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
                 {a.teachers.title}
               </h2>
               <p className="reveal mb-8 max-w-xl text-lg leading-relaxed text-[var(--muted)]">{a.teachers.lead}</p>
-              <ul className="gcard-cycle grid gap-4 sm:grid-cols-2">
+              <ul className="gcard-cycle grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {a.teachers.points.map((point) => (
                   <li key={point.title} className="reveal gcard gcard-hover p-4">
                     <h3 className="gcard-title mb-1">{point.title}</h3>

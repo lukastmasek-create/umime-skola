@@ -5110,36 +5110,87 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 @media (hover: none) { .about-person:hover { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .about-person { transition: none; } }
 
-/* Ukázka přehledu výsledků ve stylu karet kategorií: plochý papír, tmavý obrys, tvrdý stín, lepicí páska */
+/* Ukázka třídy jako dětský závod: papírová karta, zvířátka běží k vlajce */
 .rp-paper {
   --ink: rgba(244, 239, 227, 0.88);
-  position: relative; padding: 24px 24px 22px; border-radius: 22px; border: 2px solid var(--ink); color: #f4f3ff;
+  position: relative; padding: 26px 26px 24px; border-radius: 24px; border: 2px solid var(--ink); color: #f4f3ff; overflow: visible;
   background: color-mix(in srgb, var(--ac) 12%, #1b1a30);
-  box-shadow: 7px 9px 0 rgba(8, 8, 24, 0.55); rotate: 1.4deg;
+  box-shadow: 7px 9px 0 rgba(8, 8, 24, 0.55); rotate: -0.8deg;
   transition: rotate 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), translate 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
 }
-.rp-paper::before { /* papírové zrno */
-  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0.1; mix-blend-mode: screen;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-}
-.rp-paper:hover { rotate: 0.4deg; translate: 0 -6px; box-shadow: 11px 14px 0 rgba(8, 8, 24, 0.55); }
-.rp-paper > .pcard-tape { --r: 0deg; --tp: -5deg; }
-.rp-paper .pcard-tape { color: var(--ac); }
-.rp-iconwrap {
-  position: relative; display: grid; place-items: center; flex-shrink: 0; width: 64px; height: 64px; border-radius: 18px;
-  background: color-mix(in srgb, var(--ac) 42%, #1b1a30); border: 2px solid var(--ink); box-shadow: 3px 4px 0 rgba(8, 8, 24, 0.5);
-  rotate: -3deg; --ir: -3deg;
-}
+.rp-paper::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0.1; mix-blend-mode: screen;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+.rp-paper:hover { rotate: 0deg; translate: 0 -6px; box-shadow: 11px 14px 0 rgba(8, 8, 24, 0.55); }
+.rp-paper > .pcard-tape { --r: 0deg; --tp: -4deg; color: var(--ac); }
+.rp-iconwrap { position: relative; display: grid; place-items: center; flex-shrink: 0; width: 64px; height: 64px; border-radius: 18px; --ir: -3deg; rotate: -3deg;
+  background: color-mix(in srgb, var(--ac) 42%, #1b1a30); border: 2px solid var(--ink); box-shadow: 3px 4px 0 rgba(8, 8, 24, 0.5); }
 .rp-iconwrap .pcard-ring { left: -7px; top: -7px; width: calc(100% + 14px); height: calc(100% + 14px); }
-.rp-title { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.01em; }
-.rp-sub { font-size: 0.85rem; color: rgba(244, 243, 255, 0.7); }
-.rp-tag {
-  display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em;
-  background: var(--ac); color: #14132a; border: 2px solid #14132a; white-space: nowrap;
+.rp-title { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.01em; }
+.rp-sub { font-size: 0.85rem; color: rgba(244, 243, 255, 0.72); }
+.rp-tag { display: inline-flex; align-items: center; padding: 3px 12px; border-radius: 999px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em;
+  background: var(--ac); color: #14132a; border: 2px solid #14132a; white-space: nowrap; }
+.rp-big { font-size: 2.6rem; font-weight: 800; line-height: 1; color: var(--ac); }
+.rp-big small { font-size: 1.2rem; margin-left: 2px; color: #f4f3ff; }
+
+.rp-top { position: relative; z-index: 2; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+.rp-headline { display: flex; align-items: center; gap: 14px; }
+.rp-body { position: relative; z-index: 2; display: grid; gap: 22px; }
+@media (min-width: 820px) { .rp-body { grid-template-columns: 220px 1fr; gap: 30px; align-items: stretch; } }
+.rp-stats { display: flex; flex-direction: row; gap: 14px; align-items: center; }
+.rp-stats > .rp-stat { flex: 1 1 0; }
+@media (min-width: 820px) { .rp-stats { flex-direction: column; justify-content: center; align-items: stretch; } .rp-stats > .rp-stat { flex: none; } }
+.rp-stat { display: grid; justify-items: start; align-content: center; gap: 4px; padding: 14px 16px; border-radius: 18px; border: 2px solid #14132a; box-shadow: 3px 4px 0 rgba(8, 8, 24, 0.5);
+  background: color-mix(in srgb, var(--ac) 18%, #1b1a30); }
+.rp-stat-a { rotate: -1.5deg; }
+.rp-stat-b { rotate: 1.5deg; background: color-mix(in srgb, #ffc933 18%, #1b1a30); }
+.rp-stat-b .rp-big { color: #ffc933; }
+
+.rp-lanes { display: grid; gap: 14px; list-style: none; margin: 0; padding: 0; }
+.rp-lane { display: grid; grid-template-columns: 62px 1fr; align-items: center; gap: 12px; }
+.rp-who { display: grid; gap: 1px; font-size: 0.9rem; line-height: 1.1; }
+.rp-who span { font-size: 0.78rem; font-weight: 700; color: rgba(244, 243, 255, 0.72); }
+.rp-road { position: relative; height: 52px; border-radius: 26px; border: 2px solid #14132a; background: rgba(8, 8, 24, 0.5); padding: 0 16px; }
+.rp-dash { position: absolute; left: 22px; right: 46px; top: 50%; height: 0; border-top: 3px dashed rgba(246, 241, 228, 0.28); }
+.rp-trail { position: absolute; left: 22px; top: 50%; height: 8px; margin-top: -4px; border-radius: 4px; background: var(--fc, var(--ac)); opacity: .55;
+  width: calc((100% - 22px - 100px) * var(--p, 0) / 100 + 14px); transition: width 1.7s cubic-bezier(0.34, 1.15, 0.64, 1) var(--d, 0ms); }
+.rp-runner { position: absolute; top: 2px; left: calc(6px + (100% - 120px) * var(--p, 0) / 100); width: 46px; height: 46px; z-index: 2;
+  transition: left 1.7s cubic-bezier(0.34, 1.15, 0.64, 1) var(--d, 0ms); }
+.rp-hop { display: block; transform-origin: 50% 100%; }
+.rp-lane.is-in .rp-hop { animation: rp-run 0.5s ease-in-out calc(var(--d, 0ms) + 100ms) 4 alternate, rp-idle 2.6s ease-in-out calc(var(--d, 0ms) + 2.4s) infinite; }
+@keyframes rp-run { from { translate: 0 0; rotate: -6deg; } to { translate: 0 -7px; rotate: 6deg; } }
+@keyframes rp-idle { 0%, 80%, 100% { translate: 0 0; scale: 1 1; } 88% { translate: 0 -8px; scale: .94 1.08; } 95% { translate: 0 0; scale: 1.08 .92; } }
+.rp-goal { position: absolute; right: 8px; bottom: 6px; z-index: 1; }
+.rp-flag-cloth { transform-box: fill-box; transform-origin: 0 50%; animation: rp-wave 1.6s ease-in-out infinite alternate; }
+@keyframes rp-wave { from { transform: skewY(-4deg) scaleX(1); } to { transform: skewY(4deg) scaleX(0.9); } }
+.rp-win { position: absolute; top: -14px; right: -8px; scale: 0; }
+.rp-lane.is-in .rp-win { animation: rp-pop 0.7s cubic-bezier(0.34, 1.8, 0.64, 1) calc(var(--d, 0ms) + 1.7s) both; }
+.rp-win svg { animation: rp-spin 3.4s ease-in-out infinite; }
+@keyframes rp-pop { from { scale: 0; rotate: -40deg; } to { scale: 1; rotate: 0deg; } }
+@keyframes rp-spin { 0%, 70%, 100% { rotate: 0deg; } 85% { rotate: 25deg; } }
+.rp-confetti { position: absolute; left: -24px; top: 10px; width: 60px; height: 40px; pointer-events: none; }
+.rp-confetti i { position: absolute; top: 0; width: 6px; height: 9px; border-radius: 2px; opacity: 0; }
+.rp-lane.is-in .rp-confetti i { animation: rp-fall 1.8s ease-in infinite; animation-delay: calc(var(--d, 0ms) + 1.9s); }
+@keyframes rp-fall { 0% { translate: 0 -4px; rotate: 0deg; opacity: 0; } 15% { opacity: 1; } 100% { translate: 6px 38px; rotate: 260deg; opacity: 0; } }
+.rp-lane.is-full { --fc: #6ee7b7; }
+.rp-lane:not(.is-full) { --fc: #f6f1e4; }
+.rp-cloud { position: absolute; z-index: 1; width: 64px; pointer-events: none; opacity: .9; animation: rp-drift 14s ease-in-out infinite alternate; }
+.rp-cloud-a { right: 130px; top: -20px; }
+.rp-cloud-b { right: 24px; top: 58px; width: 44px; animation-duration: 18s; animation-direction: alternate-reverse; opacity: .6; }
+@keyframes rp-drift { from { translate: -14px 0; } to { translate: 14px 0; } }
+.rp-top, .rp-stat, .rp-lane { opacity: 0; }
+.rp-card.is-in .rp-top, .rp-card.is-in .rp-stat, .rp-lane.is-in { animation: rp-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--i, 0) * 120ms) both; }
+@keyframes rp-in { from { opacity: 0; translate: -14px 10px; } to { opacity: 1; translate: 0 0; } }
+.rp-ico { animation: rp-wiggle 6s ease-in-out 3s infinite; }
+@keyframes rp-wiggle { 0%, 84%, 100% { rotate: 0deg; } 88% { rotate: 10deg; } 92% { rotate: -12deg; } 96% { rotate: 5deg; } }
+.rp-trophy { animation: rp-wiggle 5s ease-in-out 2s infinite; }
+.rp-card.is-in .rp-big { animation: rp-bump 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 2.2s both; transform-origin: 0 70%; }
+@keyframes rp-bump { 0% { scale: 1; } 40% { scale: 1.12; } 100% { scale: 1; } }
+@media (max-width: 640px) { .rp-lane { grid-template-columns: 1fr; gap: 4px; } .rp-who { grid-auto-flow: column; justify-content: space-between; } .rp-cloud { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .rp-paper, .rp-paper:hover { transition: none; translate: none; }
+  .rp-top, .rp-stat, .rp-lane { opacity: 1; animation: none !important; }
+  .rp-runner, .rp-trail { transition: none; }
+  .rp-hop, .rp-flag-cloth, .rp-cloud, .rp-ico, .rp-trophy, .rp-win svg, .rp-confetti i, .rp-big { animation: none !important; }
+  .rp-win { scale: 1; }
 }
-.rp-big { font-size: 3rem; font-weight: 800; line-height: 1; color: var(--ac); }
-.rp-big small { font-size: 1.4rem; margin-left: 2px; }
-.rp-track { height: 12px; border-radius: 999px; background: rgba(8, 8, 24, 0.55); border: 2px solid #14132a; overflow: hidden; }
-.rp-fill { display: block; height: 100%; border-radius: 999px; background: var(--fc, #f6f1e4); }
-@media (max-width: 1023px) { .rp-paper { rotate: 0.8deg; } }
-@media (prefers-reduced-motion: reduce) { .rp-paper, .rp-paper:hover { transition: none; translate: none; } }
+.rp-big, .rp-sub, .rp-title { margin: 0; }
