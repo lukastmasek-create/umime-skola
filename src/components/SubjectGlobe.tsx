@@ -848,7 +848,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
                   style={{ background: s.color, willChange: "transform" }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={`/home/predmet-${slug}.webp`} alt="" width={20} height={20} draggable={false} className="h-[18px] w-[18px] object-contain" />
+                  <img src={`/ikony/${slug}.svg`} alt="" width={20} height={20} draggable={false} className="h-[18px] w-[18px] object-contain" />
                 </button>
               );
             })}
@@ -924,7 +924,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
                 >
                   <span className="flex items-center gap-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`/home/predmet-${s.slug}.webp`} alt="" width={32} height={32} draggable={false} className="h-8 w-8 shrink-0 object-contain" />
+                    <img src={`/ikony/${s.slug}.svg`} alt="" width={32} height={32} draggable={false} className="h-8 w-8 shrink-0 object-contain" />
                     <span className="text-[13px] font-bold leading-tight">{s.label}</span>
                   </span>
                   <span className="h-1.5 overflow-hidden rounded-full bg-black/15" aria-hidden>
@@ -944,7 +944,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
         <div className="card flex flex-col gap-3 p-4" style={{ borderColor: subject.color }}>
           <div className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/home/predmet-${subject.slug}.webp`} alt="" width={44} height={44} draggable={false} className="h-11 w-11 object-contain" />
+            <img src={`/ikony/${subject.slug}.svg`} alt="" width={44} height={44} draggable={false} className="h-11 w-11 object-contain" />
             <div className="min-w-0">
               <h3 className="text-lg font-extrabold leading-tight" style={{ fontFamily: "var(--font-heading)" }}>
                 {subject.label}

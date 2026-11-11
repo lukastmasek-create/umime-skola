@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { Icon } from "@/components/Icon";
 import { getDailyQuizText } from "@/i18n/daily-quiz";
 import { getSubjectText } from "@/i18n/subjects";
 import { SUBJECTS } from "@/lib/taxonomy";
@@ -300,7 +301,7 @@ export function DailyQuiz({ locale }: { locale: Locale }) {
           <fieldset>
             <legend className="mb-2 text-sm font-bold">{t.topic}</legend>
             <div className="flex flex-wrap gap-2">
-              {[{ value: null as string | null, emoji: "🎲" }, ...SUBJECTS].map((s) => {
+              {[{ value: null as string | null, slug: "daily" }, ...SUBJECTS].map((s) => {
                 const active = subject === s.value;
                 return (
                   <button
@@ -310,7 +311,7 @@ export function DailyQuiz({ locale }: { locale: Locale }) {
                     onClick={() => setSubject(s.value)}
                     className={`pill px-3 py-1.5 text-sm font-semibold transition ${active ? "bg-[var(--brand-500)] text-white" : "bg-[var(--surface-muted)] hover:-translate-y-0.5"}`}
                   >
-                    {s.emoji} {subjectName(s.value)}
+                    <Icon name={s.slug} size={22} className="mr-1.5 align-middle" />{subjectName(s.value)}
                   </button>
                 );
               })}

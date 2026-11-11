@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-4 -4 136 136" width="256" height="256"><defs>
+<linearGradient id="gd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff2a8"/><stop offset=".4" stop-color="#ffd24d"/><stop offset="1" stop-color="#b87a0c"/></linearGradient>
+<linearGradient id="gi" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff2a8"/><stop offset=".5" stop-color="#e8aa1f"/><stop offset="1" stop-color="#8a5806"/></linearGradient>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6f86ff"/><stop offset="1" stop-color="#ffb58a"/></linearGradient>
+<radialGradient id="jw" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#d9f3ff"/><stop offset=".5" stop-color="#3da0ff"/><stop offset="1" stop-color="#1b4fb5"/></radialGradient>
+<radialGradient id="sh"><stop offset="0" stop-color="#000" stop-opacity=".35"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<clipPath id="cv"><rect x="26" y="26" width="76" height="76" rx="3"/></clipPath>
+<filter id="stk" filterUnits="userSpaceOnUse" x="-4" y="-4" width="136" height="136"><feMorphology in="SourceAlpha" operator="dilate" radius="3.2" result="d"/><feFlood flood-color="#fffdf5"/><feComposite in2="d" operator="in" result="w"/><feMerge><feMergeNode in="w"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><style>.bob{transform-origin:64px 110px;animation:bob 2.8s ease-in-out infinite}@keyframes bob{0%,100%{transform:translateY(0) rotate(-1.6deg)}50%{transform:translateY(-3.5px) rotate(1.6deg)}}.tw{transform-box:fill-box;transform-origin:center;animation:tw 1.8s ease-in-out infinite}.tw:nth-of-type(2n){animation-delay:.6s}@keyframes tw{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.55);opacity:.55}}@media (prefers-reduced-motion:reduce){.bob,.tw{animation:none}}</style><g class="bob"><g filter="url(#stk)">
+<ellipse cx="64" cy="121" rx="40" ry="5" fill="url(#sh)"/>
+<rect x="12" y="12" width="104" height="104" rx="10" fill="url(#gd)" stroke="#473122" stroke-width="3.88"/>
+<rect x="19" y="19" width="90" height="90" rx="6" fill="none" stroke="#fff6c7" stroke-width="2" opacity=".7"/>
+<rect x="22" y="22" width="84" height="84" rx="5" fill="url(#gi)" stroke="#473122" stroke-width="2"/>
+<rect x="26" y="26" width="76" height="76" rx="3" fill="url(#sky)"/>
+<g clip-path="url(#cv)">
+<circle cx="84" cy="48" r="9" fill="#fff1a8"/><circle cx="84" cy="48" r="13" fill="#fff1a8" opacity=".3"/>
+<path d="M26 92l22-30 14 18 16-24 24 36v10H26z" fill="#4a3fb3"/>
+<path d="M26 98l20-20 16 14 18-12 22 18v8H26z" fill="#2d2a82"/>
+<path d="M48 62l-5 7 5-2 4 5z" fill="#fff" opacity=".7"/><path d="M78 56l-5 8 5-2 4 4z" fill="#fff" opacity=".7"/>
+<path d="M26 26h76L26 90z" fill="#fff" opacity=".12"/>
+</g>
+<rect x="26" y="26" width="76" height="76" rx="3" fill="none" stroke="#382822" stroke-width="2"/>
+<g stroke="#473122" stroke-width="2"><circle cx="18" cy="18" r="8" fill="url(#gd)"/><circle cx="110" cy="18" r="8" fill="url(#gd)"/><circle cx="18" cy="110" r="8" fill="url(#gd)"/><circle cx="110" cy="110" r="8" fill="url(#gd)"/></g>
+<circle cx="64" cy="14" r="7" fill="url(#jw)" stroke="#18285e" stroke-width="2"/><circle cx="62" cy="12" r="2" fill="#fff" opacity=".85"/>
+<path d="M16 40v48M112 40v48" stroke="#fff6c7" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+</g></g></svg>
