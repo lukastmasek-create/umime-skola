@@ -323,7 +323,7 @@ def m_iron():
 
 
 def m_silver():
-    silver = mat("silver", (0.85, 0.87, 0.9), metal=1, rough=0.18)
+    silver = mat("silver", (0.62, 0.64, 0.68), metal=1, rough=0.3, rvar=0.25, bump=0.1, noise=150)
     cyl(0.85, 0.3, loc=(0, 0, 0), m=silver, r2=0.65, verts=4, bevel=0.05, smooth=False).rotation_euler = (0, 0, math.pi / 4)
     cyl(0.85, 0.3, loc=(0, 0, 0.3), m=silver, r2=0.65, verts=4, bevel=0.05, smooth=False).rotation_euler = (0, 0, math.pi / 4)
 
@@ -337,7 +337,7 @@ def m_gold():
 
 
 def m_moon_dust():
-    dust = mat("dust", (0.4, 0.4, 0.42), rough=1.0, tint2=(0.62, 0.61, 0.6), tscale=6, bump=1.2, noise=140, voro=0.7, vscale=4)
+    dust = mat("dust", (0.17, 0.17, 0.18), rough=1.0, tint2=(0.36, 0.35, 0.34), tscale=6, bump=1.2, noise=140, voro=0.7, vscale=4)
     displaced(0.75, (0, 0, 0), dust, strength=0.18, scale=1.4, seed=2)
     for i, (x, y, z, r) in enumerate([(0.3, -0.6, 0.3, 0.12), (-0.4, -0.55, -0.2, 0.18), (0.1, -0.7, -0.4, 0.1)]):
         sphere(r, (x, y, z), m=mat(f"crater{i}", (0.4, 0.4, 0.42), rough=1.0))
@@ -432,10 +432,12 @@ def m_resin():
 
 
 def m_amber():
-    a = mat("amber", (1.0, 0.55, 0.05), rough=0.05, trans=1.0, ior=1.55, absorb=(1.0, 0.5, 0.0, 5.0))
+    a = mat("amber", (1.0, 0.7, 0.12), rough=0.04, trans=1.0, ior=1.55, emit=(1.0, 0.55, 0.05), emit_strength=0.25, absorb=(1.0, 0.72, 0.05, 1.6))
     gem(0.55, 0.78, 0.8, 0.55, a, facets=7)
     bug = mat("inc", (0.1, 0.05, 0.02), rough=0.6)
-    sphere(0.08, (0.15, 0.1, 0.12), scale=(1, 1.6, 0.8), m=bug, seg=16)
+    sphere(0.07, (0.1, 0.0, -0.1), scale=(1, 1.6, 0.8), m=bug, seg=16)
+    for dx, dy, dz in [(-0.3, 0.2, 0.15), (0.25, -0.2, -0.3), (0.0, 0.3, -0.35)]:
+        sphere(0.025, (dx, dy, dz), m=mat("bub", (1, 0.9, 0.6), rough=0.1, trans=0.7), seg=10)
 
 
 def m_golden_leaf():
@@ -450,7 +452,7 @@ def m_golden_leaf():
 
 
 def m_stone():
-    s = mat("stone", (0.3, 0.3, 0.32), rough=0.9, tint2=(0.5, 0.48, 0.45), tscale=4, rvar=0.3, bump=1.6, noise=22, voro=0.5, vscale=5)
+    s = mat("stone", (0.14, 0.14, 0.15), rough=0.9, tint2=(0.3, 0.28, 0.26), tscale=4, rvar=0.3, bump=1.6, noise=22, voro=0.5, vscale=5)
     displaced(0.8, (0, 0, 0), s, strength=0.4, scale=1.0, seed=7, flat=(1.1, 0.9, 0.75), sub=5)
 
 
@@ -516,7 +518,7 @@ def m_magic_dust():
 
 
 def m_moonstone():
-    s = mat("moon", (0.75, 0.82, 1.0), rough=0.12, trans=0.6, ior=1.5, emit=(0.5, 0.65, 1.0), emit_strength=0.9, coat=1.0, sheen=1.0)
+    s = mat("moon", (0.45, 0.6, 0.95), rough=0.08, trans=0.85, ior=1.5, emit=(0.25, 0.45, 1.0), emit_strength=0.5, absorb=(0.5, 0.65, 1.0, 1.2), tint2=(0.7, 0.8, 1.0), tscale=2.5)
     sphere(0.7, (0, 0, 0.05), m=s)
     cyl(0.5, 0.2, loc=(0, 0, -0.75), m=mat("base", (0.2, 0.2, 0.25), metal=0.8, rough=0.3), r2=0.35, verts=48)
 
@@ -672,21 +674,25 @@ def m_windmill():
     cyl(0.62, 1.4, loc=(0, 0, -0.3), m=stone, r2=0.42)
     cyl(0.55, 0.55, loc=(0, 0, 0.7), m=red, r2=0.02)
     cube((0.2, 0.05, 0.35), (0, -0.62, -0.7), mat("mdoor", (0.35, 0.2, 0.1), rough=0.6), bevel=0.01)
-    wood = mat("blade", (0.92, 0.88, 0.78), rough=0.8)
-    arm_m = mat("arm", (0.4, 0.25, 0.12), rough=0.8)
-    hub = Vector((0, -0.55, 0.35))
-    for k in range(2):
-        a = k * math.pi / 2 + 0.4
-        arm = cube((0.06, 0.06, 1.7), tuple(hub), arm_m, bevel=0.01)
-        arm.rotation_euler = (0, a, 0)
+    cloth = mat("sail", (0.93, 0.86, 0.7), rough=0.9, sheen=0.5, tint2=(0.8, 0.7, 0.5), tscale=40, bump=0.3, noise=150)
+    frame = mat("arm", (0.32, 0.19, 0.09), rough=0.75, bump=0.3, noise=40)
+    hub = Vector((0, -0.7, 0.35))
+    base = 0.45
     for k in range(4):
-        a = k * math.pi / 2 + 0.4
+        a = k * math.pi / 2 + base
         d = Vector((math.sin(a), 0, math.cos(a)))
         pr = Vector((math.cos(a), 0, -math.sin(a)))
-        pos = hub + d * 0.55 + pr * 0.16 + Vector((0, -0.04, 0))
-        sail = cube((0.3, 0.02, 0.6), tuple(pos), wood, bevel=0.0)
+        arm = cube((0.07, 0.07, 1.25), tuple(hub + d * 0.62), frame, bevel=0.01)
+        arm.rotation_euler = (0, a, 0)
+        sail = cube((0.3, 0.02, 0.8), tuple(hub + d * 0.78 + pr * 0.17 + Vector((0, -0.04, 0))), cloth, bevel=0.0)
         sail.rotation_euler = (0, a, 0)
-    sphere(0.1, (0, -0.52, 0.35), m=mat("hub", (0.3, 0.2, 0.1), rough=0.6), seg=16)
+        for off in (0.02, 0.32):
+            bar = cube((0.02, 0.03, 0.8), tuple(hub + d * 0.78 + pr * off + Vector((0, -0.05, 0))), frame, bevel=0.0)
+            bar.rotation_euler = (0, a, 0)
+        for t_ in (0.4, 0.78, 1.16):
+            rung = cube((0.34, 0.03, 0.025), tuple(hub + d * t_ + pr * 0.17 + Vector((0, -0.05, 0))), frame, bevel=0.0)
+            rung.rotation_euler = (0, a, 0)
+    sphere(0.11, (0, -0.68, 0.35), m=mat("hub", (0.3, 0.2, 0.1), rough=0.6), seg=16)
 
 
 def m_ferris_wheel():
