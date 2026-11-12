@@ -7,9 +7,9 @@ import type { Locale } from "@/i18n/config";
 import type { AnswerResult, ChestOutcome, ChestResult, LiveView } from "@/lib/live/types";
 import { forget, liveApi, type Identity } from "./api";
 import { errorText } from "./LiveRoom";
-import { isSyncMode } from "@/lib/live/logic";
+import { CHEST_AMOUNTS, isSyncMode } from "@/lib/live/logic";
 import { Countdown, EndsIn, Leaderboard, OptionButton, TEAM_STYLES, TeamScores } from "./shared";
-import { ChestClosed, ChestOpen } from "./ChestArt";
+import { ChestClosed, ChestOpen, LootIcon } from "./ChestArt";
 import { ModeScene } from "./ModeScenes";
 
 type Feedback = { choice: number; correct: boolean; correctIndex: number; explanation?: string; chests: number; points: number; question: NonNullable<LiveView["question"]> };
@@ -267,6 +267,20 @@ export function PlayerView({
           <p className="text-xl font-extrabold text-[var(--accent-green)]">{t.play.correct}</p>
           <h2 className="text-lg font-bold">{t.play.chestTitle}</h2>
           <p className="text-sm text-[var(--muted)]">{t.play.chestHint}</p>
+          <ul className="flex flex-wrap justify-center gap-2 text-sm font-extrabold">
+            <li className="flex items-center gap-2 rounded-xl bg-[var(--surface-muted)] px-3 py-2">
+              <LootIcon kind="gold" id="legend-gold" className="h-9 w-auto" />
+              +{CHEST_AMOUNTS.goldMin} až +{CHEST_AMOUNTS.goldMax}
+            </li>
+            <li className="flex items-center gap-2 rounded-xl bg-[var(--surface-muted)] px-3 py-2">
+              <LootIcon kind="steal" id="legend-steal" className="h-9 w-auto" />
+              −{CHEST_AMOUNTS.steal}
+            </li>
+            <li className="flex items-center gap-2 rounded-xl bg-[var(--surface-muted)] px-3 py-2">
+              <LootIcon kind="lose" id="legend-lose" className="h-9 w-auto" />
+              −{CHEST_AMOUNTS.lose}
+            </li>
+          </ul>
           <div className="grid w-full grid-cols-3 gap-3">
             {([0, 1, 2] as const).map((i) => (
               <button key={i} type="button" onClick={() => pickChest(i)} disabled={chestBusy} className="btn-bouncy flex flex-col items-center gap-2 bg-[var(--surface)] p-3 disabled:opacity-60" aria-label={`${t.play.chestTitle} ${i + 1}`}>

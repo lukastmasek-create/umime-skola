@@ -121,6 +121,20 @@ function Contents({ kind }: { kind: ChestOutcome["kind"] }) {
   );
 }
 
+/** Jen obsah truhly (bez těla) jako malá ikona do legendy. */
+export function LootIcon({ kind, id, className }: { kind: ChestOutcome["kind"]; id: string; className?: string }) {
+  return (
+    <svg viewBox="22 14 76 52" className={className} aria-hidden focusable="false">
+      <defs>
+        <Rough id={`rough-${id}`} seed={kind === "gold" ? 3 : kind === "steal" ? 9 : 13} />
+      </defs>
+      <g filter={`url(#rough-${id})`}>
+        <Contents kind={kind} />
+      </g>
+    </svg>
+  );
+}
+
 /** Otevřená truhla s obsahem výsledku (zlato, krádež, past). */
 export function ChestOpen({ kind, id, className }: { kind: ChestOutcome["kind"]; id: string; className?: string }) {
   const tone = kind === "gold" ? TONES[0] : kind === "steal" ? TONES[1] : TONES[2];
