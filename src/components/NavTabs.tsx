@@ -18,6 +18,7 @@ import { getLiveText } from "@/i18n/live";
 import { getDailyQuizText } from "@/i18n/daily-quiz";
 import { getContactText } from "@/i18n/contact";
 import { getProText } from "@/i18n/pro";
+import { getProToolsText } from "@/i18n/pro-tools";
 import { getPlayerMarketText } from "@/i18n/player-market";
 import { getAudiencePagesText } from "@/i18n/audience";
 import { useAccount } from "@/lib/use-account";
@@ -104,6 +105,9 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
       items: [
         { key: "mapa", href: `/${locale}/mapa`, label: review.mapNav },
         { key: "opakovani", href: `/${locale}/opakovani`, label: review.reviewNav },
+        { key: "ai-doucovatel", href: `/${locale}/pro/doucovatel`, label: getProToolsText(locale).features.doucovatel.title },
+        { key: "ai-fotka", href: `/${locale}/pro/fotka`, label: getProToolsText(locale).features.fotka.title },
+        { key: "ai-poznamky", href: `/${locale}/pro/poznamky`, label: getProToolsText(locale).features.poznamky.title },
         { key: "materialy", href: `/${locale}/materialy`, label: getMaterialsText(locale).nav },
         { key: "zaci", href: `/${locale}/zaci`, label: getAudiencePagesText(locale).students.nav },
         { key: "ucitele", href: `/${locale}/ucitele`, label: getAudiencePagesText(locale).teachers.nav },
