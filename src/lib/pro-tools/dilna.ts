@@ -130,9 +130,25 @@ export function isAssignable(game: GameData): boolean {
   return game.kind !== "speak";
 }
 
+const LANG_NAME: Record<string, string> = {
+  cs: "Czech", en: "English", de: "German", ru: "Russian", uk: "Ukrainian", ja: "Japanese", es: "Spanish", fr: "French",
+};
+
+/** Otázky v zadání úkolu v jazyce učitele. */
+const QUESTION: Record<string, { pair: (l: string) => string; order: (l: string) => string }> = {
+  cs: { pair: (l) => `Který výklad patří k pojmu „${l}“?`, order: (l) => `Co následuje po: „${l}“?` },
+  en: { pair: (l) => `Which explanation matches „${l}“?`, order: (l) => `What comes after „${l}“?` },
+  de: { pair: (l) => `Welche Erklärung passt zu „${l}“?`, order: (l) => `Was kommt nach „${l}“?` },
+  ru: { pair: (l) => `Какое объяснение подходит к «${l}»?`, order: (l) => `Что идёт после «${l}»?` },
+  uk: { pair: (l) => `Яке пояснення відповідає «${l}»?`, order: (l) => `Що йде після «${l}»?` },
+  ja: { pair: (l) => `「${l}」に当てはまる説明はどれですか？`, order: (l) => `「${l}」の次に来るものは何ですか？` },
+  es: { pair: (l) => `¿Qué explicación corresponde a «${l}»?`, order: (l) => `¿Qué viene después de «${l}»?` },
+  fr: { pair: (l) => `Quelle explication correspond à « ${l} » ?`, order: (l) => `Qu'est-ce qui vient après « ${l} » ?` },
+};
+
 /** Zadání pro AI: z textu nebo fotky vytvoř hru daného typu. */
 export function dilnaPrompt(kind: DilnaKind, locale: string): string {
-  const lang = locale === "en" ? "English" : "Czech";
+  const lang = LANG_NAME[locale] ?? "English";
   const common = [
     "Použij jen informace ze zdroje, nic si nevymýšlej.",
     `Piš ${lang}.`,
@@ -173,7 +189,7 @@ export function sourceFromQuestions(title: string, rows: { prompt: string; optio
 
 /** Otázky s možnostmi pro zadání jako úkol. Správná odpověď se pozičně střídá. */
 export function assignmentQuestions(game: GameData, locale: string): { prompt: string; options: string[]; correctIndex: number; answers: string[]; explanation: string }[] {
-  const en = locale === "en";
+  const Q = QUESTION[locale] ?? QUESTION.en;
   const make = (prompt: string, correct: string, others: string[], i: number) => {
     const wrong = others.slice(0, 3);
     const pos = i % (wrong.length + 1);
@@ -182,14 +198,14 @@ export function assignmentQuestions(game: GameData, locale: string): { prompt: s
   };
   if (game.kind === "pairs") {
     return game.pairs.map((p, i) =>
-      make(en ? `Which explanation matches „${p.left}“?` : `Který výklad patří k pojmu „${p.left}“?`, p.right, game.pairs.filter((_, j) => j !== i).map((x) => x.right), i),
+      make(Q.pair(p.left), p.right, game.pairs.filter((_, j) => j !== i).map((x) => x.right), i),
     );
   }
   if (game.kind === "order") {
     const out: ReturnType<typeof make>[] = [];
     for (let i = 0; i < game.items.length - 1; i++) {
       const others = game.items.filter((_, j) => j !== i && j !== i + 1);
-      out.push(make(en ? `What comes after „${game.items[i]}“?` : `Co následuje po: „${game.items[i]}“?`, game.items[i + 1], others, i));
+      out.push(make(Q.order(game.items[i]), game.items[i + 1], others, i));
     }
     return out;
   }

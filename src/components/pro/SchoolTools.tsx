@@ -7,6 +7,7 @@ import { getProToolsText, type ProToolsText } from "@/i18n/pro-tools";
 import { SUBJECTS } from "@/lib/taxonomy";
 import { errorText, imageToDataUrl, proFetch } from "./api";
 import { DilnaTool } from "./DilnaTool";
+import { getDilnaText } from "@/i18n/dilna";
 
 type Team = { id: string; name: string; members: number };
 type Q = { prompt: string; options: string[]; correctIndex: number; explanation: string };
@@ -54,7 +55,7 @@ export function SchoolTools({ locale }: { locale: Locale }) {
       <div className="flex flex-wrap gap-2 print:hidden" role="tablist">
         {TABS.map((k) => (
           <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className={`btn-bouncy px-3 py-1.5 text-sm font-bold ${tab === k ? "bg-[var(--brand-500)] text-white" : "btn-secondary"}`}>
-            {t.sTabs[k]}
+            {k === "dilna" ? getDilnaText(locale).tab : t.sTabs[k]}
           </button>
         ))}
       </div>

@@ -115,3 +115,11 @@ test("isMatch uzná jen stejnou dvojici", () => {
   assert.equal(isMatch(2, 2), true);
   assert.equal(isMatch(2, 3), false);
 });
+
+test("prompt i otázky úkolu se řídí jazykem učitele, neznámý jazyk padá na angličtinu", () => {
+  assert.match(dilnaPrompt("pairs", "ja"), /Japanese/);
+  assert.match(dilnaPrompt("pairs", "xx"), /English/);
+  const game = { kind: "pairs" as const, pairs: [{ left: "a", right: "1" }, { left: "b", right: "2" }, { left: "c", right: "3" }] };
+  assert.match(assignmentQuestions(game, "de")[0].prompt, /Welche Erklärung/);
+  assert.match(assignmentQuestions(game, "xx")[0].prompt, /Which explanation/);
+});
