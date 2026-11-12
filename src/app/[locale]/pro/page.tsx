@@ -9,6 +9,10 @@ import { getProExtra } from "@/i18n/pro-extra";
 import { getProToolsText } from "@/i18n/pro-tools";
 import { PRO_FEATURES, featureTier } from "@/lib/pro-tools/features";
 import { isLocale, type Locale } from "@/i18n/config";
+import { SpaceShell } from "@/components/SpaceShell";
+import { PaperCard } from "@/components/PaperCard";
+
+const FEATURE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -37,11 +41,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
   const tools = getProToolsText(locale as Locale);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-16">
-      <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        {t.title}
-      </h1>
-      <p className="mb-8 text-[var(--muted)]">{t.subtitle}</p>
+    <SpaceShell title={t.title} subtitle={t.subtitle} wide>
 
       <section className="mb-8">
         <h2 className="mb-4 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
@@ -90,15 +90,23 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
           {tools.toolsTitle}
         </h2>
         <p className="mb-4 text-sm text-[var(--muted)]">{tools.toolsHint}</p>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {PRO_FEATURES.map((f) => (
-            <Link key={f.slug} href={`/${locale}/pro/${f.slug}`} className="card flex items-start gap-3 p-4 hover:bg-[var(--surface-muted)]">
-              <ProIcon name={f.slug} className="size-7 text-[var(--brand-600)]" />
-              <span>
-                <span className="block font-bold">{tools.features[f.slug].title}{featureTier(f.slug) && <span className="pill ml-2 bg-[var(--surface-muted)] px-2 py-0.5 text-xs">{featureTier(f.slug) === "FAMILY" ? tools.tierFamily : tools.tierSchool}</span>}</span>
-                <span className="block text-sm text-[var(--muted)]">{tools.features[f.slug].text}</span>
-              </span>
-            </Link>
+        <div className="pcard-pile pcard-pile-wide">
+          {PRO_FEATURES.map((f, i) => (
+            <PaperCard
+              key={f.slug}
+              href={`/${locale}/pro/${f.slug}`}
+              accent={FEATURE_COLORS[i % FEATURE_COLORS.length]}
+              num={i + 1}
+              icon={<ProIcon name={f.slug} className="pcard-icon size-14 text-[#f6f1e4]" />}
+              title={tools.features[f.slug].title}
+              text={tools.features[f.slug].text}
+            >
+              {featureTier(f.slug) && (
+                <span className="pcard-pills">
+                  <span className="pill text-xs">{featureTier(f.slug) === "FAMILY" ? tools.tierFamily : tools.tierSchool}</span>
+                </span>
+              )}
+            </PaperCard>
           ))}
         </div>
       </section>
@@ -148,6 +156,6 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
           {t.cta}
         </Link>
       </div>
-    </div>
+    </SpaceShell>
   );
 }

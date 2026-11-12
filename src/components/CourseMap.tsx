@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
+import { PaperCard } from "@/components/PaperCard";
 import { fill } from "@/i18n/profile";
 import { getReviewText } from "@/i18n/review";
 import { gradeLabel } from "@/i18n/grades";
@@ -68,26 +69,19 @@ export function CourseMap({ locale, subjects }: { locale: Locale; subjects: MapS
           <h2 className="mb-3 text-lg font-extrabold" style={heading}>
             {t.recommended}
           </h2>
-          <ul className="grid gap-3 sm:grid-cols-2">
-            {recommended.map(({ subject, course }) => (
-              <li key={course.id}>
-                <Link
-                  href={href(course)}
-                  className="card card-hover flex items-center gap-3 p-4"
-                  style={{ borderColor: subject.color }}
-                >
-                  <Icon name={subject.slug} size={44} />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-bold">{course.title}</span>
-                    <span className="text-xs text-[var(--muted)]">
-                      {subject.label} · {label(statusOf(course))}
-                    </span>
-                  </span>
-                  <span className="text-sm font-bold text-[var(--brand-600)]">{t.startCourse} →</span>
-                </Link>
-              </li>
+          <div className="pcard-pile">
+            {recommended.map(({ subject, course }, i) => (
+              <PaperCard
+                key={course.id}
+                href={href(course)}
+                accent={subject.color}
+                num={i + 1}
+                icon={<Icon name={subject.slug} size={92} className="pcard-icon" />}
+                title={course.title}
+                text={`${subject.label} · ${label(statusOf(course))}`}
+              />
             ))}
-          </ul>
+          </div>
         </section>
       )}
 

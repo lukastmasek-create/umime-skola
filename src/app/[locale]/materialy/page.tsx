@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Icon } from "@/components/Icon";
 import type { Metadata } from "next";
@@ -6,6 +5,7 @@ import { getMaterialSubjects, getTopics, materialSubjectLabel } from "@/lib/mate
 import { getMaterialsText } from "@/i18n/materials";
 import { isLocale, type Locale } from "@/i18n/config";
 import { SpaceShell } from "@/components/SpaceShell";
+import { PaperCard } from "@/components/PaperCard";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -20,40 +20,28 @@ export default async function MaterialsIndexPage({ params }: { params: Promise<{
 
   return (
     <SpaceShell title={t.title} subtitle={t.subtitle} note={t.czechOnlyNote || undefined} wide>
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {getMaterialSubjects().map((subject) => {
+      <div className="pcard-pile pcard-pile-wide">
+        {getMaterialSubjects().map((subject, i) => {
           const topics = getTopics(subject.slug);
           const levels = [...new Set(topics.map((x) => x.level))].sort();
           return (
-            <Link
+            <PaperCard
               key={subject.slug}
               href={`/${locale}/materialy/${subject.slug}`}
-              className="card card-hover flex flex-col gap-3 overflow-hidden p-5 pt-6"
-              style={{ borderTop: `8px solid ${subject.color}` }}
+              accent={subject.color}
+              num={i + 1}
+              icon={<Icon name={subject.slug} size={92} className="pcard-icon" />}
+              title={materialSubjectLabel(subject, locale as Locale)}
+              text={`${t.topics}: ${topics.length}`}
             >
-              <div className="flex items-center gap-3">
-                <span
-                  aria-hidden
-                  className="flex h-12 w-12 items-center justify-center rounded-xl border-2 border-[var(--edge)] text-2xl"
-                  style={{ background: subject.color }}
-                >
-                  <Icon name={subject.slug} size={36} />
-                </span>
-                <div>
-                  <h2 className="text-lg font-semibold">{materialSubjectLabel(subject, locale as Locale)}</h2>
-                  <p className="text-sm text-[var(--muted)]">
-                    {t.topics}: {topics.length}
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
+              <span className="pcard-pills">
                 {levels.map((level) => (
-                  <span key={level} className="pill bg-[var(--brand-50)] px-2.5 py-1 text-xs text-[var(--brand-700)]">
+                  <span key={level} className="pill text-xs">
                     {t.levels[level].title}
                   </span>
                 ))}
-              </div>
-            </Link>
+              </span>
+            </PaperCard>
           );
         })}
       </div>

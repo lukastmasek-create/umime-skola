@@ -4982,6 +4982,23 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
   .pcard-in { padding: 18px 20px 118px; }
   .pcard-iconwrap { width: 96px; height: 96px; }
 }
+/* Karty bez ilustrace (Materiály, Mapa, nástroje PRO): stejný papír, jen nižší a v širší mřížce */
+.pcard-flat { padding: 24px 22px 24px; }
+.pcard-flat .pcard-text { max-width: none; }
+.pcard-pills { position: relative; z-index: 2; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 12px; }
+.pcard-pills .pill { padding: 3px 10px; background: color-mix(in srgb, var(--ac) 22%, #1b1a30); color: #f4f3ff; }
+.pcard-pile-wide { max-width: none; }
+@media (min-width: 640px) {
+  .pcard-pile-wide { grid-template-columns: repeat(2, 1fr); }
+  .pcard-pile-wide > .pcard-slot:nth-child(odd) { --r: -2deg; }
+  .pcard-pile-wide > .pcard-slot:nth-child(even) { --r: 2deg; margin-top: 14px; }
+}
+@media (min-width: 1024px) {
+  .pcard-pile-wide { grid-template-columns: repeat(3, 1fr); }
+  .pcard-pile-wide > .pcard-slot:nth-child(3n + 1) { --r: -2deg; margin-top: 0; }
+  .pcard-pile-wide > .pcard-slot:nth-child(3n + 2) { --r: 2deg; margin-top: 14px; }
+  .pcard-pile-wide > .pcard-slot:nth-child(3n) { --r: -1.4deg; margin-top: 4px; }
+}
 @media (hover: none) { .pcard:hover { transform: rotate(calc(var(--r) + var(--dr, 0deg))); box-shadow: 7px 9px 0 rgba(8, 8, 24, 0.55); } }
 @media (prefers-reduced-motion: reduce) {
   .pcard, .pcard-in, .pcard-iconwrap, .pcard-scene { transition: none; }
