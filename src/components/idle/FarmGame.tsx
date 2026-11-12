@@ -82,7 +82,7 @@ function Sprite({ src, name, className = "" }: { src: string; name: string; clas
   }
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt="" aria-hidden draggable={false} onError={() => setFailed(true)} className={`pointer-events-none select-none object-contain ${className}`} />
+    <img loading="lazy" decoding="async" src={src} alt="" aria-hidden draggable={false} onError={() => setFailed(true)} className={`pointer-events-none select-none object-contain ${className}`} />
   );
 }
 

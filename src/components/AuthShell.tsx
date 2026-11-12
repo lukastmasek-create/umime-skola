@@ -23,7 +23,7 @@ export function AuthShell({ mood, greeting, aside, children }: { mood: AuthMood;
       <div aria-hidden className="pointer-events-none absolute inset-0">
         {FLOATERS.map((s, i) => (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <img loading="lazy" decoding="async"
             key={s}
             src={`/ikony/${s}.svg`}
             alt=""

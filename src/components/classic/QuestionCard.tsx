@@ -27,7 +27,7 @@ export function QuestionCard({
       </p>
       {q.image && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={q.image} alt="" className="max-h-56 w-auto max-w-full self-start rounded-xl border border-[var(--border)] object-contain" />
+        <img loading="lazy" decoding="async" src={q.image} alt="" className="max-h-56 w-auto max-w-full self-start rounded-xl border border-[var(--border)] object-contain" />
       )}
       <div className="grid gap-2 sm:grid-cols-2">
         {q.options.map((opt, i) => {

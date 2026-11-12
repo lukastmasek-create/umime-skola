@@ -6,6 +6,7 @@ import { DailyQuizTeaser } from "@/components/DailyQuizTeaser";
 import { TeacherCta } from "@/components/TeacherCta";
 import { ALIEN_ROW, SpriteFrame, Wave } from "@/components/SpaceDecor";
 import { SectionWave } from "@/components/SectionWave";
+import { LazyOnView } from "@/components/LazyOnView";
 import { Nebula } from "@/components/SpaceDecor";
 import { LazyPlanet, LazySubjectGlobe, LazyTownLife } from "@/components/HomeLazy";
 import { GlobeSky } from "@/components/GlobeSky";
@@ -117,7 +118,9 @@ export default async function Home({
       {/* 1b) Lobby: co dnes zahrajeme */}
       <div className="zone zone-space pt-4">
         <span className="px-stars" aria-hidden />
-        <HomeLobby locale={locale} t={getHomeLobbyText(locale as Locale)} />
+        <LazyOnView placeholderHeight={520}>
+          <HomeLobby locale={locale} t={getHomeLobbyText(locale as Locale)} />
+        </LazyOnView>
         <SectionWave fill="#0d1430" glow="#ff8a6b" />
       </div>
 
@@ -177,6 +180,7 @@ export default async function Home({
       {/* 4b) Panel se zavěšenými štítky */}
       <section className="zone zone-space">
         <span className="px-stars" aria-hidden />
+        <LazyOnView placeholderHeight={700}>
         <HangPanel>
           <HangSparks />
           <div className="hang-copy">
@@ -188,6 +192,7 @@ export default async function Home({
           <HangTags tags={getHomeHangText(locale as Locale).tags} />
           <HangGround />
         </HangPanel>
+        </LazyOnView>
         <SectionWave fill="#10183b" glow="#8ea2ff" />
       </section>
 
@@ -203,6 +208,7 @@ export default async function Home({
           className="space-float absolute right-8 top-20 hidden sm:block"
           style={{ animationDelay: "-2.5s" }}
         />
+        <LazyOnView placeholderHeight={1100}>
         <div className="lobby-panel relative z-10">
           <h2 className="reveal mb-10 text-center text-3xl font-bold tracking-tight sm:text-4xl" style={heading}>
             {dict.home.pickSection}
@@ -226,6 +232,7 @@ export default async function Home({
             ))}
           </div>
         </div>
+        </LazyOnView>
         <SectionWave fill="#131d47" glow="#b49cff" />
       </section>
 
@@ -233,6 +240,7 @@ export default async function Home({
       <section id="pro-ucitele" className="zone zone-tech scroll-mt-24">
         <span className="px-stars" aria-hidden />
         <Nebula className="absolute inset-0 -z-10" />
+        <LazyOnView placeholderHeight={900}>
         <div className="lobby-panel relative z-10">
           <div className="grid gap-12">
             <div>
@@ -270,6 +278,7 @@ export default async function Home({
             />
           </div>
         </div>
+        </LazyOnView>
         <SectionWave fill="#14183d" glow="#b49cff" />
       </section>
 
@@ -277,6 +286,7 @@ export default async function Home({
       <section id="o-nas" className="zone zone-tech scroll-mt-24">
         <span className="px-stars" aria-hidden />
         <Nebula className="absolute inset-0 -z-10" />
+        <LazyOnView placeholderHeight={1400}>
         <div className="lobby-panel relative z-10">
           <div className="about-top">
             <div className="reveal">
@@ -334,6 +344,7 @@ export default async function Home({
             </Link>
           </div>
         </div>
+        </LazyOnView>
       </section>
     </div>
   );

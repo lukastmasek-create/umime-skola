@@ -286,7 +286,7 @@ export function HomeArt({
 }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img
+    <img loading="lazy" decoding="async"
       src={`/home/${name}.webp`}
       alt=""
       aria-hidden
@@ -316,7 +316,7 @@ export function AnimArt({
   return (
     <picture className={`pointer-events-none block select-none ${className}`} style={{ width: size, height: height ?? size, ...style }}>
       <source media="(prefers-reduced-motion: reduce)" srcSet={`/home/anim/${name}-still.webp`} />
-      <img src={`/home/anim/${name}.webp`} alt="" width={size} height={height ?? size} draggable={false} className="h-full w-full object-contain" />
+      <img loading="lazy" decoding="async" src={`/home/anim/${name}.webp`} alt="" width={size} height={height ?? size} draggable={false} className="h-full w-full object-contain" />
     </picture>
   );
 }

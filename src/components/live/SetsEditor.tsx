@@ -397,7 +397,7 @@ export function SetsEditor({ locale }: { locale: Locale }) {
             <div className="flex flex-wrap items-start gap-3">
               {q.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={q.image} alt="" className="max-h-32 w-auto rounded-xl border border-[var(--border)] object-contain" />
+                <img loading="lazy" decoding="async" src={q.image} alt="" className="max-h-32 w-auto rounded-xl border border-[var(--border)] object-contain" />
               ) : null}
               <div className="flex flex-col gap-1">
                 <label className="btn-bouncy btn-secondary cursor-pointer self-start px-4 py-2 text-sm font-bold">

@@ -126,7 +126,7 @@ export function ShopHeroStage() {
     };
     const coinRain = (xr: number, y: number) => {
       for (let i = 0; i < 18; i++) {
-        const n = spawn("gs-coinfall", xr - 14 + (Math.random() - 0.5) * 240, y - 120 - Math.random() * 60, 26, 26, 3200, '<img src="/ikony/hero-mince.svg" alt="" width="26" height="26" />');
+        const n = spawn("gs-coinfall", xr - 14 + (Math.random() - 0.5) * 240, y - 120 - Math.random() * 60, 26, 26, 3200, '<img loading="lazy" decoding="async" src="/ikony/hero-mince.svg" alt="" width="26" height="26" />');
         n.style.animationDelay = `${(i * 0.09 + Math.random() * 0.2).toFixed(2)}s`;
         n.style.setProperty("--dx", `${((Math.random() - 0.5) * 80).toFixed(0)}px`);
         n.style.setProperty("--fall", `${(200 + Math.random() * 120).toFixed(0)}px`);

@@ -40,7 +40,7 @@ export function AvatarFrame({ id, size }: { id: FrameId; size: number }) {
       style={{ left: -size * 0.1, top: -size * 0.1, width: box, height: box, ["--fs" as string]: `${size}px` }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <img loading="lazy" decoding="async"
         src={src}
         alt=""
         width={box}

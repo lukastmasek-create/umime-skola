@@ -42,7 +42,7 @@ export function Portrait({ art, talking, className = "" }: { art: Art; talking?:
       <span className={`block h-full w-full ${talking ? "town-talk" : ""}`}>
         {art.n === 1 ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={src} alt="" className="block h-full w-full object-cover" draggable={false} />
+          <img loading="lazy" decoding="async" src={src} alt="" className="block h-full w-full object-cover" draggable={false} />
         ) : (
           <span
             className="town-sprite block h-full w-full"

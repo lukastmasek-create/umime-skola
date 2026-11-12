@@ -630,8 +630,8 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
           </div>
           <div aria-hidden className="town-shooting pointer-events-none absolute" />
           {/* pohoří s paralaxou */}
-          <img src="/home/anim/hory-zadni.webp" alt="" aria-hidden draggable={false} className="town-mtn town-mtn-back pointer-events-none absolute left-0 w-full select-none" style={{ bottom: "35%" }} />
-          <img src="/home/anim/hory-stredni.webp" alt="" aria-hidden draggable={false} className="town-mtn town-mtn-mid pointer-events-none absolute left-0 w-full select-none" style={{ bottom: "32%" }} />
+          <img loading="lazy" decoding="async" src="/home/anim/hory-zadni.webp" alt="" aria-hidden draggable={false} className="town-mtn town-mtn-back pointer-events-none absolute left-0 w-full select-none" style={{ bottom: "35%" }} />
+          <img loading="lazy" decoding="async" src="/home/anim/hory-stredni.webp" alt="" aria-hidden draggable={false} className="town-mtn town-mtn-mid pointer-events-none absolute left-0 w-full select-none" style={{ bottom: "32%" }} />
           {/* sopka za kopci */}
           <div
             ref={volcano}
@@ -642,12 +642,12 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
             <div className="town-volcano-glow absolute left-1/2 top-[40%] h-[62%] w-[170%] -translate-x-1/2" />
             <picture className="block" style={{ maskImage: "linear-gradient(180deg, transparent 0%, #000 22%)", WebkitMaskImage: "linear-gradient(180deg, transparent 0%, #000 22%)" }}>
               <source media="(prefers-reduced-motion: reduce)" srcSet="/home/anim/sopka-still.webp" />
-              <img src="/home/anim/sopka.webp" alt="" draggable={false} className="relative block h-auto w-full" />
+              <img loading="lazy" decoding="async" src="/home/anim/sopka.webp" alt="" draggable={false} className="relative block h-auto w-full" />
             </picture>
           </div>
           {/* mraky */}
           {[["oblak-1", 9, 0.09, 110, 0], ["oblak-2", 7, 0.2, 150, 60], ["oblak-1", 6, 0.28, 90, 30]].map(([n, w, y, d, off], i) => (
-            <img key={i} src={`/home/${n}.webp`} alt="" aria-hidden draggable={false} className="town-cloud pointer-events-none absolute select-none" style={{ top: `${Number(y) * 100}%`, width: `${w}%`, animationDuration: `${d}s`, animationDelay: `-${off}s` }} />
+            <img loading="lazy" decoding="async" key={i} src={`/home/${n}.webp`} alt="" aria-hidden draggable={false} className="town-cloud pointer-events-none absolute select-none" style={{ top: `${Number(y) * 100}%`, width: `${w}%`, animationDuration: `${d}s`, animationDelay: `-${off}s` }} />
           ))}
           {/* ptáci */}
           {[0, 1, 2].map((i) => (
@@ -656,10 +656,10 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
             </div>
           ))}
           {/* městečko */}
-          <img src={`${DIR}/scena.webp`} alt="" aria-hidden draggable={false} className="town-img pointer-events-none absolute left-0 w-full select-none" style={{ top: `${(SKY / BOX_H) * 100}%` }} />
+          <img loading="lazy" decoding="async" src={`${DIR}/scena.webp`} alt="" aria-hidden draggable={false} className="town-img pointer-events-none absolute left-0 w-full select-none" style={{ top: `${(SKY / BOX_H) * 100}%` }} />
           {/* větrník */}
           <div aria-hidden className="town-mill pointer-events-none absolute" style={{ ...at(town.mlyn as P), width: "6.2%", aspectRatio: "1 / 1", transform: "translate(-50%,-50%)" }}>
-            <img src={`${DIR}/mlyn.webp`} alt="" draggable={false} className="town-mill-blades block h-full w-full" />
+            <img loading="lazy" decoding="async" src={`${DIR}/mlyn.webp`} alt="" draggable={false} className="town-mill-blades block h-full w-full" />
           </div>
           {/* záře lamp a neonu (jen v noci) */}
           {lampList.map((p, i) => (

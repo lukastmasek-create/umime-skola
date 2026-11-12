@@ -74,7 +74,7 @@ export function ProfileShowcase({
       </h2>
       <div className="relative mx-auto w-full max-w-3xl" style={{ aspectRatio: `${layout.w} / ${layout.h}` }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/home/profil/vitrina.webp" alt="" aria-hidden draggable={false} className="pointer-events-none absolute inset-0 h-full w-full select-none drop-shadow-[0_14px_16px_rgba(0,0,0,0.3)]" />
+        <img loading="lazy" decoding="async" src="/home/profil/vitrina.webp" alt="" aria-hidden draggable={false} className="pointer-events-none absolute inset-0 h-full w-full select-none drop-shadow-[0_14px_16px_rgba(0,0,0,0.3)]" />
         {items.map((item, i) => {
           const [x, y] = layout.slots[2 - Math.floor(i / 3)][i % 3]; // police v JSONu jdou odspodu
           return <ShowcaseItem key={item.id} item={item} x={x * 100} y={y * 100} w={layout.item * 100} openLabel={t.open} />;

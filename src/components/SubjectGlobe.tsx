@@ -772,7 +772,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
       >
         {fallback ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={`${DIR}/still.webp`} alt="" draggable={false} className="h-full w-full object-contain" />
+          <img loading="lazy" decoding="async" src={`${DIR}/still.webp`} alt="" draggable={false} className="h-full w-full object-contain" />
         ) : (
           <>
             <canvas ref={backCv} aria-hidden className="pointer-events-none absolute inset-0 z-[1] h-full w-full" />
@@ -792,7 +792,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
             </svg>
             {/* eslint-disable @next/next/no-img-element */}
             {Array.from({ length: RING_COUNT }, (_, i) => (
-              <img
+              <img loading="lazy" decoding="async"
                 key={i}
                 ref={(el) => {
                   ringEls.current[i] = el;
@@ -801,13 +801,12 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
                 alt=""
                 aria-hidden
                 draggable={false}
-                loading="lazy"
                 className="pointer-events-none absolute left-0 top-0 max-w-none opacity-95"
                 style={{ willChange: "transform" }}
               />
             ))}
             {FLYERS.map((f, i) => (
-              <img
+              <img loading="lazy" decoding="async"
                 key={i}
                 ref={(el) => {
                   flyEls.current[i] = el;
@@ -816,7 +815,6 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
                 alt=""
                 aria-hidden
                 draggable={false}
-                loading="lazy"
                 className="pointer-events-none absolute left-0 top-0 max-w-none"
                 style={{ willChange: "transform" }}
               />
@@ -825,7 +823,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
             <canvas ref={canvas} aria-hidden className={`pointer-events-none absolute left-[-25%] top-[-25%] z-[2] h-[150%] w-[150%] ${stageHidden}`} style={{ opacity: ready ? 1 : 0, transition: "opacity 0.6s" }} />
             {!ready && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={`${DIR}/still.webp`} alt="" aria-hidden draggable={false} className="absolute inset-0 h-full w-full object-contain" />
+              <img loading="lazy" decoding="async" src={`${DIR}/still.webp`} alt="" aria-hidden draggable={false} className="absolute inset-0 h-full w-full object-contain" />
             )}
             <canvas ref={frontCv} aria-hidden className="pointer-events-none absolute inset-0 z-[5] h-full w-full" />
             {ORDER.map((slug) => {
@@ -848,7 +846,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
                   style={{ background: s.color, willChange: "transform" }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={`/ikony/${slug}.svg`} alt="" width={20} height={20} draggable={false} className="h-[18px] w-[18px] object-contain" />
+                  <img loading="lazy" decoding="async" src={`/ikony/${slug}.svg`} alt="" width={20} height={20} draggable={false} className="h-[18px] w-[18px] object-contain" />
                 </button>
               );
             })}
@@ -924,7 +922,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
                 >
                   <span className="flex items-center gap-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`/ikony/${s.slug}.svg`} alt="" width={32} height={32} draggable={false} className="h-8 w-8 shrink-0 object-contain" />
+                    <img loading="lazy" decoding="async" src={`/ikony/${s.slug}.svg`} alt="" width={32} height={32} draggable={false} className="h-8 w-8 shrink-0 object-contain" />
                     <span className="text-[13px] font-bold leading-tight">{s.label}</span>
                   </span>
                   <span className="h-1.5 overflow-hidden rounded-full bg-black/15" aria-hidden>
@@ -944,7 +942,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
         <div className="card flex flex-col gap-3 p-4" style={{ borderColor: subject.color }}>
           <div className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/ikony/${subject.slug}.svg`} alt="" width={44} height={44} draggable={false} className="h-11 w-11 object-contain" />
+            <img loading="lazy" decoding="async" src={`/ikony/${subject.slug}.svg`} alt="" width={44} height={44} draggable={false} className="h-11 w-11 object-contain" />
             <div className="min-w-0">
               <h3 className="text-lg font-extrabold leading-tight" style={{ fontFamily: "var(--font-heading)" }}>
                 {subject.label}

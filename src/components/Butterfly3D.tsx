@@ -214,7 +214,7 @@ export function Butterfly3D({ size = 84, className = "" }: { size?: number; clas
     <div ref={box} aria-hidden className={`pointer-events-none select-none ${className}`} style={{ width: size, height: size }}>
       {!live && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src="/home/anim/motyl.webp" alt="" width={size} height={size} draggable={false} className="absolute inset-0 h-full w-full object-contain" />
+        <img loading="lazy" decoding="async" src="/home/anim/motyl.webp" alt="" width={size} height={size} draggable={false} className="absolute inset-0 h-full w-full object-contain" />
       )}
     </div>
   );

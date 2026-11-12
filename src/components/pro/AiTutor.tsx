@@ -62,7 +62,7 @@ export function AiTutor({ locale }: { locale: Locale }) {
           <div key={i} className={`grid max-w-[85%] gap-2 rounded-2xl px-4 py-2 text-sm ${m.role === "user" ? "justify-self-end bg-[var(--brand-500)] text-white" : "justify-self-start bg-[var(--surface-muted)]"}`}>
             {m.image && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={m.image} alt={t.tutorPhotoAlt} className="max-h-48 rounded-xl object-contain" />
+              <img loading="lazy" decoding="async" src={m.image} alt={t.tutorPhotoAlt} className="max-h-48 rounded-xl object-contain" />
             )}
             <p className="whitespace-pre-wrap">{m.content}</p>
           </div>
@@ -74,7 +74,7 @@ export function AiTutor({ locale }: { locale: Locale }) {
       {photo && (
         <div className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={photo} alt={t.tutorPhotoAlt} className="h-16 rounded-lg border-2 border-[var(--edge)] object-cover" />
+          <img loading="lazy" decoding="async" src={photo} alt={t.tutorPhotoAlt} className="h-16 rounded-lg border-2 border-[var(--edge)] object-cover" />
           <button type="button" onClick={() => setPhoto(null)} className="text-sm font-semibold text-[var(--muted)] underline">
             {t.tutorRemovePhoto}
           </button>

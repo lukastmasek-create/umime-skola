@@ -63,7 +63,7 @@ export function NotesCards({ locale }: { locale: Locale }) {
       {photoData && (
         <div className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={photoData} alt={t.tutorPhotoAlt} className="h-20 rounded-lg border-2 border-[var(--edge)] object-cover" />
+          <img loading="lazy" decoding="async" src={photoData} alt={t.tutorPhotoAlt} className="h-20 rounded-lg border-2 border-[var(--edge)] object-cover" />
           <button type="button" onClick={() => setPhotoData(null)} className="text-sm font-semibold text-[var(--muted)] underline">
             {t.tutorRemovePhoto}
           </button>

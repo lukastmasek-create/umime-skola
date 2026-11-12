@@ -613,7 +613,7 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
           </div>
           {/* zadní vrstva podlahy a stánků */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`${dir}/zadni.webp`} alt="" draggable={false} className="market-lit pointer-events-none absolute inset-0 h-full w-full" />
+          <img loading="lazy" decoding="async" src={`${dir}/zadni.webp`} alt="" draggable={false} className="market-lit pointer-events-none absolute inset-0 h-full w-full" />
           <canvas ref={front} aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" />
           {/* obchodníci */}
           {world.stalls.filter((s) => s.npc).map((s, i) => {
@@ -635,7 +635,7 @@ export function MarketWorld({ locale, initialWorld, film = false }: { locale: Lo
           })}
           {/* přední vrstva: pulty */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`${dir}/predni.webp`} alt="" draggable={false} className="market-lit pointer-events-none absolute inset-0 h-full w-full" />
+          <img loading="lazy" decoding="async" src={`${dir}/predni.webp`} alt="" draggable={false} className="market-lit pointer-events-none absolute inset-0 h-full w-full" />
 
           {/* koupené věci na pultech */}
           {STALL_KEYS.map((key) => {

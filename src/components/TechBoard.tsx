@@ -183,7 +183,7 @@ export function TechBoard({ features }: { features: TechFeature[] }) {
     <div className="flex flex-col gap-8">
       <div ref={wrap} className="relative mx-auto w-full max-w-[1180px] select-none" style={{ aspectRatio: `${board.w} / ${board.h}` }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/home/tech/deska.webp" alt="" aria-hidden draggable={false} className="absolute inset-0 h-full w-full" />
+        <img loading="lazy" decoding="async" src="/home/tech/deska.webp" alt="" aria-hidden draggable={false} className="absolute inset-0 h-full w-full" />
         <canvas ref={cv} aria-hidden className="pointer-events-none absolute inset-0 h-full w-full" />
         {features.map((f, i) => {
           const s = board.sprites[i];

@@ -81,7 +81,7 @@ function Art({ src, size }: { src: string; size: number }) {
     );
   }
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt="" width={size} height={size} className="shrink-0" style={{ width: size, height: size }} onError={() => setFailed(true)} />;
+  return <img loading="lazy" decoding="async" src={src} alt="" width={size} height={size} className="shrink-0" style={{ width: size, height: size }} onError={() => setFailed(true)} />;
 }
 
 const fmt = (n: number) => Math.round(n).toLocaleString("cs-CZ");

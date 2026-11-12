@@ -222,7 +222,7 @@ export function PlanetLive({
       <div ref={wrap} className="relative h-full w-full">
       {fallback ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={still} alt="" draggable={false} className="h-full w-full object-contain" />
+        <img loading="lazy" decoding="async" src={still} alt="" draggable={false} className="h-full w-full object-contain" />
       ) : (
         <>
           {/* eslint-disable @next/next/no-img-element */}
@@ -231,7 +231,7 @@ export function PlanetLive({
           <img src={`${dir}/halo.webp`} alt="" draggable={false} loading="lazy" className={layer} style={{ zIndex: 4, mixBlendMode: "screen" }} />
           <img src={`${dir}/prsten-predni.webp`} alt="" draggable={false} loading="lazy" className={layer} style={{ zIndex: 5 }} />
           {MOONS.map((m, i) => (
-            <img
+            <img loading="lazy" decoding="async"
               key={m.id}
               ref={(el) => {
                 moonEls.current[i] = el;

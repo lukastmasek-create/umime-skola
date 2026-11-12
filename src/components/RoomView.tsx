@@ -31,7 +31,7 @@ function Piece({ id, className = "" }: { id: string; className?: string }) {
   }
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={furnitureSprite(id)} alt="" aria-hidden draggable={false} onError={() => setFailed(true)} className={`pointer-events-none select-none object-contain ${className}`} />
+    <img loading="lazy" decoding="async" src={furnitureSprite(id)} alt="" aria-hidden draggable={false} onError={() => setFailed(true)} className={`pointer-events-none select-none object-contain ${className}`} />
   );
 }
 
@@ -163,7 +163,7 @@ export function RoomView({ locale, initialTab = "room" }: { locale: Locale; init
           {!view3d && <p className="text-sm text-[var(--muted)]">{t.pickSlot}</p>}
           <div className={`${view3d ? "hidden" : ""} room-stage relative mx-auto w-full max-w-4xl`} style={{ aspectRatio: ROOM_LAYOUT.aspect }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/room/iso.webp" alt="" aria-hidden draggable={false} className="pointer-events-none absolute inset-0 h-full w-full select-none drop-shadow-[0_26px_30px_rgba(0,0,0,0.45)]" />
+            <img loading="lazy" decoding="async" src="/room/iso.webp" alt="" aria-hidden draggable={false} className="pointer-events-none absolute inset-0 h-full w-full select-none drop-shadow-[0_26px_30px_rgba(0,0,0,0.45)]" />
             <RoomAmbient />
             {Array.from({ length: ROOM_SLOTS }, (_, slot) => {
               const id = data.room.placed[slot];

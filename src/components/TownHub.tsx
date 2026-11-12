@@ -1507,16 +1507,16 @@ export function TownHub({ locale }: { locale: Locale }) {
               </div>
             )}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/home/mesto/hub.webp" alt="" draggable={false} className="town-hub-img pointer-events-none absolute bottom-0 left-0 w-full" style={{ filter: dark ? "brightness(0.55) saturate(1.1) hue-rotate(-12deg)" : undefined, transition: "filter 0.8s" }} />
+            <img loading="lazy" decoding="async" src="/home/mesto/hub.webp" alt="" draggable={false} className="town-hub-img pointer-events-none absolute bottom-0 left-0 w-full" style={{ filter: dark ? "brightness(0.55) saturate(1.1) hue-rotate(-12deg)" : undefined, transition: "filter 0.8s" }} />
             {/* budovy druhé a přední řady znovu nad hrdinou, když je za nimi (hloubka podle polohy hrdiny) */}
             {["b", "a"].map((k) => (
               // eslint-disable-next-line @next/next/no-img-element
-              <img key={k} src={`/home/mesto/hub-${k}.webp`} alt="" draggable={false} onError={(e) => (e.currentTarget.style.display = "none")} className="town-hub-img pointer-events-none absolute bottom-0 left-0 w-full" style={{ zIndex: k === "b" ? 20 : 30, filter: dark ? "brightness(0.55) saturate(1.1) hue-rotate(-12deg)" : undefined, transition: "filter 0.8s" }} />
+              <img loading="lazy" decoding="async" key={k} src={`/home/mesto/hub-${k}.webp`} alt="" draggable={false} onError={(e) => (e.currentTarget.style.display = "none")} className="town-hub-img pointer-events-none absolute bottom-0 left-0 w-full" style={{ zIndex: k === "b" ? 20 : 30, filter: dark ? "brightness(0.55) saturate(1.1) hue-rotate(-12deg)" : undefined, transition: "filter 0.8s" }} />
             ))}
             {/* větrný mlýn a komíny */}
             <div aria-hidden className="town-mill pointer-events-none absolute" style={{ zIndex: 45, ...at(HUB.mlyn), width: `${6.2 * K}%`, aspectRatio: "1 / 1", transform: "translate(-50%,-50%)" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/home/mesto/mlyn.webp" alt="" draggable={false} className="town-mill-blades block h-full w-full" />
+              <img loading="lazy" decoding="async" src="/home/mesto/mlyn.webp" alt="" draggable={false} className="town-mill-blades block h-full w-full" />
             </div>
             {HUB.kominy.map((p, i) => (
               <div key={i} aria-hidden className="pointer-events-none absolute" style={{ zIndex: 45, ...at(p), width: `${1.4 * K}%`, aspectRatio: "1 / 1" }}>

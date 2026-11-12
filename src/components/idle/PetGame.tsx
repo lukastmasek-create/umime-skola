@@ -412,7 +412,7 @@ export function PetGame({ locale }: { locale: Locale }) {
                       className="btn-bouncy flex w-full items-center gap-3 bg-[var(--surface)] px-3 py-2 text-left text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={`/farm/icons/${id}.webp`} alt="" aria-hidden className="h-8 w-8 shrink-0 object-contain" onError={(e) => ((e.currentTarget as HTMLImageElement).style.visibility = "hidden")} />
+                      <img loading="lazy" decoding="async" src={`/farm/icons/${id}.webp`} alt="" aria-hidden className="h-8 w-8 shrink-0 object-contain" onError={(e) => ((e.currentTarget as HTMLImageElement).style.visibility = "hidden")} />
                       <span className="min-w-0 flex-1 truncate">{name}</span>
                       <span className="font-mono text-xs text-[var(--muted)]">×{qty}</span>
                       <span className="pill bg-[var(--accent-green)] px-2 py-0.5 text-[#16132b]">{fillN(t.farmFeedGain, farmFeedGrowth(itemPrice(id)))}</span>

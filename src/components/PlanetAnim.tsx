@@ -18,7 +18,7 @@ export function PlanetAnim({ width, height }: { width: number; height: number })
   return (
     <span className="relative block" style={{ width, height }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <img loading="lazy" decoding="async"
         src={videoOk || still ? "/home/planeta.webp" : "/home/anim/planeta.webp"}
         alt=""
         aria-hidden

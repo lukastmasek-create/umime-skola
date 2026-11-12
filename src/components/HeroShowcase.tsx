@@ -151,7 +151,7 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
 
         <div className="hs-card hs-class">
           <div className="hs-teacher">
-            <img src={portrait("wizard")} alt="" width={44} height={44} className="hs-avatar hs-avatar-lg" />
+            <img loading="lazy" decoding="async" src={portrait("wizard")} alt="" width={44} height={44} className="hs-avatar hs-avatar-lg" />
             <div>
               <div className="hs-label">{team ? team.name : t.classTitle}</div>
               <div className="hs-sub">{team ? (team.role === "TEACHER" ? t.teacher : t.student) : t.teacher}</div>
@@ -162,7 +162,7 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
               {BOARD.map((r, i) => (
                 <li key={r.name}>
                   <span className="hs-rank">{i + 1}</span>
-                  <img src={portrait(r.avatar)} alt="" width={28} height={28} className="hs-avatar" />
+                  <img loading="lazy" decoding="async" src={portrait(r.avatar)} alt="" width={28} height={28} className="hs-avatar" />
                   <span className="hs-name">{r.name}</span>
                   <span className="hs-meter"><span style={{ width: `${r.pct}%` }} /></span>
                   <span className="hs-pct">{r.pct * 12} {t.points}</span>
@@ -175,7 +175,7 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
               {students.slice(0, 3).map((st, i) => (
                 <li key={`${st.name}-${i}`}>
                   <span className="hs-rank">{i + 1}</span>
-                  <img src={portrait(BOARD[i % BOARD.length].avatar)} alt="" width={28} height={28} className="hs-avatar" />
+                  <img loading="lazy" decoding="async" src={portrait(BOARD[i % BOARD.length].avatar)} alt="" width={28} height={28} className="hs-avatar" />
                   <span className="hs-name" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{st.name}</span>
                   <span className="hs-meter"><span style={{ width: `${top > 0 ? Math.round((st.points / top) * 100) : 0}%` }} /></span>
                   <span className="hs-pct">{st.points} {t.points}</span>
