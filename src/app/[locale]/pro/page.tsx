@@ -90,7 +90,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
           {tools.toolsTitle}
         </h2>
         <p className="mb-4 text-sm text-[var(--muted)]">{tools.toolsHint}</p>
-        <ProToolPile locale={locale as Locale} slugs={featuresForTab("pro").filter((slug) => featureAvailableIn(slug, locale))} />
+        <ProToolPile locale={locale as Locale} slugs={featuresForTab("pro").filter((f) => featureAvailableIn(f.slug, locale))} />
       </section>
 
       <section className="mb-8">
