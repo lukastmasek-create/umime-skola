@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { hasPro } from "@/lib/pro-server";
-import { ExpandCard } from "@/components/ExpandCard";
+import { ProIcon } from "@/components/pro/ProIcon";
 import { getProText } from "@/i18n/pro";
 import { getProExtra } from "@/i18n/pro-extra";
 import { getProToolsText } from "@/i18n/pro-tools";
@@ -43,6 +43,39 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
       </h1>
       <p className="mb-8 text-[var(--muted)]">{t.subtitle}</p>
 
+      <section className="mb-8">
+        <h2 className="mb-4 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+          {t.tiersTitle}
+        </h2>
+        <div className="grid gap-4 lg:grid-cols-3">
+          {tiers.map((tier, i) => {
+            const color = ["#35d0ff", "#ffd23f", "#7cf29a"][i];
+            return (
+              <article key={tier.title} className="card flex flex-col p-5" style={{ borderTop: `4px solid ${color}` }}>
+                <h3 className="text-lg font-bold">{tier.title}</h3>
+                <p className="mb-3 text-sm text-[var(--muted)]">{tier.text}</p>
+                <p className="mb-1 flex items-baseline gap-2">
+                  <span className="text-3xl font-extrabold tabular-nums">{extra.plans[i].price}</span>
+                  <span className="text-xs text-[var(--muted)]">{extra.plans[i].per}</span>
+                </p>
+                {extra.plans[i].yearly && <p className="text-xs font-semibold text-[var(--brand-600)]">{extra.plans[i].yearly}</p>}
+                <ul className="mt-4 grid gap-2">
+                  {extra.plans[i].perks.map((perk) => (
+                    <li key={perk} className="flex items-start gap-2 border-t border-[var(--edge)] pt-2 text-sm">
+                      <ProIcon name="check" className="mt-0.5 size-4 text-[var(--accent-green)]" />
+                      <span>{perk}</span>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            );
+          })}
+        </div>
+        <p className="mt-4 text-sm font-semibold">{extra.trial}</p>
+        <p className="text-sm text-[var(--muted)]">{extra.note}</p>
+        <p className="text-sm text-[var(--muted)]">{t.availability}</p>
+      </section>
+
       <div className="card mb-8 flex flex-wrap items-center justify-between gap-3 p-5">
         <p className="font-semibold">{t.status[status]}</p>
         {status === "guest" && (
@@ -60,7 +93,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {PRO_FEATURES.map((f) => (
             <Link key={f.slug} href={`/${locale}/pro/${f.slug}`} className="card flex items-start gap-3 p-4 hover:bg-[var(--surface-muted)]">
-              <span className="text-2xl" aria-hidden>{f.icon}</span>
+              <ProIcon name={f.slug} className="size-7 text-[var(--brand-600)]" />
               <span>
                 <span className="block font-bold">{tools.features[f.slug].title}{featureTier(f.slug) && <span className="pill ml-2 bg-[var(--surface-muted)] px-2 py-0.5 text-xs">{featureTier(f.slug) === "FAMILY" ? tools.tierFamily : tools.tierSchool}</span>}</span>
                 <span className="block text-sm text-[var(--muted)]">{tools.features[f.slug].text}</span>
@@ -77,7 +110,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {extra.benefits.map((b) => (
             <div key={b.title} className="card p-5">
-              <p className="mb-2 text-2xl" aria-hidden>{b.icon}</p>
+              <ProIcon name={b.icon} className="mb-2 size-8 text-[var(--brand-600)]" />
               <h3 className="mb-1 font-bold">{b.title}</h3>
               <p className="text-sm text-[var(--muted)]">{b.text}</p>
             </div>
@@ -108,35 +141,6 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
           </tbody>
         </table>
       </section>
-
-      <section className="mb-8">
-        <h2 className="mb-4 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          {t.tiersTitle}
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {tiers.map((tier, i) => (
-            <ExpandCard key={tier.title} index={`0${i + 1}`} title={tier.title} lead={tier.text} color={["#35d0ff", "#ffd23f", "#7cf29a"][i]}>
-              <p className="mb-3 flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold tabular-nums">{extra.plans[i].price}</span>
-                <span className="text-xs text-[var(--muted)]">{extra.plans[i].per}</span>
-              </p>
-              {extra.plans[i].yearly && <p className="mb-3 text-xs font-semibold text-[var(--brand-600)]">{extra.plans[i].yearly}</p>}
-              <ul className="grid gap-2">
-                {extra.plans[i].perks.map((perk) => (
-                  <li key={perk} className="flex items-start gap-2 border-t border-[var(--edge)] pt-2 text-sm">
-                    <span aria-hidden className="text-[var(--accent-green)]">✓</span>
-                    <span>{perk}</span>
-                  </li>
-                ))}
-              </ul>
-            </ExpandCard>
-          ))}
-        </div>
-      </section>
-
-      <p className="mb-2 text-sm font-semibold">{extra.trial}</p>
-      <p className="mb-2 text-sm text-[var(--muted)]">{extra.note}</p>
-      <p className="mb-6 text-sm text-[var(--muted)]">{t.availability}</p>
 
       <div className="card flex flex-wrap items-center justify-between gap-3 p-5">
         <p className="text-sm">{t.ctaText}</p>

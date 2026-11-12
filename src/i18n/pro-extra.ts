@@ -16,7 +16,7 @@ export type ProExtra = {
   note: string;
 };
 
-const ICONS = ["🤖", "🗓️", "🎯", "📷", "🎤", "📒", "📝", "🗣️", "📴"];
+const ICONS = ["doucovatel", "plan", "zkouska", "fotka", "ustni", "sesit-chyb", "poznamky", "vyslovnost", "offline"];
 
 type Compact = Omit<ExtraBase, "benefits"> & { benefits: [string, string][] };
 type ExtraBase = ProExtra;

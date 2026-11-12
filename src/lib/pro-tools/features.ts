@@ -1,19 +1,19 @@
 // Seznam PRO nástrojů. `slug` je adresa /[locale]/pro/[slug].
 export const PRO_FEATURES = [
-  { slug: "doucovatel", icon: "🤖" },
-  { slug: "plan", icon: "🗓️" },
-  { slug: "zkouska", icon: "🎯" },
-  { slug: "fotka", icon: "📷" },
-  { slug: "ustni", icon: "🎤" },
-  { slug: "sesit-chyb", icon: "📒" },
-  { slug: "poznamky", icon: "📝" },
-  { slug: "vyslovnost", icon: "🗣️" },
-  { slug: "offline", icon: "📴" },
-  { slug: "rodina", icon: "👨‍👩‍👧", tier: "FAMILY" },
-  { slug: "souboj", icon: "⚔️", tier: "FAMILY" },
-  { slug: "prazdniny", icon: "🏖️", tier: "FAMILY" },
-  { slug: "skola", icon: "🏫", tier: "SCHOOL" },
-] as const satisfies readonly { slug: string; icon: string; tier?: "FAMILY" | "SCHOOL" }[];
+  { slug: "doucovatel" },
+  { slug: "plan" },
+  { slug: "zkouska" },
+  { slug: "fotka" },
+  { slug: "ustni" },
+  { slug: "sesit-chyb" },
+  { slug: "poznamky" },
+  { slug: "vyslovnost" },
+  { slug: "offline" },
+  { slug: "rodina", tier: "FAMILY" },
+  { slug: "souboj", tier: "FAMILY" },
+  { slug: "prazdniny", tier: "FAMILY" },
+  { slug: "skola", tier: "SCHOOL" },
+] as const satisfies readonly { slug: string; tier?: "FAMILY" | "SCHOOL" }[];
 
 export type ProFeatureSlug = (typeof PRO_FEATURES)[number]["slug"];
 
