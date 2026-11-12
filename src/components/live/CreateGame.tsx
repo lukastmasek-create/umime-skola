@@ -10,7 +10,7 @@ import type { LiveMode, SetItem } from "@/lib/live/types";
 import { liveApi, saveHost } from "./api";
 import { errorText } from "./LiveRoom";
 import { PcardTape } from "@/components/PcardArt";
-import { SketchIcon } from "@/components/SketchIcons";
+import { CountGlyph, CourseGlyph, DifficultyGlyph, SearchGlyph, SetGlyph } from "./FormIcons";
 import { ModeScene } from "./ModeScenes";
 
 // Barvy karet režimů: stejná paleta jako karty na homepage.
@@ -19,37 +19,28 @@ const MODE_ACCENT: Record<LiveMode, string> = { QUIZ: "#8fd0ff", RACE: "#7ee0b0"
 type Course = { slug: string; title: string; category: string; subject: string | null; grade: number | null; questions: number };
 type SetRow = { id: string; title: string; questions: SetItem[] };
 
-/** Dlaždice bento mřížky: papírová karta s ikonou, titulkem a jemným zvednutím při najetí. */
+/** Dlaždice bento mřížky: vstupní animace na obalu, zvednutí a ikona na vnitřní kartě (hero-in by jinak přebil hover). */
 function BentoTile({ accent, icon, title, span = "", delay = 0, children }: { accent: string; icon: ReactNode; title: string; span?: string; delay?: number; children: ReactNode }) {
   return (
-    <div
-      className={`hero-in relative flex flex-col gap-3 rounded-[22px] border-2 border-[var(--ink)] p-4 shadow-[7px_9px_0_rgba(8,8,24,0.55)] transition duration-200 hover:-translate-y-1 hover:shadow-[11px_14px_0_rgba(8,8,24,0.55)] ${span}`}
-      style={{ ["--d" as string]: `${delay}s`, background: `color-mix(in srgb, ${accent} 15%, #1b1a30)` } as CSSProperties}
-    >
-      <div className="flex items-center gap-3">
-        <span
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border-2 border-[var(--ink)] shadow-[3px_4px_0_rgba(8,8,24,0.5)]"
-          style={{ background: `color-mix(in srgb, ${accent} 42%, #1b1a30)` }}
-        >
-          {icon}
-        </span>
-        <span className="text-sm font-extrabold uppercase tracking-wider" style={{ color: accent }}>
-          {title}
-        </span>
+    <div className={`hero-in ${span}`} style={{ ["--d" as string]: `${delay}s` } as CSSProperties}>
+      <div
+        className="group flex h-full flex-col gap-3 rounded-[22px] border-2 border-[var(--ink)] p-4 shadow-[7px_9px_0_rgba(8,8,24,0.55)] transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[11px_14px_0_rgba(8,8,24,0.55)] focus-within:-translate-y-1 focus-within:shadow-[11px_14px_0_rgba(8,8,24,0.55)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+        style={{ background: `color-mix(in srgb, ${accent} 15%, #1b1a30)` }}
+      >
+        <div className="flex items-center gap-3">
+          <span
+            className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border-2 border-[var(--ink)] shadow-[3px_4px_0_rgba(8,8,24,0.5)] transition-transform duration-300 ease-out group-hover:-rotate-6 group-hover:scale-110 motion-reduce:transition-none"
+            style={{ background: `color-mix(in srgb, ${accent} 42%, #1b1a30)` }}
+          >
+            {icon}
+          </span>
+          <span className="text-sm font-extrabold uppercase tracking-wider" style={{ color: accent }}>
+            {title}
+          </span>
+        </div>
+        {children}
       </div>
-      {children}
     </div>
-  );
-}
-
-/** Lupa vlastní kresby ve stejném stylu jako ikony v SketchIcons. */
-function SearchIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden focusable="false">
-      <circle cx="10.5" cy="10.5" r="6" fill="#8fd0ff" stroke="#16132b" strokeWidth="1.8" />
-      <path d="M15 15l5.5 5.5" stroke="#16132b" strokeWidth="2.2" strokeLinecap="round" />
-      <path d="M7.6 9.2a3.2 3.2 0 0 1 2.8-2.6" stroke="#fff" strokeOpacity=".7" strokeWidth="1.4" strokeLinecap="round" />
-    </svg>
   );
 }
 
@@ -136,32 +127,32 @@ export function CreateGame({ locale }: { locale: Locale }) {
             const accent = s === "course" ? "#8fd0ff" : "#c9a8ff";
             const on = source === s;
             return (
-              <button
-                key={s}
-                type="button"
-                role="tab"
-                aria-selected={on}
-                onClick={() => setSource(s)}
-                className="hero-in flex flex-col items-center gap-2 rounded-[22px] border-2 border-[var(--ink)] p-4 shadow-[7px_9px_0_rgba(8,8,24,0.55)] transition duration-200 hover:-translate-y-1"
-                style={{
-                  ["--d" as string]: `${i * 0.08}s`,
-                  background: `color-mix(in srgb, ${accent} ${on ? 40 : 15}%, #1b1a30)`,
-                  outline: on ? "3px solid #fff" : "none",
-                  outlineOffset: 4,
-                } as CSSProperties}
-              >
-                <span className="grid h-12 w-12 place-items-center rounded-2xl border-2 border-[var(--ink)]" style={{ background: `color-mix(in srgb, ${accent} 42%, #1b1a30)` }}>
-                  <SketchIcon kind={s === "course" ? "courses" : "study"} size={30} />
-                </span>
-                <span className="font-extrabold">{s === "course" ? t.create.fromCourse : t.create.fromSet}</span>
-              </button>
+              <div key={s} className="hero-in" style={{ ["--d" as string]: `${i * 0.08}s` } as CSSProperties}>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={on}
+                  onClick={() => setSource(s)}
+                  className="group flex w-full flex-col items-center gap-2 rounded-[22px] border-2 border-[var(--ink)] p-4 shadow-[7px_9px_0_rgba(8,8,24,0.55)] transition-[transform,box-shadow,background] duration-300 ease-out hover:-translate-y-1 hover:shadow-[11px_14px_0_rgba(8,8,24,0.55)] active:translate-y-0 active:scale-[0.98] motion-reduce:transition-none"
+                  style={{
+                    background: `color-mix(in srgb, ${accent} ${on ? 40 : 15}%, #1b1a30)`,
+                    outline: on ? "3px solid #fff" : "none",
+                    outlineOffset: 4,
+                  } as CSSProperties}
+                >
+                  <span className="grid h-14 w-14 place-items-center rounded-2xl border-2 border-[var(--ink)] transition-transform duration-300 ease-out group-hover:-rotate-6 group-hover:scale-110 motion-reduce:transition-none" style={{ background: `color-mix(in srgb, ${accent} 42%, #1b1a30)` }}>
+                    {s === "course" ? <CourseGlyph size={38} /> : <SetGlyph size={38} />}
+                  </span>
+                  <span className="font-extrabold">{s === "course" ? t.create.fromCourse : t.create.fromSet}</span>
+                </button>
+              </div>
             );
           })}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           {source === "course" ? (
-            <BentoTile accent="#8fd0ff" icon={<SearchIcon />} title={t.create.course} span="sm:col-span-2" delay={0.12}>
+            <BentoTile accent="#8fd0ff" icon={<SearchGlyph size={34} />} title={t.create.course} span="sm:col-span-2" delay={0.12}>
               <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t.create.search} className={fieldInner} />
               <select value={slug} onChange={(e) => setSlug(e.target.value)} size={6} aria-label={t.create.course} className={fieldInner}>
                 {courses === null && <option disabled>{t.create.loading}</option>}
@@ -181,7 +172,7 @@ export function CreateGame({ locale }: { locale: Locale }) {
               </Link>
             </p>
           ) : (
-            <BentoTile accent="#c9a8ff" icon={<SketchIcon kind="study" size={26} />} title={t.create.fromSet} span="sm:col-span-2" delay={0.12}>
+            <BentoTile accent="#c9a8ff" icon={<SetGlyph size={34} />} title={t.create.fromSet} span="sm:col-span-2" delay={0.12}>
               {Array.isArray(sets) && sets.length === 0 && <p className="text-[var(--muted)]">{t.create.noSets}</p>}
               {Array.isArray(sets) && sets.length > 0 && (
                 <select value={setId} onChange={(e) => setSetId(e.target.value)} size={Math.min(6, sets.length + 1)} aria-label={t.create.fromSet} className={fieldInner}>
@@ -199,7 +190,7 @@ export function CreateGame({ locale }: { locale: Locale }) {
           )}
 
           {source === "course" && (
-            <BentoTile accent="#ffc933" icon={<SketchIcon kind="star" size={26} />} title={t.create.difficulty} delay={0.2}>
+            <BentoTile accent="#ffc933" icon={<DifficultyGlyph size={34} />} title={t.create.difficulty} delay={0.2}>
               <select value={difficulty} onChange={(e) => setDifficulty(Number(e.target.value))} className={fieldInner}>
                 <option value={0}>{t.create.anyDifficulty}</option>
                 {[1, 2, 3, 4, 5].map((d) => (
@@ -211,7 +202,7 @@ export function CreateGame({ locale }: { locale: Locale }) {
             </BentoTile>
           )}
 
-          <BentoTile accent="#ff8a6b" icon={<SketchIcon kind="pencil" size={26} />} title={t.create.count} delay={source === "course" ? 0.28 : 0.2}>
+          <BentoTile accent="#ff8a6b" icon={<CountGlyph size={34} />} title={t.create.count} delay={source === "course" ? 0.28 : 0.2}>
             <input type="number" min={1} max={100} value={count} onChange={(e) => setCount(Math.max(1, Math.min(100, Number(e.target.value) || 1)))} className={fieldInner} />
             {available !== undefined && <span className="text-xs font-normal text-[var(--muted)]">{fmt(t.create.available, { n: available })}</span>}
           </BentoTile>
