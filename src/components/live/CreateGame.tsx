@@ -9,11 +9,10 @@ import type { Locale } from "@/i18n/config";
 import type { LiveMode, SetItem } from "@/lib/live/types";
 import { liveApi, saveHost } from "./api";
 import { errorText } from "./LiveRoom";
+import { ModeArt } from "./ModeArt";
 
 type Course = { slug: string; title: string; category: string; subject: string | null; grade: number | null; questions: number };
 type SetRow = { id: string; title: string; questions: SetItem[] };
-
-const MODE_ICON: Record<LiveMode, string> = { QUIZ: "⏱️", RACE: "🏁", GOLD: "🪙", STREAK: "🔥", SURVIVAL: "❤️", TEAMS: "🤝" };
 
 export function CreateGame({ locale }: { locale: Locale }) {
   const t = getLiveText(locale);
@@ -181,7 +180,7 @@ export function CreateGame({ locale }: { locale: Locale }) {
               onClick={() => setMode(m)}
               className={`btn-bouncy flex flex-col items-start gap-1 p-4 text-left ${mode === m ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface)]"}`}
             >
-              <span aria-hidden className="text-3xl">{MODE_ICON[m]}</span>
+              <ModeArt mode={m} className="h-16 w-auto self-center" />
               <span className="font-bold">{t.create.modes[m].name}</span>
               <span className="text-xs">{t.create.modes[m].description}</span>
             </button>
