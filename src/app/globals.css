@@ -5027,6 +5027,17 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
 /* vybraný režim v živé hře: jasnější papír a bílý rámeček */
 .pcard-static[aria-checked="true"] .pcard-in, .pcard-static[aria-selected="true"] .pcard-in { background: color-mix(in srgb, var(--ac) 34%, #1b1a30); }
 .pcard-static[aria-checked="true"], .pcard-static[aria-selected="true"] { outline: 3px solid #fff; outline-offset: 5px; }
+
+/* Seznam kurzů v zakládání hry: vlastní posuvník, hladké rolování a postupně se objevující položky */
+.live-scroll { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--ac, #8fd0ff) rgba(255, 255, 255, 0.08); }
+.live-scroll::-webkit-scrollbar { width: 10px; }
+.live-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.06); border-radius: 999px; margin: 6px 0; }
+.live-scroll::-webkit-scrollbar-thumb { background: var(--ac, #8fd0ff); border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; transition: filter 0.25s ease, background-color 0.25s ease; }
+.live-scroll::-webkit-scrollbar-thumb:hover { filter: brightness(1.25); }
+.live-item { animation: live-item-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes live-item-in { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .live-scroll { scroll-behavior: auto; } .live-item { animation: none; } }
+
 @media (min-width: 640px) {
   .pcard-pile-wide { grid-template-columns: repeat(2, 1fr); }
   .pcard-pile-wide > .pcard-slot:nth-child(odd) { --r: -2deg; }
