@@ -5025,8 +5025,8 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
 .pcard-pile-wide { max-width: none; }
 .pcard-static { cursor: pointer; border: 0; padding: 0; font: inherit; touch-action: manipulation; }
 /* vybraný režim v živé hře: jasnější papír a bílý rámeček */
-.pcard-static[aria-checked="true"] .pcard-in { background: color-mix(in srgb, var(--ac) 34%, #1b1a30); }
-.pcard-static[aria-checked="true"] { outline: 3px solid #fff; outline-offset: 5px; }
+.pcard-static[aria-checked="true"] .pcard-in, .pcard-static[aria-selected="true"] .pcard-in { background: color-mix(in srgb, var(--ac) 34%, #1b1a30); }
+.pcard-static[aria-checked="true"], .pcard-static[aria-selected="true"] { outline: 3px solid #fff; outline-offset: 5px; }
 @media (min-width: 640px) {
   .pcard-pile-wide { grid-template-columns: repeat(2, 1fr); }
   .pcard-pile-wide > .pcard-slot:nth-child(odd) { --r: -2deg; }

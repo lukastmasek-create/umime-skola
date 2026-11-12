@@ -3,7 +3,7 @@
 import { MODES, isChoice, isSyncMode } from "@/lib/live/logic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type FormEvent, type ReactNode } from "react";
 import { fmt, getLiveText } from "@/i18n/live";
 import type { Locale } from "@/i18n/config";
 import type { LiveMode, SetItem } from "@/lib/live/types";
@@ -17,6 +17,19 @@ const MODE_ACCENT: Record<LiveMode, string> = { QUIZ: "#8fd0ff", RACE: "#7ee0b0"
 
 type Course = { slug: string; title: string; category: string; subject: string | null; grade: number | null; questions: number };
 type SetRow = { id: string; title: string; questions: SetItem[] };
+
+/** Pole formuláře jako papírová karta z homepage: okraj, barva podle výběru, stín a lepicí páska. */
+function PaperField({ accent, className, children }: { accent: string; className?: string; children: ReactNode }) {
+  return (
+    <div
+      className={`relative rounded-[22px] border-2 border-[var(--ink)] px-4 py-3 shadow-[7px_9px_0_rgba(8,8,24,0.55)] ${className ?? ""}`}
+      style={{ ["--ac" as string]: accent, ["--ink" as string]: "rgba(244,239,227,0.88)", ["--r" as string]: "0deg", background: "color-mix(in srgb, var(--ac) 15%, #1b1a30)" } as CSSProperties}
+    >
+      <PcardTape />
+      {children}
+    </div>
+  );
+}
 
 export function CreateGame({ locale }: { locale: Locale }) {
   const t = getLiveText(locale);
@@ -78,7 +91,8 @@ export function CreateGame({ locale }: { locale: Locale }) {
     router.push(`/${locale}/hrat-spolecne/${r.pin}`);
   }
 
-  const field = "rounded-lg border-2 px-3 py-2 outline-none focus:border-[var(--brand-500)]";
+  // Samotné pole je průhledné: papírová karta kolem něj (PaperField) nese okraj, barvu i stín.
+  const fieldInner = "w-full bg-transparent text-base text-[#f4f3ff] outline-none [&_option]:bg-[#1b1a30]";
   const label = "flex flex-col gap-1 text-sm font-semibold";
 
   return (
@@ -90,20 +104,21 @@ export function CreateGame({ locale }: { locale: Locale }) {
         <p className="text-[var(--muted)]">{t.create.subtitle}</p>
       </div>
 
-      <section className="card flex flex-col gap-4 p-5">
-        <h2 className="text-lg font-bold">{t.create.source}</h2>
-        <div className="flex gap-2" role="tablist">
-          {(["course", "set"] as const).map((s) => (
-            <button
-              key={s}
-              type="button"
-              role="tab"
-              aria-selected={source === s}
-              onClick={() => setSource(s)}
-              className={`btn-bouncy px-4 py-2 text-sm font-bold ${source === s ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface)]"}`}
-            >
-              {s === "course" ? t.create.fromCourse : t.create.fromSet}
-            </button>
+      <div className="lobby-panel text-[#f4f3ff]">
+        <h2 className="mb-8 text-center text-3xl font-bold tracking-tight sm:text-4xl" style={{ fontFamily: "var(--font-heading)" }}>{t.create.source}</h2>
+        <div className="pcard-pile pcard-pile-wide" role="tablist">
+          {(["course", "set"] as const).map((s, i) => (
+            <div key={s} className="pcard-slot" style={{ ["--ac" as string]: s === "course" ? "#8fd0ff" : "#c9a8ff" }}>
+              <button type="button" role="tab" aria-selected={source === s} onClick={() => setSource(s)} className="pcard pcard-static w-full text-left">
+                <span className="pcard-in pcard-flat">
+                  <span className="pcard-num" aria-hidden>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="pcard-title">{s === "course" ? t.create.fromCourse : t.create.fromSet}</span>
+                </span>
+                <PcardTape />
+              </button>
+            </div>
           ))}
         </div>
 
@@ -111,33 +126,33 @@ export function CreateGame({ locale }: { locale: Locale }) {
           <div className="flex flex-col gap-3">
             <label className={label}>
               {t.create.course}
-              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t.create.search} className={field} />
+              <PaperField accent="#8fd0ff">
+                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t.create.search} className={fieldInner} />
+              </PaperField>
             </label>
-            <select
-              value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-              size={6}
-              aria-label={t.create.course}
-              className={`${field} w-full`}
-            >
-              {courses === null && <option disabled>{t.create.loading}</option>}
-              {filtered.map((c) => (
-                <option key={c.slug} value={c.slug}>
-                  {c.title}
-                  {c.grade ? ` (${c.grade}.)` : ""}
-                </option>
-              ))}
-            </select>
-            <label className={label}>
-              {t.create.difficulty}
-              <select value={difficulty} onChange={(e) => setDifficulty(Number(e.target.value))} className={field}>
-                <option value={0}>{t.create.anyDifficulty}</option>
-                {[1, 2, 3, 4, 5].map((d) => (
-                  <option key={d} value={d}>
-                    {d}
+            <PaperField accent="#7ee0b0">
+              <select value={slug} onChange={(e) => setSlug(e.target.value)} size={6} aria-label={t.create.course} className={fieldInner}>
+                {courses === null && <option disabled>{t.create.loading}</option>}
+                {filtered.map((c) => (
+                  <option key={c.slug} value={c.slug}>
+                    {c.title}
+                    {c.grade ? ` (${c.grade}.)` : ""}
                   </option>
                 ))}
               </select>
+            </PaperField>
+            <label className={label}>
+              {t.create.difficulty}
+              <PaperField accent="#ffc933">
+                <select value={difficulty} onChange={(e) => setDifficulty(Number(e.target.value))} className={fieldInner}>
+                  <option value={0}>{t.create.anyDifficulty}</option>
+                  {[1, 2, 3, 4, 5].map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </PaperField>
             </label>
           </div>
         ) : sets === "login" ? (
@@ -151,13 +166,15 @@ export function CreateGame({ locale }: { locale: Locale }) {
           <div className="flex flex-col gap-3">
             {Array.isArray(sets) && sets.length === 0 && <p className="text-[var(--muted)]">{t.create.noSets}</p>}
             {Array.isArray(sets) && sets.length > 0 && (
-              <select value={setId} onChange={(e) => setSetId(e.target.value)} size={Math.min(6, sets.length + 1)} aria-label={t.create.fromSet} className={`${field} w-full`}>
-                {sets.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.title} ({s.questions.length})
-                  </option>
-                ))}
-              </select>
+              <PaperField accent="#c9a8ff">
+                <select value={setId} onChange={(e) => setSetId(e.target.value)} size={Math.min(6, sets.length + 1)} aria-label={t.create.fromSet} className={fieldInner}>
+                  {sets.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.title} ({s.questions.length})
+                    </option>
+                  ))}
+                </select>
+              </PaperField>
             )}
             <Link href={`/${locale}/hrat-spolecne/sady`} className="text-sm font-bold text-[var(--brand-600)] hover:underline">
               {t.create.manageSets} →
@@ -167,10 +184,12 @@ export function CreateGame({ locale }: { locale: Locale }) {
 
         <label className={label}>
           {t.create.count}
-          <input type="number" min={1} max={100} value={count} onChange={(e) => setCount(Math.max(1, Math.min(100, Number(e.target.value) || 1)))} className={`${field} w-28`} />
+          <PaperField accent="#ff8a6b" className="w-32">
+            <input type="number" min={1} max={100} value={count} onChange={(e) => setCount(Math.max(1, Math.min(100, Number(e.target.value) || 1)))} className={fieldInner} />
+          </PaperField>
           {available !== undefined && <span className="text-xs font-normal text-[var(--muted)]">{fmt(t.create.available, { n: available })}</span>}
         </label>
-      </section>
+      </div>
 
       <div className="lobby-panel">
         <h2 className="mb-10 text-center text-3xl font-bold tracking-tight sm:text-4xl" style={{ fontFamily: "var(--font-heading)" }}>
