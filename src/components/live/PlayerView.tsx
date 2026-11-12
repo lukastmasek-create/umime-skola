@@ -14,6 +14,13 @@ import { ModeScene } from "./ModeScenes";
 
 type Feedback = { choice: number; correct: boolean; correctIndex: number; explanation?: string; chests: number; points: number; question: NonNullable<LiveView["question"]> };
 
+// Všechny odměny, které může truhla obsahovat (stejné u každé truhly; výběr je náhodný).
+const REWARDS: { kind: ChestOutcome["kind"]; text: string }[] = [
+  { kind: "gold", text: `+${CHEST_AMOUNTS.goldMin} až +${CHEST_AMOUNTS.goldMax}` },
+  { kind: "steal", text: `−${CHEST_AMOUNTS.steal}` },
+  { kind: "lose", text: `−${CHEST_AMOUNTS.lose}` },
+];
+
 function chestMessage(t: LiveText, r: ChestResult): string {
   const o: ChestOutcome = r.outcome;
   if (o.kind === "gold") return fmt(t.play.youGot, { n: r.gold });
@@ -267,24 +274,18 @@ export function PlayerView({
           <p className="text-xl font-extrabold text-[var(--accent-green)]">{t.play.correct}</p>
           <h2 className="text-lg font-bold">{t.play.chestTitle}</h2>
           <p className="text-sm text-[var(--muted)]">{t.play.chestHint}</p>
-          <ul className="flex flex-wrap justify-center gap-2 text-sm font-extrabold">
-            <li className="flex items-center gap-2 rounded-xl bg-[var(--surface-muted)] px-3 py-2">
-              <LootIcon kind="gold" id="legend-gold" className="h-9 w-auto" />
-              +{CHEST_AMOUNTS.goldMin} až +{CHEST_AMOUNTS.goldMax}
-            </li>
-            <li className="flex items-center gap-2 rounded-xl bg-[var(--surface-muted)] px-3 py-2">
-              <LootIcon kind="steal" id="legend-steal" className="h-9 w-auto" />
-              −{CHEST_AMOUNTS.steal}
-            </li>
-            <li className="flex items-center gap-2 rounded-xl bg-[var(--surface-muted)] px-3 py-2">
-              <LootIcon kind="lose" id="legend-lose" className="h-9 w-auto" />
-              −{CHEST_AMOUNTS.lose}
-            </li>
-          </ul>
           <div className="grid w-full grid-cols-3 gap-3">
             {([0, 1, 2] as const).map((i) => (
               <button key={i} type="button" onClick={() => pickChest(i)} disabled={chestBusy} className="btn-bouncy flex flex-col items-center gap-2 bg-[var(--surface)] p-3 disabled:opacity-60" aria-label={`${t.play.chestTitle} ${i + 1}`}>
-                <ChestClosed tone={i} id={`chest-pick-${i}`} className="h-32 w-auto" />
+                <ChestClosed tone={0} id={`chest-pick-${i}`} className="h-32 w-auto" />
+                <ul className="flex flex-col gap-1 text-sm font-extrabold">
+                  {REWARDS.map((r) => (
+                    <li key={r.kind} className="flex items-center gap-2">
+                      <LootIcon kind={r.kind} id={`chest-${i}-${r.kind}`} className="h-7 w-auto" />
+                      {r.text}
+                    </li>
+                  ))}
+                </ul>
                 <span className="rounded-full bg-[var(--surface-muted)] px-3 py-1 text-base font-extrabold">{i + 1}</span>
               </button>
             ))}
