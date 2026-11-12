@@ -4169,6 +4169,8 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
    Bez vlnek, bez oranžového západu slunce, hvězd jen náznak. */
 .zone > svg[viewBox="0 0 1440 60"] { display: none; }
 .zone { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06); }
+/* Úvodní stránka: sekce na sebe navazují bez čárky, celá stránka je jeden plynulý celek */
+.space-page .zone { box-shadow: none; }
 
 .zone-space {
   background:
@@ -5751,3 +5753,127 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 :root[data-motion="off"] .section-wave svg,
 :root[data-motion="off"] .section-spark,
 :root[data-motion="off"] .section-sweep { animation: none; }
+
+/* --- Pohyb po celé úvodní stránce ---
+   1) Parallax: hvězdy v každé sekci se při scrollu posouvají jinou rychlostí než obsah.
+   2) Nadpisy: rozostření a rozvinutí písma při vjezdu do pohledu.
+   3) Karty a tlačítka: naklonění a záře po najetí; tlačítka mají přejíždějící lesk.
+   4) Pozadí sekcí: barevné mlhoviny se pomalu posouvají; technická sekce má místo mřížky auroru.
+   Vše jen v úvodní stránce (.space-page) a vypne se při reduced-motion / přepínači Animace. */
+
+/* 3) Mřížka pryč, technické sekce dostávají jiné pozadí: tyrkysová aurora místo modré mřížky */
+.space-page .zone-tech {
+  background-color: #0b1024;
+  background-image:
+    radial-gradient(ellipse 60% 45% at 12% 0%, rgba(59, 91, 255, 0.22), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 95% 100%, rgba(255, 138, 107, 0.10), transparent 70%),
+    linear-gradient(180deg, #0b1024 0%, #0d1430 100%);
+}
+
+/* 4) Pozadí sekcí se pomalu posouvá (mlhoviny a gradienty) */
+.space-page .zone-space,
+.space-page .zone-globe,
+.space-page .zone-tech,
+.space-page .zone-peak {
+  background-size: 170% 170%;
+  animation: zone-drift 26s ease-in-out infinite alternate;
+}
+@keyframes zone-drift {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+
+/* 1) Parallax hvězd: vrstva je o něco vyšší než sekce a při scrollu jede opačným směrem než obsah */
+.space-page .px-stars {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -90px;
+  bottom: -90px;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 22%, rgba(255, 255, 255, 0.85), transparent),
+    radial-gradient(1px 1px at 47% 61%, rgba(200, 215, 255, 0.8), transparent),
+    radial-gradient(2px 2px at 78% 14%, rgba(255, 233, 168, 0.9), transparent),
+    radial-gradient(1px 1px at 91% 83%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1.5px 1.5px at 33% 90%, rgba(255, 209, 232, 0.8), transparent);
+  background-size: 420px 420px;
+  opacity: 0.7;
+}
+@supports (animation-timeline: view()) {
+  .space-page .px-stars {
+    animation: px-drift linear both;
+    animation-timeline: view();
+    animation-range: cover 0% cover 100%;
+  }
+}
+@keyframes px-drift {
+  from { transform: translate3d(0, -70px, 0); }
+  to { transform: translate3d(0, 70px, 0); }
+}
+
+/* 2) Nadpisy: rozostření, rozvinutí písma a posun při vjezdu do pohledu */
+@supports (animation-timeline: view()) {
+  .space-page h2.reveal {
+    animation: reveal-up linear both, h-reveal linear both;
+    animation-timeline: view(), view();
+    animation-range: entry 5% entry 45%, entry 0% entry 35%;
+  }
+  .space-page h2:not(.reveal) {
+    animation: h-reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+}
+@keyframes h-reveal {
+  from { filter: blur(10px); letter-spacing: 0.14em; clip-path: inset(0 0 100% 0); }
+  to { filter: blur(0); letter-spacing: normal; clip-path: inset(0 0 0 0); }
+}
+
+/* 3) Karty: po najetí se naklopí a zazáří (translate/rotate, aby nebojovaly s reveal animací) */
+.space-page .gcard,
+.space-page .about-point,
+.space-page .about-person,
+.space-page .about-note,
+.space-page .about-problem {
+  transition: translate 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2), rotate 0.35s ease, box-shadow 0.35s ease;
+}
+.space-page .gcard:hover,
+.space-page .about-point:hover,
+.space-page .about-person:hover,
+.space-page .about-note:hover,
+.space-page .about-problem:hover {
+  translate: 0 -8px;
+  rotate: -0.6deg;
+  box-shadow: 0 20px 40px -18px rgba(41, 224, 192, 0.45), 0 0 0 1px rgba(41, 224, 192, 0.25);
+}
+
+/* 3) Tlačítka: přejíždějící lesk */
+.space-page .btn-primary {
+  background-image: linear-gradient(110deg, transparent 38%, rgba(255, 255, 255, 0.35) 50%, transparent 62%);
+  background-size: 260% 100%;
+  background-color: var(--brand-500);
+  animation: btn-shine 3.6s linear infinite;
+}
+@keyframes btn-shine {
+  0% { background-position: 120% 0; }
+  100% { background-position: -120% 0; }
+}
+
+@media (max-width: 640px) {
+  .space-page .px-stars { top: -60px; bottom: -60px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .space-page .zone-tech, .space-page .zone-space, .space-page .zone-globe, .space-page .zone-peak,
+  .space-page .px-stars, .space-page h2, .space-page .btn-primary { animation: none !important; }
+  .space-page .gcard:hover, .space-page .about-point:hover, .space-page .about-person:hover,
+  .space-page .about-note:hover, .space-page .about-problem:hover { translate: none; rotate: none; }
+}
+:root[data-motion="off"] .space-page .zone-tech,
+:root[data-motion="off"] .space-page .zone-space,
+:root[data-motion="off"] .space-page .zone-globe,
+:root[data-motion="off"] .space-page .zone-peak,
+:root[data-motion="off"] .space-page .px-stars,
+:root[data-motion="off"] .space-page h2,
+:root[data-motion="off"] .space-page .btn-primary { animation: none; }
