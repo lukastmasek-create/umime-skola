@@ -152,7 +152,7 @@ export function ChallengePanel({ game, locale, onChange }: { game: ChGame; local
         </h2>
         <p className="mt-1 text-sm text-[var(--muted)]">{t.loginRequired}</p>
         <Link href={`/${locale}/prihlaseni`} className="btn-bouncy mt-3 inline-block bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white">
-          {locale === "cs" ? "Přihlásit se" : locale === "de" ? "Anmelden" : locale === "ru" ? "Войти" : "Log in"}
+          {({ cs: "Přihlásit se", en: "Log in", de: "Anmelden", ru: "Войти", uk: "Увійти", ja: "ログイン", es: "Iniciar sesión", fr: "Se connecter" } as const)[locale]}
         </Link>
       </section>
     );
