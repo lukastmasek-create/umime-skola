@@ -6,6 +6,7 @@ import { DailyQuizTeaser } from "@/components/DailyQuizTeaser";
 import { TeacherCta } from "@/components/TeacherCta";
 import { ALIEN_ROW, SpriteFrame, Wave } from "@/components/SpaceDecor";
 import { SectionWave } from "@/components/SectionWave";
+import { Nebula } from "@/components/SpaceDecor";
 import { LazyPlanet, LazySubjectGlobe, LazyTownLife } from "@/components/HomeLazy";
 import { GlobeSky } from "@/components/GlobeSky";
 import { HeroSky } from "@/components/HeroSky";
@@ -231,6 +232,7 @@ export default async function Home({
       {/* 6) Pro učitele */}
       <section id="pro-ucitele" className="zone zone-tech scroll-mt-24">
         <span className="px-stars" aria-hidden />
+        <Nebula className="absolute inset-0 -z-10" />
         <div className="lobby-panel relative z-10">
           <div className="grid gap-12">
             <div>
@@ -274,6 +276,7 @@ export default async function Home({
       {/* 7) O nás */}
       <section id="o-nas" className="zone zone-tech scroll-mt-24">
         <span className="px-stars" aria-hidden />
+        <Nebula className="absolute inset-0 -z-10" />
         <div className="lobby-panel relative z-10">
           <div className="about-top">
             <div className="reveal">
