@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowDown, ArrowUp, ClipboardList, Copy, ImagePlus, Pencil, Play, Plus, Trash2, X } from "lucide-react";
+import { Icon } from "@/components/Icon";
 import { fmt, getLiveText } from "@/i18n/live";
 import { getSetsExtraText } from "@/i18n/sets-extra";
 import type { Locale } from "@/i18n/config";
 import { MAX_IMAGE_CHARS, isChoice } from "@/lib/live/logic";
 import type { SetItem } from "@/lib/live/types";
+import { SET_ICON, TILE_GRADS } from "@/lib/game-icons";
 import { liveApi } from "./api";
 import { errorText } from "./LiveRoom";
 import { OPTION_STYLES } from "./shared";
@@ -215,7 +218,7 @@ export function SetsEditor({ locale }: { locale: Locale }) {
     setBulkOpen(false);
   }
 
-  const field = "rounded-lg border-2 px-3 py-2 outline-none focus:border-[var(--brand-500)]";
+  const field = "sets-field";
   const errMsg = error && (
     <p role="alert" className="font-semibold text-[var(--danger)]">
       {error === "invalid" ? t.sets.invalid : error === "images-too-large" ? x.tooLarge : errorText(t, error)}
@@ -224,9 +227,9 @@ export function SetsEditor({ locale }: { locale: Locale }) {
 
   if (login) {
     return (
-      <div className="card mx-auto flex max-w-md flex-col items-center gap-3 p-6 text-center">
+      <div className="sets-tile mx-auto flex max-w-md flex-col items-center gap-4 text-center">
         <p>{t.sets.loginRequired}</p>
-        <Link href={`/${locale}/prihlaseni`} className="btn-bouncy btn-primary btn-lg">
+        <Link href={`/${locale}/prihlaseni`} className="lobby-cta">
           {t.join.button}
         </Link>
       </div>
@@ -307,25 +310,27 @@ export function SetsEditor({ locale }: { locale: Locale }) {
           <span>{x.shortcuts}</span>
         </div>
         {draft.questions.map((q, i) => (
-          <fieldset key={q.uid} className="card flex flex-col gap-3 p-4">
+          <fieldset key={q.uid} className="sets-tile flex flex-col gap-3">
             <legend className="sr-only">
               {t.sets.prompt} {i + 1}
             </legend>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="pill bg-[var(--surface-muted)] px-3 py-1 text-sm font-bold">{i + 1}</span>
+              <span className="sets-num" aria-hidden>
+                {i + 1}
+              </span>
               <span className="flex-1" />
-              <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className="btn-bouncy bg-[var(--surface)] px-3 py-1 text-sm font-bold disabled:opacity-40" aria-label={x.moveUp} title={x.moveUp}>
-                ↑
+              <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className="sets-icon-btn" aria-label={x.moveUp} title={x.moveUp}>
+                <ArrowUp aria-hidden className="h-4 w-4" />
               </button>
-              <button type="button" onClick={() => move(i, 1)} disabled={i === draft.questions.length - 1} className="btn-bouncy bg-[var(--surface)] px-3 py-1 text-sm font-bold disabled:opacity-40" aria-label={x.moveDown} title={x.moveDown}>
-                ↓
+              <button type="button" onClick={() => move(i, 1)} disabled={i === draft.questions.length - 1} className="sets-icon-btn" aria-label={x.moveDown} title={x.moveDown}>
+                <ArrowDown aria-hidden className="h-4 w-4" />
               </button>
-              <button type="button" onClick={() => duplicate(i)} disabled={draft.questions.length >= MAX_QUESTIONS} className="btn-bouncy bg-[var(--surface)] px-3 py-1 text-sm font-bold disabled:opacity-40" aria-label={x.duplicate} title={x.duplicate}>
-                ⧉
+              <button type="button" onClick={() => duplicate(i)} disabled={draft.questions.length >= MAX_QUESTIONS} className="sets-icon-btn" aria-label={x.duplicate} title={x.duplicate}>
+                <Copy aria-hidden className="h-4 w-4" />
               </button>
               {draft.questions.length > 1 && (
-                <button type="button" onClick={() => update({ questions: draft.questions.filter((_, k) => k !== i) })} className="btn-bouncy bg-[var(--surface)] px-3 py-1 text-sm font-bold" aria-label={t.sets.removeQuestion} title={t.sets.removeQuestion}>
-                  ✕
+                <button type="button" onClick={() => update({ questions: draft.questions.filter((_, k) => k !== i) })} className="sets-icon-btn is-danger" aria-label={t.sets.removeQuestion} title={t.sets.removeQuestion}>
+                  <X aria-hidden className="h-4 w-4" />
                 </button>
               )}
             </div>
@@ -346,13 +351,13 @@ export function SetsEditor({ locale }: { locale: Locale }) {
                     <input value={p.left} onChange={(e) => setQ(i, { pairs: q.pairs.map((v, n) => (n === k ? { ...v, left: e.target.value } : v)) })} placeholder={x.pairLeft} aria-label={`${x.pairLeft} ${k + 1}`} maxLength={80} className={`${field} min-w-0 flex-1`} />
                     <span aria-hidden className="text-[var(--faint)]">↔</span>
                     <input value={p.right} onChange={(e) => setQ(i, { pairs: q.pairs.map((v, n) => (n === k ? { ...v, right: e.target.value } : v)) })} placeholder={x.pairRight} aria-label={`${x.pairRight} ${k + 1}`} maxLength={80} className={`${field} min-w-0 flex-1`} />
-                    <button type="button" disabled={q.pairs.length <= 4} onClick={() => setQ(i, { pairs: q.pairs.filter((_, n) => n !== k) })} className="btn-bouncy bg-[var(--surface)] px-3 py-1 text-sm font-bold disabled:opacity-40" aria-label={x.removePair} title={x.removePair}>
-                      ✕
+                    <button type="button" disabled={q.pairs.length <= 4} onClick={() => setQ(i, { pairs: q.pairs.filter((_, n) => n !== k) })} className="sets-icon-btn is-danger" aria-label={x.removePair} title={x.removePair}>
+                      <X aria-hidden className="h-4 w-4" />
                     </button>
                   </div>
                 ))}
-                <button type="button" disabled={q.pairs.length >= 8} onClick={() => setQ(i, { pairs: [...q.pairs, { left: "", right: "" }] })} className="btn-bouncy btn-secondary self-start px-4 py-2 text-sm font-bold disabled:opacity-40">
-                  + {x.addPair}
+                <button type="button" disabled={q.pairs.length >= 8} onClick={() => setQ(i, { pairs: [...q.pairs, { left: "", right: "" }] })} className="lobby-chip self-start disabled:opacity-40">
+                  <Plus aria-hidden className="h-4 w-4" /> {x.addPair}
                 </button>
               </div>
             )}
@@ -400,8 +405,8 @@ export function SetsEditor({ locale }: { locale: Locale }) {
                 <img loading="lazy" decoding="async" src={q.image} alt="" className="max-h-32 w-auto rounded-xl border border-[var(--border)] object-contain" />
               ) : null}
               <div className="flex flex-col gap-1">
-                <label className="btn-bouncy btn-secondary cursor-pointer self-start px-4 py-2 text-sm font-bold">
-                  🖼 {q.image ? x.changeImage : x.addImage}
+                <label className="lobby-chip cursor-pointer self-start">
+                  <ImagePlus aria-hidden className="h-4 w-4" /> {q.image ? x.changeImage : x.addImage}
                   <input
                     type="file"
                     accept="image/*"
@@ -421,7 +426,7 @@ export function SetsEditor({ locale }: { locale: Locale }) {
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
               {q.options.map((o, k) => (
-                <div key={k} className="flex items-center gap-2 rounded-xl border-2 p-1.5" style={{ borderColor: q.correctIndex === k ? "var(--accent-green)" : "transparent", background: q.correctIndex === k ? "rgba(126,224,176,0.18)" : undefined }}>
+                <div key={k} className={`flex items-center gap-2 rounded-2xl border-2 p-1.5 ${q.correctIndex === k ? "sets-correct" : "border-transparent"}`}>
                   <input
                     type="radio"
                     name={`correct-${q.uid}`}
@@ -457,19 +462,19 @@ export function SetsEditor({ locale }: { locale: Locale }) {
         ))}
         <p className="text-sm text-[var(--faint)]">{x.imageHint}</p>
         <div className="flex flex-wrap gap-3">
-          <button type="button" onClick={() => addQuestion()} disabled={draft.questions.length >= MAX_QUESTIONS} className="btn-bouncy btn-secondary px-4 py-2 font-bold">
-            + {t.sets.addQuestion}
+          <button type="button" onClick={() => addQuestion()} disabled={draft.questions.length >= MAX_QUESTIONS} className="lobby-chip disabled:opacity-40">
+            <Plus aria-hidden className="h-4 w-4" /> {t.sets.addQuestion}
           </button>
-          <button type="button" onClick={() => setBulkOpen((v) => !v)} className="btn-bouncy btn-secondary px-4 py-2 font-bold" aria-expanded={bulkOpen}>
-            📋 {x.importButton}
+          <button type="button" onClick={() => setBulkOpen((v) => !v)} className="lobby-chip" aria-expanded={bulkOpen}>
+            <ClipboardList aria-hidden className="h-4 w-4" /> {x.importButton}
           </button>
         </div>
         {bulkOpen && (
-          <div className="card flex flex-col gap-2 p-4">
+          <div className="sets-tile flex flex-col gap-3">
             <h2 className="font-bold">{x.importTitle}</h2>
             <p className="text-sm text-[var(--muted)]">{x.importHint}</p>
             <textarea value={bulk} onChange={(e) => setBulk(e.target.value)} rows={6} className={`${field} font-mono text-sm`} placeholder="Hlavní město Francie; Paříž; Řím; Madrid; Berlín" />
-            <button type="button" onClick={applyBulk} className="btn-bouncy btn-primary self-start px-4 py-2 font-bold">
+            <button type="button" onClick={applyBulk} className="lobby-cta self-start">
               {x.importApply}
             </button>
           </div>
@@ -486,11 +491,11 @@ export function SetsEditor({ locale }: { locale: Locale }) {
         ) : (
           errMsg
         )}
-        <div className="sticky bottom-3 flex gap-3">
-          <button type="button" onClick={save} disabled={busy} className="btn-bouncy btn-primary btn-lg">
+        <div className="sets-sticky">
+          <button type="button" onClick={save} disabled={busy} className="lobby-cta disabled:opacity-50">
             {t.sets.save}
           </button>
-          <button type="button" onClick={leaveDraft} className="btn-bouncy btn-secondary btn-lg">
+          <button type="button" onClick={leaveDraft} className="lobby-chip">
             {t.sets.cancel}
           </button>
         </div>
@@ -498,54 +503,47 @@ export function SetsEditor({ locale }: { locale: Locale }) {
     );
   }
 
+  // Seznam sad: karty ve stylu lobby na homepage, každá s vlastní barvou a nálepkou.
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-5">
+    <div className="mx-auto flex max-w-4xl flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-            {t.sets.title}
-          </h1>
-          <p className="text-[var(--muted)]">{t.sets.subtitle}</p>
-        </div>
-        <button type="button" onClick={() => setDraft({ id: null, title: "", questions: [blankQuestion()] }, false)} className="btn-bouncy btn-primary btn-lg">
-          + {t.sets.newSet}
+        <button type="button" onClick={() => setDraft({ id: null, title: "", questions: [blankQuestion()] }, false)} className="lobby-cta">
+          <Plus aria-hidden className="h-4 w-4" /> {t.sets.newSet}
         </button>
+        {saved && <p className="lobby-chip cursor-default" style={{ background: "rgba(126,224,176,0.22)", borderColor: "#7ee0b0" }}>{t.sets.saved}</p>}
       </div>
-      {saved && <p className="pill self-start bg-[var(--accent-green)] px-3 py-1 text-white">{t.sets.saved}</p>}
       {errMsg}
       {sets === null ? (
         <p className="text-[var(--muted)]">{t.create.loading}</p>
       ) : sets.length === 0 ? (
-        <p className="text-[var(--muted)]">{t.sets.empty}</p>
+        <p className="sets-tile text-[var(--muted)]">{t.sets.empty}</p>
       ) : (
-        <ul className="flex flex-col gap-3">
-          {sets.map((s) => (
-            <li key={s.id} className="card flex flex-wrap items-center justify-between gap-3 p-4">
-              <div>
-                <p className="font-bold">{s.title}</p>
-                <p className="text-sm text-[var(--muted)]">
+        <ul className="grid gap-4 sm:grid-cols-2">
+          {sets.map((s, i) => (
+            <li key={s.id} className={`lobby-card bg-gradient-to-br ${TILE_GRADS[i % TILE_GRADS.length]}`}>
+              <Icon name={SET_ICON} size={84} className="lobby-emoji" />
+              <span className="relative mt-auto block pr-20">
+                <span className="block text-lg font-bold leading-tight">{s.title}</span>
+                <span className="block text-xs text-white/75">
                   {fmt(t.sets.questions, { n: s.questions.length })}
                   {s.questions.some((q) => isChoice(q) && q.image) ? " · 🖼" : ""}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Link href={`/${locale}/hrat-spolecne/sady/${s.id}`} className="btn-bouncy btn-primary px-4 py-2 text-sm font-bold">
-                  ▶ {x.play}
+                </span>
+              </span>
+              <div className="relative mt-4 flex flex-wrap gap-2">
+                <Link href={`/${locale}/hrat-spolecne/sady/${s.id}`} className="lobby-cta px-4 py-2 text-sm">
+                  <Play aria-hidden className="h-4 w-4" /> {x.play}
                 </Link>
-                <button type="button" onClick={() => setDraft({ id: s.id, title: s.title, questions: s.questions.map(fromStored) }, false)} className="btn-bouncy btn-secondary px-4 py-2 text-sm font-bold">
-                  {t.sets.edit}
+                <button type="button" onClick={() => setDraft({ id: s.id, title: s.title, questions: s.questions.map(fromStored) }, false)} className="lobby-chip px-4 py-2 text-sm">
+                  <Pencil aria-hidden className="h-4 w-4" /> {t.sets.edit}
                 </button>
-                <button type="button" onClick={() => remove(s.id)} className="btn-bouncy btn-secondary px-4 py-2 text-sm font-bold">
-                  {t.sets.remove}
+                <button type="button" onClick={() => remove(s.id)} className="lobby-chip px-4 py-2 text-sm">
+                  <Trash2 aria-hidden className="h-4 w-4" /> {t.sets.remove}
                 </button>
               </div>
             </li>
           ))}
         </ul>
       )}
-      <Link href={`/${locale}/hrat-spolecne/nova`} className="text-sm font-bold text-[var(--brand-600)] hover:underline">
-        ← {t.sets.back}
-      </Link>
     </div>
   );
 }
