@@ -5,6 +5,7 @@ import { HomeProgress } from "@/components/HomeProgress";
 import { DailyQuizTeaser } from "@/components/DailyQuizTeaser";
 import { TeacherCta } from "@/components/TeacherCta";
 import { ALIEN_ROW, SpriteFrame, Wave } from "@/components/SpaceDecor";
+import { SectionWave } from "@/components/SectionWave";
 import { LazyPlanet, LazySubjectGlobe, LazyTownLife } from "@/components/HomeLazy";
 import { GlobeSky } from "@/components/GlobeSky";
 import { HeroSky } from "@/components/HeroSky";
@@ -108,16 +109,17 @@ export default async function Home({
             <DailyQuizTeaser locale={locale as Locale} />
           </div>
         </section>
+        <SectionWave fill="#0d1430" glow="#8ea2ff" />
       </div>
 
       {/* 1b) Lobby: co dnes zahrajeme */}
       <div className="zone zone-space pt-4">
         <HomeLobby locale={locale} t={getHomeLobbyText(locale as Locale)} />
+        <SectionWave fill="#0d1430" glow="#ff8a6b" />
       </div>
 
       {/* 2) Příroda: předměty */}
       <section className="zone zone-space zone-globe">
-        <Wave fill="#0c0a24" />
         <GlobeSky />
         <div className="lobby-panel lobby-panel-wide relative z-10">
           <div className="reveal mb-8 flex flex-wrap items-end justify-between gap-3">
@@ -146,6 +148,7 @@ export default async function Home({
           />
           </div>
         </div>
+        <SectionWave fill="#0c1537" glow="#5ab8ff" />
       </section>
 
       {/* 4) Hory: jak to funguje */}
@@ -179,11 +182,11 @@ export default async function Home({
           <HangTags tags={getHomeHangText(locale as Locale).tags} />
           <HangGround />
         </HangPanel>
+        <SectionWave fill="#10183b" glow="#8ea2ff" />
       </section>
 
       {/* 5) Zpět do vesmíru: kategorie */}
       <section className="zone zone-space">
-        <Wave fill="#160a2c" />
         <LazyPlanet className="absolute -bottom-10 -left-12 -z-10 hidden lg:block" size={520} />
         <SpriteFrame
           sheet="aliens"
@@ -216,11 +219,11 @@ export default async function Home({
             ))}
           </div>
         </div>
+        <SectionWave fill="#0c122b" glow="#ff8a6b" />
       </section>
 
       {/* 6) Pro učitele */}
       <section id="pro-ucitele" className="zone zone-tech scroll-mt-24">
-        <Wave fill="#160a2c" />
         <div className="lobby-panel relative z-10">
           <div className="grid gap-12">
             <div>
@@ -258,11 +261,11 @@ export default async function Home({
             />
           </div>
         </div>
+        <SectionWave fill="#0a1128" glow="#7ee0b0" />
       </section>
 
       {/* 7) O nás */}
       <section id="o-nas" className="zone zone-tech scroll-mt-24">
-        <Wave fill="#071427" />
         <div className="lobby-panel relative z-10">
           <div className="about-top">
             <div className="reveal">

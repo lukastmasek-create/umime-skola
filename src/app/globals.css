@@ -5394,3 +5394,95 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 .gs-hero-card.is-broken::after { content: ""; position: absolute; z-index: 2; top: -4px; right: 372px; width: 360px; height: 6px; border-radius: 3px 3px 0 0; pointer-events: none;
   background: linear-gradient(180deg, rgba(240, 236, 255, 0.55), rgba(150, 142, 205, 0.35) 55%, rgba(60, 54, 120, 0)); mask-image: linear-gradient(90deg, transparent, #000 14%, #000 100%); }
 @media (max-width: 899px) { .gs-hero-card.is-broken::after { display: none; } }
+
+/* --- Přechody sekcí na úvodní stránce ---
+   Sekce jdou od kraje ke kraji; obsah zůstává v centrovaném sloupci přes padding.
+   SectionWave: barevné prolnutí do další sekce, dvě vlny různé rychlosti, SVG jiskry přes hranu. */
+.space-page .zone > .lobby-panel {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: clamp(72px, 10vw, 136px) max(16px, calc((100% - 72rem) / 2 + 16px));
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.space-page .zone > .lobby-panel-wide {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: clamp(72px, 10vw, 136px) max(8px, calc((100% - 96rem) / 2 + 8px));
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+/* Prolnutí: barva sekce se od poloviny výšky plynule mění na barvu další sekce */
+.section-blend {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  height: clamp(200px, 26vw, 360px);
+  pointer-events: none;
+  overflow: hidden;
+  background: linear-gradient(to bottom, transparent 0%, color-mix(in srgb, var(--sb-fill) 55%, transparent) 55%, var(--sb-fill) 100%);
+}
+.section-wave {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: clamp(88px, 13vw, 180px);
+  overflow: hidden;
+  animation: section-wave-in linear both;
+  animation-timeline: view();
+  animation-range: entry 0% cover 40%;
+}
+.section-wave svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 100%;
+}
+.section-wave-back { animation: section-wave-drift 38s linear infinite reverse; opacity: 0.9; }
+.section-wave-front { animation: section-wave-drift 22s linear infinite; }
+.section-wave-line { filter: drop-shadow(0 0 6px currentColor); }
+@keyframes section-wave-drift {
+  to { transform: translate3d(-50%, 0, 0); }
+}
+@keyframes section-wave-in {
+  from { opacity: 0; translate: 0 45%; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+/* Jiskry: SVG hvězdičky plující přes hranu sekcí */
+.section-spark {
+  position: absolute;
+  z-index: 3;
+  opacity: 0.85;
+  animation: section-spark var(--sd) ease-in-out infinite var(--sdl);
+  filter: drop-shadow(0 0 8px currentColor);
+}
+.section-spark svg { display: block; }
+@keyframes section-spark {
+  0%, 100% { transform: translate3d(-30px, 0, 0) rotate(-12deg) scale(0.75); opacity: 0.25; }
+  50% { transform: translate3d(60px, -26px, 0) rotate(18deg) scale(1.15); opacity: 1; }
+}
+
+@media (max-width: 640px) {
+  .space-page .zone > .lobby-panel { padding-top: 64px; padding-bottom: 104px; }
+  .section-spark { transform: scale(0.8); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .section-wave, .section-wave svg, .section-spark { animation: none !important; }
+}
+:root[data-motion="off"] .section-wave,
+:root[data-motion="off"] .section-wave svg,
+:root[data-motion="off"] .section-spark { animation: none; }
