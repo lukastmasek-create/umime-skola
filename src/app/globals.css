@@ -6040,3 +6040,44 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 :root[data-motion="off"] .space-page .px-stars,
 :root[data-motion="off"] .space-page h2,
 :root[data-motion="off"] .space-page .btn-primary { animation: none; }
+
+/* ===== Úvodní stránka: mobilní optimalizace (do 639 px) ===== */
+@media (max-width: 639px) {
+  /* Hlavička: tužka posuvníku se na dotykových displejích nezobrazuje a nepřekrývá Menu */
+  .pencil-track { display: none; }
+  .site-header-in button,
+  .site-header-in a { min-height: 40px; }
+
+  /* Hero: karty kolem textu se vejdou do šířky displeje (dříve přetékaly až o 70 px) */
+  .hs-flow { grid-template-columns: minmax(0, 1fr); }
+  .hs-subject-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .hs-label { font-size: 13px; }
+  .hs-sub { font-size: 12px; }
+  .hs-tile-label { font-size: 11px; }
+  .hs-pipe { flex-wrap: wrap; row-gap: 12px; min-height: 0; padding: 4px 0; }
+  .hs-chips { flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .hs-chip { width: 52px; height: 52px; font-size: 18px; }
+  .hs-chip img { width: 52px !important; height: 52px !important; }
+  .hs-pill { font-size: 14px; padding: 10px 18px; }
+
+  /* Zavěšené štítky: každý má vlastní výšku, takže se nepřekrývají */
+  .hang-tags { height: 300px; }
+  /* výše visící štítek má navrch, takže lano od níže visícího štítku jím prochází vzadu */
+  .hang-str-1 { left: 50%; --h: 52px; z-index: 5; }
+  .hang-str-2 { left: 32%; --h: 104px; z-index: 4; }
+  .hang-str-3 { left: 68%; --h: 156px; z-index: 3; }
+  .hang-str-4 { left: 40%; --h: 208px; z-index: 2; }
+  .hang-str-5 { left: 64%; --h: 260px; z-index: 1; }
+
+  /* Dotyková tlačítka a odkazy: aspoň 40 px výšky (patička, kontakt) */
+  .sketch-chip { min-height: 40px; }
+  .about-contact-txt a { display: inline-flex; align-items: center; min-height: 44px; }
+
+  /* O nás: členové týmu jako kompaktní řádky (avatar vlevo, jméno a text vpravo) */
+  .about-person { display: grid; grid-template-columns: 52px minmax(0, 1fr); column-gap: 14px; padding: 16px; }
+  .about-avatar { grid-row: 1 / span 3; width: 52px; height: 52px; margin-bottom: 0; }
+  .about-role { margin-bottom: 6px; }
+
+  /* Kategorie: o něco kompaktnější karty */
+  .pcard-pile { gap: 24px; }
+}
