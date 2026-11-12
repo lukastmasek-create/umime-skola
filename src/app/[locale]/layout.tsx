@@ -13,7 +13,7 @@ import { HeaderScroll } from "@/components/HeaderScroll";
 import { PencilScrollbar } from "@/components/PencilScrollbar";
 import { GlobalShortcuts } from "@/components/GlobalShortcuts";
 import { SiteMotion } from "@/components/SiteMotion";
-import { ScrollParallax } from "@/components/ScrollParallax";
+import { ScrollFade } from "@/components/ScrollFade";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, locales, type Locale } from "@/i18n/config";
 import { notFound } from "next/navigation";
@@ -112,7 +112,7 @@ export default async function LocaleLayout({
         <EconomyTicker locale={locale as Locale} />
         <PencilScrollbar />
         <SiteMotion />
-        <ScrollParallax />
+        <ScrollFade />
         <GlobalShortcuts locale={locale} />
         <main className="world flex-1">{children}</main>
         <footer className="relative bg-[var(--surface)] px-4 py-6 text-center text-sm text-[var(--muted)]">
