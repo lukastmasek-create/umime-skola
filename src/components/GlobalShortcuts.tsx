@@ -23,6 +23,15 @@ const LETTERS: Record<string, string> = {
 
 const ARROWS = ["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight"];
 
+// Štítek se zkratkou (číslo nebo písmeno) na dlaždici nebo podsekci.
+function ShortcutKey({ children }: { children: string | number }) {
+  return (
+    <kbd className="flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-[var(--edge)] bg-[var(--surface)] px-1 font-mono text-xs font-bold text-[var(--foreground)]">
+      {children}
+    </kbd>
+  );
+}
+
 export function GlobalShortcuts({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -57,7 +66,9 @@ export function GlobalShortcuts({ locale, dict }: { locale: Locale; dict: Dictio
       const el = e.target as HTMLElement | null;
       if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
       if (e.key === "Escape") {
-        close();
+        // Esc nejdřív zavře rozbalenou skupinu, až potom celou nabídku.
+        if (open && expanded) setExpanded(null);
+        else close();
         return;
       }
       const k = e.key.toUpperCase();
@@ -68,6 +79,24 @@ export function GlobalShortcuts({ locale, dict }: { locale: Locale; dict: Dictio
         router.push(`/${locale}${LETTERS[k]}`);
         return;
       }
+      // Číslice: bez rozbalené skupiny vybírají skupinu, s rozbalenou jen její podsekce.
+      // Zkratky ostatních skupin jsou v tu chvíli vypnuté.
+      if (open && /^[1-9]$/.test(e.key)) {
+        e.preventDefault();
+        const n = Number(e.key) - 1;
+        if (!expanded) {
+          const group = groups[n];
+          if (group) setExpanded(group.key);
+        } else {
+          const tab = groups.find((g) => g.key === expanded)?.items[n];
+          if (tab) {
+            setOpenPath(null);
+            setExpanded(null);
+            router.push(tab.href);
+          }
+        }
+        return;
+      }
       if (k === "G") {
         e.preventDefault();
         if (open) close();
@@ -76,13 +105,14 @@ export function GlobalShortcuts({ locale, dict }: { locale: Locale; dict: Dictio
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [locale, router, open, show, close]);
+  }, [locale, router, open, expanded, groups, show, close]);
 
-  // Po otevření se fokus přesune do nabídky, aby šly ovládat šipkami a Enterem.
+  // Fokus se přesune do nabídky (na dlaždice, nebo na podsekce po rozbalení skupiny).
   useEffect(() => {
     if (!open) return;
-    panelRef.current?.querySelector<HTMLElement>("button, a")?.focus();
-  }, [open]);
+    const target = expanded ? "[data-sub] a" : "[data-tiles] button";
+    panelRef.current?.querySelector<HTMLElement>(target)?.focus();
+  }, [open, expanded]);
 
   // Šipky posouvají fokus mezi dlaždicemi a podpoložkami.
   const onArrow = (e: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -118,7 +148,9 @@ export function GlobalShortcuts({ locale, dict }: { locale: Locale; dict: Dictio
             {t.menu}
           </p>
           <div className="flex items-center gap-3">
-            <span className="hidden text-xs text-[var(--muted)] sm:inline">G nebo Esc zavře · šipky pohyb · písmeno zkratka</span>
+            <span className="hidden text-xs text-[var(--muted)] sm:inline">
+              {expanded ? "1–9 vybrat · Esc zpět" : "1–9 skupina · Esc zavře"} · šipky pohyb
+            </span>
             <button
               type="button"
               onClick={close}
@@ -130,9 +162,11 @@ export function GlobalShortcuts({ locale, dict }: { locale: Locale; dict: Dictio
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {groups.map((group) => {
+        <div data-tiles className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {groups.map((group, i) => {
             const isOpen = expanded === group.key;
+            // Když je některá skupina rozbalená, zkratky ostatních dlaždic jsou vypnuté.
+            const shortcutOn = !expanded;
             const active = group.items.some((tab) => isActiveTab(pathname, tab));
             return (
               <button
@@ -140,12 +174,13 @@ export function GlobalShortcuts({ locale, dict }: { locale: Locale; dict: Dictio
                 type="button"
                 aria-expanded={isOpen}
                 onClick={() => setExpanded(isOpen ? null : group.key)}
-                className={`flex flex-col items-center gap-2 rounded-2xl border-2 px-2 py-4 text-center transition-transform hover:-translate-y-0.5 ${
+                className={`relative flex flex-col items-center gap-2 rounded-2xl border-2 px-2 py-4 text-center transition-all ${
                   isOpen || active
                     ? "border-[var(--edge)] bg-[var(--accent-yellow)] text-[#16132b]"
                     : "border-[var(--border-soft)] bg-[var(--surface-muted)] text-[var(--foreground)]"
-                }`}
+                } ${shortcutOn ? "hover:-translate-y-0.5" : expanded ? "opacity-40" : ""}`}
               >
+                {shortcutOn && i < 9 && <ShortcutKey>{i + 1}</ShortcutKey>}
                 <SketchIcon kind={GROUP_SVG_ICON[group.key]} size={56} />
                 <span className="text-sm font-bold leading-tight">{group.label}</span>
               </button>
@@ -158,8 +193,8 @@ export function GlobalShortcuts({ locale, dict }: { locale: Locale; dict: Dictio
             <p className="mb-2 px-1 text-sm font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
               {current.label}
             </p>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {current.items.map((tab) => {
+            <div data-sub className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {current.items.map((tab, i) => {
                 const isActive = isActiveTab(pathname, tab);
                 return (
                   <Link
@@ -167,13 +202,14 @@ export function GlobalShortcuts({ locale, dict }: { locale: Locale; dict: Dictio
                     href={tab.href}
                     onClick={close}
                     aria-current={isActive ? "page" : undefined}
-                    className={`flex items-center rounded-xl border-2 px-3 py-2.5 text-sm font-bold ${
+                    className={`flex items-center gap-3 rounded-xl border-2 px-3 py-2.5 text-sm font-bold ${
                       isActive
                         ? "border-[var(--edge)] bg-[var(--accent-yellow)] text-[#16132b]"
                         : "border-[var(--border-soft)] bg-[var(--surface)] text-[var(--foreground)] hover:border-[var(--edge)]"
                     }`}
                   >
-                    {tab.label}
+                    {i < 9 && <ShortcutKey>{i + 1}</ShortcutKey>}
+                    <span>{tab.label}</span>
                   </Link>
                 );
               })}
