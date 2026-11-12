@@ -22,7 +22,7 @@ export function PrivacySection({ locale }: { locale: Locale }) {
 
   const link = "rounded-full bg-[var(--surface-muted)] px-4 py-2 text-sm font-medium hover:bg-[var(--brand-50)]";
   return (
-    <div>
+    <div className="flex flex-col gap-4">
       <SettingRow title={t.privacy} hint={t.privacyHint}>
         <div className="flex flex-wrap gap-2">
           <Link href={`/${locale}/ochrana-soukromi`} className={link}>{t.privacyPolicy}</Link>

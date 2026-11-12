@@ -31,8 +31,8 @@ export function NotificationsSection({ locale, onSaved }: { locale: Locale; onSa
   }
 
   return (
-    <div>
-      <p className="mb-4 text-sm text-[var(--faint)]">{t.notifyHint}</p>
+    <div className="flex flex-col gap-4">
+      <p className="text-sm text-[var(--faint)]">{t.notifyHint}</p>
       {state && !state.loggedIn && <p className="text-sm text-[var(--muted)]">{t.notifyLogin}</p>}
       {state?.loggedIn && (
         <>

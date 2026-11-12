@@ -157,20 +157,18 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
   }
 
   return (
-    <div className="overflow-hidden rounded-[28px] border border-[var(--border-soft)] bg-[var(--surface)] shadow-xl">
-    <div className="grid md:grid-cols-[17rem_minmax(0,1fr)]">
-      <nav className="flex flex-wrap gap-1.5 border-b border-[var(--border-soft)] p-4 md:flex-col md:border-b-0 md:border-r md:p-5" aria-label={dict.settings.title}>
-        <h2 className="mb-3 w-full px-1 text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          {dict.settings.title}
-        </h2>
+    <div className="grid gap-6 md:grid-cols-[17rem_minmax(0,1fr)] md:gap-8">
+      <nav className="flex flex-wrap gap-1.5 md:flex-col md:self-start md:gap-2" aria-label={dict.settings.title}>
         {SECTIONS.map((s) => (
           <button
             key={s}
             type="button"
             onClick={() => setSection(s)}
             aria-current={section === s ? "page" : undefined}
-            className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-left text-sm font-semibold transition-colors ${
-              section === s ? "bg-[var(--brand-50)] text-[var(--brand-600)]" : "text-[var(--foreground)] hover:bg-[var(--surface-muted)]"
+            className={`btn-bouncy flex items-center gap-3 rounded-2xl border-2 px-4 py-2.5 text-left text-sm font-bold transition-colors ${
+              section === s
+                ? "border-[var(--accent-500)] bg-[var(--brand-50)] text-[var(--foreground)]"
+                : "border-transparent text-[var(--muted)] hover:border-[var(--border-soft)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]"
             }`}
           >
             {sectionLabels[s]}
@@ -178,9 +176,9 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
         ))}
       </nav>
 
-      <div className="flex min-w-0 flex-col gap-8 p-5 sm:p-8">
+      <div className="flex min-w-0 flex-col gap-4">
       {section === "graphics" && (
-        <div>
+        <div className="flex flex-col gap-4">
           <SettingRow title={look.themes} hint={look.themesHint}>
             <div role="radiogroup" aria-label={look.themes} className="grid gap-3 sm:grid-cols-3">
               <PreviewCard active={theme === "light"} onClick={() => applyTheme("light")} label={dict.settings.themeLight}>
@@ -289,7 +287,7 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
         <>
           <AccountSection locale={locale} />
 
-          <section className="card p-6">
+          <section className="card p-5 sm:p-6">
             <h2 className="mb-4 text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>
               {dict.settings.language}
             </h2>
@@ -315,7 +313,6 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
         {dict.settings.saved}
       </p>
       </div>
-    </div>
     </div>
   );
 }

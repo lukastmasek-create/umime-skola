@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, type Locale } from "@/i18n/config";
 import { SettingsForm } from "@/components/SettingsForm";
+import { SpaceShell } from "@/components/SpaceShell";
 
 export default function NastaveniPage({
   params,
@@ -16,8 +17,8 @@ export default function NastaveniPage({
   const dict = getDictionary(locale as Locale);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-12">
+    <SpaceShell title={dict.settings.title} full>
       <SettingsForm locale={locale as Locale} dict={dict} />
-    </div>
+    </SpaceShell>
   );
 }

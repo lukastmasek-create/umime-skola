@@ -41,7 +41,7 @@ export function AccessibilitySection({ locale, onChange }: { locale: Locale; onC
 
   const text = { contrast: [t.contrast, t.contrastHint], links: [t.links, t.linksHint], spacing: [t.spacing, t.spacingHint] } as const;
   return (
-    <div>
+    <div className="flex flex-col gap-4">
       {OPTIONS.map((o) => (
         <SettingRow
           key={o.key}

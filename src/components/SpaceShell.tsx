@@ -12,6 +12,7 @@ export function SpaceShell({
   note,
   back,
   wide = false,
+  full = false,
   children,
 }: {
   title: string;
@@ -20,17 +21,20 @@ export function SpaceShell({
   note?: string;
   back?: { href: string; label: string };
   wide?: boolean;
+  // Panel přes celou šířku obrazovky (s 16px okraji); hlavička a patička zůstávají na svém místě.
+  full?: boolean;
   children: React.ReactNode;
 }) {
+  const width = wide ? "min(calc(100% - 2rem), 76rem)" : "min(calc(100% - 2rem), 56rem)";
+  // Na úvodní stránce mají sekce vlastní okraje (`.space-page .zone > .lobby-panel` je zužuje na 72rem),
+  // proto režim `full` přepíše jen padding a šířku nechá na 100 %, bez zúžení.
+  const panelStyle = full ? { padding: "clamp(40px, 6vw, 72px) clamp(16px, 3vw, 40px)" } : { width };
   return (
     <div className="space-page">
       <section className="zone zone-space">
         <span className="px-stars" aria-hidden />
         <Nebula className="absolute inset-0 -z-10" />
-        <div
-          className="lobby-panel relative z-10"
-          style={{ width: wide ? "min(calc(100% - 2rem), 76rem)" : "min(calc(100% - 2rem), 56rem)" }}
-        >
+        <div className="lobby-panel relative z-10" style={panelStyle}>
           {back && (
             <Link href={back.href} className="mb-4 inline-block text-sm font-bold text-[var(--accent-green)] hover:underline print:hidden">
               ← {back.label}

@@ -2,10 +2,10 @@
 
 import { headingStyle } from "./ui";
 
-// Řádek nastavení: nadpis + popisek vlevo, ovládací prvek vpravo, oddělený čárou.
+// Řádek nastavení jako karta (stejný vzhled jako karty na úvodní stránce): nadpis + popisek vlevo, ovládací prvek vpravo.
 export function SettingRow({ title, hint, control, children }: { title: string; hint?: string; control?: React.ReactNode; children?: React.ReactNode }) {
   return (
-    <div className="border-t border-[var(--border-soft)] py-6 first:border-t-0 first:pt-0">
+    <div className="card p-5 sm:p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <h3 className="text-base font-bold" style={headingStyle}>{title}</h3>
@@ -13,7 +13,7 @@ export function SettingRow({ title, hint, control, children }: { title: string; 
         </div>
         {control && <div className="shrink-0">{control}</div>}
       </div>
-      {children && <div className="mt-4">{children}</div>}
+      {children && <div className="mt-5">{children}</div>}
     </div>
   );
 }
