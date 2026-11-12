@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { cleanSetQuestions } from "@/lib/live/logic";
 import { distractorPrompt, notesPrompt, oralFinishPrompt, oralPrompt, photoPrompt, tutorPrompt } from "@/lib/pro-tools/ai-prompts";
 import { isLocale } from "@/i18n/config";
+import { oralTranscript, oralTurns } from "@/lib/pro-tools/oral";
 
 export const dynamic = "force-dynamic";
 
@@ -69,12 +70,13 @@ export async function POST(request: Request) {
     if (mode === "oral") {
       const topic = typeof body.topic === "string" ? body.topic.trim().slice(0, 120) : "";
       if (!topic) throw new LiveError("invalid-topic");
-      const raw = cleanTurns(body.messages);
       if (body.finish === true) {
-        if (raw.length === 0) throw new LiveError("invalid-message");
+        // Přepis končí i otázkou zkoušejícího, proto se nečistí jako konverzace pro další odpověď.
+        const transcript = oralTranscript(body.messages);
+        if (!transcript.some((t) => t.role === "user")) throw new LiveError("invalid-message");
         const text = await run({
           system: oralFinishPrompt(locale, topic),
-          turns: [{ role: "user", content: "Konverzace zkoušení:\n" + raw.map((t) => `${t.role === "user" ? "Žák" : "Zkoušející"}: ${t.content}`).join("\n") }],
+          turns: [{ role: "user", content: "Konverzace zkoušení:\n" + transcript.map((t) => `${t.role === "user" ? "Žák" : "Zkoušející"}: ${t.content}`).join("\n") }],
           maxTokens: 500,
         });
         const d = extractJson<{ score?: number; right?: unknown; missing?: unknown; advice?: string }>(text);
@@ -86,8 +88,7 @@ export async function POST(request: Request) {
         };
       }
       // První otázku položí zkoušející sám, proto se konverzace může začít prázdnou zprávou.
-      const turns: ChatTurn[] = raw.length ? raw : [{ role: "user", content: "Jsem připravený/á, začni zkoušet." }];
-      return { reply: await run({ system: oralPrompt(locale, topic), turns, maxTokens: 300 }) };
+      return { reply: await run({ system: oralPrompt(locale, topic), turns: oralTurns(body.messages), maxTokens: 300 }) };
     }
 
     if (mode === "notes") {

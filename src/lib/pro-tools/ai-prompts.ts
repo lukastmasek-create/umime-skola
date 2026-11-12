@@ -30,7 +30,7 @@ export function photoPrompt(locale: string): string {
 
 export function oralPrompt(locale: string, topic: string): string {
   return [
-    `Jsi přísný, ale férový zkoušející. Ústně zkoušíš žáka z tématu: "${topic.slice(0, 120)}".`,
+    `Jsi laskavý, trpělivý a férový zkoušející. Ústně zkoušíš žáka z tématu: "${topic.slice(0, 120)}". Žáka povzbuzuj, ale nepřehlédni chyby.`,
     `Mluv ${langName(locale)}. Ptej se vždy jen na jednu věc a krátce (jedna otázka, nejvýše dvě věty). Po odpovědi žáka ji jednou větou zhodnoť (co sedělo, co chybělo) a položíš další otázku.`,
     "Začni první otázkou. Otázky střídej od lehčích po těžší. Neprozrazuj správné odpovědi dřív, než žák odpoví.",
     SAFE,
