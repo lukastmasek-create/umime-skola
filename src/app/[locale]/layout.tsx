@@ -7,6 +7,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { HeaderAccount } from "@/components/HeaderAccount";
 import { ReturnNudge } from "@/components/ReturnNudge";
 import { SiteLogo } from "@/components/SiteLogo";
+import { SketchEdge } from "@/components/SketchEdge";
 import { HeaderScroll } from "@/components/HeaderScroll";
 import { PencilScrollbar } from "@/components/PencilScrollbar";
 import { GlobalShortcuts } from "@/components/GlobalShortcuts";
@@ -84,8 +85,9 @@ export default async function LocaleLayout({
         className="min-h-full flex flex-col text-[var(--foreground)]"
         style={{ fontFamily: "var(--font-body), var(--font-sans)" }}
       >
-        <header className="site-header sticky top-0 z-40 border-b-2 border-[var(--edge)] bg-[var(--surface)]">
+        <header className="site-header sticky top-0 z-40 bg-[var(--surface)]">
           <HeaderScroll />
+          <SketchEdge position="bottom" />
           <div className="site-header-in mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-1.5 sm:px-6">
             <Link href={`/${locale}`} className="site-logo shrink-0">
               <SiteLogo />
@@ -110,26 +112,27 @@ export default async function LocaleLayout({
         <SiteMotion />
         <GlobalShortcuts locale={locale} />
         <main className="world flex-1">{children}</main>
-        <footer className="border-t-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-6 text-center text-sm text-[var(--muted)]">
+        <footer className="relative bg-[var(--surface)] px-4 py-6 text-center text-sm text-[var(--muted)]">
+          <SketchEdge position="top" />
           <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 font-semibold">
-            <Link href={`/${locale}#o-nas`} className="hover:text-[var(--foreground)] hover:underline">
+            <Link href={`/${locale}#o-nas`} className="sketch-chip">
               {getHomeText(locale as Locale).about.title}
             </Link>
-            <Link href={`/${locale}/kontakt`} className="hover:text-[var(--foreground)] hover:underline">
+            <Link href={`/${locale}/kontakt`} className="sketch-chip">
               {getContactText(locale as Locale).nav}
             </Link>
-            <Link href={`/${locale}/ochrana-soukromi`} className="hover:text-[var(--foreground)] hover:underline">
+            <Link href={`/${locale}/ochrana-soukromi`} className="sketch-chip">
               {getFooterLinks(locale as Locale).privacy}
             </Link>
-            <Link href={`/${locale}/podminky`} className="hover:text-[var(--foreground)] hover:underline">
+            <Link href={`/${locale}/podminky`} className="sketch-chip">
               {getFooterLinks(locale as Locale).terms}
             </Link>
           </nav>
           <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-            <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-[var(--foreground)] hover:underline">
+            <a href={`mailto:${CONTACT_EMAIL}`} className="sketch-chip">
               {CONTACT_EMAIL}
             </a>
-            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--foreground)] hover:underline">
+            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="sketch-chip">
               Instagram @{INSTAGRAM_HANDLE}
             </a>
           </div>
