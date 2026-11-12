@@ -28,8 +28,8 @@ export function SketchEdge({ position }: { position: "top" | "bottom" }) {
       aria-hidden
       focusable="false"
     >
-      <path d={MAIN} className="sketch-edge-line" />
-      <path d={GUIDE} className="sketch-edge-guide" />
+      <path d={MAIN} pathLength={1} className="sketch-edge-line" />
+      <path d={GUIDE} pathLength={1} className="sketch-edge-guide" />
     </svg>
   );
 }

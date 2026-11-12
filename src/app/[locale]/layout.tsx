@@ -8,6 +8,7 @@ import { HeaderAccount } from "@/components/HeaderAccount";
 import { ReturnNudge } from "@/components/ReturnNudge";
 import { SiteLogo } from "@/components/SiteLogo";
 import { SketchEdge } from "@/components/SketchEdge";
+import { SketchIcon } from "@/components/SketchIcons";
 import { HeaderScroll } from "@/components/HeaderScroll";
 import { PencilScrollbar } from "@/components/PencilScrollbar";
 import { GlobalShortcuts } from "@/components/GlobalShortcuts";
@@ -114,25 +115,37 @@ export default async function LocaleLayout({
         <main className="world flex-1">{children}</main>
         <footer className="relative bg-[var(--surface)] px-4 py-6 text-center text-sm text-[var(--muted)]">
           <SketchEdge position="top" />
-          <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 font-semibold">
+          <span className="sketch-doodles" aria-hidden>
+            <SketchIcon kind="pencil" size={26} className="sketch-doodle sketch-doodle-pencil" />
+            <SketchIcon kind="star" size={18} className="sketch-doodle sketch-doodle-star" />
+            <SketchIcon kind="sparkle" size={22} className="sketch-doodle sketch-doodle-sparkle" />
+            <SketchIcon kind="star" size={14} className="sketch-doodle sketch-doodle-star2" />
+          </span>
+          <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 font-semibold">
             <Link href={`/${locale}#o-nas`} className="sketch-chip">
+              <SketchIcon kind="info" size={16} className="sketch-chip-ico" />
               {getHomeText(locale as Locale).about.title}
             </Link>
             <Link href={`/${locale}/kontakt`} className="sketch-chip">
+              <SketchIcon kind="mail" size={16} className="sketch-chip-ico" />
               {getContactText(locale as Locale).nav}
             </Link>
             <Link href={`/${locale}/ochrana-soukromi`} className="sketch-chip">
+              <SketchIcon kind="shield" size={16} className="sketch-chip-ico" />
               {getFooterLinks(locale as Locale).privacy}
             </Link>
             <Link href={`/${locale}/podminky`} className="sketch-chip">
+              <SketchIcon kind="scroll" size={16} className="sketch-chip-ico" />
               {getFooterLinks(locale as Locale).terms}
             </Link>
           </nav>
-          <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             <a href={`mailto:${CONTACT_EMAIL}`} className="sketch-chip">
+              <SketchIcon kind="mail" size={16} className="sketch-chip-ico" />
               {CONTACT_EMAIL}
             </a>
             <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="sketch-chip">
+              <SketchIcon kind="camera" size={16} className="sketch-chip-ico" />
               Instagram @{INSTAGRAM_HANDLE}
             </a>
           </div>

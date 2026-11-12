@@ -3163,11 +3163,70 @@ a:hover .eco-ico,
 }
 .sketch-edge-line {
   stroke-width: 2.6;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: sketch-draw 1.8s cubic-bezier(0.45, 0, 0.25, 1) 0.1s forwards;
 }
 .sketch-edge-guide {
   stroke-width: 1.2;
   stroke-dasharray: 7 9;
   opacity: 0.5;
+  animation: sketch-march 2.4s linear infinite;
+}
+@keyframes sketch-draw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes sketch-march {
+  to { stroke-dashoffset: -32; }
+}
+
+/* Kreslíře v patičce: tužka, hvězdičky a jiskřičky nad čárou, každá se kývá jinak */
+.sketch-doodles {
+  position: absolute;
+  top: -14px;
+  left: 0;
+  width: 100%;
+  height: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.sketch-doodle {
+  position: absolute;
+  top: 0;
+  translate: -50% -50%;
+  filter: drop-shadow(0 2px 0 var(--shadow-ink));
+}
+.sketch-doodle-pencil {
+  left: 7%;
+  rotate: -14deg;
+  animation: doodle-bob 3.6s ease-in-out infinite;
+}
+.sketch-doodle-star {
+  left: 24%;
+  animation: doodle-twinkle 2.8s ease-in-out infinite;
+}
+.sketch-doodle-sparkle {
+  left: 76%;
+  animation: doodle-twinkle 3.4s ease-in-out 0.6s infinite;
+}
+.sketch-doodle-star2 {
+  left: 93%;
+  animation: doodle-bob 4.2s ease-in-out 0.4s infinite;
+}
+@keyframes doodle-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(8deg); }
+}
+@keyframes doodle-twinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  50% { transform: scale(0.7) rotate(25deg); opacity: 0.55; }
+}
+.sketch-chip-ico {
+  margin-right: 0.35rem;
+  flex-shrink: 0;
+}
+.sketch-chip:hover .sketch-chip-ico {
+  animation: nav-wiggle 0.7s ease-in-out;
 }
 
 /* Odkazy v patičce jako nálepky s černým obrysem a tvrdým stínem (stejně jako tlačítka a karty) */
@@ -3201,6 +3260,16 @@ a:hover .eco-ico,
   .sketch-chip:active {
     transition: none;
     transform: none;
+  }
+  .sketch-edge-line {
+    animation: none;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+  .sketch-edge-guide,
+  .sketch-doodle,
+  .sketch-chip:hover .sketch-chip-ico {
+    animation: none;
   }
 }
 

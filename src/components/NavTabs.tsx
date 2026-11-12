@@ -24,6 +24,7 @@ import { getAudiencePagesText } from "@/i18n/audience";
 import { useAccount } from "@/lib/use-account";
 import { locales, localeNames, type Locale } from "@/i18n/config";
 import { setLocaleCookie } from "@/lib/locale-cookie";
+import { SketchIcon, type SketchIconKind } from "@/components/SketchIcons";
 
 type Tab = { key: string; href: string; label: string; exact?: boolean; noActive?: boolean };
 type Group = { key: string; label: string; items: Tab[] };
@@ -42,7 +43,17 @@ const GROUP_ICON: Record<string, string> = {
   info: "info",
 };
 
+// Některé skupiny mají místo 3D ikony ručně kreslenou SVG ikonu (src/components/SketchIcons.tsx).
+const GROUP_SVG_ICON: Partial<Record<string, SketchIconKind>> = {
+  games: "gamepad",
+  together: "people",
+  boards: "trophy",
+  settings: "gear",
+};
+
 function GroupIcon({ id, size }: { id: string; size: number }) {
+  const svgKind = GROUP_SVG_ICON[id];
+  if (svgKind) return <SketchIcon kind={svgKind} size={size} className="nav-ico shrink-0" />;
   const name = GROUP_ICON[id];
   if (!name) return null;
   // eslint-disable-next-line @next/next/no-img-element
