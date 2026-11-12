@@ -8,7 +8,7 @@ const C = { yellow: "#ffc933", coral: "#ff8a6b", blue: "#8fd0ff", mint: "#7ee0b0
 
 export type SketchIconKind =
   | "gamepad" | "people" | "trophy" | "gear" | "mail" | "shield" | "scroll" | "camera" | "info" | "star" | "pencil" | "sparkle"
-  | "town" | "courses" | "shop" | "study" | "extras" | "chevron" | "chevronUp" | "menu" | "close" | "user" | "rocket";
+  | "town" | "courses" | "shop" | "study" | "extras" | "chevron" | "chevronUp" | "menu" | "close" | "user" | "rocket" | "home";
 
 export function SketchIcon({ kind, size = 24, className, style }: { kind: SketchIconKind; size?: number; className?: string; style?: CSSProperties }) {
   const common = {
@@ -222,6 +222,18 @@ export function SketchIcon({ kind, size = 24, className, style }: { kind: Sketch
             <path d="M14.5 3.5c3.2 0 5.7 1.2 6 6-.3 3.4-3.2 6.2-6.4 7l-3.8-3.8c.8-3.2 3.6-6.1 7.2-6.2z" fill={C.mint} />
             <path d="M9.5 9.5l-3.4.9-2.6 3 3.3.3M14.5 14.5l-.9 3.4-3 2.6-.3-3.3" fill="none" />
             <circle cx="15.2" cy="8.8" r="1.4" fill={ink} />
+          </g>
+        </svg>
+      );
+    case "home":
+      return (
+        <svg {...common}>
+          <g {...line}>
+            <path d="M4.5 11.2L12 4.5l7.5 6.7v8.3a.9.9 0 01-.9.9H5.4a.9.9 0 01-.9-.9z" fill={C.yellow} />
+            <rect x="9.6" y="14" width="4.8" height="6.2" fill={C.paper} />
+            <path d="M16.2 6.6V4.8" fill="none" />
+            <path d="M2.8 11.6L12 3.4l9.2 8.2" fill="none" />
+            <circle cx="12" cy="10.2" r="1.2" fill={ink} />
           </g>
         </svg>
       );
