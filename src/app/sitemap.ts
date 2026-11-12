@@ -32,6 +32,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...STATIC_PAGE_PATHS.map((path) => ({ path, priority: 0.6, changeFrequency: "monthly" as const })),
     { path: "/materialy", priority: 0.7, changeFrequency: "weekly" },
     { path: "/pro", priority: 0.5, changeFrequency: "monthly" },
+    { path: "/rodina", priority: 0.4, changeFrequency: "monthly" },
+    { path: "/skola", priority: 0.4, changeFrequency: "monthly" },
     { path: "/kontakt", priority: 0.4, changeFrequency: "monthly" },
     { path: "/ochrana-soukromi", priority: 0.2, changeFrequency: "monthly" },
     { path: "/podminky", priority: 0.2, changeFrequency: "monthly" },

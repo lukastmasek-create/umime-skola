@@ -7,12 +7,11 @@ import { ProIcon } from "@/components/pro/ProIcon";
 import { getProText } from "@/i18n/pro";
 import { getProExtra } from "@/i18n/pro-extra";
 import { getProToolsText } from "@/i18n/pro-tools";
-import { PRO_FEATURES, featureTier } from "@/lib/pro-tools/features";
+import { featuresForTab } from "@/lib/pro-tools/features";
 import { isLocale, type Locale } from "@/i18n/config";
 import { SpaceShell } from "@/components/SpaceShell";
-import { PaperCard } from "@/components/PaperCard";
-
-const FEATURE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
+import { ProTabs } from "@/components/pro/ProTabs";
+import { ProToolPile } from "@/components/pro/ProToolPile";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -42,6 +41,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
 
   return (
     <SpaceShell title={t.title} subtitle={t.subtitle} wide>
+      <ProTabs locale={locale as Locale} active="pro" />
 
       <section className="mb-8">
         <h2 className="mb-4 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
@@ -90,25 +90,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
           {tools.toolsTitle}
         </h2>
         <p className="mb-4 text-sm text-[var(--muted)]">{tools.toolsHint}</p>
-        <div className="pcard-pile pcard-pile-wide">
-          {PRO_FEATURES.map((f, i) => (
-            <PaperCard
-              key={f.slug}
-              href={`/${locale}/pro/${f.slug}`}
-              accent={FEATURE_COLORS[i % FEATURE_COLORS.length]}
-              num={i + 1}
-              icon={<ProIcon name={f.slug} className="pcard-icon size-14 text-[#f6f1e4]" />}
-              title={tools.features[f.slug].title}
-              text={tools.features[f.slug].text}
-            >
-              {featureTier(f.slug) && (
-                <span className="pcard-pills">
-                  <span className="pill text-xs">{featureTier(f.slug) === "FAMILY" ? tools.tierFamily : tools.tierSchool}</span>
-                </span>
-              )}
-            </PaperCard>
-          ))}
-        </div>
+        <ProToolPile locale={locale as Locale} slugs={featuresForTab("pro")} />
       </section>
 
       <section className="mb-8">

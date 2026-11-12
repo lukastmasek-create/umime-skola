@@ -152,3 +152,10 @@ test("známkování, zaseknutí a pochopení", () => {
   assert.equal(understoodPercent(7, 10), 70);
   assert.equal(understoodPercent(0, 0), 0);
 });
+
+import { PRO_FEATURES, PRO_TABS, featuresForTab } from "./features.ts";
+test("každý nástroj PRO patří právě do jedné záložky (Pro, Rodina, Škola)", () => {
+  const inTabs = PRO_TABS.flatMap((tab) => featuresForTab(tab).map((f) => f.slug));
+  assert.equal(inTabs.length, PRO_FEATURES.length);
+  assert.deepEqual([...inTabs].sort(), PRO_FEATURES.map((f) => f.slug).sort());
+});
