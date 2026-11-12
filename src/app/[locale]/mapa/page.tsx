@@ -6,6 +6,7 @@ import { getReviewText } from "@/i18n/review";
 import { isLocale, type Locale } from "@/i18n/config";
 import { CourseMap, type MapSubject } from "@/components/CourseMap";
 import { staticPageMetadata } from "@/lib/seo";
+import { SpaceShell } from "@/components/SpaceShell";
 
 export const revalidate = 0;
 
@@ -38,12 +39,8 @@ export default async function MapPage({ params }: { params: Promise<{ locale: st
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-16">
-      <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        {t.mapTitle}
-      </h1>
-      <p className="mb-8 max-w-2xl text-[var(--muted)]">{t.mapSubtitle}</p>
+    <SpaceShell title={t.mapTitle} subtitle={t.mapSubtitle}>
       {failed ? <p className="card p-6 text-[var(--muted)]">{t.noCourses}</p> : <CourseMap locale={locale as Locale} subjects={subjects} />}
-    </div>
+    </SpaceShell>
   );
 }

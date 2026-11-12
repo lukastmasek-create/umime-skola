@@ -47,9 +47,9 @@ export function NotesCards({ locale }: { locale: Locale }) {
   return (
     <div className="grid gap-4">
       <p className="text-sm text-[var(--muted)]">{t.notesIntro}</p>
-      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={7} maxLength={4000} placeholder={t.notesPlaceholder} className="rounded-xl border-2 border-[var(--edge)] bg-[var(--surface)] p-3 text-sm" />
+      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={7} maxLength={4000} placeholder={t.notesPlaceholder} className="rounded-xl border-2 border-[var(--edge)] bg-[var(--surface-muted)] p-3 text-sm text-[var(--foreground)] placeholder:text-[var(--faint)] focus:border-[var(--accent-green)]" />
       <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={() => void make()} disabled={busy || (text.trim().length < 20 && !photoData)} className="btn-bouncy btn-lg bg-[var(--brand-500)] font-bold text-white disabled:opacity-50">
+        <button type="button" onClick={() => void make()} disabled={busy || (text.trim().length < 20 && !photoData)} className="btn-bouncy btn-cta btn-primary btn-lg disabled:opacity-50">
           {busy ? t.thinking : t.notesMake}
         </button>
         <label className="btn-bouncy btn-secondary btn-lg cursor-pointer">

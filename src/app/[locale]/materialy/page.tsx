@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { getMaterialSubjects, getTopics, materialSubjectLabel } from "@/lib/materials";
 import { getMaterialsText } from "@/i18n/materials";
 import { isLocale, type Locale } from "@/i18n/config";
+import { SpaceShell } from "@/components/SpaceShell";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -18,14 +19,7 @@ export default async function MaterialsIndexPage({ params }: { params: Promise<{
   const t = getMaterialsText(locale as Locale);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
-      <h1 className="mb-2 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        {t.title}
-      </h1>
-      <p className="mb-2 max-w-3xl text-[var(--muted)]">{t.subtitle}</p>
-      {t.czechOnlyNote && <p className="mb-8 text-sm font-semibold text-[var(--brand-600)]">{t.czechOnlyNote}</p>}
-      {!t.czechOnlyNote && <div className="mb-8" />}
-
+    <SpaceShell title={t.title} subtitle={t.subtitle} note={t.czechOnlyNote || undefined} wide>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {getMaterialSubjects().map((subject) => {
           const topics = getTopics(subject.slug);
@@ -63,6 +57,6 @@ export default async function MaterialsIndexPage({ params }: { params: Promise<{
           );
         })}
       </div>
-    </div>
+    </SpaceShell>
   );
 }

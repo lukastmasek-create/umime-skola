@@ -40,7 +40,7 @@ export function PhotoTasks({ locale }: { locale: Locale }) {
   return (
     <div className="grid gap-4">
       <p className="text-sm text-[var(--muted)]">{t.photoIntro}</p>
-      <label className="btn-bouncy btn-lg inline-block w-fit cursor-pointer bg-[var(--brand-500)] font-bold text-white">
+      <label className="btn-bouncy btn-cta btn-primary btn-lg inline-block w-fit cursor-pointer">
         {busy ? t.thinking : t.photoPick}
         <input type="file" accept="image/*" capture="environment" onChange={pick} disabled={busy} className="sr-only" />
       </label>

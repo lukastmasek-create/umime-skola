@@ -17,6 +17,7 @@ import { Pronunciation } from "@/components/pro/Pronunciation";
 import { StudyPlan } from "@/components/pro/StudyPlan";
 import { FamilyDuel, FamilyHub, HolidayPlan } from "@/components/pro/FamilyTools";
 import { SchoolTools } from "@/components/pro/SchoolTools";
+import { SpaceShell } from "@/components/SpaceShell";
 
 export const dynamic = "force-dynamic";
 
@@ -66,14 +67,7 @@ export default async function ProToolPage({ params }: { params: Promise<{ locale
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-16">
-      <Link href={`/${locale}/pro`} className="mb-4 inline-block text-sm font-semibold text-[var(--brand-600)] hover:underline print:hidden">
-        ← UčímePRO
-      </Link>
-      <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        {f.title}
-      </h1>
-      <p className="mb-8 text-[var(--muted)] print:hidden">{f.text}</p>
+    <SpaceShell title={f.title} subtitle={f.text} back={{ href: `/${locale}/pro`, label: "UčímePRO" }}>
       {allowed ? (
         VIEWS[feature]({ locale })
       ) : (
@@ -92,6 +86,6 @@ export default async function ProToolPage({ params }: { params: Promise<{ locale
           </div>
         </div>
       )}
-    </div>
+    </SpaceShell>
   );
 }

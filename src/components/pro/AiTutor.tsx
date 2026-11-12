@@ -86,8 +86,8 @@ export function AiTutor({ locale }: { locale: Locale }) {
           <span className="sr-only">{t.tutorAttach}</span>
           <input type="file" accept="image/*" onChange={pick} disabled={busy} className="sr-only" />
         </label>
-        <input value={text} onChange={(e) => setText(e.target.value)} maxLength={500} placeholder={t.tutorPlaceholder} className="min-w-0 flex-1 rounded-xl border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-2 text-sm" />
-        <button type="submit" disabled={busy || (!text.trim() && !photo)} className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white disabled:opacity-50">
+        <input value={text} onChange={(e) => setText(e.target.value)} maxLength={500} placeholder={t.tutorPlaceholder} className="min-w-0 flex-1 rounded-xl border-2 border-[var(--edge)] bg-[var(--surface-muted)] px-3 py-2 text-sm text-[var(--foreground)] placeholder:text-[var(--faint)] focus:border-[var(--accent-green)]" />
+        <button type="submit" disabled={busy || (!text.trim() && !photo)} className="btn-bouncy btn-cta btn-primary px-4 py-2 text-sm font-bold disabled:opacity-50">
           {t.send}
         </button>
       </form>
