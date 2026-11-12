@@ -6,6 +6,8 @@ import { hasPro } from "@/lib/pro-server";
 import { ExpandCard } from "@/components/ExpandCard";
 import { getProText } from "@/i18n/pro";
 import { getProExtra } from "@/i18n/pro-extra";
+import { getProToolsText } from "@/i18n/pro-tools";
+import { PRO_FEATURES } from "@/lib/pro-tools/features";
 import { isLocale, type Locale } from "@/i18n/config";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -32,6 +34,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
 
   const tiers = [t.tiers.individual, t.tiers.family, t.tiers.school];
   const extra = getProExtra(locale as Locale);
+  const tools = getProToolsText(locale as Locale);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-16">
@@ -48,6 +51,24 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
           </Link>
         )}
       </div>
+
+      <section className="mb-8">
+        <h2 className="text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+          {tools.toolsTitle}
+        </h2>
+        <p className="mb-4 text-sm text-[var(--muted)]">{tools.toolsHint}</p>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {PRO_FEATURES.map((f) => (
+            <Link key={f.slug} href={`/${locale}/pro/${f.slug}`} className="card flex items-start gap-3 p-4 hover:bg-[var(--surface-muted)]">
+              <span className="text-2xl" aria-hidden>{f.icon}</span>
+              <span>
+                <span className="block font-bold">{tools.features[f.slug].title}</span>
+                <span className="block text-sm text-[var(--muted)]">{tools.features[f.slug].text}</span>
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       <section className="mb-8">
         <h2 className="mb-4 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>

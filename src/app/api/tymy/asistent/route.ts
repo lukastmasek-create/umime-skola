@@ -1,4 +1,4 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { generateText } from "@/lib/ai";
 import { prisma } from "@/lib/prisma";
 import { handle, readJson } from "@/lib/live/http";
 import { LiveError } from "@/lib/live/service";
@@ -10,54 +10,8 @@ import { isLocale } from "@/i18n/config";
 
 export const dynamic = "force-dynamic";
 
-// Výchozí je Cloudflare Workers AI (binding AI ve wrangler.jsonc, bez klíče, 10 000 neuronů denně zdarma).
-// Když binding chybí a je nastavený ANTHROPIC_API_KEY, použije se placené Anthropic API (volitelně ANTHROPIC_MODEL).
-const WORKERS_AI_MODEL = "@cf/google/gemma-4-26b-a4b-it";
-const ANTHROPIC_MODEL = "claude-haiku-5-5";
-
-type AiBinding = { run(model: string, input: Record<string, unknown>): Promise<unknown> };
-
-function aiBinding(): AiBinding | null {
-  try {
-    const env = getCloudflareContext({ async: false }).env as { AI?: AiBinding; WORKERS_AI_MODEL?: string };
-    return env.AI ?? null;
-  } catch {
-    return null; // mimo Workers kontext (lokální vývoj bez wrangleru)
-  }
-}
-
-/** Text odpovědi z Workers AI: modely vrací buď { response } nebo formát chat completions. */
-function workersAiText(out: unknown): string {
-  const o = out as { response?: unknown; choices?: { message?: { content?: unknown } }[] } | null;
-  const t = o?.response ?? o?.choices?.[0]?.message?.content;
-  return typeof t === "string" ? t.trim() : "";
-}
-
 async function generate(system: string, turns: ChatTurn[]): Promise<string> {
-  const ai = aiBinding();
-  if (ai) {
-    const model = (getCloudflareContext({ async: false }).env as { WORKERS_AI_MODEL?: string }).WORKERS_AI_MODEL || WORKERS_AI_MODEL;
-    const out = await ai.run(model, {
-      messages: [{ role: "system", content: system }, ...turns],
-      max_tokens: 300,
-      chat_template_kwargs: { enable_thinking: false },
-    });
-    return workersAiText(out);
-  }
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new LiveError("ai-unavailable", 503);
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "content-type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model: process.env.ANTHROPIC_MODEL || ANTHROPIC_MODEL, max_tokens: 400, system, messages: turns }),
-    signal: AbortSignal.timeout(20000),
-  }).catch(() => null);
-  if (!res || !res.ok) {
-    console.error("asistent: Anthropic API selhalo", res?.status);
-    return "";
-  }
-  const data = (await res.json().catch(() => ({}))) as { content?: { type: string; text?: string }[] };
-  return (data.content ?? []).filter((c) => c.type === "text").map((c) => c.text ?? "").join("").trim();
+  return generateText({ system, turns, maxTokens: 400 });
 }
 
 async function loadTeams(userId: string): Promise<AssistantTeam[]> {
