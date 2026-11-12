@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { proTiers } from "@/lib/pro-server";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getProToolsText } from "@/i18n/pro-tools";
-import { featureTier, isProFeature, type ProFeatureSlug } from "@/lib/pro-tools/features";
+import { featureAvailableIn, featureTier, isProFeature, type ProFeatureSlug } from "@/lib/pro-tools/features";
 import { AiTutor } from "@/components/pro/AiTutor";
 import { ExamRunner } from "@/components/pro/ExamRunner";
 import { MistakeNotebook } from "@/components/pro/MistakeNotebook";
@@ -48,6 +48,7 @@ export default async function ProToolPage({ params }: { params: Promise<{ locale
   const { locale: rawLocale, feature } = await params;
   if (!isLocale(rawLocale) || !isProFeature(feature)) notFound();
   const locale = rawLocale as Locale;
+  if (!featureAvailableIn(feature, locale)) notFound();
   const t = getProToolsText(locale);
   const f = t.features[feature];
 

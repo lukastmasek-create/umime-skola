@@ -7,7 +7,7 @@ import { ProIcon } from "@/components/pro/ProIcon";
 import { getProText } from "@/i18n/pro";
 import { getProExtra } from "@/i18n/pro-extra";
 import { getProToolsText } from "@/i18n/pro-tools";
-import { featuresForTab } from "@/lib/pro-tools/features";
+import { featureAvailableIn, featuresForTab } from "@/lib/pro-tools/features";
 import { isLocale, type Locale } from "@/i18n/config";
 import { SpaceShell } from "@/components/SpaceShell";
 import { ProTabs } from "@/components/pro/ProTabs";
@@ -90,7 +90,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
           {tools.toolsTitle}
         </h2>
         <p className="mb-4 text-sm text-[var(--muted)]">{tools.toolsHint}</p>
-        <ProToolPile locale={locale as Locale} slugs={featuresForTab("pro")} />
+        <ProToolPile locale={locale as Locale} slugs={featuresForTab("pro").filter((slug) => featureAvailableIn(slug, locale))} />
       </section>
 
       <section className="mb-8">

@@ -136,7 +136,12 @@ export function OralExam({ locale }: { locale: Locale }) {
   }, [msgs, busy]);
 
   function say(s: string) {
-    if (!speak || !window.speechSynthesis) return;
+    if (!speak) return;
+    sayInBrowser(s);
+  }
+
+  function sayInBrowser(s: string) {
+    if (!window.speechSynthesis) return;
     const lang = SPEECH_LANG[locale] ?? "cs-CZ";
     const u = new SpeechSynthesisUtterance(s);
     u.lang = lang;

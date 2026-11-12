@@ -4,7 +4,7 @@ export const PRO_FEATURES = [
   { slug: "plan" },
   { slug: "zkouska" },
   { slug: "fotka" },
-  { slug: "ustni" },
+  { slug: "ustni", locales: ["en"] },
   { slug: "sesit-chyb" },
   { slug: "poznamky" },
   { slug: "vyslovnost" },
@@ -13,7 +13,7 @@ export const PRO_FEATURES = [
   { slug: "souboj", tier: "FAMILY" },
   { slug: "prazdniny", tier: "FAMILY" },
   { slug: "skola", tier: "SCHOOL" },
-] as const satisfies readonly { slug: string; tier?: "FAMILY" | "SCHOOL" }[];
+] as const satisfies readonly { slug: string; tier?: "FAMILY" | "SCHOOL"; locales?: readonly string[] }[];
 
 export type ProFeatureSlug = (typeof PRO_FEATURES)[number]["slug"];
 
@@ -45,4 +45,10 @@ export function featuresForTab(tab: ProTab) {
 /** Adresa samostatné stránky záložky. */
 export function proTabPath(tab: ProTab): string {
   return tab === "pro" ? "/pro" : `/${tab}`;
+}
+
+/** Nástroj je dostupný v daném jazyce. Bez omezení `locales` je dostupný všude. */
+export function featureAvailableIn(slug: ProFeatureSlug, locale: string): boolean {
+  const f = PRO_FEATURES.find((x) => x.slug === slug) as { locales?: readonly string[] } | undefined;
+  return !f?.locales || f.locales.includes(locale);
 }
