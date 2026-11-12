@@ -28,6 +28,7 @@ import { getHomeText } from "@/i18n/home";
 import { getHomeAudienceText } from "@/i18n/home-teachers";
 import { getAudiencePagesText } from "@/i18n/audience";
 import { getSubjectText } from "@/i18n/subjects";
+import { ProHomeStrip } from "@/components/pro/ProHomeStrip";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, type Locale } from "@/i18n/config";
 import { notFound } from "next/navigation";
@@ -154,6 +155,7 @@ export default async function Home({
             }))}
           />
           </div>
+          <ProHomeStrip locale={locale as Locale} />
         </div>
         <SectionWave fill="#0c1537" glow="#5ab8ff" />
       </section>

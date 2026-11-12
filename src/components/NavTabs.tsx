@@ -19,6 +19,7 @@ import { getDailyQuizText } from "@/i18n/daily-quiz";
 import { getContactText } from "@/i18n/contact";
 import { getProText } from "@/i18n/pro";
 import { getProToolsText } from "@/i18n/pro-tools";
+import { getProTabsText } from "@/i18n/pro-tabs";
 import { getPlayerMarketText } from "@/i18n/player-market";
 import { getAudiencePagesText } from "@/i18n/audience";
 import { useAccount } from "@/lib/use-account";
@@ -95,6 +96,8 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
       items: [
         { key: "obchod", href: `/${locale}/obchod`, label: dict.nav.shop },
         { key: "pro", href: `/${locale}/pro`, label: getProText(locale).nav },
+        { key: "rodina", href: `/${locale}/rodina`, label: getProTabsText(locale).tabs.rodina },
+        { key: "skola", href: `/${locale}/skola`, label: getProTabsText(locale).tabs.skola },
         { key: "uzivatelsky-obchod", href: `/${locale}/uzivatelsky-obchod`, label: community.navMarketplace },
         { key: "trziste", href: `/${locale}/trziste`, label: getPlayerMarketText(locale).title },
       ],

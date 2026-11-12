@@ -26,3 +26,23 @@ export function featureTier(slug: ProFeatureSlug): "FAMILY" | "SCHOOL" | undefin
 export function isProFeature(slug: string): slug is ProFeatureSlug {
   return PRO_FEATURES.some((f) => f.slug === slug);
 }
+
+// Záložky stránek UčímePRO: každý nástroj patří právě do jedné (podle tarifu).
+export const PRO_TABS = ["pro", "rodina", "skola"] as const;
+export type ProTab = (typeof PRO_TABS)[number];
+
+const TAB_TIER: Record<ProTab, "FAMILY" | "SCHOOL" | undefined> = {
+  pro: undefined,
+  rodina: "FAMILY",
+  skola: "SCHOOL",
+};
+
+/** Nástroje patřící do dané záložky. */
+export function featuresForTab(tab: ProTab) {
+  return PRO_FEATURES.filter((f) => featureTier(f.slug) === TAB_TIER[tab]);
+}
+
+/** Adresa samostatné stránky záložky. */
+export function proTabPath(tab: ProTab): string {
+  return tab === "pro" ? "/pro" : `/${tab}`;
+}
