@@ -11,17 +11,19 @@ type Card = { front: string; back: string };
 export function NotesCards({ locale }: { locale: Locale }) {
   const t = getProToolsText(locale);
   const [text, setText] = useState("");
+  const [photoData, setPhotoData] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [title, setTitle] = useState("");
   const [cards, setCards] = useState<Card[]>([]);
   const [flipped, setFlipped] = useState<Record<number, boolean>>({});
 
-  async function make(image?: string) {
+  async function make() {
+    const image = photoData ?? undefined;
     setBusy(true);
     setError("");
     setFlipped({});
-    const r = await proFetch<{ title: string; cards: Card[] }>("/api/pro/ai", { mode: "notes", locale, text: image ? undefined : text, image });
+    const r = await proFetch<{ title: string; cards: Card[] }>("/api/pro/ai", { mode: "notes", locale, text: text.trim() || undefined, image });
     setBusy(false);
     if (!r.ok) return setError(errorText(t, r.error));
     if (r.data.cards.length === 0) return setError(t.notesNone);
@@ -31,9 +33,11 @@ export function NotesCards({ locale }: { locale: Locale }) {
 
   async function photo(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
+    setError("");
     try {
-      await make(await imageToDataUrl(file));
+      setPhotoData(await imageToDataUrl(file));
     } catch {
       setError(t.errGeneric);
     }
@@ -44,7 +48,7 @@ export function NotesCards({ locale }: { locale: Locale }) {
       <p className="text-sm text-[var(--muted)]">{t.notesIntro}</p>
       <textarea value={text} onChange={(e) => setText(e.target.value)} rows={7} maxLength={4000} placeholder={t.notesPlaceholder} className="rounded-xl border-2 border-[var(--edge)] bg-[var(--surface)] p-3 text-sm" />
       <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={() => void make()} disabled={busy || text.trim().length < 20} className="btn-bouncy btn-lg bg-[var(--brand-500)] font-bold text-white disabled:opacity-50">
+        <button type="button" onClick={() => void make()} disabled={busy || (text.trim().length < 20 && !photoData)} className="btn-bouncy btn-lg bg-[var(--brand-500)] font-bold text-white disabled:opacity-50">
           {busy ? t.thinking : t.notesMake}
         </button>
         <label className="btn-bouncy btn-secondary btn-lg cursor-pointer">
@@ -52,6 +56,15 @@ export function NotesCards({ locale }: { locale: Locale }) {
           <input type="file" accept="image/*" onChange={photo} disabled={busy} className="sr-only" />
         </label>
       </div>
+      {photoData && (
+        <div className="flex items-center gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photoData} alt={t.tutorPhotoAlt} className="h-20 rounded-lg border-2 border-[var(--edge)] object-cover" />
+          <button type="button" onClick={() => setPhotoData(null)} className="text-sm font-semibold text-[var(--muted)] underline">
+            {t.tutorRemovePhoto}
+          </button>
+        </div>
+      )}
       {error && <p className="text-sm font-semibold text-[#ff5d73]">{error}</p>}
       {cards.length > 0 && (
         <section>
