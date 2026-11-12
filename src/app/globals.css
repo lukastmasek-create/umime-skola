@@ -4887,6 +4887,86 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
 @keyframes pcard-shake { 0%, 100% { translate: 0 0; } 25% { translate: -1.5px 1px; } 75% { translate: 1.5px -1px; } }
 .pcard.is-fly { transition: none; z-index: 30; pointer-events: none; }
 
+/* ===== Obchod: balíčky bodů a kategorie jako ručně lepené karty (stejný styl jako homepage) ===== */
+.pcard-shelf { align-items: start; }
+.pcard-shop { cursor: default; touch-action: manipulation; width: 100%; font: inherit; text-align: center; border: 0; padding: 0; }
+.pcard-shop:hover { cursor: pointer; }
+.pcard-shop .pcard-in { padding: 30px 22px 26px; gap: 2px; }
+.pcard-shop-img { position: relative; z-index: 2; margin-top: -6px; filter: drop-shadow(0 6px 6px rgba(8, 8, 24, 0.45)); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.pcard-shop:hover .pcard-shop-img, .pcard-shop:focus-visible .pcard-shop-img { transform: scale(1.08) rotate(-4deg); }
+.pcard-shop .pcard-title { font-size: 2rem; font-weight: 800; margin: 6px 0 0; line-height: 1.1; }
+.pcard-shop .pcard-text { max-width: none; font-size: 0.9rem; color: rgba(244, 243, 255, 0.7); }
+.pcard-price { position: relative; z-index: 2; font: 800 1.35rem/1 var(--font-heading); color: var(--ac); margin: 10px 0 0; }
+.pcard-buy {
+  position: relative; z-index: 2; width: 100%; margin-top: 14px; padding: 10px 16px; border-radius: 999px;
+  font-weight: 700; font-size: 0.95rem; color: #14132a; background: var(--ac); border: 2px solid #14132a;
+  box-shadow: 3px 4px 0 rgba(8, 8, 24, 0.5); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.pcard-buy:hover { transform: translateY(-2px) rotate(-1.5deg); }
+.pcard-buy:active { transform: translateY(1px); box-shadow: 1px 2px 0 rgba(8, 8, 24, 0.5); }
+.pcard-soon { margin-top: 6px; font-size: 0.8rem; }
+.pcard-sticker {
+  position: absolute; top: -12px; right: 16px; z-index: 6; padding: 4px 12px; rotate: 4deg;
+  font: 800 0.75rem/1 var(--font-heading); letter-spacing: 0.04em; color: #14132a; background: #ffc933;
+  border: 2px solid #14132a; border-radius: 999px; box-shadow: 3px 4px 0 rgba(8, 8, 24, 0.5); pointer-events: none;
+}
+/* kompaktní kategorie v řádku obchodu */
+.pcard-mini .pcard-in { padding: 18px 8px 14px; min-height: 0; }
+.pcard-shop-well { width: 140px; height: 140px; margin-top: 4px; }
+.pcard-mini-well { width: 84px; height: 84px; border-radius: 20px; margin-top: 4px; }
+.pcard-shop-well .pcard-shop-img, .pcard-mini-well .pcard-shop-img { margin-top: 0; }
+.pcard-shop .pcard-go { top: 14px; right: 14px; width: 32px; height: 32px; font-size: 0.95rem; }
+.pcard-mini .pcard-go { top: 8px; right: 8px; width: 24px; height: 24px; font-size: 0.7rem; border-width: 1.5px; }
+/* stupňované karty jako na homepage: každá druhá o kousek níž */
+.pcard-shelf > .pcard-slot:nth-child(2n) { margin-top: 18px; }
+@media (max-width: 639px) { .pcard-shelf > .pcard-slot:nth-child(2n) { margin-top: 10px; } }
+.pcard-mini .pcard-shop-img { margin-top: 0; }
+.pcard-mini .pcard-title { font-size: 0.88rem; margin: 4px 0 0; }
+.pcard-mini .pcard-text { font-size: 0.72rem; line-height: 1.3; }
+.pcard-mini .pcard-num { display: none; }
+.pcard-mini .pcard-tape { width: 60px; height: 18px; margin-left: -30px; top: -10px; }
+@media (prefers-reduced-motion: reduce) {
+  .pcard-shop-img, .pcard-buy { transition: none; }
+}
+
+/* ===== Celý obchod: panely, karty a nadpisy ve stylu ručně lepených karet ===== */
+.shop-pcard .gammy-panel,
+.shop-pcard .card {
+  position: relative; border-radius: 22px; border: 2px solid rgba(244, 239, 227, 0.88);
+  box-shadow: 7px 9px 0 rgba(8, 8, 24, 0.55); rotate: var(--tilt, 0deg);
+  transition: rotate 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), translate 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+}
+.shop-pcard .gammy-panel:nth-child(odd), .shop-pcard .card:nth-child(odd) { --tilt: -0.8deg; }
+.shop-pcard .gammy-panel:nth-child(even), .shop-pcard .card:nth-child(even) { --tilt: 0.8deg; }
+/* lepicí páska nahoře na každém panelu */
+.shop-pcard .gammy-panel::before,
+.shop-pcard .card::before {
+  content: ""; position: absolute; left: 50%; top: -11px; width: 84px; height: 22px; margin-left: -42px; z-index: 4;
+  background: var(--ac, #ffc933); opacity: 0.82; rotate: calc(var(--tilt, 0deg) * -2 + 3deg); pointer-events: none;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 4% 50%);
+  filter: drop-shadow(2px 3px 0 rgba(8, 8, 24, 0.35));
+}
+.shop-pcard .gammy-panel:nth-child(3n)::before, .shop-pcard .card:nth-child(3n)::before { --ac: #8fd0ff; }
+.shop-pcard .gammy-panel:nth-child(3n+1)::before, .shop-pcard .card:nth-child(3n+1)::before { --ac: #ff8a6b; }
+.shop-pcard .gammy-panel:hover, .shop-pcard .card-hover:hover {
+  rotate: 0deg; translate: 0 -6px; box-shadow: 11px 14px 0 rgba(8, 8, 24, 0.55);
+}
+/* produktové karty v mřížce: menší páska, výraznější náklon */
+.shop-pcard article.gammy-panel { border-color: rgba(244, 239, 227, 0.6); }
+.shop-pcard article.gammy-panel::before { width: 56px; height: 16px; margin-left: -28px; top: -9px; }
+.shop-pcard article.gammy-panel:nth-child(odd) { --tilt: -1.6deg; }
+.shop-pcard article.gammy-panel:nth-child(even) { --tilt: 1.4deg; }
+.shop-pcard article.gammy-panel:hover { rotate: -2deg; }
+/* nadpisy sekcí jako nalepené štítky */
+.shop-pcard h2 {
+  display: inline-block; padding: 4px 16px 6px; border-radius: 12px; color: #14132a; background: #ffc933;
+  border: 2px solid #14132a; box-shadow: 4px 5px 0 rgba(8, 8, 24, 0.5); rotate: -1.2deg; line-height: 1.2;
+}
+.shop-pcard h2:nth-of-type(even) { background: #8fd0ff; rotate: 1deg; }
+@media (prefers-reduced-motion: reduce) {
+  .shop-pcard .gammy-panel, .shop-pcard .card { transition: none; }
+}
+
 /* ===== Karty pro žáky: vjezd, rostoucí sloupečky, světlo za kurzorem ===== */
 .gcard-live {
   --mx: 50%;

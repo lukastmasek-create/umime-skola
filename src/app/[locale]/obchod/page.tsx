@@ -17,6 +17,9 @@ const POINT_PACKAGES = [
   { points: 300, price: "99 Kč", popular: true, image: "truhla" },
   { points: 1000, price: "249 Kč", popular: false, image: "poklad" },
 ];
+// Barvy a náklon karet balíčků (stejná paleta jako karty kategorií na homepage).
+const PACKAGE_ACCENTS = ["#ffc933", "#ff8a6b", "#8fd0ff"];
+const PACKAGE_TILTS = [-2.5, 1.5, -1.5];
 
 export const generateMetadata = staticPageMetadata("/obchod");
 
@@ -58,15 +61,15 @@ export default async function ShopPage({
   }
 
   return (
-    <div className="mx-auto max-w-[96rem] px-4 py-6 sm:px-6 sm:py-10 lg:px-10">
+    <div className="shop-pcard mx-auto max-w-[96rem] px-4 py-6 sm:px-6 sm:py-10 lg:px-10">
       <GammyShop
         locale={locale as Locale}
         loggedIn={!!userId}
         players={players}
         topUp={
-          <div className="grid gap-5 sm:grid-cols-3">
-            {POINT_PACKAGES.map((pkg) => (
-              <BuyPointsCard key={pkg.points} pkg={pkg} dict={dict} />
+          <div className="pcard-shelf grid gap-8 sm:grid-cols-3">
+            {POINT_PACKAGES.map((pkg, i) => (
+              <BuyPointsCard key={pkg.points} pkg={pkg} dict={dict} accent={PACKAGE_ACCENTS[i]} tilt={PACKAGE_TILTS[i]} num={String(i + 1).padStart(2, "0")} />
             ))}
           </div>
         }
