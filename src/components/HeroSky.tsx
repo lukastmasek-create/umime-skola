@@ -512,7 +512,8 @@ export function HeroSky() {
       if (sparks.length > 420) sparks.splice(0, sparks.length - 420);
 
       if (spriteReady) {
-        const scale = 0.4 + ship.boost * 0.05;
+        // na telefonu je loď menší, aby nezakrývala text a tlačítka hero
+        const scale = (W < 640 ? 0.26 : 0.4) + ship.boost * 0.05;
         const frame = Math.floor((reduced ? 0 : sec * 24) % SHIP_FRAMES);
         sctx.save();
         sctx.translate(ship.x, ship.y);
