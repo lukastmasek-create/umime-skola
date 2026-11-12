@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Asterisk, Check, Eye, Flame, Heart, Receipt, Star, Zap } from "lucide-react";
 import { ShopModel } from "@/components/ShopModel";
+import { PcardTape } from "@/components/PcardArt";
 import { ShopHeroArt } from "@/components/ShopHeroArt";
 import { ShopHeroStage } from "@/components/ShopHeroStage";
 import { Avatar } from "@/components/Avatar";
@@ -35,6 +36,9 @@ const MORE_TABS: { id: More; label: string }[] = [
   { id: "pro", label: "UčímePRO" },
 ];
 
+// Barvy a náklon kategorií v obchodě (stejná ruční estetika jako karty na homepage).
+const TILE_ACCENTS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
+const TILE_TILTS = [-2.5, 2, -1.5, 2.5];
 const KIND_MODEL: Record<ShopKind, string> = { avatar: "cat-avatar", title: "cat-title", frame: "cat-frame", banner: "cat-banner", pet: "cat-pet", city: "cat-city" };
 const MARQUEE = ["Body", "Voucher", "Dárek", "Kolo štěstí", "Materiály", "Limitky", "Avatary", "Sady"];
 
@@ -440,20 +444,33 @@ export function GammyShop({
             Zobrazit vše
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
-          {SHOP_KINDS.map((k) => (
-            <button key={k} type="button" onClick={() => { setKind(k); setShown(15); scrollTo("zbozi"); }} className="gammy-panel flex flex-col items-center gap-2 p-4 text-center transition-transform hover:-translate-y-1">
-              <ShopModel id={KIND_MODEL[k]} size={72} />
-              <span className="text-xs font-bold">{t.tabs[k]}</span>
-              <span className="text-[11px] text-[var(--faint)]">{SHOP_ITEMS.filter((i) => i.kind === k).length} věcí</span>
-            </button>
-          ))}
-          {MORE_TABS.slice(0, 2).map((m) => (
-            <button key={m.id} type="button" onClick={() => { setMore(m.id); scrollTo("dalsi"); }} className="gammy-panel flex flex-col items-center gap-2 p-4 text-center transition-transform hover:-translate-y-1">
-              <ShopModel id={m.id === "materialy" ? "cat-materials" : "cat-limited"} size={72} />
-              <span className="text-xs font-bold">{m.label}</span>
-              <span className="text-[11px] text-[var(--faint)]">za body</span>
-            </button>
+        <div className="pcard-shelf grid grid-cols-2 gap-6 sm:grid-cols-4 lg:grid-cols-8">
+          {[
+            ...SHOP_KINDS.map((k) => ({
+              key: k,
+              icon: KIND_MODEL[k],
+              label: t.tabs[k],
+              sub: `${SHOP_ITEMS.filter((i) => i.kind === k).length} věcí`,
+              onPick: () => { setKind(k); setShown(15); scrollTo("zbozi"); },
+            })),
+            ...MORE_TABS.slice(0, 2).map((m) => ({
+              key: m.id,
+              icon: m.id === "materialy" ? "cat-materials" : "cat-limited",
+              label: m.label,
+              sub: "za body",
+              onPick: () => { setMore(m.id); scrollTo("dalsi"); },
+            })),
+          ].map((c, i) => (
+            <div key={c.key} className="pcard-slot" style={{ ["--ac" as string]: TILE_ACCENTS[i % TILE_ACCENTS.length], ["--r" as string]: `${TILE_TILTS[i % TILE_TILTS.length]}deg` }}>
+              <button type="button" onClick={c.onPick} className="pcard pcard-shop pcard-mini w-full">
+                <span className="pcard-in">
+                  <ShopModel id={c.icon} size={72} className="pcard-shop-img" />
+                  <span className="pcard-title">{c.label}</span>
+                  <span className="pcard-text">{c.sub}</span>
+                </span>
+                <PcardTape />
+              </button>
+            </div>
           ))}
         </div>
       </section>

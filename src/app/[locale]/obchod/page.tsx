@@ -17,6 +17,9 @@ const POINT_PACKAGES = [
   { points: 300, price: "99 Kč", popular: true, image: "truhla" },
   { points: 1000, price: "249 Kč", popular: false, image: "poklad" },
 ];
+// Barvy a náklon karet balíčků (stejná paleta jako karty kategorií na homepage).
+const PACKAGE_ACCENTS = ["#ffc933", "#ff8a6b", "#8fd0ff"];
+const PACKAGE_TILTS = [-2.5, 1.5, -1.5];
 
 export const generateMetadata = staticPageMetadata("/obchod");
 
@@ -64,9 +67,9 @@ export default async function ShopPage({
         loggedIn={!!userId}
         players={players}
         topUp={
-          <div className="grid gap-5 sm:grid-cols-3">
-            {POINT_PACKAGES.map((pkg) => (
-              <BuyPointsCard key={pkg.points} pkg={pkg} dict={dict} />
+          <div className="pcard-shelf grid gap-8 sm:grid-cols-3">
+            {POINT_PACKAGES.map((pkg, i) => (
+              <BuyPointsCard key={pkg.points} pkg={pkg} dict={dict} accent={PACKAGE_ACCENTS[i]} tilt={PACKAGE_TILTS[i]} />
             ))}
           </div>
         }
