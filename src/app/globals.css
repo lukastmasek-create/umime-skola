@@ -5222,7 +5222,7 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
   }
   .gs-hero-art { display: block; position: absolute; right: 0; top: -110px; width: 400px; height: 520px; z-index: 3; overflow: visible; opacity: 0; transition: opacity 0.15s; }
   .gs-hero-card.is-broken .gs-hero-art, .gs-hero-card.is-cracking .gs-hero-art { opacity: 1; }
-  .gs-stage { display: block; position: absolute; z-index: 4; pointer-events: none; opacity: 0; background-repeat: no-repeat; will-change: top, right, background-position; }
+  .gs-stage { display: block; position: absolute; right: 0; top: 0; z-index: 4; pointer-events: none; opacity: 0; will-change: transform; }
 }
 .gs-hero-card .gs-hero-text h1 { text-shadow: 0 3px 0 rgba(8, 8, 24, 0.5); }
 
@@ -5261,12 +5261,13 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 .gs-hero-card .gs-web1 .gs-webline { stroke-dashoffset: calc(100 - var(--cp1, 0) * 100); }
 .gs-hero-card .gs-web2 .gs-webline { stroke-dashoffset: calc(100 - var(--cp2, 0) * 100); }
 .gs-hero-card .gs-web3 .gs-webline { stroke-dashoffset: calc(100 - var(--cp3, 0) * 100); }
-/* oheň zespodu prosvítá trhlinami: čím silnější trysky, tím žhavější světlo */
-.gs-hero-card .gs-webline { filter: drop-shadow(0 0 calc(2px + var(--leak, 0) * 7px) rgba(255, 170, 60, calc(0.35 + var(--leak, 0) * 0.65))); }
-.gs-hero-card:not(.is-broken)::before { translate: 0 calc(var(--bulge, 0) * -3px); }
+/* oheň zespodu prosvítá trhlinami: jedna rozmazaná kopie trhlin (gs-hero-glowart), jejíž průhlednost řídí --leak */
+.gs-hero-glowart { opacity: calc(var(--leak, 0) * 0.9); will-change: opacity; z-index: 2; }
+.gs-hero-glowart { display: none; pointer-events: none; }
+@media (min-width: 900px) { .gs-hero-card.is-crack3:not(.is-broken) .gs-hero-glowart { display: block; position: absolute; right: 0; top: -110px; width: 400px; height: 520px; overflow: visible; } }
 .gs-hero-card.is-broken .gs-glow { animation: gs-flash 0.7s ease-out both, gs-pulse 3.4s ease-in-out 0.7s infinite; }
 @keyframes gs-flash { from { transform: scale(0.2); opacity: 1; } to { transform: scale(1); opacity: 0.9; } }
-.gs-burst { display: block; position: absolute; right: -60px; top: -300px; width: 580px; height: 500px; z-index: 5; pointer-events: none; opacity: 0; background-repeat: no-repeat; background-size: 500% 900%; }
+.gs-burst { display: block; position: absolute; right: -60px; top: -300px; width: 580px; height: 500px; z-index: 5; pointer-events: none; opacity: 0; }
 /* otřesy karty při nárazech hlavou a při prorazu */
 .gs-hero-card.gs-hit { animation: gs-hit 0.3s ease-out; }
 @keyframes gs-hit { 0% { transform: translate(0, 0); } 20% { transform: translate(-1px, 3px); } 45% { transform: translate(1px, -2px); } 70% { transform: translate(0, 1px); } 100% { transform: translate(0, 0); } }
@@ -5276,7 +5277,7 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 @media (max-width: 899px) { .gs-burst, .gs-stage { display: none; } }
 
 /* oranžové světlo ohně na kartě pod kosmonautem */
-.gs-fireglow { display: block; position: absolute; z-index: 3; width: 520px; height: 520px; pointer-events: none; opacity: 0; mix-blend-mode: screen;
+.gs-fireglow { display: block; position: absolute; right: 0; top: 0; z-index: 3; width: 520px; height: 520px; pointer-events: none; opacity: 0; will-change: transform, opacity;
   background: radial-gradient(closest-side, rgba(255, 168, 70, 0.55), rgba(255, 110, 30, 0.22) 45%, rgba(255, 90, 20, 0) 75%); }
 @media (max-width: 899px) { .gs-fireglow { display: none; } }
 /* žhavé okraje po prorazu pomalu stydnou, spáleniny zůstanou, text se otřese setrvačností */
@@ -5289,7 +5290,7 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 @media (prefers-reduced-motion: reduce) { .gs-hero-card.gs-quake .gs-hero-text { animation: none; } .gs-fireglow { display: none; } }
 
 /* kosmonaut reaguje na myš: neviditelná zásahová plocha, déšť mincí a záblesk fotoaparátu */
-.gs-hitbox { display: none; position: absolute; z-index: 7; width: 110px; height: 150px; cursor: pointer; }
+.gs-hitbox { display: none; position: absolute; right: 0; top: 0; z-index: 7; width: 110px; height: 150px; cursor: pointer; will-change: transform; }
 @media (min-width: 900px) { .gs-hitbox { display: block; } }
 .gs-coinfall { position: absolute; z-index: 6; pointer-events: none; display: block; animation: gs-coinfall 1.9s cubic-bezier(0.4, 0, 0.9, 0.7) both; }
 .gs-coinfall img { display: block; width: 100%; height: 100%; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35)); animation: gs-coinspin 0.7s linear infinite; }

@@ -34,6 +34,20 @@ function Cracks({ list, tone, drawn }: { list: CrackPath[]; tone: "dark" | "pale
 
 export function ShopHeroArt() {
   return (
+    <>
+    <svg className="gs-hero-glowart" viewBox={`0 0 ${W} 520`} width={W} height={520} aria-hidden focusable="false">
+      <defs>
+        <clipPath id="sha-incard2"><rect x="-40" y={TOP} width={W + 80} height={520 - TOP} /></clipPath>
+        <filter id="sha-leakblur" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="4" /></filter>
+      </defs>
+      <g filter="url(#sha-leakblur)" clipPath="url(#sha-incard2)" fill="none" strokeLinecap="round" strokeLinejoin="round" stroke="#ffb050">
+        {([["gs-web1", WEB1], ["gs-web2", WEB2], ["gs-web3", WEB3]] as const).map(([cls, list]) => (
+          <g key={cls} className={`gs-web ${cls}`}>
+            {list.map((c, i) => <path key={i} d={c.d} strokeWidth={c.w + 3.5} strokeOpacity=".9" pathLength={100} className="gs-webline" />)}
+          </g>
+        ))}
+      </g>
+    </svg>
     <svg className="gs-hero-art" viewBox={`0 0 ${W} 520`} width={W} height={520} aria-hidden focusable="false">
       <defs>
         <clipPath id="sha-incard"><rect x="-40" y={TOP} width={W + 80} height={520 - TOP} /></clipPath>
@@ -73,5 +87,6 @@ export function ShopHeroArt() {
       </g>
       <polyline points={EDGE} fill="none" stroke="#ff8a2a" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" className="gs-hot" transform="translate(0 2.5)" filter="url(#sha-glow)" />
     </svg>
+    </>
   );
 }
