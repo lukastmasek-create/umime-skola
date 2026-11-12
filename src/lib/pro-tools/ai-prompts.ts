@@ -62,3 +62,12 @@ export function contentPrompt(locale: string): string {
     SAFE,
   ].join("\n");
 }
+
+export function distractorPrompt(locale: string): string {
+  return [
+    "Dostaneš očíslovaný seznam otázek se správnou odpovědí. Ke každé vymysli 3 věrohodné, ale špatné odpovědi, které se stylem a délkou podobají správné.",
+    `Piš ${langName(locale)}. Špatná odpověď nesmí být správná ani se správné jen jinak podobat.`,
+    'Vrať pouze JSON bez dalšího textu: {"wrong":[["...","...","..."],["...","...","..."]]}, položky ve stejném pořadí jako vstup.',
+    SAFE,
+  ].join("\n");
+}

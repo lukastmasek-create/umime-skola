@@ -4,7 +4,9 @@ import { requireProUserId } from "@/lib/pro-server";
 import { withinRateLimit } from "@/lib/rate-limit";
 import { cleanTurns } from "@/lib/teams/assistant-logic";
 import { extractJson, generateText, type ChatTurn } from "@/lib/ai";
-import { notesPrompt, oralFinishPrompt, oralPrompt, photoPrompt, tutorPrompt } from "@/lib/pro-tools/ai-prompts";
+import { prisma } from "@/lib/prisma";
+import { cleanSetQuestions } from "@/lib/live/logic";
+import { distractorPrompt, notesPrompt, oralFinishPrompt, oralPrompt, photoPrompt, tutorPrompt } from "@/lib/pro-tools/ai-prompts";
 import { isLocale } from "@/i18n/config";
 
 export const dynamic = "force-dynamic";
@@ -104,6 +106,38 @@ export async function POST(request: Request) {
         .slice(0, 12)
         .map((c) => ({ front: String(c.front).slice(0, 200), back: String(c.back).slice(0, 300) }));
       return { title: String(d?.title ?? "").slice(0, 80), cards };
+    }
+
+    // Uloží otázky s odpovědí do vlastní sady: AI k nim doplní špatné možnosti.
+    if (mode === "toset") {
+      const raw: unknown[] = Array.isArray(body.items) ? body.items.slice(0, 12) : [];
+      const items = raw
+        .map((x) => {
+          const r = (x && typeof x === "object" ? x : {}) as Record<string, unknown>;
+          return { question: String(r.question ?? "").trim().slice(0, 300), answer: String(r.answer ?? "").trim().slice(0, 120) };
+        })
+        .filter((i) => i.question && i.answer);
+      if (items.length === 0) throw new LiveError("invalid-message");
+      const title = (typeof body.title === "string" ? body.title.trim() : "").slice(0, 80) || "AI sada";
+      const out = await run({
+        system: distractorPrompt(locale),
+        turns: [{ role: "user", content: items.map((i, n) => `${n + 1}. Otázka: ${i.question}\nSprávná odpověď: ${i.answer}`).join("\n\n") }],
+        maxTokens: 1500,
+      });
+      const wrong = extractJson<{ wrong?: unknown }>(out)?.wrong;
+      const questions = cleanSetQuestions(
+        items.map((i, n) => {
+          const w = Array.isArray(wrong) && Array.isArray(wrong[n]) ? (wrong[n] as unknown[]).filter((o): o is string => typeof o === "string" && !!o.trim() && o.trim() !== i.answer).slice(0, 3) : [];
+          if (w.length < 3) return null;
+          const correctIndex = Math.floor(Math.random() * 4);
+          const options = [...w];
+          options.splice(correctIndex, 0, i.answer);
+          return { prompt: i.question, options, correctIndex };
+        }),
+      );
+      if (questions.length === 0) throw new LiveError("ai-unavailable", 503);
+      const set = await prisma.questionSet.create({ data: { ownerId: userId, title, questions: questions as object[] }, select: { id: true } });
+      return { id: set.id, count: questions.length };
     }
 
     throw new LiveError("invalid-mode");

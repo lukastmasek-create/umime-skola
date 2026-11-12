@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Locale } from "@/i18n/config";
 import { getProToolsText } from "@/i18n/pro-tools";
+import { SaveAsSet } from "./SaveAsSet";
 import { errorText, imageToDataUrl, proFetch } from "./api";
 
 type Result = { task: string; method: string; examples: { question: string; answer: string }[] };
@@ -78,6 +79,7 @@ export function PhotoTasks({ locale }: { locale: Locale }) {
               </li>
             ))}
           </ol>
+          <SaveAsSet locale={locale} title={result.task.slice(0, 80)} items={result.examples} />
         </section>
       )}
     </div>

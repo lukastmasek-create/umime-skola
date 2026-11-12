@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Locale } from "@/i18n/config";
 import { getProToolsText } from "@/i18n/pro-tools";
+import { SaveAsSet } from "./SaveAsSet";
 import { errorText, imageToDataUrl, proFetch } from "./api";
 
 type Card = { front: string; back: string };
@@ -80,6 +81,9 @@ export function NotesCards({ locale }: { locale: Locale }) {
                 {flipped[i] ? c.back : c.front}
               </button>
             ))}
+          </div>
+          <div className="mt-3">
+            <SaveAsSet locale={locale} title={title} items={cards.map((c) => ({ question: c.front, answer: c.back }))} />
           </div>
         </section>
       )}
