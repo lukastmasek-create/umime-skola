@@ -132,7 +132,7 @@ export function PlayerView({
   if (view.status === "LOBBY") {
     return (
       <div className="card mx-auto flex max-w-md flex-col items-center gap-3 p-8 text-center">
-        <div className="relative h-44 w-full overflow-hidden rounded-2xl bg-[#1b1a30]">
+        <div className="relative aspect-[300/120] w-full overflow-hidden rounded-2xl bg-[#1b1a30]">
           <ModeScene mode={view.mode} />
         </div>
         <p className="font-mono text-4xl font-extrabold tracking-[0.25em]">{view.pin}</p>
@@ -270,15 +270,15 @@ export function PlayerView({
           <div className="grid w-full grid-cols-3 gap-3">
             {([0, 1, 2] as const).map((i) => (
               <button key={i} type="button" onClick={() => pickChest(i)} disabled={chestBusy} className="btn-bouncy flex flex-col items-center gap-2 bg-[var(--surface)] p-3 disabled:opacity-60" aria-label={`${t.play.chestTitle} ${i + 1}`}>
-                <ChestClosed tone={i} id={`chest-pick-${i}`} className="h-24 w-auto" />
-                <span className="text-sm font-bold">{i + 1}</span>
+                <ChestClosed tone={i} id={`chest-pick-${i}`} className="h-32 w-auto" />
+                <span className="rounded-full bg-[var(--surface-muted)] px-3 py-1 text-base font-extrabold">{i + 1}</span>
               </button>
             ))}
           </div>
         </div>
       ) : chestResult ? (
         <div className="card flex flex-col items-center gap-3 p-8 text-center">
-          <ChestOpen kind={chestResult.kind} id={`chest-open-${chestResult.kind}`} className="h-40 w-auto" />
+          <ChestOpen kind={chestResult.kind} id={`chest-open-${chestResult.kind}`} className="h-52 w-auto" />
           <p className="text-xl font-extrabold">{chestResult.text}</p>
           {chestResult.kind === "gold" && <p className="text-3xl font-extrabold text-[var(--accent-green)]">+{chestResult.gold}</p>}
           {chestResult.kind === "lose" && chestResult.gold < 0 && <p className="text-3xl font-extrabold text-[var(--danger)]">{chestResult.gold}</p>}
