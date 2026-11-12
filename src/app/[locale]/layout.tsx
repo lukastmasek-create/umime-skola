@@ -113,7 +113,7 @@ export default async function LocaleLayout({
         <PencilScrollbar />
         <SiteMotion />
         <ScrollFade />
-        <GlobalShortcuts locale={locale} />
+        <GlobalShortcuts locale={locale as Locale} dict={dict} />
         <main className="world flex-1">{children}</main>
         <footer className="relative bg-[var(--surface)] px-4 py-6 text-center text-sm text-[var(--muted)]">
           <SketchEdge position="top" />

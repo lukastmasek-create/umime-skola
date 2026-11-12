@@ -30,7 +30,7 @@ type Tab = { key: string; href: string; label: string; exact?: boolean; noActive
 type Group = { key: string; label: string; items: Tab[] };
 
 // Každá skupina v navigaci má ručně kreslenou SVG ikonu (src/components/SketchIcons.tsx).
-const GROUP_SVG_ICON: Record<string, SketchIconKind> = {
+export const GROUP_SVG_ICON: Record<string, SketchIconKind> = {
   town: "town",
   courses: "courses",
   settings: "gear",
@@ -49,7 +49,7 @@ function GroupIcon({ id, size }: { id: string; size: number }) {
   return <SketchIcon kind={kind} size={size} className="nav-ico sketch-nav-ico shrink-0" />;
 }
 
-function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
+export function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
   const community = getCommunityText(locale);
   const home = getHomeText(locale);
   const live = getLiveText(locale);
@@ -147,7 +147,7 @@ function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
 // Na širokých obrazovkách zůstávají v liště jen tyto skupiny, ostatní jsou v tlačítku Menu.
 const PRIMARY_GROUPS = new Set(["courses", "info", "shop", "study"]);
 
-function isActiveTab(pathname: string | null, tab: Tab) {
+export function isActiveTab(pathname: string | null, tab: Tab) {
   if (!pathname || tab.noActive) return false;
   const path = tab.href.split("?")[0];
   return pathname === path || (!tab.exact && pathname.startsWith(`${path}/`));
