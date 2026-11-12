@@ -225,7 +225,7 @@ export default async function Home({
             ))}
           </div>
         </div>
-        <SectionWave fill="#0c122b" glow="#ff8a6b" />
+        <SectionWave fill="#131d47" glow="#b49cff" />
       </section>
 
       {/* 6) Pro učitele */}
@@ -268,7 +268,7 @@ export default async function Home({
             />
           </div>
         </div>
-        <SectionWave fill="#0a1128" glow="#7ee0b0" />
+        <SectionWave fill="#14183d" glow="#b49cff" />
       </section>
 
       {/* 7) O nás */}

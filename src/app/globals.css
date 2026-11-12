@@ -5763,17 +5763,20 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 
 /* 3) Mřížka pryč, technické sekce dostávají jiné pozadí: tyrkysová aurora místo modré mřížky */
 .space-page .zone-tech {
-  background-color: #06141f;
+  background-color: #0b1024;
   background-image:
-    radial-gradient(ellipse 60% 50% at 18% 18%, rgba(41, 224, 192, 0.30), transparent 70%),
-    radial-gradient(ellipse 50% 45% at 88% 72%, rgba(255, 92, 170, 0.22), transparent 70%),
-    linear-gradient(180deg, #06141f 0%, #0a1d2e 100%);
-  background-size: 180% 180%, 180% 180%, 100% 100%;
-  animation: aurora-drift 22s ease-in-out infinite alternate;
+    radial-gradient(ellipse 45% 38% at 14% 22%, rgba(124, 92, 255, 0.34), transparent 72%),
+    radial-gradient(ellipse 38% 34% at 86% 18%, rgba(59, 91, 255, 0.26), transparent 70%),
+    radial-gradient(ellipse 42% 36% at 74% 88%, rgba(255, 110, 150, 0.20), transparent 72%),
+    radial-gradient(ellipse 30% 28% at 30% 80%, rgba(255, 138, 107, 0.14), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 50% 50%, rgba(90, 60, 200, 0.12), transparent 75%),
+    linear-gradient(180deg, #0b1024 0%, #10153a 55%, #0c1230 100%);
+  background-size: 170% 170%, 170% 170%, 170% 170%, 170% 170%, 170% 170%, 100% 100%;
+  animation: nebula-drift 30s ease-in-out infinite alternate;
 }
-@keyframes aurora-drift {
-  0% { background-position: 0% 0%, 100% 100%, 0 0; }
-  100% { background-position: 100% 60%, 0% 40%, 0 0; }
+@keyframes nebula-drift {
+  0% { background-position: 0% 0%, 100% 0%, 100% 100%, 0% 100%, 50% 50%, 0 0; }
+  100% { background-position: 100% 60%, 0% 40%, 20% 0%, 80% 60%, 30% 80%, 0 0; }
 }
 
 /* 4) Pozadí sekcí se pomalu posouvá (mlhoviny a gradienty) */
