@@ -154,15 +154,26 @@ export function CreateGame({ locale }: { locale: Locale }) {
           {source === "course" ? (
             <BentoTile accent="#8fd0ff" icon={<SearchGlyph size={34} />} title={t.create.course} span="sm:col-span-2" delay={0.12}>
               <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t.create.search} className={fieldInner} />
-              <select value={slug} onChange={(e) => setSlug(e.target.value)} size={6} aria-label={t.create.course} className={fieldInner}>
-                {courses === null && <option disabled>{t.create.loading}</option>}
-                {filtered.map((c) => (
-                  <option key={c.slug} value={c.slug}>
-                    {c.title}
-                    {c.grade ? ` (${c.grade}.)` : ""}
-                  </option>
-                ))}
-              </select>
+              <div role="listbox" aria-label={t.create.course} className="live-scroll max-h-72 overflow-y-auto rounded-xl bg-[#0b1030]/60 p-1.5" style={{ ["--ac" as string]: "#8fd0ff" } as CSSProperties}>
+                {courses === null && <p className="px-3 py-2 text-sm text-[var(--muted)]">{t.create.loading}</p>}
+                {filtered.map((c, i) => {
+                  const on = c.slug === slug;
+                  return (
+                    <button
+                      key={c.slug}
+                      type="button"
+                      role="option"
+                      aria-selected={on}
+                      onClick={() => setSlug(c.slug)}
+                      className="live-item flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold transition-colors duration-200 hover:bg-[color-mix(in_srgb,var(--ac)_18%,transparent)]"
+                      style={{ animationDelay: `${Math.min(i, 14) * 0.03}s`, background: on ? "color-mix(in srgb, var(--ac) 35%, transparent)" : undefined }}
+                    >
+                      <span className="truncate">{c.title}</span>
+                      {c.grade ? <span className="shrink-0 text-xs opacity-70">{c.grade}.</span> : null}
+                    </button>
+                  );
+                })}
+              </div>
             </BentoTile>
           ) : sets === "login" ? (
             <p className="text-[var(--muted)] sm:col-span-2">
