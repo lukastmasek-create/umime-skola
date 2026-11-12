@@ -154,11 +154,21 @@ export function Butterfly3D({ size = 84, className = "" }: { size?: number; clas
         const clock = new THREE.Clock();
         let raf = 0;
         let visible = true;
-        const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
+        // Smyčka se plánuje jen když je motýl vidět a záložka je aktivní. Mimo to se nevolá
+        // requestAnimationFrame vůbec, takže skrytý motýl nezatěžuje CPU.
+        const kick = () => {
+          if (!raf && visible && !document.hidden && !stop) raf = requestAnimationFrame(tick);
+        };
+        const io = new IntersectionObserver(([e]) => {
+          visible = e.isIntersecting;
+          kick();
+        });
         io.observe(host);
+        document.addEventListener("visibilitychange", kick);
         const tick = () => {
-          raf = requestAnimationFrame(tick);
+          raf = 0;
           if (!visible || document.hidden) return;
+          raf = requestAnimationFrame(tick);
           const t = clock.getElapsedTime();
           // Mávání: rychlé mávnutí, pak chvíli plachtí; křídla se přitom lehce kroutí.
           const beat = Math.sin(t * 9) * (0.55 + 0.35 * Math.sin(t * 1.3));
@@ -177,6 +187,7 @@ export function Butterfly3D({ size = 84, className = "" }: { size?: number; clas
         cleanup = () => {
           cancelAnimationFrame(raf);
           io.disconnect();
+          document.removeEventListener("visibilitychange", kick);
           wingGeo.dispose();
           tex.dispose();
           wingMat.dispose();
