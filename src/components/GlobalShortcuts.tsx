@@ -8,20 +8,21 @@ import type { Locale } from "@/i18n/config";
 import { getHomeText } from "@/i18n/home";
 import { useAccount } from "@/lib/use-account";
 import { SketchIcon } from "@/components/SketchIcons";
+import { PcardTape } from "@/components/PcardArt";
 import { GROUP_SVG_ICON, isActiveTab, useGroups } from "@/components/NavTabs";
 
-// Klávesa G otevře velkou nabídku s ikonovými dlaždicemi. Zkratky G + písmeno fungují dál:
-// uvnitř otevřené nabídky stačí stisknout písmeno (H domů, K kurzy, D kvíz, Z žebříčky, O obchod, N nastavení).
-const LETTERS: Record<string, string> = {
-  H: "",
-  K: "/kurzy/zakladni",
-  D: "/denni-kviz",
-  Z: "/zebricky",
-  O: "/obchod",
-  N: "/nastaveni",
+// Zkratky G + písmeno: stránka, kterou písmeno otevře. Když už na ní jste, zobrazí se její sekce (záložky).
+const LETTERS: Record<string, { path: string; label: string }> = {
+  H: { path: "", label: "Domů" },
+  K: { path: "/kurzy/zakladni", label: "Kurzy" },
+  D: { path: "/denni-kviz", label: "Denní kvíz" },
+  Z: { path: "/zebricky", label: "Žebříčky" },
+  O: { path: "/obchod", label: "Obchod" },
+  N: { path: "/nastaveni", label: "Nastavení" },
 };
 
 const ARROWS = ["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight"];
+const KBD = "rounded-md border border-[var(--edge)] bg-[var(--surface)] px-1.5 font-mono text-xs font-bold";
 
 // Štítek se zkratkou (číslo nebo písmeno) na dlaždici nebo podsekci.
 function ShortcutKey({ children }: { children: string | number }) {
@@ -29,6 +30,61 @@ function ShortcutKey({ children }: { children: string | number }) {
     <kbd className="flex h-6 min-w-6 shrink-0 items-center justify-center rounded-md border border-[var(--edge)] bg-[var(--surface)] px-1 font-mono text-xs font-bold text-[var(--foreground)]">
       {children}
     </kbd>
+  );
+}
+
+// Papírová karta s přehledem zkratek (styl jako karty na úvodní stránce).
+function ShortcutCard({ sections, onPick }: { sections: { label: string; el: HTMLElement }[] | null; onPick: (el: HTMLElement) => void }) {
+  const rows: [string, string][] = Object.entries(LETTERS).map(([k, v]) => [k, v.label]);
+  return (
+    <aside
+      aria-label="Přehled zkratek"
+      className="nav-panel pointer-events-auto fixed bottom-4 right-4 z-[95] w-64 max-w-[calc(100vw-2rem)] -rotate-1 rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] p-4 pt-5 shadow-[0_6px_0_var(--shadow-ink)]"
+    >
+      <PcardTape />
+      <p className="mb-2 text-sm font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
+        Zkratky
+      </p>
+      <ul className="space-y-1.5 text-sm">
+        <li className="flex items-center justify-between gap-2">
+          <span>Nabídka</span>
+          <span className="flex gap-1"><kbd className={KBD}>G</kbd></span>
+        </li>
+        {rows.map(([k, label]) => (
+          <li key={k} className="flex items-center justify-between gap-2">
+            <span>{label}</span>
+            <span className="flex gap-1">
+              <kbd className={KBD}>G</kbd>
+              <kbd className={KBD}>{k}</kbd>
+            </span>
+          </li>
+        ))}
+        <li className="flex items-center justify-between gap-2 text-[var(--muted)]">
+          <span>Skupina v nabídce</span>
+          <kbd className={KBD}>1–9</kbd>
+        </li>
+      </ul>
+
+      {sections && (
+        <div className="mt-3 border-t-2 border-dashed border-[var(--border-soft)] pt-3">
+          <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">Sekce na této stránce</p>
+          {sections.length === 0 ? (
+            <p className="text-sm text-[var(--muted)]">Na této stránce nejsou žádné sekce.</p>
+          ) : (
+            <ul className="space-y-1.5 text-sm">
+              {sections.slice(0, 9).map((s, i) => (
+                <li key={i}>
+                  <button type="button" onClick={() => onPick(s.el)} className="flex w-full items-center gap-2 rounded-lg px-1 py-1 text-left font-semibold hover:bg-[var(--surface-muted)]">
+                    <ShortcutKey>{i + 1}</ShortcutKey>
+                    <span className="truncate">{s.label}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </aside>
   );
 }
 
@@ -43,12 +99,15 @@ export function GlobalShortcuts({ locale, dict }: { locale: Locale; dict: Dictio
   const [openPath, setOpenPath] = useState<string | null>(null);
   const open = openPath !== null && openPath === pathname;
   const [expanded, setExpanded] = useState<string | null>(null);
+  // Sekce (záložky) aktuální stránky, pokud je jejich podmenu otevřené.
+  const [sections, setSections] = useState<{ label: string; el: HTMLElement }[] | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
 
   const show = useCallback(() => {
     returnFocus.current = document.activeElement as HTMLElement | null;
     setExpanded(null);
+    setSections(null);
     setOpenPath(pathname ?? "");
   }, [pathname]);
 
@@ -56,27 +115,60 @@ export function GlobalShortcuts({ locale, dict }: { locale: Locale; dict: Dictio
     if (!open) return;
     setOpenPath(null);
     setExpanded(null);
+    setSections(null);
     returnFocus.current?.focus?.();
   }, [open]);
 
+  // Vybere sekci (záložku) a nabídku zavře.
+  const pick = useCallback((el: HTMLElement) => {
+    el.click();
+    setOpenPath(null);
+    setExpanded(null);
+    setSections(null);
+  }, []);
+
   // Klávesy po celém webu (ignoruje psaní do polí a kombinace s Ctrl/Cmd/Alt).
   useEffect(() => {
+    // Sekce aktuální stránky = záložky v hlavním obsahu (role="tab").
+    const readSections = () =>
+      Array.from(document.querySelectorAll<HTMLElement>("main [role='tab']")).map((el) => ({
+        label: (el.textContent ?? "").trim(),
+        el,
+      }));
     const onKey = (e: KeyboardEvent) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
       const el = e.target as HTMLElement | null;
       if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return;
       if (e.key === "Escape") {
-        // Esc nejdřív zavře rozbalenou skupinu, až potom celou nabídku.
-        if (open && expanded) setExpanded(null);
+        // Esc zavře nejdřív podmenu sekcí, pak rozbalenou skupinu, až potom celou nabídku.
+        if (open && sections) setSections(null);
+        else if (open && expanded) setExpanded(null);
         else close();
         return;
       }
       const k = e.key.toUpperCase();
+      // Sekce aktuální stránky: číslice vybere záložku a nabídka se zavře.
+      if (open && sections && /^[1-9]$/.test(e.key)) {
+        e.preventDefault();
+        const s = sections[Number(e.key) - 1];
+        if (s) pick(s.el);
+        return;
+      }
       if (open && k.length === 1 && Object.prototype.hasOwnProperty.call(LETTERS, k)) {
         e.preventDefault();
+        const target = LETTERS[k];
+        const base = `/${locale}${target.path}`;
+        const onPage = target.path === "" ? pathname === `/${locale}` : pathname === base || !!pathname?.startsWith(`${base}/`);
+        if (onPage) {
+          // Už jsme na této stránce: stisk otevře (nebo zavře) její sekce, bez přechodu.
+          setExpanded(null);
+          setSections(sections ? null : readSections());
+          return;
+        }
         setOpenPath(null);
         setExpanded(null);
-        router.push(`/${locale}${LETTERS[k]}`);
+        setSections(null);
+        router.push(base);
         return;
       }
       // Číslice: bez rozbalené skupiny vybírají skupinu, s rozbalenou jen její podsekce.
@@ -105,7 +197,7 @@ export function GlobalShortcuts({ locale, dict }: { locale: Locale; dict: Dictio
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [locale, router, open, expanded, groups, show, close]);
+  }, [locale, router, open, expanded, sections, groups, pathname, show, close, pick]);
 
   // Fokus se přesune do nabídky (na dlaždice, nebo na podsekce po rozbalení skupiny).
   useEffect(() => {
@@ -217,6 +309,8 @@ export function GlobalShortcuts({ locale, dict }: { locale: Locale; dict: Dictio
           </div>
         )}
       </div>
+
+      <ShortcutCard sections={sections} onPick={pick} />
     </div>
   );
 }
