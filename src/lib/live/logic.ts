@@ -213,13 +213,16 @@ export function effectiveStatus(i: StatusInput): LiveStatus {
 
 // --- Zlatá horečka ---
 
+/** Částky v truhlách (zlato 15 až 120, krádež 40, past 25). Legenda na obrazovce hráče čte stejná čísla. */
+export const CHEST_AMOUNTS = { goldMin: 15, goldMax: 120, steal: 40, lose: 25 } as const;
+
 const CHEST_POOL: { outcome: ChestOutcome; weight: number }[] = [
   { outcome: { kind: "gold", amount: 15 }, weight: 3 },
   { outcome: { kind: "gold", amount: 30 }, weight: 3 },
   { outcome: { kind: "gold", amount: 60 }, weight: 2 },
-  { outcome: { kind: "gold", amount: 120 }, weight: 1 },
-  { outcome: { kind: "steal", amount: 40 }, weight: 2 },
-  { outcome: { kind: "lose", amount: 25 }, weight: 1.5 },
+  { outcome: { kind: "gold", amount: CHEST_AMOUNTS.goldMax }, weight: 1 },
+  { outcome: { kind: "steal", amount: CHEST_AMOUNTS.steal }, weight: 2 },
+  { outcome: { kind: "lose", amount: CHEST_AMOUNTS.lose }, weight: 1.5 },
 ];
 
 export function chestOptions(rnd: () => number = Math.random): ChestOutcome[] {

@@ -10,6 +10,7 @@ import { liveApi, type Identity } from "./api";
 import { errorText } from "./LiveRoom";
 import { isSyncMode } from "@/lib/live/logic";
 import { Countdown, EndsIn, Leaderboard, OptionButton, TeamScores } from "./shared";
+import { ModeScene } from "./ModeScenes";
 
 export function HostView({
   locale,
@@ -75,6 +76,9 @@ export function HostView({
     return (
       <div className="flex flex-col gap-6">
         <div className="card flex flex-col items-center gap-3 p-6 text-center">
+          <div className="relative aspect-[300/120] w-full max-w-2xl overflow-hidden rounded-2xl bg-[#1b1a30]">
+            <ModeScene mode={view.mode} />
+          </div>
           <p className="text-sm font-semibold text-[var(--muted)]">{fmt(t.lobby.share, { site: typeof window !== "undefined" ? window.location.host : "" })}</p>
           <p className="font-mono text-6xl font-extrabold tracking-[0.25em] sm:text-7xl" aria-label={view.pin.split("").join(" ")}>
             {view.pin}
