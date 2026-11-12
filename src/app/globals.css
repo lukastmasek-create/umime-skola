@@ -6042,8 +6042,8 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 :root[data-motion="off"] .space-page .btn-primary { animation: none; }
 
 /* ===== Úvodní stránka: mobilní optimalizace (do 639 px) ===== */
-@media (max-width: 639px) {
-  /* Hlavička: tužka posuvníku se na dotykových displejích nezobrazuje a nepřekrývá Menu */
+@media (max-width: 767px) {
+  /* Hlavička: tužka posuvníku se na telefonu a tabletu nezobrazuje a nepřekrývá Menu */
   .pencil-track { display: none; }
   .site-header-in button,
   .site-header-in a { min-height: 40px; }

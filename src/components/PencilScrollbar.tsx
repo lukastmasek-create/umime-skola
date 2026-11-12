@@ -19,7 +19,8 @@ export function PencilScrollbar() {
   const trailRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+    // Jen myš na širokém displeji: na telefonu a tabletu (i v režimu „desktop“) zůstává nativní posuvník.
+    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine) and (min-width: 768px)");
     if (!finePointer.matches) return;
 
     const html = document.documentElement;
