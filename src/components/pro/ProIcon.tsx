@@ -85,6 +85,73 @@ const PATHS: Record<string, ReactNode> = {
       <path d="M12 4V2.5M12 2.5h2.5" />
     </>
   ),
+  "skola-mezery": (
+    <>
+      <circle cx="10.5" cy="10.5" r="6" />
+      <path d="M15 15l5.5 5.5M7.5 10.5h6" />
+    </>
+  ),
+  "skola-soubeh": (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.5V12l3 2" />
+    </>
+  ),
+  "skola-test": (
+    <>
+      <rect x="5" y="3.5" width="14" height="17" rx="2.5" />
+      <path d="M8.5 8h7M8.5 12h7M8.5 16h4" />
+    </>
+  ),
+  "skola-zadani": (
+    <>
+      <rect x="3" y="6" width="11" height="13" rx="2" />
+      <rect x="10" y="4" width="11" height="13" rx="2" fill="currentColor" fillOpacity="0.15" />
+      <path d="M6 10h5M6 13.5h3" />
+    </>
+  ),
+  "skola-exit": (
+    <>
+      <path d="M10 4H6.5A2.5 2.5 0 0 0 4 6.5v11A2.5 2.5 0 0 0 6.5 20H10" />
+      <path d="M14 8l4 4-4 4M18 12H9" />
+    </>
+  ),
+  "skola-suplovani": (
+    <>
+      <path d="M4 8h13l-3-3M20 16H7l3 3" />
+    </>
+  ),
+  "skola-schuzka": (
+    <>
+      <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H11l-4 3.5V16H6.5A2.5 2.5 0 0 1 4 13.5z" />
+    </>
+  ),
+  "skola-tempo": (
+    <>
+      <path d="M4 16a8 8 0 1 1 16 0" />
+      <path d="M12 16l4-4.5" />
+    </>
+  ),
+  "skola-obsah": (
+    <>
+      <path d="M4 20l1-4.5L16 4.5a2.1 2.1 0 0 1 3 3L8 18.5z" />
+      <path d="M14 6.5l3 3" />
+    </>
+  ),
+  "skola-dilna": (
+    <>
+      <rect x="3.5" y="4" width="7.5" height="7.5" rx="2" />
+      <rect x="13" y="12.5" width="7.5" height="7.5" rx="2" />
+      <path d="M11 8h2.5a2.5 2.5 0 0 1 2.5 2.5v2" />
+    </>
+  ),
+  "skola-podpora": (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <circle cx="12" cy="12" r="3.5" />
+      <path d="M5.6 5.6l3.2 3.2M15.2 15.2l3.2 3.2M18.4 5.6l-3.2 3.2M8.8 15.2l-3.2 3.2" />
+    </>
+  ),
   check: <path d="M5 12.5l4.5 4.5L19 7.5" />,
 };
 

@@ -27,6 +27,12 @@ export function SchoolTools({ locale }: { locale: Locale }) {
   const [tab, setTab] = useState<Tab>("gaps");
   const [error, setError] = useState("");
 
+  // Karty v Obchodu odkazují na konkrétní nástroj přes #kotva (např. /pro/skola#dilna).
+  useEffect(() => {
+    const hash = window.location.hash.slice(1) as Tab;
+    if (TABS.includes(hash)) setTab(hash);
+  }, []);
+
   useEffect(() => {
     void proFetch<{ teams: Team[] }>("/api/pro/skola?view=teams").then((r) => {
       if (!r.ok) return setError(errorText(t, r.error));

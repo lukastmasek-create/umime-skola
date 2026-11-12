@@ -11,6 +11,7 @@ import { ShopHeroStage } from "@/components/ShopHeroStage";
 import { Avatar } from "@/components/Avatar";
 import { Modal, Preview, type Snapshot } from "@/components/ShopView";
 import { MaterialShop, LimitedShop, ProCard } from "@/components/ShopSections";
+import { SchoolShopCards } from "@/components/pro/SchoolShopCards";
 import {
   DEAL_DISCOUNT,
   SHOP_ITEMS,
@@ -29,11 +30,12 @@ import { getShopExtraText } from "@/i18n/shop-extra";
 import { notifyAccountChanged } from "@/lib/account-events";
 import type { Locale } from "@/i18n/config";
 
-type More = "materialy" | "modely" | "kolo" | "pro";
+type More = "materialy" | "modely" | "kolo" | "skola" | "pro";
 const MORE_TABS: { id: More; label: string }[] = [
   { id: "materialy", label: "Materiály" },
   { id: "modely", label: "Limitované modely" },
   { id: "kolo", label: "Kolo štěstí" },
+  { id: "skola", label: "Škola" },
   { id: "pro", label: "UčímePRO" },
 ];
 
@@ -645,6 +647,7 @@ export function GammyShop({
         {more === "materialy" && <MaterialShop locale={locale} loggedIn={loggedIn} />}
         {more === "modely" && <LimitedShop locale={locale} loggedIn={loggedIn} />}
         {more === "kolo" && wheel}
+        {more === "skola" && <SchoolShopCards locale={locale} />}
         {more === "pro" && <ProCard />}
       </section>
 
