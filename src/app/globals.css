@@ -24,6 +24,7 @@
   --border-soft: #e0dccf;
   --edge: #16132b;
   --shadow-ink: #16132b;
+  --sketch-ink: #16132b;
   --danger: #d6291f;
   --font-scale: 1;
   --field-border: #8a849f;
@@ -77,6 +78,7 @@ html[data-font="classic"] {
   --border-soft: #35305f;
   --edge: #6a63ad;
   --shadow-ink: #05040f;
+  --sketch-ink: rgba(246, 241, 228, 0.8);
   --danger: #ff8080;
   --field-border: #7d76c0;
   /* Kategoriální barvy grafů pro tmavý povrch (ověřeny validátorem palety) */
@@ -3126,6 +3128,15 @@ a:hover .eco-ico,
 .site-header-in {
   transition: padding 0.25s;
 }
+/* Tužka posuvníku (vpravo, jen u myši) nesmí překrýt tlačítka hlavičky */
+html.pencil-scroll .site-header-in {
+  padding-right: 2.5rem;
+}
+@media (min-width: 640px) {
+  html.pencil-scroll .site-header-in {
+    padding-right: 3rem;
+  }
+}
 .site-header[data-scrolled] {
   background: color-mix(in srgb, var(--surface) 88%, transparent);
   backdrop-filter: blur(10px);
@@ -3135,6 +3146,161 @@ a:hover .eco-ico,
   padding-top: 0.2rem;
   padding-bottom: 0.2rem;
 }
+/* Kreslená čára přes celou šířku stránky (src/components/SketchEdge.tsx): hlavička dole, patička nahoře */
+.sketch-edge {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 22px;
+  animation: sketch-reveal 1s cubic-bezier(0.7, 0, 0.2, 1) both;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 1;
+}
+.sketch-edge-bottom {
+  bottom: -11px;
+}
+.sketch-edge-top {
+  top: -11px;
+}
+@keyframes sketch-reveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+.sketch-edge-line,
+.sketch-edge-guide {
+  fill: none;
+  stroke: var(--sketch-ink);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.sketch-edge-line {
+  stroke-width: 3;
+  animation: sketch-jitter 0.7s steps(3) infinite;
+}
+.sketch-edge-guide {
+  stroke-width: 1.6;
+  stroke-dasharray: 7 9;
+  opacity: 0.7;
+  animation: sketch-march 1.1s linear infinite;
+}
+@keyframes sketch-jitter {
+  0% { transform: translateY(0); }
+  33% { transform: translateY(-1.5px); }
+  66% { transform: translateY(1px); }
+}
+@keyframes sketch-march {
+  to { stroke-dashoffset: -16; }
+}
+
+/* Kreslíře v patičce: tužka, hvězdičky a jiskřičky nad čárou, každá se kývá jinak */
+.sketch-doodles {
+  position: absolute;
+  top: -14px;
+  left: 0;
+  width: 100%;
+  height: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.sketch-doodle {
+  position: absolute;
+  top: 0;
+  translate: -50% -50%;
+  filter: drop-shadow(0 2px 0 var(--shadow-ink));
+}
+.sketch-doodle-pencil {
+  left: 7%;
+  rotate: -14deg;
+  animation: doodle-bob 2.2s ease-in-out infinite;
+}
+.sketch-doodle-star {
+  left: 24%;
+  animation: doodle-twinkle 1.6s ease-in-out infinite;
+}
+.sketch-doodle-sparkle {
+  left: 76%;
+  animation: doodle-twinkle 1.9s ease-in-out 0.4s infinite;
+}
+.sketch-doodle-star2 {
+  left: 93%;
+  animation: doodle-bob 2.6s ease-in-out 0.3s infinite;
+}
+@keyframes doodle-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-12px) rotate(-16deg); }
+  75% { transform: translateY(4px) rotate(14deg); }
+}
+@keyframes doodle-twinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  50% { transform: scale(0.45) rotate(70deg); opacity: 0.4; }
+}
+.sketch-chip-ico {
+  margin-right: 0.35rem;
+  flex-shrink: 0;
+}
+.sketch-chip:hover .sketch-chip-ico {
+  animation: nav-wiggle 0.5s ease-in-out infinite;
+}
+/* Ikony v navigaci se pořád lehce kývou, po najetí se rozkmitají */
+.sketch-nav-ico {
+  animation: sketch-idle 2.2s ease-in-out infinite;
+}
+.nav-group:hover .sketch-nav-ico {
+  animation: nav-wiggle 0.5s ease-in-out infinite;
+}
+@keyframes sketch-idle {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(-6deg); }
+}
+
+/* Odkazy v patičce jako nálepky s černým obrysem a tvrdým stínem (stejně jako tlačítka a karty) */
+.sketch-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border: 2px solid var(--edge);
+  border-radius: 10px;
+  background: var(--surface-muted);
+  color: var(--foreground);
+  font-weight: 700;
+  box-shadow: 0 3px 0 var(--shadow-ink);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.sketch-chip:hover {
+  transform: translateY(-4px) rotate(-2deg);
+  box-shadow: 0 7px 0 var(--shadow-ink);
+}
+.sketch-chip:nth-child(even):hover {
+  transform: translateY(-4px) rotate(2deg);
+}
+.sketch-chip:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--shadow-ink);
+}
+.sketch-chip:focus-visible {
+  outline: 3px solid var(--accent-yellow);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sketch-chip,
+  .sketch-chip:hover,
+  .sketch-chip:active {
+    transition: none;
+    transform: none;
+  }
+  .sketch-edge,
+  .sketch-edge-line,
+  .sketch-edge-guide,
+  .sketch-doodle,
+  .sketch-nav-ico,
+  .sketch-chip:hover .sketch-chip-ico,
+  .nav-group:hover .sketch-nav-ico {
+    animation: none;
+  }
+}
+
 .site-logo {
   position: relative;
   display: inline-flex;
