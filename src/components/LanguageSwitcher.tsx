@@ -1,5 +1,7 @@
 "use client";
 
+import { SketchIcon } from "@/components/SketchIcons";
+
 import { useState, useRef, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { locales, localeNames, localeFlags, type Locale } from "@/i18n/config";
@@ -37,7 +39,7 @@ export function LanguageSwitcher({ current }: { current: Locale }) {
       >
         <span className="text-base leading-none">{localeFlags[current]}</span>
         <span className="hidden sm:inline">{current.toUpperCase()}</span>
-        <span className="text-xs text-[var(--faint)]">▾</span>
+        <span className="text-[var(--faint)]"><SketchIcon kind="chevron" size={14} /></span>
       </button>
       {open && (
         <div className="absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-xl border-2 border-[var(--edge)] bg-[var(--surface)] p-1.5 shadow-[4px_4px_0_var(--shadow-ink)]">

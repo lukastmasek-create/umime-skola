@@ -29,35 +29,24 @@ import { SketchIcon, type SketchIconKind } from "@/components/SketchIcons";
 type Tab = { key: string; href: string; label: string; exact?: boolean; noActive?: boolean };
 type Group = { key: string; label: string; items: Tab[] };
 
-// 3D ikona skupiny z Blenderu (umime-art/blender/menu_ikony.py), po najetí se zhoupne.
-const GROUP_ICON: Record<string, string> = {
-  town: "mestecko",
-  courses: "kurzy",
-  settings: "nastaveni",
-  games: "hry",
-  shop: "obchod",
-  study: "studium",
-  extras: "extra",
-  together: "spolu",
-  boards: "zebricky",
+// Každá skupina v navigaci má ručně kreslenou SVG ikonu (src/components/SketchIcons.tsx).
+const GROUP_SVG_ICON: Record<string, SketchIconKind> = {
+  town: "town",
+  courses: "courses",
+  settings: "gear",
+  games: "gamepad",
+  shop: "shop",
+  study: "study",
+  extras: "extras",
+  together: "people",
+  boards: "trophy",
   info: "info",
 };
 
-// Některé skupiny mají místo 3D ikony ručně kreslenou SVG ikonu (src/components/SketchIcons.tsx).
-const GROUP_SVG_ICON: Partial<Record<string, SketchIconKind>> = {
-  games: "gamepad",
-  together: "people",
-  boards: "trophy",
-  settings: "gear",
-};
-
 function GroupIcon({ id, size }: { id: string; size: number }) {
-  const svgKind = GROUP_SVG_ICON[id];
-  if (svgKind) return <SketchIcon kind={svgKind} size={size} className="nav-ico sketch-nav-ico shrink-0" />;
-  const name = GROUP_ICON[id];
-  if (!name) return null;
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src={`/brand/menu/${name}.webp`} alt="" aria-hidden width={size} height={size} draggable={false} className="nav-ico shrink-0" style={{ width: size, height: size }} />;
+  const kind = GROUP_SVG_ICON[id];
+  if (!kind) return null;
+  return <SketchIcon kind={kind} size={size} className="nav-ico sketch-nav-ico shrink-0" />;
 }
 
 function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | null) {
@@ -242,9 +231,9 @@ export function NavTabs({ locale, dict }: { locale: Locale; dict: Dictionary }) 
                   : "border-transparent text-[var(--muted)] hover:border-[var(--edge)] hover:text-[var(--foreground)]"
               }`}
             >
-              <GroupIcon id={group.key} size={22} />
+              <GroupIcon id={group.key} size={18} />
               {group.label}
-              <span aria-hidden className={`nav-caret text-xs ${open ? "nav-caret-open" : ""}`}>▾</span>
+              <span aria-hidden className={`nav-caret ${open ? "nav-caret-open" : ""}`}><SketchIcon kind="chevron" size={14} /></span>
             </button>
             {open && (
               <div className="nav-panel absolute left-0 top-full z-50 mt-1 flex min-w-60 flex-col gap-1 rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] p-2 shadow-[0_6px_0_var(--shadow-ink)]">
@@ -311,9 +300,9 @@ export function MobileMenu({ locale, dict }: { locale: Locale; dict: Dictionary 
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls="mobile-menu"
-        className="btn-bouncy flex min-h-11 items-center gap-2 bg-[var(--surface)] px-3 py-1.5 text-sm font-bold"
+        className="btn-bouncy flex min-h-11 items-center gap-1.5 bg-[var(--surface)] px-2.5 py-1.5 text-sm font-bold sm:gap-2 sm:px-3"
       >
-        <span aria-hidden>{open ? "✕" : "☰"}</span>
+        <span aria-hidden><SketchIcon kind={open ? "close" : "menu"} size={20} /></span>
         {open ? t.closeMenu : t.menu}
       </button>
 
@@ -340,7 +329,7 @@ export function MobileMenu({ locale, dict }: { locale: Locale; dict: Dictionary 
                       <GroupIcon id={group.key} size={28} />
                       {group.label}
                     </span>
-                    <span aria-hidden>{expanded ? "▴" : "▾"}</span>
+                    <span aria-hidden><SketchIcon kind={expanded ? "chevronUp" : "chevron"} size={16} /></span>
                   </button>
                   {expanded && (
                     <div className="mt-2 grid grid-cols-2 gap-2">

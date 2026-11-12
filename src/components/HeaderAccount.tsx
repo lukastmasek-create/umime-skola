@@ -10,6 +10,7 @@ import { fill, getProfileText } from "@/i18n/profile";
 import { useAccount } from "@/lib/use-account";
 import { bannerCss, bannerLiveAttrs, isBannerId, isFrameId } from "@/lib/cosmetics";
 import type { Locale } from "@/i18n/config";
+import { SketchIcon } from "@/components/SketchIcons";
 
 export function HeaderAccount({
   locale,
@@ -72,12 +73,14 @@ export function HeaderAccount({
     return (
       <>
         <Link href={`/${locale}/prihlaseni`} className={`inline-flex whitespace-nowrap ${linkClass}`}>
+          <SketchIcon kind="user" size={18} className="mr-1.5 hidden shrink-0 sm:inline-block" />
           {loginLabel}
         </Link>
         <Link
           href={`/${locale}/registrace`}
           className="btn-bouncy inline-flex whitespace-nowrap bg-[var(--brand-500)] px-2.5 py-1.5 text-xs font-bold text-white sm:px-4 sm:text-sm"
         >
+          <SketchIcon kind="rocket" size={18} className="mr-1.5 hidden shrink-0 sm:inline-block" />
           {registerLabel}
         </Link>
       </>

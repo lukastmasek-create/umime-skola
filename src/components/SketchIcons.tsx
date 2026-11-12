@@ -7,7 +7,8 @@ const ink = "#16132b";
 const C = { yellow: "#ffc933", coral: "#ff8a6b", blue: "#8fd0ff", mint: "#7ee0b0", lilac: "#c9a8ff", paper: "#f7efe0" };
 
 export type SketchIconKind =
-  | "gamepad" | "people" | "trophy" | "gear" | "mail" | "shield" | "scroll" | "camera" | "info" | "star" | "pencil" | "sparkle";
+  | "gamepad" | "people" | "trophy" | "gear" | "mail" | "shield" | "scroll" | "camera" | "info" | "star" | "pencil" | "sparkle"
+  | "town" | "courses" | "shop" | "study" | "extras" | "chevron" | "chevronUp" | "menu" | "close" | "user" | "rocket";
 
 export function SketchIcon({ kind, size = 24, className, style }: { kind: SketchIconKind; size?: number; className?: string; style?: CSSProperties }) {
   const common = {
@@ -127,6 +128,100 @@ export function SketchIcon({ kind, size = 24, className, style }: { kind: Sketch
             <path d="M4 20l1.2-4.4L15.6 4.2a2 2 0 012.8 0l1.4 1.4a2 2 0 010 2.8L9.4 18.8z" fill={C.yellow} />
             <path d="M14.2 5.6l4.2 4.2" fill="none" />
             <path d="M5.2 15.6l3.2 3.2" fill="none" opacity=".5" />
+          </g>
+        </svg>
+      );
+    case "town":
+      return (
+        <svg {...common}>
+          <g {...line}>
+            <path d="M5 11l7-6.5 7 6.5v9.5H5z" fill={C.coral} />
+            <path d="M9.5 20.5v-5h5v5" fill={C.paper} />
+            <rect x="15.5" y="4.5" width="2.4" height="4" fill={C.paper} />
+            <circle cx="12" cy="10.5" r="1.4" fill={C.yellow} />
+          </g>
+        </svg>
+      );
+    case "courses":
+      return (
+        <svg {...common}>
+          <g {...line}>
+            <path d="M12 6.5C10 5 7.4 4.6 3.5 5.2v13c3.9-.6 6.5-.2 8.5 1.3 2-1.5 4.6-1.9 8.5-1.3v-13c-3.9-.6-6.5-.2-8.5 1.3z" fill={C.blue} />
+            <path d="M12 6.5v13.5" fill="none" />
+            <path d="M6.5 9.5c1.6-.3 3-.1 4 .5M6.5 12.5c1.6-.3 3-.1 4 .5M13.5 10c1-.6 2.4-.8 4-.5" fill="none" opacity=".6" />
+          </g>
+        </svg>
+      );
+    case "shop":
+      return (
+        <svg {...common}>
+          <g {...line}>
+            <path d="M5 8.5h14l-1.2 11.2a1.5 1.5 0 01-1.5 1.3H7.7a1.5 1.5 0 01-1.5-1.3z" fill={C.coral} />
+            <path d="M9 10.5V7a3 3 0 016 0v3.5" fill="none" />
+            <circle cx="9" cy="13" r="1" fill={ink} />
+            <circle cx="15" cy="13" r="1" fill={ink} />
+          </g>
+        </svg>
+      );
+    case "study":
+      return (
+        <svg {...common}>
+          <g {...line}>
+            <path d="M12 4l9 4.2-9 4.2-9-4.2z" fill={C.lilac} />
+            <path d="M6.5 10.4V15c0 1.7 2.5 3 5.5 3s5.5-1.3 5.5-3v-4.6" fill={C.lilac} />
+            <path d="M20.5 8.2V14" fill="none" />
+            <circle cx="20.5" cy="15.4" r="1.2" fill={C.yellow} />
+          </g>
+        </svg>
+      );
+    case "extras":
+      return (
+        <svg {...common}>
+          <g {...line}>
+            <path d="M5 5.5h4.2a2.1 2.1 0 114.2 0H17.6v4.2a2.1 2.1 0 110 4.2v4.6H13.4a2.1 2.1 0 10-4.2 0H5z" fill={C.yellow} />
+          </g>
+        </svg>
+      );
+    case "chevron":
+      return (
+        <svg {...common}>
+          <path d="M6 9.5l6 6 6-6" stroke={ink} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case "chevronUp":
+      return (
+        <svg {...common}>
+          <path d="M6 14.5l6-6 6 6" stroke={ink} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case "menu":
+      return (
+        <svg {...common}>
+          <path d="M4.5 7h15M4.5 12h15M4.5 17h15" stroke={ink} strokeWidth="2.6" strokeLinecap="round" />
+        </svg>
+      );
+    case "close":
+      return (
+        <svg {...common}>
+          <path d="M6 6l12 12M18 6L6 18" stroke={ink} strokeWidth="2.8" strokeLinecap="round" />
+        </svg>
+      );
+    case "user":
+      return (
+        <svg {...common}>
+          <g {...line}>
+            <circle cx="12" cy="8.5" r="3.9" fill={C.yellow} />
+            <path d="M4.5 20.5c.6-4 3.6-6.3 7.5-6.3s6.9 2.3 7.5 6.3z" fill={C.yellow} />
+          </g>
+        </svg>
+      );
+    case "rocket":
+      return (
+        <svg {...common}>
+          <g {...line}>
+            <path d="M14.5 3.5c3.2 0 5.7 1.2 6 6-.3 3.4-3.2 6.2-6.4 7l-3.8-3.8c.8-3.2 3.6-6.1 7.2-6.2z" fill={C.mint} />
+            <path d="M9.5 9.5l-3.4.9-2.6 3 3.3.3M14.5 14.5l-.9 3.4-3 2.6-.3-3.3" fill="none" />
+            <circle cx="15.2" cy="8.8" r="1.4" fill={ink} />
           </g>
         </svg>
       );
