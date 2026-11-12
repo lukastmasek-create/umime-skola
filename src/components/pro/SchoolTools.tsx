@@ -6,11 +6,12 @@ import type { Locale } from "@/i18n/config";
 import { getProToolsText, type ProToolsText } from "@/i18n/pro-tools";
 import { SUBJECTS } from "@/lib/taxonomy";
 import { errorText, imageToDataUrl, proFetch } from "./api";
+import { DilnaTool } from "./DilnaTool";
 
 type Team = { id: string; name: string; members: number };
 type Q = { prompt: string; options: string[]; correctIndex: number; explanation: string };
-type Tab = "gaps" | "live" | "test" | "variants" | "exit" | "cover" | "meeting" | "pace" | "content" | "support";
-const TABS: Tab[] = ["gaps", "live", "test", "variants", "exit", "cover", "meeting", "pace", "content", "support"];
+type Tab = "gaps" | "live" | "test" | "variants" | "exit" | "cover" | "meeting" | "pace" | "content" | "dilna" | "support";
+const TABS: Tab[] = ["gaps", "live", "test", "variants", "exit", "cover", "meeting", "pace", "content", "dilna", "support"];
 const heading = { fontFamily: "var(--font-heading)" } as const;
 const input = "rounded-xl border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-2 text-sm";
 const primary = "btn-bouncy btn-lg bg-[var(--brand-500)] font-bold text-white disabled:opacity-50";
@@ -67,6 +68,7 @@ export function SchoolTools({ locale }: { locale: Locale }) {
         {tab === "meeting" && <Meeting {...common} />}
         {tab === "pace" && <Pace {...common} />}
         {tab === "content" && <OwnContent {...common} />}
+        {tab === "dilna" && <DilnaTool locale={locale} />}
         {tab === "support" && <Support {...common} />}
       </div>
     </div>

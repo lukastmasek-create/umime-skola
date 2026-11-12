@@ -50,6 +50,7 @@ model User {
   duelsReceived    Duel[]         @relation("DuelOpponent")
   leagueEntries    LeagueEntry[]
   questionSets QuestionSet[]
+  teacherGames TeacherGame[]
   hostedRooms  LiveRoom[]
   livePlayers  LivePlayer[]
   contactMessages ContactMessage[]
@@ -757,4 +758,18 @@ model ShopReview {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Hry z Učitelské dílny: učitel je vytvořil z textu nebo fotky a uložil do knihovny.
+model TeacherGame {
+  id        String   @id @default(cuid())
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  title     String
+  kind      String   @default("pairs")
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId, updatedAt])
 }
