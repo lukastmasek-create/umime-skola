@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { hasPro } from "@/lib/pro-server";
 import { ExpandCard } from "@/components/ExpandCard";
 import { getProText } from "@/i18n/pro";
+import { getProExtra } from "@/i18n/pro-extra";
 import { isLocale, type Locale } from "@/i18n/config";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -30,7 +31,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
   }
 
   const tiers = [t.tiers.individual, t.tiers.family, t.tiers.school];
-  const extra = t.extra!;
+  const extra = getProExtra(locale as Locale);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-16">
@@ -98,6 +99,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
                 <span className="text-3xl font-extrabold tabular-nums">{extra.plans[i].price}</span>
                 <span className="text-xs text-[var(--muted)]">{extra.plans[i].per}</span>
               </p>
+              {extra.plans[i].yearly && <p className="mb-3 text-xs font-semibold text-[var(--brand-600)]">{extra.plans[i].yearly}</p>}
               <ul className="grid gap-2">
                 {extra.plans[i].perks.map((perk) => (
                   <li key={perk} className="flex items-start gap-2 border-t border-[var(--edge)] pt-2 text-sm">

@@ -1,5 +1,6 @@
 import { withFallbacks } from "./config";
 import type { Locale } from "./config";
+import { getProExtra } from "./pro-extra";
 
 export type ProText = {
   nav: string;
@@ -20,16 +21,6 @@ export type ProText = {
   availability: string;
   cta: string;
   ctaText: string;
-  // Výhody a ceny; chybějící jazyky se berou z angličtiny.
-  extra?: ProExtra;
-};
-
-export type ProExtra = {
-  benefitsTitle: string;
-  benefits: { icon: string; title: string; text: string }[];
-  plans: { price: string; per: string; perks: string[] }[]; // pořadí: jednotlivec, rodina, škola
-  trial: string;
-  note: string;
 };
 
 type TierText = { title: string; text: string };
@@ -62,27 +53,6 @@ const cs: ProText = {
   availability: "Předplatné se připravuje a zatím ho nelze koupit. Ceny jsou orientační a upřesníme je, až bude možné platit.",
   cta: "Napsat nám",
   ctaText: "Máš otázku nebo zájem o tarif pro školu či rodinu? Ozvi se.",
-  extra: {
-    benefitsTitle: "Co je v UčímePRO nového",
-    benefits: [
-      { icon: "🤖", title: "AI doučovač", text: "Vysvětlí úlohu krok za krokem, jinými slovy a tolikrát, kolikrát potřebuješ. Neřekne ti výsledek, dovede tě k němu." },
-      { icon: "🗓️", title: "Osobní plán učení", text: "Každý týden dostaneš plán na míru podle toho, co ti nejde. Stačí 15 minut denně." },
-      { icon: "🎯", title: "Příprava na přijímačky a testy", text: "Zkoušky nanečisto s časovým limitem, bodováním a odhadem výsledku. Je to samostatná sekce, kurzy zůstávají zdarma." },
-      { icon: "📷", title: "Fotka úlohy → podobné příklady", text: "Vyfoť úlohu z učebnice nebo sešitu a dostaneš pět podobných příkladů na procvičení stejného postupu." },
-      { icon: "🎤", title: "Ústní zkoušení", text: "Doučovač tě nahlas vyzkouší z dějepisu, přírodopisu nebo zeměpisu a ohodnotí, co sedělo a co chybělo." },
-      { icon: "📒", title: "Sešit chyb", text: "Každá tvoje chyba se uloží s vysvětlením, proč. Z nich se sestaví osobní sešit k opakování i k vytištění." },
-      { icon: "📝", title: "Import z poznámek", text: "Nahraj poznámky nebo fotku a udělají se z nich kartičky a kvízy na míru." },
-      { icon: "🗣️", title: "Hlasové procvičování výslovnosti", text: "Řekni slovíčko nahlas a hned uvidíš, jak jsi na tom s výslovností v angličtině, němčině a dalších jazycích." },
-      { icon: "📴", title: "Offline režim", text: "Stáhni si lekce a uč se i ve vlaku nebo na chatě bez internetu." },
-    ],
-    plans: [
-      { price: "100 Kč", per: "měsíčně", perks: ["1 účet", "Všechny výhody PRO pro jednotlivce", "Zrušení kdykoli"] },
-      { price: "250 Kč", per: "měsíčně", perks: ["Až 5 členů rodiny s plným PRO", "Dětský bezpečný režim", "Začínat s dítětem: tipy, jak pomoci, aniž bys rušil/a", "Plán na prázdniny, ať se po létě nic nezapomene", "Rodinný souboj s handicapem pro vyrovnané šance"] },
-      { price: "12 000 Kč", per: "ročně za školu", perks: ["Mapa mezer třídy s hotovou 20min lekcí na další hodinu", "Souběžná hodina: třída hraje týmově, učitel vidí, kdo se zasekl", "Nepsané testy podle RVP s klíčem a hodnocením", "Každý žák má jiné zadání, opisování nemá smysl", "Exit ticket za 2 minuty na konci hodiny", "Kamarád pro suplování: hodina zadaná jedním kliknutím", "Průvodce rodičovskými schůzkami: stránka o každém žákovi", "Pomalejší a rychlejší tempo bez nálepek", "Vlastní obsah školy z nahraných učebnic", "Zaškolení učitelů a přednostní podpora"] },
-    ],
-    trial: "30 dní zdarma",
-    note: "Zdarma zůstává všechno, co už na webu je, včetně kurzů, bodů, kola štěstí a rodičovského panelu. PRO přidává nové funkce. Ceny jsou včetně DPH.",
-  },
 };
 
 const en: ProText = {
@@ -113,27 +83,6 @@ const en: ProText = {
   availability: "The subscription is being prepared and cannot be purchased yet. Prices and plan terms will be added once payments are possible.",
   cta: "Contact us",
   ctaText: "Have a question or interest in a plan for a school or family? Get in touch.",
-  extra: {
-    benefitsTitle: "What is new in UčímePRO",
-    benefits: [
-      { icon: "🤖", title: "AI tutor", text: "Explains a task step by step, in other words, as many times as you need. It does not give you the answer, it leads you to it." },
-      { icon: "🗓️", title: "Personal study plan", text: "Every week you get a plan made for you based on what you find hard. 15 minutes a day is enough." },
-      { icon: "🎯", title: "Entrance exam and test prep", text: "Mock exams with a time limit, scoring and an estimate of your result. It is a separate section, courses stay free." },
-      { icon: "📷", title: "Photo of a task → similar examples", text: "Take a photo of a task from a textbook or notebook and get five similar examples to practise the same method." },
-      { icon: "🎤", title: "Oral examination", text: "The tutor quizzes you out loud in history, biology or geography and rates what was right and what was missing." },
-      { icon: "📒", title: "Mistake notebook", text: "Every mistake you make is saved with an explanation of why. They build a personal notebook for review or printing." },
-      { icon: "📝", title: "Import from notes", text: "Upload your notes or a photo and they become flashcards and quizzes made for you." },
-      { icon: "🗣️", title: "Voice pronunciation practice", text: "Say a word out loud and see right away how your pronunciation is in English, German and other languages." },
-      { icon: "📴", title: "Offline mode", text: "Download lessons and learn on a train or at a cabin without internet." },
-    ],
-    plans: [
-      { price: "CZK 100", per: "per month", perks: ["1 account", "All PRO features for individuals", "Cancel anytime"] },
-      { price: "CZK 250", per: "per month", perks: ["Up to 5 family members with full PRO", "Child safe mode", "Start with the child: tips on how to help without interrupting", "Holiday plan so nothing is forgotten over the summer", "Family duel with a handicap for fair chances"] },
-      { price: "CZK 12,000", per: "per year per school", perks: ["Class gap map with a ready 20-minute lesson for the next class", "Live lesson: the class plays in teams and the teacher sees who is stuck", "Unseen tests based on the curriculum with key and grading", "Every pupil gets a different task, so copying is pointless", "2-minute exit ticket at the end of a lesson", "Cover teacher buddy: a lesson assigned with one click", "Parent-meeting guide: a page about each pupil", "Slower and faster pace with no labels", "School's own content from uploaded textbooks", "Teacher training and priority support"] },
-    ],
-    trial: "30 days free",
-    note: "Everything already on the site stays free, including courses, points, the wheel of fortune and the parent panel. PRO adds new features. Prices include VAT.",
-  },
 };
 
 const de: ProText = {
@@ -312,7 +261,7 @@ const texts: Record<Locale, ProText> = {
 
 export function getProText(locale: Locale): ProText {
   const t = texts[locale] ?? cs;
-  if (locale === "cs") return t;
-  // Obsah nových funkcí se zatím překládá jen do angličtiny; ostatní jazyky ho berou z ní.
-  return { ...t, subtitle: en.subtitle, rows: en.rows, extra: en.extra, availability: en.availability };
+  const x = getProExtra(locale);
+  // Podtitul, srovnání a dostupnost se berou z pro-extra.ts, kde je celá nabídka ve všech jazycích.
+  return { ...t, subtitle: x.subtitle, rows: x.rows, availability: x.availability };
 }
