@@ -77,24 +77,26 @@ const CITY_PREVIEW: Record<string, string> = {
 };
 const CITY_MODELS = new Set(["christmas_tree", "windmill", "ferris_wheel", "carousel", "lighthouse", "rocket_pad"]);
 
-export function Preview({ item, locale, avatar, heightClass = "h-28" }: { item: ShopItem; locale: Locale; avatar: string | null; heightClass?: string }) {
-  const box = `flex ${heightClass} items-center justify-center rounded-xl border-2 border-[var(--edge)]`;
+// plain: bez rámečku a podkladu, ilustrace leží přímo na barevné kartě (trh hráčů).
+export function Preview({ item, locale, avatar, heightClass = "h-28", plain = false }: { item: ShopItem; locale: Locale; avatar: string | null; heightClass?: string; plain?: boolean }) {
+  const box = `flex ${heightClass} items-center justify-center rounded-xl ${plain ? "" : "border-2 border-[var(--edge)]"}`;
+  const well = plain ? "" : " bg-[var(--surface-muted)]";
   switch (item.kind) {
     case "avatar":
       return (
-        <div className={`${box} bg-[var(--surface-muted)]`}>
+        <div className={`${box}${well}`}>
           <Avatar id={item.ref} size={84} />
         </div>
       );
     case "frame":
       return (
-        <div className={`${box} bg-[var(--surface-muted)]`}>
+        <div className={`${box}${well}`}>
           <Avatar id={avatar ?? "robot"} size={72} frame={isFrameId(item.ref) ? item.ref : null} />
         </div>
       );
     case "title":
       return (
-        <div className={`${box} bg-[var(--surface-muted)]`}>
+        <div className={`${box}${well}`}>
           <span className="pill bg-[var(--accent-yellow)] px-4 py-1.5 text-base text-[#16132b]">{item.names[locale]}</span>
         </div>
       );
@@ -102,7 +104,7 @@ export function Preview({ item, locale, avatar, heightClass = "h-28" }: { item: 
       return <div {...bannerAttrs(item.ref)} className={`${box} banner-anim`} style={{ background: bannerCss(item.ref) }} />;
     case "pet":
       return (
-        <div className={`${box} bg-[var(--surface-muted)]`}>
+        <div className={`${box}${well}`}>
           <PetArt species="cat" stage={2} mood="happy" size={104} accessory={item.ref} />
         </div>
       );

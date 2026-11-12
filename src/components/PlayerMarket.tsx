@@ -25,6 +25,16 @@ type Draft = { itemId: string; price: number; want: string | null };
 const WISHLIST_KEY = "shop-wishlist"; // sdílené s klasickým seznamem zboží
 const CATS: Cat[] = ["all", ...MARKET_KINDS];
 const WORLD_COLOR: Record<CatalogWorld, string> = { pirate: "#2a78d6", space: "#6250d6", forest: "#1baf7a", castle: "#eda100", sea: "#29a3ff", other: "#8a849f" };
+// Karty ve stylu herních dlaždic z homepage (lobby): barevný přechod podle světa předmětu, styl v globals.css (.market-card).
+const WORLD_GRAD: Record<CatalogWorld, string> = {
+  pirate: "from-[#2a78d6] to-[#0a2a5c]",
+  space: "from-[#6250d6] to-[#1a0d4d]",
+  forest: "from-[#1baf7a] to-[#0c3b2c]",
+  castle: "from-[#eda100] to-[#7a4a0a]",
+  sea: "from-[#29a3ff] to-[#0a2b4d]",
+  other: "from-[#8a849f] to-[#2a2640]",
+};
+const gameCard = (world: CatalogWorld) => `market-card bg-gradient-to-br ${WORLD_GRAD[world]}`;
 
 const ring = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-500)]";
 const thumb =
@@ -182,7 +192,6 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
   };
 
   const grid = "grid grid-cols-2 gap-3 md:grid-cols-3";
-  const tile = "relative flex flex-col overflow-hidden rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] shadow-[0_3px_0_var(--shadow-ink)] transition-transform hover:-translate-y-0.5";
   const panel = "rounded-2xl border-2 border-[var(--edge)] bg-[var(--surface)] p-4";
   const heading = "text-sm font-extrabold";
   const pillBtn = `inline-flex items-center justify-center gap-1.5 rounded-full border-2 border-[var(--brand-500)] bg-[var(--surface)] px-3 py-1 text-sm font-extrabold text-[var(--brand-600)] transition-colors hover:bg-[var(--brand-500)] hover:text-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-[var(--surface)] disabled:hover:text-[var(--brand-600)] ${ring}`;
@@ -514,27 +523,27 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
                       const want = o.wantId ? tradable(o.wantId) : null;
                       const blocked = busy || !loggedIn || have || (want ? !canGive.has(want.id) : (shop?.points ?? 0) < o.price);
                       return (
-                        <article key={o.id} className={tile}>
-                          <div className="relative p-2">
-                            <Preview item={item} locale={locale} avatar={avatar} heightClass="h-36" />
+                        <article key={o.id} className={gameCard(itemWorld(item.id))}>
+                          <div className="relative">
+                            <Preview item={item} locale={locale} avatar={avatar} heightClass="h-36" plain />
                             {topBadge(item)}
                             {heart(item)}
                           </div>
-                          <div className="flex flex-1 flex-col items-center gap-1.5 px-3 pb-3 text-center">
-                            <h3 className="w-full truncate text-sm font-extrabold">{item.names[locale]}</h3>
-                            <p className="flex max-w-full items-center gap-1.5 text-xs text-[var(--muted)]">
-                              <span aria-hidden className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-[var(--brand-500)] text-[10px] font-bold text-white">
+                          <div className="mt-auto flex flex-col gap-1 pt-3">
+                            <h3 className="truncate text-lg font-bold leading-tight">{item.names[locale]}</h3>
+                            <p className="flex max-w-full items-center gap-1.5 text-xs text-white/75">
+                              <span aria-hidden className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white/25 text-[10px] font-bold text-white">
                                 {o.seller.slice(0, 1).toUpperCase()}
                               </span>
                               <span className="truncate">{t.seller.replace("{name}", o.seller)}</span>
                             </p>
-                            {want && <p className="w-full truncate text-xs font-bold">{c.wants.replace("{name}", want.names[locale])}</p>}
+                            {want && <p className="truncate text-xs font-bold text-white/90">{c.wants.replace("{name}", want.names[locale])}</p>}
                             <button
                               type="button"
                               disabled={blocked}
                               aria-label={`${have ? t.owned : want ? t.swap.button : t.buy}: ${item.names[locale]}${want ? "" : ` (${o.price})`}`}
                               onClick={() => act({ action: "buy", id: o.id, seller: o.sellerId }, want ? t.swap.done : t.done.buy)}
-                              className={`${pillBtn} mt-auto`}
+                              className="market-btn mt-2 self-start"
                             >
                               {have ? (
                                 t.owned
@@ -571,14 +580,14 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
               const item = tradable(o.itemId)!;
               const want = o.wantId ? tradable(o.wantId) : null;
               return (
-                <article key={o.id} className={tile}>
-                  <div className="p-2">
-                    <Preview item={item} locale={locale} avatar={avatar} heightClass="h-36" />
+                <article key={o.id} className={gameCard(itemWorld(item.id))}>
+                  <div>
+                    <Preview item={item} locale={locale} avatar={avatar} heightClass="h-36" plain />
                   </div>
-                  <div className="flex flex-1 flex-col items-center gap-1.5 px-3 pb-3 text-center">
-                    <h3 className="w-full truncate text-sm font-extrabold">{item.names[locale]}</h3>
-                    {want ? <span className="w-full truncate text-xs font-bold">{c.wants.replace("{name}", want.names[locale])}</span> : price(o.price)}
-                    <button type="button" disabled={busy} onClick={() => act({ action: "cancel", id: o.id }, t.done.cancel)} className={`${pillBtn} mt-auto`}>
+                  <div className="mt-auto flex flex-col gap-1 pt-3">
+                    <h3 className="truncate text-lg font-bold leading-tight">{item.names[locale]}</h3>
+                    {want ? <span className="truncate text-xs font-bold text-white/90">{c.wants.replace("{name}", want.names[locale])}</span> : <span>{price(o.price)}</span>}
+                    <button type="button" disabled={busy} onClick={() => act({ action: "cancel", id: o.id }, t.done.cancel)} className="market-btn market-btn-alt mt-2 self-start">
                       {t.cancel}
                     </button>
                   </div>
@@ -702,12 +711,12 @@ export function PlayerMarket({ locale, onChange }: { locale: Locale; onChange?: 
                       setSell({ itemId: item.id, price: item.price, want: null });
                       window.setTimeout(() => draftRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 0);
                     }}
-                    className={`${tile} text-left ${on ? "ring-4 ring-[var(--accent-yellow)]" : ""} ${ring}`}
+                    className={`${gameCard(itemWorld(item.id))} text-left ${on ? "ring-4 ring-[var(--accent-yellow)] ring-offset-2 ring-offset-[var(--surface-muted)]" : ""} ${ring}`}
                   >
-                    <div className="p-2">
-                      <Preview item={item} locale={locale} avatar={avatar} heightClass="h-32" />
+                    <div>
+                      <Preview item={item} locale={locale} avatar={avatar} heightClass="h-32" plain />
                     </div>
-                    <span className="truncate px-3 pb-3 text-center text-sm font-extrabold">{item.names[locale]}</span>
+                    <span className="mt-auto truncate pt-3 text-base font-bold leading-tight">{item.names[locale]}</span>
                   </button>
                 );
               })}
