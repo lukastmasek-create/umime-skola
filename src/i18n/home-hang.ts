@@ -1,4 +1,3 @@
-import { withFallbacks } from "./config";
 import type { Locale } from "./config";
 
 // Panel se zavěšenými štítky na úvodní stránce (jen dekorativní text).
@@ -65,7 +64,68 @@ const ru: HomeHangText = {
   tags: ["Докажи, иначе не считается", "Идеальный ритм", "Всё стабильно", "Ошибка исправлена", "Готово"],
 };
 
-const all = withFallbacks({ cs, en, de, ru });
+const uk: HomeHangText = {
+  feed: [
+    "Ти знайшов помилку. Чудово!",
+    "Виправлено, йдемо далі",
+    "Цього разу ледь-ледь",
+    "Серія триває: 5 правильних підряд",
+    "На помилках вчаться найшвидше",
+    "Нова спроба, нова удача",
+    "Мозок щойно трохи підріс",
+    "Тепер ти це знаєш!",
+  ],
+  title: "Помилки трапляються щодня",
+  lead: "Помилятися нормально, але з правильним підходом хаосу не буде.",
+  tags: ["Доведи, інакше не рахується", "Ідеальний ритм", "Усе сходиться", "Помилку виправлено", "Виконано"],
+};
+const ja: HomeHangText = {
+  feed: [
+    "ミスを見つけたね。すごい！",
+    "直したので、次へ進もう",
+    "今回はきわどかった",
+    "連続記録継続中: 5問連続正解",
+    "失敗から学ぶのがいちばん早い",
+    "新しい挑戦、新しいチャンス",
+    "脳が少しだけ成長した",
+    "もうわかったね！",
+  ],
+  title: "ミスは毎日起きるもの",
+  lead: "間違えるのは普通のこと。正しい進め方をすれば、混乱にはなりません。",
+  tags: ["証明がなければ認めない", "リズムばっちり", "すべて順調", "修正済み", "完了"],
+};
+const es: HomeHangText = {
+  feed: [
+    "Encontraste un error. ¡Genial!",
+    "Arreglado, a por el siguiente",
+    "Esta vez por poco",
+    "Racha en marcha: 5 seguidas bien",
+    "Equivocarse es la forma más rápida de aprender",
+    "Nuevo intento, nueva suerte",
+    "Tu cerebro acaba de crecer un poco",
+    "¡Ahora ya lo sabes!",
+  ],
+  title: "Los errores pasan cada día",
+  lead: "Equivocarse es normal, pero con el método correcto no se convierte en caos.",
+  tags: ["Demuéstralo o no vale", "Ritmo perfecto", "Todo en orden", "Error corregido", "Hecho"],
+};
+const fr: HomeHangText = {
+  feed: [
+    "Tu as repéré une erreur. Bravo !",
+    "Corrigé, on passe à la suite",
+    "Cette fois, c'était serré",
+    "La série continue : 5 bonnes réponses d'affilée",
+    "On apprend le plus vite de ses erreurs",
+    "Nouvel essai, nouvelle chance",
+    "Ton cerveau vient de grandir un peu",
+    "Maintenant tu l'as !",
+  ],
+  title: "Les erreurs arrivent chaque jour",
+  lead: "Se tromper est normal, mais avec la bonne méthode, ça ne tourne pas au chaos.",
+  tags: ["La preuve avant tout", "Rythme parfait", "Tout est stable", "Erreur corrigée", "Terminé"],
+};
+
+const all: Record<Locale, HomeHangText> = { cs, en, de, ru, uk, ja, es, fr };
 export function getHomeHangText(locale: Locale): HomeHangText {
   return all[locale];
 }

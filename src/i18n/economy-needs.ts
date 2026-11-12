@@ -167,6 +167,146 @@ const ru: NeedsText = {
   },
 };
 
+const uk: NeedsText = {
+  title: "Життєві потреби",
+  intro: "Купуй потреби наперед, на кілька днів. Щодня запас зменшується. Коли запас порожній, заробіток падає.",
+  dailyCost: "Разом на день: {p}",
+  emptyCount: "Порожні запаси: {n}. Кожна потреба має свій ефект, див. картки нижче.",
+  allStocked: "Усе є в запасі.",
+  days: "{n} д",
+  empty: "Закінчилось",
+  full: "Повний запас",
+  buyDay: "+1 день",
+  fill: "Поповнити до {n} д",
+  bought: "Куплено.",
+  essential: "Необхідне",
+  common: "Звичайне",
+  perDay: "{p} / день",
+  items: {
+    food: { name: "Їжа", hint: "Сніданок, обід, вечеря.", effect: "Без їжі енергія відновлюється вдвічі повільніше." },
+    drink: { name: "Напої", hint: "Вода, кава, чай.", effect: "Без напоїв енергія щогодини зменшується." },
+    clothing: { name: "Одяг", hint: "Білизна, взуття, щось для роботи й на вулицю.", effect: "Без одягу заробіток на 15 % нижчий." },
+    housing: { name: "Житло і рахунки", hint: "Оренда, світло, вода, інтернет.", effect: "Несплачені рахунки щодня додають штраф, що дорівнює оренді." },
+    transport: { name: "Транспорт", hint: "Громадський транспорт, пальне або обслуговування авто.", effect: "Без транспорту ти йдеш на зміну пішки, це коштує більше енергії." },
+    health: { name: "Гігієна і здоров'я", hint: "Засоби гігієни, ліки, відвідування лікаря.", effect: "Без догляду за здоров'ям енергія не піднімається вище 70 %." },
+    leisure: { name: "Дозвілля", hint: "Кіно, кафе, хобі.", effect: "Без дозвілля енергія відновлюється на п'яту частину повільніше." },
+  },
+  boostsTitle: "Витратні товари",
+  boostsHint: "Разові покупки з тимчасовим ефектом. Ефект згасає сам.",
+  boostLeft: "Ефект ще {t}",
+  boostNone: "Зараз ефекту немає.",
+  buyBoost: "Купити",
+  boosts: {
+    energy_drink: { name: "Енергетик", effect: "Подвійне відновлення енергії на 30 хв." },
+    cinema: { name: "Кіно", effect: "+10 % заробітку на 2 години." },
+  },
+};
+
+const ja: NeedsText = {
+  title: "生活必需品",
+  intro: "必需品は数日分まとめて前もって買いましょう。毎日ストックは減ります。ストックが空になると収入が下がります。",
+  dailyCost: "1日の合計コスト: {p}",
+  emptyCount: "空のストック: {n}。必需品ごとに効果が違うので、下のカードを見てください。",
+  allStocked: "すべて在庫があります。",
+  days: "{n} 日分",
+  empty: "切れ",
+  full: "満タン",
+  buyDay: "+1 日",
+  fill: "{n} 日分まで補充",
+  bought: "購入しました。",
+  essential: "必須",
+  common: "一般",
+  perDay: "{p} / 日",
+  items: {
+    food: { name: "食事", hint: "朝食、昼食、夕食。", effect: "食事がないと、エネルギーの回復が半分になります。" },
+    drink: { name: "飲み物", hint: "水、コーヒー、お茶。", effect: "飲み物がないと、毎時間エネルギーが減ります。" },
+    clothing: { name: "衣類", hint: "下着、靴、仕事用と外出用の服。", effect: "衣類がないと、収入が15%下がります。" },
+    housing: { name: "住居と光熱費", hint: "家賃、電気、水道、インターネット。", effect: "支払わないと、家賃と同額の罰金が毎日加算されます。" },
+    transport: { name: "交通", hint: "公共交通機関、ガソリン、車の維持費。", effect: "交通手段がないと徒歩でシフトに行くため、より多くのエネルギーを使います。" },
+    health: { name: "衛生と健康", hint: "日用品、薬、病院の受診。", effect: "健康管理をしないと、エネルギーは70%までしか上がりません。" },
+    leisure: { name: "娯楽", hint: "映画、カフェ、趣味。", effect: "娯楽がないと、エネルギーの回復が5分の1遅くなります。" },
+  },
+  boostsTitle: "消耗品",
+  boostsHint: "一時的な効果がある使い切りの商品です。効果は時間が経つと自然に切れます。",
+  boostLeft: "効果の残り {t}",
+  boostNone: "今は効果がありません。",
+  buyBoost: "購入",
+  boosts: {
+    energy_drink: { name: "エナジードリンク", effect: "30分間、エネルギーの回復が2倍になります。" },
+    cinema: { name: "映画", effect: "2時間、収入が+10%になります。" },
+  },
+};
+
+const es: NeedsText = {
+  title: "Necesidades de la vida",
+  intro: "Compra tus necesidades con antelación, para unos días. Cada día el stock baja. Cuando un stock se vacía, tus ingresos caen.",
+  dailyCost: "Coste diario total: {p}",
+  emptyCount: "Stock vacío: {n}. Cada necesidad tiene un efecto distinto, mira las tarjetas de abajo.",
+  allStocked: "Tienes de todo en stock.",
+  days: "{n} d",
+  empty: "Agotado",
+  full: "Stock lleno",
+  buyDay: "+1 día",
+  fill: "Completar hasta {n} d",
+  bought: "Comprado.",
+  essential: "Imprescindible",
+  common: "Normal",
+  perDay: "{p} / día",
+  items: {
+    food: { name: "Comida", hint: "Desayuno, almuerzo, cena.", effect: "Sin comida, la energía se recupera solo a la mitad de velocidad." },
+    drink: { name: "Bebidas", hint: "Agua, café, té.", effect: "Sin bebidas, la energía baja cada hora." },
+    clothing: { name: "Ropa", hint: "Ropa interior, zapatos, algo para el trabajo y para salir.", effect: "Sin ropa, los ingresos son un 15 % menores." },
+    housing: { name: "Vivienda y facturas", hint: "Alquiler, luz, agua, internet.", effect: "Las facturas sin pagar suman cada día una multa igual al alquiler." },
+    transport: { name: "Transporte", hint: "Transporte público, gasolina o mantenimiento del coche.", effect: "Sin transporte vas a pie al turno, lo que gasta más energía." },
+    health: { name: "Higiene y salud", hint: "Productos de higiene, medicinas, visita al médico.", effect: "Sin cuidado de la salud, la energía no puede pasar del 70 %." },
+    leisure: { name: "Ocio", hint: "Cine, cafetería, aficiones.", effect: "Sin ocio, la energía se recupera una quinta parte más despacio." },
+  },
+  boostsTitle: "Productos de consumo",
+  boostsHint: "Compras únicas con efecto temporal. El efecto se acaba solo.",
+  boostLeft: "Efecto restante: {t}",
+  boostNone: "Ahora mismo no hay ningún efecto.",
+  buyBoost: "Comprar",
+  boosts: {
+    energy_drink: { name: "Bebida energética", effect: "Recuperación de energía doble durante 30 min." },
+    cinema: { name: "Cine", effect: "+10 % de ingresos durante 2 horas." },
+  },
+};
+
+const fr: NeedsText = {
+  title: "Besoins de la vie",
+  intro: "Achète tes besoins à l'avance, pour quelques jours. Chaque jour le stock diminue. Quand un stock est vide, tes revenus baissent.",
+  dailyCost: "Coût quotidien total : {p}",
+  emptyCount: "Stocks vides : {n}. Chaque besoin a un effet différent, voir les cartes ci-dessous.",
+  allStocked: "Tout est en stock.",
+  days: "{n} j",
+  empty: "Épuisé",
+  full: "Stock plein",
+  buyDay: "+1 jour",
+  fill: "Compléter à {n} j",
+  bought: "Acheté.",
+  essential: "Indispensable",
+  common: "Courant",
+  perDay: "{p} / jour",
+  items: {
+    food: { name: "Nourriture", hint: "Petit-déjeuner, déjeuner, dîner.", effect: "Sans nourriture, l'énergie ne se recharge qu'à moitié." },
+    drink: { name: "Boissons", hint: "Eau, café, thé.", effect: "Sans boissons, l'énergie baisse chaque heure." },
+    clothing: { name: "Vêtements", hint: "Sous-vêtements, chaussures, de quoi aller au travail et sortir.", effect: "Sans vêtements, les revenus sont inférieurs de 15 %." },
+    housing: { name: "Logement et factures", hint: "Loyer, électricité, eau, internet.", effect: "Les factures impayées ajoutent chaque jour une amende égale au loyer." },
+    transport: { name: "Transports", hint: "Transports en commun, carburant ou entretien de la voiture.", effect: "Sans transport, tu vas à pied au service, ce qui coûte plus d'énergie." },
+    health: { name: "Hygiène et santé", hint: "Produits d'hygiène, médicaments, visite chez le médecin.", effect: "Sans soins, l'énergie ne peut pas dépasser 70 %." },
+    leisure: { name: "Loisirs", hint: "Cinéma, café, passe-temps.", effect: "Sans loisirs, l'énergie se recharge un cinquième plus lentement." },
+  },
+  boostsTitle: "Consommables",
+  boostsHint: "Achats ponctuels à effet temporaire. L'effet s'estompe tout seul.",
+  boostLeft: "Effet restant : {t}",
+  boostNone: "Aucun effet pour le moment.",
+  buyBoost: "Acheter",
+  boosts: {
+    energy_drink: { name: "Boisson énergisante", effect: "Recharge d'énergie doublée pendant 30 min." },
+    cinema: { name: "Cinéma", effect: "+10 % de revenus pendant 2 heures." },
+  },
+};
+
 export function getEconomyNeeds(locale: Locale): NeedsText {
   switch (locale) {
     case "cs":
@@ -175,6 +315,14 @@ export function getEconomyNeeds(locale: Locale): NeedsText {
       return de;
     case "ru":
       return ru;
+    case "uk":
+      return uk;
+    case "ja":
+      return ja;
+    case "es":
+      return es;
+    case "fr":
+      return fr;
     default:
       return en;
   }

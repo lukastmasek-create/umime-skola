@@ -51,6 +51,46 @@ const ru: EconomyNewsText = {
   seen: "Понятно",
 };
 
+const uk: EconomyNewsText = {
+  title: "Економіка: новини",
+  empty: "Поки немає оголошень. Заснуй першу компанію!",
+  founded: "{actor} заснував(ла) компанію {company}",
+  overtook: "{actor} обійшов(ла) гравця {target} у рейтингу",
+  overtookYou: "{actor} обійшов(ла) тебе в рейтингу Економіки!",
+  open: "Відкрити Економіку",
+  seen: "Зрозуміло",
+};
+
+const ja: EconomyNewsText = {
+  title: "経済: ニュース",
+  empty: "まだお知らせはありません。最初の会社を作りましょう！",
+  founded: "{actor} が会社 {company} を設立しました",
+  overtook: "{actor} がランキングで {target} を抜きました",
+  overtookYou: "{actor} が経済ランキングであなたを抜きました！",
+  open: "経済を開く",
+  seen: "わかった",
+};
+
+const es: EconomyNewsText = {
+  title: "Economía: novedades",
+  empty: "Todavía no hay avisos. ¡Funda la primera empresa!",
+  founded: "{actor} fundó la empresa {company}",
+  overtook: "{actor} superó a {target} en la clasificación",
+  overtookYou: "¡{actor} te superó en la clasificación de Economía!",
+  open: "Abrir Economía",
+  seen: "Entendido",
+};
+
+const fr: EconomyNewsText = {
+  title: "Économie : actualités",
+  empty: "Aucune annonce pour l'instant. Crée ta première entreprise !",
+  founded: "{actor} a fondé l'entreprise {company}",
+  overtook: "{actor} a dépassé {target} au classement",
+  overtookYou: "{actor} t'a dépassé au classement Économie !",
+  open: "Ouvrir Économie",
+  seen: "Compris",
+};
+
 export function getEconomyNewsText(locale: Locale): EconomyNewsText {
   switch (locale) {
     case "cs":
@@ -59,6 +99,14 @@ export function getEconomyNewsText(locale: Locale): EconomyNewsText {
       return de;
     case "ru":
       return ru;
+    case "uk":
+      return uk;
+    case "ja":
+      return ja;
+    case "es":
+      return es;
+    case "fr":
+      return fr;
     default:
       return en;
   }

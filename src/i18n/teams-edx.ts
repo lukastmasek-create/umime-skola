@@ -1,5 +1,4 @@
 // Texty přehledu týmů ve stylu dashboardu (asistent, produktivita, rozvrh termínů).
-// Zatím česky a anglicky, ostatní jazyky se vracejí k angličtině.
 import type { Locale } from "./config";
 
 const cs = {
@@ -49,5 +48,143 @@ const en: TeamsEdx = {
   gSearch: "Search groups…", gAdd: "Add group", gAssignments: "Assignments for group", gMembers: "Members", gMenu: "Group menu", gDrop: "Drag students here", gStudents: "students", gCancel: "Cancel",
 };
 
-const more: Partial<Record<Locale, TeamsEdx>> = { cs, en };
+const de: TeamsEdx = {
+  navDashboard: "Übersicht", navSchedule: "Zeitplan", navCourses: "Kurse", navTeams: "Teams", navRating: "Rangliste", navTeachers: "Lehrkräfte",
+  aiTitle: "KI-Assistent", aiToday: "Heute", aiPh: "Schreibe deine Antwort…", aiSend: "Senden",
+  aiMorning: "Guten Morgen, bist du bereit für die Stunde?", aiDay: "Guten Tag, bist du bereit für die Stunde?", aiEve: "Guten Abend, schauen wir mal, was ansteht.",
+  aiNext: "Nächste Frist: {0} ({1}).", aiNone: "Keine Frist in Sicht, du hast frei.", aiOpen: "Du hast {0} offene Aufgaben.",
+  aiOverdue: "{0} davon sind überfällig.", aiTeams: "Du bist in {0} Teams.", aiNoTeams: "Du bist noch in keinem Team. Erstelle eines oder tritt mit einem Code bei.",
+  aiThinking: "Ich denke nach…", aiHelp: "Frag mich nach Fristen, Aufgaben oder Teams.", aiQ1: "Nächste Frist", aiQ2: "Offene Aufgaben", aiQ3: "Meine Teams",
+  proTitle: "Auf PRO upgraden", proText: "Unbegrenzter Zugang zu allen Kursen, Support und mehr!", proTag: "PRO",
+  prodTitle: "Produktivität", prodTasks: "Aufgaben", prodTeams: "Teams", prodRate: "Erledigt", prodAssigned: "Zugewiesen", prodDone: "Erledigt", prodEmpty: "Noch keine Aufgaben.",
+  progSub: "Gesamtfortschritt in den Teams", progInProgress: "In Arbeit", progUpcoming: "Bald fällig", progDone: "Abgeschlossen",
+  groupTitle: "Dringende Aufgaben", prioHigh: "Hoch", prioLow: "Niedrig",
+  pointsTitle: "Erledigt pro Team",
+  schTitle: "Fristen und Aufgaben", schFilter: "Filter", schAll: "Alle Teams", schWeek: "Woche", schMonth: "Monat", schNone: "Keine Frist",
+  schDone: "Fertig", schPlanned: "Geplant", schPrev: "Zurück", schNext: "Weiter", schToday: "Heute",
+  stStudents: "Aktive Schüler", stTasks: "Aufgaben", stDoneOf: "{0} von {1} erledigt", stWaiting: "Wartet auf Erledigung", stAvg: "Durchschnitt der besten Ergebnisse",
+  listTitle: "Aufgaben im Team", listSub: "Ergebnis und Erledigung bei jeder Aufgabe", play: "Spielen", openTask: "Aufgabe öffnen", missing: "{0} fehlen",
+  dBest: "Bestes Ergebnis", dPass: "Bestehensgrenze", dAttempts: "Versuche", dDue: "Frist", dLeft: "Verbleibende Versuche", noDue: "Ohne Frist", pickTask: "Wähle eine Aufgabe aus der Liste.",
+  rDonut: "Erledigung der Aufgaben", rDonutSub: "aller Schüleraufgaben", rRadar: "Durchschnitt nach Aufgaben", rBars: "Erledigung nach Gruppen", rNoGroup: "Ohne Gruppe",
+  rDone: "Erledigt", rTried: "Versucht", rWaiting: "Wartet", rMissing: "Fehlt", rAll: "Alle", rMid: "In Arbeit", rSearch: "Schüler suchen…",
+  rColValue: "Erledigt", rColRange: "Durchschnitt und Bestehensgrenze", rColStatus: "Status", rMatrix: "Details nach Aufgaben", rAvg: "Durchschnitt", rNoData: "Keine Ergebnisse",
+  gSearch: "Gruppe suchen…", gAdd: "Gruppe hinzufügen", gAssignments: "Aufgaben für die Gruppe", gMembers: "Mitglieder", gMenu: "Gruppenmenü", gDrop: "Schüler hierher ziehen", gStudents: "Schüler", gCancel: "Abbrechen",
+};
+
+const ru: TeamsEdx = {
+  navDashboard: "Обзор", navSchedule: "Расписание", navCourses: "Курсы", navTeams: "Команды", navRating: "Рейтинг", navTeachers: "Учителя",
+  aiTitle: "ИИ-помощник", aiToday: "Сегодня", aiPh: "Напиши ответ…", aiSend: "Отправить",
+  aiMorning: "Доброе утро, готов к уроку?", aiDay: "Добрый день, готов к уроку?", aiEve: "Добрый вечер, давай посмотрим, что впереди.",
+  aiNext: "Ближайший срок: {0} ({1}).", aiNone: "Ближайших сроков нет, ты свободен.", aiOpen: "У тебя {0} незавершённых заданий.",
+  aiOverdue: "Из них {0} просрочены.", aiTeams: "Ты состоишь в {0} командах.", aiNoTeams: "Ты пока не состоишь ни в одной команде. Создай её или вступи по коду.",
+  aiThinking: "Думаю…", aiHelp: "Спроси меня о сроках, заданиях или командах.", aiQ1: "Ближайший срок", aiQ2: "Незавершённые задания", aiQ3: "Мои команды",
+  proTitle: "Перейти на PRO", proText: "Неограниченный доступ ко всем курсам, поддержке и другим функциям!", proTag: "PRO",
+  prodTitle: "Продуктивность", prodTasks: "Задания", prodTeams: "Команды", prodRate: "Выполнено", prodAssigned: "Назначено", prodDone: "Выполнено", prodEmpty: "Заданий пока нет.",
+  progSub: "Общий прогресс по командам", progInProgress: "В процессе", progUpcoming: "Скоро", progDone: "Выполнено",
+  groupTitle: "Срочные задачи", prioHigh: "Высокий", prioLow: "Низкий",
+  pointsTitle: "Выполнено по командам",
+  schTitle: "Сроки и задания", schFilter: "Фильтр", schAll: "Все команды", schWeek: "Неделя", schMonth: "Месяц", schNone: "Без срока",
+  schDone: "Готово", schPlanned: "Запланировано", schPrev: "Назад", schNext: "Вперёд", schToday: "Сегодня",
+  stStudents: "Активные ученики", stTasks: "Задания", stDoneOf: "Выполнено {0} из {1}", stWaiting: "Ждёт выполнения", stAvg: "Средний лучший результат",
+  listTitle: "Задания команды", listSub: "Результат и выполнение каждого задания", play: "Играть", openTask: "Открыть задание", missing: "Не хватает: {0}",
+  dBest: "Лучший результат", dPass: "Порог выполнения", dAttempts: "Попытки", dDue: "Срок", dLeft: "Осталось попыток", noDue: "Без срока", pickTask: "Выбери задание из списка.",
+  rDonut: "Выполнение заданий", rDonutSub: "всех заданий учеников", rRadar: "Среднее по заданиям", rBars: "Выполнение по группам", rNoGroup: "Без группы",
+  rDone: "Выполнено", rTried: "Пробовали", rWaiting: "Ждут", rMissing: "Нет", rAll: "Все", rMid: "В процессе", rSearch: "Найти ученика…",
+  rColValue: "Выполнено", rColRange: "Среднее и порог выполнения", rColStatus: "Статус", rMatrix: "Подробно по заданиям", rAvg: "Среднее", rNoData: "Нет результатов",
+  gSearch: "Найти группу…", gAdd: "Добавить группу", gAssignments: "Задания группе", gMembers: "Участников", gMenu: "Меню группы", gDrop: "Перетащи сюда учеников", gStudents: "учеников", gCancel: "Отмена",
+};
+
+const uk: TeamsEdx = {
+  navDashboard: "Огляд", navSchedule: "Розклад", navCourses: "Курси", navTeams: "Команди", navRating: "Рейтинг", navTeachers: "Вчителі",
+  aiTitle: "ШІ-асистент", aiToday: "Сьогодні", aiPh: "Напиши відповідь…", aiSend: "Надіслати",
+  aiMorning: "Доброго ранку, готовий до уроку?", aiDay: "Добрий день, готовий до уроку?", aiEve: "Добрий вечір, подивімося, що тебе чекає.",
+  aiNext: "Найближчий термін: {0} ({1}).", aiNone: "Найближчих термінів немає, ти вільний.", aiOpen: "У тебе {0} невиконаних завдань.",
+  aiOverdue: "З них {0} після терміну.", aiTeams: "Ти в {0} командах.", aiNoTeams: "Ти ще не в жодній команді. Створи свою або приєднайся за кодом.",
+  aiThinking: "Думаю…", aiHelp: "Запитай мене про терміни, завдання чи команди.", aiQ1: "Найближчий термін", aiQ2: "Невиконані завдання", aiQ3: "Мої команди",
+  proTitle: "Перейти на PRO", proText: "Необмежений доступ до всіх курсів, підтримки та інших функцій!", proTag: "PRO",
+  prodTitle: "Продуктивність", prodTasks: "Завдання", prodTeams: "Команди", prodRate: "Виконано", prodAssigned: "Призначено", prodDone: "Виконано", prodEmpty: "Завдань поки немає.",
+  progSub: "Загальний прогрес у командах", progInProgress: "У процесі", progUpcoming: "Скоро", progDone: "Виконано",
+  groupTitle: "Термінові завдання", prioHigh: "Висока", prioLow: "Низька",
+  pointsTitle: "Виконано за командами",
+  schTitle: "Терміни та завдання", schFilter: "Фільтр", schAll: "Усі команди", schWeek: "Тиждень", schMonth: "Місяць", schNone: "Без терміну",
+  schDone: "Готово", schPlanned: "Заплановано", schPrev: "Назад", schNext: "Далі", schToday: "Сьогодні",
+  stStudents: "Активні учні", stTasks: "Завдання", stDoneOf: "Виконано {0} з {1}", stWaiting: "Очікує виконання", stAvg: "Середній найкращий результат",
+  listTitle: "Завдання команди", listSub: "Результат і виконання кожного завдання", play: "Грати", openTask: "Відкрити завдання", missing: "Бракує: {0}",
+  dBest: "Найкращий результат", dPass: "Поріг виконання", dAttempts: "Спроби", dDue: "Термін", dLeft: "Залишилось спроб", noDue: "Без терміну", pickTask: "Обери завдання зі списку.",
+  rDonut: "Виконання завдань", rDonutSub: "усіх завдань учнів", rRadar: "Середнє за завданнями", rBars: "Виконання за групами", rNoGroup: "Без групи",
+  rDone: "Виконано", rTried: "Спробували", rWaiting: "Очікують", rMissing: "Немає", rAll: "Усі", rMid: "У процесі", rSearch: "Пошук учня…",
+  rColValue: "Виконано", rColRange: "Середнє і поріг виконання", rColStatus: "Стан", rMatrix: "Детально за завданнями", rAvg: "Середнє", rNoData: "Немає результатів",
+  gSearch: "Пошук групи…", gAdd: "Додати групу", gAssignments: "Завдання для групи", gMembers: "Учасників", gMenu: "Меню групи", gDrop: "Перетягни сюди учнів", gStudents: "учнів", gCancel: "Скасувати",
+};
+
+const ja: TeamsEdx = {
+  navDashboard: "概要", navSchedule: "スケジュール", navCourses: "コース", navTeams: "チーム", navRating: "ランキング", navTeachers: "先生",
+  aiTitle: "AIアシスタント", aiToday: "今日", aiPh: "回答を入力…", aiSend: "送信",
+  aiMorning: "おはようございます。授業の準備はできましたか？", aiDay: "こんにちは。授業の準備はできましたか？", aiEve: "こんばんは。これから何があるか確認しましょう。",
+  aiNext: "次の期限: {0}（{1}）。", aiNone: "近い期限はありません。自由な時間です。", aiOpen: "未完了の課題が {0} 件あります。",
+  aiOverdue: "そのうち {0} 件は期限切れです。", aiTeams: "{0} 個のチームに所属しています。", aiNoTeams: "まだどのチームにも所属していません。チームを作るか、コードで参加しましょう。",
+  aiThinking: "考えています…", aiHelp: "期限、課題、チームについて聞いてください。", aiQ1: "次の期限", aiQ2: "未完了の課題", aiQ3: "私のチーム",
+  proTitle: "PRO にアップグレード", proText: "すべてのコース、サポートなどに無制限でアクセスできます！", proTag: "PRO",
+  prodTitle: "生産性", prodTasks: "課題", prodTeams: "チーム", prodRate: "完了率", prodAssigned: "出題済み", prodDone: "完了", prodEmpty: "まだ課題はありません。",
+  progSub: "チーム全体の進捗", progInProgress: "取り組み中", progUpcoming: "間もなく期限", progDone: "完了",
+  groupTitle: "緊急の課題", prioHigh: "高", prioLow: "低",
+  pointsTitle: "チーム別の完了数",
+  schTitle: "期限と課題", schFilter: "フィルター", schAll: "すべてのチーム", schWeek: "週", schMonth: "月", schNone: "期限なし",
+  schDone: "完了", schPlanned: "予定", schPrev: "前へ", schNext: "次へ", schToday: "今日",
+  stStudents: "アクティブな生徒", stTasks: "課題", stDoneOf: "{1} 件中 {0} 件完了", stWaiting: "完了待ち", stAvg: "ベストスコアの平均",
+  listTitle: "チームの課題", listSub: "各課題のスコアと完了状況", play: "プレイ", openTask: "課題を開く", missing: "未提出 {0}",
+  dBest: "ベストスコア", dPass: "合格ライン", dAttempts: "挑戦回数", dDue: "期限", dLeft: "残りの挑戦回数", noDue: "期限なし", pickTask: "一覧から課題を選んでください。",
+  rDonut: "課題の完了率", rDonutSub: "生徒の全課題", rRadar: "課題ごとの平均", rBars: "グループ別の完了率", rNoGroup: "グループなし",
+  rDone: "完了", rTried: "挑戦済み", rWaiting: "待機中", rMissing: "未提出", rAll: "すべて", rMid: "取り組み中", rSearch: "生徒を検索…",
+  rColValue: "完了", rColRange: "平均と合格ライン", rColStatus: "状態", rMatrix: "課題ごとの詳細", rAvg: "平均", rNoData: "結果がありません",
+  gSearch: "グループを検索…", gAdd: "グループを追加", gAssignments: "グループへの課題", gMembers: "メンバー", gMenu: "グループメニュー", gDrop: "ここに生徒をドラッグ", gStudents: "人", gCancel: "キャンセル",
+};
+
+const es: TeamsEdx = {
+  navDashboard: "Resumen", navSchedule: "Calendario", navCourses: "Cursos", navTeams: "Equipos", navRating: "Clasificación", navTeachers: "Profesores",
+  aiTitle: "Asistente IA", aiToday: "Hoy", aiPh: "Escribe tu respuesta…", aiSend: "Enviar",
+  aiMorning: "Buenos días, ¿estás listo para la clase?", aiDay: "Buenas tardes, ¿estás listo para la clase?", aiEve: "Buenas noches, veamos qué te espera.",
+  aiNext: "Próxima fecha límite: {0} ({1}).", aiNone: "No hay fechas límite próximas, estás libre.", aiOpen: "Tienes {0} tareas sin completar.",
+  aiOverdue: "{0} de ellas están fuera de plazo.", aiTeams: "Estás en {0} equipos.", aiNoTeams: "Todavía no estás en ningún equipo. Crea uno o únete con un código.",
+  aiThinking: "Pensando…", aiHelp: "Pregúntame por fechas límite, tareas o equipos.", aiQ1: "Próxima fecha límite", aiQ2: "Tareas sin completar", aiQ3: "Mis equipos",
+  proTitle: "Pasar a PRO", proText: "¡Acceso ilimitado a todos los cursos, soporte y más!", proTag: "PRO",
+  prodTitle: "Productividad", prodTasks: "Tareas", prodTeams: "Equipos", prodRate: "Hecho", prodAssigned: "Asignadas", prodDone: "Hechas", prodEmpty: "Todavía no hay tareas.",
+  progSub: "Progreso total en los equipos", progInProgress: "En curso", progUpcoming: "Próximas", progDone: "Completadas",
+  groupTitle: "Tareas urgentes", prioHigh: "Alta", prioLow: "Baja",
+  pointsTitle: "Completadas por equipo",
+  schTitle: "Fechas límite y tareas", schFilter: "Filtro", schAll: "Todos los equipos", schWeek: "Semana", schMonth: "Mes", schNone: "Sin fecha límite",
+  schDone: "Hecho", schPlanned: "Planificado", schPrev: "Anterior", schNext: "Siguiente", schToday: "Hoy",
+  stStudents: "Alumnos activos", stTasks: "Tareas", stDoneOf: "{0} de {1} hechas", stWaiting: "Pendientes de hacer", stAvg: "Media de las mejores puntuaciones",
+  listTitle: "Tareas del equipo", listSub: "Resultado y cumplimiento de cada tarea", play: "Jugar", openTask: "Abrir tarea", missing: "Faltan {0}",
+  dBest: "Mejor puntuación", dPass: "Umbral de aprobado", dAttempts: "Intentos", dDue: "Fecha límite", dLeft: "Intentos restantes", noDue: "Sin fecha límite", pickTask: "Elige una tarea de la lista.",
+  rDonut: "Cumplimiento de tareas", rDonutSub: "de todas las tareas de los alumnos", rRadar: "Media por tarea", rBars: "Cumplimiento por grupos", rNoGroup: "Sin grupo",
+  rDone: "Hecho", rTried: "Probado", rWaiting: "Pendiente", rMissing: "Faltan", rAll: "Todos", rMid: "En curso", rSearch: "Buscar alumnos…",
+  rColValue: "Hecho", rColRange: "Media y umbral de aprobado", rColStatus: "Estado", rMatrix: "Detalle por tarea", rAvg: "Media", rNoData: "Sin resultados",
+  gSearch: "Buscar grupos…", gAdd: "Añadir grupo", gAssignments: "Tareas del grupo", gMembers: "Miembros", gMenu: "Menú del grupo", gDrop: "Arrastra aquí a los alumnos", gStudents: "alumnos", gCancel: "Cancelar",
+};
+
+const fr: TeamsEdx = {
+  navDashboard: "Tableau de bord", navSchedule: "Planning", navCourses: "Parcours", navTeams: "Équipes", navRating: "Classement", navTeachers: "Enseignants",
+  aiTitle: "Assistant IA", aiToday: "Aujourd'hui", aiPh: "Écris ta réponse…", aiSend: "Envoyer",
+  aiMorning: "Bonjour, tu es prêt pour le cours ?", aiDay: "Bon après-midi, tu es prêt pour le cours ?", aiEve: "Bonsoir, voyons ce qui t'attend.",
+  aiNext: "Prochaine échéance : {0} ({1}).", aiNone: "Aucune échéance à venir, tu es libre.", aiOpen: "Tu as {0} exercices non terminés.",
+  aiOverdue: "{0} d'entre eux sont en retard.", aiTeams: "Tu fais partie de {0} équipes.", aiNoTeams: "Tu ne fais encore partie d'aucune équipe. Crées-en une ou rejoins-en une avec un code.",
+  aiThinking: "Je réfléchis…", aiHelp: "Demande-moi des échéances, des exercices ou des équipes.", aiQ1: "Prochaine échéance", aiQ2: "Exercices non terminés", aiQ3: "Mes équipes",
+  proTitle: "Passer à PRO", proText: "Accès illimité à tous les parcours, à l'assistance et plus encore !", proTag: "PRO",
+  prodTitle: "Productivité", prodTasks: "Exercices", prodTeams: "Équipes", prodRate: "Fait", prodAssigned: "Attribués", prodDone: "Faits", prodEmpty: "Aucun exercice pour l'instant.",
+  progSub: "Progression totale dans les équipes", progInProgress: "En cours", progUpcoming: "À venir", progDone: "Terminés",
+  groupTitle: "Tâches urgentes", prioHigh: "Haute", prioLow: "Basse",
+  pointsTitle: "Terminés par équipe",
+  schTitle: "Échéances et exercices", schFilter: "Filtre", schAll: "Toutes les équipes", schWeek: "Semaine", schMonth: "Mois", schNone: "Pas d'échéance",
+  schDone: "Fait", schPlanned: "Prévu", schPrev: "Précédent", schNext: "Suivant", schToday: "Aujourd'hui",
+  stStudents: "Élèves actifs", stTasks: "Exercices", stDoneOf: "{0} sur {1} faits", stWaiting: "En attente", stAvg: "Moyenne des meilleurs scores",
+  listTitle: "Exercices de l'équipe", listSub: "Score et réalisation de chaque exercice", play: "Jouer", openTask: "Ouvrir l'exercice", missing: "{0} manquant(s)",
+  dBest: "Meilleur score", dPass: "Seuil de réussite", dAttempts: "Tentatives", dDue: "Échéance", dLeft: "Tentatives restantes", noDue: "Sans échéance", pickTask: "Choisis un exercice dans la liste.",
+  rDonut: "Réalisation des exercices", rDonutSub: "de tous les exercices des élèves", rRadar: "Moyenne par exercice", rBars: "Réalisation par groupe", rNoGroup: "Sans groupe",
+  rDone: "Fait", rTried: "Essayé", rWaiting: "En attente", rMissing: "Manquant", rAll: "Tous", rMid: "En cours", rSearch: "Chercher un élève…",
+  rColValue: "Fait", rColRange: "Moyenne et seuil de réussite", rColStatus: "Statut", rMatrix: "Détail par exercice", rAvg: "Moyenne", rNoData: "Aucun résultat",
+  gSearch: "Chercher un groupe…", gAdd: "Ajouter un groupe", gAssignments: "Exercices du groupe", gMembers: "Membres", gMenu: "Menu du groupe", gDrop: "Glisse les élèves ici", gStudents: "élèves", gCancel: "Annuler",
+};
+
+const more: Record<Locale, TeamsEdx> = { cs, en, de, ru, uk, ja, es, fr };
 export const getTeamsEdx = (locale: Locale): TeamsEdx => more[locale] ?? en;

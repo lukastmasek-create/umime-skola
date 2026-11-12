@@ -441,7 +441,7 @@ export function ShopView({ locale }: { locale: Locale }) {
       >
         <Avatar id={over.avatar ?? ready?.equipped.avatar ?? "robot"} size={88} frame={frame && isFrameId(frame) ? frame : null} />
         <div className="rounded-lg bg-black/35 px-3 py-2 text-white">
-          <p className="font-extrabold">{locale === "cs" ? "Ty" : locale === "ru" ? "Ты" : locale === "de" ? "Du" : "You"}</p>
+          <p className="font-extrabold">{({ cs: "Ty", en: "You", de: "Du", ru: "Ты", uk: "Ти", ja: "あなた", es: "Tú", fr: "Toi" } as const)[locale]}</p>
           {over.title && <span className="pill mt-1 bg-[var(--accent-yellow)] px-3 py-0.5 text-xs text-[#16132b]">{over.title}</span>}
         </div>
       </div>

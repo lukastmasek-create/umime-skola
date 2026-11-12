@@ -77,6 +77,70 @@ const ru: EconomyTickerText = {
   ],
 };
 
+const uk: EconomyTickerText = {
+  label: "Новини ринку",
+  disclaimer: "вигаданий приклад для навчання",
+  open: "Відкрити Економіку",
+  dismiss: "Закрити смугу",
+  items: [
+    "Криза в інвестиціях: світові акції за тиждень упали на 12 %. Інвестори панікують і продають.",
+    "Kalenda Motors оголосила рекордний прибуток, її акції зросли на 8 %.",
+    "₿ Криптовалюти знову коливаються: головна монета за годину втратила 15 %. Обережно зі швидким заробітком.",
+    "Центральний банк підвищив облікову ставку до 4 %. Іпотека дорожчає, вклади приносять більше.",
+    "Супермаркет «Зелена галявина» знижує ціни, люди заощаджують. Інфляція сповільнюється.",
+    "Стартап Solarnet знайшов інвестора за 30 % компанії. Новим фірмам потрібен капітал, але вони віддають частину часток.",
+    "Порада: не клади всі яйця в один кошик. Розподіл інвестицій знижує ризик.",
+  ],
+};
+
+const ja: EconomyTickerText = {
+  label: "市場ニュース",
+  disclaimer: "学習用の架空の例",
+  open: "経済を開く",
+  dismiss: "バーを閉じる",
+  items: [
+    "投資の危機: 世界の株価が今週12%下落しました。投資家はパニックになり売っています。",
+    "Kalenda Motors が過去最高の利益を発表し、株価は8%上昇しました。",
+    "₿ 暗号資産が再び乱高下: メインコインは1時間で15%失いました。すぐに儲かる話には注意しましょう。",
+    "中央銀行が政策金利を4%に引き上げました。住宅ローンは高くなり、預金は利息が増えます。",
+    "スーパー「グリーンメドウ」が値下げし、人々は節約しています。インフレは鈍化しています。",
+    "スタートアップ Solarnet が会社の30%と引き換えに投資家を得ました。新しい会社は資金が必要ですが、株の一部を手放すことになります。",
+    "ヒント: 卵をひとつのカゴに盛らないこと。投資を分散すると危険が減ります。",
+  ],
+};
+
+const es: EconomyTickerText = {
+  label: "Noticias del mercado",
+  disclaimer: "ejemplo ficticio para aprender",
+  open: "Abrir Economía",
+  dismiss: "Cerrar la barra",
+  items: [
+    "Crisis de inversiones: las acciones mundiales cayeron un 12 % esta semana. Los inversores entran en pánico y venden.",
+    "Kalenda Motors anunció beneficios récord y sus acciones subieron un 8 %.",
+    "₿ Las criptomonedas vuelven a oscilar: la moneda principal perdió un 15 % en una hora. Cuidado con los planes de ganancias rápidas.",
+    "El banco central subió el tipo de interés al 4 %. Las hipotecas se encarecen y las cuentas de ahorro dan más.",
+    "El supermercado Prado Verde baja precios y la gente ahorra. La inflación se frena.",
+    "La startup Solarnet consiguió un inversor a cambio del 30 % de la empresa. Las empresas nuevas necesitan capital, pero ceden parte de sus acciones.",
+    "Consejo: no pongas todos los huevos en la misma cesta. Diversificar las inversiones reduce el riesgo.",
+  ],
+};
+
+const fr: EconomyTickerText = {
+  label: "Actualités du marché",
+  disclaimer: "exemple fictif à des fins pédagogiques",
+  open: "Ouvrir Économie",
+  dismiss: "Fermer la barre",
+  items: [
+    "Crise des investissements : les actions mondiales ont chuté de 12 % cette semaine. Les investisseurs paniquent et vendent.",
+    "Kalenda Motors annonce un bénéfice record, son action a bondi de 8 %.",
+    "₿ Les cryptomonnaies repartent à la hausse et à la baisse : la pièce principale a perdu 15 % en une heure. Méfie-toi des promesses de gains rapides.",
+    "La banque centrale a relevé son taux directeur à 4 %. Les crédits immobiliers deviennent plus chers, les livrets rapportent davantage.",
+    "La supérette Prairie Verte baisse ses prix, les gens font des économies. L'inflation ralentit.",
+    "La startup Solarnet a trouvé un investisseur contre 30 % de l'entreprise. Les jeunes entreprises ont besoin de capital, mais cèdent une part de leurs parts.",
+    "Conseil : ne mets pas tous tes œufs dans le même panier. Répartir ses investissements réduit le risque.",
+  ],
+};
+
 export function getEconomyTickerText(locale: Locale): EconomyTickerText {
   switch (locale) {
     case "cs":
@@ -85,6 +149,14 @@ export function getEconomyTickerText(locale: Locale): EconomyTickerText {
       return de;
     case "ru":
       return ru;
+    case "uk":
+      return uk;
+    case "ja":
+      return ja;
+    case "es":
+      return es;
+    case "fr":
+      return fr;
     default:
       return en;
   }
