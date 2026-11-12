@@ -61,7 +61,7 @@ export default async function ShopPage({
   }
 
   return (
-    <div className="mx-auto max-w-[96rem] px-4 py-6 sm:px-6 sm:py-10 lg:px-10">
+    <div className="shop-pcard mx-auto max-w-[96rem] px-4 py-6 sm:px-6 sm:py-10 lg:px-10">
       <GammyShop
         locale={locale as Locale}
         loggedIn={!!userId}
