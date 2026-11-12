@@ -300,10 +300,11 @@ export function MobileMenu({ locale, dict }: { locale: Locale; dict: Dictionary 
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls="mobile-menu"
+        aria-label={open ? t.closeMenu : t.menu}
         className="btn-bouncy flex min-h-11 items-center gap-1.5 bg-[var(--surface)] px-2.5 py-1.5 text-sm font-bold sm:gap-2 sm:px-3"
       >
         <span aria-hidden><SketchIcon kind={open ? "close" : "menu"} size={20} /></span>
-        {open ? t.closeMenu : t.menu}
+        <span className="hidden min-[400px]:inline">{open ? t.closeMenu : t.menu}</span>
       </button>
 
       {open && (

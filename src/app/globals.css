@@ -3128,6 +3128,15 @@ a:hover .eco-ico,
 .site-header-in {
   transition: padding 0.25s;
 }
+/* Tužka posuvníku (vpravo, jen u myši) nesmí překrýt tlačítka hlavičky */
+html.pencil-scroll .site-header-in {
+  padding-right: 2.5rem;
+}
+@media (min-width: 640px) {
+  html.pencil-scroll .site-header-in {
+    padding-right: 3rem;
+  }
+}
 .site-header[data-scrolled] {
   background: color-mix(in srgb, var(--surface) 88%, transparent);
   backdrop-filter: blur(10px);

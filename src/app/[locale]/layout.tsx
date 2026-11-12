@@ -89,7 +89,7 @@ export default async function LocaleLayout({
         <header className="site-header sticky top-0 z-40 bg-[var(--surface)]">
           <HeaderScroll />
           <SketchEdge position="bottom" />
-          <div className="site-header-in mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-1.5 sm:px-6">
+          <div className="site-header-in mx-auto flex max-w-6xl items-center justify-between gap-1.5 px-3 py-1.5 min-[400px]:gap-3 min-[400px]:px-4 sm:px-6 xl:max-w-7xl">
             <Link href={`/${locale}`} className="site-logo shrink-0">
               <SiteLogo />
             </Link>

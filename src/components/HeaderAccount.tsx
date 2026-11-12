@@ -72,9 +72,9 @@ export function HeaderAccount({
   if (!account.loggedIn) {
     return (
       <>
-        <Link href={`/${locale}/prihlaseni`} className={`inline-flex whitespace-nowrap ${linkClass}`}>
-          <SketchIcon kind="user" size={18} className="mr-1.5 hidden shrink-0 sm:inline-block" />
-          {loginLabel}
+        <Link href={`/${locale}/prihlaseni`} aria-label={loginLabel} className={`inline-flex whitespace-nowrap ${linkClass}`}>
+          <SketchIcon kind="user" size={18} className="mr-1 shrink-0 min-[400px]:hidden" />
+          <span className="hidden min-[400px]:inline">{loginLabel}</span>
         </Link>
         <Link
           href={`/${locale}/registrace`}
