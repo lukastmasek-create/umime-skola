@@ -5341,22 +5341,10 @@ a.gcard-live:hover .gcard-bars i.is-hi { background: var(--ga); }
   .gc-item.is-in a.gcard-live:hover .gcard-bars i { transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease; transition-delay: calc(var(--n) * 25ms); transform: scaleY(1.1); }
   /* Zvýrazněný sloupec jemně dýchá */
   .gc-item.is-in .gcard-bars i.is-hi { animation: gc-breathe 3.2s ease-in-out 1.6s infinite; }
-  /* Scroll-scrub: karta se rozsvěcí přímo podle pozice při scrollu a při návratu zase zhasne.
-     Bez podpory scroll-timeline zůstává jednorázový vjezd přes .is-in výše. */
-  @supports (animation-timeline: view()) {
-    .gc-item {
-      animation: gc-scrub linear both;
-      animation-timeline: view();
-      animation-range: entry 5% entry 45%;
-    }
-    .gc-item.is-in { transition: none; }
-  }
 }
 @keyframes gc-breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
-@keyframes gc-scrub {
-  from { opacity: 0; transform: translateY(28px) scale(0.97); }
-  to { opacity: 1; transform: none; }
-}
+/* Celé bloky obsahu řídí ScrollFade (průhlednost a posun přes inline styly): vlastní vjezdy je nepřebijí */
+[data-sf] { animation: none !important; transition-property: color, background-color, border-color, box-shadow, filter; }
 @media (prefers-reduced-motion: reduce) {
   .gcard-live, .gcard-live .gcard-title, .gcard-live .gcard-chip, .gcard-live .gcard-bars i, .gcard-glow { transition: none; }
   a.gcard-live:hover, a.gcard-live:active, a.gcard-live:hover .gcard-title, a.gcard-live:hover .gcard-bars i { transform: none; }
