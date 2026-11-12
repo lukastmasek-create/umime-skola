@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Asterisk, Check, Eye, Flame, Heart, Receipt, Star, Zap } from "lucide-react";
 import { ShopModel } from "@/components/ShopModel";
-import { PcardTape } from "@/components/PcardArt";
+import { PcardRing, PcardTape } from "@/components/PcardArt";
+import { pcardTiltLeave, pcardTiltMove } from "@/components/pcardTilt";
 import { ShopHeroArt } from "@/components/ShopHeroArt";
 import { ShopHeroStage } from "@/components/ShopHeroStage";
 import { Avatar } from "@/components/Avatar";
@@ -462,11 +463,16 @@ export function GammyShop({
             })),
           ].map((c, i) => (
             <div key={c.key} className="pcard-slot" style={{ ["--ac" as string]: TILE_ACCENTS[i % TILE_ACCENTS.length], ["--r" as string]: `${TILE_TILTS[i % TILE_TILTS.length]}deg` }}>
-              <button type="button" onClick={c.onPick} className="pcard pcard-shop pcard-mini w-full">
+              <button type="button" onClick={c.onPick} onPointerMove={pcardTiltMove} onPointerLeave={pcardTiltLeave} className="pcard pcard-shop pcard-mini w-full">
                 <span className="pcard-in">
-                  <ShopModel id={c.icon} size={72} className="pcard-shop-img" />
+                  <span className="pcard-num" aria-hidden>{String(i + 1).padStart(2, "0")}</span>
+                  <span className="pcard-iconwrap pcard-mini-well">
+                    <PcardRing />
+                    <ShopModel id={c.icon} size={52} className="pcard-shop-img" />
+                  </span>
                   <span className="pcard-title">{c.label}</span>
                   <span className="pcard-text">{c.sub}</span>
+                  <span className="pcard-go" aria-hidden>→</span>
                 </span>
                 <PcardTape />
               </button>

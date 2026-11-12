@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Icon } from "@/components/Icon";
-import { PcardTape } from "@/components/PcardArt";
+import { PcardRing, PcardTape } from "@/components/PcardArt";
+import { pcardTiltLeave, pcardTiltMove } from "@/components/pcardTilt";
 import type { Dictionary } from "@/i18n/dictionaries";
 
 // Balíček bodů jako ručně lepená karta, stejný styl jako karty kategorií na homepage (pcard).
@@ -11,19 +12,25 @@ export function BuyPointsCard({
   dict,
   accent,
   tilt,
+  num,
 }: {
   pkg: { points: number; price: string; popular: boolean; image: string };
   dict: Dictionary;
   accent: string;
   tilt: number;
+  num: string;
 }) {
   const [clicked, setClicked] = useState(false);
 
   return (
     <div className="pcard-slot" style={{ ["--ac" as string]: accent, ["--r" as string]: `${tilt}deg` }}>
-      <div className="pcard pcard-shop">
+      <div className="pcard pcard-shop" onPointerMove={pcardTiltMove} onPointerLeave={pcardTiltLeave}>
         <div className="pcard-in">
-          <Icon name={`balicek-${pkg.image}`} size={150} className="pcard-shop-img" />
+          <span className="pcard-num" aria-hidden>{num}</span>
+          <span className="pcard-iconwrap pcard-shop-well">
+            <PcardRing />
+            <Icon name={`balicek-${pkg.image}`} size={116} className="pcard-shop-img" />
+          </span>
           <h3 className="pcard-title">{pkg.points}</h3>
           <p className="pcard-text">{dict.shop.pointsSuffix}</p>
           <p className="pcard-price">{pkg.price}</p>

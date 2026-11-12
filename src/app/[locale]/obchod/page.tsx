@@ -69,7 +69,7 @@ export default async function ShopPage({
         topUp={
           <div className="pcard-shelf grid gap-8 sm:grid-cols-3">
             {POINT_PACKAGES.map((pkg, i) => (
-              <BuyPointsCard key={pkg.points} pkg={pkg} dict={dict} accent={PACKAGE_ACCENTS[i]} tilt={PACKAGE_TILTS[i]} />
+              <BuyPointsCard key={pkg.points} pkg={pkg} dict={dict} accent={PACKAGE_ACCENTS[i]} tilt={PACKAGE_TILTS[i]} num={String(i + 1).padStart(2, "0")} />
             ))}
           </div>
         }
