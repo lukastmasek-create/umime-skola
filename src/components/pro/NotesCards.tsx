@@ -4,6 +4,9 @@ import { useState } from "react";
 import type { Locale } from "@/i18n/config";
 import { getProToolsText } from "@/i18n/pro-tools";
 import { SaveAsSet } from "./SaveAsSet";
+import { PcardTape } from "@/components/PcardArt";
+
+const PAPER_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
 import { errorText, imageToDataUrl, proFetch } from "./api";
 
 type Card = { front: string; back: string };
@@ -74,12 +77,18 @@ export function NotesCards({ locale }: { locale: Locale }) {
               {title}
             </h2>
           )}
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="pcard-pile pcard-pile-wide">
             {cards.map((c, i) => (
-              <button key={i} type="button" onClick={() => setFlipped((f) => ({ ...f, [i]: !f[i] }))} className="card min-h-24 p-4 text-left text-sm font-semibold">
-                <span className="mb-1 block text-xs font-bold text-[var(--faint)]">{flipped[i] ? t.notesBack : t.notesFront}</span>
-                {flipped[i] ? c.back : c.front}
-              </button>
+              <div key={i} className="pcard-slot" style={{ ["--ac" as string]: PAPER_COLORS[i % PAPER_COLORS.length] }}>
+                <button type="button" onClick={() => setFlipped((f) => ({ ...f, [i]: !f[i] }))} className="pcard pcard-static w-full text-left">
+                  <span className="pcard-in pcard-flat min-h-36 justify-center">
+                    <span className="pcard-num" aria-hidden>{String(i + 1).padStart(2, "0")}</span>
+                    <span className="pcard-text mb-2 text-xs font-bold uppercase tracking-widest">{flipped[i] ? t.notesBack : t.notesFront}</span>
+                    <span className="pcard-title">{flipped[i] ? c.back : c.front}</span>
+                  </span>
+                  <PcardTape />
+                </button>
+              </div>
             ))}
           </div>
           <div className="mt-3">

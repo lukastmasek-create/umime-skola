@@ -48,7 +48,7 @@ export function PhotoTasks({ locale }: { locale: Locale }) {
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {preview && <img src={preview} alt="" className="max-h-56 w-fit rounded-xl border-2 border-[var(--edge)]" />}
       {result && (
-        <section className="card grid gap-3 p-5">
+        <section className="pcard-slot grid gap-3 rounded-[22px] border-2 border-[var(--ink)] bg-[color-mix(in_srgb,var(--ac)_15%,#1b1a30)] p-5 shadow-[7px_9px_0_rgba(8,8,24,0.55)]" style={{ ["--ac" as string]: "#7ee0b0" }}>
           {result.task && (
             <p className="text-sm">
               <span className="font-bold">{t.photoTask}: </span>

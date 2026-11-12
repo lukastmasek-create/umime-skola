@@ -4988,6 +4988,7 @@ a.gcard:hover .gcard-chip { transform: rotate(-45deg) scale(1.08); background: v
 .pcard-pills { position: relative; z-index: 2; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 12px; }
 .pcard-pills .pill { padding: 3px 10px; background: color-mix(in srgb, var(--ac) 22%, #1b1a30); color: #f4f3ff; }
 .pcard-pile-wide { max-width: none; }
+.pcard-static { cursor: pointer; border: 0; padding: 0; font: inherit; touch-action: manipulation; }
 @media (min-width: 640px) {
   .pcard-pile-wide { grid-template-columns: repeat(2, 1fr); }
   .pcard-pile-wide > .pcard-slot:nth-child(odd) { --r: -2deg; }
