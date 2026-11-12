@@ -1,4 +1,4 @@
-import { topic, sec, p, ul, table, ex, tip } from "./helpers";
+import { topic, sec, p, ul, table, ex, tip, quiz } from "./helpers";
 import type { Topic } from "./types";
 
 export const nemcina: Topic[] = [
@@ -194,4 +194,52 @@ export const nemcina: Topic[] = [
       ),
     ],
     ["Passiv: werden + Partizip II.", "Rod vztažného zájmena určuje podstatné jméno před ním.", "Ve vztažné větě je sloveso na konci."]),
+  topic("essen-und-trinken", "Essen und Trinken (jídlo a pití)", 1,
+    "Základní slovíčka o jídle a pití.",
+    [
+      sec("Slovíčka",
+        table(["Německy", "Česky"], ["das Brot", "chléb"], ["die Milch", "mléko"], ["der Apfel", "jablko"], ["das Wasser", "voda"]),
+        ex("Ich esse einen Apfel. = Jím jablko."),
+        quiz("Jak řekneš „voda“?", "das Wasser", ["die Milch", "das Brot", "der Apfel"]),
+      ),
+    ],
+    ["das Brot = chléb, das Wasser = voda."]),
+  topic("in-der-schule", "In der Schule (ve škole)", 1,
+    "Slovíčka ze školy a věty o rozvrhu.",
+    [
+      sec("Škola",
+        table(["Německy", "Česky"], ["die Schule", "škola"], ["das Buch", "kniha"], ["der Lehrer", "učitel"], ["die Klasse", "třída"]),
+        ul("Ich habe Deutsch. = Mám němčinu.", "Wir lernen Mathe. = Učíme se matematiku."),
+      ),
+    ],
+    ["die Schule = škola, der Lehrer = učitel."]),
+  topic("possessivpronomen", "Přivlastňovací zájmena: mein, dein", 2,
+    "Jak říct, že něco patří někomu.",
+    [
+      sec("Mein a dein",
+        table(["Osoba", "Tvar"], ["já", "mein (můj)"], ["ty", "dein (tvůj)"], ["on", "sein (jeho)"], ["ona", "ihr (její)"]),
+        ex("Das ist mein Buch. = To je moje kniha.", "Das ist deine Tasche. = To je tvoje taška."),
+        tip("Přivlastňovací zájmeno se shoduje s podstatným jménem v rodě a pádu."),
+      ),
+    ],
+    ["mein = můj, dein = tvůj.", "Shoduje se s rodem podstatného jména."]),
+  topic("wo-und-wohin", "Místo a směr: wo a wohin", 3,
+    "Kdy použít dativ a kdy akuzativ u předložek místa.",
+    [
+      sec("Wo vs. wohin",
+        ul("Wo? = Kde? (místo, dativ)", "Wohin? = Kam? (směr, akuzativ)"),
+        ex("Ich bin in der Schule. (místo, dativ)", "Ich gehe in die Schule. (směr, akuzativ)"),
+        quiz("Který tvar patří na otázku „wohin“?", "in die Schule", ["in der Schule", "bei der Schule", "aus der Schule"]),
+      ),
+    ],
+    ["Wo = dativ, wohin = akuzativ."]),
+  topic("steigerung-adjektive", "Stupňování přídavných jmen", 3,
+    "Jak tvořit 2. a 3. stupeň přídavných jmen.",
+    [
+      sec("Stupně",
+        table(["Základ", "2. stupeň", "3. stupeň"], ["schnell (rychlý)", "schneller", "am schnellsten"], ["groß (velký)", "größer", "am größten"], ["gut (dobrý)", "besser", "am besten"]),
+        tip("Některá přídavná jména mají nepravidelný tvar – zapamatuj si je."),
+      ),
+    ],
+    ["2. stupeň = -er, 3. stupeň = am … -sten."]),
 ];

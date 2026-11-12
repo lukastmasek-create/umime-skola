@@ -1,4 +1,4 @@
-import { topic, sec, p, ul, table } from "./helpers";
+import { topic, sec, p, ul, table, ex, quiz } from "./helpers";
 import type { Topic } from "./types";
 
 export const dejepis: Topic[] = [
@@ -217,4 +217,43 @@ export const dejepis: Topic[] = [
       ),
     ],
     ["Sametová revoluce 1989.", "Samostatná ČR od 1993.", "Do EU jsme vstoupili 2004."]),
+  topic("cyril-a-metodej", "Svatí Cyril a Metoděj", 2,
+    "Věrozvěsti, kteří přinesli křesťanství a slovanské písmo na Velkou Moravu.",
+    [
+      sec("Kdo byli",
+        ul("Byli to bratři z Soluně, vzdělaní řečtí misionáři.", "Roku 863 přišli na Velkou Moravu na pozvání knížete Rastislava.", "Cyril vytvořil hlaholici, první slovanskou abecedu.", "Liturgii sloužili ve slovanském jazyce, což byl v té době významný krok."),
+        quiz("Jakou abecedu vytvořil Cyril?", "hlaholici", ["latinku", "cyrilici jako první", "runy"]),
+      ),
+      sec("Význam",
+        p("Jejich odkaz přežil v tradici staroslověnštiny. Svátek sv. Cyrila a Metoděje slavíme 5. července."),
+      ),
+    ],
+    ["Cyril a Metoděj přišli roku 863.", "Vytvořili hlaholici.", "Sloužili liturgii slovansky."]),
+  topic("renesance-humanismus", "Renesance a humanismus", 3,
+    "Obrození antického vzdělanosti v Itálii a jeho šíření do Evropy.",
+    [
+      sec("Co to bylo",
+        ul("Renesance znamená znovuzrození a vrací se k antice.", "Humanisté kladli důraz na člověka, vzdělání a studium antických textů.", "Vynález knihtisku Johannesem Gutenbergem kolem roku 1450 šířil myšlenky rychleji."),
+        table(["Osobnost", "Význam"], ["Leonardo da Vinci", "umělec a vynálezce"], ["Erasmus Rotterdamský", "humanistický myslitel"], ["Jan Blahoslav", "český humanista, překladatel Bible"]),
+      ),
+    ],
+    ["Renesance = návrat k antice.", "Humanismus staví člověka do středu zájmu.", "Knihtisk urychlil šíření myšlenek."]),
+  topic("rakousko-uhersko", "Rakousko-Uhersko a vyrovnání 1867", 3,
+    "Vznik dvojmonarchie a postavení Čech v jejím rámci.",
+    [
+      sec("Vznik monarchie",
+        ul("Po prohrané válce s Pruskem roku 1866 se Habsburkové dohodli s Maďarskem.", "Roku 1867 vznikla dvojmonarchie Rakousko-Uhersko se dvěma vládami a společným panovníkem.", "Čechy patřily k rakouské části, kde sílilo národní hnutí Čechů."),
+        ex("Císař František Josef I. vládl celé monarchii a byl zároveň uherským králem."),
+      ),
+    ],
+    ["Vyrovnání 1867 vytvořilo Rakousko-Uhersko.", "Monarchie měla společného panovníka."]),
+  topic("republika-1945-1948", "Poválečné Československo 1945–1948", 3,
+    "Obnova republiky po válce, znárodnění a politický vývoj k únoru 1948.",
+    [
+      sec("Obnova a změny",
+        ul("Roku 1945 bylo Československo osvobozeno, Edvard Beneš se vrátil do úřadu prezidenta.", "Proběhlo vysídlení Němců a znárodnění velkého průmyslu.", "Ve volbách 1946 zvítězila KSČ nejvíce hlasů.", "V únoru 1948 KSČ převzala moc a začal komunistický režim."),
+        table(["Rok", "Událost"], ["1945", "konec války, obnova republiky"], ["1946", "volby, KSČ vítězí"], ["1948", "únor, převzetí moci komunisty"]),
+      ),
+    ],
+    ["1945 – obnova republiky.", "1946 – KSČ vyhrála volby.", "Únor 1948 – převzetí moci komunisty."]),
 ];

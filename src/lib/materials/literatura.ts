@@ -1,4 +1,4 @@
-import { topic, sec, p, ul, table, tip } from "./helpers";
+import { topic, sec, p, ul, table, tip, quiz } from "./helpers";
 import type { Topic } from "./types";
 
 export const literatura: Topic[] = [
@@ -224,4 +224,41 @@ export const literatura: Topic[] = [
       ),
     ],
     ["Zapamatuj si autora, žánr a postavu.", "Rozlišuj báseň, prózu a drama.", "Čti uvedené ukázky."]),
+  topic("vers-rym-rytmus", "Verš, rým a rytmus", 2,
+    "Jak rozpoznat verš a rým v básni.",
+    [
+      sec("Verš a rým",
+        ul("Verš je řádek básně.", "Rým je shoda koncových hlásek veršů.", "Rytmus vzniká střídáním přízvučných a nepřízvučných slabik."),
+        table(["Druh rýmu", "Příklad"], ["souvislý (AABB)", "dva sousední verše se rýmují"], ["obkročný (ABAB)", "rýmují se první a třetí verš"], ["sdružený (ABBA)", "rýmují se první a poslední verš"]),
+        quiz("Jak se nazývá rým, kde se rýmují první a třetí verš?", "obkročný", ["souvislý", "sdružený", "bez rýmu"]),
+      ),
+    ],
+    ["Verš = řádek, rým = shoda koncových hlásek."]),
+  topic("povidka-a-roman", "Povídka a román", 3,
+    "Rozdíl mezi krátkým a dlouhým prozaickým dílem.",
+    [
+      sec("Druhy prózy",
+        table(["Vlastnost", "Povídka", "Román"], ["délka", "krátká", "dlouhý"], ["děj", "jedna událost", "více dějových linií"], ["postavy", "málo postav", "mnoho postav"]),
+        quiz("Které dílo je obvykle delší?", "román", ["povídka", "bajka", "říkadlo"]),
+      ),
+    ],
+    ["Povídka: krátký děj, román: dlouhý děj."]),
+  topic("pribehy-o-zviratech", "Příběhy o zvířatech", 1,
+    "Literatura, ve které mluví a jednají zvířata.",
+    [
+      sec("Zvířata v příbězích",
+        ul("Zvířata mají lidské vlastnosti (personifikace).", "Často mají ponaučení na konci.", "Příklad: Ezopovy bajky."),
+        quiz("Jaký je obvyklý cíl bajky?", "poučit o chování", ["jen pobavit", "popsat přírodu", "předpovědět počasí"]),
+      ),
+    ],
+    ["Zvířata v příbězích mají lidské rysy.", "Bajka má ponaučení."]),
+  topic("vypravec-a-zpusob-vypraveni", "Vypravěč a způsob vyprávění", 2,
+    "Kdo vypráví příběh a z jakého pohledu.",
+    [
+      sec("Vypravěč",
+        table(["Typ", "Jak vypráví"], ["vypravěč v 1. osobě", "já – jsem součástí děje"], ["vypravěč v 3. osobě", "on/ona – stojí mimo děj"]),
+        tip("Podle toho, komu vypravěč „věří“, poznáš jeho pohled na věc."),
+      ),
+    ],
+    ["1. osoba = já vyprávím, 3. osoba = on/ona."]),
 ];

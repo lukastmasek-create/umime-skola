@@ -1,4 +1,4 @@
-import { topic, sec, p, ul, table, ex } from "./helpers";
+import { topic, sec, p, ul, table, ex, quiz } from "./helpers";
 import type { Topic } from "./types";
 
 export const zemepis: Topic[] = [
@@ -174,4 +174,60 @@ export const zemepis: Topic[] = [
       ),
     ],
     ["Terciární sektor poskytuje služby.", "Škoda Auto je v Mladé Boleslavi.", "Žatec je známý chmelem."]),
+  topic("orientace-v-terenu", "Orientace v terénu a kompas", 1,
+    "Jak se orientovat pomocí kompasu a slunce.",
+    [
+      sec("Kompas",
+        ul("Střelka kompasu ukazuje na sever.", "Slunce vychází na východě a zapadá na západě.", "Při orientaci držíme kompas vodorovně."),
+        quiz("Kam ukazuje střelka kompasu?", "na sever", ["na jih", "na východ", "na západ"]),
+      ),
+    ],
+    ["Kompas ukazuje na sever.", "Slunce vychází na východě."]),
+  topic("reliefy-a-tvary-terenu", "Reliéf a jeho tvary", 2,
+    "Hory, vrchy, nížiny a údolí.",
+    [
+      sec("Tvary reliéfu",
+        table(["Tvar", "Popis"], ["hora", "nejvyšší část, velká výška"], ["vrch", "nižší než hora"], ["nížina", "rovinatý terén, nízká nadmořská výška"], ["údolí", "prohlubeň mezi vyvýšeninami"]),
+      ),
+    ],
+    ["Hora je vyšší než vrch."]),
+  topic("reky-a-povodi", "Řeky a povodí", 2,
+    "Jak řeka teče a co je povodí.",
+    [
+      sec("Řeka",
+        ul("Pramen je místo, kde řeka začíná.", "Ústí je místo, kde se vlévá do jiné řeky nebo moře.", "Povodí je území, ze kterého řeka sbírá vodu."),
+        ex("Vltava je největší česká řeka, ústí do Labe."),
+      ),
+    ],
+    ["Pramen = začátek řeky, ústí = konec."]),
+  topic("zivotni-prostredi-cr", "Životní prostředí v ČR", 2,
+    "Hlavní problémy životního prostředí v České republice.",
+    [
+      sec("Problémy",
+        ul("Znečištění ovzduší z dopravy a topení.", "Kyselé deště a znečištění vody.", "Ochrana přírody: národní parky a chráněné krajinné oblasti."),
+        quiz("Jaký je příklad chráněného území v ČR?", "Krkonošský národní park", ["Sahara", "Amazonie", "Mariánské Lázně"]),
+      ),
+    ],
+    ["Znečištění ovzduší a vody.", "Národní parky chrání přírodu."]),
+  topic("doprava-a-cestovni-ruch", "Doprava a cestovní ruch", 3,
+    "Jak doprava spojuje krajinu a proč lidé cestují.",
+    [
+      sec("Doprava",
+        table(["Druh", "Výhoda"], ["silnice", "nejflexibilnější"], ["železnice", "hromadná doprava na dálku"], ["letecká", "rychlá na velké vzdálenosti"], ["vodní", "levná pro nákladní přepravu"]),
+        ul("Cestovní ruch přináší práci a příjmy do regionů."),
+      ),
+    ],
+    ["Železnice = hromadná doprava.", "Cestovní ruch přináší příjmy."]),
+  topic("polarni-oblasti-a-pouste", "Polární oblasti a pouště", 3,
+    "Dva extrémní typy krajiny na Zemi.",
+    [
+      sec("Polární oblasti",
+        ul("Arktida a Antarktida jsou velmi studené oblasti.", "Živočichové: tučňáci, lední medvědi."),
+      ),
+      sec("Pouště",
+        ul("Pouště mají málo srážek, např. Sahara.", "Rostliny jsou přizpůsobeny suchu, např. kaktusy."),
+        quiz("Která je největší horká poušť na světě?", "Sahara", ["Gobi", "Atacama", "Kalahari"]),
+      ),
+    ],
+    ["Arktida = sever, Antarktida = jih.", "Sahara = největší horká poušť."]),
 ];
