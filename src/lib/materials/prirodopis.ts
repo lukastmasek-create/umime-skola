@@ -1,4 +1,4 @@
-import { topic, sec, p, ul, ol, table, ex } from "./helpers";
+import { topic, sec, p, ul, ol, table, ex, quiz } from "./helpers";
 import type { Topic } from "./types";
 
 export const prirodopis: Topic[] = [
@@ -182,4 +182,52 @@ export const prirodopis: Topic[] = [
       ),
     ],
     ["Záchranka 155, tísňová linka 112.", "KPR: 30 stlačení a 2 vdechy.", "Očkování pomáhá imunitě."]),
+  topic("les-a-louka", "Les a louka: společenstva", 1,
+    "Jaké rostliny a živočichové žijí v lese a na louce.",
+    [
+      sec("Les",
+        ul("V lese rostou stromy, keře a byliny.", "Žijí zde srnci, veverky a ptáci.", "Houby se živí rozkladem odumřelých částí."),
+        quiz("Co žije v lese?", "srnec", ["kaktus", "tuleň", "kapr"]),
+      ),
+      sec("Louka",
+        ul("Na louce rostou trávy a květiny.", "Žijí tu motýli, včely a hmyz."),
+      ),
+    ],
+    ["Les = stromy, keře, zvířata.", "Louka = trávy a květiny."]),
+  topic("voda-v-prirode", "Voda a vodní živočichové", 1,
+    "Co žije v rybníce, v řece a v moři.",
+    [
+      sec("Vodní prostředí",
+        table(["Živočich", "Kde žije"], ["kapr", "rybník"], ["pstruh", "čistá horská řeka"], ["žába", "rybník, bažina"]),
+        ul("Voda je domovem mnoha živočichů.", "Čistá voda je důležitá pro zdraví všech organismů."),
+      ),
+    ],
+    ["Kapr žije v rybníce.", "Pstruh potřebuje čistou vodu."]),
+  topic("stromy-a-kere", "Stromy a keře v naší krajině", 1,
+    "Jak poznat běžné listnaté a jehličnaté stromy.",
+    [
+      sec("Stromy",
+        table(["Strom", "Listy / jehlice"], ["smrk", "jehlice"], ["borovice", "jehlice ve svazečcích"], ["buk", "listy"], ["dub", "listy s laloky"]),
+        quiz("Který strom má jehlice?", "smrk", ["buk", "dub", "bříza"]),
+      ),
+    ],
+    ["Jehličnany mají jehlice, listnaté listy."]),
+  topic("ptaci-a-hnizda", "Ptáci: stavba těla a hnízda", 2,
+    "Jak jsou ptáci přizpůsobeni létání a jak stavějí hnízda.",
+    [
+      sec("Stavba těla",
+        ul("Tělo je pokryto peřím.", "Kosti jsou dutější, aby byly lehké.", "Předními končetinami jsou křídla."),
+        table(["Druh", "Hnízdo"], ["vrabec", "v dutině nebo ve střeše"], ["sojka", "na stromě, z větviček"], ["kos", "v keři, z trávy a hlíny"]),
+      ),
+    ],
+    ["Ptáci mají lehké duté kosti.", "Hnízda staví různě podle druhu."]),
+  topic("pudni-zivot", "Půda a půdní organismy", 2,
+    "Co je půda a kdo v ní žije.",
+    [
+      sec("Půda",
+        ul("Půda vzniká zvětráváním hornin a rozkladem organismů.", "V půdě žijí žížaly, bakterie a houby.", "Humus je úrodná část půdy."),
+        quiz("Co žije v půdě a pomáhá ji provzdušnit?", "žížala", ["kapr", "sova", "jelen"]),
+      ),
+    ],
+    ["Půda obsahuje humus.", "Žížaly půdu provzdušňují."]),
 ];

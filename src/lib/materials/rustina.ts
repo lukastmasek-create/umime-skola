@@ -1,4 +1,4 @@
-import { topic, sec, p, ul, table, ex, tip } from "./helpers";
+import { topic, sec, p, ul, table, ex, tip, quiz } from "./helpers";
 import type { Topic } from "./types";
 
 export const rustina: Topic[] = [
@@ -176,4 +176,69 @@ export const rustina: Topic[] = [
       ),
     ],
     ["Čárka před что, потому что, чтобы.", "чтобы = aby.", "который se shoduje v rodě a čísle."]),
+  topic("shkola-i-predmety", "Škola a předměty", 1,
+    "Základní slovíčka o škole v ruštině.",
+    [
+      sec("Slovíčka",
+        table(["Rusky", "Česky"], ["школа", "škola"], ["книга", "kniha"], ["учитель", "učitel"], ["класс", "třída"]),
+        ex("Я в школе. = Jsem ve škole."),
+        quiz("Jak se řekne „kniha“?", "книга", ["школа", "класс", "учитель"]),
+      ),
+    ],
+    ["школа = škola, книга = kniha."]),
+  topic("den-i-vremya", "Dny a hodiny", 1,
+    "Dny v týdnu a jak říct čas.",
+    [
+      sec("Dny v týdnu",
+        table(["Rusky", "Česky"], ["понедельник", "pondělí"], ["вторник", "úterý"], ["среда", "středa"], ["суббота", "sobota"]),
+        ul("Сколько времени? = Kolik je hodin?"),
+      ),
+    ],
+    ["понедельник = pondělí.", "Сколько времени? = Kolik je hodin?"]),
+  topic("eda-i-napitki", "Jídlo a pití", 1,
+    "Základní slovíčka o jídle a pití v ruštině.",
+    [
+      sec("Slovíčka",
+        table(["Rusky", "Česky"], ["хлеб", "chléb"], ["молоко", "mléko"], ["вода", "voda"], ["яблоко", "jablko"]),
+        ex("Я пью воду. = Piju vodu."),
+      ),
+    ],
+    ["хлеб = chléb, вода = voda."]),
+  topic("sport-i-hobbi", "Koníčky a sport", 2,
+    "Jak mluvit o tom, co děláme ve volném čase.",
+    [
+      sec("Koníčky",
+        table(["Rusky", "Česky"], ["футбол", "fotbal"], ["музыка", "hudba"], ["чтение", "čtení"], ["рисование", "kreslení"]),
+        ul("Я люблю читать. = Rád čtu.", "Я играю в футбол. = Hraji fotbal."),
+      ),
+    ],
+    ["Я люблю … = mám rád …"]),
+  topic("infinitiv-glagolov", "Infinitiv sloves", 2,
+    "Neurčitý tvar sloves a jak ho poznat.",
+    [
+      sec("Infinitiv",
+        p("Infinitiv je neurčitý tvar slovesa. Většinou končí na -ть: читать (číst), писать (psát)."),
+        table(["Infinitiv", "Česky"], ["читать", "číst"], ["писать", "psát"], ["говорить", "mluvit"]),
+        quiz("Který tvar je infinitiv?", "говорить", ["говорю", "говорит", "говорят"]),
+      ),
+    ],
+    ["Infinitiv většinou končí na -ть."]),
+  topic("predlogy-v-na-u", "Předložky v, на, у", 2,
+    "Jak říct „v“, „na“ a „u“ podle místa.",
+    [
+      sec("Místo",
+        table(["Předložka", "Použití", "Příklad"], ["в", "uvnitř budovy", "в школе (ve škole)"], ["на", "na povrchu, na akci", "на столе (na stole)"], ["у", "u někoho", "у мамы (u mámy)"]),
+        tip("Předložka в a на se váží s pádem podle otázky kde/kam."),
+      ),
+    ],
+    ["в = ve, на = na, у = u."]),
+  topic("vid-glagolov", "Vid sloves: dokonavý a nedokonavý", 3,
+    "Dva způsoby, jak vidět děj ve slovese.",
+    [
+      sec("Vid",
+        ul("Nedokonavý vid popisuje děj bez ohledu na dokončení: читать (četl jsem).", "Dokonavý vid říká, že děj je dokončen: прочитать (přečíst)."),
+        quiz("Který je dokonavý vid?", "прочитать", ["читать", "писать", "говорить"]),
+      ),
+    ],
+    ["Nedokonavý = proces, dokonavý = dokončený děj."]),
 ];
