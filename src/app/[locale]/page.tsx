@@ -20,6 +20,9 @@ import { HangPanel } from "@/components/HangPanel";
 import { HangBadge, HangGround, HangIcon, HangSparks } from "@/components/HangDecor";
 import { HomeLobby } from "@/components/HomeLobby";
 import { getHomeLobbyText } from "@/i18n/home-lobby";
+import { HomeQuickGrid } from "@/components/HomeQuickGrid";
+import { getHomeQuickText } from "@/i18n/home-quick";
+import { HomeMiniGames } from "@/components/HomeMiniGames";
 import { ResultsPreview } from "@/components/ResultsPreview";
 import { HeroShowcase } from "@/components/HeroShowcase";
 import { getHomeHeroText } from "@/i18n/home-hero";
@@ -122,6 +125,14 @@ export default async function Home({
           <HomeLobby locale={locale} t={getHomeLobbyText(locale as Locale)} />
         </LazyOnView>
         <SectionWave fill="#0d1430" glow="#ff8a6b" />
+      </div>
+
+      {/* 1c) Rychlý start: ikonové dlaždice hlavních sekcí */}
+      <div className="zone zone-space pt-4">
+        <span className="px-stars" aria-hidden />
+        <HomeQuickGrid locale={locale} t={getHomeQuickText(locale as Locale)} />
+        <HomeMiniGames locale={locale as Locale} title={getHomeQuickText(locale as Locale).miniTitle} />
+        <SectionWave fill="#0c1537" glow="#5ab8ff" />
       </div>
 
       {/* 2) Příroda: předměty */}
