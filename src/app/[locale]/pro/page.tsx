@@ -7,7 +7,7 @@ import { ProIcon } from "@/components/pro/ProIcon";
 import { getProText } from "@/i18n/pro";
 import { getProExtra } from "@/i18n/pro-extra";
 import { getProToolsText } from "@/i18n/pro-tools";
-import { PRO_FEATURES, featureTier } from "@/lib/pro-tools/features";
+import { PRO_FEATURES, featureAvailableIn, featureTier } from "@/lib/pro-tools/features";
 import { isLocale, type Locale } from "@/i18n/config";
 import { SpaceShell } from "@/components/SpaceShell";
 import { PaperCard } from "@/components/PaperCard";
@@ -91,7 +91,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
         </h2>
         <p className="mb-4 text-sm text-[var(--muted)]">{tools.toolsHint}</p>
         <div className="pcard-pile pcard-pile-wide">
-          {PRO_FEATURES.map((f, i) => (
+          {PRO_FEATURES.filter((f) => featureAvailableIn(f.slug, locale)).map((f, i) => (
             <PaperCard
               key={f.slug}
               href={`/${locale}/pro/${f.slug}`}
