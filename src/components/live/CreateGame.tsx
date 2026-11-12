@@ -10,6 +10,7 @@ import type { LiveMode, SetItem } from "@/lib/live/types";
 import { liveApi, saveHost } from "./api";
 import { errorText } from "./LiveRoom";
 import { PcardTape } from "@/components/PcardArt";
+import { SketchIcon } from "@/components/SketchIcons";
 import { ModeScene } from "./ModeScenes";
 
 // Barvy karet režimů: stejná paleta jako karty na homepage.
@@ -18,16 +19,37 @@ const MODE_ACCENT: Record<LiveMode, string> = { QUIZ: "#8fd0ff", RACE: "#7ee0b0"
 type Course = { slug: string; title: string; category: string; subject: string | null; grade: number | null; questions: number };
 type SetRow = { id: string; title: string; questions: SetItem[] };
 
-/** Pole formuláře jako papírová karta z homepage: okraj, barva podle výběru, stín a lepicí páska. */
-function PaperField({ accent, className, children }: { accent: string; className?: string; children: ReactNode }) {
+/** Dlaždice bento mřížky: papírová karta s ikonou, titulkem a jemným zvednutím při najetí. */
+function BentoTile({ accent, icon, title, span = "", delay = 0, children }: { accent: string; icon: ReactNode; title: string; span?: string; delay?: number; children: ReactNode }) {
   return (
     <div
-      className={`relative rounded-[22px] border-2 border-[var(--ink)] px-4 py-3 shadow-[7px_9px_0_rgba(8,8,24,0.55)] ${className ?? ""}`}
-      style={{ ["--ac" as string]: accent, ["--ink" as string]: "rgba(244,239,227,0.88)", ["--r" as string]: "0deg", background: "color-mix(in srgb, var(--ac) 15%, #1b1a30)" } as CSSProperties}
+      className={`hero-in relative flex flex-col gap-3 rounded-[22px] border-2 border-[var(--ink)] p-4 shadow-[7px_9px_0_rgba(8,8,24,0.55)] transition duration-200 hover:-translate-y-1 hover:shadow-[11px_14px_0_rgba(8,8,24,0.55)] ${span}`}
+      style={{ ["--d" as string]: `${delay}s`, background: `color-mix(in srgb, ${accent} 15%, #1b1a30)` } as CSSProperties}
     >
-      <PcardTape />
+      <div className="flex items-center gap-3">
+        <span
+          className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border-2 border-[var(--ink)] shadow-[3px_4px_0_rgba(8,8,24,0.5)]"
+          style={{ background: `color-mix(in srgb, ${accent} 42%, #1b1a30)` }}
+        >
+          {icon}
+        </span>
+        <span className="text-sm font-extrabold uppercase tracking-wider" style={{ color: accent }}>
+          {title}
+        </span>
+      </div>
       {children}
     </div>
+  );
+}
+
+/** Lupa vlastní kresby ve stejném stylu jako ikony v SketchIcons. */
+function SearchIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden focusable="false">
+      <circle cx="10.5" cy="10.5" r="6" fill="#8fd0ff" stroke="#16132b" strokeWidth="1.8" />
+      <path d="M15 15l5.5 5.5" stroke="#16132b" strokeWidth="2.2" strokeLinecap="round" />
+      <path d="M7.6 9.2a3.2 3.2 0 0 1 2.8-2.6" stroke="#fff" strokeOpacity=".7" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
   );
 }
 
@@ -91,7 +113,7 @@ export function CreateGame({ locale }: { locale: Locale }) {
     router.push(`/${locale}/hrat-spolecne/${r.pin}`);
   }
 
-  // Samotné pole je průhledné: papírová karta kolem něj (PaperField) nese okraj, barvu i stín.
+  // Samotné pole je průhledné: papírovou kartu kolem něj (BentoTile) nese okraj, barvu i stín.
   const fieldInner = "w-full bg-transparent text-base text-[#f4f3ff] outline-none [&_option]:bg-[#1b1a30]";
   const label = "flex flex-col gap-1 text-sm font-semibold";
 
@@ -104,33 +126,43 @@ export function CreateGame({ locale }: { locale: Locale }) {
         <p className="text-[var(--muted)]">{t.create.subtitle}</p>
       </div>
 
-      <div className="lobby-panel text-[#f4f3ff]">
-        <h2 className="mb-8 text-center text-3xl font-bold tracking-tight sm:text-4xl" style={{ fontFamily: "var(--font-heading)" }}>{t.create.source}</h2>
-        <div className="pcard-pile pcard-pile-wide" role="tablist">
-          {(["course", "set"] as const).map((s, i) => (
-            <div key={s} className="pcard-slot" style={{ ["--ac" as string]: s === "course" ? "#8fd0ff" : "#c9a8ff" }}>
-              <button type="button" role="tab" aria-selected={source === s} onClick={() => setSource(s)} className="pcard pcard-static w-full text-left">
-                <span className="pcard-in pcard-flat">
-                  <span className="pcard-num" aria-hidden>
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="pcard-title">{s === "course" ? t.create.fromCourse : t.create.fromSet}</span>
+      <div className="lobby-panel text-[#f4f3ff]" style={{ ["--ink" as string]: "rgba(244,239,227,0.88)" } as CSSProperties}>
+        <h2 className="mb-8 text-center text-3xl font-bold tracking-tight sm:text-4xl" style={{ fontFamily: "var(--font-heading)" }}>
+          {t.create.source}
+        </h2>
+
+        <div role="tablist" className="mx-auto mb-6 grid max-w-xl grid-cols-2 gap-4">
+          {(["course", "set"] as const).map((s, i) => {
+            const accent = s === "course" ? "#8fd0ff" : "#c9a8ff";
+            const on = source === s;
+            return (
+              <button
+                key={s}
+                type="button"
+                role="tab"
+                aria-selected={on}
+                onClick={() => setSource(s)}
+                className="hero-in flex flex-col items-center gap-2 rounded-[22px] border-2 border-[var(--ink)] p-4 shadow-[7px_9px_0_rgba(8,8,24,0.55)] transition duration-200 hover:-translate-y-1"
+                style={{
+                  ["--d" as string]: `${i * 0.08}s`,
+                  background: `color-mix(in srgb, ${accent} ${on ? 40 : 15}%, #1b1a30)`,
+                  outline: on ? "3px solid #fff" : "none",
+                  outlineOffset: 4,
+                } as CSSProperties}
+              >
+                <span className="grid h-12 w-12 place-items-center rounded-2xl border-2 border-[var(--ink)]" style={{ background: `color-mix(in srgb, ${accent} 42%, #1b1a30)` }}>
+                  <SketchIcon kind={s === "course" ? "courses" : "study"} size={30} />
                 </span>
-                <PcardTape />
+                <span className="font-extrabold">{s === "course" ? t.create.fromCourse : t.create.fromSet}</span>
               </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {source === "course" ? (
-          <div className="flex flex-col gap-3">
-            <label className={label}>
-              {t.create.course}
-              <PaperField accent="#8fd0ff">
-                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t.create.search} className={fieldInner} />
-              </PaperField>
-            </label>
-            <PaperField accent="#7ee0b0">
+        <div className="grid gap-4 sm:grid-cols-2">
+          {source === "course" ? (
+            <BentoTile accent="#8fd0ff" icon={<SearchIcon />} title={t.create.course} span="sm:col-span-2" delay={0.12}>
+              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t.create.search} className={fieldInner} />
               <select value={slug} onChange={(e) => setSlug(e.target.value)} size={6} aria-label={t.create.course} className={fieldInner}>
                 {courses === null && <option disabled>{t.create.loading}</option>}
                 {filtered.map((c) => (
@@ -140,33 +172,18 @@ export function CreateGame({ locale }: { locale: Locale }) {
                   </option>
                 ))}
               </select>
-            </PaperField>
-            <label className={label}>
-              {t.create.difficulty}
-              <PaperField accent="#ffc933">
-                <select value={difficulty} onChange={(e) => setDifficulty(Number(e.target.value))} className={fieldInner}>
-                  <option value={0}>{t.create.anyDifficulty}</option>
-                  {[1, 2, 3, 4, 5].map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  ))}
-                </select>
-              </PaperField>
-            </label>
-          </div>
-        ) : sets === "login" ? (
-          <p className="text-[var(--muted)]">
-            {t.create.loginForSets}{" "}
-            <Link href={`/${locale}/prihlaseni`} className="font-bold text-[var(--brand-600)] hover:underline">
-              →
-            </Link>
-          </p>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {Array.isArray(sets) && sets.length === 0 && <p className="text-[var(--muted)]">{t.create.noSets}</p>}
-            {Array.isArray(sets) && sets.length > 0 && (
-              <PaperField accent="#c9a8ff">
+            </BentoTile>
+          ) : sets === "login" ? (
+            <p className="text-[var(--muted)] sm:col-span-2">
+              {t.create.loginForSets}{" "}
+              <Link href={`/${locale}/prihlaseni`} className="font-bold text-[var(--brand-600)] hover:underline">
+                →
+              </Link>
+            </p>
+          ) : (
+            <BentoTile accent="#c9a8ff" icon={<SketchIcon kind="study" size={26} />} title={t.create.fromSet} span="sm:col-span-2" delay={0.12}>
+              {Array.isArray(sets) && sets.length === 0 && <p className="text-[var(--muted)]">{t.create.noSets}</p>}
+              {Array.isArray(sets) && sets.length > 0 && (
                 <select value={setId} onChange={(e) => setSetId(e.target.value)} size={Math.min(6, sets.length + 1)} aria-label={t.create.fromSet} className={fieldInner}>
                   {sets.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -174,21 +191,31 @@ export function CreateGame({ locale }: { locale: Locale }) {
                     </option>
                   ))}
                 </select>
-              </PaperField>
-            )}
-            <Link href={`/${locale}/hrat-spolecne/sady`} className="text-sm font-bold text-[var(--brand-600)] hover:underline">
-              {t.create.manageSets} →
-            </Link>
-          </div>
-        )}
+              )}
+              <Link href={`/${locale}/hrat-spolecne/sady`} className="text-sm font-bold text-[var(--brand-600)] hover:underline">
+                {t.create.manageSets} →
+              </Link>
+            </BentoTile>
+          )}
 
-        <label className={label}>
-          {t.create.count}
-          <PaperField accent="#ff8a6b" className="w-32">
+          {source === "course" && (
+            <BentoTile accent="#ffc933" icon={<SketchIcon kind="star" size={26} />} title={t.create.difficulty} delay={0.2}>
+              <select value={difficulty} onChange={(e) => setDifficulty(Number(e.target.value))} className={fieldInner}>
+                <option value={0}>{t.create.anyDifficulty}</option>
+                {[1, 2, 3, 4, 5].map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
+            </BentoTile>
+          )}
+
+          <BentoTile accent="#ff8a6b" icon={<SketchIcon kind="pencil" size={26} />} title={t.create.count} delay={source === "course" ? 0.28 : 0.2}>
             <input type="number" min={1} max={100} value={count} onChange={(e) => setCount(Math.max(1, Math.min(100, Number(e.target.value) || 1)))} className={fieldInner} />
-          </PaperField>
-          {available !== undefined && <span className="text-xs font-normal text-[var(--muted)]">{fmt(t.create.available, { n: available })}</span>}
-        </label>
+            {available !== undefined && <span className="text-xs font-normal text-[var(--muted)]">{fmt(t.create.available, { n: available })}</span>}
+          </BentoTile>
+        </div>
       </div>
 
       <div className="lobby-panel">
