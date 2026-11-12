@@ -24,7 +24,7 @@ const FEET = 0.58 * D; // výška chodidel ve snímku
 type Key = [number, number, number, number];
 const PATH: Key[] = [
   [0, 200, 215, 1], [0.9, 200, 215, 1], [1.05, 200, 224, 1], [1.22, 200, 150, 1], [1.38, 200, 164, 1], [1.55, 200, 215, 1], [1.7, 200, 224, 1], [1.85, 200, 148, 1],
-  [2.0, 200, 162, 1], [2.2, 200, 215, 1], [4.3, 200, 215, 1], [4.5, 204, 150, 0], [4.9, 210, -80, 0], [5.5, 300, -200, 0], [6.2, 470, 12, 1], [7.0, 470, 12, 1],
+  [2.0, 200, 162, 1], [2.2, 200, 215, 1], [4.3, 200, 215, 1], [4.5, 204, 150, 0], [4.9, 210, -80, 0], [5.5, 300, -200, 0], [6.2, 470, 3, 1], [7.0, 470, 3, 1],
 ];
 
 function pathAt(t: number, keys: Key[] = PATH): [number, number] {
@@ -52,8 +52,8 @@ function pathAt(t: number, keys: Key[] = PATH): [number, number] {
 // Epizody po usednutí (náhodně po klidové smyčce) a reakce na myš. Každá je krátká sekvence 3D snímků (30 fps).
 const sheetsOf = (name: string, counts: number[], cols = 10): Sheet[] => counts.map((n, i) => ({ src: `/home/obchod/ep-${name}-${i + 1}.webp`, n, cols, rows: Math.ceil(n / cols) }));
 type Episode = { sheets: Sheet[]; dur: number; path?: Key[]; fx?: "coins" | "flash" };
-const FPATH: Key[] = [[0, 470, 12, 1], [0.5, 470, 12, 1], [1.2, 462, -70, 0], [2.0, 330, -150, 0], [2.7, 170, -110, 0], [3.1, 120, -30, 0], [3.5, 230, -120, 0], [4.1, 360, -175, 0], [4.8, 455, -110, 0], [5.4, 470, -10, 1], [6.0, 470, 12, 1]];
-const HPATH: Key[] = [[0, 470, 12, 1], [0.3, 470, 12, 1], [1.0, 470, -72, 0], [1.7, 470, -60, 0], [2.1, 470, 12, 1], [2.2, 470, 12, 1]];
+const FPATH: Key[] = [[0, 470, 3, 1], [0.5, 470, 3, 1], [1.2, 462, -70, 0], [2.0, 330, -150, 0], [2.7, 170, -110, 0], [3.1, 120, -30, 0], [3.5, 230, -120, 0], [4.1, 360, -175, 0], [4.8, 455, -110, 0], [5.4, 470, -10, 1], [6.0, 470, 3, 1]];
+const HPATH: Key[] = [[0, 470, 3, 1], [0.3, 470, 3, 1], [1.0, 470, -72, 0], [1.7, 470, -60, 0], [2.1, 470, 3, 1], [2.2, 470, 3, 1]];
 const EPISODES: Record<string, Episode> = {
   yawn: { sheets: sheetsOf("yawn", [90]), dur: 3.0 },
   read: { sheets: sheetsOf("read", [75]), dur: 2.5 },
