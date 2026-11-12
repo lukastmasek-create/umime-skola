@@ -9,7 +9,11 @@ import type { Locale } from "@/i18n/config";
 import type { LiveMode, SetItem } from "@/lib/live/types";
 import { liveApi, saveHost } from "./api";
 import { errorText } from "./LiveRoom";
-import { ModeArt } from "./ModeArt";
+import { PcardTape } from "@/components/PcardArt";
+import { ModeScene } from "./ModeScenes";
+
+// Barvy karet režimů: stejná paleta jako karty na homepage.
+const MODE_ACCENT: Record<LiveMode, string> = { QUIZ: "#8fd0ff", RACE: "#7ee0b0", GOLD: "#ffc933", STREAK: "#ff8a6b", SURVIVAL: "#c9a8ff", TEAMS: "#ffb3c7" };
 
 type Course = { slug: string; title: string; category: string; subject: string | null; grade: number | null; questions: number };
 type SetRow = { id: string; title: string; questions: SetItem[] };
@@ -168,26 +172,34 @@ export function CreateGame({ locale }: { locale: Locale }) {
         </label>
       </section>
 
-      <section className="card flex flex-col gap-4 p-5">
-        <h2 className="text-lg font-bold">{t.create.mode}</h2>
-        <div className="grid gap-3 sm:grid-cols-3" role="radiogroup" aria-label={t.create.mode}>
-          {MODES.map((m) => (
-            <button
-              key={m}
-              type="button"
-              role="radio"
-              aria-checked={mode === m}
-              onClick={() => setMode(m)}
-              className={`btn-bouncy flex flex-col items-start gap-1 p-4 text-left ${mode === m ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface)]"}`}
-            >
-              <ModeArt mode={m} className="h-16 w-auto self-center" />
-              <span className="font-bold">{t.create.modes[m].name}</span>
-              <span className="text-xs">{t.create.modes[m].description}</span>
-            </button>
+      <div className="lobby-panel">
+        <h2 className="mb-10 text-center text-3xl font-bold tracking-tight sm:text-4xl" style={{ fontFamily: "var(--font-heading)" }}>
+          {t.create.mode}
+        </h2>
+        <div className="pcard-pile pcard-pile-wide" role="radiogroup" aria-label={t.create.mode}>
+          {MODES.map((m, i) => (
+            <div key={m} className="pcard-slot" style={{ ["--ac" as string]: MODE_ACCENT[m] }}>
+              <button type="button" role="radio" aria-checked={mode === m} onClick={() => setMode(m)} className="pcard pcard-static w-full text-left">
+                <span className="pcard-in">
+                  <span className="pcard-num" aria-hidden>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="pcard-title">{t.create.modes[m].name}</span>
+                  <span className="pcard-text">{t.create.modes[m].description}</span>
+                  <ModeScene mode={m} />
+                  <span className="pcard-go" aria-hidden>
+                    {mode === m ? "✓" : "→"}
+                  </span>
+                </span>
+                <PcardTape />
+              </button>
+            </div>
           ))}
         </div>
+      </div>
 
-        <h3 className="mt-2 font-bold">{t.create.settings}</h3>
+      <section className="card flex flex-col gap-4 p-5">
+        <h3 className="font-bold">{t.create.settings}</h3>
         {isSyncMode(mode) ? (
           <div className="grid gap-4 sm:grid-cols-2">
             <label className={label}>
