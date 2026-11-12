@@ -52,3 +52,12 @@ export function notesPrompt(locale: string): string {
     SAFE,
   ].join("\n");
 }
+
+export function contentPrompt(locale: string): string {
+  return [
+    "Ze školního textu (učebnice, skripta, poznámky) vytvoř testové otázky pro žáky. Použij jen informace z textu, nic si nevymýšlej.",
+    `Piš ${langName(locale)}. Každá otázka má právě 4 možnosti, jedna je správná, ostatní věrohodné, ale špatné. Přidej krátké vysvětlení správné odpovědi. Vytvoř 8 až 12 otázek.`,
+    'Vrať pouze JSON bez dalšího textu: {"title":"název tématu","questions":[{"prompt":"...","options":["...","...","...","..."],"correctIndex":0,"explanation":"..."}]}.',
+    SAFE,
+  ].join("\n");
+}

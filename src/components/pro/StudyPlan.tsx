@@ -7,19 +7,9 @@ import { getProToolsText } from "@/i18n/pro-tools";
 import type { PlanDay, PlanTask } from "@/lib/pro-tools/plan";
 import { errorText, proFetch } from "./api";
 
-// Osobní plán učení: sedm dní po 15 minutách podle slabých míst.
-export function StudyPlan({ locale }: { locale: Locale }) {
+// Seznam dnů plánu; používá ho osobní plán i plán na prázdniny.
+export function PlanList({ plan, locale }: { plan: PlanDay[]; locale: Locale }) {
   const t = getProToolsText(locale);
-  const [plan, setPlan] = useState<PlanDay[] | null>(null);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    void proFetch<{ plan: PlanDay[] }>("/api/pro/plan").then((r) => (r.ok ? setPlan(r.data.plan) : setError(errorText(t, r.error))));
-  }, [t]);
-
-  if (error) return <p className="card p-4 text-sm font-semibold">{error}</p>;
-  if (!plan) return <p className="text-sm text-[var(--muted)]">{t.loading}</p>;
-
   const fmt = new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "numeric" });
 
   function label(task: PlanTask) {
@@ -38,31 +28,49 @@ export function StudyPlan({ locale }: { locale: Locale }) {
   }
 
   return (
+    <ol className="grid gap-3">
+      {plan.map((d, i) => (
+        <li key={d.date} className={`card p-4 ${i === 0 ? "ring-2 ring-[var(--brand-500)]" : ""}`}>
+          <p className="mb-2 flex items-center justify-between text-sm font-bold">
+            <span className="capitalize">{i === 0 ? t.today : fmt.format(new Date(d.date + "T12:00:00"))}</span>
+            <span className="text-[var(--muted)]">{d.tasks.reduce((s, x) => s + x.minutes, 0)} min</span>
+          </p>
+          <ul className="grid gap-2">
+            {d.tasks.map((task, j) => {
+              const l = label(task);
+              return (
+                <li key={j}>
+                  <Link href={l.href} className="flex items-center justify-between gap-3 rounded-xl border-2 border-[var(--edge)] px-3 py-2 text-sm font-semibold hover:bg-[var(--surface-muted)]">
+                    <span>{l.text}</span>
+                    <span className="shrink-0 text-xs text-[var(--muted)]">{task.minutes} min</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+// Osobní plán učení: sedm dní po 15 minutách podle slabých míst.
+export function StudyPlan({ locale }: { locale: Locale }) {
+  const t = getProToolsText(locale);
+  const [plan, setPlan] = useState<PlanDay[] | null>(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    void proFetch<{ plan: PlanDay[] }>("/api/pro/plan").then((r) => (r.ok ? setPlan(r.data.plan) : setError(errorText(t, r.error))));
+  }, [t]);
+
+  if (error) return <p className="card p-4 text-sm font-semibold">{error}</p>;
+  if (!plan) return <p className="text-sm text-[var(--muted)]">{t.loading}</p>;
+
+  return (
     <div>
       <p className="mb-4 text-sm text-[var(--muted)]">{t.planIntro}</p>
-      <ol className="grid gap-3">
-        {plan.map((d, i) => (
-          <li key={d.date} className={`card p-4 ${i === 0 ? "ring-2 ring-[var(--brand-500)]" : ""}`}>
-            <p className="mb-2 flex items-center justify-between text-sm font-bold">
-              <span className="capitalize">{i === 0 ? t.today : fmt.format(new Date(d.date + "T12:00:00"))}</span>
-              <span className="text-[var(--muted)]">{d.tasks.reduce((s, x) => s + x.minutes, 0)} min</span>
-            </p>
-            <ul className="grid gap-2">
-              {d.tasks.map((task, j) => {
-                const l = label(task);
-                return (
-                  <li key={j}>
-                    <Link href={l.href} className="flex items-center justify-between gap-3 rounded-xl border-2 border-[var(--edge)] px-3 py-2 text-sm font-semibold hover:bg-[var(--surface-muted)]">
-                      <span>{l.text}</span>
-                      <span className="shrink-0 text-xs text-[var(--muted)]">{task.minutes} min</span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </li>
-        ))}
-      </ol>
+      <PlanList plan={plan} locale={locale} />
     </div>
   );
 }

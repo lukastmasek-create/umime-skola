@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { hasPro } from "@/lib/pro-server";
+import { proTiers } from "@/lib/pro-server";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getProToolsText } from "@/i18n/pro-tools";
-import { isProFeature, type ProFeatureSlug } from "@/lib/pro-tools/features";
+import { featureTier, isProFeature, type ProFeatureSlug } from "@/lib/pro-tools/features";
 import { AiTutor } from "@/components/pro/AiTutor";
 import { ExamRunner } from "@/components/pro/ExamRunner";
 import { MistakeNotebook } from "@/components/pro/MistakeNotebook";
@@ -15,6 +15,8 @@ import { OralExam } from "@/components/pro/OralExam";
 import { PhotoTasks } from "@/components/pro/PhotoTasks";
 import { Pronunciation } from "@/components/pro/Pronunciation";
 import { StudyPlan } from "@/components/pro/StudyPlan";
+import { FamilyDuel, FamilyHub, HolidayPlan } from "@/components/pro/FamilyTools";
+import { SchoolTools } from "@/components/pro/SchoolTools";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +30,10 @@ const VIEWS: Record<ProFeatureSlug, (props: { locale: Locale }) => React.ReactNo
   poznamky: (p) => <NotesCards {...p} />,
   vyslovnost: (p) => <Pronunciation {...p} />,
   offline: (p) => <OfflineManager {...p} />,
+  rodina: (p) => <FamilyHub {...p} />,
+  souboj: (p) => <FamilyDuel {...p} />,
+  prazdniny: (p) => <HolidayPlan {...p} />,
+  skola: (p) => <SchoolTools {...p} />,
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; feature: string }> }): Promise<Metadata> {
@@ -49,7 +55,12 @@ export default async function ProToolPage({ params }: { params: Promise<{ locale
   try {
     const userId = (await auth())?.user?.id;
     loggedIn = !!userId;
-    if (userId) allowed = await hasPro(userId);
+    if (userId) {
+      const tiers = await proTiers(userId);
+      const need = featureTier(feature);
+      // Stránka Rodina je otevřená každému přihlášenému, aby se pozvaný člen mohl připojit kódem.
+      allowed = feature === "rodina" || (need ? tiers.has(need) : tiers.size > 0);
+    }
   } catch {
     allowed = false;
   }
@@ -68,7 +79,7 @@ export default async function ProToolPage({ params }: { params: Promise<{ locale
       ) : (
         <div className="card p-6">
           <h2 className="mb-1 text-lg font-bold">{t.gateTitle}</h2>
-          <p className="mb-4 text-sm text-[var(--muted)]">{t.gateText}</p>
+          <p className="mb-4 text-sm text-[var(--muted)]">{featureTier(feature) === "FAMILY" ? t.gateFamily : featureTier(feature) === "SCHOOL" ? t.gateSchool : t.gateText}</p>
           <div className="flex flex-wrap gap-2">
             {!loggedIn && (
               <Link href={`/${locale}/prihlaseni`} className="btn-bouncy btn-secondary btn-lg">

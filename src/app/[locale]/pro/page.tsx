@@ -7,7 +7,7 @@ import { ExpandCard } from "@/components/ExpandCard";
 import { getProText } from "@/i18n/pro";
 import { getProExtra } from "@/i18n/pro-extra";
 import { getProToolsText } from "@/i18n/pro-tools";
-import { PRO_FEATURES } from "@/lib/pro-tools/features";
+import { PRO_FEATURES, featureTier } from "@/lib/pro-tools/features";
 import { isLocale, type Locale } from "@/i18n/config";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -62,7 +62,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
             <Link key={f.slug} href={`/${locale}/pro/${f.slug}`} className="card flex items-start gap-3 p-4 hover:bg-[var(--surface-muted)]">
               <span className="text-2xl" aria-hidden>{f.icon}</span>
               <span>
-                <span className="block font-bold">{tools.features[f.slug].title}</span>
+                <span className="block font-bold">{tools.features[f.slug].title}{featureTier(f.slug) && <span className="pill ml-2 bg-[var(--surface-muted)] px-2 py-0.5 text-xs">{featureTier(f.slug) === "FAMILY" ? tools.tierFamily : tools.tierSchool}</span>}</span>
                 <span className="block text-sm text-[var(--muted)]">{tools.features[f.slug].text}</span>
               </span>
             </Link>

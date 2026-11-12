@@ -3,7 +3,7 @@ import type { Prisma } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { PARENTAL_GAME, normalizeParental, readParental, weeklyReport, type Parental } from "@/lib/parental";
+import { PARENTAL_GAME, familySafe, normalizeParental, readParental, weeklyReport, type Parental } from "@/lib/parental";
 
 // Rodičovská kontrola. GET: nastavení bez PINu. POST { action: "set" | "verify" | "disable" | "report", pin, newPin?, minutes, blockShop, blockTogether }.
 // "report" vrátí týdenní přehled dokončených kurzů; stejně jako "verify" vyžaduje PIN.
@@ -23,7 +23,10 @@ export async function GET() {
   const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ loggedIn: false, enabled: false, minutes: 0, blockShop: false, blockTogether: false });
   try {
-    return NextResponse.json({ loggedIn: true, ...view(await readParental(userId)) });
+    const v = view(await readParental(userId));
+    // Dětský bezpečný režim z rodinného tarifu omezuje společné hraní a nákupy bez PINu.
+    const safe = await familySafe(userId);
+    return NextResponse.json({ loggedIn: true, ...v, familySafe: safe });
   } catch {
     return NextResponse.json({ error: "unavailable" }, { status: 503 });
   }

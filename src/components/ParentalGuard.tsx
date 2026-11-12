@@ -24,7 +24,7 @@ export function ParentalGuard({ locale }: { locale: Locale }) {
     if (!loggedIn) return;
     void fetch("/api/ucet/rodic")
       .then((r) => r.json())
-      .then((d) => d.enabled && setRules({ minutes: d.minutes, blockTogether: d.blockTogether }))
+      .then((d) => (d.enabled || d.familySafe) && setRules({ minutes: d.enabled ? d.minutes : 0, blockTogether: !!d.blockTogether || !!d.familySafe }))
       .catch(() => {});
   }, [loggedIn]);
 

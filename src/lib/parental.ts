@@ -51,8 +51,26 @@ export async function weeklyReport(userId: string, now = Date.now()) {
 /** Smí hráč utrácet body v obchodech? (rodič mohl nákupy zakázat) */
 export async function shopBlocked(userId: string): Promise<boolean> {
   try {
+    if (await familySafe(userId)) return true;
     const p = await readParental(userId);
     return !!p.pin && p.blockShop;
+  } catch {
+    return false;
+  }
+}
+
+// Dětský bezpečný režim z rodinného tarifu UčímePRO: plátce ho zapíná členům rodiny (stav drží v IdleState plátce).
+export const FAMILY_GAME = "pro-rodina";
+
+export async function familySafe(userId: string): Promise<boolean> {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { subscriptionId: true } });
+    if (!user?.subscriptionId) return false;
+    const sub = await prisma.subscription.findUnique({ where: { id: user.subscriptionId }, select: { ownerId: true, tier: true, endsAt: true } });
+    if (!sub || sub.tier !== "FAMILY" || !sub.ownerId || (sub.endsAt && sub.endsAt.getTime() < Date.now())) return false;
+    const row = await prisma.idleState.findUnique({ where: { userId_game: { userId: sub.ownerId, game: FAMILY_GAME } }, select: { data: true } });
+    const d = row?.data as { safe?: Record<string, boolean> } | null;
+    return d?.safe?.[userId] === true;
   } catch {
     return false;
   }
