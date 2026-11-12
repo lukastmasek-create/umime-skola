@@ -5671,7 +5671,7 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 2;
+  z-index: -1; /* pod obsahem sekce: vlny nikdy nepřekrývají karty */
   height: clamp(200px, 26vw, 360px);
   pointer-events: none;
   overflow: hidden;
@@ -5696,7 +5696,27 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
   height: 100%;
 }
 .section-wave-back { animation: section-wave-drift 38s linear infinite reverse; opacity: 0.9; }
-.section-wave-front { animation: section-wave-drift 22s linear infinite; }
+.section-wave-mid { animation: section-wave-drift 27s linear infinite; opacity: 0.8; }
+.section-wave-front { animation: section-wave-drift 19s linear infinite; }
+
+/* Světelný paprsek přejíždí přes hranu sekcí */
+.section-sweep {
+  position: absolute;
+  left: 0;
+  bottom: 18%;
+  width: 34%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--sb-glow), transparent);
+  box-shadow: 0 0 18px 4px var(--sb-glow);
+  opacity: 0;
+  animation: section-sweep 9s ease-in-out infinite;
+}
+@keyframes section-sweep {
+  0% { transform: translateX(-40%); opacity: 0; }
+  15% { opacity: 0.9; }
+  85% { opacity: 0.9; }
+  100% { transform: translateX(320%); opacity: 0; }
+}
 .section-wave-line { filter: drop-shadow(0 0 6px currentColor); }
 @keyframes section-wave-drift {
   to { transform: translate3d(-50%, 0, 0); }
@@ -5709,7 +5729,7 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 /* Jiskry: SVG hvězdičky plující přes hranu sekcí */
 .section-spark {
   position: absolute;
-  z-index: 3;
+  z-index: 1;
   opacity: 0.85;
   animation: section-spark var(--sd) ease-in-out infinite var(--sdl);
   filter: drop-shadow(0 0 8px currentColor);
@@ -5725,8 +5745,9 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
   .section-spark { transform: scale(0.8); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .section-wave, .section-wave svg, .section-spark { animation: none !important; }
+  .section-wave, .section-wave svg, .section-spark, .section-sweep { animation: none !important; }
 }
 :root[data-motion="off"] .section-wave,
 :root[data-motion="off"] .section-wave svg,
-:root[data-motion="off"] .section-spark { animation: none; }
+:root[data-motion="off"] .section-spark,
+:root[data-motion="off"] .section-sweep { animation: none; }
