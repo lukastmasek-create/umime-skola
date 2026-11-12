@@ -46,7 +46,9 @@ export async function POST(request: Request) {
     if (mode === "tutor") {
       const turns = cleanTurns(body.messages);
       if (turns.length === 0) throw new LiveError("invalid-message");
-      return { reply: await run({ system: tutorPrompt(locale), turns, maxTokens: 500 }) };
+      // Fotka se připojuje jen k poslední zprávě žáka.
+      const image = parseImage(body.image);
+      return { reply: await run({ system: tutorPrompt(locale), turns, image, maxTokens: 500 }) };
     }
 
     if (mode === "photo") {

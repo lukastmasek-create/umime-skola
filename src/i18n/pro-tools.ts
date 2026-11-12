@@ -74,6 +74,10 @@ const cs = {
   tutorIntro: "Napiš, s čím si nevíš rady. Doučovač ti nedá hotový výsledek, ale pomůže ti k němu dojít.",
   tutorEmpty: "Například: Nerozumím, jak se sčítají zlomky s různým jmenovatelem.",
   tutorPlaceholder: "Zeptej se na úlohu nebo látku…",
+  tutorAttach: "Přidat fotku",
+  tutorRemovePhoto: "Odebrat fotku",
+  tutorPhotoDefault: "Podívej se na fotku mé úlohy a pomoz mi s ní.",
+  tutorPhotoAlt: "Fotka úlohy",
 
   photoIntro: "Vyfoť úlohu z učebnice nebo sešitu. Úlohu za tebe nevyřeší, ale dostaneš pět podobných příkladů na procvičení stejného postupu.",
   photoPick: "Vyfotit nebo vybrat obrázek",
@@ -336,6 +340,10 @@ const en: ProToolsText = {
   tutorIntro: "Write what you are stuck on. The tutor will not give you the final answer, but will help you get there.",
   tutorEmpty: "For example: I do not understand how to add fractions with different denominators.",
   tutorPlaceholder: "Ask about a task or a topic…",
+  tutorAttach: "Add a photo",
+  tutorRemovePhoto: "Remove photo",
+  tutorPhotoDefault: "Look at the photo of my task and help me with it.",
+  tutorPhotoAlt: "Photo of the task",
 
   photoIntro: "Take a photo of a task from a textbook or notebook. It will not solve it for you, but you get five similar examples to practise the same method.",
   photoPick: "Take or choose a picture",
