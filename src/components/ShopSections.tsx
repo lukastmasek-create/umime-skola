@@ -44,17 +44,18 @@ export function ShopTabs({ panels }: { panels: Record<TabId, ReactNode> }) {
 // Karta PRO verze. Samotné PRO řeší jiná session; tady je jen karta s porovnáním a odkazem, který se doplní.
 export function ProCard() {
   const rows: [string, string, string][] = [
-    ["Body za učení", "běžné", "násobek navíc"],
-    ["Kolo štěstí", "1× denně", "víc točení"],
-    ["Možnosti v obchodě a hrách", "základní", "víc možností"],
+    ["Kurzy, body, kolo štěstí", "zdarma", "zdarma"],
+    ["AI doučovač a osobní plán učení", "ne", "ano"],
+    ["Příprava na přijímačky, ústní zkoušení", "ne", "ano"],
+    ["Fotka úlohy, sešit chyb, offline", "ne", "ano"],
   ];
   return (
     <div className="card relative mb-10 p-6">
       <span className="pill absolute -top-3 left-6 bg-[var(--brand-500)] px-3 py-1 text-white">PRO</span>
       <h2 className="mb-1 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        Umíme PRO
+        UčímePRO
       </h2>
-      <p className="mb-4 text-sm text-[var(--muted)]">Víc bodů a víc možností. Zdarma zůstává všechno, co už máš.</p>
+      <p className="mb-4 text-sm text-[var(--muted)]">Nové funkce od 100 Kč měsíčně. Zdarma zůstává všechno, co už máš.</p>
       <table className="mb-4 w-full text-left text-sm">
         <thead>
           <tr className="text-[var(--faint)]">

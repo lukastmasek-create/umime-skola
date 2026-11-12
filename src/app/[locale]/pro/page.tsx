@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { hasPro } from "@/lib/pro-server";
 import { ExpandCard } from "@/components/ExpandCard";
-import { PricingTab } from "@/components/UiDemoDashboard";
 import { getProText } from "@/i18n/pro";
 import { isLocale, type Locale } from "@/i18n/config";
 
@@ -31,6 +30,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
   }
 
   const tiers = [t.tiers.individual, t.tiers.family, t.tiers.school];
+  const extra = t.extra!;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-16">
@@ -47,6 +47,21 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
           </Link>
         )}
       </div>
+
+      <section className="mb-8">
+        <h2 className="mb-4 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+          {extra.benefitsTitle}
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {extra.benefits.map((b) => (
+            <div key={b.title} className="card p-5">
+              <p className="mb-2 text-2xl" aria-hidden>{b.icon}</p>
+              <h3 className="mb-1 font-bold">{b.title}</h3>
+              <p className="text-sm text-[var(--muted)]">{b.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
       <section className="card mb-8 p-6">
         <h2 className="mb-4 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
@@ -79,11 +94,15 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
         <div className="grid gap-4 sm:grid-cols-3">
           {tiers.map((tier, i) => (
             <ExpandCard key={tier.title} index={`0${i + 1}`} title={tier.title} lead={tier.text} color={["#35d0ff", "#ffd23f", "#7cf29a"][i]}>
+              <p className="mb-3 flex items-baseline gap-2">
+                <span className="text-3xl font-extrabold tabular-nums">{extra.plans[i].price}</span>
+                <span className="text-xs text-[var(--muted)]">{extra.plans[i].per}</span>
+              </p>
               <ul className="grid gap-2">
-                {t.rows.map((row) => (
-                  <li key={row.what} className="flex justify-between gap-3 border-t border-[var(--edge)] pt-2">
-                    <span className="text-[var(--muted)]">{row.what}</span>
-                    <span className="text-right font-semibold">{row.pro}</span>
+                {extra.plans[i].perks.map((perk) => (
+                  <li key={perk} className="flex items-start gap-2 border-t border-[var(--edge)] pt-2 text-sm">
+                    <span aria-hidden className="text-[var(--accent-green)]">✓</span>
+                    <span>{perk}</span>
                   </li>
                 ))}
               </ul>
@@ -92,10 +111,8 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
         </div>
       </section>
 
-      <section className="mb-8">
-        <PricingTab />
-      </section>
-
+      <p className="mb-2 text-sm font-semibold">{extra.trial}</p>
+      <p className="mb-2 text-sm text-[var(--muted)]">{extra.note}</p>
       <p className="mb-6 text-sm text-[var(--muted)]">{t.availability}</p>
 
       <div className="card flex flex-wrap items-center justify-between gap-3 p-5">

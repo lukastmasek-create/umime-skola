@@ -32,7 +32,7 @@ const MORE_TABS: { id: More; label: string }[] = [
   { id: "materialy", label: "Materiály" },
   { id: "modely", label: "Limitované modely" },
   { id: "kolo", label: "Kolo štěstí" },
-  { id: "pro", label: "Umíme PRO" },
+  { id: "pro", label: "UčímePRO" },
 ];
 
 const KIND_MODEL: Record<ShopKind, string> = { avatar: "cat-avatar", title: "cat-title", frame: "cat-frame", banner: "cat-banner", pet: "cat-pet", city: "cat-city" };
