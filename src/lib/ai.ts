@@ -83,17 +83,6 @@ export async function generateText({ system, turns, maxTokens = 400, image }: Ge
   return (data.content ?? []).filter((c) => c.type === "text").map((c) => c.text ?? "").join("").trim();
 }
 
-// Řeč přes Deepgram Aura-2 (anglicky, jen v angličtině). Stojí ~0,03 USD za 1000 znaků.
-const SPEECH_MODEL = "@cf/deepgram/aura-2-en";
-
-/** Vrátí audio MP3 jako stream, nebo null, když binding AI chybí (lokální vývoj). */
-export async function generateSpeech(text: string, speaker: string): Promise<ReadableStream | null> {
-  const env = aiEnv();
-  if (!env.AI) return null;
-  const out = await env.AI.run(SPEECH_MODEL, { text, speaker, encoding: "mp3" });
-  return out instanceof ReadableStream ? out : null;
-}
-
 /** Vytáhne první JSON objekt nebo pole z odpovědi modelu (modely ho rády obalí textem nebo ```). */
 export function extractJson<T = unknown>(text: string): T | null {
   const cleaned = text.replace(/```(?:json)?/gi, "");

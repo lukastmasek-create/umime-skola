@@ -128,44 +128,15 @@ export function OralExam({ locale }: { locale: Locale }) {
   const logRef = useRef<HTMLDivElement>(null);
   const canListen = typeof window !== "undefined" && !!speechRecognition();
 
-  const audio = useRef<HTMLAudioElement | null>(null);
-
-  function stopAudio() {
-    audio.current?.pause();
-    audio.current = null;
-    window.speechSynthesis?.cancel();
-  }
-
-  useEffect(() => () => { stop.current?.(); stopAudio(); }, []);
+  useEffect(() => () => { stop.current?.(); window.speechSynthesis?.cancel(); }, []);
 
   // Nová zpráva se posune do zobrazení.
   useEffect(() => {
     logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: "smooth" });
   }, [msgs, busy]);
 
-  // Angličtina jde přes serverový Deepgram Aura-2. Když selže, nebo jde o jiný jazyk, použije se prohlížeč.
-  async function sayOnServer(s: string): Promise<boolean> {
-    try {
-      const res = await fetch("/api/pro/tts", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: s }) });
-      if (!res.ok) return false;
-      const url = URL.createObjectURL(await res.blob());
-      const a = new Audio(url);
-      a.onended = () => URL.revokeObjectURL(url);
-      stopAudio();
-      audio.current = a;
-      await a.play();
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
   function say(s: string) {
     if (!speak) return;
-    if (locale === "en") {
-      void sayOnServer(s).then((ok) => { if (!ok) sayInBrowser(s); });
-      return;
-    }
     sayInBrowser(s);
   }
 
@@ -213,7 +184,7 @@ export function OralExam({ locale }: { locale: Locale }) {
   async function finish() {
     if (busy) return;
     stop.current?.();
-    stopAudio();
+    window.speechSynthesis?.cancel();
     setBusy(true);
     setError("");
     const r = await proFetch<Verdict>("/api/pro/ai", { mode: "oral", locale, topic, finish: true, messages: msgs });
