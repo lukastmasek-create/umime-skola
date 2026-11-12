@@ -1,7 +1,7 @@
 import { getLegalPage } from "@/i18n/legal";
 import type { Locale } from "@/i18n/config";
 
-export function LegalPageView({ kind, locale }: { kind: "privacy" | "terms"; locale: Locale }) {
+export function LegalPageView({ kind, locale }: { kind: "privacy" | "terms" | "cookies"; locale: Locale }) {
   const page = getLegalPage(kind, locale);
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-16">

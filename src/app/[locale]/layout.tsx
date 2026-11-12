@@ -138,6 +138,10 @@ export default async function LocaleLayout({
               <SketchIcon kind="scroll" size={16} className="sketch-chip-ico" />
               {getFooterLinks(locale as Locale).terms}
             </Link>
+            <Link href={`/${locale}/zasady-cookies`} className="sketch-chip">
+              <SketchIcon kind="info" size={16} className="sketch-chip-ico" />
+              {getFooterLinks(locale as Locale).cookies}
+            </Link>
           </nav>
           <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             <a href={`mailto:${CONTACT_EMAIL}`} className="sketch-chip">
