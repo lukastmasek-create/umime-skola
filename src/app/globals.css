@@ -4103,14 +4103,63 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  isolation: isolate;
   border-radius: 22px;
   padding: 12px;
   color: #fff;
-  transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.3), box-shadow 0.25s;
+  animation: market-in 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.4) backwards;
+  animation-delay: calc(var(--mi, 0) * 70ms);
+  transition: transform 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.5), box-shadow 0.35s;
 }
-.market-card:hover { transform: translateY(-6px) rotate(-0.6deg); box-shadow: 0 18px 32px -14px rgba(0, 0, 0, 0.7); }
-.market-card:focus-within { box-shadow: 0 18px 32px -14px rgba(0, 0, 0, 0.7); }
-/* Tlačítko s cenou v kulatém tvaru jako .lobby-play: korálová barva, po najetí se zvětší a rozzáří. */
+/* Vjezd karet: každá o kousek později, z mírného zmenšení a natočení. */
+@keyframes market-in {
+  0% { opacity: 0; transform: translateY(28px) scale(0.86) rotate(-4deg); }
+  70% { opacity: 1; transform: translateY(-4px) scale(1.02) rotate(1deg); }
+  100% { opacity: 1; transform: none; }
+}
+.market-card:nth-child(1) { --mi: 0; }
+.market-card:nth-child(2) { --mi: 1; }
+.market-card:nth-child(3) { --mi: 2; }
+.market-card:nth-child(4) { --mi: 3; }
+.market-card:nth-child(5) { --mi: 4; }
+.market-card:nth-child(6) { --mi: 5; }
+.market-card:nth-child(n + 7) { --mi: 6; }
+/* Pulzující záře za kartou a lesklý pruh, který přejede kartou při najetí. */
+.market-card::before {
+  content: "";
+  position: absolute;
+  right: -30px;
+  top: -30px;
+  z-index: -1;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  filter: blur(34px);
+  animation: market-glow 3.2s ease-in-out infinite;
+}
+.market-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -60%;
+  width: 45%;
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: skewX(-18deg);
+}
+.market-card:hover::after { animation: market-sweep 0.9s ease-out; }
+@keyframes market-glow { 0%, 100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.35) translate(-10px, 10px); opacity: 1; } }
+@keyframes market-sweep { from { left: -60%; } to { left: 130%; } }
+.market-card > * { position: relative; z-index: 1; }
+/* Při najetí výrazný skok, náklon a zvětšení; ilustrace se natáčí a nadskočí. */
+.market-card:hover { transform: translateY(-12px) rotate(-2deg) scale(1.04); box-shadow: 0 28px 44px -16px rgba(0, 0, 0, 0.8), 0 0 0 3px rgba(255, 255, 255, 0.35); }
+.market-card:focus-within { box-shadow: 0 28px 44px -16px rgba(0, 0, 0, 0.8), 0 0 0 3px rgba(255, 255, 255, 0.35); }
+.market-card > div:first-child > div { transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.6); }
+.market-card:hover > div:first-child > div { transform: scale(1.12) rotate(-5deg); }
+/* Tlačítko s cenou v kulatém tvaru jako .lobby-play: korálová barva, pulzuje a po najetí poskočí. */
 .market-btn {
   display: inline-flex;
   align-items: center;
@@ -4121,14 +4170,20 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
   font-weight: 800;
   background: #ff8a6b;
   color: #16132b;
-  transition: transform 0.25s, box-shadow 0.25s, opacity 0.2s;
+  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.6), box-shadow 0.3s, opacity 0.2s;
+  animation: market-pulse 2.4s ease-in-out infinite;
 }
-.market-btn:hover:not(:disabled) { transform: scale(1.06); box-shadow: 0 0 0 6px rgba(255, 138, 107, 0.25); }
-.market-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.market-btn-alt { background: rgba(255, 255, 255, 0.18); color: #fff; }
-.market-btn-alt:hover:not(:disabled) { box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.18); }
+@keyframes market-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 138, 107, 0.55); } 60% { box-shadow: 0 0 0 9px rgba(255, 138, 107, 0); } }
+.market-btn:hover:not(:disabled) { transform: scale(1.14) rotate(-3deg); box-shadow: 0 0 0 7px rgba(255, 138, 107, 0.35); animation: none; }
+.market-btn:active:not(:disabled) { transform: scale(0.94); }
+.market-btn:disabled { opacity: 0.5; cursor: not-allowed; animation: none; }
+.market-btn-alt { background: rgba(255, 255, 255, 0.18); color: #fff; animation: none; }
+.market-btn-alt:hover:not(:disabled) { box-shadow: 0 0 0 7px rgba(255, 255, 255, 0.2); }
 .market-btn:focus-visible, .market-card button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
-@media (prefers-reduced-motion: reduce) { .market-card, .market-btn { transition: none; } .market-card:hover { transform: none; } .market-btn:hover:not(:disabled) { transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .market-card, .market-card::before, .market-card::after, .market-btn, .market-card > div:first-child > div { animation: none !important; transition: none !important; }
+  .market-card:hover, .market-btn:hover:not(:disabled) { transform: none; }
+}
 
 /* Panel sekce: stejný vzhled jako lobby (celá stránka) */
 .lobby-panel-wide {
