@@ -148,7 +148,7 @@ export default async function Home({
           />
           </div>
         </div>
-        <SectionWave fill="#0b1024" glow="#5ab8ff" />
+        <SectionWave fill="#0c1537" glow="#5ab8ff" />
       </section>
 
       {/* 4) Hory: jak to funguje */}
@@ -182,7 +182,7 @@ export default async function Home({
           <HangTags tags={getHomeHangText(locale as Locale).tags} />
           <HangGround />
         </HangPanel>
-        <SectionWave fill="#0b1024" glow="#8ea2ff" />
+        <SectionWave fill="#10183b" glow="#8ea2ff" />
       </section>
 
       {/* 5) Zpět do vesmíru: kategorie */}
@@ -219,7 +219,7 @@ export default async function Home({
             ))}
           </div>
         </div>
-        <SectionWave fill="#0a1128" glow="#ff8a6b" />
+        <SectionWave fill="#0c122b" glow="#ff8a6b" />
       </section>
 
       {/* 6) Pro učitele */}
