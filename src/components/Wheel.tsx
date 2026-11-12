@@ -4,12 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { WHEEL_EXTRA_PRICE, WHEEL_PRIZES } from "@/lib/wheel";
 import { WHEEL_LABEL_RADIUS } from "@/lib/rewards";
-import { RewardImage } from "@/components/RewardImage";
+import { Icon } from "@/components/Icon";
 import layout from "./kolo-stojan.json";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/config";
 
-const ICON_FILE = { title: "titul", avatar: "avatar", frame: "ramecek", banner: "banner" } as const;
+// Ikony výher jako SVG (public/ikony/cat-*.svg), místo dřívějších WebP.
+const ICON_FILE = { title: "cat-title", avatar: "cat-avatar", frame: "cat-frame", banner: "cat-banner" } as const;
 const SEGMENT_ANGLE = 360 / WHEEL_PRIZES.length;
 // Svislá poloha popisků od horního okraje kola, v procentech jeho výšky.
 const LABEL_TOP = `${(0.5 - WHEEL_LABEL_RADIUS) * 100}%`;
@@ -108,7 +109,7 @@ export function Wheel({
         setWonAmount(data.amount);
         setWonItem(data.item ?? null);
         const won = WHEEL_PRIZES[prizeIndex].item;
-        setWonIcon(data.item && won ? `/home/obchod/ikona-${ICON_FILE[won.kind]}.webp` : null);
+        setWonIcon(data.item && won ? ICON_FILE[won.kind] : null);
         setBurst((b) => b + 1);
         setShatter((n) => n + 1);
         setReform(false);
@@ -160,7 +161,7 @@ export function Wheel({
                   >
                     {prize.item ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={`/home/obchod/ikona-${ICON_FILE[prize.item.kind]}.webp`} alt={prize.item.name} draggable={false} className="h-12 w-12 select-none sm:h-16 sm:w-16" style={{ filter: "drop-shadow(0 2px 2px rgba(22,19,43,0.6))" }} />
+                      <img src={`/ikony/${ICON_FILE[prize.item.kind]}.svg`} alt={prize.item.name} draggable={false} className="h-12 w-12 select-none sm:h-16 sm:w-16" style={{ filter: "drop-shadow(0 2px 2px rgba(22,19,43,0.6))" }} />
                     ) : (
                       prize.amount
                     )}
@@ -218,14 +219,14 @@ export function Wheel({
 
       {wonAmount !== null && (
         <p className="pill flex items-center gap-2 bg-[var(--brand-50)] py-1 pl-1 pr-4 text-sm text-[var(--brand-700)]">
-          <RewardImage name="mince-otoceni" size={32} />
+          <Icon name="hero-mince" size={32} />
           {wonItem ? `${dict.shop.wonPrefix} ${wonItem}` : `${dict.shop.wonPrefix} ${wonAmount} ${dict.shop.pointsSuffix}`}
         </p>
       )}
       {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
       {loggedIn && (
         <p className="flex items-center gap-1 text-xs text-[var(--faint)]">
-          <RewardImage name="mince" size={18} />
+          <Icon name="hero-mince" size={18} />
           {dict.shop.yourPoints}: {shown}
         </p>
       )}
@@ -252,14 +253,14 @@ function WheelWin({ label, icon, cx, cy }: { label: string; icon: string | null;
         })}
         {Array.from({ length: 10 }, (_, i) => (
           <span key={i} className="wheel-coin absolute block h-8 w-8" style={{ ["--dx" as string]: `${(i - 4.5) * 28}px`, ["--dx2" as string]: `${(i - 4.5) * 38}px`, animationDelay: `${0.25 + i * 0.05}s` }}>
-            <RewardImage name="mince-otoceni" size={32} className="h-full w-full" />
+            <Icon name="hero-mince" size={32} className="h-full w-full" />
           </span>
         ))}
       </div>
       <div className="wheel-chest absolute left-1/2 top-[10%] flex -translate-x-1/2 flex-col items-center">
         {icon && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={icon} alt="" draggable={false} className="h-40 w-40 select-none drop-shadow-[0_10px_16px_rgba(0,0,0,0.45)]" />
+          <img src={`/ikony/${icon}.svg`} alt="" draggable={false} className="h-40 w-40 select-none drop-shadow-[0_10px_16px_rgba(0,0,0,0.45)]" />
         )}
         <span className="whitespace-nowrap text-4xl font-extrabold text-[#ffd23a]" style={{ fontFamily: "var(--font-heading)", textShadow: "0 0 4px #16132b, 0 3px 0 #16132b" }}>
           {label}
