@@ -3,7 +3,8 @@
 // tloušťka čáry zůstává stejná díky vector-effect (viz globals.css, .sketch-edge).
 
 const WIDTH = 1200;
-const STEP = 24;
+const HEIGHT = 22;
+const STEP = 16;
 
 function wobble(base: number, amp: number, phase: number) {
   let d = "";
@@ -16,20 +17,20 @@ function wobble(base: number, amp: number, phase: number) {
 }
 
 // Hlavní tah tužky a slabší vedlejší čára (přetažení), tečkovaná jako rýsování.
-const MAIN = wobble(7, 1.6, 0.4);
-const GUIDE = wobble(10.4, 1.1, 2.1);
+const MAIN = wobble(11, 3.4, 0.4);
+const GUIDE = wobble(15, 2.2, 2.1);
 
 export function SketchEdge({ position }: { position: "top" | "bottom" }) {
   return (
     <svg
       className={`sketch-edge sketch-edge-${position}`}
-      viewBox={`0 0 ${WIDTH} 16`}
+      viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       preserveAspectRatio="none"
       aria-hidden
       focusable="false"
     >
-      <path d={MAIN} pathLength={1} className="sketch-edge-line" />
-      <path d={GUIDE} pathLength={1} className="sketch-edge-guide" />
+      <path d={MAIN} className="sketch-edge-line" />
+      <path d={GUIDE} className="sketch-edge-guide" />
     </svg>
   );
 }

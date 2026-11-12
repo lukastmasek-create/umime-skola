@@ -53,7 +53,7 @@ const GROUP_SVG_ICON: Partial<Record<string, SketchIconKind>> = {
 
 function GroupIcon({ id, size }: { id: string; size: number }) {
   const svgKind = GROUP_SVG_ICON[id];
-  if (svgKind) return <SketchIcon kind={svgKind} size={size} className="nav-ico shrink-0" />;
+  if (svgKind) return <SketchIcon kind={svgKind} size={size} className="nav-ico sketch-nav-ico shrink-0" />;
   const name = GROUP_ICON[id];
   if (!name) return null;
   // eslint-disable-next-line @next/next/no-img-element
