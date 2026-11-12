@@ -35,6 +35,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/kontakt", priority: 0.4, changeFrequency: "monthly" },
     { path: "/ochrana-soukromi", priority: 0.2, changeFrequency: "monthly" },
     { path: "/podminky", priority: 0.2, changeFrequency: "monthly" },
+    { path: "/zasady-cookies", priority: 0.2, changeFrequency: "monthly" },
   ];
 
   for (const subject of getMaterialSubjects()) {
