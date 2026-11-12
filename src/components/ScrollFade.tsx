@@ -6,11 +6,17 @@ import { useEffect } from "react";
 // do obrazovky, a plně zmizí, když z ní vyjedou. Běží na celé stránce a řídí průhlednost, posun
 // a měřítko přes inline styly. Vlastní vjezdy (sm-in, reveal) jsou pro tyto bloky vypnuté v CSS,
 // aby se s tímto efektem nepraly. Při prefers-reduced-motion i přepínači Animace se nic nedělá.
+//
+// Výkon: nejdřív se přečtou všechny souřadnice (jedno přepočítání rozložení), až potom se zapisují
+// styly, a jen ty, jejichž hodnota se změnila. Seznam bloků se znovu hledá s prodlevou, ne při
+// každé změně DOM (animované texty a čítadla mění DOM téměř pořád).
 
 // Nejvyšší bloky obsahu uvnitř <main>; vnořené prvky se řídí rodičem.
 const CANDIDATES = "main :is(.card, .gc-item, .gcard, h1, h2, h3, p, figure, img, canvas, form, table, blockquote)";
 const FADE_BAND = 0.35; // podíl výšky okna, přes který se blok rozsvěcí a zhasíná
 const SLIDE = 28; // px, o kolik blok při zhasínání ujede
+const EPS = 0.002; // nejmenší změna průhlednosti, která se ještě zapíše
+const RECOLLECT_DELAY = 250; // ms, prodleva před novým hledáním bloků po změně DOM
 
 function motionOff(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.documentElement.getAttribute("data-motion") === "off";
@@ -25,6 +31,16 @@ export function ScrollFade() {
     let targets: HTMLElement[] = [];
     let raf = 0;
     let needsCollect = true;
+    let recollectTimer = 0;
+    const lastOpacity = new Map<HTMLElement, number>();
+
+    function resetStyles(el: HTMLElement) {
+      el.style.opacity = "";
+      el.style.translate = "";
+      el.style.scale = "";
+      delete el.dataset.sf;
+      lastOpacity.delete(el);
+    }
 
     function collect() {
       needsCollect = false;
@@ -37,6 +53,9 @@ export function ScrollFade() {
         found.push(el);
         el.dataset.sf = "1";
       });
+      // Bloky, které už nejsou mezi cíli, vrátím do původního stavu.
+      const keep = new Set(found);
+      for (const el of targets) if (!keep.has(el)) resetStyles(el);
       targets = found;
     }
 
@@ -46,16 +65,32 @@ export function ScrollFade() {
       if (needsCollect) collect();
       const vh = window.innerHeight;
       const band = vh * FADE_BAND;
-      for (const el of targets) {
+      const n = targets.length;
+      const tops = new Float64Array(n);
+      const bottoms = new Float64Array(n);
+
+      // 1) Jen čtení: prohlížeč přepočítá rozložení jednou, místo jednou pro každý blok.
+      for (let i = 0; i < n; i++) {
+        const r = targets[i].getBoundingClientRect();
+        tops[i] = r.top;
+        bottoms[i] = r.bottom;
+      }
+
+      // 2) Jen zápisy, a jen tam, kde se průhlednost od minula změnila.
+      for (let i = 0; i < n; i++) {
+        const el = targets[i];
         if (!el.isConnected) continue;
-        const r = el.getBoundingClientRect();
+        const top = tops[i];
         // Vjezd zdola: blok se rozsvěcí, jakmile jeho horní hrana vstoupí do pásma u spodního okraje.
-        const enter = clamp01((vh - r.top) / band);
+        const enter = clamp01((vh - top) / band);
         // Výjezd nahoru: blok zhasne, jakmile jeho spodní hrana opustí pásmo u horního okraje.
-        const exit = clamp01(r.bottom / band);
+        const exit = clamp01(bottoms[i] / band);
         const p = Math.min(enter, exit);
         const e = p * p * (3 - 2 * p); // jemné rozběhnutí a dojezd
-        const dir = r.top > vh / 2 ? 1 : -1; // při výjezdu ujede nahoru, při vjezdu přichází zdola
+        const prev = lastOpacity.get(el);
+        if (prev !== undefined && Math.abs(prev - e) < EPS) continue;
+        lastOpacity.set(el, e);
+        const dir = top > vh / 2 ? 1 : -1; // při výjezdu ujede nahoru, při vjezdu přichází zdola
         el.style.opacity = e.toFixed(3);
         el.style.translate = `0 ${((1 - e) * SLIDE * dir).toFixed(1)}px`;
         el.style.scale = (0.96 + 0.04 * e).toFixed(3);
@@ -69,7 +104,13 @@ export function ScrollFade() {
 
     const onScroll = () => schedule();
     const onResize = () => schedule(true);
-    const mo = new MutationObserver(() => schedule(true));
+    const mo = new MutationObserver(() => {
+      if (recollectTimer) return;
+      recollectTimer = window.setTimeout(() => {
+        recollectTimer = 0;
+        schedule(true);
+      }, RECOLLECT_DELAY);
+    });
     const main = document.querySelector("main");
 
     schedule(true);
@@ -80,16 +121,13 @@ export function ScrollFade() {
 
     return () => {
       cancelAnimationFrame(raf);
+      window.clearTimeout(recollectTimer);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onResize);
       window.removeEventListener("load", onResize);
       mo.disconnect();
-      targets.forEach((el) => {
-        el.style.opacity = "";
-        el.style.translate = "";
-        el.style.scale = "";
-        delete el.dataset.sf;
-      });
+      targets.forEach(resetStyles);
+      targets = [];
     };
   }, []);
 
