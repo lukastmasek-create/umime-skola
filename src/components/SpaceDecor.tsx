@@ -106,7 +106,7 @@ export function StarsVideo({ className = "" }: { className?: string }) {
       muted
       loop
       playsInline
-      preload="auto"
+      preload="metadata"
       className={`stars-video pointer-events-none select-none object-cover ${className}`}
       style={{
         opacity: 0.4,

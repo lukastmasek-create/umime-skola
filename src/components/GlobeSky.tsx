@@ -26,13 +26,16 @@ const SHOOTING = [
   { top: 22, left: 66, a: 36, delay: 16, dur: 11 },
 ];
 
+const SOFT_BLOB = (c: string) => `radial-gradient(closest-side, ${c} 0%, ${c}66 45%, transparent 100%)`;
+
 export function GlobeSky() {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
       <div className="hero-aurora">
-        <span style={{ left: "-10%", top: "10%", width: 520, height: 520, background: "#3a6bff" }} />
-        <span style={{ right: "-6%", top: "36%", width: 420, height: 420, background: "#b05cff", animationDelay: "-5s" }} />
-        <span style={{ left: "34%", bottom: "-18%", width: 460, height: 360, background: "#1fd6a8", animationDelay: "-10s" }} />
+        {/* Měkký okraj dělá radiální gradient, ne filter: blur() (ten se na animované vrstvě přepočítával každý snímek). */}
+        <span style={{ left: "-10%", top: "10%", width: 520, height: 520, background: SOFT_BLOB("#3a6bff") }} />
+        <span style={{ right: "-6%", top: "36%", width: 420, height: 420, background: SOFT_BLOB("#b05cff"), animationDelay: "-5s" }} />
+        <span style={{ left: "34%", bottom: "-18%", width: 460, height: 360, background: SOFT_BLOB("#1fd6a8"), animationDelay: "-10s" }} />
       </div>
       {SHOOTING.map((s, i) => (
         <span key={i} className="globe-shoot" style={{ top: `${s.top}%`, left: `${s.left}%`, ["--a" as string]: `${s.a}deg`, ["--dur" as string]: `${s.dur}s`, ["--delay" as string]: `${s.delay}s` }} />

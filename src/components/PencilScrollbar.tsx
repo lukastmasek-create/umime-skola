@@ -75,6 +75,7 @@ export function PencilScrollbar() {
     // Směr jízdy: nahoru = guma vpředu (tužka překlopená), dolů = hrot vpředu
     let lastY = window.scrollY;
     let goingUp = false;
+    let lastTrailKey = "";
 
     const render = () => {
       const max = maxScroll();
@@ -89,8 +90,14 @@ export function PencilScrollbar() {
       const top = progress * travel();
       thumb.style.transform = `translate3d(0, ${top}px, 0)`;
 
-      // Stopa končí u spodní hrany tužky (hrot nebo guma): při jízdě dolů přibývá, nahoru ubývá
-      drawTrail(top + THUMB_H - TIP_Y);
+      // Stopa končí u spodní hrany tužky (hrot nebo guma): při jízdě dolů přibývá, nahoru ubývá.
+      // Překreslí se jen při skutečné změně polohy nebo velikosti (dřív při každém scrollu).
+      const head = top + THUMB_H - TIP_Y;
+      const key = `${head.toFixed(1)}|${track.clientWidth}|${track.clientHeight}`;
+      if (key !== lastTrailKey) {
+        lastTrailKey = key;
+        drawTrail(head);
+      }
     };
 
     let frame = 0;

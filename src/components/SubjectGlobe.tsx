@@ -322,7 +322,8 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
     let dpr = 1;
     const resize = () => {
       size = box.clientWidth;
-      dpr = Math.min(window.devicePixelRatio || 1, 1.6);
+      // Globus je hladký shader, na vyšším DPR se nic neuvidí, jen víc pixelů na GPU každý snímek.
+      dpr = Math.min(window.devicePixelRatio || 1, 1);
       // plátno s globem je o čtvrtinu větší na každou stranu, aby přiblížený globus nebyl uříznutý
       cv.width = Math.round(size * CANVAS_SCALE * dpr);
       cv.height = cv.width;

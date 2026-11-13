@@ -34,7 +34,7 @@ export function PlanetAnim({ width, height }: { width: number; height: number })
           loop
           muted
           playsInline
-          preload="auto"
+          preload="metadata"
           className="planet-video absolute inset-0 h-full w-full object-contain"
         >
           <source src="/home/anim/planeta.webm" type='video/webm; codecs="vp9"' onError={() => setVideoOk(false)} />
