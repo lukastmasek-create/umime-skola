@@ -1,0 +1,624 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import {
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  pointerWithin,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
+import type { ScratchText } from "@/i18n/scratch";
+import {
+  BLOCK_TYPES,
+  BOUND_X,
+  BOUND_Y,
+  CATEGORIES,
+  MAX_BLOCKS,
+  SPECS,
+  STAGE_H,
+  STAGE_W,
+  countBlocks,
+  createRuntime,
+  findBlock,
+  insertBlock,
+  isRunning,
+  makeBlock,
+  moveBlock,
+  removeBlock as withoutBlock,
+  stopRuntime,
+  tick,
+  updateArg,
+  type Block,
+  type BlockType,
+  type Category,
+  type Line,
+  type Runtime,
+  type Sprite,
+  type Value,
+} from "@/lib/scratch/engine";
+import { CatSprite, CategoryIcon, FlagIcon, GripIcon, StopIcon, TrashIcon } from "./ScratchIcons";
+
+const CAT_COLOR: Record<Category, string> = {
+  events: "#ffc933",
+  motion: "#8fd0ff",
+  pen: "#7ee0b0",
+  control: "#ff8a6b",
+  looks: "#c9a8ff",
+  custom: "#ffb3d9",
+};
+
+const INK = "#16132b";
+
+// Globální styly webu (nadpisy, pole) nejsou ve vrstvě Tailwindu, proto barvy dávám přímo inline.
+const INK_STYLE = { color: INK } as const;
+const FIELD_STYLE = { background: "#ffffff", color: INK } as const;
+
+function collide(args: Parameters<typeof pointerWithin>[0]) {
+  const hits = pointerWithin(args);
+  return hits.length > 0 ? hits : closestCenter(args);
+}
+const PAPER = "#fffaf0";
+const PEN_SWATCHES = ["#16132b", "#ff8a6b", "#ffc933", "#7ee0b0", "#8fd0ff", "#c9a8ff"];
+
+type Snap = { sprite: Sprite; lines: Line[]; say: string | null; error: string | null };
+type SaveState = "idle" | "saving" | "saved" | "error";
+
+const EMPTY_SPRITE = createRuntime([]).sprite;
+const START_SNAP: Snap = { sprite: EMPTY_SPRITE, lines: [], say: null, error: null };
+
+function takeSnap(rt: Runtime): Snap {
+  return { sprite: { ...rt.sprite }, lines: rt.lines.slice(), say: rt.sprite.say, error: rt.error };
+}
+
+// Dnd id zóny: "zone|<rodič nebo root>|<index>"
+function zoneId(parentId: string | null, index: number): string {
+  return `zone|${parentId ?? "root"}|${index}`;
+}
+
+function parseZone(id: string): { parentId: string | null; index: number } | null {
+  const [kind, parent, idx] = id.split("|");
+  if (kind !== "zone") return null;
+  const index = Number(idx);
+  if (!Number.isInteger(index)) return null;
+  return { parentId: parent === "root" ? null : parent, index };
+}
+
+type DragData = { kind: "palette"; type: BlockType } | { kind: "block"; id: string };
+
+// Šablona "jdi na x: {x}" → části s textem nebo s vstupem.
+function splitTemplate(tpl: string): Array<{ text: string } | { key: string }> {
+  return tpl
+    .split(/(\{\w+\})/)
+    .filter((s) => s !== "")
+    .map((s) => {
+      const m = /^\{(\w+)\}$/.exec(s);
+      return m ? { key: m[1] } : { text: s };
+    });
+}
+
+// Náhled bloku v nabídce: vstupy nahradí výchozími hodnotami.
+function previewLabel(type: BlockType, t: ScratchText): string {
+  const fields = SPECS[type].fields;
+  return t.blocks[type].replace(/\{(\w+)\}/g, (_, key: string) => {
+    const f = fields.find((x) => x.key === key);
+    if (!f) return "";
+    if (f.kind === "select") return t.options[String(f.def)] ?? String(f.def);
+    if (f.kind === "color") return "■";
+    return String(f.def);
+  });
+}
+
+async function saveNow(blocks: Block[]): Promise<boolean> {
+  try {
+    const res = await fetch("/api/scratch", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ blocks }),
+      keepalive: true,
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export function ScratchEditor({
+  t,
+  initialBlocks,
+  loggedIn,
+  loginHref,
+}: {
+  t: ScratchText;
+  initialBlocks: Block[] | null;
+  loggedIn: boolean;
+  loginHref: string;
+}) {
+  const [blocks, setBlocks] = useState<Block[]>(initialBlocks ?? []);
+  const [snap, setSnap] = useState<Snap>(START_SNAP);
+  const [running, setRunning] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [save, setSave] = useState<SaveState>("idle");
+  const [activeLabel, setActiveLabel] = useState<string | null>(null);
+
+  const rtRef = useRef<Runtime | null>(null);
+  const saveTimer = useRef<number | undefined>(undefined);
+  const pending = useRef<Block[] | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor),
+  );
+
+  const flush = useCallback(() => {
+    const b = pending.current;
+    if (!b) return;
+    pending.current = null;
+    window.clearTimeout(saveTimer.current);
+    setSave("saving");
+    void saveNow(b).then((ok) => setSave(ok ? "saved" : "error"));
+  }, []);
+
+  // Při odchodu ze stránky ještě odeslat čekající změnu.
+  useEffect(() => () => flush(), [flush]);
+
+  const commit = useCallback(
+    (next: Block[]) => {
+      setBlocks(next);
+      if (!loggedIn) return;
+      pending.current = next;
+      window.clearTimeout(saveTimer.current);
+      saveTimer.current = window.setTimeout(flush, 800);
+    },
+    [loggedIn, flush],
+  );
+
+  // Herní smyčka: běží jen při spuštění, po skončení všech skriptů se zastaví.
+  useEffect(() => {
+    if (!running) return;
+    let frame = 0;
+    let last = performance.now();
+    const loop = (now: number) => {
+      const rt = rtRef.current;
+      if (!rt) {
+        setRunning(false);
+        return;
+      }
+      tick(rt, Math.min(64, now - last));
+      last = now;
+      setSnap(takeSnap(rt));
+      if (!isRunning(rt)) {
+        setRunning(false);
+        return;
+      }
+      frame = requestAnimationFrame(loop);
+    };
+    frame = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(frame);
+  }, [running]);
+
+  function run() {
+    if (!blocks.some((b) => b.type === "start")) {
+      setNotice(t.noHat);
+      return;
+    }
+    setNotice(null);
+    const rt = createRuntime(blocks);
+    rtRef.current = rt;
+    setSnap(takeSnap(rt));
+    setRunning(true);
+  }
+
+  function stop() {
+    const rt = rtRef.current;
+    if (rt) {
+      stopRuntime(rt);
+      setSnap(takeSnap(rt));
+    }
+    setRunning(false);
+  }
+
+  function clearAll() {
+    if (blocks.length > 0 && !window.confirm(t.clearConfirm)) return;
+    stop();
+    rtRef.current = null;
+    setSnap(START_SNAP);
+    setNotice(null);
+    commit([]);
+  }
+
+  function addBlock(type: BlockType, parentId: string | null, index: number) {
+    if (countBlocks(blocks) >= MAX_BLOCKS) {
+      setNotice(t.limit);
+      return;
+    }
+    setNotice(null);
+    commit(insertBlock(blocks, parentId, index, makeBlock(type)));
+  }
+
+  function onDragStart(e: DragStartEvent) {
+    const data = e.active.data.current as DragData | undefined;
+    if (data?.kind === "palette") setActiveLabel(previewLabel(data.type, t));
+    else if (data?.kind === "block") {
+      const b = findBlock(blocks, data.id);
+      setActiveLabel(b ? previewLabel(b.type, t) : null);
+    }
+  }
+
+  function onDragEnd(e: DragEndEvent) {
+    setActiveLabel(null);
+    const { active, over } = e;
+    if (!over) return;
+    const target = parseZone(String(over.id));
+    if (!target) return;
+    const data = active.data.current as DragData | undefined;
+    if (data?.kind === "palette") {
+      addBlock(data.type, target.parentId, target.index);
+    } else if (data?.kind === "block") {
+      const next = moveBlock(blocks, data.id, target.parentId, target.index);
+      if (next) commit(next);
+    }
+  }
+
+  function setArg(id: string, key: string, value: Value) {
+    commit(updateArg(blocks, id, key, value));
+  }
+
+  function removeBlock(id: string) {
+    commit(withoutBlock(blocks, id).list);
+  }
+
+  const hasHat = blocks.some((b) => b.type === "start");
+
+  return (
+    <DndContext sensors={sensors} collisionDetection={collide} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setActiveLabel(null)}>
+    <div className="grid gap-6 lg:grid-cols-[210px_minmax(0,1fr)_400px]">
+      {/* Jeviště */}
+      <section className="order-first flex flex-col gap-3 lg:order-last lg:sticky lg:top-24 lg:self-start">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={run}
+            disabled={running}
+            style={INK_STYLE}
+            className="flex items-center gap-2 rounded-xl border-2 border-[#16132b] bg-[#7ee0b0] px-4 py-2 font-bold shadow-[3px_3px_0_#16132b] transition hover:-translate-y-0.5 disabled:opacity-60"
+          >
+            <FlagIcon size={18} /> {t.run}
+          </button>
+          <button
+            type="button"
+            onClick={stop}
+            style={INK_STYLE}
+            className="flex items-center gap-2 rounded-xl border-2 border-[#16132b] bg-[#ff8a6b] px-4 py-2 font-bold shadow-[3px_3px_0_#16132b] transition hover:-translate-y-0.5"
+          >
+            <StopIcon size={16} /> {t.stop}
+          </button>
+        </div>
+
+        <div className="rounded-2xl border-[3px] border-[#16132b] bg-[#fffaf0] p-3 shadow-[6px_6px_0_#16132b]">
+          <Stage snap={snap} label={t.stage} />
+        </div>
+
+        {notice && <div className="rounded-lg border-2 border-dashed border-[#16132b] bg-[#ffc933]/40 px-3 py-2 text-sm font-semibold">{notice}</div>}
+        {snap.error && (
+          <div role="alert" className="rounded-lg border-2 border-[#16132b] bg-[#ff8a6b] px-3 py-2 text-sm font-semibold">
+            {t.error}: {snap.error}
+          </div>
+        )}
+        {!hasHat && !notice && <div className="text-sm text-[var(--muted)]">{t.stageHint}</div>}
+        <SaveStatus loggedIn={loggedIn} save={save} t={t} loginHref={loginHref} />
+      </section>
+
+      {/* Nabídka bloků */}
+      <aside className="order-2 flex flex-col gap-5 rounded-2xl border-[3px] border-[#16132b] bg-[#fffaf0] p-4 lg:order-first lg:max-h-[78vh] lg:overflow-y-auto">
+          <div role="heading" aria-level={2} className="font-bold text-[#16132b]" style={INK_STYLE}>{t.palette}</div>
+          {CATEGORIES.map((cat) => (
+            <div key={cat} className="flex flex-col gap-2">
+              <div role="heading" aria-level={3} className="flex items-center gap-2 text-sm font-bold text-[#16132b]" style={INK_STYLE}>
+                <CategoryIcon category={cat} size={20} /> {t.categories[cat]}
+              </div>
+              {BLOCK_TYPES.filter((type) => SPECS[type].category === cat).map((type) => (
+                <PaletteItem key={type} type={type} t={t} onPick={() => addBlock(type, null, blocks.length)} />
+              ))}
+            </div>
+          ))}
+          <div className="text-xs text-[var(--muted)]">{t.addHint}</div>
+      </aside>
+
+      {/* Pracovní plocha se skripty: sdílí DndContext s nabídkou a jevištěm */}
+      <section className="order-3 min-w-0 lg:max-h-[78vh] lg:overflow-y-auto">
+        <WorkspaceDrop blocks={blocks} t={t} onArg={setArg} onRemove={removeBlock} onClearAll={clearAll} />
+      </section>
+    </div>
+    <DragOverlay>{activeLabel ? <div className="rounded-xl border-2 border-[#16132b] bg-[#fffaf0] px-3 py-1.5 text-sm font-semibold shadow-[3px_3px_0_#16132b]">{activeLabel}</div> : null}</DragOverlay>
+    </DndContext>
+  );
+}
+
+function PaletteItem({ type, t, onPick }: { type: BlockType; t: ScratchText; onPick: () => void }) {
+  const { setNodeRef, listeners, attributes, isDragging } = useDraggable({ id: `palette|${type}`, data: { kind: "palette", type } satisfies DragData });
+  return (
+    <div ref={setNodeRef} className={`flex items-stretch gap-1 transition ${isDragging ? "opacity-40" : ""}`}>
+      <button
+        type="button"
+        onClick={onPick}
+        className="flex-1 rounded-xl border-2 border-[#16132b] px-3 py-1.5 text-left text-sm font-semibold shadow-[2px_2px_0_#16132b] transition hover:-translate-y-0.5"
+        style={{ background: CAT_COLOR[SPECS[type].category], ...INK_STYLE }}
+      >
+        {previewLabel(type, t)}
+      </button>
+      <span
+        {...listeners}
+        {...attributes}
+        aria-label={t.dragBlock}
+        className="flex cursor-grab touch-none items-center rounded-lg border-2 border-dashed border-[#16132b] px-1"
+      >
+        <GripIcon size={14} />
+      </span>
+    </div>
+  );
+}
+
+function WorkspaceDrop({
+  blocks,
+  t,
+  onArg,
+  onRemove,
+  onClearAll,
+}: {
+  blocks: Block[];
+  t: ScratchText;
+  onArg: (id: string, key: string, value: Value) => void;
+  onRemove: (id: string) => void;
+  onClearAll: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2 rounded-2xl border-2 border-dashed border-[#16132b] bg-[#fffaf0] p-3">
+      <div className="flex items-center justify-between gap-2">
+        <div role="heading" aria-level={2} className="font-bold text-[#16132b]" style={INK_STYLE}>{t.workspace}</div>
+        <button
+          type="button"
+          onClick={onClearAll}
+          style={INK_STYLE}
+          className="flex items-center gap-1.5 rounded-lg border-2 border-[#16132b] px-2.5 py-1 text-xs font-bold hover:bg-[#ff8a6b]/40"
+        >
+          <TrashIcon size={14} /> {t.clearAll}
+        </button>
+      </div>
+      <ListZone parentId={null} list={blocks} t={t} onArg={onArg} onRemove={onRemove} />
+    </div>
+  );
+}
+
+// Seznam bloků s přetahovacími zónami mezi nimi (a na konci).
+function ListZone({
+  parentId,
+  list,
+  t,
+  onArg,
+  onRemove,
+}: {
+  parentId: string | null;
+  list: Block[];
+  t: ScratchText;
+  onArg: (id: string, key: string, value: Value) => void;
+  onRemove: (id: string) => void;
+}) {
+  if (list.length === 0) {
+    return <DropZone id={zoneId(parentId, 0)} big={parentId !== null} empty={parentId === null} />;
+  }
+  return (
+    <div className="flex flex-col">
+      {list.map((b, i) => (
+        <div key={b.id} className="flex flex-col">
+          <DropZone id={zoneId(parentId, i)} />
+          <BlockNode block={b} t={t} onArg={onArg} onRemove={onRemove} />
+        </div>
+      ))}
+      <DropZone id={zoneId(parentId, list.length)} />
+    </div>
+  );
+}
+
+function DropZone({ id, big = false, empty = false }: { id: string; big?: boolean; empty?: boolean }) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+  if (empty) {
+    return (
+      <div
+        ref={setNodeRef}
+        className={`grid place-items-center rounded-xl border-2 border-dashed border-[#16132b] py-8 text-sm text-[var(--muted)] transition ${isOver ? "bg-[#ffc933]/50" : ""}`}
+      >
+        ↓
+      </div>
+    );
+  }
+  return (
+    <div
+      ref={setNodeRef}
+      className={`rounded-full transition-all ${big ? "min-h-10" : "h-3"} ${isOver ? "bg-[#ffc933]" : ""}`}
+    />
+  );
+}
+
+function BlockNode({
+  block,
+  t,
+  onArg,
+  onRemove,
+}: {
+  block: Block;
+  t: ScratchText;
+  onArg: (id: string, key: string, value: Value) => void;
+  onRemove: (id: string) => void;
+}) {
+  const { setNodeRef, listeners, attributes, isDragging } = useDraggable({
+    id: `block|${block.id}`,
+    data: { kind: "block", id: block.id } satisfies DragData,
+  });
+  const s = SPECS[block.type];
+  const color = CAT_COLOR[s.category];
+  const isHat = block.type === "start";
+  const parts = splitTemplate(t.blocks[block.type]);
+
+  return (
+    <div ref={setNodeRef} className={`transition ${isDragging ? "opacity-40" : ""}`}>
+      <div
+        className={`flex items-center gap-1 border-2 border-[#16132b] pr-1 shadow-[2px_2px_0_#16132b] ${isHat ? "rounded-t-[26px] rounded-b-lg pl-1" : "rounded-lg"}`}
+        style={{ background: color }}
+      >
+        <span {...listeners} {...attributes} aria-label={t.dragBlock} className="flex cursor-grab touch-none self-stretch items-center px-1">
+          <GripIcon size={14} />
+        </span>
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1 py-2 text-sm font-semibold text-[#16132b]">
+          {parts.map((p, i) =>
+            "text" in p ? (
+              <span key={i}>{p.text}</span>
+            ) : (
+              <FieldInput key={i} block={block} fieldKey={p.key} t={t} onArg={onArg} />
+            ),
+          )}
+        </div>
+        <button type="button" onClick={() => onRemove(block.id)} aria-label={t.removeBlock} className="rounded-md p-1 hover:bg-white/50">
+          <TrashIcon size={14} />
+        </button>
+      </div>
+      {s.container && (
+        <div className="ml-3 mt-1 border-l-[3px] pl-2" style={{ borderColor: color }}>
+          <ListZone parentId={block.id} list={block.body ?? []} t={t} onArg={onArg} onRemove={onRemove} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FieldInput({
+  block,
+  fieldKey,
+  t,
+  onArg,
+}: {
+  block: Block;
+  fieldKey: string;
+  t: ScratchText;
+  onArg: (id: string, key: string, value: Value) => void;
+}) {
+  const f = SPECS[block.type].fields.find((x) => x.key === fieldKey);
+  const value = block.args[fieldKey] ?? f?.def ?? "";
+  const label = t.fieldNames[fieldKey] ?? fieldKey;
+
+  if (!f) return null;
+
+  if (f.kind === "select") {
+    return (
+      <select
+        aria-label={label}
+        value={String(value)}
+        onChange={(e) => onArg(block.id, fieldKey, e.target.value)}
+        className="rounded-md border-2 border-[#16132b] px-1 py-0.5 text-sm"
+        style={FIELD_STYLE}
+      >
+        {f.options.map((o) => (
+          <option key={o} value={o}>
+            {t.options[o] ?? o}
+          </option>
+        ))}
+      </select>
+    );
+  }
+
+  if (f.kind === "color") {
+    return (
+      <span role="radiogroup" aria-label={label} className="inline-flex flex-wrap gap-1">
+        {PEN_SWATCHES.map((c) => (
+          <button
+            key={c}
+            type="button"
+            role="radio"
+            aria-checked={value === c}
+            aria-label={c}
+            onClick={() => onArg(block.id, fieldKey, c)}
+            className={`h-4 w-4 rounded-full border-2 border-[#16132b] ${value === c ? "ring-2 ring-[#16132b] ring-offset-1" : ""}`}
+            style={{ background: c }}
+          />
+        ))}
+      </span>
+    );
+  }
+
+  const wide = f.kind === "text" && f.max > 20;
+  return (
+    <input
+      aria-label={label}
+      inputMode={f.kind === "number" ? "decimal" : "text"}
+      value={String(value)}
+      maxLength={f.kind === "text" ? f.max : 30}
+      onChange={(e) => onArg(block.id, fieldKey, e.target.value)}
+      className={`rounded-md border-2 border-[#16132b] px-1.5 py-0.5 text-sm ${wide ? "w-36" : "w-16"}`}
+      style={FIELD_STYLE}
+    />
+  );
+}
+
+// Jeviště: čára z pera, kočka a bublina řeči. Souřadnice jsou v plátně 480 × 360, střed je uprostřed.
+function Stage({ snap, label }: { snap: Snap; label: string }) {
+  const { sprite, lines, say } = snap;
+  const sx = sprite.x;
+  const sy = -sprite.y;
+  const bubbleW = say ? Math.min(220, 24 + say.length * 8) : 0;
+  return (
+    <svg viewBox={`${-STAGE_W / 2} ${-STAGE_H / 2} ${STAGE_W} ${STAGE_H}`} className="block h-auto w-full" role="img" aria-label={label}>
+      <defs>
+        <pattern id="scratch-dots" width="24" height="24" patternUnits="userSpaceOnUse" x={-STAGE_W / 2} y={-STAGE_H / 2}>
+          <circle cx="2" cy="2" r="1.1" fill={INK} opacity=".18" />
+        </pattern>
+      </defs>
+      <rect x={-STAGE_W / 2} y={-STAGE_H / 2} width={STAGE_W} height={STAGE_H} fill={PAPER} />
+      <rect x={-STAGE_W / 2} y={-STAGE_H / 2} width={STAGE_W} height={STAGE_H} fill="url(#scratch-dots)" />
+      <rect x={-BOUND_X} y={-BOUND_Y} width={BOUND_X * 2} height={BOUND_Y * 2} fill="none" stroke={INK} strokeOpacity=".12" strokeDasharray="4 6" />
+      <g>
+        {lines.map((l, i) => (
+          <line key={i} x1={l.x1} y1={-l.y1} x2={l.x2} y2={-l.y2} stroke={l.color} strokeWidth={l.size} strokeLinecap="round" />
+        ))}
+      </g>
+      <g transform={`translate(${sx} ${sy}) rotate(${sprite.dir - 90}) scale(1.1)`}>
+        <CatSprite />
+      </g>
+      {say && (
+        <g transform={`translate(${sx} ${sy})`}>
+          <rect x={-bubbleW / 2} y={-78} width={bubbleW} height={30} rx={10} fill="#fff" stroke={INK} strokeWidth={2} />
+          <path d="M-6 -48 L0 -40 L6 -48" fill="#fff" stroke={INK} strokeWidth={2} strokeLinejoin="round" />
+          <text x={0} y={-58} textAnchor="middle" dominantBaseline="middle" fontSize={14} fontWeight={700} fill={INK}>
+            {say}
+          </text>
+        </g>
+      )}
+    </svg>
+  );
+}
+
+function SaveStatus({ loggedIn, save, t, loginHref }: { loggedIn: boolean; save: SaveState; t: ScratchText; loginHref: string }) {
+  if (!loggedIn) {
+    return (
+      <div className="flex flex-wrap items-center gap-x-2 text-sm text-[var(--muted)]">
+        {t.loginHint}
+        <Link href={loginHref} className="font-bold text-[var(--foreground)] underline decoration-2 underline-offset-2">
+          {t.loginLink}
+        </Link>
+      </div>
+    );
+  }
+  const text = save === "saving" ? t.saving : save === "saved" ? t.saved : save === "error" ? t.saveFailed : "";
+  return (
+    <div className="min-h-5 text-sm text-[var(--muted)]" aria-live="polite">
+      {text}
+    </div>
+  );
+}
