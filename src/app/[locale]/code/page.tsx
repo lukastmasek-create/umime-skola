@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CodeLearn } from "@/components/CodeLearn";
+import { HeroSky } from "@/components/HeroSky";
+import { HeroTitle } from "@/components/HeroTitle";
 import { SketchIcon } from "@/components/SketchIcons";
 import { isLocale } from "@/i18n/config";
 
@@ -15,22 +17,51 @@ export default async function CodePage({ params }: { params: Promise<{ locale: s
   if (!isLocale(locale) || locale !== "cs") notFound();
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-16">
-      <div className="mb-8 flex items-start gap-4">
-        <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border-2 border-[var(--sketch-ink)] bg-[#ffc933] shadow-[3px_3px_0_var(--shadow-ink)]">
-          <SketchIcon kind="bolt" size={30} />
-        </span>
-        <div>
-          <h1 className="text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-            Kód na hraní
-          </h1>
-          <p className="mt-1 max-w-2xl text-[var(--muted)]">
-            Tři malé soubory: HTML, CSS a JavaScript. Klikni na řádek s jiskrou a přečti si, co každý příkaz dělá. Nebo spusť přehrávání a sleduj to.
-          </p>
-        </div>
+    <div className="space-page">
+      {/* Hrdina ve stylu úvodní stránky: vesmír, neonový nadpis a odznak */}
+      <div className="zone zone-space">
+        <span className="px-stars" aria-hidden />
+        <HeroSky comet={false} ship={false} />
+        <section className="gradient-hero relative">
+          <div className="relative mx-auto flex max-w-6xl flex-col items-center px-4 pb-10 pt-12 sm:px-6 sm:pt-16 lg:pb-14 lg:pt-20">
+            <div className="flex max-w-3xl flex-col items-center gap-6 text-center">
+              <span
+                style={{ ["--d" as string]: "0.05s" }}
+                className="hero-in inline-flex items-center gap-2 rounded-md border-2 border-[var(--edge)] bg-[var(--surface)]/80 px-2.5 py-1 text-xs font-bold uppercase tracking-widest shadow-[0_0_18px_rgba(124,108,255,0.45)]"
+              >
+                <SketchIcon kind="bolt" size={14} />
+                HTML · CSS · JS
+              </span>
+              <h1
+                className="hero-in neon-h1 text-4xl leading-[1.3] sm:text-5xl lg:text-[3.25rem]"
+                style={{ ["--d" as string]: "0.18s" }}
+              >
+                <HeroTitle line1="Kód" line2="na hraní" />
+              </h1>
+              <p
+                className="hero-in max-w-xl text-lg leading-relaxed text-[var(--muted)]"
+                style={{ ["--d" as string]: "0.32s" }}
+              >
+                Tři malé soubory. Klikni na řádek s jiskrou a přečti si, co každý příkaz dělá. Nebo spusť přehrávání a sleduj to.
+              </p>
+              <div className="hero-in" style={{ ["--d" as string]: "0.46s" }}>
+                <a href="#editor" className="btn-bouncy btn-cta btn-primary btn-lg btn-dot">
+                  ▶ Vyzkoušet
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
 
-      <CodeLearn />
+      {/* Editor v kartě ve stylu lobby z úvodní stránky */}
+      <section id="editor" className="zone zone-space scroll-mt-24">
+        <div className="relative mx-auto max-w-5xl px-4 pb-16 sm:px-6">
+          <div className="lobby-shell">
+            <CodeLearn />
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
