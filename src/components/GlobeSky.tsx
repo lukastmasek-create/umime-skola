@@ -1,4 +1,4 @@
-// Pozadí sekce s globusem: noční obloha s polární září, padajícími hvězdami, kometou a znaky
+// Pozadí sekce s globusem: noční obloha s polární září, padajícími hvězdami a znaky
 // předmětů, které se vznášejí nahoru. Jen CSS animace (bez JavaScriptu), při omezení animací v systému stojí.
 
 const SYMBOLS: { t: string; color: string; x: number; y: number; size: number; dur: number; delay: number; blur: number }[] = [
@@ -37,7 +37,6 @@ export function GlobeSky() {
       {SHOOTING.map((s, i) => (
         <span key={i} className="globe-shoot" style={{ top: `${s.top}%`, left: `${s.left}%`, ["--a" as string]: `${s.a}deg`, ["--dur" as string]: `${s.dur}s`, ["--delay" as string]: `${s.delay}s` }} />
       ))}
-      <span className="globe-comet" />
       {SYMBOLS.map((s, i) => (
         <span
           key={i}

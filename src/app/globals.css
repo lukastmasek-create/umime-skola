@@ -159,6 +159,19 @@ select[aria-invalid="true"] {
   color: #16132b;
 }
 
+/* Texty na stránce nejde označit ani zkopírovat. Pole pro psaní zůstávají použitelná. */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input,
+textarea,
+[contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
 /* Logo: tmavá verze, pokud si uživatel výslovně nezvolil světlý motiv. */
 .logo-dark {
   display: none;
@@ -2058,48 +2071,6 @@ a:hover .eco-ico,
     transform: rotate(var(--a)) translateX(620px);
   }
 }
-.globe-comet {
-  position: absolute;
-  left: -8%;
-  top: 8%;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #fff 20%, #bfe3ff 60%, transparent 70%);
-  box-shadow: 0 0 22px 8px rgba(160, 210, 255, 0.55);
-  animation: globe-comet 34s linear 3s infinite;
-}
-.globe-comet::after {
-  content: "";
-  position: absolute;
-  right: 6px;
-  top: 3px;
-  width: 340px;
-  height: 8px;
-  border-radius: 8px;
-  transform-origin: 100% 50%;
-  transform: translateY(0) rotate(0deg);
-  background: linear-gradient(270deg, rgba(190, 225, 255, 0.85), rgba(120, 170, 255, 0.35) 40%, rgba(120, 170, 255, 0));
-  filter: blur(2px);
-}
-@keyframes globe-comet {
-  0% {
-    transform: translate(0, 0);
-    opacity: 0;
-  }
-  4% {
-    opacity: 1;
-  }
-  38% {
-    transform: translate(120vw, 38vh);
-    opacity: 1;
-  }
-  42%,
-  100% {
-    transform: translate(125vw, 40vh);
-    opacity: 0;
-  }
-}
 .globe-sym {
   position: absolute;
   font-family: var(--font-heading), system-ui, sans-serif;
@@ -2122,8 +2093,7 @@ a:hover .eco-ico,
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .globe-shoot,
-  .globe-comet {
+  .globe-shoot {
     display: none;
   }
   .globe-sym {
