@@ -58,6 +58,17 @@ test("čtverec ze smyčky: opakuj 4× (krok 50, otoč 90) vrátí postavičku na
   assert.equal(normDir(rt.sprite.dir), 90);
 });
 
+test("režim krok po kroku: další příkaz počká stepDelay milisekund", () => {
+  const rt = createRuntime(script(blk("step", { steps: 10 }), blk("step", { steps: 10 })));
+  rt.stepDelay = 1000;
+  tick(rt, 16);
+  assert.equal(rt.sprite.x, 10);
+  while (rt.time < 900) tick(rt, 16);
+  assert.equal(rt.sprite.x, 10);
+  while (rt.time < 1100) tick(rt, 16);
+  assert.equal(rt.sprite.x, 20);
+});
+
 test("jdi na x, y a plynulé klouzání dojedou na cíl", () => {
   const rt = createRuntime(script(blk("glide", { x: 100, y: -50, secs: 0.5 })));
   runAll(rt);

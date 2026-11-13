@@ -188,6 +188,8 @@ export type Runtime = {
   error: string | null;
   stopped: boolean;
   rng: () => number;
+  // Pauza v ms po každém příkazu (0 = bez pauzy). Používá režim krok po kroku.
+  stepDelay: number;
 };
 
 // Skripty = blok „Po kliknutí na vlajku“ a bloky za ním, až do dalšího hlavního bloku.
@@ -232,6 +234,7 @@ export function createRuntime(top: readonly Block[], rng: () => number = Math.ra
     error: null,
     stopped: false,
     rng,
+    stepDelay: 0,
   };
   rt.threads = scriptsOf(top).map((script) => ({
     gen: runBlocks(rt, script, Object.create(null), 0),
@@ -309,6 +312,8 @@ function* runBlocks(rt: Runtime, blocks: readonly Block[], scope: Scope, depth: 
   for (const b of blocks) {
     if (rt.stopped) return;
     yield* runBlock(rt, b, scope, depth);
+    // Režim krok po kroku: po každém příkazu chvíli počkat, aby byl pohyb vidět.
+    if (rt.stepDelay > 0 && b.type !== "start" && b.type !== "define" && !rt.stopped) yield rt.stepDelay;
   }
 }
 
