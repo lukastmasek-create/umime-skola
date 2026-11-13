@@ -4,7 +4,6 @@ import { getDictionary } from "@/i18n/dictionaries";
 import { getCommunityText } from "@/i18n/community";
 import { getIdleText } from "@/i18n/idle";
 import { getScratchText } from "@/i18n/scratch";
-import { getAnimatorText } from "@/i18n/animator";
 import { getEscapeText } from "@/i18n/escape";
 import { getTownHubText } from "@/i18n/town";
 import { getTeamsText } from "@/i18n/teams";
@@ -65,7 +64,6 @@ const STATIC_PAGES = {
   "/pokoj": (l) => ({ title: getRoomText(l).nav }),
   "/ucitele": (l) => ({ title: getAudiencePagesText(l).teachers.nav, description: getAudiencePagesText(l).teachers.subtitle }),
   "/scratch": (l) => ({ title: getScratchText(l).nav, description: getScratchText(l).subtitle }),
-  "/animator": (l) => ({ title: getAnimatorText(l).nav, description: getAnimatorText(l).subtitle }),
   "/zaci": (l) => ({ title: getAudiencePagesText(l).students.nav, description: getAudiencePagesText(l).students.subtitle }),
 } satisfies Record<string, PageInfo>;
 

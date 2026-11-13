@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getScratchText } from "@/i18n/scratch";
+import { getAnimatorText } from "@/i18n/animator";
 import { ScratchEditor } from "@/components/scratch/ScratchEditor";
 import { auth } from "@/lib/auth";
 import { loadScratchProject } from "@/lib/scratch/store";
@@ -26,7 +27,7 @@ export default async function ScratchPage({ params }: { params: Promise<{ locale
         </h1>
         <p className="max-w-2xl text-base text-[var(--muted)]">{t.subtitle}</p>
       </header>
-      <ScratchEditor t={t} initialBlocks={blocks} loggedIn={Boolean(userId)} loginHref={`/${locale}/prihlaseni`} />
+      <ScratchEditor t={t} animatorText={getAnimatorText(locale as Locale)} initialBlocks={blocks} loggedIn={Boolean(userId)} loginHref={`/${locale}/prihlaseni`} />
     </div>
   );
 }

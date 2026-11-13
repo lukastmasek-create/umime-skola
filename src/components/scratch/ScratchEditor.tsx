@@ -49,6 +49,8 @@ import {
 import { checkChallenge, CHALLENGE_IDS, type ChallengeId } from "@/lib/scratch/challenges";
 import { BlockIcon, CatSprite, CategoryIcon, FlagIcon, GripIcon, SlidersIcon, SparkleBurst, StopIcon, TrashIcon } from "./ScratchIcons";
 import { BlockDocs } from "./BlockDocs";
+import { AnimatorEditor } from "@/components/animator/AnimatorEditor";
+import type { AnimatorText } from "@/i18n/animator";
 import { CAT_COLOR, INK, SKETCH_RADIUS } from "./theme";
 
 
@@ -238,11 +240,13 @@ async function saveNow(blocks: Block[]): Promise<boolean> {
 
 export function ScratchEditor({
   t,
+  animatorText,
   initialBlocks,
   loggedIn,
   loginHref,
 }: {
   t: ScratchText;
+  animatorText: AnimatorText;
   initialBlocks: Block[] | null;
   loggedIn: boolean;
   loginHref: string;
@@ -256,7 +260,7 @@ export function ScratchEditor({
   const [customOpen, setCustomOpen] = useState(false);
   const [challenge, setChallenge] = useState<ChallengeId | null>(null);
   const [ranOnce, setRanOnce] = useState(false);
-  const [view, setView] = useState<"studio" | "lessons">("studio");
+  const [view, setView] = useState<"studio" | "lessons" | "animator">("studio");
 
   // Na serveru a při prvním vykreslení jsou výchozí hodnoty, pak se načtou z prohlížeče (bez rozdílu při hydrataci).
   const rawPrefs = useSyncExternalStore(subscribePrefs, readRawPrefs, () => null);
@@ -431,7 +435,7 @@ export function ScratchEditor({
     <div className="mb-5 flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div role="tablist" className="flex gap-2">
-          {(["studio", "lessons"] as const).map((v) => (
+          {(["studio", "lessons", "animator"] as const).map((v) => (
             <button
               key={v}
               type="button"
@@ -441,10 +445,11 @@ export function ScratchEditor({
               style={INK_STYLE}
               className={`rounded-xl border-2 border-[#16132b] px-4 py-2 font-bold shadow-[3px_3px_0_#16132b] transition hover:-translate-y-0.5 ${view === v ? "bg-[#ffc933]" : "bg-white"}`}
             >
-              {v === "studio" ? t.tabStudio : t.tabLessons}
+              {v === "studio" ? t.tabStudio : v === "lessons" ? t.tabLessons : t.tabAnimator}
             </button>
           ))}
         </div>
+        {view === "studio" && (
         <button
           type="button"
           onClick={() => setCustomOpen((o) => !o)}
@@ -454,9 +459,10 @@ export function ScratchEditor({
         >
           <SlidersIcon size={18} /> {t.customize}
         </button>
+        )}
       </div>
 
-      {customOpen && (
+      {view === "studio" && customOpen && (
         <section
           aria-label={t.customizeTitle}
           className="flex flex-col gap-5 rounded-2xl border-[3px] border-[#16132b] bg-[#fffaf0] p-5 shadow-[6px_6px_0_#16132b]"
@@ -527,6 +533,8 @@ export function ScratchEditor({
 
     {view === "lessons" ? (
       <BlockDocs t={t} onAdd={addFromLessons} />
+    ) : view === "animator" ? (
+      <AnimatorEditor t={animatorText} />
     ) : (
     <div
       className="grid gap-6 lg:grid-cols-[var(--menu-w)_minmax(0,1fr)_var(--stage-w)]"

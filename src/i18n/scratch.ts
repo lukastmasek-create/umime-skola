@@ -53,6 +53,7 @@ export type ScratchText = {
   challengeNone: string;
   tabStudio: string;
   tabLessons: string;
+  tabAnimator: string;
   docsTitle: string;
   docsIntro: string;
   docsExample: string;
@@ -163,6 +164,7 @@ const CS: ScratchText = {
   hiddenBlocks: "Schovat bloky, které nepoužíváš",
   tabStudio: "Studio",
   tabLessons: "Lekce",
+  tabAnimator: "Animátor",
   docsTitle: "Lekce: klíč ke všem blokům",
   docsIntro: "Tady najdeš, co dělá každý blok a jak se používá. Klikni na „Přidat do skriptu“ a blok se rovnou objeví ve studiu.",
   docsExample: "Příklad",
@@ -320,6 +322,7 @@ const EN: ScratchText = {
   hiddenBlocks: "Hide blocks you don't use",
   tabStudio: "Studio",
   tabLessons: "Lessons",
+  tabAnimator: "Animator",
   docsTitle: "Lessons: key to all blocks",
   docsIntro: "Here's what each block does and how to use it. Click \"Add to script\" and the block appears in the studio right away.",
   docsExample: "Example",
