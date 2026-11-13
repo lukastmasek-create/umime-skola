@@ -213,11 +213,11 @@ function AccountPanel({
             {account.name ?? t.anonymous}
           </p>
           <p className="flex items-center gap-1 truncate text-sm font-bold text-[var(--accent-500)]">
-            <SketchIcon kind="sparkle" size={14} className="shrink-0" />
+            <SketchIcon kind="sparkle" size={14} className="acct-bob shrink-0" />
             <span className="truncate">{title ? title.names[locale] : t.noTitle}</span>
           </p>
           <p className={`flex items-center gap-1 truncate text-xs ${banner ? "text-white/90" : "text-[var(--muted)]"}`}>
-            <SketchIcon kind="school" size={14} className="shrink-0" />
+            <SketchIcon kind="school" size={14} className="acct-bob shrink-0" />
             <span className="truncate">
               {account.school ? `${account.school.name}${account.school.city ? `, ${account.school.city}` : ""}` : t.noSchool}
             </span>
@@ -230,7 +230,9 @@ function AccountPanel({
       <div className="mt-4">
         <div className="flex items-center justify-between gap-2 text-sm font-bold">
           <span className="flex items-center gap-2">
-            <Ico kind="level" />
+            <span className="acct-bob">
+              <Ico kind="level" />
+            </span>
             {t.level} {account.level}
           </span>
           <span className="text-xs font-semibold text-[var(--muted)]">{fill(t.toNext, toNext)}</span>
@@ -242,7 +244,7 @@ function AccountPanel({
           aria-valuemin={0}
           aria-valuemax={100}
         >
-          <div className="h-full bg-[var(--accent-500)]" style={{ width: `${account.percent}%` }} />
+          <div className="acct-fill h-full bg-[var(--accent-500)]" style={{ width: `${account.percent}%` }} />
         </div>
       </div>
 

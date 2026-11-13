@@ -6186,3 +6186,88 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 @media (prefers-reduced-motion: reduce) {
   .acct-pop { transform: none; }
 }
+
+/* Animace účtu: všechny jen pro uživatele, kteří pohyb nemají vypnutý. */
+@media (prefers-reduced-motion: no-preference) {
+  /* Okno se rozbalí shora jako papír, s lehkým překmitem a dopadem do naklonění. */
+  @keyframes acct-unroll {
+    0% { opacity: 0; clip-path: inset(0 0 100% 0); transform: translateY(-18px) rotate(calc(var(--r) - 6deg)) scaleY(0.7); }
+    45% { opacity: 1; clip-path: inset(-60px -60px -60px -60px); transform: translateY(8px) rotate(calc(var(--r) + 3deg)) scaleY(1.03); }
+    72% { transform: translateY(-3px) rotate(calc(var(--r) - 1deg)) scaleY(1); }
+    100% { opacity: 1; clip-path: inset(-60px -60px -60px -60px); transform: translateY(0) rotate(var(--r)) scaleY(1); }
+  }
+  .acct-pop { animation: acct-unroll 0.75s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+  /* Sekce naskakují postupně: každý další prvek o 60 ms později. */
+  @keyframes acct-up {
+    from { opacity: 0; transform: translateY(16px) scale(0.96); }
+    to { opacity: 1; transform: none; }
+  }
+  .acct-pop > *:not(.pcard-tape) { animation: acct-up 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  .acct-pop > *:nth-child(2) { animation-delay: 0.14s; }
+  .acct-pop > *:nth-child(3) { animation-delay: 0.2s; }
+  .acct-pop > *:nth-child(4) { animation-delay: 0.26s; }
+  .acct-pop > *:nth-child(5) { animation-delay: 0.32s; }
+  .acct-pop > *:nth-child(6) { animation-delay: 0.38s; }
+  .acct-pop > *:nth-child(7) { animation-delay: 0.44s; }
+  .acct-pop > *:nth-child(8) { animation-delay: 0.5s; }
+  .acct-pop > *:nth-child(9) { animation-delay: 0.56s; }
+  .acct-pop > *:nth-child(10) { animation-delay: 0.62s; }
+  .acct-pop > *:nth-child(11) { animation-delay: 0.68s; }
+  .acct-pop > *:nth-child(12) { animation-delay: 0.74s; }
+  .acct-pop > *:nth-child(13) { animation-delay: 0.8s; }
+  .acct-pop > *:nth-child(14) { animation-delay: 0.86s; }
+  .acct-pop > *:nth-child(n + 15) { animation-delay: 0.92s; }
+
+  /* Statistiky vyskočí s přeskokem, jedna po druhé. */
+  @keyframes acct-bounce-in {
+    0% { opacity: 0; transform: scale(0.5); }
+    60% { opacity: 1; transform: scale(1.08); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  .acct-stat { animation: acct-bounce-in 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+  .acct-stat:nth-child(1) { animation-delay: 0.3s; }
+  .acct-stat:nth-child(2) { animation-delay: 0.38s; }
+  .acct-stat:nth-child(3) { animation-delay: 0.46s; }
+
+  /* Ukazatel levelu se plní od nuly. */
+  @keyframes acct-grow {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+  .acct-fill { transform-origin: left center; animation: acct-grow 1s 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+  /* Kroužek kolem avataru se kreslí jako tužkou. */
+  .acct-pop .pcard-ring path { stroke-dasharray: 500; stroke-dashoffset: 500; animation: acct-draw 1s 0.2s ease-out forwards; }
+  @keyframes acct-draw {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* Páska se přilepí shora. */
+  @keyframes acct-tape {
+    from { opacity: 0; translate: 0 -16px; }
+    to { opacity: 1; translate: 0 0; }
+  }
+  .acct-pop .pcard-tape { animation: acct-tape 0.5s 0.05s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+  /* Ikony se pohupují, když je uživatel najede, a výběr avataru nebo titulu cvrnkne. */
+  @keyframes acct-wiggle {
+    0%, 100% { transform: rotate(0) scale(1); }
+    25% { transform: rotate(-12deg) scale(1.15); }
+    50% { transform: rotate(9deg) scale(1.12); }
+    75% { transform: rotate(-4deg) scale(1.05); }
+  }
+  .acct-pop :is(button, a):hover .acct-chip { animation: acct-wiggle 0.6s ease-in-out; }
+  @keyframes acct-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  .acct-pop .acct-bob { animation: acct-bob 2.4s ease-in-out infinite; }
+  @keyframes acct-select {
+    0% { transform: scale(0.7); }
+    60% { transform: scale(1.12); }
+    100% { transform: scale(1); }
+  }
+  .acct-pop [aria-pressed="true"] { animation: acct-select 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .acct-pop :is(button, a):active { transform: scale(0.94); }
+}
