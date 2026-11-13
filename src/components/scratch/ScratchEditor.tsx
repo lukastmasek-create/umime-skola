@@ -62,21 +62,21 @@ const PAPER = "#fffaf0";
 const PEN_SWATCHES = ["#16132b", "#ff8a6b", "#ffc933", "#7ee0b0", "#8fd0ff", "#c9a8ff"];
 
 // Rychlost: stanice posuvníku od nejrychlejší po nejpomalejší. Násobí čas, takže se pohne všechno naráz.
-// mult = násobič času, stepMs = pauza po každém příkazu (jen u režimu krok po kroku).
+// mult = násobič času, stepMs = pauza po každém příkazu ve skutečných ms (přepočítá se podle násobiče).
 type SpeedStation = { mult: number; stepMs: number };
 const SPEEDS: SpeedStation[] = [
   { mult: 4, stepMs: 0 },
   { mult: 2, stepMs: 0 },
   { mult: 1, stepMs: 0 }, // Normálně
-  { mult: 0.5, stepMs: 0 },
-  { mult: 0.25, stepMs: 0 },
-  { mult: 0.1, stepMs: 0 },
-  { mult: 1, stepMs: 1000 }, // Každý příkaz zhruba za sekundu
+  { mult: 0.5, stepMs: 400 }, // Pomalu
+  { mult: 0.25, stepMs: 800 }, // Hodně pomalu
+  { mult: 0.1, stepMs: 1200 }, // Šnek
+  { mult: 0.5, stepMs: 1500 }, // Krok po kroku: každý příkaz zhruba za 1,5 s
 ];
 const DEFAULT_SPEED = 2;
 // Jak dlouho kočka klouže k nové pozici: na pomalých stanicích delší, aby byl pohyb vidět.
 function moveMsFor(s: SpeedStation): number {
-  return Math.round(Math.min(900, Math.max(100, 100 / s.mult)));
+  return Math.round(Math.min(1500, Math.max(100, 100 / s.mult)));
 }
 // Herní smyčka běží po krocích max. 16 ms, aby pohyb při vysoké rychlosti zůstal plynulý.
 const SUB_STEP_MS = 16;
@@ -299,7 +299,8 @@ export function ScratchEditor({
       }
       // Uplynulý čas (max. 64 ms, aby po přepnutí karty nevyskočila kočka) vynásobený rychlostí,
       // rozdělený na krátké kroky. Díky tomu se kočka hýbe plynule i na nejvyšší rychlost.
-      rt.stepDelay = speedRef.current.stepMs;
+      // Pauza se počítá v čase hry, který běží s násobičem, proto se skutečná ms přepočítají.
+      rt.stepDelay = speedRef.current.stepMs * speedRef.current.mult;
       let budget = Math.min(64, now - last) * speedRef.current.mult;
       last = now;
       while (budget > 0 && isRunning(rt)) {
