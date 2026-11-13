@@ -5,12 +5,20 @@ import { CodeArea } from "@/components/CodeArea";
 import { SketchIcon } from "@/components/SketchIcons";
 import { useCodeKeys } from "@/components/useCodeKeys";
 import { modeAt, type CommentMode } from "@/lib/code-editing";
-import { ALLOWED_EXT, MAX_FILE_BYTES, buildPreview, checkName, extOf, uniqueName } from "@/lib/code-sandbox";
+import {
+  ALLOWED_EXT,
+  ENTRY,
+  MAX_FILE_BYTES,
+  buildPreview,
+  checkName,
+  extOf,
+  renameReferences,
+  uniqueName,
+} from "@/lib/code-sandbox";
 
-// Čistý list: prázdný projekt s více soubory. Soubory můžeš vytvořit, nahrát z počítače
-// a stáhnout zpátky. Náhled se skládá z propojených souborů a fetch() čte soubory z projektu.
+// Čistý list: prázdný projekt s více soubory a složkami. Soubory můžeš vytvořit, přejmenovat,
+// nahrát (jednotlivě nebo celou složku) a stáhnout. Projekt se ukládá v tomto prohlížeči.
 
-const ENTRY = "index.html";
 const SKELETON = `<!DOCTYPE html>
 <html lang="cs">
 <head>
@@ -21,6 +29,7 @@ const SKELETON = `<!DOCTYPE html>
 
 </body>
 </html>`;
+const STORE_KEY = "kod-na-hrani-list-v1";
 const LIVE_DELAY = 250;
 
 // Který způsob komentáře patří k souboru podle přípony.
@@ -37,28 +46,66 @@ function downloadText(name: string, content: string) {
   const url = URL.createObjectURL(new Blob([content], { type: "text/plain;charset=utf-8" }));
   const a = document.createElement("a");
   a.href = url;
-  a.download = name;
+  a.download = name.split("/").pop() ?? name;
   document.body.appendChild(a);
   a.click();
   a.remove();
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+function loadSaved(): Record<string, string> | null {
+  try {
+    const raw = window.localStorage.getItem(STORE_KEY);
+    if (!raw) return null;
+    const f = JSON.parse(raw) as unknown;
+    if (f && typeof f === "object" && ENTRY in f) return f as Record<string, string>;
+  } catch {
+    // Prohlížeč může úložiště zablokovat, pak prostě začneme od začátku.
+  }
+  return null;
+}
+
 export function CodeSandbox() {
   const [files, setFiles] = useState<Record<string, string>>({ [ENTRY]: SKELETON });
+  const [ready, setReady] = useState(false);
   const [active, setActive] = useState(ENTRY);
   const [wrap, setWrap] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [newError, setNewError] = useState("");
+  const [renaming, setRenaming] = useState<string | null>(null);
+  const [renameTo, setRenameTo] = useState("");
+  const [renameError, setRenameError] = useState("");
   const [notes, setNotes] = useState<string[]>([]);
-  const importRef = useRef<HTMLInputElement>(null);
+  const folderRef = useRef<HTMLInputElement>(null);
 
   const names = Object.keys(files);
   const content = files[active] ?? "";
   const live = useMemo(() => buildPreview(files), [files]);
   const [shown, setShown] = useState(live);
+
+  // Načtení uloženého projektu až po startu v prohlížeči (na serveru není localStorage).
+  useEffect(() => {
+    const saved = loadSaved();
+    // Úložiště je externí zdroj dostupný až v prohlížeči, takže načtení musí být v effectu.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (saved) setFiles(saved);
+    setReady(true);
+  }, []);
+
+  // Ukládání, až když je projekt načtený, aby se nepřepsal prázdným začátkem.
+  useEffect(() => {
+    if (!ready) return;
+    const t = window.setTimeout(() => {
+      try {
+        window.localStorage.setItem(STORE_KEY, JSON.stringify(files));
+      } catch {
+        // Plná nebo zablokovaná paměť: projekt zůstane aspoň v okně.
+      }
+    }, 400);
+    return () => window.clearTimeout(t);
+  }, [files, ready]);
 
   useEffect(() => {
     const t = window.setTimeout(() => setShown(live), LIVE_DELAY);
@@ -88,6 +135,19 @@ export function CodeSandbox() {
     setCreating(false);
   }
 
+  function renameFile(from: string) {
+    const r = checkName(renameTo, names.filter((n) => n !== from));
+    if ("error" in r) {
+      setRenameError(r.error);
+      return;
+    }
+    // Přejmenování zachová pořadí souborů a opraví odkazy a importy, které na soubor ukazují.
+    setFiles((f) => renameReferences(f, from, r.name));
+    if (active === from) setActive(r.name);
+    setRenaming(null);
+    setRenameError("");
+  }
+
   function deleteFile(name: string) {
     if (name === ENTRY) return;
     if (!window.confirm(`Smazat soubor ${name}?`)) return;
@@ -99,36 +159,149 @@ export function CodeSandbox() {
     if (active === name) setActive(ENTRY);
   }
 
+  function resetProject() {
+    if (!window.confirm("Smazat celý projekt a začít od prázdné stránky?")) return;
+    setFiles({ [ENTRY]: SKELETON });
+    setActive(ENTRY);
+    setNotes([]);
+  }
+
+  // Nahrání souborů i složky. Složka se nahrává přes webkitdirectory a první díl cesty (jméno složky) se vynechá.
+  async function importFiles(list: File[], relative: boolean) {
+    const msgs: string[] = [];
+    const taken = Object.keys(files);
+    const added: Record<string, string> = {};
+    for (const file of list) {
+      const rel = relative ? (file as File & { webkitRelativePath?: string }).webkitRelativePath ?? file.name : file.name;
+      const path = relative ? rel.split("/").slice(1).join("/") : rel;
+      if (!path) continue;
+      if (file.size > MAX_FILE_BYTES) {
+        msgs.push(`${path}: je větší než 512 kB.`);
+        continue;
+      }
+      // Diakritika v názvu se zjednoduší, aby prošel stejný kontrolní filtr jako u nových souborů.
+      const base = path.normalize("NFD").replace(/[̀-ͯ]/g, "");
+      const check = checkName(base, []);
+      if ("error" in check) {
+        msgs.push(`${path}: ${check.error}`);
+        continue;
+      }
+      const name = uniqueName(check.name, taken);
+      taken.push(name);
+      added[name] = await file.text();
+      msgs.push(`Nahráno: ${name}`);
+    }
+    const keys = Object.keys(added);
+    if (keys.length) {
+      setFiles((f) => ({ ...f, ...added }));
+      setActive(keys[keys.length - 1]);
+    }
+    setNotes(msgs);
+  }
+
   function onImport(e: ChangeEvent<HTMLInputElement>) {
     const list = Array.from(e.target.files ?? []);
     e.target.value = "";
-    if (list.length === 0) return;
-    const msgs: string[] = [];
-    const taken = Object.keys(files);
-    list.forEach(async (file) => {
-      if (file.size > MAX_FILE_BYTES) {
-        msgs.push(`${file.name}: je větší než 512 kB.`);
-      } else {
-        // Diakritika v názvu se zjednoduší, aby prošel stejný kontrolní filtr jako u nových souborů.
-        const base = file.name.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, "-");
-        const check = checkName(base, []);
-        if ("error" in check) {
-          msgs.push(`${file.name}: ${check.error}`);
-        } else {
-          const text = await file.text();
-          const name = uniqueName(check.name, taken);
-          taken.push(name);
-          setFiles((f) => ({ ...f, [name]: text }));
-          setActive(name);
-          msgs.push(`Nahráno: ${name}`);
-        }
-      }
-      setNotes([...msgs]);
-    });
+    if (list.length) void importFiles(list, false);
+  }
+
+  function onFolder(e: ChangeEvent<HTMLInputElement>) {
+    const list = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (list.length) void importFiles(list, true);
   }
 
   function exportAll() {
     names.forEach((n, i) => window.setTimeout(() => downloadText(n, files[n]), i * 200));
+  }
+
+  // Seskupení podle složek: nejdřív soubory v kořeni, pak složky.
+  const groups = useMemo(() => {
+    const root: string[] = [];
+    const dirs = new Map<string, string[]>();
+    for (const n of names) {
+      if (!n.includes("/")) root.push(n);
+      else {
+        const dir = n.slice(0, n.lastIndexOf("/"));
+        dirs.set(dir, [...(dirs.get(dir) ?? []), n]);
+      }
+    }
+    return [{ dir: "", items: root }, ...Array.from(dirs.entries()).map(([dir, items]) => ({ dir, items }))];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [files]);
+
+  function fileRow(n: string) {
+    const isActive = n === active;
+    if (renaming === n) {
+      return (
+        <form
+          key={n}
+          onSubmit={(e) => {
+            e.preventDefault();
+            renameFile(n);
+          }}
+          className="flex flex-col gap-1 py-1 pl-3 pr-1"
+        >
+          <input
+            value={renameTo}
+            onChange={(e) => {
+              setRenameTo(e.target.value);
+              setRenameError("");
+            }}
+            aria-label={`Nové jméno pro ${n}`}
+            autoFocus
+            className="w-full rounded-md border-2 border-[#ffc933] bg-[#0f0d24] px-2 py-1 font-mono text-sm text-white outline-none"
+          />
+          {renameError && <p className="text-xs text-[#ff9a8a]">{renameError}</p>}
+          <div className="flex gap-1.5">
+            <button type="submit" className="rounded bg-[#17a864] px-2 py-0.5 text-xs font-bold text-white">
+              Přejmenovat
+            </button>
+            <button type="button" onClick={() => setRenaming(null)} className="rounded px-2 py-0.5 text-xs text-[#9d96bf]">
+              Zrušit
+            </button>
+          </div>
+        </form>
+      );
+    }
+    return (
+      <div
+        key={n}
+        className={`flex items-center gap-0.5 border-l-2 pr-1 ${isActive ? "border-[#ffc933] bg-[#2c2a52]" : "border-transparent hover:bg-[#25215a]"}`}
+      >
+        <button
+          type="button"
+          onClick={() => setActive(n)}
+          aria-current={isActive ? "true" : undefined}
+          className="flex min-w-0 flex-1 items-center gap-2 py-1.5 pl-3 text-left font-mono text-sm text-white"
+        >
+          <span className="truncate">{n.includes("/") ? n.slice(n.lastIndexOf("/") + 1) : n}</span>
+          <span className="ml-auto shrink-0 text-[11px] text-[#7d76a3]">{files[n].split("\n").length} ř.</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setRenaming(n);
+            setRenameTo(n);
+            setRenameError("");
+          }}
+          aria-label={`Přejmenovat ${n}`}
+          className="grid h-6 w-6 shrink-0 place-items-center rounded text-[11px] text-[#9d96bf] hover:bg-[#3a2a4a] hover:text-white"
+        >
+          ✎
+        </button>
+        {n !== ENTRY && (
+          <button
+            type="button"
+            onClick={() => deleteFile(n)}
+            aria-label={`Smazat ${n}`}
+            className="grid h-6 w-6 shrink-0 place-items-center rounded text-[#9d96bf] hover:bg-[#3a2a4a] hover:text-[#ff9a8a]"
+          >
+            ×
+          </button>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -143,11 +316,11 @@ export function CodeSandbox() {
         <span className="truncate font-mono text-xs text-[#9d96bf]">cisty-list — {active}</span>
         <span className="ml-auto flex items-center gap-1.5 text-xs font-bold text-[#7ee0b0]">
           <span className="h-2 w-2 animate-pulse rounded-full bg-[#7ee0b0]" aria-hidden />
-          Živý náhled
+          Živý náhled · uloženo v prohlížeči
         </span>
       </div>
 
-      <div className="grid lg:grid-cols-[250px_1fr]">
+      <div className="grid lg:grid-cols-[260px_1fr]">
         {/* Soubory */}
         <aside className="flex flex-col border-b-2 border-[#35305f] bg-[#1b1838] lg:border-b-0 lg:border-r-2">
           <div className="flex flex-col gap-2 p-3">
@@ -163,15 +336,22 @@ export function CodeSandbox() {
               </button>
               <label className="cursor-pointer rounded-md border-2 border-[#35305f] px-2 py-1 text-xs font-bold text-[#cfc8e4] hover:border-[#8d99ff]">
                 Nahrát
-                <input
-                  ref={importRef}
-                  type="file"
-                  multiple
-                  accept={ALLOWED_EXT.map((x) => "." + x).join(",")}
-                  onChange={onImport}
-                  className="sr-only"
-                />
+                <input type="file" multiple accept={ALLOWED_EXT.map((x) => "." + x).join(",")} onChange={onImport} className="sr-only" />
               </label>
+              <button
+                type="button"
+                onClick={() => folderRef.current?.click()}
+                className="rounded-md border-2 border-[#35305f] px-2 py-1 text-xs font-bold text-[#cfc8e4] hover:border-[#8d99ff]"
+              >
+                Nahrát složku
+              </button>
+              <input
+                ref={folderRef}
+                type="file"
+                onChange={onFolder}
+                className="hidden"
+                {...({ webkitdirectory: "", directory: "" } as Record<string, string>)}
+              />
               <button
                 type="button"
                 onClick={exportAll}
@@ -195,7 +375,7 @@ export function CodeSandbox() {
                     setNewName(e.target.value);
                     setNewError("");
                   }}
-                  placeholder="např. style.css"
+                  placeholder="např. js/app.js"
                   aria-label="Jméno nového souboru"
                   autoFocus
                   className="w-full rounded-md border-2 border-[#35305f] bg-[#0f0d24] px-2.5 py-1.5 font-mono text-sm text-white outline-none placeholder:text-[#5b5480] focus:border-[#ffc933]"
@@ -208,7 +388,7 @@ export function CodeSandbox() {
             )}
 
             {notes.length > 0 && (
-              <ul className="flex flex-col gap-0.5 text-xs text-[#cfc8e4]" aria-live="polite">
+              <ul className="flex max-h-24 flex-col gap-0.5 overflow-y-auto text-xs text-[#cfc8e4]" aria-live="polite">
                 {notes.map((n, i) => (
                   <li key={i}>{n}</li>
                 ))}
@@ -216,38 +396,22 @@ export function CodeSandbox() {
             )}
           </div>
 
-          <nav aria-label="Soubory projektu" className="flex max-h-[260px] flex-col gap-0.5 overflow-y-auto px-2 pb-3 lg:max-h-[600px]">
-            {names.map((n) => {
-              const isActive = n === active;
-              return (
-                <div
-                  key={n}
-                  className={`flex items-center gap-1 border-l-2 pr-1 ${
-                    isActive ? "border-[#ffc933] bg-[#2c2a52]" : "border-transparent hover:bg-[#25215a]"
-                  }`}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setActive(n)}
-                    aria-current={isActive ? "true" : undefined}
-                    className="flex min-w-0 flex-1 items-center gap-2 py-1.5 pl-3 text-left font-mono text-sm text-white"
-                  >
-                    <span className="truncate">{n}</span>
-                    <span className="ml-auto shrink-0 text-[11px] text-[#7d76a3]">{files[n].split("\n").length} ř.</span>
-                  </button>
-                  {n !== ENTRY && (
-                    <button
-                      type="button"
-                      onClick={() => deleteFile(n)}
-                      aria-label={`Smazat ${n}`}
-                      className="grid h-6 w-6 shrink-0 place-items-center rounded text-[#9d96bf] hover:bg-[#3a2a4a] hover:text-[#ff9a8a]"
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-              );
-            })}
+          <nav aria-label="Soubory projektu" className="flex max-h-[280px] flex-col gap-1 overflow-y-auto px-2 pb-3 lg:max-h-[600px]">
+            {groups.map((g) => (
+              <div key={g.dir || "root"}>
+                {g.dir && (
+                  <div className="px-2 py-1 font-mono text-[11px] font-bold text-[#9d96bf]">📁 {g.dir}/</div>
+                )}
+                {g.items.map((n) => fileRow(n))}
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={resetProject}
+              className="mt-2 self-start px-2 text-xs text-[#9d96bf] underline underline-offset-4 hover:text-white"
+            >
+              Smazat celý projekt
+            </button>
           </nav>
         </aside>
 
@@ -286,7 +450,7 @@ export function CodeSandbox() {
           </div>
 
           <div className="border-b-2 border-[#35305f] bg-[#16132b] px-4 py-3 text-xs leading-relaxed text-[#9d96bf]">
-            Propoj soubory přes {"<link href=\"style.css\">"} a {"<script src=\"app.js\">"}. Skript může načíst JSON přes {"fetch(\"data.json\")"}.
+            Propoj soubory přes {"<link href=\"css/style.css\">"}, {"<script src=\"js/app.js\">"} nebo {"<script type=\"module\" src=\"js/main.js\">"} s {"import"}. Skript načte JSON přes {"fetch(\"data.json\")"}.
           </div>
 
           <div className="grid min-w-0 xl:grid-cols-2">
