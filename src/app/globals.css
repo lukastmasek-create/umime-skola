@@ -4145,13 +4145,25 @@ html.pencil-scroll::-webkit-scrollbar {
 .pencil-thumb {
   position: absolute;
   top: 0;
-  background: url(/scroll/tuzka.webp) center / 100% 100% no-repeat;
   cursor: grab;
   touch-action: none;
   will-change: transform;
 }
 .pencil-thumb[data-dragging] {
   cursor: grabbing;
+}
+/* Obrázek tužky: při jízdě dolů hrot dole, při jízdě nahoru se rychle překlopí (guma dole u čáry) */
+.pencil-art {
+  position: absolute;
+  inset: 0;
+  background: url(/scroll/tuzka.webp) center / 100% 100% no-repeat;
+  transition: transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.pencil-thumb[data-up] .pencil-art {
+  transform: rotate(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pencil-art { transition: none; }
 }
 
 /* Krátké potvrzení v Týmech: zmizí samo a ukazuje zbývající čas progress barem. */
