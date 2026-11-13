@@ -10,7 +10,8 @@ import { fill, getProfileText } from "@/i18n/profile";
 import { useAccount } from "@/lib/use-account";
 import { bannerCss, bannerLiveAttrs, isBannerId, isFrameId } from "@/lib/cosmetics";
 import type { Locale } from "@/i18n/config";
-import { SketchIcon } from "@/components/SketchIcons";
+import { SketchIcon, type SketchIconKind } from "@/components/SketchIcons";
+import { PcardRing, PcardTape } from "@/components/PcardArt";
 
 export function HeaderAccount({
   locale,
@@ -132,8 +133,9 @@ export function HeaderAccount({
         <div
           role="dialog"
           aria-label={t.nav}
-          className="card absolute inset-x-4 top-full z-50 mt-2 max-h-[calc(100dvh-6rem)] overflow-y-auto p-4 sm:inset-x-auto sm:left-auto sm:right-0 sm:w-[min(22rem,calc(100vw-2rem))] sm:max-h-[calc(100vh-6rem)]"
+          className="acct-pop absolute inset-x-4 top-full z-50 mt-3 max-h-[calc(100dvh-6rem)] overflow-y-auto p-4 sm:inset-x-auto sm:left-auto sm:right-0 sm:w-[min(22rem,calc(100vw-2rem))] sm:max-h-[calc(100vh-6rem)]"
         >
+          <PcardTape />
           <div
             {...(isBannerId(account.banner) ? { "data-banner": account.banner } : {})}
             className={`-mx-4 -mt-4 mb-1 flex items-center gap-3 rounded-t-[16px] px-4 pb-3 pt-4 ${
@@ -141,7 +143,10 @@ export function HeaderAccount({
             }`}
             style={isBannerId(account.banner) ? { background: bannerCss(account.banner) } : undefined}
           >
-            <Avatar id={account.avatar} icon={account.icon} size={64} frame={isFrameId(account.frame) ? account.frame : null} />
+            <span className="relative grid shrink-0 place-items-center">
+              <PcardRing />
+              <Avatar id={account.avatar} icon={account.icon} size={64} frame={isFrameId(account.frame) ? account.frame : null} />
+            </span>
             <div className="min-w-0">
               <p className="truncate text-lg font-extrabold" style={{ fontFamily: "var(--font-heading)" }}>
                 {account.name ?? t.anonymous}
@@ -178,19 +183,23 @@ export function HeaderAccount({
           </div>
 
           <dl className="mt-4 grid grid-cols-3 gap-2 text-center">
-            {[
-              [t.points, account.points],
-              [t.totalXp, account.xp],
-              [t.avatars, `${unlockedAvatars}/${AVATARS.length}`],
-            ].map(([label, value]) => (
-              <div key={String(label)} className="rounded-xl border-2 border-[var(--edge)] bg-[var(--surface-muted)] px-1 py-2">
+            {(
+              [
+                [t.points, account.points, "star"],
+                [t.totalXp, account.xp, "rocket"],
+                [t.avatars, `${unlockedAvatars}/${AVATARS.length}`, "user"],
+              ] as [string, string | number, SketchIconKind][]
+            ).map(([label, value, icon]) => (
+              <div key={label} className="acct-stat">
+                <SketchIcon kind={icon} size={22} className="mx-auto" />
                 <dd className="text-base font-extrabold">{value}</dd>
                 <dt className="text-[11px] font-semibold text-[var(--muted)]">{label}</dt>
               </div>
             ))}
           </dl>
 
-          <p className="mb-1.5 mt-4 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+          <p className="acct-label">
+            <SketchIcon kind="user" size={18} className="shrink-0" />
             {t.avatars}{" "}
             <span className="font-semibold normal-case">
               · {favAvatars.length > 0 ? t.quickFavorites : t.quickUnlocked} · {t.unlockedCount} {unlockedAvatars}/{AVATARS.length}
@@ -223,7 +232,8 @@ export function HeaderAccount({
             {fill(t.quickMore, AVATARS.length)} →
           </Link>
 
-          <p className="mb-1.5 mt-4 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">
+          <p className="acct-label">
+            <SketchIcon kind="sparkle" size={18} className="shrink-0" />
             {t.titles}{" "}
             <span className="font-semibold normal-case">
               · {favTitles.length > 0 ? t.quickFavorites : t.quickUnlocked} · {t.unlockedCount} {unlockedTitles}/{TITLES.length}
@@ -251,7 +261,7 @@ export function HeaderAccount({
 
           {favFrames.length > 0 && (
             <>
-              <p className="mb-1.5 mt-4 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.frames}</p>
+              <p className="acct-label"><SketchIcon kind="shield" size={18} className="shrink-0" />{t.frames}</p>
               <div className="flex flex-wrap items-center gap-2.5">
                 <button
                   type="button"
@@ -282,7 +292,7 @@ export function HeaderAccount({
 
           {favBanners.length > 0 && (
             <>
-              <p className="mb-1.5 mt-4 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.banners}</p>
+              <p className="acct-label"><SketchIcon kind="camera" size={18} className="shrink-0" />{t.banners}</p>
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
