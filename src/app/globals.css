@@ -4627,12 +4627,12 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 /* Obchod ve stylu Gammy: tmavý povrch v barvách webu (indigo + modrý akcent). Přepisuje proměnné jen uvnitř .gammy,
    takže se vloženým částem (materiály, limitky, kolo štěstí) změní barvy samy. */
 .gammy {
-  --g-bg: #12102a;
-  --g-panel: #1c1936;
-  --g-panel-2: #26224a;
-  --g-line: #35305f;
-  --g-accent: #5a6cff;
-  --g-accent-ink: #ffffff;
+  --g-bg: #16237f;
+  --g-panel: #1e2f98;
+  --g-panel-2: #2740b8;
+  --g-line: #4a63d6;
+  --g-accent: #ffc933;
+  --g-accent-ink: #14132a;
   --background: var(--g-bg);
   --surface: var(--g-panel);
   --surface-muted: var(--g-panel-2);
@@ -4646,7 +4646,7 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
   --border-soft: var(--g-line);
   --muted: #cfc8e4;
   --faint: #9d96bf;
-  background: radial-gradient(1200px 600px at 20% -10%, #353b86 0%, transparent 60%), var(--g-bg);
+  background: radial-gradient(1200px 600px at 20% -10%, #3248f0 0%, transparent 60%), var(--g-bg);
   color: #f6f1e4;
   border: 1px solid var(--g-line);
   border-radius: 28px;

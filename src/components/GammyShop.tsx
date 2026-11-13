@@ -2,13 +2,10 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { ArrowUpRight, Asterisk, Check, Eye, Flame, Heart, Receipt, Star, Zap } from "lucide-react";
+import { ArrowUpRight, Asterisk, Check, CircleDot, Coins, Eye, Flame, Heart, Package, Receipt, Shapes, Star, Zap } from "lucide-react";
 import { ShopModel } from "@/components/ShopModel";
 import { PcardRing, PcardTape } from "@/components/PcardArt";
 import { pcardTiltLeave, pcardTiltMove } from "@/components/pcardTilt";
-import { ShopHeroArt } from "@/components/ShopHeroArt";
-import { ShopHeroStage } from "@/components/ShopHeroStage";
-import { Avatar } from "@/components/Avatar";
 import { Modal, Preview, type Snapshot } from "@/components/ShopView";
 import { MaterialShop, LimitedShop, ProCard } from "@/components/ShopSections";
 import { SchoolShopCards } from "@/components/pro/SchoolShopCards";
@@ -44,6 +41,7 @@ const TILE_ACCENTS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
 const TILE_TILTS = [-2.5, 2, -1.5, 2.5];
 const KIND_MODEL: Record<ShopKind, string> = { avatar: "cat-avatar", title: "cat-title", frame: "cat-frame", banner: "cat-banner", pet: "cat-pet", city: "cat-city" };
 const MARQUEE = ["Body", "Voucher", "Dárek", "Kolo štěstí", "Materiály", "Limitky", "Avatary", "Sady"];
+const TOPUP_AMOUNTS = [100, 300, 1000];
 
 const WISHLIST_KEY = "shop-wishlist";
 type Review = { average: number; count: number; mine: { stars: number; text: string | null } | null; latest: { stars: number; text: string | null; name: string }[] };
@@ -83,12 +81,14 @@ export function GammyShop({
   locale,
   loggedIn,
   players,
+  featured,
   topUp,
   wheel,
 }: {
   locale: Locale;
   loggedIn: boolean;
   players: number | null;
+  featured: ReactNode;
   topUp: ReactNode;
   wheel: ReactNode;
 }) {
@@ -113,6 +113,7 @@ export function GammyShop({
   const [myStars, setMyStars] = useState(0);
   const [myText, setMyText] = useState("");
   const [hit, setHit] = useState<ShopItem | null>(null);
+  const [amount, setAmount] = useState(300);
 
   useEffect(() => {
     const id = window.setTimeout(() => {
@@ -283,7 +284,6 @@ export function GammyShop({
   const dealItems = [...deals].map((id) => getShopItem(id)).filter((i): i is ShopItem => !!i);
   const giftItem = giftId ? getShopItem(giftId) : undefined;
   const loginHref = `/${locale}/prihlaseni`;
-  const heroAvatars = ["avatar-astronaut", "avatar-pirate", "avatar-wizard"].map((id) => getShopItem(id)?.ref).filter((v): v is string => !!v);
 
   const card = (item: ShopItem) => {
     const have = owned.has(item.id);
@@ -365,41 +365,73 @@ export function GammyShop({
     );
   };
 
+  // Tlačítko koupit pro kartu nahoře a pro Hit týdne (stejná logika jako u karty ve zboží).
+  const quickBuy = (item: ShopItem) => {
+    if (owned.has(item.id)) {
+      return <p className="text-center text-sm font-semibold text-[var(--g-accent)]"><Check aria-hidden className="inline h-4 w-4" /> {t.owned}</p>;
+    }
+    const price = salePrice(item, day);
+    if (!loggedIn) {
+      return (
+        <Link href={loginHref} className="block rounded-full bg-[var(--g-accent)] px-3 py-2 text-center text-sm font-bold text-[var(--g-accent-ink)]">
+          {price} · {t.buy}
+        </Link>
+      );
+    }
+    const missing = price - points;
+    const sale = deals.has(item.id);
+    return (
+      <button
+        type="button"
+        disabled={!snap || busy !== null || missing > 0}
+        onClick={() => post({ action: "buy", id: item.id }, t.bought.replace("{name}", item.names[locale]), item.id)}
+        className="w-full rounded-full bg-[var(--g-accent)] px-3 py-2 text-sm font-bold text-[var(--g-accent-ink)] disabled:cursor-not-allowed disabled:opacity-45"
+      >
+        {snap && missing > 0 ? t.needPoints.replace("{n}", String(missing)) : <>{sale && <s className="opacity-60">{item.price}</s>} {price} · {t.buy}</>}
+      </button>
+    );
+  };
+
+  const dealCard = (item: ShopItem) => (
+    <article key={item.id} className="gammy-panel relative flex min-w-0 flex-col gap-3 p-4 transition-transform hover:-translate-y-1">
+      <span className="absolute left-3 top-3 z-10 rounded-full bg-[var(--g-accent)] px-2 py-0.5 text-[11px] font-bold text-[var(--g-accent-ink)]">
+        -{Math.round(DEAL_DISCOUNT * 100)} %
+      </span>
+      <div className="flex h-24 items-center justify-center">
+        <ShopModel id={KIND_MODEL[item.kind]} size={88} />
+      </div>
+      <div>
+        <p className="text-xs text-[var(--muted)]">Dnešní sleva · {t.tabs[item.kind]}</p>
+        <h3 className="text-sm font-bold leading-tight">{item.names[locale]}</h3>
+      </div>
+      <div className="mt-auto">{quickBuy(item)}</div>
+    </article>
+  );
+
+  const tiles = [
+    { label: "Mince", sub: "dobít body", icon: Coins, bg: "linear-gradient(135deg, #3248f0, #5a6cff)", onPick: () => scrollTo("body") },
+    { label: "Materiály", sub: "suroviny", icon: Package, bg: "linear-gradient(135deg, #ffc933, #ff8a6b)", onPick: () => { setMore("materialy"); scrollTo("dalsi"); } },
+    { label: "Modely", sub: "limitované", icon: Shapes, bg: "linear-gradient(135deg, #17a864, #3ddc97)", onPick: () => { setMore("modely"); scrollTo("dalsi"); } },
+    { label: "Kolo štěstí", sub: "zatoč", icon: CircleDot, bg: "linear-gradient(135deg, #29a3ff, #3248f0)", onPick: () => { setMore("kolo"); scrollTo("dalsi"); } },
+  ];
+
   const heading = "text-2xl font-bold sm:text-3xl";
   const headingFont = { fontFamily: "var(--font-heading)" };
 
   return (
     <div className="gammy overflow-hidden">
-      {/* Hero */}
-      <section className="gs-hero px-5 pb-10 pt-8 sm:px-10 md:pt-28">
-        <div className="gs-hero-card">
-        <div className="gs-hero-text">
-          <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-[var(--g-line)] px-3 py-1 text-xs text-[var(--muted)]">
-            <span className="h-2 w-2 rounded-full bg-[var(--g-accent)]" /> Uč se. Vydělávej. Užívej si.
-          </p>
-          <h1 className="text-3xl font-bold leading-tight sm:text-4xl" style={headingFont}>
-            Obchod pro <span className="text-[var(--g-accent)]">hráče</span>, kteří se učí
-          </h1>
-          <p className="mt-4 max-w-md text-sm text-[var(--muted)]">
-            Body z učení měň za avatary, rámečky, pozadí profilu, mazlíčky i budovy do města. Denně jsou jiné slevy a kamarádům můžeš koupit dárek.
-          </p>
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <button type="button" onClick={() => scrollTo("zbozi")} className="rounded-full bg-[var(--g-accent)] px-6 py-2.5 text-sm font-bold text-[var(--g-accent-ink)]">
-              Nakupovat <ArrowUpRight aria-hidden className="inline h-4 w-4" />
-            </button>
-            <button type="button" onClick={() => scrollTo("proc")} className="text-sm font-semibold text-[var(--muted)] hover:text-[var(--g-accent)]">
-              Jak to funguje?
-            </button>
+      {/* Hlavní rozložení: velká karta vlevo, slevy, dlaždice a kategorie vpravo */}
+      <section className="px-5 pb-8 pt-6 sm:px-10 md:pt-10">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="mb-2 inline-flex items-center gap-2 rounded-full border border-[var(--g-line)] px-3 py-1 text-xs text-[var(--muted)]">
+              <span className="h-2 w-2 rounded-full bg-[var(--g-accent)]" /> Uč se. Vydělávej. Užívej si.
+            </p>
+            <h1 className="text-3xl font-bold leading-tight sm:text-4xl" style={headingFont}>
+              Obchod s <span className="text-[var(--g-accent)]">body</span>
+            </h1>
           </div>
-          <div className="mt-8 flex flex-wrap items-center gap-5 text-sm">
-            <div className="flex items-center gap-3">
-              <div className="flex -space-x-2">
-                {heroAvatars.map((a) => (
-                  <Avatar key={a} id={a} size={34} />
-                ))}
-              </div>
-              <span className="text-[var(--muted)]">{players ? `${players.toLocaleString("cs-CZ")} hráčů` : "Hráči"}</span>
-            </div>
+          <div className="flex flex-wrap items-center gap-4 text-sm">
             <button type="button" onClick={() => scrollTo("hodnoceni")} className="flex items-center gap-2" aria-label="Hodnocení obchodu">
               <span className="text-2xl font-bold">{review && review.count ? review.average.toFixed(1).replace(".", ",") : "–"}</span>
               <span className="flex flex-col items-start leading-tight">
@@ -407,6 +439,7 @@ export function GammyShop({
                 <span className="text-[11px] text-[var(--faint)]">{review?.count ?? 0} hodnocení</span>
               </span>
             </button>
+            {players !== null && <span className="text-[var(--muted)]">{players.toLocaleString("cs-CZ")} hráčů</span>}
             <span className="text-[var(--muted)]">
               <b className="text-[var(--foreground)]">{SHOP_ITEMS.length}</b> věcí v nabídce
             </span>
@@ -419,8 +452,120 @@ export function GammyShop({
             )}
           </div>
         </div>
-          <ShopHeroArt />
-          <ShopHeroStage />
+
+        <div className="grid gap-5 lg:grid-cols-4">
+          <div className="min-w-0 lg:col-span-1">{featured}</div>
+
+          <div className="flex min-w-0 flex-col gap-5 lg:col-span-3">
+            <div className="grid gap-4 sm:grid-cols-3">{dealItems.map(dealCard)}</div>
+
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {tiles.map((tile) => (
+                <button
+                  key={tile.label}
+                  type="button"
+                  onClick={tile.onPick}
+                  className="flex flex-col items-start gap-2 rounded-2xl p-4 text-left text-white transition-transform hover:-translate-y-1"
+                  style={{ background: tile.bg }}
+                >
+                  <tile.icon aria-hidden className="h-7 w-7" />
+                  <span className="text-base font-bold leading-tight">{tile.label}</span>
+                  <span className="text-xs opacity-80">{tile.sub}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {SHOP_KINDS.map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => { setKind(k); setShown(15); scrollTo("zbozi"); }}
+                  className="flex min-w-[84px] flex-col items-center gap-1 rounded-2xl p-2 text-xs font-semibold text-[var(--muted)] transition-colors hover:bg-[var(--g-panel)] hover:text-[var(--foreground)]"
+                >
+                  <ShopModel id={KIND_MODEL[k]} size={44} />
+                  {t.tabs[k]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <article className="gammy-panel flex min-w-0 flex-col gap-3 p-4 lg:col-span-1">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-lg font-bold" style={headingFont}>Hit týdne</h3>
+              <button
+                type="button"
+                onClick={() => { setKind("all"); scrollTo("zbozi"); }}
+                className="rounded-full border border-[var(--g-line)] px-3 py-1 text-xs font-bold text-[var(--muted)] hover:text-[var(--g-accent)]"
+              >
+                Vše
+              </button>
+            </div>
+            {hit && (
+              <>
+                <div className="flex items-center gap-3">
+                  <ShopModel id={KIND_MODEL[hit.kind]} size={72} />
+                  <div className="min-w-0">
+                    <p className="truncate font-bold">{hit.names[locale]}</p>
+                    <p className="text-xs text-[var(--muted)]">{t.tabs[hit.kind]}</p>
+                  </div>
+                </div>
+                <div className="mt-auto">{quickBuy(hit)}</div>
+              </>
+            )}
+          </article>
+
+          <section aria-labelledby="dobit-body" className="gammy-panel flex min-w-0 flex-col gap-4 p-5 lg:col-span-3">
+            <div>
+              <h3 id="dobit-body" className="text-lg font-bold" style={headingFont}>Dobít body</h3>
+              <p className="text-sm text-[var(--muted)]">Vyber balíček a případně zadej promo kód.</p>
+            </div>
+            <div className="grid gap-3 md:grid-cols-[auto_1fr_auto_auto] md:items-center">
+              <div className="flex flex-wrap gap-2">
+                {TOPUP_AMOUNTS.map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    aria-pressed={amount === n}
+                    onClick={() => setAmount(n)}
+                    className={`rounded-full px-4 py-2 text-sm font-bold transition-colors ${
+                      amount === n
+                        ? "bg-[var(--g-accent)] text-[var(--g-accent-ink)]"
+                        : "border border-[var(--g-line)] text-[var(--muted)] hover:text-[var(--foreground)]"
+                    }`}
+                  >
+                    {n} b.
+                  </button>
+                ))}
+              </div>
+              <input
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder="Promo kód"
+                maxLength={32}
+                aria-label="Promo kód"
+                className="min-w-0 rounded-full border border-[var(--g-line)] bg-[var(--g-bg)] px-4 py-2 text-sm uppercase outline-none focus:border-[var(--g-accent)]"
+              />
+              <button
+                type="button"
+                disabled={busy !== null}
+                onClick={() => {
+                  if (!loggedIn) return toast("Nejdřív se přihlas.");
+                  void redeem();
+                }}
+                className="rounded-full border border-[var(--g-accent)] px-5 py-2 text-sm font-bold text-[var(--g-accent)] disabled:opacity-50"
+              >
+                Uplatnit
+              </button>
+              <button
+                type="button"
+                onClick={() => toast("Platby zatím nejsou spuštěné, brzy.")}
+                className="rounded-full bg-[var(--g-accent)] px-6 py-2 text-sm font-bold text-[var(--g-accent-ink)]"
+              >
+                Zaplatit
+              </button>
+            </div>
+          </section>
         </div>
       </section>
 

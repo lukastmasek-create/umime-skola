@@ -5,6 +5,7 @@ import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, type Locale } from "@/i18n/config";
 import { Wheel } from "@/components/Wheel";
 import { BuyPointsCard } from "@/components/BuyPointsCard";
+import { Icon } from "@/components/Icon";
 import { GammyShop } from "@/components/GammyShop";
 import { getPlayerMarketText } from "@/i18n/player-market";
 import { staticPageMetadata } from "@/lib/seo";
@@ -20,6 +21,8 @@ const POINT_PACKAGES = [
 // Barvy a náklon karet balíčků (stejná paleta jako karty kategorií na homepage).
 const PACKAGE_ACCENTS = ["#ffc933", "#ff8a6b", "#8fd0ff"];
 const PACKAGE_TILTS = [-2.5, 1.5, -1.5];
+// Velká karta vlevo nahoře: vezme balíček označený jako nejoblíbenější.
+const FEATURED_PACKAGE = POINT_PACKAGES.find((p) => p.popular) ?? POINT_PACKAGES[0];
 
 export const generateMetadata = staticPageMetadata("/obchod");
 
@@ -66,6 +69,31 @@ export default async function ShopPage({
         locale={locale as Locale}
         loggedIn={!!userId}
         players={players}
+        featured={
+          <article className="gammy-panel flex h-full flex-col gap-4 p-5">
+            <div className="flex flex-wrap gap-2">
+              <span className="rounded-full bg-[var(--g-accent)] px-3 py-1 text-xs font-bold text-[var(--g-accent-ink)]">Nejoblíbenější</span>
+              <span className="rounded-full border border-[var(--g-line)] px-3 py-1 text-xs font-bold text-[var(--muted)]">{FEATURED_PACKAGE.points} bodů</span>
+            </div>
+            <div className="flex flex-1 items-center justify-center rounded-2xl bg-[var(--g-bg)] p-4">
+              <Icon name={`balicek-${FEATURED_PACKAGE.image}`} size={180} />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+                Truhla s {FEATURED_PACKAGE.points} body
+              </h2>
+              <p className="mt-2 text-sm text-[var(--muted)]">
+                Body získáš učením i kolem štěstí. Za ně si koupíš avatary, mazlíčky nebo budovy do města.
+              </p>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-2xl font-bold">{FEATURED_PACKAGE.price}</p>
+              <a href="#body" className="rounded-full bg-[var(--g-accent)] px-5 py-2 text-sm font-bold text-[var(--g-accent-ink)]">
+                Vybrat
+              </a>
+            </div>
+          </article>
+        }
         topUp={
           <div className="pcard-shelf grid gap-8 sm:grid-cols-3">
             {POINT_PACKAGES.map((pkg, i) => (
