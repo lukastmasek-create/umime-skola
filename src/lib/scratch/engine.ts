@@ -342,7 +342,9 @@ function* runBlock(rt: Runtime, b: Block, scope: Scope, depth: number): Generato
       const start = rt.time;
       while (ms > 0 && rt.time - start < ms) {
         if (rt.stopped) return;
-        const t = clamp((rt.time - start) / ms, 0, 1);
+        const k = clamp((rt.time - start) / ms, 0, 1);
+        // Smoothstep: klouzání se rozjede a dojede jemně, ne tvrdě od začátku do konce.
+        const t = k * k * (3 - 2 * k);
         place(rt, sx + (tx - sx) * t, sy + (ty - sy) * t);
         yield 0;
       }

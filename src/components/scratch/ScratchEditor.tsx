@@ -70,11 +70,17 @@ function collide(args: Parameters<typeof pointerWithin>[0]) {
 const PAPER = "#fffaf0";
 const PEN_SWATCHES = ["#16132b", "#ff8a6b", "#ffc933", "#7ee0b0", "#8fd0ff", "#c9a8ff"];
 
-// Přizpůsobení: velikost menu a jeviště a schované bloky. Ukládá se jen do prohlížeče žáka.
+// Rychlost: stanice posuvníku od nejrychlejší po nejpomalejší. Násobí čas, takže se pohne všechno naráz.
+const SPEED_MULT = [4, 2, 1, 0.5, 0.25, 0.1] as const;
+const DEFAULT_SPEED = 2; // Normálně
+// Herní smyčka běží po krocích max. 16 ms, aby pohyb při vysoké rychlosti zůstal plynulý.
+const SUB_STEP_MS = 16;
+
+// Přizpůsobení: velikost menu a jeviště, schované bloky a rychlost. Ukládá se jen do prohlížeče žáka.
 type Size = "s" | "m" | "l";
-type Prefs = { menu: Size; stage: Size; hidden: BlockType[] };
+type Prefs = { menu: Size; stage: Size; hidden: BlockType[]; speed: number };
 const PREFS_KEY = "umime-scratch-prefs";
-const DEFAULT_PREFS: Prefs = { menu: "m", stage: "m", hidden: [] };
+const DEFAULT_PREFS: Prefs = { menu: "m", stage: "m", hidden: [], speed: DEFAULT_SPEED };
 // Velké jeviště zůstává rozumně široké, aby se pod ním pořád vešly skripty.
 const MENU_W: Record<Size, string> = { s: "220px", m: "270px", l: "300px" };
 const STAGE_W_COL: Record<Size, string> = { s: "420px", m: "540px", l: "600px" };
@@ -114,10 +120,15 @@ function parsePrefs(raw: string | null): Prefs {
     const hidden = Array.isArray(p.hidden)
       ? p.hidden.filter((x): x is BlockType => typeof x === "string" && (BLOCK_TYPES as readonly string[]).includes(x) && x !== "start")
       : [];
+    const speed =
+      typeof p.speed === "number" && Number.isInteger(p.speed) && p.speed >= 0 && p.speed < SPEED_MULT.length
+        ? p.speed
+        : DEFAULT_SPEED;
     return {
       menu: isSize(p.menu) ? p.menu : DEFAULT_PREFS.menu,
       stage: isSize(p.stage) ? p.stage : DEFAULT_PREFS.stage,
       hidden,
+      speed,
     };
   } catch {
     return DEFAULT_PREFS;
@@ -225,6 +236,11 @@ export function ScratchEditor({
   const rtRef = useRef<Runtime | null>(null);
   const saveTimer = useRef<number | undefined>(undefined);
   const pending = useRef<Block[] | null>(null);
+  // Smyčka čte rychlost z reference, aby se změna posuvníku projevila hned, i když skript běží.
+  const speedRef = useRef<number>(SPEED_MULT[DEFAULT_SPEED]);
+  useEffect(() => {
+    speedRef.current = SPEED_MULT[prefs.speed] ?? SPEED_MULT[DEFAULT_SPEED];
+  }, [prefs.speed]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -265,8 +281,15 @@ export function ScratchEditor({
         setRunning(false);
         return;
       }
-      tick(rt, Math.min(64, now - last));
+      // Uplynulý čas (max. 64 ms, aby po přepnutí karty nevyskočila kočka) vynásobený rychlostí,
+      // rozdělený na krátké kroky. Díky tomu se kočka hýbe plynule i na nejvyšší rychlost.
+      let budget = Math.min(64, now - last) * speedRef.current;
       last = now;
+      while (budget > 0 && isRunning(rt)) {
+        const dt = Math.min(SUB_STEP_MS, budget);
+        tick(rt, dt);
+        budget -= dt;
+      }
       setSnap(takeSnap(rt));
       if (!isRunning(rt)) {
         setRunning(false);
@@ -503,6 +526,8 @@ export function ScratchEditor({
 
       {/* Nabídka bloků */}
       <aside className="order-2 flex flex-col gap-5 rounded-2xl border-[3px] border-[#16132b] bg-[#fffaf0] p-4 lg:order-first lg:max-h-[78vh] lg:overflow-y-auto">
+          <SpeedSlider value={prefs.speed} onChange={(speed) => changePrefs({ speed })} t={t} />
+
           <div role="heading" aria-level={2} className="font-bold text-[#16132b]" style={INK_STYLE}>{t.palette}</div>
           {CATEGORIES.map((cat) => {
             const types = BLOCK_TYPES.filter((type) => SPECS[type].category === cat && !prefs.hidden.includes(type));
@@ -528,6 +553,50 @@ export function ScratchEditor({
     </div>
     <DragOverlay>{activeLabel ? <div className="rounded-xl border-2 border-[#16132b] bg-[#fffaf0] px-3 py-1.5 text-sm font-semibold shadow-[3px_3px_0_#16132b]">{activeLabel}</div> : null}</DragOverlay>
     </DndContext>
+  );
+}
+
+// Posuvník rychlosti: vlevo nejrychleji, vpravo nejpomaleji. Tečky jsou stanice, na kterých se dá zastavit.
+function SpeedSlider({ value, onChange, t }: { value: number; onChange: (v: number) => void; t: ScratchText }) {
+  const last = SPEED_MULT.length - 1;
+  const stationName = t.speedStations[value] ?? "";
+  return (
+    <div className="flex flex-col gap-2 rounded-xl border-2 border-dashed border-[#16132b] bg-white/60 p-3">
+      <div className="flex items-center justify-between gap-2">
+        <label htmlFor="scratch-speed" className="flex items-center gap-1.5 font-bold" style={INK_STYLE}>
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M13 2 4 14h7l-1 8 9-12h-7z" fill="#ffc933" stroke={INK} strokeWidth="2" strokeLinejoin="round" />
+          </svg>
+          {t.speedTitle}
+        </label>
+        <span className="rounded-md border-2 border-[#16132b] bg-[#ffc933] px-2 py-0.5 text-xs font-bold" style={INK_STYLE} aria-hidden="true">
+          {stationName}
+        </span>
+      </div>
+      <input
+        id="scratch-speed"
+        type="range"
+        min={0}
+        max={last}
+        step={1}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        aria-valuetext={stationName}
+        className="w-full accent-[#16132b]"
+      />
+      <div className="flex justify-between px-[6px]" aria-hidden="true">
+        {SPEED_MULT.map((_, i) => (
+          <span
+            key={i}
+            className={`h-2.5 w-2.5 rounded-full border-2 border-[#16132b] ${i === value ? "bg-[#ffc933]" : "bg-white"}`}
+          />
+        ))}
+      </div>
+      <div className="flex justify-between text-xs" style={INK_STYLE}>
+        <span>← {t.speedFastest}</span>
+        <span>{t.speedSlowest} →</span>
+      </div>
+    </div>
   );
 }
 
@@ -803,18 +872,24 @@ function Stage({ snap, label }: { snap: Snap; label: string }) {
           <line key={i} x1={l.x1} y1={-l.y1} x2={l.x2} y2={-l.y2} stroke={l.color} strokeWidth={l.size} strokeLinecap="round" />
         ))}
       </g>
-      <g transform={`translate(${sx} ${sy}) rotate(${sprite.dir - 90}) scale(1.1)`}>
-        <CatSprite />
-      </g>
-      {say && (
-        <g transform={`translate(${sx} ${sy})`}>
-          <rect x={-bubbleW / 2} y={-78} width={bubbleW} height={30} rx={10} fill="#fff" stroke={INK} strokeWidth={2} />
-          <path d="M-6 -48 L0 -40 L6 -48" fill="#fff" stroke={INK} strokeWidth={2} strokeLinejoin="round" />
-          <text x={0} y={-58} textAnchor="middle" dominantBaseline="middle" fontSize={14} fontWeight={700} fill={INK}>
-            {say}
-          </text>
+      {/* Kočka a bublina se jen posouvají k nové pozici; krátký přechod z toho udělá plynulý pohyb, ne skoky. Otočení se nepřechází, aby se neroztočila dokola. */}
+      <g
+        className="transition-transform duration-100 ease-linear motion-reduce:transition-none"
+        style={{ transform: `translate(${sx}px, ${sy}px)` }}
+      >
+        <g style={{ transform: `rotate(${sprite.dir - 90}deg) scale(1.1)` }}>
+          <CatSprite />
         </g>
-      )}
+        {say && (
+          <g>
+            <rect x={-bubbleW / 2} y={-78} width={bubbleW} height={30} rx={10} fill="#fff" stroke={INK} strokeWidth={2} />
+            <path d="M-6 -48 L0 -40 L6 -48" fill="#fff" stroke={INK} strokeWidth={2} strokeLinejoin="round" />
+            <text x={0} y={-58} textAnchor="middle" dominantBaseline="middle" fontSize={14} fontWeight={700} fill={INK}>
+              {say}
+            </text>
+          </g>
+        )}
+      </g>
     </svg>
   );
 }
