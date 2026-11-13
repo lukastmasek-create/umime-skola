@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import Link from "next/link";
 import {
   DndContext,
@@ -39,7 +39,6 @@ import {
   updateArg,
   type Block,
   type BlockType,
-  type Category,
   type Line,
   type Runtime,
   type Sprite,
@@ -47,17 +46,9 @@ import {
 } from "@/lib/scratch/engine";
 import { checkChallenge, CHALLENGE_IDS, type ChallengeId } from "@/lib/scratch/challenges";
 import { BlockIcon, CatSprite, CategoryIcon, FlagIcon, GripIcon, SlidersIcon, StopIcon, TrashIcon } from "./ScratchIcons";
+import { BlockDocs } from "./BlockDocs";
+import { CAT_COLOR, INK, SKETCH_RADIUS } from "./theme";
 
-const CAT_COLOR: Record<Category, string> = {
-  events: "#ffc933",
-  motion: "#8fd0ff",
-  pen: "#7ee0b0",
-  control: "#ff8a6b",
-  looks: "#c9a8ff",
-  custom: "#ffb3d9",
-};
-
-const INK = "#16132b";
 
 // Globální styly webu (nadpisy, pole) nejsou ve vrstvě Tailwindu, proto barvy dávám přímo inline.
 const INK_STYLE = { color: INK } as const;
@@ -160,14 +151,24 @@ function savePrefs(p: Prefs) {
   window.dispatchEvent(new Event(PREFS_EVENT));
 }
 
-type Snap = { sprite: Sprite; lines: Line[]; say: string | null; error: string | null };
+type Snap = { sprite: Sprite; lines: Line[]; say: string | null; error: string | null; active: string | null };
 type SaveState = "idle" | "saving" | "saved" | "error";
 
 const EMPTY_SPRITE = createRuntime([]).sprite;
-const START_SNAP: Snap = { sprite: EMPTY_SPRITE, lines: [], say: null, error: null };
+const START_SNAP: Snap = { sprite: EMPTY_SPRITE, lines: [], say: null, error: null, active: null };
+
+// Blok, který se právě provádí (svítí v editoru). Předává se přes kontext, aby nebylo nutné táhnout props stromem.
+const ActiveBlockCtx = createContext<string | null>(null);
+
 
 function takeSnap(rt: Runtime): Snap {
-  return { sprite: { ...rt.sprite }, lines: rt.lines.slice(), say: rt.sprite.say, error: rt.error };
+  return {
+    sprite: { ...rt.sprite },
+    lines: rt.lines.slice(),
+    say: rt.sprite.say,
+    error: rt.error,
+    active: isRunning(rt) ? rt.active : null,
+  };
 }
 
 // Dnd id zóny: "zone|<rodič nebo root>|<index>"
@@ -242,6 +243,7 @@ export function ScratchEditor({
   const [customOpen, setCustomOpen] = useState(false);
   const [challenge, setChallenge] = useState<ChallengeId | null>(null);
   const [ranOnce, setRanOnce] = useState(false);
+  const [view, setView] = useState<"studio" | "lessons">("studio");
 
   // Na serveru a při prvním vykreslení jsou výchozí hodnoty, pak se načtou z prohlížeče (bez rozdílu při hydrataci).
   const rawPrefs = useSyncExternalStore(subscribePrefs, readRawPrefs, () => null);
@@ -401,12 +403,34 @@ export function ScratchEditor({
     commit(withoutBlock(blocks, id).list);
   }
 
+  // Z lekce se blok přidá do skriptu a rovnou se přepne zpět do studia.
+  function addFromLessons(type: BlockType) {
+    setView("studio");
+    addBlock(type, null, blocks.length);
+  }
+
   const hasHat = blocks.some((b) => b.type === "start");
 
   return (
+    <ActiveBlockCtx.Provider value={snap.active}>
     <DndContext sensors={sensors} collisionDetection={collide} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setActiveLabel(null)}>
     <div className="mb-5 flex flex-col gap-4">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div role="tablist" className="flex gap-2">
+          {(["studio", "lessons"] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              role="tab"
+              aria-selected={view === v}
+              onClick={() => setView(v)}
+              style={INK_STYLE}
+              className={`rounded-xl border-2 border-[#16132b] px-4 py-2 font-bold shadow-[3px_3px_0_#16132b] transition hover:-translate-y-0.5 ${view === v ? "bg-[#ffc933]" : "bg-white"}`}
+            >
+              {v === "studio" ? t.tabStudio : t.tabLessons}
+            </button>
+          ))}
+        </div>
         <button
           type="button"
           onClick={() => setCustomOpen((o) => !o)}
@@ -487,6 +511,9 @@ export function ScratchEditor({
       )}
     </div>
 
+    {view === "lessons" ? (
+      <BlockDocs t={t} onAdd={addFromLessons} />
+    ) : (
     <div
       className="grid gap-6 lg:grid-cols-[var(--menu-w)_minmax(0,1fr)_var(--stage-w)]"
       style={{ "--menu-w": MENU_W[prefs.menu], "--stage-w": STAGE_W_COL[prefs.stage] } as CSSProperties}
@@ -513,7 +540,7 @@ export function ScratchEditor({
           </button>
         </div>
 
-        <div className="rounded-2xl border-[3px] border-[#16132b] bg-[#fffaf0] p-3 shadow-[6px_6px_0_#16132b]">
+        <div className="rounded-2xl border-[3px] border-[#16132b] bg-[#fffaf0] p-3 shadow-[6px_6px_0_#16132b]" style={{ borderRadius: SKETCH_RADIUS }}>
           <Stage snap={snap} label={t.stage} moveMs={moveMsFor(SPEEDS[prefs.speed] ?? SPEEDS[DEFAULT_SPEED])} />
         </div>
 
@@ -566,8 +593,10 @@ export function ScratchEditor({
         <WorkspaceDrop blocks={blocks} t={t} onArg={setArg} onRemove={removeBlock} onClearAll={clearAll} />
       </section>
     </div>
+    )}
     <DragOverlay>{activeLabel ? <div className="rounded-xl border-2 border-[#16132b] bg-[#fffaf0] px-3 py-1.5 text-sm font-semibold shadow-[3px_3px_0_#16132b]">{activeLabel}</div> : null}</DragOverlay>
     </DndContext>
+    </ActiveBlockCtx.Provider>
   );
 }
 
@@ -755,6 +784,7 @@ function BlockNode({
   onArg: (id: string, key: string, value: Value) => void;
   onRemove: (id: string) => void;
 }) {
+  const isActive = useContext(ActiveBlockCtx) === block.id;
   const { setNodeRef, listeners, attributes, isDragging } = useDraggable({
     id: `block|${block.id}`,
     data: { kind: "block", id: block.id } satisfies DragData,
@@ -767,8 +797,8 @@ function BlockNode({
   return (
     <div ref={setNodeRef} className={`transition ${isDragging ? "opacity-40" : ""}`}>
       <div
-        className={`flex items-center gap-1 border-2 border-[#16132b] pr-1 shadow-[2px_2px_0_#16132b] ${isHat ? "rounded-t-[26px] rounded-b-lg pl-1" : "rounded-lg"}`}
-        style={{ background: color }}
+        className={`flex items-center gap-1 border-2 border-[#16132b] pr-1 shadow-[2px_2px_0_#16132b] transition-transform ${isHat ? "rounded-t-[26px] rounded-b-lg pl-1" : ""} ${isActive ? "scale-[1.03] ring-4 ring-[#ffc933] ring-offset-2 ring-offset-[#fffaf0]" : ""}`}
+        style={{ background: color, ...(isHat ? {} : { borderRadius: SKETCH_RADIUS }) }}
       >
         <span {...listeners} {...attributes} aria-label={t.dragBlock} className="flex cursor-grab touch-none self-stretch items-center px-1">
           <GripIcon size={14} />
@@ -892,10 +922,12 @@ function Stage({ snap, label, moveMs }: { snap: Snap; label: string; moveMs: num
         className="transition-transform ease-linear motion-reduce:transition-none"
         style={{ transform: `translate(${sx}px, ${sy}px)`, transitionDuration: `${moveMs}ms` }}
       >
-        <g style={{ transform: `rotate(${sprite.dir - 90}deg) scale(1.1)` }}>
-          <CatSprite />
-        </g>
-        {say && (
+        {sprite.visible && (
+          <g style={{ transform: `rotate(${sprite.dir - 90}deg) scale(${(sprite.size / 100) * 1.1})` }}>
+            <CatSprite pose={sprite.pose} />
+          </g>
+        )}
+        {say && sprite.visible && (
           <g>
             <rect x={-bubbleW / 2} y={-78} width={bubbleW} height={30} rx={10} fill="#fff" stroke={INK} strokeWidth={2} />
             <path d="M-6 -48 L0 -40 L6 -48" fill="#fff" stroke={INK} strokeWidth={2} strokeLinejoin="round" />

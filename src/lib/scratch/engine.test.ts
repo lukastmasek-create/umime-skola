@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
   BLOCK_TYPES,
   BOUND_X,
+  COSTUME_COUNT,
   SPECS,
   createRuntime,
   insertBlock,
@@ -32,9 +33,30 @@ function script(...blocks: Block[]): Block[] {
   return [blk("start"), ...blocks];
 }
 
-test("nabídka má přesně 20 bloků a každý má definici", () => {
-  assert.equal(BLOCK_TYPES.length, 20);
+test("nabídka má přesně 26 bloků a každý má definici", () => {
+  assert.equal(BLOCK_TYPES.length, 26);
   for (const t of BLOCK_TYPES) assert.ok(SPECS[t], `chybí definice pro ${t}`);
+});
+
+test("kostým přepíná polohu a další kostým se točí dokola", () => {
+  const rt = createRuntime(script(blk("costume", { costume: 2 }), blk("next-costume"), blk("next-costume")));
+  runAll(rt);
+  assert.equal(rt.sprite.pose, (2 - 1 + 2) % COSTUME_COUNT);
+});
+
+test("velikost a schování kočky se nastaví", () => {
+  const rt = createRuntime(script(blk("size", { percent: 150 }), blk("hide")));
+  runAll(rt);
+  assert.equal(rt.sprite.size, 150);
+  assert.equal(rt.sprite.visible, false);
+});
+
+test("opakuj dokud nejsi na okraji: pohyb skončí až u okraje", () => {
+  const rt = createRuntime(
+    script(blk("until-edge", {}, [blk("step", { steps: 20 })])),
+  );
+  runAll(rt);
+  assert.ok(rt.sprite.x >= BOUND_X - 0.5);
 });
 
 test("krok vpřed s perem zanechá čáru ve směru pohledu", () => {
