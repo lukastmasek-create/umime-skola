@@ -3,13 +3,15 @@
 import { useState } from "react";
 import { CodeExercises } from "@/components/CodeExercises";
 import { CodePlayground } from "@/components/CodePlayground";
+import { CodeSandbox } from "@/components/CodeSandbox";
 
 // Přepínač mezi cvičeními a volným editorem s živým náhledem.
 export function CodeWorkspace() {
-  const [mode, setMode] = useState<"cviceni" | "volny">("cviceni");
-  const tabs: { key: "cviceni" | "volny"; label: string }[] = [
+  const [mode, setMode] = useState<"cviceni" | "volny" | "list">("cviceni");
+  const tabs: { key: "cviceni" | "volny" | "list"; label: string }[] = [
     { key: "cviceni", label: "✎ Cvičení" },
     { key: "volny", label: "⌨ Volný editor" },
+    { key: "list", label: "▦ Čistý list" },
   ];
   return (
     <div>
@@ -34,7 +36,9 @@ export function CodeWorkspace() {
           );
         })}
       </div>
-      {mode === "cviceni" ? <CodeExercises /> : <CodePlayground />}
+      {mode === "cviceni" && <CodeExercises />}
+      {mode === "volny" && <CodePlayground />}
+      {mode === "list" && <CodeSandbox />}
     </div>
   );
 }
