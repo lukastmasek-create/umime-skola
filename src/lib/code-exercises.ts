@@ -19,6 +19,8 @@ export type Exercise = {
   title: string;
   task: string;
   starter: string;
+  // Místa, která žák doplňuje. Když je uvedeno, výchozí kód se vytvoří z řešení (viz fillStarter).
+  holes?: string[];
   hint: string;
   solution: string;
   checks: Check[];
@@ -39,6 +41,7 @@ export const EXERCISES: Exercise[] = [
   // ---------- HTML ----------
   {
     id: "html-kostra",
+    holes: ["lang=\"cs\"","Moje stránka","Ahoj"],
     lang: "html",
     topic: "Kostra stránky",
     level: 1,
@@ -65,6 +68,7 @@ export const EXERCISES: Exercise[] = [
   },
   {
     id: "html-seznam",
+    holes: ["<ul>","mléko","chleba","jablka"],
     lang: "html",
     topic: "Seznamy",
     level: 1,
@@ -85,6 +89,7 @@ export const EXERCISES: Exercise[] = [
   },
   {
     id: "html-odkaz-obrazek",
+    holes: ["https://ucimesehrou.org","Domů","Kočka na gauči"],
     lang: "html",
     topic: "Odkazy a obrázky",
     level: 2,
@@ -103,6 +108,7 @@ export const EXERCISES: Exercise[] = [
   },
   {
     id: "html-div-span",
+    holes: ["karta","Pozor","zvyraznit"],
     lang: "html",
     topic: "Obaly div a span",
     level: 2,
@@ -122,6 +128,7 @@ export const EXERCISES: Exercise[] = [
   },
   {
     id: "html-formular",
+    holes: ["mail","password","submit"],
     lang: "html",
     topic: "Formuláře",
     level: 2,
@@ -146,6 +153,7 @@ export const EXERCISES: Exercise[] = [
   },
   {
     id: "html-sematicke",
+    holes: ["<header>","<main>","<article>","<footer>"],
     lang: "html",
     topic: "Sémantické tagy",
     level: 3,
@@ -172,6 +180,7 @@ export const EXERCISES: Exercise[] = [
   // ---------- CSS ----------
   {
     id: "css-barvy",
+    holes: ["#3248f0","40px"],
     lang: "css",
     topic: "Barvy a písmo",
     level: 1,
@@ -191,6 +200,7 @@ export const EXERCISES: Exercise[] = [
   },
   {
     id: "css-box",
+    holes: ["16px","24px auto","12px"],
     lang: "css",
     topic: "Okraje a odsazení",
     level: 1,
@@ -212,6 +222,7 @@ export const EXERCISES: Exercise[] = [
   },
   {
     id: "css-flex",
+    holes: ["flex","center","center","12px"],
     lang: "css",
     topic: "Flexbox",
     level: 2,
@@ -234,6 +245,7 @@ export const EXERCISES: Exercise[] = [
   },
   {
     id: "css-hover",
+    holes: ["#ffc933","0.2s",":hover","#ff8a6b"],
     lang: "css",
     topic: "Hover a přechody",
     level: 2,
@@ -257,6 +269,7 @@ button:hover {
   },
   {
     id: "css-media",
+    holes: ["18px","600px","14px"],
     lang: "css",
     topic: "Responzivní design",
     level: 3,
@@ -280,6 +293,7 @@ button:hover {
   },
   {
     id: "css-grid",
+    holes: ["grid","repeat(3, 1fr)","16px"],
     lang: "css",
     topic: "Grid",
     level: 3,
@@ -302,6 +316,7 @@ button:hover {
   // ---------- JavaScript ----------
   {
     id: "js-promenna",
+    holes: ["const","Marta","Ahoj"],
     lang: "js",
     topic: "Proměnné",
     level: 1,
@@ -319,6 +334,7 @@ console.log("Ahoj " + jmeno);`,
   },
   {
     id: "js-if",
+    holes: ["if",">=","else"],
     lang: "js",
     topic: "Podmínky",
     level: 1,
@@ -341,6 +357,7 @@ if (vek >= 18) {
   },
   {
     id: "js-for",
+    holes: ["5",">=","--"],
     lang: "js",
     topic: "Cykly",
     level: 2,
@@ -359,6 +376,7 @@ if (vek >= 18) {
   },
   {
     id: "js-funkce",
+    holes: ["function","return","3, 4"],
     lang: "js",
     topic: "Funkce",
     level: 2,
@@ -378,6 +396,7 @@ console.log(scitej(3, 4));`,
   },
   {
     id: "js-pole",
+    holes: ["forEach","kus","kus"],
     lang: "js",
     topic: "Pole a forEach",
     level: 2,
@@ -397,6 +416,7 @@ ovoce.forEach((kus) => {
   },
   {
     id: "js-dom",
+    holes: ["querySelector","textContent","Kliklo se!"],
     lang: "js",
     topic: "DOM a události",
     level: 3,
@@ -416,6 +436,7 @@ nadpis.addEventListener("click", () => {
   },
   {
     id: "js-prepinac",
+    holes: ["getElementById","click","toggle"],
     lang: "js",
     topic: "Přepínání tříd",
     level: 3,
@@ -903,6 +924,7 @@ for (let jmeno of jmena) {
   // ---------- PROJEKTY (celá malá aplikace v jednom HTML souboru) ----------
   {
     id: "projekt-kalkulacka",
+    holes: ["switch","a / b","parseFloat"],
     kind: "projekt",
     lang: "html",
     topic: "Kalkulačka",
@@ -982,6 +1004,7 @@ for (let jmeno of jmena) {
   },
   {
     id: "projekt-formular",
+    holes: ["preventDefault","trim","includes"],
     kind: "projekt",
     lang: "html",
     topic: "Formulář s kontrolou",
@@ -1056,6 +1079,7 @@ for (let jmeno of jmena) {
   },
   {
     id: "projekt-kviz",
+    holes: ["forEach","createElement","appendChild"],
     kind: "projekt",
     lang: "html",
     topic: "Kvíz",
@@ -1138,6 +1162,7 @@ for (let jmeno of jmena) {
   },
   {
     id: "projekt-todo",
+    holes: ["getElementById","trim","createElement"],
     kind: "projekt",
     lang: "html",
     topic: "Seznam úkolů",
@@ -1203,3 +1228,18 @@ for (let jmeno of jmena) {
 ];
 
 export const TOPICS = Array.from(new Set(EXERCISES.map((e) => e.lang)));
+
+// Výchozí kód pro cvičení s `holes`: z řešení se vynechají vybraná místa a nahradí se značkou ___.
+// Místa se hledají v pořadí zdroje, takže každé musí v řešení existovat až za tím předchozím.
+export function fillStarter(e: Exercise): string {
+  if (!e.holes) return e.starter;
+  let out = "";
+  let pos = 0;
+  for (const h of e.holes) {
+    const i = e.solution.indexOf(h, pos);
+    if (i < 0) throw new Error(`Cvičení ${e.id}: místo „${h}“ není v řešení za předchozím místem`);
+    out += e.solution.slice(pos, i) + "___";
+    pos = i + h.length;
+  }
+  return out + e.solution.slice(pos);
+}

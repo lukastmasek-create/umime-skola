@@ -1,24 +1,23 @@
 "use client";
 
-import { useState, type KeyboardEvent, type ReactNode } from "react";
+import { useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { SketchIcon, type SketchIconKind } from "@/components/SketchIcons";
-import { EXERCISES, LANG_LABEL, type Exercise, type Lang } from "@/lib/code-exercises";
+import { EXERCISES, LANG_LABEL, fillStarter, type Exercise, type Lang } from "@/lib/code-exercises";
 
-// Pracovní prostředí ve stylu VS Code: průzkumník vlevo, záložky souborů, editor s čísly řádků,
-// spodní panel s výsledky a stavový řádek dole. Vizuál zůstává v barvách a ikonách webu.
+// Pracovní prostředí ve stylu VS Code: průzkumník vlevo, záložka souboru, kód s čísly řádků,
+// spodní panel s výsledky a stavový řádek. Žák doplňuje jen chybějící místa přímo v kódu.
 
 type Result = { passed: boolean; items: { ok: boolean; msg: string }[]; n: number };
 type Panel = "problems" | "hint" | "solution";
-type GroupKey = "doplni" | "napis" | "projekt";
+type GroupKey = "doplni" | "projekt";
 
 const LANG_COLOR: Record<Lang, string> = { html: "#ff8a6b", css: "#8fd0ff", js: "#ffc933" };
 const LANG_ICON: Record<Lang, SketchIconKind> = { html: "scroll", css: "palette", js: "bolt" };
 
 const GROUPS: { key: GroupKey; label: string; icon: SketchIconKind }[] = [
   { key: "doplni", label: "Doplň chybějící", icon: "study" },
-  { key: "napis", label: "Napiš od nuly", icon: "pencil" },
-  { key: "projekt", label: "Projekty", icon: "rocket" },
+  { key: "projekt", label: "Celé projekty", icon: "rocket" },
 ];
 
 const PANELS: { key: Panel; label: string }[] = [
@@ -28,15 +27,19 @@ const PANELS: { key: Panel; label: string }[] = [
 ];
 
 function groupOf(e: Exercise): GroupKey {
-  if (e.kind === "doplni") return "doplni";
-  if (e.kind === "projekt") return "projekt";
-  return "napis";
+  return e.kind === "projekt" ? "projekt" : "doplni";
 }
 
 // Název „souboru“ v průzkumníku, např. kostra.html nebo formular.js.
 function fileName(e: Exercise) {
   const stem = e.id.replace(/^(doplni|projekt)-/, "").replace(/^(html|css|js)-/, "");
   return `${stem}.${e.lang}`;
+}
+
+// Kód ze zadaných míst: prázdné místo zůstane jako ___, aby kontrola poznala, že chybí.
+function assemble(starter: string, answers: string[]) {
+  const segs = starter.split("___");
+  return segs.reduce((acc, seg, k) => acc + seg + (k < segs.length - 1 ? answers[k] || "___" : ""), "");
 }
 
 function Pill({ children, color }: { children: ReactNode; color: string }) {
@@ -47,78 +50,67 @@ function Pill({ children, color }: { children: ReactNode; color: string }) {
   );
 }
 
-// Editor: čísla řádků vlevo, zvýrazněná místa ___ a Tab vloží odsazení.
-function CodeEditor({
-  value,
-  onChange,
+// Editor s místy k doplnění: čísla řádků vlevo, do každého místa napíšeš jen chybějící slovo.
+// Tab přeskočí na další místo, Enter taky, Ctrl+Enter nebo Ctrl+S zkontroluje.
+function FillEditor({
+  starter,
+  answers,
+  onAnswer,
   onRun,
 }: {
-  value: string;
-  onChange: (v: string) => void;
+  starter: string;
+  answers: string[];
+  onAnswer: (k: number, v: string) => void;
   onRun: () => void;
 }) {
-  const lines = value.split("\n");
-  const rows = Math.max(lines.length + 1, 12);
-  const longest = lines.reduce((m, l) => Math.max(m, l.length), 0);
-  const parts = value.split(/(___)/);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const segs = starter.split("___");
+  const lines = starter.split("\n").length;
+  const width = Math.max(48, ...starter.split("\n").map((l) => l.length + 8));
+  const textClass = "px-4 py-3 font-mono text-[13px] leading-6 sm:text-sm";
 
-  function onKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
-    const el = e.currentTarget;
-    if (e.key === "Tab" && !e.shiftKey) {
-      e.preventDefault();
-      const s = el.selectionStart;
-      const t = el.selectionEnd;
-      onChange(value.slice(0, s) + "  " + value.slice(t));
-      requestAnimationFrame(() => {
-        el.selectionStart = el.selectionEnd = s + 2;
-      });
-    } else if ((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "Enter")) {
+  function onKeyDown(e: KeyboardEvent<HTMLInputElement>, k: number) {
+    if ((e.ctrlKey || e.metaKey) && (e.key === "s" || e.key === "Enter")) {
       e.preventDefault();
       onRun();
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const inputs = boxRef.current?.querySelectorAll<HTMLInputElement>("input[data-blank]");
+      inputs?.[k + 1]?.focus();
     }
   }
 
-  const textStyle = "px-4 py-3 font-mono text-[13px] leading-6 sm:text-sm";
-
   return (
-    <div className="flex min-w-full">
+    <div ref={boxRef} className="flex min-w-full">
       <div
         aria-hidden
         className="sticky left-0 z-[2] shrink-0 select-none border-r-2 border-[#1d1a3a] bg-[#0f0d24] py-3 pl-3 pr-3 text-right font-mono text-[13px] leading-6 text-[#5b5480] sm:text-sm"
       >
-        {lines.map((_, i) => (
+        {Array.from({ length: lines }, (_, i) => (
           <div key={i}>{i + 1}</div>
         ))}
       </div>
-      <div className="relative min-w-0 flex-1" style={{ minWidth: `${longest + 6}ch` }}>
-        <pre aria-hidden className={`pointer-events-none absolute inset-0 m-0 overflow-hidden whitespace-pre text-transparent ${textStyle}`}>
-          {parts.map((p, i) =>
-            p === "___" ? (
-              <mark key={i} className="rounded-sm bg-[#ffc933]/30 text-transparent shadow-[0_0_0_1px_#ffc933]">
-                ___
-              </mark>
-            ) : (
-              <span key={i}>{p}</span>
-            ),
-          )}
-          {"\n"}
-        </pre>
-        <label htmlFor="ex-code" className="sr-only">
-          Tvůj kód
-        </label>
-        <textarea
-          id="ex-code"
-          value={value}
-          rows={rows}
-          wrap="off"
-          spellCheck={false}
-          autoCapitalize="off"
-          autoCorrect="off"
-          onChange={(e) => onChange(e.target.value)}
-          onKeyDown={onKeyDown}
-          placeholder="Napiš kód sem…"
-          className={`relative z-[1] block w-full resize-none overflow-hidden bg-transparent text-[#f6f1e4] caret-[#ffc933] outline-none placeholder:text-[#5b5480] ${textStyle}`}
-        />
+      <div className={`min-w-0 flex-1 whitespace-pre text-[#f6f1e4] ${textClass}`} style={{ minWidth: `${width}ch` }}>
+        {segs.map((s, k) => (
+          <span key={k}>
+            {s}
+            {k < segs.length - 1 && (
+              <input
+                data-blank
+                value={answers[k] ?? ""}
+                onChange={(e) => onAnswer(k, e.target.value)}
+                onKeyDown={(e) => onKeyDown(e, k)}
+                aria-label={`Místo ${k + 1} z ${segs.length - 1}`}
+                placeholder="…"
+                spellCheck={false}
+                autoComplete="off"
+                autoCapitalize="off"
+                style={{ width: `${Math.max(3, (answers[k] ?? "").length + 1)}ch` }}
+                className="mx-0.5 h-6 border-b-2 border-[#ffc933] bg-[#ffc933]/15 px-1 align-top font-mono text-[#ffe08a] outline-none transition-colors focus:bg-[#ffc933]/35 placeholder:text-[#7d76a3]"
+              />
+            )}
+          </span>
+        ))}
       </div>
     </div>
   );
@@ -126,24 +118,34 @@ function CodeEditor({
 
 export function CodeExercises() {
   const [activeId, setActiveId] = useState(EXERCISES[0].id);
-  const [codes, setCodes] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const [results, setResults] = useState<Record<string, Result>>({});
   const [panel, setPanel] = useState<Panel>("problems");
   const [query, setQuery] = useState("");
   const [closed, setClosed] = useState<Record<string, boolean>>({});
 
   const ex = EXERCISES.find((e) => e.id === activeId) ?? EXERCISES[0];
-  const code = codes[ex.id] ?? ex.starter;
+  const starter = fillStarter(ex);
+  const blanks = starter.split("___").length - 1;
+  const myAnswers = answers[ex.id] ?? [];
+  const code = assemble(starter, myAnswers);
   const result = results[ex.id];
-  const modified = code !== ex.starter;
   const passedCount = EXERCISES.filter((e) => results[e.id]?.passed).length;
   const percent = Math.round((passedCount / EXERCISES.length) * 100);
   const failedCount = result ? result.items.filter((i) => !i.ok).length : 0;
-  const lineCount = code.split("\n").length;
+  const filled = Array.from({ length: blanks }, (_, k) => (myAnswers[k] ?? "").trim() !== "").filter(Boolean).length;
   const q = query.trim().toLowerCase();
 
   function matches(e: Exercise) {
     return !q || e.title.toLowerCase().includes(q) || e.topic.toLowerCase().includes(q);
+  }
+
+  function setAnswer(k: number, v: string) {
+    setAnswers((a) => {
+      const next = [...(a[ex.id] ?? Array.from({ length: blanks }, () => ""))];
+      next[k] = v;
+      return { ...a, [ex.id]: next };
+    });
   }
 
   function check() {
@@ -156,15 +158,15 @@ export function CodeExercises() {
       [ex.id]: { passed: items.every((i) => i.ok), items, n: (r[ex.id]?.n ?? 0) + 1 },
     }));
     setPanel("problems");
-    // Na mobilu je panel pod dlouhým editorem, tak ho přivedeme do záběru.
+    // Na mobilu je panel pod dlouhým kódem, tak ho přivedeme do záběru.
     window.setTimeout(() => {
       document.getElementById("ex-panel")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }, 60);
   }
 
   function reset() {
-    setCodes((c) => {
-      const next = { ...c };
+    setAnswers((a) => {
+      const next = { ...a };
       delete next[ex.id];
       return next;
     });
@@ -285,7 +287,7 @@ export function CodeExercises() {
                 <SketchIcon kind={LANG_ICON[ex.lang]} size={11} />
               </span>
               {fileName(ex)}
-              {modified && <span aria-label="Neuložené změny" className="text-[#ffc933]">●</span>}
+              {filled > 0 && <span aria-label="Rozdělané změny" className="text-[#ffc933]">●</span>}
             </div>
           </div>
 
@@ -298,11 +300,9 @@ export function CodeExercises() {
           <div className="border-b-2 border-[#35305f] bg-[#16132b] px-4 py-4 sm:px-5">
             <div className="flex flex-wrap items-center gap-2">
               <Pill color={LANG_COLOR[ex.lang]}>{LANG_LABEL[ex.lang]}</Pill>
-              {ex.kind && ex.kind !== "napis" && (
-                <span className="rounded-md border-2 border-[#16132b] bg-[#ffc933] px-2 py-0.5 text-[11px] font-extrabold text-[#16132b]">
-                  {ex.kind === "projekt" ? "PROJEKT" : "DOPLŇ"}
-                </span>
-              )}
+              <span className="rounded-md border-2 border-[#16132b] bg-[#ffc933] px-2 py-0.5 text-[11px] font-extrabold text-[#16132b]">
+                {ex.kind === "projekt" ? "PROJEKT" : "DOPLŇ"}
+              </span>
               <span className="text-xs text-[#9d96bf]">{ex.topic}</span>
               <span className="ml-auto flex items-center gap-0.5 text-[#ffc933]" aria-label={`Obtížnost ${ex.level} z 3`}>
                 {[1, 2, 3].map((n) => (
@@ -312,11 +312,11 @@ export function CodeExercises() {
             </div>
             <h2 id="ex-title" className="mt-2 text-lg font-bold text-white">{ex.title}</h2>
             <p className="mt-1 text-sm leading-relaxed text-[#cfc8e4]">{ex.task}</p>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="mt-3 flex flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={check}
-                title="Zkontrolovat (Ctrl+S)"
+                title="Zkontrolovat (Enter posune na další místo, Ctrl+Enter zkontroluje)"
                 className="rounded-lg border-2 border-[#ffc933] bg-[#ffc933] px-4 py-1.5 text-sm font-bold text-[#16132b] shadow-[3px_3px_0_#16132b] transition-transform active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
               >
                 ▶ Zkontrolovat
@@ -328,11 +328,14 @@ export function CodeExercises() {
               >
                 Vrátit na začátek
               </button>
+              <span className="ml-auto text-xs text-[#9d96bf]">
+                Doplněno {filled} z {blanks}
+              </span>
             </div>
           </div>
 
-          {/* Editor */}
-          <div className="max-h-[440px] min-h-[260px] overflow-auto bg-[#0f0d24]" aria-labelledby="ex-title">
+          {/* Kód s místy */}
+          <div className="max-h-[440px] min-h-[220px] overflow-auto bg-[#0f0d24]" aria-labelledby="ex-title">
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={ex.id}
@@ -341,9 +344,10 @@ export function CodeExercises() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.15 }}
               >
-                <CodeEditor
-                  value={code}
-                  onChange={(v) => setCodes((c) => ({ ...c, [ex.id]: v }))}
+                <FillEditor
+                  starter={starter}
+                  answers={myAnswers}
+                  onAnswer={setAnswer}
                   onRun={check}
                 />
               </motion.div>
@@ -387,7 +391,7 @@ export function CodeExercises() {
                 >
                   {panel === "problems" &&
                     (!result ? (
-                      <p className="text-[#9d96bf]">Ještě jsi nekontroloval. Klikni na Zkontrolovat nebo stiskni Ctrl+S.</p>
+                      <p className="text-[#9d96bf]">Ještě jsi nekontroloval. Doplň místa a klikni na Zkontrolovat (nebo Ctrl+Enter).</p>
                     ) : result.passed ? (
                       <motion.div
                         initial={{ scale: 0.92, opacity: 0 }}
@@ -399,11 +403,7 @@ export function CodeExercises() {
                         <span className="font-bold">Jupí, splněno! Můžeš jít na další.</span>
                       </motion.div>
                     ) : (
-                      <motion.div
-                        key={result.n}
-                        animate={{ x: [0, -8, 8, -5, 5, 0] }}
-                        transition={{ duration: 0.4 }}
-                      >
+                      <motion.div key={result.n} animate={{ x: [0, -8, 8, -5, 5, 0] }} transition={{ duration: 0.4 }}>
                         <p className="mb-2 font-bold text-[#ffd2c5]">
                           Splněno {result.items.length - failedCount} z {result.items.length}. Podívej se, co chybí:
                         </p>
@@ -433,7 +433,7 @@ export function CodeExercises() {
                   {panel === "solution" && (
                     <div>
                       <p className="mb-2 text-xs text-[#ffd2c5]">
-                        Nejdřív zkus sám. Když to nevyjde, podívej se sem a pak to napiš po svém.
+                        Nejdřív zkus sám. Když to nevyjde, podívej se sem a doplň jen to, co chybí.
                       </p>
                       <pre className="overflow-x-auto rounded-xl border-2 border-dashed border-[#ff8a6b] bg-[#2a1c33] p-3 font-mono text-[13px] leading-6 text-[#ffd2c5]">
                         {ex.solution}
@@ -459,8 +459,8 @@ export function CodeExercises() {
           />
         </span>
         <span className="ml-auto">{LANG_LABEL[ex.lang]}</span>
-        <span>{lineCount} {lineCount === 1 ? "řádek" : lineCount < 5 ? "řádky" : "řádků"}</span>
-        <span className="hidden md:inline">Ctrl+S = zkontrolovat · Tab = odsazení</span>
+        <span>{starter.split("\n").length} řádků</span>
+        <span className="hidden md:inline">Enter = další místo · Ctrl+Enter = zkontrolovat</span>
       </div>
     </div>
   );
