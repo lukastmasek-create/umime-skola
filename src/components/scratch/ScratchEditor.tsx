@@ -922,10 +922,12 @@ function Stage({ snap, label, moveMs }: { snap: Snap; label: string; moveMs: num
         className="transition-transform ease-linear motion-reduce:transition-none"
         style={{ transform: `translate(${sx}px, ${sy}px)`, transitionDuration: `${moveMs}ms` }}
       >
-        <g style={{ transform: `rotate(${sprite.dir - 90}deg) scale(1.1)` }}>
-          <CatSprite />
-        </g>
-        {say && (
+        {sprite.visible && (
+          <g style={{ transform: `rotate(${sprite.dir - 90}deg) scale(${(sprite.size / 100) * 1.1})` }}>
+            <CatSprite pose={sprite.pose} />
+          </g>
+        )}
+        {say && sprite.visible && (
           <g>
             <rect x={-bubbleW / 2} y={-78} width={bubbleW} height={30} rx={10} fill="#fff" stroke={INK} strokeWidth={2} />
             <path d="M-6 -48 L0 -40 L6 -48" fill="#fff" stroke={INK} strokeWidth={2} strokeLinejoin="round" />

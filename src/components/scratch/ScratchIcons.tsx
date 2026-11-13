@@ -260,6 +260,54 @@ export function BlockIcon({ type, size = 18, className }: IconProps & { type: Bl
         </>
       );
       break;
+    case "costume":
+      art = (
+        <>
+          <rect x="4" y="5" width="16" height="14" rx="2" {...line} fill="#c9a8ff" />
+          <path d="M8 15l2-4 2 2 2-3 2 5" {...line} />
+        </>
+      );
+      break;
+    case "next-costume":
+      art = (
+        <>
+          <path d="M5 12a7 7 0 0 1 12-5M19 12a7 7 0 0 1-12 5" {...line} />
+          <path d="M17 4v3h-3M7 20v-3h3" {...line} />
+        </>
+      );
+      break;
+    case "size":
+      art = (
+        <>
+          <path d="M4 20l6-6M4 20h5M4 20v-5" {...line} />
+          <path d="M20 4l-6 6M20 4h-5M20 4v5" {...line} />
+        </>
+      );
+      break;
+    case "show":
+      art = (
+        <>
+          <path d="M2 12c3-5 13-5 20 0-7 5-17 5-20 0z" {...line} />
+          <circle cx="12" cy="12" r="2.5" {...line} fill="#ffc933" />
+        </>
+      );
+      break;
+    case "hide":
+      art = (
+        <>
+          <path d="M2 12c3-5 13-5 20 0-7 5-17 5-20 0z" {...line} />
+          <path d="M4 4l16 16" {...line} />
+        </>
+      );
+      break;
+    case "until-edge":
+      art = (
+        <>
+          <path d="M3 12h10M9 8l4 4-4 4" {...line} />
+          <path d="M19 5v14" {...line} strokeWidth="3" />
+        </>
+      );
+      break;
     default:
       art = null;
   }
@@ -296,7 +344,16 @@ export function GripIcon({ size = 14, className }: IconProps) {
 }
 
 // Kočka na jevišti: kreslená, směřuje doprava (v SVG se natáčí podle směru).
-export function CatSprite() {
+// Polohy nohou pro kostýmy: 0 = stojí, 1 = rozkročená, 2 = skáče (nohy podžaté).
+const CAT_POSES = [
+  { legs: "M-4 0v8M6 0v8", feet: [[-2, 15], [8, 15]] },
+  { legs: "M-7 0l-5 8M9 0l5 8", feet: [[-12, 15], [14, 15]] },
+  { legs: "M-4 0v4M6 0v4", feet: [[-2, 9], [8, 9]] },
+] as const;
+
+export function CatSprite({ pose = 0 }: { pose?: number }) {
+  const p = CAT_POSES[((pose % CAT_POSES.length) + CAT_POSES.length) % CAT_POSES.length];
+
   return (
     <g>
       <ellipse cx="0" cy="4" rx="18" ry="11" fill="#ff8a6b" stroke={ink} strokeWidth="2" />
@@ -308,9 +365,9 @@ export function CatSprite() {
       <circle cx="17" cy="-6" r="2" fill={ink} />
       <circle cx="19" cy="-2" r="1.2" fill="#ffc933" />
       <path d="M22 -2.5l5-1M22 -0.5l5 .5" stroke={ink} strokeWidth="1" strokeLinecap="round" />
-      <path d="M-4 0v8M6 0v8" stroke={ink} strokeWidth="2" strokeLinecap="round" />
-      <ellipse cx="-2" cy="15" rx="3" ry="2" fill={paper} stroke={ink} strokeWidth="1.5" />
-      <ellipse cx="8" cy="15" rx="3" ry="2" fill={paper} stroke={ink} strokeWidth="1.5" />
+      <path d={p.legs} stroke={ink} strokeWidth="2" strokeLinecap="round" />
+      <ellipse cx={p.feet[0][0]} cy={p.feet[0][1]} rx="3" ry="2" fill={paper} stroke={ink} strokeWidth="1.5" />
+      <ellipse cx={p.feet[1][0]} cy={p.feet[1][1]} rx="3" ry="2" fill={paper} stroke={ink} strokeWidth="1.5" />
     </g>
   );
 }

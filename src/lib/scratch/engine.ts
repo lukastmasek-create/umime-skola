@@ -39,6 +39,12 @@ export const BLOCK_TYPES = [
   "set-var",
   "define",
   "call",
+  "costume",
+  "next-costume",
+  "size",
+  "show",
+  "hide",
+  "until-edge",
 ] as const;
 export type BlockType = (typeof BLOCK_TYPES)[number];
 
@@ -76,6 +82,9 @@ function spec(category: Category, fields: FieldSpec[] = [], flags: { container?:
 }
 
 // 20 bloků. Každý blok má kategorii, pole (vstupy) a případně tělo (container) nebo je to hlavička skriptu (hat).
+// Počet kostýmů (poloh) kočky. Kostým je jedna z nakreslených poloh, třeba pro běh nebo skok.
+export const COSTUME_COUNT = 3;
+
 export const SPECS: Record<BlockType, BlockSpec> = {
   start: spec("events", [], { hat: true }),
   goto: spec("motion", [num("x", 0, -BOUND_X, BOUND_X), num("y", 0, -BOUND_Y, BOUND_Y)]),
@@ -97,6 +106,12 @@ export const SPECS: Record<BlockType, BlockSpec> = {
   "set-var": spec("looks", [text("name", "body", 20), text("value", "0", 30)]),
   define: spec("custom", [text("name", "tvar", 20), text("params", "velikost", 60)], { container: true }),
   call: spec("custom", [text("name", "tvar", 20), text("args", "50", 60)]),
+  costume: spec("looks", [num("costume", 1, 1, COSTUME_COUNT)]),
+  "next-costume": spec("looks"),
+  size: spec("looks", [num("percent", 100, 10, 300)]),
+  show: spec("looks"),
+  hide: spec("looks"),
+  "until-edge": spec("control", [], { container: true }),
 };
 
 export function isBlockType(v: unknown): v is BlockType {
@@ -170,6 +185,9 @@ export type Sprite = {
   penColor: string;
   penSize: number;
   say: string | null;
+  pose: number; // index kostýmu 0 až COSTUME_COUNT - 1
+  size: number; // velikost v procentech, 100 = normální
+  visible: boolean;
 };
 
 export type Line = { x1: number; y1: number; x2: number; y2: number; color: string; size: number };
@@ -227,7 +245,7 @@ export function createRuntime(top: readonly Block[], rng: () => number = Math.ra
     procs[name] = { params: splitList(String(b.args.params ?? "")), body: b.body ?? [] };
   }
   const rt: Runtime = {
-    sprite: { x: 0, y: 0, dir: 90, penDown: false, penColor: PEN_COLORS[0], penSize: 2, say: null },
+    sprite: { x: 0, y: 0, dir: 90, penDown: false, penColor: PEN_COLORS[0], penSize: 2, say: null, pose: 0, size: 100, visible: true },
     lines: [],
     vars: Object.create(null),
     procs,
@@ -288,6 +306,10 @@ function place(rt: Runtime, x: number, y: number): void {
   }
   s.x = nx;
   s.y = ny;
+}
+
+function atEdge(s: Sprite): boolean {
+  return Math.abs(s.x) >= BOUND_X - 0.5 || Math.abs(s.y) >= BOUND_Y - 0.5;
 }
 
 function bounce(s: Sprite): void {
@@ -428,6 +450,35 @@ function* runBlock(rt: Runtime, b: Block, scope: Scope, depth: number): Generato
       rt.vars[name] = storeValue(argText(rt, b, "value", scope));
       return;
     }
+
+    case "costume":
+      rt.sprite.pose = Math.round(argNum(rt, b, "costume", scope)) - 1;
+      return;
+
+    case "next-costume":
+      rt.sprite.pose = (rt.sprite.pose + 1) % COSTUME_COUNT;
+      return;
+
+    case "size":
+      rt.sprite.size = argNum(rt, b, "percent", scope);
+      return;
+
+    case "show":
+      rt.sprite.visible = true;
+      return;
+
+    case "hide":
+      rt.sprite.visible = false;
+      return;
+
+    case "until-edge":
+      // Opakuje, dokud kočka nedojde k okraji. Bez bloků uvnitř je to nekonečná smyčka, jako donekonečna.
+      while (!atEdge(rt.sprite)) {
+        if (rt.stopped) return;
+        yield* runBlocks(rt, b.body ?? [], scope, depth);
+        yield 0;
+      }
+      return;
 
     case "call": {
       const name = argText(rt, b, "name", scope).trim();

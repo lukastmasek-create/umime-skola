@@ -41,6 +41,18 @@ export function BlockDocs({ t, onAdd }: { t: ScratchText; onAdd: (type: BlockTyp
   );
 }
 
+// Text bloku s výchozími hodnotami místo zástupných znaků, třeba „jdi na x: 0 y: 0“.
+function fillDefaults(type: BlockType, t: ScratchText): string {
+  const fields = SPECS[type].fields;
+  return t.blocks[type].replace(/\{(\w+)\}/g, (_, key: string) => {
+    const f = fields.find((x) => x.key === key);
+    if (!f) return "";
+    if (f.kind === "select") return t.options[String(f.def)] ?? String(f.def);
+    if (f.kind === "color") return "■";
+    return String(f.def);
+  });
+}
+
 function DocCard({ type, t, onAdd }: { type: BlockType; t: ScratchText; onAdd: (type: BlockType) => void }) {
   const s = SPECS[type];
   const doc = t.docs[type];
@@ -52,7 +64,7 @@ function DocCard({ type, t, onAdd }: { type: BlockType; t: ScratchText; onAdd: (
     >
       <div className="flex items-center gap-2 font-bold">
         <BlockIcon type={type} size={20} className="shrink-0" />
-        <span>{t.blocks[type]}</span>
+        <span>{fillDefaults(type, t)}</span>
       </div>
       <p className="text-sm">{doc?.what}</p>
       <div className="rounded-md bg-white/80 px-2 py-1 text-xs font-semibold">
