@@ -38,6 +38,11 @@ export type ScratchText = {
   sizeM: string;
   sizeL: string;
   hiddenBlocks: string;
+  speedTitle: string;
+  speedFastest: string;
+  speedSlowest: string;
+  // Stanice posuvníku rychlosti, od nejrychlejší po nejpomalejší.
+  speedStations: string[];
   showCategory: string;
   showBlock: string;
   resetPrefs: string;
@@ -131,6 +136,10 @@ const CS: ScratchText = {
   sizeM: "Střední",
   sizeL: "Velké",
   hiddenBlocks: "Schovat bloky, které nepoužíváš",
+  speedTitle: "Rychlost",
+  speedFastest: "nejrychleji",
+  speedSlowest: "nejpomaleji",
+  speedStations: ["Blesk", "Rychle", "Normálně", "Pomalu", "Hodně pomalu", "Šnek"],
   showCategory: "Ukázat celou kategorii",
   showBlock: "Ukázat blok",
   resetPrefs: "Vrátit výchozí",
@@ -228,6 +237,10 @@ const EN: ScratchText = {
   sizeM: "Medium",
   sizeL: "Large",
   hiddenBlocks: "Hide blocks you don't use",
+  speedTitle: "Speed",
+  speedFastest: "fastest",
+  speedSlowest: "slowest",
+  speedStations: ["Lightning", "Fast", "Normal", "Slow", "Very slow", "Snail"],
   showCategory: "Show whole category",
   showBlock: "Show block",
   resetPrefs: "Reset to default",
