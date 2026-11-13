@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CodeExercises } from "@/components/CodeExercises";
+import { CodeCurriculum } from "@/components/CodeCurriculum";
 import { CodeLearn } from "@/components/CodeLearn";
 import { HeroSky } from "@/components/HeroSky";
 import { HeroTitle } from "@/components/HeroTitle";
@@ -49,6 +50,9 @@ export default async function CodePage({ params }: { params: Promise<{ locale: s
                 <a href="#editor" className="btn-bouncy btn-cta btn-primary btn-lg btn-dot">
                   ▶ Vyzkoušet editor
                 </a>
+                <a href="#ucivo" className="btn-bouncy btn-secondary btn-lg">
+                  📖 Učivo a plán
+                </a>
                 <a href="#cviceni" className="btn-bouncy btn-secondary btn-lg">
                   ✎ Cvičení
                 </a>
@@ -63,6 +67,28 @@ export default async function CodePage({ params }: { params: Promise<{ locale: s
         <div className="relative mx-auto max-w-5xl px-4 pb-16 sm:px-6">
           <div className="lobby-shell">
             <CodeLearn />
+          </div>
+        </div>
+      </section>
+
+      {/* Učivo: učební plán a rozbalovací sekce s detailním vysvětlením */}
+      <section id="ucivo" className="zone zone-space scroll-mt-24">
+        <div className="relative mx-auto max-w-6xl px-4 pb-16 sm:px-6">
+          <div className="lobby-shell">
+            <div className="mb-6 flex items-start gap-4">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border-2 border-[var(--sketch-ink)] bg-[#ffc933]">
+                <SketchIcon kind="study" size={26} />
+              </span>
+              <div>
+                <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl" style={{ fontFamily: "var(--font-heading)" }}>
+                  Učivo
+                </h2>
+                <p className="mt-1 max-w-2xl text-sm text-[#cfc8e4]">
+                  Nejdřív plán, od čeho začít. Pak sekce s vysvětlením, tabulkami a příklady. Každá sekce na konci odkazuje na cvičení, kterými si to procvičíš.
+                </p>
+              </div>
+            </div>
+            <CodeCurriculum />
           </div>
         </div>
       </section>

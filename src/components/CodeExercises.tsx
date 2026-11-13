@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { SketchIcon, type SketchIconKind } from "@/components/SketchIcons";
 import { EXERCISES, LANG_LABEL, type Lang } from "@/lib/code-exercises";
 
-type Result = { passed: boolean; items: { ok: boolean; msg: string }[] };
+type Result = { passed: boolean; items: { ok: boolean; msg: string }[]; n: number };
 
 const LANG_COLOR: Record<Lang, string> = { html: "#ff8a6b", css: "#8fd0ff", js: "#ffc933" };
 const LANG_ICON: Record<Lang, SketchIconKind> = { html: "scroll", css: "palette", js: "bolt" };
@@ -18,6 +18,7 @@ export function CodeExercises() {
   const [results, setResults] = useState<Record<string, Result>>({});
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
+  const [tries, setTries] = useState(0);
 
   const visible = filter === "all" ? EXERCISES : EXERCISES.filter((e) => e.lang === filter);
   const ex = EXERCISES.find((e) => e.id === activeId) ?? EXERCISES[0];
@@ -37,7 +38,13 @@ export function CodeExercises() {
       msg: c.msg,
       ok: c.re ? c.re.test(code) : c.fn ? c.fn(code) : false,
     }));
-    setResults((r) => ({ ...r, [ex.id]: { passed: items.every((i) => i.ok), items } }));
+    const n = tries + 1;
+    setTries(n);
+    setResults((r) => ({ ...r, [ex.id]: { passed: items.every((i) => i.ok), items, n } }));
+    // Výsledek je pod editorem, takže ho na obrazovku rovnou přivedeme.
+    window.setTimeout(() => {
+      document.getElementById("ex-result")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 60);
   }
 
   function reset() {
@@ -123,7 +130,14 @@ export function CodeExercises() {
                     <span className="block text-xs font-bold uppercase tracking-widest text-[#9d96bf]">
                       {LANG_LABEL[e.lang]} · {e.topic}
                     </span>
-                    <span className="block font-bold text-white">{e.title}</span>
+                    <span className="block font-bold text-white">
+                      {e.title}
+                      {e.kind && e.kind !== "napis" && (
+                        <span className="ml-2 rounded bg-[#ffc933] px-1.5 text-[10px] font-extrabold text-[#16132b]">
+                          {e.kind === "projekt" ? "PROJEKT" : "DOPLŇ"}
+                        </span>
+                      )}
+                    </span>
                     <span className="mt-1 flex items-center gap-1 text-[#ffc933]" aria-label={`Obtížnost ${e.level} z 3`}>
                       {[1, 2, 3].map((n) => (
                         <SketchIcon key={n} kind="star" size={12} style={{ opacity: n <= e.level ? 1 : 0.25 }} />
@@ -155,6 +169,11 @@ export function CodeExercises() {
                 <span className="rounded-md px-2 py-0.5 font-mono text-xs font-bold text-[#16132b]" style={{ background: LANG_COLOR[ex.lang] }}>
                   {LANG_LABEL[ex.lang]}
                 </span>
+                {ex.kind && ex.kind !== "napis" && (
+                  <span className="rounded-md border-2 border-[#16132b] bg-[#ffc933] px-2 py-0.5 text-xs font-extrabold text-[#16132b]">
+                    {ex.kind === "projekt" ? "PROJEKT" : "DOPLŇ"}
+                  </span>
+                )}
                 <span className="text-xs text-[#9d96bf]">{ex.topic}</span>
               </div>
               <h2 id="ex-title" className="text-xl font-bold text-white">{ex.title}</h2>
@@ -236,7 +255,15 @@ export function CodeExercises() {
               </AnimatePresence>
 
               {result && (
-                <div className="mt-4" aria-live="polite">
+                <motion.div
+                  key={result.n}
+                  id="ex-result"
+                  className="mt-4 scroll-mt-24"
+                  aria-live="polite"
+                  initial={{ x: 0 }}
+                  animate={result.passed ? { x: 0 } : { x: [0, -10, 10, -7, 7, 0] }}
+                  transition={{ duration: 0.4 }}
+                >
                   {result.passed ? (
                     <motion.div
                       initial={{ scale: 0.9, opacity: 0 }}
@@ -248,7 +275,9 @@ export function CodeExercises() {
                       <span className="font-bold">Jupí, splněno! Můžeš jít na další.</span>
                     </motion.div>
                   ) : (
-                    <p className="mb-2 text-sm font-bold text-[#ffd2c5]">Ještě to nesedí, podívej se na body níž:</p>
+                    <p className="mb-2 text-sm font-bold text-[#ffd2c5]">
+                      Splněno {result.items.filter((i) => i.ok).length} z {result.items.length}. Podívej se, co chybí:
+                    </p>
                   )}
                   <ul className="mt-2 flex flex-col gap-1.5 text-sm">
                     {result.items.map((it, i) => (
@@ -264,7 +293,7 @@ export function CodeExercises() {
                       </motion.li>
                     ))}
                   </ul>
-                </div>
+                </motion.div>
               )}
             </motion.div>
           </AnimatePresence>
