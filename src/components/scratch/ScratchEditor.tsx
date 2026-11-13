@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import Link from "next/link";
 import {
   DndContext,
@@ -160,14 +160,26 @@ function savePrefs(p: Prefs) {
   window.dispatchEvent(new Event(PREFS_EVENT));
 }
 
-type Snap = { sprite: Sprite; lines: Line[]; say: string | null; error: string | null };
+type Snap = { sprite: Sprite; lines: Line[]; say: string | null; error: string | null; active: string | null };
 type SaveState = "idle" | "saving" | "saved" | "error";
 
 const EMPTY_SPRITE = createRuntime([]).sprite;
-const START_SNAP: Snap = { sprite: EMPTY_SPRITE, lines: [], say: null, error: null };
+const START_SNAP: Snap = { sprite: EMPTY_SPRITE, lines: [], say: null, error: null, active: null };
+
+// Blok, který se právě provádí (svítí v editoru). Předává se přes kontext, aby nebylo nutné táhnout props stromem.
+const ActiveBlockCtx = createContext<string | null>(null);
+
+// Ručně nakreslený obrys: každý roh má trochu jiný poloměr, takže to nevypadá jako strojový rámeček.
+const SKETCH_RADIUS = "14px 18px 12px 16px / 16px 12px 18px 14px";
 
 function takeSnap(rt: Runtime): Snap {
-  return { sprite: { ...rt.sprite }, lines: rt.lines.slice(), say: rt.sprite.say, error: rt.error };
+  return {
+    sprite: { ...rt.sprite },
+    lines: rt.lines.slice(),
+    say: rt.sprite.say,
+    error: rt.error,
+    active: isRunning(rt) ? rt.active : null,
+  };
 }
 
 // Dnd id zóny: "zone|<rodič nebo root>|<index>"
@@ -404,6 +416,7 @@ export function ScratchEditor({
   const hasHat = blocks.some((b) => b.type === "start");
 
   return (
+    <ActiveBlockCtx.Provider value={snap.active}>
     <DndContext sensors={sensors} collisionDetection={collide} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setActiveLabel(null)}>
     <div className="mb-5 flex flex-col gap-4">
       <div className="flex justify-end">
@@ -513,7 +526,7 @@ export function ScratchEditor({
           </button>
         </div>
 
-        <div className="rounded-2xl border-[3px] border-[#16132b] bg-[#fffaf0] p-3 shadow-[6px_6px_0_#16132b]">
+        <div className="rounded-2xl border-[3px] border-[#16132b] bg-[#fffaf0] p-3 shadow-[6px_6px_0_#16132b]" style={{ borderRadius: SKETCH_RADIUS }}>
           <Stage snap={snap} label={t.stage} moveMs={moveMsFor(SPEEDS[prefs.speed] ?? SPEEDS[DEFAULT_SPEED])} />
         </div>
 
@@ -568,6 +581,7 @@ export function ScratchEditor({
     </div>
     <DragOverlay>{activeLabel ? <div className="rounded-xl border-2 border-[#16132b] bg-[#fffaf0] px-3 py-1.5 text-sm font-semibold shadow-[3px_3px_0_#16132b]">{activeLabel}</div> : null}</DragOverlay>
     </DndContext>
+    </ActiveBlockCtx.Provider>
   );
 }
 
@@ -755,6 +769,7 @@ function BlockNode({
   onArg: (id: string, key: string, value: Value) => void;
   onRemove: (id: string) => void;
 }) {
+  const isActive = useContext(ActiveBlockCtx) === block.id;
   const { setNodeRef, listeners, attributes, isDragging } = useDraggable({
     id: `block|${block.id}`,
     data: { kind: "block", id: block.id } satisfies DragData,
@@ -767,8 +782,8 @@ function BlockNode({
   return (
     <div ref={setNodeRef} className={`transition ${isDragging ? "opacity-40" : ""}`}>
       <div
-        className={`flex items-center gap-1 border-2 border-[#16132b] pr-1 shadow-[2px_2px_0_#16132b] ${isHat ? "rounded-t-[26px] rounded-b-lg pl-1" : "rounded-lg"}`}
-        style={{ background: color }}
+        className={`flex items-center gap-1 border-2 border-[#16132b] pr-1 shadow-[2px_2px_0_#16132b] transition-transform ${isHat ? "rounded-t-[26px] rounded-b-lg pl-1" : ""} ${isActive ? "scale-[1.03] ring-4 ring-[#ffc933] ring-offset-2 ring-offset-[#fffaf0]" : ""}`}
+        style={{ background: color, ...(isHat ? {} : { borderRadius: SKETCH_RADIUS }) }}
       >
         <span {...listeners} {...attributes} aria-label={t.dragBlock} className="flex cursor-grab touch-none self-stretch items-center px-1">
           <GripIcon size={14} />
