@@ -121,6 +121,66 @@ export const CODE_FILES: CodeFile[] = [
           text: "Vykreslí čáru a naznačí přechod mezi částmi stránky. Stejně jako img nemá zavírací tag.",
         },
       },
+      {
+        code: `      <section>`,
+        explain: {
+          cmd: "<section>",
+          title: "Oddíl stránky",
+          text: "Skupina souvisejícího obsahu, typicky s vlastním nadpisem. Pomáhá čtečkám a vyhledávačům pochopit strukturu.",
+        },
+      },
+      {
+        code: `        <h2>Co umím</h2>`,
+        explain: {
+          cmd: "<h2>",
+          title: "Podnadpis",
+          text: "Druhá úroveň nadpisu. Pod h1 patří h2, pod h2 zase h3. Nepřeskakuj úrovně jen kvůli velikosti písma.",
+        },
+      },
+      {
+        code: `        <ul>`,
+        explain: {
+          cmd: "<ul>",
+          title: "Odrážkový seznam",
+          text: "Obal seznamu s odrážkami. Pro číslovaný seznam je tu ol.",
+        },
+      },
+      {
+        code: `          <li>HTML</li>`,
+        explain: {
+          cmd: "<li>",
+          title: "Položka seznamu",
+          text: "Jeden řádek v seznamu. Musí být uvnitř ul nebo ol, jinak to nedává smysl.",
+        },
+      },
+      { code: `          <li>CSS</li>` },
+      { code: `        </ul>` },
+      { code: `      </section>` },
+      {
+        code: `      <form>`,
+        explain: {
+          cmd: "<form>",
+          title: "Formulář",
+          text: "Obal pro pole, která uživatel vyplňuje. Když odešleš, všechna pole se pošlou spolu.",
+        },
+      },
+      {
+        code: `        <input type="text" placeholder="Jméno">`,
+        explain: {
+          cmd: "<input>",
+          title: "Vstupní pole",
+          text: "type říká, jaký typ dat se sem píše (text, email, password, number). placeholder je šedý napovídací text.",
+        },
+      },
+      {
+        code: `        <button type="submit">Odeslat</button>`,
+        explain: {
+          cmd: "<button type>",
+          title: "Tlačítko",
+          text: "Uvnitř formuláře type=\"submit\" odešle formulář. Text uvnitř tagu je to, co uvidíš na tlačítku.",
+        },
+      },
+      { code: `      </form>` },
       { code: `    </main>` },
       {
         code: `    <footer><p>© 2026 Učíme se hrou</p></footer>`,
@@ -201,6 +261,46 @@ export const CODE_FILES: CodeFile[] = [
           cmd: "@media",
           title: "Pravidlo jen pro malé obrazovky",
           text: "Pravidla uvnitř platí jen tehdy, když je okno užší než 600 px. Přesně tohle se dělá pro telefony.",
+        },
+      },
+      {
+        code: `.karta { border: 2px solid #16132b; box-shadow: 4px 4px 0 #16132b; }`,
+        explain: {
+          cmd: "border, box-shadow",
+          title: "Rámeček a stín",
+          text: "border je obrys (tloušťka, styl, barva). box-shadow přidá stín; když dáš posun 0 a rozmazání 0, dostaneš tvrdý stín, jako v tomhle webu.",
+        },
+      },
+      {
+        code: `.tlacitko { transition: transform 0.2s; }`,
+        explain: {
+          cmd: "transition",
+          title: "Plynulá změna",
+          text: "Když se vlastnost změní, transition ji nenechá přeskočit, ale animuje ji. Tady se transformace změní za 0,2 sekundy.",
+        },
+      },
+      {
+        code: `.tlacitko:hover { transform: scale(1.05); }`,
+        explain: {
+          cmd: "transform: scale()",
+          title: "Zvětšení",
+          text: "transform mění tvar prvku bez přesouvání ostatního obsahu. scale(1.05) ho zvětší o 5 %.",
+        },
+      },
+      {
+        code: `@keyframes skakat { from { top: 0; } to { top: -10px; } }`,
+        explain: {
+          cmd: "@keyframes",
+          title: "Animace krok za krokem",
+          text: "Definuje průběh animace. from je začátek, to je konec, a prohlížeč mezi nimi plynule přechází.",
+        },
+      },
+      {
+        code: `.postava { animation: skakat 1s infinite alternate; }`,
+        explain: {
+          cmd: "animation",
+          title: "Spusť animaci",
+          text: "Přiřadí prvku animaci z @keyframes. 1s je délka, infinite znamená furt dokola, alternate ji pustí tam a zpátky.",
         },
       },
     ],
@@ -311,6 +411,87 @@ export const CODE_FILES: CodeFile[] = [
         },
       },
       { code: `}` },
+    ],
+  },
+  {
+    name: "hra.js",
+    icon: "bolt",
+    lines: [
+      {
+        code: `const hrac = { jmeno: "Marta", body: 0 };`,
+        explain: {
+          cmd: "{ }",
+          title: "Objekt",
+          text: "Složená hodnota, která drží víc věcí pod jmény. Přistupuješ k nim tečkou: hrac.jmeno nebo hrac.body.",
+        },
+      },
+      {
+        code: `hrac.body += 10;`,
+        explain: {
+          cmd: "+=",
+          title: "Přičti a ulož",
+          text: "Zkrácený zápis pro hrac.body = hrac.body + 10. Existují i -=, *= a /=.",
+        },
+      },
+      {
+        code: `const zprava = \`Máš \${hrac.body} bodů\`;`,
+        explain: {
+          cmd: "`šablona`",
+          title: "Šablonový řetězec",
+          text: "Text v zpětných uvozovkách umí vložit hodnotu přes ${…}. Výsledek bude „Máš 10 bodů“.",
+        },
+      },
+      {
+        code: `if (hrac.body === 10) {`,
+        explain: {
+          cmd: "===",
+          title: "Přesné porovnání",
+          text: "=== kontroluje hodnotu i typ. Vždycky ho používej místo ==, který dělá zbytečné převody.",
+        },
+      },
+      { code: `  console.log(zprava);` },
+      {
+        code: `} else if (hrac.body > 10) {`,
+        explain: {
+          cmd: "else if",
+          title: "Další podmínka",
+          text: "Když první if neplatí, zkusí se tahle. Podmínek může být víc, ale proběhne jen jedna.",
+        },
+      },
+      { code: `  console.log("Skvělé!");` },
+      { code: `}` },
+      {
+        code: `const nahoda = Math.random();`,
+        explain: {
+          cmd: "Math.random()",
+          title: "Náhodné číslo",
+          text: "Vrátí desetinné číslo od 0 do 1 (bez jedničky). Pro celé číslo 1 až 6 použij Math.floor(Math.random() * 6) + 1.",
+        },
+      },
+      {
+        code: `setTimeout(() => console.log("Po dvou sekundách"), 2000);`,
+        explain: {
+          cmd: "setTimeout()",
+          title: "Odlož úkol",
+          text: "Spustí funkci až po zadaném čase v milisekundách. 2000 je dvě sekundy.",
+        },
+      },
+      {
+        code: `const obrazky = ["kocka.png", "pes.png"];`,
+        explain: {
+          cmd: "[ ]",
+          title: "Pole",
+          text: "Seznam hodnot v hranatých závorkách. Číslují se od nuly: obrazky[0] je kocka.png.",
+        },
+      },
+      {
+        code: `const nazvy = obrazky.map((o) => o.toUpperCase());`,
+        explain: {
+          cmd: ".map()",
+          title: "Přetvoř každý prvek",
+          text: "Projde pole a z každého prvku udělá něco nového. Výsledkem je nové pole, původní zůstane.",
+        },
+      },
     ],
   },
 ];
