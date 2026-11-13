@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { CodeArea } from "@/components/CodeArea";
 import { SketchIcon } from "@/components/SketchIcons";
@@ -85,27 +86,138 @@ export function CodeSandbox() {
   const live = useMemo(() => buildPreview(files), [files]);
   const [shown, setShown] = useState(live);
 
-  // Načtení uloženého projektu až po startu v prohlížeči (na serveru není localStorage).
+  // Účet: projekty jsou v databázi a jsou dostupné na všech zařízeních.
+  // Host má jeden projekt v localStorage prohlížeče.
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [projects, setProjects] = useState<{ id: string; title: string }[]>([]);
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [saveState, setSaveState] = useState<"saved" | "saving" | "error">("saved");
+
+  async function openProject(id: string) {
+    const res = await fetch(`/api/code-projects?id=${encodeURIComponent(id)}`, { cache: "no-store" });
+    if (!res.ok) return false;
+    const data = (await res.json()) as { project: { id: string; files: Record<string, string> } };
+    setFiles(data.project.files);
+    setProjectId(data.project.id);
+    setActive(ENTRY);
+    setNotes([]);
+    return true;
+  }
+
+  async function createProject(title?: string) {
+    const res = await fetch("/api/code-projects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, files: { [ENTRY]: SKELETON } }),
+    });
+    if (!res.ok) {
+      setSaveState("error");
+      return null;
+    }
+    const data = (await res.json()) as { project: { id: string; title: string } };
+    setProjects((p) => [...p, data.project]);
+    setFiles({ [ENTRY]: SKELETON });
+    setProjectId(data.project.id);
+    setActive(ENTRY);
+    setNotes([]);
+    return data.project.id;
+  }
+
+  // Při přepnutí se rozdělaná změna nejdřív uloží, aby se neztratila.
+  async function saveNow() {
+    if (!projectId) return;
+    await fetch("/api/code-projects", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: projectId, files }),
+    }).catch(() => setSaveState("error"));
+  }
+
+  async function selectProject(id: string) {
+    if (id === projectId) return;
+    await saveNow();
+    await openProject(id);
+  }
+
+  function renameProject() {
+    if (!projectId) return;
+    const current = projects.find((p) => p.id === projectId)?.title ?? "";
+    const title = window.prompt("Nový název projektu", current)?.trim();
+    if (!title) return;
+    void fetch("/api/code-projects", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: projectId, title }),
+    });
+    setProjects((ps) => ps.map((p) => (p.id === projectId ? { ...p, title } : p)));
+  }
+
+  async function deleteProject() {
+    if (!projectId) return;
+    if (!window.confirm("Smazat tenhle projekt i se všemi soubory? Nejde to vrátit.")) return;
+    const id = projectId;
+    await fetch(`/api/code-projects?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    const rest = projects.filter((p) => p.id !== id);
+    setProjects(rest);
+    if (rest.length) await openProject(rest[0].id);
+    else await createProject();
+  }
+
+  // Načtení: přihlášený uživatel dostane svůj první projekt (nebo nový), host svůj lokální projekt.
   useEffect(() => {
-    const saved = loadSaved();
-    // Úložiště je externí zdroj dostupný až v prohlížeči, takže načtení musí být v effectu.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (saved) setFiles(saved);
-    setReady(true);
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/code-projects", { cache: "no-store" });
+        const data = (await res.json()) as { loggedIn: boolean; projects?: { id: string; title: string }[] };
+        if (cancelled) return;
+        if (data.loggedIn) {
+          setLoggedIn(true);
+          setProjects(data.projects ?? []);
+          if (data.projects?.length) await openProject(data.projects[0].id);
+          else await createProject();
+        } else {
+          const saved = loadSaved();
+          // Úložiště je externí zdroj dostupný až v prohlížeči, takže načtení musí být v effectu.
+          if (saved) setFiles(saved);
+        }
+      } catch {
+        if (!cancelled) setSaveState("error");
+      }
+      if (!cancelled) setReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Ukládání, až když je projekt načtený, aby se nepřepsal prázdným začátkem.
   useEffect(() => {
     if (!ready) return;
+    if (!loggedIn) {
+      const t = window.setTimeout(() => {
+        try {
+          window.localStorage.setItem(STORE_KEY, JSON.stringify(files));
+        } catch {
+          // Plná nebo zablokovaná paměť: projekt zůstane aspoň v okně.
+        }
+      }, 400);
+      return () => window.clearTimeout(t);
+    }
+    if (!projectId) return;
+    const id = projectId;
     const t = window.setTimeout(() => {
-      try {
-        window.localStorage.setItem(STORE_KEY, JSON.stringify(files));
-      } catch {
-        // Plná nebo zablokovaná paměť: projekt zůstane aspoň v okně.
-      }
-    }, 400);
+      setSaveState("saving");
+      fetch("/api/code-projects", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, files }),
+      })
+        .then((r) => setSaveState(r.ok ? "saved" : "error"))
+        .catch(() => setSaveState("error"));
+    }, 800);
     return () => window.clearTimeout(t);
-  }, [files, ready]);
+  }, [files, ready, loggedIn, projectId]);
 
   useEffect(() => {
     const t = window.setTimeout(() => setShown(live), LIVE_DELAY);
@@ -316,7 +428,7 @@ export function CodeSandbox() {
         <span className="truncate font-mono text-xs text-[#9d96bf]">cisty-list — {active}</span>
         <span className="ml-auto flex items-center gap-1.5 text-xs font-bold text-[#7ee0b0]">
           <span className="h-2 w-2 animate-pulse rounded-full bg-[#7ee0b0]" aria-hidden />
-          Živý náhled · uloženo v prohlížeči
+          Živý náhled · {!loggedIn ? "uloženo v tomhle prohlížeči" : saveState === "saved" ? "uloženo na účtu" : saveState === "saving" ? "ukládám…" : "nepodařilo se uložit"}
         </span>
       </div>
 
@@ -325,6 +437,40 @@ export function CodeSandbox() {
         <aside className="flex flex-col border-b-2 border-[#35305f] bg-[#1b1838] lg:border-b-0 lg:border-r-2">
           <div className="flex flex-col gap-2 p-3">
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#9d96bf]">Soubory projektu</span>
+            {loggedIn ? (
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-extrabold uppercase tracking-widest text-[#9d96bf]" htmlFor="projekt-vyber">
+                  Projekt
+                </label>
+                <select
+                  id="projekt-vyber"
+                  value={projectId ?? ""}
+                  onChange={(e) => void selectProject(e.target.value)}
+                  className="w-full rounded-md border-2 border-[#35305f] bg-[#0f0d24] px-2 py-1.5 text-sm text-white outline-none focus:border-[#ffc933]"
+                >
+                  {projects.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.title}
+                    </option>
+                  ))}
+                </select>
+                <div className="flex flex-wrap gap-1.5">
+                  <button type="button" onClick={() => void createProject(`Projekt ${projects.length + 1}`)} className="rounded-md border-2 border-[#35305f] px-2 py-1 text-xs font-bold text-[#cfc8e4] hover:border-[#8d99ff]">
+                    + Projekt
+                  </button>
+                  <button type="button" onClick={renameProject} className="rounded-md border-2 border-[#35305f] px-2 py-1 text-xs font-bold text-[#cfc8e4] hover:border-[#8d99ff]">
+                    Přejmenovat
+                  </button>
+                  <button type="button" onClick={() => void deleteProject()} className="rounded-md border-2 border-[#35305f] px-2 py-1 text-xs font-bold text-[#ff9a8a] hover:border-[#ff8a6b]">
+                    Smazat projekt
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs leading-relaxed text-[#9d96bf]">
+                Projekt je jen v tomhle prohlížeči. <Link href="/cs/prihlaseni" className="font-bold text-[#ffc933] underline">Přihlas se</Link>, ulož ho na účet a otevři ho na jakémkoli zařízení.
+              </p>
+            )}
             <div className="flex flex-wrap gap-1.5">
               <button
                 type="button"
