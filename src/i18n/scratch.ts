@@ -51,6 +51,15 @@ export type ScratchText = {
   challengeDone: string;
   challengeRetry: string;
   challengeNone: string;
+  tabStudio: string;
+  tabLessons: string;
+  docsTitle: string;
+  docsIntro: string;
+  docsExample: string;
+  docsDefault: string;
+  docsTry: string;
+  // Dokumentace každého bloku: co dělá a jeden příklad.
+  docs: Record<string, { what: string; example: string }>;
   challenges: Record<string, { title: string; goal: string }>;
 };
 
@@ -136,6 +145,35 @@ const CS: ScratchText = {
   sizeM: "Střední",
   sizeL: "Velké",
   hiddenBlocks: "Schovat bloky, které nepoužíváš",
+  tabStudio: "Studio",
+  tabLessons: "Lekce",
+  docsTitle: "Lekce: klíč ke všem blokům",
+  docsIntro: "Tady najdeš, co dělá každý blok a jak se používá. Klikni na „Přidat do skriptu“ a blok se rovnou objeví ve studiu.",
+  docsExample: "Příklad",
+  docsDefault: "výchozí",
+  docsTry: "Přidat do skriptu",
+  docs: {
+    start: { what: "Každý skript začíná tímhle blokem. Když klikneš na vlajku, všechny skripty pod ním se spustí naráz.", example: "Po kliknutí na vlajku → jdi o 10 kroků vpřed" },
+    goto: { what: "Kočka okamžitě skočí na zadané souřadnice. Střed jeviště je x 0, y 0. X roste doprava, y nahoru.", example: "jdi na x: 100 y: 50" },
+    random: { what: "Kočka skočí na náhodné místo na jevišti.", example: "jdi na náhodné místo" },
+    step: { what: "Kočka jde o zadaný počet kroků směrem, kam kouká. Záporné číslo jde pozpátku.", example: "jdi o 20 kroků vpřed" },
+    glide: { what: "Kočka plynule doklouže na cíl za zadaný počet sekund. Rozjede se i dojede jemně.", example: "klouzej do x: 0 y: 100 za 2 s" },
+    "turn-right": { what: "Otočí kočku doprava o zadaný počet stupňů. 90° je čtvrt otočky.", example: "otoč se doprava o 90°" },
+    "turn-left": { what: "Otočí kočku doleva o zadaný počet stupňů.", example: "otoč se doleva o 45°" },
+    edge: { what: "Když je kočka u okraje, odrazí se zpátky. Hodí se hned za pohybem, aby neodešla z jeviště.", example: "jdi o 30 kroků vpřed, pak pokud jsi na okraji, odraz" },
+    pen: { what: "Zapne nebo vypne pero. Když pero píše, kočka za sebou kreslí čáru.", example: "spusť pero, jdi o 50 kroků vpřed" },
+    "pen-color": { what: "Změní barvu pera. Barvu vybíráš kolečkem z palety.", example: "barva pera (zelená)" },
+    "pen-size": { what: "Nastaví tloušťku čáry od 1 do 30.", example: "tloušťka pera 6" },
+    clear: { what: "Smaže všechny nakreslené čáry. Kočka zůstane, kde je.", example: "vymazat kreslení" },
+    repeat: { what: "Opakuje bloky uvnitř zadaný počet krát. Bloky do něj vložíš tak, že je přetáhneš dovnitř.", example: "opakuj 4× (jdi o 50 kroků, otoč se doprava o 90°) = čtverec" },
+    forever: { what: "Opakuje bloky uvnitř pořád dokola, dokud nestiskneš Zastavit nebo blok zastav vše.", example: "opakuj donekonečna (jdi o 5 kroků, odraz)" },
+    wait: { what: "Počká zadaný počet sekund a pak pokračuje dál.", example: "počkej 1 s" },
+    stop: { what: "Zastaví všechny skripty naráz.", example: "zastav vše" },
+    say: { what: "Kočka řekne text v bublině. Text může mít nejvíc 60 znaků.", example: "řekni Ahoj!" },
+    "set-var": { what: "Uloží hodnotu do proměnné. Později ji použiješ jako $jméno, třeba v pohybu.", example: "nastav body na 0, pak jdi o $body kroků" },
+    define: { what: "Vytvoří vlastní blok s názvem a parametry. Bloky uvnitř se spustí, když ho zavoláš blokem „zavolej blok“.", example: "definuj blok ctverec s parametry velikost" },
+    call: { what: "Zavolá tvůj vlastní blok a předá mu hodnoty oddělené čárkou. Uvnitř je hodnota dostupná jako $parametr.", example: "zavolej blok ctverec s hodnotami 40" },
+  },
   speedTitle: "Rychlost",
   speedFastest: "nejrychleji",
   speedSlowest: "nejpomaleji",
@@ -237,6 +275,35 @@ const EN: ScratchText = {
   sizeM: "Medium",
   sizeL: "Large",
   hiddenBlocks: "Hide blocks you don't use",
+  tabStudio: "Studio",
+  tabLessons: "Lessons",
+  docsTitle: "Lessons: key to all blocks",
+  docsIntro: "Here's what each block does and how to use it. Click \"Add to script\" and the block appears in the studio right away.",
+  docsExample: "Example",
+  docsDefault: "default",
+  docsTry: "Add to script",
+  docs: {
+    start: { what: "Every script starts with this block. When you click the flag, all scripts under it run at once.", example: "When flag clicked → move 10 steps" },
+    goto: { what: "The cat jumps straight to the given coordinates. The centre is x 0, y 0. X grows to the right, y upwards.", example: "go to x: 100 y: 50" },
+    random: { what: "The cat jumps to a random spot on the stage.", example: "go to random position" },
+    step: { what: "The cat moves the given number of steps in the direction it faces. A negative number goes backwards.", example: "move 20 steps" },
+    glide: { what: "The cat slides smoothly to the target in the given seconds. It speeds up and slows down gently.", example: "glide to x: 0 y: 100 in 2 s" },
+    "turn-right": { what: "Turns the cat right by the given number of degrees. 90° is a quarter turn.", example: "turn right 90°" },
+    "turn-left": { what: "Turns the cat left by the given number of degrees.", example: "turn left 45°" },
+    edge: { what: "If the cat is at the edge, it bounces back. Put it right after a move so it doesn't leave the stage.", example: "move 30 steps, then if on edge, bounce" },
+    pen: { what: "Puts the pen down or lifts it. While the pen is down, the cat draws a line behind it.", example: "pen down, move 50 steps" },
+    "pen-color": { what: "Changes the pen colour. Pick a colour from the palette dots.", example: "pen colour (green)" },
+    "pen-size": { what: "Sets the line thickness from 1 to 30.", example: "pen size 6" },
+    clear: { what: "Erases all drawn lines. The cat stays where it is.", example: "clear drawing" },
+    repeat: { what: "Runs the blocks inside it the given number of times. Drag blocks inside to add them.", example: "repeat 4× (move 50 steps, turn right 90°) = square" },
+    forever: { what: "Runs the blocks inside over and over until you press Stop or the stop-all block.", example: "forever (move 5 steps, bounce)" },
+    wait: { what: "Waits the given number of seconds, then carries on.", example: "wait 1 s" },
+    stop: { what: "Stops all scripts at once.", example: "stop all" },
+    say: { what: "The cat says the text in a bubble. The text can be at most 60 characters.", example: "say Hi!" },
+    "set-var": { what: "Stores a value in a variable. Use it later as $name, for example in a move.", example: "set score to 0, then move $score steps" },
+    define: { what: "Creates your own block with a name and parameters. Its blocks run when you call it with the call block.", example: "define block square with parameter size" },
+    call: { what: "Calls your own block and passes it comma-separated values. Inside, the value is available as $parameter.", example: "call block square with values 40" },
+  },
   speedTitle: "Speed",
   speedFastest: "fastest",
   speedSlowest: "slowest",

@@ -39,7 +39,6 @@ import {
   updateArg,
   type Block,
   type BlockType,
-  type Category,
   type Line,
   type Runtime,
   type Sprite,
@@ -47,17 +46,9 @@ import {
 } from "@/lib/scratch/engine";
 import { checkChallenge, CHALLENGE_IDS, type ChallengeId } from "@/lib/scratch/challenges";
 import { BlockIcon, CatSprite, CategoryIcon, FlagIcon, GripIcon, SlidersIcon, StopIcon, TrashIcon } from "./ScratchIcons";
+import { BlockDocs } from "./BlockDocs";
+import { CAT_COLOR, INK, SKETCH_RADIUS } from "./theme";
 
-const CAT_COLOR: Record<Category, string> = {
-  events: "#ffc933",
-  motion: "#8fd0ff",
-  pen: "#7ee0b0",
-  control: "#ff8a6b",
-  looks: "#c9a8ff",
-  custom: "#ffb3d9",
-};
-
-const INK = "#16132b";
 
 // Globální styly webu (nadpisy, pole) nejsou ve vrstvě Tailwindu, proto barvy dávám přímo inline.
 const INK_STYLE = { color: INK } as const;
@@ -169,8 +160,6 @@ const START_SNAP: Snap = { sprite: EMPTY_SPRITE, lines: [], say: null, error: nu
 // Blok, který se právě provádí (svítí v editoru). Předává se přes kontext, aby nebylo nutné táhnout props stromem.
 const ActiveBlockCtx = createContext<string | null>(null);
 
-// Ručně nakreslený obrys: každý roh má trochu jiný poloměr, takže to nevypadá jako strojový rámeček.
-const SKETCH_RADIUS = "14px 18px 12px 16px / 16px 12px 18px 14px";
 
 function takeSnap(rt: Runtime): Snap {
   return {
@@ -254,6 +243,7 @@ export function ScratchEditor({
   const [customOpen, setCustomOpen] = useState(false);
   const [challenge, setChallenge] = useState<ChallengeId | null>(null);
   const [ranOnce, setRanOnce] = useState(false);
+  const [view, setView] = useState<"studio" | "lessons">("studio");
 
   // Na serveru a při prvním vykreslení jsou výchozí hodnoty, pak se načtou z prohlížeče (bez rozdílu při hydrataci).
   const rawPrefs = useSyncExternalStore(subscribePrefs, readRawPrefs, () => null);
@@ -413,13 +403,34 @@ export function ScratchEditor({
     commit(withoutBlock(blocks, id).list);
   }
 
+  // Z lekce se blok přidá do skriptu a rovnou se přepne zpět do studia.
+  function addFromLessons(type: BlockType) {
+    setView("studio");
+    addBlock(type, null, blocks.length);
+  }
+
   const hasHat = blocks.some((b) => b.type === "start");
 
   return (
     <ActiveBlockCtx.Provider value={snap.active}>
     <DndContext sensors={sensors} collisionDetection={collide} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setActiveLabel(null)}>
     <div className="mb-5 flex flex-col gap-4">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div role="tablist" className="flex gap-2">
+          {(["studio", "lessons"] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              role="tab"
+              aria-selected={view === v}
+              onClick={() => setView(v)}
+              style={INK_STYLE}
+              className={`rounded-xl border-2 border-[#16132b] px-4 py-2 font-bold shadow-[3px_3px_0_#16132b] transition hover:-translate-y-0.5 ${view === v ? "bg-[#ffc933]" : "bg-white"}`}
+            >
+              {v === "studio" ? t.tabStudio : t.tabLessons}
+            </button>
+          ))}
+        </div>
         <button
           type="button"
           onClick={() => setCustomOpen((o) => !o)}
@@ -500,6 +511,9 @@ export function ScratchEditor({
       )}
     </div>
 
+    {view === "lessons" ? (
+      <BlockDocs t={t} onAdd={addFromLessons} />
+    ) : (
     <div
       className="grid gap-6 lg:grid-cols-[var(--menu-w)_minmax(0,1fr)_var(--stage-w)]"
       style={{ "--menu-w": MENU_W[prefs.menu], "--stage-w": STAGE_W_COL[prefs.stage] } as CSSProperties}
@@ -579,6 +593,7 @@ export function ScratchEditor({
         <WorkspaceDrop blocks={blocks} t={t} onArg={setArg} onRemove={removeBlock} onClearAll={clearAll} />
       </section>
     </div>
+    )}
     <DragOverlay>{activeLabel ? <div className="rounded-xl border-2 border-[#16132b] bg-[#fffaf0] px-3 py-1.5 text-sm font-semibold shadow-[3px_3px_0_#16132b]">{activeLabel}</div> : null}</DragOverlay>
     </DndContext>
     </ActiveBlockCtx.Provider>
