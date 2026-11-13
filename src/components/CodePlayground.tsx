@@ -35,10 +35,11 @@ export function CodePlayground() {
     return () => window.clearTimeout(t);
   }, [code]);
 
-  const { textRef, onKeyDown } = useCodeKeys(code, setCode, {
+  const keys = useCodeKeys(code, setCode, {
     onRun: () => setPreview(code),
     toggleWrap: () => setWrap((w) => !w),
     commentMode: (v, pos) => modeAt(v, pos),
+    fileKind: () => "html",
   });
 
   return (
@@ -139,7 +140,18 @@ export function CodePlayground() {
           </div>
 
           <div className="grid min-w-0 xl:grid-cols-2">
-            <CodeArea value={code} onChange={setCode} onKeyDown={onKeyDown} textRef={textRef} wrap={wrap} label="Kód editoru" />
+            <CodeArea
+              value={code}
+              onChange={setCode}
+              onKeyDown={keys.onKeyDown}
+              onInput={keys.onInput}
+              onBlur={keys.onBlur}
+              completion={keys.completion}
+              onAccept={(i) => keys.completion && keys.accept(keys.completion, i)}
+              textRef={keys.textRef}
+              wrap={wrap}
+              label="Kód editoru"
+            />
 
             {showPreview && (
               <div className="flex min-w-0 flex-col border-t-2 border-[#35305f] bg-white xl:border-l-2 xl:border-t-0">

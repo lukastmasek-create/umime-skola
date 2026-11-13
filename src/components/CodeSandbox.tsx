@@ -6,6 +6,7 @@ import { CodeArea } from "@/components/CodeArea";
 import { SketchIcon } from "@/components/SketchIcons";
 import { useCodeKeys } from "@/components/useCodeKeys";
 import { modeAt, type CommentMode } from "@/lib/code-editing";
+import type { FileKind } from "@/lib/code-complete";
 import {
   ALLOWED_EXT,
   ENTRY,
@@ -40,6 +41,15 @@ function commentModeFor(name: string, v: string, pos: number): CommentMode | nul
   if (ext === "css") return "css";
   if (ext === "html" || ext === "htm") return modeAt(v, pos);
   if (ext === "svg") return "html";
+  return null;
+}
+
+// Podle přípony souboru: co se má našeptávat (null = nic, třeba u JSON nebo TXT).
+function fileKindFor(name: string): FileKind | null {
+  const ext = extOf(name);
+  if (ext === "js" || ext === "mjs") return "js";
+  if (ext === "css") return "css";
+  if (ext === "html" || ext === "htm" || ext === "svg") return "html";
   return null;
 }
 
@@ -228,10 +238,11 @@ export function CodeSandbox() {
     setFiles((f) => ({ ...f, [active]: v }));
   }
 
-  const { textRef, onKeyDown } = useCodeKeys(content, setContent, {
+  const keys = useCodeKeys(content, setContent, {
     onRun: () => setShown(live),
     toggleWrap: () => setWrap((w) => !w),
     commentMode: (v, pos) => commentModeFor(active, v, pos),
+    fileKind: () => fileKindFor(active),
   });
 
   function createFile() {
@@ -600,7 +611,19 @@ export function CodeSandbox() {
           </div>
 
           <div className="grid min-w-0 xl:grid-cols-2">
-            <CodeArea value={content} onChange={setContent} onKeyDown={onKeyDown} textRef={textRef} wrap={wrap} label={`Kód souboru ${active}`} minHeight={20} />
+            <CodeArea
+              value={content}
+              onChange={setContent}
+              onKeyDown={keys.onKeyDown}
+              onInput={keys.onInput}
+              onBlur={keys.onBlur}
+              completion={keys.completion}
+              onAccept={(i) => keys.completion && keys.accept(keys.completion, i)}
+              textRef={keys.textRef}
+              wrap={wrap}
+              label={`Kód souboru ${active}`}
+              minHeight={20}
+            />
 
             {showPreview && (
               <div className="flex min-w-0 flex-col border-t-2 border-[#35305f] bg-white xl:border-l-2 xl:border-t-0">
