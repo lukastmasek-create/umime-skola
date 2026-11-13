@@ -71,8 +71,22 @@ const PAPER = "#fffaf0";
 const PEN_SWATCHES = ["#16132b", "#ff8a6b", "#ffc933", "#7ee0b0", "#8fd0ff", "#c9a8ff"];
 
 // Rychlost: stanice posuvníku od nejrychlejší po nejpomalejší. Násobí čas, takže se pohne všechno naráz.
-const SPEED_MULT = [4, 2, 1, 0.5, 0.25, 0.1] as const;
-const DEFAULT_SPEED = 2; // Normálně
+// mult = násobič času, stepMs = pauza po každém příkazu (jen u režimu krok po kroku).
+type SpeedStation = { mult: number; stepMs: number };
+const SPEEDS: SpeedStation[] = [
+  { mult: 4, stepMs: 0 },
+  { mult: 2, stepMs: 0 },
+  { mult: 1, stepMs: 0 }, // Normálně
+  { mult: 0.5, stepMs: 0 },
+  { mult: 0.25, stepMs: 0 },
+  { mult: 0.1, stepMs: 0 },
+  { mult: 1, stepMs: 1000 }, // Každý příkaz zhruba za sekundu
+];
+const DEFAULT_SPEED = 2;
+// Jak dlouho kočka klouže k nové pozici: na pomalých stanicích delší, aby byl pohyb vidět.
+function moveMsFor(s: SpeedStation): number {
+  return Math.round(Math.min(900, Math.max(100, 100 / s.mult)));
+}
 // Herní smyčka běží po krocích max. 16 ms, aby pohyb při vysoké rychlosti zůstal plynulý.
 const SUB_STEP_MS = 16;
 
@@ -121,7 +135,7 @@ function parsePrefs(raw: string | null): Prefs {
       ? p.hidden.filter((x): x is BlockType => typeof x === "string" && (BLOCK_TYPES as readonly string[]).includes(x) && x !== "start")
       : [];
     const speed =
-      typeof p.speed === "number" && Number.isInteger(p.speed) && p.speed >= 0 && p.speed < SPEED_MULT.length
+      typeof p.speed === "number" && Number.isInteger(p.speed) && p.speed >= 0 && p.speed < SPEEDS.length
         ? p.speed
         : DEFAULT_SPEED;
     return {
@@ -237,9 +251,9 @@ export function ScratchEditor({
   const saveTimer = useRef<number | undefined>(undefined);
   const pending = useRef<Block[] | null>(null);
   // Smyčka čte rychlost z reference, aby se změna posuvníku projevila hned, i když skript běží.
-  const speedRef = useRef<number>(SPEED_MULT[DEFAULT_SPEED]);
+  const speedRef = useRef<SpeedStation>(SPEEDS[DEFAULT_SPEED]);
   useEffect(() => {
-    speedRef.current = SPEED_MULT[prefs.speed] ?? SPEED_MULT[DEFAULT_SPEED];
+    speedRef.current = SPEEDS[prefs.speed] ?? SPEEDS[DEFAULT_SPEED];
   }, [prefs.speed]);
 
   const sensors = useSensors(
@@ -283,7 +297,8 @@ export function ScratchEditor({
       }
       // Uplynulý čas (max. 64 ms, aby po přepnutí karty nevyskočila kočka) vynásobený rychlostí,
       // rozdělený na krátké kroky. Díky tomu se kočka hýbe plynule i na nejvyšší rychlost.
-      let budget = Math.min(64, now - last) * speedRef.current;
+      rt.stepDelay = speedRef.current.stepMs;
+      let budget = Math.min(64, now - last) * speedRef.current.mult;
       last = now;
       while (budget > 0 && isRunning(rt)) {
         const dt = Math.min(SUB_STEP_MS, budget);
@@ -499,7 +514,7 @@ export function ScratchEditor({
         </div>
 
         <div className="rounded-2xl border-[3px] border-[#16132b] bg-[#fffaf0] p-3 shadow-[6px_6px_0_#16132b]">
-          <Stage snap={snap} label={t.stage} />
+          <Stage snap={snap} label={t.stage} moveMs={moveMsFor(SPEEDS[prefs.speed] ?? SPEEDS[DEFAULT_SPEED])} />
         </div>
 
         {notice && <div className="rounded-lg border-2 border-dashed border-[#16132b] bg-[#ffc933]/40 px-3 py-2 text-sm font-semibold">{notice}</div>}
@@ -558,7 +573,7 @@ export function ScratchEditor({
 
 // Posuvník rychlosti: vlevo nejrychleji, vpravo nejpomaleji. Tečky jsou stanice, na kterých se dá zastavit.
 function SpeedSlider({ value, onChange, t }: { value: number; onChange: (v: number) => void; t: ScratchText }) {
-  const last = SPEED_MULT.length - 1;
+  const last = SPEEDS.length - 1;
   const stationName = t.speedStations[value] ?? "";
   return (
     <div className="flex flex-col gap-2 rounded-xl border-2 border-dashed border-[#16132b] bg-white/60 p-3">
@@ -585,7 +600,7 @@ function SpeedSlider({ value, onChange, t }: { value: number; onChange: (v: numb
         className="w-full accent-[#16132b]"
       />
       <div className="flex justify-between px-[6px]" aria-hidden="true">
-        {SPEED_MULT.map((_, i) => (
+        {SPEEDS.map((_, i) => (
           <span
             key={i}
             className={`h-2.5 w-2.5 rounded-full border-2 border-[#16132b] ${i === value ? "bg-[#ffc933]" : "bg-white"}`}
@@ -852,7 +867,7 @@ function FieldInput({
 }
 
 // Jeviště: čára z pera, kočka a bublina řeči. Souřadnice jsou v plátně 480 × 360, střed je uprostřed.
-function Stage({ snap, label }: { snap: Snap; label: string }) {
+function Stage({ snap, label, moveMs }: { snap: Snap; label: string; moveMs: number }) {
   const { sprite, lines, say } = snap;
   const sx = sprite.x;
   const sy = -sprite.y;
@@ -874,8 +889,8 @@ function Stage({ snap, label }: { snap: Snap; label: string }) {
       </g>
       {/* Kočka a bublina se jen posouvají k nové pozici; krátký přechod z toho udělá plynulý pohyb, ne skoky. Otočení se nepřechází, aby se neroztočila dokola. */}
       <g
-        className="transition-transform duration-100 ease-linear motion-reduce:transition-none"
-        style={{ transform: `translate(${sx}px, ${sy}px)` }}
+        className="transition-transform ease-linear motion-reduce:transition-none"
+        style={{ transform: `translate(${sx}px, ${sy}px)`, transitionDuration: `${moveMs}ms` }}
       >
         <g style={{ transform: `rotate(${sprite.dir - 90}deg) scale(1.1)` }}>
           <CatSprite />
