@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { CodeExercises } from "@/components/CodeExercises";
+import { CodeWorkspace } from "@/components/CodeWorkspace";
 import { CodeCurriculum } from "@/components/CodeCurriculum";
 import { CodeLearn } from "@/components/CodeLearn";
 import { HeroSky } from "@/components/HeroSky";
@@ -106,11 +106,11 @@ export default async function CodePage({ params }: { params: Promise<{ locale: s
                   Cvičení
                 </h2>
                 <p className="mt-1 max-w-2xl text-sm text-[#cfc8e4]">
-                  Vyber úkol, napiš kód do políčka a klikni na Zkontrolovat. Když to nesedí, dostaneš seznam, co chybí. Nápověda i řešení jsou hned vedle.
+                  Vyber cvičení v průzkumníku vlevo, doplň chybějící místa přímo v kódu a klikni na Zkontrolovat (nebo Ctrl+Enter). Nemusíš psát celý kód. Když to nesedí, uvidíš seznam, co chybí. Nápověda i řešení jsou ve spodním panelu.
                 </p>
               </div>
             </div>
-            <CodeExercises />
+            <CodeWorkspace />
           </div>
         </div>
       </section>

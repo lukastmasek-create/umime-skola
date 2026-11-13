@@ -44,6 +44,7 @@ model User {
   limitedCopies LimitedCopy[]
   escapeRuns  EscapeRun[]
   idleStates  IdleState[]
+  codeProjects CodeProject[]
   groupMemberships GroupMember[]
   ownedGroups      Group[]        @relation("GroupOwner")
   duelsStarted     Duel[]         @relation("DuelChallenger")
@@ -137,6 +138,20 @@ model IdleState {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, game])
+}
+
+// Projekty z Čistého listu na /cs/code: soubory jako JSON (jméno -> obsah). Tabulka: prisma/sql/code-projects.sql.
+model CodeProject {
+  id        String   @id @default(cuid())
+  title     String
+  files     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, updatedAt])
 }
 
 // Parta (třída nebo kamarádi) se společným týdenním cílem. Do party se vstupuje
