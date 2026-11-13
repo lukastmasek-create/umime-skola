@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties } from "react";
 import Link from "next/link";
 import {
   DndContext,
@@ -45,7 +45,7 @@ import {
   type Sprite,
   type Value,
 } from "@/lib/scratch/engine";
-import { CatSprite, CategoryIcon, FlagIcon, GripIcon, StopIcon, TrashIcon } from "./ScratchIcons";
+import { CatSprite, CategoryIcon, FlagIcon, GripIcon, SlidersIcon, StopIcon, TrashIcon } from "./ScratchIcons";
 
 const CAT_COLOR: Record<Category, string> = {
   events: "#ffc933",
@@ -68,6 +68,70 @@ function collide(args: Parameters<typeof pointerWithin>[0]) {
 }
 const PAPER = "#fffaf0";
 const PEN_SWATCHES = ["#16132b", "#ff8a6b", "#ffc933", "#7ee0b0", "#8fd0ff", "#c9a8ff"];
+
+// Přizpůsobení: velikost menu a jeviště a schované bloky. Ukládá se jen do prohlížeče žáka.
+type Size = "s" | "m" | "l";
+type Prefs = { menu: Size; stage: Size; hidden: BlockType[] };
+const PREFS_KEY = "umime-scratch-prefs";
+const DEFAULT_PREFS: Prefs = { menu: "m", stage: "m", hidden: [] };
+const MENU_W: Record<Size, string> = { s: "220px", m: "270px", l: "340px" };
+const STAGE_W_COL: Record<Size, string> = { s: "420px", m: "560px", l: "680px" };
+const SIZES: Size[] = ["s", "m", "l"];
+
+function isSize(v: unknown): v is Size {
+  return v === "s" || v === "m" || v === "l";
+}
+
+// Kdyby prohlížeč úložiště nepustil, drží se nastavení aspoň v paměti do obnovení stránky.
+const PREFS_EVENT = "umime-scratch-prefs-change";
+let memoryPrefs: string | null = null;
+
+function readRawPrefs(): string | null {
+  try {
+    const raw = window.localStorage.getItem(PREFS_KEY);
+    if (raw !== null) return raw;
+  } catch {
+    // Úložiště není dostupné, použije se paměť.
+  }
+  return memoryPrefs;
+}
+
+function subscribePrefs(onChange: () => void) {
+  window.addEventListener("storage", onChange);
+  window.addEventListener(PREFS_EVENT, onChange);
+  return () => {
+    window.removeEventListener("storage", onChange);
+    window.removeEventListener(PREFS_EVENT, onChange);
+  };
+}
+
+function parsePrefs(raw: string | null): Prefs {
+  if (!raw) return DEFAULT_PREFS;
+  try {
+    const p = JSON.parse(raw) as Partial<Record<keyof Prefs, unknown>>;
+    const hidden = Array.isArray(p.hidden)
+      ? p.hidden.filter((x): x is BlockType => typeof x === "string" && (BLOCK_TYPES as readonly string[]).includes(x) && x !== "start")
+      : [];
+    return {
+      menu: isSize(p.menu) ? p.menu : DEFAULT_PREFS.menu,
+      stage: isSize(p.stage) ? p.stage : DEFAULT_PREFS.stage,
+      hidden,
+    };
+  } catch {
+    return DEFAULT_PREFS;
+  }
+}
+
+function savePrefs(p: Prefs) {
+  const raw = JSON.stringify(p);
+  memoryPrefs = raw;
+  try {
+    window.localStorage.setItem(PREFS_KEY, raw);
+  } catch {
+    // Bez úložiště zůstane nastavení v paměti.
+  }
+  window.dispatchEvent(new Event(PREFS_EVENT));
+}
 
 type Snap = { sprite: Sprite; lines: Line[]; say: string | null; error: string | null };
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -148,6 +212,11 @@ export function ScratchEditor({
   const [notice, setNotice] = useState<string | null>(null);
   const [save, setSave] = useState<SaveState>("idle");
   const [activeLabel, setActiveLabel] = useState<string | null>(null);
+  const [customOpen, setCustomOpen] = useState(false);
+
+  // Na serveru a při prvním vykreslení jsou výchozí hodnoty, pak se načtou z prohlížeče (bez rozdílu při hydrataci).
+  const rawPrefs = useSyncExternalStore(subscribePrefs, readRawPrefs, () => null);
+  const prefs = useMemo(() => parsePrefs(rawPrefs), [rawPrefs]);
 
   const rtRef = useRef<Runtime | null>(null);
   const saveTimer = useRef<number | undefined>(undefined);
@@ -272,6 +341,19 @@ export function ScratchEditor({
     commit(updateArg(blocks, id, key, value));
   }
 
+  function changePrefs(patch: Partial<Prefs>) {
+    savePrefs({ ...prefs, ...patch });
+  }
+
+  // Odstartovací blok je vždy vidět, jinak by nešlo nic spustit.
+  function setBlockVisible(types: BlockType[], visible: boolean) {
+    const affected: BlockType[] = types.filter((x) => x !== "start");
+    const hidden = visible
+      ? prefs.hidden.filter((x) => !affected.includes(x))
+      : Array.from(new Set([...prefs.hidden, ...affected]));
+    changePrefs({ hidden });
+  }
+
   function removeBlock(id: string) {
     commit(withoutBlock(blocks, id).list);
   }
@@ -280,7 +362,92 @@ export function ScratchEditor({
 
   return (
     <DndContext sensors={sensors} collisionDetection={collide} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setActiveLabel(null)}>
-    <div className="grid gap-6 lg:grid-cols-[210px_minmax(0,1fr)_400px]">
+    <div className="mb-5 flex flex-col gap-4">
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => setCustomOpen((o) => !o)}
+          aria-expanded={customOpen}
+          style={INK_STYLE}
+          className="flex items-center gap-2 rounded-xl border-2 border-[#16132b] bg-[#c9a8ff] px-4 py-2 font-bold shadow-[3px_3px_0_#16132b] transition hover:-translate-y-0.5"
+        >
+          <SlidersIcon size={18} /> {t.customize}
+        </button>
+      </div>
+
+      {customOpen && (
+        <section
+          aria-label={t.customizeTitle}
+          className="flex flex-col gap-5 rounded-2xl border-[3px] border-[#16132b] bg-[#fffaf0] p-5 shadow-[6px_6px_0_#16132b]"
+        >
+          <h2 className="text-xl font-bold" style={{ ...INK_STYLE, fontFamily: "var(--font-heading)" }}>
+            {t.customizeTitle}
+          </h2>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <SizeChooser label={t.menuSize} value={prefs.menu} onChange={(menu) => changePrefs({ menu })} t={t} />
+            <SizeChooser label={t.stageSize} value={prefs.stage} onChange={(stage) => changePrefs({ stage })} t={t} />
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <div className="font-bold" style={INK_STYLE}>{t.hiddenBlocks}</div>
+            <div className="grid items-start gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {CATEGORIES.map((cat) => {
+                const types = BLOCK_TYPES.filter((type) => SPECS[type].category === cat);
+                const toggleable = types.filter((type) => type !== "start");
+                const allShown = toggleable.every((type) => !prefs.hidden.includes(type));
+                return (
+                  <div key={cat} className="flex flex-col gap-2 rounded-xl border-2 border-dashed border-[#16132b] p-3">
+                    <label className="flex items-center gap-2 text-sm font-bold" style={INK_STYLE}>
+                      <input
+                        type="checkbox"
+                        checked={allShown}
+                        disabled={toggleable.length === 0}
+                        onChange={(e) => setBlockVisible(toggleable, e.target.checked)}
+                        className="h-4 w-4 accent-[#16132b]"
+                      />
+                      <CategoryIcon category={cat} size={20} /> {t.categories[cat]}
+                    </label>
+                    {types.map((type) => {
+                      const shown = !prefs.hidden.includes(type);
+                      return (
+                        <label key={type} className="flex items-center gap-2 pl-6 text-sm" style={INK_STYLE}>
+                          <input
+                            type="checkbox"
+                            checked={shown}
+                            disabled={type === "start"}
+                            onChange={(e) => setBlockVisible([type], e.target.checked)}
+                            aria-label={`${t.showBlock}: ${previewLabel(type, t)}`}
+                            className="h-4 w-4 accent-[#16132b]"
+                          />
+                          <span className="min-w-0 truncate">{previewLabel(type, t)}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div>
+            <button
+              type="button"
+              onClick={() => changePrefs({ ...DEFAULT_PREFS })}
+              style={INK_STYLE}
+              className="rounded-lg border-2 border-[#16132b] px-3 py-1.5 text-sm font-bold hover:bg-[#8fd0ff]/50"
+            >
+              {t.resetPrefs}
+            </button>
+          </div>
+        </section>
+      )}
+    </div>
+
+    <div
+      className="grid gap-6 lg:grid-cols-[var(--menu-w)_minmax(0,1fr)_var(--stage-w)]"
+      style={{ "--menu-w": MENU_W[prefs.menu], "--stage-w": STAGE_W_COL[prefs.stage] } as CSSProperties}
+    >
       {/* Jeviště */}
       <section className="order-first flex flex-col gap-3 lg:order-last lg:sticky lg:top-24 lg:self-start">
         <div className="flex items-center gap-2">
@@ -320,16 +487,20 @@ export function ScratchEditor({
       {/* Nabídka bloků */}
       <aside className="order-2 flex flex-col gap-5 rounded-2xl border-[3px] border-[#16132b] bg-[#fffaf0] p-4 lg:order-first lg:max-h-[78vh] lg:overflow-y-auto">
           <div role="heading" aria-level={2} className="font-bold text-[#16132b]" style={INK_STYLE}>{t.palette}</div>
-          {CATEGORIES.map((cat) => (
-            <div key={cat} className="flex flex-col gap-2">
-              <div role="heading" aria-level={3} className="flex items-center gap-2 text-sm font-bold text-[#16132b]" style={INK_STYLE}>
-                <CategoryIcon category={cat} size={20} /> {t.categories[cat]}
+          {CATEGORIES.map((cat) => {
+            const types = BLOCK_TYPES.filter((type) => SPECS[type].category === cat && !prefs.hidden.includes(type));
+            if (types.length === 0) return null;
+            return (
+              <div key={cat} className="flex flex-col gap-2">
+                <div role="heading" aria-level={3} className="flex items-center gap-2 text-sm font-bold text-[#16132b]" style={INK_STYLE}>
+                  <CategoryIcon category={cat} size={prefs.menu === "l" ? 26 : 20} /> {t.categories[cat]}
+                </div>
+                {types.map((type) => (
+                  <PaletteItem key={type} type={type} t={t} large={prefs.menu === "l"} onPick={() => addBlock(type, null, blocks.length)} />
+                ))}
               </div>
-              {BLOCK_TYPES.filter((type) => SPECS[type].category === cat).map((type) => (
-                <PaletteItem key={type} type={type} t={t} onPick={() => addBlock(type, null, blocks.length)} />
-              ))}
-            </div>
-          ))}
+            );
+          })}
           <div className="text-xs text-[var(--muted)]">{t.addHint}</div>
       </aside>
 
@@ -343,14 +514,37 @@ export function ScratchEditor({
   );
 }
 
-function PaletteItem({ type, t, onPick }: { type: BlockType; t: ScratchText; onPick: () => void }) {
+function SizeChooser({ label, value, onChange, t }: { label: string; value: Size; onChange: (v: Size) => void; t: ScratchText }) {
+  const names: Record<Size, string> = { s: t.sizeS, m: t.sizeM, l: t.sizeL };
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="font-bold" style={INK_STYLE}>{label}</div>
+      <div className="flex gap-2">
+        {SIZES.map((s) => (
+          <button
+            key={s}
+            type="button"
+            aria-pressed={value === s}
+            onClick={() => onChange(s)}
+            style={INK_STYLE}
+            className={`flex-1 rounded-xl border-2 border-[#16132b] px-3 py-1.5 text-sm font-bold shadow-[2px_2px_0_#16132b] transition hover:-translate-y-0.5 ${value === s ? "bg-[#ffc933]" : "bg-white"}`}
+          >
+            {names[s]}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PaletteItem({ type, t, large, onPick }: { type: BlockType; t: ScratchText; large: boolean; onPick: () => void }) {
   const { setNodeRef, listeners, attributes, isDragging } = useDraggable({ id: `palette|${type}`, data: { kind: "palette", type } satisfies DragData });
   return (
     <div ref={setNodeRef} className={`flex items-stretch gap-1 transition ${isDragging ? "opacity-40" : ""}`}>
       <button
         type="button"
         onClick={onPick}
-        className="flex-1 rounded-xl border-2 border-[#16132b] px-3 py-1.5 text-left text-sm font-semibold shadow-[2px_2px_0_#16132b] transition hover:-translate-y-0.5"
+        className={`flex-1 rounded-xl border-2 border-[#16132b] px-3 text-left font-semibold shadow-[2px_2px_0_#16132b] transition hover:-translate-y-0.5 ${large ? "py-2.5 text-base" : "py-1.5 text-sm"}`}
         style={{ background: CAT_COLOR[SPECS[type].category], ...INK_STYLE }}
       >
         {previewLabel(type, t)}

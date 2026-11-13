@@ -101,6 +101,18 @@ export function TrashIcon({ size = 18, className }: IconProps) {
   );
 }
 
+// Posuvníky pro tlačítko „Přizpůsobit“.
+export function SlidersIcon({ size = 18, className }: IconProps) {
+  return (
+    <Svg size={size} className={className}>
+      <path d="M4 6.5h9M17 6.5h3M4 12h3M11 12h9M4 17.5h11M19 17.5h1" {...line} />
+      <circle cx="15" cy="6.5" r="2" {...line} fill="#ffc933" />
+      <circle cx="9" cy="12" r="2" {...line} fill="#7ee0b0" />
+      <circle cx="17" cy="17.5" r="2" {...line} fill="#c9a8ff" />
+    </Svg>
+  );
+}
+
 export function GripIcon({ size = 14, className }: IconProps) {
   return (
     <Svg size={size} className={className}>

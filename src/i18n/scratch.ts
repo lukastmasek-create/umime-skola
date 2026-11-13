@@ -30,6 +30,17 @@ export type ScratchText = {
   blocks: Record<string, string>;
   fieldNames: Record<string, string>;
   options: Record<string, string>;
+  customize: string;
+  customizeTitle: string;
+  menuSize: string;
+  stageSize: string;
+  sizeS: string;
+  sizeM: string;
+  sizeL: string;
+  hiddenBlocks: string;
+  showCategory: string;
+  showBlock: string;
+  resetPrefs: string;
 };
 
 const CS: ScratchText = {
@@ -106,6 +117,17 @@ const CS: ScratchText = {
     down: "spusť",
     up: "zvedni",
   },
+  customize: "Přizpůsobit",
+  customizeTitle: "Jak chceš mít studio?",
+  menuSize: "Velikost menu",
+  stageSize: "Velikost jeviště",
+  sizeS: "Malé",
+  sizeM: "Střední",
+  sizeL: "Velké",
+  hiddenBlocks: "Schovat bloky, které nepoužíváš",
+  showCategory: "Ukázat celou kategorii",
+  showBlock: "Ukázat blok",
+  resetPrefs: "Vrátit výchozí",
 };
 
 const EN: ScratchText = {
@@ -182,6 +204,17 @@ const EN: ScratchText = {
     down: "down",
     up: "up",
   },
+  customize: "Customize",
+  customizeTitle: "How do you want your studio?",
+  menuSize: "Menu size",
+  stageSize: "Stage size",
+  sizeS: "Small",
+  sizeM: "Medium",
+  sizeL: "Large",
+  hiddenBlocks: "Hide blocks you don't use",
+  showCategory: "Show whole category",
+  showBlock: "Show block",
+  resetPrefs: "Reset to default",
 };
 
 const TEXT = withFallbacks({ cs: CS, en: EN, de: EN, ru: EN });

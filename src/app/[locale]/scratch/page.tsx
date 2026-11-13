@@ -19,7 +19,7 @@ export default async function ScratchPage({ params }: { params: Promise<{ locale
   const blocks = userId ? await loadScratchProject(userId) : null;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14">
       <header className="mb-8 flex flex-col gap-3">
         <h1 className="text-3xl font-bold sm:text-4xl" style={{ fontFamily: "var(--font-heading)" }}>
           {t.title}
