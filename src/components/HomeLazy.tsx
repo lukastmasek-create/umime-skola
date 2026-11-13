@@ -37,7 +37,7 @@ function InView({
           io.disconnect();
         }
       },
-      { rootMargin: "600px 0px" },
+      { rootMargin: "250px 0px" },
     );
     io.observe(el);
     return () => io.disconnect();
