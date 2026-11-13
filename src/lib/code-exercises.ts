@@ -662,6 +662,244 @@ nadpis.addEventListener("click", () => {
       { msg: "Mění textContent na Ahoj!", re: /textContent\s*=\s*["']Ahoj!["']/ },
     ],
   },
+  {
+    id: "doplni-html-seznam",
+    kind: "doplni",
+    lang: "html",
+    topic: "Seznamy",
+    level: 1,
+    title: "Doplň seznam",
+    task: "Seznam má být nečíslovaný a obsahovat položky li. Doplň místa ___ (obal seznamu ul, zavírací tag stejně jako otevírací).",
+    starter: `<___>
+  <li>mléko</li>
+  <li>chleba</li>
+</___>`,
+    hint: "Obal nečíslovaného seznamu je ul. Zavírací tag píšeme s lomítkem: </ul>.",
+    solution: `<ul>
+  <li>mléko</li>
+  <li>chleba</li>
+</ul>`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: "Seznam je ul s oběma tagy", re: /<ul>\s*<li>mléko<\/li>\s*<li>chleba<\/li>\s*<\/ul>/ },
+    ],
+  },
+  {
+    id: "doplni-html-div",
+    kind: "doplni",
+    lang: "html",
+    topic: "Obaly div a span",
+    level: 1,
+    title: "Doplň obal div",
+    task: 'Nadpis a odstavec mají být uvnitř obalu div s třídou karta. Doplň místa ___ (název tagu a hodnotu class).',
+    starter: `<___ class="___">
+  <h2>Pozor</h2>
+  <p>Tohle je obal.</p>
+</div>`,
+    hint: "Obal bloku je div. Třídu zapíšeme jako class=\"název\", tady je název karta.",
+    solution: `<div class="karta">
+  <h2>Pozor</h2>
+  <p>Tohle je obal.</p>
+</div>`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: 'Obal je div class="karta"', re: /<div class="karta">\s*<h2>Pozor<\/h2>\s*<p>Tohle je obal\.<\/p>\s*<\/div>/ },
+    ],
+  },
+  {
+    id: "doplni-css-selektor",
+    kind: "doplni",
+    lang: "css",
+    topic: "Selektory",
+    level: 1,
+    title: "Doplň selektory",
+    task: "Třída hlavni má být červená a prvek s id uvod tučný. Doplň místa ___ (tečku pro třídu a mřížku pro id).",
+    starter: `___hlavni {
+  color: red;
+}
+
+___uvod {
+  font-weight: bold;
+}`,
+    hint: "Třída se v CSS píše s tečkou, id s mřížkou #.",
+    solution: `.hlavni {
+  color: red;
+}
+
+#uvod {
+  font-weight: bold;
+}`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: "Třída .hlavni je červená", re: /\.hlavni\s*\{\s*color\s*:\s*red\s*;?\s*\}/ },
+      { msg: "Id #uvod je tučné", re: /#uvod\s*\{\s*font-weight\s*:\s*bold\s*;?\s*\}/ },
+    ],
+  },
+  {
+    id: "doplni-css-box",
+    kind: "doplni",
+    lang: "css",
+    topic: "Box model",
+    level: 2,
+    title: "Doplň odsazení",
+    task: "Karta má mít uvnitř mezeru 16 px a zaoblené rohy 8 px. Doplň místa ___ (vlastnost pro vnitřní mezeru a zbytek názvu pro zaoblení).",
+    starter: `.karta {
+  ___: 16px;
+  border-___: 8px;
+}`,
+    hint: "Vnitřní mezera se jmenuje padding. Zaoblení rohů je border-radius.",
+    solution: `.karta {
+  padding: 16px;
+  border-radius: 8px;
+}`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: "Je tam padding: 16px", re: /padding\s*:\s*16px\s*;/ },
+      { msg: "Je tam border-radius: 8px", re: /border-radius\s*:\s*8px\s*;/ },
+    ],
+  },
+  {
+    id: "doplni-css-grid",
+    kind: "doplni",
+    lang: "css",
+    topic: "Grid",
+    level: 2,
+    title: "Doplň mřížku",
+    task: "Galerie má mít tři stejně široké sloupce. Doplň místa ___ (zapnutí gridu a vlastnost pro sloupce).",
+    starter: `.galerie {
+  display: ___;
+  ___: repeat(3, 1fr);
+  gap: 12px;
+}`,
+    hint: "Mřížku zapneš display: grid. Počet sloupců určuje grid-template-columns.",
+    solution: `.galerie {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: "Je tam display: grid", re: /display\s*:\s*grid\s*;/ },
+      { msg: "Jsou tam tři sloupce repeat(3, 1fr)", re: /grid-template-columns\s*:\s*repeat\(3,\s*1fr\)\s*;/ },
+    ],
+  },
+  {
+    id: "doplni-js-promenna",
+    kind: "doplni",
+    lang: "js",
+    topic: "Proměnné",
+    level: 1,
+    title: "Doplň proměnné",
+    task: "Jméno se nemění, takže ho ulož jako konstantu. Věk se měnit bude, takže ho ulož s let. Doplň místa ___.",
+    starter: `___ jmeno = "Anička";
+___ vek = 14;
+vek = vek + 1;
+console.log(jmeno, vek);`,
+    hint: "Konstanta se píše const. Proměnná, kterou později měníš, se píše let.",
+    solution: `const jmeno = "Anička";
+let vek = 14;
+vek = vek + 1;
+console.log(jmeno, vek);`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: 'Jméno je const jmeno = "Anička"', re: /const\s+jmeno\s*=\s*["']Anička["']\s*;/ },
+      { msg: "Věk je let vek = 14", re: /let\s+vek\s*=\s*14\s*;/ },
+    ],
+  },
+  {
+    id: "doplni-js-logika",
+    kind: "doplni",
+    lang: "js",
+    topic: "Logické operátory",
+    level: 2,
+    title: "Doplň logiku",
+    task: "Jdeme ven, jen když je hezky a zároveň nemáme úkoly. Doplň místo ___ operátorem, který znamená obě podmínky najednou.",
+    starter: `let hezky = true;
+let ukoly = false;
+if (hezky ___ !ukoly) {
+  console.log("Jdeme ven!");
+}`,
+    hint: "Obě podmínky musí platit současně. To je a, v JavaScriptu zapsané jako &&. Vykřičník ! znamená opak.",
+    solution: `let hezky = true;
+let ukoly = false;
+if (hezky && !ukoly) {
+  console.log("Jdeme ven!");
+}`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: "Podmínka je if (hezky && !ukoly)", re: /if\s*\(\s*hezky\s*&&\s*!ukoly\s*\)/ },
+    ],
+  },
+  {
+    id: "doplni-js-pole",
+    kind: "doplni",
+    lang: "js",
+    topic: "Pole",
+    level: 2,
+    title: "Doplň pole",
+    task: 'Do pole přidej na konec prvek „hruška“ a vypiš první prvek. Doplň místa ___ (metoda pro přidání a index prvního prvku).',
+    starter: `let ovoce = ["jablko", "banán"];
+ovoce.___("hruška");
+console.log(ovoce[___]);`,
+    hint: "Na konec pole přidáš prvek metodou push. Počítá se od nuly, první prvek má index 0.",
+    solution: `let ovoce = ["jablko", "banán"];
+ovoce.push("hruška");
+console.log(ovoce[0]);`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: 'Přidá "hruška" přes push', re: /ovoce\.push\(\s*["']hruška["']\s*\)/ },
+      { msg: "Vypíše ovoce[0]", re: /console\.log\(\s*ovoce\[0\]\s*\)/ },
+    ],
+  },
+  {
+    id: "doplni-js-objekt",
+    kind: "doplni",
+    lang: "js",
+    topic: "Objekty",
+    level: 2,
+    title: "Doplň objekt",
+    task: 'Objekt zvire má vlastnost jmeno. Změň jeho jméno na „Kočka“ a pak ho vypiš. Doplň místa ___ (název vlastnosti).',
+    starter: `let zvire = {
+  jmeno: "Pes",
+  nohy: 4
+};
+zvire.___ = "Kočka";
+console.log(zvire.___);`,
+    hint: "Vlastnost čteme i měníme tečkou: zvire.vlastnost. Název vlastnosti je jmeno.",
+    solution: `let zvire = {
+  jmeno: "Pes",
+  nohy: 4
+};
+zvire.jmeno = "Kočka";
+console.log(zvire.jmeno);`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: 'Nastaví zvire.jmeno = "Kočka"', re: /zvire\.jmeno\s*=\s*["']Kočka["']\s*;/ },
+      { msg: "Vypíše zvire.jmeno", re: /console\.log\(\s*zvire\.jmeno\s*\)/ },
+    ],
+  },
+  {
+    id: "doplni-js-foreach",
+    kind: "doplni",
+    lang: "js",
+    topic: "Cykly",
+    level: 2,
+    title: "Doplň for...of",
+    task: "Projdi všechna jména v poli a vypiš každé z nich. Doplň místa ___ (klíčové slovo smyčky a slovo uprostřed).",
+    starter: `const jmena = ["Ema", "Tomáš", "Lucie"];
+___ (let jmeno ___ jmena) {
+  console.log(jmeno);
+}`,
+    hint: "Smyčka pro procházení prvků začíná slovem for. Uprostřed je of.",
+    solution: `const jmena = ["Ema", "Tomáš", "Lucie"];
+for (let jmeno of jmena) {
+  console.log(jmeno);
+}`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: "Je tam for (let jmeno of jmena)", re: /for\s*\(\s*let\s+jmeno\s+of\s+jmena\s*\)/ },
+    ],
+  },
   // ---------- PROJEKTY (celá malá aplikace v jednom HTML souboru) ----------
   {
     id: "projekt-kalkulacka",

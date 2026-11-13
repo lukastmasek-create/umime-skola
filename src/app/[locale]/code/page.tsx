@@ -106,7 +106,7 @@ export default async function CodePage({ params }: { params: Promise<{ locale: s
                   Cvičení
                 </h2>
                 <p className="mt-1 max-w-2xl text-sm text-[#cfc8e4]">
-                  Vyber úkol, napiš kód do políčka a klikni na Zkontrolovat. Když to nesedí, dostaneš seznam, co chybí. Nápověda i řešení jsou hned vedle.
+                  Vyber soubor v průzkumníku vlevo, oprav nebo napiš kód v editoru a klikni na Zkontrolovat (nebo Ctrl+S). Když to nesedí, uvidíš seznam, co chybí. Nápověda i řešení jsou ve spodním panelu.
                 </p>
               </div>
             </div>
