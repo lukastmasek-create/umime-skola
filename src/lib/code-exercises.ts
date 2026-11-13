@@ -12,6 +12,7 @@ export type Check = {
 
 export type Exercise = {
   id: string;
+  kind?: "napis" | "doplni"; // napis = od nuly, doplni = kód je předepsaný, chybí jen místa ___
   lang: Lang;
   topic: string; // krátké téma, např. „Flexbox“
   level: 1 | 2 | 3; // 1 = začátek, 3 = výzva
@@ -430,6 +431,235 @@ tlacitko.addEventListener("click", () => {
       { msg: "Najde tlačítko přes getElementById(\"rezim\")", re: /getElementById\(\s*["']rezim["']\s*\)/ },
       { msg: "Poslouchá click", re: /addEventListener\(\s*["']click["']/ },
       { msg: 'Přepíná třídu "tmavy" přes classList.toggle', re: /classList\.toggle\(\s*["']tmavy["']\s*\)/ },
+    ],
+  },
+  // ---------- DOPLŇ CHYBĚJÍCÍ (kód je předepsaný, místa ___ doplň) ----------
+  {
+    id: "doplni-html-kostra",
+    kind: "doplni",
+    lang: "html",
+    topic: "Kostra stránky",
+    level: 1,
+    title: "Doplň kostru",
+    task: "Kód je skoro hotový. Doplň místa ___: u html přidej lang=\"cs\" (jen hodnotu html), v title libovolný název a v h1 text Ahoj světe.",
+    starter: `<!DOCTYPE html>
+<___ lang="cs">
+  <head>
+    <title>___</title>
+  </head>
+  <body>
+    <___>Ahoj světe</___>
+  </body>
+</html>`,
+    hint: "Místo ___ u prvního tagu napiš html. Místo ___ v title napiš libovolný název. Místa u h1 jsou dvě: napiš tam h1 a zavírací tag h1.",
+    solution: `<!DOCTYPE html>
+<html lang="cs">
+  <head>
+    <title>Moje stránka</title>
+  </head>
+  <body>
+    <h1>Ahoj světe</h1>
+  </body>
+</html>`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: 'html má lang="cs"', re: /<html lang="cs">/ },
+      { msg: "Title má neprázdný text", re: /<title>\s*\S[^<]*<\/title>/ },
+      { msg: "Je tam h1 s textem Ahoj světe", re: /<h1>Ahoj světe<\/h1>/ },
+    ],
+  },
+  {
+    id: "doplni-html-odkaz",
+    kind: "doplni",
+    lang: "html",
+    topic: "Odkazy a obrázky",
+    level: 1,
+    title: "Doplň odkaz",
+    task: "Odkaz má správně text, ale chybí mu adresa. Doplň místo ___ atribut href, aby vedl na https://ucimesehrou.org.",
+    starter: `<a ___="https://ucimesehrou.org">Učíme se hrou</a>`,
+    hint: "Atribut, který říká, kam odkaz vede, se jmenuje href.",
+    solution: `<a href="https://ucimesehrou.org">Učíme se hrou</a>`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: "Odkaz má href na https://ucimesehrou.org", re: /<a href="https:\/\/ucimesehrou\.org">Učíme se hrou<\/a>/ },
+    ],
+  },
+  {
+    id: "doplni-html-obrazek",
+    kind: "doplni",
+    lang: "html",
+    topic: "Odkazy a obrázky",
+    level: 2,
+    title: "Doplň popis obrázku",
+    task: "Obrázek nemá alt popis. Doplň místo ___ atribut alt s textem „Kočka“ tak, aby byl správně napsaný.",
+    starter: `<img src="kocka.png" ___="Kočka">`,
+    hint: "Atribut pro popis obrázku se jmenuje alt. Pozor, nesmí chybět uvozovky.",
+    solution: `<img src="kocka.png" alt="Kočka">`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: 'Obrázek má alt="Kočka"', re: /<img src="kocka\.png" alt="Kočka">/ },
+    ],
+  },
+  {
+    id: "doplni-html-formular",
+    kind: "doplni",
+    lang: "html",
+    topic: "Formuláře",
+    level: 2,
+    title: "Doplň typ pole",
+    task: "Pole na e-mail má špatný typ. Doplň místo ___ hodnotu type, aby prohlížeč hlídal, že jde o e-mail, a tlačítku dej typ submit.",
+    starter: `<form>
+  <input type="___" placeholder="E-mail">
+  <button type="___">Odeslat</button>
+</form>`,
+    hint: "Pro e-mail je typ email. Pro odeslání formuláře je typ submit.",
+    solution: `<form>
+  <input type="email" placeholder="E-mail">
+  <button type="submit">Odeslat</button>
+</form>`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: 'Pole má type="email"', re: /<input type="email"/ },
+      { msg: 'Tlačítko má type="submit"', re: /<button type="submit">Odeslat<\/button>/ },
+    ],
+  },
+  {
+    id: "doplni-css-flex",
+    kind: "doplni",
+    lang: "css",
+    topic: "Flexbox",
+    level: 2,
+    title: "Doplň flexbox",
+    task: "Krabice má být flexbox a obsah vycentrovaný vodorovně. Doplň místa ___.",
+    starter: `.lista {
+  display: ___;
+  ___: center;
+  gap: 8px;
+}`,
+    hint: "display: flex zapne flexbox. Vodorovné zarovnání se řídí vlastností justify-content.",
+    solution: `.lista {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: "Je tam display: flex", re: /display\s*:\s*flex\s*;/ },
+      { msg: "Je tam justify-content: center", re: /justify-content\s*:\s*center\s*;/ },
+    ],
+  },
+  {
+    id: "doplni-css-hover",
+    kind: "doplni",
+    lang: "css",
+    topic: "Hover a přechody",
+    level: 2,
+    title: "Doplň stav při najetí",
+    task: "Odkaz má mít modrou barvu jen při najetí myší. Doplň místo ___ pseudotřídu, aby pravidlo platilo při najetí.",
+    starter: `a___ {
+  color: #3248f0;
+}`,
+    hint: "Pseudotřída pro najetí myší se píše s dvojtečkou a začíná na h.",
+    solution: `a:hover {
+  color: #3248f0;
+}`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: "Pravidlo je a:hover s barvou #3248f0", re: /a:hover\s*\{\s*color\s*:\s*#3248f0/ },
+    ],
+  },
+  {
+    id: "doplni-js-if",
+    kind: "doplni",
+    lang: "js",
+    topic: "Podmínky",
+    level: 1,
+    title: "Doplň podmínku",
+    task: "Program má vypsat „Dospělý“, když je vek aspoň 18, jinak „Dítě“. Doplň místa ___ (klíčová slova a operátor).",
+    starter: `let vek = 16;
+___ (vek ___ 18) {
+  console.log("Dospělý");
+} ___ {
+  console.log("Dítě");
+}`,
+    hint: "Podmínka začíná klíčovým slovem if. Aspoň 18 znamená >=. Pak přijde else.",
+    solution: `let vek = 16;
+if (vek >= 18) {
+  console.log("Dospělý");
+} else {
+  console.log("Dítě");
+}`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: "Je tam if (vek >= 18)", re: /if\s*\(\s*vek\s*>=\s*18\s*\)/ },
+      { msg: "Je tam else {", re: /else\s*\{/ },
+    ],
+  },
+  {
+    id: "doplni-js-for",
+    kind: "doplni",
+    lang: "js",
+    topic: "Cykly",
+    level: 2,
+    title: "Doplň smyčku",
+    task: "Smyčka má vypsat kola 0, 1 a 2. Doplň místa ___ tak, aby i rostlo o 1 a skončilo před 3.",
+    starter: `for (let i = 0; i ___ 3; ___) {
+  console.log("Kolo", i);
+}`,
+    hint: "Podmínka je i < 3. Krok o jedna dopředu zapisujeme i++.",
+    solution: `for (let i = 0; i < 3; i++) {
+  console.log("Kolo", i);
+}`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: "Podmínka je i < 3", re: /i\s*<\s*3\s*;/ },
+      { msg: "Krok je i++", re: /i\+\+\s*\)/ },
+    ],
+  },
+  {
+    id: "doplni-js-funkce",
+    kind: "doplni",
+    lang: "js",
+    topic: "Funkce",
+    level: 2,
+    title: "Doplň funkci",
+    task: "Funkce vynasob má vrátit součin dvou čísel. Doplň místa ___ (klíčové slovo pro funkci a pro návrat hodnoty).",
+    starter: `___ vynasob(a, b) {
+  ___ a * b;
+}
+console.log(vynasob(4, 5));`,
+    hint: "Funkci začínáme slovem function. Hodnotu vracíme slovem return.",
+    solution: `function vynasob(a, b) {
+  return a * b;
+}
+console.log(vynasob(4, 5));`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: "Je tam function vynasob(a, b)", re: /function\s+vynasob\s*\(\s*a\s*,\s*b\s*\)/ },
+      { msg: "Funkce vrací return a * b", re: /return\s+a\s*\*\s*b\s*;/ },
+    ],
+  },
+  {
+    id: "doplni-js-dom",
+    kind: "doplni",
+    lang: "js",
+    topic: "DOM a události",
+    level: 3,
+    title: "Doplň DOM",
+    task: "Po kliku na nadpis h1 se má jeho text změnit na „Ahoj!“. Doplň místa ___ (najít prvek a změnit jeho text).",
+    starter: `const nadpis = document.___("h1");
+nadpis.addEventListener("click", () => {
+  nadpis.___ = "Ahoj!";
+});`,
+    hint: "Prvek najdeš přes querySelector. Text prvku měníme přes textContent.",
+    solution: `const nadpis = document.querySelector("h1");
+nadpis.addEventListener("click", () => {
+  nadpis.textContent = "Ahoj!";
+});`,
+    checks: [
+      { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
+      { msg: 'Je tam querySelector("h1")', re: /document\.querySelector\(\s*["']h1["']\s*\)/ },
+      { msg: "Mění textContent na Ahoj!", re: /textContent\s*=\s*["']Ahoj!["']/ },
     ],
   },
 ];
