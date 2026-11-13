@@ -1,9 +1,35 @@
 "use client";
 
-import { useLayoutEffect, useRef, type KeyboardEvent } from "react";
+import { useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { backspace, comment, enter, tab, typeChar, type CommentMode, type Edit } from "@/lib/code-editing";
+import { applyCompletion, completionAt, type Completion, type FileKind } from "@/lib/code-complete";
 
-// Klávesy editoru jako ve VS Code (odsazení, párování, komentáře). Sdílí je všechny režimy editoru.
+// Našeptávací seznam: návrhy + vybraný řádek + pozice u kurzoru v textarea.
+export type Suggest = Completion & { index: number; x: number; y: number };
+
+let measureCtx: CanvasRenderingContext2D | null = null;
+
+// Poloha kurzoru v textarea (v px od levého horního rohu obalu). Používá šířku znaku z fontu textarea.
+function caretXY(el: HTMLTextAreaElement, v: string, pos: number) {
+  const before = v.slice(0, pos);
+  const line = before.split("\n").length - 1;
+  const col = pos - (before.lastIndexOf("\n") + 1);
+  const cs = window.getComputedStyle(el);
+  if (!measureCtx) measureCtx = document.createElement("canvas").getContext("2d");
+  if (measureCtx) measureCtx.font = `${cs.fontSize} ${cs.fontFamily}`;
+  const charW = measureCtx ? measureCtx.measureText("0000000000").width / 10 : 8;
+  const padLeft = parseFloat(cs.paddingLeft) || 16;
+  const padTop = parseFloat(cs.paddingTop) || 12;
+  const lineH = parseFloat(cs.lineHeight) || 24;
+  const x = el.offsetLeft + padLeft + col * charW - el.scrollLeft;
+  const y = el.offsetTop + padTop + (line + 1) * lineH - el.scrollTop;
+  // Seznam se nevejde mimo viditelnou část editoru (obal s posuvníkem).
+  const box = el.offsetParent as HTMLElement | null;
+  const maxX = (box ? box.scrollLeft + box.clientWidth : el.clientWidth) - 280;
+  return { x: Math.max(0, Math.min(x, maxX)), y };
+}
+
+// Klávesy editoru jako ve VS Code (odsazení, párování, komentáře, našeptávání).
 export function useCodeKeys(
   value: string,
   setValue: (v: string) => void,
@@ -11,10 +37,13 @@ export function useCodeKeys(
     onRun: () => void;
     toggleWrap: () => void;
     commentMode: (v: string, pos: number) => CommentMode | null;
+    // Jaký typ souboru se doplňuje (null = bez našeptávání, např. u JSON).
+    fileKind: (v: string, pos: number) => FileKind | null;
   },
 ) {
   const textRef = useRef<HTMLTextAreaElement>(null);
   const pendingSel = useRef<[number, number] | null>(null);
+  const [completion, setCompletion] = useState<Suggest | null>(null);
 
   // Po změně kódu nastaví kurzor tam, kam ho chceme (když se změna nevešla do vloženého textu).
   useLayoutEffect(() => {
@@ -52,6 +81,35 @@ export function useCodeKeys(
     el.setSelectionRange(next.start, next.end);
   }
 
+  // Přepočet návrhů po psaní (a po Ctrl+Space, pak i bez písmen).
+  function refresh(el: HTMLTextAreaElement, manual = false) {
+    const v = el.value;
+    const pos = el.selectionStart;
+    const kind = opts.fileKind(v, pos);
+    const c = el.selectionStart === el.selectionEnd && kind ? completionAt(v, pos, kind, manual) : null;
+    if (!c) {
+      setCompletion(null);
+      return;
+    }
+    setCompletion({ ...c, index: 0, ...caretXY(el, v, pos) });
+  }
+
+  function accept(c: Suggest, i: number) {
+    const el = textRef.current;
+    const item = c.items[i];
+    if (!el || !item) return;
+    apply(applyCompletion(el.value, c.start, c.end, item));
+    setCompletion(null);
+  }
+
+  function onInput(e: FormEvent<HTMLTextAreaElement>) {
+    refresh(e.currentTarget);
+  }
+
+  function onBlur() {
+    setCompletion(null);
+  }
+
   function onKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
     if (e.nativeEvent.isComposing) return;
     const el = e.currentTarget;
@@ -59,6 +117,36 @@ export function useCodeKeys(
     const s = el.selectionStart;
     const t = el.selectionEnd;
     const mod = e.ctrlKey || e.metaKey;
+
+    // Když je otevřený seznam návrhů, šipky a Enter/Tab patří jemu.
+    if (completion) {
+      const n = completion.items.length;
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setCompletion({ ...completion, index: (completion.index + 1) % n });
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setCompletion({ ...completion, index: (completion.index - 1 + n) % n });
+        return;
+      }
+      if ((e.key === "Enter" || e.key === "Tab") && !mod && !e.altKey) {
+        e.preventDefault();
+        accept(completion, completion.index);
+        return;
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setCompletion(null);
+        return;
+      }
+    }
+    if (mod && e.key === " ") {
+      e.preventDefault();
+      refresh(el, true);
+      return;
+    }
 
     if (e.key === "Escape") {
       el.blur();
@@ -94,5 +182,5 @@ export function useCodeKeys(
     }
   }
 
-  return { textRef, onKeyDown };
+  return { textRef, onKeyDown, onInput, onBlur, completion, accept };
 }
