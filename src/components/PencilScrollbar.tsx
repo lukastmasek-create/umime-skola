@@ -83,7 +83,7 @@ export function PencilScrollbar() {
       if (y - lastY > DIR_EPS) goingUp = false;
       else if (lastY - y > DIR_EPS) goingUp = true;
       lastY = y;
-      thumb.toggleAttribute("data-up", goingUp);
+      thumb.toggleAttribute("data-up", !goingUp);
 
       const progress = max > 0 ? y / max : 0;
       const top = progress * travel();
