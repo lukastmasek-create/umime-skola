@@ -38,8 +38,11 @@ export function DitherBg({ bg = "rgba(0,0,0,0)", dot = "rgba(255,255,255,0.35)",
         }
       }
     };
+    // Vlnění je pomalé, stačí překreslovat každý druhý snímek (30 fps). Rychlost zůstává stejná.
+    let frameNo = 0;
     const frame = () => {
-      if (on) { t += 0.025; draw(); }
+      frameNo++;
+      if (on && frameNo % 2 === 0) { t += 0.05; draw(); }
       raf = requestAnimationFrame(frame);
     };
     size();

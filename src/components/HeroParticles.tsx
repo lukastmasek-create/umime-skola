@@ -13,7 +13,8 @@ export function HeroParticles({ className = "" }: { className?: string }) {
     const ctx = cv.getContext("2d");
     if (!ctx) return;
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.documentElement.getAttribute("data-motion") === "off";
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // Body jsou jednoduché tečky, na vyšším DPR se nic neuvidí, jen čtyřikrát víc pixelů na překreslení.
+    const dpr = 1;
     const frac = (v: number) => v - Math.floor(v);
     const N = 58;
     const pts = Array.from({ length: N }, (_, i) => {
@@ -57,18 +58,23 @@ export function HeroParticles({ className = "" }: { className?: string }) {
         p.x += (p.vx / w) * 60;
         p.y += (p.vy / h) * 60;
       }
+      // Spojnice se seskupí do několika průhlednostních košů: místo stovek tahů jen pár.
       ctx!.lineWidth = 1;
+      const BUCKETS = 6;
+      const paths = Array.from({ length: BUCKETS }, () => new Path2D());
       for (let i = 0; i < N; i++) {
         for (let j = i + 1; j < N; j++) {
           const d = Math.hypot((pts[i].x - pts[j].x) * w, (pts[i].y - pts[j].y) * h);
           if (d < 90) {
-            ctx!.strokeStyle = `rgba(160,190,255,${(1 - d / 90) * 0.35})`;
-            ctx!.beginPath();
-            ctx!.moveTo(pts[i].x * w, pts[i].y * h);
-            ctx!.lineTo(pts[j].x * w, pts[j].y * h);
-            ctx!.stroke();
+            const b = Math.min(BUCKETS - 1, Math.floor((1 - d / 90) * BUCKETS));
+            paths[b].moveTo(pts[i].x * w, pts[i].y * h);
+            paths[b].lineTo(pts[j].x * w, pts[j].y * h);
           }
         }
+      }
+      for (let b = 0; b < BUCKETS; b++) {
+        ctx!.strokeStyle = `rgba(160,190,255,${((b + 0.5) / BUCKETS) * 0.35})`;
+        ctx!.stroke(paths[b]);
       }
       ctx!.fillStyle = "rgba(255,210,77,0.85)";
       for (const p of pts) {
@@ -78,10 +84,19 @@ export function HeroParticles({ className = "" }: { className?: string }) {
       }
     }
     let raf = 0;
+    // Mimo obrazovku se nekreslí (hero se po scrollu neviditelně přepočítával každý snímek).
+    let visible = true;
     function frame() {
+      raf = 0;
+      if (!visible) return;
       draw();
       raf = requestAnimationFrame(frame);
     }
+    const io = new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting;
+      if (visible && !raf && !still) raf = requestAnimationFrame(frame);
+    });
+    io.observe(cv);
     draw();
     if (!still) raf = requestAnimationFrame(frame);
     function move(e: PointerEvent) {
@@ -96,6 +111,7 @@ export function HeroParticles({ className = "" }: { className?: string }) {
     window.addEventListener("pointermove", move, { passive: true });
     return () => {
       cancelAnimationFrame(raf);
+      io.disconnect();
       ro.disconnect();
       window.removeEventListener("pointermove", move);
     };

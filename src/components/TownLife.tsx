@@ -188,7 +188,7 @@ export function TownLife({ steps, locale = "cs" }: { steps: TownStep[]; locale?:
       const r = bx.getBoundingClientRect();
       W = r.width;
       H = r.height;
-      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      dpr = Math.min(window.devicePixelRatio || 1, 1.25); // víc pixelů se na každém snímku celé mažou a kreslí znovu
       canvas.width = Math.round(W * dpr);
       canvas.height = Math.round(H * dpr);
     };

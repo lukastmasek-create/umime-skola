@@ -155,7 +155,7 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true }: { co
       const r = host.getBoundingClientRect();
       W = Math.max(1, r.width);
       H = Math.max(1, r.height);
-      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      dpr = Math.min(window.devicePixelRatio || 1, 1.25); // 2D vrstvy se mažou celé každý snímek
       fxCv.width = shipCv.width = Math.round(W * dpr);
       fxCv.height = shipCv.height = Math.round(H * dpr);
       if (gl && glOk) {
