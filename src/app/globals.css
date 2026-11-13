@@ -6150,3 +6150,43 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
   /* Kategorie: o něco kompaktnější karty */
   .pcard-pile { gap: 24px; }
 }
+
+/* Účet v hlavičce (HeaderAccount): okno ve stylu papírové karty z homepage.
+   Barvy jsou pevné (papír + tužkový obrys), takže v tmavém režimu zůstane čitelné. */
+.acct-pop {
+  --r: -1.2deg;
+  --ac: #8f86ff;
+  --surface: #fffaf0;
+  --surface-muted: #f3e9d6;
+  --border-soft: #e4dcc8;
+  --edge: #16132b;
+  --foreground: #16132b;
+  --muted: #5b5670;
+  --brand-600: #2336d1;
+  position: absolute;
+  color: #16132b;
+  background-color: #f7efe0;
+  border: 2px solid #16132b;
+  border-radius: 22px;
+  box-shadow: 7px 9px 0 rgba(8, 8, 24, 0.55);
+  transform: rotate(var(--r));
+  transform-origin: top right;
+}
+.acct-pop .pcard-tape { top: -13px; }
+.acct-pop .pcard-ring { color: var(--ac); }
+.acct-pop .pcard-ring { left: -10px; top: -10px; width: calc(100% + 20px); height: calc(100% + 20px); }
+.acct-label {
+  display: flex; align-items: center; gap: 6px; margin: 16px 0 6px;
+  font: 800 0.8rem/1 var(--font-heading); letter-spacing: 0.04em; color: #16132b;
+}
+.acct-stat {
+  display: grid; justify-items: center; gap: 2px; padding: 8px 4px 9px; border-radius: 14px;
+  border: 2px solid #16132b; background: #fffaf0; box-shadow: 3px 3px 0 rgba(8, 8, 24, 0.35);
+}
+.acct-pop button:not(:disabled):hover, .acct-pop a:hover { filter: brightness(0.97); }
+.acct-pop a.btn-bouncy, .acct-pop button.btn-bouncy { box-shadow: 3px 3px 0 rgba(8, 8, 24, 0.5); }
+.acct-pop .pill { border-color: #16132b; }
+.acct-pop [role="progressbar"] { background: #fffaf0; border-color: #16132b; }
+@media (prefers-reduced-motion: reduce) {
+  .acct-pop { transform: none; }
+}
