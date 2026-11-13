@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { CodeExercises } from "@/components/CodeExercises";
+import { CodeWorkspace } from "@/components/CodeWorkspace";
 import { CodeCurriculum } from "@/components/CodeCurriculum";
 import { CodeLearn } from "@/components/CodeLearn";
 import { HeroSky } from "@/components/HeroSky";
@@ -110,7 +110,7 @@ export default async function CodePage({ params }: { params: Promise<{ locale: s
                 </p>
               </div>
             </div>
-            <CodeExercises />
+            <CodeWorkspace />
           </div>
         </div>
       </section>
