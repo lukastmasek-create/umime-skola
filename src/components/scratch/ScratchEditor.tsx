@@ -45,7 +45,8 @@ import {
   type Sprite,
   type Value,
 } from "@/lib/scratch/engine";
-import { CatSprite, CategoryIcon, FlagIcon, GripIcon, SlidersIcon, StopIcon, TrashIcon } from "./ScratchIcons";
+import { checkChallenge, CHALLENGE_IDS, type ChallengeId } from "@/lib/scratch/challenges";
+import { BlockIcon, CatSprite, CategoryIcon, FlagIcon, GripIcon, SlidersIcon, StopIcon, TrashIcon } from "./ScratchIcons";
 
 const CAT_COLOR: Record<Category, string> = {
   events: "#ffc933",
@@ -74,8 +75,9 @@ type Size = "s" | "m" | "l";
 type Prefs = { menu: Size; stage: Size; hidden: BlockType[] };
 const PREFS_KEY = "umime-scratch-prefs";
 const DEFAULT_PREFS: Prefs = { menu: "m", stage: "m", hidden: [] };
-const MENU_W: Record<Size, string> = { s: "220px", m: "270px", l: "340px" };
-const STAGE_W_COL: Record<Size, string> = { s: "420px", m: "560px", l: "680px" };
+// Velké jeviště zůstává rozumně široké, aby se pod ním pořád vešly skripty.
+const MENU_W: Record<Size, string> = { s: "220px", m: "270px", l: "300px" };
+const STAGE_W_COL: Record<Size, string> = { s: "420px", m: "540px", l: "600px" };
 const SIZES: Size[] = ["s", "m", "l"];
 
 function isSize(v: unknown): v is Size {
@@ -213,6 +215,8 @@ export function ScratchEditor({
   const [save, setSave] = useState<SaveState>("idle");
   const [activeLabel, setActiveLabel] = useState<string | null>(null);
   const [customOpen, setCustomOpen] = useState(false);
+  const [challenge, setChallenge] = useState<ChallengeId | null>(null);
+  const [ranOnce, setRanOnce] = useState(false);
 
   // Na serveru a při prvním vykreslení jsou výchozí hodnoty, pak se načtou z prohlížeče (bez rozdílu při hydrataci).
   const rawPrefs = useSyncExternalStore(subscribePrefs, readRawPrefs, () => null);
@@ -280,6 +284,7 @@ export function ScratchEditor({
       return;
     }
     setNotice(null);
+    setRanOnce(true);
     const rt = createRuntime(blocks);
     rtRef.current = rt;
     setSnap(takeSnap(rt));
@@ -482,6 +487,18 @@ export function ScratchEditor({
         )}
         {!hasHat && !notice && <div className="text-sm text-[var(--muted)]">{t.stageHint}</div>}
         <SaveStatus loggedIn={loggedIn} save={save} t={t} loginHref={loginHref} />
+
+        <ChallengePanel
+          t={t}
+          selected={challenge}
+          onSelect={(id) => {
+            setChallenge((cur) => (cur === id ? null : id));
+            setRanOnce(false);
+          }}
+          status={
+            challenge === null || running || !ranOnce ? null : checkChallenge(challenge, snap) ? "done" : "retry"
+          }
+        />
       </section>
 
       {/* Nabídka bloků */}
@@ -544,10 +561,11 @@ function PaletteItem({ type, t, large, onPick }: { type: BlockType; t: ScratchTe
       <button
         type="button"
         onClick={onPick}
-        className={`flex-1 rounded-xl border-2 border-[#16132b] px-3 text-left font-semibold shadow-[2px_2px_0_#16132b] transition hover:-translate-y-0.5 ${large ? "py-2.5 text-base" : "py-1.5 text-sm"}`}
+        className={`flex flex-1 items-center gap-2 rounded-xl border-2 border-[#16132b] px-3 text-left font-semibold shadow-[2px_2px_0_#16132b] transition hover:-translate-y-0.5 ${large ? "py-2.5 text-base" : "py-1.5 text-sm"}`}
         style={{ background: CAT_COLOR[SPECS[type].category], ...INK_STYLE }}
       >
-        {previewLabel(type, t)}
+        <BlockIcon type={type} size={large ? 22 : 18} className="shrink-0" />
+        <span className="min-w-0">{previewLabel(type, t)}</span>
       </button>
       <span
         {...listeners}
@@ -670,6 +688,9 @@ function BlockNode({
       >
         <span {...listeners} {...attributes} aria-label={t.dragBlock} className="flex cursor-grab touch-none self-stretch items-center px-1">
           <GripIcon size={14} />
+        </span>
+        <span className="flex shrink-0 items-center">
+          <BlockIcon type={block.type} size={18} />
         </span>
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-1.5 gap-y-1 py-2 text-sm font-semibold text-[#16132b]">
           {parts.map((p, i) =>
@@ -795,6 +816,48 @@ function Stage({ snap, label }: { snap: Snap; label: string }) {
         </g>
       )}
     </svg>
+  );
+}
+
+// Výzvy: vyber jednu, sestav skript a spusť. Výsledek se ukáže až po doběhnutí.
+function ChallengePanel({
+  t,
+  selected,
+  onSelect,
+  status,
+}: {
+  t: ScratchText;
+  selected: ChallengeId | null;
+  onSelect: (id: ChallengeId) => void;
+  status: "done" | "retry" | null;
+}) {
+  return (
+    <div className="flex flex-col gap-3 rounded-2xl border-[3px] border-[#16132b] bg-[#fffaf0] p-3 shadow-[4px_4px_0_#16132b]">
+      <div className="font-bold" style={INK_STYLE}>{t.challengesTitle}</div>
+      <div className="flex flex-wrap gap-2">
+        {CHALLENGE_IDS.map((id) => (
+          <button
+            key={id}
+            type="button"
+            aria-pressed={selected === id}
+            onClick={() => onSelect(id)}
+            style={INK_STYLE}
+            className={`rounded-lg border-2 border-[#16132b] px-2.5 py-1 text-sm font-bold transition hover:-translate-y-0.5 ${selected === id ? "bg-[#ffc933]" : "bg-white"}`}
+          >
+            {t.challenges[id]?.title ?? id}
+          </button>
+        ))}
+      </div>
+      {selected === null ? (
+        <div className="text-sm text-[var(--muted)]">{t.challengeHint}</div>
+      ) : (
+        <div className="flex flex-col gap-1 text-sm" style={INK_STYLE}>
+          <div>{t.challenges[selected]?.goal}</div>
+          {status === "done" && <div className="font-bold text-[#16132b]">✔ {t.challengeDone}</div>}
+          {status === "retry" && <div className="font-semibold">{t.challengeRetry}</div>}
+        </div>
+      )}
+    </div>
   );
 }
 

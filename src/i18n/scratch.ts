@@ -41,6 +41,12 @@ export type ScratchText = {
   showCategory: string;
   showBlock: string;
   resetPrefs: string;
+  challengesTitle: string;
+  challengeHint: string;
+  challengeDone: string;
+  challengeRetry: string;
+  challengeNone: string;
+  challenges: Record<string, { title: string; goal: string }>;
 };
 
 const CS: ScratchText = {
@@ -128,6 +134,16 @@ const CS: ScratchText = {
   showCategory: "Ukázat celou kategorii",
   showBlock: "Ukázat blok",
   resetPrefs: "Vrátit výchozí",
+  challengesTitle: "Výzvy",
+  challengeHint: "Vyber výzvu, sestav skript a stiskni vlajku.",
+  challengeDone: "Splněno, paráda!",
+  challengeRetry: "Ještě to nevyšlo, zkus to znovu.",
+  challengeNone: "Bez výzvy",
+  challenges: {
+    square: { title: "Nakresli čtverec", goal: "Kočka musí nakreslit uzavřený tvar, třeba čtverec." },
+    edge: { title: "Dojdi na okraj", goal: "Dojdi kočkou až k pravému okraji jeviště." },
+    lines: { title: "Čárový maraton", goal: "Nakresli aspoň 12 čar." },
+  },
 };
 
 const EN: ScratchText = {
@@ -215,6 +231,16 @@ const EN: ScratchText = {
   showCategory: "Show whole category",
   showBlock: "Show block",
   resetPrefs: "Reset to default",
+  challengesTitle: "Challenges",
+  challengeHint: "Pick a challenge, build a script and press the flag.",
+  challengeDone: "Done, nice one!",
+  challengeRetry: "Not quite yet, try again.",
+  challengeNone: "No challenge",
+  challenges: {
+    square: { title: "Draw a square", goal: "Make the cat draw a closed shape, for example a square." },
+    edge: { title: "Reach the edge", goal: "Walk the cat all the way to the right edge of the stage." },
+    lines: { title: "Line marathon", goal: "Draw at least 12 lines." },
+  },
 };
 
 const TEXT = withFallbacks({ cs: CS, en: EN, de: EN, ru: EN });
