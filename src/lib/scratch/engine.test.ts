@@ -7,6 +7,7 @@ import {
   SPECS,
   createRuntime,
   insertBlock,
+  isAnimating,
   isRunning,
   makeBlock,
   moveBlock,
@@ -14,6 +15,7 @@ import {
   removeBlock,
   sanitizeBlocks,
   scriptsOf,
+  stopRuntime,
   tick,
   type Block,
   type Runtime,
@@ -33,8 +35,8 @@ function script(...blocks: Block[]): Block[] {
   return [blk("start"), ...blocks];
 }
 
-test("nabídka má přesně 26 bloků a každý má definici", () => {
-  assert.equal(BLOCK_TYPES.length, 26);
+test("nabídka má přesně 31 bloků a každý má definici", () => {
+  assert.equal(BLOCK_TYPES.length, 31);
   for (const t of BLOCK_TYPES) assert.ok(SPECS[t], `chybí definice pro ${t}`);
 });
 
@@ -89,6 +91,58 @@ test("režim krok po kroku: další příkaz počká stepDelay milisekund", () =
   assert.equal(rt.sprite.x, 10);
   while (rt.time < 1100) tick(rt, 16);
   assert.equal(rt.sprite.x, 20);
+});
+
+test("otočení dokola za čas dojede na cílový úhel a zůstane v rozsahu", () => {
+  const rt = createRuntime(script(blk("spin", { deg: 720, secs: 1 })));
+  for (let i = 0; i < 30; i++) tick(rt, 16);
+  assert.ok(isRunning(rt), "uprostřed přechodu skript ještě běží");
+  assert.notEqual(normDir(rt.sprite.dir), 90, "uprostřed přechodu se úhel mění");
+  runAll(rt);
+  assert.equal(normDir(rt.sprite.dir), normDir(90 + 720));
+});
+
+test("skok zvedne kočku do výšky a na konci dopadne ve stejném kostýmu", () => {
+  const rt = createRuntime(script(blk("costume", { costume: 2 }), blk("jump", { height: 80 })));
+  let peak = 0;
+  let airPose = -1;
+  for (let i = 0; i < 1000 && isRunning(rt); i++) {
+    tick(rt, 16);
+    peak = Math.max(peak, rt.sprite.lift);
+    if (rt.sprite.lift > 40) airPose = rt.sprite.pose;
+  }
+  assert.ok(peak > 75 && peak <= 80, `výška skoku ${peak}`);
+  assert.equal(airPose, 2, "ve vzduchu je kostým skoku");
+  assert.equal(rt.sprite.lift, 0);
+  assert.equal(rt.sprite.pose, 1);
+});
+
+test("zprůhlednění a zvětšení se plynule dojedou na cíl", () => {
+  const rt = createRuntime(script(blk("fade", { transparency: 60, secs: 0.5 }), blk("grow", { percent: 250, secs: 0.5 })));
+  runAll(rt);
+  assert.equal(rt.sprite.ghost, 60);
+  assert.equal(rt.sprite.size, 250);
+});
+
+test("třpytky vzniknou na místě kočky, doznívají a pak zmizí", () => {
+  const rt = createRuntime(script(blk("goto", { x: 40, y: 20 }), blk("sparkle", { count: 5 })));
+  runAll(rt);
+  assert.equal(rt.fx.length, 1);
+  assert.equal(rt.fx[0].count, 5);
+  assert.equal(rt.fx[0].x, 40);
+  assert.ok(isAnimating(rt), "dokud doznívají, editor pokračuje");
+  while (isAnimating(rt)) tick(rt, 16);
+  assert.equal(rt.fx.length, 0);
+});
+
+test("zastavení vynuluje skok a třpytky, aby kočka nezůstala ve vzduchu", () => {
+  const rt = createRuntime(script(blk("sparkle"), blk("jump", { height: 100 })));
+  for (let i = 0; i < 5; i++) tick(rt, 16);
+  assert.ok(rt.sprite.lift > 0);
+  assert.equal(rt.fx.length, 1);
+  stopRuntime(rt);
+  assert.equal(rt.sprite.lift, 0);
+  assert.equal(rt.fx.length, 0);
 });
 
 test("jdi na x, y a plynulé klouzání dojedou na cíl", () => {

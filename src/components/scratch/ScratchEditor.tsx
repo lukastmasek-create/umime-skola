@@ -30,6 +30,7 @@ import {
   createRuntime,
   findBlock,
   insertBlock,
+  isAnimating,
   isRunning,
   makeBlock,
   moveBlock,
@@ -39,13 +40,14 @@ import {
   updateArg,
   type Block,
   type BlockType,
+  type Burst,
   type Line,
   type Runtime,
   type Sprite,
   type Value,
 } from "@/lib/scratch/engine";
 import { checkChallenge, CHALLENGE_IDS, type ChallengeId } from "@/lib/scratch/challenges";
-import { BlockIcon, CatSprite, CategoryIcon, FlagIcon, GripIcon, SlidersIcon, StopIcon, TrashIcon } from "./ScratchIcons";
+import { BlockIcon, CatSprite, CategoryIcon, FlagIcon, GripIcon, SlidersIcon, SparkleBurst, StopIcon, TrashIcon } from "./ScratchIcons";
 import { BlockDocs } from "./BlockDocs";
 import { CAT_COLOR, INK, SKETCH_RADIUS } from "./theme";
 
@@ -151,11 +153,19 @@ function savePrefs(p: Prefs) {
   window.dispatchEvent(new Event(PREFS_EVENT));
 }
 
-type Snap = { sprite: Sprite; lines: Line[]; say: string | null; error: string | null; active: string | null };
+type Snap = {
+  sprite: Sprite;
+  lines: Line[];
+  fx: Burst[];
+  time: number;
+  say: string | null;
+  error: string | null;
+  active: string | null;
+};
 type SaveState = "idle" | "saving" | "saved" | "error";
 
 const EMPTY_SPRITE = createRuntime([]).sprite;
-const START_SNAP: Snap = { sprite: EMPTY_SPRITE, lines: [], say: null, error: null, active: null };
+const START_SNAP: Snap = { sprite: EMPTY_SPRITE, lines: [], fx: [], time: 0, say: null, error: null, active: null };
 
 // Blok, který se právě provádí (svítí v editoru). Předává se přes kontext, aby nebylo nutné táhnout props stromem.
 const ActiveBlockCtx = createContext<string | null>(null);
@@ -165,6 +175,9 @@ function takeSnap(rt: Runtime): Snap {
   return {
     sprite: { ...rt.sprite },
     lines: rt.lines.slice(),
+    // Po zastavení se třpytky nepřehrají dál, ať nezůstanou viset na plátně.
+    fx: rt.stopped ? [] : rt.fx.slice(),
+    time: rt.time,
     say: rt.sprite.say,
     error: rt.error,
     active: isRunning(rt) ? rt.active : null,
@@ -303,13 +316,13 @@ export function ScratchEditor({
       rt.stepDelay = speedRef.current.stepMs * speedRef.current.mult;
       let budget = Math.min(64, now - last) * speedRef.current.mult;
       last = now;
-      while (budget > 0 && isRunning(rt)) {
+      while (budget > 0 && isAnimating(rt)) {
         const dt = Math.min(SUB_STEP_MS, budget);
         tick(rt, dt);
         budget -= dt;
       }
       setSnap(takeSnap(rt));
-      if (!isRunning(rt)) {
+      if (!isAnimating(rt)) {
         setRunning(false);
         return;
       }
@@ -898,8 +911,15 @@ function FieldInput({
 }
 
 // Jeviště: čára z pera, kočka a bublina řeči. Souřadnice jsou v plátně 480 × 360, střed je uprostřed.
+// Kočka „dýchá“ (jemně se nadzvedává). Čistě kosmetika, respektuje nastavení „omezit pohyb“.
+const STAGE_CSS = `
+@keyframes scratch-breathe { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+.scratch-breathe { animation: scratch-breathe 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .scratch-breathe { animation: none; } }
+`;
+
 function Stage({ snap, label, moveMs }: { snap: Snap; label: string; moveMs: number }) {
-  const { sprite, lines, say } = snap;
+  const { sprite, lines, say, fx, time } = snap;
   const sx = sprite.x;
   const sy = -sprite.y;
   const bubbleW = say ? Math.min(220, 24 + say.length * 8) : 0;
@@ -910,6 +930,7 @@ function Stage({ snap, label, moveMs }: { snap: Snap; label: string; moveMs: num
           <circle cx="2" cy="2" r="1.1" fill={INK} opacity=".18" />
         </pattern>
       </defs>
+      <style>{STAGE_CSS}</style>
       <rect x={-STAGE_W / 2} y={-STAGE_H / 2} width={STAGE_W} height={STAGE_H} fill={PAPER} />
       <rect x={-STAGE_W / 2} y={-STAGE_H / 2} width={STAGE_W} height={STAGE_H} fill="url(#scratch-dots)" />
       <rect x={-BOUND_X} y={-BOUND_Y} width={BOUND_X * 2} height={BOUND_Y * 2} fill="none" stroke={INK} strokeOpacity=".12" strokeDasharray="4 6" />
@@ -924,10 +945,18 @@ function Stage({ snap, label, moveMs }: { snap: Snap; label: string; moveMs: num
         style={{ transform: `translate(${sx}px, ${sy}px)`, transitionDuration: `${moveMs}ms` }}
       >
         {sprite.visible && (
-          <g style={{ transform: `rotate(${sprite.dir - 90}deg) scale(${(sprite.size / 100) * 1.1})` }}>
-            <CatSprite pose={sprite.pose} />
+          // Vnější skupina řeší skok (nahoru a dolů), vnitřní otočení a velikost, nejvnitřnější dýchání.
+          <g style={{ transform: `translateY(${-sprite.lift}px)` }}>
+            <g style={{ transform: `rotate(${sprite.dir - 90}deg) scale(${(sprite.size / 100) * 1.1})`, opacity: 1 - sprite.ghost / 100 }}>
+              <g className="scratch-breathe">
+                <CatSprite pose={sprite.pose} />
+              </g>
+            </g>
           </g>
         )}
+        {fx.map((burst, i) => (
+          <SparkleBurst key={i} burst={burst} now={time} />
+        ))}
         {say && sprite.visible && (
           <g>
             <rect x={-bubbleW / 2} y={-78} width={bubbleW} height={30} rx={10} fill="#fff" stroke={INK} strokeWidth={2} />

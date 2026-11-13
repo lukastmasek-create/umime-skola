@@ -12,6 +12,11 @@ export const MAX_DEPTH = 6;
 export const MAX_CALL_DEPTH = 40;
 export const MAX_LINES = 4000;
 export const MAX_SAVE_CHARS = 200_000;
+// Třpytky: jak dlouho doznívá jeden výbuch a kolik jich může být najednou.
+export const FX_LIFE_MS = 900;
+export const MAX_BURSTS = 12;
+// Délka skoku kočky v ms.
+export const JUMP_MS = 500;
 
 export const PEN_COLORS = ["#16132b", "#ff8a6b", "#ffc933", "#7ee0b0", "#8fd0ff", "#c9a8ff"] as const;
 
@@ -45,6 +50,11 @@ export const BLOCK_TYPES = [
   "show",
   "hide",
   "until-edge",
+  "spin",
+  "jump",
+  "fade",
+  "grow",
+  "sparkle",
 ] as const;
 export type BlockType = (typeof BLOCK_TYPES)[number];
 
@@ -112,6 +122,11 @@ export const SPECS: Record<BlockType, BlockSpec> = {
   show: spec("looks"),
   hide: spec("looks"),
   "until-edge": spec("control", [], { container: true }),
+  spin: spec("motion", [num("deg", 360, -1080, 1080), num("secs", 1, 0, 10)]),
+  jump: spec("motion", [num("height", 60, 10, 120)]),
+  fade: spec("looks", [num("transparency", 100, 0, 100), num("secs", 1, 0, 10)]),
+  grow: spec("looks", [num("percent", 200, 10, 300), num("secs", 1, 0, 10)]),
+  sparkle: spec("looks", [num("count", 8, 3, 16)]),
 };
 
 export function isBlockType(v: unknown): v is BlockType {
@@ -188,9 +203,14 @@ export type Sprite = {
   pose: number; // index kostýmu 0 až COSTUME_COUNT - 1
   size: number; // velikost v procentech, 100 = normální
   visible: boolean;
+  ghost: number; // průhlednost v procentech, 0 = plně vidět, 100 = neviditelná
+  lift: number; // výška nad zemí v px (kvůli skoku)
 };
 
 export type Line = { x1: number; y1: number; x2: number; y2: number; color: string; size: number };
+
+// Výbuch třpytek: vzniká na místě kočky a během FX_LIFE_MS doznívá (vykresluje editor).
+export type Burst = { x: number; y: number; born: number; count: number; seed: number; color: string };
 
 type Proc = { params: string[]; body: Block[] };
 
@@ -199,6 +219,7 @@ type Thread = { gen: Generator<number, void, void>; wakeAt: number; done: boolea
 export type Runtime = {
   sprite: Sprite;
   lines: Line[];
+  fx: Burst[];
   vars: Scope;
   procs: Record<string, Proc>;
   threads: Thread[];
@@ -245,8 +266,9 @@ export function createRuntime(top: readonly Block[], rng: () => number = Math.ra
     procs[name] = { params: splitList(String(b.args.params ?? "")), body: b.body ?? [] };
   }
   const rt: Runtime = {
-    sprite: { x: 0, y: 0, dir: 90, penDown: false, penColor: PEN_COLORS[0], penSize: 2, say: null, pose: 0, size: 100, visible: true },
+    sprite: { x: 0, y: 0, dir: 90, penDown: false, penColor: PEN_COLORS[0], penSize: 2, say: null, pose: 0, size: 100, visible: true, ghost: 0, lift: 0 },
     lines: [],
+    fx: [],
     vars: Object.create(null),
     procs,
     threads: [],
@@ -269,15 +291,25 @@ export function isRunning(rt: Runtime): boolean {
   return !rt.stopped && rt.error === null && rt.threads.some((t) => !t.done);
 }
 
+// Běží, dokud jsou aktivní skripty, nebo ještě doznívají třpytky.
+export function isAnimating(rt: Runtime): boolean {
+  return isRunning(rt) || (!rt.stopped && rt.error === null && rt.fx.length > 0);
+}
+
 export function stopRuntime(rt: Runtime): void {
   rt.stopped = true;
   rt.threads = [];
+  rt.fx = [];
+  // Zastavená kočka nesmí zůstat ve vzduchu ani půl průhledná z přerušeného přechodu.
+  rt.sprite.lift = 0;
 }
 
 // Posune vlákna o dt milisekund. Každé vlákno běží nejvýš jednou za krok, smyčky se vzdají v každé iteraci.
 export function tick(rt: Runtime, dt: number): void {
-  if (rt.stopped || rt.threads.length === 0) return;
+  if (rt.stopped) return;
   rt.time += dt;
+  if (rt.fx.length > 0) rt.fx = rt.fx.filter((f) => rt.time < f.born + FX_LIFE_MS);
+  if (rt.threads.length === 0) return;
   for (const th of rt.threads) {
     if (rt.stopped) break;
     if (th.done || rt.time < th.wakeAt) continue;
@@ -306,6 +338,19 @@ function place(rt: Runtime, x: number, y: number): void {
   }
   s.x = nx;
   s.y = ny;
+}
+
+// Plynulý přechod: každý snímek zavolá apply s hodnotou 0 až 1 (smoothstep). Na konci vždy dojede na 1.
+function* tween(rt: Runtime, ms: number, apply: (t: number) => void): Generator<number, void, void> {
+  const start = rt.time;
+  while (ms > 0 && rt.time - start < ms) {
+    if (rt.stopped) return;
+    const k = clamp((rt.time - start) / ms, 0, 1);
+    apply(k * k * (3 - 2 * k));
+    yield 0;
+  }
+  if (rt.stopped) return;
+  apply(1);
 }
 
 function atEdge(s: Sprite): boolean {
@@ -479,6 +524,62 @@ function* runBlock(rt: Runtime, b: Block, scope: Scope, depth: number): Generato
         yield 0;
       }
       return;
+
+    case "spin": {
+      // Animované otočení: kočka se točí a dojede na cílový úhel.
+      const from = rt.sprite.dir;
+      const deg = argNum(rt, b, "deg", scope);
+      yield* tween(rt, argNum(rt, b, "secs", scope) * 1000, (t) => {
+        rt.sprite.dir = normDir(from + deg * t);
+      });
+      return;
+    }
+
+    case "jump": {
+      // Jeden skok: kočka vystoupá, je ve vzduchu v poloze „skáče“ a dopadne na zem ve stejném kostýmu jako předtím.
+      const h = argNum(rt, b, "height", scope);
+      const pose = rt.sprite.pose;
+      rt.sprite.pose = 2;
+      yield* tween(rt, JUMP_MS, (t) => {
+        rt.sprite.lift = h * Math.sin(Math.PI * t);
+      });
+      if (rt.stopped) return;
+      rt.sprite.lift = 0;
+      rt.sprite.pose = pose;
+      return;
+    }
+
+    case "fade": {
+      const from = rt.sprite.ghost;
+      const to = argNum(rt, b, "transparency", scope);
+      yield* tween(rt, argNum(rt, b, "secs", scope) * 1000, (t) => {
+        rt.sprite.ghost = from + (to - from) * t;
+      });
+      return;
+    }
+
+    case "grow": {
+      const from = rt.sprite.size;
+      const to = argNum(rt, b, "percent", scope);
+      yield* tween(rt, argNum(rt, b, "secs", scope) * 1000, (t) => {
+        rt.sprite.size = from + (to - from) * t;
+      });
+      return;
+    }
+
+    case "sparkle": {
+      // Třpytky se jen spustí a dál se animují v editoru, skript na ně nečeká.
+      const burst: Burst = {
+        x: rt.sprite.x,
+        y: rt.sprite.y,
+        born: rt.time,
+        count: Math.round(argNum(rt, b, "count", scope)),
+        seed: rt.rng(),
+        color: PEN_COLORS[Math.floor(rt.rng() * PEN_COLORS.length)],
+      };
+      rt.fx = [...rt.fx.slice(-(MAX_BURSTS - 1)), burst];
+      return;
+    }
 
     case "call": {
       const name = argText(rt, b, "name", scope).trim();

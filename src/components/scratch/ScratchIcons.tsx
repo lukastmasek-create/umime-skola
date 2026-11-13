@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { BlockType, Category } from "@/lib/scratch/engine";
+import { FX_LIFE_MS, type BlockType, type Burst, type Category } from "@/lib/scratch/engine";
 
 // Ručně kreslené SVG ikony ve stylu webu: tmavý obrys, ploché barevné výplně. Čistě dekorativní.
 const ink = "#16132b";
@@ -308,6 +308,50 @@ export function BlockIcon({ type, size = 18, className }: IconProps & { type: Bl
         </>
       );
       break;
+    case "spin":
+      // Mince, která se točí: vodorovná elipsa a šipka kolem dokola.
+      art = (
+        <>
+          <ellipse cx="12" cy="12" rx="8" ry="3.5" {...line} fill="#ffc933" />
+          <path d="M4 8a8.5 8.5 0 0116 0M20 16a8.5 8.5 0 01-16 0" {...line} strokeWidth={1.5} strokeDasharray="2 3" />
+        </>
+      );
+      break;
+    case "jump":
+      art = (
+        <>
+          <path d="M3 20h18" {...line} strokeWidth={1.5} />
+          <path d="M5 19c0-9 14-9 14 0" {...line} fill="#7ee0b0" />
+          <path d="M12 5v-2M10 4l2-2 2 2" {...line} strokeWidth={1.5} />
+        </>
+      );
+      break;
+    case "fade":
+      art = (
+        <>
+          <rect x="4" y="4" width="16" height="16" rx="3" {...line} strokeDasharray="2 3" />
+          <rect x="8" y="8" width="8" height="8" rx="2" {...line} fill="#c9a8ff" opacity={0.55} />
+        </>
+      );
+      break;
+    case "grow":
+      art = (
+        <>
+          <rect x="3" y="13" width="8" height="8" rx="2" {...line} fill="#7ee0b0" />
+          <rect x="11" y="4" width="10" height="10" rx="2" {...line} fill="#7ee0b0" />
+          <path d="M9 11l4-4" {...line} strokeWidth={1.5} />
+        </>
+      );
+      break;
+    case "sparkle":
+      art = (
+        <>
+          <path d="M11 3l1.9 6.1L19 11l-6.1 1.9L11 19l-1.9-6.1L3 11l6.1-1.9z" {...line} fill="#ffc933" />
+          <circle cx="19" cy="4.5" r="1.4" fill="#ff8a6b" />
+          <circle cx="5" cy="19" r="1.2" fill="#8fd0ff" />
+        </>
+      );
+      break;
     default:
       art = null;
   }
@@ -315,6 +359,46 @@ export function BlockIcon({ type, size = 18, className }: IconProps & { type: Bl
     <Svg size={size} className={className}>
       {art}
     </Svg>
+  );
+}
+
+// Pětiúhelníková hvězdička pro třpytky, střed v (0, 0).
+function starPath(outer: number, inner: number): string {
+  const pts: string[] = [];
+  for (let i = 0; i < 10; i++) {
+    const r = i % 2 === 0 ? outer : inner;
+    const a = (Math.PI * i) / 5 - Math.PI / 2;
+    pts.push(`${(Math.cos(a) * r).toFixed(2)} ${(Math.sin(a) * r).toFixed(2)}`);
+  }
+  return `M${pts.join("L")}Z`;
+}
+const STAR = starPath(9, 4);
+
+// Výbuch třpytek kolem místa, kde kočka stála. Hvězdičky se rozletí, zmenší a vyblednou.
+export function SparkleBurst({ burst, now }: { burst: Burst; now: number }) {
+  const p = Math.min(1, Math.max(0, (now - burst.born) / FX_LIFE_MS));
+  if (p >= 1) return null;
+  const spread = 10 + 56 * (1 - (1 - p) * (1 - p));
+  const scale = 1 - p * 0.5;
+  return (
+    <g transform={`translate(${burst.x} ${-burst.y})`} opacity={1 - p}>
+      {Array.from({ length: burst.count }, (_, k) => {
+        const a = (k / burst.count) * Math.PI * 2 + burst.seed * Math.PI * 2;
+        const dx = (Math.cos(a) * spread).toFixed(2);
+        const dy = (Math.sin(a) * spread).toFixed(2);
+        return (
+          <path
+            key={k}
+            d={STAR}
+            fill={burst.color}
+            stroke={ink}
+            strokeWidth={1.5}
+            strokeLinejoin="round"
+            transform={`translate(${dx} ${dy}) rotate(${(p * 180).toFixed(1)}) scale(${scale.toFixed(3)})`}
+          />
+        );
+      })}
+    </g>
   );
 }
 
