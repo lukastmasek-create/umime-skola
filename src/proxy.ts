@@ -36,6 +36,6 @@ export const config = {
   // a náhled odkazu se na jazykovou verzi nepřesměrovávají. Náhled leží v [locale] a Next ho pro
   // všechny jazyky servíruje pod zástupným segmentem „-“ (/-/opengraph-image.png).
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|sw.js|rewards/|brand/|avatars-3d/|dolls/|draco/|city/|pets/|cosmetics/|game-sprites/|game-models/|home/|scroll/|mestecko3d/|escape/|base/|farm/|room/|shop-models/|ikony/|icon.svg|apple-icon.png|manifest.webmanifest|-/).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|llms.txt|sw.js|rewards/|brand/|avatars-3d/|dolls/|draco/|city/|pets/|cosmetics/|game-sprites/|game-models/|home/|scroll/|mestecko3d/|escape/|base/|farm/|room/|shop-models/|ikony/|icon.svg|apple-icon.png|manifest.webmanifest|-/).*)",
   ],
 };
