@@ -13,6 +13,7 @@ import { HeaderScroll } from "@/components/HeaderScroll";
 import { PencilScrollbar } from "@/components/PencilScrollbar";
 import { GlobalShortcuts } from "@/components/GlobalShortcuts";
 import { SiteMotion } from "@/components/SiteMotion";
+import { OffscreenPause } from "@/components/OffscreenPause";
 import { ScrollFade } from "@/components/ScrollFade";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, locales, type Locale } from "@/i18n/config";
@@ -112,6 +113,7 @@ export default async function LocaleLayout({
         <EconomyTicker locale={locale as Locale} />
         <PencilScrollbar />
         <SiteMotion />
+        <OffscreenPause />
         <ScrollFade />
         <GlobalShortcuts locale={locale as Locale} dict={dict} />
         <main className="world flex-1">{children}</main>
