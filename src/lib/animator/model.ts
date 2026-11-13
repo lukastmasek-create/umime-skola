@@ -20,7 +20,32 @@ export type Pose = { x: number; y: number; rot: number; scale: number; opacity: 
 // Klíčový snímek: poloha v čase t (s). Easing říká, jak se plynule dojede z tohoto snímku k dalšímu.
 export type Key = Pose & { t: number; ease: Easing };
 
-export type AnimObject = { id: string; name: string; shape: ShapeId; color: string; keys: Key[] };
+// Efekty se počítají při vykreslení z okamžité polohy, takže je vidět i při úpravách, ne jen při přehrávání.
+export type Effects = {
+  trail: boolean; // stopa z předchozích poloh (ukazuje dráhu a rychlost)
+  glow: boolean; // záře kolem tvaru (zdroj světla)
+  shake: number; // třes 0 až 10 (kmitání, vibrace)
+  squash: number; // protažení a zmáčknutí podle rychlosti 0 až 1 (setrvačnost, pružnost)
+  shadow: boolean; // stín na zemi (výška nad zemí)
+};
+
+export const NO_EFFECTS: Effects = { trail: false, glow: false, shake: 0, squash: 0, shadow: false };
+
+// Hotové součástky: každá ukazuje jeden fyzikální jev a v editoru k němu patří vysvětlení.
+export const TEMPLATES = ["jump", "pendulum", "bounce", "spin"] as const;
+export type TemplateId = (typeof TEMPLATES)[number];
+
+export const TEMPLATE_SHAPE: Record<TemplateId, ShapeId> = { jump: "ball", pendulum: "star", bounce: "ball", spin: "sun" };
+
+export type AnimObject = {
+  id: string;
+  name: string;
+  shape: ShapeId;
+  color: string;
+  keys: Key[];
+  effects: Effects;
+  template?: TemplateId;
+};
 
 export type Project = { duration: number; objects: AnimObject[] };
 
@@ -136,7 +161,81 @@ export function keyAt(keys: readonly Key[], t: number): Key | null {
 // ---------- projekt ----------
 
 export function makeObject(id: string, name: string, shape: ShapeId, color: string): AnimObject {
-  return { id, name, shape, color, keys: [{ t: 0, ...REST_POSE, ease: "ease" }] };
+  return { id, name, shape, color, keys: [{ t: 0, ...REST_POSE, ease: "ease" }], effects: { ...NO_EFFECTS } };
+}
+
+// Hotová součástka: vytvoří postavu s klíči, které ukazují daný jev. Délka se přizpůsobí délce animace.
+export function templateObject(id: string, name: string, template: TemplateId, color: string, duration: number): AnimObject {
+  const d = duration;
+  const at = (f: number) => f * d;
+  const k = (f: number, pose: Partial<Pose>, ease: Easing): Key => ({ t: at(f), ...REST_POSE, ...pose, ease });
+  let keys: Key[];
+  switch (template) {
+    case "jump":
+      // Gravitace: nahoru se pohyb zpomaluje, dolů zrychluje.
+      keys = [k(0, { y: 110 }, "ease"), k(0.5, { y: -70 }, "ease"), k(1, { y: 110 }, "ease")];
+      break;
+    case "pendulum":
+      // Kyvadlo: na krajích se zastaví a uprostřed je nejrychlejší.
+      keys = [k(0, { rot: 35 }, "ease"), k(0.5, { rot: -35 }, "ease"), k(1, { rot: 35 }, "ease")];
+      break;
+    case "bounce":
+      // Odrazy: při každém dopadu se část energie ztratí, proto jsou odskoky nižší.
+      keys = [
+        k(0, { y: 110 }, "bounce"),
+        k(0.3, { y: -10 }, "bounce"),
+        k(0.55, { y: 110 }, "bounce"),
+        k(0.75, { y: 50 }, "bounce"),
+        k(1, { y: 110 }, "bounce"),
+      ];
+      break;
+    case "spin":
+      // Rovnoměrný pohyb: za stejný čas se otočí vždy o stejný úhel.
+      keys = [k(0, { rot: 0 }, "linear"), k(1, { rot: 360 }, "linear")];
+      break;
+  }
+  return { id, name, shape: TEMPLATE_SHAPE[template], color, keys, effects: { ...NO_EFFECTS }, template };
+}
+
+// Okamžitá rychlost v čase t (jednotky na sekundu), spočítaná z malého okolí.
+export function velocityAt(keys: readonly Key[], t: number): { vx: number; vy: number } {
+  const h = 0.02;
+  const t0 = Math.max(0, t - h);
+  const a = poseAt(keys, t0);
+  const b = poseAt(keys, t + h);
+  const dt = t + h - t0;
+  return { vx: (b.x - a.x) / dt, vy: (b.y - a.y) / dt };
+}
+
+// Protažení ve směru pohybu: rychlý pohyb objekt natáhne, pomalý nechá v klidu.
+export function squashScale(vx: number, vy: number, amount: number): { sx: number; sy: number } {
+  const k = Math.min(0.35, (amount * Math.hypot(vx, vy)) / 900);
+  if (Math.abs(vx) >= Math.abs(vy)) return { sx: 1 + k, sy: 1 - k * 0.6 };
+  return { sx: 1 - k * 0.6, sy: 1 + k };
+}
+
+// Třes je deterministické kmitání, aby se při každém vykreslení nehýbal náhodně.
+export function shakeOffset(t: number, amount: number): { dx: number; dy: number } {
+  if (amount <= 0) return { dx: 0, dy: 0 };
+  return { dx: Math.sin(t * 47) * amount * 0.8, dy: Math.cos(t * 53) * amount * 0.8 };
+}
+
+// Časy předchozích poloh pro stopu: vrací nejvýš n časů o krok dál od t.
+export function trailTimes(t: number, n = 6, step = 0.08): number[] {
+  const out: number[] = [];
+  for (let i = 1; i <= n; i++) {
+    const at = t - i * step;
+    if (at < 0) break;
+    out.push(at);
+  }
+  return out;
+}
+
+// Stín na zemi: čím výš je objekt, tím je stín menší a světlejší.
+export function shadowFor(y: number, scale: number): { rx: number; opacity: number } {
+  const height = Math.max(0, 118 - y);
+  const f = Math.max(0.3, 1 - height / 200);
+  return { rx: 34 * scale * f, opacity: 0.12 + 0.18 * f };
 }
 
 export function defaultProject(): Project {
@@ -153,6 +252,7 @@ export function defaultProject(): Project {
           { t: 2, x: 120, y: -60, rot: 0, scale: 1.3, opacity: 1, ease: "bounce" },
           { t: 4, x: -140, y: -60, rot: 0, scale: 1, opacity: 1, ease: "ease" },
         ],
+        effects: { ...NO_EFFECTS, shadow: true },
       },
     ],
   };
@@ -190,9 +290,30 @@ export function sanitizeProject(raw: unknown): Project | null {
         keys.push({ t, ...pose, ease });
       }
     }
-    objects.push({ id, name, shape, color, keys: keys.length > 0 ? sortedKeys(keys) : [{ t: 0, ...REST_POSE, ease: "ease" }] });
+    const effects = sanitizeEffects(o.effects);
+    const template = (TEMPLATES as readonly string[]).includes(o.template as string) ? (o.template as TemplateId) : undefined;
+    objects.push({
+      id,
+      name,
+      shape,
+      color,
+      keys: keys.length > 0 ? sortedKeys(keys) : [{ t: 0, ...REST_POSE, ease: "ease" }],
+      effects,
+      ...(template ? { template } : {}),
+    });
   }
   return { duration, objects };
+}
+
+function sanitizeEffects(raw: unknown): Effects {
+  const e = typeof raw === "object" && raw !== null ? (raw as Record<string, unknown>) : {};
+  return {
+    trail: e.trail === true,
+    glow: e.glow === true,
+    shake: Math.min(10, Math.max(0, num(e.shake, 0))),
+    squash: Math.min(1, Math.max(0, num(e.squash, 0))),
+    shadow: e.shadow === true,
+  };
 }
 
 function num(v: unknown, def: number): number {

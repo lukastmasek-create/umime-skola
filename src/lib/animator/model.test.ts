@@ -9,7 +9,13 @@ import {
   poseAt,
   removeKeyAt,
   sanitizeProject,
+  shadowFor,
+  shakeOffset,
+  squashScale,
+  templateObject,
+  trailTimes,
   upsertKey,
+  velocityAt,
   type Key,
 } from "./model.ts";
 
@@ -97,4 +103,55 @@ test("čištění zahodí neznámý tvar a seřadí klíče podle času", () => 
 test("čištění odmítne data, která nejsou projekt", () => {
   assert.equal(sanitizeProject(null), null);
   assert.equal(sanitizeProject({ duration: 4 }), null);
+});
+
+test("hotová součástka skok: na začátku a na konci je na zemi, uprostřed je nahoře", () => {
+  const o = templateObject("t1", "Míček", "jump", "#ffc933", 4);
+  assert.equal(o.template, "jump");
+  assert.equal(poseAt(o.keys, 0).y, 110);
+  assert.equal(poseAt(o.keys, 2).y, -70);
+  assert.equal(poseAt(o.keys, 4).y, 110);
+});
+
+test("rychlost je největší uprostřed pohybu a v bodě zvratu nulová", () => {
+  const keys = [k(0, 0, "linear"), k(2, 100, "linear")];
+  const v = velocityAt(keys, 1);
+  assert.ok(Math.abs(v.vx - 50) < 1e-6);
+  assert.equal(velocityAt([k(0, 5), k(2, 5)], 1).vx, 0);
+});
+
+test("protažení se dělá ve směru pohybu a klid nic nemění", () => {
+  const h = squashScale(400, 0, 1);
+  assert.ok(h.sx > 1 && h.sy < 1, "vodorovný pohyb natáhne ve vodorovném směru");
+  const v = squashScale(0, 400, 1);
+  assert.ok(v.sy > 1 && v.sx < 1, "svislý pohyb natáhne svisle");
+  assert.deepEqual(squashScale(0, 0, 1), { sx: 1, sy: 1 });
+  assert.deepEqual(squashScale(400, 0, 0), { sx: 1, sy: 1 });
+});
+
+test("třes je vypnutý při nule a deterministický", () => {
+  assert.deepEqual(shakeOffset(1.2, 0), { dx: 0, dy: 0 });
+  assert.deepEqual(shakeOffset(1.2, 5), shakeOffset(1.2, 5));
+});
+
+test("stopa nevede před začátek animace a stín je menší ve větší výšce", () => {
+  const tt = trailTimes(0.1, 6, 0.08);
+  assert.equal(tt.length, 1);
+  assert.ok(Math.abs(tt[0] - 0.02) < 1e-9);
+  assert.equal(trailTimes(2, 3, 0.1).length, 3);
+  assert.ok(shadowFor(-100, 1).rx < shadowFor(110, 1).rx);
+});
+
+test("čištění zachová efekty a neznámou součástku zahodí", () => {
+  const p = sanitizeProject({
+    duration: 4,
+    objects: [{ id: "a", shape: "ball", keys: [{ t: 0 }], effects: { trail: true, shake: 99, squash: -2, shadow: "ano" }, template: "neznámá" }],
+  });
+  assert.ok(p);
+  const e = p.objects[0].effects;
+  assert.equal(e.trail, true);
+  assert.equal(e.shake, 10);
+  assert.equal(e.squash, 0);
+  assert.equal(e.shadow, false);
+  assert.equal(p.objects[0].template, undefined);
 });

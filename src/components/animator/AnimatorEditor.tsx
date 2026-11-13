@@ -27,6 +27,18 @@ import {
   type Project,
 } from "@/lib/animator/model";
 import { ShapeArt, ShapeIcon } from "./AnimatorShapes";
+import {
+  TEMPLATE_SHAPE,
+  TEMPLATES,
+  shadowFor,
+  shakeOffset,
+  squashScale,
+  templateObject,
+  trailTimes,
+  velocityAt,
+  type Effects,
+  type TemplateId,
+} from "@/lib/animator/model";
 
 const STORE_KEY = "umime-animator-v1";
 const W = 480;
@@ -40,6 +52,13 @@ const SKETCH: CSSProperties = { borderRadius: SKETCH_RADIUS };
 const INK_STYLE = { color: INK } as const;
 
 const roundT = (t: number) => Math.round(t * 100) / 100;
+
+// Id nové postavy. Čas stačí, protože se volá jen při kliknutí.
+function newObjectId(): string {
+  return `o${Date.now().toString(36)}`;
+}
+
+const EFFECT_KEYS = ["trail", "glow", "shake", "squash", "shadow"] as const;
 
 const FALLBACK = defaultProject();
 
@@ -127,6 +146,16 @@ export function AnimatorEditor({ t }: { t: AnimatorText }) {
   const selected = project.objects.find((o) => o.id === selectedId) ?? project.objects[0] ?? null;
   const pose: Pose | null = selected ? poseAt(selected.keys, time) : null;
   const keyHere = selected ? keyAt(selected.keys, time) : null;
+  // Vysvětlení jen pro to, co je u vybrané postavy zapnuté.
+  const learnLines: { title: string; text: string }[] = [];
+  if (selected) {
+    for (const k of EFFECT_KEYS) {
+      const v = selected.effects[k];
+      const on = typeof v === "number" ? v > 0 : v;
+      if (on) learnLines.push({ title: t.effectNames[k], text: t.effectLearn[k] });
+    }
+    if (selected.template) learnLines.push({ title: t.templateNames[selected.template], text: t.templateLearn[selected.template] });
+  }
 
   function updateObject(id: string, fn: (o: AnimObject) => AnimObject) {
     setProject((p) => ({ ...p, objects: p.objects.map((o) => (o.id === id ? fn(o) : o)) }));
@@ -143,6 +172,22 @@ export function AnimatorEditor({ t }: { t: AnimatorText }) {
     });
   }
 
+  function setEffects(id: string, change: Partial<Effects>) {
+    updateObject(id, (o) => ({ ...o, effects: { ...o.effects, ...change } }));
+  }
+
+  // Hotová součástka: nová postava s klíči, které ukazují daný jev, a časem přizpůsobeným délce animace.
+  function addTemplate(tp: TemplateId) {
+    if (project.objects.length >= MAX_OBJECTS) return;
+    const n = project.objects.length;
+    const id = newObjectId();
+    const o = templateObject(id, t.templateNames[tp], tp, ANIM_COLORS[(n + 2) % ANIM_COLORS.length], project.duration);
+    setProject((p) => ({ ...p, objects: [...p.objects, o] }));
+    setSelectedId(id);
+    setTime(0);
+    setPlaying(false);
+  }
+
   function deleteKey() {
     if (!selected) return;
     const at = roundT(time);
@@ -153,7 +198,7 @@ export function AnimatorEditor({ t }: { t: AnimatorText }) {
     if (project.objects.length >= MAX_OBJECTS) return;
     const n = project.objects.length;
     const shape = ANIM_SHAPES[n % ANIM_SHAPES.length];
-    const id = `o${Date.now().toString(36)}`;
+    const id = newObjectId();
     const o = makeObject(id, t.shapes[shape], shape, ANIM_COLORS[n % ANIM_COLORS.length]);
     o.keys[0] = { ...o.keys[0], x: ((n % 5) - 2) * 70 };
     setProject((p) => ({ ...p, objects: [...p.objects, o] }));
@@ -252,6 +297,13 @@ export function AnimatorEditor({ t }: { t: AnimatorText }) {
             onPointerCancel={onStageUp}
           >
             <defs>
+              <filter id="animator-glow" x="-60%" y="-60%" width="220%" height="220%">
+                <feGaussianBlur stdDeviation="9" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
               <pattern id="animator-dots" width="24" height="24" patternUnits="userSpaceOnUse" x={-W / 2} y={-H / 2}>
                 <circle cx="2" cy="2" r="1.1" fill={INK} opacity=".16" />
               </pattern>
@@ -261,16 +313,40 @@ export function AnimatorEditor({ t }: { t: AnimatorText }) {
             {project.objects.map((o) => {
               const p = poseAt(o.keys, time);
               const isSel = o.id === selected?.id;
+              const v = velocityAt(o.keys, time);
+              const sq = squashScale(v.vx, v.vy, o.effects.squash);
+              const sh = shakeOffset(time, o.effects.shake);
+              const shadow = o.effects.shadow ? shadowFor(p.y, p.scale) : null;
               return (
-                <g
-                  key={o.id}
-                  transform={`translate(${p.x} ${p.y}) rotate(${p.rot}) scale(${p.scale})`}
-                  opacity={p.opacity}
-                  onPointerDown={(e) => onObjectDown(e, o)}
-                  style={{ cursor: "grab" }}
-                >
-                  {isSel && <circle r={52} fill="none" stroke="#ffc933" strokeWidth={5} strokeDasharray="6 8" />}
-                  <ShapeArt shape={o.shape} color={o.color} />
+                <g key={o.id}>
+                  {shadow && <ellipse cx={p.x} cy={118} rx={shadow.rx} ry={shadow.rx * 0.22} fill={INK} opacity={shadow.opacity} />}
+                  {o.effects.trail &&
+                    trailTimes(time).map((tt, i) => {
+                      const q = poseAt(o.keys, tt);
+                      return (
+                        <g
+                          key={i}
+                          transform={`translate(${q.x} ${q.y}) rotate(${q.rot}) scale(${q.scale * 0.9})`}
+                          opacity={(1 - (i + 1) / 7) * 0.35 * q.opacity}
+                        >
+                          <ShapeArt shape={o.shape} color={o.color} />
+                        </g>
+                      );
+                    })}
+                  <g
+                    transform={`translate(${p.x + sh.dx} ${p.y + sh.dy}) rotate(${p.rot}) scale(${p.scale * sq.sx} ${p.scale * sq.sy})`}
+                    opacity={p.opacity}
+                    onPointerDown={(e) => onObjectDown(e, o)}
+                    style={{ cursor: "grab" }}
+                  >
+                    {o.effects.glow && (
+                      <g filter="url(#animator-glow)" opacity={0.9}>
+                        <ShapeArt shape={o.shape} color={o.color} />
+                      </g>
+                    )}
+                    {isSel && <circle r={52} fill="none" stroke="#ffc933" strokeWidth={5} strokeDasharray="6 8" />}
+                    <ShapeArt shape={o.shape} color={o.color} />
+                  </g>
                 </g>
               );
             })}
@@ -359,6 +435,24 @@ export function AnimatorEditor({ t }: { t: AnimatorText }) {
           </div>
         </div>
 
+        <div className={PANEL} style={SKETCH}>
+          <p className="mb-3 font-bold" style={INK_STYLE}>{t.templatesTitle}</p>
+          <div className="flex flex-col gap-2">
+            {TEMPLATES.map((tp) => (
+              <button
+                key={tp}
+                type="button"
+                onClick={() => addTemplate(tp)}
+                disabled={project.objects.length >= MAX_OBJECTS}
+                className={`${BTN} flex items-center gap-2 text-left`}
+              >
+                <ShapeIcon shape={TEMPLATE_SHAPE[tp]} color={ANIM_COLORS[0]} size={28} />
+                {t.templateNames[tp]}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {selected && pose && (
           <div className={PANEL} style={SKETCH}>
             <div className="mb-3 flex items-center gap-2">
@@ -426,6 +520,40 @@ export function AnimatorEditor({ t }: { t: AnimatorText }) {
               })}
             </div>
 
+            <div className="mt-4 flex flex-col gap-3 border-t-2 border-dashed border-[#16132b]/30 pt-4">
+              <p className="font-bold" style={INK_STYLE}>{t.effectsTitle}</p>
+              <div className="flex flex-wrap gap-2">
+                {(["trail", "glow", "shadow"] as const).map((k) => (
+                  <button
+                    key={k}
+                    type="button"
+                    aria-pressed={selected.effects[k]}
+                    onClick={() => setEffects(selected.id, { [k]: !selected.effects[k] } as Partial<Effects>)}
+                    className={`${BTN} ${selected.effects[k] ? "bg-[#7ee0b0]" : ""}`}
+                  >
+                    {t.effectNames[k]}
+                  </button>
+                ))}
+              </div>
+              {(["shake", "squash"] as const).map((k) => (
+                <label key={k} className="flex flex-col gap-1 text-sm font-bold" style={INK_STYLE}>
+                  <span className="flex justify-between">
+                    <span>{t.effectNames[k]} · {t.intensity}</span>
+                    <span className="tabular-nums">{Number(selected.effects[k].toFixed(2))}</span>
+                  </span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={k === "shake" ? 10 : 1}
+                    step={k === "shake" ? 1 : 0.05}
+                    value={selected.effects[k]}
+                    onChange={(e) => setEffects(selected.id, { [k]: parseFloat(e.target.value) } as Partial<Effects>)}
+                    className="accent-[#c9a8ff]"
+                  />
+                </label>
+              ))}
+            </div>
+
             <div className="mt-4 flex flex-col gap-2 border-t-2 border-dashed border-[#16132b]/30 pt-4">
               <p className="text-xs" style={INK_STYLE}>{t.keyHint}</p>
               <label className="flex items-center justify-between gap-2 text-sm font-bold" style={INK_STYLE}>
@@ -451,6 +579,22 @@ export function AnimatorEditor({ t }: { t: AnimatorText }) {
             </div>
           </div>
         )}
+
+        <div className={PANEL} style={SKETCH}>
+          <p className="mb-2 font-bold" style={INK_STYLE}>{t.learnTitle}</p>
+          {learnLines.length === 0 ? (
+            <p className="text-sm" style={INK_STYLE}>{t.learnEmpty}</p>
+          ) : (
+            <ul className="flex flex-col gap-2 text-sm" style={INK_STYLE}>
+              {learnLines.map((line) => (
+                <li key={line.title} className="rounded-lg border-2 border-dashed border-[#16132b]/50 p-2">
+                  <span className="font-bold">{line.title}: </span>
+                  {line.text}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
         <div className={PANEL} style={SKETCH}>
           <p className="mb-2 font-bold" style={INK_STYLE}>{t.howTitle}</p>
