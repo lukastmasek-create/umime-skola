@@ -228,14 +228,14 @@ function AccountPanel({
       {account.degraded && <p className="mt-3 text-xs text-[var(--muted)]">{t.degraded}</p>}
 
       <div className="mt-4">
-        <div className="flex items-center justify-between gap-2 text-sm font-bold">
+        <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-sm font-bold">
           <span className="flex items-center gap-2">
             <span className="acct-bob">
               <Ico kind="level" />
             </span>
             {t.level} {account.level}
           </span>
-          <span className="text-xs font-semibold text-[var(--muted)]">{fill(t.toNext, toNext)}</span>
+          <span className="text-right text-xs font-semibold leading-snug text-[var(--muted)]">{fill(t.toNext, toNext)}</span>
         </div>
         <div
           className="mt-2 h-3 overflow-hidden rounded-full border-2 border-[var(--edge)] bg-[var(--surface-muted)]"
@@ -254,7 +254,7 @@ function AccountPanel({
         <Stat icon="user" label={t.avatars} value={`${ownedAvatars.length}/${AVATARS.length}`} />
       </dl>
 
-      <Section icon="user" label={t.avatars} sub={`· ${favAvatars.length > 0 ? t.quickFavorites : t.quickUnlocked} · ${t.unlockedCount} ${ownedAvatars.length}/${AVATARS.length}${lockedAvatars > 0 ? ` · ${fill(t.lockedCount, lockedAvatars)}` : ""}`} />
+      <Section icon="user" label={t.avatars} sub={[favAvatars.length > 0 ? t.quickFavorites : t.quickUnlocked, `${t.unlockedCount} ${ownedAvatars.length}/${AVATARS.length}`, lockedAvatars > 0 ? fill(t.lockedCount, lockedAvatars) : null].filter(Boolean).join(" · ")} />
       <div className="grid grid-cols-6 gap-1.5">
         {quickAvatars.map((a) => {
           const selected = a.id === account.avatar;
@@ -286,7 +286,7 @@ function AccountPanel({
         {fill(t.quickMore, AVATARS.length)} →
       </Link>
 
-      <Section icon="sparkle" label={t.titles} sub={`· ${favTitles.length > 0 ? t.quickFavorites : t.quickUnlocked} · ${t.unlockedCount} ${ownedTitles.length}/${TITLES.length}`} />
+      <Section icon="sparkle" label={t.titles} sub={[favTitles.length > 0 ? t.quickFavorites : t.quickUnlocked, `${t.unlockedCount} ${ownedTitles.length}/${TITLES.length}`].join(" · ")} />
       <div className="flex flex-wrap gap-1.5">
         {quickTitles.map((x) => {
           const selected = x.id === account.title;
@@ -374,22 +374,19 @@ function AccountPanel({
         </p>
       )}
 
-      <div className="mt-4 flex items-center gap-2 border-t-2 border-[var(--edge)] pt-3 text-sm font-bold">
-        <Link href={`/${locale}/profil`} onClick={onClose} className="btn-bouncy acct-cta flex-1 bg-[var(--brand-500)] px-3 py-1.5 text-white">
-          <SketchIcon kind="idcard" size={18} className="shrink-0" />
-          {t.fullProfile}
-        </Link>
-        <Link href={`/${locale}/nastaveni`} onClick={onClose} className="acct-link rounded-xl px-2 py-1.5 hover:bg-[var(--surface-muted)]">
-          <SketchIcon kind="gear" size={16} className="shrink-0" />
-          {t.settings}
+      <Link href={`/${locale}/profil`} onClick={onClose} className="btn-bouncy acct-cta mt-4 w-full bg-[var(--brand-500)] px-3 py-2 text-sm font-bold text-white">
+        {t.fullProfile}
+      </Link>
+      <div className="mt-2 grid grid-cols-2 gap-2 border-t-2 border-dashed border-[var(--edge)] pt-2 text-xs font-bold sm:text-sm">
+        <Link href={`/${locale}/nastaveni`} onClick={onClose} className="acct-link min-w-0 justify-center rounded-xl px-2 py-1.5 hover:bg-[var(--surface-muted)]">
+          <span className="truncate">{t.settings}</span>
         </Link>
         <button
           type="button"
           onClick={() => signOut({ callbackUrl: `/${locale}` })}
-          className="acct-link rounded-xl px-2 py-1.5 text-[var(--danger)] hover:bg-[var(--surface-muted)]"
+          className="acct-link min-w-0 justify-center rounded-xl px-2 py-1.5 text-[var(--danger)] hover:bg-[var(--surface-muted)]"
         >
-          <SketchIcon kind="logout" size={16} className="shrink-0" />
-          {t.logout}
+          <span className="truncate">{t.logout}</span>
         </button>
       </div>
     </div>

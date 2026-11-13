@@ -6175,12 +6175,13 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
   display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 16px 0 8px;
   font: 800 0.8rem/1.2 var(--font-heading); letter-spacing: 0.03em;
 }
-.acct-sub { font-weight: 600; color: var(--muted); }
+.acct-sub { flex-basis: 100%; font-size: 0.72rem; font-weight: 600; line-height: 1.35; color: var(--muted); }
 .acct-stat {
   display: grid; justify-items: center; gap: 4px; padding: 8px 4px 9px; border-radius: 14px;
   border: 2px solid var(--edge); background: var(--surface-muted);
 }
-.acct-stat dd, .acct-stat dt { margin: 0; }
+.acct-stat dd, .acct-stat dt { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.acct-stat dt { line-height: 1.2; }
 .acct-cta { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 12px; border: 2px solid #16132b; }
 .acct-link { display: inline-flex; align-items: center; gap: 4px; }
 @media (prefers-reduced-motion: reduce) {
