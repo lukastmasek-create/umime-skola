@@ -33,7 +33,8 @@ import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, type Locale } from "@/i18n/config";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { SITE_NAME, pageMetadata } from "@/lib/seo";
+import { SITE_NAME, SITE_URL, pageMetadata } from "@/lib/seo";
+import { CONTACT_EMAIL, INSTAGRAM_URL } from "@/i18n/legal";
 
 const TILE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
 // Sekce „Jak to funguje“ je archivovaná (skrytá). Pro návrat stačí přepnout na true.
@@ -61,8 +62,53 @@ export default async function Home({
   const subjectText = getSubjectText(locale as Locale);
   const heading = { fontFamily: "var(--font-heading)" };
 
+  // Strukturovaná data (schema.org): vyhledávače i AI modely z nich poznají, co web je a pro koho.
+  // Znak „<“ se escapuje, aby JSON nemohl předčasně ukončit <script>.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${SITE_URL}/#organization`,
+        name: SITE_NAME,
+        url: SITE_URL,
+        logo: `${SITE_URL}/brand/icon-512.png`,
+        sameAs: [INSTAGRAM_URL],
+        email: CONTACT_EMAIL,
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+        name: SITE_NAME,
+        url: SITE_URL,
+        inLanguage: locale,
+        description: h.about.lead,
+        publisher: { "@id": `${SITE_URL}/#organization` },
+      },
+      {
+        "@type": "WebApplication",
+        name: SITE_NAME,
+        url: `${SITE_URL}/${locale}`,
+        applicationCategory: "EducationalApplication",
+        operatingSystem: "Any",
+        inLanguage: locale,
+        description: h.about.lead,
+        educationalLevel: "Grades 1–9, entrance exams, final exams",
+        audience: [
+          { "@type": "EducationalAudience", educationalRole: "student" },
+          { "@type": "EducationalAudience", educationalRole: "parent" },
+          { "@type": "EducationalAudience", educationalRole: "teacher" },
+        ],
+      },
+    ],
+  };
+
   return (
     <div className="space-page">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
       {/* 1) Vesmír: hrdina a postup */}
       <div className="zone zone-space">
         <span className="px-stars" aria-hidden />
