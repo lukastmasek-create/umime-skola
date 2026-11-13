@@ -8,7 +8,7 @@ import { ALIEN_ROW, SpriteFrame, Wave } from "@/components/SpaceDecor";
 import { SectionWave } from "@/components/SectionWave";
 import { LazyOnView } from "@/components/LazyOnView";
 import { Nebula } from "@/components/SpaceDecor";
-import { LazyPlanet, LazySubjectGlobe, LazyTownLife } from "@/components/HomeLazy";
+import { LazySubjectGlobe, LazyTownLife } from "@/components/HomeLazy";
 import { GlobeSky } from "@/components/GlobeSky";
 import { HeroSky } from "@/components/HeroSky";
 import { HeroTitle } from "@/components/HeroTitle";
@@ -66,7 +66,7 @@ export default async function Home({
       {/* 1) Vesmír: hrdina a postup */}
       <div className="zone zone-space">
         <span className="px-stars" aria-hidden />
-        <HeroSky />
+        <HeroSky comet={false} ship={false} />
         <section className="gradient-hero relative">
           <div className="relative mx-auto flex max-w-6xl flex-col items-center px-4 pb-10 pt-12 sm:px-6 sm:pt-16 lg:pb-16 lg:pt-20">
             <div className="flex max-w-3xl flex-col items-center gap-6 text-center">
@@ -201,7 +201,6 @@ export default async function Home({
       {/* 5) Zpět do vesmíru: kategorie */}
       <section className="zone zone-space">
         <span className="px-stars" aria-hidden />
-        <LazyPlanet className="absolute -bottom-10 -left-12 -z-10 hidden lg:block" size={520} />
         <SpriteFrame
           sheet="aliens"
           col={1}

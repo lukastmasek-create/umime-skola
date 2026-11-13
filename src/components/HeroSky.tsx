@@ -102,7 +102,7 @@ type Meteor = { x: number; y: number; vx: number; vy: number; len: number; life:
 
 const TAU = Math.PI * 2;
 
-export function HeroSky() {
+export function HeroSky({ comet: withComet = true, ship: withShip = true }: { comet?: boolean; ship?: boolean } = {}) {
   const gl$ = useRef<HTMLCanvasElement>(null);
   const fx$ = useRef<HTMLCanvasElement>(null);
   const ship$ = useRef<HTMLCanvasElement>(null);
@@ -181,7 +181,7 @@ export function HeroSky() {
     const meteors: Meteor[] = [];
     let nextMeteor = 1.2;
     let comet: { x: number; y: number; vx: number; vy: number; boost: number; seed: number } | null = null;
-    let nextComet = 2;
+    let nextComet = withComet ? 2 : Infinity;
     // prachové částice: drag určuje, jak rychle se zpomalují (menší = delší stopa za kometou)
     const cdust: { x: number; y: number; vx: number; vy: number; life: number; max: number; size: number; warm: boolean; drag: number }[] = [];
     // stopa komety: pozice hlavy za poslední chvíli (s časem, kdy tam byla)
@@ -457,7 +457,7 @@ export function HeroSky() {
         tx = W * (0.5 + 0.36 * Math.sin(sec * 0.23));
         ty = H * (0.5 + 0.3 * Math.sin(sec * 0.37 + 1));
       }
-      if (!reduced) {
+      if (!reduced && withShip) {
         const k = mouse.inside && fine ? 7 : 3.2;
         ship.vx += ((tx - ship.x) * k - ship.vx * 3.1) * dt;
         ship.vy += ((ty - ship.y) * k - ship.vy * 3.1) * dt;
@@ -511,7 +511,7 @@ export function HeroSky() {
       sctx.globalCompositeOperation = "source-over";
       if (sparks.length > 420) sparks.splice(0, sparks.length - 420);
 
-      if (spriteReady) {
+      if (spriteReady && withShip) {
         // na telefonu je loď menší, aby nezakrývala text a tlačítka hero
         const scale = (W < 640 ? 0.26 : 0.4) + ship.boost * 0.05;
         const frame = Math.floor((reduced ? 0 : sec * 24) % SHIP_FRAMES);
@@ -559,7 +559,7 @@ export function HeroSky() {
       window.removeEventListener("pointerdown", onDown);
       host.removeEventListener("pointerleave", onLeave);
     };
-  }, []);
+  }, [withComet, withShip]);
 
   return (
     <>
