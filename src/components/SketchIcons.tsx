@@ -8,7 +8,8 @@ const C = { yellow: "#ffc933", coral: "#ff8a6b", blue: "#8fd0ff", mint: "#7ee0b0
 
 export type SketchIconKind =
   | "gamepad" | "people" | "trophy" | "gear" | "mail" | "shield" | "scroll" | "camera" | "info" | "star" | "pencil" | "sparkle"
-  | "town" | "courses" | "shop" | "study" | "extras" | "chevron" | "chevronUp" | "menu" | "close" | "user" | "rocket" | "home";
+  | "town" | "courses" | "shop" | "study" | "extras" | "chevron" | "chevronUp" | "menu" | "close" | "user" | "rocket" | "home"
+  | "logout" | "school" | "level" | "idcard" | "palette" | "lock" | "bolt" | "heart";
 
 export function SketchIcon({ kind, size = 24, className, style }: { kind: SketchIconKind; size?: number; className?: string; style?: CSSProperties }) {
   const common = {
@@ -241,6 +242,80 @@ export function SketchIcon({ kind, size = 24, className, style }: { kind: Sketch
       return (
         <svg {...common}>
           <path d="M12 2.5c.6 4.6 2.9 6.9 7.5 7.5-4.6.6-6.9 2.9-7.5 7.5-.6-4.6-2.9-6.9-7.5-7.5 4.6-.6 6.9-2.9 7.5-7.5z" fill={C.lilac} stroke={ink} strokeWidth="1.6" strokeLinejoin="round" />
+        </svg>
+      );
+    case "logout":
+      return (
+        <svg {...common}>
+          <g {...line}>
+            <path d="M10 4.5H5.5a1.5 1.5 0 00-1.5 1.5v12A1.5 1.5 0 005.5 19.5H10" fill={C.blue} />
+            <path d="M14 8l4 4-4 4M18 12H9.5" fill="none" />
+          </g>
+        </svg>
+      );
+    case "school":
+      return (
+        <svg {...common}>
+          <g {...line}>
+            <path d="M3 9.5L12 4l9 5.5-9 5.5z" fill={C.yellow} />
+            <path d="M6.5 11.8V16c0 1.4 2.5 2.6 5.5 2.6s5.5-1.2 5.5-2.6v-4.2" fill={C.paper} />
+            <path d="M20.5 9.5v5" fill="none" />
+            <circle cx="20.5" cy="16" r="1" fill={ink} />
+          </g>
+        </svg>
+      );
+    case "level":
+      return (
+        <svg {...common}>
+          <g {...line}>
+            <path d="M3.5 20.5V16h4.5v4.5z" fill={C.blue} />
+            <path d="M9.75 20.5V11.5h4.5v9z" fill={C.lilac} />
+            <path d="M16 20.5V6.5h4.5v14z" fill={C.coral} />
+            <path d="M3 20.5h18" fill="none" />
+          </g>
+        </svg>
+      );
+    case "idcard":
+      return (
+        <svg {...common}>
+          <g {...line}>
+            <rect x="3.5" y="5" width="17" height="14" rx="2.5" fill={C.paper} />
+            <circle cx="9" cy="11" r="2.2" fill={C.mint} />
+            <path d="M6.5 16.2c.6-1.3 1.4-1.9 2.5-1.9s1.9.6 2.5 1.9M14.5 10h3.5M14.5 13.5h2.5" fill="none" />
+          </g>
+        </svg>
+      );
+    case "palette":
+      return (
+        <svg {...common}>
+          <g {...line}>
+            <path d="M12 3.5c-4.7 0-8.5 3.6-8.5 8 0 3.2 2.6 5 5 5h1.5c1 0 1.5.7 1.2 1.7-.3 1 .3 1.8 1.3 1.8 4.7 0 8-3.6 8-8.2 0-4.8-3.8-8.3-8.5-8.3z" fill={C.yellow} />
+            <circle cx="7.5" cy="10.5" r="1.3" fill={C.coral} />
+            <circle cx="10.5" cy="7" r="1.3" fill={C.blue} />
+            <circle cx="15" cy="7.8" r="1.3" fill={C.mint} />
+          </g>
+        </svg>
+      );
+    case "lock":
+      return (
+        <svg {...common}>
+          <g {...line}>
+            <rect x="5" y="10.5" width="14" height="10" rx="2.2" fill={C.coral} />
+            <path d="M8 10.5V8a4 4 0 018 0v2.5" fill="none" />
+            <circle cx="12" cy="15.5" r="1.4" fill={ink} />
+          </g>
+        </svg>
+      );
+    case "bolt":
+      return (
+        <svg {...common}>
+          <path d="M13.5 2.5L5 13.5h6l-1.5 8 9-11.5h-6z" fill={C.yellow} stroke={ink} strokeWidth="1.6" strokeLinejoin="round" />
+        </svg>
+      );
+    case "heart":
+      return (
+        <svg {...common}>
+          <path d="M12 20s-7.5-4.5-7.5-10A4.2 4.2 0 0112 7.4 4.2 4.2 0 0119.5 10c0 5.5-7.5 10-7.5 10z" fill={C.coral} stroke={ink} strokeWidth="1.8" strokeLinejoin="round" />
         </svg>
       );
   }
