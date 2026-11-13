@@ -132,7 +132,11 @@ export function CodeExercises() {
                     </span>
                     <span className="block font-bold text-white">
                       {e.title}
-                      {e.kind === "doplni" && <span className="ml-2 rounded bg-[#ffc933] px-1.5 text-[10px] font-extrabold text-[#16132b]">DOPLŇ</span>}
+                      {e.kind && e.kind !== "napis" && (
+                        <span className="ml-2 rounded bg-[#ffc933] px-1.5 text-[10px] font-extrabold text-[#16132b]">
+                          {e.kind === "projekt" ? "PROJEKT" : "DOPLŇ"}
+                        </span>
+                      )}
                     </span>
                     <span className="mt-1 flex items-center gap-1 text-[#ffc933]" aria-label={`Obtížnost ${e.level} z 3`}>
                       {[1, 2, 3].map((n) => (
@@ -165,8 +169,10 @@ export function CodeExercises() {
                 <span className="rounded-md px-2 py-0.5 font-mono text-xs font-bold text-[#16132b]" style={{ background: LANG_COLOR[ex.lang] }}>
                   {LANG_LABEL[ex.lang]}
                 </span>
-                {ex.kind === "doplni" && (
-                  <span className="rounded-md border-2 border-[#16132b] bg-[#ffc933] px-2 py-0.5 text-xs font-extrabold text-[#16132b]">DOPLŇ</span>
+                {ex.kind && ex.kind !== "napis" && (
+                  <span className="rounded-md border-2 border-[#16132b] bg-[#ffc933] px-2 py-0.5 text-xs font-extrabold text-[#16132b]">
+                    {ex.kind === "projekt" ? "PROJEKT" : "DOPLŇ"}
+                  </span>
                 )}
                 <span className="text-xs text-[#9d96bf]">{ex.topic}</span>
               </div>

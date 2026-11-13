@@ -10,7 +10,7 @@ const STEP_MS = 2800;
 // Obarví jednoduché tokeny: tagy, texty v uvozovkách, komentáře a klíčová slova.
 const TOKEN = /(<!DOCTYPE[^>]*>|<\/?[a-zA-Z][\w-]*|"[^"]*"|\/\/.*|@media|\b(?:const|let|function|if|else|for|return)\b)/;
 
-function tokenize(code: string): ReactNode[] {
+export function tokenize(code: string): ReactNode[] {
   return code.split(TOKEN).map((part, i) => {
     if (i % 2 === 0) return part; // mezi tokeny
     const cls = part.startsWith("<")

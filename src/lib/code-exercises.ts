@@ -12,7 +12,7 @@ export type Check = {
 
 export type Exercise = {
   id: string;
-  kind?: "napis" | "doplni"; // napis = od nuly, doplni = kód je předepsaný, chybí jen místa ___
+  kind?: "napis" | "doplni" | "projekt"; // napis = od nuly, doplni = místa ___, projekt = celá malá aplikace
   lang: Lang;
   topic: string; // krátké téma, např. „Flexbox“
   level: 1 | 2 | 3; // 1 = začátek, 3 = výzva
@@ -660,6 +660,306 @@ nadpis.addEventListener("click", () => {
       { msg: "Už nezůstalo žádné ___", fn: (c) => !c.includes("___") },
       { msg: 'Je tam querySelector("h1")', re: /document\.querySelector\(\s*["']h1["']\s*\)/ },
       { msg: "Mění textContent na Ahoj!", re: /textContent\s*=\s*["']Ahoj!["']/ },
+    ],
+  },
+  // ---------- PROJEKTY (celá malá aplikace v jednom HTML souboru) ----------
+  {
+    id: "projekt-kalkulacka",
+    kind: "projekt",
+    lang: "html",
+    topic: "Kalkulačka",
+    level: 3,
+    title: "Kalkulačka",
+    task: "Postav kalkulačku: dvě čísla, výběr operace (+ - * /), tlačítko = a místo na výsledek. Funkce spocitej(a, b, op) musí řešit dělení nulou. Výsledek ukaž v prvku s id=\"vysledek\".",
+    starter: `<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Kalkulačka</title>
+</head>
+<body>
+  <!-- TODO: dva vstupy s id a, b, výběr operace id op, tlačítko a výsledek -->
+  <script>
+    // TODO: funkce spocitej(a, b, op) a klik na tlačítko
+  </script>
+</body>
+</html>`,
+    hint: "Čísla čti přes parseFloat(input.value). Operaci vyber přes switch (op). U dělení nejdřív zkontroluj, jestli b není 0.",
+    solution: `<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Kalkulačka</title>
+  <style>
+    body { font-family: sans-serif; padding: 24px; }
+    input, select, button { font-size: 18px; margin: 4px; }
+    input { width: 90px; }
+  </style>
+</head>
+<body>
+  <h1>Kalkulačka</h1>
+  <input type="number" id="a">
+  <select id="op">
+    <option value="+">+</option>
+    <option value="-">-</option>
+    <option value="*">×</option>
+    <option value="/">÷</option>
+  </select>
+  <input type="number" id="b">
+  <button id="spocitat">=</button>
+  <p>Výsledek: <span id="vysledek">?</span></p>
+  <script>
+    function spocitej(a, b, op) {
+      switch (op) {
+        case "+": return a + b;
+        case "-": return a - b;
+        case "*": return a * b;
+        case "/":
+          if (b === 0) return "nelze dělit nulou";
+          return a / b;
+        default:
+          return "neznámá operace";
+      }
+    }
+    const vysledek = document.getElementById("vysledek");
+    document.getElementById("spocitat").addEventListener("click", () => {
+      const a = parseFloat(document.getElementById("a").value);
+      const b = parseFloat(document.getElementById("b").value);
+      const op = document.getElementById("op").value;
+      vysledek.textContent = spocitej(a, b, op);
+    });
+  </script>
+</body>
+</html>`,
+    checks: [
+      { msg: 'Je tam vstup id="a" a id="b"', fn: (c) => /id="a"/.test(c) && /id="b"/.test(c) },
+      { msg: 'Je tam výběr operace id="op"', re: /<select[^>]*id="op"/ },
+      { msg: 'Je tam výsledek id="vysledek"', re: /id="vysledek"/ },
+      { msg: "Je funkce spocitej(a, b, op)", re: /function\s+spocitej\s*\(\s*a\s*,\s*b\s*,\s*op\s*\)/ },
+      { msg: "Operace se vybírají přes switch (nebo if)", re: /switch\s*\(\s*op\s*\)|if\s*\(\s*op\s*===/ },
+      { msg: "Dělení kontroluje nulu (b === 0)", re: /b\s*===\s*0/ },
+      { msg: "Čísla se čtou přes parseFloat", re: /parseFloat\(/ },
+      { msg: 'Tlačítko poslouchá "click"', re: /addEventListener\(\s*["']click["']/ },
+    ],
+  },
+  {
+    id: "projekt-formular",
+    kind: "projekt",
+    lang: "html",
+    topic: "Formulář s kontrolou",
+    level: 3,
+    title: "Registrace s kontrolou",
+    task: "Udělej registrační formulář s e-mailem a heslem. Při odeslání zabraň reloadu stránky (preventDefault). Zkontroluj, že e-mail obsahuje @ a heslo má aspoň 8 znaků. Chybu i úspěch ukaž v prvku s id=\"zprava\".",
+    starter: `<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Registrace</title>
+</head>
+<body>
+  <!-- TODO: form s id formular, pole mail, heslo a tlačítko -->
+  <p id="zprava"></p>
+  <script>
+    // TODO: poslouchej submit, zabraň reloadu a kontroluj hodnoty
+  </script>
+</body>
+</html>`,
+    hint: "Na formuláři poslouchej submit a zavolej e.preventDefault(). Hodnoty čti přes .value a .trim(). Délku hesla zjistíš přes heslo.length.",
+    solution: `<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Registrace</title>
+  <style>
+    body { font-family: sans-serif; padding: 24px; }
+    input, button { font-size: 16px; margin: 4px 0; display: block; }
+    .chyba { color: #d6291f; }
+    .ok { color: #17a864; }
+  </style>
+</head>
+<body>
+  <h1>Registrace</h1>
+  <form id="formular">
+    <label>E-mail <input type="email" id="mail"></label>
+    <label>Heslo <input type="password" id="heslo"></label>
+    <button type="submit">Registrovat</button>
+  </form>
+  <p id="zprava"></p>
+  <script>
+    const formular = document.getElementById("formular");
+    const zprava = document.getElementById("zprava");
+    formular.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const mail = document.getElementById("mail").value.trim();
+      const heslo = document.getElementById("heslo").value;
+      if (!mail.includes("@")) {
+        zprava.className = "chyba";
+        zprava.textContent = "E-mail musí obsahovat @.";
+      } else if (heslo.length < 8) {
+        zprava.className = "chyba";
+        zprava.textContent = "Heslo musí mít aspoň 8 znaků.";
+      } else {
+        zprava.className = "ok";
+        zprava.textContent = "Vítej, " + mail + "!";
+      }
+    });
+  </script>
+</body>
+</html>`,
+    checks: [
+      { msg: 'Je tam form id="formular"', re: /<form[^>]*id="formular"/ },
+      { msg: 'Je tam pole type="password" s id="heslo"', re: /<input[^>]*type="password"[^>]*id="heslo"|<input[^>]*id="heslo"[^>]*type="password"/ },
+      { msg: "Poslouchá submit", re: /addEventListener\(\s*["']submit["']/ },
+      { msg: "Volá preventDefault", re: /preventDefault\(\s*\)/ },
+      { msg: 'Kontroluje @ (includes("@"))', re: /includes\(\s*["']@["']\s*\)/ },
+      { msg: "Kontroluje délku hesla aspoň 8", re: /heslo\.length\s*(<|>=)\s*8|length\s*>=\s*8/ },
+      { msg: 'Výsledek jde do id="zprava"', re: /getElementById\(\s*["']zprava["']\s*\)[\s\S]*textContent/ },
+    ],
+  },
+  {
+    id: "projekt-kviz",
+    kind: "projekt",
+    lang: "html",
+    topic: "Kvíz",
+    level: 3,
+    title: "Kvíz s bodováním",
+    task: "Vytvoř kvíz se třemi otázkami. Otázky jsou v poli objektů. Po kliku na odpověď se připočte bod, pokud je správná, a pokračuje se další otázkou. Na konci ukaž text „Správně: X z 3“.",
+    starter: `<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Kvíz</title>
+</head>
+<body>
+  <!-- TODO: nadpis otázky, box pro tlačítka, místo na výsledek -->
+  <script>
+    // TODO: pole otázek, skóre, funkce, která vykreslí otázku
+  </script>
+</body>
+</html>`,
+    hint: "Otázky dej do const otazky = [ { text, moznosti, spravne }, ... ]. Tlačítka vytvářej přes createElement a přidávej přes appendChild. Porovnání s indexem je i === o.spravne.",
+    solution: `<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Kvíz</title>
+  <style>
+    body { font-family: sans-serif; padding: 24px; }
+    button { font-size: 16px; margin: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Kvíz</h1>
+  <div id="otazka"></div>
+  <div id="moznosti"></div>
+  <p id="vysledek"></p>
+  <script>
+    const otazky = [
+      { text: "Kolik je 2 + 2?", moznosti: ["3", "4", "5"], spravne: 1 },
+      { text: "Jak se zapisuje červená v CSS?", moznosti: ["rd", "red", "blue"], spravne: 1 },
+      { text: "Který tag je odstavec?", moznosti: ["h1", "p", "a"], spravne: 1 },
+    ];
+    let aktualni = 0;
+    let skore = 0;
+
+    function ukazOtazku() {
+      const o = otazky[aktualni];
+      document.getElementById("otazka").textContent = o.text;
+      const box = document.getElementById("moznosti");
+      box.innerHTML = "";
+      o.moznosti.forEach((m, i) => {
+        const btn = document.createElement("button");
+        btn.textContent = m;
+        btn.addEventListener("click", () => {
+          if (i === o.spravne) skore += 1;
+          aktualni++;
+          if (aktualni < otazky.length) {
+            ukazOtazku();
+          } else {
+            document.getElementById("otazka").textContent = "Konec!";
+            box.innerHTML = "";
+            document.getElementById("vysledek").textContent = "Správně: " + skore + " z " + otazky.length;
+          }
+        });
+        box.appendChild(btn);
+      });
+    }
+    ukazOtazku();
+  </script>
+</body>
+</html>`,
+    checks: [
+      { msg: "Otázky jsou v poli objektů", re: /const\s+otazky\s*=\s*\[\s*\{/ },
+      { msg: "Pole má aspoň 3 otázky", fn: (c) => (c.match(/text\s*:/g) ?? []).length >= 3 },
+      { msg: 'Tlačítka se vytvářejí přes createElement("button")', re: /createElement\(\s*["']button["']\s*\)/ },
+      { msg: "Tlačítka se přidávají přes appendChild", re: /appendChild\(/ },
+      { msg: "Správnou odpověď porovnává přes i === o.spravne", re: /i\s*===\s*o\.spravne/ },
+      { msg: "Skóre se zvyšuje (+= 1, ++ nebo podobně)", re: /skore\s*(\+=\s*1|\+\+)|skore\s*=\s*skore\s*\+\s*1/ },
+      { msg: 'Na konci je text „Správně: X z …“', re: /Správně:/ },
+    ],
+  },
+  {
+    id: "projekt-todo",
+    kind: "projekt",
+    lang: "html",
+    topic: "Seznam úkolů",
+    level: 3,
+    title: "To-do seznam",
+    task: "Vytvoř seznam úkolů: pole pro text, tlačítko Přidat a seznam ul. Prázdný úkol nepřidávej (trim). Nový úkol je li, který se po kliku na něj smaže. Po přidání vyprázdni pole.",
+    starter: `<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Úkoly</title>
+</head>
+<body>
+  <!-- TODO: input id novy, tlačítko Přidat, ul id seznam -->
+  <script>
+    // TODO: přidání úkolu, kontrola prázdného textu, mazání kliknutím
+  </script>
+</body>
+</html>`,
+    hint: "Text čti přes input.value.trim(). Prázdný text zastav přes return. Nový li vytvoř přes createElement('li') a přidej přes appendChild. Smazání je li.remove().",
+    solution: `<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Úkoly</title>
+  <style>
+    body { font-family: sans-serif; padding: 24px; }
+    li { cursor: pointer; margin: 4px 0; }
+    li:hover { text-decoration: line-through; }
+  </style>
+</head>
+<body>
+  <h1>Úkoly</h1>
+  <input type="text" id="novy" placeholder="Co máš za úkol?">
+  <button id="pridat">Přidat</button>
+  <ul id="seznam"></ul>
+  <script>
+    const input = document.getElementById("novy");
+    const seznam = document.getElementById("seznam");
+    document.getElementById("pridat").addEventListener("click", () => {
+      const text = input.value.trim();
+      if (text === "") return; // prázdný úkol nepřidáme
+      const li = document.createElement("li");
+      li.textContent = text;
+      li.addEventListener("click", () => li.remove());
+      seznam.appendChild(li);
+      input.value = "";
+    });
+  </script>
+</body>
+</html>`,
+    checks: [
+      { msg: 'Je tam input id="novy"', re: /<input[^>]*id="novy"/ },
+      { msg: 'Je tam ul id="seznam"', re: /<ul[^>]*id="seznam"/ },
+      { msg: "Kontroluje prázdný text přes trim()", re: /\.trim\(\)/ },
+      { msg: "Kontroluje prázdný text (=== \"\")", re: /===\s*["']["']/ },
+      { msg: 'Vytváří li přes createElement("li")', re: /createElement\(\s*["']li["']\s*\)/ },
+      { msg: "Přidává úkol přes appendChild", re: /appendChild\(/ },
+      { msg: "Smaže li přes remove()", re: /\.remove\(\)/ },
+      { msg: "Vyprazdňuje pole (input.value = \"\")", re: /input\.value\s*=\s*["']["']/ },
     ],
   },
 ];
