@@ -184,7 +184,7 @@ export function CodeExercises() {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border-2 border-[#35305f] bg-[#0f0d24] shadow-[6px_6px_0_#0a0818]">
+    <div className="sk-rough overflow-hidden rounded-2xl border-2 border-transparent bg-[#0f0d24] shadow-[6px_6px_0_#0a0818]">
       {/* Titulek okna */}
       <div className="flex items-center gap-3 border-b-2 border-[#35305f] bg-[#1b1838] px-3 py-2">
         <div className="flex gap-1.5" aria-hidden>

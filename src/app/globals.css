@@ -6253,3 +6253,48 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 .anim-idle * {
   animation-play-state: paused !important;
 }
+
+/* ===== Stránka Kód: ručně kreslený vzhled jako na úvodní stránce ===== */
+/* Okraj se vykreslí zvlášť (::before) a filtr .sk-rough ho rozvlní. Obsah zůstává ostrý. */
+.sk-rough { position: relative; }
+.sk-rough::before {
+  content: ""; position: absolute; inset: -1px; z-index: 3; pointer-events: none;
+  border-radius: inherit; border: 2px solid var(--sk-line, rgba(143, 208, 255, 0.5));
+  filter: url(#sk-rough-filter);
+}
+/* Panel sekce: tmavá karta s nakřivo posazeným čárkovaným druhým obrysem, jako načrtnutý papír */
+.code-shell {
+  position: relative; border-radius: 26px 30px 24px 32px / 30px 24px 32px 26px;
+  padding: 24px; background: linear-gradient(160deg, #101840, #0b1024 70%); color: #fff;
+  box-shadow: 8px 8px 0 rgba(8, 5, 30, 0.75), 0 30px 60px -30px rgba(0, 0, 0, 0.8);
+}
+.code-shell::after {
+  content: ""; position: absolute; inset: 7px -7px -7px 7px; z-index: -1; border-radius: inherit;
+  border: 2px dashed rgba(143, 208, 255, 0.28); transform: rotate(0.5deg);
+}
+.sk-tilt-l { rotate: -1.4deg; }
+.sk-tilt-r { rotate: 1.4deg; }
+.hs-stage .hs-card { border-radius: 18px 14px 20px 14px / 14px 20px 14px 18px; box-shadow: 5px 5px 0 rgba(8, 5, 30, 0.7), 0 0 28px rgba(124, 108, 255, 0.14); }
+/* Nadpis sekce s ručně kreslenou vlnovkou */
+.sk-underline { position: relative; display: inline-block; padding-bottom: 8px; }
+.sk-underline::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 8px;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 8' preserveAspectRatio='none'><path d='M1 5 Q11 0 21 4 T41 4 T61 4 T81 4 T101 4 T119 3' fill='none' stroke='%23ffc933' stroke-width='2.4' stroke-linecap='round'/></svg>") center / 100% 100% no-repeat;
+}
+
+.cs-files { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.cs-files li { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; background: rgba(255, 255, 255, 0.06); }
+.cs-files code { font-family: var(--font-mono, ui-monospace, monospace); font-size: 12px; color: var(--foreground); }
+.cs-dot { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid #16132b; }
+.cs-chip {
+  display: grid; place-items: center; width: 62px; height: 46px; border-radius: 12px 9px 13px 9px;
+  border: 2px solid #16132b; color: #16132b; font-weight: 900; font-size: 14px; box-shadow: 3px 3px 0 #16132b;
+}
+.cs-chip:nth-child(even) { rotate: 2deg; }
+.cs-chip:nth-child(odd) { rotate: -2deg; }
+.cs-mini { display: grid; gap: 6px; padding: 12px; border-radius: 10px; background: #f6f1e4; color: #16132b; }
+.cs-mini-h { font-weight: 800; font-size: 13px; }
+.cs-mini-p { height: 6px; border-radius: 99px; background: rgba(22, 19, 43, 0.25); }
+.cs-mini-p2 { width: 60%; }
+.cs-mini-btn { justify-self: start; padding: 3px 10px; border-radius: 7px; background: #ffc933; border: 2px solid #16132b; font-size: 11px; font-weight: 800; }
+.cs-ai { margin-top: 10px; }

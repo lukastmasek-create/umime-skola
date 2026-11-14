@@ -4,6 +4,8 @@ import { CodeWorkspace } from "@/components/CodeWorkspace";
 import { CodeCurriculum } from "@/components/CodeCurriculum";
 import { CodeLearn } from "@/components/CodeLearn";
 import { CodeAssistant } from "@/components/CodeAssistant";
+import { CodeHeroShowcase } from "@/components/CodeHeroShowcase";
+import { SectionWave } from "@/components/SectionWave";
 import { HeroSky } from "@/components/HeroSky";
 import { HeroTitle } from "@/components/HeroTitle";
 import { SketchIcon } from "@/components/SketchIcons";
@@ -21,6 +23,13 @@ export default async function CodePage({ params }: { params: Promise<{ locale: s
 
   return (
     <div className="space-page">
+      {/* Filtr, který rozvlní ručně kreslené okraje (.sk-rough) */}
+      <svg width="0" height="0" aria-hidden className="absolute">
+        <filter id="sk-rough-filter" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="4" result="n" />
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="3.5" />
+        </filter>
+      </svg>
       {/* Hrdina ve stylu úvodní stránky: vesmír, neonový nadpis a odznak */}
       <div className="zone zone-space">
         <span className="px-stars" aria-hidden />
@@ -59,30 +68,35 @@ export default async function CodePage({ params }: { params: Promise<{ locale: s
                 </a>
               </div>
             </div>
+            <div className="hero-in-right w-full">
+              <CodeHeroShowcase />
+            </div>
           </div>
         </section>
+        <SectionWave fill="#0d1430" glow="#8ea2ff" />
       </div>
 
       {/* Editor v kartě ve stylu lobby z úvodní stránky */}
       <section id="editor" className="zone zone-space scroll-mt-24">
         <div className="relative mx-auto max-w-5xl px-4 pb-16 sm:px-6">
-          <div className="lobby-shell">
+          <div className="code-shell sk-rough">
             <CodeLearn />
           </div>
         </div>
+        <SectionWave fill="#0d1430" glow="#ff8a6b" />
       </section>
 
       {/* Učivo: učební plán a rozbalovací sekce s detailním vysvětlením */}
       <section id="ucivo" className="zone zone-space scroll-mt-24">
         <div className="relative mx-auto max-w-6xl px-4 pb-16 sm:px-6">
-          <div className="lobby-shell">
+          <div className="code-shell sk-rough">
             <div className="mb-6 flex items-start gap-4">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border-2 border-[var(--sketch-ink)] bg-[#ffc933]">
                 <SketchIcon kind="study" size={26} />
               </span>
               <div>
                 <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl" style={{ fontFamily: "var(--font-heading)" }}>
-                  Učivo
+                  <span className="sk-underline">Učivo</span>
                 </h2>
                 <p className="mt-1 max-w-2xl text-sm text-[#cfc8e4]">
                   Nejdřív plán, od čeho začít. Pak sekce s vysvětlením, tabulkami a příklady. Každá sekce na konci odkazuje na cvičení, kterými si to procvičíš.
@@ -92,19 +106,20 @@ export default async function CodePage({ params }: { params: Promise<{ locale: s
             <CodeCurriculum />
           </div>
         </div>
+        <SectionWave fill="#0d1430" glow="#8fd0ff" />
       </section>
 
       {/* Cvičení: každé má zadání, nápovědu, řešení a automatickou kontrolu */}
       <section id="cviceni" className="zone zone-space scroll-mt-24">
         <div className="relative mx-auto max-w-6xl px-4 pb-16 sm:px-6">
-          <div className="lobby-shell">
+          <div className="code-shell sk-rough">
             <div className="mb-6 flex items-start gap-4">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border-2 border-[var(--sketch-ink)] bg-[#8fd0ff]">
                 <SketchIcon kind="pencil" size={26} />
               </span>
               <div>
                 <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl" style={{ fontFamily: "var(--font-heading)" }}>
-                  Cvičení
+                  <span className="sk-underline">Cvičení</span>
                 </h2>
                 <p className="mt-1 max-w-2xl text-sm text-[#cfc8e4]">
                   Vyber cvičení v průzkumníku vlevo, doplň chybějící místa přímo v kódu a klikni na Zkontrolovat (nebo Ctrl+Enter). Nemusíš psát celý kód. Když to nesedí, uvidíš seznam, co chybí. Nápověda i řešení jsou ve spodním panelu.

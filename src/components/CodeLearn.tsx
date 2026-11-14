@@ -79,7 +79,7 @@ export function CodeLearn() {
   }, []);
 
   return (
-    <div className="overflow-hidden rounded-2xl border-2 border-[var(--sketch-ink)] bg-[#1e1b3a] text-[#f6f1e4] shadow-[6px_6px_0_var(--shadow-ink)]">
+    <div className="sk-rough overflow-hidden rounded-2xl border-2 border-[var(--sketch-ink)] bg-[#1e1b3a] text-[#f6f1e4] shadow-[6px_6px_0_var(--shadow-ink)]">
       {/* Titulní lišta okna */}
       <div className="flex items-center gap-2 border-b border-[#35305f] bg-[#16132b] px-4 py-2.5">
         <span className="h-3 w-3 rounded-full bg-[#ff5a3c]" aria-hidden />
