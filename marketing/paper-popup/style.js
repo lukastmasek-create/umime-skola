@@ -198,6 +198,7 @@
           a.disc(C.cream, -3.4, 2.5, 0.5, 0.26); a.disc(C.cream, -2.95, 2.58, 0.4, 0.3); a.disc(C.cream, 3.3, 2.35, 0.55, 0.28); a.disc(C.cream, 3.85, 2.45, 0.38, 0.26);
           a.path(C.sage, (c) => { c.moveTo(-4.8, -0.1); c.lineTo(-4.8, 1.0); c.lineTo(-3.3, 2.0); c.lineTo(-2.2, 1.2); c.lineTo(-1.2, 1.7); c.lineTo(0.3, 0.9); c.lineTo(1.6, 1.8); c.lineTo(3.0, 1.0); c.lineTo(4.0, 1.5); c.lineTo(4.8, 0.9); c.lineTo(4.8, -0.1); });
           a.path(C.leaf, (c) => { c.moveTo(-4.8, -0.1); c.lineTo(-4.8, 0.45); c.lineTo(-3.6, 0.75); c.lineTo(-2.3, 0.4); c.lineTo(-0.8, 0.8); c.lineTo(0.8, 0.45); c.lineTo(2.6, 0.8); c.lineTo(4.0, 0.4); c.lineTo(4.8, 0.55); c.lineTo(4.8, -0.1); });
+          a.box(C.navy, -2.55, 2.38, 5.1, 0.84, 0.16); a.box(C.cream, -2.47, 2.46, 4.94, 0.68, 0.11); fit(a, 'Učíme se hrou', 0, 2.62, 0.52, 4.6, C.coral);
         } },
         { fold: 'box', on: 'world', span: [-4.6, -2.4], depth: 1.35, strap: 0.7, height: 2.3, art(a) { globe(a, -3.5); } },
         { fold: 'box', on: 'world', span: [2.5, 4.6], depth: 1.2, strap: 0.7, height: 2.3, art(a) {
@@ -206,10 +207,10 @@
           for (let k = 0; k < 12; k++) { const q = k * Math.PI / 6; a.line(C.navy, k % 3 ? 0.03 : 0.06, (c) => { c.moveTo(3.55 + 0.6 * Math.cos(q), 1.4 + 0.6 * Math.sin(q)); c.lineTo(3.55 + 0.72 * Math.cos(q), 1.4 + 0.72 * Math.sin(q)); }); }
           const c = a.ctx; c.save(); c.translate(3.55, 1.4); c.rotate(0.6); a.path(C.coral, (p) => { p.moveTo(-0.14, 0); p.lineTo(0, 0.55); p.lineTo(0.14, 0); }); a.path(C.navy, (p) => { p.moveTo(-0.14, 0); p.lineTo(0, -0.55); p.lineTo(0.14, 0); }); a.disc(C.yellow, 0, 0, 0.07); c.restore();
         } },
-        { id: 'stages', fold: 'v', z: 0.35, alpha: 58, size: [4.8, 3.0], art(a) {
-          a.box(C.navy, -2.4, -0.1, 4.8, 3.05, 0.2); a.box(C.cream, -2.32, -0.02, 4.64, 2.89, 0.14);
-          [['ZŠ', C.yellow, ICON.zs, -1.2, 2.45, 1.65], ['SŠ', C.leaf, ICON.ss, 1.2, 2.45, 1.65], ['Přijímačky', C.coral, ICON.test, -1.2, 1.1, 0.45], ['Maturita', C.navy, ICON.cap, 1.2, 1.1, 0.45]].forEach(([label, col, d, x, y, ly]) => {
-            a.disc(col, x, y, 0.42); a.disc(C.cream, x, y, 0.34); ico(a, d, x, y, 0.56, C.navy, 2); fit(a, label, x, ly, 0.38, 2.0, C.navy);
+        { id: 'stages', fold: 'v', z: 0.35, alpha: 58, size: [4.8, 2.8], art(a) {
+          a.box(C.navy, -2.4, -0.1, 4.8, 2.8, 0.2); a.box(C.cream, -2.32, -0.02, 4.64, 2.64, 0.14);
+          [['ZŠ', C.yellow, ICON.zs, -1.2, 2.3, 1.62], ['SŠ', C.leaf, ICON.ss, 1.2, 2.3, 1.62], ['Přijímačky', C.coral, ICON.test, -1.2, 1.15, 0.45], ['Maturita', C.navy, ICON.cap, 1.2, 1.15, 0.45]].forEach(([label, col, d, x, y, ly]) => {
+            a.disc(col, x, y, 0.38); a.disc(C.cream, x, y, 0.3); ico(a, d, x, y, 0.5, C.navy, 2); fit(a, label, x, ly, 0.38, 2.0, C.navy);
           });
         } },
         { fold: 'float', on: 'stages', side: -1, at: [-1.9, 2.8], gap: 0.3, sway: 1, area: [-3.7, 2.6, -1.3, 3.8], art(a) {
