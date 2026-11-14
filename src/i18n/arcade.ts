@@ -11,7 +11,7 @@ export type ArcadeText = {
   upgradeAction: string;
 };
 
-export type ArcadeSlug = Exclude<GameSlug, "space-invaders" | ClassicSlug>;
+export type ArcadeSlug = Exclude<GameSlug, "space-invaders" | "runner" | ClassicSlug>;
 
 const T: Record<ArcadeSlug, Record<Locale, ArcadeText>> = {
   "pac-man": {

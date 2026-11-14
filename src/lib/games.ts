@@ -23,7 +23,8 @@ export type GameSlug =
   | "pravda"
   | "piskvorky"
   | "bingo"
-  | "razeni";
+  | "razeni"
+  | "runner";
 
 // Klasické hry bez enginu: hrají se na otázkách kurzu (src/components/classic).
 export const CLASSIC_SLUGS = [
@@ -66,6 +67,7 @@ export const GAMES: GameInfo[] = [
   { slug: "mole", emoji: "🔨", name: "Lov krtků", kind: "action", available: true },
   { slug: "ninja", emoji: "🥷", name: "Stínový bojovník", kind: "action", available: true },
   { slug: "minesweeper", emoji: "💣", name: "Hledání min", kind: "action", available: true, isNew: true },
+  { slug: "runner", emoji: "🏃", name: "Matematický běh", kind: "action", available: true, isNew: true },
   { slug: "osmismerka", emoji: "🔤", name: "Osmisměrka", kind: "classic", available: true },
   { slug: "spojovani", emoji: "🔗", name: "Spojování", kind: "classic", available: true },
   { slug: "pexeso", emoji: "🃏", name: "Pexeso", kind: "classic", available: true },

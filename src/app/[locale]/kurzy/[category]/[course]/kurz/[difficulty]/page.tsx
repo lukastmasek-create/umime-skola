@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getCategoryBySlug } from "@/lib/taxonomy";
 import { ACTIVE_GAMES, runLength, type GameInfo } from "@/lib/games";
 import { canPlay } from "@/lib/game-fit";
+import { runnerAllowed } from "@/lib/runner";
 import { loadGameQuestions } from "@/lib/game-questions";
 import { getGameText } from "@/i18n/game";
 import { gameMeta, getGamesUiText } from "@/i18n/games-meta";
@@ -44,7 +45,7 @@ export default async function CourseGamesPage({
 
   const courseHref = `/${locale}/kurzy/${categorySlug}/${courseSlug}`;
   // Hry, které se z odpovědí kurzu nedají sestavit (osmisměrka z čísel apod.), se nenabízejí.
-  const playable = ACTIVE_GAMES.filter((g) => g.available && !g.setOnly && canPlay(g.slug, questions, difficulty));
+  const playable = ACTIVE_GAMES.filter((g) => g.available && !g.setOnly && canPlay(g.slug, questions, difficulty) && (g.slug !== "runner" || runnerAllowed(difficulty)));
   const hiddenSome = playable.length < ACTIVE_GAMES.filter((g) => g.available).length;
   const sections: { kind: GameInfo["kind"]; title: string; hint: string; icon: string }[] = [
     { kind: "action", title: ui.action, hint: ui.actionHint, icon: "🕹️" },
