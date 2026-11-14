@@ -9,7 +9,8 @@ const C = { yellow: "#ffc933", coral: "#ff8a6b", blue: "#8fd0ff", mint: "#7ee0b0
 export type SketchIconKind =
   | "gamepad" | "people" | "trophy" | "gear" | "mail" | "shield" | "scroll" | "camera" | "info" | "star" | "pencil" | "sparkle"
   | "town" | "courses" | "shop" | "study" | "extras" | "chevron" | "chevronUp" | "menu" | "close" | "user" | "rocket" | "home"
-  | "logout" | "school" | "level" | "idcard" | "palette" | "lock" | "bolt" | "heart";
+  | "logout" | "school" | "level" | "idcard" | "palette" | "lock" | "bolt" | "heart"
+  | "code" | "chat" | "folder" | "play";
 
 export function SketchIcon({ kind, size = 24, className, style }: { kind: SketchIconKind; size?: number; className?: string; style?: CSSProperties }) {
   const common = {
@@ -316,6 +317,43 @@ export function SketchIcon({ kind, size = 24, className, style }: { kind: Sketch
       return (
         <svg {...common}>
           <path d="M12 20s-7.5-4.5-7.5-10A4.2 4.2 0 0112 7.4 4.2 4.2 0 0119.5 10c0 5.5-7.5 10-7.5 10z" fill={C.coral} stroke={ink} strokeWidth="1.8" strokeLinejoin="round" />
+        </svg>
+      );
+    case "code":
+      return (
+        <svg {...common}>
+          <g {...line}>
+            <rect x="2.8" y="4.5" width="18.4" height="15" rx="3" fill={C.blue} />
+            <path d="M10 9.5L7.2 12l2.8 2.5M14 9.5l2.8 2.5-2.8 2.5" fill="none" />
+          </g>
+        </svg>
+      );
+    case "chat":
+      return (
+        <svg {...common}>
+          <g {...line}>
+            <path d="M4.5 5h15a1.8 1.8 0 011.8 1.8v8.4a1.8 1.8 0 01-1.8 1.8H11l-4.5 3.5V17h-2A1.8 1.8 0 012.7 15.2V6.8A1.8 1.8 0 014.5 5z" fill={C.mint} />
+            <circle cx="8.2" cy="11" r=".9" fill={ink} />
+            <circle cx="12" cy="11" r=".9" fill={ink} />
+            <circle cx="15.8" cy="11" r=".9" fill={ink} />
+          </g>
+        </svg>
+      );
+    case "folder":
+      return (
+        <svg {...common}>
+          <g {...line}>
+            <path d="M3 7.2A1.7 1.7 0 014.7 5.5h4.3l2 2.3h8.3A1.7 1.7 0 0121 9.5v8.3a1.7 1.7 0 01-1.7 1.7H4.7A1.7 1.7 0 013 17.8z" fill={C.yellow} />
+          </g>
+        </svg>
+      );
+    case "play":
+      return (
+        <svg {...common}>
+          <g {...line}>
+            <circle cx="12" cy="12" r="9" fill={C.coral} />
+            <path d="M10 8.2l6 3.8-6 3.8z" fill={C.paper} />
+          </g>
         </svg>
       );
   }

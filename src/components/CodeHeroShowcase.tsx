@@ -58,7 +58,7 @@ export function CodeHeroShowcase() {
           <ul className="cs-files">
             {FILES.map((f) => (
               <li key={f.name}>
-                <span className="cs-dot" style={{ background: f.color }} />
+                <SketchIcon kind="code" size={16} />
                 <code>{f.name}</code>
               </li>
             ))}
@@ -79,7 +79,7 @@ export function CodeHeroShowcase() {
             <path d="M0 156 C60 156 40 100 100 100" />
           </svg>
           <span className="hs-pill">
-            <span className="hs-pill-dot" /> Živý náhled
+            <SketchIcon kind="play" size={16} /> Živý náhled
           </span>
           <span className="hs-out" />
         </div>
@@ -93,7 +93,7 @@ export function CodeHeroShowcase() {
             <span className="cs-mini-btn">Klikni</span>
           </div>
           <div className="hs-row cs-ai">
-            <SketchIcon kind="sparkle" size={16} />
+            <SketchIcon kind="chat" size={18} />
             <span className="hs-label">AI pomocník ti poradí</span>
           </div>
         </div>
