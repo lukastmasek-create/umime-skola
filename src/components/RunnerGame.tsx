@@ -602,7 +602,7 @@ export function RunnerGame({
     }
 
     // Mraky nad drahou: pomalu plynou, takže dávají pocit hloubky
-    const cloudMat = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.95 });
+    const cloudMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95 });
     const clouds: { g: THREE.Group; i: number }[] = [];
     for (let i = 0; i < 16; i++) {
       const g = new THREE.Group();
