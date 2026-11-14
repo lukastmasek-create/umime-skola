@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080">
+<title>Učíme se hrou – TikTok promo</title>
+<style>
+:root{--bg:#f6f4ee;--ink:#16132b;--brand:#3248f0;--brand-700:#1a2aa3;--orange:#ff5a3c;--yellow:#ffc933;--green:#17a864;--blue:#29a3ff;--purple:#6250d6;--surface:#fff}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--bg)}
+body{font-family:"Comic Sans MS","Segoe Print","Trebuchet MS",system-ui,sans-serif;color:var(--ink)}
+#stage{position:absolute;inset:0;overflow:hidden;background:var(--bg)}
+#stage::before{content:"";position:absolute;inset:0;background-image:radial-gradient(#16132b1f 1.6px,transparent 1.8px);background-size:30px 30px}
+.scene{position:absolute;inset:0;opacity:0;will-change:transform,opacity}
+.abs{position:absolute}
+.title{position:absolute;left:0;right:0;text-align:center;font-size:92px;font-weight:900;line-height:1;letter-spacing:-1px;white-space:nowrap}
+.sk{border:7px solid var(--ink);border-radius:30px;background:var(--surface);box-shadow:14px 14px 0 var(--ink);filter:url(#rough)}
+.card{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;height:340px;font-size:50px;font-weight:900}
+.card img{width:170px;height:170px;object-fit:contain}
+.bubble{position:absolute;padding:34px 40px;font-size:52px;font-weight:800;line-height:1.2;border:7px solid var(--ink);border-radius:34px;box-shadow:12px 12px 0 var(--ink);background:#fff;filter:url(#rough)}
+.face{position:absolute;inset:0;border-radius:22px;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;border:6px solid var(--ink)}
+.memo{position:relative;height:200px;perspective:800px}
+.inner{position:absolute;inset:0;transform-style:preserve-3d}
+.face.b{background:var(--brand);color:#fff;font-size:100px;font-weight:900}
+.face.f{transform:rotateY(180deg);background:#fff}
+.face.f img{width:130px;height:130px;object-fit:contain}
+.spr{position:absolute;image-rendering:pixelated;background-repeat:no-repeat}
+.pop{position:absolute;font-size:72px;font-weight:900;color:var(--green);text-shadow:4px 4px 0 var(--ink)}
+.bar{position:absolute;left:60px;top:44px;width:960px;height:16px;border:5px solid var(--ink);border-radius:12px;background:#fff;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--orange)}
+.cta{position:absolute;left:50%;transform:translateX(-50%);padding:34px 70px;font-size:70px;font-weight:900;color:#fff;background:var(--brand);border:7px solid var(--ink);border-radius:999px;box-shadow:14px 14px 0 var(--ink);white-space:nowrap}
+.tag{position:absolute;left:0;right:0;text-align:center;font-size:84px;font-weight:900;line-height:1.1}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <filter id="rough"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" scale="8"/></filter>
+</svg>
+<div id="stage"><div class="bar"><i id="prog"></i></div></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const P = (t, a, b) => clamp((t - a) / (b - a));
+const E = x => 1 - Math.pow(1 - x, 3);
+const OB = x => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const typed = (s, p) => s.slice(0, Math.floor(s.length * p));
+const SITE = '../../public/';
+const SCENES = [];
+const DUR = 20;
+
+function scene(id, start, end, html, update) {
+  const el = document.createElement('div');
+  el.className = 'scene';
+  el.id = id;
+  el.innerHTML = html;
+  $('#stage').appendChild(el);
+  const s = { el, start, end, update: update || (() => {}), q: sel => el.querySelector(sel), qa: sel => [...el.querySelectorAll(sel)] };
+  SCENES.push(s);
+  return s;
+}
+
+/* Vykreslí jeden snímek ze sprite sheetu webu (stejné soubory a rozměry jako v game-sprites/*.json). */
+function spr(file, cw, ch, cols, col, row, scale, extra = '') {
+  const w = cw * scale, h = ch * scale;
+  return `class="spr" style="width:${w}px;height:${h}px;background-image:url(${SITE}${file});background-size:${cols * w}px auto;background-position:${-col * w}px ${-row * h}px;${extra}"`;
+}
+const sprStyle = (file, cw, ch, cols, col, row, scale) => {
+  const w = cw * scale, h = ch * scale;
+  return `background-image:url(${SITE}${file});background-size:${cols * w}px auto;background-position:${-col * w}px ${-row * h}px;width:${w}px;height:${h}px`;
+};
+const setSpr = (el, file, cw, ch, cols, col, row, scale) => { el.style.cssText += ';' + sprStyle(file, cw, ch, cols, col, row, scale); };
+
+const SUBJECTS = [
+  ['Čeština', 'cestina'], ['Matematika', 'matematika'], ['Angličtina', 'anglictina'],
+  ['Chemie', 'chemie'], ['Hudebka', 'hudebka'], ['Informatika', 'informatika']
+];
+const CARD_BG = ['#ffc933', '#7fd1ff', '#7ee0b0', '#ffb199', '#c8bcff', '#ffe27a'];
+
+/* ---------- S1: hook ---------- */
+scene('s1', 0, 2.6, `
+  <img class="abs" src="${SITE}home/oblak-1.webp" style="left:-60px;top:240px;width:460px">
+  <img class="abs" src="${SITE}home/oblak-2.webp" style="right:-80px;top:420px;width:420px">
+  <img class="abs" src="${SITE}home/anim/hory-predni.webp" style="left:0;bottom:0;width:1080px">
+  <img class="abs logo" src="${SITE}brand/logo.svg" style="left:70px;top:560px;width:940px">
+  <svg class="abs" style="left:0;top:0" width="1080" height="1920">
+    <path class="ul" pathLength="1" d="M120 720 Q400 688 620 716 T1000 704" fill="none" stroke="#ff5a3c" stroke-width="16" stroke-linecap="round"/>
+  </svg>
+  <div class="tag" id="tag1" style="top:1000px;font-size:84px"></div>
+  <img class="abs rocket" src="${SITE}home/raketa.webp" style="width:300px;left:-300px;top:1180px">
+`, (lt, s) => {
+  const logo = s.q('.logo');
+  logo.style.transform = `scale(${0.6 + 0.4 * OB(P(lt, 0, 0.7))})`;
+  logo.style.opacity = P(lt, 0, 0.3);
+  const ul = s.q('.ul');
+  ul.style.strokeDasharray = '1';
+  ul.style.strokeDashoffset = 1 - E(P(lt, 0.8, 1.6));
+  s.q('#tag1').textContent = typed('Objevte svět, kde učení baví', P(lt, 1.0, 2.4));
+  const r = s.q('.rocket');
+  const rp = E(P(lt, 0.1, 2.4));
+  r.style.transform = `translate(${rp * 1400}px, ${-rp * 700}px) rotate(-8deg)`;
+  s.qa('img[src*="oblak"]').forEach((c, i) => c.style.transform = `translateX(${Math.sin(lt * 0.8 + i) * 30}px)`);
+});
+
+/* ---------- S2: předměty (ikonky z webu) ---------- */
+scene('s2', 2.6, 5.6, `
+  <div class="title" style="top:200px">Kurzy pro každého</div>
+  <div class="abs" style="left:70px;top:460px;width:940px;display:grid;grid-template-columns:1fr 1fr;gap:44px">
+    ${SUBJECTS.map(([name, icon], i) => `<div class="sk card" style="background:${CARD_BG[i]}"><img src="${SITE}ikony/${icon}.svg" alt=""><span>${name}</span></div>`).join('')}
+  </div>
+  <img class="abs" src="${SITE}home/funkce-kurzy.webp" style="left:-40px;bottom:120px;width:300px;transform:rotate(-8deg)">
+`, (lt, s) => {
+  s.qa('.card').forEach((c, i) => {
+    const p = P(lt, 0.2 + i * 0.2, 0.7 + i * 0.2);
+    c.style.transform = `scale(${OB(p)})`;
+    c.style.opacity = p > 0 ? 1 : 0;
+  });
+});
+
+/* ---------- S3: kód ---------- */
+const CODE = '<h1>Ahoj, světe!</h1>\n<p>Tohle jsem napsal/a sám/a.</p>';
+scene('s3', 5.6, 9.2, `
+  <div class="title" style="top:170px;font-size:80px">Kód hned v prohlížeči</div>
+  <div class="sk abs" style="left:70px;top:380px;width:940px;height:600px;background:var(--ink);padding:44px;box-shadow:14px 14px 0 var(--brand)">
+    <pre class="code" style="color:#f6f1e4;font-family:'Courier New',monospace;font-size:50px;line-height:1.45;white-space:pre-wrap"></pre>
+  </div>
+  <div class="sk abs prev" style="left:70px;top:1080px;width:940px;height:600px;padding:60px">
+    <h1 style="color:var(--brand);font-size:120px;font-weight:900;line-height:1">Ahoj, světe!</h1>
+    <p style="font-size:56px;margin-top:30px;font-weight:700">Tohle jsem napsal/a sám/a.</p>
+    <div class="cta" style="position:relative;left:auto;transform:none;margin-top:50px;display:inline-block;font-size:56px;padding:26px 56px">Hotovo</div>
+  </div>
+  <img class="abs" src="${SITE}ikony/informatika.svg" style="right:40px;top:1700px;width:240px">
+`, (lt, s) => {
+  s.q('.code').textContent = typed(CODE, P(lt, 0.6, 3.2));
+  const p = P(lt, 3.3, 3.9);
+  s.q('.prev').style.transform = `scale(${0.85 + 0.15 * OB(p)})`;
+  s.q('.prev').style.opacity = p;
+});
+
+/* ---------- S4: AI doučovač + foto → pexeso ---------- */
+const PAIRS = ['cestina', 'matematika', 'anglictina', 'chemie', 'hudebka', 'informatika'];
+const memoCards = [...PAIRS, ...PAIRS].map((icon, i) => `
+  <div class="memo"><div class="inner">
+    <div class="face b">?</div>
+    <div class="face f"><img src="${SITE}ikony/${icon}.svg" alt=""></div>
+  </div></div>`).join('');
+scene('s4', 9.2, 12.6, `
+  <div class="title" style="top:150px">AI doučovač</div>
+  <div class="sk abs photo" style="left:70px;top:340px;width:430px;height:330px;overflow:hidden;background:linear-gradient(#ffd98a,#ffb07a)">
+    <img src="${SITE}home/hory.webp" style="position:absolute;left:0;bottom:0;width:100%">
+  </div>
+  <div class="bubble" style="right:70px;top:380px;width:500px;background:#ffc933">Udělej z téhle fotky hru!</div>
+  <div class="bubble ai" style="left:70px;top:720px;width:820px;min-height:150px;background:#fff;opacity:0"><span class="dots" style="font-size:52px;letter-spacing:6px;opacity:0">...</span><span class="ait"></span></div>
+  <div class="abs" style="left:70px;top:1000px;width:940px;display:grid;grid-template-columns:repeat(4,1fr);gap:26px">${memoCards}</div>
+`, (lt, s) => {
+  const ph = P(lt, 0.1, 0.6);
+  s.q('.photo').style.transform = `scale(${OB(ph)})`;
+  s.q('.photo').style.opacity = ph;
+  const b = s.q('.bubble:not(.ai)');
+  b.style.transform = `translateX(${(1 - E(P(lt, 0.8, 1.1))) * 300}px)`;
+  b.style.opacity = P(lt, 0.8, 1.0);
+  s.q('.ai').style.opacity = P(lt, 1.6, 1.8);
+  s.q('.dots').style.opacity = lt > 1.8 && lt < 2.5 ? 1 : 0;
+  s.q('.ait').textContent = typed('Hotovo! Pexeso z 12 pojmů. Hrajem?', P(lt, 2.5, 3.4));
+  s.qa('.inner').forEach((c, i) => {
+    const p = P(lt, 2.3 + i * 0.06, 2.6 + i * 0.06);
+    c.style.transform = `rotateY(${180 * E(p)}deg)`;
+  });
+});
+
+/* ---------- G1: Lov krtků (sprity: krtek, dira, kladivo, bum) ---------- */
+const HOLES = [[270,760],[540,760],[810,760],[270,1000],[540,1000],[810,1000],[270,1240],[540,1240],[810,1240]];
+const holesHTML = HOLES.map(([x, y]) => `<img class="abs" src="${SITE}game-sprites/mole/dira.webp" style="left:${x - 128}px;top:${y - 52}px;width:256px">`).join('');
+scene('g1', 12.6, 14.0, `
+  <div class="title" style="top:150px;font-size:110px">Lov krtků</div>
+  <div class="abs" style="left:60px;top:560px;width:960px;height:900px;border-radius:200px 200px 60px 60px;background:#c98b57;border:7px solid var(--ink);box-shadow:14px 14px 0 var(--ink);filter:url(#rough)"></div>
+  ${holesHTML}
+  <div class="spr" id="m1" style="left:${540 - 75}px;top:0"></div>
+  <div class="spr" id="m2" style="left:${270 - 75}px;top:0"></div>
+  <div class="spr" id="ham" style="transform-origin:50% 100%"></div>
+  <div class="spr" id="bum" style="width:0"></div>
+  <div class="pop" id="sc1" style="left:600px;top:700px;opacity:0">+10</div>
+`, (lt, s) => {
+  const hit1 = lt > 0.8;
+  const up1 = Math.sin(P(lt, 0.2, 0.8) * Math.PI);
+  const up2 = Math.sin(P(lt, 1.0, 1.4) * Math.PI);
+  const m1 = s.q('#m1'), m2 = s.q('#m2');
+  const frame1 = hit1 ? [1, 1] : [3, 0];
+  setSpr(m1, 'game-sprites/mole/krtek.webp', 224, 240, 4, frame1[0], frame1[1], 0.67);
+  m1.style.top = (1000 - 80 + (1 - up1) * 70 - (hit1 ? 30 : 0)) + 'px';
+  m1.style.opacity = up1 > 0 ? 1 : 0;
+  setSpr(m2, 'game-sprites/mole/krtek.webp', 224, 240, 4, 3, 0, 0.67);
+  m2.style.top = (760 - 80 + (1 - up2) * 70) + 'px';
+  m2.style.opacity = up2 > 0 ? 1 : 0;
+  const ham = s.q('#ham');
+  setSpr(ham, 'game-sprites/mole/kladivo.webp', 128, 224, 1, 0, 0, 0.6);
+  ham.style.left = (540 - 40) + 'px';
+  ham.style.top = (1000 - 220) + 'px';
+  const hp = P(lt, 0.45, 0.8);
+  ham.style.transform = `rotate(${-80 + 80 * E(hp)}deg)`;
+  ham.style.opacity = lt > 0.45 && lt < 0.95 ? 1 : 0;
+  const bum = s.q('#bum');
+  setSpr(bum, 'game-sprites/mole/bum.webp', 128, 128, 1, 0, 0, 1.1);
+  bum.style.left = (540 - 70) + 'px';
+  bum.style.top = (1000 - 70) + 'px';
+  bum.style.opacity = lt > 0.8 && lt < 1.1 ? 1 : 0;
+  const sc = s.q('#sc1');
+  sc.style.opacity = P(lt, 0.8, 0.9) * (1 - P(lt, 1.2, 1.4));
+  sc.style.transform = `translateY(${-P(lt, 0.8, 1.4) * 60}px)`;
+});
+
+/* ---------- G2: Obrana galaxie (sprity: mimozemšťané, loď, výbuch) ---------- */
+const ROWS = [[0, 0], [0, 1], [0, 3]];
+const invHTML = [];
+for (let r = 0; r < 3; r++) for (let c = 0; c < 5; c++) invHTML.push(`<div class="spr inv" data-r="${r}" data-c="${c}"></div>`);
+scene('g2', 14.0, 15.4, `
+  <div class="abs" style="inset:0;background:url(${SITE}game-sprites/space/pozadi_hvezdy_1.webp) center/cover;opacity:0.9"></div>
+  <div class="title" style="top:150px;font-size:96px;color:#fff;text-shadow:6px 6px 0 var(--ink)">Obrana galaxie</div>
+  ${invHTML.join('')}
+  <div class="spr" id="ship"></div>
+  <div class="spr" id="bul"></div>
+  <div class="spr" id="boom"></div>
+  <div class="pop" id="sc2" style="left:520px;top:780px;opacity:0">+10</div>
+`, (lt, s) => {
+  const frame = Math.floor(lt * 6) % 4;
+  s.qa('.inv').forEach(el => {
+    const r = +el.dataset.r, c = +el.dataset.c;
+    const [col, row] = ROWS[r];
+    const dead = r === 1 && c === 2 && lt > 0.9;
+    const dx = Math.sin(lt * 2.5) * 50;
+    setSpr(el, 'game-sprites/space/mimozemstane.webp', 128, 128, 8, col === 0 && r === 0 ? frame : (r === 1 ? frame : frame), row, 0.9);
+    el.style.left = (110 + c * 180 + dx) + 'px';
+    el.style.top = (580 + r * 150) + 'px';
+    el.style.opacity = dead ? 0 : 1;
+  });
+  const boom = s.q('#boom');
+  const bf = Math.min(7, Math.floor(P(lt, 0.9, 1.2) * 8));
+  if (lt > 0.9 && lt < 1.2) {
+    setSpr(boom, 'game-sprites/space/vybuch.webp', 64, 64, 8, bf, 0, 2.2);
+    boom.style.left = (110 + 2 * 180 + 40) + 'px';
+    boom.style.top = (580 + 150 + 0) + 'px';
+    boom.style.opacity = 1;
+  } else boom.style.opacity = 0;
+  const ship = s.q('#ship');
+  setSpr(ship, 'game-sprites/space/lod.webp', 96, 96, 7, 0, 0, 1.2);
+  ship.style.left = (540 - 58) + 'px';
+  ship.style.top = '1450px';
+  const bul = s.q('#bul');
+  setSpr(bul, 'game-sprites/space/strely.webp', 64, 64, 2, 0, 0, 1.4);
+  const bp = P(lt, 0.2, 0.9);
+  bul.style.left = (540 - 45) + 'px';
+  bul.style.top = (1400 - bp * 1000) + 'px';
+  bul.style.opacity = lt > 0.2 && lt < 0.95 ? 1 : 0;
+  const sc = s.q('#sc2');
+  sc.style.opacity = P(lt, 0.9, 1.0) * (1 - P(lt, 1.25, 1.4));
+  sc.style.transform = `translateY(${-P(lt, 0.9, 1.4) * 60}px)`;
+});
+
+/* ---------- G3: Labyrint duchů (sprity: pac-man, duchové, tečky) ---------- */
+const DOTS = [];
+for (let i = 0; i < 9; i++) DOTS.push(`<div class="spr dot" data-i="${i}" style="left:${150 + i * 100 - 22}px;top:${920 - 22}px"></div>`);
+scene('g3', 15.4, 16.8, `
+  <div class="title" style="top:150px;font-size:110px">Labyrint duchů</div>
+  <div class="sk abs" style="left:70px;top:640px;width:940px;height:560px;background:var(--brand-700);border-radius:40px;box-shadow:14px 14px 0 var(--ink)"></div>
+  ${DOTS.join('')}
+  <div class="spr" id="pac" style="top:856px"></div>
+  <div class="spr" id="gh" style="top:856px"></div>
+`, (lt, s) => {
+  const x = 130 + P(lt, 0.1, 1.3) * 820;
+  const mouth = [0, 1, 2, 1][Math.floor(lt * 12) % 4];
+  const pac = s.q('#pac');
+  setSpr(pac, 'game-sprites/pacman/pac.webp', 64, 64, 3, mouth, 0, 2);
+  pac.style.left = (x - 64) + 'px';
+  const gh = s.q('#gh');
+  setSpr(gh, 'game-sprites/pacman/duchove.webp', 64, 64, 8, Math.floor(lt * 6) % 2 === 0 ? 0 : 1, 0, 2);
+  gh.style.left = Math.max(40, x - 240) + 'px';
+  s.qa('.dot').forEach(d => {
+    const i = +d.dataset.i;
+    setSpr(d, 'game-sprites/pacman/tecky.webp', 32, 32, 3, 0, 0, 1.4);
+    d.style.opacity = (150 + i * 100) < x ? 0 : 1;
+  });
+});
+
+/* ---------- S6: Hry. Kurzy. AI. ---------- */
+scene('s6', 16.8, 18.6, `
+  <img class="abs" src="${SITE}home/funkce-hry.webp" style="left:40px;top:120px;width:300px">
+  <div class="abs" id="w0" style="left:0;right:0;top:380px;text-align:center;font-size:230px;font-weight:900;color:var(--ink)">Hry.</div>
+  <div class="abs" id="w1" style="left:0;right:0;top:700px;text-align:center;font-size:230px;font-weight:900;color:var(--brand)">Kurzy.</div>
+  <div class="abs" id="w2" style="left:0;right:0;top:1020px;text-align:center;font-size:230px;font-weight:900;color:var(--orange)">AI.</div>
+  <svg class="abs" style="left:0;top:0" width="1080" height="1920"><path class="ul2" pathLength="1" d="M160 1280 Q420 1250 560 1276 T930 1268" fill="none" stroke="#16132b" stroke-width="16" stroke-linecap="round"/></svg>
+  <img class="abs" src="${SITE}home/krok-1.webp" style="right:30px;top:1380px;width:260px">
+`, (lt, s) => {
+  ['#w0', '#w1', '#w2'].forEach((id, i) => {
+    const p = P(lt, 0.1 + i * 0.3, 0.6 + i * 0.3);
+    const el = s.q(id);
+    el.style.transform = `scale(${OB(p)})`;
+    el.style.opacity = p > 0 ? 1 : 0;
+  });
+  const ul = s.q('.ul2');
+  ul.style.strokeDasharray = '1';
+  ul.style.strokeDashoffset = 1 - E(P(lt, 1.1, 1.7));
+});
+
+/* ---------- S7: CTA + logo + maskot (kočka z webu) ---------- */
+scene('s7', 18.6, 20, `
+  <div class="abs" style="left:-120px;top:-120px;width:500px;height:500px;border-radius:50%;background:var(--yellow);border:7px solid var(--ink)"></div>
+  <div class="abs" style="right:-100px;bottom:200px;width:420px;height:420px;border-radius:50%;background:var(--blue);border:7px solid var(--ink)"></div>
+  <img class="abs logo" src="${SITE}brand/logo.svg" style="left:70px;top:560px;width:940px">
+  <div class="abs url" style="left:0;right:0;top:820px;text-align:center;font-size:120px;font-weight:900">ucimesehrou.org</div>
+  <div class="cta" style="top:1040px">Zkus to teď →</div>
+  <img class="abs cat" src="${SITE}ikony/cat-avatar.svg" style="left:60px;bottom:120px;width:280px">
+`, (lt, s) => {
+  const logo = s.q('.logo');
+  logo.style.transform = `scale(${0.8 + 0.2 * OB(P(lt, 0, 0.5))})`;
+  logo.style.opacity = P(lt, 0, 0.3);
+  const u = s.q('.url');
+  u.style.opacity = P(lt, 0.4, 0.8);
+  u.style.transform = `translateY(${(1 - E(P(lt, 0.4, 0.8))) * 40}px)`;
+  const c = s.q('.cta');
+  c.style.opacity = P(lt, 0.9, 1.2);
+  c.style.transform = `translateX(-50%) scale(${1 + 0.03 * Math.sin(lt * 8)})`;
+  s.q('.cat').style.transform = `translateY(${Math.sin(lt * 6) * 14}px) rotate(${Math.sin(lt * 4) * 3}deg)`;
+});
+
+/* ---------- render ---------- */
+window.__render = function (t) {
+  $('#prog').style.width = (clamp(t / DUR) * 100) + '%';
+  for (const s of SCENES) {
+    const active = t >= s.start && t < s.end;
+    const lt = t - s.start;
+    s.el.style.opacity = active ? 1 : 0;
+    if (active) {
+      s.el.style.transform = `translateX(${(1 - E(P(lt, 0, 0.25))) * 160}px)`;
+      s.update(lt, s);
+    }
+  }
+};
+window.__duration = DUR;
+window.__render(0);
+</script>
+</body>
+</html>
