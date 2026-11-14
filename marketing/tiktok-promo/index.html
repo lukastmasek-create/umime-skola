@@ -4,39 +4,52 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=1080">
 <title>Učíme se hrou – TikTok promo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800;900&family=Onest:wght@500;700;800&family=Pangolin&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f6f4ee;--ink:#16132b;--brand:#3248f0;--brand-700:#1a2aa3;--orange:#ff5a3c;--yellow:#ffc933;--green:#17a864;--blue:#29a3ff;--purple:#6250d6;--surface:#fff}
+:root{
+  --bg:#12102a; --text:#f6f1e4; --line:#f6f1e4; --shadow:#05040f; --surface:#1c1936; --surface2:#26224a; --edge:#6a63ad;
+  --brand:#5a6cff; --brand-600:#8d99ff; --orange:#ff7a5c; --yellow:#ffd24d; --green:#3ddc97; --blue:#5ab8ff; --purple:#9085e9;
+  --font-head:"Unbounded",system-ui,sans-serif; --font-body:"Onest",system-ui,sans-serif; --font-hero:"Pangolin","Onest",cursive;
+}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:1080px;height:1920px;overflow:hidden;background:var(--bg)}
-body{font-family:"Comic Sans MS","Segoe Print","Trebuchet MS",system-ui,sans-serif;color:var(--ink)}
-#stage{position:absolute;inset:0;overflow:hidden;background:var(--bg)}
-#stage::before{content:"";position:absolute;inset:0;background-image:radial-gradient(#16132b1f 1.6px,transparent 1.8px);background-size:30px 30px}
+body{font-family:var(--font-body);color:var(--text)}
+#stage{position:absolute;inset:0;overflow:hidden;background:
+  radial-gradient(900px 700px at 80% 12%, #2a2a7a55, transparent 70%),
+  radial-gradient(800px 800px at 10% 90%, #3a1f5c55, transparent 70%),
+  var(--bg)}
+#stage::before{content:"";position:absolute;inset:0;background-image:radial-gradient(#f6f1e422 1.4px,transparent 1.6px);background-size:34px 34px}
+#deco{position:absolute;inset:0;pointer-events:none}
+#deco img{position:absolute;opacity:.42;filter:drop-shadow(0 6px 0 #05040f)}
 .scene{position:absolute;inset:0;opacity:0;will-change:transform,opacity}
 .abs{position:absolute}
-.title{position:absolute;left:0;right:0;text-align:center;font-size:92px;font-weight:900;line-height:1;letter-spacing:-1px;white-space:nowrap}
-.sk{border:7px solid var(--ink);border-radius:30px;background:var(--surface);box-shadow:14px 14px 0 var(--ink);filter:url(#rough)}
-.card{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;height:340px;font-size:50px;font-weight:900}
-.card img{width:170px;height:170px;object-fit:contain}
-.bubble{position:absolute;padding:34px 40px;font-size:52px;font-weight:800;line-height:1.2;border:7px solid var(--ink);border-radius:34px;box-shadow:12px 12px 0 var(--ink);background:#fff;filter:url(#rough)}
-.face{position:absolute;inset:0;border-radius:22px;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;border:6px solid var(--ink)}
-.memo{position:relative;height:200px;perspective:800px}
+.title{position:absolute;left:0;right:0;text-align:center;font-family:var(--font-head);font-weight:900;font-size:76px;line-height:1;letter-spacing:-1px;white-space:nowrap}
+.sk{border:7px solid var(--line);border-radius:34px;background:var(--surface);box-shadow:16px 16px 0 var(--shadow);filter:url(#rough)}
+.card{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;height:430px;color:#12102a;font-family:var(--font-head);font-weight:800;font-size:56px}
+.card img{width:210px;height:210px;object-fit:contain}
+.bubble{position:absolute;padding:36px 44px;font-size:54px;font-weight:700;line-height:1.2;border:7px solid var(--line);border-radius:36px;box-shadow:14px 14px 0 var(--shadow);background:var(--surface);color:var(--text);filter:url(#rough)}
+.face{position:absolute;inset:0;border-radius:24px;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;border:6px solid var(--line)}
+.memo{position:relative;height:215px;perspective:900px}
 .inner{position:absolute;inset:0;transform-style:preserve-3d}
-.face.b{background:var(--brand);color:#fff;font-size:100px;font-weight:900}
-.face.f{transform:rotateY(180deg);background:#fff}
-.face.f img{width:130px;height:130px;object-fit:contain}
+.face.b{background:var(--brand);color:#fff;font-family:var(--font-head);font-size:110px;font-weight:900}
+.face.f{transform:rotateY(180deg);background:var(--surface2)}
+.face.f img{width:150px;height:150px;object-fit:contain}
 .spr{position:absolute;image-rendering:pixelated;background-repeat:no-repeat}
-.pop{position:absolute;font-size:72px;font-weight:900;color:var(--green);text-shadow:4px 4px 0 var(--ink)}
-.bar{position:absolute;left:60px;top:44px;width:960px;height:16px;border:5px solid var(--ink);border-radius:12px;background:#fff;overflow:hidden}
+.pop{position:absolute;font-family:var(--font-head);font-size:80px;font-weight:900;color:var(--green);text-shadow:4px 4px 0 var(--shadow)}
+.bar{position:absolute;left:60px;top:44px;width:960px;height:16px;border:5px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden;z-index:50}
 .bar i{display:block;height:100%;background:var(--orange)}
-.cta{position:absolute;left:50%;transform:translateX(-50%);padding:34px 70px;font-size:70px;font-weight:900;color:#fff;background:var(--brand);border:7px solid var(--ink);border-radius:999px;box-shadow:14px 14px 0 var(--ink);white-space:nowrap}
-.tag{position:absolute;left:0;right:0;text-align:center;font-size:84px;font-weight:900;line-height:1.1}
+.cta{position:absolute;left:50%;transform:translateX(-50%);padding:36px 76px;font-family:var(--font-head);font-size:64px;font-weight:900;color:#fff;background:var(--brand);border:7px solid var(--line);border-radius:999px;box-shadow:16px 16px 0 var(--shadow);white-space:nowrap}
+.tag{position:absolute;left:0;right:0;text-align:center;font-family:var(--font-hero);font-size:84px;font-weight:400;line-height:1.1}
+.code{font-family:"Courier New",monospace;color:#f6f1e4;font-size:58px;line-height:1.45;white-space:pre-wrap}
 </style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute">
   <filter id="rough"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" scale="8"/></filter>
 </svg>
-<div id="stage"><div class="bar"><i id="prog"></i></div></div>
+<div id="stage"><div class="abs" style="inset:0;background:url(../../public/game-sprites/space/pozadi_mlhovina.webp) center/cover;opacity:.55"></div><video id="bgvid" muted playsinline preload="auto" src="../../public/home/hvezdy.webm" style="position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;opacity:.45"></video><div class="bar"><i id="prog"></i></div></div>
 
 <script>
 const $ = s => document.querySelector(s);
@@ -47,7 +60,7 @@ const OB = x => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 
 const typed = (s, p) => s.slice(0, Math.floor(s.length * p));
 const SITE = '../../public/';
 const SCENES = [];
-const DUR = 20;
+const DUR = 29.1;
 
 function scene(id, start, end, html, update) {
   const el = document.createElement('div');
@@ -61,10 +74,6 @@ function scene(id, start, end, html, update) {
 }
 
 /* Vykreslí jeden snímek ze sprite sheetu webu (stejné soubory a rozměry jako v game-sprites/*.json). */
-function spr(file, cw, ch, cols, col, row, scale, extra = '') {
-  const w = cw * scale, h = ch * scale;
-  return `class="spr" style="width:${w}px;height:${h}px;background-image:url(${SITE}${file});background-size:${cols * w}px auto;background-position:${-col * w}px ${-row * h}px;${extra}"`;
-}
 const sprStyle = (file, cw, ch, cols, col, row, scale) => {
   const w = cw * scale, h = ch * scale;
   return `background-image:url(${SITE}${file});background-size:${cols * w}px auto;background-position:${-col * w}px ${-row * h}px;width:${w}px;height:${h}px`;
@@ -75,19 +84,20 @@ const SUBJECTS = [
   ['Čeština', 'cestina'], ['Matematika', 'matematika'], ['Angličtina', 'anglictina'],
   ['Chemie', 'chemie'], ['Hudebka', 'hudebka'], ['Informatika', 'informatika']
 ];
-const CARD_BG = ['#ffc933', '#7fd1ff', '#7ee0b0', '#ffb199', '#c8bcff', '#ffe27a'];
+const CARD_BG = ['#ffd24d', '#5ab8ff', '#3ddc97', '#ff7a5c', '#9085e9', '#8d99ff'];
 
 /* ---------- S1: hook ---------- */
-scene('s1', 0, 2.6, `
-  <img class="abs" src="${SITE}home/oblak-1.webp" style="left:-60px;top:240px;width:460px">
-  <img class="abs" src="${SITE}home/oblak-2.webp" style="right:-80px;top:420px;width:420px">
+scene('s1', 0, 3.9, `
+  <div class="abs" style="left:50%;top:620px;width:1000px;height:1000px;margin-left:-500px;border-radius:50%;background:radial-gradient(circle,#5a6cff55,transparent 65%)"></div>
+  <img class="abs" src="${SITE}home/oblak-1.webp" style="left:-60px;top:240px;width:460px;opacity:.9">
+  <img class="abs" src="${SITE}home/oblak-2.webp" style="right:-80px;top:420px;width:420px;opacity:.9">
   <img class="abs" src="${SITE}home/anim/hory-predni.webp" style="left:0;bottom:0;width:1080px">
-  <img class="abs logo" src="${SITE}brand/logo.svg" style="left:70px;top:560px;width:940px">
+  <img class="abs logo" src="${SITE}brand/logo-tmave.svg" style="left:70px;top:560px;width:940px">
   <svg class="abs" style="left:0;top:0" width="1080" height="1920">
-    <path class="ul" pathLength="1" d="M120 720 Q400 688 620 716 T1000 704" fill="none" stroke="#ff5a3c" stroke-width="16" stroke-linecap="round"/>
+    <path class="ul" pathLength="1" d="M120 720 Q400 688 620 716 T1000 704" fill="none" stroke="#ff7a5c" stroke-width="18" stroke-linecap="round"/>
   </svg>
-  <div class="tag" id="tag1" style="top:1000px;font-size:84px"></div>
-  <img class="abs rocket" src="${SITE}home/raketa.webp" style="width:300px;left:-300px;top:1180px">
+  <div class="tag" id="tag1" style="top:1010px"></div>
+  <img class="abs rocket" src="${SITE}home/raketa.webp" style="width:320px;left:-320px;top:1180px">
 `, (lt, s) => {
   const logo = s.q('.logo');
   logo.style.transform = `scale(${0.6 + 0.4 * OB(P(lt, 0, 0.7))})`;
@@ -102,10 +112,10 @@ scene('s1', 0, 2.6, `
   s.qa('img[src*="oblak"]').forEach((c, i) => c.style.transform = `translateX(${Math.sin(lt * 0.8 + i) * 30}px)`);
 });
 
-/* ---------- S2: předměty (ikonky z webu) ---------- */
-scene('s2', 2.6, 5.6, `
-  <div class="title" style="top:200px">Kurzy pro každého</div>
-  <div class="abs" style="left:70px;top:460px;width:940px;display:grid;grid-template-columns:1fr 1fr;gap:44px">
+/* ---------- S2: předměty ---------- */
+scene('s2', 3.9, 8.2, `
+  <div class="title" style="top:200px;font-size:72px">Kurzy pro každého</div>
+  <div class="abs" style="left:70px;top:420px;width:940px;display:grid;grid-template-columns:1fr 1fr;gap:44px">
     ${SUBJECTS.map(([name, icon], i) => `<div class="sk card" style="background:${CARD_BG[i]}"><img src="${SITE}ikony/${icon}.svg" alt=""><span>${name}</span></div>`).join('')}
   </div>
   <img class="abs" src="${SITE}home/funkce-kurzy.webp" style="left:-40px;bottom:120px;width:300px;transform:rotate(-8deg)">
@@ -119,17 +129,16 @@ scene('s2', 2.6, 5.6, `
 
 /* ---------- S3: kód ---------- */
 const CODE = '<h1>Ahoj, světe!</h1>\n<p>Tohle jsem napsal/a sám/a.</p>';
-scene('s3', 5.6, 9.2, `
-  <div class="title" style="top:170px;font-size:80px">Kód hned v prohlížeči</div>
-  <div class="sk abs" style="left:70px;top:380px;width:940px;height:600px;background:var(--ink);padding:44px;box-shadow:14px 14px 0 var(--brand)">
-    <pre class="code" style="color:#f6f1e4;font-family:'Courier New',monospace;font-size:50px;line-height:1.45;white-space:pre-wrap"></pre>
+scene('s3', 8.2, 13.1, `
+  <div class="title" style="top:180px;font-size:66px">Kód hned v prohlížeči</div>
+  <div class="sk abs" style="left:70px;top:420px;width:940px;height:640px;background:#0b0a1f;padding:48px;box-shadow:16px 16px 0 var(--brand)">
+    <pre class="code"></pre>
   </div>
-  <div class="sk abs prev" style="left:70px;top:1080px;width:940px;height:600px;padding:60px">
-    <h1 style="color:var(--brand);font-size:120px;font-weight:900;line-height:1">Ahoj, světe!</h1>
-    <p style="font-size:56px;margin-top:30px;font-weight:700">Tohle jsem napsal/a sám/a.</p>
-    <div class="cta" style="position:relative;left:auto;transform:none;margin-top:50px;display:inline-block;font-size:56px;padding:26px 56px">Hotovo</div>
+  <div class="sk abs prev" style="left:70px;top:1140px;width:940px;height:620px;padding:64px">
+    <h1 style="font-family:var(--font-head);color:var(--brand-600);font-size:124px;font-weight:900;line-height:1">Ahoj, světe!</h1>
+    <p style="font-size:60px;margin-top:34px;font-weight:700">Tohle jsem napsal/a sám/a.</p>
+    <div class="cta" style="position:relative;left:auto;transform:none;margin-top:54px;display:inline-block;font-size:56px;padding:28px 60px">Hotovo</div>
   </div>
-  <img class="abs" src="${SITE}ikony/informatika.svg" style="right:40px;top:1700px;width:240px">
 `, (lt, s) => {
   s.q('.code').textContent = typed(CODE, P(lt, 0.6, 3.2));
   const p = P(lt, 3.3, 3.9);
@@ -139,19 +148,19 @@ scene('s3', 5.6, 9.2, `
 
 /* ---------- S4: AI doučovač + foto → pexeso ---------- */
 const PAIRS = ['cestina', 'matematika', 'anglictina', 'chemie', 'hudebka', 'informatika'];
-const memoCards = [...PAIRS, ...PAIRS].map((icon, i) => `
+const memoCards = [...PAIRS, ...PAIRS].map(icon => `
   <div class="memo"><div class="inner">
     <div class="face b">?</div>
     <div class="face f"><img src="${SITE}ikony/${icon}.svg" alt=""></div>
   </div></div>`).join('');
-scene('s4', 9.2, 12.6, `
-  <div class="title" style="top:150px">AI doučovač</div>
-  <div class="sk abs photo" style="left:70px;top:340px;width:430px;height:330px;overflow:hidden;background:linear-gradient(#ffd98a,#ffb07a)">
+scene('s4', 13.1, 17.8, `
+  <div class="title" style="top:170px">AI doučovač</div>
+  <div class="sk abs photo" style="left:70px;top:380px;width:460px;height:360px;overflow:hidden;background:linear-gradient(#ffd24d,#ff7a5c)">
     <img src="${SITE}home/hory.webp" style="position:absolute;left:0;bottom:0;width:100%">
   </div>
-  <div class="bubble" style="right:70px;top:380px;width:500px;background:#ffc933">Udělej z téhle fotky hru!</div>
-  <div class="bubble ai" style="left:70px;top:720px;width:820px;min-height:150px;background:#fff;opacity:0"><span class="dots" style="font-size:52px;letter-spacing:6px;opacity:0">...</span><span class="ait"></span></div>
-  <div class="abs" style="left:70px;top:1000px;width:940px;display:grid;grid-template-columns:repeat(4,1fr);gap:26px">${memoCards}</div>
+  <div class="bubble" style="right:70px;top:400px;width:500px;background:var(--yellow);color:#12102a;font-weight:800">Udělej z téhle fotky hru!</div>
+  <div class="bubble ai" style="left:70px;top:800px;width:900px;min-height:170px;opacity:0"><span class="dots" style="font-size:56px;letter-spacing:6px;opacity:0">...</span><span class="ait"></span></div>
+  <div class="abs" style="left:70px;top:1060px;width:940px;display:grid;grid-template-columns:repeat(4,1fr);gap:26px">${memoCards}</div>
 `, (lt, s) => {
   const ph = P(lt, 0.1, 0.6);
   s.q('.photo').style.transform = `scale(${OB(ph)})`;
@@ -169,40 +178,40 @@ scene('s4', 9.2, 12.6, `
 });
 
 /* ---------- G1: Lov krtků (sprity: krtek, dira, kladivo, bum) ---------- */
-const HOLES = [[270,760],[540,760],[810,760],[270,1000],[540,1000],[810,1000],[270,1240],[540,1240],[810,1240]];
+const HOLES = [[270,1060],[540,1060],[810,1060]];
 const holesHTML = HOLES.map(([x, y]) => `<img class="abs" src="${SITE}game-sprites/mole/dira.webp" style="left:${x - 128}px;top:${y - 52}px;width:256px">`).join('');
-scene('g1', 12.6, 14.0, `
-  <div class="title" style="top:150px;font-size:110px">Lov krtků</div>
-  <div class="abs" style="left:60px;top:560px;width:960px;height:900px;border-radius:200px 200px 60px 60px;background:#c98b57;border:7px solid var(--ink);box-shadow:14px 14px 0 var(--ink);filter:url(#rough)"></div>
+scene('g1', 17.8, 19.633, `
+  <div class="title" style="top:170px;font-size:82px">Lov krtků</div>
+  <div class="abs" style="left:60px;top:560px;width:960px;height:1000px;border-radius:200px 200px 60px 60px;background:#7a4a2a;border:7px solid var(--line);box-shadow:16px 16px 0 var(--shadow);filter:url(#rough)"></div>
   ${holesHTML}
   <div class="spr" id="m1" style="left:${540 - 75}px;top:0"></div>
   <div class="spr" id="m2" style="left:${270 - 75}px;top:0"></div>
   <div class="spr" id="ham" style="transform-origin:50% 100%"></div>
   <div class="spr" id="bum" style="width:0"></div>
-  <div class="pop" id="sc1" style="left:600px;top:700px;opacity:0">+10</div>
+  <div class="pop" id="sc1" style="left:600px;top:760px;opacity:0">+10</div>
 `, (lt, s) => {
   const hit1 = lt > 0.8;
   const up1 = Math.sin(P(lt, 0.2, 0.8) * Math.PI);
   const up2 = Math.sin(P(lt, 1.0, 1.4) * Math.PI);
   const m1 = s.q('#m1'), m2 = s.q('#m2');
   const frame1 = hit1 ? [1, 1] : [3, 0];
-  setSpr(m1, 'game-sprites/mole/krtek.webp', 224, 240, 4, frame1[0], frame1[1], 0.67);
-  m1.style.top = (1000 - 80 + (1 - up1) * 70 - (hit1 ? 30 : 0)) + 'px';
+  setSpr(m1, 'game-sprites/mole/krtek.webp', 224, 240, 4, frame1[0], frame1[1], 0.8);
+  m1.style.top = (1060 - 96 + (1 - up1) * 80 - (hit1 ? 30 : 0)) + 'px';
   m1.style.opacity = up1 > 0 ? 1 : 0;
-  setSpr(m2, 'game-sprites/mole/krtek.webp', 224, 240, 4, 3, 0, 0.67);
-  m2.style.top = (760 - 80 + (1 - up2) * 70) + 'px';
+  setSpr(m2, 'game-sprites/mole/krtek.webp', 224, 240, 4, 3, 0, 0.8);
+  m2.style.top = (1060 - 96 + (1 - up2) * 80) + 'px';
   m2.style.opacity = up2 > 0 ? 1 : 0;
   const ham = s.q('#ham');
-  setSpr(ham, 'game-sprites/mole/kladivo.webp', 128, 224, 1, 0, 0, 0.6);
+  setSpr(ham, 'game-sprites/mole/kladivo.webp', 128, 224, 1, 0, 0, 0.7);
   ham.style.left = (540 - 40) + 'px';
-  ham.style.top = (1000 - 220) + 'px';
+  ham.style.top = (1060 - 260) + 'px';
   const hp = P(lt, 0.45, 0.8);
   ham.style.transform = `rotate(${-80 + 80 * E(hp)}deg)`;
   ham.style.opacity = lt > 0.45 && lt < 0.95 ? 1 : 0;
   const bum = s.q('#bum');
-  setSpr(bum, 'game-sprites/mole/bum.webp', 128, 128, 1, 0, 0, 1.1);
-  bum.style.left = (540 - 70) + 'px';
-  bum.style.top = (1000 - 70) + 'px';
+  setSpr(bum, 'game-sprites/mole/bum.webp', 128, 128, 1, 0, 0, 1.3);
+  bum.style.left = (540 - 85) + 'px';
+  bum.style.top = (1060 - 85) + 'px';
   bum.style.opacity = lt > 0.8 && lt < 1.1 ? 1 : 0;
   const sc = s.q('#sc1');
   sc.style.opacity = P(lt, 0.8, 0.9) * (1 - P(lt, 1.2, 1.4));
@@ -212,44 +221,44 @@ scene('g1', 12.6, 14.0, `
 /* ---------- G2: Obrana galaxie (sprity: mimozemšťané, loď, výbuch) ---------- */
 const ROWS = [[0, 0], [0, 1], [0, 3]];
 const invHTML = [];
-for (let r = 0; r < 3; r++) for (let c = 0; c < 5; c++) invHTML.push(`<div class="spr inv" data-r="${r}" data-c="${c}"></div>`);
-scene('g2', 14.0, 15.4, `
-  <div class="abs" style="inset:0;background:url(${SITE}game-sprites/space/pozadi_hvezdy_1.webp) center/cover;opacity:0.9"></div>
-  <div class="title" style="top:150px;font-size:96px;color:#fff;text-shadow:6px 6px 0 var(--ink)">Obrana galaxie</div>
+for (let c = 0; c < 5; c++) invHTML.push(`<div class="spr inv" data-r="0" data-c="${c}"></div>`);
+scene('g2', 19.633, 21.467, `
+  <div class="abs" style="inset:0;background:url(${SITE}game-sprites/space/pozadi_hvezdy_1.webp) center/cover;opacity:.55"></div>
+  <div class="title" style="top:170px;font-size:78px;text-shadow:6px 6px 0 var(--shadow)">Obrana galaxie</div>
   ${invHTML.join('')}
   <div class="spr" id="ship"></div>
   <div class="spr" id="bul"></div>
   <div class="spr" id="boom"></div>
-  <div class="pop" id="sc2" style="left:520px;top:780px;opacity:0">+10</div>
+  <div class="pop" id="sc2" style="left:520px;top:800px;opacity:0">+10</div>
 `, (lt, s) => {
   const frame = Math.floor(lt * 6) % 4;
   s.qa('.inv').forEach(el => {
     const r = +el.dataset.r, c = +el.dataset.c;
     const [col, row] = ROWS[r];
-    const dead = r === 1 && c === 2 && lt > 0.9;
+    const dead = r === 0 && c === 2 && lt > 0.9;
     const dx = Math.sin(lt * 2.5) * 50;
-    setSpr(el, 'game-sprites/space/mimozemstane.webp', 128, 128, 8, col === 0 && r === 0 ? frame : (r === 1 ? frame : frame), row, 0.9);
-    el.style.left = (110 + c * 180 + dx) + 'px';
-    el.style.top = (580 + r * 150) + 'px';
+    setSpr(el, 'game-sprites/space/mimozemstane.webp', 128, 128, 8, frame, row, 1.05);
+    el.style.left = (100 + c * 190 + dx) + 'px';
+    el.style.top = (600 + r * 170) + 'px';
     el.style.opacity = dead ? 0 : 1;
   });
   const boom = s.q('#boom');
   const bf = Math.min(7, Math.floor(P(lt, 0.9, 1.2) * 8));
   if (lt > 0.9 && lt < 1.2) {
-    setSpr(boom, 'game-sprites/space/vybuch.webp', 64, 64, 8, bf, 0, 2.2);
-    boom.style.left = (110 + 2 * 180 + 40) + 'px';
-    boom.style.top = (580 + 150 + 0) + 'px';
+    setSpr(boom, 'game-sprites/space/vybuch.webp', 64, 64, 8, bf, 0, 2.4);
+    boom.style.left = (100 + 2 * 190 + 40) + 'px';
+    boom.style.top = '600px';
     boom.style.opacity = 1;
   } else boom.style.opacity = 0;
   const ship = s.q('#ship');
-  setSpr(ship, 'game-sprites/space/lod.webp', 96, 96, 7, 0, 0, 1.2);
-  ship.style.left = (540 - 58) + 'px';
-  ship.style.top = '1450px';
+  setSpr(ship, 'game-sprites/space/lod.webp', 96, 96, 7, 0, 0, 1.4);
+  ship.style.left = (540 - 67) + 'px';
+  ship.style.top = '1460px';
   const bul = s.q('#bul');
-  setSpr(bul, 'game-sprites/space/strely.webp', 64, 64, 2, 0, 0, 1.4);
+  setSpr(bul, 'game-sprites/space/strely.webp', 64, 64, 2, 0, 0, 1.6);
   const bp = P(lt, 0.2, 0.9);
-  bul.style.left = (540 - 45) + 'px';
-  bul.style.top = (1400 - bp * 1000) + 'px';
+  bul.style.left = (540 - 51) + 'px';
+  bul.style.top = (1400 - bp * 1100) + 'px';
   bul.style.opacity = lt > 0.2 && lt < 0.95 ? 1 : 0;
   const sc = s.q('#sc2');
   sc.style.opacity = P(lt, 0.9, 1.0) * (1 - P(lt, 1.25, 1.4));
@@ -258,37 +267,37 @@ scene('g2', 14.0, 15.4, `
 
 /* ---------- G3: Labyrint duchů (sprity: pac-man, duchové, tečky) ---------- */
 const DOTS = [];
-for (let i = 0; i < 9; i++) DOTS.push(`<div class="spr dot" data-i="${i}" style="left:${150 + i * 100 - 22}px;top:${920 - 22}px"></div>`);
-scene('g3', 15.4, 16.8, `
-  <div class="title" style="top:150px;font-size:110px">Labyrint duchů</div>
-  <div class="sk abs" style="left:70px;top:640px;width:940px;height:560px;background:var(--brand-700);border-radius:40px;box-shadow:14px 14px 0 var(--ink)"></div>
+for (let i = 0; i < 9; i++) DOTS.push(`<div class="spr dot" data-i="${i}" style="left:${150 + i * 100 - 25}px;top:${980 - 25}px"></div>`);
+scene('g3', 21.467, 23.3, `
+  <div class="title" style="top:170px;font-size:82px">Labyrint duchů</div>
+  <div class="sk abs" style="left:60px;top:600px;width:960px;height:760px;background:#1a2aa3;border-radius:44px;box-shadow:16px 16px 0 var(--shadow)"></div>
   ${DOTS.join('')}
-  <div class="spr" id="pac" style="top:856px"></div>
-  <div class="spr" id="gh" style="top:856px"></div>
+  <div class="spr" id="pac" style="top:916px"></div>
+  <div class="spr" id="gh" style="top:916px"></div>
 `, (lt, s) => {
   const x = 130 + P(lt, 0.1, 1.3) * 820;
   const mouth = [0, 1, 2, 1][Math.floor(lt * 12) % 4];
   const pac = s.q('#pac');
-  setSpr(pac, 'game-sprites/pacman/pac.webp', 64, 64, 3, mouth, 0, 2);
-  pac.style.left = (x - 64) + 'px';
+  setSpr(pac, 'game-sprites/pacman/pac.webp', 64, 64, 3, mouth, 0, 2.2);
+  pac.style.left = (x - 70) + 'px';
   const gh = s.q('#gh');
-  setSpr(gh, 'game-sprites/pacman/duchove.webp', 64, 64, 8, Math.floor(lt * 6) % 2 === 0 ? 0 : 1, 0, 2);
-  gh.style.left = Math.max(40, x - 240) + 'px';
+  setSpr(gh, 'game-sprites/pacman/duchove.webp', 64, 64, 8, Math.floor(lt * 6) % 2 === 0 ? 0 : 1, 0, 2.2);
+  gh.style.left = Math.max(40, x - 260) + 'px';
   s.qa('.dot').forEach(d => {
     const i = +d.dataset.i;
-    setSpr(d, 'game-sprites/pacman/tecky.webp', 32, 32, 3, 0, 0, 1.4);
+    setSpr(d, 'game-sprites/pacman/tecky.webp', 32, 32, 3, 0, 0, 1.6);
     d.style.opacity = (150 + i * 100) < x ? 0 : 1;
   });
 });
 
 /* ---------- S6: Hry. Kurzy. AI. ---------- */
-scene('s6', 16.8, 18.6, `
-  <img class="abs" src="${SITE}home/funkce-hry.webp" style="left:40px;top:120px;width:300px">
-  <div class="abs" id="w0" style="left:0;right:0;top:380px;text-align:center;font-size:230px;font-weight:900;color:var(--ink)">Hry.</div>
-  <div class="abs" id="w1" style="left:0;right:0;top:700px;text-align:center;font-size:230px;font-weight:900;color:var(--brand)">Kurzy.</div>
-  <div class="abs" id="w2" style="left:0;right:0;top:1020px;text-align:center;font-size:230px;font-weight:900;color:var(--orange)">AI.</div>
-  <svg class="abs" style="left:0;top:0" width="1080" height="1920"><path class="ul2" pathLength="1" d="M160 1280 Q420 1250 560 1276 T930 1268" fill="none" stroke="#16132b" stroke-width="16" stroke-linecap="round"/></svg>
-  <img class="abs" src="${SITE}home/krok-1.webp" style="right:30px;top:1380px;width:260px">
+scene('s6', 23.3, 26.4, `
+  <img class="abs" src="${SITE}home/funkce-hry.webp" style="left:40px;top:120px;width:320px">
+  <div class="abs" id="w0" style="left:0;right:0;top:400px;text-align:center;font-family:var(--font-head);font-size:200px;font-weight:900;color:var(--text)">Hry.</div>
+  <div class="abs" id="w1" style="left:0;right:0;top:730px;text-align:center;font-family:var(--font-head);font-size:200px;font-weight:900;color:var(--brand-600)">Kurzy.</div>
+  <div class="abs" id="w2" style="left:0;right:0;top:1060px;text-align:center;font-family:var(--font-head);font-size:200px;font-weight:900;color:var(--orange)">AI.</div>
+  <svg class="abs" style="left:0;top:0" width="1080" height="1920"><path class="ul2" pathLength="1" d="M160 1330 Q420 1300 560 1326 T930 1318" fill="none" stroke="#ffd24d" stroke-width="18" stroke-linecap="round"/></svg>
+  <img class="abs" src="${SITE}home/krok-1.webp" style="right:30px;top:1400px;width:280px">
 `, (lt, s) => {
   ['#w0', '#w1', '#w2'].forEach((id, i) => {
     const p = P(lt, 0.1 + i * 0.3, 0.6 + i * 0.3);
@@ -302,13 +311,17 @@ scene('s6', 16.8, 18.6, `
 });
 
 /* ---------- S7: CTA + logo + maskot (kočka z webu) ---------- */
-scene('s7', 18.6, 20, `
-  <div class="abs" style="left:-120px;top:-120px;width:500px;height:500px;border-radius:50%;background:var(--yellow);border:7px solid var(--ink)"></div>
-  <div class="abs" style="right:-100px;bottom:200px;width:420px;height:420px;border-radius:50%;background:var(--blue);border:7px solid var(--ink)"></div>
-  <img class="abs logo" src="${SITE}brand/logo.svg" style="left:70px;top:560px;width:940px">
-  <div class="abs url" style="left:0;right:0;top:820px;text-align:center;font-size:120px;font-weight:900">ucimesehrou.org</div>
-  <div class="cta" style="top:1040px">Zkus to teď →</div>
-  <img class="abs cat" src="${SITE}ikony/cat-avatar.svg" style="left:60px;bottom:120px;width:280px">
+scene('s7', 26.4, 29.1, `
+  <img class="abs logo" src="${SITE}brand/logo-tmave.svg" style="left:70px;top:560px;width:940px">
+  <div class="abs url" style="left:0;right:0;top:830px;text-align:center;font-family:var(--font-head);font-size:98px;font-weight:900">ucimesehrou.org</div>
+  <div class="cta" style="top:1060px">Zkus to teď →</div>
+  <div class="abs" style="left:0;right:0;top:1270px;display:flex;justify-content:center;gap:34px">
+    <div class="lvl" style="display:flex;flex-direction:column;align-items:center;gap:12px"><img src="${SITE}ikony/zakladni.svg" style="width:190px;height:190px"><span style="font-family:var(--font-head);font-weight:800;font-size:34px">ZŠ</span></div>
+    <div class="lvl" style="display:flex;flex-direction:column;align-items:center;gap:12px"><img src="${SITE}ikony/stredni.svg" style="width:190px;height:190px"><span style="font-family:var(--font-head);font-weight:800;font-size:34px">SŠ</span></div>
+    <div class="lvl" style="display:flex;flex-direction:column;align-items:center;gap:12px"><img src="${SITE}ikony/prijimacky.svg" style="width:190px;height:190px"><span style="font-family:var(--font-head);font-weight:800;font-size:34px">Přijímačky</span></div>
+    <div class="lvl" style="display:flex;flex-direction:column;align-items:center;gap:12px"><img src="${SITE}ikony/maturita.svg" style="width:190px;height:190px"><span style="font-family:var(--font-head);font-weight:800;font-size:34px">Maturita</span></div>
+  </div>
+  <img class="abs cat" src="${SITE}ikony/cat-avatar.svg" style="left:60px;bottom:120px;width:300px">
 `, (lt, s) => {
   const logo = s.q('.logo');
   logo.style.transform = `scale(${0.8 + 0.2 * OB(P(lt, 0, 0.5))})`;
@@ -319,12 +332,19 @@ scene('s7', 18.6, 20, `
   const c = s.q('.cta');
   c.style.opacity = P(lt, 0.9, 1.2);
   c.style.transform = `translateX(-50%) scale(${1 + 0.03 * Math.sin(lt * 8)})`;
+  s.qa('.lvl').forEach((el, i) => {
+    const p = P(lt, 0.8 + i * 0.18, 1.3 + i * 0.18);
+    el.style.transform = `scale(${OB(p)})`;
+    el.style.opacity = p > 0 ? 1 : 0;
+  });
   s.q('.cat').style.transform = `translateY(${Math.sin(lt * 6) * 14}px) rotate(${Math.sin(lt * 4) * 3}deg)`;
 });
 
 /* ---------- render ---------- */
 window.__render = function (t) {
   $('#prog').style.width = (clamp(t / DUR) * 100) + '%';
+  const bg = document.querySelector('#bgvid');
+  if (bg) { const target = t % 12; if (Math.abs(bg.currentTime - target) > 0.02) bg.currentTime = target; }
   for (const s of SCENES) {
     const active = t >= s.start && t < s.end;
     const lt = t - s.start;
