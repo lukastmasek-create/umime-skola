@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080">
+<title>Promo TikTok</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+:root{--ink:#17103a;--cream:#fff6e0;--coral:#ff6a4d;--yellow:#ffc933;--blue:#3248f0;--peri:#8b9bff;--green:#3ddc97}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#0e0828}
+#stage{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:Onest,system-ui,sans-serif;color:#fff}
+.abs{position:absolute;left:0;top:0;will-change:transform,opacity}
+.scene{position:absolute;inset:0;opacity:0}
+.h{font-family:Unbounded,Onest,sans-serif;font-weight:800;line-height:1.12;text-align:center;letter-spacing:-.01em;text-shadow:0 6px 0 rgba(10,5,40,.55)}
+.w{display:inline-block;white-space:pre}
+.hand{font-family:Pangolin,Onest,sans-serif;font-weight:400}
+.card{position:absolute;border:8px solid var(--ink);border-radius:40px;box-shadow:12px 14px 0 rgba(8,4,32,.7)}
+.pill{position:absolute;display:flex;align-items:center;justify-content:center;border:7px solid var(--ink);border-radius:999px;box-shadow:8px 10px 0 rgba(8,4,32,.7);font-family:Onest;font-weight:800;color:var(--ink)}
+.mono{font-family:"DejaVu Sans Mono","Liberation Mono",monospace;font-size:44px;line-height:70px;white-space:pre}
+#bar{position:absolute;left:60px;top:44px;width:960px;height:10px;border-radius:9px;background:rgba(255,255,255,.22)}
+#barf{position:absolute;left:0;top:0;height:100%;width:0;border-radius:9px;background:linear-gradient(90deg,var(--yellow),var(--coral))}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg" class="abs" style="inset:0;background:linear-gradient(#1b0d4a,#0e0828)"></div>
+  <div id="neb1" class="abs" style="width:900px;height:900px;border-radius:50%;background:radial-gradient(circle,rgba(150,70,230,.55),transparent 65%);filter:blur(30px)"></div>
+  <div id="neb2" class="abs" style="width:1000px;height:1000px;border-radius:50%;background:radial-gradient(circle,rgba(60,90,255,.45),transparent 65%);filter:blur(30px)"></div>
+  <canvas id="stars" width="1080" height="1920" class="abs"></canvas>
+  <img id="planet" class="abs" src="../../public/home/planeta.webp" style="width:760px">
+
+  <!-- SCENE 1: hook -->
+  <div class="scene" id="s1">
+    <img id="s1logo" class="abs" src="../../public/brand/logo-tmave.svg" style="left:90px;top:210px;width:900px">
+    <svg id="s1trail" class="abs" width="1080" height="1920" style="left:0;top:0"></svg>
+    <div id="s1head" class="h" style="position:absolute;left:0;top:500px;width:1080px;font-size:116px"></div>
+    <svg class="abs" width="1080" height="200" style="left:0;top:880px;overflow:visible" id="s1ul"><path pathLength="1" d="M150 40 C 330 12, 560 62, 930 22" fill="none" stroke="#ffc933" stroke-width="16" stroke-linecap="round" stroke-dasharray="1" stroke-dashoffset="1" filter="url(#rough)"/></svg>
+    <div id="s1chips"></div>
+    <img id="s1rocket" class="abs" src="../../public/home/anim/raketa-still.webp" style="width:150px;left:-75px;top:-94px">
+  </div>
+
+  <!-- SCENE 2: subjects -->
+  <div class="scene" id="s2">
+    <div id="s2title" class="h" style="position:absolute;left:0;top:150px;width:1080px;font-size:76px"></div>
+    <div id="s2cards"></div>
+  </div>
+
+  <!-- SCENE 3: code -->
+  <div class="scene" id="s3">
+    <div id="s3title" class="h" style="position:absolute;left:0;top:150px;width:1080px;font-size:76px"></div>
+    <div id="s3editor" class="card abs" style="left:70px;top:430px;width:940px;height:470px;background:#14102f;overflow:hidden">
+      <div style="position:absolute;left:34px;top:26px;display:flex;gap:14px">
+        <i style="width:22px;height:22px;border-radius:50%;background:#ff6a4d"></i><i style="width:22px;height:22px;border-radius:50%;background:#ffc933"></i><i style="width:22px;height:22px;border-radius:50%;background:#3ddc97"></i>
+      </div>
+      <div id="s3code" class="mono" style="position:absolute;left:36px;top:96px"></div>
+      <div id="s3cur" style="position:absolute;width:6px;height:52px;background:#ffc933;border-radius:3px"></div>
+    </div>
+    <div id="s3res" class="card abs" style="left:70px;top:960px;width:940px;height:340px;background:#fff6e0;color:var(--ink)">
+      <div class="h" style="position:absolute;left:44px;top:46px;width:850px;text-align:left;font-size:72px;color:var(--ink);text-shadow:none">Ahoj, světe!</div>
+      <div style="position:absolute;left:46px;top:170px;font:800 40px Onest">Tohle jsem napsal/a sám/a.</div>
+      <div id="s3ok" class="pill" style="left:46px;top:236px;height:70px;padding:0 30px;background:#3ddc97;font-size:34px;border-width:6px">Hotovo
+        <svg width="40" height="36" viewBox="0 0 40 36" style="margin-left:12px"><path pathLength="1" id="s3tick" d="M5 19 L16 30 L35 5" fill="none" stroke="#17103a" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1" stroke-dashoffset="1"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENE 4: AI -->
+  <div class="scene" id="s4">
+    <div id="s4title" class="h" style="position:absolute;left:0;top:150px;width:1080px;font-size:72px"></div>
+    <div id="s4u" class="pill abs" style="left:300px;top:520px;height:140px;width:710px;background:#6f86ff;border-radius:50px 50px 12px 50px;font-size:56px;color:#fff;text-shadow:0 3px 0 rgba(10,5,40,.4)">Nechápu zlomky&hellip;</div>
+    <svg id="s4bot" class="abs" width="150" height="150" viewBox="0 0 150 150" style="left:60px;top:790px">
+      <path d="M75 10 L75 28" stroke="#17103a" stroke-width="8" stroke-linecap="round"/><circle cx="75" cy="10" r="10" fill="#ff6a4d" stroke="#17103a" stroke-width="6"/>
+      <rect x="18" y="30" width="114" height="100" rx="34" fill="#ffc933" stroke="#17103a" stroke-width="8"/>
+      <circle cx="53" cy="76" r="14" fill="#fff" stroke="#17103a" stroke-width="6"/><circle cx="97" cy="76" r="14" fill="#fff" stroke="#17103a" stroke-width="6"/>
+      <circle id="s4pl" cx="53" cy="78" r="6" fill="#17103a"/><circle id="s4pr" cx="97" cy="78" r="6" fill="#17103a"/>
+      <path d="M52 104 Q75 120 98 104" fill="none" stroke="#17103a" stroke-width="7" stroke-linecap="round"/>
+    </svg>
+    <div id="s4dots" class="pill abs" style="left:230px;top:800px;height:110px;width:220px;background:#fff6e0;border-radius:46px 46px 46px 12px;gap:18px">
+      <i class="d" style="width:22px;height:22px;border-radius:50%;background:#17103a"></i><i class="d" style="width:22px;height:22px;border-radius:50%;background:#17103a"></i><i class="d" style="width:22px;height:22px;border-radius:50%;background:#17103a"></i>
+    </div>
+    <div id="s4a" class="pill abs" style="left:230px;top:740px;height:280px;width:780px;background:#fff6e0;border-radius:50px 50px 50px 12px;font-size:56px;text-align:left;justify-content:flex-start;padding-left:50px;line-height:1.25;white-space:pre">Pizza na 8 dílků.
+Sníš 3, zbyde 5/8.</div>
+    <svg id="s4pizza" class="abs" width="300" height="300" viewBox="0 0 250 250" style="left:70px;top:1090px;overflow:visible">
+      <g filter="url(#rough)">
+        <circle pathLength="1" class="pz" cx="125" cy="125" r="100" fill="#ffc933" stroke="#17103a" stroke-width="9" stroke-dasharray="1" stroke-dashoffset="1"/>
+        <path pathLength="1" class="pz" d="M125 25 V225 M25 125 H225 M54 54 L196 196 M196 54 L54 196" stroke="#17103a" stroke-width="7" fill="none" stroke-linecap="round" stroke-dasharray="1" stroke-dashoffset="1"/>
+        <circle class="pp" cx="90" cy="85" r="14" fill="#ff6a4d"/><circle class="pp" cx="165" cy="100" r="14" fill="#ff6a4d"/><circle class="pp" cx="110" cy="170" r="14" fill="#ff6a4d"/><circle class="pp" cx="175" cy="168" r="14" fill="#ff6a4d"/>
+      </g>
+    </svg>
+    <svg id="s4xp" class="abs" width="280" height="280" viewBox="0 0 260 260" style="left:700px;top:1290px;overflow:visible">
+      <path d="M130 8 L160 88 L246 92 L178 148 L202 232 L130 184 L58 232 L82 148 L14 92 L100 88 Z" fill="#ffc933" stroke="#17103a" stroke-width="9" stroke-linejoin="round"/>
+      <text x="130" y="152" text-anchor="middle" font-family="Unbounded" font-weight="800" font-size="46" fill="#17103a">+10</text>
+    </svg>
+    <div id="s4done" class="pill abs" style="left:390px;top:1120px;height:140px;width:620px;background:#3ddc97;font-size:46px;color:#17103a">Aha, už to dává smysl!</div>
+  </div>
+
+  <!-- SCENE 5: games -->
+  <div class="scene" id="s5">
+    <div id="s5title" class="h" style="position:absolute;left:0;top:150px;width:1080px;font-size:84px"></div>
+    <div id="s5names"></div>
+    <div id="s5view" class="card abs" style="left:82px;top:560px;width:916px;height:816px;overflow:hidden;background:#222">
+      <svg id="g1" width="900" height="800" viewBox="0 0 900 800" style="position:absolute;left:0;top:0"></svg>
+      <svg id="g2" width="900" height="800" viewBox="0 0 900 800" style="position:absolute;left:0;top:0"></svg>
+      <svg id="g3" width="900" height="800" viewBox="0 0 900 800" style="position:absolute;left:0;top:0"></svg>
+    </div>
+    <div id="s5dots"></div>
+  </div>
+
+  <!-- SCENE 6: outro -->
+  <div class="scene" id="s6">
+    <div id="s6words"></div>
+    <svg class="abs" width="1080" height="120" style="left:0;top:780px;overflow:visible"><path id="s6ul" pathLength="1" d="M300 40 C 450 14, 650 58, 790 26" fill="none" stroke="#ffc933" stroke-width="16" stroke-linecap="round" stroke-dasharray="1" stroke-dashoffset="1" filter="url(#rough)"/></svg>
+    <svg id="s6spark" class="abs" width="1080" height="1000" style="left:0;top:0;overflow:visible"></svg>
+    <img id="s6logo" class="abs" src="../../public/brand/logo-tmave.svg" style="left:110px;top:940px;width:860px">
+    <div id="s6url" class="pill abs" style="left:190px;top:1090px;height:96px;width:700px;background:var(--cream);font-size:48px;letter-spacing:.01em">ucimesehrou.org</div>
+    <div id="s6cta" class="pill abs" style="left:240px;top:1230px;height:130px;width:600px;background:var(--blue);color:#fff;font-size:62px;gap:20px;text-shadow:0 4px 0 rgba(10,5,40,.4)">Zkus to teď
+      <svg width="62" height="52" viewBox="0 0 62 52"><path d="M6 26 H50 M32 8 L52 26 L32 44" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div id="s6chips"></div>
+  </div>
+
+  <div id="bar"><div id="barf"></div></div>
+
+  <svg width="0" height="0" style="position:absolute"><defs>
+    <filter id="rough" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="6"/></filter>
+  </defs></svg>
+</div>
+
+<script>
+/* ---------- pomocné funkce: žádná náhoda, vše se počítá z času t ---------- */
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const prog=(t,s,d)=>clamp((t-s)/d);
+const eo3=x=>1-Math.pow(1-x,3);
+const eob=x=>{const c1=1.5,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2)};
+const eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const lerp=(a,b,k)=>a+(b-a)*k;
+const $=id=>document.getElementById(id);
+const tf=(el,x=0,y=0,s=1,r=0,o=1)=>{el.style.transform=`translate(${x}px,${y}px) rotate(${r}deg) scale(${s})`;el.style.opacity=o;};
+const sg=(el,x=0,y=0,s=1,r=0,sy=null)=>el.setAttribute('transform',`translate(${x} ${y}) rotate(${r}) scale(${s} ${sy??s})`);
+const NS='http://www.w3.org/2000/svg';
+const svgEl=(tag,attrs,parent)=>{const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;};
+const rng=s=>()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+
+/* slova se skládají předem do layoutu (inline-block), animuje se jen transform/opacity -> nic se neposouvá */
+function words(parent,text,style=''){
+  return text.split(' ').map((w,i,a)=>{const s=document.createElement('span');s.className='w';s.textContent=w+(i<a.length-1?' ':'');if(style)s.style.cssText=style;parent.appendChild(s);return s;});
+}
+function lines(parent,arr){ // arr: [[text,style],...]
+  const out=[];arr.forEach(([t,st])=>{const d=document.createElement('div');parent.appendChild(d);out.push(...words(d,t,st));});return out;
+}
+const popIn=(el,t,s,d=.55,fromY=50,fromS=.7)=>{const p=prog(t,s,d);tf(el,0,(1-eob(p))*fromY,lerp(fromS,1,eob(p)),0,eo3(clamp(p*2.2)));};
+
+/* ---------- pozadí ---------- */
+const R=rng(11);
+const stars=Array.from({length:150},()=>({x:R()*1080,y:R()*1960,r:.8+R()*2.4,sp:6+R()*26,tw:.6+R()*1.6,ph:R()*6.28}));
+const cv=$('stars'),cx=cv.getContext('2d');
+function drawBg(t){
+  cx.clearRect(0,0,1080,1920);
+  for(const s of stars){
+    const y=((s.y+s.sp*t)%1960)-20;
+    const a=.35+.65*Math.pow(.5+.5*Math.sin(t*s.tw+s.ph),2);
+    cx.globalAlpha=a;cx.fillStyle='#fff';cx.beginPath();cx.arc(s.x,y,s.r,0,6.283);cx.fill();
+  }
+  cx.globalAlpha=1;
+  tf($('neb1'),-250+Math.sin(t*.35)*60,100+Math.cos(t*.3)*50);
+  tf($('neb2'),380+Math.cos(t*.28)*70,950+Math.sin(t*.33)*60);
+  tf($('planet'),-150+Math.sin(t*.4)*14,1500+Math.cos(t*.5)*14,1,-6+t*.4,.95);
+}
+
+/* ---------- scény: okna ---------- */
+const SC=[['s1',0,3.2],['s2',3.2,6.4],['s3',6.4,9.6],['s4',9.6,12.8],['s5',12.8,16.4],['s6',16.4,20]];
+const TOTAL=20, FADE=.28;
+
+/* S1 */
+const s1h=lines($('s1head'),[['Učení,'],['které tě'],['fakt baví.','color:#ffc933']]);
+const chipData=[['Hry','#ff6a4d',-6],['Kurzy','#8b9bff',4],['AI doučovač','#3ddc97',-3]];
+const s1chips=chipData.map(([t,c,r],i)=>{const d=document.createElement('div');d.className='pill';d.textContent=t;d.style.cssText=`left:0;top:0;height:110px;padding:0 44px;background:${c};font-size:56px;position:absolute;will-change:transform`;$('s1chips').appendChild(d);return d;});
+const s1ChipX=[60,360,590];
+function S1(lt){
+  popIn($('s1logo'),lt,.1,.7,-120,.8);
+  s1h.forEach((w,i)=>popIn(w,lt,.55+i*.2,.55,60,.8));
+  $('s1ul').querySelector('path').setAttribute('stroke-dashoffset',1-eo3(prog(lt,1.1,.55)));
+  const cw=s1chips.map(c=>c.offsetWidth||200);let cxp=(1080-(cw.reduce((x,y)=>x+y,0)+24*2))/2;const cxs=cw.map(w=>{const v=cxp;cxp+=w+24;return v;});
+  s1chips.forEach((c,i)=>{const p=prog(lt,1.7+i*.14,.5);c.style.left='0';c.style.top='0';tf(c,cxs[i],1140,lerp(.5,1,eob(p)),chipData[i][2],eo3(clamp(p*2.5)));});
+  // raketa: čistá bezierka, tečna určuje natočení
+  const bz=(p)=>{const P=[[-140,1720],[260,1480],[740,1560],[1240,980]];const u=1-p;
+    const x=u*u*u*P[0][0]+3*u*u*p*P[1][0]+3*u*p*p*P[2][0]+p*p*p*P[3][0];
+    const y=u*u*u*P[0][1]+3*u*u*p*P[1][1]+3*u*p*p*P[2][1]+p*p*p*P[3][1];return[x,y];};
+  const p=eio(prog(lt,.1,2.5));const[x,y]=bz(p);const[x2,y2]=bz(Math.min(1,p+.01));
+  const ang=Math.atan2(x2-x,-(y2-y))*180/Math.PI;
+  tf($('s1rocket'),x,y,1,ang,p>0&&p<1?1:0);
+  const tr=$('s1trail');tr.innerHTML='';
+  for(let k=1;k<=14;k++){const q=p-k*.022;if(q<=0)break;const[px,py]=bz(q);
+    svgEl('circle',{cx:px,cy:py,r:(22-k*1.2)*(1),fill:'none',stroke:'#fff6e0','stroke-width':5,opacity:(1-k/15)*.8},tr);}
+}
+/* S2 */
+const s2w=lines($('s2title'),[['Kurzy'],['ze všech předmětů']]);
+const subj=[['cestina','Čeština','#ffc933',-2.5],['matematika','Matika','#5ab0ff',2],['anglictina','Angličtina','#3ddc97',2],['chemie','Chemie','#ff7a59',-2],['hudebka','Hudebka','#8b7bff',-2],['dejepis','Dějepis','#ff7eb6',2.5]];
+const s2c=subj.map(([f,n,c,r],i)=>{const d=document.createElement('div');d.className='card';
+  const col=i%2,row=Math.floor(i/2);d.style.cssText=`left:${70+col*480}px;top:${400+row*360}px;width:460px;height:330px;background:${c};will-change:transform`;
+  d.innerHTML=`<img src="../../public/home/predmet-${f}.webp" style="position:absolute;left:130px;top:10px;width:190px;height:190px;object-fit:contain"><div class="h" style="position:absolute;left:0;top:222px;width:444px;font-size:44px;color:var(--ink);text-shadow:none">${n}</div>`;
+  $('s2cards').appendChild(d);return d;});
+function S2(lt){
+  s2w.forEach((w,i)=>popIn(w,lt,.05+i*.15,.5,50,.85));
+  s2c.forEach((c,i)=>{const p=prog(lt,.35+i*.12,.55);const e=eob(p);
+    const bob=Math.sin(lt*2.2+i*1.1)*5*clamp(p);
+    tf(c,0,(1-e)*80+bob,lerp(.6,1,e),subj[i][3]*e,eo3(clamp(p*2.5)));});
+}
+/* S3 */
+const s3w=lines($('s3title'),[['Kóduj přímo'],['v prohlížeči']]);
+const CODE=['<h1>Ahoj, světe!</h1>','<p>Tohle jsem napsal/a sám/a.</p>'];
+const CW=(()=>{const m=document.createElement('span');m.className='mono';m.style.cssText='position:absolute;visibility:hidden';m.textContent='M'.repeat(100);document.body.appendChild(m);const w=m.getBoundingClientRect().width/100;m.remove();return w;})();
+const codeEl=$('s3code');const charEls=[];
+CODE.forEach((ln,li)=>{const d=document.createElement('div');let inTag=false;
+  [...ln].forEach(ch=>{if(ch==='<')inTag=true;const s=document.createElement('span');s.textContent=ch;s.style.color=inTag?'#ff8a70':'#f3ecff';if(ch==='>')inTag=false;d.appendChild(s);charEls.push({s,li});});
+  codeEl.appendChild(d);});
+const TOTALCH=charEls.length;
+function S3(lt){
+  s3w.forEach((w,i)=>popIn(w,lt,.05+i*.15,.5,50,.85));
+  const e=$('s3editor');const p=prog(lt,.25,.55);tf(e,0,(1-eob(p))*90,lerp(.85,1,eob(p)),0,eo3(clamp(p*2.5)));
+  const n=Math.floor(clamp((lt-.75)*38,0,TOTALCH));
+  charEls.forEach((c,i)=>c.s.style.opacity=i<n?1:0);
+  // pozice kurzoru z monospace šířky (žádné měření za běhu)
+  let ci=n,li=0,col=0;for(let i=0;i<n;i++){}
+  let rem=n;li=0;while(li<CODE.length-1&&rem>CODE[li].length){rem-=CODE[li].length;li++;}
+  col=rem;
+  const cur=$('s3cur');cur.style.left=(36+col*CW)+'px';cur.style.top=(96+li*70+12)+'px';
+  cur.style.opacity=(n>=TOTALCH&&lt>2.2)?0:(Math.floor(lt*2.6)%2===0?1:.15);
+  const pr=prog(lt,2.15,.55);tf($('s3res'),0,(1-eob(pr))*120,lerp(.85,1,eob(pr)),0,eo3(clamp(pr*2.5)));
+  $('s3tick').setAttribute('stroke-dashoffset',1-eo3(prog(lt,2.55,.3)));
+}
+/* S4 */
+const s4w=lines($('s4title'),[['AI doučovač,'],['co ti to vysvětlí']]);
+function S4(lt){
+  s4w.forEach((w,i)=>popIn(w,lt,.05+i*.15,.5,50,.85));
+  popIn($('s4u'),lt,.35,.5,60,.8);
+  const pb=prog(lt,.75,.45);
+  tf($('s4bot'),0,(1-eob(pb))*70,lerp(.6,1,eob(pb)),0,eo3(clamp(pb*2.5)));
+  const dotsVis=lt>.95&&lt<1.75;
+  const pd=prog(lt,.95,.3),pdo=1-prog(lt,1.55,.2);
+  tf($('s4dots'),0,(1-eob(pd))*40,1,0,dotsVis?eo3(pd)*pdo:0);
+  [...$('s4dots').querySelectorAll('.d')].forEach((d,i)=>{d.style.transform=`translateY(${-Math.abs(Math.sin(lt*7-i*.7))*14}px)`;});
+  const pa=prog(lt,1.7,.5);tf($('s4a'),0,(1-eob(pa))*50,lerp(.8,1,eob(pa)),0,eo3(clamp(pa*2.5)));
+  // pizza se kreslí tahem
+  const pz=eo3(prog(lt,1.95,.6));
+  [...$('s4pizza').querySelectorAll('.pz')].forEach(e=>e.setAttribute('stroke-dashoffset',1-pz));
+  const pp=prog(lt,2.4,.3);
+  [...$('s4pizza').querySelectorAll('.pp')].forEach((e,i)=>{const q=prog(lt,2.4+i*.05,.3);e.style.opacity=eo3(q);});
+  $('s4pizza').style.opacity=prog(lt,1.95,.1);
+  const px=prog(lt,2.1,.6);tf($('s4xp'),0,0,lerp(.2,1,eob(px)),-10+(1-eob(px))*60,eo3(clamp(px*3)));
+  const pdn=prog(lt,2.55,.5);tf($('s4done'),0,(1-eob(pdn))*50,lerp(.8,1,eob(pdn)),0,eo3(clamp(pdn*2.5)));
+  // zorničky sledují zprávu
+  $('s4pl').setAttribute('cy',78-2*Math.sin(lt*3));$('s4pr').setAttribute('cy',78-2*Math.sin(lt*3));
+}
+/* S5: mini-hry nakreslené v SVG */
+const s5w=lines($('s5title'),[['Hry místo nudy']]);
+const gameNames=['Lov krtků','Obrana galaxie','Labyrint duchů'];
+const gnEls=gameNames.map((n,i)=>{const d=document.createElement('div');d.className='pill';d.textContent=n;d.style.cssText='left:0;top:0;height:100px;padding:0 54px;background:var(--yellow);font-size:54px;border-width:7px;position:absolute;will-change:transform';$('s5names').appendChild(d);return d;});
+const gdots=[0,1,2].map(i=>{const d=document.createElement('i');d.style.cssText='position:absolute;left:0;top:0;width:34px;height:34px;border-radius:50%;background:#fff6e0;border:6px solid #17103a;will-change:transform';$('s5dots').appendChild(d);return d;});
+const GW=[[.1,1.3],[1.3,2.5],[2.5,3.6]];
+const INK='#17103a';
+/* hra 1: krtci */
+(function(){const g=$('g1');
+  svgEl('rect',{width:900,height:800,fill:'#62cf6a'},g);
+  [[120,120,150],[760,90,110],[480,730,170],[800,680,120],[90,640,100]].forEach(([x,y,r])=>svgEl('circle',{cx:x,cy:y,r,fill:'#7ee084',opacity:.55},g));
+  g._holes=[[180,300],[450,270],[720,300],[310,540],[590,540]];
+  g._moles=[];
+  g._holes.forEach(([x,y],i)=>{
+    svgEl('ellipse',{cx:x,cy:y+8,rx:112,ry:50,fill:'#a06a34',stroke:INK,'stroke-width':8},g);
+    svgEl('ellipse',{cx:x,cy:y+10,rx:84,ry:32,fill:'#2e1b0c'},g);
+    const cp=svgEl('clipPath',{id:'hc'+i},g);svgEl('rect',{x:x-130,y:y-260,width:260,height:272},cp);
+    const wrap=svgEl('g',{'clip-path':`url(#hc${i})`},g);
+    const m=svgEl('g',{},wrap);
+    svgEl('ellipse',{cx:0,cy:-44,rx:68,ry:86,fill:'#9a6a43',stroke:INK,'stroke-width':8},m);
+    svgEl('ellipse',{cx:0,cy:-22,rx:42,ry:34,fill:'#d9b48a'},m);
+    svgEl('circle',{cx:-26,cy:-80,r:14,fill:'#fff',stroke:INK,'stroke-width':5},m);svgEl('circle',{cx:26,cy:-80,r:14,fill:'#fff',stroke:INK,'stroke-width':5},m);
+    svgEl('circle',{cx:-24,cy:-78,r:6,fill:INK},m);svgEl('circle',{cx:28,cy:-78,r:6,fill:INK},m);
+    svgEl('ellipse',{cx:0,cy:-48,rx:16,ry:11,fill:'#ff7eb6',stroke:INK,'stroke-width':5},m);
+    svgEl('rect',{x:-11,y:-34,width:22,height:22,rx:4,fill:'#fff',stroke:INK,'stroke-width':4},m);
+    g._moles.push({m,x,y});
+  });
+  const h=svgEl('g',{},g);g._ham=h;
+  svgEl('rect',{x:-14,y:-40,width:28,height:230,rx:12,fill:'#d8913f',stroke:INK,'stroke-width':8},h);
+  svgEl('rect',{x:-86,y:-110,width:172,height:100,rx:26,fill:'#ff6a4d',stroke:INK,'stroke-width':8},h);
+  svgEl('rect',{x:-60,y:-92,width:120,height:20,rx:10,fill:'#ffa38f'},h);
+  g._stars=[];for(let i=0;i<6;i++){g._stars.push(svgEl('path',{d:'M0 -22 L7 -7 L22 -5 L10 5 L14 21 L0 12 L-14 21 L-10 5 L-22 -5 L-7 -7Z',fill:'#ffc933',stroke:INK,'stroke-width':5,'stroke-linejoin':'round'},g));}
+  g._plus=svgEl('text',{'text-anchor':'middle','font-family':'Unbounded','font-weight':800,'font-size':66,fill:'#fff6e0',stroke:INK,'stroke-width':14,'paint-order':'stroke'},g);g._plus.textContent='+10';
+  g._combo=svgEl('text',{x:450,y:740,'text-anchor':'middle','font-family':'Pangolin','font-size':70,fill:'#fff6e0',stroke:INK,'stroke-width':12,'paint-order':'stroke'},g);g._combo.textContent='Bonk!';
+})();
+function G1(u){const g=$('g1');
+  const A=[ [0,.0,.15,.55,.7],[2,.2,.4,.62,.78],[4,.5,.68,.9,1.05] ]; // index díry, up-start, up-end, down-start, down-end (mole zůstává až do zásahu u B)
+  g._moles.forEach((o,i)=>{o.m.setAttribute('transform',`translate(${o.x} ${o.y+12}) translate(0 190)`);});
+  const mv=(i,s,e,ds,de,hide=false)=>{const o=g._moles[i];const up=eo3(prog(u,s,e-s)),dn=eo3(prog(u,ds,de-ds));const y=190*(1-up)+190*dn;
+    o.m.setAttribute('transform',`translate(${o.x} ${o.y+12}) translate(0 ${y})`);};
+  mv(0,.0,.25,.5,.72);
+  mv(1,.2,.42,.7,.9);
+  // krtek 4 dostane kladívkem
+  const o=g._moles[4];const up=eo3(prog(u,.45,.2));const hit=u>=.85;
+  const sink=hit?eo3(prog(u,1.02,.2)):0;
+  const sq=hit?lerp(1,.55,eo3(prog(u,.85,.08))):1;
+  o.m.setAttribute('transform',`translate(${o.x} ${o.y+12}) translate(0 ${190*(1-up)+190*sink}) scale(${lerp(1,1.15,hit?eo3(prog(u,.85,.08)):0)} ${sq})`);
+  // kladivo
+  const hp=g._holes[4];const sw=prog(u,.62,.23);const back=prog(u,.95,.25);
+  const rot=u<.85?lerp(-75,18,eio(sw)):lerp(18,-75,eo3(back));
+  const hs=g._ham;const vis=u>.58&&u<1.25;
+  hs.setAttribute('transform',`translate(${hp[0]+70} ${hp[1]+20}) rotate(${rot}) scale(1) translate(0 -60)`);
+  hs.style.opacity=vis?1:0;
+  // hvězdičky
+  g._stars.forEach((s,i)=>{const p=prog(u,.85,.4);const a=i/6*6.283+.3;const d=eo3(p)*110;
+    s.setAttribute('transform',`translate(${hp[0]+Math.cos(a)*d} ${hp[1]-70+Math.sin(a)*d*.8}) scale(${p>0?1-p*.5:0}) rotate(${p*220})`);s.style.opacity=p>0&&p<1?1:0;});
+  const pp=prog(u,.9,.35);g._plus.setAttribute('transform',`translate(${hp[0]} ${hp[1]-110-eo3(pp)*90}) scale(${lerp(.5,1,eob(clamp(pp*1.6)))})`);g._plus.style.opacity=pp>0?1-prog(u,1.12,.18):0;
+  const cb=prog(u,.9,.3);g._combo.setAttribute('transform',`translate(0 ${(1-eob(cb))*40})`);g._combo.style.opacity=eo3(clamp(cb*2))*(1-prog(u,1.15,.15));
+}
+/* hra 2: obrana galaxie */
+(function(){const g=$('g2');
+  const defs=svgEl('defs',{},g);const lg=svgEl('linearGradient',{id:'sp',x1:0,y1:0,x2:0,y2:1},defs);svgEl('stop',{offset:0,'stop-color':'#2a1670'},lg);svgEl('stop',{offset:1,'stop-color':'#0a0630'},lg);
+  svgEl('rect',{width:900,height:800,fill:'url(#sp)'},g);
+  const r=rng(5);for(let i=0;i<50;i++)svgEl('circle',{cx:r()*900,cy:r()*800,r:1+r()*2.5,fill:'#fff',opacity:.3+r()*.6},g);
+  g._al=[];const cols=['#3ddc97','#ff7eb6','#ffc933','#5ab0ff'];
+  [170,360,540,730].forEach((x,i)=>{const a=svgEl('g',{},g);
+    svgEl('path',{d:'M-62 20 Q-62 -60 0 -60 Q62 -60 62 20 L50 50 L28 28 L0 52 L-28 28 L-50 50 Z',fill:cols[i],stroke:INK,'stroke-width':8,'stroke-linejoin':'round'},a);
+    svgEl('circle',{cx:-22,cy:-14,r:15,fill:'#fff',stroke:INK,'stroke-width':5},a);svgEl('circle',{cx:22,cy:-14,r:15,fill:'#fff',stroke:INK,'stroke-width':5},a);
+    svgEl('circle',{cx:-20,cy:-12,r:7,fill:INK},a);svgEl('circle',{cx:24,cy:-12,r:7,fill:INK},a);
+    svgEl('path',{d:'M-24 -60 L-36 -88 M24 -60 L36 -88',stroke:INK,'stroke-width':8,'stroke-linecap':'round'},a);
+    svgEl('circle',{cx:-36,cy:-90,r:9,fill:'#fff6e0',stroke:INK,'stroke-width':5},a);svgEl('circle',{cx:36,cy:-90,r:9,fill:'#fff6e0',stroke:INK,'stroke-width':5},a);
+    g._al.push({a,x});});
+  g._ship=svgEl('image',{href:'../../public/home/anim/raketa-still.webp',x:-70,y:-90,width:140,height:175},g);
+  g._bul=[0,1,2].map(()=>svgEl('rect',{x:-8,y:-30,width:16,height:60,rx:8,fill:'#ffc933',stroke:INK,'stroke-width':5},g));
+  g._ex=[0,1,2].map(()=>{const e=svgEl('g',{},g);svgEl('circle',{r:50,fill:'none',stroke:'#fff6e0','stroke-width':10},e);
+    for(let i=0;i<8;i++){const a=i/8*6.283;svgEl('path',{d:`M${Math.cos(a)*30} ${Math.sin(a)*30} L${Math.cos(a)*78} ${Math.sin(a)*78}`,stroke:'#ffc933','stroke-width':9,'stroke-linecap':'round'},e);}return e;});
+  g._sc=svgEl('text',{x:450,y:760,'text-anchor':'middle','font-family':'Unbounded','font-weight':800,'font-size':56,fill:'#fff6e0',stroke:INK,'stroke-width':12,'paint-order':'stroke'},g);
+})();
+function G2(u){const g=$('g2');
+  const tx=[170,360,540,730];const SH=[{t:.18,i:1},{t:.5,i:2},{t:.82,i:0}];
+  // loď: plynule přejíždí na pozici dalšího cíle (smoothstep mezi klíči)
+  const keys=[[0,450],[.18,tx[1]],[.5,tx[2]],[.82,tx[0]],[1.3,tx[0]]];
+  let sx=450;for(let k=0;k<keys.length-1;k++){if(u>=keys[k][0]&&u<=keys[k+1][0]){const q=eio(prog(u,keys[k][0],keys[k+1][0]-keys[k][0]));sx=lerp(keys[k][1],keys[k+1][1],q);}}
+  const shipY=690+Math.sin(u*9)*4;
+  g._ship.setAttribute('transform',`translate(${sx} ${shipY})`);
+  const aliveAt=i=>{const s=SH.find(s=>s.i===i);return s?s.t+.28:99;};
+  g._al.forEach((o,i)=>{const dead=u>aliveAt(i);const k=prog(u,aliveAt(i),.12);
+    const y=230+Math.sin(u*5+i*1.4)*14;const x=o.x+Math.sin(u*3+i)*10;
+    o.a.setAttribute('transform',`translate(${x} ${y}) scale(${dead?1+k*.6:1})`);o.a.style.opacity=dead?1-k:1;});
+  SH.forEach((s,i)=>{const b=g._bul[i];const tt=u-s.t;const y=tt>=0?690-tt*1700:900;const ax=tx[s.i];
+    b.setAttribute('transform',`translate(${ax} ${y})`);b.style.opacity=(tt>=0&&tt<.29)?1:0;
+    const e=g._ex[i];const k=prog(u,s.t+.28,.35);e.setAttribute('transform',`translate(${ax} 235) scale(${.3+k*1.1})`);e.style.opacity=k>0&&k<1?1-k:0;});
+  const n=SH.filter(s=>u>s.t+.28).length;g._sc.textContent=n?`+${n*10}`:'';
+}
+/* hra 3: labyrint */
+const PAC=[[110,610],[450,610],[450,280],[790,280]];
+const segLen=[];let TOT=0;for(let i=0;i<PAC.length-1;i++){const l=Math.hypot(PAC[i+1][0]-PAC[i][0],PAC[i+1][1]-PAC[i][1]);segLen.push(l);TOT+=l;}
+function pathAt(d){d=clamp(d,0,TOT);let i=0;while(i<segLen.length-1&&d>segLen[i]){d-=segLen[i];i++;}const q=d/segLen[i];return[lerp(PAC[i][0],PAC[i+1][0],q),lerp(PAC[i][1],PAC[i+1][1],q)];}
+(function(){const g=$('g3');
+  svgEl('rect',{width:900,height:800,fill:'#2433b8'},g);
+  const pts=PAC.map(p=>p.join(',')).join(' ');
+  const side='M450 610 L450 470 M450 280 L450 150 M110 610 L110 740 M790 280 L790 140';
+  [[`${pts}`,'polyline'],[side,'path']].forEach(([d,t])=>{
+    if(t==='polyline'){svgEl('polyline',{points:d,fill:'none',stroke:'#8ea0ff','stroke-width':176,'stroke-linejoin':'round','stroke-linecap':'round'},g);}else svgEl('path',{d,fill:'none',stroke:'#8ea0ff','stroke-width':176,'stroke-linecap':'round'},g);});
+  svgEl('polyline',{points:pts,fill:'none',stroke:'#0a0b3e','stroke-width':150,'stroke-linejoin':'round','stroke-linecap':'round'},g);
+  svgEl('path',{d:side,fill:'none',stroke:'#0a0b3e','stroke-width':150,'stroke-linecap':'round'},g);
+  g._dots=[];for(let d=90;d<TOT-10;d+=62){const[x,y]=pathAt(d);g._dots.push({d,e:svgEl('circle',{cx:x,cy:y,r:10,fill:'#fff6e0'},g)});}
+  const pe=pathAt(TOT-6);g._pellet=svgEl('circle',{cx:pe[0],cy:pe[1],r:24,fill:'#ffc933',stroke:'#fff6e0','stroke-width':5},g);
+  g._pac=svgEl('g',{},g);g._pacp=svgEl('path',{fill:'#ffc933',stroke:INK,'stroke-width':8,'stroke-linejoin':'round'},g._pac);
+  g._pacEye=svgEl('circle',{cx:6,cy:-34,r:9,fill:INK},g._pac);
+  g._gh=svgEl('g',{},g);
+  svgEl('path',{d:'M-48 44 L-48 -6 Q-48 -56 0 -56 Q48 -56 48 -6 L48 44 L32 28 L16 44 L0 28 L-16 44 L-32 28 Z',fill:'#ff6a4d',stroke:INK,'stroke-width':8,'stroke-linejoin':'round'},g._gh);
+  svgEl('ellipse',{cx:-18,cy:-14,rx:14,ry:18,fill:'#fff',stroke:INK,'stroke-width':4},g._gh);svgEl('ellipse',{cx:18,cy:-14,rx:14,ry:18,fill:'#fff',stroke:INK,'stroke-width':4},g._gh);
+  g._gp=[svgEl('circle',{cx:-14,cy:-12,r:7,fill:INK},g._gh),svgEl('circle',{cx:22,cy:-12,r:7,fill:INK},g._gh)];
+  g._sc=svgEl('text',{x:450,y:775,'text-anchor':'middle','font-family':'Pangolin','font-size':58,fill:'#fff6e0',stroke:INK,'stroke-width':12,'paint-order':'stroke'},g);g._sc.textContent='Nom nom nom!';
+})();
+function G3(u){const g=$('g3');
+  const d=60+eio(clamp(u/1.25))*(TOT-90);
+  const[x,y]=pathAt(d);const[xa,ya]=pathAt(d+26),[xb,yb]=pathAt(d-26);
+  const ang=Math.atan2(ya-yb,xa-xb)*180/Math.PI;
+  const m=.05+.42*Math.abs(Math.sin(u*14));const r=44;
+  const c=Math.cos(m),s=Math.sin(m);
+  g._pacp.setAttribute('d',`M0 0 L${r*c} ${-r*s} A${r} ${r} 0 1 0 ${r*c} ${r*s} Z`);
+  g._pacEye.setAttribute('cx',4);
+  g._pac.setAttribute('transform',`translate(${x} ${y}) rotate(${ang}) scale(1.35)`);
+  const[gx,gy]=pathAt(d-190);const[gxa,gya]=pathAt(d-160);const gdx=Math.sign(gxa-gx)*3,gdy=Math.sign(gya-gy)*3;
+  g._gh.setAttribute('transform',`translate(${gx} ${gy+Math.sin(u*10)*3})`);
+  g._gp[0].setAttribute('cx',-14+gdx*2);g._gp[0].setAttribute('cy',-12+gdy*2);g._gp[1].setAttribute('cx',22+gdx*2);g._gp[1].setAttribute('cy',-12+gdy*2);
+  g._dots.forEach(o=>o.e.style.opacity=o.d<d?0:1);
+  g._pellet.setAttribute('transform',`translate(0 0)`);g._pellet.style.opacity=.6+.4*Math.sin(u*9)>0.5?1:.5;
+  g._sc.style.opacity=eo3(prog(u,.8,.3));
+}
+function S5(lt){
+  s5w.forEach((w,i)=>popIn(w,lt,.05,.5,50,.85));
+  const pv=prog(lt,.1,.5);tf($('s5view'),0,(1-eob(pv))*90,lerp(.88,1,eob(pv)),0,eo3(clamp(pv*2.5)));
+  const fns=[G1,G2,G3];
+  GW.forEach(([a,b],i)=>{const g=$('g'+(i+1));const u=lt-a;const on=lt>=a-.02&&lt<b+.12;
+    const fi=prog(lt,a-.02,.14),fo=1-prog(lt,b-.02,.14);g.style.opacity=on?(i===0?fo:fi*fo):0;if(i===2)g.style.opacity=on?fi:0;
+    if(on)fns[i](clamp(u,0,1.3));
+    const pn=prog(lt,a,.35),po=1-prog(lt,b-.08,.16);
+    tf(gnEls[i],0,0,1,0,0);gnEls[i].style.left='0';gnEls[i].style.top='0';
+    const wpx=gnEls[i].offsetWidth||520;
+    tf(gnEls[i],(1080-wpx)/2,415+(1-eob(pn))*30,lerp(.8,1,eob(pn)),0,on?eo3(clamp(pn*2.5))*(i===2?1:po):0);
+    const act=on&&lt>=a&&lt<b?1:0;
+    tf(gdots[i],440+i*80,1450,act?1.25:.85,0,1);gdots[i].style.background=act?'#ffc933':'#fff6e0';});
+}
+/* S6 */
+const s6w=lines($('s6words'),[['Hry.','font-size:150px;color:#fff6e0;display:block'],['Kurzy.','font-size:150px;color:#8b9bff;display:block'],['AI.','font-size:150px;color:#ff6a4d;display:block']]);
+$('s6words').classList.add('h');$('s6words').style.cssText='position:absolute;left:0;top:240px;width:1080px;text-align:center;line-height:1.2';
+const chipTxt=[['ZŠ','#3ddc97'],['SŠ','#5ab0ff'],['Přijímačky','#ffc933'],['Maturita','#ff7eb6']];
+const s6c=chipTxt.map(([t,c])=>{const d=document.createElement('div');d.className='pill';d.textContent=t;d.style.cssText=`left:0;top:0;height:84px;padding:0 30px;background:${c};font-size:40px;border-width:6px;position:absolute;will-change:transform`;$('s6chips').appendChild(d);return d;});
+const spk=$('s6spark');const sparks=[[170,470],[900,330],[870,640],[200,760]].map(([x,y],i)=>svgEl('path',{d:'M0 -34 Q4 -4 34 0 Q4 4 0 34 Q-4 4 -34 0 Q-4 -4 0 -34Z',fill:'#fff6e0'},spk));
+const sparkPos=[[170,470],[900,330],[870,640],[200,760]];
+let chipX=null;
+function S6(lt){
+  s6w.forEach((w,i)=>{const p=prog(lt,.1+i*.28,.55);const e=eob(p);tf(w,0,(1-e)*100,lerp(.55,1,e),(1-e)*(i%2?4:-4),eo3(clamp(p*2.5)));});
+  $('s6ul').setAttribute('stroke-dashoffset',1-eo3(prog(lt,1.0,.5)));
+  sparks.forEach((s,i)=>{const p=prog(lt,1.0+i*.12,.5);const tw=.75+.25*Math.sin(lt*5+i*1.7);s.setAttribute('transform',`translate(${sparkPos[i][0]} ${sparkPos[i][1]}) scale(${eob(p)*tw}) rotate(${lt*40})`);});
+  popIn($('s6logo'),lt,.9,.6,60,.8);
+  popIn($('s6url'),lt,1.2,.55,50,.8);
+  const pc=prog(lt,1.5,.55);const pulse=1+.035*Math.sin(Math.max(0,lt-2.1)*5.5)*prog(lt,2.1,.3);
+  tf($('s6cta'),0,(1-eob(pc))*70,lerp(.7,1,eob(pc))*pulse,0,eo3(clamp(pc*2.5)));
+  const ws=s6c.map(c=>c.offsetWidth||160);const gap=22;const totalW=ws.reduce((a,b)=>a+b,0)+gap*3;let x=(1080-totalW)/2;
+  s6c.forEach((c,i)=>{const p=prog(lt,1.85+i*.12,.5);tf(c,x,1410+(1-eob(p))*40,lerp(.6,1,eob(p)),0,eo3(clamp(p*2.5)));x+=ws[i]+gap;});
+}
+const FN={s1:S1,s2:S2,s3:S3,s4:S4,s5:S5,s6:S6};
+
+/* ---------- hlavní render ---------- */
+window.render=function(t){
+  drawBg(t);
+  $('barf').style.width=(clamp(t/TOTAL)*100)+'%';
+  for(const[id,a,b]of SC){
+    const el=$(id);const on=t>=a-1e-6&&t<b+1e-6;
+    if(!on){el.style.display='none';continue;}
+    el.style.display='block';
+    const lt=t-a;
+    const fi=id==='s1'?1:eo3(prog(lt,0,FADE));
+    const fo=id==='s6'?1:1-eo3(prog(b-t,FADE,-FADE)); // klesá v posledních FADE sekundách
+    el.style.opacity=fi*Math.min(1,fo);
+    el.style.transform=`translateY(${(1-fi)*40-(1-Math.min(1,fo))*40}px)`;
+    FN[id](lt);
+  }
+};
+window.ready=Promise.all([document.fonts.ready,...[...document.images].map(i=>i.decode?i.decode().catch(()=>{}):Promise.resolve())]);
+window.TOTAL=TOTAL;
+render(0);
+</script>
+</body>
+</html>
