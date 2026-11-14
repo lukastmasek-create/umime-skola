@@ -1305,9 +1305,10 @@ export function RunnerGame({
       if (sim.bossHp <= 0) sim.bossDown = Math.min(1, sim.bossDown + dt * 1.2);
       const lungeP = sim.bossLunge > 0 ? Math.sin(Math.PI * (1 - sim.bossLunge / 0.6)) : 0;
       boss.body.position.x = sim.bossShake > 0 ? Math.sin(clock * 60) * 0.25 : 0;
-      boss.body.position.y = Math.sin(clock * 2.2) * 0.12 - sim.bossDown * 2.2;
+      boss.body.position.y = Math.sin(clock * 2.2) * 0.12 + Math.sin(Math.PI * Math.min(1, sim.bossDown * 1.2)) * 3;
       boss.body.position.z = lungeP * 5;
-      boss.body.rotation.x = -sim.bossDown * 1.45;
+      boss.body.rotation.y = sim.bossDown * sim.bossDown * 14;
+      boss.body.scale.setScalar(Math.max(0.001, 1 - sim.bossDown * sim.bossDown));
       boss.armL.rotation.x = Math.sin(clock * 3) * 0.3 - lungeP * 2.2;
       boss.armR.rotation.x = Math.sin(clock * 3 + Math.PI) * 0.3 - lungeP * 2.2;
       boss.armL.rotation.z = 0.25 + Math.sin(clock * 2) * 0.1;
@@ -1320,7 +1321,7 @@ export function RunnerGame({
       for (const e of boss.eyes) e.scale.y = bl;
       for (const pu of boss.pupils) pu.position.x = Math.max(-0.12, Math.min(0.12, sim.x * 0.05));
       boss.tongue.position.y = 3.62 - Math.abs(Math.sin(clock * 4)) * 0.15;
-      boss.stars.visible = sim.bossHp <= 0;
+      boss.stars.visible = sim.bossHp <= 0 && sim.bossDown < 0.7;
       boss.stars.rotation.y = clock * 4;
       boss.hpFill.scale.x = Math.max(0.001, sim.bossHp / RUNNER_BOSS_HITS);
       boss.hpFill.position.x = -(1 - boss.hpFill.scale.x) * 2.0;
