@@ -1,0 +1,108 @@
+<title>Objev svět 3D</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Onest:wght@500;700&display=swap">
+<style>
+  /* One dark room for one film: the picture centred, a thin control bar under it. */
+  :root{color-scheme:dark;--bg:#0f1b20;--bar:#18282f;--ink:#f3ecdc;--mute:#9fb3b8;--line:#2d434b;--accent:#ff8a6b;--teal:#6fcad6;
+    --body:'Onest',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;--display:'Oswald','Arial Narrow',sans-serif}
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.4 var(--body);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+    padding-block:16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  #wrap{position:relative;width:min(100%,calc((100vh - 110px) * 16 / 9));aspect-ratio:16/9;background:#f8dcc0;border-radius:10px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+  #wrap canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  #big{position:absolute;inset:0;display:grid;place-items:center;background:rgba(15,27,32,.28);border:0;cursor:pointer;color:#fff6e4}
+  #big[hidden]{display:none}
+  #big span{display:grid;place-items:center;width:clamp(64px,11%,112px);aspect-ratio:1;border-radius:50%;background:var(--accent);box-shadow:0 8px 0 rgba(15,27,32,.4)}
+  #big svg{width:42%;height:42%;margin-left:6%;fill:#22303c}
+  #bar{display:flex;align-items:center;gap:10px;width:min(100%,calc((100vh - 110px) * 16 / 9));background:var(--bar);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
+  button.ic{display:grid;place-items:center;width:40px;height:40px;flex:none;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+  button.ic:hover{background:rgba(255,255,255,.07)}
+  button.ic[aria-pressed="false"]{color:var(--mute)}
+  button.ic svg{width:20px;height:20px;fill:currentColor}
+  :is(button,input):focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+  #seek{flex:1;min-width:0;accent-color:var(--accent);height:28px;margin:0}
+  #time{flex:none;font:500 14px var(--body);font-variant-numeric:tabular-nums;color:var(--mute);min-width:9.5ch;text-align:right}
+  #msg{font:500 13px var(--body);color:var(--mute);margin:0;min-height:1.4em;text-align:center}
+  body.render{padding:0;gap:0;background:#000;justify-content:flex-start;align-items:flex-start}
+  body.render #wrap{width:1920px;height:1080px;aspect-ratio:auto;border-radius:0;box-shadow:none}
+  body.render #bar,body.render #msg,body.render #big{display:none}
+  @media (max-width:520px){#time{display:none}}
+</style>
+
+<div id="wrap"><canvas id="cv" width="1920" height="1080"></canvas>
+  <button id="big" hidden aria-label="Přehrát"><span><svg viewBox="0 0 24 24"><path d="M6 3.5v17l15-8.5z"/></svg></span></button></div>
+<div id="bar">
+  <button class="ic" id="play" aria-label="Přehrát"><svg viewBox="0 0 24 24"><path id="playicon" d="M6 3.5v17l15-8.5z"/></svg></button>
+  <input id="seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Pozice ve videu">
+  <span id="time">0:00,0 / 0:00,0</span>
+  <button class="ic" id="snd" aria-pressed="true" aria-label="Zvuk zapnutý" title="Zvuk"><svg viewBox="0 0 24 24"><path id="sndicon" d="M3 9v6h4l5 4V5L7 9zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg></button>
+  <button class="ic" id="loop" aria-pressed="true" aria-label="Smyčka zapnutá" title="Smyčka"><svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2z"/></svg></button>
+</div>
+<p id="msg" role="status">Načítám scénu…</p>
+
+<script type="text/plain" id="kit-stage">/*STAGE*/</script>
+<script type="text/plain" id="kit-sound">/*SOUND*/</script>
+<script type="text/plain" id="style-src">/*STYLE*/</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js"}}</script>
+<script type="module">
+const $ = (id) => document.getElementById(id), msg = $('msg');
+const QS = new URLSearchParams(location.search), RENDER = QS.has('render');
+if (RENDER) document.body.classList.add('render');
+let THREE;
+try { THREE = await import('three'); } catch (e) { msg.textContent = 'Nepodařilo se načíst three.js z CDN: ' + (e && e.message ? e.message : e); window.__done = 'error'; throw e; }
+window.THREE = THREE;                                   // the kit and the style read the global
+const inject = (id) => { const s = document.createElement('script'); s.textContent = $(id).textContent; document.head.appendChild(s); s.remove(); };
+inject('kit-stage'); inject('kit-sound'); inject('style-src');
+const style = window.STYLES[window.STYLES.length - 1];
+const LIVE_SAMPLES = 3, FULL_SAMPLES = +QS.get('samples') || 64;   // ?render=1&samples=N renders every frame with N sub-frames
+try {
+  // Czech letters live in Oswald's latin-ext file: ask for them explicitly so the canvas text never falls back to another font
+  await document.fonts.load('700 150px "Oswald"', 'ČŠŘŽÝÁÍÉĚŮÚŇŤĎÓčšřžýáíéěůúňťďó AaBb 12345 /.').catch(() => null);
+  const canvas = $('cv');
+  const S = await K.run(canvas, style, { samples: RENDER ? FULL_SAMPLES : LIVE_SAMPLES });
+  const DUR = style.duration;
+  window.DURATION = DUR; window.seek = (t) => S.seek(t);
+  let t = 0, playing = false, last = 0, stopSound = null, soundOn = true, loop = true, resume = false;
+  const fmt = (x) => { const m = Math.floor(x / 60), s = x - m * 60; return m + ':' + s.toFixed(1).padStart(4, '0').replace('.', ','); };
+  const stopNow = () => { if (stopSound) { stopSound(); stopSound = null; } };
+  const startSound = () => { stopNow(); if (soundOn && playing) stopSound = SOUND.live((k) => style.sound(k), t, { voiceover: false }); };
+  const ui = () => {
+    $('seek').value = Math.round(t / DUR * 1000); $('time').textContent = fmt(t) + ' / ' + fmt(DUR);
+    $('playicon').setAttribute('d', playing ? 'M6 4h4v16H6zm8 0h4v16h-4z' : 'M6 3.5v17l15-8.5z');
+    $('play').setAttribute('aria-label', playing ? 'Pauza' : 'Přehrát'); $('big').hidden = playing;
+  };
+  const draw = () => { S.seek(t); ui(); };
+  const tick = (now) => {
+    if (!playing) return;
+    t += Math.min(0.25, (now - last) / 1000); last = now;
+    if (t >= DUR) { if (loop) { t = 0; startSound(); } else { t = DUR; playing = false; stopNow(); } }
+    draw(); if (playing) requestAnimationFrame(tick);
+  };
+  const play = () => { if (playing) return; if (t >= DUR - 0.01) t = 0; playing = true; last = performance.now(); startSound(); ui(); requestAnimationFrame(tick); };
+  const pause = () => { playing = false; stopNow(); ui(); };
+  $('play').onclick = () => (playing ? pause() : play()); $('big').onclick = play;
+  const seekBar = $('seek');
+  seekBar.addEventListener('pointerdown', () => { resume = playing; pause(); });
+  seekBar.addEventListener('input', () => { t = seekBar.value / 1000 * DUR; stopNow(); draw(); });
+  seekBar.addEventListener('change', () => { if (resume) play(); resume = false; });
+  $('snd').onclick = () => { soundOn = !soundOn; $('snd').setAttribute('aria-pressed', soundOn); $('snd').setAttribute('aria-label', soundOn ? 'Zvuk zapnutý' : 'Zvuk vypnutý'); $('sndicon').setAttribute('d', soundOn ? 'M3 9v6h4l5 4V5L7 9zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z' : 'M3 9v6h4l5 4V5L7 9zm13.6 3 2.7-2.7-1.4-1.4-2.7 2.7-2.7-2.7-1.4 1.4 2.7 2.7-2.7 2.7 1.4 1.4 2.7-2.7 2.7 2.7 1.4-1.4z'); if (soundOn) startSound(); else stopNow(); };
+  $('loop').onclick = () => { loop = !loop; $('loop').setAttribute('aria-pressed', loop); $('loop').setAttribute('aria-label', loop ? 'Smyčka zapnutá' : 'Smyčka vypnutá'); };
+  document.addEventListener('keydown', (e) => { if (e.target.tagName === 'INPUT' && e.key !== ' ') return; if (e.key === ' ') { e.preventDefault(); playing ? pause() : play(); } });
+  // for the video render: the score as 16-bit stereo WAV bytes, base64
+  window.renderAudio = async () => {
+    const { inter, sr } = await SOUND.renderOffline((k) => style.sound(k), DUR, 48000, { voiceover: false });
+    const n = inter.length, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf), w = (o, s) => [...s].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+    w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVEfmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 2, true); v.setUint32(24, sr, true); v.setUint32(28, sr * 4, true); v.setUint16(32, 4, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+    for (let i = 0; i < n; i++) v.setInt16(44 + i * 2, Math.max(-1, Math.min(1, inter[i])) * 32767, true);
+    let bin = ''; const u8 = new Uint8Array(buf); for (let i = 0; i < u8.length; i += 0x8000) bin += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+    return btoa(bin);
+  };
+  draw();
+  msg.textContent = RENDER ? '' : 'Mezerník nebo tlačítko spustí video se zvukem.';
+  window.__done = true;
+} catch (e) {
+  console.error(e);
+  msg.textContent = 'Animaci se nepodařilo vykreslit (potřebuje WebGL): ' + (e && e.message ? e.message : e);
+  window.__done = 'error';
+}
+</script>

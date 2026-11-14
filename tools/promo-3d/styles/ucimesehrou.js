@@ -1,11 +1,13 @@
 {
   // ---------------------------------------------------------------- content (change this block for a new topic)
   // Five stops on one route across a low-poly island. Each gets a paper flag planted in the world when the camera arrives.
-  const STEPS = [['1', 'PŘEDMĚTY'], ['2', 'HRY'], ['3', 'AI DOUČOVAČ'], ['4', 'TÝMY'], ['5', 'PRO KOHO']];
+  const STEPS = [['1', 'PŘEDMĚTY'], ['2', 'HRY'], ['3', 'AI DOUČOVAČ'], ['4', 'TÝMY']];
   // Subjects shown as blocks that pop out of the ground: [label, palette key]
   const SUBJECTS = [['ČEŠTINA', 'coral'], ['MATEMATIKA', 'teal'], ['ANGLIČTINA', 'ochre'], ['CHEMIE', 'lilac'], ['DĚJEPIS', 'leaf'], ['HUDEBKA', 'shallow']];
   const GAMES = [['FARMA', 'farm'], ['MĚSTO', 'city'], ['MAZLÍČCI', 'pets']];
-  const LEVELS = ['ZŠ', 'SŠ', 'PŘIJÍMAČKY', 'MATURITA'];
+  // The end card lives outside the island: a sheet of paper unfolds over the picture, a line of words, four icons and the address.
+  const TITLE = ['OBJEV SVĚT,', 'KDE UČENÍ', 'BAVÍ'];
+  const TILES = [['ZŠ', 'bag'], ['SŠ', 'books'], ['PŘIJÍMAČKY', 'test'], ['MATURITA', 'cap']];
   const QUESTION = 'NECHÁPU ZLOMKY';
   const SIGN = 'ucimesehrou.org';
   // One schedule (seconds) for picture and sound.
@@ -17,10 +19,10 @@
     walk2: [4.8, 5.6],
     flag3: 5.3, robot: 5.25, q: 5.85, a: 6.2, slices: [6.55, 6.7, 6.85],
     walk3: [7.25, 7.9],
-    flag4: 7.8, team: 7.55, scroll: 8.2, ticks: [8.75, 9.0, 9.25, 9.5],
-    climb: [9.95, 11.75],
-    flag5: 9.9, summit: 11.75, confetti: 11.8,
-    end: 12.5,
+    flag4: 7.8, team: 7.55, scroll: 8.2, ticks: [8.7, 8.92, 9.14, 9.36],
+    wipe: [9.5, 10.25],            // the paper unfolds over the whole picture, facet by facet, left to right
+    title: 10.15, tiles: [10.45, 10.6, 10.75, 10.9], address: 11.3,
+    end: 12.8,
   };
 
   // ---------------------------------------------------------------- the palette
@@ -249,6 +251,76 @@
     return { group, pop, width: w };
   }
 
+  // ---------------------------------------------------------------- SVG icons in the same low-poly language
+  // Every shape is cut into triangles that fan out from its centre, and each triangle gets its own small shift of
+  // tone, so the drawings read as the same cut paper as the 3D world: flat colours, no outlines, no gradients.
+  const ngon = (cx, cy, r, n = 8, rot = 0, sx = 1, sy = 1) => Array.from({ length: n }, (_, i) => { const a = rot + (i / n) * Math.PI * 2; return [cx + Math.cos(a) * r * sx, cy + Math.sin(a) * r * sy]; });
+  const rectPts = (x, y, w, h) => [[x, y], [x + w, y], [x + w, y + h], [x, y + h]];
+  const starPts = (cx, cy, R, r, n = 5) => Array.from({ length: n * 2 }, (_, i) => { const a = -Math.PI / 2 + (i / (n * 2)) * Math.PI * 2, d = i % 2 ? r : R; return [cx + Math.cos(a) * d, cy + Math.sin(a) * d]; });
+  function F(color, pts, seed = 1, amt = 2) {
+    const cx = pts.reduce((a, q) => a + q[0], 0) / pts.length, cy = pts.reduce((a, q) => a + q[1], 0) / pts.length;
+    return pts.map((a, i) => {
+      const b = pts[(i + 1) % pts.length], hex = '#' + tone(color, seed * 3.7 + i * 1.3 + (a[0] + b[0]) * 0.07 + (a[1] + b[1]) * 0.11, amt).getHexString();
+      return `<polygon points="${cx.toFixed(1)},${cy.toFixed(1)} ${a[0].toFixed(1)},${a[1].toFixed(1)} ${b[0].toFixed(1)},${b[1].toFixed(1)}" fill="${hex}" stroke="${hex}" stroke-width="0.9" stroke-linejoin="round"/>`;
+    }).join('');
+  }
+  const ICON_SVG = {
+    // ZŠ: a school backpack with a pocket, a zip, side bottles and a paper star
+    bag: () => [
+      F('#2e8f9c', [[38, 150], [62, 144], [64, 210], [46, 202]], 1), F('#2e8f9c', [[218, 150], [194, 144], [192, 210], [210, 202]], 2),
+      F('#22303c', [[106, 62], [150, 62], [144, 38], [112, 38]], 3, 1),
+      F('#e9684a', [[56, 94], [100, 64], [156, 64], [200, 94], [210, 192], [190, 232], [66, 232], [46, 192]], 4, 2.6),
+      F('#c9543c', [[66, 96], [102, 72], [154, 72], [190, 96], [182, 130], [74, 130]], 5, 2.4),
+      F('#22303c', [[60, 100], [74, 98], [80, 196], [64, 202]], 6, 1), F('#22303c', [[196, 100], [182, 98], [176, 196], [192, 202]], 7, 1),
+      F('#e0a646', [[72, 152], [184, 152], [190, 222], [66, 222]], 8, 2.6), F('#c98a3a', [[72, 152], [184, 152], [182, 174], [74, 174]], 9, 1.8),
+      F('#22303c', rectPts(84, 182, 88, 5), 10, 0.5), F('#fff6e4', [[122, 178], [134, 178], [136, 204], [120, 204]], 11, 1.2),
+      F('#fff6e4', starPts(128, 106, 17, 8, 5), 12, 1.8),
+    ].join(''),
+    // SŠ: a stack of three books under a light bulb
+    books: () => {
+      const book = (x, y, w, h, col, dark, seed) => [
+        F(col, rectPts(x, y, w, h), seed, 2.6), F(dark, rectPts(x + 10, y, 8, h), seed + 1, 1.2), F(dark, rectPts(x + w - 34, y, 8, h), seed + 2, 1.2),
+        F('#fff6e4', rectPts(x + 26, y + h / 2 - 6, w - 74, 12), seed + 3, 1.4), F('#fffbf4', rectPts(x + w - 14, y + 4, 14, h - 8), seed + 4, 1.4), F('#d9c9ad', rectPts(x + w - 14, y + h / 2 - 1, 14, 2), seed + 5, 0.4),
+      ].join('');
+      let rays = '';
+      for (let i = 0; i < 7; i++) { const a = -Math.PI + 0.45 + (i / 6) * (Math.PI - 0.9), c = Math.cos(a), sn = Math.sin(a); rays += F('#e0a646', [[128 + c * 42 - sn * 3, 52 + sn * 42 + c * 3], [128 + c * 60 - sn * 3, 52 + sn * 60 + c * 3], [128 + c * 60 + sn * 3, 52 + sn * 60 - c * 3], [128 + c * 42 + sn * 3, 52 + sn * 42 - c * 3]], 40 + i, 1); }
+      return [
+        rays,
+        F('#f2c25a', ngon(128, 52, 31, 9, -Math.PI / 2), 50, 2.6), F('#fff6e4', [[112, 40], [122, 34], [124, 46]], 51, 1), F('#d9c9ad', rectPts(114, 80, 28, 10), 52, 1), F('#a3929b', rectPts(118, 90, 20, 8), 53, 1),
+        book(72, 98, 112, 38, '#74a857', '#5d9160', 60), book(46, 136, 164, 40, '#e9684a', '#c9543c', 70), book(30, 176, 196, 44, '#2e8f9c', '#1f6a80', 80),
+        F('#e9684a', [[160, 98], [172, 98], [172, 124], [166, 118], [160, 124]], 90, 1.4),
+      ].join('');
+    },
+    // Přijímačky: a test paper with ticked rows and a stopwatch running against it
+    test: () => {
+      let rows = '';
+      for (let i = 0; i < 4; i++) {
+        const y = 88 + i * 34; rows += F('#ecd3a0', rectPts(74, y, 22, 22), 100 + i, 1.4) + F('#a3929b', rectPts(110, y + 3, 56, 6), 110 + i, 1) + F('#d9c9ad', rectPts(110, y + 14, 38, 5), 120 + i, 1);
+        if (i < 3) rows += F('#e9684a', [[78, y + 13], [83, y + 8], [88, y + 14], [100, y - 3], [106, y + 2], [88, y + 24]], 130 + i, 1.8);
+      }
+      return [
+        F('#fffbf4', [[56, 30], [152, 30], [186, 64], [186, 226], [56, 226]], 140, 1.6), F('#d9c9ad', [[152, 30], [186, 64], [152, 64]], 141, 1.6), F('#2e8f9c', rectPts(74, 50, 62, 14), 142, 1.8), rows,
+        F('#22303c', rectPts(172, 136, 14, 12), 150, 0.8), F('#2e8f9c', ngon(179, 188, 44, 10, 0), 151, 2.4), F('#fff6e4', ngon(179, 188, 34, 10, 0.3), 152, 1.2),
+        F('#22303c', rectPts(177, 160, 4, 8), 153, 0.5), F('#22303c', rectPts(177, 208, 4, 8), 154, 0.5), F('#22303c', rectPts(151, 186, 8, 4), 155, 0.5), F('#22303c', rectPts(199, 186, 8, 4), 156, 0.5),
+        F('#22303c', [[176, 190], [182, 190], [182, 168], [176, 168]], 157, 0.5), F('#e9684a', [[178, 186], [194, 198], [191, 202], [176, 190]], 158, 0.5), F('#22303c', ngon(179, 188, 5, 6), 159, 0.3),
+      ].join('');
+    },
+    // Maturita: a mortarboard with a tassel and a rolled diploma tied with a ribbon
+    cap: () => [
+      F('#364a5a', [[64, 108], [64, 152], [128, 182], [192, 152], [192, 108], [128, 136]], 160, 2.4),
+      F('#22303c', [[128, 28], [244, 82], [128, 136], [12, 82]], 161, 3),
+      F('#e0a646', ngon(128, 82, 9, 6), 162, 1.2),
+      F('#e0a646', [[128, 82], [200, 90], [202, 96], [128, 90]], 163, 1), F('#e0a646', [[198, 90], [206, 90], [206, 146], [198, 146]], 164, 1.2), F('#e9684a', [[192, 146], [212, 146], [216, 182], [188, 182]], 165, 2),
+      F('#fff6e4', rectPts(50, 192, 156, 32), 166, 1.8), F('#ecd3a0', ngon(50, 208, 16, 8, 0, 0.55, 1), 167, 1.6), F('#d9c9ad', ngon(206, 208, 16, 8, 0, 0.55, 1), 168, 1.6),
+      F('#e9684a', rectPts(114, 188, 28, 40), 169, 2), F('#c9543c', [[118, 228], [128, 228], [122, 250], [110, 246]], 170, 1.2), F('#c9543c', [[128, 228], [138, 228], [146, 246], [134, 250]], 171, 1.2),
+    ].join(''),
+  };
+  async function svgTexture(inner, size = 512) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="${size}" height="${size}">${inner}</svg>`;
+    const img = new Image(); img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); await img.decode();
+    return K.canvasTex(size, size, (ctx) => ctx.drawImage(img, 0, 0, size, size));
+  }
+
   registerStyle({
     id: 'low-poly-ucimesehrou',
     name: 'Low-Poly',
@@ -259,7 +331,7 @@
     fonts: ['700 150px "Oswald"'],
     render: { samples: 64, shutter: 0.4, tone: 'neutral', exposure: 1.0, bloom: 0.35, bloomThreshold: 1.25, vignette: 0.22, grain: 0.014, fov: 30, background: PAL.haze, far: 400 },
 
-    build(S) {
+    async build(S) {
       const { THREE, K, scene, camera } = S;
       const N = K.noise(7), smooth = K.smooth, TX = (txt, h, color = PAL.ink, extra = {}) => K.textPlane(txt, Object.assign({ font: '700 150px "Oswald"', color, height: h, pad: 24, lineHeight: 1.0 }, extra));
 
@@ -279,7 +351,7 @@
         return 0.1 + 0.45 * (1 - Math.exp(-d * 0.5)) + 0.012 * d + m * smooth(0.2, 2.6, d) + N.fbm(x * 0.6, z * 0.6, 1, 3) * (0.05 + 0.3 * smooth(0.3, 1.6, m)) * smooth(0, 1, d);
       };
 
-      // The route: a curve the pupil walks and the stones follow. Stops sit beside it; the last part climbs the mountain.
+      // The route: a curve the pupil walks along. The stops sit beside it.
       const ROUTE = [[-10.9, 3.0], [-10.3, 2.9], [-6.0, 3.1], [-3.6, 3.0], [-1.2, 3.0], [0.6, 2.7], [2.2, 2.7], [4.3, 2.6], [6.0, 2.2], [7.4, 1.2], [8.7, -0.1], [9.6, -1.2], [10.5, -2.2], [11.2, -3.2], [10.9, -4.3], [11.6, -5.1], [12.3, -6.3]];
       const curve = new THREE.CatmullRomCurve3(ROUTE.map(([x, z]) => new THREE.Vector3(x, 0, z)), false, 'centripetal');
       const ROUTE_LEN = curve.getLength();
@@ -428,10 +500,10 @@
       });
       const flags = [
         flag(...STEPS[0], { height: 3.5, side: 1 }), flag(...STEPS[1], { height: 3.5, side: 1 }),
-        flag(...STEPS[2], { height: 4.4, side: 1 }), flag(...STEPS[3], { height: 4.9, side: 1 }), flag(...STEPS[4], { height: 2.7, side: 1 }),
+        flag(...STEPS[2], { height: 4.4, side: 1 }), flag(...STEPS[3], { height: 4.9, side: 1 }),
       ];
-      const FLAG_AT = [[-10.3, -2.0], [-4.9, -2.0], [-1.9, -2.0], [4.9, -1.7], [9.4, 1.8]];
-      const FLAG_T = [T.flag1, T.flag2, T.flag3, T.flag4, T.flag5];
+      const FLAG_AT = [[-10.3, -2.0], [-4.9, -2.0], [-1.9, -2.0], [4.9, -1.7]];
+      const FLAG_T = [T.flag1, T.flag2, T.flag3, T.flag4];
       flags.forEach((f, i) => { const [x, z] = FLAG_AT[i]; f.group.position.set(x, height(x, z) - 0.02, z); scene.add(f.group); });
       // a signpost at the start of the route
       const sign = (() => {
@@ -439,7 +511,7 @@
         const post = mesh(facet(lift(new THREE.CylinderGeometry(0.05, 0.07, 1.3, 5), 0.65), (c) => tone(PAL.trunk, c.y * 9 + c.x * 5)), faceted());
         const board = new THREE.Mesh(K.roundedRect(tw + 0.3, 0.52, 0.08), new THREE.MeshStandardMaterial({ color: PAL.paper, emissive: PAL.paper, emissiveIntensity: 0.3, roughness: 0.95, side: THREE.DoubleSide }));
         board.position.set(0.1, 1.1, 0.07); board.castShadow = true; tp.position.z = 0.01; board.add(tp); g.add(post, board);
-        g.position.set(-11.0, height(-11.0, 1.0) - 0.02, 1.0); g.rotation.y = 0.5; scene.add(g); return g;
+        g.position.set(-11.0, height(-11.0, 1.0) - 0.02, 1.0); g.rotation.y = 0.5; return g;   // kept for later, not added: the address lives on the end card
       })();
 
       // ------------------------------------------------------------ stop 2: three miniature game worlds, each on its own round plot
@@ -521,35 +593,82 @@
         return { g, bottom, paper, rows, W, H };
       })();
 
-      // ------------------------------------------------------------ stop 5: four paper flags up the mountain, and the climb
-      const CLIMB = [0.3, 0.52, 0.74, 0.96].map((k) => K.lerp(U.base, 1, k));
-      const levelFlags = LEVELS.map((word, i) => {
-        const p = onRoute(CLIMB[i]), f = flag(null, word, { height: 1.7, side: -1, scale: 1.1 });
-        f.group.position.set(p.x - 0.5, p.y - 0.02, p.z + 0.15); scene.add(f.group); return f;
+      // ------------------------------------------------------------ the end card: outside the island, paper pinned to the lens
+      // Everything below is a child of the camera, which holds still from the team scene on, so it behaves like a set built in front of the lens.
+      scene.add(camera);
+      const CARD_D = 6.5, card = new THREE.Group(); card.position.z = -CARD_D; camera.add(card);
+      const SW = 7.8, SH = 4.5;
+      const sheetGeo = (() => {
+        const pts = [], nx = 20, ny = 12, r = K.rng(33), z = (x, y) => (K.hash(x * 7.1, y * 3.3) - 0.5) * 0.2;
+        for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) {
+          const inner = i > 0 && j > 0 && i < nx && j < ny;
+          pts.push([-SW / 2 + SW * i / nx + (inner ? (r() - 0.5) * SW / nx * 0.7 : 0), -SH / 2 + SH * j / ny + (inner ? (r() - 0.5) * SH / ny * 0.7 : 0)]);
+        }
+        const pos = [];
+        for (const [a, b, c] of triangulate(pts)) {
+          let A = pts[a], B = pts[b], C = pts[c];
+          if ((B[0] - A[0]) * (C[1] - A[1]) - (B[1] - A[1]) * (C[0] - A[0]) < 0) [B, C] = [C, B];
+          for (const q of [A, B, C]) pos.push(q[0], q[1], z(q[0], q[1]));
+        }
+        const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+        const painted = facet(g, (c) => { const f = K.clamp((c.y + SH / 2) / SH), t = f + (K.hash(c.x * 9.1, c.y * 5.3) - 0.5) * 0.4; return tone(t > 0.68 ? PAL.seaDeep : t > 0.36 ? PAL.sea : PAL.seaShallow, c.x * 13 + c.y * 7, 1.3); });
+        return unfold(painted, { from: [-SW / 2, 0, 0], duration: T.wipe[1] - T.wipe[0], start: T.wipe[0] });
+      })();
+      const sheet = mesh(sheetGeo, faceted({ unfold: true, fold: 0.3, roughness: 0.9 })); sheet.position.z = -0.25; card.add(sheet);
+      const cardText = (txt, em, color) => TX(txt, em, color);
+      const padEm = (em) => 48 / 150 * em;                                    // the text plane carries 24px of padding each side
+      const titleMeshes = [];
+      {
+        const em = 0.62, rows = [[[TITLE[0], PAL.paper]], [[TITLE[1], PAL.paper], [TITLE[2], '#ffc861']]];
+        rows.forEach((row, ri) => {
+          const parts = row.map(([txt, col]) => cardText(txt, em, col)), widths = parts.map((m) => m.userData.size[0] - padEm(em)), total = widths.reduce((a, b) => a + b, 0);
+          let x = -(total + 0.2 * (parts.length - 1)) / 2; const y = 1.2 - ri * 0.62;
+          parts.forEach((m, i) => { m.position.set(x + widths[i] / 2, y, 0.02); card.add(m); m.userData.base = [m.position.x, y]; titleMeshes.push(m); x += widths[i] + 0.2; });
+        });
+      }
+      const iconTex = {}; for (const [, kind] of TILES) iconTex[kind] = await svgTexture(ICON_SVG[kind]());
+      const TILE_PITCH = 1.3, TILE_Y = -0.28;
+      const tiles = TILES.map(([label, kind], i) => {
+        const g = new THREE.Group(), x = (i - 1.5) * TILE_PITCH;
+        const base = mesh(solid(new THREE.BoxGeometry(1.0, 1.0, 0.16, 2, 2, 1), (c, n, k) => tone(PAL.sand, c.x * 11 + c.y * 7 + i * 3 + k * 0.1, 0.6), 240 + i, 0.004), faceted({ roughness: 0.9 })); g.add(base);
+        const icon = new THREE.Mesh(new THREE.PlaneGeometry(0.96, 0.96), new THREE.MeshBasicMaterial({ map: iconTex[kind], transparent: true, depthWrite: false })); icon.position.z = 0.16; icon.renderOrder = 5; g.add(icon);
+        const lab = cardText(label, 0.2, PAL.paper); lab.position.set(0, -0.72, 0.02); g.add(lab);
+        g.position.set(x, TILE_Y, 0); g.rotation.z = (i % 2 ? -1 : 1) * 0.035; card.add(g);
+        return { g, icon, lab, x };
       });
-      const stones = Array.from({ length: 44 }, (_, i) => {
-        const u = K.lerp(0.02, 0.985, i / 43), p = onRoute(u), r = K.hash(i, 2);
-        const m = mesh(solid(lift(new THREE.CylinderGeometry(0.2 + r * 0.05, 0.23 + r * 0.05, 0.07, 6, 1), 0.035), (c, n, k) => tone(n.y > 0.5 ? PAL.stone : PAL.rock, k + i * 3, 0.9), 160 + i, 0.012), faceted({ roughness: 0.9 }));
-        m.position.set(p.x, p.y + 0.01, p.z); m.rotation.y = r * 6; m.userData.s = 1.5; scene.add(m); return { m, u };
-      });
-      const gem = mesh(solid(new THREE.OctahedronGeometry(0.28, 0), PAL.coral, 170, 0.0, 0.5), new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.4, emissive: '#e9684a', emissiveIntensity: 0.35 })); scene.add(gem);
-      const NC = 70, confetti = new THREE.InstancedMesh(gemGeo(0.08, 0.13), new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.5 }), NC);
-      confetti.frustumCulled = false; confetti.castShadow = false; scene.add(confetti);
-      const CONF_COL = [PAL.coral, PAL.ochre, PAL.teal, PAL.paper, PAL.lilac, PAL.shallow].map((c) => new THREE.Color(c));
-      for (let i = 0; i < NC; i++) confetti.setColorAt(i, CONF_COL[i % CONF_COL.length]);
+      const addr = (() => {
+        const g = new THREE.Group(), tp = cardText(SIGN, 0.27, PAL.paper), w = tp.userData.size[0] - padEm(0.27) + 0.6, h = 0.46;
+        const pill = new THREE.Mesh(K.roundedRect(w, h, h / 2), new THREE.MeshStandardMaterial({ color: PAL.coral, emissive: PAL.coral, emissiveIntensity: 0.3, roughness: 0.9 })); pill.castShadow = true;
+        tp.position.z = 0.012; g.add(pill, tp); g.position.set(0, -1.38, 0.05); card.add(g); return g;
+      })();
+      // a few cut-gem droplets drift up the two sides of the card
+      const NG = 18, drift = new THREE.InstancedMesh(gemGeo(0.06, 0.1), new THREE.MeshStandardMaterial({ vertexColors: true, flatShading: true, roughness: 0.5, emissive: '#ffffff', emissiveIntensity: 0.18 }), NG);
+      drift.frustumCulled = false; drift.castShadow = false; card.add(drift);
+      const DCOL = [PAL.paper, PAL.ochre, PAL.shallow, PAL.coral].map((c) => new THREE.Color(c));
+      for (let i = 0; i < NG; i++) drift.setColorAt(i, DCOL[i % 4]);
+      function endCard(t) {
+        card.visible = t > T.wipe[0] - 0.05;
+        titleMeshes.forEach((m, i) => { const k = K.spring(t - T.title - (i < 1 ? 0 : i < 3 ? 0.16 : 0.3), 2.6, 0.42), q = Math.max(0.001, k); m.visible = t > T.title - 0.01; m.scale.setScalar(q); m.position.y = m.userData.base[1] - (1 - K.clamp(k, 0, 1.2)) * 0.25; });
+        tiles.forEach((tl, i) => {
+          const k = K.spring(t - T.tiles[i], 2.7, 0.4), q = Math.max(0.001, k); tl.g.visible = t > T.tiles[i] - 0.01; tl.g.scale.setScalar(q); tl.g.position.y = TILE_Y + (1 - K.clamp(k, 0, 1.3)) * -0.5;
+          tl.icon.rotation.y = Math.sin(t * 1.5 + i * 1.3) * 0.18; tl.icon.position.y = Math.sin(t * 2 + i) * 0.015;
+        });
+        const ak = K.spring(t - T.address, 2.6, 0.4); addr.visible = t > T.address - 0.01; addr.scale.setScalar(Math.max(0.001, ak)); addr.position.y = -1.38 - (1 - K.clamp(ak, 0, 1.2)) * 0.3;
+        for (let i = 0; i < NG; i++) {
+          const side = i % 2 ? 1 : -1, ph = K.hash(i, 3), tt = t - T.address + 0.4, u = (((tt * 0.12 + ph) % 1) + 1) % 1;
+          K.place(drift, i, [side * (2.62 + 0.22 * K.hash(i, 4)) + 0.05 * Math.sin(tt + i), -1.9 + 3.8 * u, 0.12], [tt * 0.8 + i, tt * 0.6, 0], tt > 0 ? Math.sin(u * Math.PI) * (0.8 + K.hash(i, 5) * 0.6) : 0);
+        }
+        drift.instanceMatrix.needsUpdate = true;
+      }
 
       // ------------------------------------------------------------ the pupil's journey along the route, in one track
-      const pupilU = K.track([[0, U.s1], [T.walk1[0], U.s1], [T.walk1[1], U.s2], [T.walk2[0], U.s2], [T.walk2[1], U.s3], [T.walk3[0], U.s3], [T.walk3[1], U.s4], [T.climb[0], U.s4], [T.climb[1], 1, 'inOut']]);
-      const tableT = (u) => { for (let t = 0; t <= T.end; t += 0.01) if (pupilU(t) >= u) return t; return T.end; };
-      stones.forEach((s) => { s.t0 = Math.max(-0.2, tableT(s.u) - 0.65); });
-      levelFlags.forEach((f, i) => { f.t0 = tableT(CLIMB[i]) - 0.35; });
-
+      const pupilU = K.track([[0, U.s1], [T.walk1[0], U.s1], [T.walk1[1], U.s2], [T.walk2[0], U.s2], [T.walk2[1], U.s3], [T.walk3[0], U.s3], [T.walk3[1], U.s4], [T.end, U.s4]]);
       // ------------------------------------------------------------ camera: one crane move that flows through the five stops and out to the whole island
       const cam = {
-        pos: K.path([[0, [-8.0, 4.4, 10.2]], [1.8, [-7.6, 4.4, 10.2]], [3.5, [-1.6, 4.5, 10.4]], [4.8, [-1.6, 4.5, 10.4]], [5.6, [2.8, 4.7, 10.4]], [7.2, [2.8, 4.7, 10.4]], [7.9, [6.4, 4.9, 10.4]], [9.8, [6.4, 4.9, 10.4]], [11.0, [8.0, 6.0, 13.6]], [12.5, [8.6, 6.6, 14.6]]]),
-        aim: K.path([[0, [-7.9, 1.6, 0.6]], [1.8, [-7.5, 1.6, 0.6]], [3.5, [-1.2, 1.5, 0.4]], [4.8, [-1.2, 1.5, 0.4]], [5.6, [2.9, 2.5, 0.4]], [7.2, [2.9, 2.5, 0.4]], [7.9, [6.5, 2.7, 0.0]], [9.8, [6.5, 2.7, 0.0]], [11.0, [10.0, 3.4, -2.6]], [12.5, [10.4, 3.7, -3.2]]]),
-        focus: K.track([[0, [-7.5, 1.0, 0.6]], [1.8, [-7.5, 1.0, 0.6]], [3.5, [-1.2, 1.0, 0.4], 'inOut'], [4.8, [-1.2, 1.0, 0.4]], [5.6, [2.9, 1.4, 1.0], 'inOut'], [7.2, [2.9, 1.4, 1.0]], [7.9, [6.4, 1.2, 0.4], 'inOut'], [9.8, [6.4, 1.2, 0.4]], [11.0, [10.0, 3.0, -2.5], 'inOut'], [12.5, [10.4, 3.4, -3.0]]]),
-        ap: K.track([[0, 0.06], [9.8, 0.06], [12.5, 0.05, 'inOut']]),
+        pos: K.path([[0, [-8.0, 4.4, 10.2]], [1.8, [-7.6, 4.4, 10.2]], [3.5, [-1.6, 4.5, 10.4]], [4.8, [-1.6, 4.5, 10.4]], [5.6, [2.8, 4.7, 10.4]], [7.2, [2.8, 4.7, 10.4]], [7.9, [6.4, 4.9, 10.4]], [T.end, [6.4, 4.9, 10.4]]]),
+        aim: K.path([[0, [-7.9, 1.6, 0.6]], [1.8, [-7.5, 1.6, 0.6]], [3.5, [-1.2, 1.5, 0.4]], [4.8, [-1.2, 1.5, 0.4]], [5.6, [2.9, 2.5, 0.4]], [7.2, [2.9, 2.5, 0.4]], [7.9, [6.5, 2.7, 0.0]], [T.end, [6.5, 2.7, 0.0]]]),
+        focus: K.track([[0, [-7.5, 1.0, 0.6]], [1.8, [-7.5, 1.0, 0.6]], [3.5, [-1.2, 1.0, 0.4], 'inOut'], [4.8, [-1.2, 1.0, 0.4]], [5.6, [2.9, 1.4, 1.0], 'inOut'], [7.2, [2.9, 1.4, 1.0]], [7.9, [6.4, 1.2, 0.4], 'inOut'], [T.end, [6.4, 1.2, 0.4]]]),
+        ap: K.track([[0, 0.06], [T.end, 0.06]]),
       };
       const pop = (g, t, t0, f = 2.6, d = 0.4, base = 1) => { const a = K.spring(t - t0, f, d), w = K.spring(t - t0 - 0.05, f * 0.85, Math.min(0.9, d + 0.1)); g.visible = t > t0 - 1e-3; g.scale.set(Math.max(0.001, w) * base, Math.max(0.001, a) * base, Math.max(0.001, w) * base); };
       const place2 = (g, x, z, yaw, dy = 0) => { g.position.set(x, height(x, z) + dy, z); g.rotation.y = yaw; };
@@ -563,17 +682,17 @@
           // the pupil
           const u = pupilU(t), pp = onRoute(u), u2 = pupilU(t + 0.04), u1 = pupilU(t - 0.04), speed = Math.abs(u2 - u1) / 0.08 * ROUTE_LEN, walk = K.smooth(0.05, 0.9, speed);
           const dist = u * ROUTE_LEN, phase = dist * 6.2;
-          const climbing = t > T.climb[0] - 0.2, faceCam = 0.25;
+          const faceCam = 0.25;
           let yaw = Math.atan2(pp.tx, pp.tz); yaw = K.lerp(faceCam, yaw, walk);
-          const atS3 = t > T.q - 0.2 && t < T.walk3[0], atS2 = t > T.walk1[1] && t < T.walk2[0] + 0.3, atS4 = t > T.walk3[1] && t < T.climb[0], atS1 = t < T.walk1[0] + 0.1;
-          const summit = K.seg(t, T.summit, T.summit + 0.35), hop = summit > 0 ? Math.abs(Math.sin((t - T.summit) * 7)) * 0.2 * (1 - K.smooth(T.summit + 0.8, T.end, t)) : 0;
+          const atS3 = t > T.q - 0.2 && t < T.walk3[0], atS2 = t > T.walk1[1] && t < T.walk2[0] + 0.3, atS4 = t > T.walk3[1] && t < T.wipe[0], atS1 = t < T.walk1[0] + 0.1;
+          const summit = 0, hop = 0;
           const waveP = (atS2 ? 1 : 0) * K.smooth(T.games[2] + 0.2, T.games[2] + 0.5, t) * (1 - K.smooth(T.walk2[0] - 0.2, T.walk2[0], t));
           pupil.group.position.set(pp.x, pp.y, pp.z); pupil.group.rotation.y = K.lerp(yaw, 0.1, summit);
           pose(pupil, { phase, walk: summit > 0 ? 0 : walk, up: summit > 0 ? 1 : (atS4 && t > T.ticks[3] ? 0.8 : 0), wave: waveP, hop });
           pupil.head.rotation.x = atS3 ? -0.15 : 0;
           // subject blocks and the signpost
           cubes.forEach((c) => { pop(c.g, t, c.t0); });
-          sign.visible = true;
+          
           // games
           plots.forEach((p, i) => { pop(p.g, t, p.t0, 2.4, 0.38, 1.35); p.tag.pop(t, p.t0 + 0.12); if (p.g.userData.dog) { const d = p.g.userData.dog; d.position.y = 0.09 + Math.abs(Math.sin(t * 6)) * 0.03; d.rotation.y = -0.5 + Math.sin(t * 1.4) * 0.3; } });
           // the AI tutor, its question bubble, its answer and the pizza
@@ -591,34 +710,60 @@
           place2(teacher.group, TEACHER_POS[0], TEACHER_POS[1], -0.5); pop(teacher.group, t, T.team + 0.2, 2.4, 0.4, 1.9);
           pose(teacher, { phase: t * 2, walk: 0, wave: 0 }); teacher.armR.rotation.set(-1.0 - 0.25 * K.smooth(T.ticks[3] - 0.1, T.ticks[3] + 0.2, t), 0, -0.3);
           const sc = K.seg(t, T.scroll, T.scroll + 0.55, K.ease.outBack);
-          const scrollOut = 1 - K.seg(t, T.climb[0] - 0.3, T.climb[0] + 0.1, K.ease.in);
+          const scrollOut = 1 - K.seg(t, T.wipe[0] + 0.3, T.wipe[0] + 0.55, K.ease.in);   // the unfolding paper covers it first
           scroll.g.visible = t > T.scroll && scrollOut > 0.002; scroll.g.scale.setScalar(Math.max(0.001, K.spring(t - T.scroll, 2.6, 0.45) * scrollOut));
           scroll.g.position.y = 3.9 + 0.04 * Math.sin(t * 2.2);
           const unroll = K.seg(t, T.scroll + 0.1, T.scroll + 0.6, K.ease.out);
           scroll.paper.scale.y = Math.max(0.02, unroll); scroll.paper.position.y = -scroll.H * Math.max(0.02, unroll) / 2; scroll.bottom.position.y = -scroll.H * Math.max(0.02, unroll);
           scroll.rows.forEach((r, i) => { r.tick.scale.setScalar(Math.max(0.001, K.spring(t - T.ticks[i], 3.2, 0.4))); r.tick.visible = t > T.ticks[i]; });
-          // stones and flags up the mountain
-          stones.forEach((s) => { const k = K.spring(t - s.t0, 3.2, 0.45); s.m.visible = t > s.t0; const q = Math.max(0.001, k) * 1.5; s.m.scale.set(q, q, q); });
-          levelFlags.forEach((f) => f.pop(t, f.t0));
-          // the summit: a gem appears above the pupil and a burst of paper confetti
-          const gk = K.spring(t - T.summit, 2.6, 0.4); gem.visible = t > T.summit; gem.scale.setScalar(Math.max(0.001, gk));
-          gem.position.set(pp.x, pp.y + 2.0 + 0.08 * Math.sin(t * 3), pp.z); gem.rotation.y = t * 1.6;
-          for (let i = 0; i < NC; i++) {
-            const tt = t - T.confetti - K.hash(i, 1) * 0.15, a = K.hash(i, 2) * 6.283, v = 1.2 + K.hash(i, 3) * 2.2, up = 3.2 + K.hash(i, 4) * 2.6;
-            const on = tt > 0 && tt < 3.0, x = pp.x + Math.cos(a) * v * tt * 0.7, z = pp.z + Math.sin(a) * v * tt * 0.5, y = pp.y + 0.8 + up * tt - 4.2 * tt * tt;
-            K.place(confetti, i, [x, Math.max(y, pp.y), z], [tt * 3 + i, tt * 4, tt * 2], on ? 0.8 + K.hash(i, 5) * 0.6 : 0);
-          }
-          confetti.instanceMatrix.needsUpdate = true;
+          endCard(t);
           // flags
           flags.forEach((f, i) => f.pop(t, FLAG_T[i]));
           // the paper boat rides the sea
           const bx = -13.0 + 0.12 * t, bz = 3.4, wv = (x, z) => 0.075 * (Math.sin(x * 1.25 + t * 1.35) * Math.cos(z * 1.05 - t * 1.1) * 0.6 + Math.sin(x * 2.7 - z * 2.2 + t * 2.3) * 0.4);
           boat.position.set(bx, wv(bx, bz) + 0.03, bz); boat.rotation.set(0.08 * Math.sin(t * 1.3), 0.5, (wv(bx + 0.3, bz) - wv(bx - 0.3, bz)) * 1.2); boat.scale.setScalar(1.3);
           const p = cam.pos(t), a = cam.aim(t);
-          K.look(camera, p, a); K.focus(camera, cam.focus(t), cam.ap(t));
+          K.look(camera, p, a); K.focus(camera, cam.focus(t));
+          const rack = K.smooth(9.3, 10.0, t); K.focus(camera, K.lerp(camera.userData.focus, CARD_D, rack), K.lerp(cam.ap(t), 0, rack));
           sky.position.copy(camera.position);
         },
       };
+    },
+
+    // The score: every sound is placed from the same schedule T that drives the picture.
+    sound(k) {
+      const r = globalThis.K.rng(9), pk = (t) => Math.max(0.02, t);
+      // a soft major pad, sea air and a bed of room tone; a small silence just before the paper unfolds
+      k.music('pad', 0, T.wipe[0] - 0.12, { bpm: 56, gain: 0.9, chords: [['D4', 'F#4', 'A4', 'C#5'], ['G3', 'B3', 'D4', 'F#4']] });
+      k.music('pad', T.title - 0.05, T.end, { bpm: 56, gain: 1.0, chords: [['G3', 'B3', 'D4', 'F#4'], ['D4', 'F#4', 'A4', 'C#5']] });
+      k.bed('room', 0, T.end, { gain: 0.6 }); k.bed('hiss', 0, T.wipe[0], { gain: 0.5 });
+      // the walk: a soft tock on every stone
+      const steps = (a, b, pan) => { for (let t = a + 0.12; t < b - 0.05; t += 0.29) k.play('tock', t, { gain: 0.16, f: 260 + r() * 60, pan, minor: true }); };
+      steps(T.walk1[0], T.walk1[1], -0.2); steps(T.walk2[0], T.walk2[1], 0); steps(T.walk3[0], T.walk3[1], 0.25);
+      // 1: the subject blocks pop out of the ground, each a little higher
+      T.cubes.forEach((t0, i) => k.play('pop', pk(t0 + 0.05 + (i < 3 ? 0.03 * i : 0)), { gain: 0.8, f: 500 + i * 55, pan: -0.45 + i * 0.18 }));
+      k.play('paper', 0.05, { dur: 0.5, gain: 0.5, pan: -0.3 });
+      // flags: the pin in, the paper round it, a settle
+      [T.flag2, T.flag3, T.flag4].forEach((t, i) => { k.play('pop', t, { gain: 0.9, f: 560 + i * 60, pan: [-0.3, 0.1, 0.35][i] }); k.play('swish', t + 0.12, { gain: 0.5, dur: 0.2 }); k.play('tock', t + 0.3, { gain: 0.45, f: 700 }); });
+      // 2: three game worlds
+      T.games.forEach((t0, i) => { k.play('pop', t0 + 0.03, { gain: 0.85, f: 430 + i * 70, pan: -0.3 + i * 0.3 }); k.play('tick', t0 + 0.15, { gain: 0.4, pan: -0.3 + i * 0.3 }); });
+      // 3: the robot, the question, the pizza
+      k.play('pop', T.robot + 0.02, { gain: 0.9, f: 400, pan: 0.3 }); k.play('blip', T.robot + 0.35, { gain: 0.5, f: 'E6', type: 'sine', dur: 0.1, pan: 0.3 });
+      k.play('pop', T.q + 0.02, { gain: 0.85, f: 720, pan: -0.3 }); k.play('swish', T.q - 0.05, { gain: 0.35, dur: 0.18, pan: -0.3 });
+      k.play('pop', T.a + 0.02, { gain: 0.9, f: 520, pan: 0.3 }); k.play('ding', T.a + 0.16, { gain: 0.45, f: 'E6', pan: 0.3 });
+      T.slices.forEach((t0, i) => k.play('tick', t0, { gain: 0.8, f: 3400 + i * 500, pan: 0.2 + i * 0.1 }));
+      k.play('success', T.slices[2] + 0.06, { gain: 0.5, f: 'A5' });
+      k.play('swish', T.walk3[0] - 0.05, { gain: 0.4, dur: 0.3 });
+      // 4: the team gets an assignment
+      [T.team, T.team + 0.07, T.team + 0.14].forEach((t0, i) => k.play('pop', t0 + 0.02, { gain: 0.8, f: 450 + i * 40, pan: 0.1 + i * 0.2 })); k.play('pop', T.team + 0.22, { gain: 0.9, f: 340, pan: 0.5 });
+      k.play('paper', T.scroll, { dur: 0.55, gain: 0.9, pan: 0.1 }); k.play('paper', T.scroll + 0.25, { dur: 0.3, gain: 0.5, pan: 0.1 });
+      ['C6', 'E6', 'G6', 'C7'].forEach((f, i) => { k.play('ding', T.ticks[i], { gain: 0.5, f, pan: -0.3 + i * 0.2 }); k.play('tock', T.ticks[i], { gain: 0.35, f: 500 + i * 80 }); });
+      k.play('swish', T.wipe[0] + 0.3, { gain: 0.25, dur: 0.25, pan: 0.3 });
+      // 5: the paper unfolds, then the end card lands
+      k.play('whoosh', T.wipe[0] - 0.05, { gain: 0.5, dur: 0.75, top: 2400 }); k.play('paper', T.wipe[0], { dur: 0.8, gain: 1.0 }); k.play('paper', T.wipe[0] + 0.2, { dur: 0.5, gain: 0.7, pan: 0.3 }); k.play('slap', T.wipe[1] - 0.04, { gain: 0.4 });
+      [T.title, T.title + 0.16, T.title + 0.3].forEach((t0, i) => k.play('pop', t0 + 0.02, { gain: 0.65, f: 440 + i * 80, pan: -0.1 + i * 0.1 })); k.play('thud', T.title + 0.02, { gain: 0.25, f: 110 });
+      T.tiles.forEach((t0, i) => { k.play('pop', t0 + 0.02, { gain: 0.8, f: 520 + i * 90, pan: -0.45 + i * 0.3 }); k.play('tick', t0 + 0.12, { gain: 0.35, pan: -0.45 + i * 0.3 }); });
+      k.play('pop', T.address + 0.02, { gain: 0.9, f: 700 }); k.play('success', T.address + 0.05, { gain: 0.6, f: 'C6' }); k.play('sparkle', T.address + 0.15, { gain: 0.6 });
     },
   });
 }
