@@ -119,7 +119,7 @@ export function CodeLearn() {
               onClick={() => (playing ? stopPlay() : startPlay())}
               className="rounded-lg border-2 border-[#ffc933] bg-[#ffc933] px-3 py-1 text-xs font-bold text-[#16132b] shadow-[3px_3px_0_#16132b] transition-transform active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
             >
-              {playing ? "■ Stop" : "▶ Přehrát"}
+              <span className="inline-flex items-center gap-1.5"><SketchIcon kind={playing ? "close" : "play"} size={16} />{playing ? "Stop" : "Přehrát"}</span>
             </button>
           </div>
 

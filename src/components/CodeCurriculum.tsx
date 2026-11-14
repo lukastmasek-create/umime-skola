@@ -127,13 +127,13 @@ export function CodeCurriculum() {
                             }}
                             className="rounded-md border-2 border-[#8d99ff] px-2 py-0.5 font-bold text-[#d6dcff] hover:bg-[#2c2a52]"
                           >
-                            📖 {sec.title}
+                            <span className="inline-flex items-center gap-1.5"><SketchIcon kind="study" size={14} />{sec.title}</span>
                           </button>
                         ) : null;
                       })}
                       {s.project && (
                         <a href="#cviceni" className="rounded-md border-2 border-[#17a864] px-2 py-0.5 font-bold text-[#b8f5d6] hover:bg-[#0f2a20]">
-                          🛠 Projekt: {TITLE_BY_ID[s.project] ?? s.project}
+                          <span className="inline-flex items-center gap-1.5"><SketchIcon kind="gear" size={14} />Projekt: {TITLE_BY_ID[s.project] ?? s.project}</span>
                         </a>
                       )}
                     </div>

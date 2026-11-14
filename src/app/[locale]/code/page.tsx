@@ -58,13 +58,13 @@ export default async function CodePage({ params }: { params: Promise<{ locale: s
               </p>
               <div className="hero-in flex flex-col gap-3 sm:flex-row sm:gap-4" style={{ ["--d" as string]: "0.46s" }}>
                 <a href="#editor" className="btn-bouncy btn-cta btn-primary btn-lg btn-dot">
-                  ▶ Vyzkoušet editor
+                  <span className="inline-flex items-center gap-1.5"><SketchIcon kind="play" size={18} />Vyzkoušet editor</span>
                 </a>
                 <a href="#ucivo" className="btn-bouncy btn-secondary btn-lg">
-                  📖 Učivo a plán
+                  <span className="inline-flex items-center gap-1.5"><SketchIcon kind="study" size={18} />Učivo a plán</span>
                 </a>
                 <a href="#cviceni" className="btn-bouncy btn-secondary btn-lg">
-                  ✎ Cvičení
+                  <span className="inline-flex items-center gap-1.5"><SketchIcon kind="pencil" size={18} />Cvičení</span>
                 </a>
               </div>
             </div>

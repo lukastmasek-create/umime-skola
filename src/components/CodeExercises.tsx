@@ -324,7 +324,7 @@ export function CodeExercises() {
                 title="Zkontrolovat (Enter posune na další místo, Ctrl+Enter zkontroluje)"
                 className="rounded-lg border-2 border-[#ffc933] bg-[#ffc933] px-4 py-1.5 text-sm font-bold text-[#16132b] shadow-[3px_3px_0_#16132b] transition-transform active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
               >
-                ▶ Zkontrolovat
+                <span className="inline-flex items-center gap-1.5"><SketchIcon kind="play" size={16} />Zkontrolovat</span>
               </button>
               <button
                 type="button"
@@ -431,7 +431,7 @@ export function CodeExercises() {
 
                   {panel === "hint" && (
                     <p className="rounded-xl border-2 border-dashed border-[#8fd0ff] bg-[#1b2440] p-3 text-[#d6ebff]">
-                      💡 {ex.hint}
+                      <span className="mr-1.5 inline-block align-middle"><SketchIcon kind="bolt" size={16} /></span>{ex.hint}
                     </p>
                   )}
 

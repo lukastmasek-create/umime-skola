@@ -562,7 +562,7 @@ export function CodeSandbox() {
             {groups.map((g) => (
               <div key={g.dir || "root"}>
                 {g.dir && (
-                  <div className="px-2 py-1 font-mono text-[11px] font-bold text-[#9d96bf]">📁 {g.dir}/</div>
+                  <div className="px-2 py-1 font-mono text-[11px] font-bold text-[#9d96bf]"><span className="inline-flex items-center gap-1.5"><SketchIcon kind="folder" size={14} />{g.dir}/</span></div>
                 )}
                 {g.items.map((n) => fileRow(n))}
               </div>
