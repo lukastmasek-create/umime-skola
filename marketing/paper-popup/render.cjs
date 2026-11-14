@@ -1,39 +1,37 @@
-// Renders the animation to MP4: node render.cjs <outdir> [samples=5] [width=1920] [workers=2]
-// Needs: playwright-core, headless Chromium, ffmpeg, and a static server on :8765 serving a folder with stills.html (see below).
-// Usage by stages:  node render.cjs audio <outdir>   |   node render.cjs frames <outdir> <from> <to> <samples> <width>   |   node render.cjs mux <outdir>
+// Renders the animation to MP4 (1920x1080, 30 fps, sound at about -15 LUFS).
+//   npm i playwright-core        (and have ffmpeg and Chrome/Chromium installed)
+//   node render.cjs [samples=32] [outdir=video]
+// samples = sub-renders per frame (motion blur, depth of field, soft shadows): 32 is good, 56 is the style's full quality.
+// env: CHROME=/path/to/chrome (default: Playwright's Chromium), FRAMES=N (render only the first N frames, for a test)
 const { chromium } = require('playwright-core');
-const fs = require('fs'), cp = require('child_process');
-const [mode, out, a, b, n, w] = process.argv.slice(2);
-const FPS = 30, DUR = 25;
-const open = async () => {
-  const br = await chromium.launch({ executablePath: process.env.CHROME || '/opt/pw-browsers/chromium', args: ['--no-sandbox', '--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
-  const p = await br.newPage({ viewport: { width: 1300, height: 800 } });
-  p.on('pageerror', (e) => console.log('[err]', e.message));
-  await p.goto(`http://localhost:8765/stills.html?w=${w || 1920}&n=${n || 5}`);
-  await p.waitForFunction('window.READY', null, { timeout: 300000 });
-  return [br, p];
-};
+const fs = require('fs'), http = require('http'), path = require('path'), cp = require('child_process');
+const samples = +(process.argv[2] || 32), out = path.resolve(process.argv[3] || 'video'), FPS = 30;
+fs.mkdirSync(out, { recursive: true });
+const server = http.createServer((q, r) => { const f = path.join(__dirname, q.url.split('?')[0] === '/' ? 'index.html' : q.url.split('?')[0]); fs.readFile(f, (e, d) => { if (e) { r.writeHead(404); r.end(); } else { r.writeHead(200, { 'Content-Type': f.endsWith('.html') ? 'text/html; charset=utf-8' : 'application/octet-stream' }); r.end(d); } }); });
 (async () => {
-  fs.mkdirSync(out, { recursive: true });
-  if (mode === 'audio') {
-    const [br, p] = await open();
-    const b64 = await p.evaluate(async () => {
-      const r = await SOUND.renderOffline((k) => STYLES[0].sound(k), 25, 48000, { voiceover: false });
-      const i16 = new Int16Array(r.inter.length); for (let i = 0; i < i16.length; i++) i16[i] = Math.max(-1, Math.min(1, r.inter[i])) * 32767;
-      let s = ''; const u8 = new Uint8Array(i16.buffer); for (let i = 0; i < u8.length; i += 32768) s += String.fromCharCode.apply(null, u8.subarray(i, i + 32768)); return btoa(s);
-    });
-    fs.writeFileSync(`${out}/audio.raw`, Buffer.from(b64, 'base64')); await br.close(); console.log('audio ok');
-  } else if (mode === 'frames') {
-    const [br, p] = await open();
-    for (let i = +a; i < +b; i++) {
-      const f = `${out}/f${String(i).padStart(4, '0')}.jpg`; if (fs.existsSync(f)) continue;
-      const d = await p.evaluate((t) => window.shot(t, 0.95), i / FPS);
-      fs.writeFileSync(f, Buffer.from(d.split(',')[1], 'base64'));
-      if (i % 10 === 0) console.log('frame', i);
-    }
-    await br.close();
-  } else if (mode === 'mux') {
-    cp.execSync(`ffmpeg -y -f s16le -ar 48000 -ac 2 -i ${out}/audio.raw -af loudnorm=I=-15:TP=-1.5:LRA=11 ${out}/audio.wav`, { stdio: 'inherit' });
-    cp.execSync(`ffmpeg -y -framerate ${FPS} -i ${out}/f%04d.jpg -i ${out}/audio.wav -c:v libx264 -preset slow -crf 17 -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart -shortest ${out}/ucime-se-hrou.mp4`, { stdio: 'inherit' });
+  await new Promise((ok) => server.listen(0, ok));
+  const br = await chromium.launch({ executablePath: process.env.CHROME || undefined, args: ['--no-sandbox', '--enable-gpu', '--ignore-gpu-blocklist', '--use-angle=default', '--enable-unsafe-swiftshader'] });
+  const p = await br.newPage({ viewport: { width: 1300, height: 800 } });
+  p.on('pageerror', (e) => console.log('[page error]', e.message));
+  await p.goto(`http://localhost:${server.address().port}/index.html?render&samples=${samples}`);
+  await p.waitForFunction('window.DURATION', null, { timeout: 300000 });
+  const dur = await p.evaluate('window.DURATION'), total = Math.min(+(process.env.FRAMES || Infinity), Math.ceil(dur * FPS));
+  console.log(`duration ${dur.toFixed(2)} s, ${total} frames, ${samples} samples`);
+  const b64 = await p.evaluate(async () => {
+    const r = await SOUND.renderOffline((k) => STYLE.sound(k), STYLE.duration, 48000, { voiceover: false });
+    const i16 = new Int16Array(r.inter.length); for (let i = 0; i < i16.length; i++) i16[i] = Math.max(-1, Math.min(1, r.inter[i])) * 32767;
+    let s = ''; const u8 = new Uint8Array(i16.buffer); for (let i = 0; i < u8.length; i += 32768) s += String.fromCharCode.apply(null, u8.subarray(i, i + 32768)); return btoa(s);
+  });
+  fs.writeFileSync(`${out}/audio.raw`, Buffer.from(b64, 'base64')); console.log('sound rendered');
+  const t0 = Date.now();
+  for (let i = 0; i < total; i++) {
+    const f = `${out}/f${String(i).padStart(4, '0')}.jpg`; if (fs.existsSync(f)) continue;   // a stopped render resumes where it was
+    const d = await p.evaluate((t) => { window.seek(t); return document.getElementById('c').toDataURL('image/jpeg', 0.95); }, i / FPS);
+    fs.writeFileSync(f, Buffer.from(d.split(',')[1], 'base64'));
+    if (i % 15 === 0) console.log(`frame ${i}/${total}, ${((Date.now() - t0) / 1000).toFixed(0)} s`);
   }
+  await br.close(); server.close();
+  cp.execSync(`ffmpeg -y -f s16le -ar 48000 -ac 2 -i "${out}/audio.raw" -af loudnorm=I=-15:TP=-1.5:LRA=11 -ar 48000 "${out}/audio.wav"`, { stdio: 'inherit' });
+  cp.execSync(`ffmpeg -y -framerate ${FPS} -i "${out}/f%04d.jpg" -i "${out}/audio.wav" -c:v libx264 -preset slow -crf 16 -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart -shortest "${out}/ucime-se-hrou.mp4"`, { stdio: 'inherit' });
+  console.log('done:', `${out}/ucime-se-hrou.mp4`);
 })();
