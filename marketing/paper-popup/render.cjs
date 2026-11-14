@@ -1,10 +1,11 @@
 // Renders the animation to MP4 (1920x1080, 30 fps, sound at about -15 LUFS).
-//   npm i playwright-core        (and have ffmpeg and Chrome/Chromium installed)
+//   npm i playwright-core ffmpeg-static     (ffmpeg-static replaces a system ffmpeg; Chrome/Chromium must be installed)
 //   node render.cjs [samples=32] [outdir=video]
 // samples = sub-renders per frame (motion blur, depth of field, soft shadows): 32 is good, 56 is the style's full quality.
 // env: CHROME=/path/to/chrome (default: Playwright's Chromium), FRAMES=N (render only the first N frames, for a test)
 const { chromium } = require('playwright-core');
 const fs = require('fs'), http = require('http'), path = require('path'), cp = require('child_process');
+let FF = 'ffmpeg'; try { FF = require('ffmpeg-static'); } catch (e) {}   // ffmpeg-static brings its own ffmpeg, so nothing else has to be installed
 const samples = +(process.argv[2] || 32), out = path.resolve(process.argv[3] || 'video'), FPS = 30;
 fs.mkdirSync(out, { recursive: true });
 const server = http.createServer((q, r) => { const f = path.join(__dirname, q.url.split('?')[0] === '/' ? 'index.html' : q.url.split('?')[0]); fs.readFile(f, (e, d) => { if (e) { r.writeHead(404); r.end(); } else { r.writeHead(200, { 'Content-Type': f.endsWith('.html') ? 'text/html; charset=utf-8' : 'application/octet-stream' }); r.end(d); } }); });
@@ -31,7 +32,7 @@ const server = http.createServer((q, r) => { const f = path.join(__dirname, q.ur
     if (i % 15 === 0) console.log(`frame ${i}/${total}, ${((Date.now() - t0) / 1000).toFixed(0)} s`);
   }
   await br.close(); server.close();
-  cp.execSync(`ffmpeg -y -f s16le -ar 48000 -ac 2 -i "${out}/audio.raw" -af loudnorm=I=-15:TP=-1.5:LRA=11 -ar 48000 "${out}/audio.wav"`, { stdio: 'inherit' });
-  cp.execSync(`ffmpeg -y -framerate ${FPS} -i "${out}/f%04d.jpg" -i "${out}/audio.wav" -c:v libx264 -preset slow -crf 16 -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart -shortest "${out}/ucime-se-hrou.mp4"`, { stdio: 'inherit' });
+  cp.execSync(`"${FF}" -y -f s16le -ar 48000 -ac 2 -i "${out}/audio.raw" -af loudnorm=I=-15:TP=-1.5:LRA=11 -ar 48000 "${out}/audio.wav"`, { stdio: 'inherit' });
+  cp.execSync(`"${FF}" -y -framerate ${FPS} -i "${out}/f%04d.jpg" -i "${out}/audio.wav" -c:v libx264 -preset slow -crf 16 -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart -shortest "${out}/ucime-se-hrou.mp4"`, { stdio: 'inherit' });
   console.log('done:', `${out}/ucime-se-hrou.mp4`);
 })();
