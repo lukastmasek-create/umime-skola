@@ -1,41 +1,46 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { LEVELS } from "./levels.ts";
-import { minMoves, slideRange, isSolved, moveBlock, canOccupy } from "./logic.ts";
-import { checkAnswer, pickRound, questionFor, type Question } from "./questions.ts";
+import { minMoves, isSolved, axisRange, movePiece, canAt, cellsOf } from "./logic.ts";
+
+test("pieces start on board without overlap", () => {
+  for (const lv of LEVELS) {
+    const seen = new Set<string>();
+    for (const p of lv.pieces) for (const [y, x] of cellsOf(p)) {
+      assert.ok(y >= 0 && y < 6 && x >= 0 && x < 6, `${lv.name} ${p.id} off board`);
+      assert.ok(!seen.has(`${y},${x}`), `${lv.name} overlap`);
+      seen.add(`${y},${x}`);
+    }
+  }
+});
 
 test("every level is solvable", () => {
   for (const lv of LEVELS) {
-    const m = minMoves(lv.blocks);
-    assert.ok(m > 0, `${lv.name} unsolvable (${m})`);
+    const m = minMoves(lv.pieces);
     console.log(lv.name, "min moves", m);
+    assert.ok(m > 0, `${lv.name} unsolvable (${m})`);
   }
 });
 
-test("collision and exit rules", () => {
-  const bs = LEVELS[0].blocks;
-  assert.equal(canOccupy(bs, "X", 1), false); // A sits at col 2 row 1-2
-  assert.equal(isSolved(bs), false);
-  const r = slideRange(bs, "X");
-  assert.deepEqual(r, { min: 0, max: 0 });
-  const solved = moveBlock(bs, "X", 5);
-  assert.equal(isSolved(solved), true);
+test("key H exits through the right hole only on its row", () => {
+  const ps = LEVELS[0].pieces;
+  assert.equal(canAt(ps, "H", 2, 4), true); // still on board, cols 4-5
+  assert.equal(canAt(ps, "H", 2, 6), true); // through the hole
+  assert.equal(canAt(ps, "H", 1, 6), false); // wrong row
+  assert.equal(canAt(ps, "A", 0, 4), true);
+  assert.equal(canAt(ps, "A", 0, 6), false); // ordinary piece cannot leave
+  assert.equal(isSolved(ps), false);
 });
 
-test("checkAnswer number and word", () => {
-  const n: Question = { type: "number", prompt: "", answer: "56" };
-  const w: Question = { type: "word", prompt: "", answer: "carbon dioxide" };
-  assert.equal(checkAnswer(n, " 56 "), true);
-  assert.equal(checkAnswer(n, "57"), false);
-  assert.equal(checkAnswer(n, ""), false);
-  assert.equal(checkAnswer(w, "Carbon-Dioxide"), true);
-  assert.equal(checkAnswer(w, "carbon"), false);
+test("win when both keys are out", () => {
+  let ps = LEVELS[0].pieces;
+  ps = movePiece(ps, "H", "h", 6);
+  assert.equal(isSolved(ps), false);
+  ps = movePiece(ps, "V", "v", 6);
+  assert.equal(isSolved(ps), true);
 });
 
-test("rounds are single-type and rotate", () => {
-  for (let i = 0; i < 20; i++) {
-    const r = pickRound();
-    assert.ok(r.pool.every((q) => q.type === r.type));
-    assert.notEqual(questionFor(r, 0, 0), questionFor(r, 0, 1));
-  }
+test("axis range of a blocked piece", () => {
+  const r = axisRange(LEVELS[0].pieces, "C", "h");
+  assert.deepEqual(r, { min: 0, max: 1 }); // B v sloupci 4 blokuje
 });

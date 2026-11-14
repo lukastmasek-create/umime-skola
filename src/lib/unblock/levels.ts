@@ -1,69 +1,48 @@
-import type { Level } from "./logic";
+import type { Level, Shape } from "./logic";
 
-// X is the target (always horizontal, row 2). Board 6x6, exit on the right.
+// Tvary (vždy od 0,0)
+const DOM_H: Shape = [[0, 0], [0, 1]];
+const DOM_V: Shape = [[0, 0], [1, 0]];
+const TRI_H: Shape = [[0, 0], [0, 1], [0, 2]];
+const TRI_V: Shape = [[0, 0], [1, 0], [2, 0]];
+const SQUARE: Shape = [[0, 0], [0, 1], [1, 0], [1, 1]];
+const L_TET: Shape = [[0, 0], [1, 0], [2, 0], [2, 1]];
+const L_MIRROR: Shape = [[0, 1], [1, 1], [2, 1], [2, 0]];
+const T_TET: Shape = [[0, 0], [0, 1], [0, 2], [1, 1]];
+const S_TET: Shape = [[0, 1], [0, 2], [1, 0], [1, 1]];
+
+// Klíč H (vodorovný) musí vyjet dírou vpravo v řádku 2, klíč V (svislý) dírou dole ve sloupci 3.
 export const LEVELS: Level[] = [
   {
-    name: "Warm-up",
-    blocks: [
-      { id: "X", orient: "h", r: 2, c: 0, len: 2 },
-      { id: "A", orient: "v", r: 1, c: 2, len: 2 },
-      { id: "B", orient: "v", r: 0, c: 4, len: 3 },
-      { id: "C", orient: "h", r: 4, c: 0, len: 2 },
-      { id: "D", orient: "v", r: 3, c: 5, len: 2 },
+    name: "První dveře",
+    pieces: [
+      { id: "H", r: 2, c: 0, shape: DOM_H, axis: "h", key: "H" },
+      { id: "V", r: 0, c: 3, shape: DOM_V, axis: "v", key: "V" },
+      { id: "A", r: 0, c: 0, shape: SQUARE, axis: "both" },
+      { id: "B", r: 3, c: 4, shape: TRI_V, axis: "v" },
+      { id: "C", r: 4, c: 0, shape: TRI_H, axis: "h" },
     ],
   },
   {
-    name: "Side lane",
-    blocks: [
-      { id: "X", orient: "h", r: 2, c: 0, len: 2 },
-      { id: "A", orient: "v", r: 0, c: 2, len: 3 },
-      { id: "B", orient: "v", r: 1, c: 3, len: 2 },
-      { id: "C", orient: "h", r: 0, c: 4, len: 2 },
-      { id: "D", orient: "v", r: 1, c: 5, len: 2 },
-      { id: "E", orient: "h", r: 3, c: 3, len: 2 },
-      { id: "F", orient: "v", r: 3, c: 0, len: 3 },
+    name: "Zatáčky",
+    pieces: [
+      { id: "H", r: 2, c: 1, shape: DOM_H, axis: "h", key: "H" },
+      { id: "V", r: 1, c: 3, shape: DOM_V, axis: "v", key: "V" },
+      { id: "A", r: 0, c: 0, shape: TRI_V, axis: "v" },
+      { id: "B", r: 0, c: 3, shape: T_TET, axis: "h" },
+      { id: "C", r: 4, c: 1, shape: S_TET, axis: "h" },
+      { id: "D", r: 3, c: 5, shape: DOM_V, axis: "v" },
     ],
   },
   {
-    name: "Tight squeeze",
-    blocks: [
-      { id: "X", orient: "h", r: 2, c: 1, len: 2 },
-      { id: "A", orient: "v", r: 0, c: 0, len: 3 },
-      { id: "B", orient: "v", r: 0, c: 3, len: 2 },
-      { id: "C", orient: "v", r: 1, c: 4, len: 3 },
-      { id: "D", orient: "h", r: 0, c: 4, len: 2 },
-      { id: "E", orient: "h", r: 3, c: 0, len: 2 },
-      { id: "F", orient: "v", r: 3, c: 2, len: 2 },
-      { id: "G", orient: "h", r: 5, c: 3, len: 2 },
-    ],
-  },
-  {
-    name: "Long way round",
-    blocks: [
-      { id: "X", orient: "h", r: 2, c: 0, len: 2 },
-      { id: "A", orient: "v", r: 0, c: 2, len: 2 },
-      { id: "B", orient: "v", r: 2, c: 2, len: 2 },
-      { id: "C", orient: "v", r: 0, c: 3, len: 3 },
-      { id: "D", orient: "h", r: 4, c: 0, len: 2 },
-      { id: "E", orient: "v", r: 3, c: 4, len: 2 },
-      { id: "F", orient: "h", r: 0, c: 4, len: 2 },
-      { id: "G", orient: "v", r: 0, c: 5, len: 3 },
-      { id: "H", orient: "h", r: 5, c: 1, len: 3 },
-    ],
-  },
-  {
-    name: "Gridlock",
-    blocks: [
-      { id: "X", orient: "h", r: 2, c: 1, len: 2 },
-      { id: "A", orient: "v", r: 0, c: 0, len: 2 },
-      { id: "B", orient: "v", r: 0, c: 1, len: 2 },
-      { id: "C", orient: "h", r: 0, c: 2, len: 2 },
-      { id: "D", orient: "v", r: 1, c: 2, len: 3 },
-      { id: "E", orient: "v", r: 0, c: 4, len: 2 },
-      { id: "F", orient: "v", r: 2, c: 3, len: 2 },
-      { id: "G", orient: "h", r: 3, c: 0, len: 3 },
-      { id: "H", orient: "v", r: 3, c: 5, len: 3 },
-      { id: "I", orient: "h", r: 5, c: 2, len: 2 },
+    name: "Těsně",
+    pieces: [
+      { id: "H", r: 2, c: 0, shape: DOM_H, axis: "h", key: "H" },
+      { id: "V", r: 0, c: 3, shape: DOM_V, axis: "v", key: "V" },
+      { id: "A", r: 0, c: 1, shape: SQUARE, axis: "both" },
+      { id: "B", r: 3, c: 1, shape: L_MIRROR, axis: "v" },
+      { id: "D", r: 4, c: 3, shape: T_TET, axis: "h" },
+      { id: "E", r: 0, c: 4, shape: DOM_H, axis: "h" },
     ],
   },
 ];

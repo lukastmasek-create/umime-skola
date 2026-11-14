@@ -1,57 +1,57 @@
-// Question pools. A round is ALL number questions or ALL word questions.
+// Banky otázek. Kolo je VŽDY jen číselné, nebo jen slovní.
 
 export type QType = "number" | "word";
 export type Question = { type: QType; prompt: string; answer: string };
 
 const NUMBER_QS: Question[] = [
-  { type: "number", prompt: "What is 7 × 8?", answer: "56" },
-  { type: "number", prompt: "What is 12 + 35?", answer: "47" },
-  { type: "number", prompt: "What is 9 squared?", answer: "81" },
-  { type: "number", prompt: "How many sides does a hexagon have?", answer: "6" },
-  { type: "number", prompt: "How many legs does a spider have?", answer: "8" },
-  { type: "number", prompt: "How many minutes are in 2 hours?", answer: "120" },
-  { type: "number", prompt: "How many degrees in a right angle?", answer: "90" },
-  { type: "number", prompt: "What is the next prime after 13?", answer: "17" },
-  { type: "number", prompt: "How many days are in a leap year?", answer: "366" },
-  { type: "number", prompt: "What is 144 ÷ 12?", answer: "12" },
-  { type: "number", prompt: "How many continents are there?", answer: "7" },
-  { type: "number", prompt: "How many players per football team on the pitch?", answer: "11" },
-  { type: "number", prompt: "How many strings on a standard guitar?", answer: "6" },
-  { type: "number", prompt: "What is 3 cubed?", answer: "27" },
-  { type: "number", prompt: "How many bones in the adult human body?", answer: "206" },
-  { type: "number", prompt: "How many hours in a week?", answer: "168" },
-  { type: "number", prompt: "What is 1000 − 387?", answer: "613" },
-  { type: "number", prompt: "How many seconds in 5 minutes?", answer: "300" },
-  { type: "number", prompt: "What is 25% of 200?", answer: "50" },
-  { type: "number", prompt: "Roman numeral XIV in digits?", answer: "14" },
-  { type: "number", prompt: "How many months have 31 days?", answer: "7" },
-  { type: "number", prompt: "How many corners does a cube have?", answer: "8" },
+  { type: "number", prompt: "Kolik je 7 × 8?", answer: "56" },
+  { type: "number", prompt: "Kolik je 12 + 35?", answer: "47" },
+  { type: "number", prompt: "Kolik je 9²?", answer: "81" },
+  { type: "number", prompt: "Kolik stran má šestiúhelník?", answer: "6" },
+  { type: "number", prompt: "Kolik nohou má pavouk?", answer: "8" },
+  { type: "number", prompt: "Kolik minut má 2 hodiny?", answer: "120" },
+  { type: "number", prompt: "Kolik stupňů má pravý úhel?", answer: "90" },
+  { type: "number", prompt: "Které je prvočíslo hned za 13?", answer: "17" },
+  { type: "number", prompt: "Kolik dní má přestupný rok?", answer: "366" },
+  { type: "number", prompt: "Kolik je 144 ÷ 12?", answer: "12" },
+  { type: "number", prompt: "Kolik je na Zemi světadílů?", answer: "7" },
+  { type: "number", prompt: "Kolik hráčů je v jednom týmu fotbalu na hřišti?", answer: "11" },
+  { type: "number", prompt: "Kolik strun má kytara?", answer: "6" },
+  { type: "number", prompt: "Kolik je 3³?", answer: "27" },
+  { type: "number", prompt: "Kolik kostí má dospělý člověk?", answer: "206" },
+  { type: "number", prompt: "Kolik hodin má týden?", answer: "168" },
+  { type: "number", prompt: "Kolik je 1000 − 387?", answer: "613" },
+  { type: "number", prompt: "Kolik sekund je 5 minut?", answer: "300" },
+  { type: "number", prompt: "Kolik je 25 % z 200?", answer: "50" },
+  { type: "number", prompt: "Římská číslice XIV zapsaná arabsky?", answer: "14" },
+  { type: "number", prompt: "Kolik měsíců má 31 dní?", answer: "7" },
+  { type: "number", prompt: "Kolik rohů má krychle?", answer: "8" },
 ];
 
 const WORD_QS: Question[] = [
-  { type: "word", prompt: "Opposite of 'ancient'?", answer: "modern" },
-  { type: "word", prompt: "Capital of Japan?", answer: "tokyo" },
-  { type: "word", prompt: "Plural of 'mouse'?", answer: "mice" },
-  { type: "word", prompt: "Chemical symbol for gold?", answer: "au" },
-  { type: "word", prompt: "Largest planet in the solar system?", answer: "jupiter" },
-  { type: "word", prompt: "Main language spoken in Brazil?", answer: "portuguese" },
-  { type: "word", prompt: "What do bees make?", answer: "honey" },
-  { type: "word", prompt: "Opposite of 'generous'?", answer: "stingy" },
-  { type: "word", prompt: "Hot drink made from cocoa beans?", answer: "chocolate" },
-  { type: "word", prompt: "Colour of a ripe banana?", answer: "yellow" },
-  { type: "word", prompt: "Capital of Italy?", answer: "rome" },
-  { type: "word", prompt: "Animal that says 'moo'?", answer: "cow" },
-  { type: "word", prompt: "Past tense of 'run'?", answer: "ran" },
-  { type: "word", prompt: "Frozen water?", answer: "ice" },
-  { type: "word", prompt: "Opposite of 'expand'?", answer: "contract" },
-  { type: "word", prompt: "Currency of Japan?", answer: "yen" },
-  { type: "word", prompt: "Organ that pumps blood?", answer: "heart" },
-  { type: "word", prompt: "Tallest animal on land?", answer: "giraffe" },
-  { type: "word", prompt: "A baby dog is called a...?", answer: "puppy" },
-  { type: "word", prompt: "Capital of the Czech Republic?", answer: "prague" },
-  { type: "word", prompt: "Opposite of 'brave'?", answer: "coward" },
-  { type: "word", prompt: "Gas plants absorb from the air?", answer: "carbon dioxide" },
-  { type: "word", prompt: "Fruit said to keep the doctor away?", answer: "apple" },
+  { type: "word", prompt: "Opak slova „dlouhý“?", answer: "krátký" },
+  { type: "word", prompt: "Hlavní město Japonska?", answer: "Tokio" },
+  { type: "word", prompt: "Množné číslo slova „myš“?", answer: "myši" },
+  { type: "word", prompt: "Chemická značka zlata?", answer: "Au" },
+  { type: "word", prompt: "Největší planeta sluneční soustavy?", answer: "Jupiter" },
+  { type: "word", prompt: "Hlavní jazyk Brazílie?", answer: "portugalština" },
+  { type: "word", prompt: "Co vyrábí včely?", answer: "med" },
+  { type: "word", prompt: "Opak slova „štědrý“?", answer: "lakomý" },
+  { type: "word", prompt: "Horký nápoj z kakaových bobů?", answer: "čokoláda" },
+  { type: "word", prompt: "Jakou barvu má zralý banán?", answer: "žlutá" },
+  { type: "word", prompt: "Hlavní město Itálie?", answer: "Řím" },
+  { type: "word", prompt: "Které zvíře říká „bú“?", answer: "kráva" },
+  { type: "word", prompt: "Minulý čas slovesa „běžet“ (on)?", answer: "běžel" },
+  { type: "word", prompt: "Co je zmrzlá voda?", answer: "led" },
+  { type: "word", prompt: "Opak slova „rozšířit“?", answer: "zúžit" },
+  { type: "word", prompt: "Měna Japonska?", answer: "jen" },
+  { type: "word", prompt: "Orgán, který pumpuje krev?", answer: "srdce" },
+  { type: "word", prompt: "Nejvyšší suchozemské zvíře?", answer: "žirafa" },
+  { type: "word", prompt: "Jak se řekne mláděti psa?", answer: "štěně" },
+  { type: "word", prompt: "Hlavní město České republiky?", answer: "Praha" },
+  { type: "word", prompt: "Opak slova „statečný“?", answer: "zbabělý" },
+  { type: "word", prompt: "Plyn, který rostliny pohlcují?", answer: "oxid uhličitý" },
+  { type: "word", prompt: "Ovoce, které prý odežene doktora?", answer: "jablko" },
 ];
 
 export type Round = { type: QType; pool: Question[] };
@@ -71,7 +71,7 @@ export function pickRound(rand: () => number = Math.random): Round {
   return { type, pool: shuffle(src, rand) };
 }
 
-/** Question for block at index `i`; `offset` rotates questions after each correct answer. */
+/** Otázka pro blok i; `offset` se po každé správné odpovědi posune (rotace). */
 export function questionFor(round: Round, i: number, offset: number): Question {
   const n = round.pool.length;
   return round.pool[(((i + offset) % n) + n) % n];

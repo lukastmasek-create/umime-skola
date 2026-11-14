@@ -1,83 +1,108 @@
-// Pure sliding-block logic (6x6). No React, no DOM: testable with node.
+// Vlastní engine posuvných bloků (deska 6×6). Bez Reactu a DOM, takže běží i v testech.
+//
+// Deska má dvě díry (výstupy): vpravo v řádku H_ROW (pro vodorovný klíč „H“)
+// a dole ve sloupci V_COL (pro svislý klíč „V“). Vyjet klíč ven = vyhrát.
 
 export const SIZE = 6;
-export const TARGET_ID = "X";
-export const EXIT_ROW = 2;
+export const H_ROW = 2;
+export const V_COL = 3;
 
-export type Orient = "h" | "v";
-export type Block = { id: string; orient: Orient; r: number; c: number; len: 2 | 3 };
-export type Level = { name: string; blocks: Block[] };
+export type Axis = "h" | "v" | "both";
+export type Key = "H" | "V";
+/** Relativní buňky tvaru [řádek, sloupec]; minimum je vždy 0,0. */
+export type Shape = [number, number][];
+export type Piece = {
+  id: string;
+  r: number; // kotva (levý horní roh tvaru)
+  c: number;
+  shape: Shape;
+  axis: Axis; // po jaké ose se dá posouvat
+  key?: Key; // klíč: musí vyjet jeho dírou
+};
+export type Level = { name: string; pieces: Piece[] };
 
-export const along = (b: Block): number => (b.orient === "h" ? b.c : b.r);
+export const cellsOf = (p: Piece, r = p.r, c = p.c): [number, number][] =>
+  p.shape.map(([dr, dc]) => [r + dr, c + dc]);
 
-export const maxPos = (b: Block): number =>
-  // target may slide until only its left cell is still on the board (exit)
-  b.id === TARGET_ID ? SIZE - b.len + 1 : SIZE - b.len;
+export const bbox = (shape: Shape) => ({
+  w: Math.max(...shape.map(([, dc]) => dc)) + 1,
+  h: Math.max(...shape.map(([dr]) => dr)) + 1,
+});
 
-export function cells(b: Block, p: number = along(b)): [number, number][] {
-  const out: [number, number][] = [];
-  for (let i = 0; i < b.len; i++) out.push(b.orient === "h" ? [b.r, p + i] : [p + i, b.c]);
-  return out;
-}
+const inBoard = (y: number, x: number) => y >= 0 && y < SIZE && x >= 0 && x < SIZE;
 
-export function canOccupy(blocks: Block[], id: string, p: number): boolean {
-  const self = blocks.find((b) => b.id === id);
+/** Může být piece `id` s kotvou (r,c)? Kolize a mimo-desku jen přes vlastní díru. */
+export function canAt(pieces: Piece[], id: string, r: number, c: number): boolean {
+  const self = pieces.find((p) => p.id === id);
   if (!self) return false;
-  if (p < 0 || p > maxPos(self)) return false;
   const taken = new Set<string>();
-  for (const o of blocks) if (o.id !== id) for (const [r, c] of cells(o)) taken.add(`${r},${c}`);
-  for (const [r, c] of cells(self, p)) {
-    if (r < 0 || r >= SIZE || c < 0 || c >= SIZE) continue; // off-board part is only ever the exit
-    if (taken.has(`${r},${c}`)) return false;
+  for (const o of pieces) if (o.id !== id) for (const [y, x] of cellsOf(o)) taken.add(`${y},${x}`);
+  for (const [y, x] of cellsOf(self, r, c)) {
+    if (inBoard(y, x)) {
+      if (taken.has(`${y},${x}`)) return false;
+      continue;
+    }
+    const throughHole =
+      (self.key === "H" && y === H_ROW && x >= SIZE) || (self.key === "V" && x === V_COL && y >= SIZE);
+    if (!throughHole) return false;
   }
   return true;
 }
 
-/** Inclusive range of positions block `id` may slide to right now. */
-export function slideRange(blocks: Block[], id: string): { min: number; max: number } {
-  const self = blocks.find((b) => b.id === id)!;
-  const start = along(self);
+/** Piece je celý mimo desku (klíč prošel dírou). */
+export function isOut(p: Piece): boolean {
+  return cellsOf(p).every(([y, x]) => !inBoard(y, x));
+}
+
+export const isSolved = (pieces: Piece[]): boolean =>
+  pieces.filter((p) => p.key).every((p) => isOut(p));
+
+/** Dosah posunu piece po ose: { min, max } kotvy (včetně aktuální). */
+export function axisRange(pieces: Piece[], id: string, axis: "h" | "v"): { min: number; max: number } {
+  const p = pieces.find((q) => q.id === id)!;
+  const at = (k: number) => (axis === "h" ? canAt(pieces, id, p.r, k) : canAt(pieces, id, k, p.c));
+  const start = axis === "h" ? p.c : p.r;
+  const cap = SIZE; // klíč smí vyjet nejvýš celý ven
   let min = start;
-  while (min - 1 >= 0 && canOccupy(blocks, id, min - 1)) min--;
+  while (min - 1 >= -SIZE && at(min - 1)) min--;
   let max = start;
-  while (max + 1 <= maxPos(self) && canOccupy(blocks, id, max + 1)) max++;
+  while (max + 1 <= cap && at(max + 1)) max++;
   return { min, max };
 }
 
-export function moveBlock(blocks: Block[], id: string, p: number): Block[] {
-  return blocks.map((b) => (b.id !== id ? b : b.orient === "h" ? { ...b, c: p } : { ...b, r: p }));
+export function movePiece(pieces: Piece[], id: string, axis: "h" | "v", k: number): Piece[] {
+  return pieces.map((p) => (p.id !== id ? p : axis === "h" ? { ...p, c: k } : { ...p, r: k }));
 }
 
-export function isSolved(blocks: Block[]): boolean {
-  const t = blocks.find((b) => b.id === TARGET_ID);
-  return !!t && t.c + t.len > SIZE;
-}
+/** Všechny osy, po kterých lze piece posouvat. */
+export const axesOf = (p: Piece): ("h" | "v")[] => (p.axis === "both" ? ["h", "v"] : [p.axis]);
 
-/** Breadth-first search: minimal number of slides to solve, or -1. Used by tests / tooling. */
-export function minMoves(start: Block[], limit = 500_000): number {
-  const key = (bs: Block[]) => bs.map((b) => `${b.id}${along(b)}`).join("|");
+/** BFS: nejmenší počet tahů k vyřešení, nebo -1. Jen pro testy / ladění levelů. */
+export function minMoves(start: Piece[], limit = 400_000): number {
+  const key = (ps: Piece[]) => ps.map((p) => `${p.r},${p.c}`).join("|");
   const seen = new Set<string>([key(start)]);
-  let frontier: Block[][] = [start];
-  let depth = 0;
-  while (frontier.length) {
-    const next: Block[][] = [];
-    for (const state of frontier) {
-      if (isSolved(state)) return depth;
-      for (const b of state) {
-        const { min, max } = slideRange(state, b.id);
-        for (let p = min; p <= max; p++) {
-          if (p === along(b)) continue;
-          const ns = moveBlock(state, b.id, p);
-          const k = key(ns);
-          if (seen.has(k)) continue;
-          seen.add(k);
-          if (seen.size > limit) return -1;
-          next.push(ns);
+  let frontier: Piece[][] = [start];
+  for (let depth = 0; frontier.length; depth++) {
+    const next: Piece[][] = [];
+    for (const st of frontier) {
+      if (isSolved(st)) return depth;
+      for (const p of st) {
+        for (const ax of axesOf(p)) {
+          const { min, max } = axisRange(st, p.id, ax);
+          const cur = ax === "h" ? p.c : p.r;
+          for (let k = min; k <= max; k++) {
+            if (k === cur) continue;
+            const ns = movePiece(st, p.id, ax, k);
+            const kk = key(ns);
+            if (seen.has(kk)) continue;
+            seen.add(kk);
+            if (seen.size > limit) return -1;
+            next.push(ns);
+          }
         }
       }
     }
     frontier = next;
-    depth++;
   }
   return -1;
 }
