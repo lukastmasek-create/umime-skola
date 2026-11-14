@@ -1,18 +1,9 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties, type PointerEvent as RPointerEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as RPointerEvent } from "react";
 import { LEVELS } from "@/lib/unblock/levels";
-import {
-  SIZE,
-  H_ROW,
-  V_COL,
-  axisRange,
-  bbox,
-  isSolved,
-  movePiece,
-  type Piece,
-} from "@/lib/unblock/logic";
-import { checkAnswer, pickRound, questionFor, type Round } from "@/lib/unblock/questions";
+import { SIZE, H_ROW, V_COL, axisRange, bbox, isSolved, movePiece, type Piece } from "@/lib/unblock/logic";
+import { checkAnswer, pickRound, questionFor, type Question, type Round } from "@/lib/unblock/questions";
 
 const CELL = 100 / SIZE;
 const WOOD: [string, string][] = [
@@ -24,15 +15,56 @@ const WOOD: [string, string][] = [
   ["#dcae78", "#9c6232"],
 ];
 const CHERRY: [string, string] = ["#b4442c", "#6e2112"];
+const HINT_START = "Klikni na zamčený kus a odpověz na otázku. Správně = kus se smí posunout. Dostaň oba klíče dírami ven.";
 
-const grain = (dir: "h" | "v") =>
-  `repeating-linear-gradient(${dir === "h" ? "90deg" : "180deg"}, rgba(255,255,255,0.09) 0 2px, rgba(0,0,0,0.05) 2px 7px, transparent 7px 13px)`;
+// Ukázka: přesné řešení levelu 1 (H doprava ven, pak V dolů ven). Každý krok jde přes stejnou logiku jako hráč.
+const DEMO: { id: string; axis: "h" | "v"; to: number; text: string }[] = [
+  { id: "H", axis: "h", to: 6, text: "Kus H (klíč →) — odpověz na jeho otázku a posuň ho doprava ven dírou." },
+  { id: "V", axis: "v", to: 6, text: "Kus V (klíč ↓) — odpověz a posuň ho dolů ven dírou. Oba klíče venku = výhra." },
+];
 
 function Lock({ open }: { open: boolean }) {
   return (
-    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="4" y="11" width="16" height="10" rx="2" fill="currentColor" stroke="none" opacity="0.9" />
       <path d={open ? "M8 11V7a4 4 0 0 1 8 0" : "M8 11V7a4 4 0 0 1 8 0v4"} />
+    </svg>
+  );
+}
+
+/** Jeden kus jako jedno spojené těleso: buňky bez mezer, hranice jen vně tvaru. */
+function PieceBody({ id, shape, w, h, light, dark, shadow }: { id: string; shape: Piece["shape"]; w: number; h: number; light: string; dark: string; shadow: string }) {
+  const set = new Set(shape.map(([r, c]) => `${r},${c}`));
+  const has = (r: number, c: number) => set.has(`${r},${c}`);
+  const edges: [number, number, number, number][] = [];
+  for (const [r, c] of shape) {
+    if (!has(r - 1, c)) edges.push([c, r, c + 1, r]);
+    if (!has(r + 1, c)) edges.push([c, r + 1, c + 1, r + 1]);
+    if (!has(r, c - 1)) edges.push([c, r, c, r + 1]);
+    if (!has(r, c + 1)) edges.push([c + 1, r, c + 1, r + 1]);
+  }
+  const gid = `g-${id}`;
+  return (
+    <svg
+      viewBox={`0 0 ${w} ${h}`}
+      preserveAspectRatio="none"
+      aria-hidden
+      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", overflow: "visible", filter: `drop-shadow(0 ${shadow} rgba(0,0,0,0.38))` }}
+    >
+      <defs>
+        <linearGradient id={gid} gradientUnits="userSpaceOnUse" x1="0" y1="0" x2={w} y2={h}>
+          <stop offset="0" stopColor={light} />
+          <stop offset="1" stopColor={dark} />
+        </linearGradient>
+      </defs>
+      {shape.map(([r, c]) => (
+        <rect key={`${r},${c}`} x={c} y={r} width={1} height={1} fill={`url(#${gid})`} />
+      ))}
+      <g stroke="#3a1e0c" strokeOpacity={0.75} strokeWidth={0.06} strokeLinecap="square">
+        {edges.map(([x1, y1, x2, y2], i) => (
+          <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />
+        ))}
+      </g>
     </svg>
   );
 }
@@ -53,14 +85,25 @@ export function UnblockGame({ backHref }: { backHref: string }) {
   const [drag, setDrag] = useState<Drag>(null);
   const [hint, setHint] = useState(HINT_START);
   const [won, setWon] = useState(false);
+  const [showAnswers, setShowAnswers] = useState(false);
+  const [demoOn, setDemoOn] = useState(false);
   const [boardEl, setBoardEl] = useState<HTMLDivElement | null>(null);
+  const timers = useRef<number[]>([]);
+
+  const clearTimers = () => {
+    timers.current.forEach((t) => window.clearTimeout(t));
+    timers.current = [];
+  };
+  useEffect(() => clearTimers, []);
 
   // Náhodné kolo až na klientu (kvůli shodě SSR/hydratace).
   useEffect(() => {
     setRound(pickRound());
   }, []);
 
-  const reset = (idx: number) => {
+  const reset = (idx: number, r: Round = pickRound()) => {
+    clearTimers();
+    setDemoOn(false);
     setLevelIdx(idx);
     setPieces(LEVELS[idx].pieces);
     setMoves(0);
@@ -68,9 +111,10 @@ export function UnblockGame({ backHref }: { backHref: string }) {
     setOffset(0);
     setUnlockedId(null);
     setDialogId(null);
+    setInput("");
     setDrag(null);
     setWon(false);
-    setRound(pickRound());
+    setRound(r);
     setHint(HINT_START);
   };
 
@@ -94,7 +138,7 @@ export function UnblockGame({ backHref }: { backHref: string }) {
   };
 
   const onPiecePointerDown = (e: RPointerEvent<HTMLDivElement>, p: Piece) => {
-    if (won || dialogId || !boardEl) return;
+    if (won || dialogId || demoOn || !boardEl) return;
     e.preventDefault();
     const px = boardEl.getBoundingClientRect().width / SIZE;
     const sx = e.clientX;
@@ -163,24 +207,80 @@ export function UnblockGame({ backHref }: { backHref: string }) {
     }
   };
 
+  /** Ukázka: stejné kroky jako hráč (otevřít otázku → napsat odpověď → odeslat → posun), s časováním. */
+  const runDemo = () => {
+    clearTimers();
+    const r = pickRound();
+    reset(0, r);
+    setDemoOn(true);
+    let t = 600;
+    let off = 0;
+    const at = (ms: number, fn: () => void) => timers.current.push(window.setTimeout(fn, ms));
+
+    DEMO.forEach((step, i) => {
+      const idx = LEVELS[0].pieces.findIndex((p) => p.id === step.id);
+      const q: Question = questionFor(r, idx, off);
+      at(t, () => {
+        setDialogId(step.id);
+        setInput("");
+        setWrong(false);
+        setHint(`Ukázka ${i + 1}/${DEMO.length}: ${step.text}`);
+      });
+      t += 900;
+      [...q.answer].forEach((_, j) => {
+        at(t, () => setInput(q.answer.slice(0, j + 1)));
+        t += 160;
+      });
+      t += 500;
+      const off0 = off;
+      at(t, () => {
+        setUnlockedId(step.id);
+        setOffset(off0 + 1);
+        setDialogId(null);
+        setInput("");
+        setHint("Správně! Kus je odemčený — posouvám ho.");
+      });
+      off += 1;
+      t += 700;
+      at(t, () => {
+        setPieces((prev) => movePiece(prev, step.id, step.axis, step.to));
+        setMoves((m) => m + 1);
+        setUnlockedId(null);
+      });
+      t += 900;
+    });
+    at(t, () => {
+      setDemoOn(false);
+      setWon(true);
+      setHint("Ukázka hotová. Teď zkus level sám.");
+    });
+  };
+
   const pieceIdx = (id: string) => pieces.findIndex((p) => p.id === id);
   const nonKeyIdx = (idx: number) => pieces.slice(0, idx).filter((p) => !p.key).length;
+  const revealed = showAnswers || demoOn;
 
   return (
     <div className="flex flex-col gap-5 select-none">
-      {/* Panel: tahy, chyby, reset */}
+      {/* Panel: tahy, chyby, ovládání */}
       <div className="card flex flex-wrap items-center justify-between gap-3 p-4">
         <div className="flex gap-3">
           <Stat label="Tahy" value={moves} />
           <Stat label="Chyby" value={wrongTotal} />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {round && (
             <span className="pill bg-[var(--accent-yellow)] px-3 py-1 text-xs font-bold text-[#16132b]">
               {round.type === "number" ? "Kolo s čísly" : "Kolo se slovy"}
             </span>
           )}
-          <button type="button" onClick={() => reset(levelIdx)} className="btn-bouncy bg-[var(--brand-500)] px-5 py-2.5 text-sm font-bold text-white">
+          <button type="button" disabled={demoOn} onClick={runDemo} className="btn-bouncy bg-[var(--accent-green)] px-4 py-2.5 text-sm font-bold text-[#16132b] disabled:opacity-50">
+            ▶ Ukázka
+          </button>
+          <button type="button" onClick={() => setShowAnswers((s) => !s)} className="btn-bouncy border-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-2.5 text-sm font-semibold text-[var(--foreground)]">
+            {showAnswers ? "Skrýt odpovědi" : "Ukázat odpovědi"}
+          </button>
+          <button type="button" onClick={() => reset(levelIdx)} className="btn-bouncy bg-[var(--brand-500)] px-4 py-2.5 text-sm font-bold text-white">
             Restart
           </button>
         </div>
@@ -191,6 +291,7 @@ export function UnblockGame({ backHref }: { backHref: string }) {
           <button
             key={lv.name}
             type="button"
+            disabled={demoOn}
             onClick={() => reset(i)}
             className={`pill border-2 border-[var(--edge)] px-3 py-1.5 text-sm font-semibold transition ${
               i === levelIdx ? "bg-[var(--accent-yellow)] text-[#16132b]" : "bg-[var(--surface)] text-[var(--muted)] hover:bg-[var(--surface-muted)]"
@@ -201,19 +302,49 @@ export function UnblockGame({ backHref }: { backHref: string }) {
         ))}
       </div>
 
+      {/* Otázky nad deskou (a odpovědi, když je zapnuté zobrazení) */}
+      {round && (
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {pieces.map((p, idx) => {
+            const q = questionFor(round, idx, offset);
+            const unlocked = unlockedId === p.id;
+            const active = demoOn && dialogId === p.id;
+            return (
+              <div
+                key={p.id}
+                className={`flex items-start justify-between gap-3 rounded-xl border-2 px-3 py-2 text-sm ${
+                  active ? "border-[var(--accent-yellow)] bg-[var(--surface-muted)]" : "border-[var(--edge)] bg-[var(--surface)]"
+                }`}
+              >
+                <div className="min-w-0">
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)]">
+                    {p.key ? `Klíč ${p.key === "H" ? "→" : "↓"}` : `Kus ${p.id}`} · {unlocked ? "odemčeno" : "zamčeno"}
+                  </div>
+                  <div className="font-semibold">{q.prompt}</div>
+                </div>
+                {revealed && (
+                  <div className="shrink-0 rounded-lg bg-[#16132b] px-2 py-1 font-mono font-bold text-[var(--accent-yellow)]">
+                    {q.answer}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Deska: dřevěný rám 6×6 se dvěma dírami */}
       <div className="mx-auto w-full max-w-md rounded-[24px] border-2 border-[var(--edge)] p-3.5 sm:p-4" style={FRAME}>
         <div ref={setBoardEl} className="relative w-full rounded-lg" style={{ ...BOARD, aspectRatio: "1 / 1" }}>
           {pieces.map((p) => {
             const dragging = drag?.id === p.id;
-            const axisPos = dragging ? (drag!.axis === "h" ? p.c : p.r) + drag!.d : undefined;
-            const r = dragging && drag!.axis === "v" ? (axisPos as number) : p.r;
-            const c = dragging && drag!.axis === "h" ? (axisPos as number) : p.c;
+            const pos = dragging ? (drag!.axis === "h" ? p.c : p.r) + drag!.d : undefined;
+            const r = dragging && drag!.axis === "v" ? (pos as number) : p.r;
+            const c = dragging && drag!.axis === "h" ? (pos as number) : p.c;
             const { w, h } = bbox(p.shape);
             const unlocked = unlockedId === p.id;
             const idx = pieceIdx(p.id);
             const [light, dark] = p.key ? CHERRY : WOOD[nonKeyIdx(idx) % WOOD.length];
-            const q = round && !p.key && dialogIdx !== idx ? questionFor(round, idx, offset) : null;
             return (
               <div
                 key={p.id}
@@ -222,12 +353,12 @@ export function UnblockGame({ backHref }: { backHref: string }) {
                 aria-label={`Kus ${p.id}${unlocked ? ", odemčeno" : ", zamčeno"}`}
                 onPointerDown={(e) => onPiecePointerDown(e, p)}
                 onKeyDown={(e) => {
-                  if ((e.key === "Enter" || e.key === " ") && !unlocked && !won) {
+                  if ((e.key === "Enter" || e.key === " ") && !unlocked && !won && !demoOn) {
                     e.preventDefault();
                     openDialog(p.id);
                   }
                 }}
-                className="touch-none rounded-[8px] outline-none focus-visible:ring-4 focus-visible:ring-[var(--accent-yellow)]"
+                className="touch-none outline-none focus-visible:ring-4 focus-visible:ring-[var(--accent-yellow)]"
                 style={{
                   position: "absolute",
                   left: `${c * CELL}%`,
@@ -239,47 +370,27 @@ export function UnblockGame({ backHref }: { backHref: string }) {
                   cursor: won ? "default" : unlocked ? "grab" : "pointer",
                 }}
               >
-                {p.shape.map(([dr, dc]) => (
-                  <div
-                    key={`${dr},${dc}`}
-                    style={{
-                      position: "absolute",
-                      left: `${(dc / w) * 100}%`,
-                      top: `${(dr / h) * 100}%`,
-                      width: `${100 / w}%`,
-                      height: `${100 / h}%`,
-                      padding: 4,
-                      boxSizing: "border-box",
-                    }}
-                  >
-                    <div
-                      className="rounded-[7px] text-[#fff6e6]"
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        background: `${grain(p.axis === "v" ? "v" : "h")}, linear-gradient(135deg, ${light}, ${dark})`,
-                        boxShadow: dragging
-                          ? "0 14px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.35)"
-                          : "0 4px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -2px 0 rgba(0,0,0,0.25)",
-                        outline: unlocked ? "3px solid #ffd76a" : "none",
-                        outlineOffset: 1,
-                      }}
-                    />
-                  </div>
-                ))}
-                {/* popisek uprostřed bboxu */}
+                <PieceBody
+                  id={p.id}
+                  shape={p.shape}
+                  w={w}
+                  h={h}
+                  light={light}
+                  dark={dark}
+                  shadow={dragging ? "14px" : "4px"}
+                />
+                {unlocked && (
+                  <div aria-hidden style={{ position: "absolute", inset: 0, pointerEvents: "none", boxShadow: "inset 0 0 0 3px #ffd76a", borderRadius: 4 }} />
+                )}
                 <div
                   className="pointer-events-none font-bold text-[#fff1d6] drop-shadow"
                   style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "clamp(10px, 2.6vw, 14px)" }}
                 >
                   {p.key ? (
-                    <span className="flex items-center gap-1 text-[#ffe2c4] tracking-wide">
-                      KLÍČ {p.key === "H" ? "→" : "↓"}
-                    </span>
+                    <span className="tracking-wide text-[#ffe2c4]">KLÍČ {p.key === "H" ? "→" : "↓"}</span>
                   ) : (
-                    <span className={`flex items-center gap-1 ${unlocked ? "text-[#ffe9a8]" : ""}`}>
+                    <span className={unlocked ? "text-[#ffe9a8]" : ""}>
                       <Lock open={unlocked} />
-                      {q && !unlocked && <span className="opacity-80">{q.type === "number" ? "123" : "abc"}</span>}
                     </span>
                   )}
                 </div>
@@ -310,7 +421,7 @@ export function UnblockGame({ backHref }: { backHref: string }) {
           role="dialog"
           aria-modal="true"
           aria-labelledby="unblock-q"
-          onKeyDown={(e) => e.key === "Escape" && setDialogId(null)}
+          onKeyDown={(e) => e.key === "Escape" && !demoOn && setDialogId(null)}
         >
           <div className="card w-full max-w-sm p-6">
             <div className="mb-2 text-xs font-bold uppercase tracking-widest text-[var(--muted)]">
@@ -322,11 +433,12 @@ export function UnblockGame({ backHref }: { backHref: string }) {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                submit();
+                if (!demoOn) submit();
               }}
             >
               <input
                 autoFocus
+                readOnly={demoOn}
                 value={input}
                 onChange={(e) => {
                   setInput(e.target.value);
@@ -340,7 +452,7 @@ export function UnblockGame({ backHref }: { backHref: string }) {
               />
               {wrong && <p className="mt-2 text-sm font-semibold text-[#e0533a]">Špatně, zkus to znovu.</p>}
               <div className="mt-5 flex gap-3">
-                <button type="button" onClick={() => setDialogId(null)} className="btn-bouncy flex-1 border-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-2 font-semibold text-[var(--foreground)]">
+                <button type="button" disabled={demoOn} onClick={() => setDialogId(null)} className="btn-bouncy flex-1 border-2 border-[var(--edge)] bg-[var(--surface)] px-4 py-2 font-semibold text-[var(--foreground)] disabled:opacity-50">
                   Zrušit
                 </button>
                 <button type="submit" className="btn-bouncy flex-1 bg-[var(--brand-500)] px-4 py-2 font-bold text-white">
@@ -377,8 +489,6 @@ export function UnblockGame({ backHref }: { backHref: string }) {
   );
 }
 
-const HINT_START = "Klikni na zamčený kus a odpověz na otázku. Správně = kus se smí posunout. Dostaň oba klíče dírami ven.";
-
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-xl border-2 border-[var(--edge)] bg-[var(--surface-muted)] px-4 py-2 text-center">
@@ -392,7 +502,7 @@ function Hole({ style, label }: { style: CSSProperties; label: string }) {
   return (
     <div
       aria-hidden
-      className="absolute flex items-center justify-center rounded-md bg-[#2a1608] text-[10px] text-[#ffd7a0]"
+      className="flex items-center justify-center rounded-md bg-[#2a1608] text-[10px] text-[#ffd7a0]"
       style={{ position: "absolute", boxShadow: "inset 0 2px 4px rgba(0,0,0,0.6)", ...style }}
     >
       {label}
