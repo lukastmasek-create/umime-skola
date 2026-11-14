@@ -90,9 +90,9 @@ const MAX_VISIBLE_CREW = 30;
 const ROAD_W = 9;
 const GATE_HIT_Z = -0.6; // brána se vyhodnotí, když doběhne k hrdinovi
 const HERO_Z = -0.7;
-// Obloha přechází do barvy mlhy přesně na horizontu, ať je krajina bez švu.
-const SKY_CSS = "linear-gradient(180deg, #4aa8ff 0%, #8ccfff 22%, #d6efff 36%, #d6efff 100%)";
-const FOG = 0xd6efff;
+// Vesmírná obloha přechází do barvy mlhy přesně na horizontu, ať je dráha bez švu.
+const SKY_CSS = "linear-gradient(180deg, #02010a 0%, #0b0538 18%, #2a0f6e 32%, #3b1a8f 37%, #1a0b4a 42%, #1a0b4a 100%)";
+const FOG = 0x1a0b4a;
 
 let texAniso = 4;
 
@@ -157,40 +157,44 @@ function labelTexture(text: string, bg: string, fg: string, w: number, h: number
   return tex;
 }
 
-const GATE_BG = ["#fff1b8", "#c9f0ff", "#ffd0ea"];
-const GATE_POST = [0xffa800, 0x2aa7e8, 0xe8479b];
+const GATE_BG = ["#ffe45e", "#5ef0ff", "#ff7ad9"];
+const GATE_POST = [0xffd23d, 0x2de2ff, 0xff4fd8];
 
-// Brána jen s odpovědí (otázka je nahoře na obrazovce). Každá dráha má jinou barvu, nahoře se točí hvězda.
+// Brána jako neonový portál s odpovědí (otázka je nahoře na obrazovce). Každá dráha má jinou barvu.
 function buildGate(label: string, lane: number, ballMat: THREE.Material): THREE.Group {
   const g = new THREE.Group();
-  const frame = new THREE.MeshLambertMaterial({ color: GATE_POST[lane] });
-  const beamMat = new THREE.MeshLambertMaterial({ color: 0xffc933 });
-  const post = new THREE.CylinderGeometry(0.09, 0.11, 2.7, 10);
+  const neon = new THREE.MeshBasicMaterial({ color: GATE_POST[lane] });
+  const post = new THREE.CylinderGeometry(0.07, 0.07, 2.4, 10);
   for (const x of [-1.0, 1.0]) {
-    const p = new THREE.Mesh(post, frame);
-    p.position.set(x, 1.35, 0);
+    const p = new THREE.Mesh(post, neon);
+    p.position.set(x, 1.2, 0);
     g.add(p);
-    const ball = new THREE.Mesh(new THREE.SphereGeometry(0.19, 12, 10), ballMat);
-    ball.position.set(x, 2.75, 0);
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.26, 0.18, 12), new THREE.MeshLambertMaterial({ color: 0x3a2a9a }));
+    base.position.set(x, 0.09, 0);
+    g.add(base);
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(0.15, 12, 10), ballMat);
+    ball.position.set(x, 2.45, 0);
     g.add(ball);
   }
-  const beam = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 2.0, 4, 10), beamMat);
-  beam.rotation.z = Math.PI / 2;
-  beam.position.set(0, 2.62, 0);
-  g.add(beam);
-  for (let k = -4; k <= 4; k++) {
-    const fl = new THREE.Mesh(new THREE.CircleGeometry(0.13, 3), new THREE.MeshBasicMaterial({ color: RAINBOW[(k + 4) % 7], side: THREE.DoubleSide }));
-    fl.position.set(k * 0.22, 2.4 - Math.abs(k) * 0.01, 0.02);
-    fl.rotation.z = Math.PI / 2 + Math.PI / 3;
-    g.add(fl);
+  const arc = new THREE.Mesh(new THREE.TorusGeometry(1.0, 0.07, 8, 32, Math.PI), neon);
+  arc.position.y = 2.4;
+  g.add(arc);
+  const arc2 = new THREE.Mesh(new THREE.TorusGeometry(1.14, 0.03, 6, 32, Math.PI), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.7 }));
+  arc2.position.y = 2.4;
+  g.add(arc2);
+  for (let k = 0; k <= 6; k++) {
+    const a = Math.PI * (k / 6);
+    const l = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 6), ballMat);
+    l.position.set(Math.cos(a) * 1.14, 2.4 + Math.sin(a) * 1.14, 0);
+    g.add(l);
   }
-  const star = new THREE.Mesh(starGeometry(0.34, 0.1), beamMat);
+  const star = new THREE.Mesh(starGeometry(0.34, 0.1), new THREE.MeshBasicMaterial({ color: GATE_POST[lane] }));
   star.name = "star";
-  star.position.set(0, 3.15, 0);
+  star.position.set(0, 3.9, 0);
   g.add(star);
   const panel = new THREE.Mesh(
     new THREE.PlaneGeometry(1.86, 2.28),
-    new THREE.MeshBasicMaterial({ map: labelTexture(label, GATE_BG[lane], "#2a1a6b", 768, 944), transparent: true, side: THREE.DoubleSide }),
+    new THREE.MeshBasicMaterial({ map: labelTexture(label, GATE_BG[lane], "#1a0b4a", 768, 944), transparent: true, side: THREE.DoubleSide }),
   );
   panel.position.set(0, 1.3, 0.02);
   g.add(panel);
@@ -201,8 +205,8 @@ type Particle = { m: THREE.Mesh; v: THREE.Vector3; life: number; max: number; ki
 
 // ----- Postavy
 
-type Hat = "cap" | "party" | "beanie" | "hair" | "crown";
-type Ears = "none" | "cat" | "bunny" | "bear";
+type Hat = "cap" | "party" | "beanie" | "hair" | "crown" | "none";
+type Ears = "none" | "cat" | "bunny" | "bear" | "antenna";
 type Kit = Record<
   | "torso" | "head" | "hairCap" | "eyeW" | "eyeP" | "shine" | "cheek" | "smile" | "arm" | "hand" | "leg" | "shoe" | "pack"
   | "cone" | "pom" | "brim" | "crown" | "cape" | "spike" | "catEar" | "bunnyEar" | "bearEar" | "tailCat" | "tailPom"
@@ -271,6 +275,7 @@ type Human = {
   tail: THREE.Group | null;
   ears: THREE.Group[];
   scarf: THREE.Group[];
+  flames: THREE.Mesh[];
 };
 
 type HumanOpts = {
@@ -287,6 +292,8 @@ type HumanOpts = {
   scarf?: number[];
   pack?: boolean;
   badge?: boolean;
+  helmet?: boolean;
+  jet?: boolean;
 };
 
 // Barevná postavička s velkou hlavou hledí do −z (směr běhu): kamera vidí záda, plášť, šálu a ocásek.
@@ -380,6 +387,17 @@ function buildHuman(kit: Kit, o: HumanOpts): Human {
         im.position.set(0, 0.17, -0.035);
         pv.add(im);
         pv.rotation.z = -side * 0.18;
+      } else if (earKind === "antenna") {
+        pv.position.set(side * 0.11, 0.26, 0);
+        const st = new THREE.Mesh(kit.tailCat, earM);
+        st.scale.set(0.5, 0.9, 0.5);
+        st.position.y = 0.13;
+        pv.add(st);
+        const tip = new THREE.Mesh(kit.tailPom, new THREE.MeshBasicMaterial({ color: o.accent }));
+        tip.scale.setScalar(0.7);
+        tip.position.y = 0.3;
+        pv.add(tip);
+        pv.rotation.z = -side * 0.3;
       } else {
         pv.position.set(side * 0.2, 0.19, 0);
         const m = new THREE.Mesh(kit.bearEar, earM);
@@ -428,7 +446,7 @@ function buildHuman(kit: Kit, o: HumanOpts): Human {
     const pom = new THREE.Mesh(kit.pom, gold);
     pom.position.set(-0.03, 0.66, 0);
     head.add(pom);
-  } else {
+  } else if (o.hat === "crown") {
     const crown = new THREE.Mesh(kit.crown, gold);
     crown.position.y = 0.3;
     head.add(crown);
@@ -442,6 +460,29 @@ function buildHuman(kit: Kit, o: HumanOpts): Human {
       gem.scale.setScalar(0.55);
       gem.position.set(Math.cos(a) * 0.2, 0.3, Math.sin(a) * 0.2);
       head.add(gem);
+    }
+  }
+
+  // Kosmická přilba a tryskový batoh s plamenem
+  const flames: THREE.Mesh[] = [];
+  if (o.helmet) {
+    head.add(new THREE.Mesh(new THREE.SphereGeometry(0.37, 22, 16), new THREE.MeshBasicMaterial({ color: 0xbfefff, transparent: true, opacity: 0.2, depthWrite: false })));
+    const collar = new THREE.Mesh(kit.scarfRing, new THREE.MeshLambertMaterial({ color: 0xffffff }));
+    collar.position.y = 0.84;
+    collar.rotation.x = Math.PI / 2;
+    body.add(collar);
+  }
+  if (o.jet) {
+    const tank = new THREE.MeshLambertMaterial({ color: 0xdfe6ff });
+    for (const x of [-0.09, 0.09]) {
+      const t = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.4, 10), tank);
+      t.position.set(x, 0.66, 0.2);
+      body.add(t);
+      const fl = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.3, 8), new THREE.MeshBasicMaterial({ color: 0xffa23d, transparent: true, opacity: 0.9 }));
+      fl.rotation.x = Math.PI;
+      fl.position.set(x, 0.3, 0.2);
+      body.add(fl);
+      flames.push(fl);
     }
   }
 
@@ -529,7 +570,7 @@ function buildHuman(kit: Kit, o: HumanOpts): Human {
   const armR = mkLimb(kit.arm, shirt, 0.25, 0.78, -0.1, "hand");
   const legL = mkLimb(kit.leg, pants, -0.09, 0.36, -0.1, "shoe");
   const legR = mkLimb(kit.leg, pants, 0.09, 0.36, -0.1, "shoe");
-  return { g, body, head, eyes, legL, legR, armL, armR, cape, tail, ears, scarf };
+  return { g, body, head, eyes, legL, legR, armL, armR, cape, tail, ears, scarf, flames };
 }
 
 // Animace: běžecký cyklus, squash & stretch, kývání hlavy, mrkání, vlající plášť a šála, ocásek a uši;
@@ -556,6 +597,7 @@ function animateHuman(h: Human, clock: number, phase: number, run: number, hop: 
     sg.rotation.x = -0.12 - run * 0.1 + Math.sin(clock * 13 - k * 0.9 + phase) * (0.12 + run * 0.3);
     sg.rotation.y = Math.sin(clock * 9 - k * 0.7 + phase) * (0.1 + run * 0.25);
   });
+  h.flames.forEach((f, k) => f.scale.set(1, 0.6 + run * 1.0 + Math.sin(clock * 40 + k) * 0.25, 1));
   if (h.tail) h.tail.rotation.y = Math.sin(clock * (6 + run * 10) + phase) * (0.35 + run * 0.35);
   h.ears.forEach((e, k) => {
     e.rotation.x = Math.sin(clock * 11 + phase + k * 0.5) * 0.25 * run + hop * 0.5 + Math.sin(clock * 2.5 + phase + k) * 0.05;
@@ -578,6 +620,7 @@ type Boss = {
   eyes: THREE.Mesh[];
   pupils: THREE.Mesh[];
   pupMat: THREE.MeshBasicMaterial;
+  halo: THREE.Mesh;
   stars: THREE.Group;
   mat: THREE.MeshLambertMaterial;
   hpFill: THREE.Mesh;
@@ -589,10 +632,10 @@ function buildBoss(): Boss {
   const root = new THREE.Group();
   const body = new THREE.Group();
   root.add(body);
-  const mat = new THREE.MeshLambertMaterial({ color: 0xff5a8a });
-  const belly = new THREE.MeshLambertMaterial({ color: 0xffd9e6 });
+  const mat = new THREE.MeshLambertMaterial({ color: 0x8a4dff });
+  const belly = new THREE.MeshLambertMaterial({ color: 0x9ff5d8 });
   const gold = new THREE.MeshLambertMaterial({ color: 0xffc933, emissive: 0x553a00 });
-  const purple = new THREE.MeshLambertMaterial({ color: 0x7a35f5 });
+  const purple = new THREE.MeshLambertMaterial({ color: 0xff3d9a });
   const teal = new THREE.MeshLambertMaterial({ color: 0x2ad4c4 });
   const white = new THREE.MeshBasicMaterial({ color: 0xffffff });
   const dark = new THREE.MeshBasicMaterial({ color: 0x16132b });
@@ -721,6 +764,20 @@ function buildBoss(): Boss {
     cheek.rotation.y = x * 0.25;
     body.add(cheek);
   }
+  const eye3 = new THREE.Mesh(new THREE.SphereGeometry(0.34, 16, 12), white);
+  eye3.position.set(0, 4.95, 1.12);
+  body.add(eye3);
+  eyes.push(eye3);
+  const iris3 = new THREE.Mesh(new THREE.SphereGeometry(0.21, 14, 10), new THREE.MeshBasicMaterial({ color: 0xff3d9a }));
+  iris3.position.set(0, -0.02, 0.2);
+  eye3.add(iris3);
+  const pupil3 = new THREE.Mesh(new THREE.SphereGeometry(0.12, 12, 10), pupMat);
+  pupil3.position.z = 0.12;
+  iris3.add(pupil3);
+  pupils.push(iris3);
+  const halo = new THREE.Mesh(new THREE.TorusGeometry(3.4, 0.09, 8, 48), new THREE.MeshBasicMaterial({ color: 0x38f0ff }));
+  halo.position.y = 3.2;
+  body.add(halo);
   const nose = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 8), gold);
   nose.position.set(0, 4.25, 1.3);
   body.add(nose);
@@ -784,71 +841,131 @@ function buildBoss(): Boss {
   const hpFill = new THREE.Mesh(new THREE.PlaneGeometry(4.0, 0.34), new THREE.MeshBasicMaterial({ color: 0x17a864 }));
   hpFill.position.set(0, 8.0, 1.32);
   root.add(hpFill);
-  return { root, body, armL, armR, wingL, wingR, tail, crest, mouth, tongue, eyes, pupils, pupMat, stars, mat, hpFill };
+  return { root, body, armL, armR, wingL, wingR, tail, crest, mouth, tongue, eyes, pupils, pupMat, halo, stars, mat, hpFill };
 }
 
-// ----- Krajina
+// ----- Vesmír
 
-function buildMountain(r: number, h: number, color: number): THREE.Group {
-  const g = new THREE.Group();
-  const m = new THREE.Mesh(new THREE.ConeGeometry(r, h, 6), new THREE.MeshLambertMaterial({ color, flatShading: true }));
-  m.position.y = h / 2;
-  g.add(m);
-  const cap = new THREE.Mesh(
-    new THREE.ConeGeometry(r * 0.34, h * 0.3, 6),
-    new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true }),
-  );
-  cap.position.y = h * 0.86;
-  g.add(cap);
-  return g;
-}
-
-function buildTree(variant: number): THREE.Group {
-  const g = new THREE.Group();
-  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.3, 1.6, 8), new THREE.MeshLambertMaterial({ color: 0x8a5a36 }));
-  trunk.position.y = 0.8;
-  g.add(trunk);
-  const greens = [0x3fb46a, 0x2f9e5a, 0x56c97a];
-  const leaf = new THREE.MeshLambertMaterial({ color: greens[variant % greens.length], flatShading: true });
-  if (variant % 2 === 0) {
-    for (let k = 0; k < 3; k++) {
-      const c = new THREE.Mesh(new THREE.ConeGeometry(1.5 - k * 0.32, 1.9, 8), leaf);
-      c.position.y = 2.3 + k * 1.1;
-      g.add(c);
+// Pruhovaná textura planety (plynný obr, země): vodorovné pásy se šumem.
+function planetTexture(stops: string[], seed: number): THREE.CanvasTexture {
+  const c = document.createElement("canvas");
+  c.width = 512;
+  c.height = 256;
+  const ctx = c.getContext("2d");
+  if (ctx) {
+    let y = 0;
+    let k = 0;
+    while (y < 256) {
+      const h = 10 + ((k * 37 + seed * 11) % 30);
+      ctx.fillStyle = stops[(k + seed) % stops.length];
+      ctx.fillRect(0, y, 512, h + 1);
+      for (let n = 0; n < 8; n++) {
+        ctx.fillStyle = "rgba(255,255,255,0.12)";
+        ctx.beginPath();
+        ctx.ellipse(((n * 97 + k * 53 + seed * 31) % 512), y + h / 2, 30 + ((n * 13) % 30), h / 3, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      y += h;
+      k++;
     }
-  } else {
-    const b = new THREE.Mesh(new THREE.SphereGeometry(1.7, 12, 10), leaf);
-    b.position.y = 3.1;
-    g.add(b);
   }
-  const s = 0.85 + (variant % 3) * 0.2;
-  g.scale.setScalar(s);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+// Měkká zář (mlhovina, hvězda): radiální přechod.
+function glowTexture(color: string): THREE.CanvasTexture {
+  const c = document.createElement("canvas");
+  c.width = 256;
+  c.height = 256;
+  const ctx = c.getContext("2d");
+  if (ctx) {
+    const g = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
+    g.addColorStop(0, color);
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 256, 256);
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+function jitterGeometry(seed: number): THREE.BufferGeometry {
+  const g = new THREE.IcosahedronGeometry(1, 1);
+  const pos = g.attributes.position;
+  const cache = new Map<string, number>();
+  for (let i = 0; i < pos.count; i++) {
+    const key = `${pos.getX(i).toFixed(3)},${pos.getY(i).toFixed(3)},${pos.getZ(i).toFixed(3)}`;
+    let f = cache.get(key);
+    if (f === undefined) {
+      f = 0.72 + ((Math.sin((i + seed) * 12.9898 + key.length) * 43758.5453) % 1 + 1) % 1 * 0.5;
+      cache.set(key, f);
+    }
+    pos.setXYZ(i, pos.getX(i) * f, pos.getY(i) * f * 0.85, pos.getZ(i) * f);
+  }
+  g.computeVertexNormals();
   return g;
 }
 
-function buildPlane(color: number): THREE.Group {
+function buildUfo(color: number): { g: THREE.Group; lights: THREE.Mesh[]; ring: THREE.Group } {
   const g = new THREE.Group();
-  const bodyM = new THREE.MeshLambertMaterial({ color });
+  const hull = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 12), new THREE.MeshLambertMaterial({ color, emissive: 0x222244 }));
+  hull.scale.set(2.2, 0.5, 2.2);
+  g.add(hull);
+  const dome = new THREE.Mesh(
+    new THREE.SphereGeometry(0.9, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2),
+    new THREE.MeshBasicMaterial({ color: 0x9ff7ff, transparent: true, opacity: 0.6 }),
+  );
+  dome.position.y = 0.3;
+  g.add(dome);
+  const alien = new THREE.Mesh(new THREE.SphereGeometry(0.32, 10, 8), new THREE.MeshLambertMaterial({ color: 0x7be86b }));
+  alien.position.y = 0.55;
+  g.add(alien);
+  const ring = new THREE.Group();
+  const lights: THREE.Mesh[] = [];
+  for (let k = 0; k < 8; k++) {
+    const a = (k / 8) * Math.PI * 2;
+    const l = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 6), new THREE.MeshBasicMaterial({ color: RAINBOW[k % 7] }));
+    l.position.set(Math.cos(a) * 2.0, -0.05, Math.sin(a) * 2.0);
+    ring.add(l);
+    lights.push(l);
+  }
+  g.add(ring);
+  const beam = new THREE.Mesh(
+    new THREE.ConeGeometry(2.4, 12, 20, 1, true),
+    new THREE.MeshBasicMaterial({ color: 0xfff08a, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false }),
+  );
+  beam.position.y = -6.2;
+  g.add(beam);
+  return { g, lights, ring };
+}
+
+function buildRocket(color: number): { g: THREE.Group; flame: THREE.Mesh } {
+  const g = new THREE.Group();
   const white = new THREE.MeshLambertMaterial({ color: 0xffffff });
-  const fus = new THREE.Mesh(new THREE.CapsuleGeometry(0.7, 4, 4, 12), bodyM);
-  fus.rotation.z = Math.PI / 2; // trup podél osy x
-  g.add(fus);
-  const wing = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.15, 7), white);
-  g.add(wing);
-  const tail = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.12, 2.6), white);
-  tail.position.x = -2.5;
-  g.add(tail);
-  const fin = new THREE.Mesh(new THREE.BoxGeometry(1, 1.3, 0.12), bodyM);
-  fin.position.set(-2.5, 0.7, 0);
-  g.add(fin);
-  const win = new THREE.Mesh(new THREE.SphereGeometry(0.42, 10, 8), new THREE.MeshBasicMaterial({ color: 0x16132b }));
-  win.position.set(1.2, 0.4, 0);
+  const col = new THREE.MeshLambertMaterial({ color });
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.7, 2.6, 6, 14), white);
+  g.add(body);
+  const nose = new THREE.Mesh(new THREE.ConeGeometry(0.72, 1.4, 14), col);
+  nose.position.y = 2.3;
+  g.add(nose);
+  for (let k = 0; k < 3; k++) {
+    const fin = new THREE.Mesh(new THREE.BoxGeometry(0.12, 1.1, 0.9), col);
+    const a = (k / 3) * Math.PI * 2;
+    fin.position.set(Math.cos(a) * 0.8, -1.4, Math.sin(a) * 0.8);
+    fin.rotation.y = -a;
+    g.add(fin);
+  }
+  const win = new THREE.Mesh(new THREE.SphereGeometry(0.34, 12, 10), new THREE.MeshBasicMaterial({ color: 0x7ee0ff }));
+  win.position.set(0, 0.6, 0.62);
   g.add(win);
-  const prop = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.4, 0.2), white);
-  prop.name = "prop";
-  prop.position.x = 2.9;
-  g.add(prop);
-  return g;
+  const flame = new THREE.Mesh(new THREE.ConeGeometry(0.5, 2.2, 10), new THREE.MeshBasicMaterial({ color: 0xffa23d, transparent: true, opacity: 0.9 }));
+  flame.position.y = -3.0;
+  flame.rotation.x = Math.PI;
+  g.add(flame);
+  return { g, flame };
 }
 
 // Číslo nad partou: kolik nás je.
@@ -954,58 +1071,106 @@ export function RunnerGame({
     mount.appendChild(renderer.domElement);
     const scene = new THREE.Scene();
     scene.fog = new THREE.Fog(FOG, 70, 240);
+    const tmpColor = new THREE.Color();
     const camera = new THREE.PerspectiveCamera(56, 1, 0.1, 500);
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x6fbf7a, 1.2));
-    const sun = new THREE.DirectionalLight(0xfff3d6, 1.0);
+    scene.add(new THREE.HemisphereLight(0xcdbfff, 0x2a1a7a, 1.15));
+    const sun = new THREE.DirectionalLight(0xffe6ff, 1.0);
     sun.position.set(-8, 14, 6);
     scene.add(sun);
 
     const world = new THREE.Group();
     scene.add(world);
 
-    // Silnice a trávník
-    const road = new THREE.Mesh(new THREE.PlaneGeometry(ROAD_W, 560), new THREE.MeshLambertMaterial({ color: 0x8f86c9 }));
+    // ----- Vesmír: neonová dráha nad propastí, mřížka, hvězdy, planety, mlhoviny
+    const road = new THREE.Mesh(new THREE.PlaneGeometry(ROAD_W, 560), new THREE.MeshLambertMaterial({ color: 0x2b1f7a, emissive: 0x150c48 }));
     road.rotation.x = -Math.PI / 2;
     road.position.set(0, 0, -210);
     scene.add(road);
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(700, 560), new THREE.MeshLambertMaterial({ color: 0x7fd28f }));
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(700, 560), new THREE.MeshBasicMaterial({ color: 0x07031f }));
     ground.rotation.x = -Math.PI / 2;
-    ground.position.set(0, -0.02, -210);
+    ground.position.set(0, -0.06, -210);
     scene.add(ground);
-    for (const x of [-ROAD_W / 2 - 0.2, ROAD_W / 2 + 0.2]) {
-      const curb = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.12, 560), new THREE.MeshLambertMaterial({ color: 0xffffff }));
-      curb.position.set(x, 0.05, -210);
+    const grid = new THREE.GridHelper(700, 70, 0xff4fd8, 0x4a35b8);
+    grid.position.set(0, -0.03, -210);
+    scene.add(grid);
+    const curbMats = [0, 1].map(() => new THREE.MeshBasicMaterial({ color: 0x38f0ff }));
+    [-1, 1].forEach((side, k) => {
+      const curb = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.14, 560), curbMats[k]);
+      curb.position.set(side * (ROAD_W / 2 + 0.2), 0.06, -210);
       scene.add(curb);
+    });
+
+    // Hvězdná obloha (mimo mlhu), pomalu se otáčí a třpytí
+    const STARS = 1100;
+    const stPos = new Float32Array(STARS * 3);
+    const stCol = new Float32Array(STARS * 3);
+    const starTints = [0xffffff, 0xcfe8ff, 0xfff1b8, 0xffc8f0, 0xb9a8ff];
+    for (let i = 0; i < STARS; i++) {
+      const az = Math.random() * Math.PI * 2;
+      const el = 0.02 + Math.random() * 1.4;
+      const r = 430;
+      stPos.set([Math.cos(el) * Math.sin(az) * r, Math.sin(el) * r, -Math.cos(el) * Math.cos(az) * r], i * 3);
+      tmpColor.setHex(starTints[i % starTints.length]);
+      stCol.set([tmpColor.r, tmpColor.g, tmpColor.b], i * 3);
+    }
+    const starGeo = new THREE.BufferGeometry();
+    starGeo.setAttribute("position", new THREE.BufferAttribute(stPos, 3));
+    starGeo.setAttribute("color", new THREE.BufferAttribute(stCol, 3));
+    const starMat = new THREE.PointsMaterial({ size: 3.2, vertexColors: true, transparent: true, opacity: 0.95, fog: false, depthWrite: false });
+    const starDome = new THREE.Points(starGeo, starMat);
+    starDome.frustumCulled = false;
+    scene.add(starDome);
+
+    // Mlhoviny: velké barevné záře
+    const nebulae: THREE.Sprite[] = [];
+    const nebCols = ["rgba(255,79,216,0.7)", "rgba(80,120,255,0.7)", "rgba(120,255,214,0.5)", "rgba(180,107,255,0.7)", "rgba(255,138,61,0.45)"];
+    for (let i = 0; i < 9; i++) {
+      const sp = new THREE.Sprite(
+        new THREE.SpriteMaterial({ map: glowTexture(nebCols[i % nebCols.length]), transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }),
+      );
+      const s = 140 + ((i * 53) % 90);
+      sp.scale.set(s * 1.6, s, 1);
+      sp.position.set(-260 + i * 65, 30 + ((i * 37) % 90), -400 - (i % 3) * 20);
+      scene.add(sp);
+      nebulae.push(sp);
     }
 
-    // Slunce (mimo mlhu) a záře
-    const sunDisc = new THREE.Mesh(new THREE.SphereGeometry(9, 24, 18), new THREE.MeshBasicMaterial({ color: 0xfff4c2, fog: false }));
-    sunDisc.position.set(-55, 62, -300);
-    scene.add(sunDisc);
-    const sunGlow = new THREE.Mesh(
-      new THREE.SphereGeometry(16, 24, 18),
-      new THREE.MeshBasicMaterial({ color: 0xfff4c2, transparent: true, opacity: 0.3, fog: false }),
+    // Planety (mimo mlhu): prstencový obr, modrá planeta s měsícem a družicí, rudá planeta, hvězda
+    const planetMat = (stops: string[], seed: number) => new THREE.MeshLambertMaterial({ map: planetTexture(stops, seed), emissive: 0x201040, fog: false });
+    const giant = new THREE.Mesh(new THREE.SphereGeometry(42, 40, 28), planetMat(["#ffb347", "#ffd9a0", "#e8843a", "#fff0cf", "#c9622b"], 1));
+    giant.position.set(-120, 62, -390);
+    scene.add(giant);
+    const giantRing = new THREE.Mesh(
+      new THREE.RingGeometry(58, 88, 80),
+      new THREE.MeshBasicMaterial({ color: 0xffd9a0, transparent: true, opacity: 0.55, side: THREE.DoubleSide, fog: false, depthWrite: false }),
     );
-    sunGlow.position.copy(sunDisc.position);
-    scene.add(sunGlow);
-
-    // Hory na obzoru (pevné) a nízké kopce po stranách
-    const mountainColors = [0x7c8fd6, 0x8b7fd0, 0x6f9ad8, 0x9a8fd9];
-    for (let i = 0; i < 16; i++) {
-      const r = 22 + ((i * 7) % 5) * 5;
-      const h = 26 + ((i * 11) % 6) * 6;
-      const m = buildMountain(r, h, mountainColors[i % mountainColors.length]);
-      m.position.set(-170 + i * 22 + ((i * 13) % 7), 0, -265 - ((i * 5) % 4) * 14);
-      scene.add(m);
+    giantRing.position.copy(giant.position);
+    giantRing.rotation.set(Math.PI / 2 - 0.25, 0, 0.35);
+    scene.add(giantRing);
+    const blue = new THREE.Mesh(new THREE.SphereGeometry(30, 36, 24), planetMat(["#2a6bff", "#3fd0ff", "#37c26a", "#1c46c9", "#a8ffe0"], 2));
+    blue.position.set(120, 100, -410);
+    scene.add(blue);
+    const moon = new THREE.Mesh(new THREE.SphereGeometry(6, 16, 12), new THREE.MeshLambertMaterial({ color: 0xdcd6ff, emissive: 0x201040, fog: false }));
+    scene.add(moon);
+    const satellite = new THREE.Group();
+    const satBody = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.6, 1.6), new THREE.MeshLambertMaterial({ color: 0xeeeeee, fog: false }));
+    satellite.add(satBody);
+    for (const x of [-1, 1]) {
+      const panel = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.15, 1.8), new THREE.MeshBasicMaterial({ color: 0x3a7bff, fog: false }));
+      panel.position.x = x * 3.1;
+      satellite.add(panel);
     }
-    for (let i = 0; i < 10; i++) {
-      const side = i % 2 === 0 ? -1 : 1;
-      const hill = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 12), new THREE.MeshLambertMaterial({ color: i % 3 === 0 ? 0x5fc47a : 0x74d28b }));
-      const sx = 22 + ((i * 9) % 5) * 7;
-      hill.scale.set(sx, 7 + ((i * 3) % 4) * 2.5, 22 + ((i * 5) % 4) * 6);
-      hill.position.set(side * (50 + ((i * 17) % 60)), -1, -90 - i * 22);
-      scene.add(hill);
-    }
+    scene.add(satellite);
+    const mars = new THREE.Mesh(new THREE.SphereGeometry(15, 28, 20), planetMat(["#ff5a3d", "#d9381e", "#ff9a6b", "#a62a14"], 3));
+    mars.position.set(35, 52, -300);
+    scene.add(mars);
+    const star = new THREE.Mesh(new THREE.SphereGeometry(16, 24, 18), new THREE.MeshBasicMaterial({ color: 0xfff6d0, fog: false }));
+    star.position.set(-30, 150, -430);
+    scene.add(star);
+    const starGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture("rgba(255,240,180,0.9)"), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+    starGlow.scale.set(170, 170, 1);
+    starGlow.position.copy(star.position);
+    scene.add(starGlow);
 
     // Pruhy mezi drahami (recyklují se, ať běh nemá konec)
     const dashGeo = new THREE.BoxGeometry(0.08, 0.02, 2.2);
@@ -1020,50 +1185,131 @@ export function RunnerGame({
       }
     }
 
-    // Stromy podél cesty (recyklují se jako pruhy)
-    const trees: { g: THREE.Group; i: number; x: number }[] = [];
-    for (let i = 0; i < 18; i++) {
-      for (const side of [-1, 1]) {
-        const g = buildTree(i + (side > 0 ? 1 : 0));
-        const x = side * (ROAD_W / 2 + 3 + ((i * 7) % 5) * 2.6);
-        scene.add(g);
-        trees.push({ g, i: i * 2 + (side > 0 ? 1 : 0), x });
-      }
+    // Asteroidy, krystaly, majáky a mimozemšťani podél dráhy (recyklují se)
+    const rockGeos = [jitterGeometry(1), jitterGeometry(7), jitterGeometry(13)];
+    const rockCols = [0x8a7fb0, 0x6f6a8f, 0xb08a7a, 0x7a8fb0, 0x9a6fb0];
+    const rocks: { m: THREE.Mesh; i: number; x: number; y: number; s: number }[] = [];
+    for (let i = 0; i < 24; i++) {
+      const m = new THREE.Mesh(rockGeos[i % 3], new THREE.MeshLambertMaterial({ color: rockCols[i % 5], flatShading: true }));
+      scene.add(m);
+      rocks.push({ m, i, x: (i % 2 ? 1 : -1) * (ROAD_W / 2 + 3 + ((i * 7) % 6) * 2.4), y: 0.6 + ((i * 5) % 7) * 0.9, s: 0.7 + ((i * 3) % 5) * 0.42 });
     }
-
-    // Mraky nad drahou: pomalu plynou, takže dávají pocit hloubky
-    const cloudMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95 });
-    const clouds: { g: THREE.Group; i: number }[] = [];
-    for (let i = 0; i < 16; i++) {
+    const crystalMats = [0xff4fd8, 0x2de2ff, 0xffd23d, 0x7bff9a, 0xb46bff].map((c) => new THREE.MeshLambertMaterial({ color: c, emissive: c, emissiveIntensity: 0.6, flatShading: true }));
+    const crystalGeo = new THREE.ConeGeometry(0.35, 1.6, 5);
+    const crystals: { g: THREE.Group; i: number; x: number }[] = [];
+    for (let i = 0; i < 26; i++) {
       const g = new THREE.Group();
-      const puffs = 3 + (i % 3);
-      for (let k = 0; k < puffs; k++) {
-        const puff = new THREE.Mesh(new THREE.SphereGeometry(1.3 + ((k * 7 + i) % 3) * 0.5, 12, 10), cloudMat);
-        puff.position.set((k - puffs / 2) * 1.8, ((k * 3 + i) % 2) * 0.5, (((k * 5 + i) % 3) - 1) * 0.8);
-        g.add(puff);
-      }
-      if (i % 3 === 0) {
-        for (const x of [-0.6, 0.6]) {
-          const e = new THREE.Mesh(new THREE.SphereGeometry(0.17, 8, 6), new THREE.MeshBasicMaterial({ color: 0x2a1a6b }));
-          e.position.set(x, 0.3, 2.1);
-          g.add(e);
-          const ch = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 6), new THREE.MeshBasicMaterial({ color: 0xffa8c0 }));
-          ch.position.set(x * 1.7, 0, 1.9);
-          ch.scale.z = 0.4;
-          g.add(ch);
-        }
+      for (let k = 0; k < 3; k++) {
+        const c = new THREE.Mesh(crystalGeo, crystalMats[i % 5]);
+        c.position.set((k - 1) * 0.45, 0.8 * (1 - Math.abs(k - 1) * 0.3), (k % 2) * 0.2);
+        c.scale.set(1, 1 - Math.abs(k - 1) * 0.35, 1);
+        c.rotation.z = (k - 1) * 0.25;
+        g.add(c);
       }
       scene.add(g);
-      clouds.push({ g, i });
+      crystals.push({ g, i, x: (i % 2 ? 1 : -1) * (ROAD_W / 2 + 1.2 + ((i * 11) % 6) * 0.9) });
+    }
+    const beaconGeo = new THREE.CylinderGeometry(0.06, 0.09, 3.4, 6);
+    const beaconMat = new THREE.MeshLambertMaterial({ color: 0xdddddd });
+    const beacons: { g: THREE.Group; dish: THREE.Group; lamp: THREE.MeshBasicMaterial; i: number; x: number }[] = [];
+    for (let j = 0; j < 20; j++) {
+      const g = new THREE.Group();
+      const pole = new THREE.Mesh(beaconGeo, beaconMat);
+      pole.position.y = 1.7;
+      g.add(pole);
+      const dish = new THREE.Group();
+      dish.position.y = 3.2;
+      const bowl = new THREE.Mesh(new THREE.SphereGeometry(0.45, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshLambertMaterial({ color: 0xffffff, side: THREE.DoubleSide }));
+      bowl.rotation.x = Math.PI * 0.75;
+      dish.add(bowl);
+      g.add(dish);
+      const lamp = new THREE.MeshBasicMaterial({ color: RAINBOW[j % 7] });
+      const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 8), lamp);
+      bulb.position.y = 3.55;
+      g.add(bulb);
+      scene.add(g);
+      beacons.push({ g, dish, lamp, i: j >> 1, x: (j % 2 ? 1 : -1) * (ROAD_W / 2 + 0.7) });
+    }
+    const blobs: { g: THREE.Group; eye: THREE.Group; ant: THREE.Mesh; i: number; x: number }[] = [];
+    for (let i = 0; i < 6; i++) {
+      const g = new THREE.Group();
+      const col = [0x7be86b, 0xb98cff, 0x6fd3ff][i % 3];
+      const m = new THREE.MeshLambertMaterial({ color: col, emissive: col, emissiveIntensity: 0.25 });
+      const bd = new THREE.Mesh(new THREE.SphereGeometry(0.5, 14, 10), m);
+      bd.position.y = 0.5;
+      bd.scale.y = 1.1;
+      g.add(bd);
+      const eye = new THREE.Group();
+      eye.position.set(0, 0.62, 0.38);
+      eye.add(new THREE.Mesh(new THREE.SphereGeometry(0.24, 12, 10), new THREE.MeshBasicMaterial({ color: 0xffffff })));
+      const pu = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 8), new THREE.MeshBasicMaterial({ color: 0x16132b }));
+      pu.position.z = 0.16;
+      eye.add(pu);
+      g.add(eye);
+      const ant = new THREE.Mesh(new THREE.CapsuleGeometry(0.03, 0.4, 4, 6), m);
+      ant.position.y = 1.25;
+      g.add(ant);
+      const tip = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 6), new THREE.MeshBasicMaterial({ color: 0xffd23d }));
+      tip.position.y = 0.3;
+      ant.add(tip);
+      for (const x of [-0.25, 0.25]) {
+        const f = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 6), m);
+        f.position.set(x, 0.1, 0.1);
+        f.scale.y = 0.6;
+        g.add(f);
+      }
+      scene.add(g);
+      blobs.push({ g, eye, ant, i, x: (i % 2 ? 1 : -1) * (ROAD_W / 2 + 2.2 + (i % 3) * 1.2) });
     }
 
-    // Letadla přelétají oblohu zprava doleva a zpět
-    const planes = [
-      { g: buildPlane(0xff5a8a), y: 24, z: -90, speed: 11, off: 0 },
-      { g: buildPlane(0x3248f0), y: 31, z: -140, speed: -8, off: 70 },
-      { g: buildPlane(0xffc933), y: 19, z: -60, speed: 14, off: 130 },
+    // Létající talíře a rakety přelétají oblohu, padají hvězdy
+    const ufos = [
+      { ...buildUfo(0x9aa6c8), y: 22, z: -90, speed: 9, off: 0 },
+      { ...buildUfo(0xc8a0ff), y: 30, z: -150, speed: -7, off: 70 },
+      { ...buildUfo(0x8fe0c0), y: 17, z: -60, speed: 12, off: 130 },
     ];
-    for (const p of planes) scene.add(p.g);
+    for (const u of ufos) scene.add(u.g);
+    const rockets = [
+      { ...buildRocket(0xff3d6e), y: 38, z: -130, speed: 16, off: 20 },
+      { ...buildRocket(0x3aa8ff), y: 26, z: -200, speed: -13, off: 110 },
+    ];
+    for (const r of rockets) {
+      r.g.rotation.z = r.speed > 0 ? -Math.PI / 2 : Math.PI / 2;
+      scene.add(r.g);
+    }
+    const comets: { g: THREE.Group; off: number; period: number; y: number; z: number }[] = [];
+    for (let i = 0; i < 4; i++) {
+      const g = new THREE.Group();
+      const head = new THREE.Mesh(new THREE.SphereGeometry(0.7, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffffff, fog: false }));
+      head.position.x = 7;
+      g.add(head);
+      const trail = new THREE.Mesh(new THREE.BoxGeometry(14, 0.3, 0.3), new THREE.MeshBasicMaterial({ color: [0x7ee0ff, 0xff9ae8, 0xfff08a, 0xa6ffcf][i], transparent: true, opacity: 0.6, fog: false }));
+      g.add(trail);
+      g.rotation.z = Math.atan2(-0.45, -1);
+      scene.add(g);
+      comets.push({ g, off: i * 2.3, period: 6 + i * 1.7, y: 70 + i * 22, z: -250 - i * 15 });
+    }
+
+    // Vesmírný prach a jiskřičky ve vzduchu
+    const SP = 150;
+    const spX = new Float32Array(SP);
+    const spY = new Float32Array(SP);
+    const spZ = new Float32Array(SP);
+    const spPos = new Float32Array(SP * 3);
+    const spCol = new Float32Array(SP * 3);
+    for (let i = 0; i < SP; i++) {
+      spX[i] = (Math.random() - 0.5) * 36;
+      spY[i] = Math.random() * 14;
+      spZ[i] = Math.random() * 75;
+      tmpColor.setHex(RAINBOW[i % 7]);
+      spCol.set([tmpColor.r, tmpColor.g, tmpColor.b], i * 3);
+    }
+    const spGeo = new THREE.BufferGeometry();
+    spGeo.setAttribute("position", new THREE.BufferAttribute(spPos, 3));
+    spGeo.setAttribute("color", new THREE.BufferAttribute(spCol, 3));
+    const sparkles = new THREE.Points(spGeo, new THREE.PointsMaterial({ size: 0.3, vertexColors: true, transparent: true, opacity: 0.9, depthWrite: false }));
+    sparkles.frustumCulled = false;
+    scene.add(sparkles);
 
     // Brány a tabule (řada i je na world.z = ROW_START - i * ROW_GAP)
     const ballMat = new THREE.MeshBasicMaterial({ color: 0xffc933 });
@@ -1097,202 +1343,6 @@ export function RunnerGame({
         coinList.push({ pivot, x: RUNNER_LANES[lane], z, got: false });
       }
     }
-
-    // Horkovzdušné balóny na obloze a motýli kolem cesty
-    const balloons: { g: THREE.Group; i: number }[] = [];
-    [0xff5a8a, 0xffc933, 0x3248f0, 0x17a864, 0xb46bff, 0xff8a3d].forEach((c, i) => {
-      const g = new THREE.Group();
-      const env = new THREE.Mesh(new THREE.SphereGeometry(2.4, 18, 14), new THREE.MeshLambertMaterial({ color: c }));
-      env.scale.y = 1.2;
-      env.position.y = 3.2;
-      g.add(env);
-      const band = new THREE.Mesh(new THREE.TorusGeometry(2.38, 0.2, 6, 28), new THREE.MeshLambertMaterial({ color: 0xffffff }));
-      band.rotation.x = Math.PI / 2;
-      band.position.y = 3.2;
-      g.add(band);
-      const basket = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.9, 1.2), new THREE.MeshLambertMaterial({ color: 0x8a5a36 }));
-      basket.position.y = -0.7;
-      g.add(basket);
-      for (const [x, z] of [[-0.5, -0.5], [0.5, -0.5], [-0.5, 0.5], [0.5, 0.5]]) {
-        const rope = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.6, 4), new THREE.MeshBasicMaterial({ color: 0x4a2c17 }));
-        rope.position.set(x, 0.3, z);
-        g.add(rope);
-      }
-      scene.add(g);
-      balloons.push({ g, i });
-    });
-    const flies: { g: THREE.Group; wl: THREE.Group; wr: THREE.Group; i: number }[] = [];
-    for (let i = 0; i < 8; i++) {
-      const g = new THREE.Group();
-      const wm = new THREE.MeshBasicMaterial({ color: [0xffc933, 0xff5a8a, 0x8fd0ff, 0xffffff][i % 4], side: THREE.DoubleSide });
-      const mk = (side: number) => {
-        const pv = new THREE.Group();
-        const w = new THREE.Mesh(new THREE.CircleGeometry(0.24, 10), wm);
-        w.position.x = side * 0.22;
-        pv.add(w);
-        g.add(pv);
-        return pv;
-      };
-      const wl = mk(-1);
-      const wr = mk(1);
-      scene.add(g);
-      flies.push({ g, wl, wr, i });
-    }
-
-    // ----- Oživlé pozadí: duha, sluneční paprsky, hejna ptáků, větrné mlýny, kytky, vlajky, králíčci, třpytky
-    const rainbow = new THREE.Group();
-    const rbMats = RAINBOW.map((c) => new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.7, fog: false }));
-    rbMats.forEach((m, k) => rainbow.add(new THREE.Mesh(new THREE.TorusGeometry(110 - k * 3.6, 1.9, 8, 64, Math.PI), m)));
-    rainbow.position.set(25, -8, -340);
-    scene.add(rainbow);
-
-    const rays = new THREE.Group();
-    for (let k = 0; k < 12; k++) {
-      const r = new THREE.Mesh(new THREE.BoxGeometry(1.2, 14, 0.2), new THREE.MeshBasicMaterial({ color: 0xfff4c2, transparent: true, opacity: 0.45, fog: false }));
-      const a = (k / 12) * Math.PI * 2;
-      r.position.set(Math.cos(a) * 24, Math.sin(a) * 24, 0);
-      r.rotation.z = a - Math.PI / 2;
-      rays.add(r);
-    }
-    rays.position.copy(sunDisc.position);
-    scene.add(rays);
-
-    const flocks: { g: THREE.Group; wings: [THREE.Group, THREE.Group][]; speed: number; off: number; y: number; z: number }[] = [];
-    for (let f = 0; f < 3; f++) {
-      const g = new THREE.Group();
-      const wings: [THREE.Group, THREE.Group][] = [];
-      const bm = new THREE.MeshBasicMaterial({ color: [0x2a1a6b, 0xff5a8a, 0x17a864][f], side: THREE.DoubleSide });
-      for (let k = 0; k < 5; k++) {
-        const b = new THREE.Group();
-        const bd = new THREE.Mesh(new THREE.SphereGeometry(0.28, 8, 6), bm);
-        bd.scale.set(0.7, 0.7, 1.4);
-        b.add(bd);
-        const mk = (side: number) => {
-          const pv = new THREE.Group();
-          const w = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.4), bm);
-          w.rotation.x = -Math.PI / 2;
-          w.position.x = side * 0.55;
-          pv.add(w);
-          b.add(pv);
-          return pv;
-        };
-        wings.push([mk(-1), mk(1)]);
-        const idx = Math.ceil(k / 2);
-        b.position.set((k % 2 ? 1 : -1) * idx * 1.8, 0, idx * 1.4);
-        g.add(b);
-      }
-      g.rotation.y = Math.PI / 2;
-      scene.add(g);
-      flocks.push({ g, wings, speed: 9 + f * 3, off: f * 60, y: 14 + f * 6, z: -50 - f * 40 });
-    }
-
-    const mills: { g: THREE.Group; blades: THREE.Group; i: number; x: number }[] = [];
-    for (let i = 0; i < 4; i++) {
-      const g = new THREE.Group();
-      const tower = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1.5, 9, 10), new THREE.MeshLambertMaterial({ color: [0xffe0b2, 0xffc2d6, 0xc9f0ff, 0xfff1b8][i] }));
-      tower.position.y = 4.5;
-      g.add(tower);
-      const roof = new THREE.Mesh(new THREE.ConeGeometry(1.3, 2, 10), new THREE.MeshLambertMaterial({ color: 0xe8479b }));
-      roof.position.y = 10;
-      g.add(roof);
-      const blades = new THREE.Group();
-      blades.position.set(0, 8.2, 1.4);
-      for (let k = 0; k < 4; k++) {
-        const pv = new THREE.Group();
-        const bl = new THREE.Mesh(new THREE.BoxGeometry(0.9, 6, 0.12), new THREE.MeshLambertMaterial({ color: k % 2 ? 0xffffff : 0xffc933 }));
-        bl.position.y = 3;
-        pv.add(bl);
-        pv.rotation.z = (k * Math.PI) / 2;
-        blades.add(pv);
-      }
-      g.add(blades);
-      scene.add(g);
-      mills.push({ g, blades, i, x: (i % 2 ? 1 : -1) * (30 + (i >> 1) * 20) });
-    }
-
-    const stemGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.7, 5);
-    const stemMat = new THREE.MeshLambertMaterial({ color: 0x2f9e5a });
-    const headGeo = new THREE.SphereGeometry(0.17, 8, 6);
-    const petalMats = [0xff5a8a, 0xffc933, 0xffffff, 0xb46bff, 0xff8a3d].map((c) => new THREE.MeshLambertMaterial({ color: c }));
-    const flowers: { g: THREE.Group; i: number; x: number }[] = [];
-    for (let i = 0; i < 44; i++) {
-      const g = new THREE.Group();
-      const st = new THREE.Mesh(stemGeo, stemMat);
-      st.position.y = 0.35;
-      g.add(st);
-      const hd = new THREE.Mesh(headGeo, petalMats[i % 5]);
-      hd.position.y = 0.78;
-      g.add(hd);
-      scene.add(g);
-      flowers.push({ g, i, x: (i % 2 ? 1 : -1) * (ROAD_W / 2 + 0.9 + ((i * 13) % 7) * 0.45) });
-    }
-
-    const flags: { g: THREE.Group; flag: THREE.Group; i: number; x: number }[] = [];
-    for (let j = 0; j < 20; j++) {
-      const g = new THREE.Group();
-      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 3.4, 6), new THREE.MeshLambertMaterial({ color: 0xffffff }));
-      pole.position.y = 1.7;
-      g.add(pole);
-      const flag = new THREE.Group();
-      flag.position.y = 3.1;
-      const fm = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.7), new THREE.MeshBasicMaterial({ color: RAINBOW[j % 7], side: THREE.DoubleSide }));
-      fm.position.x = 0.55;
-      flag.add(fm);
-      g.add(flag);
-      scene.add(g);
-      flags.push({ g, flag, i: j >> 1, x: (j % 2 ? 1 : -1) * (ROAD_W / 2 + 0.7) });
-    }
-
-    const bunnies: { g: THREE.Group; earL: THREE.Mesh; earR: THREE.Mesh; i: number; x: number }[] = [];
-    for (let i = 0; i < 6; i++) {
-      const g = new THREE.Group();
-      const m = new THREE.MeshLambertMaterial({ color: [0xffffff, 0xffd0ea, 0xd9a441][i % 3] });
-      const bd = new THREE.Mesh(new THREE.SphereGeometry(0.4, 12, 10), m);
-      bd.position.y = 0.4;
-      bd.scale.z = 1.25;
-      g.add(bd);
-      const hd = new THREE.Mesh(new THREE.SphereGeometry(0.27, 12, 10), m);
-      hd.position.set(0, 0.8, 0.35);
-      g.add(hd);
-      const ear = new THREE.CapsuleGeometry(0.07, 0.35, 4, 8);
-      const earL = new THREE.Mesh(ear, m);
-      earL.position.set(-0.11, 1.17, 0.33);
-      const earR = new THREE.Mesh(ear, m);
-      earR.position.set(0.11, 1.17, 0.33);
-      g.add(earL, earR);
-      for (const x of [-0.1, 0.1]) {
-        const e = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 5), new THREE.MeshBasicMaterial({ color: 0x16132b }));
-        e.position.set(x, 0.85, 0.58);
-        g.add(e);
-      }
-      const tl = new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 6), new THREE.MeshLambertMaterial({ color: 0xffffff }));
-      tl.position.set(0, 0.4, -0.55);
-      g.add(tl);
-      scene.add(g);
-      bunnies.push({ g, earL, earR, i, x: (i % 2 ? 1 : -1) * (ROAD_W / 2 + 2.2 + (i % 3) * 1.2) });
-    }
-
-    // Třpytky a bubliny ve vzduchu
-    const SP = 150;
-    const spX = new Float32Array(SP);
-    const spY = new Float32Array(SP);
-    const spZ = new Float32Array(SP);
-    const spPos = new Float32Array(SP * 3);
-    const spCol = new Float32Array(SP * 3);
-    const tmpC = new THREE.Color();
-    for (let i = 0; i < SP; i++) {
-      spX[i] = (Math.random() - 0.5) * 36;
-      spY[i] = Math.random() * 14;
-      spZ[i] = Math.random() * 75;
-      tmpC.setHex(RAINBOW[i % 7]);
-      spCol.set([tmpC.r, tmpC.g, tmpC.b], i * 3);
-    }
-    const spGeo = new THREE.BufferGeometry();
-    spGeo.setAttribute("position", new THREE.BufferAttribute(spPos, 3));
-    spGeo.setAttribute("color", new THREE.BufferAttribute(spCol, 3));
-    const sparkles = new THREE.Points(spGeo, new THREE.PointsMaterial({ size: 0.3, vertexColors: true, transparent: true, opacity: 0.9, depthWrite: false }));
-    sparkles.frustumCulled = false;
-    scene.add(sparkles);
 
     // Částice: konfety při správné odpovědi, obláčky prachu a kouře
     const confMats = [0xff5a8a, 0xffc933, 0x3248f0, 0x17a864, 0xffffff, 0xb46bff].map((c) => new THREE.MeshBasicMaterial({ color: c, side: THREE.DoubleSide }));
@@ -1349,30 +1399,31 @@ export function RunnerGame({
     const kit = makeKit();
     const crowdGroup = new THREE.Group();
     scene.add(crowdGroup);
-    const hero = buildHuman(kit, { shirt: 0xff8a3d, pants: 0x3248f0, hair: 0x4a2c17, accent: 0xff5a8a, hat: "crown", cape: 0xb46bff, scarf: RAINBOW, badge: true, eye: 0x3aa8ff });
+    const hero = buildHuman(kit, { shirt: 0xf5f7ff, pants: 0x3a4bd6, hair: 0x2a1a14, accent: 0xff4fd8, hat: "hair", helmet: true, jet: true, scarf: RAINBOW, eye: 0x3aa8ff });
     hero.g.scale.setScalar(1.35);
     hero.g.position.z = HERO_Z;
     crowdGroup.add(hero.g);
-    const shirts = [0xff7aa8, 0xffe36b, 0x7ee0ff, 0xa6f0b8, 0xc9a7ff, 0xffa65c];
+    const shirts = [0xf5f7ff, 0xffe45e, 0x9ff0ff, 0xffb3e6, 0xb9ffd2, 0xffc7a0];
     const pantsC = [0x5b2fd6, 0x2a3a8a, 0x1f9d8b, 0xe8479b];
     const skins = [0xffd2b0, 0xf2b98f, 0xc98d62, 0x8d5a3b];
     const eyeC = [0x3aa8ff, 0x3fcf6a, 0x8d5a3b, 0xb46bff];
     const hairs = [0x2a1a14, 0xe8479b, 0xd9a441, 0x3aa8ff, 0x6b4423, 0x17a864];
     const members: { h: Human; s: number }[] = [];
     for (let i = 0; i < MAX_VISIBLE_CREW; i++) {
-      const earKind = (["cat", "bunny", "bear", "none"] as const)[i % 4];
+      const alien = i % 2 === 1;
+      const alienCol = [0x7be86b, 0xb98cff, 0x6fd3ff, 0xff9ad5][(i >> 1) % 4];
       const h = buildHuman(kit, {
         shirt: shirts[i % shirts.length],
         pants: pantsC[i % pantsC.length],
-        hair: hairs[i % hairs.length],
-        accent: shirts[(i + 2) % shirts.length],
-        hat: earKind === "none" ? (["cap", "party", "beanie", "hair"] as const)[(i >> 2) % 4] : "hair",
-        skin: skins[i % skins.length],
-        eye: eyeC[i % eyeC.length],
-        ears: earKind,
-        tail: earKind === "cat" || earKind === "bunny",
-        scarf: i % 2 ? [RAINBOW[i % 7], RAINBOW[(i + 2) % 7], RAINBOW[(i + 4) % 7]] : undefined,
-        pack: i % 5 === 0,
+        hair: alien ? alienCol : hairs[i % hairs.length],
+        accent: alien ? 0xffd23d : shirts[(i + 2) % shirts.length],
+        hat: alien ? "none" : "hair",
+        skin: alien ? alienCol : skins[i % skins.length],
+        eye: alien ? 0x16132b : eyeC[i % eyeC.length],
+        ears: alien ? "antenna" : i % 4 === 2 ? "bear" : "none",
+        helmet: !alien,
+        jet: !alien && i % 3 === 0,
+        scarf: i % 4 === 0 ? [RAINBOW[i % 7], RAINBOW[(i + 2) % 7], RAINBOW[(i + 4) % 7]] : undefined,
       });
       h.g.scale.setScalar(0.9);
       h.g.visible = false;
@@ -1660,50 +1711,80 @@ export function RunnerGame({
           p.m.scale.setScalar(Math.sin(Math.PI * (1 - p.life / p.max)) * 1.3 + 0.05);
         }
       }
-      // ----- Animace pozadí
-      rbMats.forEach((m, k) => (m.opacity = 0.62 + Math.sin(clock * 1.6 - k * 0.6) * 0.12));
-      rainbow.scale.setScalar(1 + Math.sin(clock * 0.5) * 0.015);
-      rays.rotation.z = clock * 0.15;
-      rays.scale.setScalar(1 + Math.sin(clock * 1.3) * 0.08);
-      sunDisc.scale.setScalar(1 + Math.sin(clock * 2) * 0.03);
+      // ----- Animace vesmíru
+      grid.position.z = -210 + (sim.d % 10);
+      starDome.rotation.y = clock * 0.004;
+      starMat.opacity = 0.8 + Math.sin(clock * 2.3) * 0.15;
+      nebulae.forEach((n, k) => {
+        n.material.rotation = clock * 0.02 * (k % 2 ? 1 : -1);
+        n.material.opacity = 0.32 + Math.sin(clock * 0.6 + k) * 0.1;
+      });
+      giant.rotation.y = clock * 0.05;
+      giantRing.rotation.z = 0.35 + Math.sin(clock * 0.2) * 0.02;
+      blue.rotation.y = clock * 0.08;
+      mars.rotation.y = clock * 0.12;
+      moon.position.set(blue.position.x + Math.cos(clock * 0.4) * 58, blue.position.y + Math.sin(clock * 0.4) * 10, blue.position.z + Math.sin(clock * 0.4) * 58);
+      satellite.position.set(blue.position.x + Math.cos(clock * 0.9 + 2) * 46, blue.position.y + Math.sin(clock * 0.9 + 2) * 20, blue.position.z + Math.sin(clock * 0.9 + 2) * 46);
+      satellite.rotation.y = clock * 0.9;
+      starGlow.scale.setScalar(170 + Math.sin(clock * 1.7) * 8);
+      curbMats.forEach((m, k) => m.color.setHSL((clock * 0.2 + k * 0.5) % 1, 0.95, 0.6));
       dashMat.color.setHSL((clock * 0.15) % 1, 0.85, 0.75);
       ballMat.color.setHSL((clock * 0.5) % 1, 0.9, 0.6);
-      for (const fl of flocks) {
-        const x = 90 - ((clock * fl.speed + fl.off) % 180);
-        fl.g.position.set(x, fl.y + Math.sin(clock * 0.8 + fl.off) * 1.2, fl.z);
-        fl.wings.forEach(([l, r], k) => {
-          const a = Math.sin(clock * 9 + k * 0.6) * 0.7;
-          l.rotation.z = a;
-          r.rotation.z = -a;
-        });
+      crystalMats.forEach((m, k) => (m.emissiveIntensity = 0.55 + Math.sin(clock * 2.5 + k * 1.3) * 0.3));
+      for (const u of ufos) {
+        const dir = u.speed > 0 ? 1 : -1;
+        const x = ((clock * Math.abs(u.speed) + u.off) % 180) - 90;
+        u.g.position.set(dir > 0 ? x : -x, u.y + Math.sin(clock * 1.4 + u.off) * 1.2, u.z);
+        u.g.rotation.z = Math.sin(clock * 1.8 + u.off) * 0.12;
+        u.ring.rotation.y = clock * 3;
+        u.lights.forEach((l, k) => l.scale.setScalar(0.7 + Math.max(0, Math.sin(clock * 6 + k)) * 0.8));
       }
-      for (const m of mills) {
-        const z = -230 + ((m.i * 60 + sim.d * 0.5) % 240);
-        m.g.position.set(m.x, 0, z);
-        m.g.visible = z > -225 && z < -20;
-        m.blades.rotation.z = clock * (1.2 + m.i * 0.3);
+      for (const r of rockets) {
+        const dir = r.speed > 0 ? 1 : -1;
+        const x = ((clock * Math.abs(r.speed) + r.off) % 200) - 100;
+        r.g.position.set(dir > 0 ? x : -x, r.y + Math.sin(clock * 0.9 + r.off) * 1.0, r.z);
+        r.flame.scale.set(1 + Math.sin(clock * 30) * 0.15, 0.8 + Math.sin(clock * 24 + r.off) * 0.3, 1);
       }
-      for (const f of flowers) {
-        const z = -230 + ((f.i * 5.4 + sim.d) % 240);
-        f.g.position.set(f.x, 0, z);
-        f.g.visible = z > -225 && z < 14;
-        f.g.rotation.z = Math.sin(clock * 3 + f.i) * 0.22;
+      for (const c of comets) {
+        const p = ((clock + c.off) % c.period) / 1.2;
+        c.g.visible = p < 1;
+        c.g.position.set(130 - p * 260, c.y - p * 117, c.z);
       }
-      for (const fg of flags) {
-        const z = -230 + ((fg.i * 24 + sim.d) % 240);
-        fg.g.position.set(fg.x, 0, z);
-        fg.g.visible = z > -225 && z < 14;
-        fg.flag.rotation.y = Math.sin(clock * 6 + fg.i * 1.7) * 0.5 + (fg.x > 0 ? 0 : Math.PI);
+      // Silnice: pruhy se posouvají
+      for (const dsh of dashes) {
+        const z = -220 + ((dsh.i * 8 + sim.d) % 240);
+        dsh.mesh.position.z = z;
+        dsh.mesh.visible = z > -215 && z < 25;
       }
-      for (const bn of bunnies) {
-        const z = -230 + ((bn.i * 38 + sim.d) % 240);
-        const hop = Math.abs(Math.sin(clock * 5 + bn.i * 2));
-        bn.g.position.set(bn.x, hop * 0.7, z);
-        bn.g.visible = z > -225 && z < 14;
-        bn.g.rotation.y = (bn.x > 0 ? -0.5 : 0.5) + Math.sin(clock + bn.i) * 0.3;
-        bn.earL.rotation.x = -hop * 0.5;
-        bn.earR.rotation.x = -hop * 0.5;
-        bn.g.scale.y = 1 + (1 - hop) * 0.08;
+      for (const rk of rocks) {
+        const z = -230 + ((rk.i * 10 + sim.d) % 240);
+        rk.m.position.set(rk.x, rk.y + Math.sin(clock * 0.9 + rk.i) * 0.5, z);
+        rk.m.scale.setScalar(rk.s);
+        rk.m.rotation.set(clock * 0.3 + rk.i, clock * 0.4, clock * 0.2);
+        rk.m.visible = z > -225 && z < 14;
+      }
+      for (const cr of crystals) {
+        const z = -230 + ((cr.i * 9.2 + sim.d) % 240);
+        cr.g.position.set(cr.x, 0, z);
+        cr.g.visible = z > -225 && z < 14;
+        cr.g.rotation.y = cr.i;
+      }
+      for (const bc of beacons) {
+        const z = -230 + ((bc.i * 24 + sim.d) % 240);
+        bc.g.position.set(bc.x, 0, z);
+        bc.g.visible = z > -225 && z < 14;
+        bc.dish.rotation.y = clock * 2 + bc.i;
+        bc.lamp.color.setHSL((clock * 0.4 + bc.i * 0.1) % 1, 0.9, 0.35 + Math.max(0, Math.sin(clock * 5 + bc.i)) * 0.35);
+      }
+      for (const bl of blobs) {
+        const z = -230 + ((bl.i * 38 + sim.d) % 240);
+        const hop = Math.abs(Math.sin(clock * 4 + bl.i * 2));
+        bl.g.position.set(bl.x, hop * 0.9, z);
+        bl.g.visible = z > -225 && z < 14;
+        bl.g.rotation.y = (bl.x > 0 ? -0.5 : 0.5) + Math.sin(clock + bl.i) * 0.3;
+        bl.g.scale.set(1 + (1 - hop) * 0.12, 1 - (1 - hop) * 0.1, 1 + (1 - hop) * 0.12);
+        bl.ant.rotation.z = Math.sin(clock * 6 + bl.i) * 0.35;
+        bl.eye.scale.y = Math.sin(clock * 0.8 + bl.i * 3) > 0.96 ? 0.1 : 1;
       }
       for (let i = 0; i < SP; i++) {
         spPos[i * 3] = spX[i] + Math.sin(clock * 0.7 + i) * 0.8;
@@ -1712,57 +1793,8 @@ export function RunnerGame({
       }
       spGeo.attributes.position.needsUpdate = true;
       sparkles.material.opacity = 0.65 + Math.sin(clock * 5) * 0.25;
-      // Balóny a motýli
-      for (const b of balloons) {
-        b.g.position.set(((b.i * 41) % 130) - 65 + Math.sin(clock * 0.2 + b.i) * 4, 20 + ((b.i * 5) % 4) * 5 + Math.sin(clock * 0.7 + b.i * 2) * 1.2, -110 - (b.i % 3) * 45);
-        b.g.rotation.z = Math.sin(clock * 0.8 + b.i) * 0.06;
-      }
-      for (const f of flies) {
-        const z = -150 + ((f.i * 29 + sim.d * 0.9 + clock * 3) % 160);
-        const side = f.i % 2 ? 1 : -1;
-        f.g.position.set(side * (ROAD_W / 2 + 2 + (f.i % 3) * 2) + Math.sin(clock * 0.8 + f.i) * 1.5, 1.5 + Math.sin(clock * 1.7 + f.i * 2) * 0.5, z);
-        f.g.visible = z > -148 && z < 10;
-        f.g.rotation.y = Math.sin(clock * 0.8 + f.i) * 0.6;
-        const fl = Math.sin(clock * 18 + f.i) * 0.9;
-        f.wl.rotation.y = fl;
-        f.wr.rotation.y = -fl;
-      }
       // Rychlost animace běhu dobíhá plynule; mimo běh postavy stojí.
       sim.runAmt += ((sim.phase === "run" ? 1 : 0) - sim.runAmt) * Math.min(1, dt * 8);
-      // Pohyb scenérie: když hráč neběží, krajina stojí (sim.d se nemění).
-
-      // Silnice: pruhy se posouvají
-      for (const dsh of dashes) {
-        const z = -220 + ((dsh.i * 8 + sim.d) % 240);
-        dsh.mesh.position.z = z;
-        dsh.mesh.visible = z > -215 && z < 25;
-      }
-
-      // Stromy
-      for (const tr of trees) {
-        const z = -230 + ((tr.i * 7.2 + sim.d) % 240);
-        tr.g.position.set(tr.x, 0, z);
-        tr.g.visible = z > -225 && z < 14;
-        tr.g.rotation.z = Math.sin(clock * 1.6 + tr.i) * 0.035;
-      }
-
-      // Mraky: plynou pomaleji než silnice
-      for (const c of clouds) {
-        const z = -230 + ((c.i * 17 + sim.d * 0.6 + clock * 0.8) % 260);
-        c.g.position.set(((c.i * 37) % 60) - 30 + Math.sin(clock * 0.2 + c.i) * 6, 13 + (c.i % 4) * 2.2, z);
-        c.g.visible = z < 6;
-      }
-
-      // Letadla
-      for (const p of planes) {
-        const dir = p.speed > 0 ? 1 : -1;
-        const x = ((clock * Math.abs(p.speed) + p.off) % 180) - 90;
-        p.g.position.set(dir > 0 ? x : -x, p.y + Math.sin(clock * 0.9 + p.off) * 0.8, p.z);
-        p.g.rotation.y = dir > 0 ? Math.PI : 0; // nos míří po směru letu
-        p.g.rotation.x = Math.sin(clock * 1.3 + p.off) * 0.12;
-        const prop = p.g.getObjectByName("prop");
-        if (prop) prop.rotation.x = clock * 40;
-      }
 
       // Hrdina a parta
       const shakeX = sim.shake > 0 ? Math.sin(clock * 60) * 0.12 * sim.shake : 0;
@@ -1831,6 +1863,7 @@ export function RunnerGame({
       boss.wingR.rotation.z = 0.35 + Math.sin(clock * 6) * 0.5;
       boss.tail.forEach((tp, k) => (tp.rotation.y = Math.sin(clock * 5 - k * 0.8) * 0.45));
       boss.crest.forEach((c, k) => c.scale.set(1, 1 + Math.sin(clock * 6 + k * 0.9) * 0.3, 1));
+      boss.halo.rotation.set(Math.PI / 2 + Math.sin(clock * 1.5) * 0.35, 0, clock * 2);
       boss.pupMat.color.setHex(lungeP > 0.1 || sim.bossShake > 0 ? 0xe5174a : 0x16132b);
       boss.stars.visible = sim.bossHp <= 0 && sim.bossDown < 0.7;
       boss.stars.rotation.y = clock * 4;
