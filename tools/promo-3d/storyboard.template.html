@@ -1,0 +1,156 @@
+<title>Storyboard Učíme se hrou</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Onest:wght@400;500;700&display=swap">
+<style>
+  /* Layout: a storyboard sheet. One wide still per beat, its notes underneath, assumptions at the foot. */
+  :root{
+    --bg:#eef2ec; --card:#fbfcf8; --ink:#22303c; --mute:#566673; --line:#cfd9d0; --accent:#d9573a; --teal:#2a7f8c; --chip:#e1ebe3;
+    --display:'Oswald','Arial Narrow',Impact,sans-serif; --body:'Onest',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+    --bg:#131d22; --card:#1b2a31; --ink:#f1ece0; --mute:#a3b4b9; --line:#2f4249; --accent:#ff8a6b; --teal:#6fcad6; --chip:#243840; color-scheme:dark}}
+  :root[data-theme="dark"]{--bg:#131d22; --card:#1b2a31; --ink:#f1ece0; --mute:#a3b4b9; --line:#2f4249; --accent:#ff8a6b; --teal:#6fcad6; --chip:#243840; color-scheme:dark}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);
+    padding-block:32px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .wrap{max-width:1180px;margin:0 auto}
+  header{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:end;justify-content:space-between;margin-bottom:8px}
+  h1{font:700 clamp(34px,6vw,60px)/1 var(--display);letter-spacing:.01em;text-transform:uppercase;margin:0}
+  h1 span{color:var(--accent)}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+  .meta li{background:var(--chip);border-radius:999px;padding:5px 14px;font-size:14px;font-weight:500}
+  .lede{max-width:70ch;color:var(--mute);margin:12px 0 28px}
+  #status{font:500 14px var(--body);color:var(--teal);margin:0 0 20px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,520px),1fr));gap:28px 24px;margin:0;padding:0;list-style:none}
+  .beat{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+  .shot{position:relative;aspect-ratio:16/9;background:#f8dcc0;max-width:100%}
+  .shot img{display:block;width:100%;height:100%;object-fit:cover}
+  .shot .ph{position:absolute;inset:0;display:grid;place-items:center;font:500 14px var(--body);color:#5b4a3c}
+  .shot .tc{position:absolute;left:10px;bottom:10px;background:rgba(34,48,60,.82);color:#fff6e4;border-radius:6px;padding:2px 9px;font:500 13px var(--body);font-variant-numeric:tabular-nums}
+  .body{padding:18px 20px 22px;display:grid;gap:12px}
+  .head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px}
+  .num{font:700 40px/1 var(--display);color:var(--accent)}
+  .name{font:700 26px/1.1 var(--display);letter-spacing:.02em;text-transform:uppercase}
+  .time{margin-left:auto;font:500 14px var(--body);color:var(--mute);font-variant-numeric:tabular-nums}
+  dl{margin:0;display:grid;gap:10px}
+  dl div{display:grid;grid-template-columns:104px 1fr;gap:12px}
+  dt{font:700 12px/1.8 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+  dd{margin:0;min-width:0}
+  .words{display:flex;flex-wrap:wrap;gap:6px}
+  .words b{background:var(--chip);border-radius:6px;padding:1px 9px;font:600 14px var(--display);letter-spacing:.04em}
+  h2{font:700 28px/1.1 var(--display);text-transform:uppercase;letter-spacing:.02em;margin:48px 0 12px}
+  .assume{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 22px}
+  .assume li{padding:10px 0;border-bottom:1px solid var(--line)}
+  .assume li:last-child{border-bottom:0}
+  .assume ul{margin:0;padding:0;list-style:none}
+  .assume strong{font-weight:700}
+  .q{border-left:4px solid var(--accent);padding:2px 0 2px 16px;margin:20px 0 0;max-width:70ch}
+  @media (max-width:560px){dl div{grid-template-columns:1fr;gap:0}.time{margin-left:0;width:100%}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Učíme se <span>hrou</span><br>storyboard</h1>
+    <ul class="meta"><li>Styl Low-Poly</li><li>1920×1080 · 12,5 s</li><li>5 záběrů · bez mluveného slova</li></ul>
+  </header>
+  <p class="lede">Jeden ostrov, jedna cesta. Žák jde po kamenných dlaždicích od předmětů přes hry, AI doučovače a týmy až na horu s úrovněmi školy. Kamera jede s ním jedním jeřábovým záběrem. Každý panel je klíčový snímek vykreslený hned v tomhle okně tím samým kitem, jakým se pak udělá finální video.</p>
+  <p id="status" role="status">Vykresluji panely… na slabším počítači to může trvat chvíli.</p>
+
+  <ol class="grid" id="grid">
+    <li class="beat"><div class="shot"><div class="ph">záběr 1</div><span class="tc"></span></div><div class="body">
+      <div class="head"><span class="num">1</span><span class="name">Předměty</span><span class="time">0,0 – 2,6 s</span></div>
+      <dl>
+        <div><dt>Na obrazovce</dt><dd class="words"><b>1 PŘEDMĚTY</b><b>ČEŠTINA</b><b>MATEMATIKA</b><b>ANGLIČTINA</b><b>CHEMIE</b><b>DĚJEPIS</b><b>HUDEBKA</b><b>ucimesehrou.org</b></dd></div>
+        <div><dt>Co se děje</dt><dd>Úvodní scéna. Šest barevných kostek vyskočí ze země s odskokem, jedna po druhé. První dvě už na prvním snímku skoro stojí. Vlajka 1 je zapíchnutá, žák stojí před kostkami, papírová loďka houpe na moři a mraky plují.</dd></div>
+        <div><dt>Kamera</dt><dd>Nízko a blízko u kostek, zaostřeno na ně, pomalu se posouvá doprava za žákem.</dd></div>
+        <div><dt>Zvuk</dt><dd>Tichý podklad (moře, měkký pad). Šest „pop“ přesně na snímek, kdy kostka vyskočí, každé o kousek výš. Papírové zašustění u cedule.</dd></div>
+      </dl></div></li>
+    <li class="beat"><div class="shot"><div class="ph">záběr 2</div><span class="tc"></span></div><div class="body">
+      <div class="head"><span class="num">2</span><span class="name">Hry</span><span class="time">2,6 – 5,0 s</span></div>
+      <dl>
+        <div><dt>Na obrazovce</dt><dd class="words"><b>2 HRY</b><b>FARMA</b><b>MĚSTO</b><b>MAZLÍČCI</b></dd></div>
+        <div><dt>Co se děje</dt><dd>Žák vykročí a před ním po jedné vyskakují kamenné dlaždice, které tvoří cestu celým videem. Tři kulaté ostrůvky vyskočí z trávy: farma se stodolou a silem, město s věžemi, domek se psem. Zapíchne se vlajka 2.</dd></div>
+        <div><dt>Kamera</dt><dd>Jeřáb jede doprava a trochu nahoru, ostrost přeskočí na ostrůvky. Žák zamává.</dd></div>
+        <div><dt>Zvuk</dt><dd>Tiché kroky na kamenech (tock), tři „pop“ ostrůvků, špendlík a papír u vlajky, jemné cinknutí.</dd></div>
+      </dl></div></li>
+    <li class="beat"><div class="shot"><div class="ph">záběr 3</div><span class="tc"></span></div><div class="body">
+      <div class="head"><span class="num">3</span><span class="name">AI doučovač</span><span class="time">5,0 – 7,4 s</span></div>
+      <dl>
+        <div><dt>Na obrazovce</dt><dd class="words"><b>3 AI DOUČOVAČ</b><b>NECHÁPU ZLOMKY</b><b>3/8</b></dd></div>
+        <div><dt>Co se děje</dt><dd>Vyskočí malý robot. Žák se ptá a naskočí oranžová bublina. Robot odpoví bublinou s pizzou rozdělenou na 8 dílů. Tři dílky se vysunou ven a vedle se objeví 3/8.</dd></div>
+        <div><dt>Kamera</dt><dd>Jeřáb zpomalí, zvedne se a míří mezi žáka a robota. Ostrost na robotovi.</dd></div>
+        <div><dt>Zvuk</dt><dd>„Pop“ robota, jemné cinknutí při otázce, tři tiknutí při vysunutí dílků, krátký „success“ na 3/8.</dd></div>
+      </dl></div></li>
+    <li class="beat"><div class="shot"><div class="ph">záběr 4</div><span class="tc"></span></div><div class="body">
+      <div class="head"><span class="num">4</span><span class="name">Týmy</span><span class="time">7,4 – 9,8 s</span></div>
+      <dl>
+        <div><dt>Na obrazovce</dt><dd class="words"><b>4 TÝMY</b><b>ZADÁNÍ</b></dd></div>
+        <div><dt>Co se děje</dt><dd>Žák dojde ke skupince. Učitel a tři spolužáci vyskočí. Nad týmem se rozvine svitek se zadáním a čtyři políčka se postupně zaškrtnou. Při každém zaškrtnutí jeden žák poskočí radostí a učitel nakonec zvedne desky s výsledky.</dd></div>
+        <div><dt>Kamera</dt><dd>Jeřáb doprava, ostrost na týmu a svitku.</dd></div>
+        <div><dt>Zvuk</dt><dd>Šustění rozvinutého papíru, čtyři stoupající „ding“ na snímek zaškrtnutí, tlumené poskoky.</dd></div>
+      </dl></div></li>
+    <li class="beat"><div class="shot"><div class="ph">záběr 5</div><span class="tc"></span></div><div class="body">
+      <div class="head"><span class="num">5</span><span class="name">Pro koho</span><span class="time">9,8 – 12,5 s</span></div>
+      <dl>
+        <div><dt>Na obrazovce</dt><dd class="words"><b>5 PRO KOHO</b><b>ZŠ</b><b>SŠ</b><b>PŘIJÍMAČKY</b><b>MATURITA</b></dd></div>
+        <div><dt>Co se děje</dt><dd>Dlaždice vyrůstají do hory před žákem. Na cestě se jedna po druhé zapichují čtyři vlajky: ZŠ, SŠ, Přijímačky, Maturita. Žák vystoupá až na vrchol, nad hlavou se mu objeví drahokam a vyletí papírové konfety. Poslední sekunda drží.</dd></div>
+        <div><dt>Kamera</dt><dd>Couvne a vyjede nahoru, takže na konci je vidět celý ostrov: všechny zastávky dole a hora s vlajkami.</dd></div>
+        <div><dt>Zvuk</dt><dd>Kroky do kopce, čtyři „pop“ vlajek o stupeň výš, „success“ a třpyt na vrcholu, jemný „whoosh“ při odjezdu kamery.</dd></div>
+      </dl></div></li>
+  </ol>
+
+  <h2>Co jsem předpokládal</h2>
+  <div class="assume"><ul>
+    <li><strong>Jazyk.</strong> Všechny nápisy ve videu jsou česky, jak je web.</li>
+    <li><strong>Předměty.</strong> Ukazuju šest z patnácti: Čeština, Matematika, Angličtina, Chemie, Dějepis, Hudebka. Web má i Literaturu, Fyziku, Zeměpis, Přírodopis, Němčinu a další. Informatiku jsem vynechal, protože není v seznamu předmětů v kódu, i když ji měla stará verze videa.</li>
+    <li><strong>Hry.</strong> Farma, Město a Mazlíčci jsou na webu opravdu. Ekonomika a arkády (Lov krtků, Labyrint duchů…) tu pro čas nejsou.</li>
+    <li><strong>AI doučovač.</strong> Příklad se zlomky a pizzou je vymyšlený pro ilustraci, ne převzatý z webu.</li>
+    <li><strong>Týmy.</strong> Vycházím z textu na webu: učitel založí třídu, zadá zadání a výsledky se ukládají učiteli. Čtyři žáci a čtyři zaškrtnutí jsou jen ilustrace.</li>
+    <li><strong>Pro koho.</strong> Úrovně z kategorií webu: Základní škola, Střední škola, Přijímačky, Maturita. Na vlajkách jsou zkratky ZŠ a SŠ.</li>
+    <li><strong>Délka.</strong> 12,5 s, trochu přes dvanáct, protože je pět částí a každá potřebuje pár sekund.</li>
+    <li><strong>Adresa.</strong> Je jen malá na cedulce hned v první scéně. Konec je ve výhledu na ostrov, ne na logu.</li>
+    <li><strong>Panely.</strong> Tyto náhledy jsou ve zmenšeném rozlišení 1280×720 se 16 vzorky, finální video bude 1920×1080 s plným počtem vzorků.</li>
+  </ul></div>
+  <p class="q"><strong>Co potřebuju od tebe:</strong> sedí pořadí (předměty, hry, AI, týmy, pro koho)? Chceš Informatiku mezi předměty? A má být adresa na cedulce, nebo ji úplně vynechat?</p>
+</div>
+
+<script type="text/plain" id="kit-stage">/*STAGE*/</script>
+<script type="text/plain" id="style-src">/*STYLE*/</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js"}}</script>
+<script type="module">
+const status = document.getElementById('status');
+let THREE;
+try { THREE = await import('three'); } catch (e) { status.textContent = 'Nepodařilo se načíst three.js z CDN: ' + (e && e.message ? e.message : e); window.__done = 'error'; throw e; }
+window.THREE = THREE;
+const inject = (id) => { const s = document.createElement('script'); s.textContent = document.getElementById(id).textContent; document.head.appendChild(s); s.remove(); };
+const KEY_TIMES = [1.2, 4.1, 7.1, 9.4, 12.3];
+const SAMPLES = 16;
+(async () => {
+  try {
+    inject('kit-stage'); inject('style-src');
+    const style = window.STYLES[window.STYLES.length - 1];
+    // Czech letters live in Oswald's latin-ext file: ask for them explicitly so the canvas text never falls back to another font
+    await document.fonts.load('700 150px "Oswald"', 'ČŠŘŽÝÁÍÉĚŮÚŇŤĎÓčšřžýáíéěůúňťďó AaBb 12345 /.').catch(() => null);
+    const canvas = document.createElement('canvas');
+    const S = await K.run(canvas, style, { samples: SAMPLES, width: 1280, height: 720 });
+    const shots = [...document.querySelectorAll('.beat .shot')];
+    for (let i = 0; i < KEY_TIMES.length; i++) {
+      status.textContent = `Vykresluji panel ${i + 1} z ${KEY_TIMES.length}…`;
+      await new Promise((r) => setTimeout(r, 30));
+      S.seek(KEY_TIMES[i], SAMPLES);
+      const img = new Image();
+      img.alt = 'Klíčový snímek záběru ' + (i + 1);
+      img.src = canvas.toDataURL('image/jpeg', 0.92);
+      shots[i].querySelector('.ph')?.remove();
+      shots[i].prepend(img);
+      shots[i].querySelector('.tc').textContent = 't = ' + KEY_TIMES[i].toFixed(2).replace('.', ',') + ' s';
+    }
+    status.textContent = 'Panely jsou hotové.';
+    window.__done = true;
+  } catch (e) {
+    console.error(e);
+    status.textContent = 'Panely se nepodařilo vykreslit (potřebuje WebGL): ' + (e && e.message ? e.message : e);
+    window.__done = 'error';
+  }
+})();
+</script>
