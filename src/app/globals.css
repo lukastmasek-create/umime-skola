@@ -6299,11 +6299,8 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 .cs-mini-btn { justify-self: start; padding: 3px 10px; border-radius: 7px; background: #ffc933; border: 2px solid #16132b; font-size: 11px; font-weight: 800; }
 .cs-ai { margin-top: 10px; }
 
-/* ===== Kód: ručně psané písmo Playwrite a oživení karet ===== */
-.sk-underline, .hs-stage .hs-label, .cs-chip, .cs-mini-h {
-  font-family: var(--font-sketch), cursive; font-weight: 400;
-}
-.code-shell h2 { font-family: var(--font-sketch), cursive !important; font-weight: 400; line-height: 1.5; }
+/* ===== Kód: oživení karet (písmo je běžné, stejné jako na zbytku webu) ===== */
+.code-shell h2 { line-height: 1.5; }
 @keyframes sk-wobble { 0%, 100% { rotate: -2deg; } 50% { rotate: 2.5deg; } }
 @keyframes sk-pop { 0% { scale: 0.6; opacity: 0; } 70% { scale: 1.08; } 100% { scale: 1; opacity: 1; } }
 @keyframes sk-draw { to { stroke-dashoffset: 0; } }
@@ -6317,15 +6314,12 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
   .code-shell svg, .cs-chip, .code-shell > div:first-child > span:first-child { animation: none !important; }
 }
 
-/* ===== Kód: sketch styl pro všechny prvky (editory, cvičení, učivo, tlačítka) ===== */
-.code-shell h2, .code-shell h3, .code-shell h4, .code-shell p.font-bold, .code-shell [class*="text-lg"],
-.code-shell [class*="uppercase"], .code-shell [role="tab"], .code-shell nav button span.truncate,
-.code-shell .font-extrabold { font-family: var(--font-sketch), cursive; }
-.code-shell h2, .code-shell h3 { line-height: 1.5; font-weight: 400; }
-.code-shell [class*="uppercase"] { letter-spacing: 0.02em; text-transform: none; font-weight: 400; }
+/* ===== Kód: nakřivo kreslené prvky (editory, cvičení, učivo, tlačítka) ===== */
+.code-shell h2, .code-shell h3 { line-height: 1.5; }
+.code-shell [class*="uppercase"] { letter-spacing: 0.02em; text-transform: none; }
 /* Tlačítka: nakřivo, tvrdý stín, hravé najetí */
 .code-shell button[class*="bg-[#ffc933]"], .code-shell .sk-tab {
-  border-radius: 14px 10px 15px 10px / 10px 15px 10px 14px; font-family: var(--font-sketch), cursive; font-weight: 400;
+  border-radius: 14px 10px 15px 10px / 10px 15px 10px 14px;
   transition: transform .18s cubic-bezier(.3,1.6,.5,1), box-shadow .18s;
 }
 .code-shell button[class*="bg-[#ffc933]"]:hover, .code-shell .sk-tab:hover { transform: translateY(-2px) rotate(-1.2deg); }
@@ -6340,7 +6334,6 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 .code-shell svg[aria-hidden]:not([class]) { transition: rotate .2s; }
 .code-shell button:hover > svg, .code-shell a:hover > svg, .code-shell button:hover span > svg { animation: sk-wobble .5s ease-in-out; }
 /* Plovoucí AI pomocník */
-.sk-ai h2, .sk-ai > button, .sk-ai form button, .sk-ai header + div + div button { font-family: var(--font-sketch), cursive; font-weight: 400; }
 .sk-ai [role="dialog"], .sk-ai > div { border-radius: 22px 26px 20px 28px / 26px 20px 28px 22px; }
 .sk-ai > button { border-radius: 18px 24px 16px 26px / 24px 16px 26px 18px; rotate: -1.5deg; }
 .sk-ai > button:hover { animation: sk-wobble .6s ease-in-out; }
