@@ -84,10 +84,15 @@ const ROW_START = -60;
 const ROW_GAP = 34;
 const SPEED = 7; // pomalu, ať se otázka stihne přečíst
 const BOSS_STOP_Z = -14;
-const MAX_VISIBLE_CREW = 40;
+const MAX_VISIBLE_CREW = 30;
 const ROAD_W = 9;
-const SKY_CSS = "linear-gradient(180deg, #8fd0ff 0%, #b49bff 42%, #7a35f5 100%)";
-const FOG = 0xb9a2ff;
+const GATE_HIT_Z = -0.6; // brána se vyhodnotí, když doběhne k hrdinovi
+const HERO_Z = -0.7;
+// Obloha přechází do barvy mlhy přesně na horizontu, ať je krajina bez švu.
+const SKY_CSS = "linear-gradient(180deg, #4aa8ff 0%, #8ccfff 22%, #d6efff 36%, #d6efff 100%)";
+const FOG = 0xd6efff;
+
+let texAniso = 4;
 
 function roundRectPath(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath();
@@ -115,25 +120,30 @@ function wrapLines(ctx: CanvasRenderingContext2D, text: string, maxW: number): s
   return lines;
 }
 
-// Text na panelu (brána, tabule): zmenší písmo, dokud se vejde.
-function labelTexture(text: string, bg: string, fg: string, w = 512, h = 256): THREE.CanvasTexture {
+// Text na panelu (brána, tabule): vysoké rozlišení, písmo se zmenší, dokud se text nevejde.
+// Poměr stran textury musí odpovídat ploše, na kterou se lepí, jinak je písmo zdeformované.
+function labelTexture(text: string, bg: string, fg: string, w: number, h: number): THREE.CanvasTexture {
   const c = document.createElement("canvas");
   c.width = w;
   c.height = h;
   const ctx = c.getContext("2d");
+  const k = Math.min(w, h) / 256;
   if (ctx) {
     ctx.fillStyle = bg;
-    roundRectPath(ctx, 6, 6, w - 12, h - 12, 36);
+    roundRectPath(ctx, 6 * k, 6 * k, w - 12 * k, h - 12 * k, 36 * k);
     ctx.fill();
+    ctx.lineWidth = 8 * k;
+    ctx.strokeStyle = "rgba(42,26,107,0.35)";
+    ctx.stroke();
     ctx.fillStyle = fg;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    let size = 96;
+    let size = 96 * k;
     let lines: string[] = [text];
-    for (; size >= 28; size -= 6) {
+    for (; size >= 28 * k; size -= 6 * k) {
       ctx.font = `800 ${size}px system-ui, sans-serif`;
-      lines = wrapLines(ctx, text, w - 60);
-      if (lines.length * size * 1.15 <= h - 36) break;
+      lines = wrapLines(ctx, text, w - 60 * k);
+      if (lines.length * size * 1.15 <= h - 36 * k) break;
     }
     const lh = size * 1.15;
     const y0 = h / 2 - ((lines.length - 1) * lh) / 2;
@@ -141,6 +151,7 @@ function labelTexture(text: string, bg: string, fg: string, w = 512, h = 256): T
   }
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = texAniso;
   return tex;
 }
 
@@ -148,22 +159,287 @@ function buildGate(label: string): THREE.Group {
   const g = new THREE.Group();
   const frame = new THREE.MeshLambertMaterial({ color: 0x5b2fd6 });
   const beamMat = new THREE.MeshLambertMaterial({ color: 0xffc933 });
-  const post = new THREE.BoxGeometry(0.16, 2.6, 0.16);
-  for (const x of [-0.95, 0.95]) {
+  const post = new THREE.BoxGeometry(0.16, 2.7, 0.16);
+  for (const x of [-1.0, 1.0]) {
     const p = new THREE.Mesh(post, frame);
-    p.position.set(x, 1.3, 0);
+    p.position.set(x, 1.35, 0);
     g.add(p);
   }
-  const beam = new THREE.Mesh(new THREE.BoxGeometry(2.06, 0.2, 0.16), beamMat);
-  beam.position.set(0, 2.5, 0);
+  const beam = new THREE.Mesh(new THREE.BoxGeometry(2.16, 0.2, 0.16), beamMat);
+  beam.position.set(0, 2.6, 0);
   g.add(beam);
   const panel = new THREE.Mesh(
-    new THREE.PlaneGeometry(1.8, 2.2),
-    new THREE.MeshBasicMaterial({ map: labelTexture(label, "#ffffff", "#2a1a6b"), transparent: true, side: THREE.DoubleSide }),
+    new THREE.PlaneGeometry(1.86, 2.28),
+    new THREE.MeshBasicMaterial({ map: labelTexture(label, "#ffffff", "#2a1a6b", 768, 944), transparent: true, side: THREE.DoubleSide }),
   );
   panel.position.set(0, 1.3, 0.02);
   g.add(panel);
   return g;
+}
+
+// ----- Postavy
+
+type Kit = {
+  torso: THREE.BufferGeometry;
+  head: THREE.BufferGeometry;
+  hair: THREE.BufferGeometry;
+  eye: THREE.BufferGeometry;
+  arm: THREE.BufferGeometry;
+  leg: THREE.BufferGeometry;
+  pack: THREE.BufferGeometry;
+  shoe: THREE.BufferGeometry;
+};
+
+function makeKit(): Kit {
+  return {
+    torso: new THREE.CapsuleGeometry(0.17, 0.3, 4, 10),
+    head: new THREE.SphereGeometry(0.2, 18, 14),
+    hair: new THREE.SphereGeometry(0.215, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.55),
+    eye: new THREE.SphereGeometry(0.032, 8, 6),
+    arm: new THREE.CapsuleGeometry(0.056, 0.26, 3, 8),
+    leg: new THREE.CapsuleGeometry(0.075, 0.28, 3, 8),
+    pack: new THREE.BoxGeometry(0.28, 0.32, 0.13),
+    shoe: new THREE.BoxGeometry(0.15, 0.08, 0.24),
+  };
+}
+
+type Human = { g: THREE.Group; legL: THREE.Group; legR: THREE.Group; armL: THREE.Group; armR: THREE.Group; body: THREE.Group };
+
+// Postava hledí do −z (směr běhu), takže kamera vidí záda a batoh.
+function buildHuman(kit: Kit, o: { shirt: number; pants: number; hair: number; pack: number; skin?: number; cap?: boolean }): Human {
+  const g = new THREE.Group();
+  const body = new THREE.Group();
+  g.add(body);
+  const shirt = new THREE.MeshLambertMaterial({ color: o.shirt });
+  const pants = new THREE.MeshLambertMaterial({ color: o.pants });
+  const skin = new THREE.MeshLambertMaterial({ color: o.skin ?? 0xffd2b0 });
+  const hairM = new THREE.MeshLambertMaterial({ color: o.hair });
+  const packM = new THREE.MeshLambertMaterial({ color: o.pack });
+  const dark = new THREE.MeshBasicMaterial({ color: 0x16132b });
+  const shoeM = new THREE.MeshLambertMaterial({ color: 0xffffff });
+
+  const torso = new THREE.Mesh(kit.torso, shirt);
+  torso.position.y = 0.8;
+  body.add(torso);
+  const pack = new THREE.Mesh(kit.pack, packM);
+  pack.position.set(0, 0.82, 0.19);
+  body.add(pack);
+  const head = new THREE.Mesh(kit.head, skin);
+  head.position.y = 1.23;
+  body.add(head);
+  const hair = new THREE.Mesh(kit.hair, o.cap ? packM : hairM);
+  hair.position.y = 1.24;
+  hair.rotation.x = -0.15;
+  body.add(hair);
+  for (const x of [-0.075, 0.075]) {
+    const eye = new THREE.Mesh(kit.eye, dark);
+    eye.position.set(x, 1.25, -0.185);
+    body.add(eye);
+  }
+
+  const mkLimb = (geo: THREE.BufferGeometry, mat: THREE.Material, x: number, y: number, off: number, withShoe: boolean) => {
+    const pivot = new THREE.Group();
+    pivot.position.set(x, y, 0);
+    const m = new THREE.Mesh(geo, mat);
+    m.position.y = off;
+    pivot.add(m);
+    if (withShoe) {
+      const s = new THREE.Mesh(kit.shoe, shoeM);
+      s.position.set(0, off - 0.2, -0.04);
+      pivot.add(s);
+    }
+    body.add(pivot);
+    return pivot;
+  };
+  const armL = mkLimb(kit.arm, skin, -0.25, 0.98, -0.17, false);
+  const armR = mkLimb(kit.arm, skin, 0.25, 0.98, -0.17, false);
+  const legL = mkLimb(kit.leg, pants, -0.09, 0.58, -0.2, true);
+  const legR = mkLimb(kit.leg, pants, 0.09, 0.58, -0.2, true);
+  return { g, legL, legR, armL, armR, body };
+}
+
+// Běžecký cyklus: nohy a ruce se kývají proti sobě, tělo mírně poskakuje.
+function animateHuman(h: Human, clock: number, phase: number, run: number, hop: number) {
+  const s = Math.sin(clock * 11 + phase);
+  const idle = Math.sin(clock * 2 + phase) * 0.03;
+  h.legL.rotation.x = s * 0.95 * run;
+  h.legR.rotation.x = -s * 0.95 * run;
+  // ve vzduchu (skok do strany) jsou nohy pokrčené a ruce nahoře
+  h.legL.rotation.x += hop * -0.6;
+  h.legR.rotation.x += hop * 0.4;
+  h.armL.rotation.x = -s * 0.9 * run + idle - hop * 1.2;
+  h.armR.rotation.x = s * 0.9 * run - idle - hop * 1.2;
+  h.armL.rotation.z = 0.08 + hop * 0.5;
+  h.armR.rotation.z = -0.08 - hop * 0.5;
+  h.body.position.y = Math.abs(s) * 0.09 * run + idle * 0.5;
+  h.body.rotation.x = -0.12 * run; // předklon při běhu
+}
+
+// ----- Boss
+
+type Boss = {
+  root: THREE.Group;
+  body: THREE.Group;
+  armL: THREE.Group;
+  armR: THREE.Group;
+  mouth: THREE.Mesh;
+  mat: THREE.MeshLambertMaterial;
+  hpFill: THREE.Mesh;
+};
+
+function buildBoss(): Boss {
+  const root = new THREE.Group();
+  const body = new THREE.Group();
+  root.add(body);
+  const mat = new THREE.MeshLambertMaterial({ color: 0xff5a8a });
+  const belly = new THREE.MeshLambertMaterial({ color: 0xffc2d6 });
+  const gold = new THREE.MeshLambertMaterial({ color: 0xffc933 });
+  const white = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const dark = new THREE.MeshBasicMaterial({ color: 0x16132b });
+
+  const torso = new THREE.Mesh(new THREE.SphereGeometry(1.9, 24, 18), mat);
+  torso.scale.set(1.1, 1, 0.9);
+  torso.position.y = 2.1;
+  body.add(torso);
+  const tummy = new THREE.Mesh(new THREE.SphereGeometry(1.3, 20, 14), belly);
+  tummy.scale.set(1, 1, 0.5);
+  tummy.position.set(0, 1.8, 1.35);
+  body.add(tummy);
+
+  const head = new THREE.Mesh(new THREE.SphereGeometry(1.25, 24, 18), mat);
+  head.position.y = 4.35;
+  body.add(head);
+  for (const x of [-0.8, 0.8]) {
+    const horn = new THREE.Mesh(new THREE.ConeGeometry(0.38, 1.3, 10), gold);
+    horn.position.set(x, 5.6, 0);
+    horn.rotation.z = -x * 0.35;
+    body.add(horn);
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 12), white);
+    eye.position.set(x * 0.7, 4.6, 1.0);
+    body.add(eye);
+    const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 10), dark);
+    pupil.position.set(x * 0.7, 4.55, 1.35);
+    body.add(pupil);
+    const brow = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.14, 0.14), dark);
+    brow.position.set(x * 0.7, 5.12, 1.12);
+    brow.rotation.z = x * 0.45; // zamračený pohled
+    body.add(brow);
+  }
+  const mouth = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.4, 0.2), dark);
+  mouth.position.set(0, 3.75, 1.15);
+  body.add(mouth);
+  for (const x of [-0.4, -0.13, 0.13, 0.4]) {
+    const tooth = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.22, 6), white);
+    tooth.position.set(x, 3.92, 1.28);
+    tooth.rotation.x = Math.PI;
+    body.add(tooth);
+  }
+
+  const mkArm = (side: number) => {
+    const pivot = new THREE.Group();
+    pivot.position.set(side * 2.2, 3.1, 0);
+    const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 1.3, 4, 10), mat);
+    arm.position.y = -0.9;
+    pivot.add(arm);
+    const fist = new THREE.Mesh(new THREE.SphereGeometry(0.58, 14, 10), gold);
+    fist.position.y = -1.9;
+    pivot.add(fist);
+    body.add(pivot);
+    return pivot;
+  };
+  const armL = mkArm(-1);
+  const armR = mkArm(1);
+  for (const x of [-0.9, 0.9]) {
+    const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.5, 0.6, 4, 10), mat);
+    leg.position.set(x, 0.55, 0);
+    body.add(leg);
+  }
+
+  const hpBack = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 0.5), new THREE.MeshBasicMaterial({ color: 0x2a1a6b }));
+  hpBack.position.set(0, 7.2, 1.3);
+  root.add(hpBack);
+  const hpFill = new THREE.Mesh(new THREE.PlaneGeometry(4.0, 0.34), new THREE.MeshBasicMaterial({ color: 0x17a864 }));
+  hpFill.position.set(0, 7.2, 1.32);
+  root.add(hpFill);
+  return { root, body, armL, armR, mouth, mat, hpFill };
+}
+
+// ----- Krajina
+
+function buildMountain(r: number, h: number, color: number): THREE.Group {
+  const g = new THREE.Group();
+  const m = new THREE.Mesh(new THREE.ConeGeometry(r, h, 6), new THREE.MeshLambertMaterial({ color, flatShading: true }));
+  m.position.y = h / 2;
+  g.add(m);
+  const cap = new THREE.Mesh(
+    new THREE.ConeGeometry(r * 0.34, h * 0.3, 6),
+    new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true }),
+  );
+  cap.position.y = h * 0.86;
+  g.add(cap);
+  return g;
+}
+
+function buildTree(variant: number): THREE.Group {
+  const g = new THREE.Group();
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.3, 1.6, 8), new THREE.MeshLambertMaterial({ color: 0x8a5a36 }));
+  trunk.position.y = 0.8;
+  g.add(trunk);
+  const greens = [0x3fb46a, 0x2f9e5a, 0x56c97a];
+  const leaf = new THREE.MeshLambertMaterial({ color: greens[variant % greens.length], flatShading: true });
+  if (variant % 2 === 0) {
+    for (let k = 0; k < 3; k++) {
+      const c = new THREE.Mesh(new THREE.ConeGeometry(1.5 - k * 0.32, 1.9, 8), leaf);
+      c.position.y = 2.3 + k * 1.1;
+      g.add(c);
+    }
+  } else {
+    const b = new THREE.Mesh(new THREE.SphereGeometry(1.7, 12, 10), leaf);
+    b.position.y = 3.1;
+    g.add(b);
+  }
+  const s = 0.85 + (variant % 3) * 0.2;
+  g.scale.setScalar(s);
+  return g;
+}
+
+function buildPlane(color: number): THREE.Group {
+  const g = new THREE.Group();
+  const bodyM = new THREE.MeshLambertMaterial({ color });
+  const white = new THREE.MeshLambertMaterial({ color: 0xffffff });
+  const fus = new THREE.Mesh(new THREE.CapsuleGeometry(0.7, 4, 4, 12), bodyM);
+  fus.rotation.z = Math.PI / 2; // trup podél osy x
+  g.add(fus);
+  const wing = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.15, 7), white);
+  g.add(wing);
+  const tail = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.12, 2.6), white);
+  tail.position.x = -2.5;
+  g.add(tail);
+  const fin = new THREE.Mesh(new THREE.BoxGeometry(1, 1.3, 0.12), bodyM);
+  fin.position.set(-2.5, 0.7, 0);
+  g.add(fin);
+  const win = new THREE.Mesh(new THREE.SphereGeometry(0.42, 10, 8), new THREE.MeshBasicMaterial({ color: 0x16132b }));
+  win.position.set(1.2, 0.4, 0);
+  g.add(win);
+  const prop = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.4, 0.2), white);
+  prop.name = "prop";
+  prop.position.x = 2.9;
+  g.add(prop);
+  return g;
+}
+
+// Číslo nad partou: kolik nás je.
+function drawCount(ctx: CanvasRenderingContext2D | null, n: number) {
+  if (!ctx) return;
+  ctx.clearRect(0, 0, 256, 128);
+  ctx.fillStyle = "#2a1a6b";
+  roundRectPath(ctx, 40, 14, 176, 100, 40);
+  ctx.fill();
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "800 72px system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(String(n), 128, 66);
 }
 
 export function RunnerGame({
@@ -228,41 +504,78 @@ export function RunnerGame({
       results: [] as AnswerResult[],
       shake: 0,
       bossShake: 0,
+      bossLunge: 0,
+      bossDown: 0,
       pulse: 0,
+      hopT: 0,
+      hopDir: 0,
+      runAmt: 0,
       feedbackTimer: 0,
       projectiles: [] as { mesh: THREE.Mesh; t: number; from: THREE.Vector3; to: THREE.Vector3 }[],
     };
 
-    // ----- Renderer a scéna
+    // ----- Renderer a scéna (vyšší rozlišení: supersampling i na běžných displejích)
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(Math.max(window.devicePixelRatio, 1.5), 2.5));
+    texAniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
     renderer.domElement.style.display = "block";
     renderer.domElement.style.width = "100%";
     renderer.domElement.style.height = "100%";
     mount.appendChild(renderer.domElement);
     const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(FOG, 80, 190);
-    const camera = new THREE.PerspectiveCamera(58, 1, 0.1, 400);
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x7a35f5, 1.15));
-    const sun = new THREE.DirectionalLight(0xffffff, 0.9);
-    sun.position.set(4, 12, 6);
+    scene.fog = new THREE.Fog(FOG, 70, 240);
+    const camera = new THREE.PerspectiveCamera(56, 1, 0.1, 500);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x6fbf7a, 1.2));
+    const sun = new THREE.DirectionalLight(0xfff3d6, 1.0);
+    sun.position.set(-8, 14, 6);
     scene.add(sun);
 
     const world = new THREE.Group();
     scene.add(world);
 
-    // Silnice a boky
-    const road = new THREE.Mesh(
-      new THREE.PlaneGeometry(ROAD_W, 520),
-      new THREE.MeshLambertMaterial({ color: 0x9c7bff }),
-    );
+    // Silnice a trávník
+    const road = new THREE.Mesh(new THREE.PlaneGeometry(ROAD_W, 560), new THREE.MeshLambertMaterial({ color: 0x8f86c9 }));
     road.rotation.x = -Math.PI / 2;
-    road.position.set(0, 0, -190);
+    road.position.set(0, 0, -210);
     scene.add(road);
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 520), new THREE.MeshLambertMaterial({ color: 0xc9b6ff }));
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(700, 560), new THREE.MeshLambertMaterial({ color: 0x7fd28f }));
     ground.rotation.x = -Math.PI / 2;
-    ground.position.set(0, -0.02, -190);
+    ground.position.set(0, -0.02, -210);
     scene.add(ground);
+    for (const x of [-ROAD_W / 2 - 0.2, ROAD_W / 2 + 0.2]) {
+      const curb = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.12, 560), new THREE.MeshLambertMaterial({ color: 0xffffff }));
+      curb.position.set(x, 0.05, -210);
+      scene.add(curb);
+    }
+
+    // Slunce (mimo mlhu) a záře
+    const sunDisc = new THREE.Mesh(new THREE.SphereGeometry(9, 24, 18), new THREE.MeshBasicMaterial({ color: 0xfff4c2, fog: false }));
+    sunDisc.position.set(-55, 62, -300);
+    scene.add(sunDisc);
+    const sunGlow = new THREE.Mesh(
+      new THREE.SphereGeometry(16, 24, 18),
+      new THREE.MeshBasicMaterial({ color: 0xfff4c2, transparent: true, opacity: 0.3, fog: false }),
+    );
+    sunGlow.position.copy(sunDisc.position);
+    scene.add(sunGlow);
+
+    // Hory na obzoru (pevné) a nízké kopce po stranách
+    const mountainColors = [0x7c8fd6, 0x8b7fd0, 0x6f9ad8, 0x9a8fd9];
+    for (let i = 0; i < 16; i++) {
+      const r = 22 + ((i * 7) % 5) * 5;
+      const h = 26 + ((i * 11) % 6) * 6;
+      const m = buildMountain(r, h, mountainColors[i % mountainColors.length]);
+      m.position.set(-170 + i * 22 + ((i * 13) % 7), 0, -265 - ((i * 5) % 4) * 14);
+      scene.add(m);
+    }
+    for (let i = 0; i < 10; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const hill = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 12), new THREE.MeshLambertMaterial({ color: i % 3 === 0 ? 0x5fc47a : 0x74d28b }));
+      const sx = 22 + ((i * 9) % 5) * 7;
+      hill.scale.set(sx, 7 + ((i * 3) % 4) * 2.5, 22 + ((i * 5) % 4) * 6);
+      hill.position.set(side * (50 + ((i * 17) % 60)), -1, -90 - i * 22);
+      scene.add(hill);
+    }
 
     // Pruhy mezi drahami (recyklují se, ať běh nemá konec)
     const dashGeo = new THREE.BoxGeometry(0.08, 0.02, 2.2);
@@ -277,10 +590,21 @@ export function RunnerGame({
       }
     }
 
+    // Stromy podél cesty (recyklují se jako pruhy)
+    const trees: { g: THREE.Group; i: number; x: number }[] = [];
+    for (let i = 0; i < 18; i++) {
+      for (const side of [-1, 1]) {
+        const g = buildTree(i + (side > 0 ? 1 : 0));
+        const x = side * (ROAD_W / 2 + 3 + ((i * 7) % 5) * 2.6);
+        scene.add(g);
+        trees.push({ g, i: i * 2 + (side > 0 ? 1 : 0), x });
+      }
+    }
+
     // Mraky nad drahou: pomalu plynou, takže dávají pocit hloubky
-    const cloudMat = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.92 });
+    const cloudMat = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.95 });
     const clouds: { g: THREE.Group; i: number }[] = [];
-    for (let i = 0; i < 14; i++) {
+    for (let i = 0; i < 16; i++) {
       const g = new THREE.Group();
       const puffs = 3 + (i % 3);
       for (let k = 0; k < puffs; k++) {
@@ -291,6 +615,14 @@ export function RunnerGame({
       scene.add(g);
       clouds.push({ g, i });
     }
+
+    // Letadla přelétají oblohu zprava doleva a zpět
+    const planes = [
+      { g: buildPlane(0xff5a8a), y: 24, z: -90, speed: 11, off: 0 },
+      { g: buildPlane(0x3248f0), y: 31, z: -140, speed: -8, off: 70 },
+      { g: buildPlane(0xffc933), y: 19, z: -60, speed: 14, off: 130 },
+    ];
+    for (const p of planes) scene.add(p.g);
 
     // Brány a tabule (řada i je na world.z = ROW_START - i * ROW_GAP)
     const rowObjects: THREE.Group[] = [];
@@ -304,13 +636,13 @@ export function RunnerGame({
       });
       const sign = new THREE.Mesh(
         new THREE.PlaneGeometry(7.6, 1.6),
-        new THREE.MeshBasicMaterial({ map: labelTexture(row.prompt, "#3248f0", "#ffffff", 768, 256), transparent: true, side: THREE.DoubleSide }),
+        new THREE.MeshBasicMaterial({ map: labelTexture(row.prompt, "#3248f0", "#ffffff", 2432, 512), transparent: true, side: THREE.DoubleSide }),
       );
-      sign.position.set(0, 4.3, 0);
+      sign.position.set(0, 4.5, 0);
       grp.add(sign);
       for (const x of [-3.7, 3.7]) {
-        const p = new THREE.Mesh(new THREE.BoxGeometry(0.18, 4.3, 0.18), new THREE.MeshLambertMaterial({ color: 0x5b2fd6 }));
-        p.position.set(x, 2.15, 0);
+        const p = new THREE.Mesh(new THREE.BoxGeometry(0.18, 4.5, 0.18), new THREE.MeshLambertMaterial({ color: 0x5b2fd6 }));
+        p.position.set(x, 2.25, 0);
         grp.add(p);
       }
       world.add(grp);
@@ -318,44 +650,52 @@ export function RunnerGame({
     });
 
     // Boss na konci trati
-    const boss = new THREE.Group();
-    boss.position.z = bossLocalZ;
-    const bodyMat = new THREE.MeshLambertMaterial({ color: 0xff5a8a });
-    const body = new THREE.Mesh(new THREE.BoxGeometry(3.4, 3.2, 2.4), bodyMat);
-    body.position.y = 1.7;
-    boss.add(body);
-    for (const x of [-1.1, 1.1]) {
-      const horn = new THREE.Mesh(new THREE.ConeGeometry(0.4, 1.2, 6), new THREE.MeshLambertMaterial({ color: 0xffc933 }));
-      horn.position.set(x, 3.9, 0);
-      boss.add(horn);
-      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.46, 16, 12), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-      eye.position.set(x * 0.7, 2.1, 1.25);
-      boss.add(eye);
-      const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 10), new THREE.MeshBasicMaterial({ color: 0x16132b }));
-      pupil.position.set(x * 0.7, 2.1, 1.5);
-      boss.add(pupil);
-    }
-    const hpBack = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 0.36), new THREE.MeshBasicMaterial({ color: 0x2a1a6b }));
-    hpBack.position.set(0, 5.1, 1.3);
-    boss.add(hpBack);
-    const hpFill = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 0.36), new THREE.MeshBasicMaterial({ color: 0x17a864 }));
-    hpFill.position.set(0, 5.1, 1.32);
-    boss.add(hpFill);
-    world.add(boss);
+    const boss = buildBoss();
+    boss.root.position.z = bossLocalZ;
+    world.add(boss.root);
 
-    // Parta: menší kapsle za hráčem
+    // Hrdina a parta
+    const kit = makeKit();
     const crowdGroup = new THREE.Group();
     scene.add(crowdGroup);
-    const crowdGeo = new THREE.CapsuleGeometry(0.2, 0.45, 3, 8);
-    const crowdColors = [0xffffff, 0xffe36b, 0xff9ad5, 0x8fd0ff].map((c) => new THREE.MeshLambertMaterial({ color: c }));
-    const members: THREE.Mesh[] = [];
+    const hero = buildHuman(kit, { shirt: 0xffc933, pants: 0x3248f0, hair: 0x4a2c17, pack: 0xff5a8a, cap: true });
+    hero.g.scale.setScalar(1.35);
+    hero.g.position.z = HERO_Z;
+    crowdGroup.add(hero.g);
+    const shirts = [0xffffff, 0xffe36b, 0xff9ad5, 0x8fd0ff, 0xa6f0b8];
+    const hairs = [0x2a1a14, 0x6b4423, 0xd9a441, 0x1c1c1c];
+    const members: { h: Human; s: number }[] = [];
     for (let i = 0; i < MAX_VISIBLE_CREW; i++) {
-      const m = new THREE.Mesh(crowdGeo, crowdColors[i % crowdColors.length]);
-      crowdGroup.add(m);
-      members.push(m);
+      const h = buildHuman(kit, {
+        shirt: shirts[i % shirts.length],
+        pants: i % 2 ? 0x5b2fd6 : 0x2a3a8a,
+        hair: hairs[i % hairs.length],
+        pack: shirts[(i + 2) % shirts.length],
+      });
+      h.g.scale.setScalar(0.9);
+      h.g.visible = false;
+      crowdGroup.add(h.g);
+      members.push({ h, s: 0 });
     }
 
-    const projGeo = new THREE.SphereGeometry(0.18, 10, 8);
+    // Počítadlo party nad hlavou hrdiny
+    const countCanvas = document.createElement("canvas");
+    countCanvas.width = 256;
+    countCanvas.height = 128;
+    const countCtx = countCanvas.getContext("2d");
+    drawCount(countCtx, sim.crew);
+    const countTex = new THREE.CanvasTexture(countCanvas);
+    countTex.colorSpace = THREE.SRGBColorSpace;
+    const countSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: countTex, transparent: true, depthTest: false }));
+    countSprite.scale.set(1.8, 0.9, 1);
+    countSprite.position.set(0, 3.1, HERO_Z);
+    crowdGroup.add(countSprite);
+    const refreshCount = () => {
+      drawCount(countCtx, sim.crew);
+      countTex.needsUpdate = true;
+    };
+
+    const projGeo = new THREE.SphereGeometry(0.22, 12, 10);
     const projMat = new THREE.MeshBasicMaterial({ color: 0xfff33b });
 
     // ----- Velikost
@@ -393,12 +733,26 @@ export function RunnerGame({
     const move = (dir: -1 | 1) => {
       if (sim.phase !== "run") return;
       const next = Math.min(2, Math.max(0, sim.lane + dir)) as 0 | 1 | 2;
+      if (next === sim.lane) return;
       sim.lane = next;
+      sim.hopT = 1; // skok do strany
+      sim.hopDir = dir;
     };
 
     const start = () => {
       if (sim.phase !== "ready") return;
       setP("run");
+    };
+
+    // Výstřely party do bosse (vizuálně)
+    const crowdShots = (c: number) => Math.max(1, Math.ceil(c / 8));
+    const shoot = (k: number) => {
+      const mesh = new THREE.Mesh(projGeo, projMat);
+      const from = new THREE.Vector3(sim.x + (k - 1.5) * 0.4, 1.5, 0.3);
+      const to = new THREE.Vector3(0, 3.0, boss.root.position.z + world.position.z + 1.6);
+      mesh.position.copy(from);
+      scene.add(mesh);
+      sim.projectiles.push({ mesh, t: 0, from, to });
     };
 
     const answer = (i: number) => {
@@ -416,7 +770,9 @@ export function RunnerGame({
         const before = sim.crew;
         sim.crew = bossOutcome(sim.crew, false);
         sim.shake = 0.5;
+        sim.bossLunge = 0.6;
         setCrew(sim.crew);
+        refreshCount();
         flash(t.bossWrongN.replace("{n}", String(before - sim.crew)), false, `${t.wrongWas} ${q.options[q.correctIndex]}`);
       }
       setRevealed({ picked: i, ok });
@@ -431,19 +787,6 @@ export function RunnerGame({
       sim.bossIdx += 1;
       setBossIdx(sim.bossIdx);
     };
-
-    // Výstřely party do bosse (vizuálně)
-    function crowdShots(c: number) {
-      return Math.max(1, Math.ceil(c / 8));
-    }
-    function shoot(k: number) {
-      const mesh = new THREE.Mesh(projGeo, projMat);
-      const from = new THREE.Vector3(sim.x + (k - 2) * 0.35, 1.4, 0.5);
-      const to = new THREE.Vector3(0, 2.2, boss.position.z + 1.2);
-      mesh.position.copy(from);
-      scene.add(mesh);
-      sim.projectiles.push({ mesh, t: 0, from, to });
-    }
 
     api.current = { start, move, answer, next };
 
@@ -472,6 +815,7 @@ export function RunnerGame({
         else if (rel > 0.65) move(1);
       }
     };
+    const onCancel = () => (drag = null);
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") move(-1);
       else if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") move(1);
@@ -483,7 +827,7 @@ export function RunnerGame({
     };
     host?.addEventListener("pointerdown", onDown);
     window.addEventListener("pointerup", onUp);
-    window.addEventListener("pointercancel", () => (drag = null));
+    window.addEventListener("pointercancel", onCancel);
     window.addEventListener("keydown", onKey);
 
     // ----- Smyčka
@@ -500,15 +844,16 @@ export function RunnerGame({
 
       // Pohyb do stran
       const targetX = RUNNER_LANES[sim.lane];
-      sim.x += (targetX - sim.x) * Math.min(1, dt * 12);
+      sim.x += (targetX - sim.x) * Math.min(1, dt * 11);
+      sim.hopT = Math.max(0, sim.hopT - dt / 0.4);
 
       // Běh
       if (sim.phase === "run") {
         sim.d += SPEED * dt;
-        // Průchod bránami
+        // Průchod bránami: řada se vyhodnotí, až doběhne k hrdinovi (její z se blíží k 0 zepředu)
         while (sim.nextRow < rows.length) {
           const rz = ROW_START - sim.nextRow * ROW_GAP + sim.d;
-          if (rz < 0.6) {
+          if (rz >= GATE_HIT_Z) {
             const row = rows[sim.nextRow];
             const gate = row.gates[sim.lane];
             const before = sim.crew;
@@ -519,6 +864,7 @@ export function RunnerGame({
             if (sim.crew !== before) sim.shake = gate.correct ? 0 : 0.35;
             setCrew(sim.crew);
             setRowsDone(sim.nextRow);
+            refreshCount();
             if (gate.correct) flash(`${t.gained.replace("{n}", String(sim.crew - before))}`, true);
             else flash(t.lostN.replace("{n}", String(before - sim.crew)), false, `${t.wrongWas} ${row.correctLabel}`);
             if (sim.crew <= 0) {
@@ -537,47 +883,93 @@ export function RunnerGame({
       }
 
       world.position.z = sim.d;
+      // Rychlost animace běhu dobíhá plynule; mimo běh postavy stojí.
+      sim.runAmt += ((sim.phase === "run" ? 1 : 0) - sim.runAmt) * Math.min(1, dt * 8);
+      // Pohyb scenérie: když hráč neběží, krajina stojí (sim.d se nemění).
 
       // Silnice: pruhy se posouvají
       for (const dsh of dashes) {
-        const base = dsh.i * 8 + sim.d * 0;
-        const z = -220 + ((base + sim.d) % 240);
+        const z = -220 + ((dsh.i * 8 + sim.d) % 240);
         dsh.mesh.position.z = z;
         dsh.mesh.visible = z > -215 && z < 25;
       }
 
+      // Stromy
+      for (const tr of trees) {
+        const z = -230 + ((tr.i * 7.2 + sim.d) % 240);
+        tr.g.position.set(tr.x, 0, z);
+        tr.g.visible = z > -225 && z < 14;
+      }
+
       // Mraky: plynou pomaleji než silnice
       for (const c of clouds) {
-        const z = -230 + ((c.i * 19 + sim.d * 0.6) % 260);
-        c.g.position.set(((c.i * 37) % 30) - 15, 11 + (c.i % 4) * 1.6, z);
+        const z = -230 + ((c.i * 17 + sim.d * 0.6 + clock * 0.8) % 260);
+        c.g.position.set(((c.i * 37) % 60) - 30, 13 + (c.i % 4) * 2.2, z);
         c.g.visible = z < 6;
       }
 
-      // Parta
+      // Letadla
+      for (const p of planes) {
+        const dir = p.speed > 0 ? 1 : -1;
+        const x = ((clock * Math.abs(p.speed) + p.off) % 180) - 90;
+        p.g.position.set(dir > 0 ? x : -x, p.y + Math.sin(clock * 0.9 + p.off) * 0.8, p.z);
+        p.g.rotation.y = dir > 0 ? Math.PI : 0; // nos míří po směru letu
+        p.g.rotation.x = Math.sin(clock * 1.3 + p.off) * 0.12;
+        const prop = p.g.getObjectByName("prop");
+        if (prop) prop.rotation.x = clock * 40;
+      }
+
+      // Hrdina a parta
       const shakeX = sim.shake > 0 ? Math.sin(clock * 60) * 0.12 * sim.shake : 0;
       sim.shake = Math.max(0, sim.shake - dt);
       sim.pulse = Math.max(0, sim.pulse - dt);
-      const visible = Math.min(sim.crew, MAX_VISIBLE_CREW);
+      const hopP = 1 - sim.hopT; // 0..1 průběh skoku
+      const hopArc = sim.hopT > 0 ? Math.sin(Math.PI * hopP) : 0;
       crowdGroup.position.set(sim.x + shakeX, 0, 0);
-      const scale = 1 + sim.pulse * 0.25;
-      crowdGroup.scale.setScalar(scale);
+      crowdGroup.scale.setScalar(1 + sim.pulse * 0.2);
+      hero.g.position.y = hopArc * 0.95;
+      hero.g.rotation.z = -sim.hopDir * hopArc * 0.45;
+      animateHuman(hero, clock, 0, sim.runAmt, hopArc);
+      countSprite.position.y = 3.1 + hopArc * 0.95 + Math.sin(clock * 3) * 0.05;
+
+      const want = Math.min(sim.crew, MAX_VISIBLE_CREW);
       for (let i = 0; i < members.length; i++) {
-        const m = members[i];
-        m.visible = i < visible;
-        if (!m.visible) continue;
+        const mem = members[i];
+        const target = i < want ? 1 : 0;
+        mem.s += (target - mem.s) * Math.min(1, dt * 10);
+        const vis = mem.s > 0.03;
+        mem.h.g.visible = vis;
+        if (!vis) continue;
         const col = i % 5;
         const row = Math.floor(i / 5);
-        const jitter = Math.sin((i + 1) * 12.9898) * 0.12;
-        const bob = Math.abs(Math.sin(clock * 9 + i * 0.7)) * 0.16;
-        m.position.set((col - 2) * 0.46 + jitter, 0.45 + bob, -row * 0.5 - 0.3);
+        const jitter = Math.sin((i + 1) * 12.9898) * 0.08;
+        // členové skáčou se zpožděním podle řady, takže skok proběhne partou jako vlna
+        const p = Math.min(1, Math.max(0, hopP - row * 0.07));
+        const mHop = sim.hopT > 0 ? Math.sin(Math.PI * p) : 0;
+        mem.h.g.position.set((col - 2) * 0.5 + jitter, mHop * 0.6, 0.55 + row * 0.62);
+        mem.h.g.scale.setScalar(0.9 * mem.s);
+        mem.h.g.rotation.z = -sim.hopDir * mHop * 0.35;
+        animateHuman(mem.h, clock, i * 0.9, sim.runAmt, mHop);
       }
 
-      // Boss
+      // Boss: dýchá, mává pěstmi, při zásahu bliká a padá, při špatné odpovědi udeří
       if (sim.bossShake > 0) sim.bossShake = Math.max(0, sim.bossShake - dt);
-      boss.position.x = sim.bossShake > 0 ? Math.sin(clock * 60) * 0.25 : 0;
-      boss.position.y = Math.sin(clock * 2.2) * 0.12;
-      hpFill.scale.x = Math.max(0.001, sim.bossHp / RUNNER_BOSS_HITS);
-      hpFill.position.x = -(1 - hpFill.scale.x) * 1.7;
+      if (sim.bossLunge > 0) sim.bossLunge = Math.max(0, sim.bossLunge - dt);
+      if (sim.bossHp <= 0) sim.bossDown = Math.min(1, sim.bossDown + dt * 1.2);
+      const lungeP = sim.bossLunge > 0 ? Math.sin(Math.PI * (1 - sim.bossLunge / 0.6)) : 0;
+      boss.body.position.x = sim.bossShake > 0 ? Math.sin(clock * 60) * 0.25 : 0;
+      boss.body.position.y = Math.sin(clock * 2.2) * 0.12 - sim.bossDown * 2.2;
+      boss.body.position.z = lungeP * 5;
+      boss.body.rotation.x = -sim.bossDown * 1.45;
+      boss.armL.rotation.x = Math.sin(clock * 3) * 0.3 - lungeP * 2.2;
+      boss.armR.rotation.x = Math.sin(clock * 3 + Math.PI) * 0.3 - lungeP * 2.2;
+      boss.armL.rotation.z = 0.25 + Math.sin(clock * 2) * 0.1;
+      boss.armR.rotation.z = -0.25 - Math.sin(clock * 2) * 0.1;
+      boss.mouth.scale.y = 1 + Math.abs(Math.sin(clock * 4)) * 0.8 + lungeP * 1.5;
+      const flashK = sim.bossShake > 0 ? sim.bossShake * 2 : 0;
+      boss.mat.emissive.setRGB(flashK, flashK * 0.2, flashK * 0.2);
+      boss.hpFill.scale.x = Math.max(0.001, sim.bossHp / RUNNER_BOSS_HITS);
+      boss.hpFill.position.x = -(1 - boss.hpFill.scale.x) * 2.0;
 
       // Výstřely
       for (let i = sim.projectiles.length - 1; i >= 0; i--) {
@@ -592,9 +984,9 @@ export function RunnerGame({
         }
       }
 
-      // Kamera sleduje hráče
-      camera.position.set(sim.x * 0.35, 4.6, 7.5);
-      camera.lookAt(sim.x * 0.25, 1.4, -12);
+      // Kamera sleduje hráče (výš a blíž, ať jsou vidět brány i text)
+      camera.position.set(sim.x * 0.35, 4.9, 8.2);
+      camera.lookAt(sim.x * 0.25, 1.7, -12);
 
       renderer.render(scene, camera);
     };
@@ -606,17 +998,20 @@ export function RunnerGame({
       ro.disconnect();
       host?.removeEventListener("pointerdown", onDown);
       window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onCancel);
       window.removeEventListener("keydown", onKey);
       api.current = null;
       scene.traverse((o) => {
         const mesh = o as THREE.Mesh;
         if (mesh.geometry) mesh.geometry.dispose();
-        const mat = mesh.material as THREE.Material & { map?: THREE.Texture | null };
+        const mat = mesh.material as (THREE.Material & { map?: THREE.Texture | null }) | undefined;
         if (mat) {
           mat.map?.dispose();
           mat.dispose();
         }
       });
+      Object.values(kit).forEach((g) => g.dispose());
+      countTex.dispose();
       projGeo.dispose();
       projMat.dispose();
       renderer.dispose();
@@ -689,7 +1084,7 @@ export function RunnerGame({
       <div className="card p-3 sm:p-4">
         <div
           ref={hostRef}
-          className="relative h-[min(70vh,620px)] min-h-[440px] w-full touch-none select-none overflow-hidden rounded-2xl"
+          className="relative h-[min(78vh,720px)] min-h-[480px] w-full touch-none select-none overflow-hidden rounded-2xl"
           style={{ background: SKY_CSS }}
         >
           <div ref={mountRef} className="absolute inset-0" />
