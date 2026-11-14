@@ -1,5 +1,6 @@
 "use client";
 
+import { setAssistContext } from "@/lib/code-assist";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { CodeArea } from "@/components/CodeArea";
@@ -93,6 +94,10 @@ export function CodeSandbox() {
 
   const names = Object.keys(files);
   const content = files[active] ?? "";
+  useEffect(() => {
+    setAssistContext({ label: `Čistý list: ${active}`, code: content });
+    return () => setAssistContext(null);
+  }, [active, content]);
   const live = useMemo(() => buildPreview(files), [files]);
   const [shown, setShown] = useState(live);
 

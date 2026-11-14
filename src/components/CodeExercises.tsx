@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { setAssistContext } from "@/lib/code-assist";
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { SketchIcon, type SketchIconKind } from "@/components/SketchIcons";
 import { EXERCISES, LANG_LABEL, fillStarter, type Exercise, type Lang } from "@/lib/code-exercises";
@@ -129,6 +130,10 @@ export function CodeExercises() {
   const blanks = starter.split("___").length - 1;
   const myAnswers = answers[ex.id] ?? [];
   const code = assemble(starter, myAnswers);
+  useEffect(() => {
+    setAssistContext({ label: `Cvičení: ${ex.title}`, code, task: ex.task });
+    return () => setAssistContext(null);
+  }, [ex.title, ex.task, code]);
   const result = results[ex.id];
   const passedCount = EXERCISES.filter((e) => results[e.id]?.passed).length;
   const percent = Math.round((passedCount / EXERCISES.length) * 100);

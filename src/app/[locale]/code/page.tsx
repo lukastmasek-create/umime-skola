@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { CodeWorkspace } from "@/components/CodeWorkspace";
 import { CodeCurriculum } from "@/components/CodeCurriculum";
 import { CodeLearn } from "@/components/CodeLearn";
+import { CodeAssistant } from "@/components/CodeAssistant";
 import { HeroSky } from "@/components/HeroSky";
 import { HeroTitle } from "@/components/HeroTitle";
 import { SketchIcon } from "@/components/SketchIcons";
@@ -114,6 +115,8 @@ export default async function CodePage({ params }: { params: Promise<{ locale: s
           </div>
         </div>
       </section>
+
+      <CodeAssistant />
     </div>
   );
 }

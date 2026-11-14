@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { SketchIcon } from "@/components/SketchIcons";
+import { setAssistContext } from "@/lib/code-assist";
 import { CODE_FILES } from "@/lib/code-lessons";
 
 const STEP_MS = 2800;
@@ -65,6 +66,12 @@ export function CodeLearn() {
     setFileIdx(i);
     setLine(null);
   }
+
+  const fileCode = file.lines.map((l) => l.code).join("\n");
+  useEffect(() => {
+    setAssistContext({ label: `Ukázka: ${file.name}`, code: fileCode });
+    return () => setAssistContext(null);
+  }, [file.name, fileCode]);
 
   // Při odchodu ze stránky zastav časovač.
   useEffect(() => () => {

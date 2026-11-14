@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { CodeArea } from "@/components/CodeArea";
 import { SketchIcon } from "@/components/SketchIcons";
 import { useCodeKeys } from "@/components/useCodeKeys";
+import { setAssistContext } from "@/lib/code-assist";
 import { modeAt } from "@/lib/code-editing";
 import { TEMPLATES } from "@/lib/code-playground";
 
@@ -24,6 +25,11 @@ export function CodePlayground() {
   const tpl = TEMPLATES.find((t) => t.id === tid) ?? TEMPLATES[0];
   const code = drafts[tpl.id] ?? tpl.code;
   const changed = code !== tpl.code;
+
+  useEffect(() => {
+    setAssistContext({ label: `Volný editor: ${tpl.title}`, code, task: tpl.task });
+    return () => setAssistContext(null);
+  }, [tpl.title, tpl.task, code]);
 
   function setCode(v: string) {
     setDrafts((d) => ({ ...d, [tpl.id]: v }));
