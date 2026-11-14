@@ -5,6 +5,7 @@ import { toGaps, toHangman, toPairs, toScrambles, toStatements, toWords } from "
 // Dá se hra sestavit z otázek kurzu? Prahy odpovídají tomu, co jednotlivé hry potřebují
 // (např. osmisměrka a křížovka chtějí jednoslovné odpovědi z písmen, ne čísla).
 export function canPlay(slug: GameSlug, questions: GameQuestion[], difficulty: number): boolean {
+  if (slug === "runner") return questions.length >= 6;
   if (!isClassicSlug(slug)) return true; // akční hry mají v nouzi ukázkové otázky
   const n = questions.length;
   switch (slug) {

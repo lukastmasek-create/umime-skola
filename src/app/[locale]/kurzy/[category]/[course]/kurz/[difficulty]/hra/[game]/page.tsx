@@ -8,6 +8,8 @@ import { getTestText } from "@/i18n/test";
 import { SpaceQuizGame } from "@/components/SpaceQuizGame";
 import { FullscreenFrame } from "@/components/FullscreenFrame";
 import { ClassicGame } from "@/components/ClassicGame";
+import { RunnerGame } from "@/components/RunnerGame";
+import { runnerAllowed, runnerPlayable } from "@/lib/runner";
 
 export const revalidate = 0;
 
@@ -44,6 +46,7 @@ export default async function CourseGamePage({
     !game.available ||
     game.archived ||
     game.setOnly ||
+    (game.slug === "runner" && !runnerAllowed(category.value, difficulty)) ||
     !Number.isInteger(difficulty) ||
     difficulty < 1 ||
     difficulty > 5
@@ -65,6 +68,16 @@ export default async function CourseGamePage({
   if (!title) notFound();
 
   const backHref = `/${locale}/kurzy/${categorySlug}/${courseSlug}`;
+  if (game.slug === "runner") {
+    if (!runnerPlayable(questions)) notFound();
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+        <FullscreenFrame locale={locale as Locale} backHref={backHref}>
+          <RunnerGame locale={locale} courseSlug={courseSlug} backHref={backHref} questions={questions} level={difficulty} />
+        </FullscreenFrame>
+      </div>
+    );
+  }
   if (isClassicSlug(game.slug)) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">

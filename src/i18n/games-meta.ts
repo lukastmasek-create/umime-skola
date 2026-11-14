@@ -304,6 +304,18 @@ const META: Record<GameSlug, Record<Locale, Meta>> = {
     es: { name: "Ordenar", tag: "Pon los elementos en el orden correcto" },
     fr: { name: "Remettre en ordre", tag: "Remets les éléments dans le bon ordre" },
   },
+  runner: {
+    ...withFallbacks({
+      cs: { name: "Matematický běh", tag: "Běž správnou bránou a poraz bosse správnými odpověďmi" },
+      en: { name: "Math Run", tag: "Run through the right gate and beat the boss with right answers" },
+      de: { name: "Mathe-Lauf", tag: "Lauf durch das richtige Tor und besiege den Boss mit richtigen Antworten" },
+      ru: { name: "Математический забег", tag: "Беги через правильные ворота и победи босса правильными ответами" },
+    }),
+    uk: { name: "Математичний біг", tag: "Бігай правильними воротами і переможи боса правильними відповідями" },
+    ja: { name: "算数ラン", tag: "正しいゲートを通ってボスを倒そう" },
+    es: { name: "Carrera matemática", tag: "Corre por la puerta correcta y vence al jefe con respuestas correctas" },
+    fr: { name: "Course de maths", tag: "Passe la bonne porte et bats le boss avec les bonnes réponses" },
+  },
 };
 
 export function gameMeta(slug: GameSlug, locale: Locale): Meta {
