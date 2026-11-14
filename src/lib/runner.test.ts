@@ -10,12 +10,11 @@ const qs = Array.from({ length: 8 }, (_, i) => ({
   explanation: "",
 }));
 
-test("runner allowed only for simple courses", () => {
-  assert.equal(runnerAllowed("ZAKLADNI", 1), true);
-  assert.equal(runnerAllowed("ZAKLADNI", 2), true);
-  assert.equal(runnerAllowed("ZAKLADNI", 3), false);
-  assert.equal(runnerAllowed("STREDNI", 1), false);
-  assert.equal(runnerAllowed("MATURITA", 1), false);
+test("runner allowed for all subjects up to difficulty 2", () => {
+  assert.equal(runnerAllowed(1), true);
+  assert.equal(runnerAllowed(2), true);
+  assert.equal(runnerAllowed(3), false);
+  assert.equal(runnerAllowed(5), false);
 });
 
 test("playable needs enough questions", () => {

@@ -27,10 +27,10 @@ function shuffleWith<T>(items: readonly T[], rng: Rng): T[] {
   return a;
 }
 
-// Hra je jen pro jednoduché kurzy: základní škola a nejnižší dvě obtížnosti.
-// Pokročilé kurzy (střední, přijímačky, maturita, vyšší obtížnost) se nenabízejí.
-export function runnerAllowed(category: string, difficulty: number): boolean {
-  return category === "ZAKLADNI" && difficulty <= 2;
+// Hra je pro všechny předměty, ale jen pro nejnižší dvě obtížnosti.
+// U těžších kurzů hráč nestíhá rozhodnout správnou odpověď, takže se nenabízí.
+export function runnerAllowed(difficulty: number): boolean {
+  return difficulty <= 2;
 }
 
 // Hra potřebuje aspoň pár otázek, jinak by se odpovědi opakovaly moc brzy.

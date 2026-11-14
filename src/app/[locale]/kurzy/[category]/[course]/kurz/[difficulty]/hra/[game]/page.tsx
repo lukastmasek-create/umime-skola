@@ -46,7 +46,7 @@ export default async function CourseGamePage({
     !game.available ||
     game.archived ||
     game.setOnly ||
-    (game.slug === "runner" && !runnerAllowed(category.value, difficulty)) ||
+    (game.slug === "runner" && !runnerAllowed(difficulty)) ||
     !Number.isInteger(difficulty) ||
     difficulty < 1 ||
     difficulty > 5

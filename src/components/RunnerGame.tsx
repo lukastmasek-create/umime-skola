@@ -277,6 +277,21 @@ export function RunnerGame({
       }
     }
 
+    // Mraky nad drahou: pomalu plynou, takže dávají pocit hloubky
+    const cloudMat = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.92 });
+    const clouds: { g: THREE.Group; i: number }[] = [];
+    for (let i = 0; i < 14; i++) {
+      const g = new THREE.Group();
+      const puffs = 3 + (i % 3);
+      for (let k = 0; k < puffs; k++) {
+        const puff = new THREE.Mesh(new THREE.SphereGeometry(1.3 + ((k * 7 + i) % 3) * 0.5, 12, 10), cloudMat);
+        puff.position.set((k - puffs / 2) * 1.8, ((k * 3 + i) % 2) * 0.5, (((k * 5 + i) % 3) - 1) * 0.8);
+        g.add(puff);
+      }
+      scene.add(g);
+      clouds.push({ g, i });
+    }
+
     // Brány a tabule (řada i je na world.z = ROW_START - i * ROW_GAP)
     const rowObjects: THREE.Group[] = [];
     rows.forEach((row, i) => {
@@ -529,6 +544,13 @@ export function RunnerGame({
         const z = -220 + ((base + sim.d) % 240);
         dsh.mesh.position.z = z;
         dsh.mesh.visible = z > -215 && z < 25;
+      }
+
+      // Mraky: plynou pomaleji než silnice
+      for (const c of clouds) {
+        const z = -230 + ((c.i * 19 + sim.d * 0.6) % 260);
+        c.g.position.set(((c.i * 37) % 30) - 15, 11 + (c.i % 4) * 1.6, z);
+        c.g.visible = z < 6;
       }
 
       // Parta
