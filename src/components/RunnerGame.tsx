@@ -25,6 +25,7 @@ const TXT = {
     intro: "Běž správnou bránou s odpovědí na otázku. Správná brána přidá do party, špatná ubere. Na konci tě čeká boss, kterého porazíš správnými odpověďmi.",
     back: "Zpět na kurz",
     crew: "Parta",
+    coins: "Mince",
     gates: "Brány",
     boss: "Boss",
     start: "Spustit",
@@ -52,6 +53,7 @@ const TXT = {
     intro: "Run through the gate with the right answer. The right gate grows your crew, the wrong one shrinks it. At the end a boss waits — beat it with right answers.",
     back: "Back to course",
     crew: "Crew",
+    coins: "Coins",
     gates: "Gates",
     boss: "Boss",
     start: "Start",
@@ -155,124 +157,235 @@ function labelTexture(text: string, bg: string, fg: string, w: number, h: number
   return tex;
 }
 
-function buildGate(label: string): THREE.Group {
+const GATE_BG = ["#fff1b8", "#c9f0ff", "#ffd0ea"];
+const GATE_POST = [0xffa800, 0x2aa7e8, 0xe8479b];
+
+// Brána jen s odpovědí (otázka je nahoře na obrazovce). Každá dráha má jinou barvu, nahoře se točí hvězda.
+function buildGate(label: string, lane: number): THREE.Group {
   const g = new THREE.Group();
-  const frame = new THREE.MeshLambertMaterial({ color: 0x5b2fd6 });
+  const frame = new THREE.MeshLambertMaterial({ color: GATE_POST[lane] });
   const beamMat = new THREE.MeshLambertMaterial({ color: 0xffc933 });
-  const post = new THREE.BoxGeometry(0.16, 2.7, 0.16);
+  const post = new THREE.CylinderGeometry(0.09, 0.11, 2.7, 10);
   for (const x of [-1.0, 1.0]) {
     const p = new THREE.Mesh(post, frame);
     p.position.set(x, 1.35, 0);
     g.add(p);
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(0.17, 12, 10), beamMat);
+    ball.position.set(x, 2.75, 0);
+    g.add(ball);
   }
-  const beam = new THREE.Mesh(new THREE.BoxGeometry(2.16, 0.2, 0.16), beamMat);
-  beam.position.set(0, 2.6, 0);
+  const beam = new THREE.Mesh(new THREE.CapsuleGeometry(0.09, 2.0, 4, 10), beamMat);
+  beam.rotation.z = Math.PI / 2;
+  beam.position.set(0, 2.62, 0);
   g.add(beam);
+  const star = new THREE.Mesh(new THREE.OctahedronGeometry(0.3), beamMat);
+  star.name = "star";
+  star.position.set(0, 3.15, 0);
+  g.add(star);
   const panel = new THREE.Mesh(
     new THREE.PlaneGeometry(1.86, 2.28),
-    new THREE.MeshBasicMaterial({ map: labelTexture(label, "#ffffff", "#2a1a6b", 768, 944), transparent: true, side: THREE.DoubleSide }),
+    new THREE.MeshBasicMaterial({ map: labelTexture(label, GATE_BG[lane], "#2a1a6b", 768, 944), transparent: true, side: THREE.DoubleSide }),
   );
   panel.position.set(0, 1.3, 0.02);
   g.add(panel);
   return g;
 }
 
+type Particle = { m: THREE.Mesh; v: THREE.Vector3; life: number; max: number; kind: "conf" | "puff" };
+
 // ----- Postavy
 
-type Kit = {
-  torso: THREE.BufferGeometry;
-  head: THREE.BufferGeometry;
-  hair: THREE.BufferGeometry;
-  eye: THREE.BufferGeometry;
-  arm: THREE.BufferGeometry;
-  leg: THREE.BufferGeometry;
-  pack: THREE.BufferGeometry;
-  shoe: THREE.BufferGeometry;
-};
+type Hat = "cap" | "party" | "beanie" | "hair" | "crown";
+type Kit = Record<
+  "torso" | "head" | "hairCap" | "eyeW" | "eyeP" | "cheek" | "smile" | "arm" | "hand" | "leg" | "shoe" | "pack" | "cone" | "pom" | "brim" | "crown" | "cape" | "spike",
+  THREE.BufferGeometry
+>;
 
 function makeKit(): Kit {
   return {
-    torso: new THREE.CapsuleGeometry(0.17, 0.3, 4, 10),
-    head: new THREE.SphereGeometry(0.2, 18, 14),
-    hair: new THREE.SphereGeometry(0.215, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.55),
-    eye: new THREE.SphereGeometry(0.032, 8, 6),
-    arm: new THREE.CapsuleGeometry(0.056, 0.26, 3, 8),
-    leg: new THREE.CapsuleGeometry(0.075, 0.28, 3, 8),
-    pack: new THREE.BoxGeometry(0.28, 0.32, 0.13),
-    shoe: new THREE.BoxGeometry(0.15, 0.08, 0.24),
+    torso: new THREE.CapsuleGeometry(0.17, 0.2, 6, 14),
+    head: new THREE.SphereGeometry(0.28, 26, 20),
+    hairCap: new THREE.SphereGeometry(0.295, 22, 10, 0, Math.PI * 2, 0, Math.PI * 0.5),
+    eyeW: new THREE.SphereGeometry(0.075, 14, 10),
+    eyeP: new THREE.SphereGeometry(0.042, 10, 8),
+    cheek: new THREE.CircleGeometry(0.05, 12),
+    smile: new THREE.TorusGeometry(0.07, 0.015, 6, 14, Math.PI),
+    arm: new THREE.CapsuleGeometry(0.055, 0.16, 4, 8),
+    hand: new THREE.SphereGeometry(0.07, 10, 8),
+    leg: new THREE.CapsuleGeometry(0.075, 0.12, 4, 8),
+    shoe: new THREE.SphereGeometry(0.1, 12, 8),
+    pack: new THREE.BoxGeometry(0.24, 0.28, 0.12),
+    cone: new THREE.ConeGeometry(0.16, 0.38, 12),
+    pom: new THREE.SphereGeometry(0.065, 10, 8),
+    brim: new THREE.CylinderGeometry(0.2, 0.2, 0.035, 18),
+    crown: new THREE.CylinderGeometry(0.2, 0.17, 0.12, 12),
+    cape: new THREE.PlaneGeometry(0.46, 0.64, 1, 4),
+    spike: new THREE.ConeGeometry(0.05, 0.14, 6),
   };
 }
 
-type Human = { g: THREE.Group; legL: THREE.Group; legR: THREE.Group; armL: THREE.Group; armR: THREE.Group; body: THREE.Group };
+type Human = {
+  g: THREE.Group;
+  body: THREE.Group;
+  head: THREE.Group;
+  eyes: THREE.Mesh[];
+  legL: THREE.Group;
+  legR: THREE.Group;
+  armL: THREE.Group;
+  armR: THREE.Group;
+  cape: THREE.Group | null;
+};
 
-// Postava hledí do −z (směr běhu), takže kamera vidí záda a batoh.
-function buildHuman(kit: Kit, o: { shirt: number; pants: number; hair: number; pack: number; skin?: number; cap?: boolean }): Human {
+// Postava s velkou hlavou hledí do −z (směr běhu), takže kamera vidí záda, batoh nebo plášť.
+function buildHuman(kit: Kit, o: { shirt: number; pants: number; hair: number; accent: number; hat: Hat; cape?: number; pack?: boolean }): Human {
   const g = new THREE.Group();
   const body = new THREE.Group();
   g.add(body);
   const shirt = new THREE.MeshLambertMaterial({ color: o.shirt });
   const pants = new THREE.MeshLambertMaterial({ color: o.pants });
-  const skin = new THREE.MeshLambertMaterial({ color: o.skin ?? 0xffd2b0 });
+  const skin = new THREE.MeshLambertMaterial({ color: 0xffd2b0 });
   const hairM = new THREE.MeshLambertMaterial({ color: o.hair });
-  const packM = new THREE.MeshLambertMaterial({ color: o.pack });
+  const accent = new THREE.MeshLambertMaterial({ color: o.accent });
+  const gold = new THREE.MeshLambertMaterial({ color: 0xffc933 });
   const dark = new THREE.MeshBasicMaterial({ color: 0x16132b });
+  const white = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const pink = new THREE.MeshBasicMaterial({ color: 0xff9fb2, transparent: true, opacity: 0.8, side: THREE.DoubleSide });
   const shoeM = new THREE.MeshLambertMaterial({ color: 0xffffff });
 
   const torso = new THREE.Mesh(kit.torso, shirt);
-  torso.position.y = 0.8;
+  torso.position.y = 0.62;
   body.add(torso);
-  const pack = new THREE.Mesh(kit.pack, packM);
-  pack.position.set(0, 0.82, 0.19);
-  body.add(pack);
-  const head = new THREE.Mesh(kit.head, skin);
-  head.position.y = 1.23;
-  body.add(head);
-  const hair = new THREE.Mesh(kit.hair, o.cap ? packM : hairM);
-  hair.position.y = 1.24;
-  hair.rotation.x = -0.15;
-  body.add(hair);
-  for (const x of [-0.075, 0.075]) {
-    const eye = new THREE.Mesh(kit.eye, dark);
-    eye.position.set(x, 1.25, -0.185);
-    body.add(eye);
+  if (o.pack) {
+    const pack = new THREE.Mesh(kit.pack, accent);
+    pack.position.set(0, 0.64, 0.19);
+    body.add(pack);
   }
 
-  const mkLimb = (geo: THREE.BufferGeometry, mat: THREE.Material, x: number, y: number, off: number, withShoe: boolean) => {
+  // Hlava: pivot v místě hlavy, aby se mohla naklánět a kývat
+  const head = new THREE.Group();
+  head.position.y = 1.05;
+  body.add(head);
+  head.add(new THREE.Mesh(kit.head, skin));
+  const eyes: THREE.Mesh[] = [];
+  for (const x of [-0.1, 0.1]) {
+    const eye = new THREE.Mesh(kit.eyeW, white);
+    eye.position.set(x, 0.03, -0.235);
+    eye.scale.z = 0.7;
+    head.add(eye);
+    const pupil = new THREE.Mesh(kit.eyeP, dark);
+    pupil.position.set(0, 0, -0.05);
+    eye.add(pupil);
+    eyes.push(eye);
+    const cheek = new THREE.Mesh(kit.cheek, pink);
+    cheek.position.set(x * 1.75, -0.06, -0.215);
+    cheek.rotation.y = Math.PI + (x > 0 ? -0.5 : 0.5);
+    head.add(cheek);
+  }
+  const smile = new THREE.Mesh(kit.smile, dark);
+  smile.position.set(0, -0.08, -0.268);
+  smile.rotation.z = Math.PI;
+  head.add(smile);
+
+  // Čepice podle typu
+  if (o.hat === "hair" || o.hat === "cap" || o.hat === "beanie") {
+    const cap = new THREE.Mesh(kit.hairCap, o.hat === "hair" ? hairM : accent);
+    cap.rotation.x = -0.2;
+    head.add(cap);
+    if (o.hat === "hair") {
+      const tuft = new THREE.Mesh(kit.pom, hairM);
+      tuft.position.set(0, 0.32, -0.04);
+      tuft.scale.set(1.1, 1.8, 1.1);
+      head.add(tuft);
+    }
+    if (o.hat === "cap") {
+      const brim = new THREE.Mesh(kit.brim, accent);
+      brim.position.set(0, 0.17, -0.26);
+      brim.rotation.x = 0.35;
+      brim.scale.set(1, 1, 0.7);
+      head.add(brim);
+    }
+    if (o.hat === "beanie") {
+      const pom = new THREE.Mesh(kit.pom, white);
+      pom.position.y = 0.31;
+      pom.scale.setScalar(1.4);
+      head.add(pom);
+    }
+  } else if (o.hat === "party") {
+    const cone = new THREE.Mesh(kit.cone, accent);
+    cone.position.y = 0.46;
+    cone.rotation.z = 0.12;
+    head.add(cone);
+    const pom = new THREE.Mesh(kit.pom, gold);
+    pom.position.set(-0.03, 0.66, 0);
+    head.add(pom);
+  } else {
+    const crown = new THREE.Mesh(kit.crown, gold);
+    crown.position.y = 0.3;
+    head.add(crown);
+    for (let k = 0; k < 5; k++) {
+      const a = (k / 5) * Math.PI * 2;
+      const sp = new THREE.Mesh(kit.spike, gold);
+      sp.position.set(Math.cos(a) * 0.17, 0.4, Math.sin(a) * 0.17);
+      head.add(sp);
+    }
+  }
+
+  // Plášť (hrdina): vlaje za zády
+  let cape: THREE.Group | null = null;
+  if (o.cape !== undefined) {
+    cape = new THREE.Group();
+    cape.position.set(0, 0.86, 0.15);
+    const c = new THREE.Mesh(kit.cape, new THREE.MeshLambertMaterial({ color: o.cape, side: THREE.DoubleSide }));
+    c.position.y = -0.31;
+    cape.add(c);
+    body.add(cape);
+  }
+
+  const mkLimb = (geo: THREE.BufferGeometry, mat: THREE.Material, x: number, y: number, off: number, tip: "hand" | "shoe") => {
     const pivot = new THREE.Group();
     pivot.position.set(x, y, 0);
     const m = new THREE.Mesh(geo, mat);
     m.position.y = off;
     pivot.add(m);
-    if (withShoe) {
+    if (tip === "hand") {
+      const h = new THREE.Mesh(kit.hand, skin);
+      h.position.y = off - 0.14;
+      pivot.add(h);
+    } else {
       const s = new THREE.Mesh(kit.shoe, shoeM);
-      s.position.set(0, off - 0.2, -0.04);
+      s.position.set(0, off - 0.14, -0.03);
+      s.scale.set(1, 0.65, 1.35);
       pivot.add(s);
     }
     body.add(pivot);
     return pivot;
   };
-  const armL = mkLimb(kit.arm, skin, -0.25, 0.98, -0.17, false);
-  const armR = mkLimb(kit.arm, skin, 0.25, 0.98, -0.17, false);
-  const legL = mkLimb(kit.leg, pants, -0.09, 0.58, -0.2, true);
-  const legR = mkLimb(kit.leg, pants, 0.09, 0.58, -0.2, true);
-  return { g, legL, legR, armL, armR, body };
+  const armL = mkLimb(kit.arm, shirt, -0.25, 0.78, -0.1, "hand");
+  const armR = mkLimb(kit.arm, shirt, 0.25, 0.78, -0.1, "hand");
+  const legL = mkLimb(kit.leg, pants, -0.09, 0.36, -0.1, "shoe");
+  const legR = mkLimb(kit.leg, pants, 0.09, 0.36, -0.1, "shoe");
+  return { g, body, head, eyes, legL, legR, armL, armR, cape };
 }
 
-// Běžecký cyklus: nohy a ruce se kývají proti sobě, tělo mírně poskakuje.
+// Běžecký cyklus: nohy a ruce se kývají proti sobě, tělo poskakuje a natahuje se, hlava kývá, plášť vlaje, oči mrkají.
 function animateHuman(h: Human, clock: number, phase: number, run: number, hop: number) {
   const s = Math.sin(clock * 11 + phase);
   const idle = Math.sin(clock * 2 + phase) * 0.03;
-  h.legL.rotation.x = s * 0.95 * run;
-  h.legR.rotation.x = -s * 0.95 * run;
-  // ve vzduchu (skok do strany) jsou nohy pokrčené a ruce nahoře
-  h.legL.rotation.x += hop * -0.6;
-  h.legR.rotation.x += hop * 0.4;
-  h.armL.rotation.x = -s * 0.9 * run + idle - hop * 1.2;
-  h.armR.rotation.x = s * 0.9 * run - idle - hop * 1.2;
-  h.armL.rotation.z = 0.08 + hop * 0.5;
-  h.armR.rotation.z = -0.08 - hop * 0.5;
-  h.body.position.y = Math.abs(s) * 0.09 * run + idle * 0.5;
-  h.body.rotation.x = -0.12 * run; // předklon při běhu
+  h.legL.rotation.x = s * 1.0 * run - hop * 0.6;
+  h.legR.rotation.x = -s * 1.0 * run + hop * 0.4;
+  h.armL.rotation.x = -s * 1.0 * run + idle - hop * 1.4;
+  h.armR.rotation.x = s * 1.0 * run - idle - hop * 1.4;
+  h.armL.rotation.z = 0.1 + hop * 0.6;
+  h.armR.rotation.z = -0.1 - hop * 0.6;
+  h.body.position.y = Math.abs(s) * 0.11 * run + idle * 0.5;
+  h.body.rotation.x = -0.15 * run;
+  const sq = Math.cos(clock * 22 + phase * 2) * 0.035 * run + hop * 0.05;
+  h.body.scale.set(1 - sq, 1 + sq, 1 - sq);
+  h.head.rotation.z = Math.sin(clock * 5.5 + phase) * 0.09 * run + idle;
+  h.head.rotation.x = Math.sin(clock * 11 + phase + 1) * 0.05 * run;
+  const blink = Math.sin(clock * 0.9 + phase * 1.7) > 0.985 ? 0.1 : 1;
+  for (const e of h.eyes) e.scale.y = blink;
+  if (h.cape) h.cape.rotation.x = -(0.2 + run * 0.55 + hop * 0.5 + Math.sin(clock * 13 + phase) * 0.12 * (0.3 + run));
 }
 
 // ----- Boss
@@ -283,6 +396,10 @@ type Boss = {
   armL: THREE.Group;
   armR: THREE.Group;
   mouth: THREE.Mesh;
+  tongue: THREE.Mesh;
+  eyes: THREE.Mesh[];
+  pupils: THREE.Mesh[];
+  stars: THREE.Group;
   mat: THREE.MeshLambertMaterial;
   hpFill: THREE.Mesh;
 };
@@ -294,43 +411,80 @@ function buildBoss(): Boss {
   const mat = new THREE.MeshLambertMaterial({ color: 0xff5a8a });
   const belly = new THREE.MeshLambertMaterial({ color: 0xffc2d6 });
   const gold = new THREE.MeshLambertMaterial({ color: 0xffc933 });
+  const purple = new THREE.MeshLambertMaterial({ color: 0x7a35f5 });
   const white = new THREE.MeshBasicMaterial({ color: 0xffffff });
   const dark = new THREE.MeshBasicMaterial({ color: 0x16132b });
 
-  const torso = new THREE.Mesh(new THREE.SphereGeometry(1.9, 24, 18), mat);
+  const shadow = new THREE.Mesh(new THREE.CircleGeometry(3.2, 28), new THREE.MeshBasicMaterial({ color: 0x1a1040, transparent: true, opacity: 0.28 }));
+  shadow.rotation.x = -Math.PI / 2;
+  shadow.position.y = 0.04;
+  root.add(shadow);
+
+  const torso = new THREE.Mesh(new THREE.SphereGeometry(1.9, 28, 20), mat);
   torso.scale.set(1.1, 1, 0.9);
   torso.position.y = 2.1;
   body.add(torso);
-  const tummy = new THREE.Mesh(new THREE.SphereGeometry(1.3, 20, 14), belly);
+  const tummy = new THREE.Mesh(new THREE.SphereGeometry(1.3, 22, 16), belly);
   tummy.scale.set(1, 1, 0.5);
   tummy.position.set(0, 1.8, 1.35);
   body.add(tummy);
+  // pruhy na břiše a fialové bodliny na zádech
+  for (let k = -1; k <= 1; k++) {
+    const stripe = new THREE.Mesh(new THREE.TorusGeometry(1.0 - Math.abs(k) * 0.15, 0.05, 6, 24, Math.PI), purple);
+    stripe.position.set(0, 1.8 + k * 0.5, 1.58);
+    stripe.rotation.z = Math.PI;
+    stripe.scale.y = 0.5;
+    body.add(stripe);
+  }
+  for (let k = 0; k < 5; k++) {
+    const spike = new THREE.Mesh(new THREE.ConeGeometry(0.34, 0.9, 8), purple);
+    spike.position.set((k - 2) * 0.75, 3.8 - Math.abs(k - 2) * 0.35, -1.2);
+    spike.rotation.x = -0.5;
+    body.add(spike);
+  }
 
-  const head = new THREE.Mesh(new THREE.SphereGeometry(1.25, 24, 18), mat);
-  head.position.y = 4.35;
+  const head = new THREE.Mesh(new THREE.SphereGeometry(1.3, 28, 20), mat);
+  head.position.y = 4.4;
   body.add(head);
+  for (const x of [-1, 1]) {
+    const ear = new THREE.Mesh(new THREE.SphereGeometry(0.45, 12, 10), mat);
+    ear.position.set(x * 1.3, 4.7, 0);
+    body.add(ear);
+  }
+  const eyes: THREE.Mesh[] = [];
+  const pupils: THREE.Mesh[] = [];
   for (const x of [-0.8, 0.8]) {
-    const horn = new THREE.Mesh(new THREE.ConeGeometry(0.38, 1.3, 10), gold);
-    horn.position.set(x, 5.6, 0);
+    const horn = new THREE.Mesh(new THREE.ConeGeometry(0.4, 1.4, 12), gold);
+    horn.position.set(x, 5.75, 0);
     horn.rotation.z = -x * 0.35;
     body.add(horn);
-    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 12), white);
-    eye.position.set(x * 0.7, 4.6, 1.0);
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.42, 18, 14), white);
+    eye.position.set(x * 0.7, 4.65, 1.0);
     body.add(eye);
-    const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 10), dark);
-    pupil.position.set(x * 0.7, 4.55, 1.35);
-    body.add(pupil);
-    const brow = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.14, 0.14), dark);
-    brow.position.set(x * 0.7, 5.12, 1.12);
+    eyes.push(eye);
+    const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 10), dark);
+    pupil.position.set(0, -0.03, 0.34);
+    pupil.userData.baseX = 0;
+    eye.add(pupil);
+    pupils.push(pupil);
+    const brow = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.15, 0.15), dark);
+    brow.position.set(x * 0.7, 5.2, 1.12);
     brow.rotation.z = x * 0.45; // zamračený pohled
     body.add(brow);
   }
-  const mouth = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.4, 0.2), dark);
-  mouth.position.set(0, 3.75, 1.15);
+  const nose = new THREE.Mesh(new THREE.SphereGeometry(0.2, 10, 8), gold);
+  nose.position.set(0, 4.25, 1.3);
+  body.add(nose);
+  const mouth = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.4, 0.2), dark);
+  mouth.position.set(0, 3.8, 1.15);
   body.add(mouth);
-  for (const x of [-0.4, -0.13, 0.13, 0.4]) {
-    const tooth = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.22, 6), white);
-    tooth.position.set(x, 3.92, 1.28);
+  const tongue = new THREE.Mesh(new THREE.SphereGeometry(0.28, 10, 8), new THREE.MeshBasicMaterial({ color: 0xff7aa0 }));
+  tongue.position.set(0.25, 3.62, 1.2);
+  tongue.scale.set(1.2, 0.7, 0.6);
+  body.add(tongue);
+  for (const x of [-0.45, -0.15, 0.15, 0.45]) {
+    const tooth = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.24, 6), white);
+    tooth.position.set(x, 3.97, 1.28);
     tooth.rotation.x = Math.PI;
     body.add(tooth);
   }
@@ -338,30 +492,46 @@ function buildBoss(): Boss {
   const mkArm = (side: number) => {
     const pivot = new THREE.Group();
     pivot.position.set(side * 2.2, 3.1, 0);
-    const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 1.3, 4, 10), mat);
+    const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 1.3, 4, 12), mat);
     arm.position.y = -0.9;
     pivot.add(arm);
-    const fist = new THREE.Mesh(new THREE.SphereGeometry(0.58, 14, 10), gold);
-    fist.position.y = -1.9;
+    const fist = new THREE.Mesh(new THREE.SphereGeometry(0.62, 16, 12), gold);
+    fist.position.y = -1.95;
     pivot.add(fist);
     body.add(pivot);
     return pivot;
   };
   const armL = mkArm(-1);
   const armR = mkArm(1);
-  for (const x of [-0.9, 0.9]) {
-    const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.5, 0.6, 4, 10), mat);
-    leg.position.set(x, 0.55, 0);
+  for (const x of [-0.95, 0.95]) {
+    const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.5, 0.5, 4, 12), mat);
+    leg.position.set(x, 0.65, 0);
     body.add(leg);
+    const boot = new THREE.Mesh(new THREE.SphereGeometry(0.7, 14, 10), purple);
+    boot.position.set(x, 0.25, 0.2);
+    boot.scale.set(1, 0.55, 1.35);
+    body.add(boot);
   }
 
+  // Hvězdičky nad hlavou, když je boss poražen
+  const stars = new THREE.Group();
+  stars.position.y = 6.6;
+  for (let k = 0; k < 5; k++) {
+    const st = new THREE.Mesh(new THREE.OctahedronGeometry(0.28), gold);
+    const a = (k / 5) * Math.PI * 2;
+    st.position.set(Math.cos(a) * 1.5, 0, Math.sin(a) * 1.5);
+    stars.add(st);
+  }
+  stars.visible = false;
+  body.add(stars);
+
   const hpBack = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 0.5), new THREE.MeshBasicMaterial({ color: 0x2a1a6b }));
-  hpBack.position.set(0, 7.2, 1.3);
+  hpBack.position.set(0, 7.6, 1.3);
   root.add(hpBack);
   const hpFill = new THREE.Mesh(new THREE.PlaneGeometry(4.0, 0.34), new THREE.MeshBasicMaterial({ color: 0x17a864 }));
-  hpFill.position.set(0, 7.2, 1.32);
+  hpFill.position.set(0, 7.6, 1.32);
   root.add(hpFill);
-  return { root, body, armL, armR, mouth, mat, hpFill };
+  return { root, body, armL, armR, mouth, tongue, eyes, pupils, stars, mat, hpFill };
 }
 
 // ----- Krajina
@@ -471,6 +641,7 @@ export function RunnerGame({
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [results, setResults] = useState<AnswerResult[]>([]);
   const [best, setBest] = useState<Best | null>(null);
+  const [coins, setCoins] = useState(0);
 
   const hostRef = useRef<HTMLDivElement>(null);
   const mountRef = useRef<HTMLDivElement>(null);
@@ -509,6 +680,11 @@ export function RunnerGame({
       pulse: 0,
       hopT: 0,
       hopDir: 0,
+      cheer: 0,
+      stumble: 0,
+      dust: 0,
+      coins: 0,
+      parts: [] as Particle[],
       runAmt: 0,
       feedbackTimer: 0,
       projectiles: [] as { mesh: THREE.Mesh; t: number; from: THREE.Vector3; to: THREE.Vector3 }[],
@@ -625,29 +801,113 @@ export function RunnerGame({
     for (const p of planes) scene.add(p.g);
 
     // Brány a tabule (řada i je na world.z = ROW_START - i * ROW_GAP)
-    const rowObjects: THREE.Group[] = [];
+    const gateObjs: { g: THREE.Group; star: THREE.Object3D | undefined; ph: number }[] = [];
     rows.forEach((row, i) => {
       const grp = new THREE.Group();
       grp.position.z = ROW_START - i * ROW_GAP;
       row.gates.forEach((gate, lane) => {
-        const gobj = buildGate(gate.label);
+        const gobj = buildGate(gate.label, lane);
         gobj.position.x = RUNNER_LANES[lane];
         grp.add(gobj);
+        gateObjs.push({ g: gobj, star: gobj.getObjectByName("star"), ph: i * 1.3 + lane });
       });
-      const sign = new THREE.Mesh(
-        new THREE.PlaneGeometry(7.6, 1.6),
-        new THREE.MeshBasicMaterial({ map: labelTexture(row.prompt, "#3248f0", "#ffffff", 2432, 512), transparent: true, side: THREE.DoubleSide }),
-      );
-      sign.position.set(0, 4.5, 0);
-      grp.add(sign);
-      for (const x of [-3.7, 3.7]) {
-        const p = new THREE.Mesh(new THREE.BoxGeometry(0.18, 4.5, 0.18), new THREE.MeshLambertMaterial({ color: 0x5b2fd6 }));
-        p.position.set(x, 2.25, 0);
-        grp.add(p);
-      }
       world.add(grp);
-      rowObjects.push(grp);
     });
+
+    // Mince mezi řadami: sbírají se průchodem (jen pro radost, na body nemají vliv)
+    const coinGeo = new THREE.CylinderGeometry(0.34, 0.34, 0.09, 18);
+    const coinMat = new THREE.MeshLambertMaterial({ color: 0xffc933, emissive: 0x6b4a00 });
+    const coinList: { pivot: THREE.Group; x: number; z: number; got: boolean }[] = [];
+    for (let i = 0; i < rows.length; i++) {
+      const lane = (i * 2 + 1) % 3;
+      for (let k = 0; k < 5; k++) {
+        const pivot = new THREE.Group();
+        const m = new THREE.Mesh(coinGeo, coinMat);
+        m.rotation.x = Math.PI / 2;
+        pivot.add(m);
+        const z = ROW_START - i * ROW_GAP + 6 + k * 3.5;
+        pivot.position.set(RUNNER_LANES[lane], 0.95, z);
+        world.add(pivot);
+        coinList.push({ pivot, x: RUNNER_LANES[lane], z, got: false });
+      }
+    }
+
+    // Horkovzdušné balóny na obloze a motýli kolem cesty
+    const balloons: { g: THREE.Group; i: number }[] = [];
+    [0xff5a8a, 0xffc933, 0x3248f0, 0x17a864, 0xb46bff, 0xff8a3d].forEach((c, i) => {
+      const g = new THREE.Group();
+      const env = new THREE.Mesh(new THREE.SphereGeometry(2.4, 18, 14), new THREE.MeshLambertMaterial({ color: c }));
+      env.scale.y = 1.2;
+      env.position.y = 3.2;
+      g.add(env);
+      const band = new THREE.Mesh(new THREE.TorusGeometry(2.38, 0.2, 6, 28), new THREE.MeshLambertMaterial({ color: 0xffffff }));
+      band.rotation.x = Math.PI / 2;
+      band.position.y = 3.2;
+      g.add(band);
+      const basket = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.9, 1.2), new THREE.MeshLambertMaterial({ color: 0x8a5a36 }));
+      basket.position.y = -0.7;
+      g.add(basket);
+      for (const [x, z] of [[-0.5, -0.5], [0.5, -0.5], [-0.5, 0.5], [0.5, 0.5]]) {
+        const rope = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.6, 4), new THREE.MeshBasicMaterial({ color: 0x4a2c17 }));
+        rope.position.set(x, 0.3, z);
+        g.add(rope);
+      }
+      scene.add(g);
+      balloons.push({ g, i });
+    });
+    const flies: { g: THREE.Group; wl: THREE.Group; wr: THREE.Group; i: number }[] = [];
+    for (let i = 0; i < 8; i++) {
+      const g = new THREE.Group();
+      const wm = new THREE.MeshBasicMaterial({ color: [0xffc933, 0xff5a8a, 0x8fd0ff, 0xffffff][i % 4], side: THREE.DoubleSide });
+      const mk = (side: number) => {
+        const pv = new THREE.Group();
+        const w = new THREE.Mesh(new THREE.CircleGeometry(0.24, 10), wm);
+        w.position.x = side * 0.22;
+        pv.add(w);
+        g.add(pv);
+        return pv;
+      };
+      const wl = mk(-1);
+      const wr = mk(1);
+      scene.add(g);
+      flies.push({ g, wl, wr, i });
+    }
+
+    // Částice: konfety při správné odpovědi, obláčky prachu a kouře
+    const confMats = [0xff5a8a, 0xffc933, 0x3248f0, 0x17a864, 0xffffff, 0xb46bff].map((c) => new THREE.MeshBasicMaterial({ color: c, side: THREE.DoubleSide }));
+    const confGeo = new THREE.PlaneGeometry(0.2, 0.13);
+    const puffGeo = new THREE.SphereGeometry(0.24, 8, 6);
+    const dustMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 });
+    const smokeMat = new THREE.MeshBasicMaterial({ color: 0x5d5778, transparent: true, opacity: 0.7 });
+    const addPart = (m: THREE.Mesh, pos: THREE.Vector3, v: THREE.Vector3, max: number, kind: Particle["kind"]) => {
+      m.position.copy(pos);
+      scene.add(m);
+      sim.parts.push({ m, v, life: max, max, kind });
+    };
+    const burstAt = (pos: THREE.Vector3, n: number) => {
+      for (let k = 0; k < n; k++) {
+        const a = Math.random() * Math.PI * 2;
+        const sp = 1.5 + Math.random() * 3.5;
+        addPart(
+          new THREE.Mesh(confGeo, confMats[k % confMats.length]),
+          pos,
+          new THREE.Vector3(Math.cos(a) * sp, 4 + Math.random() * 4, Math.sin(a) * sp * 0.6),
+          0.9 + Math.random() * 0.5,
+          "conf",
+        );
+      }
+    };
+    const puffAt = (pos: THREE.Vector3, n: number, smoke: boolean) => {
+      for (let k = 0; k < n; k++) {
+        addPart(
+          new THREE.Mesh(puffGeo, smoke ? smokeMat : dustMat),
+          pos,
+          new THREE.Vector3((Math.random() - 0.5) * (smoke ? 3 : 1.2), smoke ? 1.5 + Math.random() : 0.4, (Math.random() - 0.3) * (smoke ? 2 : 1.5)),
+          smoke ? 0.8 : 0.45,
+          "puff",
+        );
+      }
+    };
 
     // Boss na konci trati
     const boss = buildBoss();
@@ -658,7 +918,7 @@ export function RunnerGame({
     const kit = makeKit();
     const crowdGroup = new THREE.Group();
     scene.add(crowdGroup);
-    const hero = buildHuman(kit, { shirt: 0xffc933, pants: 0x3248f0, hair: 0x4a2c17, pack: 0xff5a8a, cap: true });
+    const hero = buildHuman(kit, { shirt: 0xffc933, pants: 0x3248f0, hair: 0x4a2c17, accent: 0xff5a8a, hat: "crown", cape: 0xe5365a });
     hero.g.scale.setScalar(1.35);
     hero.g.position.z = HERO_Z;
     crowdGroup.add(hero.g);
@@ -670,7 +930,9 @@ export function RunnerGame({
         shirt: shirts[i % shirts.length],
         pants: i % 2 ? 0x5b2fd6 : 0x2a3a8a,
         hair: hairs[i % hairs.length],
-        pack: shirts[(i + 2) % shirts.length],
+        accent: shirts[(i + 2) % shirts.length],
+        hat: (["hair", "cap", "party", "beanie", "hair"] as const)[i % 5],
+        pack: i % 3 === 0,
       });
       h.g.scale.setScalar(0.9);
       h.g.visible = false;
@@ -764,6 +1026,8 @@ export function RunnerGame({
       if (ok) {
         sim.bossHp -= 1;
         sim.bossShake = 0.45;
+        sim.cheer = 1;
+        burstAt(new THREE.Vector3(0, 3.4, boss.root.position.z + world.position.z + 1.8), 26);
         for (let k = 0; k < Math.min(crowdShots(sim.crew), 4); k++) shoot(k);
         setBossHp(sim.bossHp);
       } else {
@@ -846,6 +1110,8 @@ export function RunnerGame({
       const targetX = RUNNER_LANES[sim.lane];
       sim.x += (targetX - sim.x) * Math.min(1, dt * 11);
       sim.hopT = Math.max(0, sim.hopT - dt / 0.4);
+      sim.cheer = Math.max(0, sim.cheer - dt / 0.7);
+      sim.stumble = Math.max(0, sim.stumble - dt);
 
       // Běh
       if (sim.phase === "run") {
@@ -865,6 +1131,14 @@ export function RunnerGame({
             setCrew(sim.crew);
             setRowsDone(sim.nextRow);
             refreshCount();
+            const hp = new THREE.Vector3(sim.x, 1.4, HERO_Z);
+            if (gate.correct) {
+              burstAt(hp, 30);
+              sim.cheer = 1;
+            } else {
+              puffAt(hp, 10, true);
+              sim.stumble = 0.6;
+            }
             if (gate.correct) flash(`${t.gained.replace("{n}", String(sim.crew - before))}`, true);
             else flash(t.lostN.replace("{n}", String(before - sim.crew)), false, `${t.wrongWas} ${row.correctLabel}`);
             if (sim.crew <= 0) {
@@ -883,6 +1157,74 @@ export function RunnerGame({
       }
 
       world.position.z = sim.d;
+
+      // Brány se houpou a točí se na nich hvězda; mince se točí a sbírají
+      for (const go of gateObjs) {
+        go.g.position.y = Math.sin(clock * 2.2 + go.ph) * 0.07;
+        if (go.star) {
+          go.star.rotation.y = clock * 2.5;
+          go.star.position.y = 3.15 + Math.sin(clock * 3 + go.ph) * 0.1;
+        }
+      }
+      for (const c of coinList) {
+        if (c.got) continue;
+        c.pivot.rotation.y = clock * 3.2 + c.z;
+        c.pivot.position.y = 0.95 + Math.sin(clock * 3 + c.z) * 0.1;
+        const wz = c.z + sim.d;
+        if (wz > 2.5) {
+          c.got = true;
+          c.pivot.visible = false;
+        } else if (sim.phase === "run" && wz >= HERO_Z - 0.5 && Math.abs(c.x - sim.x) < 1.1) {
+          c.got = true;
+          c.pivot.visible = false;
+          sim.coins += 1;
+          setCoins(sim.coins);
+          burstAt(new THREE.Vector3(c.x, 1.1, HERO_Z), 6);
+        }
+      }
+      // Prach za nohama při běhu
+      if (sim.phase === "run") {
+        sim.dust -= dt;
+        if (sim.dust <= 0) {
+          sim.dust = 0.1;
+          puffAt(new THREE.Vector3(sim.x + (Math.random() - 0.5) * 0.4, 0.12, HERO_Z + 0.5), 1, false);
+        }
+      }
+      // Částice
+      for (let i = sim.parts.length - 1; i >= 0; i--) {
+        const p = sim.parts[i];
+        p.life -= dt;
+        if (p.life <= 0) {
+          scene.remove(p.m);
+          sim.parts.splice(i, 1);
+          continue;
+        }
+        if (p.kind === "conf") {
+          p.v.y -= 11 * dt;
+          p.m.position.addScaledVector(p.v, dt);
+          p.m.rotation.x += dt * 9;
+          p.m.rotation.y += dt * 7;
+          p.m.scale.setScalar(Math.min(1, p.life / 0.3));
+        } else {
+          p.m.position.addScaledVector(p.v, dt);
+          p.m.scale.setScalar(Math.sin(Math.PI * (1 - p.life / p.max)) * 1.3 + 0.05);
+        }
+      }
+      // Balóny a motýli
+      for (const b of balloons) {
+        b.g.position.set(((b.i * 41) % 130) - 65 + Math.sin(clock * 0.2 + b.i) * 4, 20 + ((b.i * 5) % 4) * 5 + Math.sin(clock * 0.7 + b.i * 2) * 1.2, -110 - (b.i % 3) * 45);
+        b.g.rotation.z = Math.sin(clock * 0.8 + b.i) * 0.06;
+      }
+      for (const f of flies) {
+        const z = -150 + ((f.i * 29 + sim.d * 0.9 + clock * 3) % 160);
+        const side = f.i % 2 ? 1 : -1;
+        f.g.position.set(side * (ROAD_W / 2 + 2 + (f.i % 3) * 2) + Math.sin(clock * 0.8 + f.i) * 1.5, 1.5 + Math.sin(clock * 1.7 + f.i * 2) * 0.5, z);
+        f.g.visible = z > -148 && z < 10;
+        f.g.rotation.y = Math.sin(clock * 0.8 + f.i) * 0.6;
+        const fl = Math.sin(clock * 18 + f.i) * 0.9;
+        f.wl.rotation.y = fl;
+        f.wr.rotation.y = -fl;
+      }
       // Rychlost animace běhu dobíhá plynule; mimo běh postavy stojí.
       sim.runAmt += ((sim.phase === "run" ? 1 : 0) - sim.runAmt) * Math.min(1, dt * 8);
       // Pohyb scenérie: když hráč neběží, krajina stojí (sim.d se nemění).
@@ -899,6 +1241,7 @@ export function RunnerGame({
         const z = -230 + ((tr.i * 7.2 + sim.d) % 240);
         tr.g.position.set(tr.x, 0, z);
         tr.g.visible = z > -225 && z < 14;
+        tr.g.rotation.z = Math.sin(clock * 1.6 + tr.i) * 0.035;
       }
 
       // Mraky: plynou pomaleji než silnice
@@ -927,10 +1270,14 @@ export function RunnerGame({
       const hopArc = sim.hopT > 0 ? Math.sin(Math.PI * hopP) : 0;
       crowdGroup.position.set(sim.x + shakeX, 0, 0);
       crowdGroup.scale.setScalar(1 + sim.pulse * 0.2);
-      hero.g.position.y = hopArc * 0.95;
-      hero.g.rotation.z = -sim.hopDir * hopArc * 0.45;
-      animateHuman(hero, clock, 0, sim.runAmt, hopArc);
-      countSprite.position.y = 3.1 + hopArc * 0.95 + Math.sin(clock * 3) * 0.05;
+      const cheerArc = sim.cheer > 0 ? Math.sin(Math.PI * (1 - sim.cheer)) : 0;
+      const heroUp = Math.max(hopArc * 0.95, cheerArc * 0.7);
+      hero.g.position.y = heroUp;
+      hero.g.rotation.z = -sim.hopDir * hopArc * 0.45 + Math.sin(clock * 45) * 0.3 * sim.stumble;
+      hero.g.rotation.y = cheerArc * Math.PI * 2 * (1 - sim.cheer);
+      animateHuman(hero, clock, 0, sim.runAmt, Math.max(hopArc, cheerArc));
+      countSprite.position.y = 3.1 + heroUp + Math.sin(clock * 3) * 0.05;
+      countSprite.scale.setScalar(1 + sim.pulse * 0.6);
 
       const want = Math.min(sim.crew, MAX_VISIBLE_CREW);
       for (let i = 0; i < members.length; i++) {
@@ -945,7 +1292,7 @@ export function RunnerGame({
         const jitter = Math.sin((i + 1) * 12.9898) * 0.08;
         // členové skáčou se zpožděním podle řady, takže skok proběhne partou jako vlna
         const p = Math.min(1, Math.max(0, hopP - row * 0.07));
-        const mHop = sim.hopT > 0 ? Math.sin(Math.PI * p) : 0;
+        const mHop = Math.max(sim.hopT > 0 ? Math.sin(Math.PI * p) : 0, cheerArc);
         mem.h.g.position.set((col - 2) * 0.5 + jitter, mHop * 0.6, 0.55 + row * 0.62);
         mem.h.g.scale.setScalar(0.9 * mem.s);
         mem.h.g.rotation.z = -sim.hopDir * mHop * 0.35;
@@ -968,6 +1315,13 @@ export function RunnerGame({
       boss.mouth.scale.y = 1 + Math.abs(Math.sin(clock * 4)) * 0.8 + lungeP * 1.5;
       const flashK = sim.bossShake > 0 ? sim.bossShake * 2 : 0;
       boss.mat.emissive.setRGB(flashK, flashK * 0.2, flashK * 0.2);
+      // Boss mrká, sleduje pohledem hráče, vyplazuje jazyk; po porážce mu nad hlavou krouží hvězdičky
+      const bl = Math.sin(clock * 0.8) > 0.97 ? 0.1 : 1;
+      for (const e of boss.eyes) e.scale.y = bl;
+      for (const pu of boss.pupils) pu.position.x = Math.max(-0.12, Math.min(0.12, sim.x * 0.05));
+      boss.tongue.position.y = 3.62 - Math.abs(Math.sin(clock * 4)) * 0.15;
+      boss.stars.visible = sim.bossHp <= 0;
+      boss.stars.rotation.y = clock * 4;
       boss.hpFill.scale.x = Math.max(0.001, sim.bossHp / RUNNER_BOSS_HITS);
       boss.hpFill.position.x = -(1 - boss.hpFill.scale.x) * 2.0;
 
@@ -987,6 +1341,7 @@ export function RunnerGame({
       // Kamera sleduje hráče (výš a blíž, ať jsou vidět brány i text)
       camera.position.set(sim.x * 0.35, 4.9, 8.2);
       camera.lookAt(sim.x * 0.25, 1.7, -12);
+      camera.rotation.z += (targetX - sim.x) * 0.02;
 
       renderer.render(scene, camera);
     };
@@ -1012,6 +1367,7 @@ export function RunnerGame({
       });
       Object.values(kit).forEach((g) => g.dispose());
       countTex.dispose();
+      [confGeo, puffGeo, dustMat, smokeMat, coinGeo, coinMat, ...confMats].forEach((r) => r.dispose());
       projGeo.dispose();
       projMat.dispose();
       renderer.dispose();
@@ -1059,6 +1415,7 @@ export function RunnerGame({
     setRevealed(null);
     setFeedback(null);
     setResults([]);
+    setCoins(0);
   }
 
   const bossQ = plan.boss[bossIdx % plan.boss.length];
@@ -1077,6 +1434,7 @@ export function RunnerGame({
           : [
               { label: t.crew, value: String(crew) },
               { label: t.gates, value: `${rowsDone}/${plan.rows.length}` },
+              ...(coins > 0 ? [{ label: t.coins, value: String(coins) }] : []),
               ...(phase === "boss" || bossHp < RUNNER_BOSS_HITS ? [{ label: t.boss, value: `${bossHp}/${RUNNER_BOSS_HITS}` }] : []),
             ]
       }
@@ -1088,13 +1446,26 @@ export function RunnerGame({
           style={{ background: SKY_CSS }}
         >
           <div ref={mountRef} className="absolute inset-0" />
+          <style>{`@keyframes rn-pop{0%{transform:translateY(-34px) scale(.8);opacity:0}60%{transform:translateY(5px) scale(1.04);opacity:1}100%{transform:none;opacity:1}}.rn-pop{animation:rn-pop .45s ease-out}`}</style>
+
+          {phase === "run" && rowsDone < plan.rows.length && (
+            <div
+              key={rowsDone}
+              className="rn-pop pointer-events-none absolute inset-x-3 top-3 z-10 mx-auto max-w-xl rounded-3xl border-4 border-white bg-[#3248f0] px-5 py-3 text-center text-lg font-extrabold leading-snug text-white shadow-[0_6px_0_#1d2a9e] sm:text-2xl"
+            >
+              <span className="mr-2 inline-block rounded-full bg-[#ffc933] px-2.5 text-base text-[#2a1a6b]">
+                {rowsDone + 1}/{plan.rows.length}
+              </span>
+              {plan.rows[rowsDone].prompt}
+            </div>
+          )}
 
           {feedback && (
             <div
               key={feedback.id}
               role="status"
               aria-live="polite"
-              className={`pointer-events-none absolute left-1/2 top-3 z-10 -translate-x-1/2 rounded-2xl px-4 py-2 text-center text-lg font-extrabold text-white shadow-lg ${
+              className={`pointer-events-none absolute left-1/2 top-[6.5rem] z-10 -translate-x-1/2 sm:top-28 rounded-2xl px-4 py-2 text-center text-lg font-extrabold text-white shadow-lg ${
                 feedback.good ? "bg-[var(--accent-green)]" : "bg-[var(--danger)]"
               }`}
             >
