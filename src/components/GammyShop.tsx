@@ -8,6 +8,7 @@ import { PcardRing, PcardTape } from "@/components/PcardArt";
 import { pcardTiltLeave, pcardTiltMove } from "@/components/pcardTilt";
 import { Modal, Preview, type Snapshot } from "@/components/ShopView";
 import { MaterialShop, LimitedShop, ProCard } from "@/components/ShopSections";
+import { PAYMENTS_ENABLED } from "@/lib/payments";
 import { SchoolShopCards } from "@/components/pro/SchoolShopCards";
 import {
   DEAL_DISCOUNT,
@@ -30,7 +31,7 @@ import type { Locale } from "@/i18n/config";
 type More = "materialy" | "modely" | "kolo" | "skola" | "pro";
 const MORE_TABS: { id: More; label: string }[] = [
   { id: "materialy", label: "Materiály" },
-  { id: "modely", label: "Limitované modely" },
+  { id: "modely", label: "Sběratelské modely" },
   { id: "kolo", label: "Kolo štěstí" },
   { id: "skola", label: "Škola" },
   { id: "pro", label: "UčímePRO" },
@@ -40,7 +41,10 @@ const MORE_TABS: { id: More; label: string }[] = [
 const TILE_ACCENTS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
 const TILE_TILTS = [-2.5, 2, -1.5, 2.5];
 const KIND_MODEL: Record<ShopKind, string> = { avatar: "cat-avatar", title: "cat-title", frame: "cat-frame", banner: "cat-banner", pet: "cat-pet", city: "cat-city" };
-const MARQUEE = ["Body", "Voucher", "Dárek", "Kolo štěstí", "Materiály", "Limitky", "Avatary", "Sady"];
+const MIN_REVIEWS_SHOWN = 5;
+const MIN_PLAYERS_SHOWN = 100;
+
+const MARQUEE = ["Body", "Voucher", "Dárek", "Kolo štěstí", "Materiály", "Sběratelské", "Avatary", "Sady"];
 const TOPUP_AMOUNTS = [100, 300, 1000];
 
 const WISHLIST_KEY = "shop-wishlist";
@@ -401,7 +405,7 @@ export function GammyShop({
         <ShopModel id={KIND_MODEL[item.kind]} size={88} />
       </div>
       <div>
-        <p className="text-xs text-[var(--muted)]">Dnešní sleva · {t.tabs[item.kind]}</p>
+        <p className="text-xs text-[var(--muted)]">Tip dne · {t.tabs[item.kind]}</p>
         <h3 className="text-sm font-bold leading-tight">{item.names[locale]}</h3>
       </div>
       <div className="mt-auto">{quickBuy(item)}</div>
@@ -411,7 +415,7 @@ export function GammyShop({
   const tiles = [
     { label: "Mince", sub: "dobít body", icon: Coins, bg: "linear-gradient(135deg, #3248f0, #5a6cff)", onPick: () => scrollTo("body") },
     { label: "Materiály", sub: "suroviny", icon: Package, bg: "linear-gradient(135deg, #ffc933, #ff8a6b)", onPick: () => { setMore("materialy"); scrollTo("dalsi"); } },
-    { label: "Modely", sub: "limitované", icon: Shapes, bg: "linear-gradient(135deg, #17a864, #3ddc97)", onPick: () => { setMore("modely"); scrollTo("dalsi"); } },
+    { label: "Modely", sub: "sběratelské", icon: Shapes, bg: "linear-gradient(135deg, #17a864, #3ddc97)", onPick: () => { setMore("modely"); scrollTo("dalsi"); } },
     { label: "Kolo štěstí", sub: "zatoč", icon: CircleDot, bg: "linear-gradient(135deg, #29a3ff, #3248f0)", onPick: () => { setMore("kolo"); scrollTo("dalsi"); } },
   ];
 
@@ -425,13 +429,15 @@ export function GammyShop({
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="mb-2 inline-flex items-center gap-2 rounded-full border border-[var(--g-line)] px-3 py-1 text-xs text-[var(--muted)]">
-              <span className="h-2 w-2 rounded-full bg-[var(--g-accent)]" /> Uč se. Vydělávej. Užívej si.
+              <span className="h-2 w-2 rounded-full bg-[var(--g-accent)]" /> Uč se. Sbírej body. Užívej si.
             </p>
             <h1 className="text-3xl font-bold leading-tight sm:text-4xl" style={headingFont}>
               Obchod s <span className="text-[var(--g-accent)]">body</span>
             </h1>
           </div>
           <div className="flex flex-wrap items-center gap-4 text-sm">
+            {/* Hodnocení a počet hráčů se ukazují, až mají vypovídající hodnotu. */}
+            {(review?.count ?? 0) >= MIN_REVIEWS_SHOWN && (
             <button type="button" onClick={() => scrollTo("hodnoceni")} className="flex items-center gap-2" aria-label="Hodnocení obchodu">
               <span className="text-2xl font-bold">{review && review.count ? review.average.toFixed(1).replace(".", ",") : "–"}</span>
               <span className="flex flex-col items-start leading-tight">
@@ -439,7 +445,8 @@ export function GammyShop({
                 <span className="text-[11px] text-[var(--faint)]">{review?.count ?? 0} hodnocení</span>
               </span>
             </button>
-            {players !== null && <span className="text-[var(--muted)]">{players.toLocaleString("cs-CZ")} hráčů</span>}
+            )}
+            {players !== null && players >= MIN_PLAYERS_SHOWN && <span className="text-[var(--muted)]">{players.toLocaleString("cs-CZ")} hráčů</span>}
             <span className="text-[var(--muted)]">
               <b className="text-[var(--foreground)]">{SHOP_ITEMS.length}</b> věcí v nabídce
             </span>
@@ -517,10 +524,11 @@ export function GammyShop({
 
           <section aria-labelledby="dobit-body" className="gammy-panel flex min-w-0 flex-col gap-4 p-5 lg:col-span-3">
             <div>
-              <h3 id="dobit-body" className="text-lg font-bold" style={headingFont}>Dobít body</h3>
-              <p className="text-sm text-[var(--muted)]">Vyber balíček a případně zadej promo kód.</p>
+              <h3 id="dobit-body" className="text-lg font-bold" style={headingFont}>{PAYMENTS_ENABLED ? "Dobít body" : "Promo kód"}</h3>
+              <p className="text-sm text-[var(--muted)]">{PAYMENTS_ENABLED ? "Vyber balíček a případně zadej promo kód." : "Body získáš učením. Máš promo kód? Zadej ho tady."}</p>
             </div>
             <div className="grid gap-3 md:grid-cols-[auto_1fr_auto_auto] md:items-center">
+              {PAYMENTS_ENABLED && (
               <div className="flex flex-wrap gap-2">
                 {TOPUP_AMOUNTS.map((n) => (
                   <button
@@ -538,6 +546,7 @@ export function GammyShop({
                   </button>
                 ))}
               </div>
+              )}
               <input
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
@@ -557,13 +566,15 @@ export function GammyShop({
               >
                 Uplatnit
               </button>
-              <button
-                type="button"
-                onClick={() => toast("Platby zatím nejsou spuštěné, brzy.")}
-                className="rounded-full bg-[var(--g-accent)] px-6 py-2 text-sm font-bold text-[var(--g-accent-ink)]"
-              >
-                Zaplatit
-              </button>
+              {PAYMENTS_ENABLED && (
+                <button
+                  type="button"
+                  onClick={() => toast("Platby zatím nejsou spuštěné, brzy.")}
+                  className="rounded-full bg-[var(--g-accent)] px-6 py-2 text-sm font-bold text-[var(--g-accent-ink)]"
+                >
+                  Zaplatit
+                </button>
+              )}
             </div>
           </section>
         </div>
@@ -630,8 +641,8 @@ export function GammyShop({
 
       {/* Dobíjení bodů a vouchery */}
       <section id="body" className="scroll-mt-4 px-5 pb-10 sm:px-10">
-        <h2 className={`${heading} mb-1`} style={headingFont}>Dobij si body</h2>
-        <p className="mb-5 text-sm text-[var(--muted)]">Balíčky bodů a vouchery. Body získáš i učením, zdarma.</p>
+        <h2 className={`${heading} mb-1`} style={headingFont}>{PAYMENTS_ENABLED ? "Dobij si body" : "Jak získat body"}</h2>
+        <p className="mb-5 text-sm text-[var(--muted)]">{PAYMENTS_ENABLED ? "Balíčky bodů a vouchery. Body získáš i učením, zdarma." : "Body se získávají učením, kolem štěstí a vouchery. Za skutečné peníze se body koupit nedají."}</p>
         {topUp}
         <div className="gammy-panel mt-6 grid gap-5 p-5 md:grid-cols-[1fr_1.2fr]">
           <div>
@@ -678,7 +689,7 @@ export function GammyShop({
             <h2 className={heading} style={headingFont}>Proč nakupovat v Umíme?</h2>
             <p className="mt-2 max-w-xl text-sm text-[var(--muted)]">Žádné skutečné peníze nejsou potřeba. Čím víc se učíš, tím víc si můžeš dovolit.</p>
             <div className="mt-4 flex flex-wrap gap-2">
-              {["Body za učení", "Denní slevy", "Dárky kamarádům", "Rodičovská kontrola", "Limitované edice"].map((f) => (
+              {["Body za učení", "Tipy dne", "Dárky kamarádům", "Rodičovská kontrola", "Sběratelské edice"].map((f) => (
                 <span key={f} className="rounded-full border border-[var(--g-line)] bg-[var(--g-bg)] px-4 py-2 text-xs font-bold">
                   <Check aria-hidden className="mr-1 inline h-3.5 w-3.5 text-[var(--g-accent)]" /> {f}
                 </span>
@@ -718,7 +729,7 @@ export function GammyShop({
             )}
             {dealItems.length > 0 && (
               <div className="gammy-panel p-3">
-                <p className="mb-2 text-xs font-extrabold uppercase tracking-wide text-[var(--g-accent)]"><Zap aria-hidden className="mr-1 inline h-4 w-4" />Denní slevy −{Math.round(DEAL_DISCOUNT * 100)} %</p>
+                <p className="mb-2 text-xs font-extrabold uppercase tracking-wide text-[var(--g-accent)]"><Zap aria-hidden className="mr-1 inline h-4 w-4" />Tipy dne −{Math.round(DEAL_DISCOUNT * 100)} %</p>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {dealItems.map((i) => (
                     <button key={i.id} type="button" onClick={() => setPreviewId(i.id)} className="rounded-xl border border-[var(--g-line)] p-2 text-left text-xs hover:border-[var(--g-accent)]">

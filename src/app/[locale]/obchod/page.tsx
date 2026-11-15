@@ -5,6 +5,7 @@ import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, type Locale } from "@/i18n/config";
 import { Wheel } from "@/components/Wheel";
 import { BuyPointsCard } from "@/components/BuyPointsCard";
+import { PAYMENTS_ENABLED } from "@/lib/payments";
 import { Icon } from "@/components/Icon";
 import { GammyShop } from "@/components/GammyShop";
 import { getPlayerMarketText } from "@/i18n/player-market";
@@ -72,7 +73,7 @@ export default async function ShopPage({
         featured={
           <article className="gammy-panel flex h-full flex-col gap-4 p-5">
             <div className="flex flex-wrap gap-2">
-              <span className="rounded-full bg-[var(--g-accent)] px-3 py-1 text-xs font-bold text-[var(--g-accent-ink)]">Nejoblíbenější</span>
+              <span className="rounded-full bg-[var(--g-accent)] px-3 py-1 text-xs font-bold text-[var(--g-accent-ink)]">Poklad</span>
               <span className="rounded-full border border-[var(--g-line)] px-3 py-1 text-xs font-bold text-[var(--muted)]">{FEATURED_PACKAGE.points} bodů</span>
             </div>
             <div className="flex flex-1 items-center justify-center rounded-2xl bg-[var(--g-bg)] p-4">
@@ -86,20 +87,28 @@ export default async function ShopPage({
                 Body získáš učením i kolem štěstí. Za ně si koupíš avatary, mazlíčky nebo budovy do města.
               </p>
             </div>
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-2xl font-bold">{FEATURED_PACKAGE.price}</p>
-              <a href="#body" className="rounded-full bg-[var(--g-accent)] px-5 py-2 text-sm font-bold text-[var(--g-accent-ink)]">
-                Vybrat
+            {PAYMENTS_ENABLED ? (
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-2xl font-bold">{FEATURED_PACKAGE.price}</p>
+                <a href="#body" className="rounded-full bg-[var(--g-accent)] px-5 py-2 text-sm font-bold text-[var(--g-accent-ink)]">
+                  Vybrat
+                </a>
+              </div>
+            ) : (
+              <a href={`/${locale}/kurzy`} className="self-start rounded-full bg-[var(--g-accent)] px-5 py-2 text-sm font-bold text-[var(--g-accent-ink)]">
+                Získat body učením
               </a>
-            </div>
+            )}
           </article>
         }
         topUp={
-          <div className="pcard-shelf grid gap-8 sm:grid-cols-3">
-            {POINT_PACKAGES.map((pkg, i) => (
-              <BuyPointsCard key={pkg.points} pkg={pkg} dict={dict} accent={PACKAGE_ACCENTS[i]} tilt={PACKAGE_TILTS[i]} num={String(i + 1).padStart(2, "0")} />
-            ))}
-          </div>
+          PAYMENTS_ENABLED ? (
+            <div className="pcard-shelf grid gap-8 sm:grid-cols-3">
+              {POINT_PACKAGES.map((pkg, i) => (
+                <BuyPointsCard key={pkg.points} pkg={pkg} dict={dict} accent={PACKAGE_ACCENTS[i]} tilt={PACKAGE_TILTS[i]} num={String(i + 1).padStart(2, "0")} />
+              ))}
+            </div>
+          ) : null
         }
         wheel={
           <Wheel

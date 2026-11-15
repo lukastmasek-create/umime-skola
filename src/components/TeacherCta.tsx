@@ -9,7 +9,7 @@ import type { Locale } from "@/i18n/config";
 export function TeacherCta({ locale, className, children }: { locale: Locale; className?: string; children: React.ReactNode }) {
   const [account] = useAccount();
   const teams = `/${locale}/tymy`;
-  const href = account?.loggedIn ? teams : `/${locale}/registrace?next=${encodeURIComponent(teams)}`;
+  const href = account?.loggedIn ? teams : `/${locale}/registrace?role=teacher&next=${encodeURIComponent(teams)}`;
   return (
     <Link href={href} className={className}>
       {children}

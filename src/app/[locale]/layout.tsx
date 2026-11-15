@@ -20,7 +20,6 @@ import { isLocale, locales, type Locale } from "@/i18n/config";
 import { notFound } from "next/navigation";
 import { THEME_INIT_SCRIPT } from "@/lib/theme-init-script";
 import { ParentalGuard } from "@/components/ParentalGuard";
-import { EconomyTicker } from "@/components/EconomyTicker";
 import { getContactText } from "@/i18n/contact";
 import { getHomeText } from "@/i18n/home";
 import { CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL, getFooterLinks } from "@/i18n/legal";
@@ -110,7 +109,6 @@ export default async function LocaleLayout({
         </header>
         <ReturnNudge locale={locale as Locale} />
         <ParentalGuard locale={locale as Locale} />
-        <EconomyTicker locale={locale as Locale} />
         <PencilScrollbar />
         <SiteMotion />
         <OffscreenPause />

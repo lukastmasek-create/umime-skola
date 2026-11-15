@@ -23,12 +23,12 @@ function write(value: string) {
   }
 }
 
-// Lišta s tržními zprávami pod hlavičkou na všech stránkách. Zprávy se posouvají (pauza najetím myši),
+// Lišta s tržními zprávami ze hry Ekonomika (zobrazuje se jen na stránce hry). Zprávy se posouvají (pauza najetím myši),
 // při vypnutých animacích zůstanou statické a dají se odscrollovat. Zavřená lišta se nepamatuje jen
 // do změny TICKER_VERSION. Bez localStorage se lišta prostě ukáže znovu po každém načtení.
 const noSubscribe = () => () => {};
 
-export function EconomyTicker({ locale }: { locale: Locale }) {
+export function EconomyTicker({ locale, inGame = false }: { locale: Locale; inGame?: boolean }) {
   const t = getEconomyTickerText(locale);
   // Na serveru i při hydrataci se lišta skryje; po načtení v prohlížeči se ukáže, pokud ji hráč nezavřel.
   const dismissedBefore = useSyncExternalStore(
@@ -72,9 +72,11 @@ export function EconomyTicker({ locale }: { locale: Locale }) {
           </div>
         </div>
         <span className="hidden shrink-0 text-xs font-medium opacity-80 md:inline">({t.disclaimer})</span>
-        <Link href={`/${locale}/stale-hry/ekonomika`} className="shrink-0 underline">
-          {t.open}
-        </Link>
+        {!inGame && (
+          <Link href={`/${locale}/stale-hry/ekonomika`} className="shrink-0 underline">
+            {t.open}
+          </Link>
+        )}
         <button
           type="button"
           aria-label={t.dismiss}
@@ -82,7 +84,7 @@ export function EconomyTicker({ locale }: { locale: Locale }) {
             write(TICKER_VERSION);
             setClosed(true);
           }}
-          className="shrink-0 px-1 leading-none"
+          className="-my-1.5 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md leading-none hover:bg-black/10"
         >
           ✕
         </button>

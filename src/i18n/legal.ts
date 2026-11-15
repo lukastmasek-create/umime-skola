@@ -1903,7 +1903,125 @@ const cookiesFr: LegalPage = {
   ],
 };
 
-const LEGAL: Record<Locale, Record<"privacy" | "terms" | "cookies", LegalPage>> = {
+// ---------- Měření návštěvnosti a ochrana proti botům (Cloudflare) ----------
+// Cloudflare na všech stránkách načítá Web Analytics (anonymní měření návštěvnosti bez cookies)
+// a skript ochrany proti botům. Zásady to musí uvádět; text se doplňuje do všech jazyků stejně.
+
+type Disclosure = { h: string; p: string; list: string[]; notUsed: string; processor: string };
+
+const DISCLOSURE: Record<Locale, Disclosure> = {
+  cs: {
+    h: "Měření návštěvnosti bez cookies",
+    p: "Pro základní přehled o návštěvnosti používáme Cloudflare Web Analytics. Nástroj nenastavuje cookies, nepoužívá místní úložiště, nevytváří profily a nesleduje vás napříč weby. Vidíme jen souhrnná čísla (počet zobrazení stránek, rychlost načtení, typ zařízení, zemi).",
+    list: [
+      "Cloudflare Web Analytics: souhrnná anonymní statistika návštěvnosti, bez cookies.",
+      "Ochrana proti botům Cloudflare: krátký skript, který odhalí automatizované útoky; data zpracovává Cloudflare jako náš zpracovatel.",
+    ],
+    notUsed: "Analytické nástroje, které sledují jednotlivé návštěvníky nebo nastavují cookies (např. Google Analytics).",
+    processor: "Cloudflare Web Analytics a ochrana proti botům: anonymní měření návštěvnosti bez cookies a odhalování automatizovaných útoků na všech stránkách.",
+  },
+  en: {
+    h: "Cookie-free traffic measurement",
+    p: "For a basic overview of traffic we use Cloudflare Web Analytics. It sets no cookies, uses no local storage, builds no profiles and does not track you across sites. We only see aggregate numbers (page views, load speed, device type, country).",
+    list: [
+      "Cloudflare Web Analytics: aggregate, anonymous traffic statistics without cookies.",
+      "Cloudflare bot protection: a small script that detects automated attacks; the data is processed by Cloudflare as our processor.",
+    ],
+    notUsed: "Analytics tools that track individual visitors or set cookies (such as Google Analytics).",
+    processor: "Cloudflare Web Analytics and bot protection: anonymous, cookie-free traffic measurement and detection of automated attacks on all pages.",
+  },
+  de: {
+    h: "Reichweitenmessung ohne Cookies",
+    p: "Für einen groben Überblick über die Besuche nutzen wir Cloudflare Web Analytics. Das Werkzeug setzt keine Cookies, nutzt keinen lokalen Speicher, erstellt keine Profile und verfolgt dich nicht über Websites hinweg. Wir sehen nur Summen (Seitenaufrufe, Ladezeit, Gerätetyp, Land).",
+    list: [
+      "Cloudflare Web Analytics: zusammengefasste, anonyme Besuchsstatistik ohne Cookies.",
+      "Cloudflare-Bot-Schutz: ein kleines Skript, das automatisierte Angriffe erkennt; die Daten verarbeitet Cloudflare als unser Auftragsverarbeiter.",
+    ],
+    notUsed: "Analyse-Werkzeuge, die einzelne Besucher verfolgen oder Cookies setzen (z. B. Google Analytics).",
+    processor: "Cloudflare Web Analytics und Bot-Schutz: anonyme Reichweitenmessung ohne Cookies und Erkennung automatisierter Angriffe auf allen Seiten.",
+  },
+  ru: {
+    h: "Измерение посещаемости без cookie",
+    p: "Для общего обзора посещаемости мы используем Cloudflare Web Analytics. Инструмент не устанавливает cookie, не использует локальное хранилище, не создаёт профили и не отслеживает тебя на других сайтах. Мы видим только сводные числа (просмотры страниц, скорость загрузки, тип устройства, страна).",
+    list: [
+      "Cloudflare Web Analytics: сводная анонимная статистика посещаемости без cookie.",
+      "Защита Cloudflare от ботов: небольшой скрипт, который распознаёт автоматические атаки; данные обрабатывает Cloudflare как наш обработчик.",
+    ],
+    notUsed: "Инструменты аналитики, которые отслеживают отдельных посетителей или устанавливают cookie (например, Google Analytics).",
+    processor: "Cloudflare Web Analytics и защита от ботов: анонимное измерение посещаемости без cookie и распознавание автоматических атак на всех страницах.",
+  },
+  uk: {
+    h: "Вимірювання відвідуваності без cookie",
+    p: "Для загального огляду відвідуваності ми використовуємо Cloudflare Web Analytics. Інструмент не встановлює cookie, не використовує локальне сховище, не створює профілі й не відстежує тебе на інших сайтах. Ми бачимо лише зведені числа (перегляди сторінок, швидкість завантаження, тип пристрою, країна).",
+    list: [
+      "Cloudflare Web Analytics: зведена анонімна статистика відвідуваності без cookie.",
+      "Захист Cloudflare від ботів: невеликий скрипт, що розпізнає автоматизовані атаки; дані обробляє Cloudflare як наш обробник.",
+    ],
+    notUsed: "Інструменти аналітики, які відстежують окремих відвідувачів або встановлюють cookie (наприклад, Google Analytics).",
+    processor: "Cloudflare Web Analytics і захист від ботів: анонімне вимірювання відвідуваності без cookie та розпізнавання автоматизованих атак на всіх сторінках.",
+  },
+  ja: {
+    h: "クッキーを使わないアクセス計測",
+    p: "アクセス状況の大まかな把握のために Cloudflare Web Analytics を使っています。クッキーやローカルストレージは使わず、プロファイルの作成や他サイトをまたいだ追跡も行いません。私たちが見るのは集計された数値（ページビュー、読み込み速度、端末の種類、国）だけです。",
+    list: [
+      "Cloudflare Web Analytics：クッキーを使わない、集計された匿名のアクセス統計。",
+      "Cloudflare のボット対策：自動化された攻撃を検知する小さなスクリプト。データは委託先として Cloudflare が処理します。",
+    ],
+    notUsed: "個々の訪問者を追跡したりクッキーを設定したりするアクセス解析ツール（Google Analytics など）。",
+    processor: "Cloudflare Web Analytics とボット対策：全ページでのクッキーを使わない匿名のアクセス計測と、自動化された攻撃の検知。",
+  },
+  es: {
+    h: "Medición de visitas sin cookies",
+    p: "Para tener una visión general de las visitas usamos Cloudflare Web Analytics. No instala cookies, no usa almacenamiento local, no crea perfiles ni te rastrea entre sitios. Solo vemos cifras agregadas (páginas vistas, velocidad de carga, tipo de dispositivo, país).",
+    list: [
+      "Cloudflare Web Analytics: estadísticas de visitas agregadas y anónimas, sin cookies.",
+      "Protección contra bots de Cloudflare: un pequeño script que detecta ataques automatizados; los datos los trata Cloudflare como encargado del tratamiento.",
+    ],
+    notUsed: "Herramientas de análisis que siguen a visitantes individuales o instalan cookies (como Google Analytics).",
+    processor: "Cloudflare Web Analytics y protección contra bots: medición anónima de visitas sin cookies y detección de ataques automatizados en todas las páginas.",
+  },
+  fr: {
+    h: "Mesure d'audience sans cookies",
+    p: "Pour avoir une vue d'ensemble de la fréquentation, nous utilisons Cloudflare Web Analytics. L'outil ne dépose aucun cookie, n'utilise pas le stockage local, ne crée pas de profil et ne te suit pas d'un site à l'autre. Nous ne voyons que des chiffres agrégés (pages vues, vitesse de chargement, type d'appareil, pays).",
+    list: [
+      "Cloudflare Web Analytics : statistiques de fréquentation agrégées et anonymes, sans cookies.",
+      "Protection anti-bots de Cloudflare : un petit script qui détecte les attaques automatisées ; les données sont traitées par Cloudflare en tant que sous-traitant.",
+    ],
+    notUsed: "Les outils d'analyse qui suivent chaque visiteur ou déposent des cookies (comme Google Analytics).",
+    processor: "Cloudflare Web Analytics et protection anti-bots : mesure d'audience anonyme sans cookies et détection des attaques automatisées sur toutes les pages.",
+  },
+};
+
+// Doplní do zásad cookies oddíl o měření návštěvnosti a opraví položku „analytické nástroje nepoužíváme“.
+// Oddíl „Cookies, které nepoužíváme“ má ve všech jazycích ikonu star a analytiku jako 2. položku seznamu.
+function withCookieDisclosure(page: LegalPage, d: Disclosure): LegalPage {
+  const sections: Section[] = [];
+  for (const sec of page.sections) {
+    if (sec.icon === "star" && sec.list && sec.list.length >= 2) {
+      sections.push({ icon: "info", h: d.h, p: d.p, list: d.list });
+      sections.push({ ...sec, list: sec.list.map((item, i) => (i === 1 ? d.notUsed : item)) });
+    } else {
+      sections.push(sec);
+    }
+  }
+  return { ...page, sections };
+}
+
+// Doplní Cloudflare Web Analytics a ochranu proti botům do seznamu zpracovatelů (za položku „Cloudflare: …“).
+function withPrivacyDisclosure(page: LegalPage, d: Disclosure): LegalPage {
+  return {
+    ...page,
+    sections: page.sections.map((sec) => {
+      const i = sec.list?.findIndex((item) => item.startsWith("Cloudflare")) ?? -1;
+      if (!sec.list || i < 0) return sec;
+      const list = [...sec.list];
+      list.splice(i + 1, 0, d.processor);
+      return { ...sec, list };
+    }),
+  };
+}
+
+const RAW: Record<Locale, Record<"privacy" | "terms" | "cookies", LegalPage>> = {
   cs: { privacy: privacyCs, terms: termsCs, cookies: cookiesCs },
   en: { privacy: privacyEn, terms: termsEn, cookies: cookiesEn },
   de: { privacy: privacyDe, terms: termsDe, cookies: cookiesDe },
@@ -1913,6 +2031,17 @@ const LEGAL: Record<Locale, Record<"privacy" | "terms" | "cookies", LegalPage>> 
   es: { privacy: privacyEs, terms: termsEs, cookies: cookiesEs },
   fr: { privacy: privacyFr, terms: termsFr, cookies: cookiesFr },
 };
+
+const LEGAL = Object.fromEntries(
+  (Object.keys(RAW) as Locale[]).map((l) => [
+    l,
+    {
+      privacy: withPrivacyDisclosure(RAW[l].privacy, DISCLOSURE[l]),
+      terms: RAW[l].terms,
+      cookies: withCookieDisclosure(RAW[l].cookies, DISCLOSURE[l]),
+    },
+  ]),
+) as Record<Locale, Record<"privacy" | "terms" | "cookies", LegalPage>>;
 
 export function getLegalPage(kind: "privacy" | "terms" | "cookies", locale: Locale): LegalPage {
   return LEGAL[locale][kind];
