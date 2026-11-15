@@ -1,4 +1,9 @@
 import Link from "next/link";
+import { Icon } from "@/components/Icon";
+import { TearCard } from "@/components/TearCard";
+import { PcardArt, PcardRing, PcardTape } from "@/components/PcardArt";
+
+const TILE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
 import { notFound } from "next/navigation";
 import { CATEGORIES } from "@/lib/taxonomy";
 import { getDictionary } from "@/i18n/dictionaries";
@@ -34,18 +39,23 @@ export default async function KurzyPage({
       >
         {dict.templates.title} →
       </Link>
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {CATEGORIES.map((cat) => (
-          <Link
-            key={cat.slug}
-            href={`/${locale}/kurzy/${cat.slug}`}
-            className="card card-hover flex flex-col gap-2 p-6"
-          >
-            <h2 className="text-lg font-semibold">{dict.categories[cat.slug].label}</h2>
-            <p className="text-sm text-[var(--muted)]">
-              {dict.categories[cat.slug].description}
-            </p>
-          </Link>
+      {/* Stejné ilustrované karty sekcí jako na úvodní stránce. */}
+      <div className="pcard-pile">
+        {CATEGORIES.map((cat, i) => (
+          <TearCard key={cat.slug} href={`/${locale}/kurzy/${cat.slug}`} className="pcard" accent={TILE_COLORS[i % TILE_COLORS.length]}>
+            <span className="pcard-in">
+              <PcardArt slug={cat.slug} />
+              <span className="pcard-num" aria-hidden>{String(i + 1).padStart(2, "0")}</span>
+              <span className="pcard-iconwrap">
+                <PcardRing />
+                <Icon name={cat.slug} size={92} className="pcard-icon" />
+              </span>
+              <h2 className="pcard-title">{dict.categories[cat.slug].label}</h2>
+              <p className="pcard-text">{dict.categories[cat.slug].description}</p>
+              <span className="pcard-go" aria-hidden>→</span>
+            </span>
+            <PcardTape />
+          </TearCard>
         ))}
       </div>
     </div>

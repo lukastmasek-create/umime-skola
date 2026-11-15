@@ -56,7 +56,7 @@ export type AudiencePagesText = {
 const cs: AudiencePagesText = {
   teachers: {
     nav: "Pro učitele",
-    title: "Pro učitele",
+    title: "Zadej třídě procvičování za minutu. Zdarma.",
     subtitle: "Procvičování pro celou třídu na jednom místě. Zdarma, bez reklam a s dětským zámkem.",
     points: [
       { title: "Založ třídu za minutu", text: "Žáci se připojí kódem třídy. Přijetí schvaluješ ty, takže se k tobě nedostane nikdo cizí." },
@@ -89,7 +89,7 @@ const cs: AudiencePagesText = {
     previewCaption: "Ilustrační ukázka, ne živá data.",
     faqTitle: "Časté dotazy",
     faq: [
-      { q: "Je to opravdu zdarma?", a: "Ano. Registrace, třídy i úkoly jsou zdarma a bez reklam." },
+      { q: "Je to opravdu zdarma?", a: "Ano. Registrace, třídy, úkoly i přehled výsledků jsou zdarma a bez reklam. Žáci si v obchodě mohou za body získané učením odemykat avatary a vylepšení. Skutečnými penězi se nic nekupuje." },
       { q: "Potřebují žáci účet?", a: "Hrát a učit se mohou i bez účtu. Pro připojení do třídy se ale musí přihlásit, aby se jejich postup uložil." },
       { q: "Můžu přijmout jen některé žáky?", a: "Ano. Když zapneš schvalování, každou žádost uvidíš a přijmeš ji sám." },
       { q: "Jak funguje rodičovský zámek?", a: "Rodiče nastaví PIN a denní limit času a mohou zakázat nákupy v obchodě i společné hraní." },
@@ -123,7 +123,7 @@ const cs: AudiencePagesText = {
 const en: AudiencePagesText = {
   teachers: {
     nav: "For teachers",
-    title: "For teachers",
+    title: "Set your class practice in a minute. Free.",
     subtitle: "Practice for the whole class in one place. Free, no ads, with a child-safe lock.",
     points: [
       { title: "Create a class in a minute", text: "Pupils join with a class code. You approve every request, so no outsiders get in." },
@@ -156,7 +156,7 @@ const en: AudiencePagesText = {
     previewCaption: "Illustrative example, not live data.",
     faqTitle: "Frequently asked questions",
     faq: [
-      { q: "Is it really free?", a: "Yes. Registration, classes and tasks are free, with no ads." },
+      { q: "Is it really free?", a: "Yes. Sign-up, classes, tasks and results are free, with no ads. Pupils can unlock avatars and upgrades in the shop with points they earn by learning. Nothing is bought with real money." },
       { q: "Do pupils need an account?", a: "They can play and learn without one. To join a class they need to sign in, so their progress is saved." },
       { q: "Can I accept only some pupils?", a: "Yes. If you turn on approval, you see each request and accept it yourself." },
       { q: "How does the parental lock work?", a: "Parents set a PIN and a daily time limit, and can block shop purchases and playing together." },
@@ -190,7 +190,7 @@ const en: AudiencePagesText = {
 const de: AudiencePagesText = {
   teachers: {
     nav: "Für Lehrkräfte",
-    title: "Für Lehrkräfte",
+    title: "Übungen für deine Klasse in einer Minute. Kostenlos.",
     subtitle: "Üben für die ganze Klasse an einem Ort. Kostenlos, ohne Werbung und mit Kindersicherung.",
     points: [
       { title: "Klasse in einer Minute", text: "Schüler treten mit dem Klassencode bei. Du bestätigst jede Anfrage, es kommt also niemand Fremdes hinein." },
@@ -223,7 +223,7 @@ const de: AudiencePagesText = {
     previewCaption: "Illustratives Beispiel, keine Live-Daten.",
     faqTitle: "Häufige Fragen",
     faq: [
-      { q: "Ist das wirklich kostenlos?", a: "Ja. Registrierung, Klassen und Aufgaben sind kostenlos und werbefrei." },
+      { q: "Ist das wirklich kostenlos?", a: "Ja. Registrierung, Klassen, Aufgaben und Ergebnisse sind kostenlos und werbefrei. Im Shop können Schüler mit Punkten, die sie beim Lernen sammeln, Avatare und Extras freischalten. Mit echtem Geld wird nichts gekauft." },
       { q: "Brauchen Schüler ein Konto?", a: "Spielen und lernen können sie auch ohne Konto. Für den Beitritt zur Klasse müssen sie sich anmelden, damit ihr Fortschritt gespeichert wird." },
       { q: "Kann ich nur einige Schüler aufnehmen?", a: "Ja. Wenn du die Bestätigung einschaltest, siehst du jede Anfrage und kannst sie selbst annehmen." },
       { q: "Wie funktioniert die Kindersicherung?", a: "Eltern legen eine PIN und ein tägliches Zeitlimit fest und können Einkäufe im Shop und gemeinsames Spielen sperren." },
@@ -257,7 +257,7 @@ const de: AudiencePagesText = {
 const ru: AudiencePagesText = {
   teachers: {
     nav: "Для учителей",
-    title: "Для учителей",
+    title: "Задания для класса за минуту. Бесплатно.",
     subtitle: "Тренировка для всего класса в одном месте. Бесплатно, без рекламы и с детской защитой.",
     points: [
       { title: "Класс за минуту", text: "Ученики входят по коду класса. Каждую заявку подтверждаете вы, так что посторонние не попадут." },
@@ -290,7 +290,7 @@ const ru: AudiencePagesText = {
     previewCaption: "Иллюстративный пример, не реальные данные.",
     faqTitle: "Частые вопросы",
     faq: [
-      { q: "Это правда бесплатно?", a: "Да. Регистрация, классы и задания бесплатны, без рекламы." },
+      { q: "Это правда бесплатно?", a: "Да. Регистрация, классы, задания и результаты бесплатны и без рекламы. В магазине ученики открывают аватары и улучшения за баллы, заработанные учёбой. За реальные деньги ничего не покупается." },
       { q: "Нужен ли ученикам аккаунт?", a: "Играть и учиться можно и без аккаунта. Чтобы войти в класс, нужно войти в аккаунт, так сохранится прогресс." },
       { q: "Можно принять только некоторых учеников?", a: "Да. Если включить подтверждение, вы видите каждую заявку и принимаете её сами." },
       { q: "Как работает родительский замок?", a: "Родители задают PIN и дневной лимит времени и могут запретить покупки в магазине и совместную игру." },
@@ -324,7 +324,7 @@ const ru: AudiencePagesText = {
 const uk: AudiencePagesText = {
   teachers: {
     nav: "Для вчителів",
-    title: "Для вчителів",
+    title: "Завдання для класу за хвилину. Безкоштовно.",
     subtitle: "Тренування для всього класу в одному місці. Безкоштовно, без реклами та з дитячим захистом.",
     points: [
       { title: "Клас за хвилину", text: "Учні приєднуються за кодом класу. Кожну заявку підтверджуєте ви, тож стороння людина не потрапить." },
@@ -357,7 +357,7 @@ const uk: AudiencePagesText = {
     previewCaption: "Ілюстративний приклад, не реальні дані.",
     faqTitle: "Часті питання",
     faq: [
-      { q: "Це справді безкоштовно?", a: "Так. Реєстрація, класи й завдання безкоштовні, без реклами." },
+      { q: "Це справді безкоштовно?", a: "Так. Реєстрація, класи, завдання й результати безкоштовні та без реклами. У магазині учні відкривають аватари й покращення за бали, зароблені навчанням. За реальні гроші нічого не купується." },
       { q: "Чи потрібен учням обліковий запис?", a: "Грати й учитися можна і без нього. Щоб приєднатися до класу, потрібно увійти, тоді зберігається прогрес." },
       { q: "Чи можна прийняти лише деяких учнів?", a: "Так. Якщо ввімкнути підтвердження, ви бачите кожну заявку й приймаєте її самі." },
       { q: "Як працює батьківський замок?", a: "Батьки задають PIN і денний ліміт часу та можуть заборонити покупки в магазині й спільну гру." },
@@ -391,7 +391,7 @@ const uk: AudiencePagesText = {
 const ja: AudiencePagesText = {
   teachers: {
     nav: "教師の方へ",
-    title: "教師の方へ",
+    title: "1分でクラスに練習を出せます。無料です。",
     subtitle: "クラス全体の練習を一か所で。無料・広告なし・子ども向けのロック機能付きです。",
     points: [
       { title: "1分でクラスを作成", text: "生徒はクラスコードで参加します。参加の承認はあなたが行うので、部外者は入れません。" },
@@ -424,7 +424,7 @@ const ja: AudiencePagesText = {
     previewCaption: "イメージ例で、実際のデータではありません。",
     faqTitle: "よくある質問",
     faq: [
-      { q: "本当に無料ですか？", a: "はい。登録、クラス、課題は無料で、広告もありません。" },
+      { q: "本当に無料ですか？", a: "はい。登録、クラス、課題、結果の確認はすべて無料で広告もありません。ショップでは学習でためたポイントでアバターなどを解放できます。実際のお金で買うものはありません。" },
       { q: "生徒にアカウントは必要ですか？", a: "アカウントなしでも遊んで学べます。クラスに参加するにはログインが必要で、進み具合が保存されます。" },
       { q: "一部の生徒だけを受け入れられますか？", a: "はい。承認をオンにすると、届いた参加申請を一件ずつ確認して受け入れられます。" },
       { q: "保護者向けのロックはどう機能しますか？", a: "保護者がPINと1日の利用時間の上限を設定し、ショップでの購入や一緒に遊ぶことを禁止できます。" },
@@ -458,7 +458,7 @@ const ja: AudiencePagesText = {
 const es: AudiencePagesText = {
   teachers: {
     nav: "Para docentes",
-    title: "Para docentes",
+    title: "Práctica para tu clase en un minuto. Gratis.",
     subtitle: "Práctica para toda la clase en un solo lugar. Gratis, sin anuncios y con bloqueo infantil.",
     points: [
       { title: "Clase en un minuto", text: "Los alumnos se unen con el código de la clase. Tú apruebas cada solicitud, así que no entra nadie ajeno." },
@@ -491,7 +491,7 @@ const es: AudiencePagesText = {
     previewCaption: "Ejemplo ilustrativo, no son datos reales.",
     faqTitle: "Preguntas frecuentes",
     faq: [
-      { q: "¿De verdad es gratis?", a: "Sí. El registro, las clases y las tareas son gratuitos y sin anuncios." },
+      { q: "¿De verdad es gratis?", a: "Sí. El registro, las clases, las tareas y los resultados son gratis y sin anuncios. En la tienda los alumnos desbloquean avatares y mejoras con puntos que ganan estudiando. No se compra nada con dinero real." },
       { q: "¿Los alumnos necesitan una cuenta?", a: "Pueden jugar y aprender sin cuenta. Para unirse a una clase deben iniciar sesión, así se guarda su progreso." },
       { q: "¿Puedo aceptar solo a algunos alumnos?", a: "Sí. Si activas la aprobación, ves cada solicitud y la aceptas tú." },
       { q: "¿Cómo funciona el bloqueo parental?", a: "Los padres fijan un PIN y un límite de tiempo diario, y pueden bloquear las compras en la tienda y el juego en grupo." },
@@ -525,7 +525,7 @@ const es: AudiencePagesText = {
 const fr: AudiencePagesText = {
   teachers: {
     nav: "Pour les enseignants",
-    title: "Pour les enseignants",
+    title: "Des exercices pour ta classe en une minute. Gratuit.",
     subtitle: "L'entraînement de toute la classe au même endroit. Gratuit, sans publicité, avec un verrouillage pour enfants.",
     points: [
       { title: "Une classe en une minute", text: "Les élèves rejoignent avec le code de la classe. Vous validez chaque demande, personne d'extérieur n'entre." },
@@ -558,7 +558,7 @@ const fr: AudiencePagesText = {
     previewCaption: "Exemple illustratif, pas de données réelles.",
     faqTitle: "Questions fréquentes",
     faq: [
-      { q: "C'est vraiment gratuit ?", a: "Oui. L'inscription, les classes et les tâches sont gratuites, sans publicité." },
+      { q: "C'est vraiment gratuit ?", a: "Oui. L'inscription, les classes, les devoirs et les résultats sont gratuits et sans publicité. Dans la boutique, les élèves débloquent des avatars et des bonus avec les points gagnés en apprenant. Rien ne s'achète avec de l'argent réel." },
       { q: "Les élèves ont-ils besoin d'un compte ?", a: "Ils peuvent jouer et apprendre sans compte. Pour rejoindre une classe, ils doivent se connecter, ce qui sauvegarde leur progression." },
       { q: "Puis-je n'accepter que certains élèves ?", a: "Oui. Si vous activez la validation, vous voyez chaque demande et l'acceptez vous-même." },
       { q: "Comment fonctionne le verrou parental ?", a: "Les parents définissent un code PIN et une limite de temps quotidienne, et peuvent bloquer les achats dans la boutique et le jeu à plusieurs." },

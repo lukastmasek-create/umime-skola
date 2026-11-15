@@ -23,7 +23,9 @@ export function DailyQuizTeaser({ locale }: { locale: Locale }) {
     };
   }, []);
 
-  if (!s) return null;
+  // Obecnou pozvánku na denní kvíz ukazuje lobby hned pod tímto blokem; tady jen osobní stav
+  // (rozehraný nebo dokončený kvíz), aby se stejná nabídka neopakovala dvakrát za sebou.
+  if (!s || !s.loggedIn || !(s.started || s.finished)) return null;
   const left = `${Math.floor(s.msToNext / 3_600_000)} h ${Math.floor((s.msToNext % 3_600_000) / 60_000)} min`;
   const done = s.loggedIn && s.finished;
   const text = done

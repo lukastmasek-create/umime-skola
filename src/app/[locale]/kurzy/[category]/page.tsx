@@ -18,6 +18,12 @@ import { matchesCourseQuery } from "@/lib/course-search";
 import { CourseSearch } from "@/components/CourseSearch";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
+import { tr8 } from "@/i18n/config";
+
+// Přehled bez vybraného předmětu ukazuje z každého předmětu jen pár kurzů a odkaz na celý seznam,
+// jinak by stránka měla stovky karet (na mobilu přes 100 000 px).
+const PREVIEW_PER_SUBJECT = 6;
+const SHOW_ALL = tr8("Zobrazit vše", "Show all", "Alle anzeigen", "Показать все", "Показати все", "すべて表示", "Ver todo", "Tout afficher");
 
 export const revalidate = 0;
 
@@ -111,9 +117,19 @@ export default async function CategoryPage({
   const query = (q ?? "").trim().slice(0, 100);
   if (query) courses = courses.filter((c) => matchesCourseQuery(c, query));
 
-  // Seskupení: předmět -> kategorie (obor) -> kurzy.
+  // Seskupení: předmět -> kategorie (obor) -> kurzy. V přehledu (bez předmětu a hledání) jen ukázka.
+  const collapsed = !selectedSubject && !query;
+  const totals = new Map<string, number>();
+  for (const course of courses) totals.set(course.subject ?? "OTHER", (totals.get(course.subject ?? "OTHER") ?? 0) + 1);
+  const shown = new Map<string, number>();
   const groups = new Map<string, Map<string, Course[]>>();
   for (const course of courses) {
+    if (collapsed) {
+      const key = course.subject ?? "OTHER";
+      const n = shown.get(key) ?? 0;
+      if (n >= PREVIEW_PER_SUBJECT) continue;
+      shown.set(key, n + 1);
+    }
     const subjectKey = course.subject ?? "OTHER";
     const sectionKey = course.section ?? "";
     if (!groups.has(subjectKey)) groups.set(subjectKey, new Map());
@@ -123,7 +139,7 @@ export default async function CategoryPage({
   }
 
   const chip = (active: boolean) =>
-    `pill px-4 py-2 text-sm ${
+    `pill inline-flex min-h-11 items-center px-4 py-2 text-sm ${
       active
         ? "bg-[var(--brand-500)] text-white"
         : "bg-[var(--surface-muted)] text-[var(--muted)] hover:bg-[var(--brand-50)]"
@@ -155,6 +171,23 @@ export default async function CategoryPage({
         </div>
       )}
 
+      {/* Na mobilu jednoduché tlačítko pro každý předmět; mapa ostrovů je od 640 px. */}
+      <nav aria-label={subjectText.all} className="mb-6 flex flex-wrap gap-2 sm:hidden">
+        <Link href={filterHref(undefined, selectedGrade)} className={chip(!selectedSubject)}>
+          {subjectText.all}
+        </Link>
+        {SUBJECTS.filter((subject) => (counts.get(subject.value) ?? 0) > 0).map((subject) => (
+          <Link
+            key={subject.slug}
+            href={filterHref(subject.slug, selectedGrade)}
+            className={chip(selectedSubject?.value === subject.value)}
+            aria-current={selectedSubject?.value === subject.value ? "page" : undefined}
+          >
+            {subjectText.labels[subject.value]} · {counts.get(subject.value)}
+          </Link>
+        ))}
+      </nav>
+      <div className="hidden sm:block">
       <CourseWorld
         locale={locale}
         allHref={filterHref(undefined, selectedGrade)}
@@ -169,6 +202,7 @@ export default async function CategoryPage({
           active: selectedSubject?.value === subject.value,
         }))}
       />
+      </div>
 
       <div id={COURSES_ANCHOR} className="scroll-mt-6">
       {!loadFailed && (courses.length > 0 || query) && (
@@ -203,7 +237,7 @@ export default async function CategoryPage({
                   </span>
                   {subject ? subjectText.labels[subject.value] : subjectText.other}
                   <span className="pill bg-[var(--surface-muted)] px-2.5 py-1 text-xs text-[var(--muted)]">
-                    {[...sections.values()].reduce((sum, list) => sum + list.length, 0)}
+                    {totals.get(subjectKey) ?? 0}
                   </span>
                 </h2>
                 <div className="flex flex-col gap-8">
@@ -244,6 +278,14 @@ export default async function CategoryPage({
                     </div>
                   ))}
                 </div>
+                {collapsed && subject && (totals.get(subjectKey) ?? 0) > PREVIEW_PER_SUBJECT && (
+                  <Link
+                    href={filterHref(subject.slug, selectedGrade)}
+                    className="btn-bouncy mt-5 inline-flex min-h-11 items-center rounded-full bg-[var(--brand-500)] px-5 py-2 text-sm font-semibold text-white"
+                  >
+                    {SHOW_ALL[locale as Locale]} ({totals.get(subjectKey)}) →
+                  </Link>
+                )}
               </section>
             );
           })}
