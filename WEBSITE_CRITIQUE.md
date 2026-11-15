@@ -244,3 +244,27 @@ It also scanned all tracked files for secrets (none found) and measured asset si
 | `obchod/page.tsx:16-19`, `BuyPointsCard.tsx:40` | **D-1 confirmed** |
 | `src/i18n/economy-ticker.ts` | **D-2 confirmed** |
 | `.github/workflows/` contains only `deploy.yml` | **R-2 confirmed** |
+
+---
+
+## 8. Fix status (follow-up, 2026-11-15)
+
+Fixes are on branch `claude/vigilant-babbage-dqanbm` (commits `f67acf4` … `29b1738`). Verified with lint (0 errors), `npm run typecheck`, `npm test` (321/321), `npm run build`, and a local smoke test (dummy DB) of the changed pages.
+
+**Fixed:** R-1, R-2, R-3, R-5, R-6, R-7, R-8, R-9, R-12 (partly), R-17, R-18, R-19 (non-breaking `npm audit fix` only), R-20, R-21 · F-1, F-2 (in code; see below), F-3, F-4, F-5, F-6, F-7, F-8, F-9, F-10, F-13, F-14 · D-1 (no real-money offers while payments are off), D-2, D-3, D-4, D-5 (header line icons), D-6, D-7 (partly), D-8, D-9, D-10, D-11 (header, courses, ticker), D-12, D-13, D-14 (column width, duplicate quiz), D-15 (print).
+
+**Owner actions before merging to main** (deploy runs on push to main):
+1. Run `prisma/sql/full-access-admins.sql` with the real admin e-mails filled in locally (don't commit them). Until then no account has full access.
+2. Make sure the Worker has the `TURNSTILE_SECRET_KEY` secret. In production, registration and contact are now refused without it.
+3. Against the existing DB, run once: `npx prisma migrate resolve --applied 0_init`.
+4. `www.ucimesehrou.org` is added as a Workers custom domain in `wrangler.jsonc`. The deploy token needs permission to create custom domains/DNS for the zone. If the deploy fails on that, add the domain in the Cloudflare dashboard, or remove that route line.
+
+**Not fixed (reason):**
+- R-11 CSP `script-src`: the pupil code playground runs in `srcdoc` iframes that inherit the page CSP. A strict policy would break pupils' HTML/JS. This needs the sandbox on a separate origin first.
+- R-13 3D texture recompression, R-14 CSS split, F-11 fonts and lazy WebGL: these need asset tooling and visual QA. Left as a performance project.
+- R-15/R-16: hardcoded Czech in the shop and code sections, and partial uk/ja/es/fr. These need translation work and a decision on which languages are supported.
+- R-19 Prisma 7 / stable Auth.js: major upgrades. The remaining `deepmerge-ts` advisory needs Prisma 7.
+- R-10: the registration 409 is kept because the UI uses it. The risk is low behind rate limiting and the captcha.
+- R-23 LICENSE: the owner has to choose a license.
+- F-12 (preload emitted by the framework); F-15 (sitemap is within Google's limits: 9,216 URLs and 11 MB, against 50,000 URLs and 50 MB).
+- D-1 (launch design for parent-only purchases); D-7 (who runs the site: needs real operator details); D-14 (decorations overlapping text).
