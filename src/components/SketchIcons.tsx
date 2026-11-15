@@ -1,7 +1,8 @@
 import type { CSSProperties } from "react";
 
 // Ručně kreslené SVG ikony ve stejném stylu jako ostatní ilustrace (tmavý obrys, ploché barevné výplně).
-// Čistě dekorativní (aria-hidden), bez stavu, takže jdou použít na serveru i v klientských komponentách.
+// Jednobarevné čárové ikony (šipky, menu, zavřít) kreslí barvou textu (currentColor), aby byly vidět
+// ve světlém i tmavém motivu. Čistě dekorativní (aria-hidden), bez stavu, takže jdou použít na serveru i v klientských komponentách.
 
 const ink = "#16132b";
 const C = { yellow: "#ffc933", coral: "#ff8a6b", blue: "#8fd0ff", mint: "#7ee0b0", lilac: "#c9a8ff", paper: "#f7efe0" };
@@ -187,25 +188,25 @@ export function SketchIcon({ kind, size = 24, className, style }: { kind: Sketch
     case "chevron":
       return (
         <svg {...common}>
-          <path d="M6 9.5l6 6 6-6" stroke={ink} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M6 9.5l6 6 6-6" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
     case "chevronUp":
       return (
         <svg {...common}>
-          <path d="M6 14.5l6-6 6 6" stroke={ink} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M6 14.5l6-6 6 6" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       );
     case "menu":
       return (
         <svg {...common}>
-          <path d="M4.5 7h15M4.5 12h15M4.5 17h15" stroke={ink} strokeWidth="2.6" strokeLinecap="round" />
+          <path d="M4.5 7h15M4.5 12h15M4.5 17h15" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
         </svg>
       );
     case "close":
       return (
         <svg {...common}>
-          <path d="M6 6l12 12M18 6L6 18" stroke={ink} strokeWidth="2.8" strokeLinecap="round" />
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" />
         </svg>
       );
     case "user":

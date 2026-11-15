@@ -29,6 +29,16 @@ export function alternatesFor(locale: Locale, path: string): NonNullable<Metadat
   };
 }
 
+// Plné kódy jazyka pro og:locale (Facebook a další očekávají jazyk_ZEMĚ).
+export const OG_LOCALE: Record<Locale, string> = {
+  cs: "cs_CZ", en: "en_US", de: "de_DE", ru: "ru_RU", uk: "uk_UA", ja: "ja_JP", es: "es_ES", fr: "fr_FR",
+};
+
+// Náhledový obrázek (src/app/[locale]/opengraph-image.png). Vlastní openGraph na stránce by ho jinak
+// přepsal, proto se uvádí výslovně. Next ho servíruje pod zástupným segmentem „-“.
+export const OG_IMAGE = { url: "/-/opengraph-image.png", width: 1200, height: 630, alt: SITE_NAME, type: "image/png" };
+export const TWITTER_IMAGE = { url: "/-/twitter-image.png", width: 1200, height: 630, alt: SITE_NAME, type: "image/png" };
+
 export function pageMetadata(
   locale: Locale,
   path: string,
@@ -41,7 +51,17 @@ export function pageMetadata(
     title: opts.absoluteTitle ? { absolute: title } : title, // šablona „%s · Učíme se hrou“ je v layoutu
     description,
     alternates: alternatesFor(locale, path),
-    openGraph: { title: full, description, siteName: SITE_NAME, type: "website", url: `/${locale}${path}`, locale },
+    openGraph: {
+      title: full,
+      description,
+      siteName: SITE_NAME,
+      type: "website",
+      url: `/${locale}${path}`,
+      locale: OG_LOCALE[locale],
+      alternateLocale: locales.filter((l) => l !== locale).map((l) => OG_LOCALE[l]),
+      images: [OG_IMAGE],
+    },
+    twitter: { card: "summary_large_image", title: full, description, images: [TWITTER_IMAGE] },
   };
 }
 

@@ -15,6 +15,7 @@ import {
   type ContactCategory,
   type ContactField,
   type ContactTopic,
+  validateContact,
 } from "@/lib/contact";
 
 const ICON: Record<ContactCategory, string> = { support: "", partner: "", school: "" };
@@ -68,6 +69,13 @@ export function ContactForm({
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!def || status.kind === "sending") return;
+    // Stejná kontrola jako na serveru (src/lib/contact.ts): chyba se ukáže hned, bez odeslání
+    // a bez spotřebování ověření Turnstile.
+    const check = validateContact({ topic: def.id, name, email, message, details });
+    if (!check.ok) {
+      setStatus({ kind: "error", ...errorText(check.error) });
+      return;
+    }
     setStatus({ kind: "sending" });
     try {
       const res = await fetch("/api/kontakt", {

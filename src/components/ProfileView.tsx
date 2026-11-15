@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { getDictionary } from "@/i18n/dictionaries";
 import { Avatar } from "@/components/Avatar";
 import { LevelBadge } from "@/components/LevelBadge";
 import { ProfileCollection } from "@/components/ProfileCollection";
@@ -377,12 +378,13 @@ export function ProfileView({ locale }: { locale: Locale }) {
   if (!profile.loggedIn) {
     return (
       <div className="card p-8 text-center">
+        <h1 className="mb-2 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>{t.title}</h1>
         <p className="mb-3 text-[var(--muted)]">{t.loginRequired}</p>
         <Link
-          href={`/${locale}/prihlaseni`}
+          href={`/${locale}/prihlaseni?next=${encodeURIComponent(`/${locale}/profil`)}`}
           className="btn-bouncy inline-block bg-[var(--brand-500)] px-5 py-2 text-sm font-bold text-white"
         >
-          →
+          {getDictionary(locale).nav.login} →
         </Link>
       </div>
     );

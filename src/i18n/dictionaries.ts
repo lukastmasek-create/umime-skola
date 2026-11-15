@@ -139,7 +139,7 @@ const cs: Dictionary = {
     titleLine1: "Připrav se na",
     titleLine2: "základku, střední, přijímačky i maturitu",
     subtitle:
-      "Sbírej body za dokončené lekce, sleduj svůj postup a uč se v jazyce, který právě potřebuješ.",
+      "Procvičuj učivo od 1. třídy po maturitu, za každou lekci sbírej body a sleduj, jak se zlepšuješ.",
     browseCourses: "Prohlédnout kurzy",
     createAccount: "Vytvořit účet",
     pickSection: "Vyber si svou sekci",
@@ -196,7 +196,7 @@ const cs: Dictionary = {
   auth: {
     login: {
       title: "Přihlášení",
-      subtitle: "Vítej zpátky! Pokračuj tam, kde jsi skončil.",
+      subtitle: "Vítej zpátky! Tvůj postup na tebe čeká.",
       email: "Email",
       password: "Heslo",
       submit: "Přihlásit se",
@@ -285,7 +285,7 @@ const en: Dictionary = {
     titleLine1: "Get ready for",
     titleLine2: "primary school, high school, entrance exams and finals",
     subtitle:
-      "Earn points for finished lessons, track your progress, and learn in the language you need right now.",
+      "Practise everything from grade 1 to the school-leaving exam, earn points for every lesson and see how you improve.",
     browseCourses: "Browse courses",
     createAccount: "Create an account",
     pickSection: "Pick your section",
@@ -431,7 +431,7 @@ const de: Dictionary = {
     titleLine1: "Bereite dich vor auf",
     titleLine2: "Grundschule, Mittelschule, Aufnahmeprüfungen und Abitur",
     subtitle:
-      "Sammle Punkte für abgeschlossene Lektionen, verfolge deinen Fortschritt und lerne in der Sprache, die du gerade brauchst.",
+      "Übe den Stoff von der 1. Klasse bis zum Abitur, sammle Punkte für jede Lektion und sieh, wie du besser wirst.",
     browseCourses: "Kurse ansehen",
     createAccount: "Konto erstellen",
     pickSection: "Wähle deinen Bereich",
@@ -488,7 +488,7 @@ const de: Dictionary = {
   auth: {
     login: {
       title: "Anmelden",
-      subtitle: "Willkommen zurück! Mach dort weiter, wo du aufgehört hast.",
+      subtitle: "Willkommen zurück! Dein Fortschritt wartet auf dich.",
       email: "E-Mail",
       password: "Passwort",
       submit: "Anmelden",
@@ -577,7 +577,7 @@ const ru: Dictionary = {
     titleLine1: "Готовься к",
     titleLine2: "начальной, средней школе, вступительным экзаменам и выпускным",
     subtitle:
-      "Получай баллы за пройденные уроки, следи за прогрессом и учись на том языке, который нужен именно сейчас.",
+      "Занимайся от 1 класса до выпускных экзаменов, получай баллы за каждый урок и следи, как растут твои успехи.",
     browseCourses: "Посмотреть курсы",
     createAccount: "Создать аккаунт",
     pickSection: "Выбери свой раздел",
@@ -634,7 +634,7 @@ const ru: Dictionary = {
   auth: {
     login: {
       title: "Вход",
-      subtitle: "С возвращением! Продолжи с того места, где остановился.",
+      subtitle: "С возвращением! Твой прогресс ждёт тебя.",
       email: "Email",
       password: "Пароль",
       submit: "Войти",
@@ -718,7 +718,7 @@ const uk: Dictionary = {
     titleLine1: "Готуйся до",
     titleLine2: "початкової школи, середньої школи, вступних іспитів і випускних",
     subtitle:
-      "Отримуй бали за пройдені уроки, відстежуй прогрес і вчися мовою, яка потрібна саме зараз.",
+      "Тренуйся від 1 класу до випускних іспитів, отримуй бали за кожен урок і стеж, як покращуєшся.",
     browseCourses: "Переглянути курси",
     createAccount: "Створити обліковий запис",
     pickSection: "Обери розділ",
@@ -758,7 +758,7 @@ const uk: Dictionary = {
   auth: {
     login: {
       title: "Вхід",
-      subtitle: "З поверненням! Продовжуй з того місця, де зупинився.",
+      subtitle: "З поверненням! Твій прогрес чекає на тебе.",
       email: "Email",
       password: "Пароль",
       submit: "Увійти",
@@ -842,7 +842,7 @@ const ja: Dictionary = {
     titleLine1: "いまから準備しよう",
     titleLine2: "小学校〜卒業試験",
     subtitle:
-      "完了したレッスンでポイントがたまり、進み具合を確認しながら、今必要な言語を学べます。",
+      "小学1年生から高校卒業試験まで練習でき、レッスンごとにポイントがたまり、上達を確認できます。",
     browseCourses: "コースを見る",
     createAccount: "アカウントを作成",
     pickSection: "分野を選ぶ",
@@ -966,7 +966,7 @@ const es: Dictionary = {
     titleLine1: "Prepárate para",
     titleLine2: "primaria, secundaria, pruebas de acceso y exámenes finales",
     subtitle:
-      "Gana puntos por cada lección terminada, sigue tu progreso y aprende en el idioma que necesitas ahora mismo.",
+      "Practica desde 1.º de primaria hasta el examen final, gana puntos en cada lección y mira cómo mejoras.",
     browseCourses: "Ver cursos",
     createAccount: "Crear una cuenta",
     pickSection: "Elige tu sección",
@@ -1090,7 +1090,7 @@ const fr: Dictionary = {
     titleLine1: "Prépare-toi pour",
     titleLine2: "le primaire, le secondaire, les concours d'entrée et les examens finaux",
     subtitle:
-      "Gagne des points pour chaque leçon terminée, suis tes progrès et apprends dans la langue dont tu as besoin tout de suite.",
+      "Entraîne-toi du CP jusqu'au bac, gagne des points à chaque leçon et vois tes progrès.",
     browseCourses: "Voir les cours",
     createAccount: "Créer un compte",
     pickSection: "Choisis ta section",
@@ -1130,7 +1130,7 @@ const fr: Dictionary = {
   auth: {
     login: {
       title: "Connexion",
-      subtitle: "Content de te revoir ! Reprends là où tu t'étais arrêté.",
+      subtitle: "Content de te revoir ! Ta progression t'attend.",
       email: "E-mail",
       password: "Mot de passe",
       submit: "Se connecter",

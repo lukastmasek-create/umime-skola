@@ -47,7 +47,7 @@ const cs: HomeText = {
   languages: "Jazyky",
   index: "Sbírka karet",
   subjectsTitle: "Vyber si předmět",
-  subjectsHint: "Čtrnáct předmětů od 1. do 9. třídy, každý s kurzy od nejsnazších po nejtěžší.",
+  subjectsHint: "Všechny hlavní předměty od 1. třídy po maturitu, každý s kurzy od nejsnazších po nejtěžší.",
   allCourses: "Všechny kurzy",
   featuresTitle: "Co tu najdeš",
   features: [
@@ -71,9 +71,9 @@ const cs: HomeText = {
   openProfile: "Otevřít profil",
   about: {
     title: "O nás",
-    lead: "Učíme se hrou je vzdělávací web pro žáky 1. až 9. třídy. Věříme, že se člověk nejlépe učí tehdy, když ho to baví. Proto procvičování spojujeme s hrami, body a malými výzvami a ke každé odpovědi máš vysvětlení.",
+    lead: "Učíme se hrou je vzdělávací web pro žáky základních a středních škol: od 1. třídy přes přijímačky až po maturitu. Věříme, že se člověk nejlépe učí tehdy, když ho to baví. Proto procvičování spojujeme s hrami, body a malými výzvami a ke každé odpovědi máš vysvětlení.",
     points: [
-      { title: "Co děláme", text: "Připravujeme kurzy a testy ke čtrnácti předmětům od 1. do 9. třídy, každý s pěti úrovněmi obtížnosti." },
+      { title: "Co děláme", text: "Připravujeme kurzy a testy ke všem hlavním předmětům od 1. třídy po maturitu, každý s pěti úrovněmi obtížnosti." },
       { title: "Proč hrou", text: "Za správné odpovědi získáš body, odemkneš vylepšení a postoupíš o úroveň výš. Učení tak připomíná hru, ne úkol." },
       { title: "Pro koho", text: "Pro žáky, rodiče i učitele. Registrace je zdarma a body, úrovně i časy v únikovkách si uložíš na svůj účet." },
     ],
@@ -107,7 +107,7 @@ const en: HomeText = {
   languages: "Languages",
   index: "Card collection",
   subjectsTitle: "Pick a subject",
-  subjectsHint: "Fourteen subjects from grade 1 to 9, each with courses from the easiest to the hardest.",
+  subjectsHint: "All the main subjects from grade 1 to the school-leaving exam, each with courses from the easiest to the hardest.",
   allCourses: "All courses",
   featuresTitle: "What you'll find here",
   features: [
@@ -131,9 +131,9 @@ const en: HomeText = {
   openProfile: "Open profile",
   about: {
     title: "About us",
-    lead: "Učíme se hrou (Let's learn through play) is an educational website for pupils in grades 1 to 9. We believe people learn best when they enjoy it, so we combine practice with games, points and small challenges, and every answer comes with an explanation.",
+    lead: "Učíme se hrou (Let's learn through play) is an educational website for primary and secondary school pupils: from grade 1 through entrance exams to the school-leaving exam. We believe people learn best when they enjoy it, so we combine practice with games, points and small challenges, and every answer comes with an explanation.",
     points: [
-      { title: "What we do", text: "We create courses and tests for fourteen subjects from grade 1 to 9, each with five difficulty levels." },
+      { title: "What we do", text: "We create courses and tests for all the main subjects from grade 1 to the school-leaving exam, each with five difficulty levels." },
       { title: "Why through play", text: "Correct answers earn points, unlock upgrades and move you up a level. Learning feels like a game, not a chore." },
       { title: "Who it's for", text: "Pupils, parents and teachers. Registration is free, and your points, levels and escape room times are saved to your account." },
     ],
@@ -167,7 +167,7 @@ const de: HomeText = {
   languages: "Sprachen",
   index: "Kartensammlung",
   subjectsTitle: "Wähle ein Fach",
-  subjectsHint: "Vierzehn Fächer von der 1. bis zur 9. Klasse, jedes mit Kursen vom leichtesten bis zum schwersten.",
+  subjectsHint: "Alle Hauptfächer von der 1. Klasse bis zum Abitur, jedes mit Kursen vom leichtesten bis zum schwersten.",
   allCourses: "Alle Kurse",
   featuresTitle: "Das findest du hier",
   features: [
@@ -191,9 +191,9 @@ const de: HomeText = {
   openProfile: "Profil öffnen",
   about: {
     title: "Über uns",
-    lead: "Učíme se hrou (Lernen durch Spielen) ist eine Lernplattform für Schülerinnen und Schüler der 1. bis 9. Klasse. Wir glauben, dass man am besten lernt, wenn es Spaß macht. Deshalb verbinden wir Üben mit Spielen, Punkten und kleinen Herausforderungen, und zu jeder Antwort gibt es eine Erklärung.",
+    lead: "Učíme se hrou (Lernen durch Spielen) ist eine Lernplattform für Schülerinnen und Schüler von der 1. Klasse bis zum Abitur. Wir glauben, dass man am besten lernt, wenn es Spaß macht. Deshalb verbinden wir Üben mit Spielen, Punkten und kleinen Herausforderungen, und zu jeder Antwort gibt es eine Erklärung.",
     points: [
-      { title: "Was wir machen", text: "Wir erstellen Kurse und Tests zu vierzehn Fächern von der 1. bis zur 9. Klasse, jeweils mit fünf Schwierigkeitsstufen." },
+      { title: "Was wir machen", text: "Wir erstellen Kurse und Tests zu allen Hauptfächern von der 1. Klasse bis zum Abitur, jeweils mit fünf Schwierigkeitsstufen." },
       { title: "Warum spielerisch", text: "Richtige Antworten bringen Punkte, schalten Verbesserungen frei und lassen dich aufsteigen. Lernen fühlt sich wie ein Spiel an, nicht wie eine Pflicht." },
       { title: "Für wen", text: "Für Schülerinnen und Schüler, Eltern und Lehrkräfte. Die Registrierung ist kostenlos, und Punkte, Level und Zeiten aus den Escape Rooms werden in deinem Konto gespeichert." },
     ],
@@ -227,7 +227,7 @@ const ru: HomeText = {
   languages: "Языки",
   index: "Коллекция карточек",
   subjectsTitle: "Выбери предмет",
-  subjectsHint: "Четырнадцать предметов с 1 по 9 класс, в каждом курсы от самых лёгких до самых сложных.",
+  subjectsHint: "Все основные предметы от 1 класса до выпускных экзаменов, в каждом курсы от самых лёгких до самых сложных.",
   allCourses: "Все курсы",
   featuresTitle: "Что здесь есть",
   features: [
@@ -251,9 +251,9 @@ const ru: HomeText = {
   openProfile: "Открыть профиль",
   about: {
     title: "О нас",
-    lead: "Učíme se hrou («Учимся играя») — образовательный сайт для учеников с 1 по 9 класс. Мы считаем, что лучше всего учиться тогда, когда это интересно. Поэтому мы сочетаем тренировку с играми, баллами и небольшими заданиями, а к каждому ответу есть объяснение.",
+    lead: "Učíme se hrou («Учимся играя») — образовательный сайт для школьников от 1 класса до выпускных экзаменов. Мы считаем, что лучше всего учиться тогда, когда это интересно. Поэтому мы сочетаем тренировку с играми, баллами и небольшими заданиями, а к каждому ответу есть объяснение.",
     points: [
-      { title: "Что мы делаем", text: "Создаём курсы и тесты по четырнадцати предметам с 1 по 9 класс, в каждом пять уровней сложности." },
+      { title: "Что мы делаем", text: "Создаём курсы и тесты по всем основным предметам от 1 класса до выпускных экзаменов, в каждом пять уровней сложности." },
       { title: "Почему через игру", text: "Верные ответы приносят баллы, открывают улучшения и помогают подниматься на уровень выше. Учёба становится похожа на игру, а не на обязанность." },
       { title: "Для кого", text: "Для учеников, родителей и учителей. Регистрация бесплатна, а баллы, уровни и время в квестах сохраняются в твоём аккаунте." },
     ],

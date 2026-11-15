@@ -43,7 +43,9 @@ const SHOW_HOW_IT_WORKS = false;
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
-  return pageMetadata(locale, "", SITE_NAME, getDictionary(locale).home.subtitle, { absoluteTitle: true });
+  const home = getDictionary(locale).home;
+  // Titulek říká, co web je, ne jen jeho název.
+  return pageMetadata(locale, "", `${SITE_NAME} · ${home.titleLine1} ${home.titleLine2}`, home.subtitle, { absoluteTitle: true });
 }
 
 export default async function Home({

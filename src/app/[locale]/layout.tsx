@@ -24,6 +24,9 @@ import { getContactText } from "@/i18n/contact";
 import { getHomeText } from "@/i18n/home";
 import { CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL, getFooterLinks } from "@/i18n/legal";
 import { SITE_URL } from "@/lib/seo";
+import { tr8 } from "@/i18n/config";
+
+const SKIP_LINK = tr8("Přeskočit na obsah", "Skip to content", "Zum Inhalt springen", "Перейти к содержимому", "Перейти до вмісту", "本文へスキップ", "Saltar al contenido", "Aller au contenu");
 
 const heading = Unbounded({
   subsets: ["latin", "latin-ext", "cyrillic"],
@@ -87,6 +90,9 @@ export default async function LocaleLayout({
         className="min-h-full flex flex-col text-[var(--foreground)]"
         style={{ fontFamily: "var(--font-body), var(--font-sans)" }}
       >
+        <a href="#obsah" className="skip-link">
+          {SKIP_LINK[locale as Locale]}
+        </a>
         <header className="site-header sticky top-0 z-40 bg-[var(--surface)]">
           <HeaderScroll />
           <SketchEdge position="bottom" />
@@ -114,7 +120,7 @@ export default async function LocaleLayout({
         <OffscreenPause />
         <ScrollFade />
         <GlobalShortcuts locale={locale as Locale} dict={dict} />
-        <main className="world flex-1">{children}</main>
+        <main id="obsah" tabIndex={-1} className="world flex-1 outline-none">{children}</main>
         <footer className="relative bg-[var(--surface)] px-4 py-6 text-center text-sm text-[var(--muted)]">
           <SketchEdge position="top" />
           <span className="sketch-doodles" aria-hidden>

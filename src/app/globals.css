@@ -126,11 +126,32 @@ p {
   text-wrap: pretty;
 }
 
-/* Viditelný fokus pro ovládání klávesnicí */
+/* Viditelný fokus pro ovládání klávesnicí. Světlejší modrá má kontrast přes 3:1 i na tmavém pozadí. */
 :focus-visible {
-  outline: 3px solid var(--brand-500);
+  outline: 3px solid var(--focus-ring, var(--brand-500));
   outline-offset: 2px;
   border-radius: 6px;
+}
+:root:not([data-theme="light"]) {
+  --focus-ring: #8ea2ff;
+}
+
+/* Odkaz „Přeskočit na obsah“: skrytý, dokud na něj nepřejde klávesnice. */
+.skip-link {
+  position: absolute;
+  left: 0.75rem;
+  top: -4rem;
+  z-index: 100;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  border: 2px solid var(--edge);
+  background: var(--surface);
+  color: var(--foreground);
+  font-weight: 700;
+  transition: top 0.15s;
+}
+.skip-link:focus {
+  top: 0.75rem;
 }
 
 input,

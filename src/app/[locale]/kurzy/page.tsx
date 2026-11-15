@@ -3,6 +3,15 @@ import { notFound } from "next/navigation";
 import { CATEGORIES } from "@/lib/taxonomy";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, type Locale } from "@/i18n/config";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  if (!isLocale(locale)) return {};
+  const t = getDictionary(locale).kurzyPage;
+  return pageMetadata(locale, "/kurzy", t.title, t.subtitle);
+}
 
 export default async function KurzyPage({
   params,

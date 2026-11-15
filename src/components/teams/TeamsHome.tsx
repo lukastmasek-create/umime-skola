@@ -23,6 +23,8 @@ import { TeacherOverview } from "./TeacherOverview";
 const PROGRESS_GRADIENT = "linear-gradient(90deg, var(--brand-500), var(--accent-green))";
 
 
+import { useAccount } from "@/lib/use-account";
+
 export function TeamsHome({ locale }: { locale: Locale }) {
   const t = getTeamsAll(locale);
   const router = useRouter();
@@ -52,10 +54,19 @@ export function TeamsHome({ locale }: { locale: Locale }) {
       setTeams([]);
     }
   }, [t]);
+  // Nepřihlášenému se týmy nenačítají (API by vrátilo 401 a chybu v konzoli).
+  const [account] = useAccount();
+  const loggedIn = account ? account.loggedIn : undefined;
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (loggedIn === undefined) return;
+    if (!loggedIn) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAuth(false);
+      setTeams([]);
+      return;
+    }
     void load();
-  }, [load]);
+  }, [loggedIn, load]);
   // Odkaz pozvánky (?kod=ABC123) předvyplní kód pro připojení.
   useEffect(() => {
     const k = new URLSearchParams(window.location.search).get("kod");

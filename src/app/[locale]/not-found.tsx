@@ -66,6 +66,8 @@ export default function NotFound() {
 
   return (
     <div className="mx-auto flex max-w-xl flex-col items-center px-4 py-20 text-center sm:py-28">
+      {/* React 19 přesune <title> do <head>; 404 tak má vlastní titulek. */}
+      <title>{`404 · ${t.title} · Učíme se hrou`}</title>
       <p
         className="text-7xl font-extrabold text-[var(--brand-500)] sm:text-8xl"
         style={{ fontFamily: "var(--font-heading)" }}

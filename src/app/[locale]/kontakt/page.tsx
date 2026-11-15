@@ -5,12 +5,13 @@ import { getContactText } from "@/i18n/contact";
 import { isLocale, type Locale } from "@/i18n/config";
 import { auth } from "@/lib/auth";
 import { topicFromQuery } from "@/lib/contact";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const t = getContactText(locale);
-  return { title: t.title, description: t.subtitle };
+  return pageMetadata(locale, "/kontakt", t.title, t.subtitle);
 }
 
 export default async function ContactPage({
