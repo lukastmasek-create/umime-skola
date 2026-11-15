@@ -4,7 +4,7 @@ Každá postava je malá hračková kostra z pivotů (kyčel–koleno, rameno–
 z fáze t (0..1) sinusy s celým počtem period, takže smyčka je plynulá. Postavy hledí doprava (+x), kamera
 je ortografická z boku s malým náklonem; web je případně zrcadlí.
 
-Spuštění: python mesto_figury.py -- <práce> [--preview]   (každá práce ve vlastním procesu, viz BLENDER_ANIM.md)
+Spuštění: python mesto_figury.py -- <práce> [--preview]   (každá práce ve vlastním procesu, viz docs/BLENDER_ANIM.md)
 Práce: hrdina_chuze hrdina_stoji hrdina_radost knihovnice pekar farmar babicka kluk
        pes_bezi pes_sedi kocka ovce slepice kralik ptak ryba mlyn
 Výstup: out/mf_<práce>/f_0001.png …

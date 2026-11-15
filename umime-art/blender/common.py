@@ -1,6 +1,6 @@
 """Společné pomůcky pro render animací úvodní stránky (Blender jako modul bpy).
 
-Spuštění: python umime-art/blender/<skript>.py  (potřebuje balíček bpy, viz BLENDER_ANIM.md)
+Spuštění: python umime-art/blender/<skript>.py  (potřebuje balíček bpy, viz docs/BLENDER_ANIM.md)
 Snímky se renderují do umime-art/out/<nazev>/ jako PNG s průhledností.
 """
 import math

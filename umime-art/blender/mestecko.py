@@ -3,7 +3,7 @@
 náměstí s fontánou, mlýn, trh, říčka s mostem, ohrady a stromy. Pohoří a sopku skládá web
 z vlastních vrstev, městečko je jeden průhledný obrázek s kopcovitým zadním okrajem.
 
-Spuštění: python mestecko.py [-- scena] [--preview]   (potřebuje bpy, viz BLENDER_ANIM.md)
+Spuštění: python mestecko.py [-- scena] [--preview]   (potřebuje bpy, viz docs/BLENDER_ANIM.md)
 Výstup: out/mesto_scena/f_0001.png a out/mesto_scena/paths.json (polohy pro web, normalizované)
 """
 import json

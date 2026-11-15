@@ -10,7 +10,7 @@ import { tr8 } from "@/i18n/config";
 //   - zušlechtěním: 3 kusy jedné vzácnosti = 1 kus další vzácnosti stejného světa.
 // Světové materiály z učení padají do světa, který si hráč zvolí („sbírám pro svět…“).
 //
-// 3D modely doplňků (na avatara, pro mazlíčky, do pokoje) zatím nejsou, jen mají jména (CRAFT_ASSETS.md);
+// 3D modely doplňků (na avatara, pro mazlíčky, do pokoje) zatím nejsou, jen mají jména (docs/CRAFT_ASSETS.md);
 // takové recepty jsou vidět, ale vyrobit půjdou, až bude model (ready: true).
 
 import type { Locale } from "@/i18n/config";
@@ -100,7 +100,7 @@ export type Recipe = {
   icon: string;
   names: Names;
   effect?: BonusEffect;
-  /** Název 3D modelu pro Blender tým (CRAFT_ASSETS.md). */
+  /** Název 3D modelu pro Blender tým (docs/CRAFT_ASSETS.md). */
   asset3d?: string;
   /** false = model ještě není, recept se ukáže, ale nejde vyrobit. */
   ready: boolean;

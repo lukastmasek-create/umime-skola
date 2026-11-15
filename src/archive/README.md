@@ -5,4 +5,4 @@ Obnovení: přesuň složku zpět do `src/app/[locale]/` a vrať odkazy.
 
 - `app/mestecko/` — 3D městečko (`/mestecko`), přesměrování `/mestecko/nove` a původní městečko `/mestecko/puvodni`.
   Komponenty (`components/town3d`, `TownHub`, …), `lib/town*` a API `/api/mestecko/*` zůstaly na místě.
-- Sekce „Co tu najdeš“ na homepage (`IslandHub`, `TechBoard`, `TechScenes`) — odebrána z `src/app/[locale]/page.tsx`, komponenty zůstaly.
+- Sekce „Co tu najdeš“ na homepage (`IslandHub`, `TechBoard`) — komponenty smazány, jsou v historii gitu (před commitem s auditem webu, listopad 2026).

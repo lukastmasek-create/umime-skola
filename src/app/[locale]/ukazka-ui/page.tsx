@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 
 export default async function UiDemoPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
-  if (!isLocale(locale)) notFound();
+  // Jen pro vývoj: v produkci stránka neexistuje (demo táhne velké knihovny, např. recharts).
+  if (!isLocale(locale) || process.env.NODE_ENV === "production") notFound();
   return <UiDemo />;
 }

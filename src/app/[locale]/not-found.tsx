@@ -1,92 +1,9 @@
-"use client";
-import { withFallbacks } from "@/i18n/config";
+import type { Metadata } from "next";
+import { NotFoundView } from "@/components/NotFoundView";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { defaultLocale, isLocale, type Locale } from "@/i18n/config";
-
-const TEXT: Record<Locale, { title: string; body: string; home: string; courses: string }> = {
-  ...withFallbacks({
-  cs: {
-    title: "Tahle stránka se ztratila",
-    body: "Odkaz je starý, nebo stránka neexistuje. Zkus to od začátku.",
-    home: "Na úvodní stránku",
-    courses: "Procházet kurzy",
-  },
-  en: {
-    title: "This page got lost in space",
-    body: "The link is old or the page doesn't exist. Start again from the beginning.",
-    home: "Back to the homepage",
-    courses: "Browse courses",
-  },
-  de: {
-    title: "Diese Seite hat sich verirrt",
-    body: "Der Link ist alt oder die Seite existiert nicht. Fang am besten von vorn an.",
-    home: "Zur Startseite",
-    courses: "Kurse ansehen",
-  },
-  ru: {
-    title: "Эта страница потерялась",
-    body: "Ссылка устарела или страницы не существует. Начни сначала.",
-    home: "На главную",
-    courses: "Смотреть курсы",
-  },
-  }),
-  uk: {
-    title: "Ця сторінка загубилася в космосі",
-    body: "Посилання застаріле або сторінки не існує. Почни спочатку.",
-    home: "На головну сторінку",
-    courses: "Переглянути курси",
-  },
-  ja: {
-    title: "このページは宇宙で迷子になりました",
-    body: "リンクが古いか、ページが存在しません。最初からやり直してください。",
-    home: "トップページへ",
-    courses: "コースを見る",
-  },
-  es: {
-    title: "Esta página se perdió en el espacio",
-    body: "El enlace es antiguo o la página no existe. Empieza de nuevo desde el principio.",
-    home: "Ir a la página principal",
-    courses: "Ver cursos",
-  },
-  fr: {
-    title: "Cette page s'est perdue dans l'espace",
-    body: "Le lien est ancien ou la page n'existe pas. Recommence depuis le début.",
-    home: "Retour à l'accueil",
-    courses: "Parcourir les cours",
-  },
-};
+// Vlastní titulek 404 (šablona v layoutu doplní „· Učíme se hrou“). Obsah v jazyce adresy řeší klientská komponenta.
+export const metadata: Metadata = { title: "404" };
 
 export default function NotFound() {
-  // not-found nedostává params, jazyk proto vezmeme z první části adresy.
-  const first = usePathname().split("/")[1] ?? "";
-  const locale: Locale = isLocale(first) ? first : defaultLocale;
-  const t = TEXT[locale];
-
-  return (
-    <div className="mx-auto flex max-w-xl flex-col items-center px-4 py-20 text-center sm:py-28">
-      {/* React 19 přesune <title> do <head>; 404 tak má vlastní titulek. */}
-      <title>{`404 · ${t.title} · Učíme se hrou`}</title>
-      <p
-        className="text-7xl font-extrabold text-[var(--brand-500)] sm:text-8xl"
-        style={{ fontFamily: "var(--font-heading)" }}
-        aria-hidden
-      >
-        404
-      </p>
-      <h1 className="mt-4 text-2xl font-bold sm:text-3xl" style={{ fontFamily: "var(--font-heading)" }}>
-        {t.title}
-      </h1>
-      <p className="mt-3 text-[var(--muted)]">{t.body}</p>
-      <div className="mt-8 flex flex-wrap justify-center gap-3">
-        <Link href={`/${locale}`} className="btn-bouncy bg-[var(--brand-500)] px-5 py-2.5 font-bold text-white">
-          {t.home}
-        </Link>
-        <Link href={`/${locale}/kurzy`} className="btn-bouncy bg-[var(--surface)] px-5 py-2.5 font-bold">
-          {t.courses}
-        </Link>
-      </div>
-    </div>
-  );
+  return <NotFoundView />;
 }

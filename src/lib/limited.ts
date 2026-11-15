@@ -1,6 +1,6 @@
 // Katalog limitovaných edic. Každý kus má sériové číslo (1 = první koupený) a po vyprodání už nepřibude.
 // Koupená věc se uloží jako odemčení "<druh>:<ref>" stejně jako zboží z běžného katalogu,
-// takže ji profil, rámečky i bannery rozpoznají. Vlastní grafika limitek se dodá později (SHOP_ASSETS.md);
+// takže ji profil, rámečky i bannery rozpoznají. Vlastní grafika limitek se dodá později (docs/SHOP_ASSETS.md);
 // zatím používají vzhled odpovídající věci z katalogu.
 
 export type LimitedKind = "avatar" | "frame" | "banner" | "title";

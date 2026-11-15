@@ -691,7 +691,7 @@ export const portfolioValue = (state: Pick<EconomyState, "holdings" | "startedAt
   ASSETS.reduce((sum, a) => sum + (state.holdings[a.id] ?? 0) * assetPrice(a.id, now, state.startedAt), 0);
 
 // --- Hustle ---
-// Hustl je projekt ve třech fázích: nákup, provoz, prodej. Čísla a popisy jsou v NAVRH_EKONOMIKA_HUSTLE.md.
+// Hustl je projekt ve třech fázích: nákup, provoz, prodej. Čísla a popisy jsou v docs/NAVRH_EKONOMIKA_HUSTLE.md.
 export type HustleId = "lemonade" | "reselling" | "carflip" | "houseflip" | "startup" | "freelance";
 export const HUSTLE_PHASES = 3;
 export const HUSTLE_MAX_EXPERIENCE = 5;

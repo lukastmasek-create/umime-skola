@@ -1,6 +1,4 @@
-@import "@savvycal/calendar/preset.css";
 @import "tailwindcss";
-@import "@savvycal/calendar/components.css";
 
 :root {
   color-scheme: light;

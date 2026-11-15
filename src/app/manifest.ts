@@ -13,8 +13,8 @@ export default function manifest(): MetadataRoute.Manifest {
     icons: [
       { src: "/brand/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
       { src: "/brand/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
-      // Ikona má kolem sebe dost místa, aby ji Android mohl oříznout do kruhu.
-      { src: "/brand/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      // Zmenšená ikona s okrajem: celý obsah je v bezpečné zóně, Android ji může oříznout do kruhu.
+      { src: "/brand/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
 }

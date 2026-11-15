@@ -272,7 +272,7 @@ export function NatureDecor() {
   );
 }
 
-// Obrázek z public/home (3D rendery z Blenderu, viz BLENDER_DODANO.md), čistě ozdobný.
+// Obrázek z public/home (3D rendery z Blenderu, viz docs/BLENDER_DODANO.md), čistě ozdobný.
 export function HomeArt({
   name,
   size,

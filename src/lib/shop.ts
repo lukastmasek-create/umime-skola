@@ -3,7 +3,7 @@ import { tr8 } from "@/i18n/config";
 // dopsat sem. Kupuje se za body z učení a koupená věc se uloží jako odemčení
 // (tabulka Unlock) s klíčem "<druh>:<ref>", stejně jako avatary a tituly z úspěchů.
 //
-// `asset3d` je název modelu, který má dodat 3D tým (viz SHOP_ASSETS.md). Dokud model
+// `asset3d` je název modelu, který má dodat 3D tým (viz docs/SHOP_ASSETS.md). Dokud model
 // není, hra kreslí náhradní vzhled kódem.
 
 import type { Locale } from "@/i18n/config";

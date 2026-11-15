@@ -3,7 +3,7 @@
 Model: šestihranné tělo ve žluté, dřevěný hrot s grafitem, kovová objímka a růžová guma.
 Tužka stojí svisle, hrot dolů. Web ji zmenší na ~12×72 px a posouvá podle polohy stránky.
 
-Spuštění: python umime-art/blender/tuzka_posuvnik.py  (potřebuje bpy, viz BLENDER_ANIM.md)
+Spuštění: python umime-art/blender/tuzka_posuvnik.py  (potřebuje bpy, viz docs/BLENDER_ANIM.md)
 Výstup: umime-art/out/tuzka/f_0001.png (složí se do public/scroll/tuzka.webp přes encode.py)
 """
 import os

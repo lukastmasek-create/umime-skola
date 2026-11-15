@@ -2,7 +2,7 @@
 exploze s rázovou vlnou, létající lávové pumy, žhavé jiskry a stoupající oblak popela.
 
 Smyčka je plynulá: všechno se počítá z fáze t (0..1) periodickými funkcemi, žádná simulace.
-Spuštění: python umime-art/blender/sopka.py [--preview]   (potřebuje bpy, viz BLENDER_ANIM.md)
+Spuštění: python umime-art/blender/sopka.py [--preview]   (potřebuje bpy, viz docs/BLENDER_ANIM.md)
 """
 import math
 import random
