@@ -1,4 +1,4 @@
-import { grantFullAccessOnce, hasFullAccessEmail } from "@/lib/full-access";
+import { grantFullAccessOnce, hasFullAccessRole } from "@/lib/full-access";
 import NextAuth, { type NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { prisma } from "@/lib/prisma";
-import { withinRateLimit } from "@/lib/rate-limit";
+import { clientIp, withinRateLimit } from "@/lib/rate-limit";
 import { defaultLocale } from "@/i18n/config";
 
 // Na Workers nemusí být secrety z dashboardu v process.env, proto se čtou z bindingů.
@@ -21,6 +21,9 @@ function authSecret(): string | undefined {
   return process.env.AUTH_SECRET;
 }
 
+// Jak často se role v přihlašovacím tokenu ověřuje proti databázi.
+const ROLE_REFRESH_MS = 10 * 60 * 1000;
+
 const authConfig: NextAuthConfig = {
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
@@ -34,13 +37,16 @@ const authConfig: NextAuthConfig = {
         email: { label: "Email", type: "email" },
         password: { label: "Heslo", type: "password" },
       },
-      authorize: async (credentials) => {
+      authorize: async (credentials, request) => {
         const email = credentials?.email as string | undefined;
         const password = credentials?.password as string | undefined;
 
         if (!email || !password) return null;
         // 10 pokusů za 15 minut na jeden účet (proti hádání hesla).
         if (!(await withinRateLimit(`login:${email.trim().toLowerCase()}`, 10, 900))) return null;
+        // A 30 pokusů za 15 minut z jedné IP adresy (proti zkoušení hesel napříč účty).
+        const ip = request ? clientIp(request) : "unknown";
+        if (ip !== "unknown" && !(await withinRateLimit(`login-ip:${ip}`, 30, 900))) return null;
 
         // E-mail se hledá bez ohledu na velikost písmen, stejně jako kontrola při registraci.
         const user = await prisma.user.findFirst({
@@ -64,6 +70,13 @@ const authConfig: NextAuthConfig = {
     async jwt({ token, user }) {
       if (user) {
         token.role = (user as { role?: string }).role;
+        token.roleCheckedAt = Date.now();
+      } else if (token.sub && Date.now() - ((token.roleCheckedAt as number | undefined) ?? 0) > ROLE_REFRESH_MS) {
+        // Role se v tokenu obnovuje z databáze, aby se změna (nebo odebrání) role projevila bez odhlášení.
+        const fresh = await prisma.user.findUnique({ where: { id: token.sub }, select: { role: true } }).catch(() => undefined);
+        if (fresh === null) return null;
+        if (fresh) token.role = fresh.role;
+        token.roleCheckedAt = Date.now();
       }
       return token;
     },
@@ -71,7 +84,7 @@ const authConfig: NextAuthConfig = {
       if (session.user) {
         session.user.id = token.sub as string;
         // Účty s plným přístupem dostanou všechna odemčení (jednou za běh serveru).
-        if (token.sub && hasFullAccessEmail(token.email)) await grantFullAccessOnce(token.sub);
+        if (token.sub && hasFullAccessRole(token.role as string | undefined)) await grantFullAccessOnce(token.sub);
         (session.user as { role?: string }).role = token.role as string | undefined;
       }
       return session;

@@ -42,6 +42,8 @@
   ],
   // Vlastní doména ucimesehrou.org (zóna musí být v účtu Cloudflare).
   "routes": [
-    { "pattern": "ucimesehrou.org", "custom_domain": true }
+    { "pattern": "ucimesehrou.org", "custom_domain": true },
+    // www: Cloudflare při nasazení vytvoří DNS záznam, worker.ts přesměruje 301 na ucimesehrou.org.
+    { "pattern": "www.ucimesehrou.org", "custom_domain": true }
   ]
 }

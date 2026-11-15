@@ -33,17 +33,16 @@ const tpl = (s: string, n: number) => s.replace("{n}", String(n));
 export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subject[] }) {
   const [account] = useAccount();
   const loggedIn = !!account && account.loggedIn;
-  const [streak, setStreak] = useState<number | null>(null);
-  const [team, setTeam] = useState<LiveTeam | null>(null);
-  const [students, setStudents] = useState<{ name: string; points: number }[]>([]);
+  const [rawStreak, setStreak] = useState<number | null>(null);
+  const [rawTeam, setTeam] = useState<LiveTeam | null>(null);
+  const [rawStudents, setStudents] = useState<{ name: string; points: number }[]>([]);
+  // Po odhlášení se data účtu nezobrazují (bez mazání stavu v efektu).
+  const streak = loggedIn ? rawStreak : null;
+  const team = loggedIn ? rawTeam : null;
+  const students = loggedIn ? rawStudents : [];
 
   useEffect(() => {
-    if (!loggedIn) {
-      setStreak(null);
-      setTeam(null);
-      setStudents([]);
-      return;
-    }
+    if (!loggedIn) return;
     let cancelled = false;
     fetch("/api/denni-vyzvy")
       .then((r) => r.json())

@@ -65,8 +65,9 @@ function callPath(path: PropertyKey[]): unknown {
     },
     apply(_target, _this, args) {
       const client = getClient();
-      const owner = path.slice(0, -1).reduce<any>((obj, key) => obj[key], client);
-      const fn = owner[path[path.length - 1]];
+      type Node = Record<PropertyKey, unknown>;
+      const owner = path.slice(0, -1).reduce<Node>((obj, key) => obj[key] as Node, client as unknown as Node);
+      const fn = owner[path[path.length - 1]] as (...a: unknown[]) => unknown;
       return fn.apply(owner, args);
     },
   });

@@ -10,24 +10,20 @@ import { CITY_ITEMS } from "@/lib/idle/city";
 import { xpForLevel } from "@/lib/progression";
 
 // Účty s plným přístupem: mají odemčené úplně všechno a nejvyšší úroveň.
+// Plný přístup má jen účet s rolí ADMIN v databázi (nastavuje se ručně SQL,
+// viz prisma/sql/full-access-admins.sql). Nikdy se neodvozuje z e-mailu: ten si
+// uživatel volí sám a jeho vlastnictví se neověřuje.
 // Všechny klíče se skládají z katalogů v kódu, takže se nové věci, které
 // přidáme do avatarů, titulů, obchodu, craftování, světů, mazlíčků nebo města,
 // odemknou samy – není potřeba nic dopisovat sem.
-export const FULL_ACCESS_EMAILS: ReadonlySet<string> = new Set([
-  "lukaszahorda1011@gmail.com",
-  "tuzitv@seznam.cz",
-  "ondrej.vrba@infis.cz",
-  "natalie.majerovainf@seznam.cz",
-  "lukas.zahor@infis.cz",
-  "lukas.zahorsky@infis.cz",
-]);
+export const FULL_ACCESS_ROLE = "ADMIN";
 
 // Úroveň, kterou plný přístup dosazuje (XP se jen dopočítá, do databáze se nezapisuje).
 export const FULL_ACCESS_LEVEL = 100;
 export const FULL_ACCESS_XP = xpForLevel(FULL_ACCESS_LEVEL);
 
-export function hasFullAccessEmail(email: string | null | undefined): boolean {
-  return !!email && FULL_ACCESS_EMAILS.has(email.trim().toLowerCase());
+export function hasFullAccessRole(role: string | null | undefined): boolean {
+  return role === FULL_ACCESS_ROLE;
 }
 
 export function allUnlockKeys(): string[] {
@@ -48,8 +44,8 @@ export function allUnlockKeys(): string[] {
 }
 
 export async function isFullAccessUser(userId: string): Promise<boolean> {
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
-  return hasFullAccessEmail(user?.email);
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+  return hasFullAccessRole(user?.role);
 }
 
 // Doplní chybějící odemčení. Volá se při každém načtení profilu a obchodu,

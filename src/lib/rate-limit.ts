@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 
 // Společný limit počtu požadavků v databázi (funguje napříč Workers instancemi).
-// Vrací true, pokud je požadavek v limitu. Při chybě (např. tabulka ještě není vytvořená) vrací true,
-// aby se web nerozbil; chybu zaloguje.
+// Vrací true, pokud je požadavek v limitu. Při chybě databáze v produkci vrací false (raději odmítnout,
+// než pustit neomezené pokusy), při vývoji true, aby lokální web bez tabulky fungoval; chybu zaloguje.
 export async function withinRateLimit(key: string, limit: number, windowSec: number): Promise<boolean> {
   try {
     const rows = await prisma.$queryRaw<{ count: number }[]>`
@@ -16,7 +16,7 @@ export async function withinRateLimit(key: string, limit: number, windowSec: num
     return Number(rows[0]?.count ?? 0) <= limit;
   } catch (error) {
     console.error("Limit požadavků selhal:", error);
-    return true;
+    return process.env.NODE_ENV !== "production";
   }
 }
 

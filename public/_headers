@@ -1,0 +1,55 @@
+# Hlavičky pro statické soubory, které Workers Static Assets servíruje bez workeru
+# (Next config headers() se na ně nevztahuje). Formát: https://developers.cloudflare.com/workers/static-assets/headers/
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=63072000; includeSubDomains
+
+# Soubory s hashem v názvu se nikdy nemění.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Obrázky, modely a další soubory z public/ bez hashe: den v prohlížeči, týden na CDN.
+/home/*
+  Cache-Control: public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400
+/ikony/*
+  Cache-Control: public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400
+/brand/*
+  Cache-Control: public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400
+/avatars-3d/*
+  Cache-Control: public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400
+/dolls/*
+  Cache-Control: public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400
+/draco/*
+  Cache-Control: public, max-age=604800, immutable
+/game-models/*
+  Cache-Control: public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400
+/game-sprites/*
+  Cache-Control: public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400
+/shop-models/*
+  Cache-Control: public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400
+/rewards/*
+  Cache-Control: public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400
+/cosmetics/*
+  Cache-Control: public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400
+/pets/*
+  Cache-Control: public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400
+/city/*
+  Cache-Control: public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400
+/escape/*
+  Cache-Control: public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400
+/base/*
+  Cache-Control: public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400
+/farm/*
+  Cache-Control: public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400
+/room/*
+  Cache-Control: public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400
+/scroll/*
+  Cache-Control: public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400
+/mestecko3d/*
+  Cache-Control: public, max-age=86400, s-maxage=604800, stale-while-revalidate=86400
+
+# Service worker se musí vždy ověřit.
+/sw.js
+  Cache-Control: no-cache

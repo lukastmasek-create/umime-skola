@@ -1,0 +1,33 @@
+# Kontrola kódu: lint, typy a testy. Běží na každý pull request a push.
+# Nasazení (deploy.yml) tuto kontrolu volá a bez ní se nespustí.
+name: Kontrola
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]
+  workflow_call:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instalace závislostí
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typy
+        run: npm run typecheck
+
+      - name: Testy
+        run: npm test

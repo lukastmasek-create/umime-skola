@@ -453,6 +453,7 @@ export function EconomyGame({ locale }: { locale: Locale }) {
         ? fill(w.crisis, { t: formatLeft(state.crisis.startAt - clock, t) })
         : null
       : null;
+  const chooseShift = (index: number) => void act({ action: "chooseShift", index }, eventText);
   const eventText = (p: Payload) => (p.event ? fill(w.events[p.event], { n: m(p.gained?.cash ?? 0) }) : t.toast.bought);
 
   // Banka: skutečné údaje z hry ve stejném vzhledu jako ukázka.
@@ -1079,7 +1080,9 @@ export function EconomyGame({ locale }: { locale: Locale }) {
                           key={label}
                           type="button"
                           disabled={busy}
-                          onClick={() => void act({ action: "chooseShift", index: i }, eventText)}
+                          // Volá se až po kliknutí; lint tu kvůli IIFE v JSX chybně hlásí přístup k ref při renderu.
+                          // eslint-disable-next-line react-hooks/refs
+                          onClick={() => chooseShift(i)}
                           className="btn-bouncy rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-left text-sm font-bold disabled:opacity-45"
                         >
                           {label}

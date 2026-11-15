@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { isSubscriptionActive, subscriptionCoversUser, type SubscriptionRecord, type SubscriptionTier } from "@/lib/pro";
-import { hasFullAccessEmail } from "@/lib/full-access";
+import { hasFullAccessRole } from "@/lib/full-access";
 import { LiveError } from "@/lib/live/service";
 import { requireUserId } from "@/lib/teams/server";
 
@@ -11,10 +11,10 @@ const ALL_TIERS: SubscriptionTier[] = ["INDIVIDUAL", "FAMILY", "SCHOOL"];
 export async function proTiers(userId: string, now: Date = new Date()): Promise<Set<SubscriptionTier>> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, subscriptionId: true, schoolId: true, email: true },
+    select: { id: true, subscriptionId: true, schoolId: true, role: true },
   });
   if (!user) return new Set();
-  if (hasFullAccessEmail(user.email)) return new Set(ALL_TIERS);
+  if (hasFullAccessRole(user.role)) return new Set(ALL_TIERS);
 
   const candidates: SubscriptionRecord[] = await prisma.subscription.findMany({
     where: {

@@ -4,7 +4,7 @@ import { LiveError } from "@/lib/live/service";
 import { requireTierUserId } from "@/lib/pro-server";
 import { requireUserId } from "@/lib/teams/server";
 import { FAMILY_GAME, weeklyReport } from "@/lib/parental";
-import { hasFullAccessEmail } from "@/lib/full-access";
+import { hasFullAccessRole } from "@/lib/full-access";
 import { INVITE_TTL_MS, makeInviteCode, parseInviteCode, pruneInvites, seatsLeft, type Invite } from "@/lib/pro-tools/family";
 import { loadGameState, loadPlanInputs, saveGameState } from "@/lib/pro-tools/server";
 import { generateText } from "@/lib/ai";
@@ -39,8 +39,8 @@ export async function GET() {
     const now = Date.now();
     const sub = await ownedFamily(userId);
     if (!sub) {
-      const me = await prisma.user.findUnique({ where: { id: userId }, select: { email: true, subscriptionId: true } });
-      return { role: me?.subscriptionId ? "member" : "none", canStart: hasFullAccessEmail(me?.email) };
+      const me = await prisma.user.findUnique({ where: { id: userId }, select: { role: true, subscriptionId: true } });
+      return { role: me?.subscriptionId ? "member" : "none", canStart: hasFullAccessRole(me?.role) };
     }
     const state = normalize(await loadGameState(userId, FAMILY_GAME), now);
     const members = await Promise.all(
@@ -89,8 +89,8 @@ export async function POST(request: Request) {
 
     if (action === "start") {
       // Jen pro účty s plným přístupem (testování): založí rodinné předplatné bez platby.
-      const me = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
-      if (!hasFullAccessEmail(me?.email)) throw new LiveError("forbidden", 403);
+      const me = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+      if (!hasFullAccessRole(me?.role)) throw new LiveError("forbidden", 403);
       if (!(await ownedFamily(userId))) await prisma.subscription.create({ data: { tier: "FAMILY", ownerId: userId } });
       return { ok: true };
     }

@@ -5,6 +5,11 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  // Skripty v CommonJS (prisma/*.cjs) používají require() záměrně.
+  {
+    files: ["**/*.cjs"],
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
@@ -15,6 +20,11 @@ const eslintConfig = defineConfig([
     // Testovací nástroje her (boti a harness) nejsou součástí aplikace.
     "tests/games/**",
     "umime-art/**",
+    // Převzatý dekodér Draco (minifikovaný kód třetí strany).
+    "public/draco/**",
+    // Výstup buildů OpenNext / Wrangler.
+    ".open-next/**",
+    ".wrangler/**",
   ]),
 ]);
 

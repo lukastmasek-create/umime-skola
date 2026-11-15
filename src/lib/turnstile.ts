@@ -2,7 +2,8 @@ import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { clientIp } from "@/lib/rate-limit";
 
 // Ověření Cloudflare Turnstile na serveru. Secret se čte z Workers bindingů, jinak z process.env.
-// Pokud secret není nastavený (lokální vývoj), ověření se přeskočí a zaloguje se varování.
+// Pokud secret není nastavený: při vývoji se ověření přeskočí, v produkci se požadavek odmítne
+// (chybějící secret je chyba nasazení a bez něj by registrace a kontakt byly bez ochrany).
 function turnstileSecret(): string | undefined {
   try {
     // Na Workers nemusí být secrety z dashboardu v process.env, proto se čtou z bindingů.
@@ -18,7 +19,11 @@ function turnstileSecret(): string | undefined {
 export async function verifyTurnstile(request: Request, token: unknown): Promise<boolean> {
   const secret = turnstileSecret();
   if (!secret) {
-    console.warn("TURNSTILE_SECRET_KEY není nastavený, ověření robota se přeskakuje.");
+    if (process.env.NODE_ENV === "production") {
+      console.error("TURNSTILE_SECRET_KEY není nastavený – požadavek se odmítá. Nastav secret ve Workers.");
+      return false;
+    }
+    console.warn("TURNSTILE_SECRET_KEY není nastavený, ověření robota se při vývoji přeskakuje.");
     return true;
   }
   if (typeof token !== "string" || token.length === 0 || token.length > 2048) return false;

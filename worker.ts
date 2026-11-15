@@ -8,8 +8,24 @@ export { DOQueueHandler, DOShardedTagCache, BucketCachePurge } from "./.open-nex
 
 type Env = { CRON_SECRET?: string } & Record<string, unknown>;
 
+const CANONICAL_HOST = "ucimesehrou.org";
+
+// Kanonická adresa: http → https a www → bez www (301). Ostatní hosty (náhledy *.workers.dev, localhost) beze změny.
+function canonicalRedirect(request: Request): Response | null {
+  const url = new URL(request.url);
+  const isWww = url.hostname === `www.${CANONICAL_HOST}`;
+  const isPlainHttp = url.protocol === "http:" && (url.hostname === CANONICAL_HOST || isWww);
+  if (!isWww && !isPlainHttp) return null;
+  url.protocol = "https:";
+  url.hostname = CANONICAL_HOST;
+  url.port = "";
+  return Response.redirect(url.toString(), 301);
+}
+
 const worker = {
-  fetch: handler.fetch,
+  fetch(request: Request, env: Env, ctx: { waitUntil(p: Promise<unknown>): void }) {
+    return canonicalRedirect(request) ?? handler.fetch(request, env, ctx);
+  },
   async scheduled(_event: unknown, env: Env, ctx: { waitUntil(p: Promise<unknown>): void }) {
     if (!env.CRON_SECRET) {
       console.warn("Plánovač: chybí secret CRON_SECRET, připomínky se nespouští.");
