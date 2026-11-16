@@ -32,6 +32,7 @@ import { makeTutor } from "./Tutor";
 import { CodePart1, CodePart2, CodePart3, CodePart4, CODE1_FRAMES, CODE2_FRAMES, CODE3_FRAMES, CODE4_FRAMES } from "./Code";
 
 const TUT1 = makeTutor(1639984585, "ai-doucovac1");
+const TUT2 = makeTutor(1641832608, "ai-doucovac2");
 export const Root: React.FC = () => (
   <>
     <Composition id="MonoShort" component={MonoShort} durationInFrames={MONO_FRAMES} fps={30} width={1080} height={1920} />
@@ -67,5 +68,6 @@ export const Root: React.FC = () => (
     <Composition id="DepthDemo" component={DepthDemo} durationInFrames={DEPTHDEMO_FRAMES} fps={30} width={1080} height={1920} />
     <Composition id="Fx2Demo" component={Fx2Demo} durationInFrames={FX2DEMO_FRAMES} fps={30} width={1080} height={1920} />
     <Composition id="DoucovacDil1" component={TUT1.Comp} durationInFrames={TUT1.frames} fps={30} width={1080} height={1920} />
+    <Composition id="DoucovacDil2" component={TUT2.Comp} durationInFrames={TUT2.frames} fps={30} width={1080} height={1920} />
   </>
 );

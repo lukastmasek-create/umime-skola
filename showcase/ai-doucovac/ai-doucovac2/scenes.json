@@ -1,0 +1,54 @@
+{
+ "seed": 1641832608,
+ "fps": 30,
+ "frames": 432,
+ "effects": [
+  "dollyZoom",
+  "pageRead",
+  "sparkChase"
+ ],
+ "word": "PROČ?",
+ "wordLetters": 5,
+ "order": [
+  {
+   "id": "logoMorph",
+   "start": 0,
+   "dur": 2.733
+  },
+  {
+   "id": "katanaCut",
+   "start": 2.733,
+   "dur": 2.267,
+   "extra": {
+    "cut": 3.6
+   }
+  },
+  {
+   "id": "sparkChat",
+   "start": 5,
+   "dur": 3.733,
+   "extra": {
+    "arrive0": 6.226,
+    "arrive1": 6.353,
+    "arrive2": 6.338
+   }
+  },
+  {
+   "id": "feature_steps",
+   "start": 8.733,
+   "dur": 2.867,
+   "extra": {
+    "land0": 9.533,
+    "land1": 9.933,
+    "land2": 10.333,
+    "type": 10.267,
+    "ok": 10.667
+   }
+  },
+  {
+   "id": "finale",
+   "start": 11.6,
+   "dur": 2.8
+  }
+ ]
+}
