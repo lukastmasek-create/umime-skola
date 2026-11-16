@@ -1,0 +1,252 @@
+{
+ "id": "TymyDil3",
+ "width": 1920,
+ "height": 1080,
+ "fps": 30,
+ "frames": 420,
+ "seed": 4203,
+ "title": "Zeptej se asistenta",
+ "camera": [
+  {
+   "frame": 0,
+   "x": 960,
+   "y": 540,
+   "zoom": 1.14
+  },
+  {
+   "frame": 52,
+   "x": 960,
+   "y": 540,
+   "zoom": 1,
+   "stop": true
+  },
+  {
+   "frame": 104,
+   "x": 960,
+   "y": 540,
+   "zoom": 1,
+   "stop": true
+  },
+  {
+   "frame": 124,
+   "x": 2880,
+   "y": 540,
+   "zoom": 1,
+   "stop": true
+  },
+  {
+   "frame": 320,
+   "x": 2880,
+   "y": 540,
+   "zoom": 1,
+   "stop": true
+  },
+  {
+   "frame": 338,
+   "x": 4800,
+   "y": 540,
+   "zoom": 1,
+   "stop": true
+  },
+  {
+   "frame": 420,
+   "x": 4800,
+   "y": 540,
+   "zoom": 1,
+   "stop": true
+  }
+ ],
+ "flights": [
+  {
+   "start": 104,
+   "end": 124
+  },
+  {
+   "start": 320,
+   "end": 338
+  }
+ ],
+ "strongBlurFrames": [
+  10,
+  10
+ ],
+ "stages": [
+  {
+   "id": "ask",
+   "rect": {
+    "x": 736,
+    "y": 184,
+    "width": 1088,
+    "height": 712
+   },
+   "tone": 0
+  },
+  {
+   "id": "answer",
+   "rect": {
+    "x": 736,
+    "y": 184,
+    "width": 1088,
+    "height": 712
+   },
+   "tone": 1
+  }
+ ],
+ "transfers": [
+  {
+   "start": 204,
+   "end": 230
+  }
+ ],
+ "cardArrival": {
+  "start": 106,
+  "end": 126
+ },
+ "cardExit": {
+  "start": 316,
+  "end": 336
+ },
+ "typing": null,
+ "cursor": {
+  "start": 150,
+  "from": [
+   1560,
+   900
+  ],
+  "exit": {
+   "start": 204,
+   "end": 214
+  },
+  "clicks": [
+   {
+    "id": "chip-nesplnena",
+    "frame": 200,
+    "approach": 172,
+    "lead": 4,
+    "target": [
+     1000,
+     638
+    ]
+   }
+  ]
+ },
+ "result": {
+  "reveal": 262,
+  "pulse": {
+   "start": 262,
+   "end": 280
+  },
+  "check": {
+   "start": 266,
+   "end": 282
+  },
+  "lap": {
+   "start": 262,
+   "end": 292
+  },
+  "hold": {
+   "start": 262,
+   "end": 316
+  }
+ },
+ "texts": {
+  "intro": {
+   "start": 44,
+   "end": 66
+  },
+  "feature": {
+   "start": 124,
+   "end": 138
+  },
+  "outro": {
+   "start": 342,
+   "end": 356
+  }
+ },
+ "fadeOut": {
+  "start": 408,
+  "end": 420
+ },
+ "effects": [
+  {
+   "entry": "Morph + LOGO_PARTS (IntroScene logic, landscape)",
+   "span": {
+    "start": 4,
+    "end": 44
+   },
+   "refs": "blob -> tile -> real logo"
+  },
+  {
+   "entry": "createCameraTrack/stageTransform flight 1 (+ blur/CA by speed)",
+   "span": {
+    "start": 104,
+    "end": 124
+   },
+   "refs": "intro world -> feature world"
+  },
+  {
+   "entry": "cardArrival + StudioCard",
+   "span": {
+    "start": 106,
+    "end": 126
+   },
+   "refs": "form card"
+  },
+  {
+   "entry": "clickMotion + magnetPose + Ripple",
+   "span": {
+    "start": 172,
+    "end": 209
+   },
+   "refs": "chip-nesplnena"
+  },
+  {
+   "entry": "sharedCardPose chain (one StudioCard from setup to result, tone navy->cream)",
+   "span": {
+    "start": 204,
+    "end": 230
+   },
+   "refs": "ask->answer"
+  },
+  {
+   "entry": "ResultMark + resultLap",
+   "span": {
+    "start": 262,
+    "end": 292
+   },
+   "refs": "result card"
+  },
+  {
+   "entry": "bubblePose + dotPose",
+   "span": {
+    "start": 230,
+    "end": 262
+   },
+   "refs": "chat"
+  },
+  {
+   "entry": "cardExit + textExitPose",
+   "span": {
+    "start": 316,
+    "end": 336
+   },
+   "refs": "handoff"
+  },
+  {
+   "entry": "createCameraTrack flight 2",
+   "span": {
+    "start": 320,
+    "end": 338
+   },
+   "refs": "feature world -> outro world"
+  },
+  {
+   "entry": "textPose + LOGO_PARTS end card",
+   "span": {
+    "start": 342,
+    "end": 356
+   },
+   "refs": "logo + url"
+  }
+ ]
+}

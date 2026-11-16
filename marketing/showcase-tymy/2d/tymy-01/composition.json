@@ -1,0 +1,287 @@
+{
+ "id": "TymyDil1",
+ "width": 1920,
+ "height": 1080,
+ "fps": 30,
+ "frames": 392,
+ "seed": 4201,
+ "title": "Založ tým",
+ "camera": [
+  {
+   "frame": 0,
+   "x": 960,
+   "y": 540,
+   "zoom": 1.14
+  },
+  {
+   "frame": 52,
+   "x": 960,
+   "y": 540,
+   "zoom": 1,
+   "stop": true
+  },
+  {
+   "frame": 104,
+   "x": 960,
+   "y": 540,
+   "zoom": 1,
+   "stop": true
+  },
+  {
+   "frame": 124,
+   "x": 2880,
+   "y": 540,
+   "zoom": 1,
+   "stop": true
+  },
+  {
+   "frame": 292,
+   "x": 2880,
+   "y": 540,
+   "zoom": 1,
+   "stop": true
+  },
+  {
+   "frame": 310,
+   "x": 4800,
+   "y": 540,
+   "zoom": 1,
+   "stop": true
+  },
+  {
+   "frame": 392,
+   "x": 4800,
+   "y": 540,
+   "zoom": 1,
+   "stop": true
+  }
+ ],
+ "flights": [
+  {
+   "start": 104,
+   "end": 124
+  },
+  {
+   "start": 292,
+   "end": 310
+  }
+ ],
+ "strongBlurFrames": [
+  10,
+  10
+ ],
+ "stages": [
+  {
+   "id": "form",
+   "rect": {
+    "x": 736,
+    "y": 235,
+    "width": 1088,
+    "height": 610
+   },
+   "tone": 0
+  },
+  {
+   "id": "result",
+   "rect": {
+    "x": 736,
+    "y": 290,
+    "width": 1088,
+    "height": 490
+   },
+   "tone": 1
+  }
+ ],
+ "transfers": [
+  {
+   "start": 212,
+   "end": 240
+  }
+ ],
+ "cardArrival": {
+  "start": 106,
+  "end": 126
+ },
+ "cardExit": {
+  "start": 288,
+  "end": 308
+ },
+ "typing": {
+  "span": {
+   "start": 132,
+   "end": 169
+  },
+  "text": "5. B – matematika",
+  "keyFrames": [
+   135,
+   137,
+   139,
+   141,
+   143,
+   146,
+   148,
+   150,
+   152,
+   154,
+   156,
+   159,
+   161,
+   163,
+   165,
+   167,
+   169
+  ]
+ },
+ "cursor": {
+  "start": 150,
+  "from": [
+   1560,
+   880
+  ],
+  "exit": {
+   "start": 212,
+   "end": 222
+  },
+  "clicks": [
+   {
+    "id": "checkbox",
+    "frame": 188,
+    "approach": 160,
+    "lead": 4,
+    "target": [
+     808,
+     563
+    ]
+   },
+   {
+    "id": "vytvorit",
+    "frame": 208,
+    "approach": 192,
+    "lead": 4,
+    "target": [
+     956,
+     737
+    ]
+   }
+  ]
+ },
+ "result": {
+  "reveal": 240,
+  "pulse": {
+   "start": 240,
+   "end": 258
+  },
+  "check": {
+   "start": 244,
+   "end": 260
+  },
+  "lap": {
+   "start": 240,
+   "end": 270
+  },
+  "hold": {
+   "start": 240,
+   "end": 288
+  }
+ },
+ "texts": {
+  "intro": {
+   "start": 44,
+   "end": 66
+  },
+  "feature": {
+   "start": 124,
+   "end": 138
+  },
+  "outro": {
+   "start": 314,
+   "end": 328
+  }
+ },
+ "fadeOut": {
+  "start": 380,
+  "end": 392
+ },
+ "effects": [
+  {
+   "entry": "Morph + LOGO_PARTS (IntroScene logic, landscape)",
+   "span": {
+    "start": 4,
+    "end": 44
+   },
+   "refs": "blob -> tile -> real logo"
+  },
+  {
+   "entry": "createCameraTrack/stageTransform flight 1 (+ blur/CA by speed)",
+   "span": {
+    "start": 104,
+    "end": 124
+   },
+   "refs": "intro world -> feature world"
+  },
+  {
+   "entry": "cardArrival + StudioCard",
+   "span": {
+    "start": 106,
+    "end": 126
+   },
+   "refs": "form card"
+  },
+  {
+   "entry": "typeState (key per grapheme)",
+   "span": {
+    "start": 132,
+    "end": 169
+   },
+   "refs": "input field"
+  },
+  {
+   "entry": "clickMotion + magnetPose + Ripple",
+   "span": {
+    "start": 160,
+    "end": 217
+   },
+   "refs": "checkbox,vytvorit"
+  },
+  {
+   "entry": "sharedCardPose chain (one StudioCard from setup to result, tone navy->cream)",
+   "span": {
+    "start": 212,
+    "end": 240
+   },
+   "refs": "form->result"
+  },
+  {
+   "entry": "ResultMark + resultLap",
+   "span": {
+    "start": 240,
+    "end": 270
+   },
+   "refs": "result card"
+  },
+  {
+   "entry": "cardExit + textExitPose",
+   "span": {
+    "start": 288,
+    "end": 308
+   },
+   "refs": "handoff"
+  },
+  {
+   "entry": "createCameraTrack flight 2",
+   "span": {
+    "start": 292,
+    "end": 310
+   },
+   "refs": "feature world -> outro world"
+  },
+  {
+   "entry": "textPose + LOGO_PARTS end card",
+   "span": {
+    "start": 314,
+    "end": 328
+   },
+   "refs": "logo + url"
+  }
+ ]
+}

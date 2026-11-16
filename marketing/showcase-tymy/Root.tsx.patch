@@ -1,0 +1,22 @@
+diff --git a/2d/src/Root.tsx b/2d/src/Root.tsx
+index d530856..1ed958c 100644
+--- a/2d/src/Root.tsx
++++ b/2d/src/Root.tsx
+@@ -28,6 +28,7 @@ import { DegreeShort, DEGREE_FRAMES } from "./Degree";
+ import { InsecureShort, INSECURE_FRAMES } from "./Insecure";
+ import { DepthDemo, DEPTHDEMO_FRAMES } from "./depth";
+ import { Fx2Demo, FX2DEMO_FRAMES } from "./fx2";
++import { TymyDil1, TymyDil2, TymyDil3, TYMY_FRAMES } from "./Tymy";
+ import { CodePart1, CodePart2, CodePart3, CodePart4, CODE1_FRAMES, CODE2_FRAMES, CODE3_FRAMES, CODE4_FRAMES } from "./Code";
+ 
+ export const Root: React.FC = () => (
+@@ -62,6 +63,9 @@ export const Root: React.FC = () => (
+     <Composition id="KodDil2" component={CodePart2} durationInFrames={CODE2_FRAMES} fps={30} width={1080} height={1920} />
+     <Composition id="KodDil3" component={CodePart3} durationInFrames={CODE3_FRAMES} fps={30} width={1080} height={1920} />
+     <Composition id="KodDil4" component={CodePart4} durationInFrames={CODE4_FRAMES} fps={30} width={1080} height={1920} />
++    <Composition id="TymyDil1" component={TymyDil1} durationInFrames={TYMY_FRAMES[0]} fps={30} width={1920} height={1080} />
++    <Composition id="TymyDil2" component={TymyDil2} durationInFrames={TYMY_FRAMES[1]} fps={30} width={1920} height={1080} />
++    <Composition id="TymyDil3" component={TymyDil3} durationInFrames={TYMY_FRAMES[2]} fps={30} width={1920} height={1080} />
+     <Composition id="DepthDemo" component={DepthDemo} durationInFrames={DEPTHDEMO_FRAMES} fps={30} width={1080} height={1920} />
+     <Composition id="Fx2Demo" component={Fx2Demo} durationInFrames={FX2DEMO_FRAMES} fps={30} width={1080} height={1920} />
+   </>

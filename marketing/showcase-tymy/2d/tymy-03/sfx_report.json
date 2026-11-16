@@ -1,0 +1,29 @@
+{
+ "events": 13,
+ "fills": 16,
+ "duration": 14.0,
+ "peak_dbfs": -3.0,
+ "true_peak": -2.99,
+ "hero": {
+  "kind": "impact",
+  "t": 7.667,
+  "note": "HERO HIT: result lands",
+  "margin_db": 4.29
+ },
+ "rms_per_second": [
+  -28.6,
+  -40.2,
+  -46.6,
+  -35.0,
+  -48.6,
+  -49.4,
+  -36.9,
+  -20.3,
+  -38.3,
+  -40.8,
+  -29.3,
+  -36.1,
+  -46.5,
+  -51.0
+ ]
+}

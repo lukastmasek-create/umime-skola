@@ -1,0 +1,180 @@
+{
+ "seed": 4202,
+ "fps": 30,
+ "frames": 379,
+ "order": [
+  {
+   "id": "logoMorph",
+   "start": 0,
+   "dur": 4.1333,
+   "extra": {
+    "frameStart": 0,
+    "frameEnd": 124,
+    "cues": [
+     {
+      "kind": "whoosh",
+      "t": 0.0667,
+      "gain": 0.55,
+      "pan": -0.3,
+      "note": "logo blob morph"
+     },
+     {
+      "kind": "tok",
+      "t": 1.5333,
+      "gain": 0.5,
+      "pan": 0.1,
+      "note": "logo tile lands in the logo"
+     }
+    ]
+   }
+  },
+  {
+   "id": "feature_tymy-02",
+   "start": 3.4667,
+   "dur": 6.4333,
+   "extra": {
+    "frameStart": 104,
+    "frameEnd": 297,
+    "click": [
+     6.1333
+    ],
+    "keys": [
+     4.5,
+     4.5667,
+     4.6333,
+     4.7,
+     4.7667,
+     4.8333
+    ],
+    "resultLand": 7.2,
+    "transferStart": 6.2667,
+    "cues": [
+     {
+      "kind": "cloth",
+      "t": 3.6,
+      "gain": 0.5,
+      "pan": 0.1,
+      "note": "card slides in"
+     },
+     {
+      "kind": "key",
+      "t": 4.5,
+      "gain": 0.5,
+      "pan": -0.08,
+      "note": "typed char 1"
+     },
+     {
+      "kind": "key",
+      "t": 4.5667,
+      "gain": 0.5,
+      "pan": 0,
+      "note": "typed char 2"
+     },
+     {
+      "kind": "key",
+      "t": 4.6333,
+      "gain": 0.5,
+      "pan": 0.08,
+      "note": "typed char 3"
+     },
+     {
+      "kind": "key",
+      "t": 4.7,
+      "gain": 0.5,
+      "pan": -0.08,
+      "note": "typed char 4"
+     },
+     {
+      "kind": "key",
+      "t": 4.7667,
+      "gain": 0.5,
+      "pan": 0,
+      "note": "typed char 5"
+     },
+     {
+      "kind": "key",
+      "t": 4.8333,
+      "gain": 0.5,
+      "pan": 0.08,
+      "note": "typed char 6"
+     },
+     {
+      "kind": "click",
+      "t": 6.1333,
+      "gain": 0.6,
+      "pan": 0.05,
+      "note": "click pripojit"
+     },
+     {
+      "kind": "cloth",
+      "t": 6.2667,
+      "gain": 0.45,
+      "pan": 0.2,
+      "note": "card slides to the result"
+     },
+     {
+      "kind": "impact",
+      "t": 7.2,
+      "gain": 1,
+      "pan": 0,
+      "note": "HERO HIT: result lands"
+     },
+     {
+      "kind": "tok",
+      "t": 7.6,
+      "gain": 0.4,
+      "pan": 0,
+      "note": "result check drawn"
+     }
+    ]
+   }
+  },
+  {
+   "id": "finale",
+   "start": 9.3,
+   "dur": 3.3333,
+   "extra": {
+    "frameStart": 279,
+    "frameEnd": 379,
+    "cues": [
+     {
+      "kind": "whoosh",
+      "t": 9.2,
+      "gain": 0.6,
+      "pan": -0.2,
+      "note": "camera flight 2"
+     },
+     {
+      "kind": "cloth",
+      "t": 9.2333,
+      "gain": 0.4,
+      "pan": -0.2,
+      "note": "card leaves"
+     },
+     {
+      "kind": "tok",
+      "t": 10.5,
+      "gain": 0.5,
+      "pan": 0,
+      "note": "end-card logo settles"
+     },
+     {
+      "kind": "tok",
+      "t": 10.5,
+      "gain": 0.4,
+      "pan": 0.1,
+      "note": "url lands"
+     }
+    ]
+   }
+  }
+ ],
+ "hero": {
+  "id": "result_lands",
+  "frame": 216
+ },
+ "notes": [
+  "Sample content: invite code K7M4QZ and team name '5. B – matematika'.",
+  "Result shown is the site's 'Se schválením' state: row in 'Moje týmy' with 'čeká na schválení učitelem' (from TeamsHome.tsx pending list). The toast sentence is not shown (too long for its reading budget)."
+ ]
+}

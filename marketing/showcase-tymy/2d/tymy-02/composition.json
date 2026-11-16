@@ -1,0 +1,266 @@
+{
+ "id": "TymyDil2",
+ "width": 1920,
+ "height": 1080,
+ "fps": 30,
+ "frames": 379,
+ "seed": 4202,
+ "title": "Připoj se kódem",
+ "camera": [
+  {
+   "frame": 0,
+   "x": 960,
+   "y": 540,
+   "zoom": 1.14
+  },
+  {
+   "frame": 52,
+   "x": 960,
+   "y": 540,
+   "zoom": 1,
+   "stop": true
+  },
+  {
+   "frame": 104,
+   "x": 960,
+   "y": 540,
+   "zoom": 1,
+   "stop": true
+  },
+  {
+   "frame": 124,
+   "x": 2880,
+   "y": 540,
+   "zoom": 1,
+   "stop": true
+  },
+  {
+   "frame": 279,
+   "x": 2880,
+   "y": 540,
+   "zoom": 1,
+   "stop": true
+  },
+  {
+   "frame": 297,
+   "x": 4800,
+   "y": 540,
+   "zoom": 1,
+   "stop": true
+  },
+  {
+   "frame": 379,
+   "x": 4800,
+   "y": 540,
+   "zoom": 1,
+   "stop": true
+  }
+ ],
+ "flights": [
+  {
+   "start": 104,
+   "end": 124
+  },
+  {
+   "start": 279,
+   "end": 297
+  }
+ ],
+ "strongBlurFrames": [
+  10,
+  10
+ ],
+ "stages": [
+  {
+   "id": "join",
+   "rect": {
+    "x": 736,
+    "y": 260,
+    "width": 1088,
+    "height": 540
+   },
+   "tone": 0
+  },
+  {
+   "id": "pending",
+   "rect": {
+    "x": 736,
+    "y": 260,
+    "width": 1088,
+    "height": 540
+   },
+   "tone": 1
+  }
+ ],
+ "transfers": [
+  {
+   "start": 188,
+   "end": 216
+  }
+ ],
+ "cardArrival": {
+  "start": 106,
+  "end": 126
+ },
+ "cardExit": {
+  "start": 275,
+  "end": 295
+ },
+ "typing": {
+  "span": {
+   "start": 132,
+   "end": 145
+  },
+  "text": "K7M4QZ",
+  "keyFrames": [
+   135,
+   137,
+   139,
+   141,
+   143,
+   145
+  ]
+ },
+ "cursor": {
+  "start": 150,
+  "from": [
+   1560,
+   880
+  ],
+  "exit": {
+   "start": 188,
+   "end": 198
+  },
+  "clicks": [
+   {
+    "id": "pripojit",
+    "frame": 184,
+    "approach": 152,
+    "lead": 4,
+    "target": [
+     976,
+     700
+    ]
+   }
+  ]
+ },
+ "result": {
+  "reveal": 216,
+  "pulse": {
+   "start": 216,
+   "end": 234
+  },
+  "check": {
+   "start": 220,
+   "end": 236
+  },
+  "lap": {
+   "start": 216,
+   "end": 246
+  },
+  "hold": {
+   "start": 216,
+   "end": 275
+  }
+ },
+ "texts": {
+  "intro": {
+   "start": 44,
+   "end": 66
+  },
+  "feature": {
+   "start": 124,
+   "end": 138
+  },
+  "outro": {
+   "start": 301,
+   "end": 315
+  }
+ },
+ "fadeOut": {
+  "start": 367,
+  "end": 379
+ },
+ "effects": [
+  {
+   "entry": "Morph + LOGO_PARTS (IntroScene logic, landscape)",
+   "span": {
+    "start": 4,
+    "end": 44
+   },
+   "refs": "blob -> tile -> real logo"
+  },
+  {
+   "entry": "createCameraTrack/stageTransform flight 1 (+ blur/CA by speed)",
+   "span": {
+    "start": 104,
+    "end": 124
+   },
+   "refs": "intro world -> feature world"
+  },
+  {
+   "entry": "cardArrival + StudioCard",
+   "span": {
+    "start": 106,
+    "end": 126
+   },
+   "refs": "form card"
+  },
+  {
+   "entry": "typeState (key per grapheme)",
+   "span": {
+    "start": 132,
+    "end": 145
+   },
+   "refs": "input field"
+  },
+  {
+   "entry": "clickMotion + magnetPose + Ripple",
+   "span": {
+    "start": 152,
+    "end": 193
+   },
+   "refs": "pripojit"
+  },
+  {
+   "entry": "sharedCardPose chain (one StudioCard from setup to result, tone navy->cream)",
+   "span": {
+    "start": 188,
+    "end": 216
+   },
+   "refs": "join->pending"
+  },
+  {
+   "entry": "ResultMark + resultLap",
+   "span": {
+    "start": 216,
+    "end": 246
+   },
+   "refs": "result card"
+  },
+  {
+   "entry": "cardExit + textExitPose",
+   "span": {
+    "start": 275,
+    "end": 295
+   },
+   "refs": "handoff"
+  },
+  {
+   "entry": "createCameraTrack flight 2",
+   "span": {
+    "start": 279,
+    "end": 297
+   },
+   "refs": "feature world -> outro world"
+  },
+  {
+   "entry": "textPose + LOGO_PARTS end card",
+   "span": {
+    "start": 301,
+    "end": 315
+   },
+   "refs": "logo + url"
+  }
+ ]
+}

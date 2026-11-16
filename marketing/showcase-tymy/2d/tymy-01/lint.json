@@ -1,0 +1,446 @@
+{
+ "part": "tymy-01",
+ "pass": true,
+ "scenes": [
+  {
+   "scene": "intro",
+   "items": [
+    {
+     "id": "intro-hero",
+     "role": "headline",
+     "sizePx": 160,
+     "bbox": [
+      321,
+      568,
+      1599,
+      763
+     ],
+     "completeFrame": 66,
+     "leaveFrame": 104,
+     "holdFrames": 38,
+     "neededFrames": 36,
+     "text": "Týmy a třídy"
+    }
+   ]
+  },
+  {
+   "scene": "feature",
+   "items": [
+    {
+     "id": "hero-1",
+     "role": "headline",
+     "sizePx": 150,
+     "bbox": [
+      96,
+      358,
+      686,
+      541
+     ],
+     "completeFrame": 138,
+     "leaveFrame": 288,
+     "holdFrames": 150,
+     "neededFrames": 36,
+     "text": "Založ"
+    },
+    {
+     "id": "hero-2",
+     "role": "headline",
+     "sizePx": 150,
+     "bbox": [
+      96,
+      526,
+      672,
+      709
+     ],
+     "completeFrame": 141,
+     "leaveFrame": 288,
+     "holdFrames": 147,
+     "neededFrames": 36,
+     "text": "tým"
+    },
+    {
+     "id": "form-title",
+     "role": "required",
+     "sizePx": 52,
+     "bbox": [
+      776,
+      282,
+      1227,
+      345
+     ],
+     "completeFrame": 126,
+     "leaveFrame": 212,
+     "holdFrames": 86,
+     "neededFrames": 42,
+     "text": "Založit tým / třídu"
+    },
+    {
+     "id": "typed",
+     "role": "required",
+     "sizePx": 52,
+     "bbox": [
+      808,
+      396,
+      1054,
+      459
+     ],
+     "completeFrame": 169,
+     "leaveFrame": 212,
+     "holdFrames": 43,
+     "neededFrames": 42,
+     "text": "5. B – matematika"
+    },
+    {
+     "id": "check-1",
+     "role": "context",
+     "sizePx": 52,
+     "bbox": [
+      868,
+      508,
+      1662,
+      571
+     ],
+     "completeFrame": 126,
+     "leaveFrame": 212,
+     "holdFrames": 86,
+     "neededFrames": 67,
+     "text": "Jsem učitel (budu zadávat úkoly"
+    },
+    {
+     "id": "check-2",
+     "role": "context",
+     "sizePx": 52,
+     "bbox": [
+      868,
+      570,
+      1263,
+      633
+     ],
+     "completeFrame": 126,
+     "leaveFrame": 212,
+     "holdFrames": 86,
+     "neededFrames": 42,
+     "text": "a přidávat žáky)"
+    },
+    {
+     "id": "btn",
+     "role": "control",
+     "sizePx": 52,
+     "bbox": [
+      831,
+      706,
+      1081,
+      769
+     ],
+     "completeFrame": 126,
+     "leaveFrame": 212,
+     "holdFrames": 86,
+     "neededFrames": 42,
+     "text": "Vytvořit"
+    },
+    {
+     "id": "res-name",
+     "role": "required",
+     "sizePx": 52,
+     "bbox": [
+      936,
+      341,
+      1389,
+      404
+     ],
+     "completeFrame": 240,
+     "leaveFrame": 288,
+     "holdFrames": 48,
+     "neededFrames": 42,
+     "text": "5. B – matematika"
+    },
+    {
+     "id": "res-pill",
+     "role": "required",
+     "sizePx": 52,
+     "bbox": [
+      964,
+      423,
+      1112,
+      486
+     ],
+     "completeFrame": 240,
+     "leaveFrame": 288,
+     "holdFrames": 48,
+     "neededFrames": 42,
+     "text": "Učitel"
+    },
+    {
+     "id": "res-role",
+     "role": "required",
+     "sizePx": 52,
+     "bbox": [
+      784,
+      551,
+      1235,
+      614
+     ],
+     "completeFrame": 240,
+     "leaveFrame": 288,
+     "holdFrames": 48,
+     "neededFrames": 45,
+     "text": "Jsi učitel · Členů: 1"
+    },
+    {
+     "id": "res-code",
+     "role": "required",
+     "sizePx": 52,
+     "bbox": [
+      784,
+      633,
+      1343,
+      696
+     ],
+     "completeFrame": 240,
+     "leaveFrame": 288,
+     "holdFrames": 48,
+     "neededFrames": 43,
+     "text": "kód pro žáky: K7M4QZ"
+    }
+   ]
+  },
+  {
+   "scene": "outro",
+   "items": [
+    {
+     "id": "outro-url",
+     "role": "required",
+     "sizePx": 52,
+     "bbox": [
+      671,
+      641,
+      1249,
+      704
+     ],
+     "completeFrame": 328,
+     "leaveFrame": 380,
+     "holdFrames": 52,
+     "neededFrames": 43,
+     "text": "ucimesehrou.org/tymy"
+    }
+   ]
+  }
+ ],
+ "checks": [
+  {
+   "name": "total frames <= 450",
+   "pass": true,
+   "detail": "392 frames = 13.07 s"
+  },
+  {
+   "name": "scene count",
+   "pass": true,
+   "detail": "intro:0-124 feature:104-310 outro:292-392"
+  },
+  {
+   "name": "feature frames",
+   "pass": true,
+   "detail": "206 frames"
+  },
+  {
+   "name": "result hold >= 36",
+   "pass": true,
+   "detail": "48 frames"
+  },
+  {
+   "name": "typing budget",
+   "pass": true,
+   "detail": "17 graphemes need 37 have 37"
+  },
+  {
+   "name": "keys = graphemes",
+   "pass": true,
+   "detail": "17"
+  },
+  {
+   "name": "typing starts after camera settles",
+   "pass": true,
+   "detail": "settle 124, typing 132"
+  },
+  {
+   "name": "fast flights <= 3",
+   "pass": true,
+   "detail": "2"
+  },
+  {
+   "name": "strong blur frames <= 12 per flight",
+   "pass": true,
+   "detail": "10,10"
+  },
+  {
+   "name": "flight 1 midpoint shows destination",
+   "pass": true,
+   "detail": "camera x 1920 mid 114"
+  },
+  {
+   "name": "flight 2 midpoint shows destination",
+   "pass": true,
+   "detail": "camera x 3840 mid 301"
+  },
+  {
+   "name": "scene intro: <= 2 text sizes",
+   "pass": true,
+   "detail": "160"
+  },
+  {
+   "name": "intro/intro-hero [headline]",
+   "pass": true,
+   "detail": "hold 38/36 size 160 bbox 321,568,1599,763 safe true still true"
+  },
+  {
+   "name": "intro-hero: promo <= 7 words",
+   "pass": true,
+   "detail": "Týmy a třídy"
+  },
+  {
+   "name": "scene feature: <= 2 text sizes",
+   "pass": true,
+   "detail": "150/52"
+  },
+  {
+   "name": "feature/hero-1 [headline]",
+   "pass": true,
+   "detail": "hold 150/36 size 150 bbox 96,358,686,541 safe true still true"
+  },
+  {
+   "name": "hero-1: <= 4 words",
+   "pass": true,
+   "detail": "Založ"
+  },
+  {
+   "name": "hero-1: promo <= 7 words",
+   "pass": true,
+   "detail": "Založ"
+  },
+  {
+   "name": "feature/hero-2 [headline]",
+   "pass": true,
+   "detail": "hold 147/36 size 150 bbox 96,526,672,709 safe true still true"
+  },
+  {
+   "name": "hero-2: <= 4 words",
+   "pass": true,
+   "detail": "tým"
+  },
+  {
+   "name": "hero-2: promo <= 7 words",
+   "pass": true,
+   "detail": "tým"
+  },
+  {
+   "name": "feature/form-title [required]",
+   "pass": true,
+   "detail": "hold 86/42 size 52 bbox 776,282,1227,345 safe true still true"
+  },
+  {
+   "name": "feature/typed [required]",
+   "pass": true,
+   "detail": "hold 43/42 size 52 bbox 808,396,1054,459 safe true still true"
+  },
+  {
+   "name": "feature/check-1 [context]",
+   "pass": true,
+   "detail": "hold 86/67 size 52 bbox 868,508,1662,571 safe true still true"
+  },
+  {
+   "name": "feature/check-2 [context]",
+   "pass": true,
+   "detail": "hold 86/42 size 52 bbox 868,570,1263,633 safe true still true"
+  },
+  {
+   "name": "feature/btn [control]",
+   "pass": true,
+   "detail": "hold 86/42 size 52 bbox 831,706,1081,769 safe true still true"
+  },
+  {
+   "name": "feature/res-name [required]",
+   "pass": true,
+   "detail": "hold 48/42 size 52 bbox 936,341,1389,404 safe true still true"
+  },
+  {
+   "name": "feature/res-pill [required]",
+   "pass": true,
+   "detail": "hold 48/42 size 52 bbox 964,423,1112,486 safe true still true"
+  },
+  {
+   "name": "feature/res-role [required]",
+   "pass": true,
+   "detail": "hold 48/45 size 52 bbox 784,551,1235,614 safe true still true"
+  },
+  {
+   "name": "feature/res-code [required]",
+   "pass": true,
+   "detail": "hold 48/43 size 52 bbox 784,633,1343,696 safe true still true"
+  },
+  {
+   "name": "scene outro: <= 2 text sizes",
+   "pass": true,
+   "detail": "52"
+  },
+  {
+   "name": "outro/outro-url [required]",
+   "pass": true,
+   "detail": "hold 52/43 size 52 bbox 671,641,1249,704 safe true still true"
+  },
+  {
+   "name": "hero lines <= 2",
+   "pass": true,
+   "detail": "Založ / tým"
+  },
+  {
+   "name": "contrast intro-hero: cream on backdrop+glow >= 7",
+   "pass": true,
+   "detail": "7.81 on #3a4d59"
+  },
+  {
+   "name": "contrast intro-hero: yellow accent on backdrop >= 7",
+   "pass": true,
+   "detail": "7.65 on #333842"
+  },
+  {
+   "name": "contrast hero-1: cream on backdrop+glow >= 7",
+   "pass": true,
+   "detail": "7.12 on #3f535f"
+  },
+  {
+   "name": "contrast hero-2: cream on backdrop+glow >= 7",
+   "pass": true,
+   "detail": "7.59 on #3b4f5a"
+  },
+  {
+   "name": "contrast hero-2: yellow accent on backdrop >= 7",
+   "pass": true,
+   "detail": "7.45 on #343a43"
+  },
+  {
+   "name": "contrast cream/navy card >= 7",
+   "pass": true,
+   "detail": "12.97"
+  },
+  {
+   "name": "contrast ink/cream >= 7",
+   "pass": true,
+   "detail": "14.82"
+  },
+  {
+   "name": "contrast ink/row (#e9e4f4) >= 7",
+   "pass": true,
+   "detail": "13.42"
+  },
+  {
+   "name": "contrast muted ink/row >= 7",
+   "pass": true,
+   "detail": "7.73"
+  },
+  {
+   "name": "contrast white/blue button >= 4.5 (control)",
+   "pass": true,
+   "detail": "6.32"
+  }
+ ]
+}
