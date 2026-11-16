@@ -1,0 +1,242 @@
+{
+ "seed": 1664014485,
+ "fps": 30,
+ "frames": 450,
+ "order": [
+  {
+   "id": "logoMorph",
+   "start": 0,
+   "dur": 2
+  },
+  {
+   "id": "feature_plan",
+   "start": 2,
+   "dur": 3.8
+  },
+  {
+   "id": "feature_fotka",
+   "start": 5.8,
+   "dur": 3.8
+  },
+  {
+   "id": "feature_doucovatel",
+   "start": 9.6,
+   "dur": 5.4
+  }
+ ],
+ "events": [
+  {
+   "t": 0,
+   "kind": "cloth",
+   "gain": 0.4,
+   "pan": 0,
+   "scene": "logoMorph"
+  },
+  {
+   "t": 1.067,
+   "kind": "tok",
+   "gain": 0.4,
+   "pan": 0.1,
+   "scene": "logoMorph"
+  },
+  {
+   "t": 1.533,
+   "kind": "whoosh",
+   "gain": 0.3,
+   "pan": 0.4,
+   "scene": "flight"
+  },
+  {
+   "t": 2.333,
+   "kind": "cloth",
+   "gain": 0.4,
+   "pan": -0.2,
+   "scene": "feature_plan"
+  },
+  {
+   "t": 2.733,
+   "kind": "tok",
+   "gain": 0.25,
+   "pan": 0.2,
+   "scene": "feature_plan"
+  },
+  {
+   "t": 3.2,
+   "kind": "tok",
+   "gain": 0.25,
+   "pan": 0.2,
+   "scene": "feature_plan"
+  },
+  {
+   "t": 3.4,
+   "kind": "whoosh",
+   "gain": 0.5,
+   "pan": 0,
+   "scene": "feature_plan"
+  },
+  {
+   "t": 3.8,
+   "kind": "impact",
+   "gain": 1,
+   "pan": 0,
+   "scene": "feature_plan"
+  },
+  {
+   "t": 3.933,
+   "kind": "cloth",
+   "gain": 0.3,
+   "pan": 0.2,
+   "scene": "feature_plan"
+  },
+  {
+   "t": 5.333,
+   "kind": "whoosh",
+   "gain": 0.3,
+   "pan": -0.4,
+   "scene": "flight"
+  },
+  {
+   "t": 5.867,
+   "kind": "cloth",
+   "gain": 0.35,
+   "pan": -0.2,
+   "scene": "feature_fotka"
+  },
+  {
+   "t": 6.733,
+   "kind": "click",
+   "gain": 0.5,
+   "pan": 0,
+   "scene": "feature_fotka"
+  },
+  {
+   "t": 6.833,
+   "kind": "cloth",
+   "gain": 0.4,
+   "pan": 0.3,
+   "scene": "feature_fotka"
+  },
+  {
+   "t": 7.2,
+   "kind": "tok",
+   "gain": 0.45,
+   "pan": 0,
+   "scene": "feature_fotka"
+  },
+  {
+   "t": 7.3,
+   "kind": "tok",
+   "gain": 0.3,
+   "pan": -0.3,
+   "scene": "feature_fotka"
+  },
+  {
+   "t": 7.433,
+   "kind": "tok",
+   "gain": 0.3,
+   "pan": 0.3,
+   "scene": "feature_fotka"
+  },
+  {
+   "t": 7.567,
+   "kind": "tok",
+   "gain": 0.3,
+   "pan": -0.1,
+   "scene": "feature_fotka"
+  },
+  {
+   "t": 7.933,
+   "kind": "cloth",
+   "gain": 0.3,
+   "pan": 0.2,
+   "scene": "feature_fotka"
+  },
+  {
+   "t": 9.133,
+   "kind": "whoosh",
+   "gain": 0.3,
+   "pan": 0.4,
+   "scene": "flight"
+  },
+  {
+   "t": 9.667,
+   "kind": "cloth",
+   "gain": 0.35,
+   "pan": 0,
+   "scene": "feature_doucovatel"
+  },
+  {
+   "t": 10,
+   "kind": "tok",
+   "gain": 0.45,
+   "pan": 0.3,
+   "scene": "feature_doucovatel"
+  },
+  {
+   "t": 11.133,
+   "kind": "tok",
+   "gain": 0.45,
+   "pan": -0.3,
+   "scene": "feature_doucovatel"
+  },
+  {
+   "t": 11.6,
+   "kind": "tok",
+   "gain": 0.25,
+   "pan": -0.2,
+   "scene": "feature_doucovatel"
+  },
+  {
+   "t": 11.833,
+   "kind": "tok",
+   "gain": 0.25,
+   "pan": -0.2,
+   "scene": "feature_doucovatel"
+  },
+  {
+   "t": 11.933,
+   "kind": "cloth",
+   "gain": 0.3,
+   "pan": 0.2,
+   "scene": "feature_doucovatel"
+  },
+  {
+   "t": 12.067,
+   "kind": "tok",
+   "gain": 0.3,
+   "pan": -0.2,
+   "scene": "feature_doucovatel"
+  },
+  {
+   "t": 13.2,
+   "kind": "tok",
+   "gain": 0.4,
+   "pan": 0,
+   "scene": "feature_doucovatel"
+  },
+  {
+   "t": 13.333,
+   "kind": "cloth",
+   "gain": 0.3,
+   "pan": 0,
+   "scene": "feature_doucovatel"
+  }
+ ],
+ "typedChars": 0,
+ "effects": [
+  "magnetCursor",
+  "ghostTrail",
+  "pinDrop",
+  "filmLook",
+  "endLoop",
+  "countdownDots",
+  "typedStepList"
+ ],
+ "morph": [
+  "spark",
+  "n5",
+  "circle",
+  "n4",
+  "sq"
+ ]
+}

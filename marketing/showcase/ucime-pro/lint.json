@@ -1,0 +1,300 @@
+{
+ "summary": {
+  "total_s": 15,
+  "intro_s": 2,
+  "features_s": 11,
+  "outro_s": 2,
+  "flights": 3
+ },
+ "failures": 0,
+ "scenes": {
+  "intro": [
+   {
+    "id": "hero",
+    "text": "UčímePRO",
+    "sizePx": 160,
+    "bbox": [
+     239,
+     1080,
+     602,
+     200
+    ],
+    "tComplete": 21,
+    "tLeave": 58,
+    "visibleS": 1.23,
+    "ok": true
+   },
+   {
+    "id": "itag",
+    "text": "Nové funkce navíc",
+    "sizePx": 45,
+    "bbox": [
+     213,
+     1355,
+     653,
+     56
+    ],
+    "tComplete": 16,
+    "tLeave": 58,
+    "visibleS": 1.4,
+    "ok": true
+   }
+  ],
+  "plan": [
+   {
+    "id": "ph",
+    "text": "Osobní plán",
+    "sizePx": 96,
+    "bbox": [
+     107,
+     194,
+     866,
+     120
+    ],
+    "tComplete": 53,
+    "tLeave": 112,
+    "visibleS": 1.97,
+    "ok": true
+   },
+   {
+    "id": "d0",
+    "text": "Po",
+    "sizePx": 44,
+    "bbox": [
+     114,
+     542,
+     72,
+     55
+    ],
+    "tComplete": 37,
+    "tLeave": 112,
+    "visibleS": 2.5,
+    "ok": true
+   },
+   {
+    "id": "d1",
+    "text": "Út",
+    "sizePx": 44,
+    "bbox": [
+     114,
+     638,
+     72,
+     55
+    ],
+    "tComplete": 40,
+    "tLeave": 112,
+    "visibleS": 2.4,
+    "ok": true
+   },
+   {
+    "id": "d2",
+    "text": "St",
+    "sizePx": 44,
+    "bbox": [
+     114,
+     734,
+     72,
+     55
+    ],
+    "tComplete": 43,
+    "tLeave": 112,
+    "visibleS": 2.3,
+    "ok": true
+   },
+   {
+    "id": "d3",
+    "text": "Čt",
+    "sizePx": 44,
+    "bbox": [
+     114,
+     830,
+     72,
+     55
+    ],
+    "tComplete": 46,
+    "tLeave": 112,
+    "visibleS": 2.2,
+    "ok": true
+   },
+   {
+    "id": "d4",
+    "text": "Pá",
+    "sizePx": 44,
+    "bbox": [
+     114,
+     926,
+     72,
+     55
+    ],
+    "tComplete": 49,
+    "tLeave": 112,
+    "visibleS": 2.1,
+    "ok": true
+   },
+   {
+    "id": "d5",
+    "text": "So",
+    "sizePx": 44,
+    "bbox": [
+     114,
+     1022,
+     72,
+     55
+    ],
+    "tComplete": 52,
+    "tLeave": 112,
+    "visibleS": 2,
+    "ok": true
+   },
+   {
+    "id": "d6",
+    "text": "Ne",
+    "sizePx": 44,
+    "bbox": [
+     114,
+     1118,
+     72,
+     55
+    ],
+    "tComplete": 55,
+    "tLeave": 112,
+    "visibleS": 1.9,
+    "ok": true
+   },
+   {
+    "id": "ps",
+    "text": "Stačí 15 minut denně.",
+    "sizePx": 52,
+    "bbox": [
+     223,
+     1348,
+     633,
+     65
+    ],
+    "tComplete": 61,
+    "tLeave": 112,
+    "visibleS": 1.7,
+    "ok": true
+   }
+  ],
+  "fotka": [
+   {
+    "id": "fh",
+    "text": "Fotka úlohy",
+    "sizePx": 96,
+    "bbox": [
+     107,
+     194,
+     866,
+     120
+    ],
+    "tComplete": 53,
+    "tLeave": 112,
+    "visibleS": 1.97,
+    "ok": true
+   },
+   {
+    "id": "fc",
+    "text": "Přidat fotku",
+    "sizePx": 44,
+    "bbox": [
+     354,
+     1146,
+     433,
+     55
+    ],
+    "tComplete": 26,
+    "tLeave": 112,
+    "visibleS": 2.87,
+    "ok": true
+   },
+   {
+    "id": "fp",
+    "text": "3/4 + 1/2",
+    "sizePx": 52,
+    "bbox": [
+     404,
+     654,
+     271,
+     65
+    ],
+    "tComplete": 56,
+    "tLeave": 112,
+    "visibleS": 1.87,
+    "ok": true
+   },
+   {
+    "id": "fs",
+    "text": "Pět podobných příkladů.",
+    "sizePx": 52,
+    "bbox": [
+     193,
+     1348,
+     694,
+     65
+    ],
+    "tComplete": 64.4,
+    "tLeave": 112,
+    "visibleS": 1.59,
+    "ok": true
+   }
+  ],
+  "doucovatel": [
+   {
+    "id": "dh",
+    "text": "AI doučovač",
+    "sizePx": 96,
+    "bbox": [
+     107,
+     194,
+     866,
+     120
+    ],
+    "tComplete": 53,
+    "tLeave": 106,
+    "visibleS": 1.77,
+    "ok": true
+   },
+   {
+    "id": "du",
+    "text": "Nechápu zlomky.",
+    "sizePx": 52,
+    "bbox": [
+     489,
+     596,
+     452,
+     65
+    ],
+    "tComplete": 55,
+    "tLeave": 106,
+    "visibleS": 1.7,
+    "ok": true
+   },
+   {
+    "id": "ds",
+    "text": "Dovede tě k výsledku.",
+    "sizePx": 52,
+    "bbox": [
+     223,
+     1348,
+     633,
+     65
+    ],
+    "tComplete": 61,
+    "tLeave": 106,
+    "visibleS": 1.5,
+    "ok": true
+   }
+  ],
+  "outro": [
+   {
+    "id": "url",
+    "sizePx": 52,
+    "tComplete": 7,
+    "tLeave": 164,
+    "visibleS": 5.23,
+    "note": "outro t = local-114; tComplete 114+7"
+   }
+  ]
+ }
+}

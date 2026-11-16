@@ -1,0 +1,31 @@
+{
+ "intro": [
+  {"id":"hero","text":"UčímePRO","kind":"headline","f":"p","size":160,"x":540,"y":1240,"a":6,"st":0,"mode":"pop","glow":"neon","fill":"#f2fbff"},
+  {"id":"itag","text":"Nové funkce navíc","kind":"sentence","f":"tag","size":45,"x":540,"y":1400,"a":8,"st":0,"mode":"tag","dur":8}
+ ],
+ "doucovatel": [
+  {"id":"dh","text":"AI doučovač","kind":"headline","f":"h","size":96,"x":540,"y":290,"a":18,"st":2,"mode":"rise"},
+  {"id":"du","text":"Nechápu zlomky.","kind":"sentence","f":"b","size":52,"x":715,"y":648,"a":26,"st":1,"mode":"pop","maxW":470,"invented":true},
+  {"id":"ds","text":"Dovede tě k výsledku.","kind":"sentence","f":"b","size":52,"x":540,"y":1400,"a":30,"st":0.8,"mode":"rise","accent":"last"}
+ ],
+ "fotka": [
+  {"id":"fh","text":"Fotka úlohy","kind":"headline","f":"h","size":96,"x":540,"y":290,"a":18,"st":2,"mode":"rise"},
+  {"id":"fc","text":"Přidat fotku","kind":"label","f":"chip","size":44,"x":570,"y":1190,"a":14,"st":0,"mode":"chip","dur":12},
+  {"id":"fp","text":"3/4 + 1/2","kind":"sentence","f":"b","size":52,"x":540,"y":706,"a":44,"st":0,"mode":"photo","dur":12,"invented":true},
+  {"id":"fs","text":"Pět podobných příkladů.","kind":"sentence","f":"b","size":52,"x":540,"y":1400,"a":34,"st":0.7,"mode":"rise","accent":"last"}
+ ],
+ "plan": [
+  {"id":"ph","text":"Osobní plán","kind":"headline","f":"h","size":96,"x":540,"y":290,"a":18,"st":2,"mode":"rise"},
+  {"id":"d0","text":"Po","kind":"label","f":"h","size":44,"x":150,"y":586,"a":22,"st":0,"mode":"pop"},
+  {"id":"d1","text":"Út","kind":"label","f":"h","size":44,"x":150,"y":682,"a":25,"st":0,"mode":"pop"},
+  {"id":"d2","text":"St","kind":"label","f":"h","size":44,"x":150,"y":778,"a":28,"st":0,"mode":"pop"},
+  {"id":"d3","text":"Čt","kind":"label","f":"h","size":44,"x":150,"y":874,"a":31,"st":0,"mode":"pop"},
+  {"id":"d4","text":"Pá","kind":"label","f":"h","size":44,"x":150,"y":970,"a":34,"st":0,"mode":"pop"},
+  {"id":"d5","text":"So","kind":"label","f":"h","size":44,"x":150,"y":1066,"a":37,"st":0,"mode":"pop"},
+  {"id":"d6","text":"Ne","kind":"label","f":"h","size":44,"x":150,"y":1162,"a":40,"st":0,"mode":"pop"},
+  {"id":"ps","text":"Stačí 15 minut denně.","kind":"sentence","f":"b","size":52,"x":540,"y":1400,"a":30,"st":0.8,"mode":"rise","accent":"last"}
+ ],
+ "outro": [
+  {"id":"url","text":"ucimesehrou.org/cs/pro","kind":"sentence","f":"b","size":52,"x":540,"y":1050,"a":-8,"st":0,"mode":"pop","maxW":940}
+ ]
+}
