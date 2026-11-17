@@ -1,0 +1,42 @@
+{
+  "name": "mono-vfx",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "render": "node scripts/render.mjs",
+    "render:katana": "node scripts/render.mjs --family katana",
+    "render:fracture": "node scripts/render.mjs --family fracture",
+    "render:liquid": "node scripts/render.mjs --family liquid",
+    "render:depth": "node scripts/render.mjs --family depth",
+    "render:portal": "node scripts/render.mjs --family portal",
+    "render:assembly": "node scripts/render.mjs --family assembly",
+    "render:hyperspeed": "node scripts/render.mjs --family hyperspeed",
+    "render:gravity": "node scripts/render.mjs --family gravity",
+    "render:typography": "node scripts/render.mjs --family typography",
+    "render:micro": "node scripts/render.mjs --family micro",
+    "render:all": "node scripts/render.mjs --all",
+    "preview": "node scripts/render.mjs --preview",
+    "still": "node scripts/still.mjs"
+  },
+  "dependencies": {
+    "@react-three/fiber": "^9.8.2",
+    "@remotion/bundler": "^4.0.544",
+    "@remotion/cli": "^4.0.544",
+    "@remotion/renderer": "^4.0.544",
+    "@remotion/three": "^4.0.544",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/three": "^0.170.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remotion": "^4.0.544",
+    "three": "^0.170.0",
+    "typescript": "^7.0.2"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15"
+  }
+}
