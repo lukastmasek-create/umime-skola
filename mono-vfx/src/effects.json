@@ -1,0 +1,202 @@
+[
+ {
+  "id": "MONO-01-ObsidianSlash",
+  "family": "katana"
+ },
+ {
+  "id": "MONO-02-TriplePrecisionCut",
+  "family": "katana"
+ },
+ {
+  "id": "MONO-03-GlassBlade",
+  "family": "katana"
+ },
+ {
+  "id": "MONO-04-KatanaShockwave",
+  "family": "katana"
+ },
+ {
+  "id": "MONO-05-InfiniteSlice",
+  "family": "katana"
+ },
+ {
+  "id": "MONO-06-CrystalImpact",
+  "family": "fracture"
+ },
+ {
+  "id": "MONO-07-GlassExplosion",
+  "family": "fracture"
+ },
+ {
+  "id": "MONO-08-ReverseShatter",
+  "family": "fracture"
+ },
+ {
+  "id": "MONO-09-FracturePropagation",
+  "family": "fracture"
+ },
+ {
+  "id": "MONO-10-FrozenDestruction",
+  "family": "fracture"
+ },
+ {
+  "id": "MONO-11-ChromeMetamorphosis",
+  "family": "liquid"
+ },
+ {
+  "id": "MONO-12-LiquidCrown",
+  "family": "liquid"
+ },
+ {
+  "id": "MONO-13-MercuryCube",
+  "family": "liquid"
+ },
+ {
+  "id": "MONO-14-LiquidRibbon",
+  "family": "liquid"
+ },
+ {
+  "id": "MONO-15-ChromePortal",
+  "family": "liquid"
+ },
+ {
+  "id": "MONO-16-ExplodedView",
+  "family": "depth"
+ },
+ {
+  "id": "MONO-17-LayeredGlass",
+  "family": "depth"
+ },
+ {
+  "id": "MONO-18-GeometricDeconstruction",
+  "family": "depth"
+ },
+ {
+  "id": "MONO-19-FloatingArchitecture",
+  "family": "depth"
+ },
+ {
+  "id": "MONO-20-ImpossibleDepth",
+  "family": "depth"
+ },
+ {
+  "id": "MONO-21-BlackHoleCollapse",
+  "family": "portal"
+ },
+ {
+  "id": "MONO-22-WormholeFlight",
+  "family": "portal"
+ },
+ {
+  "id": "MONO-23-MirrorPortal",
+  "family": "portal"
+ },
+ {
+  "id": "MONO-24-FoldingReality",
+  "family": "portal"
+ },
+ {
+  "id": "MONO-25-PortalRing",
+  "family": "portal"
+ },
+ {
+  "id": "MONO-26-MagneticCube",
+  "family": "assembly"
+ },
+ {
+  "id": "MONO-27-ParticleSphere",
+  "family": "assembly"
+ },
+ {
+  "id": "MONO-28-ReverseExplosion",
+  "family": "assembly"
+ },
+ {
+  "id": "MONO-29-MagneticSculpture",
+  "family": "assembly"
+ },
+ {
+  "id": "MONO-30-ParticleToSolid",
+  "family": "assembly"
+ },
+ {
+  "id": "MONO-31-InfiniteTunnel",
+  "family": "hyperspeed"
+ },
+ {
+  "id": "MONO-32-MacroToUniverse",
+  "family": "hyperspeed"
+ },
+ {
+  "id": "MONO-33-SpeedRampSculpture",
+  "family": "hyperspeed"
+ },
+ {
+  "id": "MONO-34-HyperspaceCorridor",
+  "family": "hyperspeed"
+ },
+ {
+  "id": "MONO-35-OneShotTransformation",
+  "family": "hyperspeed"
+ },
+ {
+  "id": "MONO-36-GravityFlip",
+  "family": "gravity"
+ },
+ {
+  "id": "MONO-37-DominoCascade",
+  "family": "gravity"
+ },
+ {
+  "id": "MONO-38-ZeroGravity",
+  "family": "gravity"
+ },
+ {
+  "id": "MONO-39-ControlledCollapse",
+  "family": "gravity"
+ },
+ {
+  "id": "MONO-40-OrbitalMechanics",
+  "family": "gravity"
+ },
+ {
+  "id": "MONO-41-TypographySlash",
+  "family": "typography"
+ },
+ {
+  "id": "MONO-42-ChromeTypography",
+  "family": "typography"
+ },
+ {
+  "id": "MONO-43-TypographyAssembly",
+  "family": "typography"
+ },
+ {
+  "id": "MONO-44-LiquidTypography",
+  "family": "typography"
+ },
+ {
+  "id": "MONO-45-TypographyExplosion",
+  "family": "typography"
+ },
+ {
+  "id": "MONO-46-MagneticAttraction",
+  "family": "micro"
+ },
+ {
+  "id": "MONO-47-PrecisionLock",
+  "family": "micro"
+ },
+ {
+  "id": "MONO-48-SpringCompression",
+  "family": "micro"
+ },
+ {
+  "id": "MONO-49-KineticSwitch",
+  "family": "micro"
+ },
+ {
+  "id": "MONO-50-MechanicalChainReaction",
+  "family": "micro"
+ }
+]

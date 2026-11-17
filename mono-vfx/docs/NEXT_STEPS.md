@@ -1,5 +1,6 @@
 # Next steps
-1. User renders 01–05 on a GPU machine (`angle`), reviews; feed back issues.
-2. Fix env contrast for metals, glass realism, portrait framing.
-3. Phase 4 families in order: fracture (Voronoi on ConvexSolid), liquid, depth, portal, assembly, hyperspeed, gravity, typography, micro.
-4. Transition engine, showreel.
+1. Render everything on a GPU machine, watch playback, log issues in QUALITY_REPORT.md.
+2. Fix by priority: glass realism (fake fresnel glass, no true transmission), flat-grey metals in some effects, portrait framing, particle/trail polish, true motion blur (currently SVG gaussian blur approximation).
+3. Phase 5: transition engine (shared end/start states; see TRANSITION_GUIDE).
+4. Phase 6: showreel composition.
+5. Visual-quality tests: automated frame-hash determinism check (render frame N twice, compare).

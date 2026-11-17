@@ -20,6 +20,8 @@ export interface StageSpec {
   envRotation?: (t: number) => number;
   lights?: (t: number) => React.ReactNode;
   vignette?: number;
+  /** horizontal/vertical gaussian blur (px) approximating motion blur; deterministic */
+  blur?: (t: number) => [number, number];
 }
 
 const Inner: React.FC<{t: number; q: Quality; spec: StageSpec; portrait: boolean; render: (t: number, q: Quality) => React.ReactNode}> = ({t, q, spec, portrait, render}) => {
@@ -65,10 +67,13 @@ export const Stage: React.FC<EffectProps & {spec: StageSpec; render: (t: number,
   const t = frame / FPS;
   return (
     <AbsoluteFill style={{background: '#000'}}>
-      <ThreeCanvas width={width} height={height} camera={{fov: 30, near: 0.05, far: 120, position: [0, 0, 9]}}
+      {spec.blur && (() => { const [bx, by] = spec.blur!(t); return <svg width="0" height="0" style={{position: 'absolute'}}><filter id="mb" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation={`${bx.toFixed(2)} ${by.toFixed(2)}`} /></filter></svg>; })()}
+      <AbsoluteFill style={spec.blur && (spec.blur(t)[0] > 0.2 || spec.blur(t)[1] > 0.2) ? {filter: 'url(#mb)'} : undefined}>
+      <ThreeCanvas width={width} height={height} camera={{fov: 30, near: 0.05, far: 160, position: [0, 0, 9]}}
         gl={{antialias: q.antialias, toneMapping: THREE.ACESFilmicToneMapping, powerPreference: 'high-performance'}}>
         <Inner t={t} q={q} spec={spec} portrait={orientation === 'portrait'} render={render} />
       </ThreeCanvas>
+      </AbsoluteFill>
       <AbsoluteFill style={{background: `radial-gradient(ellipse at 50% 48%, rgba(0,0,0,0) 38%, rgba(0,0,0,${spec.vignette ?? 0.7}) 100%)`, pointerEvents: 'none'}} />
       {q.grain && (
         <AbsoluteFill style={{mixBlendMode: 'overlay', opacity: 0.1, pointerEvents: 'none'}}>

@@ -1,5 +1,7 @@
 # Progress
-Phase 1 foundation: done (core, Stage harness, ConvexSolid, materials, lighting, quality, render scripts).
-Phase 2: MONO-01 done + rendered 9:16.
-Phase 3: MONO-02..05 implemented from shared `effects/katana/slice.tsx` (SlicedObject, Streak, makeGlowCap). Only still-inspected; no full playback review, no MP4 renders, 16:9 framing unchecked.
-Phases 4–7: not started. 45 of 50 animations do not exist.
+- Phase 1 Foundation: done (core, Stage harness, ConvexSolid, SDF mesher, rigid sim, materials, lighting, quality presets, render scripts).
+- Phase 2 MONO-01: done, 9:16 high render verified.
+- Phases 3–4: all 50 animations implemented and registered (katana, fracture, liquid, depth, portal, assembly, hyperspeed, gravity, typography, micro). Each was inspected via contact sheets of stills (9:16 preview quality; a handful also 16:9).
+- Phase 5 Transition engine: NOT done (docs/TRANSITION_GUIDE.md = plan only).
+- Phase 6 Master showreel: NOT done.
+- Phase 7 Final polish: not done. Only MONO-01 has a verified full-length MP4. No motion-playback review of any effect.

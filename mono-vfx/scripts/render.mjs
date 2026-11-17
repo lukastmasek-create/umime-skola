@@ -12,8 +12,8 @@ const a = process.argv.slice(2);
 const get = (k, d) => { const i = a.indexOf('--' + k); return i >= 0 && a[i + 1] && !a[i + 1].startsWith('--') ? a[i + 1] : d; };
 const has = (k) => a.includes('--' + k);
 
-// Registry mirror (id -> family). Keep in sync with src/registry.ts.
-const REG = JSON.parse(fs.readFileSync(new URL('./registry.json', import.meta.url), 'utf8'));
+// Single source of truth: src/effects.json (id, family). Components are mapped in src/registry.ts.
+const REG = JSON.parse(fs.readFileSync(new URL('../src/effects.json', import.meta.url), 'utf8'));
 const preview = has('preview');
 const quality = preview ? 'preview' : get('quality', 'high');
 const scale = preview ? 0.5 : Number(get('scale', 1));
@@ -33,7 +33,7 @@ for (const e of list) for (const f of formats) {
   const comp = await selectComposition({serveUrl, id, inputProps: props, chromiumOptions: {gl: 'swangle'}});
   const dir = preview ? 'previews' : `renders/${e.family}`;
   fs.mkdirSync(dir, {recursive: true});
-  const out = path.join(dir, `${id}${preview ? '_preview' : ''}_${quality}.mp4`);
+  const out = path.join(dir, `${id}_${quality}.mp4`);
   let last = -1;
   await renderMedia({
     composition: comp, serveUrl, codec: 'h264', outputLocation: out, inputProps: props, scale,
