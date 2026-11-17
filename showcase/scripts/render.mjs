@@ -22,7 +22,8 @@ for (const id of list) {
     const out = `${preview ? 'previews' : 'renders'}/${n}-${fmt}${preview ? '-preview' : ''}.mp4`;
     const cmd = ['remotion', 'render', 'src/index.ts', `${id}-${fmt}`, out, gl, '--codec=h264', '--crf=16', '--pixel-format=yuv420p', ...(preview ? ['--scale=0.5', '--every-nth-frame=2'] : []), ...extra];
     console.log('\n>> npx ' + cmd.join(' '));
-    const r = spawnSync('npx', cmd, { stdio: 'inherit' });
+    const r = spawnSync('npx', cmd, { stdio: 'inherit', shell: process.platform === 'win32' });
+    if (r.error) console.error(r.error);
     if (r.status !== 0) { failed++; console.error('FAILED', id, fmt); }
   }
 }
