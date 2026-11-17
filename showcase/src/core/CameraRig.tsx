@@ -1,25 +1,19 @@
 import { useThree } from '@react-three/fiber';
 import { useLayoutEffect } from 'react';
 import * as THREE from 'three';
+import { easeInOut } from './MotionSystem';
 
 export type CamKey = { f: number; pos: [number, number, number]; target: [number, number, number]; fov: number; ease?: (t: number) => number };
 
-// Catmull-Rom spline over keyframes for position/target; smooth ease inside each segment.
 export function sampleRig(keys: CamKey[], frame: number) {
   const f = Math.min(Math.max(frame, keys[0].f), keys[keys.length - 1].f);
   let i = 0;
   while (i < keys.length - 2 && f > keys[i + 1].f) i++;
   const a = keys[i], b = keys[i + 1];
-  let t = (f - a.f) / Math.max(1, b.f - a.f);
-  t = (b.ease ?? ((x: number) => x * x * (3 - 2 * x)))(t);
-  const v = (k: CamKey, p: 'pos' | 'target') => new THREE.Vector3(...k[p]);
-  const p0 = v(keys[Math.max(0, i - 1)], 'pos'), p3 = v(keys[Math.min(keys.length - 1, i + 2)], 'pos');
-  const pos = new THREE.CatmullRomCurve3([p0, v(a, 'pos'), v(b, 'pos'), p3], false, 'centripetal').getPoint(0.333 + 0.334 * t);
-  // exact endpoints: blend straight lerp to avoid spline overshoot at ends
-  const lin = v(a, 'pos').lerp(v(b, 'pos'), t);
-  const posF = lin.lerp(pos, 0.5);
-  const target = v(a, 'target').lerp(v(b, 'target'), t);
-  return { pos: posF, target, fov: a.fov + (b.fov - a.fov) * t };
+  const raw = (f - a.f) / Math.max(1, b.f - a.f);
+  const t = (b.ease ?? easeInOut)(raw);
+  const v = (x: [number, number, number]) => new THREE.Vector3(...x);
+  return { pos: v(a.pos).lerp(v(b.pos), t), target: v(a.target).lerp(v(b.target), t), fov: a.fov + (b.fov - a.fov) * t };
 }
 
 export const CameraRig: React.FC<{ keys: CamKey[]; frame: number }> = ({ keys, frame }) => {
@@ -33,3 +27,21 @@ export const CameraRig: React.FC<{ keys: CamKey[]; frame: number }> = ({ keys, f
   });
   return null;
 };
+
+// ---- framing helper: aim camera at a point on the screen plane (css px of the 1920x1080 page) ----
+export const SCREEN_Z = 0.0875;
+export const px2world = (x: number, y: number): [number, number, number] => [(x / 1920 - 0.5) * 3.2, (0.5 - y / 1080) * 1.8, SCREEN_Z];
+
+/** Camera looking at px point (cx,cy) showing `visW` css-px of page width, with yaw/pitch (deg) offset from screen normal. */
+export function frameScreen(cx: number, cy: number, visW: number, aspect: number, yawDeg = 0, pitchDeg = 0, fov = 22, f = 0, ease?: (t: number) => number): CamKey {
+  const target = px2world(cx, cy);
+  const worldW = (visW / 1920) * 3.2;
+  const d = worldW / (2 * Math.tan((fov * Math.PI) / 360) * aspect);
+  const yaw = (yawDeg * Math.PI) / 180, pitch = (pitchDeg * Math.PI) / 180;
+  const pos: [number, number, number] = [
+    target[0] + d * Math.sin(yaw) * Math.cos(pitch),
+    target[1] + d * Math.sin(pitch),
+    target[2] + d * Math.cos(yaw) * Math.cos(pitch),
+  ];
+  return { f, pos, target, fov, ease };
+}

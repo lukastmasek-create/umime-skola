@@ -3,6 +3,7 @@ import { AbsoluteFill, useCurrentFrame, useVideoConfig } from 'remotion';
 import * as THREE from 'three';
 import { Suspense } from 'react';
 import { Monitor3D } from '../core/Monitor3D';
+import { ImageLayer } from '../core/ScreenContent';
 import { Studio } from '../core/Studio';
 import { CameraRig, CamKey } from '../core/CameraRig';
 
@@ -11,7 +12,7 @@ const k = (pos: [number, number, number], target: [number, number, number], fov:
 const HERO_16x9 = k([2.35, 0.3, 7.0], [0, -0.28, 0], 21);
 const HERO_9x16 = k([2.0, 0.3, 8.0], [0, -0.2, 0], 34);
 
-export const HeroStill: React.FC<{ shot?: string }> = ({ shot = 'shots/home.png' }) => {
+export const HeroStill: React.FC<{ shot?: string }> = ({ shot = 'shots/home.webp' }) => {
   const frame = useCurrentFrame();
   const { width, height } = useVideoConfig();
   const vertical = height > width;
@@ -22,7 +23,7 @@ export const HeroStill: React.FC<{ shot?: string }> = ({ shot = 'shots/home.png'
         <CameraRig keys={vertical ? HERO_9x16 : HERO_16x9} frame={frame} />
         <Studio />
         <group rotation={[0, 0, 0]}>
-          <Monitor3D layers={[{ src: shot, opacity: 1 }]} />
+          <Monitor3D><ImageLayer src={shot} /></Monitor3D>
         </group>
       </Suspense>
     </ThreeCanvas>

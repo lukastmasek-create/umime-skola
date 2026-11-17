@@ -1,8 +1,9 @@
 # NEXT STEPS
-1. Seed local demo env (Postgres + `.env` + demo user, sample data) and run app -> Playwright capture logged-in farma/mesto/zakladna/ekonomika/tymy/profile. Never real user data.
-2. Finish audit per route (components, interactions) -> fill ROUTE_INVENTORY gaps.
-3. Hero polish: screen haze at bottom (glass layer), metal neck too dark, 9:16 re-check.
-4. Intro 3s prototype (dark -> edge sweep -> logo `shots/logo.png` -> home), render MP4 preview, inspect contact sheet.
-5. Home module: real scroll captures `shots/home-s1..6.png`, cursor/UI animation overlay, camera push into screen.
-6. Transition engine + home->courses benchmark.
-7. Remaining modules, audio (Artlist MCP has SFX search), master, verify with ffprobe.
+1. `npm run preview:intro`, `preview:home`... inspect each; tune `shots`, `cursor`, `highlights` in `src/film/defs/*.ts` (all in page px; screen = 1920x1080).
+2. Capture real interactions: extend `capture/` with Playwright flows (login via `capture/login.mjs`), record frame sequences (e.g. 30 screenshots at 60 ms) and add a `SequenceLayer`. Priorities: quiz answering, multiplayer with 4 demo players (teacher + 3 student contexts), farma planting, mesto building, základna upgrade, team assignment.
+3. Audio: add `public/audio/*`, `<Audio>` per section (Artlist MCP has SFX/music search; check licence).
+4. Hero polish: neck colour, glass haze, vertical framing.
+5. More modules from ROUTE_INVENTORY: zebricky, obchod, trziste, mazlicci, unikovky, materialy, pro, code.
+## Re-capturing
+Public: `npm run capture:strips` (needs python3 + Pillow), then `python3 capture/compress.py`.
+Gated: start Postgres, `.env` with local DATABASE_URL, `npx prisma migrate deploy`, `psql -f prisma/sql/all-courses.sql`, `node showcase/demo/seed.mjs`, `next dev`, then `npm run capture:gated` (hides the Next dev badge). Never run against production data.

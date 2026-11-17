@@ -46,7 +46,7 @@ const ScreenPlane: React.FC<{ src: string; z: number; opacity: number; brightnes
   );
 };
 
-export const Monitor3D: React.FC<{ layers: ScreenLayer[]; glass?: number }> = ({ layers, glass = 0.1 }) => {
+export const Monitor3D: React.FC<{ children?: React.ReactNode; glass?: number; sweep?: React.ReactNode }> = ({ children, glass = 0.1, sweep }) => {
   const body = useMemo(() => new THREE.ExtrudeGeometry(rrect(OUT_W, OUT_H, 0.05), { depth: DEPTH, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.012, bevelSegments: 8, curveSegments: 24 }), []);
   const front = useMemo(() => new THREE.ShapeGeometry(rrect(OUT_W - 0.026, OUT_H - 0.026, 0.038), 24), []);
   const rear = useMemo(() => new THREE.ExtrudeGeometry(rrect(OUT_W * 0.9, OUT_H * 0.86, 0.12), { depth: 0.07, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.05, bevelSegments: 10, curveSegments: 24 }), []);
@@ -67,12 +67,13 @@ export const Monitor3D: React.FC<{ layers: ScreenLayer[]; glass?: number }> = ({
       </mesh>
       {/* screen content */}
       <group position={[0, 0, z0 + 0.0015]}>
-        {layers.map((l, i) => <ScreenPlane key={l.src} src={l.src} z={i * 0.0003} opacity={l.opacity} brightness={l.brightness ?? 1} />)}
+        {children}
       </group>
       {/* glass sheen over everything */}
       <mesh geometry={front} position={[0, 0, z0 + 0.004]} renderOrder={3}>
         <meshPhysicalMaterial color="#000000" transparent opacity={glass} roughness={0.02} metalness={0} clearcoat={1} clearcoatRoughness={0.02} envMapIntensity={1.6} depthWrite={false} />
       </mesh>
+      {sweep}
       {/* stand */}
       <mesh geometry={neck} position={[0, -1.12, -0.23]} rotation={[0, 0, 0]}>{aluDark}</mesh>
       <mesh geometry={base} position={[0, -1.43, -0.25]} rotation={[-Math.PI / 2, 0, 0]}>{alu}</mesh>
