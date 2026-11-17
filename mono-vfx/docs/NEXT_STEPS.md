@@ -1,6 +1,5 @@
 # Next steps
-1. Refine MONO-01 (see QUALITY_REPORT): cap material richness, fresnel on floor reflection, landscape camera check, motion-blur on slash.
-2. Phase 3: MONO-02..05 reusing ConvexSolid (multi-plane clipping, layered slices).
-3. Add contact-sheet script; add per-effect render tests.
-4. Fracture family needs Voronoi clipping on top of ConvexSolid.
-5. Transition engine, showreel.
+1. User renders 01–05 on a GPU machine (`angle`), reviews; feed back issues.
+2. Fix env contrast for metals, glass realism, portrait framing.
+3. Phase 4 families in order: fracture (Voronoi on ConvexSolid), liquid, depth, portal, assembly, hyperspeed, gravity, typography, micro.
+4. Transition engine, showreel.

@@ -17,10 +17,11 @@ const PRESETS: Record<StudioName, {boxes: Box[]; ambient: number}> = {
       {pos: [-4.5, 5, 5], size: [3, 3], intensity: 5},
     ],
   },
-  highContrastMetallic: {ambient: 0.01, boxes: [
+  highContrastMetallic: {ambient: 0.012, boxes: [
+    {pos: [0, 1, 9], size: [14, 7], intensity: 0.25}, {pos: [-3.2, 0, 7], size: [0.5, 10], intensity: 38}, {pos: [4, 0, 7], size: [0.35, 10], intensity: 26, color: 0xffe6cc}, {pos: [0, 6, 5], size: [9, 1.4], intensity: 9}, {pos: [0, -5, 4], size: [10, 1.2], intensity: 4},
     {pos: [-6, 2, 3], size: [3, 8], intensity: 22}, {pos: [6, 3, -2], size: [2, 8], intensity: 28}, {pos: [0, 8, 2], size: [8, 4], intensity: 10}]},
   softProduct: {ambient: 0.35, boxes: [{pos: [0, 8, 3], size: [12, 8], intensity: 9}, {pos: [-8, 2, 2], size: [5, 8], intensity: 6}, {pos: [8, 2, 2], size: [5, 8], intensity: 6}]},
-  glassShowcase: {ambient: 0.05, boxes: [{pos: [-7, 0, 0], size: [1.2, 10], intensity: 18}, {pos: [7, 0, 0], size: [1.2, 10], intensity: 18}, {pos: [0, 0, -9], size: [12, 8], intensity: 12}, {pos: [0, 9, 0], size: [10, 10], intensity: 8}]},
+  glassShowcase: {ambient: 0.01, boxes: [{pos: [-6, 0, 3], size: [0.6, 10], intensity: 30}, {pos: [6.5, 0, 2], size: [0.4, 10], intensity: 34}, {pos: [0, 0, -9], size: [1.2, 9], intensity: 14}, {pos: [0, 8, 1], size: [8, 0.8], intensity: 12}, {pos: [0, -5, 4], size: [8, 0.5], intensity: 6}]},
   rimLit: {ambient: 0.002, boxes: [{pos: [-6, 1, -6], size: [0.6, 10], intensity: 45, color: 0xcfe3ff}, {pos: [6, 1, -6], size: [0.6, 10], intensity: 45, color: 0xffd9b0}, {pos: [0, 7, -3], size: [8, 1], intensity: 12}]},
 };
 

@@ -13,7 +13,7 @@ export const makeMaterial = (name: MaterialName, opts: {color?: THREE.ColorRepre
       Object.assign(m, {color: new THREE.Color(opts.color ?? 0xffffff), metalness: 1, roughness: 0.035, envMapIntensity: 1.3});
       break;
     case 'brushedAluminum':
-      Object.assign(m, {color: new THREE.Color(0xc8cbd0), metalness: 1, roughness: 0.32, anisotropy: 0.8, envMapIntensity: 1.1});
+      Object.assign(m, {color: new THREE.Color(0xc8cbd0), metalness: 1, roughness: 0.17, anisotropy: 0.6, envMapIntensity: 1.2});
       break;
     case 'glass':
       Object.assign(m, {color: new THREE.Color(0xffffff), metalness: 0, roughness: 0.02, transmission: 1, thickness: 1.2, ior: 1.5, attenuationColor: new THREE.Color(0xbfe8e0), attenuationDistance: 3, envMapIntensity: 1.2});

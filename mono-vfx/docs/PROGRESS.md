@@ -1,4 +1,5 @@
 # Progress
-Phase 1 foundation: done (core, geometry, materials, lighting, quality presets, render scripts).
-Phase 2: MONO-01 implemented and rendered (9:16). 16:9 composition registered; still-checked only if listed in RENDER_STATUS.
-Phases 3–7: not started. 49 of 50 animations do not exist.
+Phase 1 foundation: done (core, Stage harness, ConvexSolid, materials, lighting, quality, render scripts).
+Phase 2: MONO-01 done + rendered 9:16.
+Phase 3: MONO-02..05 implemented from shared `effects/katana/slice.tsx` (SlicedObject, Streak, makeGlowCap). Only still-inspected; no full playback review, no MP4 renders, 16:9 framing unchecked.
+Phases 4–7: not started. 45 of 50 animations do not exist.

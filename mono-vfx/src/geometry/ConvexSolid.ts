@@ -42,6 +42,24 @@ export class ConvexSolid {
     return new ConvexSolid(faces.map((pts) => ({pts, tag: 0, normal: polyNormal(pts)})));
   }
 
+  /** Sphere approximated by `count` tangent planes on a Fibonacci lattice (smooth-shaded). */
+  static sphere(radius: number, count: number): ConvexSolid {
+    let s = ConvexSolid.box(radius * 2);
+    const ga = Math.PI * (3 - Math.sqrt(5));
+    for (let i = 0; i < count; i++) {
+      const y = 1 - (2 * (i + 0.5)) / count, r = Math.sqrt(1 - y * y), a = ga * i;
+      s = s.clip({n: new THREE.Vector3(Math.cos(a) * r, y, Math.sin(a) * r), d: radius}, 0).inside;
+    }
+    return s;
+  }
+
+  /** Convex solid from arbitrary planes (n·p <= d) inside a big box. */
+  static fromPlanes(planes: Plane3[], bound = 6): ConvexSolid {
+    let s = ConvexSolid.box(bound);
+    for (const p of planes) s = s.clip(p, 0).inside;
+    return s;
+  }
+
   /** Rounded cube: support function of (cube ⊕ ball) sampled on an integer direction grid. */
   static roundedCube(half: number, radius: number, grid: number): ConvexSolid {
     let s = ConvexSolid.box(half * 2);
