@@ -20,6 +20,8 @@ const eslintConfig = defineConfig([
     // Testovací nástroje her (boti a harness) nejsou součástí aplikace.
     "tests/games/**",
     "umime-art/**",
+    // Samostatný Remotion projekt (vlastní závislosti).
+    "marketing/spotify-showcase/**",
     // Převzatý dekodér Draco (minifikovaný kód třetí strany).
     "public/draco/**",
     // Výstup buildů OpenNext / Wrangler.

@@ -1,0 +1,29 @@
+{
+  "name": "spotify-ultra-cinematic-showcase",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts SpotifyShowcase out/spotify-showcase.mp4",
+    "still": "remotion still src/index.ts SpotifyShowcase out/frame.jpg --frame=1200 --gl=swangle --timeout=300000",
+    "typecheck": "tsc --noEmit",
+    "render:cpu": "remotion render src/index.ts SpotifyShowcase out/spotify-showcase.mp4 --gl=swangle --timeout=300000"
+  },
+  "dependencies": {
+    "@react-three/drei": "^9.114.0",
+    "@react-three/fiber": "^8.17.10",
+    "@remotion/cli": "4.0.544",
+    "@remotion/three": "4.0.544",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "remotion": "4.0.544",
+    "three": "0.169.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1",
+    "@types/three": "0.169.0",
+    "typescript": "^5.6.3"
+  }
+}
