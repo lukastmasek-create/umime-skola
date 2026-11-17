@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {CamChain, V3} from './rig';
-import {P2, STUDIO} from '../film';
+import {P2, STUDIO} from '../timeline';
 import {phoneQuat1} from '../scenes/FirstLight';
 import {axisAt} from '../scenes/InsideTheSound';
 import {WAVE_CURVE, headProgress} from '../components/Waveform3D';

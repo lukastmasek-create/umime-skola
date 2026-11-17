@@ -1,7 +1,7 @@
 import React, {useMemo} from 'react';
 import {useCurrentFrame} from 'remotion';
 import * as THREE from 'three';
-import {SHOT, P2} from '../film';
+import {SHOT, P2} from '../timeline';
 import {Lights} from '../components/Studio';
 import {StudioEnvironment} from '../components/StudioEnvironment';
 import {useUITexture} from '../components/useUITexture';

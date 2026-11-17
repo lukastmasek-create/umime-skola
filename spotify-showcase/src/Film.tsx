@@ -7,7 +7,7 @@ import {CameraRig} from './camera/CameraRig';
 import {CamPoseCtx} from './camera/context';
 import {evalCamera} from './camera/rig';
 import {CHAINS} from './camera/shots';
-import {SHOT} from './film';
+import {SHOT} from './timeline';
 import {FirstLight} from './scenes/FirstLight';
 import {MusicPlayer} from './scenes/MusicPlayer';
 import {GalleryArchitecture, CoverExit, paletteAt} from './scenes/AlbumUniverse';

@@ -1,6 +1,6 @@
 import React, {useLayoutEffect, useMemo, useRef} from 'react';
 import * as THREE from 'three';
-import {G} from '../film';
+import {G} from '../timeline';
 import {PLAYER_SCALE} from '../animation/gallery';
 import {PLAYER_BAR} from './Player3D';
 import {range, smooth, smoother, cinematic, clamp} from '../animation/motion';

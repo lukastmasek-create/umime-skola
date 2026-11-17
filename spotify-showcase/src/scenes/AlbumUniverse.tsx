@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import {Card3D} from '../components/Card3D';
 import {heroArtTex} from '../assets/faces';
 import {useCamPose} from '../camera/context';
-import {SHOT} from '../film';
+import {SHOT} from '../timeline';
 import {HEROES} from '../assets/content';
 import {range, smoother, lerp, easeInOutQuart} from '../animation/motion';
 import {darkMetal} from '../materials';

@@ -8,7 +8,7 @@ import {useUITexture} from '../components/useUITexture';
 import {drawHome, UI_H, UI_W} from '../components/SpotifyUI';
 import {AlbumCard3D} from '../components/AlbumCard3D';
 import {PlaylistCard3D} from '../components/PlaylistCard3D';
-import {STUDIO} from '../film';
+import {STUDIO} from '../timeline';
 import {range, smoother, cinematic, dampedSpring, lerp, easeInOutQuart} from '../animation/motion';
 
 export const FLOOR_Y = -0.98;

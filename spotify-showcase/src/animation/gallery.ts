@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {G} from '../film';
+import {G} from '../timeline';
 import {dampedSpring, easeInOutQuart, lerp, range, smooth, smoother, cinematic, stagger} from './motion';
 
 export type CardState = {pos: THREE.Vector3; rotY: number; rotX: number; rotZ: number; scale: number; flip: number; opacity: number};
