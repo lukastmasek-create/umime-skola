@@ -52,3 +52,8 @@ __pycache__/
 .dev.vars
 cloudflare-env.d.ts
 dist/
+
+# showcase
+showcase/node_modules/
+showcase/renders/
+showcase/.remotion/
