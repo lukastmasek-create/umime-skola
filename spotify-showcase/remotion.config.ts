@@ -1,7 +1,9 @@
 import {Config} from '@remotion/cli/config';
-Config.setBrowserExecutable('/opt/pw-browsers/chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell');
+import fs from 'node:fs';
+// Optional override: REMOTION_BROWSER=/path/to/chrome. Otherwise Remotion downloads its own.
+const b = process.env.REMOTION_BROWSER;
+if (b && fs.existsSync(b)) Config.setBrowserExecutable(b);
 Config.setChromiumOpenGlRenderer('angle');
 Config.setVideoImageFormat('jpeg');
 Config.setJpegQuality(95);
-Config.setConcurrency(4);
 Config.setOverwriteOutput(true);
