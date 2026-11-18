@@ -1,0 +1,706 @@
+[
+ {
+  "name": "acorn",
+  "animated": true,
+  "mean": 0.789,
+  "badPct": 0,
+  "max": 26,
+  "ok": true
+ },
+ {
+  "name": "amber",
+  "animated": true,
+  "mean": 2.068,
+  "badPct": 0.636,
+  "max": 132,
+  "ok": true
+ },
+ {
+  "name": "anglictina",
+  "animated": true,
+  "mean": 2.69,
+  "badPct": 0.662,
+  "max": 127,
+  "ok": true
+ },
+ {
+  "name": "bingo",
+  "animated": true,
+  "mean": 3.405,
+  "badPct": 0.641,
+  "max": 127,
+  "ok": true
+ },
+ {
+  "name": "blesk",
+  "animated": true,
+  "mean": 2.3,
+  "badPct": 1.306,
+  "max": 129,
+  "ok": true
+ },
+ {
+  "name": "boards",
+  "animated": true,
+  "mean": 2.741,
+  "badPct": 0.873,
+  "max": 131,
+  "ok": true
+ },
+ {
+  "name": "carousel",
+  "animated": true,
+  "mean": 2.954,
+  "badPct": 0.659,
+  "max": 127,
+  "ok": true
+ },
+ {
+  "name": "cat-avatar",
+  "animated": true,
+  "mean": 0.77,
+  "badPct": 0,
+  "max": 22,
+  "ok": true
+ },
+ {
+  "name": "cat-banner",
+  "animated": true,
+  "mean": 0.748,
+  "badPct": 0,
+  "max": 21,
+  "ok": true
+ },
+ {
+  "name": "cat-city",
+  "animated": true,
+  "mean": 0.856,
+  "badPct": 0,
+  "max": 18,
+  "ok": true
+ },
+ {
+  "name": "cat-frame",
+  "animated": true,
+  "mean": 1.227,
+  "badPct": 0,
+  "max": 17,
+  "ok": true
+ },
+ {
+  "name": "cat-limited",
+  "animated": true,
+  "mean": 1.618,
+  "badPct": 0.646,
+  "max": 150,
+  "ok": true
+ },
+ {
+  "name": "cat-materials",
+  "animated": true,
+  "mean": 1.891,
+  "badPct": 0.771,
+  "max": 189,
+  "ok": true
+ },
+ {
+  "name": "cat-pet",
+  "animated": true,
+  "mean": 1.165,
+  "badPct": 0,
+  "max": 22,
+  "ok": true
+ },
+ {
+  "name": "cat-title",
+  "animated": true,
+  "mean": 0.751,
+  "badPct": 0,
+  "max": 24,
+  "ok": true
+ },
+ {
+  "name": "cestina",
+  "animated": true,
+  "mean": 1.302,
+  "badPct": 0,
+  "max": 38,
+  "ok": true
+ },
+ {
+  "name": "chemie",
+  "animated": true,
+  "mean": 1.824,
+  "badPct": 0.604,
+  "max": 128,
+  "ok": true
+ },
+ {
+  "name": "christmas_tree",
+  "animated": true,
+  "mean": 2.214,
+  "badPct": 1.022,
+  "max": 133,
+  "ok": true
+ },
+ {
+  "name": "city",
+  "animated": true,
+  "mean": 3.074,
+  "badPct": 0.591,
+  "max": 128,
+  "ok": true
+ },
+ {
+  "name": "comet-core",
+  "animated": true,
+  "mean": 2.261,
+  "badPct": 1.257,
+  "max": 132,
+  "ok": true
+ },
+ {
+  "name": "coral",
+  "animated": true,
+  "mean": 2.54,
+  "badPct": 0.65,
+  "max": 148,
+  "ok": true
+ },
+ {
+  "name": "daily",
+  "animated": true,
+  "mean": 3.02,
+  "badPct": 0.612,
+  "max": 147,
+  "ok": true
+ },
+ {
+  "name": "dejepis",
+  "animated": true,
+  "mean": 0.678,
+  "badPct": 0,
+  "max": 26,
+  "ok": true
+ },
+ {
+  "name": "doplnovani",
+  "animated": true,
+  "mean": 1.975,
+  "badPct": 0.33,
+  "max": 133,
+  "ok": true
+ },
+ {
+  "name": "dragon-scale",
+  "animated": true,
+  "mean": 2.034,
+  "badPct": 0.81,
+  "max": 129,
+  "ok": true
+ },
+ {
+  "name": "economy",
+  "animated": true,
+  "mean": 3.187,
+  "badPct": 0.644,
+  "max": 133,
+  "ok": true
+ },
+ {
+  "name": "escape",
+  "animated": true,
+  "mean": 2.428,
+  "badPct": 0.647,
+  "max": 127,
+  "ok": true
+ },
+ {
+  "name": "farm",
+  "animated": true,
+  "mean": 2.24,
+  "badPct": 0.644,
+  "max": 145,
+  "ok": true
+ },
+ {
+  "name": "ferris_wheel",
+  "animated": true,
+  "mean": 3.947,
+  "badPct": 1.031,
+  "max": 128,
+  "ok": true
+ },
+ {
+  "name": "francouzstina",
+  "animated": true,
+  "mean": 2.101,
+  "badPct": 0.63,
+  "max": 131,
+  "ok": true
+ },
+ {
+  "name": "fyzika",
+  "animated": true,
+  "mean": 2.695,
+  "badPct": 0.627,
+  "max": 133,
+  "ok": true
+ },
+ {
+  "name": "gold",
+  "animated": true,
+  "mean": 2.496,
+  "badPct": 1.118,
+  "max": 132,
+  "ok": true
+ },
+ {
+  "name": "golden-leaf",
+  "animated": true,
+  "mean": 2.106,
+  "badPct": 0.981,
+  "max": 129,
+  "ok": true
+ },
+ {
+  "name": "herb",
+  "animated": true,
+  "mean": 2.544,
+  "badPct": 1.004,
+  "max": 131,
+  "ok": true
+ },
+ {
+  "name": "hero-mince",
+  "animated": true,
+  "mean": 0.816,
+  "badPct": 0,
+  "max": 20,
+  "ok": true
+ },
+ {
+  "name": "hero-odznak",
+  "animated": true,
+  "mean": 0.984,
+  "badPct": 0,
+  "max": 25,
+  "ok": true
+ },
+ {
+  "name": "hero-stit",
+  "animated": true,
+  "mean": 0.711,
+  "badPct": 0,
+  "max": 17,
+  "ok": true
+ },
+ {
+  "name": "hudebka",
+  "animated": true,
+  "mean": 2.605,
+  "badPct": 0.966,
+  "max": 135,
+  "ok": true
+ },
+ {
+  "name": "informatika",
+  "animated": true,
+  "mean": 2.357,
+  "badPct": 0.395,
+  "max": 128,
+  "ok": true
+ },
+ {
+  "name": "iron",
+  "animated": true,
+  "mean": 2.208,
+  "badPct": 0.952,
+  "max": 132,
+  "ok": true
+ },
+ {
+  "name": "krizovka",
+  "animated": true,
+  "mean": 3.197,
+  "badPct": 0.648,
+  "max": 130,
+  "ok": true
+ },
+ {
+  "name": "lighthouse",
+  "animated": true,
+  "mean": 2.075,
+  "badPct": 0.528,
+  "max": 133,
+  "ok": true
+ },
+ {
+  "name": "literatura",
+  "animated": true,
+  "mean": 2.564,
+  "badPct": 0.658,
+  "max": 129,
+  "ok": true
+ },
+ {
+  "name": "magic-dust",
+  "animated": true,
+  "mean": 2.713,
+  "badPct": 1.434,
+  "max": 133,
+  "ok": true
+ },
+ {
+  "name": "matematika",
+  "animated": true,
+  "mean": 2.623,
+  "badPct": 0.446,
+  "max": 126,
+  "ok": true
+ },
+ {
+  "name": "maturita",
+  "animated": false,
+  "mean": 0.016,
+  "badPct": 0,
+  "max": 1,
+  "ok": true
+ },
+ {
+  "name": "meteorite",
+  "animated": true,
+  "mean": 2.106,
+  "badPct": 1.213,
+  "max": 133,
+  "ok": true
+ },
+ {
+  "name": "milionar",
+  "animated": true,
+  "mean": 3.07,
+  "badPct": 1.17,
+  "max": 130,
+  "ok": true
+ },
+ {
+  "name": "moon-dust",
+  "animated": true,
+  "mean": 2.53,
+  "badPct": 0.867,
+  "max": 137,
+  "ok": true
+ },
+ {
+  "name": "moonstone",
+  "animated": true,
+  "mean": 2.814,
+  "badPct": 1.344,
+  "max": 133,
+  "ok": true
+ },
+ {
+  "name": "nemcina",
+  "animated": true,
+  "mean": 2.362,
+  "badPct": 0.603,
+  "max": 131,
+  "ok": true
+ },
+ {
+  "name": "obcanka",
+  "animated": true,
+  "mean": 2.38,
+  "badPct": 0.406,
+  "max": 131,
+  "ok": true
+ },
+ {
+  "name": "ocean-heart",
+  "animated": true,
+  "mean": 2.055,
+  "badPct": 0.926,
+  "max": 134,
+  "ok": true
+ },
+ {
+  "name": "osmismerka",
+  "animated": true,
+  "mean": 3.018,
+  "badPct": 0.366,
+  "max": 131,
+  "ok": true
+ },
+ {
+  "name": "pearl",
+  "animated": true,
+  "mean": 2.533,
+  "badPct": 0.946,
+  "max": 139,
+  "ok": true
+ },
+ {
+  "name": "pets",
+  "animated": true,
+  "mean": 2.608,
+  "badPct": 0.435,
+  "max": 129,
+  "ok": true
+ },
+ {
+  "name": "pexeso",
+  "animated": true,
+  "mean": 1.898,
+  "badPct": 0.446,
+  "max": 142,
+  "ok": true
+ },
+ {
+  "name": "piskvorky",
+  "animated": true,
+  "mean": 2.651,
+  "badPct": 0.162,
+  "max": 130,
+  "ok": true
+ },
+ {
+  "name": "pravda",
+  "animated": true,
+  "mean": 2.031,
+  "badPct": 0.61,
+  "max": 134,
+  "ok": true
+ },
+ {
+  "name": "presmycky",
+  "animated": true,
+  "mean": 2.699,
+  "badPct": 0.467,
+  "max": 126,
+  "ok": true
+ },
+ {
+  "name": "prijimacky",
+  "animated": false,
+  "mean": 0.007,
+  "badPct": 0,
+  "max": 1,
+  "ok": true
+ },
+ {
+  "name": "prirodopis",
+  "animated": true,
+  "mean": 2.226,
+  "badPct": 0.273,
+  "max": 127,
+  "ok": true
+ },
+ {
+  "name": "razeni",
+  "animated": true,
+  "mean": 2.826,
+  "badPct": 0.639,
+  "max": 133,
+  "ok": true
+ },
+ {
+  "name": "resin",
+  "animated": true,
+  "mean": 2.676,
+  "badPct": 1.036,
+  "max": 129,
+  "ok": true
+ },
+ {
+  "name": "review",
+  "animated": true,
+  "mean": 2.536,
+  "badPct": 0.652,
+  "max": 126,
+  "ok": true
+ },
+ {
+  "name": "rocket_pad",
+  "animated": true,
+  "mean": 2.649,
+  "badPct": 0.969,
+  "max": 130,
+  "ok": true
+ },
+ {
+  "name": "royal-seal",
+  "animated": true,
+  "mean": 2.169,
+  "badPct": 0.455,
+  "max": 127,
+  "ok": true
+ },
+ {
+  "name": "ruby",
+  "animated": true,
+  "mean": 2.964,
+  "badPct": 1.772,
+  "max": 158,
+  "ok": false
+ },
+ {
+  "name": "rustina",
+  "animated": true,
+  "mean": 0.778,
+  "badPct": 0,
+  "max": 22,
+  "ok": true
+ },
+ {
+  "name": "sada",
+  "animated": true,
+  "mean": 1.992,
+  "badPct": 0.212,
+  "max": 126,
+  "ok": true
+ },
+ {
+  "name": "shell",
+  "animated": true,
+  "mean": 1.748,
+  "badPct": 0.298,
+  "max": 123,
+  "ok": true
+ },
+ {
+  "name": "shop-bag",
+  "animated": true,
+  "mean": 2.684,
+  "badPct": 0.989,
+  "max": 131,
+  "ok": true
+ },
+ {
+  "name": "sibenice",
+  "animated": true,
+  "mean": 3.026,
+  "badPct": 0.668,
+  "max": 127,
+  "ok": true
+ },
+ {
+  "name": "silver",
+  "animated": true,
+  "mean": 2.775,
+  "badPct": 1.404,
+  "max": 133,
+  "ok": true
+ },
+ {
+  "name": "spanelstina",
+  "animated": true,
+  "mean": 1.697,
+  "badPct": 0.572,
+  "max": 130,
+  "ok": true
+ },
+ {
+  "name": "spojovani",
+  "animated": true,
+  "mean": 3.348,
+  "badPct": 0.633,
+  "max": 126,
+  "ok": true
+ },
+ {
+  "name": "star-crystal",
+  "animated": true,
+  "mean": 2.123,
+  "badPct": 0.839,
+  "max": 129,
+  "ok": true
+ },
+ {
+  "name": "steel",
+  "animated": true,
+  "mean": 2.237,
+  "badPct": 0.586,
+  "max": 131,
+  "ok": true
+ },
+ {
+  "name": "stone",
+  "animated": true,
+  "mean": 0.898,
+  "badPct": 0,
+  "max": 19,
+  "ok": true
+ },
+ {
+  "name": "stredni",
+  "animated": false,
+  "mean": 0.033,
+  "badPct": 0,
+  "max": 1,
+  "ok": true
+ },
+ {
+  "name": "together",
+  "animated": true,
+  "mean": 1.99,
+  "badPct": 0.587,
+  "max": 129,
+  "ok": true
+ },
+ {
+  "name": "town_hall",
+  "animated": true,
+  "mean": 2.527,
+  "badPct": 0.533,
+  "max": 135,
+  "ok": true
+ },
+ {
+  "name": "trideni",
+  "animated": true,
+  "mean": 2.783,
+  "badPct": 0.653,
+  "max": 126,
+  "ok": true
+ },
+ {
+  "name": "vytvarka",
+  "animated": true,
+  "mean": 2.075,
+  "badPct": 0.65,
+  "max": 133,
+  "ok": true
+ },
+ {
+  "name": "windmill",
+  "animated": true,
+  "mean": 1.981,
+  "badPct": 0.504,
+  "max": 126,
+  "ok": true
+ },
+ {
+  "name": "wood",
+  "animated": true,
+  "mean": 0.367,
+  "badPct": 0,
+  "max": 15,
+  "ok": true
+ },
+ {
+  "name": "zakladni",
+  "animated": false,
+  "mean": 0.312,
+  "badPct": 0,
+  "max": 1,
+  "ok": true
+ },
+ {
+  "name": "zemepis",
+  "animated": true,
+  "mean": 1.994,
+  "badPct": 0.635,
+  "max": 126,
+  "ok": true
+ }
+]

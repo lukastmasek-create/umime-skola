@@ -651,7 +651,8 @@ a:hover .eco-ico,
   animation: firefly 8s ease-in-out infinite;
 }
 /* Ikony předmětů si při najetí „zamávají“. */
-.zone-nature .card:hover img {
+.zone-nature .card:hover img:not(.ik img),
+.zone-nature .card:hover .ik {
   animation: icon-wiggle 0.6s ease-in-out;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -5852,7 +5853,7 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 .gs-hitbox { display: none; position: absolute; z-index: 7; width: 110px; height: 150px; cursor: pointer; }
 @media (min-width: 900px) { .gs-hitbox { display: block; } }
 .gs-coinfall { position: absolute; z-index: 6; pointer-events: none; display: block; animation: gs-coinfall 1.9s cubic-bezier(0.4, 0, 0.9, 0.7) both; }
-.gs-coinfall img { display: block; width: 100%; height: 100%; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35)); animation: gs-coinspin 0.7s linear infinite; }
+.gs-coinfall .ik { display: block; width: 100%; height: 100%; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.35)); animation: gs-coinspin 0.7s linear infinite; }
 @keyframes gs-coinfall { 0% { transform: translate(0, 0); opacity: 0; } 12% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translate(var(--dx, 0), var(--fall, 240px)); opacity: 0; } }
 @keyframes gs-coinspin { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
 .gs-flashbulb { position: absolute; z-index: 8; pointer-events: none; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 70%); animation: gs-flashbulb 0.5s ease-out both; }
@@ -6121,7 +6122,7 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
   .hs-pipe { flex-wrap: wrap; row-gap: 12px; min-height: 0; padding: 4px 0; }
   .hs-chips { flex-wrap: wrap; justify-content: center; gap: 8px; }
   .hs-chip { width: 52px; height: 52px; font-size: 18px; }
-  .hs-chip img { width: 52px !important; height: 52px !important; }
+  .hs-chip .ik { width: 52px !important; height: 52px !important; }
   .hs-pill { font-size: 14px; padding: 10px 18px; }
 
   /* Zavěšené štítky: každý má vlastní výšku, takže se nepřekrývají */
@@ -6378,3 +6379,20 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
     position: static !important;
   }
 }
+
+/* Ilustrované ikony (komponenta Icon, src/lib/icons.ts): tělo, třpytky a stín jsou samostatné WebP/CSS vrstvy,
+   aby šly zachovat animace původních SVG (pohupování 2,8 s, třpyt 1,8 s). Ve vrstvě components, aby
+   utility z Tailwindu (absolute, hidden, block, h-*, w-*) měly přednost před obalem. */
+/* icon-layers:start */
+@layer components {
+  .ik { position: relative; display: inline-block; aspect-ratio: 1; overflow: hidden; }
+  .ik-sh { position: absolute; display: block; }
+  .ik-bob { position: absolute; inset: 0; transform-origin: 50% 83.82%; }
+  .ik-bob > img { display: block; width: 100%; height: 100%; max-width: none; }
+  .ik-bob > .ik-tw { position: absolute; transform-origin: 50% 50%; opacity: var(--o, 1); animation: ik-tw 1.8s ease-in-out infinite; }
+  .ik-b { animation: ik-bob 2.8s ease-in-out infinite; }
+  @keyframes ik-bob { 0%, 100% { transform: translateY(0) rotate(-1.6deg); } 50% { transform: translateY(-2.574%) rotate(1.6deg); } }
+  @keyframes ik-tw { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.55); opacity: 0.55; } }
+  @media (prefers-reduced-motion: reduce) { .ik-b, .ik-bob > .ik-tw { animation: none; } }
+}
+/* icon-layers:end */

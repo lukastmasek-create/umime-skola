@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { Icon } from "@/components/Icon";
 import { getGlobeText } from "@/i18n/globe";
 import { fmt } from "@/i18n/live";
 import { useAccount } from "@/lib/use-account";
@@ -846,8 +847,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
                   className="absolute left-0 top-0 z-10 flex h-[26px] w-[26px] items-center justify-center rounded-full border-2 border-[#16132b] bg-white/85 opacity-0 shadow-[0_3px_0_rgba(0,0,0,0.35)] transition-[opacity] hover:scale-110"
                   style={{ background: s.color, willChange: "transform" }}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img loading="lazy" decoding="async" src={`/ikony/${slug}.svg`} alt="" width={20} height={20} draggable={false} className="h-[18px] w-[18px] object-contain" />
+                  <Icon name={slug} size={18} />
                 </button>
               );
             })}
@@ -922,8 +922,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
                   style={{ background: s.color, borderColor: "#16132b" }}
                 >
                   <span className="flex items-center gap-2">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img loading="lazy" decoding="async" src={`/ikony/${s.slug}.svg`} alt="" width={32} height={32} draggable={false} className="h-8 w-8 shrink-0 object-contain" />
+                    <Icon name={s.slug} size={32} className="shrink-0" />
                     <span className="text-[13px] font-bold leading-tight">{s.label}</span>
                   </span>
                   <span className="h-1.5 overflow-hidden rounded-full bg-black/15" aria-hidden>
@@ -942,8 +941,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
 
         <div className="card flex flex-col gap-3 p-4" style={{ borderColor: subject.color }}>
           <div className="flex items-center gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img loading="lazy" decoding="async" src={`/ikony/${subject.slug}.svg`} alt="" width={44} height={44} draggable={false} className="h-11 w-11 object-contain" />
+            <Icon name={subject.slug} size={44} />
             <div className="min-w-0">
               <h3 className="text-lg font-extrabold leading-tight" style={{ fontFamily: "var(--font-heading)" }}>
                 {subject.label}

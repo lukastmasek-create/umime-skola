@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { getHeroLook, heroSpriteUrl } from "@/lib/hero";
+import { Icon } from "@/components/Icon";
 
 // Rámec přihlášení a registrace: vlevo maskot (hrdina z městečka, stejné 3D sprity z Blenderu), kolem plují
 // ikony předmětů, formulář vpravo naběhne políčko po políčku. Maskot se raduje po úspěchu a kroutí hlavou
@@ -22,12 +23,10 @@ export function AuthShell({ mood, greeting, aside, children }: { mood: AuthMood;
     <div className="gradient-hero auth-stage relative flex min-h-[calc(100vh-140px)] items-center justify-center overflow-hidden px-4 py-10 sm:px-6 sm:py-16">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         {FLOATERS.map((s, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img loading="lazy" decoding="async"
+          <Icon
             key={s}
-            src={`/ikony/${s}.svg`}
-            alt=""
-            draggable={false}
+            name={s}
+            fluid
             className="auth-float absolute hidden w-14 opacity-80 sm:block lg:w-20"
             style={{ left: `${[3, 13, 80, 90][i % 4] + (i > 3 ? 2 : 0)}%`, top: i < 4 ? `${8 + (i % 2) * 10}%` : `${74 + (i % 2) * 8}%`, ["--d" as string]: `${i * -1.1}s`, ["--r" as string]: `${(i % 2 ? 1 : -1) * (6 + i)}deg` }}
           />

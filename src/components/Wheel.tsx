@@ -9,7 +9,7 @@ import layout from "./kolo-stojan.json";
 import type { Dictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/config";
 
-// Ikony výher jako SVG (public/ikony/cat-*.svg), místo dřívějších WebP.
+// Ikony výher: public/ikony/cat-*.webp (zdroj cat-*.svg, převod viz docs/ICONS_WEBP.md).
 const ICON_FILE = { title: "cat-title", avatar: "cat-avatar", frame: "cat-frame", banner: "cat-banner" } as const;
 const SEGMENT_ANGLE = 360 / WHEEL_PRIZES.length;
 // Svislá poloha popisků od horního okraje kola, v procentech jeho výšky.
@@ -160,8 +160,7 @@ export function Wheel({
                     }}
                   >
                     {prize.item ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img loading="lazy" decoding="async" src={`/ikony/${ICON_FILE[prize.item.kind]}.svg`} alt={prize.item.name} draggable={false} className="h-12 w-12 select-none sm:h-16 sm:w-16" style={{ filter: "drop-shadow(0 2px 2px rgba(22,19,43,0.6))" }} />
+                      <Icon name={ICON_FILE[prize.item.kind]} fluid alt={prize.item.name} className="h-12 w-12 sm:h-16 sm:w-16" style={{ filter: "drop-shadow(0 2px 2px rgba(22,19,43,0.6))" }} />
                     ) : (
                       prize.amount
                     )}
@@ -259,8 +258,7 @@ function WheelWin({ label, icon, cx, cy }: { label: string; icon: string | null;
       </div>
       <div className="wheel-chest absolute left-1/2 top-[10%] flex -translate-x-1/2 flex-col items-center">
         {icon && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img loading="lazy" decoding="async" src={`/ikony/${icon}.svg`} alt="" draggable={false} className="h-40 w-40 select-none drop-shadow-[0_10px_16px_rgba(0,0,0,0.45)]" />
+          <Icon name={icon} fluid className="h-40 w-40 drop-shadow-[0_10px_16px_rgba(0,0,0,0.45)]" />
         )}
         <span className="whitespace-nowrap text-4xl font-extrabold text-[#ffd23a]" style={{ fontFamily: "var(--font-heading)", textShadow: "0 0 4px #16132b, 0 3px 0 #16132b" }}>
           {label}

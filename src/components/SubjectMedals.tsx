@@ -4,6 +4,7 @@ import { withFallbacks } from "@/i18n/config";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { RewardImage } from "@/components/RewardImage";
+import { Icon } from "@/components/Icon";
 import { getSubjectText } from "@/i18n/subjects";
 import { SUBJECTS } from "@/lib/taxonomy";
 import type { SubjectSummary } from "@/app/api/predmety/route";
@@ -127,8 +128,7 @@ export function SubjectMedals({ locale }: { locale: Locale }) {
               >
                 <span className={`medal relative block w-full max-w-[120px] ${r.tier === 2 ? "medal-gold" : ""}`} style={r.tier < 0 ? { filter: "grayscale(1) brightness(0.6)", opacity: 0.45 } : undefined}>
                   <RewardImage name={`medaile_${TIERS[Math.max(0, r.tier)]}`} size={256} className="h-auto w-full" />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img loading="lazy" decoding="async" src={`/ikony/${r.slug}.svg`} alt="" draggable={false} className="absolute left-1/2 top-[55%] h-[34%] w-[34%] -translate-x-1/2 -translate-y-1/2 object-contain" />
+                  <Icon name={r.slug} fluid className="absolute left-1/2 top-[55%] h-[34%] w-[34%] -translate-x-1/2 -translate-y-1/2" />
                 </span>
                 <span className="text-xs font-extrabold leading-tight">{r.label}</span>
                 {r.sum && <span className="text-[10px] font-semibold text-[var(--muted)]">{t.done.replace("{done}", String(r.sum.done)).replace("{total}", String(r.sum.total))}</span>}
@@ -151,8 +151,7 @@ export function SubjectMedals({ locale }: { locale: Locale }) {
             </h3>
             <span className="medal-pop relative block w-48">
               <RewardImage name={`medaile_${TIERS[hero.tier]}`} size={256} className="h-auto w-full drop-shadow-[0_10px_14px_rgba(0,0,0,0.35)]" preload />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img loading="lazy" decoding="async" src={`/ikony/${hero.slug}.svg`} alt="" draggable={false} className="absolute left-1/2 top-[55%] h-[34%] w-[34%] -translate-x-1/2 -translate-y-1/2 object-contain" />
+              <Icon name={hero.slug} fluid className="absolute left-1/2 top-[55%] h-[34%] w-[34%] -translate-x-1/2 -translate-y-1/2" />
             </span>
             <p className="font-bold">
               {t[TIERS[hero.tier]]} · {hero.label}
