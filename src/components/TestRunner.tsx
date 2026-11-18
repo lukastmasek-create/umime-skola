@@ -1,6 +1,7 @@
 "use client";
 
 import { DailyRecap } from "@/components/DailyChallenges";
+import { CompletionJourney } from "@/components/CompletionJourney";
 import type { Locale } from "@/i18n/config";
 import { useState } from "react";
 import Link from "next/link";
@@ -126,11 +127,7 @@ export function TestRunner({
           <p className="text-sm">
             {t.grade}: <span className="font-bold">{gradeIndex + 1}</span> · {t.gradeNames[gradeIndex]} ({percent} %)
           </p>
-          {xpGained > 0 && (
-            <p className="pill mt-2 bg-[var(--accent-yellow)] px-3 py-1.5 text-sm text-[#16132b]">
-              +{xpGained} XP
-            </p>
-          )}
+          <CompletionJourney locale={locale} xp={xpGained} levelComplete={percent === 100} />
         </div>
       )}
       {submitted && <DailyRecap locale={locale} refreshKey={xpGained} />}

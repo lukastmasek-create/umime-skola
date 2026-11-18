@@ -5,6 +5,7 @@ import Link from "next/link";
 import { GRADES, type CategorySlug } from "@/lib/taxonomy";
 import { gradeLabel } from "@/i18n/grades";
 import { tr8, type Locale } from "@/i18n/config";
+import { Icon } from "@/components/Icon";
 
 const text = {
   title: tr8("Najdi si procvičování", "Find your practice", "Finde Übungen", "Найди упражнения", "Знайди вправи", "練習を探す", "Encuentra ejercicios", "Trouve des exercices"),
@@ -27,6 +28,7 @@ export function HomeQuickStart({ locale, categories, subjects }: { locale: Local
   if (subject) query.set("predmet", subject);
   const href = `/${locale}/kurzy/${category}${query.size ? `?${query}` : ""}${subject ? "#vyber-kurzu" : ""}`;
   const field = "home-finder-select";
+  const selectedSubject = subjects.find((item) => item.slug === subject);
 
   return (
     <div className="home-finder" role="group" aria-label={text.title[locale]}>
@@ -55,7 +57,12 @@ export function HomeQuickStart({ locale, categories, subjects }: { locale: Local
           </select>
         </label>
       </div>
-      <Link href={href} className="btn-bouncy btn-primary home-finder-go">{text.go[locale]} <span aria-hidden>→</span></Link>
+      <div className="home-finder-route" data-selected={!!subject} aria-hidden="true">
+        <span key={subject || "empty"} className="home-finder-route-icon">{selectedSubject && <Icon name={subject} size={30} />}</span>
+        <svg viewBox="0 0 220 32" preserveAspectRatio="none"><path key={subject || "empty"} d="M 2 17 C 60 -4, 100 38, 158 17 S 200 16, 218 16" /></svg>
+        <span className="home-finder-route-destination">★</span>
+      </div>
+      <Link href={href} className="btn-bouncy btn-primary home-finder-go" onClick={() => { if (subject) sessionStorage.setItem("course-subject-arrival", subject); }}>{text.go[locale]} <span aria-hidden>→</span></Link>
     </div>
   );
 }

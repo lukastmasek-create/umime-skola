@@ -8,7 +8,8 @@ import { call, errorCode, fmtDate } from "./api";
 import { tfill } from "@/i18n/teams";
 import { getTeamsAll, teamsAllError } from "@/i18n/teams-more";
 import { getSubjectText } from "@/i18n/subjects";
-import type { Locale } from "@/i18n/config";
+import { tr8, type Locale } from "@/i18n/config";
+import { prefersReducedMotion } from "@/lib/motion";
 
 import { TeamChat } from "./TeamChat";
 import { TeamPeople } from "./TeamPeople";
@@ -327,6 +328,7 @@ function NewAssignment({ locale, teamId, groups, students, onCreated }: { locale
   const [aud, setAud] = useState<Audience>({ groupIds: [], userIds: [] });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [delivering, setDelivering] = useState(false);
 
   useEffect(() => {
     if (!open || courses.length) return;
@@ -346,7 +348,10 @@ function NewAssignment({ locale, teamId, groups, students, onCreated }: { locale
         action: "createAssignment", source, description: f.description, slug: f.slug, setId: f.setId, subject: f.subject,
         title: f.title || (source === "subject" ? tfill(t.quizTitle, subjectLabels[f.subject] ?? f.subject) : ""), count: f.count, passPercent: f.passPercent, maxAttempts: f.unlimited ? null : f.maxAttempts, dueAt: f.dueAt ? new Date(f.dueAt).toISOString() : "", audience: aud,
       });
+      setDelivering(true);
+      if (!prefersReducedMotion()) await new Promise<void>((resolve) => window.setTimeout(resolve, 1500));
       setOpen(false);
+      setDelivering(false);
       onCreated();
     } catch (err) {
       setError(teamsAllError(t, errorCode(err)));
@@ -356,7 +361,7 @@ function NewAssignment({ locale, teamId, groups, students, onCreated }: { locale
   }
 
   return (
-    <form onSubmit={submit} className="card flex w-full flex-col gap-3 p-5">
+    <form onSubmit={submit} className="card relative flex w-full flex-col gap-3 overflow-hidden p-5">
       <h2 className="text-lg font-extrabold">{t.newTaskTitle}</h2>
       <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t.srcCourse}>
         {([["course", t.srcCourse], ["set", t.srcSet], ["subject", t.srcSubject]] as const).map(([k, l]) => (
@@ -394,8 +399,18 @@ function NewAssignment({ locale, teamId, groups, students, onCreated }: { locale
       {error && <p className="text-sm font-semibold text-[var(--danger)]">{error}</p>}
       <div className="flex gap-2">
         <button disabled={busy} className="btn-bouncy bg-[var(--brand-500)] px-5 py-2 text-sm font-bold text-white disabled:opacity-60">{t.assign}</button>
-        <button type="button" onClick={() => setOpen(false)} className="px-3 text-sm font-bold">{t.cancel}</button>
+        <button type="button" disabled={busy} onClick={() => setOpen(false)} className="px-3 text-sm font-bold disabled:opacity-60">{t.cancel}</button>
       </div>
+      {delivering && (
+        <div className="assignment-flight" role="status" aria-live="polite">
+          <p>{tr8("Úkol letí ke třídě", "Sending the task to the class", "Die Aufgabe fliegt zur Klasse", "Задание отправляется классу", "Завдання надсилається класу", "クラスに課題を送信中", "Enviando la tarea a la clase", "Envoi du devoir à la classe")[locale]}</p>
+          <div className="assignment-flight-scene" aria-hidden="true">
+            <span className="assignment-flight-sheet">☰<span>✓</span></span>
+            <span className="assignment-flight-plane"><svg viewBox="0 0 80 60"><path d="M2 23 76 2 51 55 38 34 2 23Z" fill="#f5ffff" stroke="#16132b" strokeWidth="3" strokeLinejoin="round"/><path d="m38 34 38-32-29 38" fill="none" stroke="#16132b" strokeWidth="2"/></svg></span>
+            <div className="assignment-flight-recipients">{(students.length ? students.slice(0, 3) : [{ id: "one", name: "1" }, { id: "two", name: "2" }, { id: "three", name: "3" }]).map((student) => <span key={student.id} className="assignment-flight-student"><span className="assignment-flight-avatar">{(student.name || "•").slice(0, 1).toUpperCase()}</span><span className="assignment-flight-card">✓</span></span>)}</div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }

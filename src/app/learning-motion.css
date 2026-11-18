@@ -1,0 +1,73 @@
+/* Learning moments: short, purposeful motion tied to a completed action. */
+.home-finder-route { display: flex; align-items: center; gap: .6rem; height: 38px; margin-top: .7rem; color: var(--brand-600); }
+.home-finder-route-icon { display: grid; flex: none; place-items: center; width: 34px; height: 34px; }
+.home-finder-route svg { width: 100%; height: 30px; overflow: visible; }
+.home-finder-route path { fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 300; stroke-dashoffset: 300; }
+.home-finder-route[data-selected="true"] path { animation: finder-path .5s ease-out forwards; }
+.home-finder-route[data-selected="true"] .home-finder-route-icon { animation: finder-icon .5s ease-out both; }
+.home-finder-route-destination { font-size: 1.4rem; }
+.home-finder-go { margin-top: .35rem; }
+@keyframes finder-path { to { stroke-dashoffset: 0; } }
+@keyframes finder-icon { from { opacity: .35; transform: translateX(-6px) scale(.85); } to { opacity: 1; transform: none; } }
+
+.home-exercise-answer[data-result="incorrect"] { animation: answer-nudge .32s ease-out; }
+@keyframes answer-nudge { 30% { transform: translateX(-4px); } 65% { transform: translateX(3px); } }
+.home-exercise-proof { display: flex; align-items: center; gap: .8rem; margin-top: 1rem; color: var(--brand-600); font-family: var(--font-heading); font-weight: 800; }
+.home-exercise-dots { display: grid; grid-template-columns: repeat(8, 8px); gap: 4px 7px; padding: 6px 10px; border-radius: 12px; background: var(--surface-muted); }
+.home-exercise-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green); animation: proof-dot .3s ease-out both; }
+.home-exercise-equals { font-size: 1.25rem; font-variant-numeric: tabular-nums; }
+.home-exercise-check { width: 37px; height: 37px; fill: none; stroke: var(--accent-green); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 52; stroke-dashoffset: 52; animation: proof-check .4s .5s ease-out forwards; }
+@keyframes proof-dot { from { opacity: 0; transform: scale(.3); } to { opacity: 1; transform: scale(1); } }
+@keyframes proof-check { to { stroke-dashoffset: 0; } }
+
+.course-paper { position: relative; isolation: isolate; transition: transform .2s ease-out, box-shadow .2s ease-out; }
+.course-paper::after { content: ""; position: absolute; top: 0; right: 0; width: 24px; height: 24px; background: linear-gradient(225deg, var(--surface-muted) 50%, transparent 51%); filter: drop-shadow(-2px 2px 1px rgba(0,0,0,.15)); transform: translate(24px,-24px); transition: transform .2s ease-out; }
+.course-paper-icon { position: absolute; right: 10px; bottom: 8px; z-index: -1; opacity: .28; transform: translateY(8px) rotate(-5deg); transition: transform .2s ease-out, opacity .2s ease-out; }
+.course-paper:is(:hover,:focus-visible)::after { transform: none; }
+.course-paper:is(:hover,:focus-visible) .course-paper-icon { transform: translateY(-4px) rotate(0); opacity: .8; }
+.course-paper:focus-visible { outline: 3px solid var(--accent-yellow); outline-offset: 3px; }
+.course-island-arriving > span:first-child { animation: island-land .6s ease-out both; }
+.course-arrival-badge { position: absolute; z-index: 15; padding: .25rem .6rem; border: 2px solid #16132b; border-radius: 999px; background: #ffe67c; color: #16132b; font-size: .75rem; font-weight: 800; white-space: nowrap; pointer-events: none; animation: island-badge .6s ease-out both; }
+@keyframes island-badge { 0% { opacity: 0; transform: translate(-145px,-115px) scale(.75); } 60% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%,-130%) scale(.85); } }
+@keyframes island-land { 0% { filter: brightness(1); } 55% { filter: brightness(1.65) drop-shadow(0 0 24px #ffe67c); } 100% { filter: brightness(1); } }
+
+.completion-journey { width: min(100%, 320px); margin: .8rem auto .3rem; padding: .65rem 1rem; border: 2px solid var(--edge); border-radius: 16px; background: var(--surface-muted); color: var(--foreground); text-align: center; }
+.completion-journey-title { font-size: .8rem; font-weight: 800; }
+.completion-journey-track { position: relative; height: 42px; margin: .5rem 18px .2rem; }
+.completion-journey-line { position: absolute; left: 0; right: 0; top: 22px; height: 4px; border-radius: 4px; background: var(--edge); }
+.completion-journey-line::after { content: ""; display: block; width: 33.333%; height: 100%; border-radius: inherit; background: var(--accent-green); transform-origin: left; animation: journey-fill .85s ease-out both; }
+.completion-journey-stop { position: absolute; top: 16px; width: 16px; height: 16px; border: 2px solid var(--edge); border-radius: 50%; background: var(--surface); transform: translateX(-50%); }
+.completion-journey-stop.is-reached { background: var(--accent-green); }
+.completion-journey-rocket { position: absolute; z-index: 2; top: -8px; left: 0; width: 38px; height: 38px; transform: translateX(-50%) rotate(35deg); animation: journey-advance .85s ease-out both; }
+.completion-journey-xp { display: inline-block; padding: .25rem .75rem; border-radius: 999px; background: var(--accent-yellow); color: #16132b; font-size: .9rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+@keyframes journey-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes journey-advance { from { left: 0; transform: translateX(-50%) rotate(35deg); } to { left: 33.333%; transform: translateX(-50%) rotate(35deg); } }
+
+.assignment-flight { position: absolute; z-index: 30; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; background: var(--surface); color: var(--foreground); font-weight: 800; text-align: center; }
+.assignment-flight-scene { position: relative; width: min(90%, 420px); height: 145px; }
+.assignment-flight-sheet { position: absolute; left: 3%; top: 34px; display: grid; place-items: center; width: 48px; height: 58px; border: 2px solid var(--edge); border-radius: 4px; background: var(--surface-muted); font-size: 1.3rem; animation: sheet-fold .4s ease-in both; }
+.assignment-flight-sheet span { position: absolute; bottom: 2px; right: 5px; color: var(--accent-green); }
+.assignment-flight-plane { position: absolute; z-index: 2; left: 4%; top: 40px; width: 60px; animation: plane-deliver 1.2s .32s ease-in-out both; }
+.assignment-flight-recipients { position: absolute; right: 0; bottom: 0; display: flex; gap: 1rem; }
+.assignment-flight-student { display: grid; justify-items: center; gap: .35rem; }
+.assignment-flight-avatar { display: grid; place-items: center; width: 38px; height: 38px; border: 2px solid var(--edge); border-radius: 50%; background: var(--accent-yellow); }
+.assignment-flight-student:nth-child(2) .assignment-flight-avatar { background: var(--accent-green); }
+.assignment-flight-student:nth-child(3) .assignment-flight-avatar { background: #a4d5fa; }
+.assignment-flight-card { display: grid; place-items: center; width: 25px; height: 30px; border: 2px solid var(--edge); border-radius: 3px; background: var(--surface); color: var(--accent-green); opacity: 0; animation: task-arrive .22s 1.1s ease-out forwards; }
+.assignment-flight-student:nth-child(2) .assignment-flight-card { animation-delay: 1.2s; }
+.assignment-flight-student:nth-child(3) .assignment-flight-card { animation-delay: 1.3s; }
+@keyframes sheet-fold { to { opacity: 0; transform: scale(.7) rotate(18deg); } }
+@keyframes plane-deliver { 0% { opacity: 0; transform: translate(0,0) rotate(-12deg) scale(.65); } 15% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(265px,-12px) rotate(12deg) scale(.7); } }
+@keyframes task-arrive { from { opacity: 0; transform: translateY(-10px) scale(.8); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .home-finder-route path { stroke-dashoffset: 0; }
+  .home-exercise-check { stroke-dashoffset: 0; }
+  .completion-journey-line::after { transform: none; }
+  .completion-journey-rocket { left: 33.333%; }
+  .assignment-flight-sheet { opacity: 0; }
+  .assignment-flight-card { opacity: 1; }
+}
+:root[data-motion="off"] .home-finder-route path, :root[data-motion="off"] .home-exercise-check { stroke-dashoffset: 0; }
+:root[data-motion="off"] .completion-journey-line::after { transform: none; }
+:root[data-motion="off"] .completion-journey-rocket { left: 33.333%; }
+:root[data-motion="off"] .assignment-flight-card { opacity: 1; }
