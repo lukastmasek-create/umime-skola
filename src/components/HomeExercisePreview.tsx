@@ -42,6 +42,13 @@ export function HomeExercisePreview({ locale }: { locale: Locale }) {
           </button>
         ))}
       </div>
+      {answer === 56 && (
+        <div className="home-exercise-proof" aria-hidden="true">
+          <div className="home-exercise-dots">{Array.from({ length: 56 }, (_, i) => <span key={i} style={{ animationDelay: `${Math.floor(i / 8) * 65 + (i % 8) * 12}ms` }} />)}</div>
+          <span className="home-exercise-equals">= 56</span>
+          <svg viewBox="0 0 48 48" className="home-exercise-check"><path d="M7 24 L19 36 L41 10" /></svg>
+        </div>
+      )}
       <div className="home-exercise-feedback" aria-live="polite">
         {answer === null ? <p>{text.note[locale]}</p> : (
           <p><strong>{answer === 56 ? text.correct[locale] : text.retry[locale]}</strong>{" "}{answer === 56 ? text.explanation[locale] : ""}</p>

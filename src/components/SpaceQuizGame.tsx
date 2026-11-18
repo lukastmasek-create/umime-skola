@@ -17,6 +17,7 @@ import { getGamesUiText } from "@/i18n/games-meta";
 import { getArcadeText, isArcadeSlug } from "@/i18n/arcade";
 import { getGameText, type GameQuestion, type GameText } from "@/i18n/game";
 import { DailyRecap } from "@/components/DailyChallenges";
+import { CompletionJourney } from "@/components/CompletionJourney";
 import type { Locale } from "@/i18n/config";
 import { isMuted, setMuted, sfx, unlockAudio } from "@/lib/game-fx";
 
@@ -1052,11 +1053,7 @@ export function SpaceQuizGame({
               </span>
             )}
           </p>
-          {xpGained > 0 && (
-            <p className="pill self-start bg-[var(--accent-yellow)] px-3 py-1.5 text-sm text-[#16132b]">
-              +{xpGained} XP
-            </p>
-          )}
+          <CompletionJourney locale={locale} xp={xpGained} levelComplete={completed && mistakes.length === 0} />
           <DailyRecap locale={locale} refreshKey={xpGained} />
           {asked > 0 && (
             <p className="text-sm font-semibold">

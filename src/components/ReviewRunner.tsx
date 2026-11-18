@@ -5,6 +5,7 @@ import Link from "next/link";
 import { fill } from "@/i18n/profile";
 import { getReviewText } from "@/i18n/review";
 import { DailyRecap } from "@/components/DailyChallenges";
+import { CompletionJourney } from "@/components/CompletionJourney";
 import type { Locale } from "@/i18n/config";
 
 type Question = {
@@ -151,7 +152,7 @@ export function ReviewRunner({ locale, courseId }: { locale: Locale; courseId?: 
             {fill(t.summary, `${correct} / ${results.length}`)}
           </p>
           <p className="text-sm text-[var(--muted)]">{t.summaryHint}</p>
-          {xp > 0 && <p className="pill mt-2 bg-[var(--accent-yellow)] px-3 py-1.5 text-sm text-[#16132b]">+{xp} XP</p>}
+          <CompletionJourney locale={locale} xp={xp} levelComplete={correct === results.length} />
         </div>
         <DailyRecap locale={locale} refreshKey={xp} />
         {due > questions.length && (

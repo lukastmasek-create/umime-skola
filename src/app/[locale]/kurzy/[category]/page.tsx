@@ -253,9 +253,10 @@ export default async function CategoryPage({
                           <Link
                             key={course.id}
                             href={`/${locale}/kurzy/${category.slug}/${course.slug}`}
-                            className="card card-hover flex flex-col gap-2 overflow-hidden p-5 pt-6"
-                            style={{ borderTop: `8px solid ${subject?.color ?? "var(--edge)"}` }}
+                            className="card card-hover course-paper flex flex-col gap-2 overflow-hidden p-5 pt-6"
+                            style={{ borderTop: `8px solid ${subject?.color ?? "var(--edge)"}`, "--course-accent": subject?.color ?? "var(--surface-muted)" } as React.CSSProperties}
                           >
+                            <span className="course-paper-icon" aria-hidden><Icon name={subject?.slug ?? "literatura"} size={36} /></span>
                             <div className="flex items-start justify-between gap-2">
                               <h4 className="text-lg font-semibold">{course.title}</h4>
                               {course.grade && (
