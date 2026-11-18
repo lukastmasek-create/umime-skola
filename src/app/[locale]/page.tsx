@@ -114,7 +114,7 @@ export default async function Home({
       {/* 1) Vesmír: hrdina a postup */}
       <div className="zone zone-space">
         <span className="px-stars" aria-hidden />
-        <HeroSky comet={false} ship={false} />
+        <HeroSky comet={false} ship={false} follow={false} />
         <section className="gradient-hero relative">
           <div className="relative mx-auto flex max-w-6xl flex-col items-center px-4 pb-10 pt-12 sm:px-6 sm:pt-16 lg:pb-16 lg:pt-20">
             <div className="flex max-w-3xl flex-col items-center gap-6 text-center">
