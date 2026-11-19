@@ -142,6 +142,7 @@ export function CourseWorld({ locale, islands, allHref, allLabel, noteLabel }: {
   const ship = useRef<HTMLDivElement>(null);
   const [narrow, setNarrow] = useState(false);
   const [hover, setHover] = useState<string | null>(null);
+  const [arrival, setArrival] = useState<string | null>(null);
   const [account] = useAccount();
   const [data, setData] = useState<Record<string, SubjectSummary> | null>(null);
   const hoverRef = useRef<string | null>(null);
@@ -150,6 +151,16 @@ export function CourseWorld({ locale, islands, allHref, allLabel, noteLabel }: {
 
   const selected = islands.find((i) => i.active)?.slug ?? null;
   const focus = hover ?? selected;
+
+  useEffect(() => {
+    if (!selected || sessionStorage.getItem("course-subject-arrival") !== selected) return;
+    const start = window.setTimeout(() => {
+      sessionStorage.removeItem("course-subject-arrival");
+      setArrival(selected);
+    }, 0);
+    const stop = window.setTimeout(() => setArrival(null), 850);
+    return () => { window.clearTimeout(start); window.clearTimeout(stop); };
+  }, [selected]);
 
   useEffect(() => {
     hoverRef.current = focus;
@@ -317,7 +328,7 @@ export function CourseWorld({ locale, islands, allHref, allLabel, noteLabel }: {
               onMouseLeave={() => setHover(null)}
               onFocus={() => setHover(isl.slug)}
               onBlur={() => setHover(null)}
-              className="absolute z-10 block"
+              className={`absolute z-10 block ${arrival === isl.slug ? "course-island-arriving" : ""}`}
               style={{ left: `${x}%`, top: `${y}%`, width: `${size}%`, transform: "translate(-50%, -66%)" }}
             >
               <span
@@ -347,6 +358,11 @@ export function CourseWorld({ locale, islands, allHref, allLabel, noteLabel }: {
             </Link>
           );
         })}
+        {arrival && (
+          <span className="course-arrival-badge" aria-hidden style={{ left: `${place[arrival]?.[0] ?? 50}%`, top: `${place[arrival]?.[1] ?? 50}%` }}>
+            {islands.find((island) => island.slug === arrival)?.label}
+          </span>
+        )}
         <Link
           href={allHref}
           className="btn-bouncy absolute bottom-3 left-3 z-20 bg-[var(--surface)] px-3 py-1.5 text-xs font-bold sm:text-sm"

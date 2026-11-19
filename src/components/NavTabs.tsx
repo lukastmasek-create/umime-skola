@@ -148,7 +148,7 @@ export function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | 
 }
 
 // Na širokých obrazovkách zůstávají v liště jen tyto skupiny, ostatní jsou v tlačítku Menu.
-const PRIMARY_GROUPS = new Set(["courses", "info", "shop", "study"]);
+const PRIMARY_GROUPS = new Set(["courses", "games", "info", "study"]);
 
 export function isActiveTab(pathname: string | null, tab: Tab) {
   if (!pathname || tab.noActive) return false;
