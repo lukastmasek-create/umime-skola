@@ -116,9 +116,8 @@ export default async function Home({
         <span className="px-stars" aria-hidden />
         <HeroSky comet={false} ship={false} />
         <section className="gradient-hero relative">
-          <div className="relative mx-auto max-w-6xl px-4 pb-10 pt-12 sm:px-6 sm:pt-16 lg:pb-16 lg:pt-20">
-            <div className="home-hero-grid">
-              <div className="flex max-w-2xl flex-col items-start gap-5 text-left">
+          <div className="relative mx-auto flex max-w-6xl flex-col items-center px-4 pb-10 pt-12 sm:px-6 sm:pt-16 lg:pb-16 lg:pt-20">
+            <div className="flex max-w-3xl flex-col items-center gap-6 text-center">
               <span style={{ ["--d" as string]: "0.05s" }} className="hero-in rounded-md border-2 border-[var(--edge)] bg-[var(--surface)]/80 px-2.5 py-1 text-xs font-bold uppercase tracking-widest shadow-[0_0_18px_rgba(124,108,255,0.45)]">
                 {badge}
               </span>
@@ -129,15 +128,25 @@ export default async function Home({
                 <HeroTitle line1={dict.home.titleLine1} line2={dict.home.titleLine2} />
               </h1>
               <p className="hero-in max-w-xl text-lg leading-relaxed text-[var(--muted)]" style={{ ["--d" as string]: "0.32s" }}>{dict.home.subtitle}</p>
-              <div className="hero-in flex w-full flex-wrap items-center gap-3" style={{ ["--d" as string]: "0.5s" }}>
+              <div className="hero-in flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:gap-4" style={{ ["--d" as string]: "0.46s" }}>
+                <Link
+                  href={`/${locale}/kurzy/zakladni`}
+                  className="btn-bouncy btn-cta btn-primary btn-lg btn-dot"
+                >
+                  {a.playCta}
+                </Link>
                 <TeacherCta locale={locale as Locale} className="btn-bouncy btn-secondary btn-lg">
                   {a.teacherCta}
                 </TeacherCta>
-                <span className="text-sm text-[var(--muted)]">{a.teacherHint}</span>
               </div>
-              </div>
+              <p className="hero-in text-sm text-[var(--muted)]" style={{ ["--d" as string]: "0.58s" }}>
+                {a.teacherHint}{" "}
+                <Link href={`/${locale}/registrace`} className="font-bold text-[var(--accent-green)] hover:underline">
+                  {a.accountLink} →
+                </Link>
+              </p>
             </div>
-            <div className="home-hero-showcase">
+            <div className="hero-in-right w-full">
               <HeroShowcase
                 t={getHomeHeroText(locale as Locale)}
                 subjects={SUBJECTS.map((sj) => ({ slug: sj.slug, color: sj.color, label: subjectText.labels[sj.value] }))}
