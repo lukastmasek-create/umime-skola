@@ -102,7 +102,7 @@ type Meteor = { x: number; y: number; vx: number; vy: number; len: number; life:
 
 const TAU = Math.PI * 2;
 
-export function HeroSky({ comet: withComet = true, ship: withShip = true, follow = true }: { comet?: boolean; ship?: boolean; follow?: boolean } = {}) {
+export function HeroSky({ comet: withComet = true, ship: withShip = true }: { comet?: boolean; ship?: boolean } = {}) {
   const gl$ = useRef<HTMLCanvasElement>(null);
   const fx$ = useRef<HTMLCanvasElement>(null);
   const ship$ = useRef<HTMLCanvasElement>(null);
@@ -208,7 +208,6 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true, follow
     sprite.src = SHIP_SRC;
 
     const onMove = (e: PointerEvent) => {
-      if (!follow) return;
       const r = host.getBoundingClientRect();
       mouse.x = e.clientX - r.left;
       mouse.y = e.clientY - r.top;
@@ -227,7 +226,6 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true, follow
       }
     };
     const onDown = (e: PointerEvent) => {
-      if (!withShip && !withComet) return;
       if ((e.target as HTMLElement).closest("a,button,input,[role=button]")) return;
       const r = host.getBoundingClientRect();
       const x = e.clientX - r.left, y = e.clientY - r.top;
@@ -242,7 +240,6 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true, follow
         if (!raf) kick();
         return;
       }
-      if (!withShip) return;
       const dx = x - ship.x, dy = y - ship.y;
       const d = Math.hypot(dx, dy) || 1;
       ship.vx += (dx / d) * 900;
@@ -562,7 +559,7 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true, follow
       window.removeEventListener("pointerdown", onDown);
       host.removeEventListener("pointerleave", onLeave);
     };
-  }, [withComet, withShip, follow]);
+  }, [withComet, withShip]);
 
   return (
     <>
