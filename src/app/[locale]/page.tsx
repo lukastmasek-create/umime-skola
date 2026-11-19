@@ -22,8 +22,6 @@ import { HomeLobby } from "@/components/HomeLobby";
 import { getHomeLobbyText } from "@/i18n/home-lobby";
 import { ResultsPreview } from "@/components/ResultsPreview";
 import { HeroShowcase } from "@/components/HeroShowcase";
-import { HomeQuickStart } from "@/components/HomeQuickStart";
-import { HomeExercisePreview } from "@/components/HomeExercisePreview";
 import { getHomeHeroText } from "@/i18n/home-hero";
 import { getHomeHangText } from "@/i18n/home-hang";
 import { getHomeText } from "@/i18n/home";
@@ -131,22 +129,12 @@ export default async function Home({
                 <HeroTitle line1={dict.home.titleLine1} line2={dict.home.titleLine2} />
               </h1>
               <p className="hero-in max-w-xl text-lg leading-relaxed text-[var(--muted)]" style={{ ["--d" as string]: "0.32s" }}>{dict.home.subtitle}</p>
-              <div className="hero-in w-full" style={{ ["--d" as string]: "0.4s" }}>
-                <HomeQuickStart
-                  locale={locale as Locale}
-                  categories={CATEGORIES.map((cat) => ({ slug: cat.slug, label: dict.categories[cat.slug].label }))}
-                  subjects={SUBJECTS.map((subject) => ({ slug: subject.slug, label: subjectText.labels[subject.value] }))}
-                />
-              </div>
               <div className="hero-in flex w-full flex-wrap items-center gap-3" style={{ ["--d" as string]: "0.5s" }}>
                 <TeacherCta locale={locale as Locale} className="btn-bouncy btn-secondary btn-lg">
                   {a.teacherCta}
                 </TeacherCta>
                 <span className="text-sm text-[var(--muted)]">{a.teacherHint}</span>
               </div>
-              </div>
-              <div className="hero-in-right w-full">
-                <HomeExercisePreview locale={locale as Locale} />
               </div>
             </div>
             <div className="home-hero-showcase">
