@@ -210,14 +210,12 @@ INSERT INTO "Question" ("id","prompt","options","correctIndex","explanation","di
 ('q_obc-eu-svet_25','Kdy vstoupila ČR do Evropské unie?',ARRAY['1999','1993','2004','2007']::TEXT[],2,'Do EU vstoupila ČR 1. května 2004.',3,ARRAY[]::TEXT[],NULL,25,'c_obc-eu-svet',NULL,NOW()),
 ('q_obc-eu-svet_26','Jak se nazývá vojenská aliance, do které patří ČR?',ARRAY['NATO','OPEC','ASEAN','NAFTA']::TEXT[],0,'ČR je členem NATO od roku 1999.',4,ARRAY[]::TEXT[],NULL,26,'c_obc-eu-svet',NULL,NOW()),
 ('q_obc-eu-svet_27','Ve kterém městě je hlavní sídlo Evropského parlamentu?',ARRAY['Štrasburk','Lucemburk','Frankfurt','Brusel']::TEXT[],0,'Evropský parlament sídlí ve Štrasburku.',5,ARRAY[]::TEXT[],NULL,27,'c_obc-eu-svet',NULL,NOW()),
-('q_obc-eu-svet_28','Kdy vstoupila ČR do Evropské unie?',ARRAY['1993','2010','1999','2004']::TEXT[],3,'ČR vstoupila 1. 5. 2004.',1,ARRAY[]::TEXT[],NULL,28,'c_obc-eu-svet',NULL,NOW()),
-('q_obc-eu-svet_29','Jak se jmenuje hlavní město EU?',ARRAY['Berlín','Lucemburk','Paříž','Brusel']::TEXT[],3,'Sídlo Evropské komise je v Bruselu.',1,ARRAY[]::TEXT[],NULL,29,'c_obc-eu-svet',NULL,NOW()),
-('q_obc-eu-svet_30','Jak se jmenuje měna eurozóny?',ARRAY['libra','koruna','euro','dolar']::TEXT[],2,'Euro.',2,ARRAY[]::TEXT[],NULL,30,'c_obc-eu-svet',NULL,NOW()),
-('q_obc-eu-svet_31','Jak se jmenuje organizace OSN?',ARRAY['Evropská rada','Organizace severoatlantické smlouvy','Rada Evropy','Organizace spojených národů']::TEXT[],3,'OSN.',2,ARRAY[]::TEXT[],NULL,31,'c_obc-eu-svet',NULL,NOW()),
-('q_obc-eu-svet_32','Jak se nazývá vojenská aliance, do které patří ČR?',ARRAY['OPEC','NATO','EU','OSN']::TEXT[],1,'ČR je členem NATO od roku 1999.',3,ARRAY[]::TEXT[],NULL,32,'c_obc-eu-svet',NULL,NOW()),
-('q_obc-eu-svet_33','Kdy vznikla Evropská unie v současné podobě?',ARRAY['1945','1958','2004','1993']::TEXT[],3,'Maastrichtská smlouva 1993.',3,ARRAY[]::TEXT[],NULL,33,'c_obc-eu-svet',NULL,NOW()),
-('q_obc-eu-svet_34','Který orgán EU navrhuje zákony?',ARRAY['Soudní dvůr','Evropská komise','Evropský parlament','Evropská rada']::TEXT[],1,'Komise navrhuje.',4,ARRAY[]::TEXT[],NULL,34,'c_obc-eu-svet',NULL,NOW()),
-('q_obc-eu-svet_35','Kde sídlí Evropský parlament?',ARRAY['Lucemburk','Berlín','Štrasburk','Brusel']::TEXT[],2,'Štrasburk.',4,ARRAY[]::TEXT[],NULL,35,'c_obc-eu-svet',NULL,NOW()),
-('q_obc-eu-svet_36','Kolik členských států má EU (zhruba)?',ARRAY['12','15','40','27']::TEXT[],3,'27 členských států.',5,ARRAY[]::TEXT[],NULL,36,'c_obc-eu-svet',NULL,NOW())
+('q_obc-eu-svet_28','Jak se jmenuje hlavní město EU?',ARRAY['Paříž','Lucemburk','Berlín','Brusel']::TEXT[],3,'Sídlo Evropské komise je v Bruselu.',1,ARRAY[]::TEXT[],NULL,28,'c_obc-eu-svet',NULL,NOW()),
+('q_obc-eu-svet_29','Jak se jmenuje měna eurozóny?',ARRAY['dolar','libra','koruna','euro']::TEXT[],3,'Euro.',2,ARRAY[]::TEXT[],NULL,29,'c_obc-eu-svet',NULL,NOW()),
+('q_obc-eu-svet_30','Jak se jmenuje organizace OSN?',ARRAY['Rada Evropy','Organizace severoatlantické smlouvy','Organizace spojených národů','Evropská rada']::TEXT[],2,'OSN.',2,ARRAY[]::TEXT[],NULL,30,'c_obc-eu-svet',NULL,NOW()),
+('q_obc-eu-svet_31','Kdy vznikla Evropská unie v současné podobě?',ARRAY['1958','1945','2004','1993']::TEXT[],3,'Maastrichtská smlouva 1993.',3,ARRAY[]::TEXT[],NULL,31,'c_obc-eu-svet',NULL,NOW()),
+('q_obc-eu-svet_32','Který orgán EU navrhuje zákony?',ARRAY['Evropská rada','Evropská komise','Soudní dvůr','Evropský parlament']::TEXT[],1,'Komise navrhuje.',4,ARRAY[]::TEXT[],NULL,32,'c_obc-eu-svet',NULL,NOW()),
+('q_obc-eu-svet_33','Kde sídlí Evropský parlament?',ARRAY['Brusel','Lucemburk','Berlín','Štrasburk']::TEXT[],3,'Štrasburk.',4,ARRAY[]::TEXT[],NULL,33,'c_obc-eu-svet',NULL,NOW()),
+('q_obc-eu-svet_34','Kolik členských států má EU (zhruba)?',ARRAY['40','27','12','15']::TEXT[],1,'27 členských států.',5,ARRAY[]::TEXT[],NULL,34,'c_obc-eu-svet',NULL,NOW())
 ON CONFLICT ("id") DO NOTHING;
 

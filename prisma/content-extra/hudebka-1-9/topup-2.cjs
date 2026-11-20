@@ -5,7 +5,6 @@ module.exports = {
       [1,"Jak se nazývá vysoký tón?","vysoký",["hluboký","tichý","dlouhý"],"Výška tónu."],
       [1,"Jak se nazývá hlasitost tónu?","síla (dynamika)",["výška","barva","délka"],"Dynamika."],
       [2,"Co určuje barvu zvuku?","zdroj zvuku (nástroj nebo hlas)",["hlasitost","výška","rychlost"],"Barva zvuku."],
-      [2,"Jak se nazývá rychlost skladby?","tempo",["metrum","takt","dynamika"],"Tempo."],
       [3,"Kolik čtvrťových dob má celá nota?","4",["2","3","8"],"Celá = 4 čtvrtky."],
       [3,"Kolik čtvrťových dob má půlová nota?","2",["1","4","3"],"Půlová = 2."],
       [4,"Jak se nazývá opakující se pravidelný puls?","metrum",["melodie","harmonie","akord"],"Metrum."],

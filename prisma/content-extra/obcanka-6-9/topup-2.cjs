@@ -42,11 +42,9 @@ module.exports = {
       [5,"Co je to bankovní účet?","účet u banky pro uložení peněz",["knižní účet","účet za jídlo","účet za telefon"],"Bankovní účet."]
     ],
     "obc-eu-svet": [
-      [1,"Kdy vstoupila ČR do Evropské unie?","2004",["1993","1999","2010"],"ČR vstoupila 1. 5. 2004."],
       [1,"Jak se jmenuje hlavní město EU?","Brusel",["Paříž","Berlín","Lucemburk"],"Sídlo Evropské komise je v Bruselu."],
       [2,"Jak se jmenuje měna eurozóny?","euro",["koruna","dolar","libra"],"Euro."],
       [2,"Jak se jmenuje organizace OSN?","Organizace spojených národů",["Organizace severoatlantické smlouvy","Evropská rada","Rada Evropy"],"OSN."],
-      [3,"Jak se nazývá vojenská aliance, do které patří ČR?","NATO",["OSN","OPEC","EU"],"ČR je členem NATO od roku 1999."],
       [3,"Kdy vznikla Evropská unie v současné podobě?","1993",["1945","1958","2004"],"Maastrichtská smlouva 1993."],
       [4,"Který orgán EU navrhuje zákony?","Evropská komise",["Evropský parlament","Evropská rada","Soudní dvůr"],"Komise navrhuje."],
       [4,"Kde sídlí Evropský parlament?","Štrasburk",["Brusel","Lucemburk","Berlín"],"Štrasburk."],

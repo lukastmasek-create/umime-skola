@@ -24,7 +24,6 @@ module.exports = {
     ],
     "chem-reakce-rovnice": [
       [1,"Co je chemická reakce?","přeměna výchozích látek na produkty",["změna skupenství","rozpouštění soli","mísení vody a oleje"],"Chemická reakce."],
-      [1,"Co platí o hmotnosti při chemické reakci?","zachovává se",["zvětšuje se","zmenšuje se","vzniká ze země"],"Zákon zachování hmotnosti."],
       [2,"Co vzniká při hoření vodíku?","voda",["oxid uhličitý","kyslík","dusík"],"2H2 + O2 → 2H2O."],
       [2,"Co vzniká při reakci železa s kyslíkem?","oxid železitý (rez)",["vodík","sůl","uhlík"],"Rez."],
       [3,"Kolik molekul vody vznikne z 2 molekul vodíku a 1 molekuly kyslíku?","2",["1","3","4"],"2H2 + O2 → 2H2O."],
