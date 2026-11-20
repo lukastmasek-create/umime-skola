@@ -1155,8 +1155,17 @@ local Economy = ReplicatedStorage:WaitForChild("Economy")
 local C = require(Economy:WaitForChild("Config"))
 local L = require(Economy:WaitForChild("Logic"))
 
-local okStore, STORE = pcall(function() return DataStoreService:GetDataStore("EconomyGame_v1") end)
-if not okStore then STORE = nil warn("[Economy] DataStore unavailable (publish the place). Progress will not save.") end
+local STORE = nil
+do
+	local okStore, result = pcall(function()
+		return DataStoreService:GetDataStore("EconomyGame_v1")
+	end)
+	if okStore then
+		STORE = result
+	else
+		warn("[Economy] DataStore unavailable. Progress will not save.")
+	end
+end
 local TICK_SEC = 1
 local SAVE_SEC = 60
 local ACTION_MIN_GAP = 0.08 -- seconds, basic spam guard
