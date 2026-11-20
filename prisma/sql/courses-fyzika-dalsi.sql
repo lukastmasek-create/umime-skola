@@ -52,6 +52,9 @@ INSERT INTO "Question" ("id","prompt","options","correctIndex","explanation","di
 ('q_fyz-hustota-latek_18','Hustota železa je přibližně:',ARRAY['1 000 kg/m³','7 800 kg/m³','2 700 kg/m³','11 300 kg/m³']::TEXT[],1,'Železo má hustotu kolem 7800 kg/m³.',3,ARRAY[]::TEXT[],NULL,18,'c_fyz-hustota-latek',NULL,NOW()),
 ('q_fyz-hustota-latek_19','Kámen o hmotnosti 10 kg a objemu 4 dm³ má hustotu:',ARRAY['2,5 kg/dm³','40 kg/dm³','0,4 kg/dm³','14 kg/dm³']::TEXT[],0,'10 kg / 4 dm³ = 2,5 kg/dm³.',3,ARRAY[]::TEXT[],NULL,19,'c_fyz-hustota-latek',NULL,NOW()),
 ('q_fyz-hustota-latek_20','Hustota látky je 800 kg/m³. Těleso o objemu 2 m³ má hmotnost:',ARRAY['2 800 kg','1 600 kg','400 kg','800 kg']::TEXT[],1,'m = ρ · V = 800 · 2.',4,ARRAY[]::TEXT[],NULL,20,'c_fyz-hustota-latek',NULL,NOW()),
+('q_fyz-hustota-latek_21','Kámen 10 kg a objem 4 dm³ má hustotu:',ARRAY['40 kg/dm³','14 kg/dm³','2,5 kg/dm³','0,4 kg/dm³']::TEXT[],2,'10 / 4.',3,ARRAY[]::TEXT[],NULL,21,'c_fyz-hustota-latek',NULL,NOW()),
+('q_fyz-hustota-latek_22','Hustota vzduchu je přibližně:',ARRAY['1,2 kg/m³','0,12 kg/m³','12 kg/m³','1000 kg/m³']::TEXT[],0,'Vzduch.',4,ARRAY[]::TEXT[],NULL,22,'c_fyz-hustota-latek',NULL,NOW()),
+('q_fyz-hustota-latek_23','Hustota ledu je přibližně:',ARRAY['900 kg/m³','1000 kg/m³','800 kg/m³','2700 kg/m³']::TEXT[],0,'Led plave, je menší než voda.',5,ARRAY[]::TEXT[],NULL,23,'c_fyz-hustota-latek',NULL,NOW()),
 ('q_fyz-magnetismus_0','Který materiál se přitahuje k magnetu?',ARRAY['Dřevo','Sklo','Železo','Plast']::TEXT[],2,'Feromagnetické materiály se magnetem přitahují.',1,ARRAY[]::TEXT[],NULL,0,'c_fyz-magnetismus',NULL,NOW()),
 ('q_fyz-magnetismus_1','Kolik pólů má magnet?',ARRAY['Tři','Čtyři','Jeden','Dva (severní a jižní)']::TEXT[],3,'Každý magnet má dva póly.',1,ARRAY[]::TEXT[],NULL,1,'c_fyz-magnetismus',NULL,NOW()),
 ('q_fyz-magnetismus_2','Co se stane, když přiblížíme dva severní póly k sobě?',ARRAY['Nic se nestane','Odpudí se','Zničí se','Přitáhnou se']::TEXT[],1,'Stejné póly se odpuzují.',2,ARRAY[]::TEXT[],NULL,2,'c_fyz-magnetismus',NULL,NOW()),
@@ -73,6 +76,8 @@ INSERT INTO "Question" ("id","prompt","options","correctIndex","explanation","di
 ('q_fyz-magnetismus_18','Kompas se otáčí podle:',ARRAY['větru','gravitace','magnetického pole Země','slunečního záření']::TEXT[],2,'Střelka se orientuje podle pole Země.',3,ARRAY[]::TEXT[],NULL,18,'c_fyz-magnetismus',NULL,NOW()),
 ('q_fyz-magnetismus_19','Elektromagnet lze zesílit:',ARRAY['ochlazením','zvýšením počtu závitů nebo proudu','snížením napětí','zvětšením odporu']::TEXT[],1,'Více závitů a větší proud = silnější magnet.',3,ARRAY[]::TEXT[],NULL,19,'c_fyz-magnetismus',NULL,NOW()),
 ('q_fyz-magnetismus_20','Směr magnetických indukčních čar vně magnetu je od:',ARRAY['okraje ke středu','středu k okraji','jižního k severnímu','severního pólu k jižnímu']::TEXT[],3,'Čáry vycházejí ze severního pólu.',4,ARRAY[]::TEXT[],NULL,20,'c_fyz-magnetismus',NULL,NOW()),
+('q_fyz-magnetismus_21','Jednotka magnetické indukce je:',ARRAY['ohm','volt','newton','tesla']::TEXT[],3,'Tesla.',4,ARRAY[]::TEXT[],NULL,21,'c_fyz-magnetismus',NULL,NOW()),
+('q_fyz-magnetismus_22','Který materiál je pro magnetismus nejdůležitější?',ARRAY['železo, nikl, kobalt','dřevo, plast','sklo, papír','měď, zlato']::TEXT[],0,'Feromagnetika.',5,ARRAY[]::TEXT[],NULL,22,'c_fyz-magnetismus',NULL,NOW()),
 ('q_fyz-prace-vykon_0','Co je to mechanická práce?',ARRAY['Rychlost tělesa','Síla působící po dráze','Čas, který uplyne','Hmotnost tělesa']::TEXT[],1,'Práce vzniká při působení síly na dráze.',1,ARRAY[]::TEXT[],NULL,0,'c_fyz-prace-vykon',NULL,NOW()),
 ('q_fyz-prace-vykon_1','Jaká je jednotka práce?',ARRAY['Newton (N)','Joule (J)','Pascal (Pa)','Watt (W)']::TEXT[],1,'Práce se udává v joulech.',1,ARRAY[]::TEXT[],NULL,1,'c_fyz-prace-vykon',NULL,NOW()),
 ('q_fyz-prace-vykon_2','Jaký je vzorec pro práci?',ARRAY['W = F · s','W = F · t','W = m · v','W = F / s']::TEXT[],0,'Práce je součin síly a dráhy.',2,ARRAY[]::TEXT[],NULL,2,'c_fyz-prace-vykon',NULL,NOW()),
@@ -94,6 +99,11 @@ INSERT INTO "Question" ("id","prompt","options","correctIndex","explanation","di
 ('q_fyz-prace-vykon_18','Člověk zvedne 10 kg do výšky 2 m. Vykonaná práce při g = 10 m/s² je:',ARRAY['20 J','1000 J','200 J','2 J']::TEXT[],2,'W = m·g·h = 10·10·2 = 200 J.',3,ARRAY[]::TEXT[],NULL,18,'c_fyz-prace-vykon',NULL,NOW()),
 ('q_fyz-prace-vykon_19','Jeřáb vykoná práci 6 000 J za 3 s. Jeho výkon je:',ARRAY['500 W','2 W','18 000 W','2 000 W']::TEXT[],3,'P = 6000 / 3 = 2000 W.',3,ARRAY[]::TEXT[],NULL,19,'c_fyz-prace-vykon',NULL,NOW()),
 ('q_fyz-prace-vykon_20','Těleso se pohybuje rovnoměrně, síla je 5 N a dráha 4 m. Práce je:',ARRAY['9 J','20 J','1,25 J','5 J']::TEXT[],1,'W = F · s = 5 · 4.',4,ARRAY[]::TEXT[],NULL,20,'c_fyz-prace-vykon',NULL,NOW()),
+('q_fyz-prace-vykon_21','Člověk zvedne 10 kg do výšky 2 m (g = 10). Práce je:',ARRAY['2 J','20 J','200 J','1000 J']::TEXT[],2,'m·g·h.',3,ARRAY[]::TEXT[],NULL,21,'c_fyz-prace-vykon',NULL,NOW()),
+('q_fyz-prace-vykon_22','Jeřáb vykoná práci 6 000 J za 3 s. Výkon je:',ARRAY['500 W','2 000 W','2 W','18 000 W']::TEXT[],1,'6000/3.',3,ARRAY[]::TEXT[],NULL,22,'c_fyz-prace-vykon',NULL,NOW()),
+('q_fyz-prace-vykon_23','Síla 5 N působí na dráze 4 m. Práce je:',ARRAY['5 J','20 J','1,25 J','9 J']::TEXT[],1,'5 · 4.',4,ARRAY[]::TEXT[],NULL,23,'c_fyz-prace-vykon',NULL,NOW()),
+('q_fyz-prace-vykon_24','Výkon motoru 1 kW za 10 s vykoná práci:',ARRAY['100 J','10 J','10 000 J','1 000 J']::TEXT[],2,'P·t = 1000·10.',4,ARRAY[]::TEXT[],NULL,24,'c_fyz-prace-vykon',NULL,NOW()),
+('q_fyz-prace-vykon_25','Jednotka energie v kWh odpovídá:',ARRAY['3,6 MJ','3,6 kJ','36 kJ','1 MJ']::TEXT[],0,'1 kWh = 3,6 MJ.',5,ARRAY[]::TEXT[],NULL,25,'c_fyz-prace-vykon',NULL,NOW()),
 ('q_fyz-jednotky-mereni_0','Jaká je základní jednotka délky v SI?',ARRAY['kilometr (km)','palec','metr (m)','centimetr (cm)']::TEXT[],2,'Základní jednotka délky je metr.',1,ARRAY[]::TEXT[],NULL,0,'c_fyz-jednotky-mereni',NULL,NOW()),
 ('q_fyz-jednotky-mereni_1','Jaká je základní jednotka hmotnosti v SI?',ARRAY['tuna (t)','libra','kilogram (kg)','gram (g)']::TEXT[],2,'Základní jednotka hmotnosti je kilogram.',1,ARRAY[]::TEXT[],NULL,1,'c_fyz-jednotky-mereni',NULL,NOW()),
 ('q_fyz-jednotky-mereni_2','Jaká je základní jednotka času v SI?',ARRAY['sekunda (s)','den','minuta (min)','hodina (h)']::TEXT[],0,'Sekunda je základní jednotka času.',1,ARRAY[]::TEXT[],NULL,2,'c_fyz-jednotky-mereni',NULL,NOW()),
@@ -115,6 +125,8 @@ INSERT INTO "Question" ("id","prompt","options","correctIndex","explanation","di
 ('q_fyz-jednotky-mereni_18','Jednotka teploty v soustavě SI je:',ARRAY['stupeň Celsia','kilogram','kelvin','stupeň Fahrenheita']::TEXT[],2,'Základní jednotka je kelvin.',2,ARRAY[]::TEXT[],NULL,18,'c_fyz-jednotky-mereni',NULL,NOW()),
 ('q_fyz-jednotky-mereni_19','Kolik centimetrů je jeden metr?',ARRAY['0,01 cm','100 cm','1000 cm','10 cm']::TEXT[],1,'1 m = 100 cm.',3,ARRAY[]::TEXT[],NULL,19,'c_fyz-jednotky-mereni',NULL,NOW()),
 ('q_fyz-jednotky-mereni_20','Kolik gramů je jeden kilogram?',ARRAY['10 g','1000 g','10 000 g','100 g']::TEXT[],1,'1 kg = 1000 g.',3,ARRAY[]::TEXT[],NULL,20,'c_fyz-jednotky-mereni',NULL,NOW()),
-('q_fyz-jednotky-mereni_21','Kolik sekund je jedna hodina?',ARRAY['600 s','3600 s','360 s','60 s']::TEXT[],1,'1 h = 60 min = 3600 s.',4,ARRAY[]::TEXT[],NULL,21,'c_fyz-jednotky-mereni',NULL,NOW())
+('q_fyz-jednotky-mereni_21','Kolik sekund je jedna hodina?',ARRAY['600 s','3600 s','360 s','60 s']::TEXT[],1,'1 h = 60 min = 3600 s.',4,ARRAY[]::TEXT[],NULL,21,'c_fyz-jednotky-mereni',NULL,NOW()),
+('q_fyz-jednotky-mereni_22','Kolik mm je jeden metr?',ARRAY['10 000 mm','100 mm','10 mm','1000 mm']::TEXT[],3,'1 m = 1000 mm.',4,ARRAY[]::TEXT[],NULL,22,'c_fyz-jednotky-mereni',NULL,NOW()),
+('q_fyz-jednotky-mereni_23','Kolik mililitrů je jeden litr?',ARRAY['10 000 ml','10 ml','100 ml','1000 ml']::TEXT[],3,'1 l = 1000 ml.',5,ARRAY[]::TEXT[],NULL,23,'c_fyz-jednotky-mereni',NULL,NOW())
 ON CONFLICT ("id") DO NOTHING;
 
