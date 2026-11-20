@@ -1,6 +1,15 @@
 import { prisma } from "@/lib/prisma";
 import type { GameQuestion } from "@/i18n/game";
 
+function shuffle<T>(items: readonly T[]): T[] {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
 // Otázky kurzu pro hry: na jednu úroveň připadá v kurzu jen pár otázek, takže kolo doplníme
 // z nejbližších obtížností (nejdřív stejná, pak sousední), ať je dost na výběr.
 export async function loadGameQuestions(
@@ -20,9 +29,18 @@ export async function loadGameQuestions(
     },
   });
   if (!course) return null;
-  const questions = course.questions
-    .filter((q) => q.options.length === 4 && q.correctIndex >= 0 && q.correctIndex < 4)
-    .sort((a, b) => Math.abs(a.difficulty - difficulty) - Math.abs(b.difficulty - difficulty))
+  // Míchání: uvnitř každé vzdálenosti od obtížnosti otázky zamíchej, ať se kolo pokaždé skládá jinak
+  // a hry se neopakují. Nejdřív jdou otázky stejné obtížnosti, pak sousední.
+  type Row = (typeof course.questions)[number];
+  const byDistance = new Map<number, Row[]>();
+  for (const q of course.questions) {
+    if (q.options.length !== 4 || q.correctIndex < 0 || q.correctIndex >= 4) continue;
+    const d = Math.abs(q.difficulty - difficulty);
+    byDistance.set(d, [...(byDistance.get(d) ?? []), q]);
+  }
+  const questions = [...byDistance.keys()]
+    .sort((a, b) => a - b)
+    .flatMap((d) => shuffle<Row>(byDistance.get(d) ?? []))
     .slice(0, size)
     .map((q) => ({
       id: q.id,
