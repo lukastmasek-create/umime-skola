@@ -1,0 +1,21 @@
+{
+  "name": "EconomyGame",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "Economy": { "$path": "src/shared" }
+    },
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "EconomyService": { "$path": "src/server/EconomyService.server.lua" }
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "EconomyUI": { "$path": "src/client/EconomyUI.client.lua" }
+      }
+    }
+  }
+}
