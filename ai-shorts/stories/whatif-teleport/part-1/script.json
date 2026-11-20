@@ -1,0 +1,8 @@
+{ "voice": "am_puck", "bed": 0, "lines": [
+ ["You wake up... and you can *teleport*.", 0.95, 0.3],
+ ["It starts with a sneeze. Achoo! Your bed is gone. You land in the kitchen, face first in your sister's cereal.", 1.1, 0.3],
+ ["You are late for school, so you blink... and land on your desk. In your pyjamas. The whole class stares.", 1.1, 0.3],
+ ["By lunch, you have had breakfast on a beach, a snowball fight on a mountain, and a nap in the desert.", 1.1, 0.25],
+ ["But why is a man with a clipboard... waiting at *every single place* you land?", 0.88, 2.6],
+ ["Follow and comment... for part two!", 1.0, 0.9]
+]}

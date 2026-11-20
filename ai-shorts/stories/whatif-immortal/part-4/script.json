@@ -1,0 +1,8 @@
+{ "voice": "bm_george", "bed": -3, "lines": [
+ ["Lyra's last day. She is ninety, small, and *smiling*. You can choose to stay forever... or end here, with her.", 0.95, 0.3],
+ ["Echo says: for four hundred years I never had anyone to choose it with. Now you do.", 1.0, 0.3],
+ ["You hold Lyra's hand. The golden light rises. Your hair turns grey, one *silver* strand at a time.", 1.02, 0.3],
+ ["Years later, you are old, and tired, and happy. And somehow, it is the *best* day of your very long life.", 1.05, 0.25],
+ ["But Echo is wearing a yellow ribbon... *Lyra's* ribbon. Why does she have it?", 0.86, 2.6],
+ ["Follow for the next story... and comment what it should be!", 1.0, 0.9]
+]}

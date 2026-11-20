@@ -1,0 +1,8 @@
+{ "voice": "af_heart", "bed": 2, "lines": [
+ ["The stranger in the black car wants one thing... to *save the world*.", 0.95, 0.3],
+ ["In her lab, a screen shows an asteroid. Impact in four hundred days. You solve it in *nine seconds*.", 1.05, 0.3],
+ ["She goes pale. Because your solution works... but it needs one impossible thing.", 1.0, 0.3],
+ ["Every person on Earth must *agree*. At the same time. On anything. You can calculate planets, but never *that*.", 1.08, 0.25],
+ ["So what if the only person who can convince the world... is the friend you scared away?", 0.88, 2.6],
+ ["Follow and comment... for part four!", 1.0, 0.9]
+]}

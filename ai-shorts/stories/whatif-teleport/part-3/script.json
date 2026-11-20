@@ -1,0 +1,8 @@
+{ "voice": "am_puck", "bed": 0, "lines": [
+ ["The man with the clipboard is called Trek. And he works at the Landing Office.", 0.95, 0.3],
+ ["He opens a huge book. Your name is in it. Every landing, every skid mark, *every* sock.", 1.05, 0.3],
+ ["Trek says: teleporters leave footprints in the air. Footprints... can be *followed*. By things that aren't friendly.", 1.05, 0.3],
+ ["He hands you a ticket. One jump left on it. And no way to come back.", 1.05, 0.25],
+ ["So what if your very next jump... *doesn't have a return*?", 0.86, 2.6],
+ ["Follow and comment... for part four!", 1.0, 0.9]
+]}

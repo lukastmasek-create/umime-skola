@@ -1,0 +1,8 @@
+{ "voice": "am_puck", "bed": 0, "lines": [
+ ["Kit followed your footprints. Now she is on a frozen mountain top, and the cold things are coming *closer*.", 1.0, 0.3],
+ ["You have one jump left. Use it to run away safe... or to bring *her* home.", 1.0, 0.3],
+ ["You hold her hand and jump. The mountain shatters into light. And you land... in your *kitchen*.", 1.05, 0.3],
+ ["Kit laughs. Cereal everywhere. Your sock is back on your foot. For one second, everything is *perfect*.", 1.05, 0.25],
+ ["Then Trek takes off his cap. He is wearing... *your pyjamas* under his coat. Why?", 0.86, 2.6],
+ ["Follow for the next story... and comment what it should be!", 1.0, 0.9]
+]}

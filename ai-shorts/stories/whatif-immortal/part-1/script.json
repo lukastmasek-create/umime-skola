@@ -1,0 +1,8 @@
+{ "voice": "bm_george", "bed": -3, "lines": [
+ ["You wake up... and you can *never* die.", 0.9, 0.3],
+ ["First, you test it. You step off the roof, land on your feet, and brush off the dust. Nothing. Not even a scratch.", 1.05, 0.3],
+ ["Then you do everything. Skydiving without a parachute. Eating the spiciest pepper on Earth. Your friend Lyra screams... then laughs.", 1.1, 0.3],
+ ["Years pass. The calendar flips. Lyra's hair turns *grey*. Yours never moves. Not one strand.", 1.0, 0.25],
+ ["But in every crowd, in every old photo... why is one stranger *not aging* either?", 0.86, 2.6],
+ ["Follow and comment... for part two!", 1.0, 0.9]
+]}

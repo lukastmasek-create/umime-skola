@@ -1,0 +1,8 @@
+{ "voice": "am_puck", "bed": 0, "lines": [
+ ["Every jump takes something. Something *small*.", 0.92, 0.3],
+ ["The first jump takes a sock. The second takes your left slipper. The third takes your *shadow*.", 1.1, 0.3],
+ ["The fifth takes a word. You open your mouth to talk to your sister... and you can't remember her name.", 1.08, 0.3],
+ ["Kit holds up a photo and says: it's Kit. It's *Kit*. She is not laughing anymore.", 1.05, 0.25],
+ ["And you can't help but wonder... what did your very *last* jump take?", 0.88, 2.6],
+ ["Follow and comment... for part three!", 1.0, 0.9]
+]}

@@ -1,0 +1,8 @@
+{ "voice": "af_bella", "bed": -5, "lines": [
+ ["You can stop *time*. Whenever you want.", 0.95, 0.3],
+ ["Your friend Bea knocks her coffee off the table. You press pause, catch it in mid-air, and press play. She never knows.", 1.1, 0.3],
+ ["The whole street is frozen. Cars, birds, raindrops. So you put a traffic cone on every single car.", 1.1, 0.3],
+ ["You give every frozen pigeon a tiny hat. Then you press play... and the whole city *loses its mind*.", 1.1, 0.25],
+ ["But in the silence, one person on the street is *still moving*... and looking straight at you. Who?", 0.88, 2.6],
+ ["Follow and comment... for part two!", 1.0, 0.9]
+]}

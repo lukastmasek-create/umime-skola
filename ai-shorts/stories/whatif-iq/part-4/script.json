@@ -1,0 +1,8 @@
+{ "voice": "af_heart", "bed": 2, "lines": [
+ ["Midnight. Your I.Q. is *dropping*. Nine hundred... five hundred... one hundred.", 1.0, 0.3],
+ ["You race to the rooftop and write everything down. Every equation. Every step. The notebook fills up *fast*.", 1.08, 0.3],
+ ["Mo arrives, out of breath. You hand him the notebook... and say the one sentence math never gave you: *I'm sorry*.", 1.05, 0.3],
+ ["Morning. You wake up normal. Average. Happy. The notebook is just a notebook... and the asteroid is on the news.", 1.08, 0.25],
+ ["But the last page is *not* in your handwriting. Why does it look like... Mo's?", 0.88, 2.6],
+ ["Follow for the next story... and comment what it should be!", 1.0, 0.9]
+]}

@@ -1,0 +1,8 @@
+{ "voice": "af_heart", "bed": 2, "lines": [
+ ["Today you wake up... with a *thousand* I.Q.", 0.95, 0.35],
+ ["Breakfast is easy. You read the cereal box once, then fix the toaster *with a spoon*. It has never worked so well.", 1.05, 0.3],
+ ["At school, the exam takes four seconds. You finish, hand it in, and politely correct the teacher's *textbook*.", 1.05, 0.3],
+ ["Outside, you can see everything. You tell your friend: in three seconds, a pigeon will land on your head.", 1.05, 0.25],
+ ["But who is the stranger in the black car... writing down every answer you give?", 0.88, 2.6],
+ ["Follow and comment... for part two!", 1.0, 0.9]
+]}

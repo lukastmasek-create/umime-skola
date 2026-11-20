@@ -1,0 +1,8 @@
+{ "voice": "af_heart", "bed": 2, "lines": [
+ ["You can't turn it *off*. Not even to sleep.", 0.95, 0.3],
+ ["At lunch, your friend takes ten seconds to say one sentence. So you finish it for him. Then the next one. Then he stops talking.", 1.08, 0.3],
+ ["At night, your brain counts every atom in the ceiling. Three nights now... *no sleep*.", 1.0, 0.3],
+ ["Then Mo says it, very quietly: you're scaring me. You calculate his heartbeat. It's fast. You didn't even need to.", 1.08, 0.25],
+ ["And now, at three in the morning... *who* is knocking on your door?", 0.88, 2.6],
+ ["Follow and comment... for part three!", 1.0, 0.9]
+]}

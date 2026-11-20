@@ -1,0 +1,8 @@
+{ "voice": "af_bella", "bed": -5, "lines": [
+ ["Midnight. Inside the vault there is no gold. Just one small, glowing *clock*... stopped at twelve.", 0.95, 0.3],
+ ["Vex whispers: it is the world's clock. Hold it still, and time stays frozen *forever*. No more tomorrow. No more aging.", 1.05, 0.3],
+ ["You think of Bea. Of birthdays. Of cold coffee and rainy Mondays. You turn the dial... and *press play*.", 1.05, 0.3],
+ ["The city wakes up. Cars honk. Pigeons fly. Vex smiles, and fades out like a shadow. Bea hands you a small gift.", 1.08, 0.25],
+ ["It is a watch. But why is its second hand... *not moving*?", 0.86, 2.6],
+ ["Follow for the next story... and comment what it should be!", 1.0, 0.9]
+]}
