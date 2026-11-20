@@ -1,0 +1,14 @@
+{
+  "name": "economy-roblox-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node run.mjs && node ui_smoke.mjs && node server_smoke.mjs",
+    "preview": "node ui_preview.mjs && node render_preview.mjs"
+  },
+  "devDependencies": {
+    "luau-web": "^1.5.1",
+    "tsx": "^4.19.0",
+    "playwright": "*"
+  }
+}

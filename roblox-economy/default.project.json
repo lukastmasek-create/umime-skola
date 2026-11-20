@@ -8,13 +8,13 @@
     },
     "ServerScriptService": {
       "$className": "ServerScriptService",
-      "EconomyService": { "$path": "src/server/EconomyService.server.lua" }
+      "EconomyService": { "$path": "src/server/EconomyService" }
     },
     "StarterPlayer": {
       "$className": "StarterPlayer",
       "StarterPlayerScripts": {
         "$className": "StarterPlayerScripts",
-        "EconomyUI": { "$path": "src/client/EconomyUI.client.lua" }
+        "EconomyUI": { "$path": "src/client/EconomyUI" }
       }
     }
   }

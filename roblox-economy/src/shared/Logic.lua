@@ -1,11 +1,12 @@
 --!nonstrict
--- Pure game logic (no Roblox services). Runs on the server (authoritative) and on the client (live cash counter).
--- Every action mutates `state` in place and returns (true, info) or (false, errorCode).
+-- Pure game logic (no Roblox services). Server-authoritative; client only calls read-only helpers.
+-- Every action mutates `state` in place and returns (true, info, extra) or (false, errorCode).
+-- Source of truth: umime-skola src/lib/idle/economy.ts (see README for deliberate differences).
 local C = require(script.Parent.Config)
 local H = C.H
 local L = {}
 
--- ───────── deterministic hash (FNV-1a + murmur3 fmix32), 32-bit safe in Luau doubles ─────────
+-- ───────── deterministic hash (FNV-1a + murmur3 fmix32) ─────────
 local TWO32 = 4294967296
 local function mul32(a, b)
 	return ((a * (b % 65536)) % TWO32 + ((a * math.floor(b / 65536)) % 65536) * 65536) % TWO32
@@ -32,6 +33,7 @@ local function hustleRoll(seed, round, index)
 	x = bit32.bxor(x, bit32.rshift(x, 16))
 	return x / TWO32
 end
+L.hustleRoll = hustleRoll
 
 local function clamp(v, lo, hi) return math.min(hi, math.max(lo, v)) end
 local function contains(list, v)
@@ -39,6 +41,15 @@ local function contains(list, v)
 	return false
 end
 local function fail(code) return false, code end
+local function isNum(v) return type(v) == "number" and v == v and v ~= math.huge and v ~= -math.huge end
+local function isInt(v) return isNum(v) and v == math.floor(v) end
+local function deepCopy(t)
+	if type(t) ~= "table" then return t end
+	local o = {}
+	for k, v in pairs(t) do o[k] = deepCopy(v) end
+	return o
+end
+L.deepCopy = deepCopy
 
 -- ───────── state ─────────
 function L.emptyNeeds()
@@ -49,20 +60,63 @@ end
 
 function L.newState(now, runs, best)
 	return {
-		v = 1, character = nil, cash = 0, totalEarned = 0, peak = 0, best = best or 0, runs = runs or 0,
+		v = C.STATE_VERSION, character = nil, cash = 0, totalEarned = 0, peak = 0, best = best or 0, runs = runs or 0,
 		startedAt = now, lastSeen = now, job = nil, energy = C.ENERGY_MAX, edu = 0, eduPoints = 0,
-		needs = L.emptyNeeds(), shift = nil, shiftReadyAt = 0, restReadyAt = 0, sickUntil = 0,
+		needs = L.emptyNeeds(), boosts = {}, shift = nil, shiftReadyAt = 0, restReadyAt = 0, sickUntil = 0,
+		vacationUntil = 0, vacations = {}, crisis = nil,
 		dayPay = 0, bonusAt = now, raises = {}, raiseReadyAt = 0,
-		companies = {}, setup = {}, phase = 1, holdings = {}, cost = {}, hustle = {}, knowledge = {},
+		companies = {}, setup = {}, responses = {}, research = {}, contracts = {}, phase = 1,
+		holdings = {}, cost = {}, hustle = {}, knowledge = {}, orders = {}, orderSeq = 0, arbReadyAt = 0,
 		distressAt = 0, bankruptcies = 0, lastBankruptId = nil, lastBankruptAt = 0,
-		news = {}, startupRound = {},
+		news = {}, startupRound = {}, history = {},
+		-- device progression and device-gated UI preferences (kept across restarts of the economy? no: reset on restart)
+		device = 1, deviceLog = {}, stats = { shifts = 0 }, watch = {}, views = {}, pins = {},
 	}
+end
+
+-- Fill missing fields with defaults and sanitize numbers. Safe for any older profile or garbage input.
+function L.migrate(raw, now)
+	local fresh = L.newState(now, 0, 0)
+	if type(raw) ~= "table" then return fresh end
+	for k, v in pairs(fresh) do
+		if raw[k] == nil and k ~= "character" and k ~= "job" and k ~= "shift" and k ~= "crisis" and k ~= "lastBankruptId" then
+			raw[k] = deepCopy(v)
+		end
+	end
+	for _, k in ipairs({ "cash", "totalEarned", "peak", "best", "runs", "energy", "edu", "eduPoints", "dayPay", "orderSeq", "phase", "device" }) do
+		if not isNum(raw[k]) then raw[k] = fresh[k] end
+	end
+	if type(raw.stats) ~= "table" then raw.stats = { shifts = 0 } end
+	raw.stats.shifts = isNum(raw.stats.shifts) and raw.stats.shifts or 0
+	raw.startedAt = isNum(raw.startedAt) and math.min(raw.startedAt, now) or now
+	raw.lastSeen = isNum(raw.lastSeen) and math.min(raw.lastSeen, now) or now
+	raw.bonusAt = isNum(raw.bonusAt) and math.min(raw.bonusAt, now) or now
+	raw.energy = clamp(raw.energy, 0, C.ENERGY_MAX)
+	raw.edu = clamp(math.floor(raw.edu), 0, C.MAX_EDU)
+	raw.phase = clamp(math.floor(raw.phase), 1, C.MAX_PHASE)
+	raw.device = clamp(math.floor(raw.device), 1, #C.DEVICES)
+	if type(raw.needs) ~= "table" then raw.needs = L.emptyNeeds() end
+	for _, id in ipairs(C.NEEDS) do raw.needs[id] = isNum(raw.needs[id]) and clamp(raw.needs[id], 0, C.MAX_NEED_DAYS) or 0 end
+	-- strip unknown ids
+	for _, field in ipairs({ "companies", "setup", "responses", "research", "contracts" }) do
+		for id in pairs(raw[field]) do if not C.COMPANY_BY_ID[id] then raw[field][id] = nil end end
+	end
+	for _, field in ipairs({ "holdings", "cost", "startupRound" }) do
+		for id in pairs(raw[field]) do if not C.ASSET_BY_ID[id] then raw[field][id] = nil end end
+	end
+	for id in pairs(raw.hustle) do if not C.HUSTLE_BY_ID[id] then raw.hustle[id] = nil end end
+	for id, slot in pairs(raw.setup) do
+		local d = L.defaultSetup()
+		for k, v in pairs(d) do if slot[k] == nil then slot[k] = deepCopy(v) end end
+	end
+	raw.v = C.STATE_VERSION
+	return raw
 end
 
 function L.defaultSetup()
 	return {
 		upgraded = false, staff = 0, roles = { producer = 0, seller = 0, accountant = 0, manager = 0 },
-		rookieUntil = 0, price = 1, output = 1, risk = 0.3, stock = 0,
+		rookieUntil = 0, unionUntil = 0, marketingUntil = 0, price = 1, output = 1, risk = 0.3, stock = 0,
 	}
 end
 local function setupOf(state, id)
@@ -81,6 +135,7 @@ end
 
 -- ───────── events & prices ─────────
 local function eventWindow(now) return math.floor(now / C.EVENT_WINDOW_MS) end
+L.eventWindow = eventWindow
 
 function L.currentEvent(now)
 	local window = eventWindow(now)
@@ -96,6 +151,8 @@ local function eventAffects(def, id)
 	end
 	return contains(def.affects, id)
 end
+L.eventAffects = eventAffects
+function L.isNegativeEvent(def) return def.mult < 1 or def.wageMult > 1 end
 
 function L.currentAssetEvent(now)
 	local window = math.floor(now / C.ASSET_EVENT_WINDOW_MS)
@@ -124,6 +181,13 @@ function L.assetPrice(id, now, origin)
 	return math.max(1, def.base * trend * (1 + def.vol * (wave + noise))) * assetEventMult(id, now)
 end
 
+function L.arbitrageSpread(now)
+	local h = now / H
+	local a = math.sin(h * 20 + 0.7) * 0.5 + math.sin(h * 70 + 2.1) * 0.5
+	local b = math.sin(h * 17 + 4.2) * 0.5 + math.sin(h * 55 + 0.3) * 0.5
+	return math.abs(a - b) * 0.03
+end
+
 function L.startupOutcome(id, round)
 	local r = hash32("startup-round:" .. id .. ":" .. round)
 	if r < C.STARTUP_EXIT_CHANCE then
@@ -148,12 +212,22 @@ end
 function L.needDaily(state, id)
 	return math.round(L.livingCost(state) * 24 * C.NEED_DEF[id].share)
 end
-function L.needsEffects(state)
+function L.boostPrice(state, id)
+	return math.round(L.livingCost(state) * 24 * C.BOOST_DEF[id].priceShare)
+end
+function L.needsEffects(state, now)
 	local n = state.needs
 	local function empty(id) return n[id] <= 0 end
+	local function boost(kind)
+		local m = 1
+		for _, b in ipairs(state.boosts) do
+			if b.until_ > now then m *= C.BOOST_DEF[b.id][kind] end
+		end
+		return m
+	end
 	return {
-		income = empty("clothing") and C.CLOTHING_INCOME or 1,
-		energyRegen = (empty("food") and C.FOOD_REGEN or 1) * (empty("leisure") and C.LEISURE_REGEN or 1),
+		income = (empty("clothing") and C.CLOTHING_INCOME or 1) * boost("income"),
+		energyRegen = (empty("food") and C.FOOD_REGEN or 1) * (empty("leisure") and C.LEISURE_REGEN or 1) * boost("energy"),
 		energyDrain = empty("drink") and C.DRINK_DRAIN or 0,
 		energyCap = empty("health") and C.HEALTH_ENERGY_CAP or 1,
 		noShift = empty("transport"),
@@ -166,11 +240,10 @@ function L.companyIncome(id)
 	local d = C.COMPANY_BY_ID[id]
 	return d.cost / d.payback
 end
-function L.companyPrice(state, id)
-	local mult = state.character and C.FAMILY_DEF[state.character.family].company or 1
-	return math.round(C.COMPANY_BY_ID[id].cost * mult * C.COMPANY_GROWTH ^ (state.companies[id] or 0))
-end
 local function familyCompany(state) return state.character and C.FAMILY_DEF[state.character.family].company or 1 end
+function L.companyPrice(state, id)
+	return math.round(C.COMPANY_BY_ID[id].cost * familyCompany(state) * C.COMPANY_GROWTH ^ (state.companies[id] or 0))
+end
 function L.upgradePrice(state, id) return math.round(C.COMPANY_BY_ID[id].cost * C.UPGRADE_COST_MULT * familyCompany(state)) end
 function L.hireCost(role) return math.round(C.STAFF_BASE_WAGE * C.STAFF_HIRE_YEARS * C.ROLE_WAGE[role]) end
 function L.sellPrice(state, id) return math.round((L.companyPrice(state, id) / C.COMPANY_GROWTH) * C.SELL_SHARE) end
@@ -182,28 +255,53 @@ function L.batchPrice(id, now)
 end
 function L.phaseRequirement(k) return k <= 1 and 0 or math.round(400 * 1.8 ^ (k - 2)) end
 function L.phaseCost(k) return math.round(L.phaseRequirement(k) * C.PHASE_COST_YEARS) end
+function L.campaignPrice(state, id) return math.round(C.COMPANY_BY_ID[id].cost * (state.companies[id] or 0) * C.MARKETING_COST * familyCompany(state)) end
+function L.fundPrice(state, id) return math.round(C.COMPANY_BY_ID[id].cost * (state.companies[id] or 0) * C.FUND_COST * familyCompany(state)) end
+function L.contractPrice(state, id) return math.round((state.companies[id] or 0) * L.companyIncome(id) * C.CONTRACT_FEE_YEARS * familyCompany(state)) end
+function L.researchLevel(state, id) return state.research[id] or 0 end
+function L.researchPrice(state, id) return math.round(C.COMPANY_BY_ID[id].cost * C.RESEARCH_COST * (L.researchLevel(state, id) + 1) * familyCompany(state)) end
+function L.contractActive(state, id, now) return (state.contracts[id] or 0) > now end
 
 local function payroll(roles)
 	local sum = 0
 	for _, k in ipairs(C.STAFF_ROLES) do sum += (roles[k] or 0) * C.ROLE_WAGE[k] end
 	return sum * C.STAFF_BASE_WAGE
 end
+function L.moraleFrom(wageShare) return math.min(1, math.max(0, 1.2 - 2 * wageShare)) end
+
+function L.currentRival(state, now)
+	local window = eventWindow(now)
+	if now - window * C.EVENT_WINDOW_MS >= C.EVENT_DURATION_MS then return nil end
+	local ownedList = {}
+	for _, c in ipairs(C.COMPANIES) do if (state.companies[c.id] or 0) > 0 then table.insert(ownedList, c.id) end end
+	if #ownedList == 0 then return nil end
+	return ownedList[math.floor(hash32("rival:" .. window) * #ownedList) + 1]
+end
+
+local function rivalMult(state, id, now)
+	if L.currentRival(state, now) ~= id then return 1 end
+	local s = setupOf(state, id)
+	local shield = now < s.marketingUntil and C.RIVAL_CAMPAIGN_SHIELD or 1
+	return math.max(0.5, 1 - C.RIVAL_BITE * s.price * shield)
+end
 
 local function eventEffect(state, id, now)
 	local ev = L.currentEvent(now)
 	if not ev or not eventAffects(ev.def, id) then return 1, 1 end
 	local s = setupOf(state, id)
-	local exposure = (0.3 + 1.5 * s.risk) * s.price
+	local exposure = (0.3 + 1.5 * s.risk) * s.price * (1 + C.RESEARCH_EXPOSURE * L.researchLevel(state, id))
+		* (L.contractActive(state, id, now) and C.CONTRACT_EXPOSURE or 1)
+	local saved = state.responses[id] == ev.window and (1 - C.FUND_SAVES) or 1
 	local d = ev.def
 	local mult
-	if d.mult < 1 then mult = math.max(0.05, 1 - (1 - d.mult) * exposure)
+	if d.mult < 1 then mult = math.max(0.05, 1 - (1 - d.mult) * exposure * saved)
 	else mult = 1 + (d.mult - 1) * exposure end
-	return mult, d.wageMult
+	return mult, 1 + (d.wageMult - 1) * saved
 end
 
 function L.companyYield(state, id, now)
 	local n = state.companies[id] or 0
-	if n <= 0 then return { gross = 0, costs = 0 } end
+	if n <= 0 then return { gross = 0, costs = 0, morale = 1, strike = false } end
 	local s = setupOf(state, id)
 	local effMult, wageMult = eventEffect(state, id, now)
 	local base = n * L.companyIncome(id)
@@ -213,21 +311,32 @@ function L.companyYield(state, id, now)
 	local producers = math.max(0, r.producer - sick)
 	local staffRevenue = producers * rookie * C.STAFF_REVENUE + r.seller * rookie * C.SELLER_REVENUE
 	local boost = (s.upgraded and 1 + C.UPGRADE_BONUS or 1) * s.price * s.output * (0.85 + 0.6 * s.risk)
+		* (now < s.marketingUntil and C.MARKETING_BONUS or 1)
 		* (r.manager > 0 and 1 + C.MANAGER_BONUS or 1) * effMult
+		* (L.contractActive(state, id, now) and 1 + C.CONTRACT_BONUS or 1)
+		* (1 + C.RESEARCH_BONUS * L.researchLevel(state, id)) * rivalMult(state, id, now)
 	local stocked = s.stock > 0 and 1 or C.NO_STOCK_OUTPUT
-	local gross = (base * boost + staffRevenue) * stocked
+	local gross0 = (base * boost + staffRevenue) * stocked
+	local wageCost = payroll(r) * wageMult
+	local morale = gross0 > 0 and L.moraleFrom(wageCost / gross0) or 1
+	local unionOn = s.staff >= C.UNION_MIN_STAFF and s.unionUntil <= now
+	local strike = unionOn and morale < C.UNION_THRESHOLD and hash32(`strike:{id}:{eventWindow(now)}`) < C.STRIKE_CHANCE
 	local upkeep = math.max(0, (s.output - 0.5) * 0.5)
-	return { gross = gross, costs = base * (upkeep + C.OPEX_SHARE) + payroll(r) * wageMult }
+	return { gross = strike and gross0 * C.STRIKE_OUTPUT or gross0, costs = base * (upkeep + C.OPEX_SHARE) + wageCost, morale = morale, strike = strike }
 end
 
 -- ───────── jobs & rates ─────────
 function L.eduBonus(edu) return math.min(C.MAX_EDU, math.max(0, edu)) * C.EDU_BONUS_PER_LEVEL end
 function L.eduCost(edu) return 5 + edu * 6 end
-function L.jobHourly(state)
+function L.inCrisis(state, now)
+	local c = state.crisis
+	return c ~= nil and state.job ~= nil and c.job == state.job.id and now >= c.startAt and now < c.endAt
+end
+function L.jobHourly(state, now)
 	local job, ch = state.job, state.character
 	if not job or not ch then return 0 end
 	return C.JOB_BY_ID[job.id].salary * (1 + C.JOB_RANK_BONUS * (job.rank - 1)) * C.COUNTRY_DEF[ch.country].salary
-		* C.CITY_DEF[ch.city].salary * (state.raises[job.id] or 1)
+		* C.CITY_DEF[ch.city].salary * (state.raises[job.id] or 1) * (L.inCrisis(state, now or 0) and C.CRISIS_SALARY or 1)
 end
 
 function L.rates(state, now)
@@ -235,9 +344,10 @@ function L.rates(state, now)
 	if not ch then return { salary = 0, companies = 0, passive = 0, living = 0, companyCosts = 0, multiplier = 1, net = 0, dividends = 0 } end
 	local city = C.CITY_DEF[ch.city]
 	local family = C.FAMILY_DEF[ch.family]
-	local fx = L.needsEffects(state)
+	local fx = L.needsEffects(state, now)
 	local multiplier = (1 + L.eduBonus(state.edu)) * fx.income
-	local salary = L.jobHourly(state) * C.PASSIVE_SHARE * (state.sickUntil > now and 0 or 1) * (1 - C.PERSONAL_TAX)
+	local passiveFactor = state.sickUntil > now and 0 or (state.vacationUntil > now and C.VACATION_PAY or 1)
+	local salary = L.jobHourly(state, now) * C.PASSIVE_SHARE * passiveFactor * (1 - C.PERSONAL_TAX)
 
 	local companies, costs, value, accountants = 0, 0, 0, 0
 	for _, c in ipairs(C.COMPANIES) do
@@ -271,9 +381,14 @@ function L.rates(state, now)
 		multiplier = multiplier, net = gross - costs, dividends = dividends }
 end
 
-function L.netWorth(state, now)
-	local total = state.cash
+function L.portfolioValue(state, now)
+	local total = 0
 	for _, a in ipairs(C.ASSETS) do total += (state.holdings[a.id] or 0) * L.assetPrice(a.id, now, state.startedAt) end
+	return total
+end
+
+function L.netWorth(state, now)
+	local total = state.cash + L.portfolioValue(state, now)
 	for _, c in ipairs(C.COMPANIES) do
 		local n = state.companies[c.id] or 0
 		if n > 0 then total += c.cost * n * familyCompany(state) end
@@ -337,6 +452,64 @@ local function resolveStartups(state, now)
 	end
 end
 
+local function applyBuy(state, id, money, price, now)
+	local qty = money / price
+	local have = state.holdings[id] or 0
+	local avg = state.cost[id] or price
+	state.cost[id] = (have * avg + money) / (have + qty)
+	state.holdings[id] = have + qty
+	state.cash -= money
+	if have <= 0 and C.ASSET_BY_ID[id].cat == "startups" then state.startupRound[id] = math.floor(now / C.STARTUP_ROUND_MS) end
+end
+
+local function applySell(state, id, share, price)
+	local have = state.holdings[id] or 0
+	local qty = have * share
+	local money = qty * price
+	local profit = money - qty * (state.cost[id] or price)
+	if have - qty < 1e-9 then state.holdings[id] = nil; state.cost[id] = nil else state.holdings[id] = have - qty end
+	state.cash += money
+	state.totalEarned += math.max(0, profit)
+	return money, profit
+end
+
+local function fillOrdersAt(state, at)
+	local snapshot = {}
+	for i, o in ipairs(state.orders) do snapshot[i] = o end
+	for _, o in ipairs(snapshot) do
+		local p = L.assetPrice(o.asset, at, state.startedAt)
+		local hit = (o.when == "below") and p <= o.price or (o.when == "above" and p >= o.price)
+		if hit then
+			for i, x in ipairs(state.orders) do if x.id == o.id then table.remove(state.orders, i) break end end
+			if o.side == "buy" then
+				local money = math.min(o.amount, state.cash)
+				if money < 1 then pushNews(state, { t = at, kind = "order-failed", asset = o.asset, amount = 0 })
+				else
+					applyBuy(state, o.asset, money, p, at)
+					pushNews(state, { t = at, kind = "buy-filled", asset = o.asset, amount = math.round(money) })
+				end
+			elseif (state.holdings[o.asset] or 0) <= 0 then
+				pushNews(state, { t = at, kind = "order-failed", asset = o.asset, amount = 0 })
+			else
+				local money = applySell(state, o.asset, o.share, p)
+				pushNews(state, { t = at, kind = "sell-filled", asset = o.asset, amount = math.round(money) })
+			end
+		end
+	end
+end
+
+local function fillOrders(state, from, to)
+	if #state.orders == 0 or to <= from then return end
+	local step = math.max(C.ORDER_CHECK_MS, math.ceil((to - from) / C.ORDER_MAX_SAMPLES))
+	local at = from + step
+	while true do
+		local t = math.min(at, to)
+		fillOrdersAt(state, t)
+		if t >= to or #state.orders == 0 then break end
+		at += step
+	end
+end
+
 local function applyQuits(state, now)
 	local window = eventWindow(now)
 	for _, c in ipairs(C.COMPANIES) do
@@ -362,6 +535,8 @@ local function bankruptcy(state, now)
 	if not worst then return end
 	state.companies[worst] = nil
 	state.setup[worst] = nil
+	state.contracts[worst] = nil
+	state.research[worst] = nil
 	state.bankruptcies += 1
 	state.lastBankruptId = worst
 	state.lastBankruptAt = now
@@ -373,13 +548,20 @@ local function withPeak(state, now)
 	state.best = math.max(state.best, worth)
 end
 
+local function recordHistory(state, now)
+	local last = state.history[#state.history]
+	if last and now - last.t < C.HISTORY_STEP_MS then return end
+	table.insert(state.history, { t = now, w = L.netWorth(state, now), p = math.round(L.portfolioValue(state, now)) })
+	while #state.history > C.HISTORY_MAX do table.remove(state.history, 1) end
+end
+
 function L.settle(state, now)
 	if not state.character then state.lastSeen = now return end
 	local elapsed = math.min(math.max(0, now - state.lastSeen), C.MAX_OFFLINE_MIN * 60000)
 	local hours = elapsed / H
 	local prev = state.lastSeen
 	state.lastSeen = now
-	local fx = L.needsEffects(state)
+	local fx = L.needsEffects(state, now)
 	if elapsed > 0 then
 		local rate = L.rates(state, prev + elapsed / 2)
 		local gain = rate.net * hours
@@ -387,6 +569,7 @@ function L.settle(state, now)
 		if gain > 0 then state.totalEarned += gain end
 		state.energy = math.min(C.ENERGY_MAX * fx.energyCap,
 			math.max(0, state.energy + C.ENERGY_PER_HOUR * hours * fx.energyRegen - fx.energyDrain * hours))
+		if state.job then state.job.hours += hours end
 		for _, c in ipairs(C.COMPANIES) do
 			local n, s = state.companies[c.id] or 0, state.setup[c.id]
 			if s and n > 0 and s.stock > 0 then s.stock = math.max(0, s.stock - n * s.output * C.INPUT_RATE * hours) end
@@ -395,7 +578,8 @@ function L.settle(state, now)
 		if fx.bills then state.cash -= L.needDaily(state, "housing") / 24 * hours end
 		if eventWindow(now) ~= eventWindow(prev) then applyQuits(state, now) end
 	end
-	-- distress warning / bankruptcy
+	-- drop expired boosts
+	for i = #state.boosts, 1, -1 do if state.boosts[i].until_ <= now then table.remove(state.boosts, i) end end
 	local danger = L.distressOf(state, now)
 	if not danger then state.distressAt = 0
 	else
@@ -410,17 +594,130 @@ function L.settle(state, now)
 		state.bonusAt = now
 	end
 	resolveStartups(state, now)
+	fillOrders(state, now - elapsed, now)
+	recordHistory(state, now)
 	withPeak(state, now)
 end
 
--- ───────── actions ─────────
-local function inList(list, v) return contains(list, v) end
+-- ───────── gates: why an action is locked, what it costs ─────────
+-- Each gate returns { ok = bool, price = n, reasons = { {code=..., need=..., have=...}, ... } }
+local function gate(price, cash)
+	return { ok = true, price = price, reasons = {}, cash = cash }
+end
+local function need(g, code, ok, have, req)
+	if not ok then g.ok = false; table.insert(g.reasons, { code = code, have = have, need = req }) end
+end
+function L.jobGate(state, id)
+	local def = C.JOB_BY_ID[id]
+	local g = gate(def.fee, state.cash)
+	need(g, "edu", state.edu >= def.edu, state.edu, def.edu)
+	need(g, "busyShift", state.shift == nil, 0, 1)
+	need(g, "sameJob", not (state.job and state.job.id == id), 0, 1)
+	return g
+end
+function L.companyGate(state, id)
+	local g = gate(L.companyPrice(state, id), state.cash)
+	need(g, "era", not L.isLocked(state, "company", id), 0, 1)
+	need(g, "maxUnits", (state.companies[id] or 0) < C.MAX_COMPANY_UNITS, 0, 1)
+	return g
+end
+function L.hustleGate(state, id)
+	local def = C.HUSTLE_BY_ID[id]
+	local g = gate(def.cost, state.cash)
+	need(g, "edu", state.edu >= def.edu, state.edu, def.edu)
+	need(g, "cash", state.cash >= def.cost, math.floor(state.cash), def.cost)
+	need(g, "running", state.hustle[id] == nil, 0, 1)
+	return g
+end
+function L.deviceGate(state, tier, now)
+	local d = C.DEVICES[tier]
+	if not d then return { ok = false, price = 0, reasons = { { code = "unknownDevice" } } } end
+	local g = gate(d.price, state.cash)
+	need(g, "deviceOrder", tier == state.device + 1, state.device, tier - 1)
+	local req = d.req
+	if req.shifts then need(g, "shifts", (state.stats.shifts or 0) >= req.shifts, state.stats.shifts or 0, req.shifts) end
+	if req.edu then need(g, "edu", state.edu >= req.edu, state.edu, req.edu) end
+	if req.netWorth then
+		local nw = now and L.netWorth(state, now) or 0
+		need(g, "netWorth", nw >= req.netWorth, nw, req.netWorth)
+	end
+	if req.companies then
+		local n = 0
+		for _, c in ipairs(C.COMPANIES) do n += state.companies[c.id] or 0 end
+		need(g, "companies", n >= req.companies, n, req.companies)
+	end
+	need(g, "cash", state.cash >= d.price, math.floor(state.cash), d.price)
+	return g
+end
 
+-- Upcoming expenses and active projects (iPad+ overview) and alerts (PC).
+function L.upcoming(state, now)
+	local list = {}
+	for _, id in ipairs(C.NEEDS) do
+		local msLeft = state.needs[id] * 24 * H
+		if state.needs[id] < 2 then
+			table.insert(list, { kind = "need", id = id, inMs = msLeft, amount = L.needDaily(state, id) })
+		end
+	end
+	for _, c in ipairs(C.COMPANIES) do
+		local n, s = state.companies[c.id] or 0, state.setup[c.id]
+		if s and n > 0 then
+			local burn = n * s.output * C.INPUT_RATE
+			if burn > 0 then
+				table.insert(list, { kind = "stock", id = c.id, inMs = (s.stock / burn) * H, amount = L.batchPrice(c.id, now) * 5 })
+			end
+		end
+	end
+	table.sort(list, function(a, b) return a.inMs < b.inMs end)
+	return list
+end
+
+function L.projects(state, now)
+	local list = {}
+	if state.shift then table.insert(list, { kind = "shift", step = state.shift.step }) end
+	for id, slot in pairs(state.hustle) do
+		table.insert(list, { kind = "hustle", id = id, round = slot.round, due = L.hustleDue(slot, id, now), inMs = L.hustleRoundAt(slot, id, slot.round) - now })
+	end
+	for _, o in ipairs(state.orders) do table.insert(list, { kind = "order", order = o }) end
+	return list
+end
+
+function L.alerts(state, now)
+	local list = {}
+	local danger, left = L.distressOf(state, now)
+	if danger then table.insert(list, { level = "bad", code = "distress", ms = left }) end
+	if state.energy < C.SHIFT_MIN_ENERGY then table.insert(list, { level = "warn", code = "lowEnergy" }) end
+	for _, id in ipairs(C.NEEDS) do
+		if state.needs[id] <= 0 then table.insert(list, { level = "bad", code = "needEmpty", id = id }) end
+	end
+	for _, c in ipairs(C.COMPANIES) do
+		local s = state.setup[c.id]
+		if (state.companies[c.id] or 0) > 0 and s and s.stock <= 0 then table.insert(list, { level = "warn", code = "noStock", id = c.id }) end
+	end
+	local ev = L.currentEvent(now)
+	if ev then
+		for _, c in ipairs(C.COMPANIES) do
+			if (state.companies[c.id] or 0) > 0 and eventAffects(ev.def, c.id) then
+				table.insert(list, { level = L.isNegativeEvent(ev.def) and "bad" or "good", code = "event", id = c.id, event = ev.def.id })
+				break
+			end
+		end
+	end
+	if state.sickUntil > now then table.insert(list, { level = "warn", code = "sick" }) end
+	if L.inCrisis(state, now) then table.insert(list, { level = "warn", code = "crisis" }) end
+	for _, o in ipairs(state.orders) do
+		local p = L.assetPrice(o.asset, now, state.startedAt)
+		if math.abs(p - o.price) / o.price < 0.03 then table.insert(list, { level = "good", code = "orderNear", id = o.asset }) end
+	end
+	return list
+end
+
+-- ───────── actions ─────────
 function L.createCharacter(state, input, now)
 	if state.character then return fail("has-character") end
 	local name = L.cleanName(input.name)
-	if name == "" or not inList(C.COUNTRIES, input.country) or not inList(C.CITIES, input.city)
-		or not inList(C.ERAS, input.era) or not inList(C.FAMILIES, input.family) then return fail("bad-request") end
+	if name == "" or not contains(C.COUNTRIES, input.country) or not contains(C.CITIES, input.city)
+		or not contains(C.ERAS, input.era) or not contains(C.FAMILIES, input.family) then return fail("bad-request") end
 	local fresh = L.newState(now, state.runs, state.best)
 	for k in pairs(state) do state[k] = nil end
 	for k, v in pairs(fresh) do state[k] = v end
@@ -431,6 +728,7 @@ function L.createCharacter(state, input, now)
 	return true
 end
 
+-- Restart: wipes progress (including device tier and layout choices). Record (`best`) and run count stay.
 function L.restart(state, now)
 	local fresh = L.newState(now, state.runs + 1, state.best)
 	for k in pairs(state) do state[k] = nil end
@@ -441,12 +739,26 @@ end
 function L.buyNeed(state, id, days, now)
 	if not state.character then return fail("no-character") end
 	if not C.NEED_DEF[id] then return fail("bad-request") end
-	if type(days) ~= "number" or days < 1 or days ~= math.floor(days) then return fail("bad-request") end
+	if not isInt(days) or days < 1 then return fail("bad-request") end
 	local have = state.needs[id]
 	local add = math.min(days, C.MAX_NEED_DAYS - have)
 	if add <= 1e-9 then return fail("max") end
 	state.cash -= math.round(L.needDaily(state, id) * add)
 	state.needs[id] = have + add
+	withPeak(state, now)
+	return true
+end
+
+function L.buyBoost(state, id, now)
+	if not state.character then return fail("no-character") end
+	local def = C.BOOST_DEF[id]
+	if not def then return fail("bad-request") end
+	local current = now
+	for _, b in ipairs(state.boosts) do if b.id == id and b.until_ > now then current = b.until_ end end
+	local untilT = math.min(now + C.MAX_BOOST_MINUTES * 60000, math.max(current, now) + def.minutes * 60000)
+	for i = #state.boosts, 1, -1 do if state.boosts[i].id == id then table.remove(state.boosts, i) end end
+	table.insert(state.boosts, { id = id, until_ = untilT })
+	state.cash -= L.boostPrice(state, id)
 	withPeak(state, now)
 	return true
 end
@@ -481,8 +793,9 @@ function L.startShift(state, now, rng, walk)
 	if not state.job then return fail("no-job") end
 	if state.shift then return fail("busy") end
 	if state.sickUntil > now then return fail("sick") end
+	if state.vacationUntil > now then return fail("vacation") end
 	if now < state.shiftReadyAt then return fail("cooldown") end
-	local noTransport = L.needsEffects(state).noShift
+	local noTransport = L.needsEffects(state, now).noShift
 	if noTransport and not walk then return fail("no-transport") end
 	local extra = (state.job.lead and C.LEAD_EXTRA_ENERGY or 0) + (noTransport and C.WALK_EXTRA_ENERGY or 0)
 	if state.energy < C.SHIFT_MIN_ENERGY + extra then return fail("low-energy") end
@@ -490,9 +803,14 @@ function L.startShift(state, now, rng, walk)
 		state.sickUntil = now + (rng() < 0.5 and 1 or 2) * C.GAME_DAY
 		return true, "sick"
 	end
+	local event = "shift-started"
+	if (not state.crisis or now >= state.crisis.endAt) and rng() < C.CRISIS_CHANCE then
+		state.crisis = { job = state.job.id, startAt = now + C.CRISIS_DELAY_MS, endAt = now + C.CRISIS_DELAY_MS + C.CRISIS_MS }
+		event = "crisis-warning"
+	end
 	state.energy -= extra
 	state.shift = { startedAt = now, seed = math.floor(rng() * #C.SITUATIONS), step = 0, perfSum = 0, lead = state.job.lead }
-	return true, "shift-started"
+	return true, event
 end
 
 local function avgPerf(perfs)
@@ -507,23 +825,24 @@ function L.chooseShift(state, index, now)
 	if not state.job then return fail("no-job") end
 	local shift = state.shift
 	if not shift then return fail("no-shift") end
-	if type(index) ~= "number" or index < 1 or index > 3 or index ~= math.floor(index) then return fail("bad-request") end
+	if not isInt(index) or index < 1 or index > 3 then return fail("bad-request") end
 	local perf = L.situationAt(shift.seed, shift.step).perf[index]
 	shift.step += 1
 	shift.perfSum += perf
-	state.energy -= C.SITUATION_ENERGY
+	state.energy = math.max(0, state.energy - C.SITUATION_ENERGY)
 	if shift.step < C.SITUATIONS_PER_SHIFT then return true, "shift-step" end
 
 	local avg = shift.perfSum / C.SITUATIONS_PER_SHIFT
 	local mult = 1 + L.eduBonus(state.edu)
-	local pay = math.round(L.jobHourly(state) * (1 - C.PASSIVE_SHARE) * (1 / C.SHIFTS_PER_YEAR) * (1 - C.PERSONAL_TAX)
+	local pay = math.round(L.jobHourly(state, now) * (1 - C.PASSIVE_SHARE) * (1 / C.SHIFTS_PER_YEAR) * (1 - C.PERSONAL_TAX)
 		* (0.7 + 0.6 * avg / C.PERF_MAX) * (shift.lead and C.LEAD_PAY or 1) * mult)
 	local points = avg >= 70 and 10 or (avg >= 40 and 6 or 3)
 	local job = state.job
 	job.points += points
 	table.insert(job.perfs, avg)
 	while #job.perfs > 5 do table.remove(job.perfs, 1) end
-	state.eduPoints += points -- shifts also feed learning points used for Education
+	state.eduPoints += points
+	state.stats.shifts += 1
 	local event = "shift-done"
 	if avg >= C.BAD_PERF then job.bad = 0; job.warned = false
 	elseif job.bad + 1 >= C.DISMISS_STREAK and job.warned then state.job = nil; event = "fired"
@@ -545,6 +864,21 @@ function L.rest(state, now)
 	state.energy = C.ENERGY_MAX
 	state.restReadyAt = now + C.REST_COOLDOWN_MS
 	return true, "rested"
+end
+
+function L.startVacation(state, now)
+	if not state.character then return fail("no-character") end
+	if state.shift then return fail("busy") end
+	if state.sickUntil > now then return fail("sick") end
+	if state.vacationUntil > now then return fail("busy") end
+	local recent = {}
+	for _, t in ipairs(state.vacations) do if now - t < C.VACATION_WINDOW_MS then table.insert(recent, t) end end
+	if #recent >= C.VACATION_MAX then return fail("max") end
+	table.insert(recent, now)
+	state.vacations = recent
+	state.vacationUntil = now + C.VACATION_MS
+	state.energy = C.ENERGY_MAX
+	return true, "vacation"
 end
 
 function L.requestPromotion(state, now, rng)
@@ -629,8 +963,7 @@ function L.sellCompany(state, id, now)
 	local money = L.sellPrice(state, id)
 	state.cash += money
 	if n - 1 <= 0 then
-		state.companies[id] = nil
-		state.setup[id] = nil
+		state.companies[id], state.setup[id], state.contracts[id], state.research[id] = nil, nil, nil, nil
 	else
 		state.companies[id] = n - 1
 		local s = state.setup[id]
@@ -645,7 +978,7 @@ function L.sellCompany(state, id, now)
 		end
 	end
 	withPeak(state, now)
-	return true, money
+	return true, "sold", money
 end
 
 function L.upgradeCompany(state, id, now)
@@ -683,7 +1016,7 @@ end
 function L.buyStock(state, id, amount, now)
 	local cid, err = owned(state, id)
 	if not cid then return fail(err) end
-	if type(amount) ~= "number" or amount < 1 or amount ~= math.floor(amount) then return fail("bad-request") end
+	if not isInt(amount) or amount < 1 then return fail("bad-request") end
 	local s = setupOf(state, id)
 	if s.stock + amount > L.stockCapacity(state.companies[id], state.phase) + 1e-9 then return fail("max") end
 	state.cash -= L.batchPrice(id, now) * amount
@@ -696,9 +1029,65 @@ function L.setCompanySetting(state, id, field, value, now)
 	local cid, err = owned(state, id)
 	if not cid then return fail(err) end
 	local r = C.SETTING_RANGE[field]
-	if not r or type(value) ~= "number" or value ~= value then return fail("bad-request") end
+	if not r or not isNum(value) then return fail("bad-request") end
 	local snapped = math.floor(value / r.step + 0.5) * r.step
 	setupOf(state, id)[field] = clamp(tonumber(string.format("%.2f", snapped)), r.min, r.max)
+	return true
+end
+
+function L.runCampaign(state, id, now)
+	local cid, err = owned(state, id)
+	if not cid then return fail(err) end
+	local s = setupOf(state, id)
+	if now < s.marketingUntil then return fail("busy") end
+	state.cash -= L.campaignPrice(state, id)
+	s.marketingUntil = now + C.MARKETING_MINUTES * 60000
+	withPeak(state, now)
+	return true
+end
+
+function L.fundResponse(state, id, now)
+	local cid, err = owned(state, id)
+	if not cid then return fail(err) end
+	local ev = L.currentEvent(now)
+	if not ev or not L.isNegativeEvent(ev.def) or not eventAffects(ev.def, id) then return fail("nothing") end
+	if state.responses[id] == ev.window then return fail("busy") end
+	state.cash -= L.fundPrice(state, id)
+	state.responses[id] = ev.window
+	withPeak(state, now)
+	return true
+end
+
+function L.signContract(state, id, now)
+	local cid, err = owned(state, id)
+	if not cid then return fail(err) end
+	if L.contractActive(state, id, now) then return fail("busy") end
+	state.cash -= L.contractPrice(state, id)
+	state.contracts[id] = now + C.CONTRACT_MS
+	withPeak(state, now)
+	return true
+end
+
+function L.researchCompany(state, id, now)
+	local cid, err = owned(state, id)
+	if not cid then return fail(err) end
+	local lvl = L.researchLevel(state, id)
+	if lvl >= C.MAX_RESEARCH then return fail("max") end
+	state.cash -= L.researchPrice(state, id)
+	state.research[id] = lvl + 1
+	withPeak(state, now)
+	return true
+end
+
+function L.unionDeal(state, id, now)
+	local cid, err = owned(state, id)
+	if not cid then return fail(err) end
+	local s = setupOf(state, id)
+	if s.staff < C.UNION_MIN_STAFF then return fail("nothing") end
+	if s.unionUntil > now then return fail("busy") end
+	state.cash -= math.round(payroll(s.roles) * C.UNION_DEAL_YEARS)
+	s.unionUntil = now + C.UNION_DEAL_MS
+	withPeak(state, now)
 	return true
 end
 
@@ -713,43 +1102,83 @@ function L.upgradePhase(state, now)
 	return true
 end
 
--- Assets
+-- Assets and orders
 function L.buyAsset(state, id, amount, now)
 	if not state.character then return fail("no-character") end
-	local def = C.ASSET_BY_ID[id]
-	if not def then return fail("bad-request") end
-	if type(amount) ~= "number" or amount <= 0 or amount ~= amount then return fail("bad-request") end
+	if not C.ASSET_BY_ID[id] then return fail("bad-request") end
+	if not isNum(amount) or amount <= 0 then return fail("bad-request") end
 	if L.isLocked(state, "asset", id) then return fail("locked") end
 	local money = math.min(amount, state.cash)
 	if money < 1 then return fail("not-enough-cash") end
-	local price = L.assetPrice(id, now, state.startedAt)
-	local qty = money / price
-	local have = state.holdings[id] or 0
-	local avg = state.cost[id] or price
-	state.cost[id] = (have * avg + money) / (have + qty)
-	state.holdings[id] = have + qty
-	state.cash -= money
-	if have <= 0 and def.cat == "startups" then state.startupRound[id] = math.floor(now / C.STARTUP_ROUND_MS) end
+	applyBuy(state, id, money, L.assetPrice(id, now, state.startedAt), now)
 	withPeak(state, now)
-	return true
+	return true, "bought", math.round(money)
 end
 
 function L.sellAsset(state, id, share, now)
 	if not state.character then return fail("no-character") end
 	if not C.ASSET_BY_ID[id] then return fail("bad-request") end
-	local have = state.holdings[id] or 0
-	if have <= 0 then return fail("nothing") end
-	share = (type(share) == "number" and share == share) and clamp(share, 0, 1) or 1
+	if (state.holdings[id] or 0) <= 0 then return fail("nothing") end
+	share = isNum(share) and clamp(share, 0, 1) or 1
 	if share <= 0 then return fail("bad-request") end
-	local price = L.assetPrice(id, now, state.startedAt)
-	local qty = have * share
-	local money = qty * price
-	local profit = money - qty * (state.cost[id] or price)
-	if have - qty < 1e-9 then state.holdings[id] = nil; state.cost[id] = nil else state.holdings[id] = have - qty end
-	state.cash += money
-	state.totalEarned += math.max(0, profit)
+	local money, profit = applySell(state, id, share, L.assetPrice(id, now, state.startedAt))
 	withPeak(state, now)
-	return true, math.round(money)
+	return true, "sold", math.round(money), math.round(profit)
+end
+
+function L.placeOrder(state, input, now)
+	if not state.character then return fail("no-character") end
+	if type(input) ~= "table" or not C.ASSET_BY_ID[input.asset] then return fail("bad-request") end
+	if input.side ~= "buy" and input.side ~= "sell" then return fail("bad-request") end
+	if input.when ~= "below" and input.when ~= "above" then return fail("bad-request") end
+	if not isNum(input.price) or input.price <= 0 then return fail("bad-request") end
+	local current = L.assetPrice(input.asset, now, state.startedAt)
+	if input.when == "below" and input.price >= current then return fail("bad-request") end
+	if input.when == "above" and input.price <= current then return fail("bad-request") end
+	if #state.orders >= C.MAX_ORDERS then return fail("max") end
+	local amount, share = 0, 0
+	if input.side == "buy" then
+		if not isNum(input.amount) or input.amount <= 0 then return fail("bad-request") end
+		amount = input.amount
+	else
+		if (state.holdings[input.asset] or 0) <= 0 then return fail("nothing") end
+		local s = isNum(input.share) and input.share or 1
+		if s <= 0 or s > 1 then return fail("bad-request") end
+		share = s
+	end
+	table.insert(state.orders, {
+		id = `o{state.orderSeq}-{now}`, asset = input.asset, side = input.side, when = input.when,
+		price = input.price, amount = amount, share = share, createdAt = now,
+	})
+	state.orderSeq += 1
+	withPeak(state, now)
+	return true
+end
+
+function L.cancelOrder(state, id, now)
+	if not state.character then return fail("no-character") end
+	if type(id) ~= "string" then return fail("bad-request") end
+	for i, o in ipairs(state.orders) do
+		if o.id == id then table.remove(state.orders, i) return true end
+	end
+	return fail("nothing")
+end
+
+function L.arbitrageLimit(state) return C.ARB_CAP * (1 + state.edu * 0.2) end
+function L.arbitrage(state, amount, now)
+	if not state.character then return fail("no-character") end
+	if now < state.arbReadyAt then return fail("cooldown") end
+	if not isNum(amount) or amount <= 0 then return fail("bad-request") end
+	local money = math.min(amount, state.cash, L.arbitrageLimit(state))
+	if money < 1 then return fail("not-enough-cash") end
+	local edge = L.arbitrageSpread(now) - C.ARB_FEE
+	if edge <= 0 then return fail("no-spread") end
+	local profit = money * edge
+	state.cash += profit
+	state.totalEarned += profit
+	state.arbReadyAt = now + C.ARB_COOLDOWN_MS
+	withPeak(state, now)
+	return true, "arbitrage", math.round(profit)
 end
 
 -- Hustles
@@ -799,11 +1228,23 @@ function L.startHustle(state, id, stake, now, rng)
 	if state.edu < def.edu then return fail("locked") end
 	if state.hustle[id] then return fail("busy") end
 	stake = stake or def.cost
-	if type(stake) ~= "number" or stake < 1 or stake ~= math.floor(stake) then return fail("bad-request") end
+	if not isInt(stake) or stake < 1 or stake > 1e12 then return fail("bad-request") end
 	if state.cash < stake then return fail("not-enough-cash") end
 	state.cash -= stake
 	state.hustle[id] = { startedAt = now, value = stake, stake = stake, round = 0, seed = math.floor(rng() * 2 ^ 31),
 		streak = 0, protected = false, log = {} }
+	return true
+end
+
+function L.topUpHustle(state, id, amount, now)
+	if not state.character then return fail("no-character") end
+	local slot = C.HUSTLE_BY_ID[id] and state.hustle[id]
+	if not slot then return fail("nothing") end
+	if not isInt(amount) or amount < 1 or amount > 1e12 then return fail("bad-request") end
+	if state.cash < amount then return fail("not-enough-cash") end
+	slot.value += amount
+	slot.stake += amount
+	state.cash -= amount
 	return true
 end
 
@@ -818,7 +1259,8 @@ function L.decideHustle(state, id, option, now)
 	for _, c in ipairs(L.hustleChoices(slot, id)) do if c.index == option then choice = c end end
 	if not choice then return fail("bad-request") end
 	local last = slot.round == C.HUSTLE_PHASES - 1
-	local quality = choice.lo + (choice.hi - choice.lo) * hustleRoll(slot.seed, slot.round, choice.index)
+	-- roll index is 0-based in the web version (parity)
+	local quality = choice.lo + (choice.hi - choice.lo) * hustleRoll(slot.seed, slot.round, choice.index - 1)
 	local mult, value, lost = quality, slot.value * quality, false
 	if last then
 		mult = quality * L.hustleMarket(slot, id) * (1 - def.commission)
@@ -843,6 +1285,75 @@ function L.decideHustle(state, id, option, now)
 	state.totalEarned += math.max(0, profit)
 	withPeak(state, now)
 	return true, lost and "lost" or "done", profit
+end
+
+-- ───────── devices: one atomic purchase ─────────
+-- Deducts the price and unlocks the tier in the same synchronous call (no yields), so no partial state exists.
+-- Nothing else (shift, hustles, orders, holdings, cash after deduction) is touched.
+function L.buyDevice(state, tier, now)
+	if not state.character then return fail("no-character") end
+	if not isInt(tier) or not C.DEVICES[tier] then return fail("bad-request") end
+	if tier <= state.device then return fail("max") end
+	local g = L.deviceGate(state, tier, now)
+	if not g.ok then
+		for _, r in ipairs(g.reasons) do
+			if r.code == "cash" then return fail("not-enough-cash") end
+		end
+		return fail("locked")
+	end
+	state.cash -= C.DEVICES[tier].price
+	state.device = tier
+	table.insert(state.deviceLog, { tier = tier, t = now, price = C.DEVICES[tier].price })
+	withPeak(state, now)
+	return true, "device", tier
+end
+
+local function deviceDef(state) return C.DEVICES[state.device] end
+
+-- Device-gated UI preferences (validated server-side so a client can't fake a higher tier).
+function L.toggleWatch(state, id)
+	if not C.ASSET_BY_ID[id] then return fail("bad-request") end
+	local limit = deviceDef(state).limits.watch
+	for i, v in ipairs(state.watch) do
+		if v == id then table.remove(state.watch, i) return true end
+	end
+	if #state.watch >= limit then return fail("locked") end
+	table.insert(state.watch, id)
+	return true
+end
+
+function L.saveView(state, name, view)
+	local limit = deviceDef(state).limits.views
+	name = L.cleanName(name)
+	if name == "" or type(view) ~= "table" then return fail("bad-request") end
+	local tab = view.tab
+	if not contains({ "overview", "work", "needs", "companies", "invest", "hustle", "compare", "board" }, tab) then return fail("bad-request") end
+	local clean = { name = string.sub(name, 1, 16), tab = tab, filter = type(view.filter) == "string" and string.sub(view.filter, 1, 16) or "" }
+	for i, v in ipairs(state.views) do
+		if v.name == clean.name then state.views[i] = clean return true end
+	end
+	if #state.views >= limit then return fail("locked") end
+	table.insert(state.views, clean)
+	return true
+end
+
+function L.deleteView(state, index)
+	if not isInt(index) or not state.views[index] then return fail("nothing") end
+	table.remove(state.views, index)
+	return true
+end
+
+function L.setPins(state, list)
+	local limit = deviceDef(state).limits.pins
+	if type(list) ~= "table" or #list > limit then return fail("locked") end
+	local out, seen = {}, {}
+	for _, id in ipairs(list) do
+		if not contains(C.PIN_CARDS, id) or seen[id] then return fail("bad-request") end
+		seen[id] = true
+		table.insert(out, id)
+	end
+	state.pins = out
+	return true
 end
 
 return L

@@ -280,4 +280,86 @@ C.LEISURE_REGEN = 0.8
 C.DRINK_DRAIN = 3
 C.HEALTH_ENERGY_CAP = 0.7
 
+
+-- ───────── v2 additions ─────────
+C.STATE_VERSION = 2
+
+-- Vacation, crisis
+C.VACATION_MS = C.GAME_DAY
+C.VACATION_PAY = 0.5
+C.VACATION_MAX = 2
+C.VACATION_WINDOW_MS = 30 * C.DAY
+C.CRISIS_CHANCE = 0.02
+C.CRISIS_DELAY_MS = C.GAME_DAY
+C.CRISIS_MS = 7 * C.GAME_DAY
+C.CRISIS_SALARY = 0.9
+
+-- Orders, arbitrage
+C.MAX_ORDERS = 8
+C.ORDER_CHECK_MS = 10 * 60000
+C.ORDER_MAX_SAMPLES = 400
+C.ARB_COOLDOWN_MS = 60000
+C.ARB_FEE = 0.005
+C.ARB_CAP = 5000
+
+-- Boosts (consumer goods)
+C.BOOSTS = { "energy_drink", "cinema" }
+C.BOOST_DEF = {
+	energy_drink = { need = "drink", priceShare = 0.1, minutes = 30, energy = 2, income = 1 },
+	cinema = { need = "leisure", priceShare = 0.25, minutes = 120, energy = 1, income = 1.1 },
+}
+C.MAX_BOOST_MINUTES = 240
+
+-- Company management extras
+C.MARKETING_MINUTES = 30
+C.MARKETING_BONUS = 1.3
+C.MARKETING_COST = 0.3
+C.FUND_COST = 0.3
+C.FUND_SAVES = 0.65
+C.CONTRACT_MS = 6 * C.H
+C.CONTRACT_FEE_YEARS = 0.25
+C.CONTRACT_BONUS = 0.35
+C.CONTRACT_EXPOSURE = 1.5
+C.MAX_RESEARCH = 3
+C.RESEARCH_COST = 1
+C.RESEARCH_BONUS = 0.15
+C.RESEARCH_EXPOSURE = 0.1
+C.RIVAL_BITE = 0.2
+C.RIVAL_CAMPAIGN_SHIELD = 0.5
+C.UNION_MIN_STAFF = 3
+C.UNION_THRESHOLD = 0.4
+C.STRIKE_CHANCE = 0.5
+C.STRIKE_OUTPUT = 0.5
+C.UNION_DEAL_MS = 12 * C.H
+C.UNION_DEAL_YEARS = 1 / 12
+
+-- History (net worth chart)
+C.HISTORY_STEP_MS = 15 * 60000
+C.HISTORY_MAX = 96
+
+-- Leaderboard
+C.BOARD_SIZE = 20
+
+-- ───────── DEVICES: single configuration table ─────────
+-- Buy sequentially. price in credits (cash must cover it, not allowed to go negative).
+-- req: shifts = lifetime completed shifts, edu = Education level, netWorth, companies = owned units.
+-- Tuning (middle family, Warehouse job, town): ~370 credits per real hour gross vs ~270 living cost,
+-- so iPad (600) is ~3-4 real hours of surplus for poor/middle starts. Laptop and PC price against company / investment capital.
+-- features: UI capabilities only. No income multipliers.
+C.DEVICES = {
+	{ id = "phone", tier = 1, price = 0, req = {},
+		limits = { watch = 0, views = 0, pins = 0 },
+		features = {} },
+	{ id = "ipad", tier = 2, price = 600, req = { shifts = 3 },
+		limits = { watch = 4, views = 0, pins = 0 },
+		features = { splitView = true, watchlist = true, upcoming = true } },
+	{ id = "laptop", tier = 3, price = 6000, req = { shifts = 10, edu = 3, netWorth = 5000 },
+		limits = { watch = 8, views = 4, pins = 0 },
+		features = { splitView = true, watchlist = true, upcoming = true, compare = true, savedViews = true, quickActions = true } },
+	{ id = "pc", tier = 4, price = 40000, req = { edu = 8, companies = 1, netWorth = 50000 },
+		limits = { watch = 12, views = 8, pins = 6 },
+		features = { splitView = true, watchlist = true, upcoming = true, compare = true, savedViews = true, quickActions = true, pinnedCards = true, history = true, alerts = true } },
+}
+C.PIN_CARDS = { "cash", "netWorth", "income", "needs", "companies", "portfolio", "projects", "hustle", "energy", "events" }
+
 return C
