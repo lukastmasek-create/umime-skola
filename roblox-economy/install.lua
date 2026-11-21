@@ -2616,9 +2616,15 @@ T.color = {
 	cream = hex("F4EEFF"), creamInk = hex("12061F"), text = hex("F4EEFF"), muted = hex("A094C7"), disabled = hex("3A2F5E"),
 	tileA = hex("B0185F"), tileB = hex("1D5FB8"), tileC = hex("B5560E"), tileD = hex("7A1FA8"), tileE = hex("0F8F82"), tileF = hex("3A2FB5"),
 }
+-- Fonts are looked up defensively: a name missing in this Studio version falls back instead of crashing the UI.
+local function font(name, fallback)
+	local ok, f = pcall(function() return Enum.Font[name] end)
+	return (ok and f) or fallback
+end
 T.font = {
-	display = Enum.Font.GothamBlack, head = Enum.Font.GothamBold, caps = Enum.Font.Code,
-	body = Enum.Font.BuilderSansMedium, bold = Enum.Font.BuilderSansBold, mono = Enum.Font.RobotoMono,
+	display = font("GothamBlack", Enum.Font.SourceSansBold), head = font("GothamBold", Enum.Font.SourceSansBold),
+	caps = font("Code", Enum.Font.SourceSans), body = font("BuilderSansMedium", Enum.Font.SourceSans),
+	bold = font("BuilderSansBold", Enum.Font.SourceSansBold), mono = font("RobotoMono", Enum.Font.Code),
 }
 T.size = { caption = 12, body = 14, label = 16, title = 22, display = 30 }
 T.space = { xs = 4, sm = 8, md = 12, lg = 16 }
