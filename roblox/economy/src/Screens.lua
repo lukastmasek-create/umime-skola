@@ -121,12 +121,13 @@ function Screens.home(ctx, parent)
 		secondary = (nxt.tab ~= "device" and st.device < #C.DEVICES) and S.hero.secondary or nil, onSecondary = function() ctx.go("device") end,
 	})
 	local panelW = wide and (ctx.cw - 12 - heroW) or ctx.cw
-	local panel = W.new("Frame", { Size = UDim2.fromOffset(panelW, wide and 230 or 0), AutomaticSize = wide and Enum.AutomaticSize.None or Enum.AutomaticSize.Y, BackgroundColor3 = T.color.panel, BackgroundTransparency = 0.1, BorderSizePixel = 0, LayoutOrder = 2 }, top)
-	W.corner(panel, 20)
-	W.stroke(panel, T.color.lineSoft, 1, 0)
-	W.pad(panel, 12, 10, 12, 10)
+	local panelOuter = W.new("Frame", { Size = UDim2.fromOffset(panelW, wide and 230 or 0), AutomaticSize = wide and Enum.AutomaticSize.None or Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = 2 }, top)
+	W.chamfer(panelOuter, { cut = 18, corners = { tr = true, bl = true }, fill = T.color.panel, fillT = 0.2, line = T.color.lineDim, z = 1 })
+	W.brackets(panelOuter, 10, T.color.line, 2, 4, 2)
+	local panel = W.new("Frame", { Size = UDim2.new(1, 0, wide and 1 or 0, 0), AutomaticSize = wide and Enum.AutomaticSize.None or Enum.AutomaticSize.Y, BackgroundTransparency = 1, ZIndex = 2 }, panelOuter)
+	W.pad(panel, 14, 12, 14, 12)
 	W.new("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }, panel)
-	local live = W.label(panel, { text = "●  " .. W.upper(S.hero.panelTitle), size = UDim2.new(1, 0, 0, 16), ts = 11, color = T.color.teal, font = T.font.head, wrap = false, order = 0 })
+	local live = W.label(panel, { text = "●  " .. W.upper(S.hero.panelTitle) .. "  ///", size = UDim2.new(1, 0, 0, 18), ts = 13, color = T.color.line, font = T.font.head, wrap = false, order = 0 })
 	W.glow(live, "TextTransparency", 0, 0.35, 3)
 	local alerts = L.alerts(st, now)
 	local shown = 0
@@ -134,16 +135,14 @@ function Screens.home(ctx, parent)
 		if shown >= (wide and 4 or 5) then break end
 		shown += 1
 		local color = (a.level == "bad") and T.color.red or ((a.level == "warn") and T.color.amber or T.color.teal)
-		local row = W.new("Frame", { Size = UDim2.new(1, 0, 0, 38), BackgroundColor3 = T.color.ink, BackgroundTransparency = 0.4, BorderSizePixel = 0, LayoutOrder = shown }, panel)
-		W.corner(row, 10)
+		local row = W.new("Frame", { Size = UDim2.new(1, 0, 0, 38), BackgroundTransparency = 1, LayoutOrder = shown }, panel)
+		W.chamfer(row, { cut = 7, corners = { tl = true, br = true }, fill = color, fillT = 0.9, line = color, lineT = 0.5, z = 1 })
 		local text = alertText(ctx, a)
-		local av = W.avatar(row, (a.level == "bad") and "!" or ((a.level == "warn") and "•" or "✓"), color, 28)
-		av.Position = UDim2.fromOffset(6, 5)
-		av.TextColor3 = T.color.creamInk
-		W.label(row, { text = text, pos = UDim2.fromOffset(42, 0), size = UDim2.new(1, -118, 1, 0), ts = 12, font = T.font.caps, wrap = false, truncate = Enum.TextTruncate.AtEnd })
-		W.button(row, { text = S.hero.panelOpen, variant = "ghost", w = 64, h = 24, ts = 10, pos = UDim2.new(1, -70, 0.5, -12), onClick = function() ctx.go(ALERT_TAB[a.code] or "home") end })
+		if a.level ~= "good" then W.hazard(row, UDim2.fromOffset(6, 9), UDim2.fromOffset(20, 20), color, 2) else W.label(row, { text = "✓", pos = UDim2.fromOffset(6, 9), size = UDim2.fromOffset(20, 20), color = color, font = T.font.head, align = Enum.TextXAlignment.Center }) end
+		W.label(row, { text = W.upper(text), pos = UDim2.fromOffset(34, 0), size = UDim2.new(1, -112, 1, 0), ts = 12, font = T.font.head, color = color, wrap = false, truncate = Enum.TextTruncate.AtEnd })
+		W.button(row, { text = S.hero.panelOpen, variant = "ghost", w = 70, h = 26, ts = 11, pos = UDim2.new(1, -70, 0.5, -12), onClick = function() ctx.go(ALERT_TAB[a.code] or "home") end })
 	end
-	if shown == 0 then W.label(panel, { text = S.hero.panelEmpty, size = UDim2.new(1, 0, 0, 40), ts = 12, color = T.color.muted, font = T.font.caps, order = 1 }) end
+	if shown == 0 then W.label(panel, { text = W.upper(S.hero.panelEmpty), size = UDim2.new(1, 0, 0, 40), ts = 13, color = T.color.muted, font = T.font.head, order = 1 }) end
 
 	-- "continue" tile row
 	W.label(parent, { text = W.upper(S.hero.continueTitle), size = UDim2.new(1, 0, 0, 26), ts = 16, font = T.font.display, color = T.color.text, wrap = false, order = W.nextOrder(parent) })
@@ -869,11 +868,13 @@ function Screens.dailyCard(ctx, parent, compact)
 	for d = 1, C.DAILY_MAX_STREAK do
 		local done = d < streak or (d == streak and not ready)
 		local today = ready and d == streak
-		local pip = W.new("TextLabel", { Size = UDim2.fromOffset(40, 46), BackgroundColor3 = done and T.color.gold or (today and T.color.raised or T.color.ink), BackgroundTransparency = done and 0.1 or 0.2, Text = (done and "✓" or tostring(d)) .. "\n" .. W.fmt(L.dailyReward(st, d)), Font = T.font.head, TextSize = 10, TextColor3 = done and T.color.creamInk or T.color.text, LayoutOrder = d, BorderSizePixel = 0 }, track)
-		W.corner(pip, 10)
+		local tint = done and T.color.gold or (today and T.color.amber or T.color.lineDim)
+		local pip = W.new("Frame", { Size = UDim2.fromOffset(44, 48), BackgroundTransparency = 1, LayoutOrder = d }, track)
+		local parts = W.chamfer(pip, { cut = 8, corners = { tl = true, br = true }, fill = tint, fillT = done and 0.15 or 0.88, line = tint, lineT = done and 0 or 0.2, z = 1 })
+		W.label(pip, { text = done and "✓" or string.format("%02d", d), pos = UDim2.fromOffset(0, 4), size = UDim2.new(1, 0, 0, 20), ts = 15, font = T.font.head, color = done and T.color.creamInk or tint, align = Enum.TextXAlignment.Center, wrap = false })
+		W.label(pip, { text = W.fmt(L.dailyReward(st, d)), pos = UDim2.fromOffset(0, 24), size = UDim2.new(1, 0, 0, 16), ts = 10, font = T.font.mono, color = done and T.color.creamInk or T.color.muted, align = Enum.TextXAlignment.Center, wrap = false })
 		if today then
-			local stp = W.stroke(pip, T.color.gold, 2)
-			W.glow(stp, "Transparency", 0, 0.6, 4)
+			for _, f in ipairs(parts.lines) do W.glow(f, "BackgroundTransparency", 0, 0.6, 4) end
 		end
 	end
 	if ready then

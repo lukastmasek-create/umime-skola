@@ -1,29 +1,31 @@
 --!nonstrict
--- Visual system shared by all four device tiers.
--- Deep midnight base with layered glass panels, a violet→pink brand gradient, mint for money gained,
--- coral for money lost, gold for rewards. Bold geometric display type, clean UI sans, tabular mono numbers.
+-- Sci-fi HUD visual system shared by all four device tiers.
+-- Deep navy void, a faint tactical grid, cyan neon line-work: cut-corner frames, corner brackets, chevrons,
+-- dotted ring gauges, segmented bars and hazard-striped warning plates. Cyan carries everything; amber and red
+-- appear only for warnings and danger, exactly like a heads-up display.
 local T = {}
 
 local function hex(h) return Color3.fromHex(h) end
 T.color = {
 	-- surfaces (darkest → lightest)
-	ink = hex("07060F"), ink2 = hex("120D26"), panel = hex("141029"), panel2 = hex("1C1638"), panel3 = hex("2A2152"), raised = hex("332862"),
-	-- lines
-	line = hex("9AA4FF"), lineDim = hex("3A3170"), lineSoft = hex("272052"),
-	-- brand
-	brand = hex("8B5CF6"), brand2 = hex("EC4899"), blue = hex("5B8CFF"), blueDark = hex("2B2470"),
+	ink = hex("050B14"), ink2 = hex("0A1626"), panel = hex("0B1C2C"), panel2 = hex("0F2438"), panel3 = hex("123049"), raised = hex("17405E"),
+	-- line-work
+	line = hex("3BE4FF"), lineDim = hex("1D7A93"), lineSoft = hex("12445A"), glow = hex("7FF1FF"),
 	-- semantic
-	magenta = hex("FF3D8B"), red = hex("FF5A6E"), teal = hex("2EF2A6"), amber = hex("FFC24B"), gold = hex("FFD66B"), sky = hex("5ED3FF"),
+	cyan = hex("3BE4FF"), teal = hex("3BE4FF"), sky = hex("7FD8FF"), blue = hex("2A8CFF"),
+	amber = hex("FFB020"), gold = hex("FFD25A"), red = hex("FF3B55"), magenta = hex("3BE4FF"),
+	brand = hex("3BE4FF"), brand2 = hex("1FA9E0"), blueDark = hex("0C2A40"),
 	-- text
-	cream = hex("F6F2FF"), creamInk = hex("0D0A1C"), text = hex("F4F1FF"), muted = hex("A49CC9"), faint = hex("6E6696"), disabled = hex("2C2650"),
-	-- tile gradients (pairs)
-	tileA = hex("C2185B"), tileB = hex("1E5BD8"), tileC = hex("D9661A"), tileD = hex("7B2FF7"), tileE = hex("0E9F8E"), tileF = hex("3F35C8"), tileG = hex("B8860B"),
+	text = hex("DDF8FF"), muted = hex("78AFC4"), faint = hex("3F6E82"), cream = hex("DDF8FF"), creamInk = hex("03121C"), disabled = hex("0E2232"),
+	-- tile tints (kept for screens; all stay in the cyan family)
+	tileA = hex("0E3A52"), tileB = hex("0B2F47"), tileC = hex("10344C"), tileD = hex("0A2840"), tileE = hex("0D3550"), tileF = hex("0B2C45"), tileG = hex("2B2A12"),
 	shadow = hex("000000"),
 }
-T.brandSeq = ColorSequence.new({ ColorSequenceKeypoint.new(0, T.color.brand), ColorSequenceKeypoint.new(1, T.color.brand2) })
-T.goodSeq = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex("2EF2A6")), ColorSequenceKeypoint.new(1, hex("19C3E6")) })
-T.goldSeq = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex("FFE08A")), ColorSequenceKeypoint.new(1, hex("FF9F2E")) })
-T.dangerSeq = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex("FF6B7F")), ColorSequenceKeypoint.new(1, hex("E0315A")) })
+local c = T.color
+T.brandSeq = ColorSequence.new(c.line, c.brand2)
+T.goodSeq = ColorSequence.new(c.line, c.brand2)
+T.goldSeq = ColorSequence.new(hex("FFE08A"), c.amber)
+T.dangerSeq = ColorSequence.new(hex("FF6B7F"), c.red)
 
 -- Fonts are looked up defensively: a name missing in this Studio version falls back instead of crashing the UI.
 local function font(name, fallback)
@@ -31,13 +33,17 @@ local function font(name, fallback)
 	return (ok and f) or fallback
 end
 T.font = {
-	display = font("GothamBlack", Enum.Font.SourceSansBold), head = font("GothamBold", Enum.Font.SourceSansBold),
-	caps = font("GothamMedium", Enum.Font.SourceSansSemibold), body = font("BuilderSansMedium", Enum.Font.SourceSans),
-	bold = font("BuilderSansBold", Enum.Font.SourceSansBold), mono = font("RobotoMono", Enum.Font.Code),
+	display = font("Michroma", font("GothamBlack", Enum.Font.SourceSansBold)), -- wide techno headlines
+	head = font("Sarpanch", font("GothamBold", Enum.Font.SourceSansBold)), -- condensed HUD labels
+	caps = font("Jura", font("GothamMedium", Enum.Font.SourceSans)), -- thin tactical captions
+	body = font("TitilliumWeb", font("BuilderSansMedium", Enum.Font.SourceSans)),
+	bold = font("TitilliumWeb", font("BuilderSansBold", Enum.Font.SourceSansBold)),
+	mono = font("RobotoMono", Enum.Font.Code),
 }
-T.size = { caption = 12, body = 14, label = 16, title = 22, display = 30 }
+T.size = { caption = 12, body = 15, label = 16, title = 22, display = 30 }
 T.space = { xs = 4, sm = 8, md = 12, lg = 16, xl = 24 }
-T.radius = 14
+T.radius = 0
+T.cut = 10 -- chamfer size of cut corners (px)
 T.motion = { fast = 0.08, base = 0.18, slow = 0.35 }
 
 -- Width classes: compact < 620, medium < 1020, wide >= 1020 (viewport pixels).
@@ -48,8 +54,8 @@ function T.metrics(viewport, touch)
 	return {
 		class = class, w = w, h = viewport.Y, touch = touch,
 		btnH = touch and 44 or 36, gutter = compact and 10 or 18,
-		topH = compact and 50 or 60, statsH = compact and 70 or 80,
-		headerH = (compact and 50 or 60) + (compact and 70 or 80), navH = 68,
+		topH = compact and 52 or 60, statsH = compact and 74 or 84,
+		headerH = (compact and 52 or 60) + (compact and 74 or 84), navH = 70,
 	}
 end
 

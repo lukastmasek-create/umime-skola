@@ -25,7 +25,15 @@ Color3 = { new = c3, fromRGB = function(r, g, b) return c3(r / 255, g / 255, b /
 	fromHex = function(h) assert(type(h) == "string" and #h == 6, "bad hex " .. tostring(h)); return c3(tonumber(h:sub(1, 2), 16) / 255, tonumber(h:sub(3, 4), 16) / 255, tonumber(h:sub(5, 6), 16) / 255) end }
 ColorSequenceKeypoint = { new = function(t, c) assert(type(t) == "number" and type(c) == "table", "bad keypoint"); return { Time = t, Value = c } end }
 ColorSequence = { new = function(a, b) assert(a ~= nil, "ColorSequence.new needs args"); return { a, b } end }
-NumberSequence = { new = function(a, b) return { a, b } end }
+NumberSequenceKeypoint = { new = function(t, v) assert(type(t) == "number" and t >= 0 and t <= 1 and type(v) == "number", "bad NumberSequenceKeypoint"); return { Time = t, Value = v } end }
+NumberSequence = { new = function(a, b)
+	if type(a) == "table" then
+		assert(#a >= 2 and #a <= 20, "NumberSequence needs 2..20 keypoints, got " .. #a)
+		assert(a[1].Time == 0 and a[#a].Time == 1, "NumberSequence must start at 0 and end at 1")
+		for i = 2, #a do assert(a[i].Time > a[i - 1].Time, "NumberSequence keypoints must increase") end
+	end
+	return { a, b }
+end }
 TweenInfo = { new = function(...) return { ... } end }
 
 local function enumOf(name)

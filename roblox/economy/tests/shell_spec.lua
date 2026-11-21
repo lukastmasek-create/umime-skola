@@ -52,7 +52,13 @@ local function push() stateRE.OnClientEvent:Fire(session.state, now, false) end
 local function tick(n) for _ = 1, n or 3 do heartbeat:Fire(1 / 20) end end
 local function pressText(root, pattern)
 	for _, d in ipairs(root:GetDescendants()) do
-		if d.ClassName == "TextButton" and type(d.Text) == "string" and d.Text:find(pattern, 1, true) and d._p.Activated then d._p.Activated:Fire() return true end
+		if d.ClassName == "TextButton" and d._p.Activated then
+			local hit = type(d.Text) == "string" and d.Text:upper():find(pattern:upper(), 1, true)
+			for _, c in ipairs(d._kids) do
+				if c.ClassName == "TextLabel" and type(c.Text) == "string" and c.Text:upper():find(pattern:upper(), 1, true) then hit = true end
+			end
+			if hit then d._p.Activated:Fire() return true end
+		end
 	end
 	return false
 end

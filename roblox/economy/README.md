@@ -53,7 +53,15 @@ device tiers and presses every button against a Roblox UI mock, and `shell_spec`
   study-point rewards scaled to cost of living. Net-worth goals track this run's peak, so restarting can't farm them.
 - **Daily reward** with a 7-day streak (20 h cooldown, 48 h grace). The streak survives restarts; cash doesn't.
 
-**UI / feel**
+**UI v2: sci-fi HUD** (styled on the reference HUD kit)
+- Cut-corner neon frames, corner brackets, title plates with `>>>` chevrons, edge notches, a tactical grid
+  backdrop with spinning ring clusters and a hologram platform.
+- Dotted ring gauges with % (dashboard modules), segmented block progress bars, hazard-striped WARNING / DANGER plates,
+  "MESSAGE" divider plates, crosshair reticles, waveform bars, hex price plates.
+- Monochrome cyan glyphs and two-letter callsigns ("PG" = Programmer) replace color emoji.
+- Diagonals are hard-edged UIGradients, never rotated frames, so everything still clips inside scrolling lists.
+
+**UI v1 / feel**
 - New visual system: midnight glass panels, violet→pink brand gradient, animated hero border, ambient glow, icons.
 - Splash screen, count-up header numbers, tab slide/fade transitions, stacked toasts, pop-in modals with confirm
   dialogs for destructive actions, celebration screen + confetti for promotions, device unlocks and rewards,

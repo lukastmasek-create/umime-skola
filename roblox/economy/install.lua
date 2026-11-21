@@ -1916,7 +1916,7 @@ S.ui = {
 	studioPreview = "Device preview (Studio only)", preview = "Previewing",
 	more = "More", pinned = "Pinned cards", edit = "Edit", done = "Done",
 	nothing = "Nothing here yet.", panels = "Panels", all = "All", available = "Available", main = "Main",
-	sound = "Sound", soundOn = "🔊", soundOff = "🔇", requires = "Requires {name}",
+	sound = "Sound", soundOn = "SFX ON", soundOff = "SFX OFF", requires = "Requires {name}",
 	tips = {
 		"Tip: Keep food and drink stocked — empty needs slow everything down.",
 		"Tip: Education boosts every income source by 4% per level.",
@@ -1931,7 +1931,7 @@ S.nav = {
 	home = "Home", work = "Work", needs = "Needs", companies = "Business", invest = "Invest",
 	hustle = "Hustle", board = "Leaders", device = "Devices", compare = "Compare", history = "History", goals = "Goals", more = "More",
 }
-S.navIcon = { home = "🏠", work = "💼", needs = "🍔", companies = "🏭", invest = "📈", hustle = "🎲", board = "🏆", device = "📱", compare = "⚖️", history = "🕘", goals = "🎯", more = "☰" }
+S.navIcon = { home = "⌂", work = "▣", needs = "◒", companies = "▥", invest = "↗", hustle = "◈", board = "♛", device = "▯", compare = "⇌", history = "◷", goals = "◎", more = "≡" }
 S.navShort = S.navIcon
 
 S.devices = {
@@ -1982,20 +1982,20 @@ S.create = {
 	startMoney = "Starting cash: {n}", welcome = "WELCOME", pitch = "Start from nothing. Take a job, keep yourself fed, then build companies, trade assets and climb the leaderboard.",
 }
 S.countries = { cz = "Czechia", sk = "Slovakia", de = "Germany", us = "USA", gb = "United Kingdom", jp = "Japan" }
-S.countryFlag = { cz = "🇨🇿", sk = "🇸🇰", de = "🇩🇪", us = "🇺🇸", gb = "🇬🇧", jp = "🇯🇵" }
+S.countryFlag = { cz = "CZ", sk = "SK", de = "DE", us = "US", gb = "UK", jp = "JP" }
 S.cities = { village = "Village", town = "Town", city = "City", metropolis = "Metropolis" }
 S.eras = { ["1990"] = "1990s", ["2010"] = "2010s", ["2025"] = "Today", ["2050"] = "Future" }
 S.families = { poor = "Poor family", middle = "Middle class", rich = "Wealthy family", business = "Business family" }
 S.jobs = { warehouse = "Warehouse Worker", seller = "Salesperson", cook = "Cook", police = "Police Officer", vet = "Veterinarian", programmer = "Programmer", farmer = "Farmer", firefighter = "Firefighter", teacher = "Teacher", journalist = "Journalist", architect = "Architect", pilot = "Pilot", doctor = "Doctor", banker = "Banker" }
-S.jobIcon = { warehouse = "📦", seller = "🛍️", cook = "🍳", police = "🚓", vet = "🐾", programmer = "💻", farmer = "🌾", firefighter = "🚒", teacher = "📚", journalist = "📰", architect = "📐", pilot = "✈️", doctor = "🩺", banker = "🏦" }
+S.jobIcon = { warehouse = "WH", seller = "SL", cook = "CK", police = "PD", vet = "VT", programmer = "PG", farmer = "FM", firefighter = "FF", teacher = "TC", journalist = "JR", architect = "AR", pilot = "PL", doctor = "MD", banker = "BK" }
 S.companies = { shoes = "Shoe Store", clothes = "Clothing Brand", tech = "Electronics", delivery = "Delivery Service", supermarket = "Supermarket", digi = "Digital Agency", software = "Software House", hardware = "Hardware Maker", factory = "Factory", bakery = "Bakery", carwash = "Car Wash", eshop = "Online Store", printshop = "Print Shop", streaming = "Streaming Platform" }
-S.companyIcon = { shoes = "👟", clothes = "👕", tech = "📺", delivery = "🛵", supermarket = "🛒", digi = "🖥️", software = "🧩", hardware = "🔧", factory = "🏭", bakery = "🥐", carwash = "🚿", eshop = "📦", printshop = "🖨️", streaming = "🎬" }
+S.companyIcon = { shoes = "SH", clothes = "CL", tech = "EL", delivery = "DL", supermarket = "SM", digi = "DA", software = "SW", hardware = "HW", factory = "FX", bakery = "BK", carwash = "CW", eshop = "OS", printshop = "PR", streaming = "ST" }
 S.assets = { coin = "Main Coin", altcoin = "Altcoin", stablecoin = "Stablecoin", memecoin = "Memecoin", defi = "DeFi Token", flat = "Apartment", house = "House", land = "Land Plot", office = "Office Space", technology = "Tech Stocks", energy = "Energy Stocks", bank = "Bank Stocks", consumer = "Consumer Goods", biotech = "Biotech", gold = "Gold", silver = "Silver", copper = "Copper", state = "Government Bonds", corporate = "Corporate Bonds", junk = "High-Yield Bonds", index = "World Index Fund", dividend = "Dividend Fund", theme = "Thematic Fund", startup_it = "IT Startup", startup_fintech = "Fintech Startup", startup_green = "Green Energy Startup" }
 S.assetCats = { crypto = "Crypto", realestate = "Real estate", stocks = "Stocks", metals = "Metals", bonds = "Bonds", funds = "Funds", startups = "Startups" }
-S.assetCatIcon = { crypto = "🪙", realestate = "🏘️", stocks = "📊", metals = "🥇", bonds = "📜", funds = "🧺", startups = "🚀" }
+S.assetCatIcon = { crypto = "CR", realestate = "RE", stocks = "EQ", metals = "MT", bonds = "BD", funds = "FD", startups = "SU" }
 S.roles = { producer = "Producer", seller = "Sales Rep", accountant = "Accountant", manager = "Manager" }
 S.hustles = { lemonade = "Lemonade Stand", reselling = "Reselling", carflip = "Car Flipping", houseflip = "House Flipping", startup = "Startup", freelance = "Freelance Gig" }
-S.hustleIcon = { lemonade = "🍋", reselling = "🏷️", carflip = "🚗", houseflip = "🏡", startup = "🦄", freelance = "🎧" }
+S.hustleIcon = { lemonade = "LM", reselling = "RS", carflip = "CF", houseflip = "HF", startup = "SU", freelance = "FL" }
 S.needs = {
 	food = { name = "Food", effect = "Without food, energy recovers at half speed." },
 	drink = { name = "Drinks", effect = "Without drinks, energy drains over time." },
@@ -2005,7 +2005,7 @@ S.needs = {
 	health = { name = "Health", effect = "Without healthcare, energy can't go above 70%." },
 	leisure = { name = "Leisure", effect = "Without leisure, energy recovers 20% slower." },
 }
-S.needIcon = { food = "🍔", drink = "🥤", clothing = "👔", housing = "🏠", transport = "🚌", health = "💊", leisure = "🎮" }
+S.needIcon = { food = "FD", drink = "DR", clothing = "CL", housing = "HS", transport = "TR", health = "HL", leisure = "LS" }
 S.boosts = { energy_drink = "Energy Drink (faster recovery)", cinema = "Cinema Night (+10% income)" }
 S.events = {
 	crash = "Market Crash", hyper = "Hyperinflation", shortage = "Supply Shortage", outage = "Server Outage", boom = "Economic Boom",
@@ -2424,38 +2424,50 @@ gui.Parent = player:WaitForChild("PlayerGui")
 W.begin(T.metrics(gui.AbsoluteSize, UserInputService.TouchEnabled), 320)
 W.attach(gui)
 
--- ───────── animated backdrop (lives outside the shell so it never restarts) ─────────
+-- ───────── HUD backdrop: navy void, tactical grid, slow-spinning rings (outside the shell, never restarts) ─────────
 local backdrop = W.new("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(1, 1, 1), BorderSizePixel = 0, ZIndex = 0 }, gui)
-W.spin(W.new("UIGradient", { Color = ColorSequence.new({
-	ColorSequenceKeypoint.new(0, col.ink), ColorSequenceKeypoint.new(0.55, col.ink2), ColorSequenceKeypoint.new(1, Color3.fromHex("1B0B2E")),
-}) }, backdrop), 4)
-for i, spec in ipairs({ { 0.15, 0.25, 420, col.brand }, { 0.85, 0.7, 520, col.brand2 }, { 0.6, 0.1, 300, col.blue } }) do
-	local orb = W.new("Frame", { Size = UDim2.fromOffset(spec[3], spec[3]), Position = UDim2.fromScale(spec[1], spec[2]), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = spec[4], BackgroundTransparency = 0.93, BorderSizePixel = 0, ZIndex = 0 }, backdrop)
-	W.new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, orb)
-	W.glow(orb, "BackgroundTransparency", 0.9, 0.97, 0.4 + i * 0.15)
+W.new("UIGradient", { Rotation = 90, Color = ColorSequence.new(col.ink2, col.ink) }, backdrop)
+do
+	local grid = W.new("Frame", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ZIndex = 0 }, backdrop)
+	for i = 1, 60 do
+		W.new("Frame", { Position = UDim2.new(0, i * 40, 0, 0), Size = UDim2.new(0, 1, 1, 0), BackgroundColor3 = col.line, BackgroundTransparency = (i % 5 == 0) and 0.9 or 0.96, BorderSizePixel = 0, ZIndex = 0 }, grid)
+	end
+	for i = 1, 40 do
+		W.new("Frame", { Position = UDim2.new(0, 0, 0, i * 40), Size = UDim2.new(1, 0, 0, 1), BackgroundColor3 = col.line, BackgroundTransparency = (i % 5 == 0) and 0.9 or 0.96, BorderSizePixel = 0, ZIndex = 0 }, grid)
+	end
+	-- big HUD ring cluster bottom-left and a hologram platform bottom-right
+	local cluster = W.new("Frame", { Size = UDim2.fromOffset(420, 420), Position = UDim2.new(0, -140, 1, -260), BackgroundTransparency = 1, ZIndex = 0 }, backdrop)
+	for i, spec in ipairs({ { 1, 0.85, 12 }, { 0.78, 0.8, -20 }, { 0.56, 0.75, 35 }, { 0.34, 0.85, -50 } }) do
+		local r = W.new("Frame", { Size = UDim2.fromScale(spec[1], spec[1]), Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, ZIndex = 0 }, cluster)
+		W.round(r)
+		local st = W.stroke(r, col.line, (i == 1) and 2 or 1, spec[2])
+		W.spin(W.new("UIGradient", { Transparency = NumberSequence.new({ NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(0.3, 0), NumberSequenceKeypoint.new(0.31, 1), NumberSequenceKeypoint.new(0.6, 1), NumberSequenceKeypoint.new(0.61, 0), NumberSequenceKeypoint.new(0.8, 0), NumberSequenceKeypoint.new(0.81, 1), NumberSequenceKeypoint.new(1, 1) }) }, st), spec[3])
+	end
+	local plat = W.new("Frame", { Size = UDim2.fromOffset(360, 140), Position = UDim2.new(1, -300, 1, -110), BackgroundTransparency = 1, ZIndex = 0 }, backdrop)
+	for i = 1, 3 do
+		local e = W.new("Frame", { Size = UDim2.new(1 - i * 0.2, 0, 0.36 - i * 0.07, 0), Position = UDim2.new(0.5, 0, 0.5 + i * 0.07, 0), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = col.line, BackgroundTransparency = 0.97, ZIndex = 0 }, plat)
+		W.round(e)
+		W.glow(W.stroke(e, col.line, 1.5, 0.75), "Transparency", 0.6, 0.9, 1 + i * 0.4)
+	end
 end
 
--- ───────── splash (until the first state arrives) ─────────
+-- ───────── splash: reticle boot screen with a segmented loader ─────────
 local splash = W.new("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = col.ink, BorderSizePixel = 0, ZIndex = 600 }, gui)
 do
-	W.new("UIGradient", { Rotation = 90, Color = ColorSequence.new(col.ink2, col.ink) }, splash)
-	local logo = W.label(splash, { text = S.ui.title, size = UDim2.new(1, 0, 0, 60), pos = UDim2.new(0, 0, 0.42, -40), ts = 46, font = T.font.display, align = Enum.TextXAlignment.Center, z = 601 })
-	W.spin(W.gradient(logo, ColorSequence.new({ ColorSequenceKeypoint.new(0, col.brand), ColorSequenceKeypoint.new(0.5, col.brand2), ColorSequenceKeypoint.new(1, col.sky) }), 0), 45)
-	W.label(splash, { text = W.upper(S.ui.tagline), size = UDim2.new(1, 0, 0, 20), pos = UDim2.new(0, 0, 0.42, 22), ts = 13, font = T.font.head, color = col.muted, align = Enum.TextXAlignment.Center, z = 601 })
-	local track = W.new("Frame", { Size = UDim2.fromOffset(220, 6), Position = UDim2.new(0.5, -110, 0.42, 60), BackgroundColor3 = col.panel2, BorderSizePixel = 0, ZIndex = 601, ClipsDescendants = true }, splash)
-	W.new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, track)
-	local bar = W.new("Frame", { Size = UDim2.fromScale(0.35, 1), BackgroundColor3 = Color3.new(1, 1, 1), BorderSizePixel = 0, ZIndex = 602 }, track)
-	W.new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, bar)
-	W.gradient(bar, T.brandSeq, 0)
-	task.spawn(function()
-		while splash.Parent do
-			bar.Position = UDim2.fromScale(-0.35, 0)
-			W.tween(bar, { Position = UDim2.fromScale(1, 0) }, 1.1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
-			task.wait(1.15)
-		end
-	end)
-	W.label(splash, { text = S.ui.loading, size = UDim2.new(1, 0, 0, 20), pos = UDim2.new(0, 0, 0.42, 76), ts = 13, color = col.muted, align = Enum.TextXAlignment.Center, z = 601 })
-	W.label(splash, { text = S.ui.tips[math.random(1, #S.ui.tips)], size = UDim2.new(1, -40, 0, 40), pos = UDim2.new(0, 20, 1, -70), ts = 13, color = col.faint, align = Enum.TextXAlignment.Center, z = 601 })
+	W.reticle(splash, UDim2.new(0.5, 0, 0.42, -90), 110, col.line, 601)
+	local logo = W.label(splash, { text = S.ui.title, size = UDim2.new(1, 0, 0, 56), pos = UDim2.new(0, 0, 0.42, -24), ts = 40, font = T.font.display, color = col.line, align = Enum.TextXAlignment.Center, z = 601 })
+	W.glow(logo, "TextTransparency", 0, 0.25, 2)
+	W.label(splash, { text = "// " .. W.upper(S.ui.tagline) .. " //", size = UDim2.new(1, 0, 0, 20), pos = UDim2.new(0, 0, 0.42, 34), ts = 14, font = T.font.head, color = col.muted, align = Enum.TextXAlignment.Center, z = 601 })
+	local track = W.new("Frame", { Size = UDim2.fromOffset(260, 10), Position = UDim2.new(0.5, -130, 0.42, 66), BackgroundTransparency = 1, ZIndex = 601 }, splash)
+	W.new("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 3) }, track)
+	for i = 1, 16 do
+		local seg = W.new("Frame", { Size = UDim2.new(1 / 16, -3, 1, 0), BackgroundColor3 = col.line, BorderSizePixel = 0, ZIndex = 601, LayoutOrder = i }, track)
+		W.glow(seg, "BackgroundTransparency", 0, 0.9, 5)
+		W.glows[seg].phase = -i * 0.35
+	end
+	W.label(splash, { text = W.upper(S.ui.loading), size = UDim2.new(1, 0, 0, 20), pos = UDim2.new(0, 0, 0.42, 84), ts = 13, font = T.font.head, color = col.line, align = Enum.TextXAlignment.Center, z = 601 })
+	W.label(splash, { text = S.ui.tips[math.random(1, #S.ui.tips)], size = UDim2.new(1, -40, 0, 40), pos = UDim2.new(0, 20, 1, -70), ts = 14, color = col.muted, align = Enum.TextXAlignment.Center, z = 601 })
+	W.brackets(splash, 40, col.lineDim, 2, 20, 601)
 end
 local function dismissSplash()
 	if not splash or not splash.Parent then return end
@@ -2550,22 +2562,21 @@ end
 
 -- ───────── creation screen ─────────
 local function createScreen(ctx, parent)
-	W.hero(parent, { kicker = S.create.welcome, title = S.ui.title, sub = S.create.pitch, icon = "🏙️", h = ctx.m.class == "compact" and 190 or 210 })
-	local card = W.card(parent, { title = S.create.title, icon = "🪪", accent = col.brand })
+	W.hero(parent, { kicker = S.create.welcome, title = S.ui.title, sub = S.create.pitch, icon = "◎", h = ctx.m.class == "compact" and 190 or 210 })
+	local card = W.card(parent, { title = S.create.title, icon = "▣", accent = col.line })
 	W.note(card, S.create.hint)
-	local nameRow = W.new("Frame", { Size = UDim2.new(1, 0, 0, 46), BackgroundColor3 = col.ink, BackgroundTransparency = 0.3, BorderSizePixel = 0, LayoutOrder = W.nextOrder(card) }, card)
-	W.corner(nameRow, 12)
-	W.label(nameRow, { text = S.create.name, pos = UDim2.fromOffset(14, 0), size = UDim2.fromOffset(80, 46), color = col.muted, font = T.font.caps })
-	local box = W.new("TextBox", { Size = UDim2.new(1, -110, 0, 34), Position = UDim2.fromOffset(98, 6), BackgroundColor3 = col.panel2, TextColor3 = col.text, Text = ui.pick.name, ClearTextOnFocus = false, Font = T.font.bold, TextSize = 16, PlaceholderText = S.create.name, PlaceholderColor3 = col.faint, TextXAlignment = Enum.TextXAlignment.Left }, nameRow)
-	W.corner(box, 10)
+	local nameRow = W.new("Frame", { Size = UDim2.new(1, 0, 0, 48), BackgroundTransparency = 1, LayoutOrder = W.nextOrder(card) }, card)
+	W.chamfer(nameRow, { cut = 10, corners = { tl = true, br = true }, fill = col.ink, fillT = 0.3, line = col.lineDim, z = 1 })
+	W.label(nameRow, { text = "// " .. W.upper(S.create.name), pos = UDim2.fromOffset(14, 0), size = UDim2.fromOffset(90, 48), color = col.line, font = T.font.head, ts = 13 })
+	local box = W.new("TextBox", { Size = UDim2.new(1, -124, 0, 34), Position = UDim2.fromOffset(108, 7), BackgroundColor3 = col.panel2, BackgroundTransparency = 0.2, BorderSizePixel = 0, TextColor3 = col.text, Text = ui.pick.name, ClearTextOnFocus = false, Font = T.font.mono, TextSize = 16, PlaceholderText = S.create.name, PlaceholderColor3 = col.faint, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 2 }, nameRow)
 	W.pad(box, 10, 0, 10, 0)
 	local bs = W.stroke(box, col.lineDim, 1)
-	box.Focused:Connect(function() W.tween(bs, { Color = col.brand2 }, 0.15) end)
+	box.Focused:Connect(function() W.tween(bs, { Color = col.glow }, 0.15) end)
 	box.FocusLost:Connect(function() ui.pick.name = box.Text; W.tween(bs, { Color = col.lineDim }, 0.15) end)
 	local function chooser(label, key, list, names, icons)
-		W.label(card, { text = W.upper(label), size = UDim2.new(1, 0, 0, 18), ts = 11, color = col.line, font = T.font.head, order = W.nextOrder(card) })
+		W.divider(card, label, col.line)
 		local opts = {}
-		for _, v in ipairs(list) do table.insert(opts, { id = v, text = (icons and icons[v] and (icons[v] .. " ") or "") .. names[v] }) end
+		for _, v in ipairs(list) do table.insert(opts, { id = v, text = (icons and icons[v] and (icons[v] .. " · ") or "") .. names[v] }) end
 		W.segmented(card, opts, ui.pick[key], function(id) ui.pick.name = box.Text; ui.pick[key] = id; render(true) end)
 	end
 	chooser(S.create.country, "country", C.COUNTRIES, S.countries, S.countryFlag)
@@ -2573,7 +2584,7 @@ local function createScreen(ctx, parent)
 	chooser(S.create.era, "era", C.ERAS, S.eras)
 	chooser(S.create.family, "family", C.FAMILIES, S.families)
 	local startMoney = math.round(C.FAMILY_DEF[ui.pick.family].start * C.ERA_DEF[ui.pick.era].start)
-	W.row(card, { title = S.f(S.create.startMoney, { n = W.fmt(startMoney) }), icon = "💰", cw = ctx.cw, highlight = col.teal, actions = { { text = "▶  " .. S.create.start, variant = "good", w = 170, onClick = function()
+	W.row(card, { title = S.f(S.create.startMoney, { n = W.fmt(startMoney) }), icon = "$", cw = ctx.cw, highlight = col.line, actions = { { text = "▶  " .. S.create.start, variant = "good", w = 170, onClick = function()
 		act("createCharacter", { name = box.Text, country = ui.pick.country, city = ui.pick.city, era = ui.pick.era, family = ui.pick.family })
 	end } } })
 end
@@ -2589,7 +2600,7 @@ local function moreScreen(ctx, parent)
 				actions = { { text = S.hero.panelOpen, variant = badge > 0 and "gold" or "ghost", onClick = function() go(id) end } } })
 		end
 	end
-	W.row(card, { title = S.ui.sound, icon = W.muted and S.ui.soundOff or S.ui.soundOn, cw = ctx.cw, actions = { { text = W.muted and S.ui.soundOff or S.ui.soundOn, w = 64, variant = "ghost", onClick = function() W.muted = not W.muted; render(true) end } } })
+	W.row(card, { title = S.ui.sound, icon = "SFX", cw = ctx.cw, actions = { { text = W.muted and S.ui.soundOff or S.ui.soundOn, w = 96, variant = "ghost", onClick = function() W.muted = not W.muted; render(true) end } } })
 end
 
 -- ───────── shell (rebuilt only when layout-relevant inputs change) ─────────
@@ -2615,9 +2626,10 @@ end
 
 local function navBadge(parent, n)
 	if n <= 0 then return end
-	local b = W.new("TextLabel", { Size = UDim2.fromOffset(18, 18), Position = UDim2.new(1, -6, 0, 2), AnchorPoint = Vector2.new(1, 0), BackgroundColor3 = col.gold, Text = tostring(n), Font = T.font.display, TextSize = 11, TextColor3 = col.creamInk, BorderSizePixel = 0, ZIndex = 8 }, parent)
-	W.new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, b)
-	W.glow(b, "BackgroundTransparency", 0, 0.3, 4)
+	local b = W.new("Frame", { Size = UDim2.fromOffset(22, 18), Position = UDim2.new(1, -4, 0, 2), AnchorPoint = Vector2.new(1, 0), BackgroundTransparency = 1, ZIndex = 8 }, parent)
+	local parts = W.chamfer(b, { cut = 5, corners = { tl = true, br = true }, fill = col.amber, fillT = 0, z = 8 })
+	for _, f in ipairs(parts.fills) do W.glow(f, "BackgroundTransparency", 0, 0.35, 4) end
+	W.label(b, { text = tostring(n), size = UDim2.fromScale(1, 1), ts = 12, font = T.font.head, color = col.creamInk, align = Enum.TextXAlignment.Center, z = 9 })
 end
 
 function rebuildShell()
@@ -2636,60 +2648,59 @@ function rebuildShell()
 
 	local g = m.gutter
 	local compact = m.class == "compact"
-	-- top bar: logo, tab strip with icons + animated underline, sound toggle, player badge (opens the device shop)
-	local topbar = W.new("Frame", { Size = UDim2.new(1, 0, 0, m.topH), BackgroundColor3 = col.ink, BackgroundTransparency = 0.35, BorderSizePixel = 0 }, shell)
-	W.new("Frame", { Size = UDim2.new(1, 0, 0, 1), Position = UDim2.new(0, 0, 1, -1), BackgroundColor3 = col.lineSoft, BorderSizePixel = 0 }, topbar)
-	local logoW = compact and 150 or 210
-	local logo = W.new("TextLabel", { Size = UDim2.fromOffset(logoW, m.topH), Position = UDim2.fromOffset(g, 0), BackgroundTransparency = 1, Text = "◆ " .. S.ui.title, Font = T.font.display, TextSize = compact and 17 or 21, TextColor3 = Color3.new(1, 1, 1), TextXAlignment = Enum.TextXAlignment.Left }, topbar)
-	W.gradient(logo, ColorSequence.new({ ColorSequenceKeypoint.new(0, col.brand), ColorSequenceKeypoint.new(0.6, col.brand2), ColorSequenceKeypoint.new(1, col.gold) }), 0)
+	-- top bar: HUD header plate, logo with live dot, bracketed tab strip, SFX toggle, player badge (opens the device shop)
+	local topbar = W.new("Frame", { Size = UDim2.new(1, 0, 0, m.topH), BackgroundTransparency = 1 }, shell)
+	W.chamfer(topbar, { cut = 16, corners = { bl = true, br = true }, fill = col.ink, fillT = 0.15, line = col.lineDim, z = 0 })
+	W.new("Frame", { Position = UDim2.new(0.5, -60, 1, -3), Size = UDim2.fromOffset(120, 3), BackgroundColor3 = col.line, BorderSizePixel = 0, ZIndex = 1 }, topbar)
+	local logoW = compact and 160 or 220
+	local dot = W.new("Frame", { Size = UDim2.fromOffset(8, 8), Position = UDim2.new(0, g, 0.5, -4), BackgroundColor3 = col.line, BorderSizePixel = 0, ZIndex = 2 }, topbar)
+	W.glow(dot, "BackgroundTransparency", 0, 0.7, 3)
+	W.label(topbar, { text = S.ui.title, size = UDim2.fromOffset(logoW, m.topH), pos = UDim2.fromOffset(g + 16, 0), ts = compact and 15 or 18, font = T.font.display, color = col.line, wrap = false })
 
 	local avatarW = compact and 128 or 210
-	local badge = W.new("TextButton", { Size = UDim2.fromOffset(avatarW, m.topH - 8), Position = UDim2.new(1, -g - avatarW, 0, 4), BackgroundTransparency = 1, Text = "", AutoButtonColor = false }, topbar)
-	local av = W.avatar(badge, string.sub(player.DisplayName, 1, 1), col.blueDark, 36, col.teal)
-	av.Position = UDim2.new(1, -36, 0.5, -18)
-	local avs = W.stroke(av, Color3.new(1, 1, 1), 2)
-	W.spin(W.gradient(avs, T.brandSeq, 0), 120)
-	local nameL = W.label(badge, { text = player.DisplayName, size = UDim2.new(1, -46, 0, 18), pos = UDim2.fromOffset(0, compact and 4 or 8), align = Enum.TextXAlignment.Right, font = T.font.head, ts = 13, wrap = false, truncate = Enum.TextTruncate.AtEnd })
-	W.label(badge, { text = "● " .. W.upper(S.devices[C.DEVICES[tier].id].name), size = UDim2.new(1, -46, 0, 14), pos = UDim2.fromOffset(0, compact and 22 or 28), align = Enum.TextXAlignment.Right, font = T.font.caps, ts = 10, color = col.teal, wrap = false })
+	local badge = W.new("TextButton", { Size = UDim2.fromOffset(avatarW, m.topH - 8), Position = UDim2.new(1, -g - avatarW, 0, 4), BackgroundTransparency = 1, Text = "", AutoButtonColor = false, ZIndex = 2 }, topbar)
+	local av = W.avatar(badge, string.sub(player.DisplayName, 1, 1), col.line, 36, col.line)
+	av.Position = UDim2.new(1, -38, 0.5, -18)
+	local nameL = W.label(badge, { text = player.DisplayName, size = UDim2.new(1, -48, 0, 18), pos = UDim2.fromOffset(0, compact and 4 or 8), align = Enum.TextXAlignment.Right, font = T.font.head, ts = 14, wrap = false, truncate = Enum.TextTruncate.AtEnd })
+	W.label(badge, { text = "SYS · " .. W.upper(S.devices[C.DEVICES[tier].id].name) .. " · " .. S.hero.online, size = UDim2.new(1, -48, 0, 14), pos = UDim2.fromOffset(0, compact and 22 or 28), align = Enum.TextXAlignment.Right, font = T.font.head, ts = 11, color = col.line, wrap = false, truncate = Enum.TextTruncate.AtEnd })
 	badge.Activated:Connect(function() W.sound("click"); go("device") end)
 	refs.info = nameL
 
 	local rightUsed = avatarW + 8
 	if not compact then
-		local snd = W.button(topbar, { text = W.muted and S.ui.soundOff or S.ui.soundOn, variant = "ghost", w = 40, h = 32, ts = 14, pos = UDim2.new(1, -g - rightUsed - 40, 0.5, -16), onClick = function() W.muted = not W.muted; signature = nil; render(true) end })
+		local snd = W.button(topbar, { text = W.muted and S.ui.soundOff or S.ui.soundOn, variant = W.muted and "ghost" or "select", w = 84, h = 30, ts = 12, pos = UDim2.new(1, -g - rightUsed - 84, 0.5, -15), onClick = function() W.muted = not W.muted; signature = nil; render(true) end })
 		snd.Name = "Sound"
-		rightUsed += 48
+		rightUsed += 92
 	end
 	if RunService:IsStudio() and hasChar then
 		for i = 1, #C.DEVICES do
-			local b = W.new("TextButton", { Size = UDim2.fromOffset(24, 22), Position = UDim2.new(1, -g - rightUsed - (#C.DEVICES - i + 1) * 28, 0.5, -11), BackgroundColor3 = (ui.previewTier == i) and col.magenta or col.panel3, Text = tostring(i), Font = T.font.bold, TextSize = 12, TextColor3 = col.text }, topbar)
-			W.corner(b, 11)
-			b.Activated:Connect(function() ui.previewTier = (ui.previewTier ~= i) and i or nil; render(true) end)
+			W.button(topbar, { text = tostring(i), variant = (ui.previewTier == i) and "select" or "ghost", w = 26, h = 24, ts = 12, pos = UDim2.new(1, -g - rightUsed - (#C.DEVICES - i + 1) * 30, 0.5, -12), onClick = function() ui.previewTier = (ui.previewTier ~= i) and i or nil; render(true) end })
 		end
-		rightUsed += #C.DEVICES * 28 + 6
+		rightUsed += #C.DEVICES * 30 + 6
 	end
 	local items = hasChar and navItems(tier) or {}
 	layout.items = items
 	local bottomNav = compact
 	if hasChar and not bottomNav then
 		local tabsX = g + logoW
-		local strip = W.new("ScrollingFrame", { Size = UDim2.new(1, -tabsX - g - rightUsed, 0, m.topH), Position = UDim2.fromOffset(tabsX, 0), BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 0, CanvasSize = UDim2.new(), AutomaticCanvasSize = Enum.AutomaticSize.X, ScrollingDirection = Enum.ScrollingDirection.X }, topbar)
-		W.new("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 2), SortOrder = Enum.SortOrder.LayoutOrder, VerticalAlignment = Enum.VerticalAlignment.Center }, strip)
+		local strip = W.new("ScrollingFrame", { Size = UDim2.new(1, -tabsX - g - rightUsed, 0, m.topH), Position = UDim2.fromOffset(tabsX, 0), BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 0, CanvasSize = UDim2.new(), AutomaticCanvasSize = Enum.AutomaticSize.X, ScrollingDirection = Enum.ScrollingDirection.X, ZIndex = 2 }, topbar)
+		W.new("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 4), SortOrder = Enum.SortOrder.LayoutOrder, VerticalAlignment = Enum.VerticalAlignment.Center }, strip)
 		local iconOnly = m.class == "medium"
 		for i, id in ipairs(items) do
 			local active = ui.tab == id
-			local label = iconOnly and S.navIcon[id] or (S.navIcon[id] .. "  " .. S.nav[id])
-			local b = W.new("TextButton", { Size = UDim2.fromOffset(iconOnly and 44 or math.max(70, 40 + #S.nav[id] * 8), m.topH - 14), BackgroundColor3 = col.panel3, BackgroundTransparency = active and 0.4 or 1, Text = label, Font = T.font.head, TextSize = iconOnly and 18 or 13, TextColor3 = active and col.text or col.muted, AutoButtonColor = false, LayoutOrder = i }, strip)
-			W.corner(b, 12)
+			local text = iconOnly and S.navIcon[id] or (S.navIcon[id] .. " " .. W.upper(S.nav[id]))
+			local w = iconOnly and 40 or math.max(78, 40 + #S.nav[id] * 9)
+			local b = W.new("TextButton", { Size = UDim2.fromOffset(w, m.topH - 18), BackgroundTransparency = 1, Text = "", AutoButtonColor = false, LayoutOrder = i, ZIndex = 2 }, strip)
+			local parts = W.chamfer(b, { cut = 7, corners = { tl = true, br = true }, fill = col.line, fillT = active and 0.8 or 1, line = col.line, lineT = active and 0 or 1, z = 2 })
+			local l = W.label(b, { text = text, size = UDim2.fromScale(1, 1), ts = iconOnly and 17 or 13, font = T.font.head, color = active and col.line or col.muted, align = Enum.TextXAlignment.Center, wrap = false, z = 3 })
 			if active then
-				local u = W.new("Frame", { Size = UDim2.new(0.6, 0, 0, 3), Position = UDim2.new(0.2, 0, 1, -3), BackgroundColor3 = Color3.new(1, 1, 1), BorderSizePixel = 0 }, b)
-				W.corner(u, 2)
-				W.gradient(u, T.brandSeq, 0)
+				W.brackets(b, 6, col.glow, 2, -3, 3)
+				local u = W.new("Frame", { Size = UDim2.new(0.5, 0, 0, 2), Position = UDim2.new(0.25, 0, 1, 1), BackgroundColor3 = col.glow, BorderSizePixel = 0, ZIndex = 3 }, b)
 				local usc = W.new("UIScale", { Scale = 0.2 }, u)
 				W.tween(usc, { Scale = 1 }, 0.25, Enum.EasingStyle.Back)
 			end
-			b.MouseEnter:Connect(function() if not active then W.tween(b, { TextColor3 = col.text, BackgroundTransparency = 0.7 }, 0.1) end end)
-			b.MouseLeave:Connect(function() if not active then W.tween(b, { TextColor3 = col.muted, BackgroundTransparency = 1 }, 0.1) end end)
+			b.MouseEnter:Connect(function() if not active then l.TextColor3 = col.text; for _, f in ipairs(parts.lines) do f.BackgroundTransparency = 0.5 end end end)
+			b.MouseLeave:Connect(function() if not active then l.TextColor3 = col.muted; for _, f in ipairs(parts.lines) do f.BackgroundTransparency = 1 end end end)
 			b.Activated:Connect(function() W.sound("click"); go(id) end)
 			if id == "goals" then navBadge(b, claim) end
 		end
@@ -2705,26 +2716,26 @@ function rebuildShell()
 		f.Name = name
 		return f, v
 	end
-	refs.cash, refs.cashV = tile(1, S.ui.cash, col.teal, "CashTile", "💵")
-	refs.worth, refs.worthV = tile(2, S.ui.netWorth, col.sky, "WorthTile", "💎")
-	refs.income, refs.incomeV = tile(3, S.ui.income, col.amber, "IncomeTile", "📈")
+	refs.cash, refs.cashV = tile(1, S.ui.cash, col.line, "CashTile", "$")
+	refs.worth, refs.worthV = tile(2, S.ui.netWorth, col.sky, "WorthTile", "◆")
+	refs.income, refs.incomeV = tile(3, S.ui.income, col.amber, "IncomeTile", "↗")
 
 	local top = m.headerH + 4
 	local bottomH = (bottomNav and hasChar) and m.navH or 0
 
-	-- bottom navigation (phone): icon + label, active slot gets a gradient pill
+	-- bottom navigation (phone): cut-corner glyph plates, active one lit with brackets
 	if hasChar and bottomNav then
-		local nav = W.new("Frame", { Size = UDim2.new(1, 0, 0, bottomH), Position = UDim2.new(0, 0, 1, -bottomH), BackgroundColor3 = col.panel, BackgroundTransparency = 0.05, BorderSizePixel = 0, ZIndex = 5 }, shell)
-		W.new("Frame", { Size = UDim2.new(1, 0, 0, 1), BackgroundColor3 = col.lineDim, BorderSizePixel = 0, ZIndex = 5 }, nav)
+		local nav = W.new("Frame", { Size = UDim2.new(1, 0, 0, bottomH), Position = UDim2.new(0, 0, 1, -bottomH), BackgroundTransparency = 1, ZIndex = 5 }, shell)
+		W.chamfer(nav, { cut = 16, corners = { tl = true, tr = true }, fill = col.ink, fillT = 0.05, line = col.lineDim, z = 5 })
 		local five = { "home", "work", "needs", "companies", "invest", "more" }
 		local bw = 1 / #five
 		for i, id in ipairs(five) do
 			local active = (ui.tab == id) or (id == "more" and not FIVE[ui.tab])
-			local b = W.new("TextButton", { Size = UDim2.new(bw, -6, 1, -12), Position = UDim2.new(bw * (i - 1), 3, 0, 6), BackgroundColor3 = Color3.new(1, 1, 1), BackgroundTransparency = active and 0 or 1, Text = "", AutoButtonColor = false, ZIndex = 6 }, nav)
-			W.new("UICorner", { CornerRadius = UDim.new(0, 16) }, b)
-			if active then W.gradient(b, T.brandSeq, 0) end
-			W.label(b, { text = S.navIcon[id], size = UDim2.new(1, 0, 0, 26), pos = UDim2.fromOffset(0, 4), ts = 20, align = Enum.TextXAlignment.Center, z = 7 })
-			W.label(b, { text = S.nav[id], size = UDim2.new(1, 0, 0, 14), pos = UDim2.new(0, 0, 1, -20), ts = 10, font = T.font.head, color = active and Color3.new(1, 1, 1) or col.muted, align = Enum.TextXAlignment.Center, wrap = false, z = 7 })
+			local b = W.new("TextButton", { Size = UDim2.new(bw, -6, 1, -14), Position = UDim2.new(bw * (i - 1), 3, 0, 8), BackgroundTransparency = 1, Text = "", AutoButtonColor = false, ZIndex = 6 }, nav)
+			W.chamfer(b, { cut = 8, corners = { tl = true, br = true }, fill = col.line, fillT = active and 0.78 or 0.96, line = col.line, lineT = active and 0 or 0.75, z = 6 })
+			if active then W.brackets(b, 6, col.glow, 2, 2, 7) end
+			W.label(b, { text = S.navIcon[id], size = UDim2.new(1, 0, 0, 26), pos = UDim2.fromOffset(0, 4), ts = 20, font = T.font.head, color = active and col.glow or col.muted, align = Enum.TextXAlignment.Center, z = 7, wrap = false })
+			W.label(b, { text = W.upper(S.nav[id]), size = UDim2.new(1, 0, 0, 14), pos = UDim2.new(0, 0, 1, -20), ts = 11, font = T.font.head, color = active and col.line or col.muted, align = Enum.TextXAlignment.Center, wrap = false, z = 7 })
 			local sc = W.new("UIScale", { Scale = 1 }, b)
 			b.MouseButton1Down:Connect(function() W.tween(sc, { Scale = 0.92 }, 0.06) end)
 			b.MouseButton1Up:Connect(function() W.tween(sc, { Scale = 1 }, 0.14, Enum.EasingStyle.Back) end)
@@ -2756,8 +2767,9 @@ function rebuildShell()
 	layout.mainPos = mainScroll.Position
 	sideScroll = nil
 	if sideVisible then
-		local sideBg = W.new("Frame", { Size = UDim2.fromOffset(sideW, areaH), Position = UDim2.fromOffset(areaX + mainW, areaY), BackgroundColor3 = col.ink, BackgroundTransparency = 0.5, BorderSizePixel = 0 }, shell)
-		W.new("Frame", { Size = UDim2.new(0, 1, 1, 0), BackgroundColor3 = col.lineSoft, BorderSizePixel = 0 }, sideBg)
+		local sideBg = W.new("Frame", { Size = UDim2.fromOffset(sideW, areaH), Position = UDim2.fromOffset(areaX + mainW, areaY), BackgroundColor3 = col.ink, BackgroundTransparency = 0.45, BorderSizePixel = 0 }, shell)
+		W.new("Frame", { Size = UDim2.new(0, 1, 1, 0), BackgroundColor3 = col.lineDim, BorderSizePixel = 0 }, sideBg)
+		for i = 0, 3 do W.new("Frame", { Position = UDim2.new(0, -1, 0, 20 + i * 8), Size = UDim2.fromOffset(4, 4), BackgroundColor3 = col.line, BackgroundTransparency = i * 0.25, BorderSizePixel = 0 }, sideBg) end
 		sideScroll = newScroll(shell, UDim2.fromOffset(sideW, areaH), UDim2.fromOffset(areaX + mainW, areaY), 10)
 	end
 	-- cover used for the tab-switch fade-in
@@ -2955,36 +2967,38 @@ RunService.Heartbeat:Connect(function(dt)
 	refs.incomeV.Text = (inc >= 0 and "+" or "") .. W.fmt(inc)
 	refs.incomeV.TextColor3 = (r.net >= 0) and col.amber or col.red
 	local ch = state.character
-	refs.info.Text = (layout.m and layout.m.class == "compact") and ch.name or ((S.countryFlag[ch.country] or "") .. "  " .. ch.name)
+	refs.info.Text = (layout.m and layout.m.class == "compact") and ch.name or ("[" .. (S.countryFlag[ch.country] or "") .. "] " .. ch.name)
 end)
 ]==])
 make("ModuleScript", "Theme", ui, [==[
 --!nonstrict
--- Visual system shared by all four device tiers.
--- Deep midnight base with layered glass panels, a violet→pink brand gradient, mint for money gained,
--- coral for money lost, gold for rewards. Bold geometric display type, clean UI sans, tabular mono numbers.
+-- Sci-fi HUD visual system shared by all four device tiers.
+-- Deep navy void, a faint tactical grid, cyan neon line-work: cut-corner frames, corner brackets, chevrons,
+-- dotted ring gauges, segmented bars and hazard-striped warning plates. Cyan carries everything; amber and red
+-- appear only for warnings and danger, exactly like a heads-up display.
 local T = {}
 
 local function hex(h) return Color3.fromHex(h) end
 T.color = {
 	-- surfaces (darkest → lightest)
-	ink = hex("07060F"), ink2 = hex("120D26"), panel = hex("141029"), panel2 = hex("1C1638"), panel3 = hex("2A2152"), raised = hex("332862"),
-	-- lines
-	line = hex("9AA4FF"), lineDim = hex("3A3170"), lineSoft = hex("272052"),
-	-- brand
-	brand = hex("8B5CF6"), brand2 = hex("EC4899"), blue = hex("5B8CFF"), blueDark = hex("2B2470"),
+	ink = hex("050B14"), ink2 = hex("0A1626"), panel = hex("0B1C2C"), panel2 = hex("0F2438"), panel3 = hex("123049"), raised = hex("17405E"),
+	-- line-work
+	line = hex("3BE4FF"), lineDim = hex("1D7A93"), lineSoft = hex("12445A"), glow = hex("7FF1FF"),
 	-- semantic
-	magenta = hex("FF3D8B"), red = hex("FF5A6E"), teal = hex("2EF2A6"), amber = hex("FFC24B"), gold = hex("FFD66B"), sky = hex("5ED3FF"),
+	cyan = hex("3BE4FF"), teal = hex("3BE4FF"), sky = hex("7FD8FF"), blue = hex("2A8CFF"),
+	amber = hex("FFB020"), gold = hex("FFD25A"), red = hex("FF3B55"), magenta = hex("3BE4FF"),
+	brand = hex("3BE4FF"), brand2 = hex("1FA9E0"), blueDark = hex("0C2A40"),
 	-- text
-	cream = hex("F6F2FF"), creamInk = hex("0D0A1C"), text = hex("F4F1FF"), muted = hex("A49CC9"), faint = hex("6E6696"), disabled = hex("2C2650"),
-	-- tile gradients (pairs)
-	tileA = hex("C2185B"), tileB = hex("1E5BD8"), tileC = hex("D9661A"), tileD = hex("7B2FF7"), tileE = hex("0E9F8E"), tileF = hex("3F35C8"), tileG = hex("B8860B"),
+	text = hex("DDF8FF"), muted = hex("78AFC4"), faint = hex("3F6E82"), cream = hex("DDF8FF"), creamInk = hex("03121C"), disabled = hex("0E2232"),
+	-- tile tints (kept for screens; all stay in the cyan family)
+	tileA = hex("0E3A52"), tileB = hex("0B2F47"), tileC = hex("10344C"), tileD = hex("0A2840"), tileE = hex("0D3550"), tileF = hex("0B2C45"), tileG = hex("2B2A12"),
 	shadow = hex("000000"),
 }
-T.brandSeq = ColorSequence.new({ ColorSequenceKeypoint.new(0, T.color.brand), ColorSequenceKeypoint.new(1, T.color.brand2) })
-T.goodSeq = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex("2EF2A6")), ColorSequenceKeypoint.new(1, hex("19C3E6")) })
-T.goldSeq = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex("FFE08A")), ColorSequenceKeypoint.new(1, hex("FF9F2E")) })
-T.dangerSeq = ColorSequence.new({ ColorSequenceKeypoint.new(0, hex("FF6B7F")), ColorSequenceKeypoint.new(1, hex("E0315A")) })
+local c = T.color
+T.brandSeq = ColorSequence.new(c.line, c.brand2)
+T.goodSeq = ColorSequence.new(c.line, c.brand2)
+T.goldSeq = ColorSequence.new(hex("FFE08A"), c.amber)
+T.dangerSeq = ColorSequence.new(hex("FF6B7F"), c.red)
 
 -- Fonts are looked up defensively: a name missing in this Studio version falls back instead of crashing the UI.
 local function font(name, fallback)
@@ -2992,13 +3006,17 @@ local function font(name, fallback)
 	return (ok and f) or fallback
 end
 T.font = {
-	display = font("GothamBlack", Enum.Font.SourceSansBold), head = font("GothamBold", Enum.Font.SourceSansBold),
-	caps = font("GothamMedium", Enum.Font.SourceSansSemibold), body = font("BuilderSansMedium", Enum.Font.SourceSans),
-	bold = font("BuilderSansBold", Enum.Font.SourceSansBold), mono = font("RobotoMono", Enum.Font.Code),
+	display = font("Michroma", font("GothamBlack", Enum.Font.SourceSansBold)), -- wide techno headlines
+	head = font("Sarpanch", font("GothamBold", Enum.Font.SourceSansBold)), -- condensed HUD labels
+	caps = font("Jura", font("GothamMedium", Enum.Font.SourceSans)), -- thin tactical captions
+	body = font("TitilliumWeb", font("BuilderSansMedium", Enum.Font.SourceSans)),
+	bold = font("TitilliumWeb", font("BuilderSansBold", Enum.Font.SourceSansBold)),
+	mono = font("RobotoMono", Enum.Font.Code),
 }
-T.size = { caption = 12, body = 14, label = 16, title = 22, display = 30 }
+T.size = { caption = 12, body = 15, label = 16, title = 22, display = 30 }
 T.space = { xs = 4, sm = 8, md = 12, lg = 16, xl = 24 }
-T.radius = 14
+T.radius = 0
+T.cut = 10 -- chamfer size of cut corners (px)
 T.motion = { fast = 0.08, base = 0.18, slow = 0.35 }
 
 -- Width classes: compact < 620, medium < 1020, wide >= 1020 (viewport pixels).
@@ -3009,8 +3027,8 @@ function T.metrics(viewport, touch)
 	return {
 		class = class, w = w, h = viewport.Y, touch = touch,
 		btnH = touch and 44 or 36, gutter = compact and 10 or 18,
-		topH = compact and 50 or 60, statsH = compact and 70 or 80,
-		headerH = (compact and 50 or 60) + (compact and 70 or 80), navH = 68,
+		topH = compact and 52 or 60, statsH = compact and 74 or 84,
+		headerH = (compact and 52 or 60) + (compact and 74 or 84), navH = 70,
 	}
 end
 
@@ -3018,7 +3036,10 @@ return T
 ]==])
 make("ModuleScript", "Widgets", ui, [==[
 --!nonstrict
--- UI kit. Every screen is built from these pieces so the whole game shares one look and one motion language.
+-- HUD UI kit. Every screen is built from these pieces so the whole game shares one sci-fi look:
+-- cut-corner neon frames, corner brackets, chevrons, dotted ring gauges, segmented bars, hazard plates.
+-- No image assets: every shape is drawn from Frames. Diagonals use a hard-edged UIGradient (never Rotation),
+-- so everything still clips correctly inside ScrollingFrames.
 local TweenService = game:GetService("TweenService")
 local T = require(script.Parent.Theme)
 local W = {}
@@ -3038,7 +3059,8 @@ function W.tween(o, props, t, style, dir)
 	return tw
 end
 
-function W.corner(o, r) return new("UICorner", { CornerRadius = UDim.new(0, r or T.radius) }, o) end
+function W.corner(o, r) return new("UICorner", { CornerRadius = UDim.new(0, r or 0) }, o) end
+function W.round(o) return new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, o) end
 function W.stroke(o, color, th, tr)
 	return new("UIStroke", { Color = color or col.line, Thickness = th or 1, Transparency = tr or 0, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, o)
 end
@@ -3057,28 +3079,28 @@ W.nextOrder = nextOrder
 
 function W.begin(m, cw) W.m, W.cw = m, cw end
 
--- ───────── continuous animation registry (survives re-renders: phase comes from the clock) ─────────
+-- ───────── continuous animation registry (phase comes from the clock, so it survives re-renders) ─────────
 W.spinners = setmetatable({}, { __mode = "k" }) -- UIGradient -> degrees per second
 W.glows = setmetatable({}, { __mode = "k" }) -- instance -> { prop, lo, hi, speed }
 function W.spin(g, speed) W.spinners[g] = speed or 90; return g end
-function W.glow(o, prop, lo, hi, speed) W.glows[o] = { prop = prop, lo = lo, hi = hi, speed = speed or 2 }; return o end
+function W.glow(o, prop, lo, hi, speed) W.glows[o] = { prop = prop, lo = lo, hi = hi, speed = speed or 2, phase = math.random() * 6 }; return o end
 function W.step()
 	local t = os.clock()
 	for g, speed in pairs(W.spinners) do
 		if g.Parent then g.Rotation = (t * speed) % 360 end
 	end
 	for o, g in pairs(W.glows) do
-		if o.Parent then o[g.prop] = g.lo + (g.hi - g.lo) * (0.5 + 0.5 * math.sin(t * g.speed)) end
+		if o.Parent then o[g.prop] = g.lo + (g.hi - g.lo) * (0.5 + 0.5 * math.sin(t * g.speed + g.phase)) end
 	end
 end
 
 -- ───────── sound (built-in engine sounds only: no external asset ids) ─────────
 W.muted = false
 local SFX = {
-	click = { id = "rbxasset://sounds/clickfast.wav", vol = 0.25, speed = 1.1 },
-	good = { id = "rbxasset://sounds/electronicpingshort.wav", vol = 0.35, speed = 1.3 },
-	cash = { id = "rbxasset://sounds/electronicpingshort.wav", vol = 0.3, speed = 1.7 },
-	bad = { id = "rbxasset://sounds/electronicpingshort.wav", vol = 0.3, speed = 0.55 },
+	click = { id = "rbxasset://sounds/clickfast.wav", vol = 0.25, speed = 1.25 },
+	good = { id = "rbxasset://sounds/electronicpingshort.wav", vol = 0.32, speed = 1.4 },
+	cash = { id = "rbxasset://sounds/electronicpingshort.wav", vol = 0.3, speed = 1.8 },
+	bad = { id = "rbxasset://sounds/electronicpingshort.wav", vol = 0.3, speed = 0.5 },
 	big = { id = "rbxasset://sounds/electronicpingshort.wav", vol = 0.45, speed = 1.0 },
 }
 local soundPool = {}
@@ -3131,6 +3153,43 @@ end
 
 function W.upper(str) return string.upper(str or "") end
 
+-- ───────── HUD glyphs ─────────
+-- Color emoji clash with monochrome neon line-work, so icons are drawn as cyan glyphs. Known emoji map to a
+-- geometric symbol; anything else becomes a two-letter callsign taken from the item's name ("PR" = Programmer).
+local GLYPH = {
+	["🏠"] = "⌂", ["💼"] = "▣", ["🍔"] = "◒", ["🏭"] = "▥", ["📈"] = "↗", ["🎲"] = "◈", ["🏆"] = "♛", ["📱"] = "▯",
+	["⚖️"] = "⇌", ["🕘"] = "◷", ["🎯"] = "◎", ["☰"] = "≡", ["🎁"] = "✦", ["💵"] = "$", ["💰"] = "$", ["💎"] = "◆",
+	["📊"] = "▤", ["🏦"] = "▦", ["🧾"] = "▤", ["🚨"] = "!", ["⚠️"] = "!", ["📰"] = "▤", ["🗞️"] = "▤", ["🗂️"] = "▦",
+	["▶️"] = "▶", ["😴"] = "z", ["🏖️"] = "◐", ["🏅"] = "▲", ["💸"] = "$", ["🦺"] = "◭", ["🚪"] = "⇥", ["🎓"] = "△",
+	["📚"] = "▥", ["📋"] = "≡", ["🧺"] = "◒", ["🛍️"] = "◇", ["🎬"] = "▶", ["🥫"] = "ϟ", ["📦"] = "▢", ["🛠️"] = "⊞",
+	["🤝"] = "⇄", ["🧮"] = "∑", ["👔"] = "◭", ["🏷️"] = "◇", ["⚙️"] = "✲", ["⬆️"] = "↑", ["📣"] = "◁", ["📝"] = "✎",
+	["🔬"] = "◉", ["🛡️"] = "◊", ["🏢"] = "▥", ["🚀"] = "▲", ["📑"] = "≡", ["✨"] = "✦", ["⭐"] = "★", ["📅"] = "▦",
+	["🧩"] = "◈", ["🔔"] = "◬", ["📌"] = "◆", ["✅"] = "✓", ["📲"] = "▯", ["💻"] = "▭", ["🖥️"] = "▭", ["🪪"] = "▣",
+	["🏙️"] = "▥", ["♻️"] = "↺", ["🐷"] = "$", ["🌟"] = "✦", ["🧠"] = "◎", ["📜"] = "≡", ["🧺 "] = "◒", ["⚡"] = "ϟ",
+	["🔊"] = "◀)", ["🔇"] = "◀×", ["🪙"] = "◎", ["🏘️"] = "⌂", ["🥇"] = "1", ["🥈"] = "2", ["🥉"] = "3", ["🚀 "] = "▲",
+	["🅰️"] = "A", ["🅱️"] = "B", ["©️"] = "C", ["🎉"] = "✦",
+}
+local function monogram(title)
+	title = tostring(title or "")
+	local a, b = title:match("^%W*(%w)%w*%W+(%w)")
+	if a then return string.upper(a .. b) end
+	local w = title:match("%w%w?")
+	return w and string.upper(w) or "◆"
+end
+local function isPlain(s)
+	-- ASCII, or a single symbol from Geometric Shapes / Arrows / Math / Misc Technical blocks (monochrome in fonts)
+	if not s:find("[\128-\255]") then return true end
+	local b1, b2 = s:byte(1, 2)
+	return #s <= 3 and b1 == 0xE2 and b2 ~= nil and (b2 == 0x86 or b2 == 0x87 or b2 == 0x88 or b2 == 0x8C or b2 == 0x96 or b2 == 0x97 or b2 == 0x9C)
+end
+function W.glyph(icon, title)
+	if icon == nil or icon == "" then return nil end
+	if GLYPH[icon] then return GLYPH[icon] end
+	if isPlain(icon) then return icon end
+	return monogram(title)
+end
+W.monogram = monogram
+
 function W.label(parent, o)
 	return new("TextLabel", {
 		Size = o.size or UDim2.new(1, 0, 0, o.h or 20), Position = o.pos or UDim2.new(), BackgroundTransparency = 1, Text = o.text or "",
@@ -3138,11 +3197,180 @@ function W.label(parent, o)
 		TextXAlignment = o.align or Enum.TextXAlignment.Left, TextYAlignment = o.valign or Enum.TextYAlignment.Center,
 		TextWrapped = o.wrap ~= false, TextTruncate = o.truncate or Enum.TextTruncate.None, LayoutOrder = o.order or 0,
 		AnchorPoint = o.anchor or Vector2.new(), RichText = o.rich == true, AutomaticSize = o.auto or Enum.AutomaticSize.None,
-		ZIndex = o.z or 1, TextTransparency = o.tt or 0,
+		ZIndex = o.z or 2, TextTransparency = o.tt or 0,
 	}, parent)
 end
 
--- ───────── toasts (stacked, slide in from the top, colored edge + icon) ─────────
+-- ───────── primitives: cut-corner frame ─────────
+local ROT = { tl = 45, tr = 135, br = 225, bl = 315 }
+local POS = {
+	tl = function(c) return UDim2.new(0, 0, 0, 0) end, tr = function(c) return UDim2.new(1, -c, 0, 0) end,
+	br = function(c) return UDim2.new(1, -c, 1, -c) end, bl = function(c) return UDim2.new(0, 0, 1, -c) end,
+}
+local function seq(points)
+	local kps = {}
+	for _, p in ipairs(points) do table.insert(kps, NumberSequenceKeypoint.new(p[1], p[2])) end
+	return NumberSequence.new(kps)
+end
+local FILL_SEQ = seq({ { 0, 1 }, { 0.49, 1 }, { 0.5, 0 }, { 1, 0 } })
+local lineSeqCache = {}
+local function lineSeq(cut, th)
+	local key = cut .. ":" .. th
+	if not lineSeqCache[key] then
+		local d = math.clamp(th / (cut * 1.4142) * 0.5, 0.02, 0.2)
+		lineSeqCache[key] = seq({ { 0, 1 }, { 0.5 - d - 0.01, 1 }, { 0.5 - d, 0 }, { 0.5 + d, 0 }, { 0.5 + d + 0.01, 1 }, { 1, 1 } })
+	end
+	return lineSeqCache[key]
+end
+local function diag(parent, corner, c, color, tr, mode, th, z)
+	local f = new("Frame", { Size = UDim2.fromOffset(c, c), Position = POS[corner](c), BackgroundColor3 = color, BackgroundTransparency = tr, BorderSizePixel = 0, ZIndex = z }, parent)
+	new("UIGradient", { Rotation = ROT[corner], Transparency = (mode == "fill") and FILL_SEQ or lineSeq(c, th) }, f)
+	return f
+end
+
+-- Draws a chamfered frame into `host` (behind its content). o: cut, corners {tl,tr,br,bl}, fill, fillT, line, lineT, th, z.
+-- Returns { fills = {...}, lines = {...}, root = Frame } so callers can recolor on hover.
+function W.chamfer(host, o)
+	o = o or {}
+	local c = o.cut or T.cut
+	local cs = o.corners or { tl = true, br = true }
+	local th = o.th or 1
+	local z = o.z or 1
+	local root = new("Frame", { Name = "Deco", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ZIndex = z }, host)
+	local parts = { fills = {}, lines = {}, root = root }
+	local L, R = cs.tl and c or 0, cs.tr and c or 0
+	local BL, BR = cs.bl and c or 0, cs.br and c or 0
+	if o.fill then
+		local ft = o.fillT or 0
+		local function band(pos, size) table.insert(parts.fills, new("Frame", { Position = pos, Size = size, BackgroundColor3 = o.fill, BackgroundTransparency = ft, BorderSizePixel = 0, ZIndex = z }, root)) end
+		band(UDim2.new(0, 0, 0, c), UDim2.new(1, 0, 1, -2 * c))
+		band(UDim2.new(0, L, 0, 0), UDim2.new(1, -L - R, 0, c))
+		band(UDim2.new(0, BL, 1, -c), UDim2.new(1, -BL - BR, 0, c))
+		for corner, on in pairs(cs) do if on then table.insert(parts.fills, diag(root, corner, c, o.fill, ft, "fill", th, z)) end end
+	end
+	if o.line then
+		local lt = o.lineT or 0
+		local function edge(pos, size) table.insert(parts.lines, new("Frame", { Position = pos, Size = size, BackgroundColor3 = o.line, BackgroundTransparency = lt, BorderSizePixel = 0, ZIndex = z }, root)) end
+		edge(UDim2.new(0, L, 0, 0), UDim2.new(1, -L - R, 0, th))
+		edge(UDim2.new(0, BL, 1, -th), UDim2.new(1, -BL - BR, 0, th))
+		edge(UDim2.new(0, 0, 0, L), UDim2.new(0, th, 1, -L - BL))
+		edge(UDim2.new(1, -th, 0, R), UDim2.new(0, th, 1, -R - BR))
+		for corner, on in pairs(cs) do if on then table.insert(parts.lines, diag(root, corner, c, o.line, lt, "line", th, z)) end end
+	end
+	return parts
+end
+local function recolor(parts, line, fillT)
+	if line then for _, f in ipairs(parts.lines) do f.BackgroundColor3 = line end end
+	if fillT then for _, f in ipairs(parts.fills) do f.BackgroundTransparency = fillT end end
+end
+
+-- L-shaped targeting brackets just inside each corner.
+function W.brackets(host, size, color, th, inset, z)
+	size, th, inset = size or 12, th or 2, inset or 0
+	local root = new("Frame", { Name = "Brackets", Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ZIndex = z or 2 }, host)
+	local function bar(pos, sz) new("Frame", { Position = pos, Size = sz, BackgroundColor3 = color or col.line, BorderSizePixel = 0, ZIndex = z or 2 }, root) end
+	for _, k in ipairs({ { 0, 0, 1, 1 }, { 1, 0, -1, 1 }, { 0, 1, 1, -1 }, { 1, 1, -1, -1 } }) do
+		local sx, sy, dx, dy = k[1], k[2], k[3], k[4]
+		local x = (dx > 0) and inset or (-inset - size)
+		local y = (dy > 0) and inset or (-inset - th)
+		bar(UDim2.new(sx, x, sy, y), UDim2.fromOffset(size, th))
+		local x2 = (dx > 0) and inset or (-inset - th)
+		local y2 = (dy > 0) and inset or (-inset - size)
+		bar(UDim2.new(sx, x2, sy, y2), UDim2.fromOffset(th, size))
+	end
+	return root
+end
+
+-- Diagonal hazard stripes (warning / danger plates).
+local HAZARD = (function()
+	local pts = {}
+	local n = 9
+	for i = 0, n - 1 do
+		local a, b = i / n, (i + 1) / n
+		local v = (i % 2 == 0) and 0 or 1
+		table.insert(pts, { a == 0 and 0 or a + 0.002, v })
+		table.insert(pts, { b, v })
+	end
+	pts[#pts][1] = 1
+	return seq(pts)
+end)()
+function W.hazard(parent, pos, size, color, z)
+	local f = new("Frame", { Position = pos, Size = size, BackgroundColor3 = color or col.amber, BackgroundTransparency = 0.15, BorderSizePixel = 0, ZIndex = z or 2, ClipsDescendants = true }, parent)
+	new("UIGradient", { Rotation = 45, Transparency = HAZARD }, f)
+	return f
+end
+
+-- ">>>" chevron run with a travelling glow.
+function W.chevrons(parent, pos, n, color, ts, z)
+	local f = new("Frame", { Position = pos, Size = UDim2.fromOffset((n or 3) * (ts or 14) * 0.62, ts or 14), BackgroundTransparency = 1, ZIndex = z or 2 }, parent)
+	for i = 1, (n or 3) do
+		local l = W.label(f, { text = "›", pos = UDim2.fromOffset((i - 1) * (ts or 14) * 0.55, -2), size = UDim2.fromOffset(ts or 14, (ts or 14) + 2), ts = (ts or 14) + 6, color = color or col.line, font = T.font.display, align = Enum.TextXAlignment.Center, z = z or 2, wrap = false })
+		W.glow(l, "TextTransparency", 0, 0.75, 3)
+		W.glows[l].phase = -i * 0.6
+	end
+	return f
+end
+
+-- Dotted ring gauge: `n` dots around a circle, lit up to `pct`, an outer dashed spinning ring and centre text.
+local DASH = seq({ { 0, 0 }, { 0.12, 0 }, { 0.13, 1 }, { 0.25, 1 }, { 0.26, 0 }, { 0.38, 0 }, { 0.39, 1 }, { 0.5, 1 }, { 0.51, 0 }, { 0.63, 0 }, { 0.64, 1 }, { 0.75, 1 }, { 0.76, 0 }, { 0.88, 0 }, { 0.89, 1 }, { 1, 1 } })
+function W.ring(parent, o)
+	local size = o.size or 64
+	local f = new("Frame", { Position = o.pos or UDim2.new(), AnchorPoint = o.anchor or Vector2.new(), Size = UDim2.fromOffset(size, size), BackgroundTransparency = 1, ZIndex = o.z or 2, LayoutOrder = o.order or 0 }, parent)
+	local outer = new("Frame", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ZIndex = o.z or 2 }, f)
+	W.round(outer)
+	local st = W.stroke(outer, o.color or col.line, 1.5, 0.15)
+	W.spin(new("UIGradient", { Transparency = DASH }, st), o.spin or 40)
+	local inner = new("Frame", { Size = UDim2.new(1, -16, 1, -16), Position = UDim2.fromOffset(8, 8), BackgroundColor3 = o.color or col.line, BackgroundTransparency = 0.93, ZIndex = o.z or 2 }, f)
+	W.round(inner)
+	W.stroke(inner, o.color or col.line, 1, 0.6)
+	local n = o.dots or 24
+	local lit = math.floor(math.clamp(o.pct or 0, 0, 1) * n + 0.5)
+	local r = size / 2 - 4
+	for i = 1, n do
+		local a = (i - 1) / n * math.pi * 2 - math.pi / 2
+		local d = new("Frame", { Size = UDim2.fromOffset(3, 3), Position = UDim2.new(0.5, math.floor(math.cos(a) * r) - 1, 0.5, math.floor(math.sin(a) * r) - 1), BackgroundColor3 = (i <= lit) and (o.color or col.line) or col.lineSoft, BorderSizePixel = 0, ZIndex = (o.z or 2) + 1 }, f)
+		W.round(d)
+	end
+	if o.text then W.label(f, { text = o.text, size = UDim2.fromScale(1, 1), ts = o.ts or math.floor(size * 0.24), font = T.font.head, color = o.textColor or col.text, align = Enum.TextXAlignment.Center, wrap = false, z = (o.z or 2) + 1 }) end
+	return f
+end
+
+-- Crosshair reticle (decor).
+function W.reticle(parent, pos, size, color, z)
+	local f = new("Frame", { Position = pos, Size = UDim2.fromOffset(size, size), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, ZIndex = z or 1 }, parent)
+	local ring = new("Frame", { Size = UDim2.fromScale(0.7, 0.7), Position = UDim2.fromScale(0.15, 0.15), BackgroundTransparency = 1, ZIndex = z or 1 }, f)
+	W.round(ring)
+	W.spin(new("UIGradient", { Transparency = DASH }, W.stroke(ring, color or col.line, 1.5, 0.3)), -25)
+	local core = new("Frame", { Size = UDim2.fromScale(0.3, 0.3), Position = UDim2.fromScale(0.35, 0.35), BackgroundTransparency = 1, ZIndex = z or 1 }, f)
+	W.round(core)
+	W.stroke(core, color or col.line, 1, 0.4)
+	for _, p in ipairs({ { 0.5, 0, 0, 0.18 }, { 0.5, 0.82, 0, 0.18 }, { 0, 0.5, 0.18, 0 }, { 0.82, 0.5, 0.18, 0 } }) do
+		local vertical = p[3] == 0
+		new("Frame", { Position = UDim2.new(p[1], vertical and -1 or 0, p[2], vertical and 0 or -1), Size = UDim2.new(p[3], vertical and 2 or 0, p[4], vertical and 0 or 2), BackgroundColor3 = color or col.line, BackgroundTransparency = 0.2, BorderSizePixel = 0, ZIndex = z or 1 }, f)
+	end
+	local dot = new("Frame", { Size = UDim2.fromOffset(4, 4), Position = UDim2.new(0.5, -2, 0.5, -2), BackgroundColor3 = color or col.line, BorderSizePixel = 0, ZIndex = z or 1 }, f)
+	W.round(dot)
+	W.glow(dot, "BackgroundTransparency", 0, 0.7, 4)
+	return f
+end
+
+-- Divider: thin line with end caps and an optional small plate ("MESSAGE" style).
+function W.divider(parent, text, color, order)
+	local f = new("Frame", { Size = UDim2.new(1, 0, 0, text and 18 or 8), BackgroundTransparency = 1, LayoutOrder = order or nextOrder(parent) }, parent)
+	local cy = text and 9 or 4
+	new("Frame", { Position = UDim2.new(0, 0, 0, cy), Size = UDim2.new(1, 0, 0, 1), BackgroundColor3 = color or col.lineDim, BorderSizePixel = 0 }, f)
+	new("Frame", { Position = UDim2.new(0, 0, 0, cy - 2), Size = UDim2.fromOffset(18, 4), BackgroundColor3 = color or col.line, BorderSizePixel = 0 }, f)
+	new("Frame", { Position = UDim2.new(1, -18, 0, cy - 2), Size = UDim2.fromOffset(18, 4), BackgroundColor3 = color or col.line, BorderSizePixel = 0 }, f)
+	if text then
+		local w = 24 + #text * 7
+		local plate = new("Frame", { Position = UDim2.new(0.5, -w / 2, 0, 0), Size = UDim2.fromOffset(w, 18), BackgroundTransparency = 1, ZIndex = 2 }, f)
+		W.chamfer(plate, { cut = 5, corners = { tl = true, tr = true, bl = true, br = true }, fill = col.ink, fillT = 0, line = color or col.line, z = 2 })
+		W.label(plate, { text = W.upper(text), size = UDim2.fromScale(1, 1), ts = 11, font = T.font.head, color = color or col.line, align = Enum.TextXAlignment.Center, wrap = false, z = 3 })
+	end
+	return f
+end
+
+-- ───────── toasts (HUD message plates stacked under the header) ─────────
 function W.attach(gui)
 	W.gui = gui
 	W.toastHost = new("Frame", { Size = UDim2.new(0, 380, 1, 0), Position = UDim2.new(0.5, 0, 0, 0), AnchorPoint = Vector2.new(0.5, 0), BackgroundTransparency = 1, ZIndex = 200 }, gui)
@@ -3150,137 +3378,146 @@ function W.attach(gui)
 	W.toastPad = W.pad(W.toastHost, 0, 140, 0, 0)
 	W.toastN = 0
 end
-local TOAST_ICON = { good = "✓", bad = "✕", warn = "!", gold = "★" }
+local TOAST_TAG = { good = "OK", bad = "ERR", warn = "WARN", gold = "REWARD" }
 function W.toast(text, kind)
 	if not W.toastHost then return end
 	kind = kind or "good"
-	local color = (kind == "bad") and col.red or ((kind == "warn") and col.amber or ((kind == "gold") and col.gold or col.teal))
-	local width = math.min((W.m and W.m.w or 400) - 24, 380)
+	local color = (kind == "bad") and col.red or ((kind == "warn") and col.amber or ((kind == "gold") and col.gold or col.line))
+	local width = math.min((W.m and W.m.w or 400) - 24, 400)
 	W.toastHost.Size = UDim2.new(0, width, 1, 0)
 	W.toastPad.PaddingTop = UDim.new(0, W.m and (W.m.headerH + 8) or 140)
 	W.toastN += 1
-	local holder = new("Frame", { Size = UDim2.new(1, 0, 0, 48), BackgroundTransparency = 1, LayoutOrder = W.toastN, ZIndex = 200 }, W.toastHost)
-	local f = new("Frame", { Size = UDim2.fromScale(1, 1), Position = UDim2.fromOffset(0, -14), BackgroundColor3 = col.panel2, BackgroundTransparency = 1, BorderSizePixel = 0, ZIndex = 201 }, holder)
-	W.corner(f, 14)
-	local st = W.stroke(f, color, 1.5, 1)
-	local icon = new("TextLabel", { Size = UDim2.fromOffset(28, 28), Position = UDim2.new(0, 10, 0.5, -14), BackgroundColor3 = color, BackgroundTransparency = 1, Text = TOAST_ICON[kind] or "•", Font = T.font.display, TextSize = 15, TextColor3 = col.creamInk, TextTransparency = 1, ZIndex = 202 }, f)
-	W.corner(icon, 14)
-	local l = W.label(f, { text = text, pos = UDim2.fromOffset(48, 0), size = UDim2.new(1, -58, 1, 0), font = T.font.bold, ts = 14, z = 202, tt = 1 })
-	W.tween(f, { Position = UDim2.fromOffset(0, 0), BackgroundTransparency = 0.04 }, 0.22, Enum.EasingStyle.Back)
-	W.tween(st, { Transparency = 0 }, 0.2)
-	W.tween(icon, { BackgroundTransparency = 0, TextTransparency = 0 }, 0.2)
-	W.tween(l, { TextTransparency = 0 }, 0.2)
+	local holder = new("Frame", { Size = UDim2.new(1, 0, 0, 50), BackgroundTransparency = 1, LayoutOrder = W.toastN, ZIndex = 200 }, W.toastHost)
+	local f = new("Frame", { Size = UDim2.fromScale(1, 1), Position = UDim2.fromOffset(40, 0), BackgroundTransparency = 1, ZIndex = 201 }, holder)
+	W.chamfer(f, { cut = 10, corners = { tl = true, br = true }, fill = col.ink2, fillT = 0.05, line = color, z = 201 })
+	if kind ~= "good" then W.hazard(f, UDim2.new(1, -46, 0, 6), UDim2.fromOffset(30, 8), color, 202) end
+	local tagW = 18 + #TOAST_TAG[kind] * 8
+	local tag = new("Frame", { Position = UDim2.fromOffset(12, 13), Size = UDim2.fromOffset(tagW, 24), BackgroundTransparency = 1, ZIndex = 202 }, f)
+	W.chamfer(tag, { cut = 6, corners = { tl = true, br = true }, fill = color, fillT = 0, z = 202 })
+	W.label(tag, { text = TOAST_TAG[kind], size = UDim2.fromScale(1, 1), ts = 12, font = T.font.head, color = col.creamInk, align = Enum.TextXAlignment.Center, wrap = false, z = 203 })
+	W.label(f, { text = text, pos = UDim2.fromOffset(tagW + 22, 0), size = UDim2.new(1, -tagW - 34, 1, 0), font = T.font.bold, ts = 15, z = 202 })
+	W.tween(f, { Position = UDim2.fromOffset(0, 0) }, 0.22, Enum.EasingStyle.Quint)
 	local frames = {}
-	for _, c in ipairs(W.toastHost:GetChildren()) do if c:IsA("Frame") then table.insert(frames, c) end end
+	for _, ch in ipairs(W.toastHost:GetChildren()) do if ch:IsA("Frame") then table.insert(frames, ch) end end
 	table.sort(frames, function(a, b) return a.LayoutOrder < b.LayoutOrder end)
 	for i = 1, #frames - 4 do frames[i]:Destroy() end
 	task.delay(3.4, function()
 		if not holder.Parent then return end
-		W.tween(f, { Position = UDim2.fromOffset(0, -10), BackgroundTransparency = 1 }, 0.25)
-		W.tween(st, { Transparency = 1 }, 0.25)
-		W.tween(icon, { BackgroundTransparency = 1, TextTransparency = 1 }, 0.25)
-		W.tween(l, { TextTransparency = 1 }, 0.25)
-		task.delay(0.27, function() holder:Destroy() end)
+		W.tween(f, { Position = UDim2.fromOffset(-40, 0) }, 0.2)
+		task.delay(0.2, function() holder:Destroy() end)
 	end)
 	W.sound((kind == "bad" or kind == "warn") and "bad" or "good")
 end
 
 -- ───────── cards, rows, stats ─────────
--- Glass card: layered gradient fill, soft border; optional icon + title + right caption.
+-- HUD panel: cut-corner neon frame with brackets, a title plate with chevrons and an edge notch.
+-- Returns the inner body (a vertical list) so callers add rows/notes to it.
 function W.card(parent, o)
 	o = o or {}
-	local f = new("Frame", { Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundColor3 = o.bg or col.panel, BorderSizePixel = 0, LayoutOrder = nextOrder(parent) }, parent)
-	W.corner(f, 16)
-	new("UIGradient", { Rotation = 100, Color = ColorSequence.new(col.panel2, col.panel) }, f)
-	W.stroke(f, o.accent or col.lineSoft, o.accent and 1.5 or 1, o.accent and 0.15 or 0)
-	W.pad(f, 14, 14, 14, 14)
-	new("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }, f)
+	local accent = o.accent or col.lineDim
+	local outer = new("Frame", { Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = nextOrder(parent) }, parent)
+	W.chamfer(outer, { cut = 14, corners = { tl = true, br = true }, fill = col.panel, fillT = 0.25, line = accent, lineT = o.accent and 0 or 0.1, z = 1 })
+	-- edge notch + corner ticks
+	new("Frame", { Position = UDim2.new(1, -64, 0, -1), Size = UDim2.fromOffset(40, 3), BackgroundColor3 = o.accent or col.line, BorderSizePixel = 0, ZIndex = 2 }, outer)
+	new("Frame", { Position = UDim2.new(0, 14, 1, -2), Size = UDim2.fromOffset(24, 3), BackgroundColor3 = o.accent or col.line, BackgroundTransparency = 0.3, BorderSizePixel = 0, ZIndex = 2 }, outer)
+	local body = new("Frame", { Name = "Body", Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, ZIndex = 2 }, outer)
+	W.pad(body, 16, 14, 16, 16)
+	new("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }, body)
 	if o.title then
-		local h = new("Frame", { Size = UDim2.new(1, 0, 0, 26), BackgroundTransparency = 1, LayoutOrder = 0 }, f)
-		local x
-		if o.icon then
-			local ic = new("TextLabel", { Size = UDim2.fromOffset(26, 26), BackgroundColor3 = o.accent or col.panel3, BackgroundTransparency = o.accent and 0.7 or 0, Text = o.icon, TextSize = 15, Font = T.font.body, TextColor3 = col.text }, h)
-			W.corner(ic, 8)
-			x = 34
-		else
-			local bar = new("Frame", { Size = UDim2.fromOffset(4, 18), Position = UDim2.fromOffset(0, 4), BackgroundColor3 = Color3.new(1, 1, 1), BorderSizePixel = 0 }, h)
-			W.corner(bar, 2)
-			if o.accent then bar.BackgroundColor3 = o.accent else W.gradient(bar, T.brandSeq, 90) end
-			x = 12
+		local h = new("Frame", { Size = UDim2.new(1, 0, 0, 26), BackgroundTransparency = 1, LayoutOrder = 0, ZIndex = 2 }, body)
+		local g = W.glyph(o.icon, o.title)
+		local title = W.upper(o.title)
+		local plateW = math.min(math.floor((W.cw or 320) * 0.7), (g and 34 or 16) + #title * 9 + 16)
+		local plate = new("Frame", { Size = UDim2.fromOffset(plateW, 26), BackgroundTransparency = 1, ZIndex = 2 }, h)
+		W.chamfer(plate, { cut = 8, corners = { tl = true, br = true }, fill = o.accent or col.line, fillT = 0.84, line = o.accent or col.line, lineT = 0.2, z = 2 })
+		local x = 10
+		if g then
+			W.label(plate, { text = g, pos = UDim2.fromOffset(6, 0), size = UDim2.fromOffset(22, 26), ts = 15, font = T.font.head, color = o.accent or col.line, align = Enum.TextXAlignment.Center, wrap = false, z = 3 })
+			x = 30
 		end
-		new("TextLabel", { Size = UDim2.new(0.64, -x, 1, 0), Position = UDim2.fromOffset(x, 0), BackgroundTransparency = 1, Text = W.upper(o.title), Font = T.font.head, TextSize = 14, TextColor3 = col.text, TextXAlignment = Enum.TextXAlignment.Left, TextTruncate = Enum.TextTruncate.AtEnd }, h)
+		W.label(plate, { text = title, pos = UDim2.fromOffset(x, 0), size = UDim2.new(1, -x - 8, 1, 0), ts = 14, font = T.font.head, color = col.text, wrap = false, truncate = Enum.TextTruncate.AtEnd, z = 3 })
+		W.chevrons(h, UDim2.fromOffset(plateW + 8, 6), 3, o.accent or col.line, 13, 2)
+		new("Frame", { Position = UDim2.new(0, plateW + 40, 0, 13), Size = UDim2.new(1, -plateW - 40 - (o.right and 110 or 0), 0, 1), BackgroundColor3 = col.lineSoft, BorderSizePixel = 0, ZIndex = 2 }, h)
 		if o.right then
-			W.label(h, { text = o.right, size = UDim2.new(0.36, 0, 1, 0), pos = UDim2.new(0.64, 0, 0, 0), align = Enum.TextXAlignment.Right, color = o.rightColor or col.muted, ts = 12, wrap = false, font = T.font.caps })
+			W.label(h, { text = W.upper(o.right), size = UDim2.new(0, 104, 1, 0), pos = UDim2.new(1, -104, 0, 0), align = Enum.TextXAlignment.Right, color = o.rightColor or col.muted, ts = 12, wrap = false, font = T.font.head, truncate = Enum.TextTruncate.AtEnd })
 		end
 	end
-	return f
+	return body
 end
 
 function W.stat(parent, o)
-	local f = new("Frame", { Size = o.size or UDim2.new(1, 0, 0, 64), BackgroundColor3 = col.panel2, BorderSizePixel = 0, LayoutOrder = o.order or nextOrder(parent) }, parent)
-	W.corner(f, 14)
-	new("UIGradient", { Rotation = 90, Color = ColorSequence.new(col.panel3, col.panel2) }, f)
-	W.stroke(f, o.color or col.line, 1, 0.55)
+	local color = o.color or col.line
+	local f = new("Frame", { Size = o.size or UDim2.new(1, 0, 0, 64), BackgroundTransparency = 1, LayoutOrder = o.order or nextOrder(parent) }, parent)
+	W.chamfer(f, { cut = 10, corners = { tl = true, br = true }, fill = col.panel, fillT = 0.25, line = color, lineT = 0.35, z = 1 })
+	W.brackets(f, 8, color, 2, 3, 2)
+	local g = W.glyph(o.icon, o.label)
 	local ix = 12
-	if o.icon then
-		W.label(f, { text = o.icon, pos = UDim2.fromOffset(10, 5), size = UDim2.fromOffset(18, 18), ts = 13, align = Enum.TextXAlignment.Center })
-		ix = 32
+	if g then
+		W.label(f, { text = g, pos = UDim2.fromOffset(10, 6), size = UDim2.fromOffset(16, 14), ts = 13, font = T.font.head, color = color, align = Enum.TextXAlignment.Center, wrap = false })
+		ix = 30
 	end
-	W.label(f, { text = W.upper(o.label), pos = UDim2.fromOffset(ix, 6), size = UDim2.new(1, -ix - 6, 0, 14), ts = 10, color = col.muted, font = T.font.caps, wrap = false, truncate = Enum.TextTruncate.AtEnd })
-	local v = W.label(f, { text = o.value, pos = UDim2.fromOffset(12, 21), size = UDim2.new(1, -16, 0, 28), ts = o.ts or T.size.title, color = o.color or col.text, font = T.font.mono, wrap = false })
-	if o.sub then W.label(f, { text = o.sub, pos = UDim2.fromOffset(12, 46), size = UDim2.new(1, -16, 0, 14), ts = 11, color = col.muted, wrap = false, truncate = Enum.TextTruncate.AtEnd }) end
-	local line = new("Frame", { Size = UDim2.new(1, -24, 0, 2), Position = UDim2.new(0, 12, 1, -3), BackgroundColor3 = o.color or col.line, BackgroundTransparency = 0.35, BorderSizePixel = 0 }, f)
-	W.corner(line, 1)
+	W.label(f, { text = "// " .. W.upper(o.label), pos = UDim2.fromOffset(ix, 6), size = UDim2.new(1, -ix - 8, 0, 14), ts = 11, color = col.muted, font = T.font.head, wrap = false, truncate = Enum.TextTruncate.AtEnd })
+	local v = W.label(f, { text = o.value, pos = UDim2.fromOffset(12, 21), size = UDim2.new(1, -20, 0, 28), ts = o.ts or T.size.title, color = color, font = T.font.mono, wrap = false })
+	if o.sub then W.label(f, { text = o.sub, pos = UDim2.fromOffset(12, 46), size = UDim2.new(1, -20, 0, 14), ts = 11, color = col.muted, wrap = false, truncate = Enum.TextTruncate.AtEnd }) end
+	-- segmented underline
+	for i = 0, 4 do
+		new("Frame", { Position = UDim2.new(1, -16 - i * 9, 1, -6), Size = UDim2.fromOffset(6, 2), BackgroundColor3 = color, BackgroundTransparency = i * 0.18, BorderSizePixel = 0, ZIndex = 2 }, f)
+	end
 	f.Name = o.name or "Stat"
 	return f, v
 end
 
--- Buttons: pill shaped. primary = brand gradient, good = mint gradient, gold = reward gradient, danger = coral,
--- ghost = outline glass pill, select = active pink. `reason` makes it look locked and explains why on tap.
+-- Buttons: cut-corner plates. primary/good = solid cyan with dark text, gold = amber, danger = red outline with
+-- hazard tick, ghost = outline glass, select = lit outline. `reason` locks the button and explains why on tap.
 local VARIANT = {
-	primary = { seq = T.brandSeq, text = Color3.new(1, 1, 1) },
-	good = { seq = T.goodSeq, text = col.creamInk },
-	gold = { seq = T.goldSeq, text = col.creamInk },
-	danger = { seq = T.dangerSeq, text = Color3.new(1, 1, 1) },
-	ghost = { fill = col.panel3, fillT = 0.45, edge = col.lineDim, text = col.text },
-	select = { fill = col.magenta, fillT = 0, edge = Color3.fromHex("FF9CC2"), text = Color3.new(1, 1, 1) },
-	disabled = { fill = col.disabled, fillT = 0.25, edge = col.lineSoft, text = col.faint },
+	primary = { fill = col.line, fillT = 0, line = col.glow, text = col.creamInk, hoverT = 0.15 },
+	good = { fill = col.line, fillT = 0, line = col.glow, text = col.creamInk, hoverT = 0.15 },
+	gold = { fill = col.amber, fillT = 0, line = col.gold, text = col.creamInk, hoverT = 0.15 },
+	danger = { fill = col.red, fillT = 0.82, line = col.red, text = col.text, hoverT = 0.6 },
+	ghost = { fill = col.line, fillT = 0.92, line = col.lineDim, text = col.text, hoverT = 0.8, hoverLine = col.line },
+	select = { fill = col.line, fillT = 0.7, line = col.line, text = col.text, hoverT = 0.6 },
+	disabled = { fill = col.disabled, fillT = 0.3, line = col.lineSoft, text = col.faint, hoverT = 0.3 },
 }
 W.hover = 0 -- number of hovered interactive elements; the shell avoids re-rendering under the cursor
-local function track(b, sc, shine, hoverScale)
+local function track(b, sc, onIn, onOut)
 	local inside = false
 	b.MouseEnter:Connect(function()
 		if not inside then inside = true; W.hover += 1 end
 		if W.m and W.m.touch then return end
-		W.tween(sc, { Scale = hoverScale }, 0.1)
-		if shine then W.tween(shine, { BackgroundTransparency = 0.88 }, 0.1) end
+		W.tween(sc, { Scale = 1.03 }, 0.1)
+		if onIn then onIn() end
 	end)
 	b.MouseLeave:Connect(function()
 		if inside then inside = false; W.hover = math.max(0, W.hover - 1) end
 		W.tween(sc, { Scale = 1 }, 0.1)
-		if shine then W.tween(shine, { BackgroundTransparency = 1 }, 0.12) end
+		if onOut then onOut() end
 	end)
 	b.Destroying:Connect(function() if inside then inside = false; W.hover = math.max(0, W.hover - 1) end end)
-	b.MouseButton1Down:Connect(function() W.tween(sc, { Scale = 0.94 }, 0.06) end)
+	b.MouseButton1Down:Connect(function() W.tween(sc, { Scale = 0.95 }, 0.06) end)
 	b.MouseButton1Up:Connect(function() W.tween(sc, { Scale = 1 }, 0.14, Enum.EasingStyle.Back) end)
 end
 function W.button(parent, o)
 	local key = o.reason and "disabled" or (o.variant or "primary")
 	local v = VARIANT[key] or VARIANT.primary
 	local h = o.h or (W.m and W.m.btnH or 34)
-	local text = o.text
-	if o.icon then text = o.icon .. "  " .. text end
+	local text = W.upper(o.text)
+	local g = o.icon and W.glyph(o.icon, o.text)
+	if g then text = g .. "  " .. text end
+	if o.reason then text = "⊘ " .. text end
+	local z = o.z or 2
 	local b = new("TextButton", {
 		Size = o.size or UDim2.fromOffset(o.w or 96, h), Position = o.pos or UDim2.new(), AnchorPoint = o.anchor or Vector2.new(),
-		BackgroundColor3 = v.seq and Color3.new(1, 1, 1) or v.fill, BackgroundTransparency = v.fillT or 0, Text = text, TextColor3 = v.text, Font = T.font.bold, TextSize = o.ts or 14, TextWrapped = true,
-		AutoButtonColor = false, BorderSizePixel = 0, LayoutOrder = o.order or 0, ZIndex = o.z or 1,
+		BackgroundTransparency = 1, Text = "", AutoButtonColor = false, BorderSizePixel = 0, LayoutOrder = o.order or 0, ZIndex = z,
 	}, parent)
-	new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, b)
-	if v.seq then W.gradient(b, v.seq, 0) else W.stroke(b, v.edge, 1.2, 0) end
-	local shine = new("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(1, 1, 1), BackgroundTransparency = 1, BorderSizePixel = 0, ZIndex = b.ZIndex }, b)
-	new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, shine)
+	local cut = math.min(9, math.floor(h / 3))
+	local parts = W.chamfer(b, { cut = cut, corners = { tl = true, br = true }, fill = v.fill, fillT = v.fillT, line = v.line, z = z })
+	if key == "danger" then W.hazard(b, UDim2.new(1, -cut - 14, 0, 3), UDim2.fromOffset(12, 4), col.red, z + 1) end
+	local label = W.label(b, { text = text, size = UDim2.new(1, -10, 1, 0), pos = UDim2.fromOffset(5, 0), ts = o.ts or 14, font = T.font.head, color = v.text, align = Enum.TextXAlignment.Center, wrap = true, z = z + 1 })
+	label.Name = "Label"
 	local sc = new("UIScale", { Scale = 1 }, b)
-	track(b, sc, shine, 1.04)
+	track(b, sc,
+		function() recolor(parts, v.hoverLine or col.glow, v.hoverT) end,
+		function() recolor(parts, v.line, v.fillT) end)
 	b.Activated:Connect(function()
 		if o.reason then W.toast(o.reason, "warn"); W.shake(b) return end
 		W.sound("click")
@@ -3289,43 +3526,40 @@ function W.button(parent, o)
 	return b
 end
 
--- Item row: optional icon bubble, title/sub/extra on the left, action buttons on the right.
--- Buttons stack under the text when the row is narrow.
+-- Item row: cut-corner plate, optional glyph box, title/sub/extra on the left, action buttons on the right.
 function W.row(parent, o)
 	local m = W.m
-	local cw = (o.cw or W.cw or 320) - 28
+	local cw = (o.cw or W.cw or 320) - 32
 	local actions = o.actions or {}
 	local aw, gap = 0, 6
-	for _, a in ipairs(actions) do a.w = a.w or math.max(76, 24 + #a.text * 7.5); aw += a.w + gap end
+	for _, a in ipairs(actions) do a.w = a.w or math.max(84, 30 + #a.text * 8.5); aw += a.w + gap end
 	local stacked = (#actions > 0) and (cw - aw < 180 or m.class == "compact")
-	local ix = o.icon and 52 or 12
+	local g = W.glyph(o.icon, o.title)
+	local ix = g and 54 or 14
 	local textH = (o.sub and 50 or 30) + (o.extra and 18 or 0)
 	local height = textH + 8 + ((stacked and #actions > 0) and (m.btnH + 6) or 0)
-	height = math.max(height, (not stacked and #actions > 0) and (m.btnH + 14) or 0, o.icon and 56 or 0)
-	local f = new("Frame", { Size = UDim2.new(1, 0, 0, height), BackgroundColor3 = o.selected and col.panel3 or col.ink, BackgroundTransparency = o.selected and 0.1 or 0.45, BorderSizePixel = 0, LayoutOrder = o.order or nextOrder(parent) }, parent)
-	W.corner(f, 12)
+	height = math.max(height, (not stacked and #actions > 0) and (m.btnH + 14) or 0, g and 56 or 0)
+	local f = new("Frame", { Size = UDim2.new(1, 0, 0, height), BackgroundTransparency = 1, LayoutOrder = o.order or nextOrder(parent) }, parent)
+	local lineColor = (o.selected and col.line) or (o.alert and col.red) or o.highlight or col.lineSoft
+	W.chamfer(f, { cut = 9, corners = { tl = true, br = true }, fill = o.selected and col.panel3 or col.ink, fillT = o.selected and 0.2 or 0.45, line = lineColor, lineT = (o.selected or o.alert or o.highlight) and 0 or 0.2, z = 1 })
 	if o.selected then
-		W.stroke(f, col.magenta, 1.5)
-		local bar = new("Frame", { Size = UDim2.new(0, 3, 1, -16), Position = UDim2.fromOffset(0, 8), BackgroundColor3 = Color3.new(1, 1, 1), BorderSizePixel = 0 }, f)
-		W.gradient(bar, T.brandSeq, 90)
+		local bar = new("Frame", { Size = UDim2.new(0, 3, 1, -24), Position = UDim2.fromOffset(3, 12), BackgroundColor3 = col.line, BorderSizePixel = 0, ZIndex = 2 }, f)
+		W.glow(bar, "BackgroundTransparency", 0, 0.5, 3)
 	elseif o.alert then
-		W.stroke(f, col.red, 1.2, 0.2)
-	elseif o.highlight then
-		W.stroke(f, o.highlight, 1.2, 0.3)
-	else
-		W.stroke(f, col.lineSoft, 1, 0.3)
+		W.hazard(f, UDim2.new(1, -40, 0, 4), UDim2.fromOffset(26, 5), col.red, 2)
 	end
-	if o.icon then
-		local ic = new("TextLabel", { Size = UDim2.fromOffset(38, 38), Position = UDim2.fromOffset(8, stacked and 9 or math.floor((height - 38) / 2)), BackgroundColor3 = o.iconColor or Color3.new(1, 1, 1), Text = o.icon, TextSize = 20, Font = T.font.body, TextColor3 = col.text, BorderSizePixel = 0 }, f)
-		W.corner(ic, 11)
-		if not o.iconColor then W.gradient(ic, ColorSequence.new(col.raised, col.panel3), 135) end
+	if g then
+		local box = new("Frame", { Size = UDim2.fromOffset(38, 38), Position = UDim2.fromOffset(9, stacked and 9 or math.floor((height - 38) / 2)), BackgroundTransparency = 1, ZIndex = 2 }, f)
+		local tint = o.iconColor or (o.alert and col.red) or o.highlight or col.line
+		W.chamfer(box, { cut = 7, corners = { tl = true, tr = true, bl = true, br = true }, fill = tint, fillT = 0.88, line = tint, lineT = 0.25, z = 2 })
+		W.label(box, { text = g, size = UDim2.fromScale(1, 1), ts = (#g <= 3) and 18 or 13, font = T.font.head, color = tint, align = Enum.TextXAlignment.Center, wrap = false, z = 3 })
 	end
-	local tw = (stacked and cw or (cw - aw)) - (ix - 12)
+	local tw = (stacked and cw or (cw - aw)) - (ix - 14)
 	local ty = (not stacked and not o.sub and not o.extra) and math.floor((height - 22) / 2) or 6
 	W.label(f, { text = o.title, pos = UDim2.fromOffset(ix, ty), size = UDim2.new(0, tw, 0, 22), font = T.font.bold, ts = T.size.label, color = o.titleColor or col.text, wrap = false, truncate = Enum.TextTruncate.AtEnd })
-	if o.sub then W.label(f, { text = o.sub, pos = UDim2.fromOffset(ix, 27), size = UDim2.new(0, tw, 0, 30), ts = 12, color = col.muted, valign = Enum.TextYAlignment.Top }) end
-	if o.extra then W.label(f, { text = o.extra, pos = UDim2.fromOffset(ix, (o.sub and 54 or 30)), size = UDim2.new(0, tw, 0, 16), ts = 12, color = o.extraColor or col.amber, wrap = false, truncate = Enum.TextTruncate.AtEnd, font = T.font.caps }) end
-	local x = stacked and ix or (cw + 16 - aw + gap)
+	if o.sub then W.label(f, { text = o.sub, pos = UDim2.fromOffset(ix, 27), size = UDim2.new(0, tw, 0, 30), ts = 13, color = col.muted, valign = Enum.TextYAlignment.Top }) end
+	if o.extra then W.label(f, { text = o.extra, pos = UDim2.fromOffset(ix, (o.sub and 54 or 30)), size = UDim2.new(0, tw, 0, 16), ts = 12, color = o.extraColor or col.amber, wrap = false, truncate = Enum.TextTruncate.AtEnd, font = T.font.head }) end
+	local x = stacked and ix or (cw + 18 - aw + gap)
 	for _, a in ipairs(actions) do
 		local y = stacked and (textH + 4) or math.floor((height - m.btnH) / 2)
 		a.pos = UDim2.fromOffset(x, y)
@@ -3336,130 +3570,157 @@ function W.row(parent, o)
 end
 
 function W.reason(parent, text, color)
-	return W.label(parent, { text = "🔒  " .. text, color = color or col.amber, ts = 13, auto = Enum.AutomaticSize.Y, size = UDim2.new(1, 0, 0, 16), order = nextOrder(parent), font = T.font.caps })
+	local f = new("Frame", { Size = UDim2.new(1, 0, 0, 30), BackgroundTransparency = 1, LayoutOrder = nextOrder(parent) }, parent)
+	W.hazard(f, UDim2.fromOffset(0, 4), UDim2.fromOffset(22, 22), color or col.amber, 2)
+	W.label(f, { text = W.upper(text), pos = UDim2.fromOffset(32, 0), size = UDim2.new(1, -32, 1, 0), color = color or col.amber, ts = 13, font = T.font.head })
+	return f
 end
 function W.note(parent, text, color)
-	return W.label(parent, { text = text, color = color or col.muted, ts = 13, auto = Enum.AutomaticSize.Y, size = UDim2.new(1, 0, 0, 16), order = nextOrder(parent) })
+	return W.label(parent, { text = text, color = color or col.muted, ts = 14, auto = Enum.AutomaticSize.Y, size = UDim2.new(1, 0, 0, 16), order = nextOrder(parent) })
 end
 
--- Progress bar with a softly shaded fill.
+-- Segmented progress bar (blocks), like the HUD loaders.
 function W.progress(parent, frac, color, h, order)
 	frac = math.clamp(frac or 0, 0, 1)
-	local bar = new("Frame", { Size = UDim2.new(1, 0, 0, math.min(h or 6, 10)), BackgroundColor3 = col.ink, BackgroundTransparency = 0.2, BorderSizePixel = 0, LayoutOrder = order or nextOrder(parent), ClipsDescendants = true }, parent)
-	new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, bar)
-	local fill = new("Frame", { Size = UDim2.new(frac, 0, 1, 0), BackgroundColor3 = color or col.teal, BorderSizePixel = 0 }, bar)
-	new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, fill)
-	new("UIGradient", { Color = ColorSequence.new(Color3.new(1, 1, 1), Color3.new(0.78, 0.78, 0.78)), Rotation = 90 }, fill)
+	local n = 16
+	local lit = math.floor(frac * n + 0.5)
+	if frac > 0 and lit == 0 then lit = 1 end
+	local bar = new("Frame", { Size = UDim2.new(1, 0, 0, math.clamp(h or 6, 4, 10)), BackgroundTransparency = 1, LayoutOrder = order or nextOrder(parent) }, parent)
+	new("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 2), SortOrder = Enum.SortOrder.LayoutOrder }, bar)
+	color = color or col.line
+	for i = 1, n do
+		local seg = new("Frame", { Size = UDim2.new(1 / n, -2, 1, 0), BackgroundColor3 = (i <= lit) and color or col.lineSoft, BackgroundTransparency = (i <= lit) and 0 or 0.4, BorderSizePixel = 0, LayoutOrder = i }, bar)
+		if i == lit then W.glow(seg, "BackgroundTransparency", 0, 0.5, 4) end
+	end
 	return bar
 end
 
--- Avatar circle with a status dot
+-- Avatar: dashed spinning ring with a letter.
 function W.avatar(parent, letter, color, size, dot)
 	size = size or 34
-	local a = new("TextLabel", { Size = UDim2.fromOffset(size, size), BackgroundColor3 = color or col.magenta, Text = letter, Font = T.font.display, TextSize = math.floor(size * 0.45), TextColor3 = Color3.new(1, 1, 1), BorderSizePixel = 0 }, parent)
-	new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, a)
+	local a = new("TextLabel", { Size = UDim2.fromOffset(size, size), BackgroundColor3 = color or col.line, BackgroundTransparency = 0.85, Text = W.upper(letter), Font = T.font.head, TextSize = math.floor(size * 0.45), TextColor3 = color or col.line, BorderSizePixel = 0, ZIndex = 2 }, parent)
+	W.round(a)
+	W.spin(new("UIGradient", { Transparency = DASH }, W.stroke(a, color or col.line, 1.5, 0)), 60)
 	if dot then
-		local d = new("Frame", { Size = UDim2.fromOffset(10, 10), Position = UDim2.new(1, -9, 1, -9), BackgroundColor3 = dot, BorderSizePixel = 0 }, a)
-		new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, d)
-		W.stroke(d, col.panel, 2)
+		local d = new("Frame", { Size = UDim2.fromOffset(9, 9), Position = UDim2.new(1, -8, 1, -8), BackgroundColor3 = dot, BorderSizePixel = 0, ZIndex = 3 }, a)
+		W.round(d)
+		W.glow(d, "BackgroundTransparency", 0, 0.6, 3)
 	end
 	return a
 end
 
--- Featured hero card: animated brand-gradient border, ambient glow orbs, price tag, CTA pills.
+-- Waveform bars (decor; the equalizer-like chart in the HUD panels).
+function W.wave(parent, pos, size, color, bars, z)
+	local f = new("Frame", { Position = pos, Size = size, BackgroundTransparency = 1, ZIndex = z or 2 }, parent)
+	bars = bars or 18
+	for i = 1, bars do
+		local hgt = 0.2 + 0.8 * math.abs(math.sin(i * 1.7) * math.cos(i * 0.6))
+		local b = new("Frame", { Size = UDim2.new(1 / bars, -2, hgt, 0), Position = UDim2.new((i - 1) / bars, 0, 1 - hgt, 0), BackgroundColor3 = color or col.line, BorderSizePixel = 0, ZIndex = z or 2 }, f)
+		W.glow(b, "BackgroundTransparency", 0.1, 0.7, 2 + (i % 4))
+	end
+	return f
+end
+
+-- Featured hero panel: big cut-corner frame, brackets, reticle, chevrons, waveform, hex price plate, CTAs.
 function W.hero(parent, o)
 	local hgt = o.h or 220
-	local f = new("Frame", { Size = o.size or UDim2.new(1, 0, 0, hgt), BackgroundColor3 = Color3.new(1, 1, 1), BorderSizePixel = 0, LayoutOrder = o.order or nextOrder(parent), ClipsDescendants = true }, parent)
-	W.corner(f, 20)
-	new("UIGradient", { Rotation = 25, Color = ColorSequence.new(Color3.fromHex("3B1470"), Color3.fromHex("120A2A")) }, f)
-	local st = W.stroke(f, Color3.new(1, 1, 1), 2, 0)
-	W.spin(W.gradient(st, ColorSequence.new({
-		ColorSequenceKeypoint.new(0, col.brand), ColorSequenceKeypoint.new(0.5, col.brand2), ColorSequenceKeypoint.new(1, col.sky),
-	}), 0), 60)
-	local orb1 = new("Frame", { Size = UDim2.fromOffset(260, 260), Position = UDim2.new(1, -120, 0, -110), BackgroundColor3 = col.brand2, BackgroundTransparency = 0.82, BorderSizePixel = 0 }, f)
-	new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, orb1)
-	W.glow(orb1, "BackgroundTransparency", 0.78, 0.9, 1.3)
-	local orb2 = new("Frame", { Size = UDim2.fromOffset(200, 200), Position = UDim2.new(0, -80, 1, -70), BackgroundColor3 = col.blue, BackgroundTransparency = 0.86, BorderSizePixel = 0 }, f)
-	new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, orb2)
-	W.glow(orb2, "BackgroundTransparency", 0.82, 0.94, 0.9)
+	local f = new("Frame", { Size = o.size or UDim2.new(1, 0, 0, hgt), BackgroundTransparency = 1, LayoutOrder = o.order or nextOrder(parent), ClipsDescendants = true }, parent)
+	W.chamfer(f, { cut = 22, corners = { tl = true, br = true, tr = true }, fill = col.panel2, fillT = 0.15, line = col.line, th = 2, z = 1 })
+	W.brackets(f, 16, col.glow, 2, 6, 2)
+	-- scanline sweep
+	local scan = new("Frame", { Size = UDim2.new(1, 0, 0, 2), Position = UDim2.fromScale(0, 0.5), BackgroundColor3 = col.line, BackgroundTransparency = 0.85, BorderSizePixel = 0, ZIndex = 2 }, f)
+	W.glow(scan, "BackgroundTransparency", 0.75, 0.95, 1.5)
 	local compact = W.m and W.m.class == "compact"
-	W.label(f, { text = "✦  " .. W.upper(o.kicker or ""), pos = UDim2.fromOffset(22, 16), size = UDim2.new(0.6, 0, 0, 16), ts = 11, color = col.teal, font = T.font.head, wrap = false })
+	if not compact then W.reticle(f, UDim2.new(1, -90, 0.5, 10), 120, col.line, 1) end
+	W.wave(f, UDim2.new(1, compact and -120 or -230, 1, -40), UDim2.fromOffset(compact and 90 or 110, 26), col.line, 16, 2)
+	-- kicker plate
+	local k = W.upper(o.kicker or "")
+	local kp = new("Frame", { Position = UDim2.fromOffset(24, 16), Size = UDim2.fromOffset(30 + #k * 8, 22), BackgroundTransparency = 1, ZIndex = 2 }, f)
+	W.chamfer(kp, { cut = 6, corners = { tl = true, br = true }, fill = col.line, fillT = 0.82, line = col.line, z = 2 })
+	W.label(kp, { text = "◆ " .. k, size = UDim2.fromScale(1, 1), ts = 12, color = col.line, font = T.font.head, align = Enum.TextXAlignment.Center, wrap = false, z = 3 })
+	W.chevrons(f, UDim2.fromOffset(34 + #k * 8 + 6, 20), 4, col.line, 13, 2)
 	if o.price then
-		local tag = new("Frame", { Size = UDim2.fromOffset(math.max(70, 24 + #o.price * 10), 36), Position = UDim2.new(1, -20, 0, 14), AnchorPoint = Vector2.new(1, 0), BackgroundColor3 = Color3.new(1, 1, 1), BorderSizePixel = 0, Rotation = 3 }, f)
-		W.corner(tag, 8)
-		W.gradient(tag, T.brandSeq, 0)
-		W.label(tag, { text = o.price, size = UDim2.fromScale(1, 1), color = Color3.new(1, 1, 1), font = T.font.display, ts = 15, align = Enum.TextXAlignment.Center, wrap = false })
+		local pw = math.max(78, 30 + #o.price * 10)
+		local tag = new("Frame", { Size = UDim2.fromOffset(pw, 34), Position = UDim2.new(1, -24 - pw, 0, 14), BackgroundTransparency = 1, ZIndex = 2 }, f)
+		W.chamfer(tag, { cut = 17, corners = { tl = true, tr = true, bl = true, br = true }, fill = col.line, fillT = 0, z = 2 })
+		W.label(tag, { text = W.upper(o.price), size = UDim2.fromScale(1, 1), color = col.creamInk, font = T.font.head, ts = 15, align = Enum.TextXAlignment.Center, wrap = false, z = 3 })
 	end
-	if o.icon then
-		W.label(f, { text = o.icon, pos = UDim2.new(1, -100, 1, -116), size = UDim2.fromOffset(84, 84), ts = 62, align = Enum.TextXAlignment.Center, tt = 0.1 })
+	local g = W.glyph(o.icon, o.title)
+	if g and not compact then
+		W.label(f, { text = g, pos = UDim2.new(1, -120, 0.5, -20), size = UDim2.fromOffset(60, 60), ts = 34, color = col.glow, font = T.font.head, align = Enum.TextXAlignment.Center, z = 2 })
 	end
-	W.label(f, { text = o.title, pos = UDim2.fromOffset(22, 38), size = UDim2.new(1, -44, 0, compact and 60 or 64), ts = compact and 24 or 32, color = col.text, font = T.font.display, valign = Enum.TextYAlignment.Center })
-	if o.sub and o.sub ~= "" then W.label(f, { text = o.sub, pos = UDim2.fromOffset(22, compact and 98 or 104), size = UDim2.new(1, -130, 0, 40), ts = 13, color = col.muted, font = T.font.body, valign = Enum.TextYAlignment.Top }) end
-	local y = hgt - 60
-	local x = 22
+	W.label(f, { text = W.upper(o.title), pos = UDim2.fromOffset(24, 44), size = UDim2.new(1, compact and -48 or -200, 0, compact and 60 or 64), ts = compact and 20 or 26, color = col.text, font = T.font.display, valign = Enum.TextYAlignment.Center })
+	if o.sub and o.sub ~= "" then W.label(f, { text = o.sub, pos = UDim2.fromOffset(24, compact and 104 or 110), size = UDim2.new(1, compact and -48 or -200, 0, 40), ts = 14, color = col.muted, font = T.font.body, valign = Enum.TextYAlignment.Top }) end
+	local y = hgt - 62
+	local x = 24
 	if o.cta then
-		local w = math.max(150, 50 + #o.cta * 9)
+		local w = math.max(160, 60 + #o.cta * 10)
 		W.button(f, { text = "▶  " .. o.cta, variant = "good", w = w, h = 44, ts = 16, pos = UDim2.fromOffset(x, y), onClick = o.onCta })
 		x += w + 10
 	end
-	if o.secondary then W.button(f, { text = o.secondary, variant = "ghost", w = math.max(120, 30 + #o.secondary * 8), h = 44, ts = 14, pos = UDim2.fromOffset(x, y), onClick = o.onSecondary }) end
+	if o.secondary then W.button(f, { text = o.secondary, variant = "ghost", w = math.max(130, 40 + #o.secondary * 9), h = 44, ts = 14, pos = UDim2.fromOffset(x, y), onClick = o.onSecondary }) end
 	return f
 end
 
--- Dashboard tile: gradient card with a big emoji, count badge, caps title, caption and a progress line.
+-- Dashboard module: cut-corner frame, index plate, dotted ring gauge with %, title and caption.
+local tileIndex = 0
 function W.tile(parent, o)
-	local f = new("TextButton", { Size = UDim2.fromOffset(o.w, o.h or 150), BackgroundColor3 = Color3.new(1, 1, 1), Text = "", AutoButtonColor = false, BorderSizePixel = 0, LayoutOrder = o.order or nextOrder(parent), ClipsDescendants = true }, parent)
-	W.corner(f, 16)
-	new("UIGradient", { Rotation = 135, Color = ColorSequence.new(o.color or col.tileA, o.color2 or col.tileD) }, f)
-	W.stroke(f, Color3.new(1, 1, 1), 1, 0.82)
+	local f = new("TextButton", { Size = UDim2.fromOffset(o.w, o.h or 150), BackgroundTransparency = 1, Text = "", AutoButtonColor = false, BorderSizePixel = 0, LayoutOrder = o.order or nextOrder(parent) }, parent)
+	local tint = o.alert and col.amber or col.line
+	local parts = W.chamfer(f, { cut = 12, corners = { tl = true, br = true }, fill = col.panel, fillT = 0.2, line = tint, lineT = 0.3, z = 1 })
 	local sc = new("UIScale", { Scale = 1 }, f)
-	track(f, sc, nil, 1.04)
+	track(f, sc, function() recolor(parts, col.glow, 0.05) end, function() recolor(parts, tint, 0.2) end)
 	f.Activated:Connect(function() W.sound("click"); if o.onClick then o.onClick() end end)
-	local deco = new("Frame", { Size = UDim2.fromOffset(120, 120), Position = UDim2.new(1, -70, 0, -40), BackgroundColor3 = Color3.new(1, 1, 1), BackgroundTransparency = 0.9, BorderSizePixel = 0 }, f)
-	new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, deco)
-	W.label(f, { text = o.icon or "", pos = UDim2.fromOffset(12, 10), size = UDim2.fromOffset(48, 48), ts = 34 })
-	local badge = new("TextLabel", { Size = UDim2.fromOffset(44, 26), Position = UDim2.new(1, -12, 0, 14), AnchorPoint = Vector2.new(1, 0), BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.6, Text = tostring(o.num or ""), Font = T.font.display, TextSize = 14, TextColor3 = Color3.new(1, 1, 1), BorderSizePixel = 0 }, f)
-	new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, badge)
-	if o.alert then badge.BackgroundColor3 = col.red; badge.BackgroundTransparency = 0; W.glow(badge, "BackgroundTransparency", 0, 0.35, 5) end
-	W.label(f, { text = W.upper(o.title), pos = UDim2.new(0, 12, 1, -52), size = UDim2.new(1, -24, 0, 18), ts = 14, font = T.font.head, color = Color3.new(1, 1, 1), wrap = false, truncate = Enum.TextTruncate.AtEnd })
-	W.label(f, { text = o.caption or "", pos = UDim2.new(0, 12, 1, -33), size = UDim2.new(1, -24, 0, 14), ts = 11, font = T.font.caps, color = Color3.new(1, 1, 1), tt = 0.15, wrap = false, truncate = Enum.TextTruncate.AtEnd })
-	local pb = new("Frame", { Size = UDim2.new(1, -24, 0, 5), Position = UDim2.new(0, 12, 1, -14), BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.6, BorderSizePixel = 0 }, f)
-	new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, pb)
-	local pf = new("Frame", { Size = UDim2.new(math.clamp(o.pct or 0, 0, 1), 0, 1, 0), BackgroundColor3 = Color3.new(1, 1, 1), BorderSizePixel = 0 }, pb)
-	new("UICorner", { CornerRadius = UDim.new(0.5, 0) }, pf)
+	-- index plate "01"
+	local idx = string.format("%02d", o.order or 0)
+	local plate = new("Frame", { Position = UDim2.fromOffset(10, 10), Size = UDim2.fromOffset(34, 20), BackgroundTransparency = 1, ZIndex = 2 }, f)
+	W.chamfer(plate, { cut = 6, corners = { tl = true, br = true }, fill = tint, fillT = 0, z = 2 })
+	W.label(plate, { text = idx, size = UDim2.fromScale(1, 1), ts = 12, font = T.font.head, color = col.creamInk, align = Enum.TextXAlignment.Center, wrap = false, z = 3 })
+	if o.alert then W.hazard(f, UDim2.new(1, -40, 0, 14), UDim2.fromOffset(26, 8), col.amber, 2) end
+	local g = W.glyph(o.icon, o.title)
+	W.label(f, { text = g or "", pos = UDim2.fromOffset(50, 8), size = UDim2.fromOffset(24, 24), ts = 18, font = T.font.head, color = tint, align = Enum.TextXAlignment.Center, wrap = false })
+	local rs = math.min(70, math.floor(o.w * 0.45))
+	W.ring(f, { size = rs, pos = UDim2.new(0.5, 0, 0, 36), anchor = Vector2.new(0.5, 0), pct = o.pct, text = tostring(o.num or ""), color = tint, ts = (#tostring(o.num or "") > 3) and 11 or 15, z = 2, dots = 20 })
+	W.label(f, { text = W.upper(o.title), pos = UDim2.new(0, 12, 1, -40), size = UDim2.new(1, -24, 0, 16), ts = 13, font = T.font.head, color = col.text, wrap = false, truncate = Enum.TextTruncate.AtEnd })
+	W.label(f, { text = o.caption or "", pos = UDim2.new(0, 12, 1, -24), size = UDim2.new(1, -24, 0, 14), ts = 11, font = T.font.caps, color = col.muted, wrap = false, truncate = Enum.TextTruncate.AtEnd })
 	return f
 end
 
--- Column chart with gridlines, fading columns and a highlighted latest value.
+-- Signal chart: grid, glowing columns and a highlighted latest value.
 function W.chart(parent, values, color, h, labels)
-	local f = new("Frame", { Size = UDim2.new(1, 0, 0, h or 90), BackgroundColor3 = col.ink, BackgroundTransparency = 0.2, BorderSizePixel = 0, LayoutOrder = nextOrder(parent), ClipsDescendants = true }, parent)
-	W.corner(f, 12)
-	W.stroke(f, col.lineSoft, 1)
+	local f = new("Frame", { Size = UDim2.new(1, 0, 0, h or 90), BackgroundTransparency = 1, LayoutOrder = nextOrder(parent), ClipsDescendants = true }, parent)
+	W.chamfer(f, { cut = 10, corners = { tl = true, br = true }, fill = col.ink, fillT = 0.2, line = col.lineSoft, z = 1 })
 	if #values < 2 then
 		W.label(f, { text = labels and labels.none or "…", size = UDim2.fromScale(1, 1), color = col.muted, align = Enum.TextXAlignment.Center })
 		return f
 	end
 	for i = 1, 3 do
-		new("Frame", { Size = UDim2.new(1, 0, 0, 1), Position = UDim2.fromScale(0, i / 4), BackgroundColor3 = col.lineSoft, BackgroundTransparency = 0.4, BorderSizePixel = 0 }, f)
+		new("Frame", { Size = UDim2.new(1, -20, 0, 1), Position = UDim2.new(0, 10, i / 4, 0), BackgroundColor3 = col.lineSoft, BackgroundTransparency = 0.3, BorderSizePixel = 0, ZIndex = 2 }, f)
+	end
+	for i = 1, 9 do
+		new("Frame", { Size = UDim2.new(0, 1, 1, -20), Position = UDim2.new(i / 10, 0, 0, 10), BackgroundColor3 = col.lineSoft, BackgroundTransparency = 0.6, BorderSizePixel = 0, ZIndex = 2 }, f)
 	end
 	local lo, hi = math.huge, -math.huge
 	for _, v in ipairs(values) do lo = math.min(lo, v); hi = math.max(hi, v) end
 	if hi - lo < 1e-9 then hi = lo + 1 end
 	local n = math.min(#values, 60)
 	local step = #values / n
-	local inner = new("Frame", { Size = UDim2.new(1, -12, 1, -12), Position = UDim2.fromOffset(6, 6), BackgroundTransparency = 1 }, f)
+	local inner = new("Frame", { Size = UDim2.new(1, -20, 1, -16), Position = UDim2.fromOffset(10, 8), BackgroundTransparency = 1, ZIndex = 2 }, f)
 	for i = 1, n do
 		local v = values[math.min(#values, math.floor((i - 1) * step) + 1)]
-		local frac = 0.06 + 0.94 * (v - lo) / (hi - lo)
-		local bar = new("Frame", { Size = UDim2.new(1 / n, -1, frac, 0), Position = UDim2.new((i - 1) / n, 0, 1 - frac, 0), BackgroundColor3 = color or col.line, BorderSizePixel = 0, BackgroundTransparency = (i == n) and 0 or 0.3 }, inner)
-		new("UIGradient", { Rotation = 90, Transparency = NumberSequence.new(0, 0.75) }, bar)
+		local frac = 0.05 + 0.95 * (v - lo) / (hi - lo)
+		local bar = new("Frame", { Size = UDim2.new(1 / n, -2, frac, 0), Position = UDim2.new((i - 1) / n, 0, 1 - frac, 0), BackgroundColor3 = color or col.line, BorderSizePixel = 0, BackgroundTransparency = (i == n) and 0 or 0.35, ZIndex = 2 }, inner)
+		new("UIGradient", { Rotation = 90, Transparency = NumberSequence.new(0, 0.85) }, bar)
+		new("Frame", { Size = UDim2.new(1, 0, 0, 2), BackgroundColor3 = col.glow, BorderSizePixel = 0, ZIndex = 3 }, bar)
 	end
 	return f, lo, hi
 end
 
 function W.chip(parent, text, color, order)
-	local c = new("TextLabel", { Size = UDim2.fromOffset(math.max(40, 18 + #text * 7), 22), BackgroundColor3 = color or col.cream, Text = text, TextColor3 = col.creamInk, Font = T.font.head, TextSize = 12, BorderSizePixel = 0, LayoutOrder = order or nextOrder(parent) }, parent)
-	W.corner(c, 11)
+	local w = math.max(48, 24 + #text * 7.5)
+	local c = new("Frame", { Size = UDim2.fromOffset(w, 24), BackgroundTransparency = 1, LayoutOrder = order or nextOrder(parent) }, parent)
+	W.chamfer(c, { cut = 6, corners = { tl = true, br = true }, fill = color or col.line, fillT = 0.82, line = color or col.line, lineT = 0.2, z = 1 })
+	W.label(c, { text = W.upper(text), size = UDim2.fromScale(1, 1), ts = 12, font = T.font.head, color = color or col.line, align = Enum.TextXAlignment.Center, wrap = false })
 	return c
 end
 
@@ -3473,25 +3734,29 @@ end
 function W.segmented(parent, options, current, onPick)
 	local f = W.flow(parent)
 	for i, o in ipairs(options) do
-		W.button(f, { text = o.text, variant = (o.id == current) and "select" or "ghost", w = math.max(64, 24 + #o.text * 7.5), h = math.max(30, W.m.btnH - 6), ts = 13, order = i, onClick = function() onPick(o.id) end })
+		W.button(f, { text = o.text, variant = (o.id == current) and "select" or "ghost", w = math.max(70, 30 + #o.text * 8.5), h = math.max(30, W.m.btnH - 6), ts = 13, order = i, onClick = function() onPick(o.id) end })
 	end
 	return f
 end
 
--- Compare table: headers = { "", col1, col2 }, rows = { { label, v1, v2, ... } }
+-- Data table: header plate + thin-lined rows.
 function W.table(parent, headers, rows, cw)
 	local cols = #headers
 	local first = math.min(140, math.floor((cw or 320) * 0.32))
-	local other = math.floor(((cw or 320) - 28 - first) / math.max(1, cols - 1))
+	local other = math.floor(((cw or 320) - 32 - first) / math.max(1, cols - 1))
 	local f = new("Frame", { Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = nextOrder(parent) }, parent)
-	new("UIListLayout", { Padding = UDim.new(0, 2), SortOrder = Enum.SortOrder.LayoutOrder }, f)
+	new("UIListLayout", { Padding = UDim.new(0, 0), SortOrder = Enum.SortOrder.LayoutOrder }, f)
 	local function rowOf(cells, header, idx)
-		local r = new("Frame", { Size = UDim2.new(1, 0, 0, header and 30 or 28), BackgroundColor3 = header and Color3.new(1, 1, 1) or ((idx % 2 == 0) and col.panel2 or col.panel), BorderSizePixel = 0, LayoutOrder = idx }, f)
-		W.corner(r, 8)
-		if header then W.gradient(r, ColorSequence.new(col.blueDark, col.panel3), 0) end
+		local r = new("Frame", { Size = UDim2.new(1, 0, 0, header and 30 or 30), BackgroundTransparency = 1, LayoutOrder = idx }, f)
+		if header then
+			W.chamfer(r, { cut = 8, corners = { tl = true, br = true }, fill = col.line, fillT = 0.85, line = col.line, lineT = 0.3, z = 1 })
+		else
+			new("Frame", { Position = UDim2.new(0, 0, 1, -1), Size = UDim2.new(1, 0, 0, 1), BackgroundColor3 = col.lineSoft, BorderSizePixel = 0 }, r)
+			if idx % 2 == 0 then new("Frame", { Size = UDim2.new(1, 0, 1, -1), BackgroundColor3 = col.line, BackgroundTransparency = 0.96, BorderSizePixel = 0 }, r) end
+		end
 		for i, text in ipairs(cells) do
-			local x = (i == 1) and 8 or (first + (i - 2) * other + 8)
-			W.label(r, { text = tostring(text), pos = UDim2.fromOffset(x, 0), size = UDim2.fromOffset((i == 1) and first - 8 or other - 8, header and 30 or 28), ts = 12, font = (header or i == 1) and T.font.head or T.font.mono, color = (i == 1 and not header) and col.muted or col.text, wrap = false, truncate = Enum.TextTruncate.AtEnd })
+			local x = (i == 1) and 10 or (first + (i - 2) * other + 10)
+			W.label(r, { text = header and W.upper(tostring(text)) or tostring(text), pos = UDim2.fromOffset(x, 0), size = UDim2.fromOffset((i == 1) and first - 10 or other - 10, 30), ts = 13, font = (header or i == 1) and T.font.head or T.font.mono, color = header and col.line or ((i == 1) and col.muted or col.text), wrap = false, truncate = Enum.TextTruncate.AtEnd })
 		end
 	end
 	rowOf(headers, true, 0)
@@ -3499,26 +3764,34 @@ function W.table(parent, headers, rows, cw)
 	return f
 end
 
--- ───────── dialog (fades the backdrop, pops the window) ─────────
+-- ───────── dialog: dimmed grid backdrop, bracketed cut-corner window, title plate, warning stripes ─────────
 function W.modal(title, text, buttons, opts)
 	opts = opts or {}
-	local overlay = new("TextButton", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 1, Text = "", AutoButtonColor = false, ZIndex = 150 }, W.gui)
-	W.tween(overlay, { BackgroundTransparency = 0.35 }, 0.2)
-	local w = math.min(W.m.w - 24, 440)
-	local win = new("TextButton", { Size = UDim2.fromOffset(w, 0), AutomaticSize = Enum.AutomaticSize.Y, Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Color3.new(1, 1, 1), BorderSizePixel = 0, ZIndex = 151, Text = "", AutoButtonColor = false }, overlay)
-	W.corner(win, 20)
-	new("UIGradient", { Rotation = 90, Color = ColorSequence.new(col.panel2, col.panel) }, win)
-	local st = W.stroke(win, Color3.new(1, 1, 1), 1.5)
-	W.gradient(st, T.brandSeq, 45)
+	local overlay = new("TextButton", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = col.ink, BackgroundTransparency = 1, Text = "", AutoButtonColor = false, ZIndex = 150 }, W.gui)
+	W.tween(overlay, { BackgroundTransparency = 0.25 }, 0.2)
+	local danger = false
+	for _, b in ipairs(buttons or {}) do if b.variant == "danger" then danger = true end end
+	local accent = danger and col.red or col.line
+	local w = math.min(W.m.w - 24, 460)
+	local win = new("TextButton", { Size = UDim2.fromOffset(w, 0), AutomaticSize = Enum.AutomaticSize.Y, Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, BorderSizePixel = 0, ZIndex = 151, Text = "", AutoButtonColor = false }, overlay)
+	W.chamfer(win, { cut = 20, corners = { tl = true, br = true }, fill = col.ink2, fillT = 0.02, line = accent, th = 2, z = 151 })
+	W.brackets(win, 18, accent, 2, -6, 152)
 	local sc = new("UIScale", { Scale = 0.85 }, win)
 	W.tween(sc, { Scale = 1 }, 0.25, Enum.EasingStyle.Back)
-	new("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Center }, win)
-	W.pad(win, 20, 20, 20, 18)
-	if opts.icon then W.label(win, { text = opts.icon, size = UDim2.new(1, 0, 0, 56), ts = 44, align = Enum.TextXAlignment.Center, order = 0 }) end
-	W.label(win, { text = W.upper(title), size = UDim2.new(1, 0, 0, 28), ts = 18, font = T.font.display, align = Enum.TextXAlignment.Center, order = 1 })
-	local body = new("TextLabel", { Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Text = text, TextWrapped = true, Font = T.font.body, TextSize = 15, TextColor3 = col.muted, TextXAlignment = Enum.TextXAlignment.Center, LayoutOrder = 2 }, win)
-	W.pad(body, 0, 8, 0, 14)
-	local row = new("Frame", { Size = UDim2.new(1, 0, 0, W.m.btnH), BackgroundTransparency = 1, LayoutOrder = 3 }, win)
+	local body = new("Frame", { Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, ZIndex = 152 }, win)
+	new("UIListLayout", { SortOrder = Enum.SortOrder.LayoutOrder, HorizontalAlignment = Enum.HorizontalAlignment.Center, Padding = UDim.new(0, 6) }, body)
+	W.pad(body, 22, 22, 22, 20)
+	local warn = W.upper(danger and "Warning" or "Message")
+	local top = new("Frame", { Size = UDim2.new(1, 0, 0, 22), BackgroundTransparency = 1, LayoutOrder = 0, ZIndex = 152 }, body)
+	W.hazard(top, UDim2.fromOffset(0, 5), UDim2.new(0.5, -70, 0, 12), accent, 152)
+	W.hazard(top, UDim2.new(0.5, 70, 0, 5), UDim2.new(0.5, -70, 0, 12), accent, 152)
+	W.label(top, { text = warn, size = UDim2.fromScale(1, 1), ts = 13, font = T.font.head, color = accent, align = Enum.TextXAlignment.Center, z = 153 })
+	local g = W.glyph(opts.icon, title)
+	if g then W.label(body, { text = g, size = UDim2.new(1, 0, 0, 44), ts = 32, font = T.font.head, color = accent, align = Enum.TextXAlignment.Center, order = 1, z = 153 }) end
+	W.label(body, { text = W.upper(title), size = UDim2.new(1, 0, 0, 30), ts = 18, font = T.font.display, align = Enum.TextXAlignment.Center, order = 2, z = 153 })
+	local msg = new("TextLabel", { Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, Text = text, TextWrapped = true, Font = T.font.body, TextSize = 15, TextColor3 = col.muted, TextXAlignment = Enum.TextXAlignment.Center, LayoutOrder = 3, ZIndex = 153 }, body)
+	W.pad(msg, 0, 4, 0, 12)
+	local row = new("Frame", { Size = UDim2.new(1, 0, 0, W.m.btnH), BackgroundTransparency = 1, LayoutOrder = 4, ZIndex = 153 }, body)
 	new("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 10), HorizontalAlignment = Enum.HorizontalAlignment.Center, SortOrder = Enum.SortOrder.LayoutOrder }, row)
 	local closed = false
 	local function close()
@@ -3530,9 +3803,8 @@ function W.modal(title, text, buttons, opts)
 	end
 	overlay.Activated:Connect(function() if opts.dismissable ~= false then close() end end)
 	for i, b in ipairs(buttons or {}) do
-		W.button(row, { text = b.text, variant = b.variant, w = math.max(110, 28 + #b.text * 8), order = i, onClick = function() close(); if b.onClick then b.onClick() end end })
+		W.button(row, { text = b.text, variant = b.variant, w = math.max(120, 36 + #b.text * 9), order = i, z = 154, onClick = function() close(); if b.onClick then b.onClick() end end })
 	end
-	for _, d in ipairs(win:GetDescendants()) do if d:IsA("GuiObject") then d.ZIndex = d.ZIndex + 152 end end
 	return overlay
 end
 
@@ -3541,7 +3813,7 @@ function W.floatText(anchor, text, color)
 	if not (W.gui and anchor and anchor.Parent) then return end
 	local p, s = anchor.AbsolutePosition, anchor.AbsoluteSize
 	local inset = W.gui.AbsolutePosition
-	local l = new("TextLabel", { Size = UDim2.fromOffset(220, 30), Position = UDim2.fromOffset(p.X - inset.X + s.X / 2 - 110, p.Y - inset.Y + s.Y - 6), BackgroundTransparency = 1, Text = text, TextColor3 = color or col.teal, Font = T.font.display, TextSize = 24, ZIndex = 300, TextStrokeTransparency = 0.6 }, W.gui)
+	local l = new("TextLabel", { Size = UDim2.fromOffset(220, 30), Position = UDim2.fromOffset(p.X - inset.X + s.X / 2 - 110, p.Y - inset.Y + s.Y - 6), BackgroundTransparency = 1, Text = text, TextColor3 = color or col.line, Font = T.font.mono, TextSize = 24, ZIndex = 300, TextStrokeTransparency = 0.7, TextStrokeColor3 = col.ink }, W.gui)
 	local sc = new("UIScale", { Scale = 0.6 }, l)
 	W.tween(sc, { Scale = 1 }, 0.25, Enum.EasingStyle.Back)
 	W.tween(l, { Position = l.Position - UDim2.fromOffset(0, 54), TextTransparency = 1, TextStrokeTransparency = 1 }, 1.2)
@@ -3561,46 +3833,53 @@ function W.shake(frame)
 end
 function W.pulse(frame, color)
 	if not (frame and frame.Parent) then return end
-	local o = new("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = color or col.teal, BackgroundTransparency = 0.5, BorderSizePixel = 0, ZIndex = 250 }, frame)
-	W.corner(o, 14)
+	local o = new("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = color or col.line, BackgroundTransparency = 0.6, BorderSizePixel = 0, ZIndex = 250 }, frame)
 	W.tween(o, { BackgroundTransparency = 1 }, 0.6)
 	task.delay(0.65, function() o:Destroy() end)
 end
 
--- Confetti burst from the top of the screen.
-local CONFETTI = { col.brand, col.brand2, col.teal, col.gold, col.sky, col.amber }
+-- Data-shard burst (cyan/amber squares falling through the HUD).
+local SHARDS = { col.line, col.glow, col.sky, col.gold, col.line }
 function W.confetti(count)
 	if not W.gui then return end
 	local size = W.gui.AbsoluteSize
 	local host = new("Frame", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, ZIndex = 500 }, W.gui)
-	for i = 1, (count or 70) do
+	for _ = 1, (count or 70) do
 		local x = math.random() * size.X
-		local p = new("Frame", {
-			Size = UDim2.fromOffset(math.random(6, 11), math.random(10, 16)), Position = UDim2.fromOffset(x, -20 - math.random() * 120),
-			BackgroundColor3 = CONFETTI[math.random(1, #CONFETTI)], BorderSizePixel = 0, Rotation = math.random(0, 360), ZIndex = 500,
-		}, host)
-		if i % 3 == 0 then W.corner(p, 6) end
-		local t = 1.4 + math.random() * 1.2
-		W.tween(p, { Position = UDim2.fromOffset(x + (math.random() - 0.5) * 220, size.Y + 30), Rotation = p.Rotation + math.random(-540, 540) }, t, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+		local s = math.random(3, 8)
+		local p = new("Frame", { Size = UDim2.fromOffset(s, s), Position = UDim2.fromOffset(x, -20 - math.random() * 120), BackgroundColor3 = SHARDS[math.random(1, #SHARDS)], BorderSizePixel = 0, ZIndex = 500 }, host)
+		local t = 1.3 + math.random() * 1.2
+		W.tween(p, { Position = UDim2.fromOffset(x + (math.random() - 0.5) * 120, size.Y + 30) }, t, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
 		task.delay(t * 0.7, function() if p.Parent then W.tween(p, { BackgroundTransparency = 1 }, t * 0.3) end end)
 	end
 	task.delay(3, function() host:Destroy() end)
 end
 
--- Full-screen celebration banner (device unlocks, promotions, goals).
+-- Full-screen celebration: expanding HUD rings, bracketed title, shard burst.
 function W.celebrate(title, sub, icon)
 	if not W.gui then return end
 	W.sound("big")
-	W.confetti(90)
-	local o = new("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 1, ZIndex = 400, BorderSizePixel = 0 }, W.gui)
-	W.tween(o, { BackgroundTransparency = 0.45 }, 0.2)
-	local box = new("Frame", { Size = UDim2.fromOffset(math.min(W.gui.AbsoluteSize.X - 40, 460), 200), Position = UDim2.fromScale(0.5, 0.45), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, ZIndex = 401 }, o)
+	W.confetti(80)
+	local o = new("Frame", { Size = UDim2.fromScale(1, 1), BackgroundColor3 = col.ink, BackgroundTransparency = 1, ZIndex = 400, BorderSizePixel = 0 }, W.gui)
+	W.tween(o, { BackgroundTransparency = 0.3 }, 0.2)
+	for i = 1, 3 do
+		local r = new("Frame", { Size = UDim2.fromOffset(40, 40), Position = UDim2.fromScale(0.5, 0.45), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, ZIndex = 401 }, o)
+		W.round(r)
+		local st = W.stroke(r, col.line, 2, 0)
+		task.delay((i - 1) * 0.12, function()
+			if not r.Parent then return end
+			W.tween(r, { Size = UDim2.fromOffset(420, 420) }, 0.9, Enum.EasingStyle.Quint)
+			W.tween(st, { Transparency = 1 }, 0.9)
+		end)
+	end
+	local box = new("Frame", { Size = UDim2.fromOffset(math.min(W.gui.AbsoluteSize.X - 40, 480), 170), Position = UDim2.fromScale(0.5, 0.45), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, ZIndex = 401 }, o)
+	W.brackets(box, 22, col.glow, 3, 0, 402)
 	local sc = new("UIScale", { Scale = 0.4 }, box)
 	W.tween(sc, { Scale = 1 }, 0.45, Enum.EasingStyle.Back)
-	local i = W.label(box, { text = icon or "🎉", size = UDim2.new(1, 0, 0, 80), ts = 64, align = Enum.TextXAlignment.Center, z = 402 })
-	local t = W.label(box, { text = W.upper(title), pos = UDim2.fromOffset(0, 84), size = UDim2.new(1, 0, 0, 44), ts = 34, font = T.font.display, align = Enum.TextXAlignment.Center, z = 402 })
-	W.gradient(t, T.goldSeq, 90)
-	local s = W.label(box, { text = sub or "", pos = UDim2.fromOffset(0, 130), size = UDim2.new(1, 0, 0, 40), ts = 16, color = col.text, align = Enum.TextXAlignment.Center, font = T.font.bold, z = 402 })
+	local g = W.glyph(icon, title) or "✦"
+	local i = W.label(box, { text = g, pos = UDim2.fromOffset(0, 10), size = UDim2.new(1, 0, 0, 50), ts = 40, font = T.font.head, color = col.glow, align = Enum.TextXAlignment.Center, z = 402 })
+	local t = W.label(box, { text = W.upper(title), pos = UDim2.fromOffset(0, 64), size = UDim2.new(1, 0, 0, 44), ts = 28, font = T.font.display, color = col.line, align = Enum.TextXAlignment.Center, z = 402 })
+	local s = W.label(box, { text = W.upper(sub or ""), pos = UDim2.fromOffset(0, 112), size = UDim2.new(1, 0, 0, 30), ts = 15, color = col.text, align = Enum.TextXAlignment.Center, font = T.font.head, z = 402 })
 	task.delay(1.9, function()
 		if not o.Parent then return end
 		W.tween(o, { BackgroundTransparency = 1 }, 0.3)
@@ -3736,12 +4015,13 @@ function Screens.home(ctx, parent)
 		secondary = (nxt.tab ~= "device" and st.device < #C.DEVICES) and S.hero.secondary or nil, onSecondary = function() ctx.go("device") end,
 	})
 	local panelW = wide and (ctx.cw - 12 - heroW) or ctx.cw
-	local panel = W.new("Frame", { Size = UDim2.fromOffset(panelW, wide and 230 or 0), AutomaticSize = wide and Enum.AutomaticSize.None or Enum.AutomaticSize.Y, BackgroundColor3 = T.color.panel, BackgroundTransparency = 0.1, BorderSizePixel = 0, LayoutOrder = 2 }, top)
-	W.corner(panel, 20)
-	W.stroke(panel, T.color.lineSoft, 1, 0)
-	W.pad(panel, 12, 10, 12, 10)
+	local panelOuter = W.new("Frame", { Size = UDim2.fromOffset(panelW, wide and 230 or 0), AutomaticSize = wide and Enum.AutomaticSize.None or Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = 2 }, top)
+	W.chamfer(panelOuter, { cut = 18, corners = { tr = true, bl = true }, fill = T.color.panel, fillT = 0.2, line = T.color.lineDim, z = 1 })
+	W.brackets(panelOuter, 10, T.color.line, 2, 4, 2)
+	local panel = W.new("Frame", { Size = UDim2.new(1, 0, wide and 1 or 0, 0), AutomaticSize = wide and Enum.AutomaticSize.None or Enum.AutomaticSize.Y, BackgroundTransparency = 1, ZIndex = 2 }, panelOuter)
+	W.pad(panel, 14, 12, 14, 12)
 	W.new("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }, panel)
-	local live = W.label(panel, { text = "●  " .. W.upper(S.hero.panelTitle), size = UDim2.new(1, 0, 0, 16), ts = 11, color = T.color.teal, font = T.font.head, wrap = false, order = 0 })
+	local live = W.label(panel, { text = "●  " .. W.upper(S.hero.panelTitle) .. "  ///", size = UDim2.new(1, 0, 0, 18), ts = 13, color = T.color.line, font = T.font.head, wrap = false, order = 0 })
 	W.glow(live, "TextTransparency", 0, 0.35, 3)
 	local alerts = L.alerts(st, now)
 	local shown = 0
@@ -3749,16 +4029,14 @@ function Screens.home(ctx, parent)
 		if shown >= (wide and 4 or 5) then break end
 		shown += 1
 		local color = (a.level == "bad") and T.color.red or ((a.level == "warn") and T.color.amber or T.color.teal)
-		local row = W.new("Frame", { Size = UDim2.new(1, 0, 0, 38), BackgroundColor3 = T.color.ink, BackgroundTransparency = 0.4, BorderSizePixel = 0, LayoutOrder = shown }, panel)
-		W.corner(row, 10)
+		local row = W.new("Frame", { Size = UDim2.new(1, 0, 0, 38), BackgroundTransparency = 1, LayoutOrder = shown }, panel)
+		W.chamfer(row, { cut = 7, corners = { tl = true, br = true }, fill = color, fillT = 0.9, line = color, lineT = 0.5, z = 1 })
 		local text = alertText(ctx, a)
-		local av = W.avatar(row, (a.level == "bad") and "!" or ((a.level == "warn") and "•" or "✓"), color, 28)
-		av.Position = UDim2.fromOffset(6, 5)
-		av.TextColor3 = T.color.creamInk
-		W.label(row, { text = text, pos = UDim2.fromOffset(42, 0), size = UDim2.new(1, -118, 1, 0), ts = 12, font = T.font.caps, wrap = false, truncate = Enum.TextTruncate.AtEnd })
-		W.button(row, { text = S.hero.panelOpen, variant = "ghost", w = 64, h = 24, ts = 10, pos = UDim2.new(1, -70, 0.5, -12), onClick = function() ctx.go(ALERT_TAB[a.code] or "home") end })
+		if a.level ~= "good" then W.hazard(row, UDim2.fromOffset(6, 9), UDim2.fromOffset(20, 20), color, 2) else W.label(row, { text = "✓", pos = UDim2.fromOffset(6, 9), size = UDim2.fromOffset(20, 20), color = color, font = T.font.head, align = Enum.TextXAlignment.Center }) end
+		W.label(row, { text = W.upper(text), pos = UDim2.fromOffset(34, 0), size = UDim2.new(1, -112, 1, 0), ts = 12, font = T.font.head, color = color, wrap = false, truncate = Enum.TextTruncate.AtEnd })
+		W.button(row, { text = S.hero.panelOpen, variant = "ghost", w = 70, h = 26, ts = 11, pos = UDim2.new(1, -70, 0.5, -12), onClick = function() ctx.go(ALERT_TAB[a.code] or "home") end })
 	end
-	if shown == 0 then W.label(panel, { text = S.hero.panelEmpty, size = UDim2.new(1, 0, 0, 40), ts = 12, color = T.color.muted, font = T.font.caps, order = 1 }) end
+	if shown == 0 then W.label(panel, { text = W.upper(S.hero.panelEmpty), size = UDim2.new(1, 0, 0, 40), ts = 13, color = T.color.muted, font = T.font.head, order = 1 }) end
 
 	-- "continue" tile row
 	W.label(parent, { text = W.upper(S.hero.continueTitle), size = UDim2.new(1, 0, 0, 26), ts = 16, font = T.font.display, color = T.color.text, wrap = false, order = W.nextOrder(parent) })
@@ -4484,11 +4762,13 @@ function Screens.dailyCard(ctx, parent, compact)
 	for d = 1, C.DAILY_MAX_STREAK do
 		local done = d < streak or (d == streak and not ready)
 		local today = ready and d == streak
-		local pip = W.new("TextLabel", { Size = UDim2.fromOffset(40, 46), BackgroundColor3 = done and T.color.gold or (today and T.color.raised or T.color.ink), BackgroundTransparency = done and 0.1 or 0.2, Text = (done and "✓" or tostring(d)) .. "\n" .. W.fmt(L.dailyReward(st, d)), Font = T.font.head, TextSize = 10, TextColor3 = done and T.color.creamInk or T.color.text, LayoutOrder = d, BorderSizePixel = 0 }, track)
-		W.corner(pip, 10)
+		local tint = done and T.color.gold or (today and T.color.amber or T.color.lineDim)
+		local pip = W.new("Frame", { Size = UDim2.fromOffset(44, 48), BackgroundTransparency = 1, LayoutOrder = d }, track)
+		local parts = W.chamfer(pip, { cut = 8, corners = { tl = true, br = true }, fill = tint, fillT = done and 0.15 or 0.88, line = tint, lineT = done and 0 or 0.2, z = 1 })
+		W.label(pip, { text = done and "✓" or string.format("%02d", d), pos = UDim2.fromOffset(0, 4), size = UDim2.new(1, 0, 0, 20), ts = 15, font = T.font.head, color = done and T.color.creamInk or tint, align = Enum.TextXAlignment.Center, wrap = false })
+		W.label(pip, { text = W.fmt(L.dailyReward(st, d)), pos = UDim2.fromOffset(0, 24), size = UDim2.new(1, 0, 0, 16), ts = 10, font = T.font.mono, color = done and T.color.creamInk or T.color.muted, align = Enum.TextXAlignment.Center, wrap = false })
 		if today then
-			local stp = W.stroke(pip, T.color.gold, 2)
-			W.glow(stp, "Transparency", 0, 0.6, 4)
+			for _, f in ipairs(parts.lines) do W.glow(f, "BackgroundTransparency", 0, 0.6, 4) end
 		end
 	end
 	if ready then

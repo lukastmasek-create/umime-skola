@@ -19,7 +19,7 @@ S.ui = {
 	studioPreview = "Device preview (Studio only)", preview = "Previewing",
 	more = "More", pinned = "Pinned cards", edit = "Edit", done = "Done",
 	nothing = "Nothing here yet.", panels = "Panels", all = "All", available = "Available", main = "Main",
-	sound = "Sound", soundOn = "🔊", soundOff = "🔇", requires = "Requires {name}",
+	sound = "Sound", soundOn = "SFX ON", soundOff = "SFX OFF", requires = "Requires {name}",
 	tips = {
 		"Tip: Keep food and drink stocked — empty needs slow everything down.",
 		"Tip: Education boosts every income source by 4% per level.",
@@ -34,7 +34,7 @@ S.nav = {
 	home = "Home", work = "Work", needs = "Needs", companies = "Business", invest = "Invest",
 	hustle = "Hustle", board = "Leaders", device = "Devices", compare = "Compare", history = "History", goals = "Goals", more = "More",
 }
-S.navIcon = { home = "🏠", work = "💼", needs = "🍔", companies = "🏭", invest = "📈", hustle = "🎲", board = "🏆", device = "📱", compare = "⚖️", history = "🕘", goals = "🎯", more = "☰" }
+S.navIcon = { home = "⌂", work = "▣", needs = "◒", companies = "▥", invest = "↗", hustle = "◈", board = "♛", device = "▯", compare = "⇌", history = "◷", goals = "◎", more = "≡" }
 S.navShort = S.navIcon
 
 S.devices = {
@@ -85,20 +85,20 @@ S.create = {
 	startMoney = "Starting cash: {n}", welcome = "WELCOME", pitch = "Start from nothing. Take a job, keep yourself fed, then build companies, trade assets and climb the leaderboard.",
 }
 S.countries = { cz = "Czechia", sk = "Slovakia", de = "Germany", us = "USA", gb = "United Kingdom", jp = "Japan" }
-S.countryFlag = { cz = "🇨🇿", sk = "🇸🇰", de = "🇩🇪", us = "🇺🇸", gb = "🇬🇧", jp = "🇯🇵" }
+S.countryFlag = { cz = "CZ", sk = "SK", de = "DE", us = "US", gb = "UK", jp = "JP" }
 S.cities = { village = "Village", town = "Town", city = "City", metropolis = "Metropolis" }
 S.eras = { ["1990"] = "1990s", ["2010"] = "2010s", ["2025"] = "Today", ["2050"] = "Future" }
 S.families = { poor = "Poor family", middle = "Middle class", rich = "Wealthy family", business = "Business family" }
 S.jobs = { warehouse = "Warehouse Worker", seller = "Salesperson", cook = "Cook", police = "Police Officer", vet = "Veterinarian", programmer = "Programmer", farmer = "Farmer", firefighter = "Firefighter", teacher = "Teacher", journalist = "Journalist", architect = "Architect", pilot = "Pilot", doctor = "Doctor", banker = "Banker" }
-S.jobIcon = { warehouse = "📦", seller = "🛍️", cook = "🍳", police = "🚓", vet = "🐾", programmer = "💻", farmer = "🌾", firefighter = "🚒", teacher = "📚", journalist = "📰", architect = "📐", pilot = "✈️", doctor = "🩺", banker = "🏦" }
+S.jobIcon = { warehouse = "WH", seller = "SL", cook = "CK", police = "PD", vet = "VT", programmer = "PG", farmer = "FM", firefighter = "FF", teacher = "TC", journalist = "JR", architect = "AR", pilot = "PL", doctor = "MD", banker = "BK" }
 S.companies = { shoes = "Shoe Store", clothes = "Clothing Brand", tech = "Electronics", delivery = "Delivery Service", supermarket = "Supermarket", digi = "Digital Agency", software = "Software House", hardware = "Hardware Maker", factory = "Factory", bakery = "Bakery", carwash = "Car Wash", eshop = "Online Store", printshop = "Print Shop", streaming = "Streaming Platform" }
-S.companyIcon = { shoes = "👟", clothes = "👕", tech = "📺", delivery = "🛵", supermarket = "🛒", digi = "🖥️", software = "🧩", hardware = "🔧", factory = "🏭", bakery = "🥐", carwash = "🚿", eshop = "📦", printshop = "🖨️", streaming = "🎬" }
+S.companyIcon = { shoes = "SH", clothes = "CL", tech = "EL", delivery = "DL", supermarket = "SM", digi = "DA", software = "SW", hardware = "HW", factory = "FX", bakery = "BK", carwash = "CW", eshop = "OS", printshop = "PR", streaming = "ST" }
 S.assets = { coin = "Main Coin", altcoin = "Altcoin", stablecoin = "Stablecoin", memecoin = "Memecoin", defi = "DeFi Token", flat = "Apartment", house = "House", land = "Land Plot", office = "Office Space", technology = "Tech Stocks", energy = "Energy Stocks", bank = "Bank Stocks", consumer = "Consumer Goods", biotech = "Biotech", gold = "Gold", silver = "Silver", copper = "Copper", state = "Government Bonds", corporate = "Corporate Bonds", junk = "High-Yield Bonds", index = "World Index Fund", dividend = "Dividend Fund", theme = "Thematic Fund", startup_it = "IT Startup", startup_fintech = "Fintech Startup", startup_green = "Green Energy Startup" }
 S.assetCats = { crypto = "Crypto", realestate = "Real estate", stocks = "Stocks", metals = "Metals", bonds = "Bonds", funds = "Funds", startups = "Startups" }
-S.assetCatIcon = { crypto = "🪙", realestate = "🏘️", stocks = "📊", metals = "🥇", bonds = "📜", funds = "🧺", startups = "🚀" }
+S.assetCatIcon = { crypto = "CR", realestate = "RE", stocks = "EQ", metals = "MT", bonds = "BD", funds = "FD", startups = "SU" }
 S.roles = { producer = "Producer", seller = "Sales Rep", accountant = "Accountant", manager = "Manager" }
 S.hustles = { lemonade = "Lemonade Stand", reselling = "Reselling", carflip = "Car Flipping", houseflip = "House Flipping", startup = "Startup", freelance = "Freelance Gig" }
-S.hustleIcon = { lemonade = "🍋", reselling = "🏷️", carflip = "🚗", houseflip = "🏡", startup = "🦄", freelance = "🎧" }
+S.hustleIcon = { lemonade = "LM", reselling = "RS", carflip = "CF", houseflip = "HF", startup = "SU", freelance = "FL" }
 S.needs = {
 	food = { name = "Food", effect = "Without food, energy recovers at half speed." },
 	drink = { name = "Drinks", effect = "Without drinks, energy drains over time." },
@@ -108,7 +108,7 @@ S.needs = {
 	health = { name = "Health", effect = "Without healthcare, energy can't go above 70%." },
 	leisure = { name = "Leisure", effect = "Without leisure, energy recovers 20% slower." },
 }
-S.needIcon = { food = "🍔", drink = "🥤", clothing = "👔", housing = "🏠", transport = "🚌", health = "💊", leisure = "🎮" }
+S.needIcon = { food = "FD", drink = "DR", clothing = "CL", housing = "HS", transport = "TR", health = "HL", leisure = "LS" }
 S.boosts = { energy_drink = "Energy Drink (faster recovery)", cinema = "Cinema Night (+10% income)" }
 S.events = {
 	crash = "Market Crash", hyper = "Hyperinflation", shortage = "Supply Shortage", outage = "Server Outage", boom = "Economic Boom",
