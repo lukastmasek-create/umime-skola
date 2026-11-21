@@ -334,8 +334,8 @@ C.UNION_DEAL_MS = 12 * C.H
 C.UNION_DEAL_YEARS = 1 / 12
 
 -- History (net worth chart)
-C.HISTORY_STEP_MS = 15 * 60000
-C.HISTORY_MAX = 96
+C.HISTORY_STEP_MS = 5 * 60000
+C.HISTORY_MAX = 144 -- 12 real hours of 5-minute samples
 
 -- Leaderboard
 C.BOARD_SIZE = 20
@@ -363,7 +363,7 @@ C.DEVICES = {
 C.PIN_CARDS = { "cash", "netWorth", "income", "needs", "companies", "portfolio", "projects", "hustle", "energy", "events" }
 
 -- ───────── v3: economy guard rails ─────────
-C.STATE_VERSION = 3
+-- (v3 bumped STATE_VERSION to 3; see the v4 block)
 -- Essentials (needs, company stock) may run into a small overdraft so a broke player can still eat.
 -- Everything else (companies, staff, upgrades, boosts, job fees...) must be paid from cash on hand.
 C.OVERDRAFT_DAYS = 2
@@ -403,5 +403,36 @@ C.MILESTONES = {
 }
 C.MILESTONE_BY_ID = {}
 for _, m in ipairs(C.MILESTONES) do C.MILESTONE_BY_ID[m.id] = m end
+
+-- ───────── v4: bank, missions, legacy ─────────
+C.STATE_VERSION = 4
+-- Rates are per game year (= one real hour), the same unit as salaries and yields.
+C.BANK_SAVINGS_RATE = 0.04
+C.BANK_LOAN_RATE = 0.12
+C.BANK_LOAN_LTV = 0.5 -- total debt may reach 50% of equity (net worth after debt)
+C.BANK_MIN = 10
+
+-- Daily missions: three per real day, picked from this pool. `counter` is a lifetime stat in state.stats
+-- (or "earned" = totalEarned). target "living" means `livingHours` hours of living cost.
+C.MISSIONS_PER_DAY = 3
+C.MISSION_POOL = {
+	{ id = "shifts", counter = "shifts", target = 3, hours = 1.0, points = 6 },
+	{ id = "trades", counter = "trades", target = 4, hours = 0.8, points = 4 },
+	{ id = "supplies", counter = "supplies", target = 3, hours = 0.6, points = 3 },
+	{ id = "restock", counter = "restocks", target = 2, hours = 1.2, points = 5, needsCompany = true },
+	{ id = "hustle", counter = "hustles", target = 1, hours = 1.0, points = 5 },
+	{ id = "study", counter = "studies", target = 1, hours = 0.8, points = 0 },
+	{ id = "deposit", counter = "deposits", target = 2, hours = 0.6, points = 3 },
+	{ id = "earn", counter = "earned", livingHours = 4, hours = 1.0, points = 5 },
+}
+C.MISSION_BY_ID = {}
+for _, m in ipairs(C.MISSION_POOL) do C.MISSION_BY_ID[m.id] = m end
+
+-- Legacy: restarting converts your all-time record into permanent points. Each point = +2% to all income.
+C.LEGACY_DIVISOR = 10000 -- points = floor(sqrt(record / divisor))
+C.LEGACY_BONUS = 0.02
+C.LEGACY_MAX = 100
+
+C.STAT_KEYS = { "shifts", "hustles", "trades", "supplies", "restocks", "studies", "deposits", "promotions", "companiesBought" }
 
 return C

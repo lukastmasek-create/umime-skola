@@ -518,6 +518,10 @@ function W.row(parent, o)
 		W.label(box, { text = g, size = UDim2.fromScale(1, 1), ts = (#g <= 3) and 18 or 13, font = T.font.head, color = tint, align = Enum.TextXAlignment.Center, wrap = false, z = 3 })
 	end
 	local tw = (stacked and cw or (cw - aw)) - (ix - 14)
+	if o.spark and not stacked and tw > 220 then
+		tw -= 100
+		W.spark(f, o.spark, UDim2.fromOffset(ix + tw + 8, math.floor(height / 2) - 14), UDim2.fromOffset(86, 28), o.sparkColor, 2)
+	end
 	local ty = (not stacked and not o.sub and not o.extra) and math.floor((height - 22) / 2) or 6
 	W.label(f, { text = o.title, pos = UDim2.fromOffset(ix, ty), size = UDim2.new(0, tw, 0, 22), font = T.font.bold, ts = T.size.label, color = o.titleColor or col.text, wrap = false, truncate = Enum.TextTruncate.AtEnd })
 	if o.sub then W.label(f, { text = o.sub, pos = UDim2.fromOffset(ix, 27), size = UDim2.new(0, tw, 0, 30), ts = 13, color = col.muted, valign = Enum.TextYAlignment.Top }) end
@@ -676,7 +680,98 @@ function W.chart(parent, values, color, h, labels)
 		new("UIGradient", { Rotation = 90, Transparency = NumberSequence.new(0, 0.85) }, bar)
 		new("Frame", { Size = UDim2.new(1, 0, 0, 2), BackgroundColor3 = col.glow, BorderSizePixel = 0, ZIndex = 3 }, bar)
 	end
+	local fmt = (labels and labels.fmt) or W.fmt
+	W.label(f, { text = fmt(hi), pos = UDim2.fromOffset(12, 6), size = UDim2.fromOffset(120, 12), ts = 11, font = T.font.mono, color = col.muted, wrap = false, z = 4 })
+	W.label(f, { text = fmt(lo), pos = UDim2.new(0, 12, 1, -18), size = UDim2.fromOffset(120, 12), ts = 11, font = T.font.mono, color = col.muted, wrap = false, z = 4 })
+	if labels and labels.title then
+		W.label(f, { text = W.upper(labels.title), pos = UDim2.new(1, -212, 0, 6), size = UDim2.fromOffset(200, 12), ts = 11, font = T.font.head, color = color or col.line, align = Enum.TextXAlignment.Right, wrap = false, z = 4 })
+	end
 	return f, lo, hi
+end
+
+-- Section header: "01 // TITLE ———— sub". Numbers count per parent so every screen reads like a HUD index.
+function W.section(parent, title, sub)
+	local n = (parent:GetAttribute("_sec") or 0) + 1
+	parent:SetAttribute("_sec", n)
+	local f = new("Frame", { Size = UDim2.new(1, 0, 0, 30), BackgroundTransparency = 1, LayoutOrder = nextOrder(parent) }, parent)
+	local tag = new("Frame", { Size = UDim2.fromOffset(34, 22), Position = UDim2.fromOffset(0, 4), BackgroundTransparency = 1, ZIndex = 2 }, f)
+	W.chamfer(tag, { cut = 6, corners = { tl = true, br = true }, fill = col.line, fillT = 0, z = 2 })
+	W.label(tag, { text = string.format("%02d", n), size = UDim2.fromScale(1, 1), ts = 12, font = T.font.head, color = col.creamInk, align = Enum.TextXAlignment.Center, wrap = false, z = 3 })
+	local text = "// " .. W.upper(title)
+	W.label(f, { text = text, pos = UDim2.fromOffset(42, 0), size = UDim2.fromOffset(12 + #text * 10, 30), ts = 16, font = T.font.display, color = col.text, wrap = false })
+	local x = 54 + #text * 10
+	new("Frame", { Position = UDim2.new(0, x, 0, 15), Size = UDim2.new(1, -x - (sub and 150 or 0), 0, 1), BackgroundColor3 = col.lineDim, BorderSizePixel = 0 }, f)
+	new("Frame", { Position = UDim2.new(1, -(sub and 150 or 0) - 6, 0, 13), Size = UDim2.fromOffset(6, 5), BackgroundColor3 = col.line, BorderSizePixel = 0 }, f)
+	if sub then W.label(f, { text = W.upper(sub), pos = UDim2.new(1, -144, 0, 0), size = UDim2.fromOffset(144, 30), ts = 12, font = T.font.head, color = col.muted, align = Enum.TextXAlignment.Right, wrap = false, truncate = Enum.TextTruncate.AtEnd }) end
+	return f
+end
+
+-- Horizontal bar chart. items = { { label, value, color?, text? } }. Negative values draw in red.
+function W.bars(parent, items, o)
+	o = o or {}
+	local maxv = 1e-9
+	for _, it in ipairs(items) do maxv = math.max(maxv, math.abs(it.value or 0)) end
+	local f = new("Frame", { Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = nextOrder(parent) }, parent)
+	new("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }, f)
+	local labelW = o.labelW or 0.32
+	for i, it in ipairs(items) do
+		local v = it.value or 0
+		local color = it.color or ((v < 0) and col.red or col.line)
+		local r = new("Frame", { Size = UDim2.new(1, 0, 0, o.h or 22), BackgroundTransparency = 1, LayoutOrder = i }, f)
+		W.label(r, { text = W.upper(it.label), size = UDim2.new(labelW, -8, 1, 0), ts = 12, font = T.font.head, color = col.muted, wrap = false, truncate = Enum.TextTruncate.AtEnd })
+		local track = new("Frame", { Position = UDim2.new(labelW, 0, 0.5, -5), Size = UDim2.new(1 - labelW, -96, 0, 10), BackgroundColor3 = col.lineSoft, BackgroundTransparency = 0.5, BorderSizePixel = 0 }, r)
+		local frac = math.clamp(math.abs(v) / maxv, 0, 1)
+		local fill = new("Frame", { Size = UDim2.new(frac, 0, 1, 0), BackgroundColor3 = color, BorderSizePixel = 0 }, track)
+		new("UIGradient", { Transparency = NumberSequence.new(0.55, 0) }, fill)
+		if frac > 0 then
+			local cap = new("Frame", { Position = UDim2.new(frac, -2, 0, -3), Size = UDim2.fromOffset(3, 16), BackgroundColor3 = col.glow, BorderSizePixel = 0, ZIndex = 2 }, track)
+			W.glow(cap, "BackgroundTransparency", 0, 0.5, 3)
+		end
+		for k = 1, 3 do new("Frame", { Position = UDim2.new(k / 4, 0, 1, 1), Size = UDim2.fromOffset(1, 3), BackgroundColor3 = col.lineDim, BorderSizePixel = 0 }, track) end
+		W.label(r, { text = it.text or ((v < 0 and "−" or "") .. W.fmt(math.abs(v))), pos = UDim2.new(1, -90, 0, 0), size = UDim2.new(0, 90, 1, 0), ts = 13, font = T.font.mono, color = color, align = Enum.TextXAlignment.Right, wrap = false })
+	end
+	return f
+end
+
+-- Allocation strip: one bar split by share + a legend of percentage chips.
+function W.stack(parent, items)
+	local total = 0
+	for _, it in ipairs(items) do total += math.max(0, it.value or 0) end
+	local f = new("Frame", { Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = nextOrder(parent) }, parent)
+	new("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }, f)
+	local strip = new("Frame", { Size = UDim2.new(1, 0, 0, 16), BackgroundTransparency = 1, LayoutOrder = 1 }, f)
+	W.chamfer(strip, { cut = 6, corners = { tl = true, br = true }, fill = col.lineSoft, fillT = 0.5, line = col.lineDim, z = 1 })
+	local x = 0
+	local legend = W.flow(f)
+	legend.LayoutOrder = 2
+	for i, it in ipairs(items) do
+		local share = (total > 0) and math.max(0, it.value or 0) / total or 0
+		if share > 0 then
+			new("Frame", { Position = UDim2.new(x, 1, 0, 3), Size = UDim2.new(share, -2, 1, -6), BackgroundColor3 = it.color, BackgroundTransparency = 0.1, BorderSizePixel = 0, ZIndex = 2 }, strip)
+			x += share
+		end
+		local text = W.upper(it.label) .. " " .. math.floor(share * 100 + 0.5) .. "%"
+		local chip = new("Frame", { Size = UDim2.fromOffset(28 + #text * 7.5, 22), BackgroundTransparency = 1, LayoutOrder = i }, legend)
+		new("Frame", { Position = UDim2.fromOffset(4, 7), Size = UDim2.fromOffset(8, 8), BackgroundColor3 = it.color, BorderSizePixel = 0 }, chip)
+		W.label(chip, { text = text, pos = UDim2.fromOffset(18, 0), size = UDim2.new(1, -18, 1, 0), ts = 12, font = T.font.head, color = col.text, wrap = false })
+	end
+	return f
+end
+
+-- Mini sparkline (columns) for list rows.
+function W.spark(parent, values, pos, size, color, z)
+	local f = new("Frame", { Position = pos, Size = size, BackgroundTransparency = 1, ZIndex = z or 2 }, parent)
+	if #values < 2 then return f end
+	local lo, hi = math.huge, -math.huge
+	for _, v in ipairs(values) do lo = math.min(lo, v); hi = math.max(hi, v) end
+	if hi - lo < 1e-9 then hi = lo + 1 end
+	local n = #values
+	new("Frame", { Position = UDim2.new(0, 0, 1, -1), Size = UDim2.new(1, 0, 0, 1), BackgroundColor3 = col.lineSoft, BorderSizePixel = 0, ZIndex = z or 2 }, f)
+	for i, v in ipairs(values) do
+		local frac = 0.12 + 0.88 * (v - lo) / (hi - lo)
+		new("Frame", { Size = UDim2.new(1 / n, -1, frac, 0), Position = UDim2.new((i - 1) / n, 0, 1 - frac, 0), BackgroundColor3 = color or col.line, BackgroundTransparency = (i == n) and 0 or 0.45, BorderSizePixel = 0, ZIndex = z or 2 }, f)
+	end
+	return f
 end
 
 function W.chip(parent, text, color, order)

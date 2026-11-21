@@ -53,6 +53,20 @@ device tiers and presses every button against a Roblox UI mock, and `shell_spec`
   study-point rewards scaled to cost of living. Net-worth goals track this run's peak, so restarting can't farm them.
 - **Daily reward** with a 7-day streak (20 h cooldown, 48 h grace). The streak survives restarts; cash doesn't.
 
+**Gameplay v4**
+- **Bank**: savings earn 4%/yr; loans at 12%/yr up to 50% of equity (net worth after debt). Interest flows through
+  income every tick; savings auto-cover negative cash.
+- **Daily missions**: 3 per real day from an 8-mission pool (shifts, trades, supplies, restocks, hustles, study,
+  deposits, earnings), rewards scale with cost of living, plus study points.
+- **Legacy**: restarting converts the all-time record into permanent points (+2% income each, sqrt-scaled, max 100).
+- **Lifetime stats** (9 counters) and richer history samples (net worth, portfolio, cash, income every 5 min, 12 h).
+
+**Organisation + analytics**
+- Every screen is split into numbered HUD sections (`01 // COMMAND`, `02 // MODULES`, ...).
+- Charts: net-worth and income trends, income breakdown bars, money allocation strip, shift performance,
+  supply levels, top salaries, profit per company, revenue vs costs, portfolio by category and over time,
+  3-hour price sparklines with % change on every asset, hustle round results, bank interest bars and a debt gauge.
+
 **UI v2: sci-fi HUD** (styled on the reference HUD kit)
 - Cut-corner neon frames, corner brackets, title plates with `>>>` chevrons, edge notches, a tactical grid
   backdrop with spinning ring clusters and a hologram platform.

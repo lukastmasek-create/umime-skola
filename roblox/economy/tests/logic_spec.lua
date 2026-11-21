@@ -178,5 +178,90 @@ test("rate limiter blocks bursts", function()
 	eq(limited, true)
 end)
 
+
+test("bank: deposit, interest, withdraw", function()
+	local st = fresh("rich")
+	local ok, info = L.bankDeposit(st, 1000, T0)
+	assert(ok); eq(info, "deposited"); eq(st.savings, 1000); eq(st.cash, 1000)
+	local r = L.rates(st, T0)
+	eq(r.savingsInterest, 1000 * C.BANK_SAVINGS_RATE)
+	ok = L.bankWithdraw(st, 400, T0)
+	assert(ok); eq(st.savings, 600); eq(st.cash, 1400)
+	local bad, code = L.bankDeposit(st, -5, T0)
+	eq(bad, false); eq(code, "bad-request")
+end)
+
+test("bank: loans capped by equity and repayable", function()
+	local st = fresh("rich") -- 2000 cash, equity 2000 -> cap 1000
+	eq(L.loanCapacity(st, T0), 1000)
+	local ok, info, got = L.bankBorrow(st, 999999, T0)
+	assert(ok); eq(got, 1000); eq(st.loan, 1000); eq(st.cash, 3000)
+	eq(L.netWorth(st, T0), 2000)
+	eq(L.loanCapacity(st, T0), 0)
+	local no = L.bankBorrow(st, 100, T0)
+	eq(no, false)
+	assert(L.bankRepay(st, 5000, T0))
+	eq(st.loan, 0); eq(st.cash, 2000)
+	assert(L.rates(st, T0).loanInterest == 0)
+end)
+
+test("savings cover negative cash", function()
+	local st = fresh("rich")
+	assert(L.bankDeposit(st, 1500, T0))
+	st.cash = -300
+	L.settle(st, T0 + 1000)
+	assert(st.cash >= 0 - 1e-6, "cash covered"); assert(st.savings < 1500)
+end)
+
+test("missions roll once per day and pay out", function()
+	local st = fresh()
+	L.settle(st, T0)
+	eq(#st.missions.list, C.MISSIONS_PER_DAY)
+	local day = st.missions.day
+	local first = st.missions.list[1].id
+	L.settle(st, T0 + 1000)
+	eq(st.missions.day, day); eq(st.missions.list[1].id, first)
+	-- force-complete mission 1 by bumping its counter
+	local m = st.missions.list[1]
+	local d = C.MISSION_BY_ID[m.id]
+	if d.counter == "earned" then st.totalEarned = st.totalEarned + m.target else st.stats[d.counter] = st.stats[d.counter] + m.target end
+	assert(L.missionReady(st, m, T0 + 1000))
+	assert(L.claimableCount(st, T0 + 1000) >= 1)
+	local ok, info, reward = L.claimMission(st, 1, T0 + 1000)
+	assert(ok); eq(info, "mission"); assert(reward > 0)
+	local again = L.claimMission(st, 1, T0 + 1000)
+	eq(again, false)
+	L.settle(st, T0 + C.DAY + 1000)
+	assert(st.missions.day ~= day, "new day rolls new missions")
+end)
+
+test("legacy: restart converts record into permanent income points", function()
+	local st = fresh()
+	st.best = 1000000 -- sqrt(1e6 / 1e4) = 10 points
+	assert(L.restart(st, T0))
+	eq(st.legacy, 10)
+	assert(L.createCharacter(st, { name = "Ada", country = "us", city = "town", era = "2025", family = "middle" }, T0))
+	eq(st.legacy, 10)
+	for _, id in ipairs(C.NEEDS) do st.needs[id] = 5 end
+	local r = L.rates(st, T0)
+	assert(math.abs(r.multiplier - 1.2) < 1e-9, "multiplier " .. r.multiplier)
+end)
+
+test("stats counters increment", function()
+	local st = fresh("rich")
+	st.cash = 1e6
+	assert(L.buyNeed(st, "food", 1, T0)); eq(st.stats.supplies, 1)
+	assert(L.buyAsset(st, "gold", 100, T0)); eq(st.stats.trades, 1)
+	assert(L.sellAsset(st, "gold", 1, T0)); eq(st.stats.trades, 2)
+	assert(L.buyCompany(st, "shoes", T0)); eq(st.stats.companiesBought, 1)
+end)
+
+test("history records cash and income", function()
+	local st = fresh()
+	L.settle(st, T0 + 1)
+	local h = st.history[#st.history]
+	assert(h.c ~= nil and h.i ~= nil and h.w ~= nil)
+end)
+
 print(string.format("%d passed, %d failed", passed, failed))
 if failed > 0 then error("tests failed") end

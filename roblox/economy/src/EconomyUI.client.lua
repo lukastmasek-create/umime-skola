@@ -124,7 +124,7 @@ local function act(name, ...)
 			W.celebrate(S.f(S.deviceUi.unlocked, { name = S.devices[C.DEVICES[extra].id].name }), S.devices[C.DEVICES[extra].id].tag, "📲")
 		elseif info == "promoted" then
 			W.celebrate(msg, state and state.job and S.jobs[state.job.id] or nil, "🏅")
-		elseif info == "milestone" or info == "daily" then
+		elseif info == "milestone" or info == "daily" or info == "mission" then
 			W.toast(S.f(msg, { n = W.fmt(extra or 0) }), "gold"); W.confetti(50); W.sound("cash")
 		elseif info == "fired" then
 			W.modal(msg, S.work.noJob, { { text = S.ui.close, variant = "ghost" }, { text = S.work.jobs, variant = "primary", onClick = function() ui.tab = "work"; render(true) end } }, { icon = "📦" })
@@ -215,7 +215,7 @@ local layout = {}
 local function tierNow() return ui.previewTier or (state and state.device) or 1 end
 
 local function navItems(tier)
-	local list = { "home", "work", "needs", "companies", "invest", "hustle" }
+	local list = { "home", "work", "needs", "companies", "invest", "bank", "hustle" }
 	if tier >= 3 then table.insert(list, "compare") end
 	if tier >= 4 then table.insert(list, "history") end
 	for _, id in ipairs({ "goals", "board", "device" }) do table.insert(list, id) end
@@ -394,6 +394,7 @@ local function clear(sf)
 		if not c:IsA("UIListLayout") and not c:IsA("UIPadding") then c:Destroy() end
 	end
 	sf:SetAttribute("_n", 0)
+	sf:SetAttribute("_sec", 0)
 end
 
 local function panelsFor(tier)
@@ -476,6 +477,8 @@ local function contentSig(now)
 		now >= st.shiftReadyAt and 1 or 0, now >= st.restReadyAt and 1 or 0, now >= st.raiseReadyAt and 1 or 0, now >= st.arbReadyAt and 1 or 0,
 		st.sickUntil > now and 1 or 0, st.vacationUntil > now and 1 or 0, math.floor(now / C.EVENT_WINDOW_MS), L.currentEvent(now) and 1 or 0, L.currentAssetEvent(now) and 1 or 0 }
 	for _, id in ipairs(C.NEEDS) do table.insert(parts, math.floor(st.needs[id] * 10)) end
+	table.insert(parts, math.floor((st.savings or 0) / 10)); table.insert(parts, math.floor((st.loan or 0) / 10)); table.insert(parts, #st.history)
+	for _, m in ipairs(st.missions and st.missions.list or {}) do table.insert(parts, m.id .. (m.claimed and "c" or "") .. (L.missionReady(st, m, now) and "r" or "")) end
 	for id, n in pairs(st.companies) do
 		local s = st.setup[id]
 		table.insert(parts, id .. n .. (s and (":" .. s.staff .. ":" .. math.floor(s.stock) .. ":" .. s.price .. s.output .. s.risk .. tostring(s.upgraded)) or ""))

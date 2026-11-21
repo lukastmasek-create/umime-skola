@@ -32,9 +32,9 @@ S.ui = {
 
 S.nav = {
 	home = "Home", work = "Work", needs = "Needs", companies = "Business", invest = "Invest",
-	hustle = "Hustle", board = "Leaders", device = "Devices", compare = "Compare", history = "History", goals = "Goals", more = "More",
+	hustle = "Hustle", board = "Leaders", device = "Devices", compare = "Compare", history = "History", goals = "Goals", bank = "Bank", more = "More",
 }
-S.navIcon = { home = "⌂", work = "▣", needs = "◒", companies = "▥", invest = "↗", hustle = "◈", board = "♛", device = "▯", compare = "⇌", history = "◷", goals = "◎", more = "≡" }
+S.navIcon = { home = "⌂", work = "▣", needs = "◒", companies = "▥", invest = "↗", hustle = "◈", board = "♛", device = "▯", compare = "⇌", history = "◷", goals = "◎", bank = "◫", more = "≡" }
 S.navShort = S.navIcon
 
 S.devices = {
@@ -75,7 +75,8 @@ S.evt = {
 	raised = "Raise approved!", ["raise-rejected"] = "Raise denied.", warned = "Warning for poor performance!",
 	fired = "You've been fired!", rested = "Fully rested.", vacation = "Vacation started.", sold = "Sold +{n}", bought = "Bought for {n}",
 	arbitrage = "Arbitrage +{n}", lost = "Hustle: you got scammed!", done = "Hustle complete.", step = "Round decided.", device = "Device unlocked!",
-	milestone = "Goal reached! +{n}", daily = "Daily reward +{n}",
+	milestone = "Goal reached! +{n}", daily = "Daily reward +{n}", mission = "Mission complete! +{n}",
+	deposited = "Deposited {n}", withdrawn = "Withdrew {n}", borrowed = "Borrowed {n}", repaid = "Repaid {n}",
 }
 
 S.create = {
@@ -200,5 +201,47 @@ S.milestoneKind = {
 S.preset = { cash = "Cash", netWorth = "Net worth", income = "Income", needs = "Needs", companies = "Business", portfolio = "Portfolio", projects = "Projects", hustle = "Hustle", energy = "Energy", events = "Events", waiting = "waiting", perYear = "/ yr" }
 S.legal = { saveNote = "Progress is saved to Roblox servers. This is a game, not financial advice." }
 S.sides = { buy = "Buy", sell = "Sell", below = "below", above = "above" }
+
+-- ───────── v4: organisation, analytics, bank, missions, legacy ─────────
+S.sec = {
+	command = "Command", modules = "Modules", analytics = "Analytics", status = "Status", system = "System",
+	career = "Career", actions = "Actions", training = "Training", market = "Job market",
+	supply = "Supply levels", supplies = "Supplies", goods = "Consumer goods",
+	overview = "Overview", units = "Units", detail = "Unit control", markets = "Markets", orders = "Orders", tools = "Trading tools",
+	accounts = "Accounts", savings = "Savings", credit = "Credit", missions = "Daily missions", milestones = "Milestones", legacy = "Legacy",
+	active = "Active operations", available = "Available operations", charts = "Charts", lifetime = "Lifetime stats", log = "Log",
+}
+S.chart = {
+	worth = "Net worth · 12 h", cash = "Cash · 12 h", income = "Income / yr · 12 h", portfolio = "Portfolio · 12 h", perf = "Shift performance",
+	price = "Price · 3 h", breakdown = "Income breakdown", allocation = "Where your money is", profit = "Profit by company / yr",
+	revenueCosts = "Revenue vs costs", categories = "Portfolio by category", interest = "Interest / yr", supplyDays = "Days of supply",
+	change = "{n}% · 3 h",
+}
+S.alloc = { cash = "Cash", savings = "Savings", portfolio = "Portfolio", companies = "Business", hustles = "Hustles", debt = "Debt" }
+S.bank = {
+	title = "Bank", hint = "Park cash in savings for interest, or borrow against your net worth. Interest is paid every moment.",
+	savings = "Savings", loan = "Loan", capacity = "Can borrow", netInterest = "Net interest / yr", debtUse = "Debt used",
+	savingsRate = "Savings rate {n}% / yr", loanRate = "Loan rate {n}% / yr · max {m}% of equity",
+	deposit = "Deposit", withdraw = "Withdraw", borrow = "Borrow", repay = "Repay",
+	dep10 = "Deposit 10%", dep50 = "Deposit 50%", depAll = "Deposit all", wd50 = "Withdraw ½", wdAll = "Withdraw all",
+	borrow25 = "Borrow 25%", borrowMax = "Borrow max", repay50 = "Repay ½", repayAll = "Repay all",
+	protect = "Savings automatically cover your cash if it goes negative.",
+	confirmBorrow = "Borrow {n} at {r}% per year? Interest is charged until you repay.",
+	earn = "Savings interest", pay = "Loan interest", noLoan = "No active loan.",
+}
+S.missions = {
+	shifts = "Complete {n} shifts", trades = "Make {n} trades", supplies = "Buy supplies {n} times", restock = "Restock a company {n} times",
+	hustle = "Finish {n} hustle", study = "Study {n} time", deposit = "Make {n} savings deposits", earn = "Earn {n}",
+	refresh = "New missions in {t}", none = "Missions appear once your character is created.", reward = "+{n} · +{p} study pts",
+}
+S.legacy = {
+	title = "Legacy", points = "Legacy {n}", bonus = "+{n}% all income", hint = "Starting over turns your record net worth into permanent Legacy points (+2% income each).",
+	next = "Restart now: Legacy {a} → {b}", same = "Raise your record to earn more Legacy.",
+}
+S.stats = {
+	shifts = "Shifts worked", hustles = "Hustles finished", trades = "Trades", supplies = "Supply runs", restocks = "Restocks",
+	studies = "Study sessions", deposits = "Deposits", promotions = "Promotions", companiesBought = "Companies bought",
+	earned = "Total earned", runs = "Runs", bankruptcies = "Bankruptcies", best = "Record net worth",
+}
 
 return S

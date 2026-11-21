@@ -41,6 +41,8 @@ local function makeState(kind)
 	table.insert(st.news, { t = T0, kind = "order-failed", asset = "gold", amount = 0 })
 	table.insert(st.deviceLog, { tier = 2, t = T0, price = 600 })
 	st.milestones.first_shift = true
+	assert(L.bankDeposit(st, 50000, T0)); assert(L.bankBorrow(st, 20000, T0))
+	st.job.perfs = { 40, 90, 70 }
 	if kind == "shift" then
 		assert(L.startShift(st, T0, function() return 0.5 end, false))
 		st.sickUntil = 0
@@ -59,7 +61,7 @@ end
 local gui = Instance.new("ScreenGui")
 W.attach(gui)
 
-local tabs = { "home", "work", "needs", "companies", "invest", "hustle", "board", "device", "compare", "history", "goals" }
+local tabs = { "home", "work", "needs", "companies", "invest", "bank", "hustle", "board", "device", "compare", "history", "goals" }
 local panels = { "watch", "upcoming", "projects", "alerts", "pinned" }
 local widths = { { 390, true }, { 800, false }, { 1400, false } }
 local renders, presses = 0, 0
@@ -82,6 +84,12 @@ for _, kind in ipairs({ "fresh", "mid", "shift" }) do
 			-- make a hustle round due in the mid state
 			if kind ~= "fresh" then now = T0 + 400 * 1000 end
 			L.settle(st, now)
+			if kind ~= "fresh" then
+				local m = st.missions.list[1]
+				local d = C.MISSION_BY_ID[m.id]
+				if d.counter == "earned" then st.totalEarned = st.totalEarned + m.target else st.stats[d.counter] = st.stats[d.counter] + m.target end
+				for i = 1, 20 do table.insert(st.history, { t = now + i, w = i * 100, p = i * 10, c = i * 50, i = (i % 5) * 20 - 30 }) end
+			end
 			local m = T.metrics(Vector2.new(wspec[1], 800), wspec[2])
 			local ui = { tab = "home", filter = {}, company = (kind ~= "fresh") and "shoes" or nil, orderAsset = (kind ~= "fresh") and "gold" or nil, cmpKind = "jobs", cmpSel = { "warehouse", "doctor" }, board = { { rank = 1, name = "Zed", value = 1e9 }, { rank = 2, name = "Amy", value = 5e6 }, { rank = 4, name = "Bo", value = 10 } }, pinEdit = true }
 			for _, tab in ipairs(tabs) do

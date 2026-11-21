@@ -345,8 +345,8 @@ C.UNION_DEAL_MS = 12 * C.H
 C.UNION_DEAL_YEARS = 1 / 12
 
 -- History (net worth chart)
-C.HISTORY_STEP_MS = 15 * 60000
-C.HISTORY_MAX = 96
+C.HISTORY_STEP_MS = 5 * 60000
+C.HISTORY_MAX = 144 -- 12 real hours of 5-minute samples
 
 -- Leaderboard
 C.BOARD_SIZE = 20
@@ -374,7 +374,7 @@ C.DEVICES = {
 C.PIN_CARDS = { "cash", "netWorth", "income", "needs", "companies", "portfolio", "projects", "hustle", "energy", "events" }
 
 -- ───────── v3: economy guard rails ─────────
-C.STATE_VERSION = 3
+-- (v3 bumped STATE_VERSION to 3; see the v4 block)
 -- Essentials (needs, company stock) may run into a small overdraft so a broke player can still eat.
 -- Everything else (companies, staff, upgrades, boosts, job fees...) must be paid from cash on hand.
 C.OVERDRAFT_DAYS = 2
@@ -414,6 +414,37 @@ C.MILESTONES = {
 }
 C.MILESTONE_BY_ID = {}
 for _, m in ipairs(C.MILESTONES) do C.MILESTONE_BY_ID[m.id] = m end
+
+-- ───────── v4: bank, missions, legacy ─────────
+C.STATE_VERSION = 4
+-- Rates are per game year (= one real hour), the same unit as salaries and yields.
+C.BANK_SAVINGS_RATE = 0.04
+C.BANK_LOAN_RATE = 0.12
+C.BANK_LOAN_LTV = 0.5 -- total debt may reach 50% of equity (net worth after debt)
+C.BANK_MIN = 10
+
+-- Daily missions: three per real day, picked from this pool. `counter` is a lifetime stat in state.stats
+-- (or "earned" = totalEarned). target "living" means `livingHours` hours of living cost.
+C.MISSIONS_PER_DAY = 3
+C.MISSION_POOL = {
+	{ id = "shifts", counter = "shifts", target = 3, hours = 1.0, points = 6 },
+	{ id = "trades", counter = "trades", target = 4, hours = 0.8, points = 4 },
+	{ id = "supplies", counter = "supplies", target = 3, hours = 0.6, points = 3 },
+	{ id = "restock", counter = "restocks", target = 2, hours = 1.2, points = 5, needsCompany = true },
+	{ id = "hustle", counter = "hustles", target = 1, hours = 1.0, points = 5 },
+	{ id = "study", counter = "studies", target = 1, hours = 0.8, points = 0 },
+	{ id = "deposit", counter = "deposits", target = 2, hours = 0.6, points = 3 },
+	{ id = "earn", counter = "earned", livingHours = 4, hours = 1.0, points = 5 },
+}
+C.MISSION_BY_ID = {}
+for _, m in ipairs(C.MISSION_POOL) do C.MISSION_BY_ID[m.id] = m end
+
+-- Legacy: restarting converts your all-time record into permanent points. Each point = +2% to all income.
+C.LEGACY_DIVISOR = 10000 -- points = floor(sqrt(record / divisor))
+C.LEGACY_BONUS = 0.02
+C.LEGACY_MAX = 100
+
+C.STAT_KEYS = { "shifts", "hustles", "trades", "supplies", "restocks", "studies", "deposits", "promotions", "companiesBought" }
 
 return C
 ]==])
@@ -478,6 +509,12 @@ function L.emptyNeeds()
 	return n
 end
 
+function L.emptyStats()
+	local t = {}
+	for _, k in ipairs(C.STAT_KEYS) do t[k] = 0 end
+	return t
+end
+
 function L.newState(now, runs, best)
 	return {
 		v = C.STATE_VERSION, character = nil, cash = 0, totalEarned = 0, peak = 0, best = best or 0, runs = runs or 0,
@@ -490,9 +527,11 @@ function L.newState(now, runs, best)
 		distressAt = 0, bankruptcies = 0, lastBankruptId = nil, lastBankruptAt = 0,
 		news = {}, startupRound = {}, history = {},
 		-- device progression and device-gated UI preferences (kept across restarts of the economy? no: reset on restart)
-		device = 1, deviceLog = {}, stats = { shifts = 0, hustles = 0 }, watch = {}, views = {}, pins = {},
+		device = 1, deviceLog = {}, stats = L.emptyStats(), watch = {}, views = {}, pins = {},
 		-- v3: milestones claimed (id -> true) and daily login streak
 		milestones = {}, dailyAt = 0, dailyStreak = 0,
+		-- v4: bank balances, daily missions, legacy points (kept across restarts)
+		savings = 0, loan = 0, missions = { day = -1, list = {} }, legacy = 0,
 	}
 end
 
@@ -508,13 +547,24 @@ function L.migrate(raw, now)
 	for _, k in ipairs({ "cash", "totalEarned", "peak", "best", "runs", "energy", "edu", "eduPoints", "dayPay", "orderSeq", "phase", "device" }) do
 		if not isNum(raw[k]) then raw[k] = fresh[k] end
 	end
-	if type(raw.stats) ~= "table" then raw.stats = { shifts = 0, hustles = 0 } end
+	if type(raw.stats) ~= "table" then raw.stats = L.emptyStats() end
 	raw.stats.shifts = isNum(raw.stats.shifts) and raw.stats.shifts or 0
 	raw.stats.hustles = isNum(raw.stats.hustles) and raw.stats.hustles or 0
 	if type(raw.milestones) ~= "table" then raw.milestones = {} end
 	for id in pairs(raw.milestones) do if not C.MILESTONE_BY_ID[id] then raw.milestones[id] = nil end end
 	raw.dailyAt = isNum(raw.dailyAt) and math.min(raw.dailyAt, now) or 0
 	raw.dailyStreak = isNum(raw.dailyStreak) and clamp(math.floor(raw.dailyStreak), 0, C.DAILY_MAX_STREAK) or 0
+	for _, k in ipairs(C.STAT_KEYS) do raw.stats[k] = isNum(raw.stats[k]) and raw.stats[k] or 0 end
+	raw.savings = isNum(raw.savings) and math.max(0, raw.savings) or 0
+	raw.loan = isNum(raw.loan) and math.max(0, raw.loan) or 0
+	if not isNum(raw.legacy) then raw.legacy = ((raw.runs or 0) > 0) and L.legacyFor(raw.best or 0) or 0 end
+	raw.legacy = clamp(math.floor(raw.legacy), 0, C.LEGACY_MAX)
+	if type(raw.missions) ~= "table" or type(raw.missions.list) ~= "table" then raw.missions = { day = -1, list = {} } end
+	for i = #raw.missions.list, 1, -1 do
+		local m = raw.missions.list[i]
+		if type(m) ~= "table" or not C.MISSION_BY_ID[m.id] or not isNum(m.base) or not isNum(m.target) then table.remove(raw.missions.list, i) end
+	end
+	for _, h in ipairs(raw.history) do h.c = isNum(h.c) and h.c or h.w; h.i = isNum(h.i) and h.i or 0 end
 	raw.startedAt = isNum(raw.startedAt) and math.min(raw.startedAt, now) or now
 	raw.lastSeen = isNum(raw.lastSeen) and math.min(raw.lastSeen, now) or now
 	raw.bonusAt = isNum(raw.bonusAt) and math.min(raw.bonusAt, now) or now
@@ -769,11 +819,11 @@ end
 
 function L.rates(state, now)
 	local ch = state.character
-	if not ch then return { salary = 0, companies = 0, passive = 0, living = 0, companyCosts = 0, multiplier = 1, net = 0, dividends = 0 } end
+	if not ch then return { salary = 0, companies = 0, passive = 0, living = 0, companyCosts = 0, multiplier = 1, net = 0, dividends = 0, savingsInterest = 0, loanInterest = 0, bank = 0 } end
 	local city = C.CITY_DEF[ch.city]
 	local family = C.FAMILY_DEF[ch.family]
 	local fx = L.needsEffects(state, now)
-	local multiplier = (1 + L.eduBonus(state.edu)) * fx.income
+	local multiplier = (1 + L.eduBonus(state.edu)) * fx.income * (1 + C.LEGACY_BONUS * (state.legacy or 0))
 	local passiveFactor = state.sickUntil > now and 0 or (state.vacationUntil > now and C.VACATION_PAY or 1)
 	local salary = L.jobHourly(state, now) * C.PASSIVE_SHARE * passiveFactor * (1 - C.PERSONAL_TAX)
 
@@ -805,8 +855,12 @@ function L.rates(state, now)
 	end
 	local living = C.LIVING_BASE * C.COUNTRY_DEF[ch.country].living * city.living * family.living
 	local gross = (salary + companies + passive) * multiplier
+	-- bank interest is paid in cash every tick; it is not boosted by the income multiplier
+	local savingsInterest = (state.savings or 0) * C.BANK_SAVINGS_RATE
+	local loanInterest = (state.loan or 0) * C.BANK_LOAN_RATE
 	return { salary = salary, companies = companies, passive = passive, living = living, companyCosts = costs,
-		multiplier = multiplier, net = gross - costs, dividends = dividends }
+		multiplier = multiplier, net = gross - costs + savingsInterest - loanInterest, dividends = dividends,
+		savingsInterest = savingsInterest, loanInterest = loanInterest, bank = savingsInterest - loanInterest }
 end
 
 function L.portfolioValue(state, now)
@@ -822,8 +876,19 @@ function L.netWorth(state, now)
 		if n > 0 then total += c.cost * n * familyCompany(state) end
 	end
 	for _, slot in pairs(state.hustle) do total += slot.value end
+	total += (state.savings or 0) - (state.loan or 0)
 	return math.round(total)
 end
+
+-- Where the net worth sits (for allocation charts). Values are >= 0 except debt, which is reported positive.
+function L.allocation(state, now)
+	local companies, hustles = 0, 0
+	for _, c in ipairs(C.COMPANIES) do companies += c.cost * (state.companies[c.id] or 0) * familyCompany(state) end
+	for _, slot in pairs(state.hustle) do hustles += slot.value end
+	return { cash = math.max(0, state.cash), savings = state.savings or 0, portfolio = L.portfolioValue(state, now), companies = companies, hustles = hustles, debt = (state.loan or 0) + math.max(0, -state.cash) }
+end
+
+function L.legacyFor(best) return math.min(C.LEGACY_MAX, math.floor(math.sqrt(math.max(0, best) / C.LEGACY_DIVISOR))) end
 
 function L.distressOf(state, now)
 	local any = false
@@ -979,7 +1044,7 @@ end
 local function recordHistory(state, now)
 	local last = state.history[#state.history]
 	if last and now - last.t < C.HISTORY_STEP_MS then return end
-	table.insert(state.history, { t = now, w = L.netWorth(state, now), p = math.round(L.portfolioValue(state, now)) })
+	table.insert(state.history, { t = now, w = L.netWorth(state, now), p = math.round(L.portfolioValue(state, now)), c = math.round(state.cash), i = math.round(L.rates(state, now).net) })
 	while #state.history > C.HISTORY_MAX do table.remove(state.history, 1) end
 end
 
@@ -1021,8 +1086,15 @@ function L.settle(state, now)
 		state.dayPay = 0
 		state.bonusAt = now
 	end
+	-- overdraft protection: savings automatically cover a negative cash balance
+	if state.cash < 0 and (state.savings or 0) > 0 then
+		local cover = math.min(state.savings, -state.cash)
+		state.savings -= cover
+		state.cash += cover
+	end
 	resolveStartups(state, now)
 	fillOrders(state, now - elapsed, now)
+	L.rollMissions(state, now)
 	recordHistory(state, now)
 	withPeak(state, now)
 end
@@ -1155,6 +1227,7 @@ function L.createCharacter(state, input, now)
 		or not contains(C.ERAS, input.era) or not contains(C.FAMILIES, input.family) then return fail("bad-request") end
 	local fresh = L.newState(now, state.runs, state.best)
 	fresh.dailyAt, fresh.dailyStreak = state.dailyAt or 0, state.dailyStreak or 0 -- the login streak belongs to the player, not the run
+	fresh.legacy = state.legacy or 0
 	for k in pairs(state) do state[k] = nil end
 	for k, v in pairs(fresh) do state[k] = v end
 	state.character = { country = input.country, name = name, city = input.city, era = input.era, family = input.family }
@@ -1168,6 +1241,7 @@ end
 function L.restart(state, now)
 	local fresh = L.newState(now, state.runs + 1, state.best)
 	fresh.dailyAt, fresh.dailyStreak = state.dailyAt or 0, state.dailyStreak or 0
+	fresh.legacy = math.max(state.legacy or 0, L.legacyFor(state.best)) -- the record becomes permanent income points
 	for k in pairs(state) do state[k] = nil end
 	for k, v in pairs(fresh) do state[k] = v end
 	return true
@@ -1184,6 +1258,7 @@ function L.buyNeed(state, id, days, now)
 	if not canPayEssential(state, price) then return fail("not-enough-cash") end
 	state.cash -= price
 	state.needs[id] = have + add
+	state.stats.supplies = (state.stats.supplies or 0) + 1
 	withPeak(state, now)
 	return true
 end
@@ -1336,6 +1411,7 @@ function L.requestPromotion(state, now, rng)
 	local chance = math.min(C.PROMO_MAX, C.PROMO_BASE + C.PROMO_PER_PERF * avgPerf(job.perfs))
 	if rng() * 100 < chance then
 		job.rank += 1; job.rankSince = now; job.promoRetryAt = 0
+		state.stats.promotions = (state.stats.promotions or 0) + 1
 		return true, "promoted"
 	end
 	job.promoRetryAt = now + C.PROMO_RETRY_MS
@@ -1373,6 +1449,7 @@ function L.investEdu(state, now)
 	local cost = L.eduCost(state.edu)
 	if state.eduPoints < cost then return fail("not-enough-points") end
 	state.eduPoints -= cost
+	state.stats.studies = (state.stats.studies or 0) + 1
 	state.edu += 1
 	return true
 end
@@ -1394,6 +1471,7 @@ function L.buyCompany(state, id, now)
 	if not canPay(state, L.companyPrice(state, id)) then return fail("not-enough-cash") end
 	state.cash -= L.companyPrice(state, id)
 	state.companies[id] = n + 1
+	state.stats.companiesBought = (state.stats.companiesBought or 0) + 1
 	withPeak(state, now)
 	return true
 end
@@ -1466,6 +1544,7 @@ function L.buyStock(state, id, amount, now)
 	if not canPayEssential(state, L.batchPrice(id, now) * amount) then return fail("not-enough-cash") end
 	state.cash -= L.batchPrice(id, now) * amount
 	s.stock += amount
+	state.stats.restocks = (state.stats.restocks or 0) + 1
 	withPeak(state, now)
 	return true
 end
@@ -1562,6 +1641,7 @@ function L.buyAsset(state, id, amount, now)
 	local money = math.min(amount, state.cash)
 	if money < 1 then return fail("not-enough-cash") end
 	applyBuy(state, id, money, L.assetPrice(id, now, state.startedAt), now)
+	state.stats.trades = (state.stats.trades or 0) + 1
 	withPeak(state, now)
 	return true, "bought", math.round(money)
 end
@@ -1573,6 +1653,7 @@ function L.sellAsset(state, id, share, now)
 	share = isNum(share) and clamp(share, 0, 1) or 1
 	if share <= 0 then return fail("bad-request") end
 	local money, profit = applySell(state, id, share, L.assetPrice(id, now, state.startedAt))
+	state.stats.trades = (state.stats.trades or 0) + 1
 	withPeak(state, now)
 	return true, "sold", math.round(money), math.round(profit)
 end
@@ -1849,6 +1930,7 @@ function L.claimableCount(state, now)
 		if not state.milestones[m.id] and L.milestoneProgress(state, m, now) >= m.target then n += 1 end
 	end
 	if L.dailyReady(state, now) then n += 1 end
+	for _, m in ipairs(state.missions and state.missions.list or {}) do if L.missionReady(state, m, now) then n += 1 end end
 	return n
 end
 
@@ -1892,6 +1974,107 @@ function L.claimDaily(state, now)
 	return true, "daily", reward
 end
 
+-- ───────── v4: bank ─────────
+-- Equity = net worth after debt. Total debt may reach BANK_LOAN_LTV x equity.
+function L.loanCapacity(state, now)
+	local equity = math.max(0, L.netWorth(state, now))
+	return math.max(0, C.BANK_LOAN_LTV * equity - (state.loan or 0))
+end
+local function bankAmount(v) return isNum(v) and v > 0 and v <= 1e15 end
+function L.bankDeposit(state, amount, now)
+	if not state.character then return fail("no-character") end
+	if not bankAmount(amount) then return fail("bad-request") end
+	local money = math.min(amount, state.cash)
+	if money < C.BANK_MIN then return fail("not-enough-cash") end
+	state.cash -= money
+	state.savings += money
+	state.stats.deposits = (state.stats.deposits or 0) + 1
+	return true, "deposited", math.round(money)
+end
+function L.bankWithdraw(state, amount, now)
+	if not state.character then return fail("no-character") end
+	if not bankAmount(amount) then return fail("bad-request") end
+	local money = math.min(amount, state.savings)
+	if money < 1 then return fail("nothing") end
+	state.savings -= money
+	state.cash += money
+	return true, "withdrawn", math.round(money)
+end
+function L.bankBorrow(state, amount, now)
+	if not state.character then return fail("no-character") end
+	if not bankAmount(amount) then return fail("bad-request") end
+	local money = math.min(amount, L.loanCapacity(state, now))
+	if money < C.BANK_MIN then return fail("locked") end
+	state.loan += money
+	state.cash += money
+	return true, "borrowed", math.round(money)
+end
+function L.bankRepay(state, amount, now)
+	if not state.character then return fail("no-character") end
+	if not bankAmount(amount) then return fail("bad-request") end
+	if state.loan <= 0 then return fail("nothing") end
+	local money = math.min(amount, state.loan, math.max(0, state.cash))
+	if money < 1 then return fail("not-enough-cash") end
+	state.loan -= money
+	if state.loan < 0.5 then state.loan = 0 end
+	state.cash -= money
+	return true, "repaid", math.round(money)
+end
+
+-- ───────── v4: daily missions ─────────
+local function counterValue(state, key)
+	if key == "earned" then return state.totalEarned or 0 end
+	return state.stats[key] or 0
+end
+L.counterValue = counterValue
+function L.missionDay(now) return math.floor(now / C.DAY) end
+function L.missionTarget(state, def)
+	if def.livingHours then return math.max(100, math.round(L.livingCost(state) * def.livingHours)) end
+	return def.target
+end
+function L.missionReward(state, def) return math.max(25, math.round(L.livingCost(state) * def.hours)) end
+-- Picks today's missions once per day (server tick). Deterministic per day, skipping ones that can't be done.
+function L.rollMissions(state, now)
+	if not state.character then return end
+	local day = L.missionDay(now)
+	if state.missions.day == day then return end
+	local hasCompany = next(state.companies) ~= nil
+	local pool = {}
+	for _, d in ipairs(C.MISSION_POOL) do
+		if not d.needsCompany or hasCompany then table.insert(pool, d) end
+	end
+	table.sort(pool, function(a, b) return hash32("mission:" .. day .. ":" .. a.id) < hash32("mission:" .. day .. ":" .. b.id) end)
+	local list = {}
+	for i = 1, math.min(C.MISSIONS_PER_DAY, #pool) do
+		local d = pool[i]
+		table.insert(list, { id = d.id, base = counterValue(state, d.counter), target = L.missionTarget(state, d), claimed = false })
+	end
+	state.missions = { day = day, list = list }
+end
+function L.missionProgress(state, m)
+	local d = C.MISSION_BY_ID[m.id]
+	return math.max(0, counterValue(state, d.counter) - m.base)
+end
+function L.missionReady(state, m, now)
+	return not m.claimed and state.missions.day == L.missionDay(now) and L.missionProgress(state, m) >= m.target
+end
+function L.claimMission(state, index, now)
+	if not state.character then return fail("no-character") end
+	if not isInt(index) then return fail("bad-request") end
+	local m = state.missions.list[index]
+	if not m or state.missions.day ~= L.missionDay(now) then return fail("nothing") end
+	if m.claimed then return fail("max") end
+	if L.missionProgress(state, m) < m.target then return fail("locked") end
+	local d = C.MISSION_BY_ID[m.id]
+	local reward = L.missionReward(state, d)
+	m.claimed = true
+	state.cash += reward
+	state.totalEarned += reward
+	state.eduPoints += d.points
+	withPeak(state, now)
+	return true, "mission", reward
+end
+
 return L
 ]==])
 make("ModuleScript", "Strings", econ, [==[
@@ -1929,9 +2112,9 @@ S.ui = {
 
 S.nav = {
 	home = "Home", work = "Work", needs = "Needs", companies = "Business", invest = "Invest",
-	hustle = "Hustle", board = "Leaders", device = "Devices", compare = "Compare", history = "History", goals = "Goals", more = "More",
+	hustle = "Hustle", board = "Leaders", device = "Devices", compare = "Compare", history = "History", goals = "Goals", bank = "Bank", more = "More",
 }
-S.navIcon = { home = "⌂", work = "▣", needs = "◒", companies = "▥", invest = "↗", hustle = "◈", board = "♛", device = "▯", compare = "⇌", history = "◷", goals = "◎", more = "≡" }
+S.navIcon = { home = "⌂", work = "▣", needs = "◒", companies = "▥", invest = "↗", hustle = "◈", board = "♛", device = "▯", compare = "⇌", history = "◷", goals = "◎", bank = "◫", more = "≡" }
 S.navShort = S.navIcon
 
 S.devices = {
@@ -1972,7 +2155,8 @@ S.evt = {
 	raised = "Raise approved!", ["raise-rejected"] = "Raise denied.", warned = "Warning for poor performance!",
 	fired = "You've been fired!", rested = "Fully rested.", vacation = "Vacation started.", sold = "Sold +{n}", bought = "Bought for {n}",
 	arbitrage = "Arbitrage +{n}", lost = "Hustle: you got scammed!", done = "Hustle complete.", step = "Round decided.", device = "Device unlocked!",
-	milestone = "Goal reached! +{n}", daily = "Daily reward +{n}",
+	milestone = "Goal reached! +{n}", daily = "Daily reward +{n}", mission = "Mission complete! +{n}",
+	deposited = "Deposited {n}", withdrawn = "Withdrew {n}", borrowed = "Borrowed {n}", repaid = "Repaid {n}",
 }
 
 S.create = {
@@ -2097,6 +2281,48 @@ S.milestoneKind = {
 S.preset = { cash = "Cash", netWorth = "Net worth", income = "Income", needs = "Needs", companies = "Business", portfolio = "Portfolio", projects = "Projects", hustle = "Hustle", energy = "Energy", events = "Events", waiting = "waiting", perYear = "/ yr" }
 S.legal = { saveNote = "Progress is saved to Roblox servers. This is a game, not financial advice." }
 S.sides = { buy = "Buy", sell = "Sell", below = "below", above = "above" }
+
+-- ───────── v4: organisation, analytics, bank, missions, legacy ─────────
+S.sec = {
+	command = "Command", modules = "Modules", analytics = "Analytics", status = "Status", system = "System",
+	career = "Career", actions = "Actions", training = "Training", market = "Job market",
+	supply = "Supply levels", supplies = "Supplies", goods = "Consumer goods",
+	overview = "Overview", units = "Units", detail = "Unit control", markets = "Markets", orders = "Orders", tools = "Trading tools",
+	accounts = "Accounts", savings = "Savings", credit = "Credit", missions = "Daily missions", milestones = "Milestones", legacy = "Legacy",
+	active = "Active operations", available = "Available operations", charts = "Charts", lifetime = "Lifetime stats", log = "Log",
+}
+S.chart = {
+	worth = "Net worth · 12 h", cash = "Cash · 12 h", income = "Income / yr · 12 h", portfolio = "Portfolio · 12 h", perf = "Shift performance",
+	price = "Price · 3 h", breakdown = "Income breakdown", allocation = "Where your money is", profit = "Profit by company / yr",
+	revenueCosts = "Revenue vs costs", categories = "Portfolio by category", interest = "Interest / yr", supplyDays = "Days of supply",
+	change = "{n}% · 3 h",
+}
+S.alloc = { cash = "Cash", savings = "Savings", portfolio = "Portfolio", companies = "Business", hustles = "Hustles", debt = "Debt" }
+S.bank = {
+	title = "Bank", hint = "Park cash in savings for interest, or borrow against your net worth. Interest is paid every moment.",
+	savings = "Savings", loan = "Loan", capacity = "Can borrow", netInterest = "Net interest / yr", debtUse = "Debt used",
+	savingsRate = "Savings rate {n}% / yr", loanRate = "Loan rate {n}% / yr · max {m}% of equity",
+	deposit = "Deposit", withdraw = "Withdraw", borrow = "Borrow", repay = "Repay",
+	dep10 = "Deposit 10%", dep50 = "Deposit 50%", depAll = "Deposit all", wd50 = "Withdraw ½", wdAll = "Withdraw all",
+	borrow25 = "Borrow 25%", borrowMax = "Borrow max", repay50 = "Repay ½", repayAll = "Repay all",
+	protect = "Savings automatically cover your cash if it goes negative.",
+	confirmBorrow = "Borrow {n} at {r}% per year? Interest is charged until you repay.",
+	earn = "Savings interest", pay = "Loan interest", noLoan = "No active loan.",
+}
+S.missions = {
+	shifts = "Complete {n} shifts", trades = "Make {n} trades", supplies = "Buy supplies {n} times", restock = "Restock a company {n} times",
+	hustle = "Finish {n} hustle", study = "Study {n} time", deposit = "Make {n} savings deposits", earn = "Earn {n}",
+	refresh = "New missions in {t}", none = "Missions appear once your character is created.", reward = "+{n} · +{p} study pts",
+}
+S.legacy = {
+	title = "Legacy", points = "Legacy {n}", bonus = "+{n}% all income", hint = "Starting over turns your record net worth into permanent Legacy points (+2% income each).",
+	next = "Restart now: Legacy {a} → {b}", same = "Raise your record to earn more Legacy.",
+}
+S.stats = {
+	shifts = "Shifts worked", hustles = "Hustles finished", trades = "Trades", supplies = "Supply runs", restocks = "Restocks",
+	studies = "Study sessions", deposits = "Deposits", promotions = "Promotions", companiesBought = "Companies bought",
+	earned = "Total earned", runs = "Runs", bankruptcies = "Bankruptcies", best = "Record net worth",
+}
 
 return S
 ]==])
@@ -2348,6 +2574,11 @@ return function(L, C)
 		setPins = function(st, now, list) return L.setPins(st, list) end,
 		claimMilestone = function(st, now, id) return L.claimMilestone(st, id, now) end,
 		claimDaily = function(st, now) return L.claimDaily(st, now) end,
+		bankDeposit = function(st, now, amount) return L.bankDeposit(st, amount, now) end,
+		bankWithdraw = function(st, now, amount) return L.bankWithdraw(st, amount, now) end,
+		bankBorrow = function(st, now, amount) return L.bankBorrow(st, amount, now) end,
+		bankRepay = function(st, now, amount) return L.bankRepay(st, amount, now) end,
+		claimMission = function(st, now, index) return L.claimMission(st, index, now) end,
 	}
 	Core.ACTIONS = ACTIONS
 
@@ -2519,7 +2750,7 @@ local function act(name, ...)
 			W.celebrate(S.f(S.deviceUi.unlocked, { name = S.devices[C.DEVICES[extra].id].name }), S.devices[C.DEVICES[extra].id].tag, "📲")
 		elseif info == "promoted" then
 			W.celebrate(msg, state and state.job and S.jobs[state.job.id] or nil, "🏅")
-		elseif info == "milestone" or info == "daily" then
+		elseif info == "milestone" or info == "daily" or info == "mission" then
 			W.toast(S.f(msg, { n = W.fmt(extra or 0) }), "gold"); W.confetti(50); W.sound("cash")
 		elseif info == "fired" then
 			W.modal(msg, S.work.noJob, { { text = S.ui.close, variant = "ghost" }, { text = S.work.jobs, variant = "primary", onClick = function() ui.tab = "work"; render(true) end } }, { icon = "📦" })
@@ -2610,7 +2841,7 @@ local layout = {}
 local function tierNow() return ui.previewTier or (state and state.device) or 1 end
 
 local function navItems(tier)
-	local list = { "home", "work", "needs", "companies", "invest", "hustle" }
+	local list = { "home", "work", "needs", "companies", "invest", "bank", "hustle" }
 	if tier >= 3 then table.insert(list, "compare") end
 	if tier >= 4 then table.insert(list, "history") end
 	for _, id in ipairs({ "goals", "board", "device" }) do table.insert(list, id) end
@@ -2789,6 +3020,7 @@ local function clear(sf)
 		if not c:IsA("UIListLayout") and not c:IsA("UIPadding") then c:Destroy() end
 	end
 	sf:SetAttribute("_n", 0)
+	sf:SetAttribute("_sec", 0)
 end
 
 local function panelsFor(tier)
@@ -2871,6 +3103,8 @@ local function contentSig(now)
 		now >= st.shiftReadyAt and 1 or 0, now >= st.restReadyAt and 1 or 0, now >= st.raiseReadyAt and 1 or 0, now >= st.arbReadyAt and 1 or 0,
 		st.sickUntil > now and 1 or 0, st.vacationUntil > now and 1 or 0, math.floor(now / C.EVENT_WINDOW_MS), L.currentEvent(now) and 1 or 0, L.currentAssetEvent(now) and 1 or 0 }
 	for _, id in ipairs(C.NEEDS) do table.insert(parts, math.floor(st.needs[id] * 10)) end
+	table.insert(parts, math.floor((st.savings or 0) / 10)); table.insert(parts, math.floor((st.loan or 0) / 10)); table.insert(parts, #st.history)
+	for _, m in ipairs(st.missions and st.missions.list or {}) do table.insert(parts, m.id .. (m.claimed and "c" or "") .. (L.missionReady(st, m, now) and "r" or "")) end
 	for id, n in pairs(st.companies) do
 		local s = st.setup[id]
 		table.insert(parts, id .. n .. (s and (":" .. s.staff .. ":" .. math.floor(s.stock) .. ":" .. s.price .. s.output .. s.risk .. tostring(s.upgraded)) or ""))
@@ -3555,6 +3789,10 @@ function W.row(parent, o)
 		W.label(box, { text = g, size = UDim2.fromScale(1, 1), ts = (#g <= 3) and 18 or 13, font = T.font.head, color = tint, align = Enum.TextXAlignment.Center, wrap = false, z = 3 })
 	end
 	local tw = (stacked and cw or (cw - aw)) - (ix - 14)
+	if o.spark and not stacked and tw > 220 then
+		tw -= 100
+		W.spark(f, o.spark, UDim2.fromOffset(ix + tw + 8, math.floor(height / 2) - 14), UDim2.fromOffset(86, 28), o.sparkColor, 2)
+	end
 	local ty = (not stacked and not o.sub and not o.extra) and math.floor((height - 22) / 2) or 6
 	W.label(f, { text = o.title, pos = UDim2.fromOffset(ix, ty), size = UDim2.new(0, tw, 0, 22), font = T.font.bold, ts = T.size.label, color = o.titleColor or col.text, wrap = false, truncate = Enum.TextTruncate.AtEnd })
 	if o.sub then W.label(f, { text = o.sub, pos = UDim2.fromOffset(ix, 27), size = UDim2.new(0, tw, 0, 30), ts = 13, color = col.muted, valign = Enum.TextYAlignment.Top }) end
@@ -3713,7 +3951,98 @@ function W.chart(parent, values, color, h, labels)
 		new("UIGradient", { Rotation = 90, Transparency = NumberSequence.new(0, 0.85) }, bar)
 		new("Frame", { Size = UDim2.new(1, 0, 0, 2), BackgroundColor3 = col.glow, BorderSizePixel = 0, ZIndex = 3 }, bar)
 	end
+	local fmt = (labels and labels.fmt) or W.fmt
+	W.label(f, { text = fmt(hi), pos = UDim2.fromOffset(12, 6), size = UDim2.fromOffset(120, 12), ts = 11, font = T.font.mono, color = col.muted, wrap = false, z = 4 })
+	W.label(f, { text = fmt(lo), pos = UDim2.new(0, 12, 1, -18), size = UDim2.fromOffset(120, 12), ts = 11, font = T.font.mono, color = col.muted, wrap = false, z = 4 })
+	if labels and labels.title then
+		W.label(f, { text = W.upper(labels.title), pos = UDim2.new(1, -212, 0, 6), size = UDim2.fromOffset(200, 12), ts = 11, font = T.font.head, color = color or col.line, align = Enum.TextXAlignment.Right, wrap = false, z = 4 })
+	end
 	return f, lo, hi
+end
+
+-- Section header: "01 // TITLE ———— sub". Numbers count per parent so every screen reads like a HUD index.
+function W.section(parent, title, sub)
+	local n = (parent:GetAttribute("_sec") or 0) + 1
+	parent:SetAttribute("_sec", n)
+	local f = new("Frame", { Size = UDim2.new(1, 0, 0, 30), BackgroundTransparency = 1, LayoutOrder = nextOrder(parent) }, parent)
+	local tag = new("Frame", { Size = UDim2.fromOffset(34, 22), Position = UDim2.fromOffset(0, 4), BackgroundTransparency = 1, ZIndex = 2 }, f)
+	W.chamfer(tag, { cut = 6, corners = { tl = true, br = true }, fill = col.line, fillT = 0, z = 2 })
+	W.label(tag, { text = string.format("%02d", n), size = UDim2.fromScale(1, 1), ts = 12, font = T.font.head, color = col.creamInk, align = Enum.TextXAlignment.Center, wrap = false, z = 3 })
+	local text = "// " .. W.upper(title)
+	W.label(f, { text = text, pos = UDim2.fromOffset(42, 0), size = UDim2.fromOffset(12 + #text * 10, 30), ts = 16, font = T.font.display, color = col.text, wrap = false })
+	local x = 54 + #text * 10
+	new("Frame", { Position = UDim2.new(0, x, 0, 15), Size = UDim2.new(1, -x - (sub and 150 or 0), 0, 1), BackgroundColor3 = col.lineDim, BorderSizePixel = 0 }, f)
+	new("Frame", { Position = UDim2.new(1, -(sub and 150 or 0) - 6, 0, 13), Size = UDim2.fromOffset(6, 5), BackgroundColor3 = col.line, BorderSizePixel = 0 }, f)
+	if sub then W.label(f, { text = W.upper(sub), pos = UDim2.new(1, -144, 0, 0), size = UDim2.fromOffset(144, 30), ts = 12, font = T.font.head, color = col.muted, align = Enum.TextXAlignment.Right, wrap = false, truncate = Enum.TextTruncate.AtEnd }) end
+	return f
+end
+
+-- Horizontal bar chart. items = { { label, value, color?, text? } }. Negative values draw in red.
+function W.bars(parent, items, o)
+	o = o or {}
+	local maxv = 1e-9
+	for _, it in ipairs(items) do maxv = math.max(maxv, math.abs(it.value or 0)) end
+	local f = new("Frame", { Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = nextOrder(parent) }, parent)
+	new("UIListLayout", { Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder }, f)
+	local labelW = o.labelW or 0.32
+	for i, it in ipairs(items) do
+		local v = it.value or 0
+		local color = it.color or ((v < 0) and col.red or col.line)
+		local r = new("Frame", { Size = UDim2.new(1, 0, 0, o.h or 22), BackgroundTransparency = 1, LayoutOrder = i }, f)
+		W.label(r, { text = W.upper(it.label), size = UDim2.new(labelW, -8, 1, 0), ts = 12, font = T.font.head, color = col.muted, wrap = false, truncate = Enum.TextTruncate.AtEnd })
+		local track = new("Frame", { Position = UDim2.new(labelW, 0, 0.5, -5), Size = UDim2.new(1 - labelW, -96, 0, 10), BackgroundColor3 = col.lineSoft, BackgroundTransparency = 0.5, BorderSizePixel = 0 }, r)
+		local frac = math.clamp(math.abs(v) / maxv, 0, 1)
+		local fill = new("Frame", { Size = UDim2.new(frac, 0, 1, 0), BackgroundColor3 = color, BorderSizePixel = 0 }, track)
+		new("UIGradient", { Transparency = NumberSequence.new(0.55, 0) }, fill)
+		if frac > 0 then
+			local cap = new("Frame", { Position = UDim2.new(frac, -2, 0, -3), Size = UDim2.fromOffset(3, 16), BackgroundColor3 = col.glow, BorderSizePixel = 0, ZIndex = 2 }, track)
+			W.glow(cap, "BackgroundTransparency", 0, 0.5, 3)
+		end
+		for k = 1, 3 do new("Frame", { Position = UDim2.new(k / 4, 0, 1, 1), Size = UDim2.fromOffset(1, 3), BackgroundColor3 = col.lineDim, BorderSizePixel = 0 }, track) end
+		W.label(r, { text = it.text or ((v < 0 and "−" or "") .. W.fmt(math.abs(v))), pos = UDim2.new(1, -90, 0, 0), size = UDim2.new(0, 90, 1, 0), ts = 13, font = T.font.mono, color = color, align = Enum.TextXAlignment.Right, wrap = false })
+	end
+	return f
+end
+
+-- Allocation strip: one bar split by share + a legend of percentage chips.
+function W.stack(parent, items)
+	local total = 0
+	for _, it in ipairs(items) do total += math.max(0, it.value or 0) end
+	local f = new("Frame", { Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = nextOrder(parent) }, parent)
+	new("UIListLayout", { Padding = UDim.new(0, 8), SortOrder = Enum.SortOrder.LayoutOrder }, f)
+	local strip = new("Frame", { Size = UDim2.new(1, 0, 0, 16), BackgroundTransparency = 1, LayoutOrder = 1 }, f)
+	W.chamfer(strip, { cut = 6, corners = { tl = true, br = true }, fill = col.lineSoft, fillT = 0.5, line = col.lineDim, z = 1 })
+	local x = 0
+	local legend = W.flow(f)
+	legend.LayoutOrder = 2
+	for i, it in ipairs(items) do
+		local share = (total > 0) and math.max(0, it.value or 0) / total or 0
+		if share > 0 then
+			new("Frame", { Position = UDim2.new(x, 1, 0, 3), Size = UDim2.new(share, -2, 1, -6), BackgroundColor3 = it.color, BackgroundTransparency = 0.1, BorderSizePixel = 0, ZIndex = 2 }, strip)
+			x += share
+		end
+		local text = W.upper(it.label) .. " " .. math.floor(share * 100 + 0.5) .. "%"
+		local chip = new("Frame", { Size = UDim2.fromOffset(28 + #text * 7.5, 22), BackgroundTransparency = 1, LayoutOrder = i }, legend)
+		new("Frame", { Position = UDim2.fromOffset(4, 7), Size = UDim2.fromOffset(8, 8), BackgroundColor3 = it.color, BorderSizePixel = 0 }, chip)
+		W.label(chip, { text = text, pos = UDim2.fromOffset(18, 0), size = UDim2.new(1, -18, 1, 0), ts = 12, font = T.font.head, color = col.text, wrap = false })
+	end
+	return f
+end
+
+-- Mini sparkline (columns) for list rows.
+function W.spark(parent, values, pos, size, color, z)
+	local f = new("Frame", { Position = pos, Size = size, BackgroundTransparency = 1, ZIndex = z or 2 }, parent)
+	if #values < 2 then return f end
+	local lo, hi = math.huge, -math.huge
+	for _, v in ipairs(values) do lo = math.min(lo, v); hi = math.max(hi, v) end
+	if hi - lo < 1e-9 then hi = lo + 1 end
+	local n = #values
+	new("Frame", { Position = UDim2.new(0, 0, 1, -1), Size = UDim2.new(1, 0, 0, 1), BackgroundColor3 = col.lineSoft, BorderSizePixel = 0, ZIndex = z or 2 }, f)
+	for i, v in ipairs(values) do
+		local frac = 0.12 + 0.88 * (v - lo) / (hi - lo)
+		new("Frame", { Size = UDim2.new(1 / n, -1, frac, 0), Position = UDim2.new((i - 1) / n, 0, 1 - frac, 0), BackgroundColor3 = color or col.line, BackgroundTransparency = (i == n) and 0 or 0.45, BorderSizePixel = 0, ZIndex = z or 2 }, f)
+	end
+	return f
 end
 
 function W.chip(parent, text, color, order)
@@ -3987,6 +4316,8 @@ local function tileData(ctx)
 		{ tab = "invest", icon = "📈", color = ctx.T.color.tileD, c2 = ctx.T.color.tileB, shape = "circle", num = holdings, title = S.nav.invest, pct = pv / worth, cap = S.f(H.invest, { n = math.floor(100 * pv / worth) }) },
 		{ tab = "hustle", icon = "🎲", color = ctx.T.color.tileE, c2 = ctx.T.color.tileF, shape = "hex", num = hustles, title = S.nav.hustle, pct = hr / C.HUSTLE_PHASES, cap = S.f(H.hustle, { a = hr, b = C.HUSTLE_PHASES }) },
 	}
+	local bankUse = (st.loan > 0) and st.loan / math.max(1, st.loan + L.loanCapacity(st, now)) or 0
+	table.insert(list, { tab = "bank", icon = "◫", alert = bankUse > 0.75, num = W.fmt(st.savings - st.loan), title = S.nav.bank, pct = (st.loan > 0) and bankUse or math.min(1, st.savings / math.max(1, L.netWorth(st, now))), cap = S.f(S.ui.perYear, { n = W.fmt(L.rates(st, now).bank) }) })
 	local claim = L.claimableCount(st, now)
 	local doneN = 0
 	for _ in pairs(st.milestones) do doneN += 1 end
@@ -3999,11 +4330,43 @@ local function tileData(ctx)
 	return list
 end
 
+-- ───────── shared analytics ─────────
+local function series(st, key)
+	local out = {}
+	for _, h in ipairs(st.history) do table.insert(out, h[key] or 0) end
+	return out
+end
+Screens.series = series
+
+local function incomeBars(ctx, parent, r)
+	local S, W, T = ctx.S, ctx.W, ctx.T
+	W.bars(parent, {
+		{ label = S.home.salary, value = r.salary * r.multiplier },
+		{ label = S.home.companies, value = r.companies * r.multiplier },
+		{ label = S.home.passive, value = r.passive * r.multiplier, color = T.color.sky },
+		{ label = S.nav.bank, value = r.bank, color = (r.bank >= 0) and T.color.sky or T.color.red },
+		{ label = S.home.costs, value = -r.companyCosts },
+		{ label = S.home.living, value = -r.living, color = T.color.amber },
+	})
+end
+
+local ALLOC_ORDER = { "cash", "savings", "portfolio", "companies", "hustles", "debt" }
+local function allocation(ctx, parent)
+	local st, now, L, C, S, W, T = init(ctx)
+	local a = L.allocation(st, now)
+	local colors = { cash = T.color.line, savings = T.color.sky, portfolio = T.color.blue, companies = T.color.glow, hustles = T.color.gold, debt = T.color.red }
+	local items = {}
+	for _, k in ipairs(ALLOC_ORDER) do table.insert(items, { label = S.alloc[k], value = a[k], color = colors[k] }) end
+	W.stack(parent, items)
+end
+
 function Screens.home(ctx, parent)
 	local st, now, L, C, S, W, T = init(ctx)
 	local nxt = nextAction(ctx)
 	local wide = ctx.cw >= 700
+	local r = L.rates(st, now)
 
+	W.section(parent, S.sec.command, S.f(S.ui.perYear, { n = W.fmt(r.net) }))
 	-- hero (featured next step) + side panel ("friends online" slot -> what is happening in the economy)
 	local top = W.new("Frame", { Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = W.nextOrder(parent) }, parent)
 	W.new("UIListLayout", { FillDirection = wide and Enum.FillDirection.Horizontal or Enum.FillDirection.Vertical, Padding = UDim.new(0, 12), SortOrder = Enum.SortOrder.LayoutOrder }, top)
@@ -4038,8 +4401,7 @@ function Screens.home(ctx, parent)
 	end
 	if shown == 0 then W.label(panel, { text = W.upper(S.hero.panelEmpty), size = UDim2.new(1, 0, 0, 40), ts = 13, color = T.color.muted, font = T.font.head, order = 1 }) end
 
-	-- "continue" tile row
-	W.label(parent, { text = W.upper(S.hero.continueTitle), size = UDim2.new(1, 0, 0, 26), ts = 16, font = T.font.display, color = T.color.text, wrap = false, order = W.nextOrder(parent) })
+	W.section(parent, S.sec.modules)
 	local tiles = W.flow(parent)
 	local data = tileData(ctx)
 	local cols = (ctx.m.class == "compact") and 2 or ((ctx.cw >= 1000) and 7 or ((ctx.cw >= 700) and 4 or 3))
@@ -4049,35 +4411,56 @@ function Screens.home(ctx, parent)
 	end
 	Screens.dailyCard(ctx, parent, true)
 
-	local r = L.rates(st, now)
-	local card = W.card(parent, { title = S.home.income, icon = "📊", right = S.f(S.home.mult, { n = W.dec(r.multiplier) }) })
-	halfGrid(ctx, card, {
-		{ label = S.home.salary, value = W.fmt(r.salary), color = T.color.line, icon = "💼" },
-		{ label = S.home.companies, value = W.fmt(r.companies), color = T.color.line, icon = "🏭" },
-		{ label = S.home.passive, value = W.fmt(r.passive), color = T.color.line, icon = "🏦" },
-		{ label = S.home.costs, value = "−" .. W.fmt(r.companyCosts), color = T.color.red, icon = "🧾" },
-		{ label = S.home.living, value = "−" .. W.fmt(r.living), color = T.color.amber, sub = S.needsUi.hint, icon = "🏠" },
-		{ label = S.ui.income, value = W.fmt(r.net), color = (r.net >= 0) and T.color.teal or T.color.red, icon = "📈" },
-	})
-	local danger, left = L.distressOf(st, now)
-	if danger then
-		local c = W.card(parent, { title = S.co.distress, icon = "🚨", accent = T.color.red })
-		W.note(c, S.f(S.co.distressText, { n = W.dur(left) }), T.color.red)
+	W.section(parent, S.sec.analytics, S.f(S.home.mult, { n = W.dec(r.multiplier) }))
+	local grid = W.new("Frame", { Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = W.nextOrder(parent) }, parent)
+	W.new("UIListLayout", { FillDirection = wide and Enum.FillDirection.Horizontal or Enum.FillDirection.Vertical, Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder }, grid)
+	local half = wide and math.floor((ctx.cw - 10) / 2) or ctx.cw
+	local function column(order)
+		local c = W.new("Frame", { Size = UDim2.fromOffset(half, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = order }, grid)
+		W.new("UIListLayout", { Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder }, c)
+		return c
 	end
-	if st.sickUntil > now then W.note(W.card(parent, { title = S.work.title }), S.work.sick, T.color.amber) end
+	local left, right = column(1), column(2)
+	local saved = W.cw
+	W.cw = half
+	local wc = W.card(left, { title = S.chart.worth, icon = "◆", right = W.fmt(L.netWorth(st, now)) })
+	W.chart(wc, series(st, "w"), T.color.line, 120, { none = S.hist.none })
+	local ic = W.card(left, { title = S.chart.income, icon = "↗", right = W.fmt(r.net) })
+	W.chart(ic, series(st, "i"), T.color.amber, 90, { none = S.hist.none })
+	local bc = W.card(right, { title = S.chart.breakdown, icon = "▤" })
+	incomeBars(ctx, bc, r)
+	local ac = W.card(right, { title = S.chart.allocation, icon = "◫" })
+	allocation(ctx, ac)
+	W.cw = saved
+
+	local danger, left2 = L.distressOf(st, now)
 	local ev = L.currentEvent(now)
 	local ae = L.currentAssetEvent(now)
-	if ev or ae then
-		local c = W.card(parent, { title = S.home.title, icon = "📰" })
-		if ev then W.note(c, S.f(S.home.event, { name = S.events[ev.def.id] }) .. "  ×" .. W.dec(ev.def.mult, 2), ev.def.mult < 1 and T.color.red or T.color.teal) end
-		if ae then W.note(c, S.f(S.home.news, { name = S.assetEvents[ae.def.id] }), T.color.line) end
+	if danger or st.sickUntil > now or ev or ae then
+		W.section(parent, S.sec.status)
+		if danger then
+			local c = W.card(parent, { title = S.co.distress, icon = "🚨", accent = T.color.red })
+			W.note(c, S.f(S.co.distressText, { n = W.dur(left2) }), T.color.red)
+		end
+		if st.sickUntil > now then W.note(W.card(parent, { title = S.work.title }), S.work.sick, T.color.amber) end
+		if ev or ae then
+			local c = W.card(parent, { title = S.home.title, icon = "📰" })
+			if ev then W.note(c, S.f(S.home.event, { name = S.events[ev.def.id] }) .. "  ×" .. W.dec(ev.def.mult, 2), ev.def.mult < 1 and T.color.red or T.color.teal) end
+			if ae then W.note(c, S.f(S.home.news, { name = S.assetEvents[ae.def.id] }), T.color.line) end
+		end
 	end
-	card = W.card(parent, { title = S.board.record, icon = "🏆" })
+
+	W.section(parent, S.sec.system)
+	local card = W.card(parent, { title = S.legacy.title, icon = "♛", right = S.f(S.legacy.bonus, { n = math.floor((st.legacy or 0) * C.LEGACY_BONUS * 100) }) })
+	W.note(card, S.legacy.hint)
+	local gain = math.max(st.legacy or 0, L.legacyFor(st.best))
+	W.note(card, (gain > (st.legacy or 0)) and S.f(S.legacy.next, { a = st.legacy or 0, b = gain }) or S.legacy.same, (gain > (st.legacy or 0)) and T.color.gold or T.color.muted)
+	W.progress(card, (st.legacy or 0) / C.LEGACY_MAX, T.color.gold, 6)
 	W.note(card, S.f(S.home.record, { a = W.fmt(st.best), b = st.runs }) .. " · " .. S.f(S.board.bankrupt, { n = st.bankruptcies }))
 	W.row(card, {
-		title = S.home.restart, sub = S.home.restartHint, cw = ctx.cw,
+		title = S.home.restart, icon = "↺", sub = S.home.restartHint, cw = ctx.cw,
 		actions = { { text = S.home.restart, variant = "danger", onClick = function()
-			W.modal(S.home.restart, S.home.restartConfirm .. " " .. S.home.restartHint, {
+			W.modal(S.home.restart, S.home.restartConfirm .. " " .. S.home.restartHint .. "\n" .. S.f(S.legacy.next, { a = st.legacy or 0, b = gain }), {
 				{ text = S.ui.no, variant = "ghost" },
 				{ text = S.ui.yes, variant = "danger", onClick = function() ctx.act("restart") end },
 			}, { icon = "♻️" })
@@ -4092,6 +4475,7 @@ function Screens.work(ctx, parent)
 	local st, now, L, C, S, W, T = init(ctx)
 	local fx = L.needsEffects(st, now)
 	local job = st.job
+	W.section(parent, S.sec.career, job and S.f(S.work.rank, { a = job.rank, b = C.MAX_JOB_RANK }) or nil)
 	local card = W.card(parent, { title = S.work.current, icon = "💼" })
 	if job then
 		local def = C.JOB_BY_ID[job.id]
@@ -4103,6 +4487,7 @@ function Screens.work(ctx, parent)
 			W.note(card, "⭐ " .. S.f(S.work.points, { a = job.points, b = nextPts }))
 			W.progress(card, job.points / nextPts, T.color.gold, 6)
 		end
+		if #job.perfs >= 2 then W.chart(card, job.perfs, T.color.glow, 80, { title = S.chart.perf, fmt = function(v) return math.floor(v) .. "%" end }) end
 		if st.sickUntil > now then W.note(card, S.work.sick, T.color.amber) end
 		if L.inCrisis(st, now) then W.note(card, S.work.crisis, T.color.amber) end
 		if fx.noShift then W.note(card, S.work.walk, T.color.amber) end
@@ -4113,6 +4498,7 @@ function Screens.work(ctx, parent)
 	if job and st.shift then
 		local sit = L.situationAt(st.shift.seed, st.shift.step)
 		local txt = S.situations[sit.id]
+		W.section(parent, S.sec.actions)
 		local sc = W.card(parent, { title = S.f(S.work.decision, { a = st.shift.step + 1, b = C.SITUATIONS_PER_SHIFT }), icon = "🧠", accent = T.color.magenta })
 		W.label(sc, { text = txt.text, size = UDim2.new(1, 0, 0, 28), auto = Enum.AutomaticSize.Y, ts = 18, font = T.font.head, order = W.nextOrder(sc) })
 		W.progress(sc, st.shift.step / C.SITUATIONS_PER_SHIFT, T.color.brand2, 6)
@@ -4127,6 +4513,7 @@ function Screens.work(ctx, parent)
 		elseif st.vacationUntil > now then reason = S.err.vacation
 		elseif cd > 0 then reason = S.f(S.work.cooldown, { n = W.dur(cd) })
 		elseif st.energy < C.SHIFT_MIN_ENERGY then reason = S.err["low-energy"] end
+		W.section(parent, S.sec.actions)
 		local ac = W.card(parent, { title = S.work.title, icon = "🗂️" })
 		W.row(ac, { title = S.work.start, icon = "▶️", highlight = (not reason) and T.color.teal or nil, sub = S.f(S.work.startHint, { n = C.SHIFT_MIN_ENERGY }), cw = ctx.cw,
 			actions = { { text = S.work.start, variant = "good", reason = reason, onClick = function() ctx.act("startShift", fx.noShift) end } } })
@@ -4149,6 +4536,7 @@ function Screens.work(ctx, parent)
 	end
 
 	-- education
+	W.section(parent, S.sec.training, S.f(S.work.eduPoints, { n = st.eduPoints }))
 	local ec = W.card(parent, { title = S.work.edu, icon = "🎓", right = S.f(S.work.eduPoints, { n = st.eduPoints }) })
 	local cost = L.eduCost(st.edu)
 	local ereason = (st.edu >= C.MAX_EDU) and S.err.max or ((st.eduPoints < cost) and S.f(S.reason.points, { have = st.eduPoints, need = cost }) or nil)
@@ -4156,6 +4544,13 @@ function Screens.work(ctx, parent)
 		actions = { { text = S.work.eduBuy, variant = "good", reason = ereason, onClick = function() ctx.act("investEdu") end } } })
 
 	if not st.shift then
+		W.section(parent, S.sec.market)
+		local top = {}
+		for _, j in ipairs(C.JOBS) do if st.edu >= j.edu then table.insert(top, j) end end
+		table.sort(top, function(a, b) return a.salary > b.salary end)
+		local sb = {}
+		for i = 1, math.min(5, #top) do table.insert(sb, { label = S.jobs[top[i].id], value = top[i].salary, color = (job and job.id == top[i].id) and T.color.gold or nil }) end
+		if #sb > 0 then W.bars(W.card(parent, { title = S.cmp.salaryCol, icon = "$", right = S.ui.available }), sb) end
 		local jc = W.card(parent, { title = S.work.jobs, icon = "📋" })
 		if ctx.feat.savedViews or ctx.feat.compare then
 			W.segmented(jc, { { id = "", text = S.ui.all }, { id = "open", text = S.ui.available } }, ctx.ui.filter.work or "", function(id) ctx.ui.filter.work = id; ctx.rerender() end)
@@ -4179,6 +4574,12 @@ end
 -- ───────── needs ─────────
 function Screens.needs(ctx, parent)
 	local st, now, L, C, S, W, T = init(ctx)
+	W.section(parent, S.sec.supply)
+	local lv = W.card(parent, { title = S.chart.supplyDays, icon = "◒" })
+	local nb = {}
+	for _, id in ipairs(C.NEEDS) do table.insert(nb, { label = S.needs[id].name, value = st.needs[id], color = (st.needs[id] <= 0) and T.color.red or ((st.needs[id] < 1) and T.color.amber or nil), text = W.dec(st.needs[id], 1) .. " d" }) end
+	W.bars(lv, nb, { h = 18 })
+	W.section(parent, S.sec.supplies)
 	local card = W.card(parent, { title = S.needsUi.title, icon = "🧺" })
 	W.note(card, S.needsUi.hint .. " " .. S.f(S.needsUi.overdraft, { n = W.fmt(L.overdraft(st)) }))
 	local fx = L.needsEffects(st, now)
@@ -4198,6 +4599,7 @@ function Screens.needs(ctx, parent)
 		})
 		W.progress(card, have / C.MAX_NEED_DAYS, have <= 0 and T.color.red or T.color.teal, 6)
 	end
+	W.section(parent, S.sec.goods)
 	local bc = W.card(parent, { title = S.needsUi.boosts, icon = "🛍️" })
 	for _, id in ipairs(C.BOOSTS) do
 		local left = 0
@@ -4262,6 +4664,7 @@ end
 function Screens.companies(ctx, parent)
 	local st, now, L, C, S, W, T = init(ctx)
 	local r = L.rates(st, now)
+	W.section(parent, S.sec.overview, S.f(S.co.profit, { n = W.fmt(r.companies - r.companyCosts) }))
 	local card = W.card(parent, { title = S.co.title, icon = "🏢", right = S.f(S.co.phase, { a = st.phase, b = C.MAX_PHASE }) })
 	W.note(card, S.f(S.co.revenue, { n = W.fmt(r.companies) }) .. " · " .. S.f(S.co.costs, { n = W.fmt(r.companyCosts) }))
 	local danger, left = L.distressOf(st, now)
@@ -4274,6 +4677,29 @@ function Screens.companies(ctx, parent)
 		W.row(card, { title = S.co.nextPhase, icon = "🚀", sub = S.f(S.co.phaseHint, { req = W.fmt(req), cost = W.fmt(cost) }), cw = ctx.cw,
 			actions = { { text = S.co.upgradePhase, variant = "good", reason = reason, onClick = function() ctx.act("upgradePhase") end } } })
 	end
+	local pb = {}
+	for _, c in ipairs(C.COMPANIES) do
+		if (st.companies[c.id] or 0) > 0 then
+			local y = L.companyYield(st, c.id, now)
+			table.insert(pb, { label = S.companies[c.id], value = y.gross - y.costs })
+		end
+	end
+	if #pb > 0 then
+		local wide = ctx.cw >= 700
+		local grid = W.new("Frame", { Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = W.nextOrder(parent) }, parent)
+		W.new("UIListLayout", { FillDirection = wide and Enum.FillDirection.Horizontal or Enum.FillDirection.Vertical, Padding = UDim.new(0, 10), SortOrder = Enum.SortOrder.LayoutOrder }, grid)
+		local half = wide and math.floor((ctx.cw - 10) / 2) or ctx.cw
+		local saved = W.cw
+		W.cw = half
+		local a = W.new("Frame", { Size = UDim2.fromOffset(half, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = 1 }, grid)
+		W.new("UIListLayout", {}, a)
+		W.bars(W.card(a, { title = S.chart.profit, icon = "▥" }), pb)
+		local b = W.new("Frame", { Size = UDim2.fromOffset(half, 0), AutomaticSize = Enum.AutomaticSize.Y, BackgroundTransparency = 1, LayoutOrder = 2 }, grid)
+		W.new("UIListLayout", {}, b)
+		W.bars(W.card(b, { title = S.chart.revenueCosts, icon = "⇌" }), { { label = S.cmp.incomeCol, value = r.companies }, { label = S.home.costs, value = -r.companyCosts }, { label = S.co.profit:gsub(" {n} / yr", ""), value = r.companies - r.companyCosts, color = T.color.gold } })
+		W.cw = saved
+	end
+	W.section(parent, S.sec.units)
 	local lc = W.card(parent, {})
 	if ctx.feat.savedViews then
 		W.segmented(lc, { { id = "", text = S.ui.all }, { id = "owned", text = S.ui.owned } }, ctx.ui.filter.companies or "", function(id) ctx.ui.filter.companies = id; ctx.rerender() end)
@@ -4296,7 +4722,10 @@ function Screens.companies(ctx, parent)
 			})
 		end
 	end
-	if ctx.ui.company and (st.companies[ctx.ui.company] or 0) > 0 then companyDetail(ctx, parent, ctx.ui.company) end
+	if ctx.ui.company and (st.companies[ctx.ui.company] or 0) > 0 then
+		W.section(parent, S.sec.detail, S.companies[ctx.ui.company])
+		companyDetail(ctx, parent, ctx.ui.company)
+	end
 end
 
 -- ───────── invest ─────────
@@ -4328,7 +4757,11 @@ local function assetRow(ctx, parent, a, opts)
 	if opts.compact then actions = { actions[1], actions[4] } end
 	if ctx.feat.watchlist then table.insert(actions, { text = watched and "★" or "☆", w = 48, variant = watched and "select" or "ghost", onClick = function() ctx.act("toggleWatch", a.id) end }) end
 	table.insert(actions, { text = "⚙", w = 48, variant = (ctx.ui.orderAsset == a.id) and "select" or "ghost", onClick = function() ctx.ui.orderAsset = (ctx.ui.orderAsset ~= a.id) and a.id or nil; ctx.rerender() end })
-	W.row(parent, { title = S.assets[a.id], icon = S.assetCatIcon[a.cat], sub = sub, extra = extra, extraColor = T.color.line, selected = (ctx.ui.orderAsset == a.id), cw = ctx.cw, actions = actions })
+	local hist = {}
+	for k = 15, 0, -1 do table.insert(hist, L.assetPrice(a.id, now - k * 12 * 60000, st.startedAt)) end
+	local change = (hist[#hist] - hist[1]) / math.max(1e-9, hist[1]) * 100
+	sub = sub .. " · " .. S.f(S.chart.change, { n = string.format("%+.1f", change) })
+	W.row(parent, { title = S.assets[a.id], icon = S.assetCatIcon[a.cat], spark = hist, sparkColor = (change >= 0) and T.color.line or T.color.red, sub = sub, extra = extra, extraColor = T.color.line, selected = (ctx.ui.orderAsset == a.id), cw = ctx.cw, actions = actions })
 end
 Screens.assetRow = assetRow
 
@@ -4357,6 +4790,20 @@ end
 function Screens.invest(ctx, parent)
 	local st, now, L, C, S, W, T = init(ctx)
 	local pv = L.portfolioValue(st, now)
+	W.section(parent, S.sec.overview, S.inv.portfolio .. " " .. W.fmt(pv))
+	local byCat = {}
+	for _, a in ipairs(C.ASSETS) do
+		local q = st.holdings[a.id] or 0
+		if q > 0 then byCat[a.cat] = (byCat[a.cat] or 0) + q * L.assetPrice(a.id, now, st.startedAt) end
+	end
+	local cb = {}
+	for _, cat in ipairs(C.ASSET_CATEGORIES) do if byCat[cat] then table.insert(cb, { label = S.assetCats[cat], value = byCat[cat] }) end end
+	if #cb > 0 or #st.history >= 2 then
+		local pc = W.card(parent, { title = S.chart.categories, icon = "▤" })
+		if #cb > 0 then W.bars(pc, cb) end
+		W.chart(pc, series(st, "p"), T.color.sky, 90, { none = S.hist.none, title = S.chart.portfolio })
+	end
+	W.section(parent, S.sec.markets)
 	local card = W.card(parent, { title = S.inv.title, icon = "📈", right = S.inv.portfolio .. " " .. W.fmt(pv) })
 	local ae = L.currentAssetEvent(now)
 	if ae then W.note(card, "📰 " .. S.assetEvents[ae.def.id] .. "  ×" .. W.dec(ae.def.mult, 2), ae.def.mult < 1 and T.color.red or T.color.teal) end
@@ -4377,12 +4824,14 @@ function Screens.invest(ctx, parent)
 		end
 	end
 	if #st.orders > 0 then
+		W.section(parent, S.sec.orders)
 		local oc = W.card(parent, { title = S.inv.orders .. " (" .. #st.orders .. "/" .. C.MAX_ORDERS .. ")", icon = "📑" })
 		for _, o in ipairs(st.orders) do
 			W.row(oc, { title = S.sides[o.side] .. " " .. S.assets[o.asset], sub = S.sides[o.when] .. " " .. W.fmt(o.price), cw = ctx.cw,
 				actions = { { text = S.inv.orderCancel, variant = "danger", onClick = function() ctx.act("cancelOrder", o.id) end } } })
 		end
 	end
+	W.section(parent, S.sec.tools)
 	local arb = W.card(parent, { title = S.inv.arb, icon = "⚖️" })
 	local spread = L.arbitrageSpread(now) * 100
 	W.note(arb, S.inv.arbHint .. " " .. S.f(S.inv.spread, { n = W.dec(spread, 2) }))
@@ -4404,6 +4853,7 @@ end
 -- ───────── hustle ─────────
 function Screens.hustle(ctx, parent)
 	local st, now, L, C, S, W, T = init(ctx)
+	W.section(parent, S.sec.available, S.stats.hustles .. " " .. (st.stats.hustles or 0))
 	local card = W.card(parent, { title = S.hu.title, icon = "🎲" })
 	W.note(card, S.hu.hint)
 	for _, h in ipairs(C.HUSTLES) do
@@ -4417,6 +4867,7 @@ function Screens.hustle(ctx, parent)
 			local c = W.card(parent, { title = S.hustles[h.id], icon = S.hustleIcon[h.id], accent = T.color.magenta, right = S.f(S.hu.round, { a = slot.round + 1, b = C.HUSTLE_PHASES }) })
 			W.note(c, S.f(S.hu.value, { n = W.fmt(slot.value) }) .. " · " .. S.f(S.hu.stake, { n = W.fmt(slot.stake) }), slot.value >= slot.stake and T.color.teal or T.color.red)
 			W.progress(c, slot.round / C.HUSTLE_PHASES, T.color.brand2, 6)
+			if #slot.log >= 2 then W.chart(c, slot.log, T.color.gold, 70, { title = S.hu.title, fmt = function(v) return "×" .. W.dec(v, 2) end }) end
 			if L.hustleDue(slot, h.id, now) then
 				local hint = L.hustleHint(slot, h.id, st.knowledge[h.id] or 0)
 				if hint ~= nil then W.note(c, hint and S.hu.hintUp or S.hu.hintDown, T.color.line) end
@@ -4572,6 +5023,7 @@ end
 -- ───────── history (PC) ─────────
 function Screens.history(ctx, parent)
 	local st, now, L, C, S, W, T = init(ctx)
+	W.section(parent, S.sec.charts)
 	local card = W.card(parent, { title = S.hist.title, icon = "🕘" })
 	local w, p = {}, {}
 	for _, h in ipairs(st.history) do table.insert(w, h.w); table.insert(p, h.p) end
@@ -4580,6 +5032,17 @@ function Screens.history(ctx, parent)
 	if lo then W.note(card, S.f(S.hist.minLabel, { n = W.fmt(lo) }) .. " · " .. S.f(S.hist.maxLabel, { n = W.fmt(hi) }) .. " · " .. S.f(S.hist.nowLabel, { n = W.fmt(L.netWorth(st, now)) })) end
 	W.note(card, S.hist.portfolio, T.color.line)
 	W.chart(card, p, T.color.line, 80, { none = S.hist.none })
+	W.chart(card, series(st, "c"), T.color.sky, 80, { none = S.hist.none, title = S.chart.cash })
+	W.chart(card, series(st, "i"), T.color.amber, 80, { none = S.hist.none, title = S.chart.income })
+	W.section(parent, S.sec.lifetime)
+	local rows = {}
+	for _, k in ipairs(C.STAT_KEYS) do table.insert(rows, { S.stats[k], W.fmt(st.stats[k] or 0) }) end
+	table.insert(rows, { S.stats.earned, W.fmt(st.totalEarned) })
+	table.insert(rows, { S.stats.best, W.fmt(st.best) })
+	table.insert(rows, { S.stats.runs, tostring(st.runs) })
+	table.insert(rows, { S.stats.bankruptcies, tostring(st.bankruptcies) })
+	W.table(W.card(parent, { title = S.sec.lifetime, icon = "▤" }), { S.cmp.metric, "" }, rows, ctx.cw)
+	W.section(parent, S.sec.log)
 	local nc = W.card(parent, { title = S.hist.log, icon = "🗞️" })
 	if #st.news == 0 then W.note(nc, S.hist.none) end
 	for i = #st.news, 1, -1 do
@@ -4780,9 +5243,36 @@ function Screens.dailyCard(ctx, parent, compact)
 end
 
 local KIND_ICON = { shifts = "💼", rank = "🏅", edu = "🎓", companies = "🏭", phase = "🚀", hustles = "🎲", portfolio = "📈", netWorth = "💎", device = "📱" }
+function Screens.missions(ctx, parent)
+	local st, now, L, C, S, W, T = init(ctx)
+	local day = L.missionDay(now)
+	local nextIn = (day + 1) * C.DAY - now
+	local card = W.card(parent, { title = S.sec.missions, icon = "◎", right = S.f(S.missions.refresh, { t = W.dur(nextIn) }) })
+	local list = (st.missions and st.missions.day == day) and st.missions.list or {}
+	if #list == 0 then W.note(card, S.missions.none) end
+	for i, m in ipairs(list) do
+		local d = C.MISSION_BY_ID[m.id]
+		local have = math.min(m.target, L.missionProgress(st, m))
+		local isMoney = d.counter == "earned"
+		local target = isMoney and W.fmt(m.target) or tostring(m.target)
+		local ready = L.missionReady(st, m, now)
+		W.row(card, {
+			title = S.f(S.missions[m.id], { n = target }), icon = string.format("M%d", i), highlight = ready and T.color.gold or nil,
+			sub = S.f(S.goals.progress, { a = isMoney and W.fmt(have) or tostring(math.floor(have)), b = target }),
+			extra = S.f(S.missions.reward, { n = W.fmt(L.missionReward(st, d)), p = d.points }), extraColor = T.color.gold, cw = ctx.cw,
+			actions = { m.claimed and { text = "✓ " .. S.goals.claimed, variant = "ghost", reason = S.err.max } or { text = S.goals.claim, variant = ready and "gold" or "ghost", reason = (not ready) and S.err["not-ready"] or nil, onClick = function() ctx.act("claimMission", i) end } },
+		})
+		W.progress(card, have / math.max(1, m.target), ready and T.color.gold or T.color.line, 6)
+	end
+end
+
 function Screens.goals(ctx, parent)
 	local st, now, L, C, S, W, T = init(ctx)
+	W.section(parent, S.goals.daily)
 	Screens.dailyCard(ctx, parent, false)
+	W.section(parent, S.sec.missions)
+	Screens.missions(ctx, parent)
+	W.section(parent, S.sec.milestones)
 	local list = L.milestoneList(st, now)
 	local claimable, open, finished = {}, {}, {}
 	for _, it in ipairs(list) do
@@ -4818,6 +5308,64 @@ function Screens.goals(ctx, parent)
 		end
 		if #finished == #list then W.note(done, S.goals.allDone, T.color.gold) end
 	end
+end
+
+-- ───────── bank ─────────
+function Screens.bank(ctx, parent)
+	local st, now, L, C, S, W, T = init(ctx)
+	local r = L.rates(st, now)
+	local cap = L.loanCapacity(st, now)
+	W.section(parent, S.sec.accounts, S.f(S.ui.perYear, { n = W.fmt(r.bank) }))
+	local top = W.card(parent, { title = S.bank.title, icon = "◫" })
+	W.note(top, S.bank.hint)
+	local f = W.flow(top)
+	local w = (ctx.m.class == "compact") and math.floor((ctx.cw - 38) / 2) or math.floor((ctx.cw - 50) / 4)
+	W.stat(f, { label = S.bank.savings, value = W.fmt(st.savings), color = T.color.sky, size = UDim2.fromOffset(w, 64), order = 1, icon = "◫" })
+	W.stat(f, { label = S.bank.loan, value = W.fmt(st.loan), color = (st.loan > 0) and T.color.red or T.color.muted, size = UDim2.fromOffset(w, 64), order = 2, icon = "!" })
+	W.stat(f, { label = S.bank.capacity, value = W.fmt(cap), color = T.color.line, size = UDim2.fromOffset(w, 64), order = 3, icon = "↗" })
+	W.stat(f, { label = S.bank.netInterest, value = W.fmt(r.bank), color = (r.bank >= 0) and T.color.gold or T.color.red, size = UDim2.fromOffset(w, 64), order = 4, icon = "%" })
+	local gauges = W.flow(top)
+	local used = (st.loan > 0) and st.loan / math.max(1, st.loan + cap) or 0
+	W.ring(gauges, { size = 84, pct = used, text = math.floor(used * 100) .. "%", color = (used > 0.75) and T.color.red or T.color.line, order = 1 })
+	local g2 = W.new("Frame", { Size = UDim2.fromOffset(math.max(160, ctx.cw - 140), 84), BackgroundTransparency = 1, LayoutOrder = 2 }, gauges)
+	W.new("UIListLayout", { VerticalAlignment = Enum.VerticalAlignment.Center }, g2)
+	W.bars(g2, { { label = S.bank.earn, value = r.savingsInterest, color = T.color.sky }, { label = S.bank.pay, value = -r.loanInterest } }, { h = 20 })
+	W.note(top, S.bank.debtUse .. " · " .. S.bank.protect)
+
+	W.section(parent, S.sec.savings, S.f(S.bank.savingsRate, { n = W.dec(C.BANK_SAVINGS_RATE * 100, 0) }))
+	local sc = W.card(parent, { title = S.bank.savings, icon = "◫", right = W.fmt(st.savings) })
+	local noCash = (st.cash < C.BANK_MIN) and S.err["not-enough-cash"] or nil
+	local noSav = (st.savings < 1) and S.err.nothing or nil
+	W.row(sc, { title = S.bank.deposit, icon = "↓", sub = S.ui.cash .. " " .. W.fmt(st.cash), cw = ctx.cw, actions = {
+		{ text = S.bank.dep10, variant = "ghost", reason = noCash, onClick = function() ctx.act("bankDeposit", st.cash * 0.1) end },
+		{ text = S.bank.dep50, variant = "ghost", reason = noCash, onClick = function() ctx.act("bankDeposit", st.cash * 0.5) end },
+		{ text = S.bank.depAll, variant = "primary", reason = noCash, onClick = function() ctx.act("bankDeposit", st.cash) end },
+	} })
+	W.row(sc, { title = S.bank.withdraw, icon = "↑", sub = S.bank.savings .. " " .. W.fmt(st.savings), cw = ctx.cw, actions = {
+		{ text = S.bank.wd50, variant = "ghost", reason = noSav, onClick = function() ctx.act("bankWithdraw", st.savings * 0.5) end },
+		{ text = S.bank.wdAll, variant = "primary", reason = noSav, onClick = function() ctx.act("bankWithdraw", st.savings) end },
+	} })
+
+	W.section(parent, S.sec.credit, S.f(S.bank.loanRate, { n = W.dec(C.BANK_LOAN_RATE * 100, 0), m = math.floor(C.BANK_LOAN_LTV * 100) }))
+	local lc = W.card(parent, { title = S.bank.loan, icon = "!", accent = (st.loan > 0) and T.color.amber or nil, right = W.fmt(st.loan) })
+	if st.loan <= 0 then W.note(lc, S.bank.noLoan) end
+	local noCap = (cap < C.BANK_MIN) and S.err.locked or nil
+	local function borrow(amount)
+		W.modal(S.bank.borrow, S.f(S.bank.confirmBorrow, { n = W.fmt(amount), r = W.dec(C.BANK_LOAN_RATE * 100, 0) }), {
+			{ text = S.ui.no, variant = "ghost" },
+			{ text = S.bank.borrow, variant = "danger", onClick = function() ctx.act("bankBorrow", amount) end },
+		}, { icon = "!" })
+	end
+	W.row(lc, { title = S.bank.borrow, icon = "+", sub = S.bank.capacity .. " " .. W.fmt(cap), cw = ctx.cw, actions = {
+		{ text = S.bank.borrow25, variant = "ghost", reason = noCap, onClick = function() borrow(cap * 0.25) end },
+		{ text = S.bank.borrowMax, variant = "danger", reason = noCap, onClick = function() borrow(cap) end },
+	} })
+	local noLoan = (st.loan <= 0) and S.err.nothing or ((st.cash < 1) and S.err["not-enough-cash"] or nil)
+	W.row(lc, { title = S.bank.repay, icon = "−", sub = S.bank.loan .. " " .. W.fmt(st.loan), cw = ctx.cw, actions = {
+		{ text = S.bank.repay50, variant = "ghost", reason = noLoan, onClick = function() ctx.act("bankRepay", st.loan * 0.5) end },
+		{ text = S.bank.repayAll, variant = "primary", reason = noLoan, onClick = function() ctx.act("bankRepay", st.loan) end },
+	} })
+	W.progress(lc, used, (used > 0.75) and T.color.red or T.color.amber, 8)
 end
 
 return Screens

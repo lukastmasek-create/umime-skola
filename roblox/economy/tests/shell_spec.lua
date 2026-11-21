@@ -73,7 +73,7 @@ session.state.device = 4
 for _, size in ipairs({ Vector2.new(390, 844), Vector2.new(820, 1180), Vector2.new(1600, 900) }) do
 	gui._p.AbsoluteSize = size
 	push(); tick()
-	for _, tab in ipairs({ "Home", "Work", "Needs", "Business", "Invest", "Hustle", "Compare", "History", "Goals", "Leaders", "Devices", "More" }) do
+	for _, tab in ipairs({ "Home", "Work", "Needs", "Business", "Invest", "Bank", "Hustle", "Compare", "History", "Goals", "Leaders", "Devices", "More" }) do
 		pressText(gui, tab)
 		push(); tick(2)
 	end

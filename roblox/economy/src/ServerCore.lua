@@ -58,6 +58,11 @@ return function(L, C)
 		setPins = function(st, now, list) return L.setPins(st, list) end,
 		claimMilestone = function(st, now, id) return L.claimMilestone(st, id, now) end,
 		claimDaily = function(st, now) return L.claimDaily(st, now) end,
+		bankDeposit = function(st, now, amount) return L.bankDeposit(st, amount, now) end,
+		bankWithdraw = function(st, now, amount) return L.bankWithdraw(st, amount, now) end,
+		bankBorrow = function(st, now, amount) return L.bankBorrow(st, amount, now) end,
+		bankRepay = function(st, now, amount) return L.bankRepay(st, amount, now) end,
+		claimMission = function(st, now, index) return L.claimMission(st, index, now) end,
 	}
 	Core.ACTIONS = ACTIONS
 

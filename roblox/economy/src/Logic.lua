@@ -58,6 +58,12 @@ function L.emptyNeeds()
 	return n
 end
 
+function L.emptyStats()
+	local t = {}
+	for _, k in ipairs(C.STAT_KEYS) do t[k] = 0 end
+	return t
+end
+
 function L.newState(now, runs, best)
 	return {
 		v = C.STATE_VERSION, character = nil, cash = 0, totalEarned = 0, peak = 0, best = best or 0, runs = runs or 0,
@@ -70,9 +76,11 @@ function L.newState(now, runs, best)
 		distressAt = 0, bankruptcies = 0, lastBankruptId = nil, lastBankruptAt = 0,
 		news = {}, startupRound = {}, history = {},
 		-- device progression and device-gated UI preferences (kept across restarts of the economy? no: reset on restart)
-		device = 1, deviceLog = {}, stats = { shifts = 0, hustles = 0 }, watch = {}, views = {}, pins = {},
+		device = 1, deviceLog = {}, stats = L.emptyStats(), watch = {}, views = {}, pins = {},
 		-- v3: milestones claimed (id -> true) and daily login streak
 		milestones = {}, dailyAt = 0, dailyStreak = 0,
+		-- v4: bank balances, daily missions, legacy points (kept across restarts)
+		savings = 0, loan = 0, missions = { day = -1, list = {} }, legacy = 0,
 	}
 end
 
@@ -88,13 +96,24 @@ function L.migrate(raw, now)
 	for _, k in ipairs({ "cash", "totalEarned", "peak", "best", "runs", "energy", "edu", "eduPoints", "dayPay", "orderSeq", "phase", "device" }) do
 		if not isNum(raw[k]) then raw[k] = fresh[k] end
 	end
-	if type(raw.stats) ~= "table" then raw.stats = { shifts = 0, hustles = 0 } end
+	if type(raw.stats) ~= "table" then raw.stats = L.emptyStats() end
 	raw.stats.shifts = isNum(raw.stats.shifts) and raw.stats.shifts or 0
 	raw.stats.hustles = isNum(raw.stats.hustles) and raw.stats.hustles or 0
 	if type(raw.milestones) ~= "table" then raw.milestones = {} end
 	for id in pairs(raw.milestones) do if not C.MILESTONE_BY_ID[id] then raw.milestones[id] = nil end end
 	raw.dailyAt = isNum(raw.dailyAt) and math.min(raw.dailyAt, now) or 0
 	raw.dailyStreak = isNum(raw.dailyStreak) and clamp(math.floor(raw.dailyStreak), 0, C.DAILY_MAX_STREAK) or 0
+	for _, k in ipairs(C.STAT_KEYS) do raw.stats[k] = isNum(raw.stats[k]) and raw.stats[k] or 0 end
+	raw.savings = isNum(raw.savings) and math.max(0, raw.savings) or 0
+	raw.loan = isNum(raw.loan) and math.max(0, raw.loan) or 0
+	if not isNum(raw.legacy) then raw.legacy = ((raw.runs or 0) > 0) and L.legacyFor(raw.best or 0) or 0 end
+	raw.legacy = clamp(math.floor(raw.legacy), 0, C.LEGACY_MAX)
+	if type(raw.missions) ~= "table" or type(raw.missions.list) ~= "table" then raw.missions = { day = -1, list = {} } end
+	for i = #raw.missions.list, 1, -1 do
+		local m = raw.missions.list[i]
+		if type(m) ~= "table" or not C.MISSION_BY_ID[m.id] or not isNum(m.base) or not isNum(m.target) then table.remove(raw.missions.list, i) end
+	end
+	for _, h in ipairs(raw.history) do h.c = isNum(h.c) and h.c or h.w; h.i = isNum(h.i) and h.i or 0 end
 	raw.startedAt = isNum(raw.startedAt) and math.min(raw.startedAt, now) or now
 	raw.lastSeen = isNum(raw.lastSeen) and math.min(raw.lastSeen, now) or now
 	raw.bonusAt = isNum(raw.bonusAt) and math.min(raw.bonusAt, now) or now
@@ -349,11 +368,11 @@ end
 
 function L.rates(state, now)
 	local ch = state.character
-	if not ch then return { salary = 0, companies = 0, passive = 0, living = 0, companyCosts = 0, multiplier = 1, net = 0, dividends = 0 } end
+	if not ch then return { salary = 0, companies = 0, passive = 0, living = 0, companyCosts = 0, multiplier = 1, net = 0, dividends = 0, savingsInterest = 0, loanInterest = 0, bank = 0 } end
 	local city = C.CITY_DEF[ch.city]
 	local family = C.FAMILY_DEF[ch.family]
 	local fx = L.needsEffects(state, now)
-	local multiplier = (1 + L.eduBonus(state.edu)) * fx.income
+	local multiplier = (1 + L.eduBonus(state.edu)) * fx.income * (1 + C.LEGACY_BONUS * (state.legacy or 0))
 	local passiveFactor = state.sickUntil > now and 0 or (state.vacationUntil > now and C.VACATION_PAY or 1)
 	local salary = L.jobHourly(state, now) * C.PASSIVE_SHARE * passiveFactor * (1 - C.PERSONAL_TAX)
 
@@ -385,8 +404,12 @@ function L.rates(state, now)
 	end
 	local living = C.LIVING_BASE * C.COUNTRY_DEF[ch.country].living * city.living * family.living
 	local gross = (salary + companies + passive) * multiplier
+	-- bank interest is paid in cash every tick; it is not boosted by the income multiplier
+	local savingsInterest = (state.savings or 0) * C.BANK_SAVINGS_RATE
+	local loanInterest = (state.loan or 0) * C.BANK_LOAN_RATE
 	return { salary = salary, companies = companies, passive = passive, living = living, companyCosts = costs,
-		multiplier = multiplier, net = gross - costs, dividends = dividends }
+		multiplier = multiplier, net = gross - costs + savingsInterest - loanInterest, dividends = dividends,
+		savingsInterest = savingsInterest, loanInterest = loanInterest, bank = savingsInterest - loanInterest }
 end
 
 function L.portfolioValue(state, now)
@@ -402,8 +425,19 @@ function L.netWorth(state, now)
 		if n > 0 then total += c.cost * n * familyCompany(state) end
 	end
 	for _, slot in pairs(state.hustle) do total += slot.value end
+	total += (state.savings or 0) - (state.loan or 0)
 	return math.round(total)
 end
+
+-- Where the net worth sits (for allocation charts). Values are >= 0 except debt, which is reported positive.
+function L.allocation(state, now)
+	local companies, hustles = 0, 0
+	for _, c in ipairs(C.COMPANIES) do companies += c.cost * (state.companies[c.id] or 0) * familyCompany(state) end
+	for _, slot in pairs(state.hustle) do hustles += slot.value end
+	return { cash = math.max(0, state.cash), savings = state.savings or 0, portfolio = L.portfolioValue(state, now), companies = companies, hustles = hustles, debt = (state.loan or 0) + math.max(0, -state.cash) }
+end
+
+function L.legacyFor(best) return math.min(C.LEGACY_MAX, math.floor(math.sqrt(math.max(0, best) / C.LEGACY_DIVISOR))) end
 
 function L.distressOf(state, now)
 	local any = false
@@ -559,7 +593,7 @@ end
 local function recordHistory(state, now)
 	local last = state.history[#state.history]
 	if last and now - last.t < C.HISTORY_STEP_MS then return end
-	table.insert(state.history, { t = now, w = L.netWorth(state, now), p = math.round(L.portfolioValue(state, now)) })
+	table.insert(state.history, { t = now, w = L.netWorth(state, now), p = math.round(L.portfolioValue(state, now)), c = math.round(state.cash), i = math.round(L.rates(state, now).net) })
 	while #state.history > C.HISTORY_MAX do table.remove(state.history, 1) end
 end
 
@@ -601,8 +635,15 @@ function L.settle(state, now)
 		state.dayPay = 0
 		state.bonusAt = now
 	end
+	-- overdraft protection: savings automatically cover a negative cash balance
+	if state.cash < 0 and (state.savings or 0) > 0 then
+		local cover = math.min(state.savings, -state.cash)
+		state.savings -= cover
+		state.cash += cover
+	end
 	resolveStartups(state, now)
 	fillOrders(state, now - elapsed, now)
+	L.rollMissions(state, now)
 	recordHistory(state, now)
 	withPeak(state, now)
 end
@@ -735,6 +776,7 @@ function L.createCharacter(state, input, now)
 		or not contains(C.ERAS, input.era) or not contains(C.FAMILIES, input.family) then return fail("bad-request") end
 	local fresh = L.newState(now, state.runs, state.best)
 	fresh.dailyAt, fresh.dailyStreak = state.dailyAt or 0, state.dailyStreak or 0 -- the login streak belongs to the player, not the run
+	fresh.legacy = state.legacy or 0
 	for k in pairs(state) do state[k] = nil end
 	for k, v in pairs(fresh) do state[k] = v end
 	state.character = { country = input.country, name = name, city = input.city, era = input.era, family = input.family }
@@ -748,6 +790,7 @@ end
 function L.restart(state, now)
 	local fresh = L.newState(now, state.runs + 1, state.best)
 	fresh.dailyAt, fresh.dailyStreak = state.dailyAt or 0, state.dailyStreak or 0
+	fresh.legacy = math.max(state.legacy or 0, L.legacyFor(state.best)) -- the record becomes permanent income points
 	for k in pairs(state) do state[k] = nil end
 	for k, v in pairs(fresh) do state[k] = v end
 	return true
@@ -764,6 +807,7 @@ function L.buyNeed(state, id, days, now)
 	if not canPayEssential(state, price) then return fail("not-enough-cash") end
 	state.cash -= price
 	state.needs[id] = have + add
+	state.stats.supplies = (state.stats.supplies or 0) + 1
 	withPeak(state, now)
 	return true
 end
@@ -916,6 +960,7 @@ function L.requestPromotion(state, now, rng)
 	local chance = math.min(C.PROMO_MAX, C.PROMO_BASE + C.PROMO_PER_PERF * avgPerf(job.perfs))
 	if rng() * 100 < chance then
 		job.rank += 1; job.rankSince = now; job.promoRetryAt = 0
+		state.stats.promotions = (state.stats.promotions or 0) + 1
 		return true, "promoted"
 	end
 	job.promoRetryAt = now + C.PROMO_RETRY_MS
@@ -953,6 +998,7 @@ function L.investEdu(state, now)
 	local cost = L.eduCost(state.edu)
 	if state.eduPoints < cost then return fail("not-enough-points") end
 	state.eduPoints -= cost
+	state.stats.studies = (state.stats.studies or 0) + 1
 	state.edu += 1
 	return true
 end
@@ -974,6 +1020,7 @@ function L.buyCompany(state, id, now)
 	if not canPay(state, L.companyPrice(state, id)) then return fail("not-enough-cash") end
 	state.cash -= L.companyPrice(state, id)
 	state.companies[id] = n + 1
+	state.stats.companiesBought = (state.stats.companiesBought or 0) + 1
 	withPeak(state, now)
 	return true
 end
@@ -1046,6 +1093,7 @@ function L.buyStock(state, id, amount, now)
 	if not canPayEssential(state, L.batchPrice(id, now) * amount) then return fail("not-enough-cash") end
 	state.cash -= L.batchPrice(id, now) * amount
 	s.stock += amount
+	state.stats.restocks = (state.stats.restocks or 0) + 1
 	withPeak(state, now)
 	return true
 end
@@ -1142,6 +1190,7 @@ function L.buyAsset(state, id, amount, now)
 	local money = math.min(amount, state.cash)
 	if money < 1 then return fail("not-enough-cash") end
 	applyBuy(state, id, money, L.assetPrice(id, now, state.startedAt), now)
+	state.stats.trades = (state.stats.trades or 0) + 1
 	withPeak(state, now)
 	return true, "bought", math.round(money)
 end
@@ -1153,6 +1202,7 @@ function L.sellAsset(state, id, share, now)
 	share = isNum(share) and clamp(share, 0, 1) or 1
 	if share <= 0 then return fail("bad-request") end
 	local money, profit = applySell(state, id, share, L.assetPrice(id, now, state.startedAt))
+	state.stats.trades = (state.stats.trades or 0) + 1
 	withPeak(state, now)
 	return true, "sold", math.round(money), math.round(profit)
 end
@@ -1429,6 +1479,7 @@ function L.claimableCount(state, now)
 		if not state.milestones[m.id] and L.milestoneProgress(state, m, now) >= m.target then n += 1 end
 	end
 	if L.dailyReady(state, now) then n += 1 end
+	for _, m in ipairs(state.missions and state.missions.list or {}) do if L.missionReady(state, m, now) then n += 1 end end
 	return n
 end
 
@@ -1470,6 +1521,107 @@ function L.claimDaily(state, now)
 	state.totalEarned += reward
 	withPeak(state, now)
 	return true, "daily", reward
+end
+
+-- ───────── v4: bank ─────────
+-- Equity = net worth after debt. Total debt may reach BANK_LOAN_LTV x equity.
+function L.loanCapacity(state, now)
+	local equity = math.max(0, L.netWorth(state, now))
+	return math.max(0, C.BANK_LOAN_LTV * equity - (state.loan or 0))
+end
+local function bankAmount(v) return isNum(v) and v > 0 and v <= 1e15 end
+function L.bankDeposit(state, amount, now)
+	if not state.character then return fail("no-character") end
+	if not bankAmount(amount) then return fail("bad-request") end
+	local money = math.min(amount, state.cash)
+	if money < C.BANK_MIN then return fail("not-enough-cash") end
+	state.cash -= money
+	state.savings += money
+	state.stats.deposits = (state.stats.deposits or 0) + 1
+	return true, "deposited", math.round(money)
+end
+function L.bankWithdraw(state, amount, now)
+	if not state.character then return fail("no-character") end
+	if not bankAmount(amount) then return fail("bad-request") end
+	local money = math.min(amount, state.savings)
+	if money < 1 then return fail("nothing") end
+	state.savings -= money
+	state.cash += money
+	return true, "withdrawn", math.round(money)
+end
+function L.bankBorrow(state, amount, now)
+	if not state.character then return fail("no-character") end
+	if not bankAmount(amount) then return fail("bad-request") end
+	local money = math.min(amount, L.loanCapacity(state, now))
+	if money < C.BANK_MIN then return fail("locked") end
+	state.loan += money
+	state.cash += money
+	return true, "borrowed", math.round(money)
+end
+function L.bankRepay(state, amount, now)
+	if not state.character then return fail("no-character") end
+	if not bankAmount(amount) then return fail("bad-request") end
+	if state.loan <= 0 then return fail("nothing") end
+	local money = math.min(amount, state.loan, math.max(0, state.cash))
+	if money < 1 then return fail("not-enough-cash") end
+	state.loan -= money
+	if state.loan < 0.5 then state.loan = 0 end
+	state.cash -= money
+	return true, "repaid", math.round(money)
+end
+
+-- ───────── v4: daily missions ─────────
+local function counterValue(state, key)
+	if key == "earned" then return state.totalEarned or 0 end
+	return state.stats[key] or 0
+end
+L.counterValue = counterValue
+function L.missionDay(now) return math.floor(now / C.DAY) end
+function L.missionTarget(state, def)
+	if def.livingHours then return math.max(100, math.round(L.livingCost(state) * def.livingHours)) end
+	return def.target
+end
+function L.missionReward(state, def) return math.max(25, math.round(L.livingCost(state) * def.hours)) end
+-- Picks today's missions once per day (server tick). Deterministic per day, skipping ones that can't be done.
+function L.rollMissions(state, now)
+	if not state.character then return end
+	local day = L.missionDay(now)
+	if state.missions.day == day then return end
+	local hasCompany = next(state.companies) ~= nil
+	local pool = {}
+	for _, d in ipairs(C.MISSION_POOL) do
+		if not d.needsCompany or hasCompany then table.insert(pool, d) end
+	end
+	table.sort(pool, function(a, b) return hash32("mission:" .. day .. ":" .. a.id) < hash32("mission:" .. day .. ":" .. b.id) end)
+	local list = {}
+	for i = 1, math.min(C.MISSIONS_PER_DAY, #pool) do
+		local d = pool[i]
+		table.insert(list, { id = d.id, base = counterValue(state, d.counter), target = L.missionTarget(state, d), claimed = false })
+	end
+	state.missions = { day = day, list = list }
+end
+function L.missionProgress(state, m)
+	local d = C.MISSION_BY_ID[m.id]
+	return math.max(0, counterValue(state, d.counter) - m.base)
+end
+function L.missionReady(state, m, now)
+	return not m.claimed and state.missions.day == L.missionDay(now) and L.missionProgress(state, m) >= m.target
+end
+function L.claimMission(state, index, now)
+	if not state.character then return fail("no-character") end
+	if not isInt(index) then return fail("bad-request") end
+	local m = state.missions.list[index]
+	if not m or state.missions.day ~= L.missionDay(now) then return fail("nothing") end
+	if m.claimed then return fail("max") end
+	if L.missionProgress(state, m) < m.target then return fail("locked") end
+	local d = C.MISSION_BY_ID[m.id]
+	local reward = L.missionReward(state, d)
+	m.claimed = true
+	state.cash += reward
+	state.totalEarned += reward
+	state.eduPoints += d.points
+	withPeak(state, now)
+	return true, "mission", reward
 end
 
 return L
