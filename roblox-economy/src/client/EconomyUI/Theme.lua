@@ -13,7 +13,7 @@ T.color = {
 	tileA = hex("B0185F"), tileB = hex("1D5FB8"), tileC = hex("B5560E"), tileD = hex("7A1FA8"), tileE = hex("0F8F82"), tileF = hex("3A2FB5"),
 }
 T.font = {
-	display = Enum.Font.Arvo, head = Enum.Font.Arvo, caps = Enum.Font.Code,
+	display = Enum.Font.GothamBlack, head = Enum.Font.GothamBold, caps = Enum.Font.Code,
 	body = Enum.Font.BuilderSansMedium, bold = Enum.Font.BuilderSansBold, mono = Enum.Font.RobotoMono,
 }
 T.size = { caption = 12, body = 14, label = 16, title = 22, display = 30 }
