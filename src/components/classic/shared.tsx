@@ -10,7 +10,7 @@ import { getAvatarModel } from "@/lib/avatars3d";
 import { useAccount } from "@/lib/use-account";
 
 // Která hra, kurz a obtížnost se hraje: FinishCard podle toho ukládá osobní rekord.
-export type ClassicSession = { game: string; course: string; level: number; newBestLabel: string; bestLabel: string };
+export type ClassicSession = { game: string; course: string; level: number; newBestLabel: string; bestLabel: string; controls?: string };
 export const ClassicSessionContext = createContext<ClassicSession | null>(null);
 
 export type AnswerResult = { id: string; correct: boolean };
@@ -42,27 +42,25 @@ export function GameFrame({
   stats?: { label: string; value: string }[];
   children: ReactNode;
 }) {
+  const session = useContext(ClassicSessionContext);
   return (
-    <div className="fs-classic flex flex-col gap-5">
-      <div>
-        <Link href={backHref} className="text-sm font-medium text-[var(--faint)] hover:text-[var(--foreground)]">
+    <div className="fs-classic gq-frame">
+      <div className="gq-bar">
+        <Link href={backHref} className="gq-back">
           {backLabel}
         </Link>
-        <h1 className="mt-2 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+        <h1 style={{ fontFamily: "var(--font-heading)" }} title={intro}>
           {title}
         </h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">{intro}</p>
+        {stats?.map((s) => (
+          <span key={s.label} className="gq-stat">
+            <small>{s.label}</small>
+            <span className="tabular-nums">{s.value}</span>
+          </span>
+        ))}
       </div>
-      {stats && (
-        <div className="flex flex-wrap gap-2">
-          {stats.map((s) => (
-            <span key={s.label} className="pill bg-[var(--surface-muted)] px-3 py-1.5 text-sm font-semibold">
-              {s.label}: <span className="tabular-nums">{s.value}</span>
-            </span>
-          ))}
-        </div>
-      )}
       {children}
+      {session?.controls && <p className="gq-hint">⌨️ {session.controls}</p>}
     </div>
   );
 }

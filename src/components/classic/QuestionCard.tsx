@@ -1,10 +1,13 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import type { Shuffled } from "@/lib/classic-games";
+import { sfx } from "@/lib/game-fx";
 
 const LETTERS = ["A", "B", "C", "D"];
 
-// Otázka se čtyřmi možnostmi. Po výběru (`picked`) se správná odpověď zvýrazní zeleně a špatná červeně.
+// Otázka se čtyřmi možnostmi na pevné čitelné kartě. Po výběru (`picked`) se správná odpověď
+// zvýrazní zeleně (✓), špatná červeně (✗), ozve se zvuk a na mobilu krátce zavibruje.
 export function QuestionCard({
   q,
   picked,
@@ -12,6 +15,8 @@ export function QuestionCard({
   onPick,
   disabled = false,
   votes,
+  streak = 0,
+  note,
 }: {
   q: Shuffled;
   picked: number | null;
@@ -19,52 +24,71 @@ export function QuestionCard({
   onPick: (i: number) => void;
   disabled?: boolean;
   votes?: number[];
+  streak?: number;
+  // Doplněk ke špatné odpovědi (třeba ztracený čas).
+  note?: string;
 }) {
+  const revealed = picked !== null;
+  const wasRevealed = useRef(false);
+  useEffect(() => {
+    if (revealed && !wasRevealed.current) {
+      const ok = picked === q.correct;
+      sfx(ok ? "correct" : "wrong");
+      try {
+        navigator.vibrate?.(ok ? 25 : [60, 40, 60]);
+      } catch {
+        /* vibrace nejsou k dispozici */
+      }
+    }
+    wasRevealed.current = revealed;
+  }, [revealed, picked, q.correct]);
+
+  const ok = revealed && picked === q.correct;
   return (
-    <div className="flex flex-col gap-3">
-      <p className="text-lg font-bold sm:text-xl" style={{ fontFamily: "var(--font-heading)" }}>
-        {q.prompt}
-      </p>
-      {q.image && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img loading="lazy" decoding="async" src={q.image} alt="" className="max-h-56 w-auto max-w-full self-start rounded-xl border border-[var(--border)] object-contain" />
-      )}
-      <div className="grid gap-2 sm:grid-cols-2">
+    <div className="gq-body">
+      <div className="gq-card gq-q">
+        {streak >= 2 && (
+          <span key={streak} className="gq-combo">
+            🔥 {streak}×
+          </span>
+        )}
+        <p>{q.prompt}</p>
+        {q.image && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img loading="lazy" decoding="async" src={q.image} alt="" className="max-h-40 w-auto max-w-full rounded-xl object-contain" />
+        )}
+      </div>
+      <div className="gq-opts">
         {q.options.map((opt, i) => {
           const gone = hidden.includes(i);
-          const revealed = picked !== null;
-          const style: React.CSSProperties = revealed
-            ? i === q.correct
-              ? { borderColor: "#2ea36b", background: "rgba(126,224,176,0.35)" }
-              : i === picked
-                ? { borderColor: "#ff5d73", background: "rgba(255,93,115,0.18)" }
-                : { opacity: 0.55 }
-            : {};
+          const state = revealed ? (i === q.correct ? "is-right" : i === picked ? "is-wrong" : "is-dim") : "";
           return (
             <button
               key={i}
               type="button"
               disabled={disabled || revealed || gone}
               onClick={() => onPick(i)}
-              className={`card relative flex min-h-14 items-center gap-3 overflow-hidden p-3 text-left text-sm font-semibold transition hover:-translate-y-0.5 sm:text-base ${gone ? "invisible" : ""}`}
-              style={style}
+              className={`gq-opt ${state} ${gone ? "invisible" : ""}`}
             >
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--surface-muted)] text-xs font-extrabold">
+              <span className="gq-key" aria-hidden>
                 {LETTERS[i]}
               </span>
               <span className="relative z-10">{opt}</span>
               {votes && !revealed && (
-                <span
-                  aria-hidden
-                  className="absolute inset-y-0 left-0 bg-[var(--accent-500)]/20"
-                  style={{ width: `${votes[i]}%` }}
-                />
+                <span aria-hidden className="absolute inset-y-0 left-0 bg-[var(--accent-500)]/20" style={{ width: `${votes[i]}%` }} />
               )}
               {votes && !revealed && <span className="relative z-10 ml-auto text-xs tabular-nums text-[var(--muted)]">{votes[i]} %</span>}
+              {revealed && i === q.correct && <span className="gq-mark" aria-label="✓">✓</span>}
+              {revealed && i === picked && i !== q.correct && <span className="gq-mark" aria-label="✗">✗</span>}
             </button>
           );
         })}
       </div>
+      {revealed && (
+        <p className={`gq-feedback ${ok ? "ok" : "bad"}`} role="status">
+          {ok ? "✓" : `✗ → ${q.options[q.correct]}${note ? ` · ${note}` : ""}`}
+        </p>
+      )}
     </div>
   );
 }

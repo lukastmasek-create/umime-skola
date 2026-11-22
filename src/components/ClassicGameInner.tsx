@@ -114,8 +114,8 @@ export function ClassicGameInner({
   }
 
   return (
-    <ClassicSessionContext.Provider value={{ game, course: courseSlug, level: difficulty, newBestLabel: ui.newBest, bestLabel: ui.bestSoFar }}>
-      <div className="arena-stage p-3 sm:p-6">
+    <ClassicSessionContext.Provider value={{ game, course: courseSlug, level: difficulty, newBestLabel: ui.newBest, bestLabel: ui.bestSoFar, controls: t.controls[game] }}>
+      <div className="arena-stage arena-playing p-3 sm:p-6">
         <ArenaBackdrop variant={arenaKey(game)} />
         <ClassicGameBody t={t} game={game} questions={questions} difficulty={difficulty} backHref={backHref} />
       </div>

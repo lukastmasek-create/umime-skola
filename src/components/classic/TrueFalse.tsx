@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { ClassicText } from "@/i18n/classic";
 import type { GameQuestion } from "@/i18n/game";
 import { toStatements, type Statement } from "@/lib/classic-games";
+import { sfx } from "@/lib/game-fx";
 import { FinishCard, GameFrame, xpFor, type AnswerResult } from "./shared";
 
 const PENALTY = 3;
@@ -64,6 +65,12 @@ export function TrueFalse({
     const ok = says === s.truth;
     if (s.id) setResults((r) => [...r, { id: s.id as string, correct: ok }]);
     setFeedback({ ok, s });
+    sfx(ok ? "correct" : "wrong");
+    try {
+      navigator.vibrate?.(ok ? 25 : [60, 40, 60]);
+    } catch {
+      /* bez vibrací */
+    }
     if (ok) {
       setRight((n) => n + 1);
       const next = streak + 1;
@@ -167,46 +174,50 @@ export function TrueFalse({
           )}
         </FinishCard>
       ) : (
-        <div className="card flex flex-col gap-5 p-5">
-          <div className="relative h-3 overflow-hidden rounded-full bg-[var(--surface-muted)]" aria-hidden>
+        <div className="gq-body">
+          <div className="h-4 overflow-hidden rounded-full bg-[var(--surface-muted)]" aria-hidden>
             <div className="h-full rounded-full transition-[width] duration-200" style={{ width: `${pct}%`, background: pct < 25 ? "#ff5d73" : "var(--accent-500)" }} />
           </div>
           {bonusPop > 0 && (
-            <span key={bonusPop} className="tf-bonus self-center rounded-full bg-[var(--accent-yellow)] px-3 py-1 text-sm font-extrabold text-[#16132b]">
+            <span key={bonusPop} className="gq-combo">
               +{BONUS} s ⏱️
+            </span>
+          )}
+          {streak >= 2 && !feedback && (
+            <span key={streak} className="gq-combo">
+              🔥 {streak}×
             </span>
           )}
           {s && (
             <div
               key={index}
-              className="tf-card flex min-h-48 flex-col items-center justify-center gap-4 rounded-3xl border-4 p-6 text-center transition-colors"
+              className="gq-card gq-q"
               style={{
-                borderColor: feedback ? (feedback.ok ? "#2ea36b" : "#ff5d73") : "var(--edge)",
-                background: feedback ? (feedback.ok ? "rgba(126,224,176,0.25)" : "rgba(255,93,115,0.15)") : "var(--surface-muted)",
+                borderColor: feedback ? (feedback.ok ? "var(--gq-ok)" : "var(--gq-bad)") : undefined,
+                background: feedback ? (feedback.ok ? "color-mix(in srgb, var(--gq-ok) 30%, var(--gq-bg))" : "color-mix(in srgb, var(--gq-bad) 28%, var(--gq-bg))") : undefined,
               }}
             >
               <p className="text-xs font-bold uppercase tracking-wide text-[var(--faint)]">{t.tf.question}</p>
-              <p className="text-lg font-bold sm:text-xl" style={{ fontFamily: "var(--font-heading)" }}>
-                {s.question}
-              </p>
+              <p>{s.question}</p>
               <p className="text-xs font-bold uppercase tracking-wide text-[var(--faint)]">{t.tf.claim}</p>
-              <p className="rounded-2xl bg-[var(--surface)] px-5 py-2 text-2xl font-extrabold">{s.shown}</p>
-              {feedback && !feedback.ok && (
-                <p className="text-sm font-semibold">
-                  {feedback.s.truth ? t.tf.wasTrue : `${t.tf.wasLie} · ✓ ${feedback.s.correct}`} · −{PENALTY} s
+              <p className="rounded-2xl bg-white/10 px-5 py-2 text-2xl font-extrabold sm:text-3xl">{s.shown}</p>
+              {feedback && (
+                <p className="gq-feedback w-full" style={{ fontSize: "1.1rem" }}>
+                  {feedback.ok ? "✓" : `✗ ${feedback.s.truth ? t.tf.wasTrue : `${t.tf.wasLie} · ✓ ${feedback.s.correct}`} · −${PENALTY} s`}
                 </p>
               )}
             </div>
           )}
-          <div className="grid grid-cols-2 gap-3">
-            <button type="button" onClick={() => answer(false)} className="btn-bouncy rounded-2xl bg-[#ff5d73] py-5 text-xl font-extrabold text-white">
+          <div className="gq-big">
+            <button type="button" onClick={() => answer(false)} style={{ background: "#e8445a" }}>
               ✗ {t.tf.lie}
+              <small>← L</small>
             </button>
-            <button type="button" onClick={() => answer(true)} className="btn-bouncy rounded-2xl bg-[#22c55e] py-5 text-xl font-extrabold text-white">
+            <button type="button" onClick={() => answer(true)} style={{ background: "#1fa84f" }}>
               ✓ {t.tf.truth}
+              <small>→ P</small>
             </button>
           </div>
-          <p className="text-center text-xs text-[var(--faint)]">⌨️ {t.tf.keys}</p>
         </div>
       )}
     </GameFrame>

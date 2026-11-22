@@ -165,19 +165,14 @@ export function Blitz({
           )}
         </FinishCard>
       ) : (
-        <div className="card flex flex-col gap-4 p-5">
-          <div className="h-3 overflow-hidden rounded-full bg-[var(--surface-muted)]" aria-hidden>
+        <div className="gq-body">
+          <div className="h-4 overflow-hidden rounded-full bg-[var(--surface-muted)]" aria-hidden>
             <div
               className="h-full rounded-full transition-[width] duration-200"
               style={{ width: `${pct}%`, background: pct < 25 ? "#ff5d73" : "var(--accent-500)" }}
             />
           </div>
-          {q && <QuestionCard q={q} picked={picked} onPick={pick} />}
-          {picked !== null && picked !== q?.correct && q && (
-            <p className="text-sm font-semibold text-[#ff5d73]">
-              {t.quiz.wrongAnswer} −{PENALTY} s · {t.quiz.correctWas}: {q.options[q.correct]}
-            </p>
-          )}
+          {q && <QuestionCard q={q} picked={picked} onPick={pick} streak={streak} note={`−${PENALTY} s`} />}
         </div>
       )}
     </GameFrame>
