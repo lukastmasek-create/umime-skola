@@ -18,6 +18,7 @@ export const Outro = () => {
           fontFamily: HEADING,
           fontWeight: 800,
           fontSize: 84,
+          textShadow: `0 0 30px ${C.yellow}99`,
           color: C.yellow,
           opacity: url,
           transform: `translateY(${(1 - url) * 30}px)`,

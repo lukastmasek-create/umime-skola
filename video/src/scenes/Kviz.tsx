@@ -1,64 +1,100 @@
-import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Easing, interpolate, useCurrentFrame } from "remotion";
 import { C } from "../theme";
 import { BODY, HEADING } from "../fonts";
+import { Glass, Neon, Toast } from "../ui";
 
-const CARDS = [
-  { q: "7 × 8 = ?", a: "56", color: C.coral, x: -520, y: -300, r: -8 },
-  { q: "Vlastní jména píšeme…", a: "velkým", color: C.yellow, x: 480, y: -310, r: 6 },
-  { q: "Voda vře při…", a: "100 °C", color: C.green, x: -380, y: 300, r: 5 },
-  { q: "Hauptstadt von Spanien?", a: "Madrid", color: C.blue, x: 440, y: 310, r: -6 },
+const OPTIONS = [
+  { t: "54", x: 0 },
+  { t: "56", x: 1 },
+  { t: "64", x: 2 },
 ];
+const CLICK = 78;
+const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
 export const Kviz = () => {
   const f = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const xp = Math.round(interpolate(f, [20, 170], [0, 12480], { easing: Easing.out(Easing.cubic), extrapolateLeft: "clamp", extrapolateRight: "clamp" }));
-  const out = interpolate(f, [190, 210], [1, 0], { extrapolateLeft: "clamp" });
+  const correct = f >= CLICK;
+  // Kurzor jede k odpovědi „56“ a klikne.
+  const cx = interpolate(f, [30, CLICK], [1450, 960], { easing: Easing.bezier(0.3, 0, 0.2, 1), ...clamp });
+  const cy = interpolate(f, [30, CLICK], [900, 555], { easing: Easing.bezier(0.3, 0, 0.2, 1), ...clamp });
+  const press = interpolate(f, [CLICK - 3, CLICK, CLICK + 6], [1, 0.8, 1], clamp);
+  const xp = Math.round(interpolate(f, [CLICK + 8, CLICK + 70], [0, 12480], { easing: Easing.out(Easing.cubic), ...clamp }));
 
   return (
-    <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity: out }}>
-      {CARDS.map((c, i) => {
-        const s = spring({ frame: f - i * 12, fps, config: { damping: 11, stiffness: 120 } });
-        const answered = f > i * 12 + 36;
-        const float = Math.sin((f + i * 20) / 22) * 10;
-        return (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              width: 520,
-              padding: "36px 40px",
-              borderRadius: 28,
-              background: C.paper,
-              color: C.ink,
-              border: `5px solid ${C.ink}`,
-              boxShadow: `10px 10px 0 ${c.color}`,
-              fontFamily: BODY,
-              fontWeight: 700,
-              fontSize: 40,
-              transform: `translate(${c.x}px, ${c.y + float + (1 - s) * 500}px) rotate(${c.r * s}deg) scale(${s})`,
-            }}
-          >
-            <div>{c.q}</div>
-            <div
-              style={{
-                marginTop: 18,
-                fontFamily: HEADING,
-                fontWeight: 800,
-                fontSize: 64,
-                color: answered ? c.color : "transparent",
-                filter: answered ? "none" : "blur(12px)",
-              }}
-            >
-              {answered ? c.a : "?"}
+    <AbsoluteFill style={{ alignItems: "center" }}>
+      <div style={{ marginTop: 60 }}>
+        <Neon size={110} delay={6} color="#ffe9a8" glow={C.yellow}>
+          Kurzy ke každému předmětu.
+        </Neon>
+      </div>
+      <div style={{ position: "absolute", top: 230 }}>
+        <Glass width={1000} height={450}>
+          <div style={{ padding: "80px 70px 0", fontFamily: BODY, fontWeight: 700, color: C.paper }}>
+            <div style={{ fontSize: 66, textAlign: "center", marginBottom: 50 }}>7 × 8 = ?</div>
+            <div style={{ display: "flex", gap: 36, justifyContent: "center" }}>
+              {OPTIONS.map((o) => {
+                const good = o.x === 1 && correct;
+                return (
+                  <div
+                    key={o.t}
+                    style={{
+                      width: 260,
+                      padding: "28px 0",
+                      textAlign: "center",
+                      fontFamily: HEADING,
+                      fontWeight: 800,
+                      fontSize: 62,
+                      borderRadius: 22,
+                      background: good ? C.green : "rgba(255,255,255,0.08)",
+                      border: `2px solid ${good ? C.green : "rgba(255,255,255,0.2)"}`,
+                      boxShadow: good ? `0 0 40px ${C.green}aa` : "none",
+                      transform: good ? `scale(${1 + 0.06 * Math.sin(Math.min(f - CLICK, 12) / 12 * Math.PI)})` : "none",
+                    }}
+                  >
+                    {o.t}
+                  </div>
+                );
+              })}
             </div>
           </div>
-        );
-      })}
-      <div style={{ textAlign: "center", fontFamily: HEADING, fontWeight: 800, color: C.paper }}>
-        <div style={{ fontSize: 190, color: C.yellow, letterSpacing: -4 }}>{xp.toLocaleString("cs-CZ")}</div>
-        <div style={{ fontSize: 64 }}>XP</div>
+        </Glass>
       </div>
+      <div style={{ position: "absolute", top: 720 }}>
+        <Toast title="Správně!" sub={`+50 XP · celkem ${xp.toLocaleString("cs-CZ")}`} delay={CLICK + 4} />
+      </div>
+      <div style={{ position: "absolute", bottom: 50, display: "flex", gap: 18 }}>
+        {["Matematika", "Čeština", "Fyzika", "Dějepis", "Angličtina", "Chemie"].map((t, i) => {
+          const k = interpolate(f, [12 + i * 5, 30 + i * 5], [0, 1], clamp);
+          return (
+            <div
+              key={t}
+              style={{
+                padding: "12px 26px",
+                borderRadius: 40,
+                fontFamily: BODY,
+                fontWeight: 700,
+                fontSize: 30,
+                color: C.paper,
+                background: "rgba(255,255,255,0.1)",
+                border: "2px solid rgba(255,255,255,0.22)",
+                opacity: k,
+                transform: `translateY(${(1 - k) * 30}px)`,
+              }}
+            >
+              {t}
+            </div>
+          );
+        })}
+      </div>
+      {/* kurzor */}
+      <svg
+        width="54"
+        height="54"
+        viewBox="0 0 24 24"
+        style={{ position: "absolute", left: cx, top: cy, transform: `scale(${press})`, filter: "drop-shadow(0 4px 8px rgba(0,0,0,.6))" }}
+      >
+        <path d="M4 2l16 9-7 2-3 7z" fill="#fff" stroke="#16132b" strokeWidth="1.5" strokeLinejoin="round" />
+      </svg>
     </AbsoluteFill>
   );
 };

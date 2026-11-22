@@ -5,7 +5,7 @@ import font from "three/examples/fonts/helvetiker_bold.typeface.json";
 import { C } from "../theme";
 
 const LETTERS = "HRAJ.".split("");
-const COLORS = [C.coral, C.yellow, C.green, C.blue, C.paper];
+const COLORS = [C.coral, C.yellow, C.green, C.blue, C.yellow];
 
 // 3D písmena, každé přilétne z jiné strany; kamera proletí skrz.
 export const Hraj3D = () => {
@@ -13,21 +13,19 @@ export const Hraj3D = () => {
   const { width, height } = useVideoConfig();
 
   const ease = Easing.bezier(0.16, 1, 0.3, 1);
-  const camZ = interpolate(f, [0, 150, 210], [14, 9, -2], {
+  const camZ = interpolate(f, [0, 120, 170], [14, 9, -2], {
     easing: ease,
     extrapolateRight: "clamp",
   });
   const camX = interpolate(f, [0, 210], [-3, 2]);
-  const fade = interpolate(f, [180, 210], [1, 0], { extrapolateLeft: "clamp" });
 
   return (
-    <AbsoluteFill style={{ opacity: fade }}>
+    <AbsoluteFill>
       <ThreeCanvas
         width={width}
         height={height}
         camera={{ position: [camX, 0.6, camZ], fov: 40 }}
       >
-        <color attach="background" args={[C.bg]} />
         <ambientLight intensity={0.8} />
         <directionalLight position={[6, 8, 8]} intensity={2.4} />
         <pointLight position={[-6, -2, 4]} intensity={60} color={C.brand} />

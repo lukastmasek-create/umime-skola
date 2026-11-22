@@ -12,11 +12,10 @@ export const NudaHraj = () => {
   const blur = interpolate(slam, [0, 1], [24, 0]);
   const strike = interpolate(f, [42, 54], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   const glitch = f > 54 ? Math.sin(f * 9.1) * (90 - f) * 1.2 : 0;
-  const out = interpolate(f, [70, 90], [1, 0], { extrapolateLeft: "clamp" });
   const shake = f < 14 ? Math.sin(f * 7) * (14 - f) * 1.4 : 0;
 
   return (
-    <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", opacity: out }}>
+    <AbsoluteFill style={{ alignItems: "center", justifyContent: "center" }}>
       <div
         style={{
           position: "relative",

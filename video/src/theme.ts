@@ -18,9 +18,11 @@ export const DURATION = 30 * FPS;
 
 // Scény: [start, délka] ve snímcích.
 export const S = {
-  nuda: [0, 90],
-  hraj: [90, 210],
-  mesto: [300, 270],
-  kviz: [570, 210],
-  outro: [780, 120],
+  nuda: [0, 100],
+  hraj: [90, 170],
+  kurzy: [250, 180],
+  materialy: [420, 150],
+  code: [560, 150],
+  scratch: [700, 130],
+  outro: [820, 80],
 } as const;
