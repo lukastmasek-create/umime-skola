@@ -8,7 +8,8 @@ export function IntroSteps({ locale, controls, light = false }: { locale: string
   const t = getClassicText((locale as Locale) ?? "cs");
   const steps = t.introSteps ?? getClassicText("en").introSteps ?? ["", ""];
   // Na malé obrazovce stačí první věta ovládání.
-  const short = controls.replace(/^[^:]{1,15}:\s*/, "").split(/(?<=[.!?])\s|,\s/)[0].replace(/[.,]$/, "");
+  const parts = controls.replace(/^[^:]{1,15}:\s*/, "").split(/(?<=[.!?])\s|,\s/);
+  const short = (parts[0] + (parts[1] && /prst|touch|tap|dot|finger/i.test(parts[1]) && parts[0].length + parts[1].length < 60 ? ", " + parts[1] : "")).replace(/[.,]$/, "");
   const items = [
     { icon: "👀", text: steps[0] },
     { icon: "👆", text: short },
