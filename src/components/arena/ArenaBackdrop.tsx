@@ -159,3 +159,16 @@ export function ArenaBackdrop({ variant = "neutral", className = "" }: { variant
     </div>
   );
 }
+
+/** Barva pozadí podle hry (akční hry; klasické berou barvu podle pořadí). */
+export const GAME_ARENA: Record<string, ArenaKey> = {
+  "space-invaders": "survival",
+  "pac-man": "gold",
+  snake: "race",
+  breakout: "quiz",
+  tetris: "teams",
+  mole: "streak",
+  ninja: "survival",
+  minesweeper: "quiz",
+  runner: "race",
+};

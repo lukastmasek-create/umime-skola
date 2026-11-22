@@ -17,6 +17,7 @@ import {
   type RunnerBossQuestion,
   type RunnerPlan,
 } from "@/lib/runner";
+import { ArenaBackdrop, GAME_ARENA } from "@/components/arena/ArenaBackdrop";
 import { GameFrame, type AnswerResult } from "./classic/shared";
 
 const TXT = {
@@ -1968,6 +1969,8 @@ export function RunnerGame({
   const stars = runnerStars(right, results.length);
 
   return (
+    <div className="arena-stage p-3 sm:p-6">
+      <ArenaBackdrop variant={GAME_ARENA.runner} />
     <GameFrame
       title={t.title}
       intro={t.intro}
@@ -1984,7 +1987,7 @@ export function RunnerGame({
             ]
       }
     >
-      <div className="card p-3 sm:p-4">
+      <div className="arena-panel" style={{ padding: 12 }}>
         <div
           ref={hostRef}
           className="relative h-[min(78vh,720px)] min-h-[480px] w-full touch-none select-none overflow-hidden rounded-2xl"
@@ -2030,7 +2033,7 @@ export function RunnerGame({
               <button
                 type="button"
                 onClick={() => api.current?.start()}
-                className="rounded-2xl bg-[var(--brand-500)] px-8 py-3 text-lg font-bold text-white shadow-md transition-transform hover:scale-[1.03] focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[var(--brand-500)]"
+                className="arena-btn"
               >
                 {t.start}
               </button>
@@ -2071,7 +2074,7 @@ export function RunnerGame({
                   <button
                     type="button"
                     onClick={() => api.current?.next()}
-                    className="shrink-0 rounded-xl bg-[#3248f0] px-5 py-2 font-bold text-white"
+                    className="arena-btn shrink-0"
                   >
                     {t.next}
                   </button>
@@ -2100,10 +2103,10 @@ export function RunnerGame({
                 </span>
               </div>
               <div className="flex flex-wrap justify-center gap-3">
-                <button type="button" onClick={restart} className="rounded-2xl bg-white px-6 py-3 font-bold text-[#2336d1]">
+                <button type="button" onClick={restart} className="arena-btn">
                   {t.again}
                 </button>
-                <Link href={backHref} className="rounded-2xl border-2 border-white/70 px-6 py-3 font-bold text-white">
+                <Link href={backHref} className="arena-btn arena-btn-ghost">
                   {t.back}
                 </Link>
               </div>
@@ -2113,5 +2116,6 @@ export function RunnerGame({
         <p className="mt-3 text-center text-xs text-[#c9c3e0]">{t.controls}</p>
       </div>
     </GameFrame>
+    </div>
   );
 }

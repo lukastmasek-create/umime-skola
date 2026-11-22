@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { ArenaBackdrop, GAME_ARENA } from "@/components/arena/ArenaBackdrop";
 import { SpaceEngine, GAME_HEIGHT, GAME_WIDTH, type EngineConfig } from "@/lib/space-engine";
 import { PacmanEngine } from "@/lib/pacman-engine";
 import { SnakeEngine } from "@/lib/snake-engine";
@@ -175,7 +176,7 @@ function UpgradeShop({
   return (
     <div className="flex flex-col gap-2">
       <p className="text-sm font-semibold">
-        🛠️ {t.upgrades} · {t.courseCoins}: <span className="text-[var(--brand-600)]">{coins}</span>
+        🛠️ {t.upgrades} · {t.courseCoins}: <span className="text-[#ffc933]">{coins}</span>
       </p>
       <div className="grid gap-2 sm:grid-cols-3">
         {(Object.keys(names) as UpgradeKey[]).map((key) => {
@@ -729,7 +730,8 @@ export function SpaceQuizGame({
   }
 
   return (
-    <div className="fs-game card flex flex-col gap-4 p-5">
+    <div className="fs-game arena-stage flex flex-col gap-4 p-4 sm:p-6">
+      <ArenaBackdrop variant={GAME_ARENA[game] ?? "neutral"} />
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="fs-title">
           <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
@@ -787,13 +789,13 @@ export function SpaceQuizGame({
       </div>
 
       {(phase === "playing" || phase === "explain") && question && (
-        <p className="rounded-xl bg-[var(--brand-50)] px-4 py-3 text-lg font-bold text-[var(--brand-700)]">
+        <p className="arena-panel text-lg font-black" style={{ padding: "12px 18px", borderColor: "rgba(255,201,51,.55)" }}>
           {question.prompt}
         </p>
       )}
 
       {phase === "playing" && qIndex === 0 && !paused && (
-        <p className="fs-tip rounded-xl bg-[var(--surface-muted)] px-4 py-2 text-xs text-[var(--muted)]">⌨️ {t.controls}</p>
+        <p className="fs-tip arena-panel text-xs text-[var(--muted)]" style={{ padding: "8px 14px", borderRadius: 14 }}>⌨️ {t.controls}</p>
       )}
 
       {phase === "playing" && hintOut && question && (
@@ -802,7 +804,7 @@ export function SpaceQuizGame({
         </p>
       )}
 
-      <div className="fs-stage relative overflow-hidden rounded-2xl border-2 border-[var(--border-soft)]">
+      <div className="fs-stage arena-screen relative overflow-hidden rounded-2xl">
         <canvas
           ref={canvasRef}
           width={GAME_WIDTH}
@@ -834,13 +836,15 @@ export function SpaceQuizGame({
           </button>
         )}
         {phase === "intro" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60 p-4 text-center backdrop-blur-[2px]">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[rgba(10,8,28,0.62)] p-4 text-center backdrop-blur-[3px]">
+            <span aria-hidden className="arena-emoji">{emoji}</span>
+            <h2 className="text-2xl font-black text-white sm:text-3xl" style={{ fontFamily: "var(--font-heading)" }}>{t.title}</h2>
             <p className="max-w-md text-xs font-semibold text-white sm:text-sm">⌨️ {t.controls}</p>
             <button
               type="button"
               onClick={() => startRun()}
               autoFocus
-              className="btn-bouncy bg-[var(--brand-500)] px-6 py-2.5 text-sm font-bold text-white hover:bg-[var(--brand-600)]"
+              className="arena-btn"
             >
               ▶ {t.start}
             </button>
@@ -855,7 +859,7 @@ export function SpaceQuizGame({
               type="button"
               onClick={resumeGame}
               autoFocus
-              className="btn-bouncy bg-[var(--brand-500)] px-6 py-2.5 text-sm font-bold text-white"
+              className="arena-btn"
             >
               ▶ {t.resume}
             </button>
@@ -972,7 +976,7 @@ export function SpaceQuizGame({
       )}
 
       {showExplanation && (
-        <div className="fs-panel flex flex-col gap-3">
+        <div className="fs-panel arena-panel flex flex-col gap-3">
           <p
             className={`pill self-start px-3 py-1.5 text-sm font-semibold ${
               resolved.kind === "correct"
@@ -988,7 +992,7 @@ export function SpaceQuizGame({
           </p>
           <div className="rounded-xl bg-[var(--surface-muted)] p-4 text-sm">
             <p className="mb-1 font-semibold">
-              💡 {t.whyCorrect}: <span className="text-[var(--brand-600)]">{question.options[question.correctIndex]}</span>
+              💡 {t.whyCorrect}: <span className="text-[#ffc933]">{question.options[question.correctIndex]}</span>
             </p>
             <p className="text-[var(--muted)]">{question.explanation}</p>
           </div>
@@ -1009,7 +1013,7 @@ export function SpaceQuizGame({
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={nextStep}
-              className="btn-bouncy rounded-full bg-[var(--brand-500)] px-6 py-2.5 text-sm font-semibold text-white hover:bg-[var(--brand-600)]"
+              className="arena-btn"
             >
               {lives <= 0 || lastQuestion ? t.finish : t.next}
             </button>
@@ -1031,7 +1035,7 @@ export function SpaceQuizGame({
       )}
 
       {phase === "result" && (
-        <div className="fs-panel flex flex-col gap-4">
+        <div className="fs-panel arena-panel flex flex-col gap-4">
           <p className="text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
             {completed ? t.runComplete : `${t.gameOver} 💥`}
           </p>
@@ -1046,7 +1050,7 @@ export function SpaceQuizGame({
             </p>
           )}
           <p className="text-sm">
-            {t.earned}: <span className="font-bold text-[var(--brand-600)]">+{score}</span>
+            {t.earned}: <span className="font-bold text-[#ffc933]">+{score}</span>
             {bestCombo > 1 && (
               <span className="ml-3 font-bold">
                 🔥 {t.combo} ×{bestCombo} (+{bestCombo * 3})
@@ -1068,7 +1072,7 @@ export function SpaceQuizGame({
                 {mistakes.map((m) => (
                   <li key={m.prompt} className="rounded-lg bg-[var(--surface)] p-3">
                     <p className="font-semibold">{m.prompt}</p>
-                    <p className="text-[var(--brand-600)]">✓ {m.options[m.correctIndex]}</p>
+                    <p className="text-[#ffc933]">✓ {m.options[m.correctIndex]}</p>
                     <p className="text-xs text-[var(--muted)]">{m.explanation}</p>
                   </li>
                 ))}
@@ -1076,7 +1080,7 @@ export function SpaceQuizGame({
               <button
                 type="button"
                 onClick={() => startRun(mistakes)}
-                className="btn-bouncy self-start rounded-full bg-[var(--accent-500)] px-5 py-2 text-sm font-semibold text-white"
+                className="arena-btn arena-btn-ghost self-start"
               >
                 🔁 {t.practiceMistakes} ({mistakes.length})
               </button>
@@ -1088,11 +1092,11 @@ export function SpaceQuizGame({
           <div className="flex flex-wrap items-center gap-4">
             <button
               onClick={() => startRun()}
-              className="btn-bouncy rounded-full bg-[var(--brand-500)] px-6 py-3 text-sm font-semibold text-white hover:bg-[var(--brand-600)]"
+              className="arena-btn"
             >
               {t.again}
             </button>
-            <Link href={backHref} className="text-sm font-semibold text-[var(--brand-600)] hover:underline">
+            <Link href={backHref} className="text-sm font-semibold text-[#ffc933] hover:underline">
               {t.backToCourse}
             </Link>
           </div>
