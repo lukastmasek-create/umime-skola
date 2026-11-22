@@ -92,17 +92,46 @@ function compile(gl: WebGL2RenderingContext, type: number, src: string) {
   const s = gl.createShader(type)!;
   gl.shaderSource(s, src);
   gl.compileShader(s);
-  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s) ?? "shader");
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
+    throw new Error(gl.getShaderInfoLog(s) ?? "shader");
   return s;
 }
 
-type Star = { x: number; y: number; r: number; layer: number; ph: number; sp: number; hue: number };
-type Spark = { x: number; y: number; vx: number; vy: number; life: number; max: number; size: number; kind: 0 | 1 };
-type Meteor = { x: number; y: number; vx: number; vy: number; len: number; life: number; max: number };
+type Star = {
+  x: number;
+  y: number;
+  r: number;
+  layer: number;
+  ph: number;
+  sp: number;
+  hue: number;
+};
+type Spark = {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  max: number;
+  size: number;
+  kind: 0 | 1;
+};
+type Meteor = {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  len: number;
+  life: number;
+  max: number;
+};
 
 const TAU = Math.PI * 2;
 
-export function HeroSky({ comet: withComet = true, ship: withShip = true }: { comet?: boolean; ship?: boolean } = {}) {
+export function HeroSky({
+  comet: withComet = true,
+  ship: withShip = true,
+}: { comet?: boolean; ship?: boolean } = {}) {
   const gl$ = useRef<HTMLCanvasElement>(null);
   const fx$ = useRef<HTMLCanvasElement>(null);
   const ship$ = useRef<HTMLCanvasElement>(null);
@@ -115,42 +144,80 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true }: { co
     const host = glCv?.parentElement;
     if (!glCv || !fxCv || !shipCv || !host) return;
     const reduced = prefersReducedMotion();
-    const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    const fine = window.matchMedia(
+      "(hover: hover) and (pointer: fine)",
+    ).matches;
     let disposed = false;
     let raf = 0;
     let visible = true;
 
     // --- WebGL mlhovina ---
-    const gl = glCv.getContext("webgl2", { alpha: false, antialias: false, powerPreference: "low-power" });
+    // WebGL se zapne až po prvním vykreslení (idle), aby nebrzdil načtení stránky.
+    let gl: WebGL2RenderingContext | null = null;
     let u: (n: string) => WebGLUniformLocation | null = () => null;
     let glOk = false;
-    if (gl) {
-      try {
-        const prog = gl.createProgram()!;
-        gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VERT));
-        gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, FRAG));
-        gl.linkProgram(prog);
-        if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error("link");
-        gl.useProgram(prog);
-        const buf = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-        const loc = gl.getAttribLocation(prog, "aPos");
-        gl.enableVertexAttribArray(loc);
-        gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-        u = (n) => gl.getUniformLocation(prog, n);
-        glOk = true;
-      } catch {
+    const initGL = () => {
+      if (disposed) return;
+      const g = glCv.getContext("webgl2", {
+        alpha: false,
+        antialias: false,
+        powerPreference: "low-power",
+      });
+      gl = g;
+      if (g) {
+        try {
+          const prog = g.createProgram()!;
+          g.attachShader(prog, compile(g, g.VERTEX_SHADER, VERT));
+          g.attachShader(prog, compile(g, g.FRAGMENT_SHADER, FRAG));
+          g.linkProgram(prog);
+          if (!g.getProgramParameter(prog, g.LINK_STATUS))
+            throw new Error("link");
+          g.useProgram(prog);
+          const buf = g.createBuffer();
+          g.bindBuffer(g.ARRAY_BUFFER, buf);
+          g.bufferData(
+            g.ARRAY_BUFFER,
+            new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]),
+            g.STATIC_DRAW,
+          );
+          const loc = g.getAttribLocation(prog, "aPos");
+          g.enableVertexAttribArray(loc);
+          g.vertexAttribPointer(loc, 2, g.FLOAT, false, 0, 0);
+          u = (n) => g.getUniformLocation(prog, n);
+          glOk = true;
+        } catch {
+          setFallback(true);
+        }
+      } else {
         setFallback(true);
       }
-    } else {
-      setFallback(true);
-    }
+    };
+    const idleId: number | undefined = (
+      window as Window & {
+        requestIdleCallback?: (
+          cb: () => void,
+          o?: { timeout: number },
+        ) => number;
+      }
+    ).requestIdleCallback
+      ? (
+          window as Window & {
+            requestIdleCallback: (
+              cb: () => void,
+              o?: { timeout: number },
+            ) => number;
+          }
+        ).requestIdleCallback(initGL, { timeout: 800 })
+      : undefined;
+    const idleTimer =
+      idleId === undefined ? window.setTimeout(initGL, 120) : undefined;
 
     // --- 2D vrstva ---
     const ctx = fxCv.getContext("2d")!;
     const sctx = shipCv.getContext("2d")!; // loď a jiskry jsou nad obsahem stránky
-    let W = 0, H = 0, dpr = 1;
+    let W = 0,
+      H = 0,
+      dpr = 1;
     const resize = () => {
       const r = host.getBoundingClientRect();
       W = Math.max(1, r.width);
@@ -180,10 +247,27 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true }: { co
     const sparks: Spark[] = [];
     const meteors: Meteor[] = [];
     let nextMeteor = 1.2;
-    let comet: { x: number; y: number; vx: number; vy: number; boost: number; seed: number } | null = null;
+    let comet: {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      boost: number;
+      seed: number;
+    } | null = null;
     let nextComet = withComet ? 2 : Infinity;
     // prachové částice: drag určuje, jak rychle se zpomalují (menší = delší stopa za kometou)
-    const cdust: { x: number; y: number; vx: number; vy: number; life: number; max: number; size: number; warm: boolean; drag: number }[] = [];
+    const cdust: {
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      life: number;
+      max: number;
+      size: number;
+      warm: boolean;
+      drag: number;
+    }[] = [];
     // stopa komety: pozice hlavy za poslední chvíli (s časem, kdy tam byla)
     const TRAIL_LIFE = 1.6;
     const STREAKS = 36;
@@ -211,7 +295,11 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true }: { co
       const r = host.getBoundingClientRect();
       mouse.x = e.clientX - r.left;
       mouse.y = e.clientY - r.top;
-      mouse.inside = mouse.x >= 0 && mouse.y >= 0 && mouse.x <= r.width && mouse.y <= r.height;
+      mouse.inside =
+        mouse.x >= 0 &&
+        mouse.y >= 0 &&
+        mouse.x <= r.width &&
+        mouse.y <= r.height;
       mouse.nx = (mouse.x / r.width) * 2 - 1;
       mouse.ny = (mouse.y / r.height) * 2 - 1;
       if (!raf) kick();
@@ -221,26 +309,50 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true }: { co
     };
     const burst = (x: number, y: number, n: number, power: number) => {
       for (let i = 0; i < n; i++) {
-        const a = Math.random() * TAU, v = rnd(40, power);
-        sparks.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0, max: rnd(0.5, 1.1), size: rnd(1.5, 3.2), kind: 1 });
+        const a = Math.random() * TAU,
+          v = rnd(40, power);
+        sparks.push({
+          x,
+          y,
+          vx: Math.cos(a) * v,
+          vy: Math.sin(a) * v,
+          life: 0,
+          max: rnd(0.5, 1.1),
+          size: rnd(1.5, 3.2),
+          kind: 1,
+        });
       }
     };
     const onDown = (e: PointerEvent) => {
-      if ((e.target as HTMLElement).closest("a,button,input,[role=button]")) return;
+      if ((e.target as HTMLElement).closest("a,button,input,[role=button]"))
+        return;
       const r = host.getBoundingClientRect();
-      const x = e.clientX - r.left, y = e.clientY - r.top;
+      const x = e.clientX - r.left,
+        y = e.clientY - r.top;
       if (x < 0 || y < 0 || x > r.width || y > r.height) return;
       if (comet && Math.hypot(x - comet.x, y - comet.y) < 140) {
         // kliknutí na kometu: sprška ledových jisker a kometa na chvíli přidá
         comet.boost = 1.6;
         for (let i = 0; i < 42; i++) {
-          const a = Math.random() * TAU, v = rnd(60, 420);
-          cdust.push({ x: comet.x, y: comet.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0, max: rnd(0.7, 1.6), size: rnd(1.6, 3.6), warm: Math.random() < 0.35, drag: 0.9 });
+          const a = Math.random() * TAU,
+            v = rnd(60, 420);
+          cdust.push({
+            x: comet.x,
+            y: comet.y,
+            vx: Math.cos(a) * v,
+            vy: Math.sin(a) * v,
+            life: 0,
+            max: rnd(0.7, 1.6),
+            size: rnd(1.6, 3.6),
+            warm: Math.random() < 0.35,
+            drag: 0.9,
+          });
         }
         if (!raf) kick();
         return;
       }
-      const dx = x - ship.x, dy = y - ship.y;
+      const dx = x - ship.x,
+        dy = y - ship.y;
       const d = Math.hypot(dx, dy) || 1;
       ship.vx += (dx / d) * 900;
       ship.vy += (dy / d) * 900;
@@ -283,7 +395,8 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true }: { co
         const y = s.y * H - mouse.sy * 16 * depth;
         const tw = reduced ? 0.8 : 0.55 + 0.45 * Math.sin(sec * s.sp + s.ph);
         ctx.globalAlpha = tw * (0.45 + depth * 0.5);
-        ctx.fillStyle = s.hue === 210 ? "#bcd6ff" : s.hue === 40 ? "#ffe9b0" : "#ffffff";
+        ctx.fillStyle =
+          s.hue === 210 ? "#bcd6ff" : s.hue === 40 ? "#ffe9b0" : "#ffffff";
         ctx.beginPath();
         ctx.arc(x, y, s.r * (0.7 + depth * 0.5), 0, TAU);
         ctx.fill();
@@ -303,7 +416,15 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true }: { co
           nextMeteor = rnd(2.5, 7);
           const a = rnd(0.35, 0.7);
           const v = rnd(700, 1100);
-          meteors.push({ x: rnd(-0.1, 0.8) * W, y: rnd(-40, 0.3 * H), vx: Math.cos(a) * v, vy: Math.sin(a) * v, len: rnd(160, 340), life: 0, max: rnd(0.7, 1.2) });
+          meteors.push({
+            x: rnd(-0.1, 0.8) * W,
+            y: rnd(-40, 0.3 * H),
+            vx: Math.cos(a) * v,
+            vy: Math.sin(a) * v,
+            len: rnd(160, 340),
+            life: 0,
+            max: rnd(0.7, 1.2),
+          });
         }
         ctx.globalCompositeOperation = "lighter";
         for (let i = meteors.length - 1; i >= 0; i--) {
@@ -317,7 +438,8 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true }: { co
           }
           const k = Math.sin((m.life / m.max) * Math.PI);
           const n = Math.hypot(m.vx, m.vy);
-          const tx = m.x - (m.vx / n) * m.len, ty = m.y - (m.vy / n) * m.len;
+          const tx = m.x - (m.vx / n) * m.len,
+            ty = m.y - (m.vy / n) * m.len;
           const g = ctx.createLinearGradient(m.x, m.y, tx, ty);
           g.addColorStop(0, `rgba(255,255,255,${0.95 * k})`);
           g.addColorStop(0.2, `rgba(160,200,255,${0.5 * k})`);
@@ -339,34 +461,49 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true }: { co
         // --- kometa z Blenderu: prolétá z pravého horního rohu doleva dolů, u kurzoru zrychlí ---
         nextComet -= dt;
         if (!comet && nextComet <= 0 && cometReady) {
-          comet = { x: W + 260, y: rnd(0.05, 0.1) * H, vx: -rnd(75, 100), vy: rnd(7, 13), boost: 0, seed: Math.random() * 100 };
+          comet = {
+            x: W + 260,
+            y: rnd(0.05, 0.1) * H,
+            vx: -rnd(75, 100),
+            vy: rnd(7, 13),
+            boost: 0,
+            seed: Math.random() * 100,
+          };
           nextComet = rnd(24, 38);
         }
         if (comet) {
-          const near = mouse.inside && fine && Math.hypot(mouse.x - comet.x, mouse.y - comet.y) < 260;
-          comet.boost += ((near ? 1 : 0) - comet.boost) * Math.min(1, dt * (near ? 3 : 0.8));
+          const near =
+            mouse.inside &&
+            fine &&
+            Math.hypot(mouse.x - comet.x, mouse.y - comet.y) < 260;
+          comet.boost +=
+            ((near ? 1 : 0) - comet.boost) * Math.min(1, dt * (near ? 3 : 0.8));
           const speed = 1 + 1.7 * comet.boost;
           comet.x += comet.vx * speed * dt;
           comet.y += comet.vy * speed * dt;
           if (comet.x < -420 || comet.y > H + 300) {
             comet = null;
             trail = [];
-          }
-          else {
-            const scale = (Math.min(1.05, Math.max(0.55, W / 1300)) * (1 + 0.07 * Math.min(1, comet.boost)));
+          } else {
+            const scale =
+              Math.min(1.05, Math.max(0.55, W / 1300)) *
+              (1 + 0.07 * Math.min(1, comet.boost));
             // paralaxa: kometa je daleko, kurzor ji posouvá jen jemně
             const px = comet.x + mouse.sx * 18;
             const py = comet.y + mouse.sy * 12;
             const frame = Math.floor((sec * 14) % COMET_FRAMES);
             const size = COMET_S * scale;
             // směr letu (aktuální rychlost včetně zrychlení u kurzoru)
-            const vxN = comet.vx * speed, vyN = comet.vy * speed;
+            const vxN = comet.vx * speed,
+              vyN = comet.vy * speed;
             const vLen = Math.hypot(vxN, vyN) || 1;
-            const ux = vxN / vLen, uy = vyN / vLen;
+            const ux = vxN / vLen,
+              uy = vyN / vLen;
             // sprite je zrcadlený a jádro leží v bodě COMET_HEAD; otočíme ho kolem jádra tak,
             // aby ohon (v obrázku mířil doprava nahoru) vždy mířil přesně proti směru letu
             const angle = Math.atan2(-uy, -ux) - Math.atan2(-0.62, 0.78);
-            const hx = COMET_HEAD.x * size, hy = COMET_HEAD.y * size;
+            const hx = COMET_HEAD.x * size,
+              hy = COMET_HEAD.y * size;
             // animovaná stopa: pamatujeme si, kde hlava byla, a kreslíme pás od hlavy dozadu
             // (zužuje se, bliká a postupně hasne), takže vždy sleduje skutečnou dráhu komety
             trail.push({ x: px, y: py, t: sec });
@@ -376,12 +513,18 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true }: { co
               const target = sec - age;
               for (let i = trail.length - 1; i > 0; i--) {
                 if (trail[i - 1].t <= target) {
-                  const p0 = trail[i - 1], p1 = trail[i];
+                  const p0 = trail[i - 1],
+                    p1 = trail[i];
                   const f = (target - p0.t) / Math.max(1e-6, p1.t - p0.t);
-                  return { x: p0.x + (p1.x - p0.x) * f, y: p0.y + (p1.y - p0.y) * f };
+                  return {
+                    x: p0.x + (p1.x - p0.x) * f,
+                    y: p0.y + (p1.y - p0.y) * f,
+                  };
                 }
               }
-              return trail.length ? { x: trail[0].x, y: trail[0].y } : { x: px, y: py };
+              return trail.length
+                ? { x: trail[0].x, y: trail[0].y }
+                : { x: px, y: py };
             };
             ctx.save();
             ctx.globalCompositeOperation = "lighter";
@@ -392,12 +535,17 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true }: { co
               const u = (sec * 0.55 + TRAIL_SEEDS[k]) % 1; // 0 u hlavy, 1 na konci
               const age = u * TRAIL_LIFE;
               const age2 = Math.min(TRAIL_LIFE, age + 0.06); // krátká úsečka = pohyb
-              const p = posAt(age), q = posAt(age2);
-              const nx = -(q.y - p.y), ny = q.x - p.x;
+              const p = posAt(age),
+                q = posAt(age2);
+              const nx = -(q.y - p.y),
+                ny = q.x - p.x;
               const nl = Math.hypot(nx, ny) || 1;
-              const wob = Math.sin(sec * (3 + k * 0.13) + k) * (4 + 10 * u) * scale;
-              const ox = (nx / nl) * wob, oy = (ny / nl) * wob;
-              const fade = Math.pow(1 - u, 1.4) * (0.7 + 0.3 * Math.sin(sec * 11 + k));
+              const wob =
+                Math.sin(sec * (3 + k * 0.13) + k) * (4 + 10 * u) * scale;
+              const ox = (nx / nl) * wob,
+                oy = (ny / nl) * wob;
+              const fade =
+                Math.pow(1 - u, 1.4) * (0.7 + 0.3 * Math.sin(sec * 11 + k));
               ctx.strokeStyle = `rgba(${k % 3 === 0 ? "255,236,190" : "190,220,255"},${0.7 * fade})`;
               ctx.lineWidth = (1.2 + 2.2 * (1 - u)) * scale;
               ctx.beginPath();
@@ -407,16 +555,31 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true }: { co
             }
             ctx.restore();
             ctx.save();
-            ctx.globalAlpha = Math.min(1, (W + 260 - comet.x) / 160, (comet.x + 420) / 200);
+            ctx.globalAlpha = Math.min(
+              1,
+              (W + 260 - comet.x) / 160,
+              (comet.x + 420) / 200,
+            );
             ctx.shadowColor = "rgba(150,200,255,0.5)";
             ctx.shadowBlur = 26;
             ctx.translate(px, py);
             ctx.rotate(angle);
             ctx.scale(-1, 1);
-            ctx.drawImage(cometImg, frame * COMET_S, 0, COMET_S, COMET_S, -hx, -hy, size, size);
+            ctx.drawImage(
+              cometImg,
+              frame * COMET_S,
+              0,
+              COMET_S,
+              COMET_S,
+              -hx,
+              -hy,
+              size,
+              size,
+            );
             ctx.restore();
             // občas z komety odletí padající hvězda
-            if (Math.random() < dt * 0.35) nextMeteor = Math.min(nextMeteor, 0.05);
+            if (Math.random() < dt * 0.35)
+              nextMeteor = Math.min(nextMeteor, 0.05);
           }
         }
         for (let i = cdust.length - 1; i >= 0; i--) {
@@ -436,7 +599,12 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true }: { co
           g.addColorStop(0, `rgba(${c},${0.85 * k})`);
           g.addColorStop(1, `rgba(${c},0)`);
           ctx.fillStyle = g;
-          ctx.fillRect(d.x - d.size * 3, d.y - d.size * 3, d.size * 6, d.size * 6);
+          ctx.fillRect(
+            d.x - d.size * 3,
+            d.y - d.size * 3,
+            d.size * 6,
+            d.size * 6,
+          );
         }
         if (cdust.length > 420) cdust.splice(0, cdust.length - 420);
         ctx.globalCompositeOperation = "source-over";
@@ -477,13 +645,25 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true }: { co
         ship.boost = Math.max(0, ship.boost - dt * 1.6);
 
         // jiskry a plamen za lodí
-        const tail = { x: ship.x - Math.cos(ship.ang) * 70, y: ship.y - Math.sin(ship.ang) * 70 };
+        const tail = {
+          x: ship.x - Math.cos(ship.ang) * 70,
+          y: ship.y - Math.sin(ship.ang) * 70,
+        };
         const n = sp > 120 ? 3 : 1;
         for (let i = 0; i < n; i++) {
           const spread = rnd(-0.28, 0.28);
           const back = ship.ang + Math.PI + spread;
           const v = rnd(70, 190) + sp * 0.15;
-          sparks.push({ x: tail.x, y: tail.y, vx: Math.cos(back) * v, vy: Math.sin(back) * v, life: 0, max: rnd(0.45, 0.95), size: rnd(1.4, 3.6), kind: 0 });
+          sparks.push({
+            x: tail.x,
+            y: tail.y,
+            vx: Math.cos(back) * v,
+            vy: Math.sin(back) * v,
+            life: 0,
+            max: rnd(0.45, 0.95),
+            size: rnd(1.4, 3.6),
+            kind: 0,
+          });
         }
       }
       sctx.globalCompositeOperation = "lighter";
@@ -500,7 +680,16 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true }: { co
         s.vy *= 1 - dt * 1.6;
         const k = 1 - s.life / s.max;
         // plamen přechází z bílé přes žlutou a oranžovou do modré
-        const c = s.kind === 0 ? (k > 0.7 ? "255,246,210" : k > 0.4 ? "255,190,70" : "120,150,255") : k > 0.5 ? "255,255,255" : "255,150,200";
+        const c =
+          s.kind === 0
+            ? k > 0.7
+              ? "255,246,210"
+              : k > 0.4
+                ? "255,190,70"
+                : "120,150,255"
+            : k > 0.5
+              ? "255,255,255"
+              : "255,150,200";
         const rad = s.size * (0.6 + k * 1.8);
         const g = sctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, rad * 2.2);
         g.addColorStop(0, `rgba(${c},${0.85 * k})`);
@@ -522,7 +711,17 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true }: { co
         sctx.scale(1, 1 - Math.min(0.14, Math.abs(ship.roll) * 0.12));
         sctx.shadowColor = "rgba(150,170,255,0.55)";
         sctx.shadowBlur = 24;
-        sctx.drawImage(sprite, frame * SHIP_W, 0, SHIP_W, SHIP_H, -SHIP_W * scale * 0.42, -SHIP_H * scale * 0.5, SHIP_W * scale, SHIP_H * scale);
+        sctx.drawImage(
+          sprite,
+          frame * SHIP_W,
+          0,
+          SHIP_W,
+          SHIP_H,
+          -SHIP_W * scale * 0.42,
+          -SHIP_H * scale * 0.5,
+          SHIP_W * scale,
+          SHIP_H * scale,
+        );
         sctx.restore();
       }
 
@@ -553,6 +752,11 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true }: { co
     return () => {
       disposed = true;
       cancelAnimationFrame(raf);
+      if (idleId !== undefined)
+        (
+          window as Window & { cancelIdleCallback?: (id: number) => void }
+        ).cancelIdleCallback?.(idleId);
+      if (idleTimer !== undefined) window.clearTimeout(idleTimer);
       ro.disconnect();
       io.disconnect();
       window.removeEventListener("pointermove", onMove);
@@ -563,12 +767,23 @@ export function HeroSky({ comet: withComet = true, ship: withShip = true }: { co
 
   return (
     <>
-    <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 select-none overflow-hidden">
-      {fallback && <Nebula className="absolute inset-0 h-full" />}
-      <canvas ref={gl$} className="absolute inset-0 h-full w-full" style={{ display: fallback ? "none" : undefined }} />
-      <canvas ref={fx$} className="absolute inset-0 h-full w-full" />
-    </div>
-    <canvas ref={ship$} aria-hidden className="pointer-events-none absolute inset-0 z-20 h-full w-full select-none" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 select-none overflow-hidden"
+      >
+        {fallback && <Nebula className="absolute inset-0 h-full" />}
+        <canvas
+          ref={gl$}
+          className="absolute inset-0 h-full w-full"
+          style={{ display: fallback ? "none" : undefined }}
+        />
+        <canvas ref={fx$} className="absolute inset-0 h-full w-full" />
+      </div>
+      <canvas
+        ref={ship$}
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-20 h-full w-full select-none"
+      />
     </>
   );
 }
