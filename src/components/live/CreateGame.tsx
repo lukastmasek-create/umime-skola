@@ -9,12 +9,11 @@ import type { Locale } from "@/i18n/config";
 import type { LiveMode, SetItem } from "@/lib/live/types";
 import { liveApi, saveHost } from "./api";
 import { errorText } from "./LiveRoom";
-import { PcardTape } from "@/components/PcardArt";
+import { ArenaBackdrop, type ArenaKey } from "@/components/arena/ArenaBackdrop";
 import { CountGlyph, CourseGlyph, DifficultyGlyph, SearchGlyph, SetGlyph } from "./FormIcons";
-import { ModeScene } from "./ModeScenes";
+import { MODE_ACCENT } from "./shared";
 
 // Barvy karet režimů: stejná paleta jako karty na homepage.
-const MODE_ACCENT: Record<LiveMode, string> = { QUIZ: "#8fd0ff", RACE: "#7ee0b0", GOLD: "#ffc933", STREAK: "#ff8a6b", SURVIVAL: "#c9a8ff", TEAMS: "#ffb3c7" };
 
 type Course = { slug: string; title: string; category: string; subject: string | null; grade: number | null; questions: number };
 type SetRow = { id: string; title: string; questions: SetItem[] };
@@ -109,12 +108,13 @@ export function CreateGame({ locale }: { locale: Locale }) {
   const label = "flex flex-col gap-1 text-sm font-semibold";
 
   return (
-    <form onSubmit={submit} className="mx-auto flex max-w-3xl flex-col gap-6">
+    <form onSubmit={submit} className="arena-stage mx-auto flex max-w-4xl flex-col gap-6 p-4 sm:p-8">
+      <ArenaBackdrop variant={mode.toLowerCase() as ArenaKey} />
       <div>
         <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
           {t.create.title}
         </h1>
-        <p className="text-[var(--muted)]">{t.create.subtitle}</p>
+        <p style={{ color: "#cfc8e4" }}>{t.create.subtitle}</p>
       </div>
 
       <div className="lobby-panel text-[#f4f3ff]" style={{ ["--ink" as string]: "rgba(244,239,227,0.88)" } as CSSProperties}>
@@ -224,29 +224,22 @@ export function CreateGame({ locale }: { locale: Locale }) {
         <h2 className="mb-10 text-center text-3xl font-bold tracking-tight sm:text-4xl" style={{ fontFamily: "var(--font-heading)" }}>
           {t.create.mode}
         </h2>
-        <div className="pcard-pile pcard-pile-wide" role="radiogroup" aria-label={t.create.mode}>
-          {MODES.map((m, i) => (
-            <div key={m} className="pcard-slot" style={{ ["--ac" as string]: MODE_ACCENT[m] }}>
-              <button type="button" role="radio" aria-checked={mode === m} onClick={() => setMode(m)} className="pcard pcard-static w-full text-left">
-                <span className="pcard-in">
-                  <span className="pcard-num" aria-hidden>
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="pcard-title">{t.create.modes[m].name}</span>
-                  <span className="pcard-text">{t.create.modes[m].description}</span>
-                  <ModeScene mode={m} />
-                  <span className="pcard-go" aria-hidden>
-                    {mode === m ? "✓" : "→"}
-                  </span>
-                </span>
-                <PcardTape />
-              </button>
-            </div>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3" role="radiogroup" aria-label={t.create.mode}>
+          {MODES.map((m) => (
+            <button key={m} type="button" role="radio" aria-checked={mode === m} onClick={() => setMode(m)} className="arena-mode" style={{ ["--mode" as string]: MODE_ACCENT[m] }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`/arena/emblem-${m.toLowerCase()}.webp`} alt="" width={88} height={88} decoding="async" />
+              <span className="flex items-center justify-between gap-2 font-black">
+                {t.create.modes[m].name}
+                <span aria-hidden>{mode === m ? "✓" : ""}</span>
+              </span>
+              <span className="text-xs leading-snug" style={{ color: "#cfc8e4" }}>{t.create.modes[m].description}</span>
+            </button>
           ))}
         </div>
       </div>
 
-      <section className="card flex flex-col gap-4 p-5">
+      <section className="arena-panel flex flex-col gap-4">
         <h3 className="font-bold">{t.create.settings}</h3>
         {isSyncMode(mode) ? (
           <div className="grid gap-4 sm:grid-cols-2">
@@ -282,7 +275,7 @@ export function CreateGame({ locale }: { locale: Locale }) {
           {errorText(t, error)}
         </p>
       )}
-      <button type="submit" disabled={busy || !ready} className="btn-bouncy btn-primary btn-lg self-start disabled:opacity-50">
+      <button type="submit" disabled={busy || !ready} className="arena-btn self-start">
         {busy ? t.create.creating : t.create.submit}
       </button>
     </form>

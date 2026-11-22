@@ -10,7 +10,6 @@ import { errorText } from "./LiveRoom";
 import { CHEST_AMOUNTS, isSyncMode } from "@/lib/live/logic";
 import { Countdown, EndsIn, Leaderboard, OptionButton, TEAM_STYLES, TeamScores } from "./shared";
 import { ChestClosed, ChestOpen, LootIcon } from "./ChestArt";
-import { ModeScene } from "./ModeScenes";
 
 type Feedback = { choice: number; correct: boolean; correctIndex: number; explanation?: string; chests: number; points: number; question: NonNullable<LiveView["question"]> };
 
@@ -139,9 +138,8 @@ export function PlayerView({
   if (view.status === "LOBBY") {
     return (
       <div className="card mx-auto flex max-w-md flex-col items-center gap-3 p-8 text-center">
-        <div className="relative aspect-[300/120] w-full overflow-hidden rounded-2xl bg-[#1b1a30]">
-          <ModeScene mode={view.mode} />
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+<img src={`/arena/emblem-${view.mode.toLowerCase()}.webp`} alt="" width={120} height={120} decoding="async" className="arena-emblem" />
         <p className="font-mono text-4xl font-extrabold tracking-[0.25em]">{view.pin}</p>
         <h1 className="text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
           {view.title}

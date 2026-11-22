@@ -183,3 +183,6 @@ export function Leaderboard({
     </ol>
   );
 }
+
+/** Barva režimu (okraje karet, zvýraznění). */
+export const MODE_ACCENT: Record<LiveMode, string> = { QUIZ: "#8fd0ff", RACE: "#7ee0b0", GOLD: "#ffc933", STREAK: "#ff8a6b", SURVIVAL: "#c9a8ff", TEAMS: "#ffb3c7" };

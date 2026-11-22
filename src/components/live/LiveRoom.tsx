@@ -6,6 +6,7 @@ import { fmt, getLiveText, type LiveText } from "@/i18n/live";
 import type { Locale } from "@/i18n/config";
 import { useAccount } from "@/lib/use-account";
 import { forget, liveApi, savePlayer, useLiveView, useStoredIdentity, type Identity } from "./api";
+import { ArenaBackdrop, type ArenaKey } from "@/components/arena/ArenaBackdrop";
 import { HostView } from "./HostView";
 import { PlayerView } from "./PlayerView";
 
@@ -75,7 +76,13 @@ export function LiveRoom({ locale, pin }: { locale: Locale; pin: string }) {
   const { view, error, serverNow } = useLiveView(pin, identity ?? null);
 
   if (identity === undefined) return null;
-  if (!identity) return <JoinForm locale={locale} pin={pin} onJoined={() => {}} />;
+  if (!identity)
+    return (
+      <div className="arena-stage px-4 py-10 sm:py-16">
+        <ArenaBackdrop variant="neutral" />
+        <JoinForm locale={locale} pin={pin} onJoined={() => {}} />
+      </div>
+    );
 
   if (error === "room-not-found" || (error === "unauthorized" && !view)) {
     return (
@@ -98,7 +105,8 @@ export function LiveRoom({ locale, pin }: { locale: Locale; pin: string }) {
 
   return (
     <div className="fs-classic">
-      <div className="w-full">
+      <div className="arena-stage w-full p-3 sm:p-6" style={{ minHeight: "70vh" }}>
+        <ArenaBackdrop variant={view.mode.toLowerCase() as ArenaKey} />
         {identity.kind === "host" ? (
           <HostView locale={locale} t={t} view={view} identity={identity} serverNow={serverNow} />
         ) : (
