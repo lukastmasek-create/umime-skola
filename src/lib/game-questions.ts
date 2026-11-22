@@ -10,8 +10,7 @@ function shuffle<T>(items: readonly T[]): T[] {
   return out;
 }
 
-// Otázky kurzu pro hry: na jednu úroveň připadá v kurzu jen pár otázek, takže kolo doplníme
-// z nejbližších obtížností (nejdřív stejná, pak sousední), ať je dost na výběr.
+// Otázky kurzu pro hry: jen otázky dané obtížnosti (každá úroveň má vlastní sadu).
 export async function loadGameQuestions(
   courseSlug: string,
   category: "ZAKLADNI" | "STREDNI" | "PRIJIMACKY" | "MATURITA",
@@ -24,23 +23,14 @@ export async function loadGameQuestions(
       title: true,
       levels: { where: { order: difficulty, published: true }, select: { id: true } },
       questions: {
-        select: { id: true, prompt: true, options: true, correctIndex: true, explanation: true, difficulty: true },
+        where: { difficulty },
+        select: { id: true, prompt: true, options: true, correctIndex: true, explanation: true },
       },
     },
   });
   if (!course) return null;
-  // Míchání: uvnitř každé vzdálenosti od obtížnosti otázky zamíchej, ať se kolo pokaždé skládá jinak
-  // a hry se neopakují. Nejdřív jdou otázky stejné obtížnosti, pak sousední.
-  type Row = (typeof course.questions)[number];
-  const byDistance = new Map<number, Row[]>();
-  for (const q of course.questions) {
-    if (q.options.length !== 4 || q.correctIndex < 0 || q.correctIndex >= 4) continue;
-    const d = Math.abs(q.difficulty - difficulty);
-    byDistance.set(d, [...(byDistance.get(d) ?? []), q]);
-  }
-  const questions = [...byDistance.keys()]
-    .sort((a, b) => a - b)
-    .flatMap((d) => shuffle<Row>(byDistance.get(d) ?? []))
+  const questions = shuffle(course.questions)
+    .filter((q) => q.options.length === 4 && q.correctIndex >= 0 && q.correctIndex < 4)
     .slice(0, size)
     .map((q) => ({
       id: q.id,
