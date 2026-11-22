@@ -6,9 +6,29 @@ import { C } from "./theme";
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 export const ease = Easing.bezier(0.16, 1, 0.3, 1);
 
+// Rozložení pro 16:9 i svislé 9:16 (Reels).
+export const useLayout = () => {
+  const { width, height } = useVideoConfig();
+  const v = height > width;
+  return { w: width, h: height, v, panel: v ? 940 : 1000, title: v ? 96 : 110, gap: v ? 56 : 44 };
+};
+
+// Společný rámec scény: nadpis nahoře, obsah uprostřed.
+export const Stage = ({ title, children }: { title: ReactNode; children: ReactNode }) => {
+  const { v, gap, w } = useLayout();
+  return (
+    <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", gap, padding: v ? "0 50px" : 0, boxSizing: "border-box" }}>
+      <div style={{ maxWidth: w - 100 }}>{title}</div>
+      {children}
+    </AbsoluteFill>
+  );
+};
+
 // Pozadí: temná záře + pulzující kruhy + jiskry (inspirace pokoj_final.mp4).
 export const Bg = () => {
   const f = useCurrentFrame();
+  const { width: W, height: H } = useVideoConfig();
+  const big = Math.max(W, H) / 1920;
   return (
     <AbsoluteFill style={{ background: C.bg }}>
       <AbsoluteFill
@@ -23,10 +43,10 @@ export const Bg = () => {
               position: "absolute",
               left: "50%",
               top: "46%",
-              width: 500 + t * 1500,
-              height: 500 + t * 1500,
-              marginLeft: -(250 + t * 750),
-              marginTop: -(250 + t * 750),
+              width: (500 + t * 1500) * big,
+              height: (500 + t * 1500) * big,
+              marginLeft: -(250 + t * 750) * big,
+              marginTop: -(250 + t * 750) * big,
               borderRadius: "50%",
               border: `2px solid rgba(120,140,255,${0.16 * (1 - t)})`,
             }}
@@ -34,15 +54,15 @@ export const Bg = () => {
         );
       })}
       {Array.from({ length: 28 }).map((_, i) => {
-        const x = (i * 677) % 1920;
-        const y = ((i * 331 + f * (0.3 + (i % 5) * 0.12)) % 1200) - 60;
+        const x = (i * 677) % W;
+        const y = ((i * 331 + f * (0.3 + (i % 5) * 0.12)) % (H + 120)) - 60;
         return (
           <div
             key={i}
             style={{
               position: "absolute",
               left: x,
-              top: 1080 - (y % 1080),
+              top: H - (y % H),
               width: 4 + (i % 3) * 2,
               height: 4 + (i % 3) * 2,
               borderRadius: "50%",
@@ -154,7 +174,8 @@ export const Toast = ({ title, sub, delay = 0 }: { title: string; sub: string; d
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        gap: 60,
+        gap: 40,
+        maxWidth: 940,
         padding: "26px 36px",
         borderRadius: 22,
         background: C.paper,

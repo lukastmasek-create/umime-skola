@@ -1,6 +1,6 @@
-import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
+import { interpolate, useCurrentFrame } from "remotion";
 import { C } from "../theme";
-import { Glass, Neon, Toast } from "../ui";
+import { Glass, Neon, Stage, Toast, useLayout } from "../ui";
 
 const CODE = `for (let i = 1; i <= 3; i++) {
   console.log("Ahoj, světe! " + i);
@@ -22,21 +22,23 @@ const colorize = (line: string) =>
 
 export const Code = () => {
   const f = useCurrentFrame();
+  const { panel, title, v } = useLayout();
   const n = Math.floor(interpolate(f, [8, 62], [0, CODE.length], clamp));
-  const typed = CODE.slice(0, n);
-  const lines = typed.split("\n");
+  const lines = CODE.slice(0, n).split("\n");
   const run = f >= 66;
   const shown = Math.floor(interpolate(f, [68, 90], [0, OUT.length + 0.99], clamp));
+  const mono = "ui-monospace, Menlo, Consolas, monospace";
   return (
-    <AbsoluteFill style={{ alignItems: "center" }}>
-      <div style={{ marginTop: 60 }}>
-        <Neon size={110} delay={4} color="#d6ffe8" glow={C.green}>
+    <Stage
+      title={
+        <Neon size={title} delay={4} color="#d6ffe8" glow={C.green}>
           Kód na hraní.
         </Neon>
-      </div>
-      <div style={{ position: "absolute", top: 250, display: "flex", gap: 40 }}>
-        <Glass width={880} height={470}>
-          <pre style={{ margin: 0, padding: "80px 40px 0", fontFamily: "ui-monospace, Menlo, Consolas, monospace", fontSize: 31, lineHeight: 1.55 }}>
+      }
+    >
+      <div style={{ display: "flex", flexDirection: v ? "column" : "row", gap: v ? 30 : 40 }}>
+        <Glass width={v ? panel : 880} height={v ? 440 : 470}>
+          <pre style={{ margin: 0, padding: "80px 36px 0", fontFamily: mono, fontSize: v ? 26 : 31, lineHeight: 1.55 }}>
             {lines.map((l, i) => (
               <div key={i}>
                 {colorize(l)}
@@ -45,8 +47,8 @@ export const Code = () => {
             ))}
           </pre>
         </Glass>
-        <Glass width={560} height={470} style={{ background: "rgba(8,8,24,0.9)" }}>
-          <div style={{ padding: "80px 40px 0", fontFamily: "ui-monospace, Menlo, Consolas, monospace", fontSize: 34, color: C.green, lineHeight: 1.6 }}>
+        <Glass width={v ? panel : 560} height={v ? 330 : 470} style={{ background: "rgba(8,8,24,0.9)" }}>
+          <div style={{ padding: "80px 36px 0", fontFamily: mono, fontSize: 34, color: C.green, lineHeight: 1.6 }}>
             <div style={{ color: "#8a849f", fontSize: 24, marginBottom: 10 }}>{run ? "▶ výstup" : "▶ čeká na spuštění"}</div>
             {OUT.slice(0, run ? shown : 0).map((o) => (
               <div key={o}>{o}</div>
@@ -54,9 +56,7 @@ export const Code = () => {
           </div>
         </Glass>
       </div>
-      <div style={{ position: "absolute", top: 780 }}>
-        <Toast title="Napiš. Spusť. Vidíš výsledek." sub="Programování pro začátečníky" delay={78} />
-      </div>
-    </AbsoluteFill>
+      <Toast title="Napiš. Spusť. Vidíš výsledek." sub="Programování pro začátečníky" delay={78} />
+    </Stage>
   );
 };

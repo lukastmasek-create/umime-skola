@@ -6,6 +6,7 @@
     "dev": "remotion studio src/index.ts",
     "render": "remotion render src/index.ts Promo out/promo.mp4 --codec=h264 --crf=16",
     "still": "remotion still src/index.ts Promo out/still.png --frame=150",
+    "render:reel": "remotion render src/index.ts PromoReel out/promo-reel.mp4 --codec=h264 --crf=16",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
