@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import type { ClassicText } from "@/i18n/classic";
 import { formatTime, normalizeAnswer, shuffle, toGaps, type Gap } from "@/lib/classic-games";
 import type { GameQuestion } from "@/i18n/game";
+import { sfx } from "@/lib/game-fx";
 import { FinishCard, GameFrame, useTimer, xpFor, type AnswerResult } from "./shared";
 
 const ROWS = 6;
@@ -38,7 +39,7 @@ export function Fill({
     setRowsFor(gaps);
     setRows(gaps.map(fresh));
   }
-  const [chip, setChip] = useState<number | null>(null);
+  const [cur, setCur] = useState(0);
   const [usedChips, setUsedChips] = useState<Set<number>>(new Set());
   const [flash, setFlash] = useState<number | null>(null);
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
@@ -53,7 +54,17 @@ export function Fill({
     setRows((rs) => rs.map((r, k) => (k === i ? { ...r, ...patch } : r)));
   }
 
+  function buzz(ok: boolean) {
+    sfx(ok ? "correct" : "wrong");
+    try {
+      navigator.vibrate?.(ok ? 25 : [60, 40, 60]);
+    } catch {
+      /* bez vibrací */
+    }
+  }
+
   function fail(i: number, wrongNow: number) {
+    buzz(false);
     setFlash(i);
     window.setTimeout(() => setFlash((f) => (f === i ? null : f)), 500);
     if (typing && wrongNow >= MAX_TRIES) mark(i, { wrong: wrongNow, done: true, ok: false, revealed: true });
@@ -65,7 +76,7 @@ export function Fill({
     if (normalizeAnswer(bank[chipIndex]) === normalizeAnswer(gaps[i].answer)) {
       mark(i, { done: true, ok: true, value: bank[chipIndex] });
       setUsedChips((u) => new Set(u).add(chipIndex));
-      setChip(null);
+      buzz(true);
     } else {
       fail(i, rows[i].wrong + 1);
     }
@@ -74,13 +85,15 @@ export function Fill({
   function checkTyped(i: number) {
     const r = rows[i];
     if (r.done || r.value.trim() === "") return;
-    if (normalizeAnswer(r.value) === normalizeAnswer(gaps[i].answer)) mark(i, { done: true, ok: true });
-    else fail(i, r.wrong + 1);
+    if (normalizeAnswer(r.value) === normalizeAnswer(gaps[i].answer)) {
+      mark(i, { done: true, ok: true });
+      buzz(true);
+    } else fail(i, r.wrong + 1);
   }
 
   function restart() {
     setRound((n) => n + 1);
-    setChip(null);
+    setCur(0);
     setUsedChips(new Set());
     setFlash(null);
     reset();
@@ -114,99 +127,108 @@ export function Fill({
           backHref={backHref}
         />
       ) : (
-        <div className="flex flex-col gap-4">
-          {!typing && (
-            <div className="card sticky top-2 z-10 flex flex-col gap-2 p-3">
-              <p className="text-xs font-bold uppercase tracking-widest text-[var(--faint)]">
-                {t.fill.bank} <span className="font-normal normal-case tracking-normal">· {t.fill.pickWord}</span>
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {bank.map((word, k) => (
-                  <button
-                    key={`${word}-${k}`}
-                    type="button"
-                    disabled={usedChips.has(k)}
-                    onClick={() => setChip(chip === k ? null : k)}
-                    className={`rounded-full border-2 px-3 py-1.5 text-sm font-bold transition ${
-                      usedChips.has(k)
-                        ? "border-transparent opacity-25"
-                        : chip === k
-                          ? "border-[var(--accent-500)] bg-[var(--accent-500)] text-white"
-                          : "border-[var(--edge)] bg-[var(--surface)] hover:-translate-y-0.5"
-                    }`}
-                  >
-                    {word}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          <ol className="flex flex-col gap-3">
-            {gaps.map((g: Gap, i) => {
-              const r = rows[i] ?? fresh();
-              const bad = flash === i;
-              return (
-                <li key={g.id ?? i} className="card flex flex-col gap-2 p-4" style={bad ? { borderColor: "#ff5d73" } : r.done ? { borderColor: r.ok ? "#2ea36b" : "#ff5d73" } : undefined}>
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-base">
-                    <span className="font-bold tabular-nums text-[var(--faint)]">{i + 1}.</span>
-                    {g.before && <span>{g.before}</span>}
-                    {typing ? (
-                      <span className="inline-flex items-center gap-2">
-                        <input
-                          ref={(el) => {
-                            inputs.current[i] = el;
-                          }}
-                          value={r.done ? (r.revealed ? g.answer : r.value) : r.value}
-                          disabled={r.done}
-                          onChange={(e) => mark(i, { value: e.target.value })}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") checkTyped(i);
-                          }}
-                          placeholder={t.fill.placeholder}
-                          aria-label={`${i + 1}`}
-                          size={Math.max(8, Math.min(g.answer.length + 2, 26))}
-                          className="rounded-lg border-2 border-[var(--edge)] bg-[var(--surface)] px-2 py-1 font-bold outline-none focus:border-[var(--accent-500)]"
-                          style={bad ? { borderColor: "#ff5d73" } : r.done ? { borderColor: r.ok ? "#2ea36b" : "#ff5d73" } : undefined}
-                        />
-                        {!r.done && (
-                          <button type="button" onClick={() => checkTyped(i)} className="btn-bouncy rounded-full bg-[var(--accent-500)] px-3 py-1.5 text-xs font-bold text-white">
-                            {t.fill.check}
-                          </button>
-                        )}
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        disabled={r.done}
-                        onClick={() => chip !== null && tryChip(i, chip)}
-                        className="min-w-24 rounded-lg border-2 border-dashed px-3 py-1 font-bold transition"
-                        style={
-                          r.done
-                            ? { borderStyle: "solid", borderColor: "#2ea36b", background: "rgba(126,224,176,0.3)" }
-                            : bad
-                              ? { borderColor: "#ff5d73", background: "rgba(255,93,115,0.15)" }
-                              : { borderColor: chip !== null ? "var(--accent-500)" : "var(--faint)" }
-                        }
-                      >
-                        {r.done ? r.value : " "}
+        <div className="gq-body">
+          <div className="flex justify-center gap-2" aria-hidden>
+            {gaps.map((_, i) => (
+              <span
+                key={i}
+                className="h-3 w-3 rounded-full border-2"
+                style={{
+                  borderColor: i === cur ? "#ffc933" : "var(--gq-edge)",
+                  background: rows[i]?.done ? (rows[i].ok ? "var(--gq-ok)" : "var(--gq-bad)") : i === cur ? "#ffc933" : "transparent",
+                }}
+              />
+            ))}
+          </div>
+          {(() => {
+            const i = Math.min(cur, gaps.length - 1);
+            const g: Gap = gaps[i];
+            const r = rows[i] ?? fresh();
+            const bad = flash === i;
+            const lastOne = i >= gaps.length - 1;
+            return (
+              <>
+                <div
+                  className="gq-card gq-q"
+                  style={{ borderColor: bad ? "var(--gq-bad)" : r.done ? (r.ok ? "var(--gq-ok)" : "var(--gq-bad)") : undefined }}
+                >
+                  <p className="text-xs font-bold uppercase tracking-wide text-[var(--faint)]">
+                    {i + 1}/{gaps.length}
+                  </p>
+                  <p>
+                    {g.before && <span>{g.before} </span>}
+                    <span
+                      className="inline-block min-w-24 rounded-xl border-4 border-dashed px-3 py-0.5 align-middle"
+                      style={{
+                        borderColor: r.done ? (r.ok ? "var(--gq-ok)" : "var(--gq-bad)") : bad ? "var(--gq-bad)" : "#ffc933",
+                        borderStyle: r.done ? "solid" : "dashed",
+                        background: r.done ? "rgba(255,255,255,0.1)" : "transparent",
+                      }}
+                    >
+                      {r.done ? (r.revealed ? g.answer : r.value || g.answer) : "\u00a0"}
+                    </span>
+                    {g.after && <span> {g.after}</span>}
+                  </p>
+                </div>
+                {!r.done &&
+                  (typing ? (
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <input
+                        ref={(el) => {
+                          inputs.current[i] = el;
+                        }}
+                        autoFocus
+                        value={r.value}
+                        onChange={(e) => mark(i, { value: e.target.value })}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") checkTyped(i);
+                        }}
+                        placeholder={t.fill.placeholder}
+                        aria-label={`${i + 1}`}
+                        className="min-h-16 flex-1 rounded-2xl border-[3px] border-[var(--gq-edge)] bg-[var(--gq-bg)] px-4 text-xl font-bold outline-none focus:border-[#ffc933]"
+                        style={bad ? { borderColor: "var(--gq-bad)" } : undefined}
+                      />
+                      <button type="button" onClick={() => checkTyped(i)} className="arena-btn" style={{ minHeight: 64 }}>
+                        ✔ {t.fill.check}
                       </button>
-                    )}
-                    {g.after && <span>{g.after}</span>}
-                  </div>
-                  {typing && !r.done && r.wrong > 0 && (
-                    <p className="text-xs text-[#ff5d73]">
-                      {t.fill.attemptsLeft}: {MAX_TRIES - r.wrong}
-                    </p>
-                  )}
-                  {r.done && (
-                    <p className="text-xs text-[var(--muted)]">
+                    </div>
+                  ) : (
+                    <div className="gq-opts">
+                      {bank.map((word, k) => (
+                        <button
+                          key={`${word}-${k}`}
+                          type="button"
+                          disabled={usedChips.has(k)}
+                          onClick={() => tryChip(i, k)}
+                          className={`gq-opt justify-center text-center ${usedChips.has(k) ? "is-dim" : ""}`}
+                          style={usedChips.has(k) ? { visibility: "hidden" } : undefined}
+                        >
+                          {word}
+                        </button>
+                      ))}
+                    </div>
+                  ))}
+                {typing && !r.done && r.wrong > 0 && (
+                  <p className="gq-feedback bad">
+                    {t.fill.attemptsLeft}: {MAX_TRIES - r.wrong}
+                  </p>
+                )}
+                {!typing && !r.done && r.wrong > 0 && <p className="gq-feedback bad">✗</p>}
+                {r.done && (
+                  <>
+                    <p className={`gq-feedback ${r.ok ? "ok" : "bad"}`} role="status">
                       {r.ok ? `✓ ${t.fill.correctIs}.` : `✗ ${t.fill.revealed}: ${g.answer}.`} {g.explanation}
                     </p>
-                  )}
-                </li>
-              );
-            })}
-          </ol>
+                    {!lastOne && (
+                      <button type="button" autoFocus onClick={() => setCur(i + 1)} className="arena-btn self-center" style={{ minHeight: 56 }}>
+                        {"→"}
+                      </button>
+                    )}
+                  </>
+                )}
+              </>
+            );
+          })()}
         </div>
       )}
     </GameFrame>

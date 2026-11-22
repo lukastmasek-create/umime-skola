@@ -17,6 +17,7 @@ import { readBest, saveBest, starsFor, type Best } from "@/lib/game-best";
 import { getGamesUiText } from "@/i18n/games-meta";
 import { getArcadeText, isArcadeSlug } from "@/i18n/arcade";
 import { getGameText, type GameQuestion, type GameText } from "@/i18n/game";
+import { IntroSteps } from "@/components/classic/IntroSteps";
 import { DailyRecap } from "@/components/DailyChallenges";
 import { CompletionJourney } from "@/components/CompletionJourney";
 import type { Locale } from "@/i18n/config";
@@ -840,7 +841,7 @@ export function SpaceQuizGame({
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[rgba(10,8,28,0.62)] p-4 text-center backdrop-blur-[3px]">
             <span aria-hidden className="arena-emoji">{emoji}</span>
             <h2 className="text-2xl font-black text-white sm:text-3xl" style={{ fontFamily: "var(--font-heading)" }}>{t.title}</h2>
-            <p className="max-w-md text-xs font-semibold text-white sm:text-sm">⌨️ {t.controls}</p>
+            <IntroSteps locale={locale} controls={t.controls} />
             <button
               type="button"
               onClick={() => startRun()}

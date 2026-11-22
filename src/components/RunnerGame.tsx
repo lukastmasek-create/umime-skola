@@ -18,6 +18,7 @@ import {
   type RunnerPlan,
 } from "@/lib/runner";
 import { ArenaBackdrop, GAME_ARENA } from "@/components/arena/ArenaBackdrop";
+import { IntroSteps } from "@/components/classic/IntroSteps";
 import { GameFrame, type AnswerResult } from "./classic/shared";
 
 const TXT = {
@@ -2024,7 +2025,7 @@ export function RunnerGame({
 
           {phase === "ready" && (
             <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center gap-3 rounded-t-3xl bg-white/95 p-5 text-center text-[#16132b] shadow-xl">
-              <p className="max-w-md text-sm text-[#4f4a66]">{t.controls}</p>
+              <IntroSteps locale={locale} controls={t.controls} light />
               {best && (
                 <p className="text-xs font-semibold text-[#5f5978]">
                   {t.best}: {"⭐".repeat(best.stars)} · {best.score}
