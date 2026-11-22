@@ -17,7 +17,6 @@ export type GameSlug =
   | "presmycky"
   | "blesk"
   | "poklad"
-  | "oblekani"
   | "obrana"
   | "krizovka"
   | "pravda"
@@ -38,7 +37,6 @@ export const CLASSIC_SLUGS = [
   "presmycky",
   "blesk",
   "poklad",
-  "oblekani",
   "obrana",
   "krizovka",
   "pravda",
@@ -78,7 +76,6 @@ export const GAMES: GameInfo[] = [
   { slug: "presmycky", emoji: "🔀", name: "Přesmyčky", kind: "classic", available: true },
   { slug: "blesk", emoji: "⚡", name: "Bleskový kvíz", kind: "classic", available: true },
   { slug: "poklad", emoji: "🏴‍☠️", name: "Hon za pokladem", kind: "classic", available: true },
-  { slug: "oblekani", emoji: "👗", name: "Obleč panenku", kind: "classic", available: true, archived: true },
   { slug: "obrana", emoji: "🏰", name: "Obrana města", kind: "classic", available: true },
   { slug: "krizovka", emoji: "✍️", name: "Křížovka", kind: "classic", available: true, isNew: true },
   { slug: "pravda", emoji: "⚖️", name: "Pravda, nebo lež", kind: "classic", available: true, isNew: true },

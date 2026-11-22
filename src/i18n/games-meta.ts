@@ -222,18 +222,6 @@ const META: Record<GameSlug, Record<Locale, Meta>> = {
     es: { name: "Búsqueda del tesoro", tag: "Responde y excava las casillas que esconden el tesoro" },
     fr: { name: "Chasse au trésor", tag: "Réponds et déterre les cases qui cachent le trésor" },
   },
-  oblekani: {
-    ...withFallbacks({
-      cs: { name: "Obleč panenku", tag: "Za každou správnou odpověď jeden kus oblečení" },
-      en: { name: "Dress the Doll", tag: "One piece of clothing per right answer" },
-      de: { name: "Puppe anziehen", tag: "Ein Kleidungsstück pro richtige Antwort" },
-      ru: { name: "Наряди куклу", tag: "Одна вещь за каждый правильный ответ" },
-    }),
-    uk: { name: "Одягни ляльку", tag: "За кожну правильну відповідь один предмет одягу" },
-    ja: { name: "おにんぎょうのおきがえ", tag: "正しい答え1つにつき、服を1枚着せよう" },
-    es: { name: "Viste a la muñeca", tag: "Una prenda de ropa por cada respuesta correcta" },
-    fr: { name: "Habille la poupée", tag: "Un vêtement par bonne réponse" },
-  },
   obrana: {
     ...withFallbacks({
       cs: { name: "Obrana města", tag: "Odpovídej a ubraň hrad před vlnami nepřátel" },

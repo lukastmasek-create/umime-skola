@@ -12,7 +12,6 @@ export const GAME_ICON: Partial<Record<GameSlug, string>> = {
   presmycky: "presmycky",
   blesk: "blesk",
   poklad: "balicek-truhla",
-  oblekani: "vytvarka",
   obrana: "town_hall",
   krizovka: "krizovka",
   pravda: "pravda",

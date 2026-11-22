@@ -12,7 +12,6 @@ import { ArenaBackdrop, type ArenaKey } from "@/components/arena/ArenaBackdrop";
 import { Bingo } from "./classic/Bingo";
 import { Blitz } from "./classic/Blitz";
 import { Crossword } from "./classic/Crossword";
-import { DressUp } from "./classic/DressUp";
 import { Fill } from "./classic/Fill";
 import { Hangman } from "./classic/Hangman";
 import { Matching } from "./classic/Matching";
@@ -168,8 +167,6 @@ function ClassicGameBody({
       return <Blitz t={t} questions={questions} difficulty={difficulty} backHref={backHref} />;
     case "poklad":
       return <Treasure t={t} questions={questions} difficulty={difficulty} backHref={backHref} />;
-    case "oblekani":
-      return <DressUp t={t} questions={questions} backHref={backHref} />;
     case "obrana":
       return <Defense t={t} questions={questions} backHref={backHref} />;
     case "krizovka":

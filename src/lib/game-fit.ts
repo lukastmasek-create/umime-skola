@@ -37,7 +37,6 @@ export function canPlay(slug: GameSlug, questions: GameQuestion[], difficulty: n
     case "razeni":
       return n >= 3; // položky sady, každá je jedno pořadí (viz poolFor)
     case "poklad":
-    case "oblekani":
       return n >= 6;
   }
 }

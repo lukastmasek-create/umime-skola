@@ -42,7 +42,6 @@ export type ClassicText = {
   matching: { questions: string; answers: string };
   ordering: { hint: string; round: string; next: string; wrong: string; done: string };
   defense: { wave: string; hearts: string; gold: string; kills: string; ready: string; waveClear: string; shop: string; heal: string; slow: string; next: string; win: string; lose: string; waiting: string };
-  dress: { pick: string; start: string; slots: Record<"hair" | "outfit" | "shoes" | "makeup" | "accessory" | "topper", string>; dolls: Record<"princess" | "athlete" | "rocker" | "fairy" | "chef" | "astronaut", string>; yay: string; oops: string; dressed: string; question: string; wearing: string; changed: string; choose: string; option: string; kinds: Record<string, string> };
 };
 
 const cs: ClassicText = {
@@ -81,7 +80,6 @@ const cs: ClassicText = {
     presmycky: "Klikej na písmena, nebo piš na klávesnici. Backspace smaže poslední písmeno.",
     blesk: "Klikni na správnou odpověď, nebo stiskni klávesy 1 až 4.",
     poklad: "Vyber políčko na ostrově a odpověz na otázku. Správná odpověď ho odemkne.",
-    oblekani: "Klikni na správnou odpověď. Každá správná dá panence jeden kus oblečení.",
     obrana: "Vyber správnou odpověď klikem nebo klávesami 1 až 4. Mezi vlnami kupuj vylepšení klikem.",
     krizovka: "Klikni na políčko a piš na klávesnici. Šipkami se pohybuješ, Tab mění otázku, Enter zkontroluje.",
     pravda: "→ nebo Pravda = pravda, ← nebo Lež = lež (fungují i klávesy P a L).",
@@ -100,7 +98,6 @@ const cs: ClassicText = {
     presmycky: { title: "Přesmyčky", intro: "Písmena jsou zamíchaná. Poskládej z nich správnou odpověď na otázku. Klepej na písmena, nebo piš na klávesnici." },
     blesk: { title: "Bleskový kvíz", intro: "Odpovídej, co to jde. Za správnou odpověď bod a série, za špatnou ztratíš pět sekund. Klávesy 1 až 4 vybírají odpověď." },
     poklad: { title: "Hon za pokladem", intro: "Správná odpověď ti odemkne jedno políčko na ostrově. Skrývá se v nich zlato a truhly, ale i lebky, které berou životy." },
-    oblekani: { title: "Obleč panenku", intro: "Panenka stojí jen ve spodním prádle. Za každou správnou odpověď dostane jeden kus oblečení: vlasy, šaty, boty, make-up, doplněk i čepici. Při chybě zesmutní a něco z jejího oblečení se změní." },
     obrana: { title: "Obrana města", intro: "Nepřátelé se blíží k hradu a nejbližší nese otázku. Správná odpověď ho sestřelí, špatná ho pošle blíž. Přežij pět vln a mezi nimi si za zlato oprav hradby!" },
     krizovka: { title: "Křížovka", intro: "Vyplň křížovku odpověďmi na otázky. Klikni na políčko (nebo na otázku) a piš na klávesnici, šipkami se pohybuješ. Když si nevíš rady, odkryj písmeno, ale stojí to body." },
     pravda: { title: "Pravda, nebo lež", intro: "U každé otázky uvidíš odpověď. Rozhodni co nejrychleji, jestli je správná: šipka → nebo tlačítko Pravda, šipka ← nebo Lež. Za sérii správných rozhodnutí dostaneš bonusový čas." },
@@ -119,7 +116,6 @@ const cs: ClassicText = {
   mil: { points: "bodů", fifty: "50:50", audience: "Publikum", skip: "Přeskočit", take: "Vzít body", safe: "jistý bod", question: "Otázka", reached: "Došel jsi na", won: "Vyhráno", lost: "Špatně! Odnášíš si", takeHome: "Odnášíš si" },
   scramble: { hint: "Nápověda", clear: "Smazat", placeholder: "Složená odpověď", letters: "písmen", revealed: "Správně je" },
   treasure: { gold: "Zlato", lives: "Životy", chest: "Truhla", skull: "Lebka", coin: "Mince", openedTiles: "Odkryto", question: "Otázka" },
-  dress: { pick: "Vyber panenku", start: "Obléknout", slots: { hair: "Vlasy", outfit: "Oblečení", shoes: "Boty", makeup: "Make-up", accessory: "Doplněk", topper: "Čepice" }, dolls: { princess: "Princezna", athlete: "Sportovkyně", rocker: "Rockerka", fairy: "Víla", chef: "Kuchařka", astronaut: "Astronautka" }, yay: "Hurá, sluší jí to!", oops: "Ach ne, špatně… a oblečení se změnilo.", dressed: "Panenka je oblečená", question: "Otázka", wearing: "Na řadě", changed: "Změnilo se", choose: "Vyber {slot}", option: "Varianta {n}", kinds: {"hair:long": "Dlouhé vlasy", "hair:bob": "Sestřih", "hair:pony": "Culík", "hair:curly": "Kudrliny", "hair:bun": "Drdol", "hair:braids": "Copánky", "outfit:gown": "Bálové šaty", "outfit:short": "Koktejlové šaty", "outfit:mermaid": "Večerní šaty", "outfit:summer": "Letní šaty", "outfit:sport": "Sportovní dres", "outfit:rock": "Rockový outfit", "outfit:fairy": "Vílí šatičky", "outfit:chef": "Kuchařský úbor", "outfit:astro": "Skafandr", "shoes:heels": "Střevíčky", "shoes:sneaker": "Tenisky", "shoes:boots": "Kozačky", "shoes:ballet": "Baleríny", "shoes:clog": "Pracovní boty", "shoes:moon": "Měsíční boty", "makeup:0": "Klasický", "makeup:1": "Přirozený", "makeup:2": "Večerní", "makeup:3": "Hravý třpyt", "accessory:necklace": "Náhrdelník", "accessory:glasses": "Brýle", "accessory:bag": "Kabelka", "accessory:wand": "Kouzelná hůlka", "accessory:medal": "Medaile", "accessory:ladle": "Naběračka", "accessory:badge": "Odznak", "topper:crown": "Korunka", "topper:headband": "Čelenka", "topper:hat": "Klobouk", "topper:flowers": "Věnec z květin", "topper:cap": "Kšiltovka", "topper:jacket": "Bunda", "topper:chefhat": "Kuchařská čepice", "topper:helmet": "Přilba"} },
 };
 
 const en: ClassicText = {
@@ -158,7 +154,6 @@ const en: ClassicText = {
     presmycky: "Tap letters or type on the keyboard. Backspace deletes the last letter.",
     blesk: "Click the right answer, or press keys 1 to 4.",
     poklad: "Pick a tile on the island and answer the question. A right answer unlocks it.",
-    oblekani: "Click the right answer. Each right one gives the doll a piece of clothing.",
     obrana: "Pick the right answer by clicking or with keys 1 to 4. Between waves, buy upgrades by clicking.",
     krizovka: "Click a square and type. Arrow keys move, Tab switches the clue, Enter checks.",
     pravda: "→ or True = true, ← or False = lie (the P and L keys work too).",
@@ -177,7 +172,6 @@ const en: ClassicText = {
     presmycky: { title: "Anagrams", intro: "The letters are scrambled. Put them together into the right answer to the question. Tap the letters or type on the keyboard." },
     blesk: { title: "Lightning quiz", intro: "Answer as many as you can. A right answer earns a point and a streak, a wrong one costs five seconds. Keys 1 to 4 pick an answer." },
     poklad: { title: "Treasure hunt", intro: "A right answer unlocks one tile on the island. They hide gold and chests, but also skulls that cost lives." },
-    oblekani: { title: "Dress the doll", intro: "The doll stands in her underwear. Every right answer gives her one piece: hair, outfit, shoes, make-up, accessory and a hat. A wrong answer makes her sad and something she wears changes." },
     obrana: { title: "Castle Defence", intro: "Monsters march on the castle and the nearest one carries a question. A right answer blasts it, a wrong one pushes it closer. Survive five waves and repair the walls with gold in between!" },
     krizovka: { title: "Crossword", intro: "Fill the crossword with the answers. Click a square (or a clue) and type; move with the arrow keys. Stuck? Reveal a letter, but it costs points." },
     pravda: { title: "True or False", intro: "Each question comes with an answer. Decide as fast as you can whether it is right: → or True, ← or False. A streak of right calls earns bonus time." },
@@ -196,7 +190,6 @@ const en: ClassicText = {
   mil: { points: "points", fifty: "50:50", audience: "Audience", skip: "Skip", take: "Take points", safe: "safe point", question: "Question", reached: "You reached", won: "Won", lost: "Wrong! You take home", takeHome: "You take home" },
   scramble: { hint: "Hint", clear: "Clear", placeholder: "Your answer", letters: "letters", revealed: "The answer is" },
   treasure: { gold: "Gold", lives: "Lives", chest: "Chest", skull: "Skull", coin: "Coin", openedTiles: "Opened", question: "Question" },
-  dress: { pick: "Pick a doll", start: "Dress up", slots: { hair: "Hair", outfit: "Outfit", shoes: "Shoes", makeup: "Make-up", accessory: "Accessory", topper: "Hat" }, dolls: { princess: "Princess", athlete: "Athlete", rocker: "Rocker", fairy: "Fairy", chef: "Chef", astronaut: "Astronaut" }, yay: "Yay, it suits her!", oops: "Oh no, wrong… and her outfit changed.", dressed: "The doll is dressed", question: "Question", wearing: "Up next", changed: "Changed", choose: "Choose {slot}", option: "Option {n}", kinds: {"hair:long": "Long hair", "hair:bob": "Bob", "hair:pony": "Ponytail", "hair:curly": "Curls", "hair:bun": "Bun", "hair:braids": "Braids", "outfit:gown": "Ball gown", "outfit:short": "Cocktail dress", "outfit:mermaid": "Evening gown", "outfit:summer": "Summer dress", "outfit:sport": "Sports kit", "outfit:rock": "Rock outfit", "outfit:fairy": "Fairy dress", "outfit:chef": "Chef whites", "outfit:astro": "Space suit", "shoes:heels": "Heels", "shoes:sneaker": "Sneakers", "shoes:boots": "Boots", "shoes:ballet": "Ballet flats", "shoes:clog": "Clogs", "shoes:moon": "Moon boots", "makeup:0": "Classic", "makeup:1": "Natural", "makeup:2": "Evening", "makeup:3": "Playful glitter", "accessory:necklace": "Necklace", "accessory:glasses": "Glasses", "accessory:bag": "Handbag", "accessory:wand": "Magic wand", "accessory:medal": "Medal", "accessory:ladle": "Ladle", "accessory:badge": "Badge", "topper:crown": "Tiara", "topper:headband": "Headband", "topper:hat": "Hat", "topper:flowers": "Flower wreath", "topper:cap": "Cap", "topper:jacket": "Jacket", "topper:chefhat": "Chef hat", "topper:helmet": "Helmet"} },
 };
 
 const de: ClassicText = {
@@ -234,7 +227,6 @@ const de: ClassicText = {
     presmycky: "Tippe Buchstaben an oder schreibe auf der Tastatur. Rücktaste löscht den letzten Buchstaben.",
     blesk: "Klicke die richtige Antwort an oder drücke die Tasten 1 bis 4.",
     poklad: "Wähle ein Feld auf der Insel und beantworte die Frage. Die richtige Antwort öffnet es.",
-    oblekani: "Klicke die richtige Antwort an. Jede richtige gibt der Puppe ein Kleidungsstück.",
     obrana: "Wähle die richtige Antwort per Klick oder mit den Tasten 1 bis 4. Zwischen den Wellen kaufst du Verbesserungen per Klick.",
     krizovka: "Klicke ein Feld an und tippe. Pfeiltasten bewegen dich, Tab wechselt die Frage, Enter prüft.",
     pravda: "→ oder Wahr = wahr, ← oder Falsch = falsch (auch die Tasten P und L).",
@@ -253,7 +245,6 @@ const de: ClassicText = {
     presmycky: { title: "Buchstabensalat", intro: "Die Buchstaben sind durcheinander. Setze daraus die richtige Antwort auf die Frage zusammen. Tippe die Buchstaben an oder schreibe mit der Tastatur." },
     blesk: { title: "Blitzquiz", intro: "Antworte, so schnell du kannst. Für eine richtige Antwort gibt es einen Punkt und eine Serie, für eine falsche verlierst du fünf Sekunden. Die Tasten 1 bis 4 wählen die Antwort." },
     poklad: { title: "Schatzsuche", intro: "Eine richtige Antwort schaltet ein Feld der Insel frei. Darunter liegen Gold und Truhen, aber auch Totenköpfe, die Leben kosten." },
-    oblekani: { title: "Puppe anziehen", intro: "Die Puppe steht in Unterwäsche da. Jede richtige Antwort bringt ihr ein Teil: Haare, Outfit, Schuhe, Make-up, Accessoire und Hut. Bei einer falschen Antwort wird sie traurig und etwas an ihrem Outfit ändert sich." },
     obrana: { title: "Burgverteidigung", intro: "Monster marschieren auf die Burg zu, das vorderste trägt eine Frage. Eine richtige Antwort schießt es ab, eine falsche schiebt es näher. Überstehe fünf Wellen und repariere dazwischen die Mauern mit Gold!" },
     krizovka: { title: "Kreuzworträtsel", intro: "Füll das Rätsel mit den Antworten aus. Klick ein Feld (oder eine Frage) an und tippe; mit den Pfeiltasten bewegst du dich. Kommst du nicht weiter, deck einen Buchstaben auf, das kostet aber Punkte." },
     pravda: { title: "Wahr oder falsch", intro: "Zu jeder Frage siehst du eine Antwort. Entscheide schnell, ob sie stimmt: → oder Wahr, ← oder Falsch. Für eine Serie richtiger Entscheidungen gibt es Bonuszeit." },
@@ -272,7 +263,6 @@ const de: ClassicText = {
   mil: { points: "Punkte", fifty: "50:50", audience: "Publikum", skip: "Überspringen", take: "Punkte nehmen", safe: "sicherer Punkt", question: "Frage", reached: "Du hast erreicht", won: "Gewonnen", lost: "Falsch! Du nimmst mit", takeHome: "Du nimmst mit" },
   scramble: { hint: "Tipp", clear: "Löschen", placeholder: "Deine Antwort", letters: "Buchstaben", revealed: "Richtig ist" },
   treasure: { gold: "Gold", lives: "Leben", chest: "Truhe", skull: "Totenkopf", coin: "Münze", openedTiles: "Geöffnet", question: "Frage" },
-  dress: { pick: "Wähle eine Puppe", start: "Anziehen", slots: { hair: "Haare", outfit: "Outfit", shoes: "Schuhe", makeup: "Make-up", accessory: "Accessoire", topper: "Hut" }, dolls: { princess: "Prinzessin", athlete: "Sportlerin", rocker: "Rockerin", fairy: "Fee", chef: "Köchin", astronaut: "Astronautin" }, yay: "Super, es steht ihr!", oops: "Oje, falsch… und ihr Outfit hat sich geändert.", dressed: "Die Puppe ist angezogen", question: "Frage", wearing: "Als Nächstes", changed: "Geändert", choose: "Wähle {slot}", option: "Variante {n}", kinds: {"hair:long": "Lange Haare", "hair:bob": "Bob", "hair:pony": "Pferdeschwanz", "hair:curly": "Locken", "hair:bun": "Dutt", "hair:braids": "Zöpfe", "outfit:gown": "Ballkleid", "outfit:short": "Cocktailkleid", "outfit:mermaid": "Abendkleid", "outfit:summer": "Sommerkleid", "outfit:sport": "Sportdress", "outfit:rock": "Rock-Outfit", "outfit:fairy": "Feenkleid", "outfit:chef": "Kochjacke", "outfit:astro": "Raumanzug", "shoes:heels": "Pumps", "shoes:sneaker": "Sneaker", "shoes:boots": "Stiefel", "shoes:ballet": "Ballerinas", "shoes:clog": "Clogs", "shoes:moon": "Mondstiefel", "makeup:0": "Klassisch", "makeup:1": "Natürlich", "makeup:2": "Abend", "makeup:3": "Verspielter Glitzer", "accessory:necklace": "Halskette", "accessory:glasses": "Brille", "accessory:bag": "Handtasche", "accessory:wand": "Zauberstab", "accessory:medal": "Medaille", "accessory:ladle": "Kelle", "accessory:badge": "Abzeichen", "topper:crown": "Tiara", "topper:headband": "Haarreif", "topper:hat": "Hut", "topper:flowers": "Blumenkranz", "topper:cap": "Kappe", "topper:jacket": "Jacke", "topper:chefhat": "Kochmütze", "topper:helmet": "Helm"} },
 };
 
 const ru: ClassicText = {
@@ -310,7 +300,6 @@ const ru: ClassicText = {
     presmycky: "Нажимай буквы или печатай на клавиатуре. Backspace удаляет последнюю букву.",
     blesk: "Нажми на правильный ответ или клавиши от 1 до 4.",
     poklad: "Выбери клетку на острове и ответь на вопрос. Правильный ответ её откроет.",
-    oblekani: "Нажми на правильный ответ. Каждый верный даёт кукле одну вещь одежды.",
     obrana: "Выбери правильный ответ кликом или клавишами от 1 до 4. Между волнами покупай улучшения кликом.",
     krizovka: "Нажми на клетку и печатай. Стрелки двигают курсор, Tab переключает вопрос, Enter проверяет.",
     pravda: "→ или Правда = правда, ← или Ложь = ложь (работают и клавиши P и L).",
@@ -329,7 +318,6 @@ const ru: ClassicText = {
     presmycky: { title: "Анаграммы", intro: "Буквы перемешаны. Составь из них правильный ответ на вопрос. Нажимай на буквы или печатай на клавиатуре." },
     blesk: { title: "Блиц-викторина", intro: "Отвечай как можно быстрее. За верный ответ балл и серия, за неверный минус пять секунд. Клавиши 1–4 выбирают ответ." },
     poklad: { title: "Охота за сокровищами", intro: "Верный ответ открывает одну клетку острова. В них золото и сундуки, но и черепа, которые отнимают жизни." },
-    oblekani: { title: "Одень куклу", intro: "Кукла стоит в белье. За каждый верный ответ она получает вещь: причёску, наряд, обувь, макияж, аксессуар и головной убор. При ошибке она грустит, и что-то из её одежды меняется." },
     obrana: { title: "Оборона города", intro: "Враги идут к замку, и ближайший несёт вопрос. Верный ответ сбивает его, неверный подталкивает ближе. Переживи пять волн и между ними чини стены за золото!" },
     krizovka: { title: "Кроссворд", intro: "Заполни кроссворд ответами. Нажми на клетку (или на вопрос) и печатай, стрелками перемещайся. Если не знаешь, открой букву, но это стоит очков." },
     pravda: { title: "Правда или ложь", intro: "К каждому вопросу показан ответ. Быстро реши, верный ли он: → или «Правда», ← или «Ложь». За серию верных решений — бонусное время." },
@@ -348,7 +336,6 @@ const ru: ClassicText = {
   mil: { points: "очков", fifty: "50:50", audience: "Зал", skip: "Пропустить", take: "Забрать очки", safe: "надёжный балл", question: "Вопрос", reached: "Ты дошёл до", won: "Выиграно", lost: "Неверно! Ты забираешь", takeHome: "Ты забираешь" },
   scramble: { hint: "Подсказка", clear: "Стереть", placeholder: "Твой ответ", letters: "букв", revealed: "Правильно так" },
   treasure: { gold: "Золото", lives: "Жизни", chest: "Сундук", skull: "Череп", coin: "Монета", openedTiles: "Открыто", question: "Вопрос" },
-  dress: { pick: "Выбери куклу", start: "Одевать", slots: { hair: "Причёска", outfit: "Наряд", shoes: "Обувь", makeup: "Макияж", accessory: "Аксессуар", topper: "Головной убор" }, dolls: { princess: "Принцесса", athlete: "Спортсменка", rocker: "Рокерша", fairy: "Фея", chef: "Повариха", astronaut: "Астронавтка" }, yay: "Ура, ей идёт!", oops: "Ой, неверно… и наряд изменился.", dressed: "Кукла одета", question: "Вопрос", wearing: "Следующее", changed: "Изменилось", choose: "Выбери: {slot}", option: "Вариант {n}", kinds: {"hair:long": "Длинные волосы", "hair:bob": "Каре", "hair:pony": "Хвост", "hair:curly": "Кудри", "hair:bun": "Пучок", "hair:braids": "Косички", "outfit:gown": "Бальное платье", "outfit:short": "Коктейльное платье", "outfit:mermaid": "Вечернее платье", "outfit:summer": "Летнее платье", "outfit:sport": "Спортивная форма", "outfit:rock": "Рок-наряд", "outfit:fairy": "Платье феи", "outfit:chef": "Поварской китель", "outfit:astro": "Скафандр", "shoes:heels": "Туфли", "shoes:sneaker": "Кроссовки", "shoes:boots": "Сапожки", "shoes:ballet": "Балетки", "shoes:clog": "Сабо", "shoes:moon": "Лунные ботинки", "makeup:0": "Классический", "makeup:1": "Естественный", "makeup:2": "Вечерний", "makeup:3": "Игривый блеск", "accessory:necklace": "Ожерелье", "accessory:glasses": "Очки", "accessory:bag": "Сумочка", "accessory:wand": "Волшебная палочка", "accessory:medal": "Медаль", "accessory:ladle": "Половник", "accessory:badge": "Значок", "topper:crown": "Диадема", "topper:headband": "Ободок", "topper:hat": "Шляпа", "topper:flowers": "Венок", "topper:cap": "Кепка", "topper:jacket": "Куртка", "topper:chefhat": "Поварской колпак", "topper:helmet": "Шлем"} },
 };
 
 const uk: ClassicText = {
@@ -386,7 +373,6 @@ const uk: ClassicText = {
     presmycky: "Натискай літери або вводь їх на клавіатурі. Backspace видаляє останню літеру.",
     blesk: "Клацни правильну відповідь або натисни клавіші від 1 до 4.",
     poklad: "Вибери клітинку на острові і дай відповідь на запитання. Правильна відповідь її відкриває.",
-    oblekani: "Клацни правильну відповідь. Кожна правильна дає ляльці один елемент одягу.",
     obrana: "Вибери правильну відповідь кліком або клавішами від 1 до 4. Між хвилями купуй покращення кліком.",
     krizovka: "Клацни клітинку і пиши. Стрілки переміщують, Tab змінює підказку, Enter перевіряє.",
     pravda: "→ або Правда = правда, ← або Неправда = брехня (працюють також клавіші P і L).",
@@ -405,7 +391,6 @@ const uk: ClassicText = {
     presmycky: { title: "Анаграми", intro: "Літери переплутані. Склади їх у правильну відповідь на запитання. Натискай літери або вводь їх на клавіатурі." },
     blesk: { title: "Блискавична вікторина", intro: "Відповідай на якомога більше. Правильна відповідь дає бал і серію, неправильна коштує п'ять секунд. Клавіші від 1 до 4 вибирають відповідь." },
     poklad: { title: "Пошук скарбів", intro: "Правильна відповідь відкриває одну клітинку острова. Там ховаються золото і скрині, але також черепи, що забирають життя." },
-    oblekani: { title: "Одягни ляльку", intro: "Лялька стоїть у білизні. Кожна правильна відповідь дає їй один елемент: волосся, сукню, взуття, макіяж, аксесуар і капелюшок. Неправильна відповідь її засмучує, і один з елементів змінюється." },
     obrana: { title: "Оборона замку", intro: "Монстри йдуть на замок, і найближчий несе запитання. Правильна відповідь його знищує, неправильна штовхає ближче. Витримай п'ять хвиль і лагодь мури за золото між ними!" },
     krizovka: { title: "Кросворд", intro: "Заповни кросворд відповідями. Клацни клітинку (або підказку) і пиши; переміщуйся стрілками. Застряг? Відкрий літеру, але це коштує балів." },
     pravda: { title: "Правда чи неправда", intro: "До кожного запитання є твердження. Швидко вирішуй, чи воно правильне: → або Правда, ← або Неправда. Серія правильних відповідей дає бонусний час." },
@@ -424,7 +409,6 @@ const uk: ClassicText = {
   mil: { points: "балів", fifty: "50:50", audience: "Публіка", skip: "Пропуск", take: "Забрати бали", safe: "безпечна позначка", question: "Запитання", reached: "Ти досяг", won: "Виграно", lost: "Помилка! Ти забираєш додому", takeHome: "Ти забираєш додому" },
   scramble: { hint: "Підказка", clear: "Очистити", placeholder: "Твоя відповідь", letters: "літер", revealed: "Відповідь:" },
   treasure: { gold: "Золото", lives: "Життя", chest: "Скриня", skull: "Череп", coin: "Монета", openedTiles: "Відкрито", question: "Запитання" },
-  dress: { pick: "Вибери ляльку", start: "Одягни", slots: { hair: "Волосся", outfit: "Сукня", shoes: "Взуття", makeup: "Макіяж", accessory: "Аксесуар", topper: "Капелюшок" }, dolls: { princess: "Принцеса", athlete: "Спортсменка", rocker: "Рокерка", fairy: "Фея", chef: "Кухарка", astronaut: "Космонавтка" }, yay: "Ура, їй личить!", oops: "Ой, помилка… і її одяг змінився.", dressed: "Ляльку вдягнено", question: "Запитання", wearing: "Далі", changed: "Змінено", choose: "Вибери: {slot}", option: "Варіант {n}", kinds: { "hair:long": "Довге волосся", "hair:bob": "Боб", "hair:pony": "Хвіст", "hair:curly": "Локони", "hair:bun": "Пучок", "hair:braids": "Коси", "outfit:gown": "Бальна сукня", "outfit:short": "Коктейльна сукня", "outfit:mermaid": "Вечірня сукня", "outfit:summer": "Літня сукня", "outfit:sport": "Спортивний костюм", "outfit:rock": "Рокерський образ", "outfit:fairy": "Фейська сукня", "outfit:chef": "Кухарська форма", "outfit:astro": "Скафандр", "shoes:heels": "Туфлі на підборах", "shoes:sneaker": "Кросівки", "shoes:boots": "Черевики", "shoes:ballet": "Балетки", "shoes:clog": "Сабо", "shoes:moon": "Місячні черевики", "makeup:0": "Класичний", "makeup:1": "Натуральний", "makeup:2": "Вечірній", "makeup:3": "Грайливий з блиском", "accessory:necklace": "Намисто", "accessory:glasses": "Окуляри", "accessory:bag": "Сумочка", "accessory:wand": "Чарівна паличка", "accessory:medal": "Медаль", "accessory:ladle": "Черпак", "accessory:badge": "Значок", "topper:crown": "Діадема", "topper:headband": "Пов'язка", "topper:hat": "Капелюх", "topper:flowers": "Вінок з квітів", "topper:cap": "Кепка", "topper:jacket": "Куртка", "topper:chefhat": "Кухарський ковпак", "topper:helmet": "Шолом" } },
 };
 
 const ja: ClassicText = {
@@ -462,7 +446,6 @@ const ja: ClassicText = {
     presmycky: "文字をタップするか、キーボードで入力してください。Backspace で最後の文字を消せます。",
     blesk: "正しい答えをクリックするか、キー 1 から 4 を押してください。",
     poklad: "島のマスを選んで問題に答えてください。正解するとマスが開きます。",
-    oblekani: "正しい答えをクリックしてください。正解するたびに人形の服が1つ増えます。",
     obrana: "正しい答えをクリックするか、キー 1 から 4 で選んでください。ウェーブの合間はクリックで強化を買えます。",
     krizovka: "マスをクリックして入力してください。矢印キーで移動、Tab でヒントを切り替え、Enter で確認できます。",
     pravda: "→ または「正しい」＝正しい、← または「まちがい」＝うそ（P と L キーも使えます）。",
@@ -481,7 +464,6 @@ const ja: ClassicText = {
     presmycky: { title: "アナグラム", intro: "文字がバラバラになっています。並べ替えて、問題の正しい答えを作ってください。文字をタップするか、キーボードで入力しましょう。" },
     blesk: { title: "ひらめきクイズ", intro: "できるだけたくさん答えてください。正解でポイントと連続記録が増え、まちがえると5秒失います。キー 1 から 4 で答えを選べます。" },
     poklad: { title: "宝探し", intro: "正解すると島のマスが1つ開きます。金貨や宝箱が隠れていますが、ライフを失う髑髏もあるので注意してね。" },
-    oblekani: { title: "お人形の着せ替え", intro: "お人形は下着姿で立っています。正解するたびに、髪、服、靴、メイク、アクセサリー、帽子のどれか1つが増えます。まちがえるとお人形は悲しくなり、身につけているもののどれかが変わってしまいます。" },
     obrana: { title: "お城の防衛", intro: "モンスターがお城に向かって進んできます。一番近いモンスターが問題を持っています。正解すると吹き飛ばし、まちがえると近づいてしまいます。5つのウェーブを生き延びて、合間にゴールドで城壁を修理しましょう！" },
     krizovka: { title: "クロスワード", intro: "答えでクロスワードを埋めましょう。マス（またはヒント）をクリックして入力し、矢印キーで移動できます。困ったら文字を明かせますが、ポイントが減ります。" },
     pravda: { title: "正しい？まちがい？", intro: "それぞれの問題には答えが付いています。それが正しいかどうか、できるだけ早く決めましょう。→ または「正しい」、← または「まちがい」。正解が続くとボーナス時間がもらえます。" },
@@ -500,7 +482,6 @@ const ja: ClassicText = {
   mil: { points: "ポイント", fifty: "50:50", audience: "観客", skip: "スキップ", take: "ポイントを受け取る", safe: "安全地点", question: "問題", reached: "到達しました", won: "獲得", lost: "不正解！ 持ち帰るポイント", takeHome: "持ち帰るポイント" },
   scramble: { hint: "ヒント", clear: "消去", placeholder: "あなたの答え", letters: "文字", revealed: "答えは" },
   treasure: { gold: "ゴールド", lives: "ライフ", chest: "宝箱", skull: "髑髏", coin: "コイン", openedTiles: "開いたマス", question: "問題" },
-  dress: { pick: "お人形を選ぶ", start: "着せ替えスタート", slots: { hair: "髪", outfit: "服", shoes: "靴", makeup: "メイク", accessory: "アクセサリー", topper: "帽子" }, dolls: { princess: "プリンセス", athlete: "アスリート", rocker: "ロッカー", fairy: "妖精", chef: "シェフ", astronaut: "宇宙飛行士" }, yay: "やった、似合ってる！", oops: "あら、まちがい…服が変わってしまいました。", dressed: "お人形の着替えが完了", question: "問題", wearing: "次は", changed: "変わりました", choose: "{slot} を選んでね", option: "選択肢 {n}", kinds: { "hair:long": "ロングヘア", "hair:bob": "ボブ", "hair:pony": "ポニーテール", "hair:curly": "カール", "hair:bun": "お団子", "hair:braids": "三つ編み", "outfit:gown": "舞踏会のドレス", "outfit:short": "カクテルドレス", "outfit:mermaid": "イブニングドレス", "outfit:summer": "サマードレス", "outfit:sport": "スポーツウェア", "outfit:rock": "ロックな服", "outfit:fairy": "妖精のドレス", "outfit:chef": "コックの制服", "outfit:astro": "宇宙服", "shoes:heels": "ハイヒール", "shoes:sneaker": "スニーカー", "shoes:boots": "ブーツ", "shoes:ballet": "バレエシューズ", "shoes:clog": "木靴", "shoes:moon": "ムーンブーツ", "makeup:0": "クラシック", "makeup:1": "ナチュラル", "makeup:2": "イブニング", "makeup:3": "キラキラ遊び心", "accessory:necklace": "ネックレス", "accessory:glasses": "メガネ", "accessory:bag": "ハンドバッグ", "accessory:wand": "魔法の杖", "accessory:medal": "メダル", "accessory:ladle": "お玉", "accessory:badge": "バッジ", "topper:crown": "ティアラ", "topper:headband": "ヘアバンド", "topper:hat": "帽子", "topper:flowers": "花の冠", "topper:cap": "キャップ", "topper:jacket": "ジャケット", "topper:chefhat": "コックの帽子", "topper:helmet": "ヘルメット" } },
 };
 
 const es: ClassicText = {
@@ -538,7 +519,6 @@ const es: ClassicText = {
     presmycky: "Toca las letras o escribe en el teclado. Retroceso borra la última letra.",
     blesk: "Haz clic en la respuesta correcta o pulsa las teclas 1 a 4.",
     poklad: "Elige una casilla de la isla y responde la pregunta. Una respuesta correcta la desbloquea.",
-    oblekani: "Haz clic en la respuesta correcta. Cada acierto le da a la muñeca una prenda.",
     obrana: "Elige la respuesta correcta con clic o con las teclas 1 a 4. Entre oleadas, compra mejoras haciendo clic.",
     krizovka: "Haz clic en una casilla y escribe. Las flechas mueven, Tab cambia la pista y Intro comprueba.",
     pravda: "→ o Verdadero = verdadero, ← o Falso = mentira (las teclas P y L también funcionan).",
@@ -557,7 +537,6 @@ const es: ClassicText = {
     presmycky: { title: "Anagramas", intro: "Las letras están desordenadas. Ponlas juntas para formar la respuesta correcta a la pregunta. Toca las letras o escribe en el teclado." },
     blesk: { title: "Quiz relámpago", intro: "Responde todas las que puedas. Una respuesta correcta suma un punto y racha, una incorrecta cuesta cinco segundos. Las teclas 1 a 4 eligen una respuesta." },
     poklad: { title: "Búsqueda del tesoro", intro: "Una respuesta correcta desbloquea una casilla de la isla. Esconden oro y cofres, pero también calaveras que cuestan vidas." },
-    oblekani: { title: "Viste a la muñeca", intro: "La muñeca está de pie en ropa interior. Cada respuesta correcta le da una prenda: pelo, vestido, zapatos, maquillaje, accesorio y sombrero. Una respuesta mala la entristece y cambia algo de lo que lleva puesto." },
     obrana: { title: "Defensa del castillo", intro: "Los monstruos marchan hacia el castillo y el más cercano lleva una pregunta. Una respuesta correcta lo destruye; una incorrecta lo acerca. ¡Sobrevive a cinco oleadas y repara los muros con oro entre medias!" },
     krizovka: { title: "Crucigrama", intro: "Rellena el crucigrama con las respuestas. Haz clic en una casilla (o en una pista) y escribe; mueve con las flechas. ¿Atascado? Revela una letra, pero cuesta puntos." },
     pravda: { title: "Verdadero o falso", intro: "Cada pregunta viene con una respuesta. Decide lo más rápido posible si es correcta: → o Verdadero, ← o Falso. Una racha de aciertos da tiempo extra." },
@@ -576,7 +555,6 @@ const es: ClassicText = {
   mil: { points: "puntos", fifty: "50:50", audience: "Público", skip: "Saltar", take: "Llevarse los puntos", safe: "punto seguro", question: "Pregunta", reached: "Has llegado", won: "Ganado", lost: "¡Mal! Te llevas a casa", takeHome: "Te llevas a casa" },
   scramble: { hint: "Pista", clear: "Borrar", placeholder: "Tu respuesta", letters: "letras", revealed: "La respuesta es" },
   treasure: { gold: "Oro", lives: "Vidas", chest: "Cofre", skull: "Calavera", coin: "Moneda", openedTiles: "Abiertas", question: "Pregunta" },
-  dress: { pick: "Elige una muñeca", start: "Vestir", slots: { hair: "Pelo", outfit: "Vestido", shoes: "Zapatos", makeup: "Maquillaje", accessory: "Accesorio", topper: "Sombrero" }, dolls: { princess: "Princesa", athlete: "Atleta", rocker: "Rockera", fairy: "Hada", chef: "Cocinera", astronaut: "Astronauta" }, yay: "¡Qué bien, le queda genial!", oops: "¡Vaya, fallaste… y su ropa cambió.", dressed: "La muñeca está vestida", question: "Pregunta", wearing: "Después", changed: "Cambiado", choose: "Elige: {slot}", option: "Opción {n}", kinds: { "hair:long": "Pelo largo", "hair:bob": "Melena", "hair:pony": "Coleta", "hair:curly": "Rizos", "hair:bun": "Moño", "hair:braids": "Trenzas", "outfit:gown": "Vestido de gala", "outfit:short": "Vestido de cóctel", "outfit:mermaid": "Vestido de noche", "outfit:summer": "Vestido de verano", "outfit:sport": "Ropa deportiva", "outfit:rock": "Look rockero", "outfit:fairy": "Vestido de hada", "outfit:chef": "Uniforme de cocinera", "outfit:astro": "Traje espacial", "shoes:heels": "Tacones", "shoes:sneaker": "Zapatillas", "shoes:boots": "Botas", "shoes:ballet": "Bailarinas", "shoes:clog": "Zuecos", "shoes:moon": "Botas lunares", "makeup:0": "Clásico", "makeup:1": "Natural", "makeup:2": "De noche", "makeup:3": "Juguetón con brillo", "accessory:necklace": "Collar", "accessory:glasses": "Gafas", "accessory:bag": "Bolso", "accessory:wand": "Varita mágica", "accessory:medal": "Medalla", "accessory:ladle": "Cucharón", "accessory:badge": "Insignia", "topper:crown": "Tiara", "topper:headband": "Diadema", "topper:hat": "Sombrero", "topper:flowers": "Corona de flores", "topper:cap": "Gorra", "topper:jacket": "Chaqueta", "topper:chefhat": "Gorro de cocinera", "topper:helmet": "Casco" } },
 };
 
 const fr: ClassicText = {
@@ -614,7 +592,6 @@ const fr: ClassicText = {
     presmycky: "Touche les lettres ou tape au clavier. Retour arrière efface la dernière lettre.",
     blesk: "Clique sur la bonne réponse ou appuie sur les touches 1 à 4.",
     poklad: "Choisis une case sur l'île et réponds à la question. Une bonne réponse la débloque.",
-    oblekani: "Clique sur la bonne réponse. Chaque bonne réponse donne à la poupée un vêtement.",
     obrana: "Choisis la bonne réponse en cliquant ou avec les touches 1 à 4. Entre les vagues, achète des améliorations en cliquant.",
     krizovka: "Clique sur une case et tape. Les flèches déplacent, Tab change d'indice, Entrée vérifie.",
     pravda: "→ ou Vrai = vrai, ← ou Faux = mensonge (les touches P et L fonctionnent aussi).",
@@ -633,7 +610,6 @@ const fr: ClassicText = {
     presmycky: { title: "Anagrammes", intro: "Les lettres sont mélangées. Assemble-les pour former la bonne réponse à la question. Touche les lettres ou tape au clavier." },
     blesk: { title: "Quiz éclair", intro: "Réponds à un maximum de questions. Une bonne réponse rapporte un point et une série, une mauvaise coûte cinq secondes. Les touches 1 à 4 choisissent une réponse." },
     poklad: { title: "Chasse au trésor", intro: "Une bonne réponse débloque une case de l'île. Elles cachent de l'or et des coffres, mais aussi des têtes de mort qui coûtent des vies." },
-    oblekani: { title: "Habille la poupée", intro: "La poupée se tient en sous-vêtements. Chaque bonne réponse lui donne un élément : cheveux, tenue, chaussures, maquillage, accessoire et chapeau. Une mauvaise réponse la rend triste et change l'un de ses vêtements." },
     obrana: { title: "Défense du château", intro: "Des monstres avancent vers le château et le plus proche porte une question. Une bonne réponse le fait exploser ; une mauvaise le rapproche. Survis à cinq vagues et répare les murs avec de l'or entre-temps !" },
     krizovka: { title: "Mots croisés", intro: "Remplis la grille avec les réponses. Clique sur une case (ou un indice) et tape ; déplace-toi avec les flèches. Bloqué ? Révèle une lettre, mais cela coûte des points." },
     pravda: { title: "Vrai ou faux", intro: "Chaque question est accompagnée d'une affirmation. Décide le plus vite possible si elle est juste : → ou Vrai, ← ou Faux. Une série de bonnes réponses rapporte du temps bonus." },
@@ -652,7 +628,6 @@ const fr: ClassicText = {
   mil: { points: "points", fifty: "50:50", audience: "Public", skip: "Passer", take: "Prendre les points", safe: "point sûr", question: "Question", reached: "Tu as atteint", won: "Gagné", lost: "Raté ! Tu repars avec", takeHome: "Tu repars avec" },
   scramble: { hint: "Indice", clear: "Effacer", placeholder: "Ta réponse", letters: "lettres", revealed: "La réponse est" },
   treasure: { gold: "Or", lives: "Vies", chest: "Coffre", skull: "Tête de mort", coin: "Pièce", openedTiles: "Ouvertes", question: "Question" },
-  dress: { pick: "Choisis une poupée", start: "Habiller", slots: { hair: "Cheveux", outfit: "Tenue", shoes: "Chaussures", makeup: "Maquillage", accessory: "Accessoire", topper: "Chapeau" }, dolls: { princess: "Princesse", athlete: "Athlète", rocker: "Rockeuse", fairy: "Fée", chef: "Cheffe", astronaut: "Astronaute" }, yay: "Bravo, ça lui va bien !", oops: "Oh non, raté… et sa tenue a changé.", dressed: "La poupée est habillée", question: "Question", wearing: "Ensuite", changed: "Changé", choose: "Choisis : {slot}", option: "Option {n}", kinds: { "hair:long": "Cheveux longs", "hair:bob": "Carré", "hair:pony": "Queue de cheval", "hair:curly": "Boucles", "hair:bun": "Chignon", "hair:braids": "Tresses", "outfit:gown": "Robe de bal", "outfit:short": "Robe de cocktail", "outfit:mermaid": "Robe de soirée", "outfit:summer": "Robe d'été", "outfit:sport": "Tenue de sport", "outfit:rock": "Tenue rock", "outfit:fairy": "Robe de fée", "outfit:chef": "Tenue de cuisinière", "outfit:astro": "Combinaison spatiale", "shoes:heels": "Talons", "shoes:sneaker": "Baskets", "shoes:boots": "Bottes", "shoes:ballet": "Ballerines", "shoes:clog": "Sabots", "shoes:moon": "Bottes lunaires", "makeup:0": "Classique", "makeup:1": "Naturel", "makeup:2": "Soirée", "makeup:3": "Ludique et pailleté", "accessory:necklace": "Collier", "accessory:glasses": "Lunettes", "accessory:bag": "Sac à main", "accessory:wand": "Baguette magique", "accessory:medal": "Médaille", "accessory:ladle": "Louche", "accessory:badge": "Badge", "topper:crown": "Diadème", "topper:headband": "Bandeau", "topper:hat": "Chapeau", "topper:flowers": "Couronne de fleurs", "topper:cap": "Casquette", "topper:jacket": "Veste", "topper:chefhat": "Toque de cuisinier", "topper:helmet": "Casque" } },
 };
 
 const texts: Record<Locale, ClassicText> = { ...withFallbacks({ cs, en, de, ru }), uk, ja, es, fr };
