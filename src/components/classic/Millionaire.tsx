@@ -186,14 +186,14 @@ export function Millionaire({
             </div>
             {q && <QuestionCard q={q} picked={picked} hidden={hidden} onPick={pick} votes={votes} />}
           </div>
-          <ol className="flex flex-col-reverse gap-1 text-sm">
+          <ol className="grid grid-cols-5 gap-1 text-xs sm:flex sm:flex-col-reverse sm:text-sm">
             {ladder.map((amount, i) => {
               const isNow = i === level;
               const isSafe = safe.includes(i + 1);
               return (
                 <li
                   key={amount}
-                  className="flex items-center justify-between rounded-lg border-2 px-3 py-1 font-bold tabular-nums"
+                  className="flex flex-col items-center justify-between rounded-lg border-2 px-1 py-0.5 font-bold tabular-nums sm:flex-row sm:px-3 sm:py-1"
                   style={{
                     borderColor: isNow ? "var(--accent-500)" : "transparent",
                     background: isNow ? "var(--accent-500)" : i < level ? "rgba(126,224,176,0.3)" : "var(--surface-muted)",

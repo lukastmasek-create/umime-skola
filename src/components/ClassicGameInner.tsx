@@ -55,6 +55,7 @@ export function ClassicGameInner({
   const ui = getGamesUiText(locale);
   const meta = gameMeta(game, locale);
   const emoji = GAMES.find((g) => g.slug === game)?.emoji ?? "🎮";
+  const steps = t.introSteps ?? getClassicText("en").introSteps ?? ["", ""];
   const [started, setStarted] = useState(false);
   const [best, setBest] = useState<Best | null>(null);
 
@@ -101,14 +102,24 @@ export function ClassicGameInner({
             ▶ {ui.start}
           </button>
         </div>
-        <div className="arena-panel p-4" style={{ padding: 16 }}>
-          <h2 className="mb-1 text-sm font-bold uppercase tracking-wide" style={{ color: "#ffc933" }}>⌨️ {t.controlsLabel}</h2>
-          <p className="text-sm font-semibold">{t.controls[game]}</p>
+        <div className="gq-steps">
+          {[
+            { icon: "👀", title: "1", text: steps[0] },
+            { icon: "👆", title: "2", text: t.controls[game] },
+            { icon: "✅", title: "3", text: steps[1] },
+          ].map((st) => (
+            <div key={st.title} className="gq-step">
+              <span className="gq-step-icon" aria-hidden>
+                {st.icon}
+              </span>
+              <p>{st.text}</p>
+            </div>
+          ))}
         </div>
-        <div className="arena-panel" style={{ padding: 16 }}>
-          <h2 className="mb-1 text-sm font-bold uppercase tracking-wide text-[var(--faint)]">{ui.howTo}</h2>
-          <p className="text-sm">{t.games[game].intro}</p>
-        </div>
+        <details className="arena-panel" style={{ padding: 14 }}>
+          <summary className="cursor-pointer text-sm font-bold">{ui.howTo}</summary>
+          <p className="mt-2 text-sm">{t.games[game].intro}</p>
+        </details>
       </div>
     );
   }
