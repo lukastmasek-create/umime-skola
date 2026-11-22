@@ -7,6 +7,7 @@ import { Materialy } from "./scenes/Materialy";
 import { Code } from "./scenes/Code";
 import { Scratch } from "./scenes/Scratch";
 import { Outro } from "./scenes/Outro";
+import { Intro } from "./scenes/Intro";
 
 // Hudba a voice-over: soubory vlož do public/audio (viz README).
 const HAS_VOICE = false;
@@ -17,6 +18,7 @@ export const Promo = () => (
     <Bg />
     {(
       [
+        ["intro", Intro, false],
         ["kurzy", Kviz, true],
         ["materialy", Materialy, true],
         ["code", Code, true],
