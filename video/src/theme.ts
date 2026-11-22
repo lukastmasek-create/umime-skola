@@ -14,14 +14,16 @@ export const C = {
 export const FPS = 30;
 export const W = 1920;
 export const H = 1080;
-export const DURATION = 725;
+export const DURATION = 562;
 
 // Scény: [start, délka] ve snímcích.
 export const S = {
-  intro: [0, 85],
-  kurzy: [75, 180],
-  materialy: [245, 150],
-  code: [385, 150],
-  scratch: [525, 130],
-  outro: [645, 80],
+  intro: [0, 45],
+  kurzy: [30, 125],
+  materialy: [148, 114],
+  code: [258, 114],
+  scratch: [366, 100],
+  outro: [452, 110],
 } as const;
+// Hlas začíná po 1 s loga a trvá 17,32 s.
+export const VOICE_FROM = 30;

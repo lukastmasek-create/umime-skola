@@ -22,11 +22,11 @@ const colorize = (line: string) =>
 
 export const Code = () => {
   const f = useCurrentFrame();
-  const n = Math.floor(interpolate(f, [14, 90], [0, CODE.length], clamp));
+  const n = Math.floor(interpolate(f, [8, 62], [0, CODE.length], clamp));
   const typed = CODE.slice(0, n);
   const lines = typed.split("\n");
-  const run = f >= 96;
-  const shown = Math.floor(interpolate(f, [100, 124], [0, OUT.length + 0.99], clamp));
+  const run = f >= 66;
+  const shown = Math.floor(interpolate(f, [68, 90], [0, OUT.length + 0.99], clamp));
   return (
     <AbsoluteFill style={{ alignItems: "center" }}>
       <div style={{ marginTop: 60 }}>
@@ -55,7 +55,7 @@ export const Code = () => {
         </Glass>
       </div>
       <div style={{ position: "absolute", top: 780 }}>
-        <Toast title="Napiš. Spusť. Vidíš výsledek." sub="Programování pro začátečníky" delay={110} />
+        <Toast title="Napiš. Spusť. Vidíš výsledek." sub="Programování pro začátečníky" delay={78} />
       </div>
     </AbsoluteFill>
   );

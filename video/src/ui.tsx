@@ -178,10 +178,10 @@ export const Toast = ({ title, sub, delay = 0 }: { title: string; sub: string; d
 };
 
 // Přechod scén: vlet a odlet s náklonem a rozmazáním.
-export const Fly = ({ dur, children, tilt = true }: { dur: number; children: ReactNode; tilt?: boolean }) => {
+export const Fly = ({ dur, children, tilt = true, last = false }: { dur: number; children: ReactNode; tilt?: boolean; last?: boolean }) => {
   const f = useCurrentFrame();
   const inn = interpolate(f, [0, 16], [0, 1], { easing: ease, ...clamp });
-  const out = interpolate(f, [dur - 14, dur], [0, 1], { easing: Easing.in(Easing.cubic), ...clamp });
+  const out = last ? 0 : interpolate(f, [dur - 14, dur], [0, 1], { easing: Easing.in(Easing.cubic), ...clamp });
   const a = 1 - inn + out;
   return (
     <AbsoluteFill

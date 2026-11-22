@@ -41,7 +41,7 @@ export const Materialy = () => {
         </Glass>
       </div>
       <div style={{ position: "absolute", top: 790 }}>
-        <Toast title="Přečti si to. Pak procvič." sub="Výtahy ze všech předmětů" delay={70} />
+        <Toast title="Přečti si to. Pak procvič." sub="Výtahy ze všech předmětů" delay={58} />
       </div>
     </AbsoluteFill>
   );

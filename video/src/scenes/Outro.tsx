@@ -6,7 +6,7 @@ export const Outro = () => {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
   const s = spring({ frame: f, fps, config: { damping: 12, stiffness: 100 } });
-  const url = interpolate(f, [24, 44], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const url = interpolate(f, [38, 58], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   return (
     <AbsoluteFill style={{ alignItems: "center", justifyContent: "center", gap: 48, flexDirection: "column" }}>
       <Img

@@ -13,8 +13,8 @@ const BLOCKS = [
 
 export const Scratch = () => {
   const f = useCurrentFrame();
-  const start = 66;
-  const p = interpolate(f, [start, start + 56], [0, 4], { easing: Easing.linear, ...clamp });
+  const start = 36;
+  const p = interpolate(f, [start, start + 40], [0, 4], { easing: Easing.linear, ...clamp });
   const side = Math.min(Math.floor(p), 3);
   const q = p - side;
   const pts = [[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]];
@@ -33,7 +33,7 @@ export const Scratch = () => {
         <Glass width={720} height={470}>
           <div style={{ padding: "90px 60px 0", fontFamily: BODY, fontWeight: 700, fontSize: 34 }}>
             {BLOCKS.map((b, i) => {
-              const k = interpolate(f, [10 + i * 10, 34 + i * 10], [0, 1], { easing: Easing.out(Easing.back(1.6)), ...clamp });
+              const k = interpolate(f, [4 + i * 7, 24 + i * 7], [0, 1], { easing: Easing.out(Easing.back(1.6)), ...clamp });
               return (
                 <div
                   key={b.t}
@@ -79,7 +79,7 @@ export const Scratch = () => {
         </Glass>
       </div>
       <div style={{ position: "absolute", top: 780 }}>
-        <Toast title="Postavička běží podle tvých bloků." sub="Scratch pro děti" delay={96} />
+        <Toast title="Postavička běží podle tvých bloků." sub="Scratch pro děti" delay={62} />
       </div>
     </AbsoluteFill>
   );

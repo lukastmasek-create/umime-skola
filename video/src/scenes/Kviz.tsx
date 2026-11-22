@@ -8,15 +8,15 @@ const OPTIONS = [
   { t: "56", x: 1 },
   { t: "64", x: 2 },
 ];
-const CLICK = 78;
+const CLICK = 70;
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
 export const Kviz = () => {
   const f = useCurrentFrame();
   const correct = f >= CLICK;
   // Kurzor jede k odpovědi „56“ a klikne.
-  const cx = interpolate(f, [30, CLICK], [1450, 960], { easing: Easing.bezier(0.3, 0, 0.2, 1), ...clamp });
-  const cy = interpolate(f, [30, CLICK], [900, 555], { easing: Easing.bezier(0.3, 0, 0.2, 1), ...clamp });
+  const cx = interpolate(f, [22, CLICK], [1450, 960], { easing: Easing.bezier(0.3, 0, 0.2, 1), ...clamp });
+  const cy = interpolate(f, [22, CLICK], [900, 555], { easing: Easing.bezier(0.3, 0, 0.2, 1), ...clamp });
   const press = interpolate(f, [CLICK - 3, CLICK, CLICK + 6], [1, 0.8, 1], clamp);
   const xp = Math.round(interpolate(f, [CLICK + 8, CLICK + 70], [0, 12480], { easing: Easing.out(Easing.cubic), ...clamp }));
 
