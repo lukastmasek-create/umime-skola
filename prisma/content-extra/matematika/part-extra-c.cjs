@@ -4,6 +4,9 @@ module.exports = {
     "mat-scitani-do-20": [
       [      2, "Kolik je 15 − 8 + 4?", "11", ["3","19","7"], "15 − 8 = 7, 7 + 4 = 11."],
     ],
+    "mat-geometrie-tvary": [
+      [      2, "Kolik rohů má šestiúhelník?", "6", ["5","8","12"], "Šestiúhelník má šest rohů."],
+    ],
     "mat-nasobilka": [
       [      3, "Kolik je 4 · 12?", "48", ["44","52","42"], "4 · 12 = 48."],
     ],

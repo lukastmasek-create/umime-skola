@@ -318,6 +318,7 @@ INSERT INTO "Question" ("id","prompt","options","correctIndex","explanation","di
 ('q_mat-geometrie-tvary_56','Který tvar je kulatý jako kolo?',ARRAY['kruh','čtverec','hranol','trojúhelník']::TEXT[],0,'Kruh je kulatý.',1,ARRAY[]::TEXT[],NULL,56,'c_mat-geometrie-tvary',NULL,NOW()),
 ('q_mat-geometrie-tvary_57','Kolik vrcholů má trojboký hranol?',ARRAY['9','6','3','5']::TEXT[],1,'Dva trojúhelníky po třech vrcholech.',3,ARRAY[]::TEXT[],NULL,57,'c_mat-geometrie-tvary',NULL,NOW()),
 ('q_mat-geometrie-tvary_58','Kolik hran má trojboký hranol?',ARRAY['9','3','12','6']::TEXT[],0,'3 hrany podstavy · 2 + 3 boční hrany = 9.',3,ARRAY[]::TEXT[],NULL,58,'c_mat-geometrie-tvary',NULL,NOW()),
+('q_mat-geometrie-tvary_59','Kolik rohů má šestiúhelník?',ARRAY['5','8','6','12']::TEXT[],2,'Šestiúhelník má šest rohů.',2,ARRAY[]::TEXT[],NULL,59,'c_mat-geometrie-tvary',NULL,NOW()),
 ('q_mat-nasobilka_0','Kolik je 2 · 3?',ARRAY['23','5','6','8']::TEXT[],2,'Dvakrát tři je šest.',1,ARRAY[]::TEXT[],NULL,0,'c_mat-nasobilka',NULL,NOW()),
 ('q_mat-nasobilka_1','Kolik je 5 · 2?',ARRAY['7','12','10','52']::TEXT[],2,'Pětkrát dvě je deset.',1,ARRAY[]::TEXT[],NULL,1,'c_mat-nasobilka',NULL,NOW()),
 ('q_mat-nasobilka_2','Kolik je 10 : 2?',ARRAY['12','8','5','20']::TEXT[],2,'Deset rozdělíme na dvě stejné části, v každé je pět.',1,ARRAY[]::TEXT[],NULL,2,'c_mat-nasobilka',NULL,NOW()),
