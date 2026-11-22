@@ -68,6 +68,12 @@ INSERT INTO "Question" ("id","prompt","options","correctIndex","explanation","di
 ('q_mat-logicke-ulohy_52','Kolik je 2⁵ − 3³ + 4²?',ARRAY['21','25','15','11']::TEXT[],0,'32 − 27 + 16 = 21.',5,ARRAY[]::TEXT[],NULL,52,'c_mat-logicke-ulohy',NULL,NOW()),
 ('q_mat-logicke-ulohy_53','Součet čtyř po sobě jdoucích čísel je 58. Které je nejmenší?',ARRAY['14','15','12','13']::TEXT[],3,'4x + 6 = 58 → x = 13.',5,ARRAY[]::TEXT[],NULL,53,'c_mat-logicke-ulohy',NULL,NOW()),
 ('q_mat-logicke-ulohy_54','Kolik nejméně ponožek musíš vytáhnout z šuplíku se 4 černými a 4 bílými, aby byl jistě pár stejné barvy?',ARRAY['3','8','4','2']::TEXT[],0,'Dvě barvy, takže třetí ponožka musí tvořit pár.',5,ARRAY[]::TEXT[],NULL,54,'c_mat-logicke-ulohy',NULL,NOW()),
-('q_mat-logicke-ulohy_55','Kolik různých pořadí lze vytvořit z 3 knih?',ARRAY['3','12','9','6']::TEXT[],3,'3 · 2 · 1 = 6.',5,ARRAY[]::TEXT[],NULL,55,'c_mat-logicke-ulohy',NULL,NOW())
+('q_mat-logicke-ulohy_55','Kolik různých pořadí lze vytvořit z 3 knih?',ARRAY['3','12','9','6']::TEXT[],3,'3 · 2 · 1 = 6.',5,ARRAY[]::TEXT[],NULL,55,'c_mat-logicke-ulohy',NULL,NOW()),
+('q_mat-logicke-ulohy_56','Doplň, které číslo chybí: 6, 8, ?, 12',ARRAY['5','12','10','-10']::TEXT[],2,'Rozdíl 2.',1,ARRAY[]::TEXT[],NULL,56,'c_mat-logicke-ulohy',NULL,NOW()),
+('q_mat-logicke-ulohy_57','Doplň, které číslo chybí: 8, 13, ?, 23',ARRAY['21','22','14','18']::TEXT[],3,'Rozdíl 5.',1,ARRAY[]::TEXT[],NULL,57,'c_mat-logicke-ulohy',NULL,NOW()),
+('q_mat-logicke-ulohy_58','Doplň, které číslo chybí: 2, 6, ?, 14',ARRAY['10','6','12','30']::TEXT[],0,'Rozdíl 4.',1,ARRAY[]::TEXT[],NULL,58,'c_mat-logicke-ulohy',NULL,NOW()),
+('q_mat-logicke-ulohy_59','Doplň, které číslo chybí: 8, 9, ?, 11',ARRAY['8','10','14','7']::TEXT[],1,'Rozdíl 1.',5,ARRAY[]::TEXT[],NULL,59,'c_mat-logicke-ulohy',NULL,NOW()),
+('q_mat-logicke-ulohy_60','Doplň, které číslo chybí: 4, 10, ?, 22',ARRAY['26','12','13','16']::TEXT[],3,'Rozdíl 6.',5,ARRAY[]::TEXT[],NULL,60,'c_mat-logicke-ulohy',NULL,NOW()),
+('q_mat-logicke-ulohy_61','Doplň, které číslo chybí: 2, 3, ?, 5',ARRAY['4','-6','-16','1']::TEXT[],0,'Rozdíl 1.',5,ARRAY[]::TEXT[],NULL,61,'c_mat-logicke-ulohy',NULL,NOW())
 ON CONFLICT ("id") DO NOTHING;
 
