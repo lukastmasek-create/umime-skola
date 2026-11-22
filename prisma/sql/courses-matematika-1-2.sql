@@ -880,7 +880,7 @@ INSERT INTO "Question" ("id","prompt","options","correctIndex","explanation","di
 ('q_mat-deleni-rovnym-dilem_42','Kolik je 10 : 5?',ARRAY['5','3','50','2']::TEXT[],3,'10 : 5 = 2.',1,ARRAY[]::TEXT[],NULL,42,'c_mat-deleni-rovnym-dilem',NULL,NOW()),
 ('q_mat-deleni-rovnym-dilem_43','Kolik je 8 : 1?',ARRAY['8','0','1','7']::TEXT[],0,'8 : 1 = 8.',1,ARRAY[]::TEXT[],NULL,43,'c_mat-deleni-rovnym-dilem',NULL,NOW()),
 ('q_mat-deleni-rovnym-dilem_44','Kolik je 12 : 4?',ARRAY['2','4','3','8']::TEXT[],2,'12 : 4 = 3.',2,ARRAY[]::TEXT[],NULL,44,'c_mat-deleni-rovnym-dilem',NULL,NOW()),
-('q_mat-deleni-rovnym-dilem_45','Kolik je 25 : 5?',ARRAY['10','2','3','5']::TEXT[],3,'25 : 5 = 5.',2,ARRAY[]::TEXT[],NULL,45,'c_mat-deleni-rovnym-dilem',NULL,NOW()),
+('q_mat-deleni-rovnym-dilem_45','Kolik je 55 : 5?',ARRAY['12','5','10','11']::TEXT[],3,'55 : 5 = 11.',2,ARRAY[]::TEXT[],NULL,45,'c_mat-deleni-rovnym-dilem',NULL,NOW()),
 ('q_mat-deleni-rovnym-dilem_46','Kolik je 24 : 4?',ARRAY['5','4','6','8']::TEXT[],2,'24 : 4 = 6.',2,ARRAY[]::TEXT[],NULL,46,'c_mat-deleni-rovnym-dilem',NULL,NOW()),
 ('q_mat-deleni-rovnym-dilem_47','Kolik je 18 : 3?',ARRAY['6','15','5','7']::TEXT[],0,'18 : 3 = 6.',2,ARRAY[]::TEXT[],NULL,47,'c_mat-deleni-rovnym-dilem',NULL,NOW()),
 ('q_mat-deleni-rovnym-dilem_48','Kolik je 24 : 6?',ARRAY['4','3','18','5']::TEXT[],0,'24 : 6 = 4.',3,ARRAY[]::TEXT[],NULL,48,'c_mat-deleni-rovnym-dilem',NULL,NOW()),
