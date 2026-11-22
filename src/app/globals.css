@@ -6503,7 +6503,6 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 .gq-card { background: var(--gq-bg, var(--surface-muted)); border: 2px solid var(--gq-edge, var(--edge)); border-radius: 24px; box-shadow: 0 16px 36px -22px rgba(0,0,0,0.9); color: var(--foreground); }
 .gq-q { flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem; padding: 1.1rem 1.25rem; text-align: center; min-height: 7.5rem; font-family: var(--font-heading); font-weight: 800; font-size: clamp(1.25rem, 3.6vw, 1.9rem); line-height: 1.3; }
 .gq-opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
-@media (max-width: 520px) { .gq-opts { grid-template-columns: minmax(0, 1fr); } }
 .gq-opt { position: relative; display: flex; align-items: center; gap: 0.75rem; min-height: 4.25rem; padding: 0.6rem 0.9rem; text-align: left; font-weight: 700; font-size: clamp(1rem, 2.6vw, 1.2rem); line-height: 1.25; border-radius: 18px; color: var(--foreground); background: var(--gq-bg, var(--surface-muted)); border: 3px solid var(--gq-edge, var(--edge)); box-shadow: 0 4px 0 rgba(0,0,0,0.35); transition: transform 0.12s, border-color 0.12s, background 0.12s; overflow: hidden; }
 .gq-opt:hover:not(:disabled) { transform: translateY(-2px); border-color: #ffc933; }
 .gq-opt:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); }
@@ -6524,3 +6523,23 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 @keyframes gq-pop { 0% { transform: scale(0.96); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }
 @keyframes gq-shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
 @media (prefers-reduced-motion: reduce) { .gq-opt, .gq-opt.is-right, .gq-opt.is-wrong, .gq-combo { animation: none; transition: none; } }
+/* Karta, která jen obaluje otázku, se neobaluje podruhé. */
+.arena-stage .card:has(> .gq-body) { background: none; border: 0; box-shadow: none; padding: 0; backdrop-filter: none; }
+/* Mobil: stavy v jednom řádku, odpovědi ve dvou sloupcích, ať se vejde víc na obrazovku. */
+@media (max-width: 520px) {
+  .gq-bar { gap: 0.35rem; }
+  .gq-bar h1 { flex-basis: 100%; order: -1; font-size: 1rem; }
+  .gq-back { min-height: 40px; padding: 0 0.6rem; font-size: 0.8rem; }
+  .gq-stat { padding: 0.25rem 0.55rem; font-size: 0.9rem; gap: 0.25rem; }
+  .gq-stat small { font-size: 0.6rem; }
+  .gq-opts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.45rem; }
+  .gq-opt { min-height: 3.6rem; padding: 0.4rem 0.55rem; gap: 0.4rem; font-size: 0.95rem; border-radius: 14px; }
+  .gq-key { width: 1.7rem; height: 1.7rem; font-size: 0.85rem; }
+  .gq-mark { font-size: 1.2rem; }
+  .gq-q { min-height: 5rem; padding: 0.75rem; }
+  .gq-hint { font-size: 0.75rem; }
+}
+/* Dotykové ovládání akčních her: velká tlačítka. */
+.gq-pad { display: inline-flex; align-items: center; justify-content: center; min-width: 4.25rem; height: 3.75rem; border-radius: 18px; font-size: 1.6rem; font-weight: 900; color: var(--foreground); background: rgba(255,255,255,0.14); border: 3px solid var(--gq-edge); box-shadow: 0 4px 0 rgba(0,0,0,0.35); user-select: none; touch-action: none; }
+.gq-pad:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.35); background: rgba(255,255,255,0.26); }
+.gq-pad-main { font-size: 1rem; color: #16132b; background: linear-gradient(135deg, #ffc933, #ff8a6b); border-color: transparent; }

@@ -1969,7 +1969,7 @@ export function RunnerGame({
   const stars = runnerStars(right, results.length);
 
   return (
-    <div className="arena-stage p-3 sm:p-6">
+    <div className={`arena-stage ${phase === "ready" ? "" : "arena-playing"} p-3 sm:p-6`}>
       <ArenaBackdrop variant={GAME_ARENA.runner} />
     <GameFrame
       title={t.title}
@@ -1990,7 +1990,7 @@ export function RunnerGame({
       <div className="arena-panel" style={{ padding: 12 }}>
         <div
           ref={hostRef}
-          className="relative h-[min(78vh,720px)] min-h-[480px] w-full touch-none select-none overflow-hidden rounded-2xl"
+          className="relative h-[min(70dvh,720px)] min-h-[360px] w-full touch-none select-none overflow-hidden rounded-2xl"
           style={{ background: SKY_CSS }}
         >
           <div ref={mountRef} className="absolute inset-0" />
@@ -2054,7 +2054,7 @@ export function RunnerGame({
                       type="button"
                       disabled={!!revealed}
                       onClick={() => api.current?.answer(i)}
-                      className={`rounded-xl border-2 px-4 py-3 text-left font-semibold transition-colors ${
+                      className={`flex min-h-14 items-center gap-2 rounded-2xl border-[3px] px-4 py-3 text-left text-base font-bold shadow-[0_3px_0_rgba(0,0,0,0.2)] transition-colors sm:text-lg ${
                         isRight
                           ? "border-[var(--accent-green)] bg-[var(--accent-green)]/15"
                           : isWrong
@@ -2062,8 +2062,10 @@ export function RunnerGame({
                             : "border-[#e0dccf] bg-white text-[#16132b] hover:border-[#3248f0]"
                       }`}
                     >
-                      <span className="mr-2 text-[#5f5978]">{i + 1}.</span>
-                      {opt}
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#eceaf6] text-sm font-black text-[#3248f0]">{i + 1}</span>
+                      <span className="flex-1">{opt}</span>
+                      {isRight && <span className="text-xl font-black text-[var(--accent-green)]">✓</span>}
+                      {isWrong && <span className="text-xl font-black text-[var(--danger)]">✗</span>}
                     </button>
                   );
                 })}

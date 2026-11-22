@@ -730,14 +730,14 @@ export function SpaceQuizGame({
   }
 
   return (
-    <div className="fs-game arena-stage flex flex-col gap-4 p-4 sm:p-6">
+    <div className={`fs-game arena-stage ${phase === "playing" || phase === "explain" ? "arena-playing" : ""} flex flex-col gap-3 p-3 sm:p-6`}>
       <ArenaBackdrop variant={GAME_ARENA[game] ?? "neutral"} />
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="fs-title">
-          <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+          <h1 className="text-xl font-bold sm:text-2xl" style={{ fontFamily: "var(--font-heading)" }}>
             {emoji} {t.title}
           </h1>
-          <p className="text-sm text-[var(--muted)]">{courseTitle}</p>
+          <p className="hidden text-sm text-[var(--muted)] sm:block">{courseTitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-sm font-semibold">
           <button
@@ -751,24 +751,24 @@ export function SpaceQuizGame({
             aria-pressed={!muted}
             aria-label={t.sound}
             title={t.sound}
-            className="pill bg-[var(--surface-muted)] px-3 py-1.5"
+            className="gq-stat"
           >
             {muted ? "🔇" : "🔊"}
           </button>
           {phase !== "intro" && (
             <>
-            <span className="pill bg-[var(--surface-muted)] px-3 py-1.5">
+            <span className="gq-stat">
               {t.question} {Math.min(qIndex + 1, run.length)}
               {endless ? "" : `/${run.length}`}
             </span>
-            <span className="pill bg-[var(--surface-muted)] px-3 py-1.5">
+            <span className="gq-stat">
               {t.lives}: {"❤️".repeat(Math.max(lives, 0)) || "💀"}
             </span>
-            <span className="pill bg-[var(--surface-muted)] px-3 py-1.5">
+            <span className="gq-stat">
               {t.score}: {score}
             </span>
             {combo > 1 && (
-              <span className="pill bg-[var(--accent-yellow)] px-3 py-1.5 text-black">
+              <span key={combo} className="gq-combo">
                 🔥 {t.combo} ×{combo}
               </span>
             )}
@@ -778,7 +778,8 @@ export function SpaceQuizGame({
                 onClick={useHint}
                 disabled={hintsLeft <= 0 || !!hintOut || paused}
                 title={t.hintUsed}
-                className="btn-bouncy rounded-full border-2 border-[var(--border-soft)] bg-[var(--surface)] px-3 py-1.5 disabled:cursor-not-allowed disabled:opacity-40"
+                className="gq-stat disabled:cursor-not-allowed disabled:opacity-40"
+                style={{ minHeight: 44, background: "rgba(255,201,51,0.22)", borderColor: "#ffc933" }}
               >
                 {t.hint} · {hintsLeft}
               </button>
@@ -789,13 +790,13 @@ export function SpaceQuizGame({
       </div>
 
       {(phase === "playing" || phase === "explain") && question && (
-        <p className="arena-panel text-lg font-black" style={{ padding: "12px 18px", borderColor: "rgba(255,201,51,.55)" }}>
+        <p className="gq-card text-center font-black" style={{ padding: "12px 18px", fontFamily: "var(--font-heading)", fontSize: "clamp(1.15rem, 3.2vw, 1.6rem)", lineHeight: 1.3, borderColor: "rgba(255,201,51,.7)" }}>
           {question.prompt}
         </p>
       )}
 
-      {phase === "playing" && qIndex === 0 && !paused && (
-        <p className="fs-tip arena-panel text-xs text-[var(--muted)]" style={{ padding: "8px 14px", borderRadius: 14 }}>⌨️ {t.controls}</p>
+      {phase === "playing" && !paused && (
+        <p className="fs-tip gq-hint" style={{ order: 99 }}>⌨️ {t.controls}</p>
       )}
 
       {phase === "playing" && hintOut && question && (
@@ -903,7 +904,7 @@ export function SpaceQuizGame({
             <HoldButton
               onHold={(down) => setHeld("left", down)}
               label="←"
-              className="btn-bouncy h-14 w-16 select-none rounded-2xl bg-[var(--surface-muted)] text-2xl"
+              className="btn-bouncy gq-pad"
             >
               ◀
             </HoldButton>
@@ -914,7 +915,7 @@ export function SpaceQuizGame({
                 <HoldButton
                   onHold={(down) => setHeld("up", down)}
                   label="↑"
-                  className="btn-bouncy h-12 w-16 select-none rounded-2xl bg-[var(--surface-muted)] text-xl"
+                  className="btn-bouncy gq-pad"
                 >
                   {pad.up ?? "▲"}
                 </HoldButton>
@@ -923,7 +924,7 @@ export function SpaceQuizGame({
                 <HoldButton
                   onHold={(down) => setHeld("down", down)}
                   label="↓"
-                  className="btn-bouncy h-12 w-16 select-none rounded-2xl bg-[var(--surface-muted)] text-xl"
+                  className="btn-bouncy gq-pad"
                 >
                   {pad.down ?? "▼"}
                 </HoldButton>
@@ -934,7 +935,7 @@ export function SpaceQuizGame({
             <HoldButton
               onHold={(down) => setHeld("right", down)}
               label="→"
-              className="btn-bouncy h-14 w-16 select-none rounded-2xl bg-[var(--surface-muted)] text-2xl"
+              className="btn-bouncy gq-pad"
             >
               ▶
             </HoldButton>
@@ -942,7 +943,7 @@ export function SpaceQuizGame({
           {pad.keys.includes("fire") && (
             <HoldButton
               onHold={(down) => setHeld("fire", down)}
-              className="btn-bouncy h-14 flex-1 select-none rounded-2xl bg-[var(--accent-500)] text-sm font-bold text-white sm:max-w-xs"
+              className="btn-bouncy gq-pad gq-pad-main flex-1 sm:max-w-xs"
             >
               {emoji} {t.fire}
             </HoldButton>
@@ -955,20 +956,20 @@ export function SpaceQuizGame({
           <HoldButton
             onHold={(down) => setHeld("left", down)}
             label="←"
-            className="btn-bouncy h-14 w-20 select-none rounded-2xl bg-[var(--surface-muted)] text-2xl"
+            className="btn-bouncy gq-pad"
           >
             ◀
           </HoldButton>
           <HoldButton
             onHold={(down) => setHeld("fire", down)}
-            className="btn-bouncy h-14 flex-1 select-none rounded-2xl bg-[var(--accent-500)] text-sm font-bold text-white sm:max-w-xs"
+            className="btn-bouncy gq-pad gq-pad-main flex-1 sm:max-w-xs"
           >
             🔫 {t.fire}
           </HoldButton>
           <HoldButton
             onHold={(down) => setHeld("right", down)}
             label="→"
-            className="btn-bouncy h-14 w-20 select-none rounded-2xl bg-[var(--surface-muted)] text-2xl"
+            className="btn-bouncy gq-pad"
           >
             ▶
           </HoldButton>
