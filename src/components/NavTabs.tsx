@@ -217,7 +217,7 @@ export function NavTabs({ locale, dict }: { locale: Locale; dict: Dictionary }) 
     }`;
 
   return (
-    <nav ref={rootRef} aria-label="Hlavní navigace" className="hidden min-w-0 flex-nowrap items-center min-[1150px]:flex">
+    <nav ref={rootRef} aria-label="Hlavní navigace" className="hidden min-w-0 flex-nowrap items-center md:flex max-[1149px]:[&_.nav-ico]:hidden max-[1149px]:[&_.nav-group]:px-1.5">
       {groups.filter((group) => PRIMARY_GROUPS.has(group.key)).map((group) => {
         const open = openKey === group.key;
         const active = group.items.some((tab) => isActiveTab(pathname, tab));
@@ -320,7 +320,7 @@ export function MobileMenu({ locale, dict }: { locale: Locale; dict: Dictionary 
               const expanded = openKey === group.key;
               const active = group.items.some((tab) => isActiveTab(pathname, tab));
               return (
-                <div key={group.key} className={PRIMARY_GROUPS.has(group.key) ? "min-[1150px]:hidden" : undefined}>
+                <div key={group.key} className={PRIMARY_GROUPS.has(group.key) ? "md:hidden" : undefined}>
                   <button
                     type="button"
                     aria-expanded={expanded}
