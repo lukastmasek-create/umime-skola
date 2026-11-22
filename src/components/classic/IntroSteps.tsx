@@ -7,9 +7,11 @@ import type { Locale } from "@/i18n/config";
 export function IntroSteps({ locale, controls, light = false }: { locale: string; controls: string; light?: boolean }) {
   const t = getClassicText((locale as Locale) ?? "cs");
   const steps = t.introSteps ?? getClassicText("en").introSteps ?? ["", ""];
+  // Na malé obrazovce stačí první věta ovládání.
+  const short = controls.replace(/^[^:]{1,15}:\s*/, "").split(/(?<=[.!?])\s|,\s/)[0].replace(/[.,]$/, "");
   const items = [
     { icon: "👀", text: steps[0] },
-    { icon: "👆", text: controls },
+    { icon: "👆", text: short },
     { icon: "✅", text: steps[1] },
   ];
   return (

@@ -68,7 +68,7 @@ const cs: ClassicText = {
   gameOver: "Oběšenec je hotový",
   rightAnswer: "Správně",
   controlsLabel: "Ovládání",
-  introSteps: ["Přečti si otázku", "Zelená = správně, červená = špatně. Za hru dostaneš body a hvězdy."],
+  introSteps: ["Čti otázku", "Zelená = správně, červená = špatně"],
   controls: {
     razeni: "Klikej na položky od prvního po poslední, nebo použij klávesy 1–4.",
     osmismerka: "Přejeď myší nebo prstem přes písmena. Nebo klepni na první a pak na poslední písmeno slova.",
@@ -145,7 +145,7 @@ const en: ClassicText = {
   gameOver: "The hangman is complete",
   rightAnswer: "Correct",
   controlsLabel: "Controls",
-  introSteps: ["Read the question", "Green = right, red = wrong. You earn points and stars."],
+  introSteps: ["Read the question", "Green = right, red = wrong"],
   controls: {
     razeni: "Click the items from first to last, or use keys 1–4.",
     osmismerka: "Drag the mouse or your finger across the letters. Or tap the first letter and then the last one.",

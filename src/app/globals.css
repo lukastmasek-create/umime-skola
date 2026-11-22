@@ -6549,3 +6549,6 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 .gq-step { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 1rem 0.9rem; text-align: center; font-weight: 700; font-size: 1rem; line-height: 1.35; border-radius: 20px; background: var(--gq-bg); border: 2px solid var(--gq-edge); }
 .gq-step-icon { font-size: 2.6rem; line-height: 1; }
 @media (max-width: 640px) { .gq-step { flex-direction: row; text-align: left; padding: 0.7rem 0.9rem; } .gq-step-icon { font-size: 2rem; } }
+/* Karty v arénách: téměř plné pozadí, ať text nesplývá s živým pozadím. */
+.arena-stage .card { background: rgba(27, 24, 64, 0.94); backdrop-filter: none; }
+.arena-stage .card:has(> .gq-body) { background: none; }

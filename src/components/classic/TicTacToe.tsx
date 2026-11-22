@@ -227,8 +227,8 @@ export function TicTacToe({
         </FinishCard>
       )}
       <div className="grid items-start gap-5 lg:grid-cols-[auto_1fr]">
-        <div className="card self-start p-3">
-          <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${size}, ${px}px)` }}>
+        <div className="card w-full self-start p-3 lg:w-auto">
+          <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`, width: `min(${size * (px + 6)}px, calc(100vw - 4.5rem))` }}>
             {board.map((m, i) => {
               const hot = winLine.includes(i);
               const chosen = cell === i;
@@ -241,8 +241,8 @@ export function TicTacToe({
                   aria-label={`${Math.floor(i / size) + 1}/${(i % size) + 1}`}
                   className={`ttt-cell flex items-center justify-center rounded-xl border-2 font-extrabold transition ${!m && phase === "pick" ? "hover:-translate-y-0.5 hover:border-[var(--brand-500)]" : ""}`}
                   style={{
-                    height: px,
-                    fontSize: px * 0.55,
+                    aspectRatio: "1",
+                    fontSize: `min(${px * 0.55}px, 9vw)`,
                     borderColor: chosen ? "var(--brand-500)" : hot ? "#ffb020" : "var(--edge)",
                     background: hot ? "rgba(255,176,32,0.3)" : chosen ? "var(--brand-50)" : "var(--surface-muted)",
                     color: m === "X" ? "#7c6cff" : "#ff5d73",

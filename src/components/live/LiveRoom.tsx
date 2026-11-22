@@ -105,7 +105,7 @@ export function LiveRoom({ locale, pin }: { locale: Locale; pin: string }) {
 
   return (
     <div className="fs-classic">
-      <div className="arena-stage w-full p-3 sm:p-6" style={{ minHeight: "70vh" }}>
+      <div className={`arena-stage ${view.status === "LOBBY" ? "" : "arena-playing"} w-full p-3 sm:p-6`} style={{ minHeight: "70vh" }}>
         <ArenaBackdrop variant={view.mode.toLowerCase() as ArenaKey} />
         {identity.kind === "host" ? (
           <HostView locale={locale} t={t} view={view} identity={identity} serverNow={serverNow} />
