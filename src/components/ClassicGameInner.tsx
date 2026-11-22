@@ -8,6 +8,7 @@ import type { GameQuestion } from "@/i18n/game";
 import { gameMeta, getGamesUiText } from "@/i18n/games-meta";
 import { readBest, type Best } from "@/lib/game-best";
 import { GAMES, type ClassicSlug } from "@/lib/games";
+import { ArenaBackdrop, type ArenaKey } from "@/components/arena/ArenaBackdrop";
 import { Bingo } from "./classic/Bingo";
 import { Blitz } from "./classic/Blitz";
 import { Crossword } from "./classic/Crossword";
@@ -26,6 +27,12 @@ import { Treasure } from "./classic/Treasure";
 import { TrueFalse } from "./classic/TrueFalse";
 import { WordSearch } from "./classic/WordSearch";
 import { ClassicSessionContext } from "./classic/shared";
+
+// Každá hra má vlastní barvu pozadí (WebGL), podle pořadí v seznamu her.
+const ARENA_KEYS: ArenaKey[] = ["quiz", "race", "gold", "streak", "survival", "teams"];
+function arenaKey(game: ClassicSlug): ArenaKey {
+  return ARENA_KEYS[Math.max(0, GAMES.findIndex((g) => g.slug === game)) % ARENA_KEYS.length];
+}
 
 // Klasické hry nad otázkami kurzu. Nejdřív jednotná úvodní obrazovka (jak hrát, rekord, start),
 // pak samotná hra. Míchání je náhodné, proto se vykresluje jen v prohlížeči.
@@ -68,7 +75,8 @@ export function ClassicGameInner({
 
   if (!started) {
     return (
-      <div className="fs-classic card flex flex-col gap-4 p-5 sm:p-6">
+      <div className="fs-classic arena-stage flex flex-col gap-4 p-5 sm:p-8">
+        <ArenaBackdrop variant={arenaKey(game)} />
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link href={backHref} className="text-sm font-medium text-[var(--faint)] hover:text-[var(--foreground)]">
             {t.back}
@@ -80,7 +88,7 @@ export function ClassicGameInner({
           )}
         </div>
         <div className="flex flex-wrap items-center gap-4">
-          <span className="game-intro-emoji flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl bg-[var(--surface-muted)] text-4xl" aria-hidden>
+          <span className="game-intro-emoji flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl bg-[var(--surface-muted)] text-5xl" aria-hidden>
             {emoji}
           </span>
           <div className="min-w-[12rem] flex-1">
@@ -89,15 +97,15 @@ export function ClassicGameInner({
             </h1>
             <p className="text-sm text-[var(--muted)]">{meta.tag}</p>
           </div>
-          <button type="button" onClick={() => setStarted(true)} autoFocus className="btn-bouncy btn-primary btn-lg">
+          <button type="button" onClick={() => setStarted(true)} autoFocus className="arena-btn">
             ▶ {ui.start}
           </button>
         </div>
-        <div className="rounded-2xl border-2 border-[var(--border-soft)] bg-[var(--brand-50)] p-4">
-          <h2 className="mb-1 text-sm font-bold uppercase tracking-wide text-[var(--brand-700)]">⌨️ {t.controlsLabel}</h2>
+        <div className="arena-panel p-4" style={{ padding: 16 }}>
+          <h2 className="mb-1 text-sm font-bold uppercase tracking-wide" style={{ color: "#ffc933" }}>⌨️ {t.controlsLabel}</h2>
           <p className="text-sm font-semibold">{t.controls[game]}</p>
         </div>
-        <div className="rounded-2xl bg-[var(--surface-muted)] p-4">
+        <div className="arena-panel" style={{ padding: 16 }}>
           <h2 className="mb-1 text-sm font-bold uppercase tracking-wide text-[var(--faint)]">{ui.howTo}</h2>
           <p className="text-sm">{t.games[game].intro}</p>
         </div>
@@ -107,7 +115,10 @@ export function ClassicGameInner({
 
   return (
     <ClassicSessionContext.Provider value={{ game, course: courseSlug, level: difficulty, newBestLabel: ui.newBest, bestLabel: ui.bestSoFar }}>
-      <ClassicGameBody t={t} game={game} questions={questions} difficulty={difficulty} backHref={backHref} />
+      <div className="arena-stage p-3 sm:p-6">
+        <ArenaBackdrop variant={arenaKey(game)} />
+        <ClassicGameBody t={t} game={game} questions={questions} difficulty={difficulty} backHref={backHref} />
+      </div>
     </ClassicSessionContext.Provider>
   );
 }
