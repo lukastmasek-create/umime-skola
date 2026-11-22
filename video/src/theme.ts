@@ -14,15 +14,13 @@ export const C = {
 export const FPS = 30;
 export const W = 1920;
 export const H = 1080;
-export const DURATION = 30 * FPS;
+export const DURATION = 650;
 
 // Scény: [start, délka] ve snímcích.
 export const S = {
-  nuda: [0, 100],
-  hraj: [90, 170],
-  kurzy: [250, 180],
-  materialy: [420, 150],
-  code: [560, 150],
-  scratch: [700, 130],
-  outro: [820, 80],
+  kurzy: [0, 180],
+  materialy: [170, 150],
+  code: [310, 150],
+  scratch: [450, 130],
+  outro: [570, 80],
 } as const;

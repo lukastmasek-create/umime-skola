@@ -2,8 +2,6 @@ import { AbsoluteFill, Audio, Sequence, staticFile } from "remotion";
 import { Bg, Fly } from "./ui";
 import { C, S } from "./theme";
 import "./fonts";
-import { NudaHraj } from "./scenes/NudaHraj";
-import { Hraj3D } from "./scenes/Hraj3D";
 import { Kviz } from "./scenes/Kviz";
 import { Materialy } from "./scenes/Materialy";
 import { Code } from "./scenes/Code";
@@ -19,8 +17,6 @@ export const Promo = () => (
     <Bg />
     {(
       [
-        ["nuda", NudaHraj, false],
-        ["hraj", Hraj3D, true],
         ["kurzy", Kviz, true],
         ["materialy", Materialy, true],
         ["code", Code, true],
