@@ -139,7 +139,7 @@ export function EscapeList({ locale, t, cards }: { locale: Locale; t: EscapeText
                 <>
                   <div className="relative flex h-40 items-start justify-between overflow-hidden p-3" style={{ backgroundColor: color }}>
                     <span aria-hidden className="absolute inset-x-0 bottom-0 h-3" style={{ background: "linear-gradient(#4cc16b 0 6px, #8a5a2b 6px)" }} />
-                    <PxScene id={room.id} className="absolute -bottom-0 left-1/2 h-[7rem] w-[10.5rem] -translate-x-1/2" />
+                    <PxScene id={room.id} className="absolute -bottom-0 left-1/2 h-[8rem] w-[12rem] -translate-x-1/2" />
                     <span className="px-pill relative">{room.subject}</span>
                     {room.best ? (
                       <span className="px-pill relative" title={t.best}>
