@@ -11,14 +11,17 @@ import { useEffect, useState } from "react";
 
 const W = 2880;
 const H = 160;
-const STEP = 24;
+const STEP = 48;
 
 // Periody 720 a 360 dělí polovinu šířky (1440), proto smyčka posunu navazuje bez skoku.
 function buildPaths(base: number, amp: number, amp2: number, phase: number) {
   const pts: string[] = [];
+  let prevY = 0;
   for (let x = 0; x <= W; x += STEP) {
-    const y = base + amp * Math.sin((x / 720) * 2 * Math.PI + phase) + amp2 * Math.sin((x / 360) * 2 * Math.PI + phase * 0.6 + 1);
-    pts.push(`${x === 0 ? "M" : "L"}${x} ${y.toFixed(1)}`);
+    const raw = base + amp * Math.sin((x / 720) * 2 * Math.PI + phase) + amp2 * Math.sin((x / 360) * 2 * Math.PI + phase * 0.6 + 1);
+    const y = Math.round(raw / 8) * 8; // pixelové schody po 8 jednotkách
+    pts.push(x === 0 ? `M${x} ${y}` : `L${x} ${prevY}L${x} ${y}`);
+    prevY = y;
   }
   const line = pts.join(" ");
   return { line, fill: `${line} L${W} ${H} L0 ${H} Z` };
@@ -44,7 +47,7 @@ const SPARKS = [
 function Spark({ size, color }: { size: number; color: string }) {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden>
-      <path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z" fill={color} />
+      <path d="M10 0h4v10h10v4H14v10h-4V14H0v-4h10z" fill={color} shapeRendering="crispEdges" />
     </svg>
   );
 }
@@ -76,7 +79,7 @@ export function SectionWave({ fill, glow = "#8ea2ff", className = "" }: { fill: 
   return (
     <div aria-hidden className={`section-blend ${className}`} style={{ ["--sb-fill" as string]: fill, ["--sb-glow" as string]: glow }}>
       <div className="section-wave">
-        <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="section-wave-drift section-wave-back">
+        <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="section-wave-drift section-wave-back" shapeRendering="crispEdges">
           <path d={BACK_A.fill} fill={glow} fillOpacity={0.08}>
             <Morph on={morph} a={BACK_A.fill} b={BACK_B.fill} dur="13s" />
           </path>
@@ -84,7 +87,7 @@ export function SectionWave({ fill, glow = "#8ea2ff", className = "" }: { fill: 
             <Morph on={morph} a={BACK_A.line} b={BACK_B.line} dur="13s" />
           </path>
         </svg>
-        <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="section-wave-drift section-wave-mid">
+        <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="section-wave-drift section-wave-mid" shapeRendering="crispEdges">
           <path d={MID_A.fill} fill={glow} fillOpacity={0.14}>
             <Morph on={morph} a={MID_A.fill} b={MID_B.fill} dur="9s" begin="-3s" />
           </path>
@@ -92,7 +95,7 @@ export function SectionWave({ fill, glow = "#8ea2ff", className = "" }: { fill: 
             <Morph on={morph} a={MID_A.line} b={MID_B.line} dur="9s" begin="-3s" />
           </path>
         </svg>
-        <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="section-wave-drift section-wave-front">
+        <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="section-wave-drift section-wave-front" shapeRendering="crispEdges">
           <path d={FRONT_A.fill} fill={fill}>
             <Morph on={morph} a={FRONT_A.fill} b={FRONT_B.fill} dur="7s" />
           </path>
