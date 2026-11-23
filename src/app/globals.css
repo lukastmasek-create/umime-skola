@@ -4825,8 +4825,6 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 @media (min-width: 1024px) {
   .hs-stage { margin-top: 3rem; }
   .hs-guides { display: block; }
-  .hs-progress { display: block; position: absolute; left: 0; top: -300px; }
-  .hs-safe { display: block; position: absolute; right: 0; top: -330px; width: 170px; }
   .hs-flow {
     grid-template-columns: 250px 1fr 290px;
     align-items: center; gap: 0; max-width: 960px; margin: 0 auto;
@@ -6654,8 +6652,11 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
   .hs-subjects { align-self: start; transform: translateY(-36px) rotate(-1.6deg); }
   .hs-class { align-self: end; transform: translateY(34px) rotate(1.6deg); }
   .hs-pipe { align-self: center; }
-  .hs-progress { left: 1%; top: -250px; }
-  .hs-safe { right: 1%; top: -280px; }
+}
+/* Plovoucí karty vedle textu: jen když vedle něj je místo (text max 672px, karty ≤190px). */
+@media (min-width: 1200px) {
+  .hs-progress { display: block; position: absolute; left: 1%; top: -250px; }
+  .hs-safe { display: block; position: absolute; right: 1%; top: -280px; width: 170px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .hs-subjects, .hs-class { transform: none; }
