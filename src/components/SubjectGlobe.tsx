@@ -267,12 +267,21 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
     [],
   );
 
+  // Další památka prohlídky se předem stáhne, aby po otočení globu nevyskočila až s prodlevou.
+  useEffect(() => {
+    const i = TOUR.indexOf(active as (typeof TOUR)[number]);
+    if (i < 0) return;
+    const img = new Image();
+    img.decoding = "async";
+    img.src = `${DIR}/${LANDMARK[TOUR[(i + 1) % TOUR.length]]}.webp`;
+  }, [active]);
+
   // --- vykreslování a prohlídka ---
   useEffect(() => {
     const cv = canvas.current;
     const box = stage.current;
     if (!cv || !box) return;
-    const gl = cv.getContext("webgl2", { alpha: true, premultipliedAlpha: true, antialias: false });
+    const gl = cv.getContext("webgl2", { alpha: true, premultipliedAlpha: true, antialias: false, powerPreference: "low-power" });
     if (!gl) {
       setFallback(true);
       return;
@@ -304,6 +313,8 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     gl.clearColor(0, 0, 0, 0);
     const u = (n: string) => gl.getUniformLocation(prog, n);
+    // umístění uniformů se hledají jednou, ne každý snímek
+    const U = { res: u("uRes"), r: u("uR"), spin: u("uSpin"), tilt: u("uTilt"), time: u("uTime"), sel: u("uSel"), cloud: u("uCloud") };
 
     const texture = (unit: number, img: HTMLImageElement, mip: boolean, nearest: boolean) => {
       const tx = gl.createTexture();
@@ -321,30 +332,44 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
     // stav kamery
     let size = 0;
     let dpr = 1;
+    let rs = 1; // adaptivní rozlišení shaderu (CSS velikost plátna zůstává)
     const resize = () => {
       size = box.clientWidth;
       // Globus je hladký shader, na vyšším DPR se nic neuvidí, jen víc pixelů na GPU každý snímek.
       dpr = Math.min(window.devicePixelRatio || 1, 1);
       // plátno s globem je o čtvrtinu větší na každou stranu, aby přiblížený globus nebyl uříznutý
-      cv.width = Math.round(size * CANVAS_SCALE * dpr);
+      cv.width = Math.max(1, Math.round(size * CANVAS_SCALE * dpr * rs));
       cv.height = cv.width;
       gl.viewport(0, 0, cv.width, cv.height);
-      gl.uniform2f(u("uRes"), cv.width, cv.height);
+      gl.uniform2f(U.res, cv.width, cv.height);
       for (const c of [back2d, front2d]) {
         if (!c) continue;
         c.width = Math.round(size * dpr);
         c.height = c.width;
       }
+      // velikost prstence a letadel se nastaví jednou; za běhu se jen škáluje transformací (bez layoutu)
+      const rb = size * 0.092;
+      for (const el of ringEls.current) if (el) el.style.width = el.style.height = `${rb}px`;
+      FLYERS.forEach((f, i) => {
+        const el = flyEls.current[i];
+        if (el) el.style.width = el.style.height = `${size * f.size}px`;
+      });
     };
     const back2d = backCv.current;
     const front2d = frontCv.current;
     const bctx = back2d?.getContext("2d") ?? null;
     const fctx = front2d?.getContext("2d") ?? null;
+    const DUST_A = [0.33, 0.52, 0.68];
     const dust = Array.from({ length: 150 }, (_, i) => {
       const r = Math.sin(i * 12.9898) * 43758.5453;
       const f = (k: number) => Math.abs(Math.sin(r * k)) % 1;
-      return { th: f(1.3) * TAU, off: 0.9 + f(2.1) * 0.22, size: 0.6 + f(3.7) * 1.4, a: 0.25 + f(5.3) * 0.5, sp: 0.8 + f(7.1) * 0.5, wob: f(9.7) };
+      const a = 0.25 + f(5.3) * 0.5;
+      return { th: f(1.3) * TAU, off: 0.9 + f(2.1) * 0.22, size: 0.6 + f(3.7) * 1.4, bucket: a < 0.45 ? 0 : a < 0.6 ? 1 : 2, sp: 0.8 + f(7.1) * 0.5 };
     });
+    const dustPos = new Float32Array(dust.length * 3); // x, y, hloubka
+    const ringFront: boolean[] = [];
+    let ema = 1 / 60; // vyhlazená doba snímku
+    let lastScale = 0;
     const trails = FLYERS.map(() => [] as { x: number; y: number; d: number }[]);
 
     const desiredSpin = (slug: string) => SPOTS[slug].lon * (Math.PI / 180) + Math.PI / 2;
@@ -388,6 +413,14 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
       if (disposed) return;
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
+      // pomalé zařízení: shader se vykresluje v nižším rozlišení (min. 0.6×), CSS velikost zůstává
+      ema = ema * 0.92 + dt * 0.08;
+      if (ema > 0.026 && rs > 0.6 && now - lastScale > 1500) {
+        rs = Math.max(0.6, rs * 0.8);
+        lastScale = now;
+        ema = 1 / 60;
+        resize();
+      }
       const pin = pinnedRef.current;
       const dragging = now < manualUntil || pointers.size > 0;
 
@@ -456,12 +489,12 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
       const R = size * BASE_R * zoom;
       const sel = ORDER.indexOf(activeRef.current as (typeof ORDER)[number]) + 1;
       gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.uniform1f(u("uR"), R * dpr);
-      gl.uniform1f(u("uSpin"), spin);
-      gl.uniform1f(u("uTilt"), tilt);
-      gl.uniform1f(u("uTime"), now / 1000);
-      gl.uniform1f(u("uSel"), sel);
-      gl.uniform1f(u("uCloud"), -now / 1000 / 520 + 0.0);
+      gl.uniform1f(U.r, R * dpr * rs);
+      gl.uniform1f(U.spin, spin);
+      gl.uniform1f(U.tilt, tilt);
+      gl.uniform1f(U.time, now / 1000);
+      gl.uniform1f(U.sel, sel);
+      gl.uniform1f(U.cloud, -now / 1000 / 520);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
       // prstenec ze školních předmětů, prach a dráhy letadel; zadní polovina je pod globem, přední nad ním
@@ -477,26 +510,41 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
           const o = orbit(rr, RING_INCL, RING_ROLL, th);
           return { x: cx + o.x, y: cy - o.z, d: o.d };
         };
-        // průsvitný pás prstence
+        // průsvitný pás prstence: čtyři elipsy, zadní půlka pod globem, přední nad ním (místo 360 úseček)
+        // stejná soustava jako orbit(): rozměry rho × rho·sin(sklon), natočení -roll, th ↔ úhel -th
+        bctx.lineWidth = fctx.lineWidth = rho * 0.06 * dpr;
         for (const [k, a] of [[0.9, 0.1], [0.97, 0.2], [1.04, 0.2], [1.11, 0.1]] as const) {
-          for (let i = 0; i < 90; i++) {
-            const p1 = put((i / 90) * TAU, rho * k), p2 = put(((i + 1) / 90) * TAU, rho * k);
-            const ctx = p1.d > 0 ? bctx : fctx;
-            ctx.strokeStyle = `rgba(170,205,255,${a * (p1.d > 0 ? 0.7 : 1)})`;
-            ctx.lineWidth = rho * 0.06 * dpr;
-            ctx.beginPath();
-            ctx.moveTo(p1.x * dpr, p1.y * dpr);
-            ctx.lineTo(p2.x * dpr, p2.y * dpr);
-            ctx.stroke();
-          }
+          const rx = rho * k * dpr, ry = rx * Math.sin(RING_INCL);
+          bctx.strokeStyle = `rgba(170,205,255,${a * 0.7})`;
+          bctx.beginPath();
+          bctx.ellipse(cx * dpr, cy * dpr, rx, ry, -RING_ROLL, -Math.PI, 0);
+          bctx.stroke();
+          fctx.strokeStyle = `rgba(170,205,255,${a})`;
+          fctx.beginPath();
+          fctx.ellipse(cx * dpr, cy * dpr, rx, ry, -RING_ROLL, 0, Math.PI);
+          fctx.stroke();
         }
-        for (const dp of dust) {
+        // prach: polohy jednou, kreslení po dávkách podle průhlednosti (3 výplně na vrstvu místo 150)
+        for (let i = 0; i < dust.length; i++) {
+          const dp = dust[i];
           const p = put(dp.th + spinRing * dp.sp, rho * dp.off);
-          const ctx = p.d > 0 ? bctx : fctx;
-          ctx.fillStyle = `rgba(235,245,255,${dp.a * (p.d > 0 ? 0.6 : 1)})`;
-          ctx.beginPath();
-          ctx.arc(p.x * dpr, p.y * dpr, dp.size * dpr, 0, TAU);
-          ctx.fill();
+          dustPos[i * 3] = p.x * dpr;
+          dustPos[i * 3 + 1] = p.y * dpr;
+          dustPos[i * 3 + 2] = p.d;
+        }
+        for (const back of [true, false]) {
+          const ctx = back ? bctx : fctx;
+          for (let b = 0; b < 3; b++) {
+            ctx.fillStyle = `rgba(235,245,255,${DUST_A[b] * (back ? 0.6 : 1)})`;
+            ctx.beginPath();
+            for (let i = 0; i < dust.length; i++) {
+              if (dust[i].bucket !== b || dustPos[i * 3 + 2] > 0 !== back) continue;
+              const rr = dust[i].size * dpr;
+              ctx.moveTo(dustPos[i * 3] + rr, dustPos[i * 3 + 1]);
+              ctx.arc(dustPos[i * 3], dustPos[i * 3 + 1], rr, 0, TAU);
+            }
+            ctx.fill();
+          }
         }
         for (let i = 0; i < RING_COUNT; i++) {
           const el = ringEls.current[i];
@@ -505,13 +553,17 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
           const jitter = 1 + 0.05 * Math.sin(i * 7.3);
           const p = put(th, rho * jitter);
           const depth = p.d / rho; // -1 vpředu .. 1 vzadu
-          const sz = size * 0.092 * (1.08 - depth * 0.22);
+          const base = size * 0.092; // pevná velikost z resize(), hloubka jen škáluje transformací
           const rock = reduced ? 0 : Math.sin(sec * 0.9 + i * 1.7) * 10;
           const bob = reduced ? 0 : Math.sin(sec * 1.3 + i) * 3;
-          el.style.width = el.style.height = `${sz}px`;
-          el.style.transform = `translate3d(${p.x - sz / 2}px, ${p.y - sz / 2 + bob}px, 0) rotate(${rock}deg)`;
-          el.style.zIndex = p.d > 0 ? "1" : "6";
-          el.style.filter = p.d > 0 ? "brightness(0.78)" : "none";
+          el.style.transform = `translate3d(${p.x - base / 2}px, ${p.y - base / 2 + bob}px, 0) rotate(${rock}deg) scale(${1.08 - depth * 0.22})`;
+          const back = p.d > 0;
+          if (ringFront[i] !== !back) {
+            // z-index a filtr se mění jen při přechodu přes globus
+            ringFront[i] = !back;
+            el.style.zIndex = back ? "1" : "6";
+            el.style.filter = back ? "brightness(0.78)" : "none";
+          }
         }
         // letadla a raketa s dráhou za sebou
         FLYERS.forEach((f, i) => {
@@ -523,9 +575,8 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
           const o2 = orbit(r2, f.incl, f.roll, th + 0.03 * Math.sign(f.speed));
           const x = cx + o1.x, y = cy - o1.z;
           const ang = Math.atan2(-(o2.z - o1.z), o2.x - o1.x);
-          const sz = size * f.size * (1.05 - (o1.d / r2) * 0.2);
-          el.style.width = el.style.height = `${sz}px`;
-          el.style.transform = `translate3d(${x - sz / 2}px, ${y - sz / 2}px, 0) rotate(${ang}rad)`;
+          const fb = size * f.size;
+          el.style.transform = `translate3d(${x - fb / 2}px, ${y - fb / 2}px, 0) rotate(${ang}rad) scale(${1.05 - (o1.d / r2) * 0.2})`;
           el.style.zIndex = o1.d > 0 ? "1" : "7";
           const tr = trails[i];
           tr.push({ x, y, d: o1.d });
