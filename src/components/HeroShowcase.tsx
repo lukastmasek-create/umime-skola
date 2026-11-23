@@ -19,7 +19,15 @@ const GAME_CHIPS = [
   { key: "pets", icon: "pets", href: "stale-hry/mazlicci" },
 ] as const;
 
-type LiveTeam = { id: string; name: string; role: string; members: number; open: number };
+const BOARD = [
+  { avatar: "astronaut", name: "A. K.", pct: 100 },
+  { avatar: "fox", name: "T. N.", pct: 80 },
+  { avatar: "owl", name: "E. P.", pct: 60 },
+];
+
+const portrait = (slug: string) => `/avatars-3d/${slug}-portret.webp`;
+
+type LiveTeam ={ id: string; name: string; role: string; members: number; open: number };
 
 const tpl = (s: string, n: number) => s.replace("{n}", String(n));
 
