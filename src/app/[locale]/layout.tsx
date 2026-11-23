@@ -45,7 +45,7 @@ const heroFont = Pangolin({
 
 // Pixelové písmo pro nadpisy a tlačítka „arkádového“ vzhledu (Stálé hry, Únikovky, Materiály, Moje sady).
 const pixel = Jersey_10({
-  subsets: ["latin", "latin-ext", "cyrillic"],
+  subsets: ["latin", "latin-ext"],
   weight: "400",
   variable: "--font-pixel",
 });
