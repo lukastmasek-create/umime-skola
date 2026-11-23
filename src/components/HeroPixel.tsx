@@ -188,6 +188,60 @@ const CLOUD_A = [
 ];
 const CLOUD_B = ["...www.....", ".wwwwwww.w.", "wwwwwwwwwww", ".lllllllll."];
 
+const BIRCH = [
+  "..lll..",
+  ".lllll.",
+  "lllllgl",
+  ".lgllg.",
+  "..lgl..",
+  "...w...",
+  "...k...",
+  "...w...",
+  "...w...",
+  "...k...",
+  "...w...",
+];
+const SUNFLOWER = [".yyy.", "ybbby", ".yyy.", "..s..", ".ls..", "..sl.", "..s..", "..s.."];
+const FENCE = ["w.w.w.w", "wwwwwww", "w.w.w.w", "w.w.w.w"];
+const ROCK = [".ggg.", "gggdg", "ddddd"];
+const SIGN = ["bbbbbb", "bwwwwb", "bbbbbb", "..p...", "..p...", "..p...", "..p..."];
+const WM_BODY = [
+  "...r...",
+  "..rrr..",
+  ".rrrrr.",
+  "..www..",
+  "..wyw..",
+  "..www..",
+  ".wwwww.",
+  ".wwwww.",
+  ".wwdww.",
+  "wwwdwww",
+  "wwwdwww",
+];
+const bladeRows = (diag: boolean) =>
+  Array.from({ length: 11 }, (_, y) =>
+    Array.from({ length: 11 }, (_, x) =>
+      x === 5 && y === 5 ? "h" : (diag ? x === y || x + y === 10 : x === 5 || y === 5) ? "b" : ".",
+    ).join(""),
+  );
+const BLADES_A = bladeRows(false);
+const BLADES_B = bladeRows(true);
+const FIRE_A = ["..o..", ".oyo.", "ooyoo", "lllll"];
+const FIRE_B = [".o...", "ooyo.", ".oyoo", "lllll"];
+const TENT = [
+  ".....r.....",
+  "....rrr....",
+  "...rrrrr...",
+  "..rrrdrrr..",
+  ".rrrrdddrr.",
+  "rrrrdddddrr",
+  "rrrrdddddrr",
+];
+const RABBIT = [".w.w..", ".www..", ".wkw..", "wwwww.", "wwwwww"];
+const BFLY_A = ["p.p", ".p."];
+const BFLY_B = [".p.", "p.p"];
+const UFO = ["...ccc...", "..ccccc..", "ggggggggg", ".y.y.y.y."];
+
 const P_PINE_FAR: Pal = { l: "#2f8f7a", g: "#1f6a5c", t: "#2a2a3a" };
 const P_PINE_MID: Pal = { l: "#4fbf6a", g: "#2a7a48", t: "#5a3a22" };
 const P_PINE_NEAR: Pal = { l: "#6fe07a", g: "#2f8f4f", t: "#6b4226" };
@@ -272,32 +326,35 @@ function scatter(seed: number, count: number, gap: number, from = 4, to = W - 12
 const at = (layer: number, x: number, hgt: number) => HS[layer][Math.min(W - 1, Math.max(0, x))] - hgt + 1;
 
 // horské pásmo se sněhovými čepičkami
-const MOUNTS = (() => {
-  const base = 188;
-  const amp = 44;
+function makeMounts(base: number, amp: number, f1: number, ph1: number, f2: number, ph2: number, snowK: number) {
   const ys = Array.from({ length: W }, (_, x) => {
-    const p = 1 - Math.abs(Math.sin(x * 0.028 + 0.8));
-    const q = 1 - Math.abs(Math.sin(x * 0.071 + 2.1));
+    const p = 1 - Math.abs(Math.sin(x * f1 + ph1));
+    const q = 1 - Math.abs(Math.sin(x * f2 + ph2));
     return Math.round(base - amp * (0.7 * p + 0.3 * q * p));
   });
   let body = "";
   let side = "";
   let snow = "";
   let snow2 = "";
-  const snowline = base - amp * 0.62;
+  let ridge = "";
+  const snowline = base - amp * snowK;
   for (let x = 0; x < W; x++) {
     const y = ys[x];
     body += `M${x} ${y}h1v${H - y}h-1z`;
-    // stín na pravých svazích
-    if (x > 0 && ys[x - 1] > y - 0 && (x + y) % 3 === 0) side += `M${x} ${y + 3}h1v6h-1z`;
+    // stín na pravých svazích a skalnaté žilky
+    if (x > 0 && ys[x - 1] > y && (x + y) % 3 === 0) side += `M${x} ${y + 3}h1v6h-1z`;
+    if (x > 0 && ys[x - 1] < y && (x * 7 + y) % 4 === 0) ridge += `M${x} ${y + 2}h1v${3 + ((x + y) % 4)}h-1z`;
     if (y < snowline) {
-      const d = Math.min(6, Math.round(snowline - y) + 1);
+      const d = Math.min(7, Math.round(snowline - y) + 1);
       snow += `M${x} ${y}h1v${d}h-1z`;
       snow2 += `M${x} ${y + d - 1}h1v1h-1z`;
+      if ((x + y) % 2 === 0) snow2 += `M${x} ${y + d}h1v1h-1z`; // rozcuchaná spodní hrana sněhu
     }
   }
-  return { body, side, snow, snow2 };
-})();
+  return { body, side, snow, snow2, ridge };
+}
+const MOUNTS = makeMounts(188, 44, 0.028, 0.8, 0.071, 2.1, 0.62);
+const MOUNTS_FAR = makeMounts(176, 30, 0.04, 2.4, 0.09, 0.3, 0.7);
 
 const STARS = (() => {
   const r = rng(7);
@@ -346,6 +403,18 @@ const FIREFLIES = (() => {
   }));
 })();
 
+const BUTTERFLIES = (() => {
+  const r = rng(555);
+  const cols = ["#ff6b9a", "#ffd86b", "#8ea2ff", "#ffffff"];
+  return Array.from({ length: 7 }, (_, i) => ({
+    x: Math.floor(r() * W),
+    y: 214 + Math.floor(r() * 36),
+    c: cols[i % cols.length],
+    d: -(r() * 6),
+    dur: 5 + r() * 3,
+  }));
+})();
+
 // ---------- vykreslení ----------
 export function HeroPixel() {
   const treesMid = scatter(11, 15, 18);
@@ -356,8 +425,28 @@ export function HeroPixel() {
   const mushrooms = scatter(61, 5, 70);
   const bigTrees4 = scatter(71, 4, 110, 20, W - 30);
   const houseX = 268;
-  const lampX = 196;
+  const lampX = 232;
   const castleX = 232;
+  const birches = scatter(77, 7, 34).filter((x) => Math.abs(x - houseX) > 30);
+  const sunflowers = scatter(81, 7, 28);
+  const rocks = scatter(83, 6, 60);
+  const windmillX = 408;
+  const pondX = 178;
+  const tentX = 402;
+  const fireX = 419;
+  const signX = 262;
+  const houseTop = at(2, houseX + 7, HOUSE.length);
+  const doorY = HS[2][houseX + 11];
+  // vyšlapaná cesta od dveří chaloupky dolů do popředí
+  let pathD = "";
+  let pathEdge = "";
+  for (let y = doorY; y < H; y++) {
+    const t = y - doorY;
+    const cx = Math.round(houseX + 11 + Math.sin(t * 0.09) * 5 + t * 0.12);
+    const w = 3 + Math.floor(t / 9);
+    pathD += `M${cx - Math.floor(w / 2)} ${y}h${w}v1h-${w}z`;
+    if (t % 2 === 0) pathEdge += `M${cx - Math.floor(w / 2) - 1} ${y}h1v1h-1zM${cx - Math.floor(w / 2) + w} ${y}h1v1h-1z`;
+  }
 
   const SKIES: Record<string, string[]> = {
     night: [
@@ -495,9 +584,15 @@ export function HeroPixel() {
         </g>
 
         <g className="hp-land">
+        {/* vzdálené, zamlžené pásmo */}
+        <path d={MOUNTS_FAR.body} fill="#3b3787" opacity="0.8" />
+        <path d={MOUNTS_FAR.side} fill="#322e78" opacity="0.8" />
+        <path d={MOUNTS_FAR.snow} fill="#d9d4f5" opacity="0.7" />
+        <path d={MOUNTS_FAR.snow2} fill="#aaa2e8" opacity="0.7" />
         {/* hory */}
         <path d={MOUNTS.body} fill="#2a2468" />
         <path d={MOUNTS.side} fill="#221c58" />
+        <path d={MOUNTS.ridge} fill="#1d184d" />
         <path d={MOUNTS.snow} fill="#e6e0ff" opacity="0.9" />
         <path d={MOUNTS.snow2} fill="#b9b0f0" opacity="0.9" />
 
@@ -513,11 +608,28 @@ export function HeroPixel() {
           <Sprite key={x} rows={PINE} pal={P_PINE_FAR} x={x} y={at(0, x, PINE.length)} />
         ))}
 
+        {/* větrný mlýn na dalekém kopci, lopatky se střídají ve dvou snímcích */}
+        <Sprite
+          rows={WM_BODY}
+          pal={{ r: "#8a3a4a", w: "#4a5a9a", y: LIT, d: "#2a2a5a" }}
+          x={windmillX}
+          y={at(0, windmillX + 3, WM_BODY.length)}
+        />
+        <g className="hp-flip-a">
+          <Sprite rows={BLADES_A} pal={{ b: "#cfd6ff", h: "#8a3a4a" }} x={windmillX - 2} y={at(0, windmillX + 3, WM_BODY.length) - 4} />
+        </g>
+        <g className="hp-flip-b">
+          <Sprite rows={BLADES_B} pal={{ b: "#cfd6ff", h: "#8a3a4a" }} x={windmillX - 2} y={at(0, windmillX + 3, WM_BODY.length) - 4} />
+        </g>
+        <rect x="0" y={HILLS[0].base - 3} width={W} height="6" fill="#cfd8ff" opacity="0.06" />
+
         {/* vrstva 2: teal kopce, borovice v mlze */}
         <HillLayer h={HILLS[1]} hs={HS[1]} seed={2} />
         {treesMid.map((x, i) => (
           <Sprite key={x} rows={PINE} pal={P_PINE_MID} x={x} y={at(1, x, PINE.length)} flip={i % 2 === 0} />
         ))}
+
+        <rect x="0" y={HILLS[1].base - 3} width={W} height="7" fill="#cfe8ff" opacity="0.07" />
 
         {/* vrstva 3: zelené kopce, chaloupka, listnáče */}
         <HillLayer h={HILLS[2]} hs={HS[2]} seed={3} />
@@ -539,6 +651,14 @@ export function HeroPixel() {
           x={houseX}
           y={at(2, houseX + 7, HOUSE.length)}
         />
+        {birches.map((x, i) => (
+          <Sprite key={x} rows={BIRCH} pal={{ l: "#9be37a", g: "#4fb85a", w: "#f1efe6", k: "#4a4a55" }} x={x} y={at(2, x, BIRCH.length)} flip={i % 2 === 0} />
+        ))}
+        {/* plot před chaloupkou */}
+        {Array.from({ length: 5 }, (_, i) => {
+          const x = houseX - 30 + i * 7;
+          return <Sprite key={x} rows={FENCE} pal={{ w: "#c9a06a" }} x={x} y={at(2, x + 3, FENCE.length) + 1} />;
+        })}
         {bushes3.map((x) =>
           Math.abs(x - houseX - 7) < 14 ? null : <Sprite key={x} rows={BUSH} pal={P_BUSH} x={x} y={at(2, x, BUSH.length)} />,
         )}
@@ -555,6 +675,40 @@ export function HeroPixel() {
             flip={i % 2 === 1}
           />
         ))}
+        <path d={pathEdge} fill="#8a6a44" />
+        <path d={pathD} fill="#c9a77c" />
+        {/* rybníček s rákosím, jeho hladina se pomalu třpytí */}
+        <g>
+          {[[12, 0, 14], [6, 1, 26], [2, 2, 34], [0, 3, 38], [3, 4, 32], [8, 5, 22], [14, 6, 10]].map(([dx, dy, w], i) => (
+            <g key={i}>
+              <rect x={pondX + dx} y={HS[3][pondX + 19] + 4 + dy} width={w} height="1" fill={i < 2 ? "#6fb0ff" : "#3b7ad8"} />
+              {i === 0 && <rect x={pondX + dx} y={HS[3][pondX + 19] + 3} width={w} height="1" fill="#2b5fb0" />}
+            </g>
+          ))}
+          <g className="hp-flip-a" fill="#ffffff" opacity="0.7">
+            <rect x={pondX + 9} y={HS[3][pondX + 19] + 6} width="5" height="1" />
+            <rect x={pondX + 22} y={HS[3][pondX + 19] + 8} width="4" height="1" />
+          </g>
+          <g className="hp-flip-b" fill="#ffffff" opacity="0.7">
+            <rect x={pondX + 14} y={HS[3][pondX + 19] + 7} width="5" height="1" />
+            <rect x={pondX + 6} y={HS[3][pondX + 19] + 9} width="4" height="1" />
+          </g>
+          {[pondX - 2, pondX + 38].map((x, i) => (
+            <g key={x} fill="#2f8f4f">
+              <rect x={x} y={HS[3][pondX + 19] + 1 + i} width="1" height="6" />
+              <rect x={x + 2} y={HS[3][pondX + 19] + 3} width="1" height="4" />
+              <rect x={x} y={HS[3][pondX + 19]} width="1" height="2" fill="#7a4a1a" />
+            </g>
+          ))}
+        </g>
+        {rocks.map((x) => (
+          <Sprite key={x} rows={ROCK} pal={{ g: "#a5aac4", d: "#6a6f88" }} x={x} y={at(3, x, ROCK.length) + 1} />
+        ))}
+        {sunflowers.map((x) => (
+          <Sprite key={x} rows={SUNFLOWER} pal={{ y: "#ffd24d", b: "#7a4a1a", s: "#2f8f4f", l: "#4fbf6a" }} x={x} y={at(3, x, SUNFLOWER.length) + 1} />
+        ))}
+        <Sprite rows={SIGN} pal={{ b: "#8a5a3a", w: "#e8d2a6", p: "#6b4226" }} x={signX} y={at(3, signX, SIGN.length) + 1} />
+        <Sprite rows={TENT} pal={{ r: "#d9534f", d: "#2a1a3a" }} x={tentX} y={at(3, tentX + 5, TENT.length) + 1} />
         {bushes4.map((x) => (
           <Sprite key={x} rows={BUSH} pal={P_BUSH} x={x} y={at(3, x, BUSH.length)} />
         ))}
@@ -583,6 +737,43 @@ export function HeroPixel() {
           <Sprite rows={LAMP} pal={{ y: LIT }} only={LIT} x={lampX} y={at(3, lampX, LAMP.length)} />
           <Sprite rows={CASTLE} pal={{ y: LIT, o: LIT }} only={LIT} x={castleX} y={at(0, castleX + 8, CASTLE.length)} />
           <Sprite rows={HOUSE} pal={{ y: LIT }} only={LIT} x={houseX} y={at(2, houseX + 7, HOUSE.length)} />
+        </g>
+
+        {/* kouř z komína */}
+        <g className="hp-smokes">
+          {[0, 1, 2, 3].map((i) => (
+            <rect key={i} className="hp-smoke" x={houseX + 11} y={houseTop - 2} width="2" height="2" fill="#e8e4ff" style={{ animationDelay: `${-i * 1}s` }} />
+          ))}
+        </g>
+
+        {/* táborák: dva snímky plamene, v noci a večer září */}
+        <g className="hp-fire">
+          <g className="hp-fireglow" fill="#ff8a3d">
+            <rect x={fireX - 4} y={at(3, fireX, 4) - 2} width="13" height="8" opacity="0.1" />
+            <rect x={fireX - 7} y={at(3, fireX, 4)} width="19" height="5" opacity="0.07" />
+          </g>
+          <g className="hp-flip-a"><Sprite rows={FIRE_A} pal={{ o: "#ff8a3d", y: "#ffd86b", l: "#6b4226" }} x={fireX} y={at(3, fireX, 4) + 1} /></g>
+          <g className="hp-flip-b"><Sprite rows={FIRE_B} pal={{ o: "#ff8a3d", y: "#ffd86b", l: "#6b4226" }} x={fireX} y={at(3, fireX, 4) + 1} /></g>
+        </g>
+
+        {/* králík poskakuje u rybníčku */}
+        <g className="hp-hop">
+          <Sprite rows={RABBIT} pal={{ w: "#f1efe6", k: "#2a1a3a" }} x={pondX + 46} y={at(3, pondX + 46, RABBIT.length) + 1} />
+        </g>
+
+        {/* motýli (ve dne) */}
+        {BUTTERFLIES.map((b, i) => (
+          <g key={i} className="hp-butterfly" style={{ animationDuration: `${b.dur}s`, animationDelay: `${b.d}s` }}>
+            <g className="hp-flip-a"><Sprite rows={BFLY_A} pal={{ p: b.c }} x={b.x} y={b.y} /></g>
+            <g className="hp-flip-b"><Sprite rows={BFLY_B} pal={{ p: b.c }} x={b.x} y={b.y} /></g>
+          </g>
+        ))}
+
+        {/* UFO v noci */}
+        <g className="hp-ufo">
+          <g className="hp-bob" style={{ animationDuration: "3s" }}>
+            <Sprite rows={UFO} pal={{ c: "#8fd0ff", g: "#9a9ab8", y: "#ffee77" }} x={0} y={92} />
+          </g>
         </g>
 
         {/* světlušky */}
