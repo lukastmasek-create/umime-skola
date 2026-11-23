@@ -6697,7 +6697,8 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 :root[data-motion="off"] .hero-pixel .hp-fish { opacity: 0; }
 
 
-/* ==============================================================   Minecraft / pixel vrstva pro celý web: hranaté bloky se zkosením (světlo
+/* =====================================================================
+   Minecraft / pixel vrstva pro celý web: hranaté bloky se zkosením (světlo
    vlevo nahoře, stín vpravo dole), pixelový font nadpisů, schodovité okraje,
    blokový posuvník a kurzor. Vše jde přes tokeny a jednu vrstvu, komponenty se nemění.
    ===================================================================== */
@@ -6926,7 +6927,6 @@ hr {
 }
 .about-person, .legal-card, .faq-item { border-width: 3px; }
 .sketch-chip { font-family: var(--font-heading), system-ui, sans-serif; }
-=======
 /* ===================================================================
    Pixel arcade: Stálé hry, Únikovky, Materiály, Moje sady.
    Vše pod `.px-skin`, ostatní stránky se nemění. Rám je „vroubkovaný“ (box-shadow bez rohů),
@@ -7072,10 +7072,21 @@ hr {
 }
 @media print { .px-sky, .px-ground { display: none; } .px-stage { background: none; } }
 
-/* Pixelová scéna: ostré hrany, po načtení „vyskočí“ po krocích, po najetí na kartu dvakrát poskočí.
-   Animuje se `transform` (Tailwind centruje přes `translate`), obě vlastnosti se skládají. */
-.px-scene { image-rendering: pixelated; pointer-events: none; animation: px-pop 0.4s steps(4, end) both; }
-.px-box:hover .px-scene, .px-box:focus-visible .px-scene { animation: px-hop 0.7s steps(1, end) infinite; }
+/* Pixelová scéna: 4 snímky smyčky (skupiny .px-fr), CSS je po 0,3 s přepíná po krocích.
+   Po načtení scéna „vyskočí“. Bez pohybu zůstává snímek 0. Animuje se `transform`, Tailwind centruje přes `translate`. */
+.px-scene { image-rendering: pixelated; pointer-events: none; }
+.px-fr { opacity: 0; }
+.px-fr-0 { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .px-scene { animation: px-pop 0.4s steps(4, end) both; }
+  .px-fr { animation: 1.2s steps(1, end) infinite; }
+  .px-fr-0 { animation-name: px-f0; }
+  .px-fr-1 { animation-name: px-f1; }
+  .px-fr-2 { animation-name: px-f2; }
+  .px-fr-3 { animation-name: px-f3; }
+}
 @keyframes px-pop { from { transform: translateY(14px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-@keyframes px-hop { 0%, 50%, 100% { transform: translateY(0); } 15% { transform: translateY(-8px); } 30% { transform: translateY(0); } 65% { transform: translateY(-4px); } 80% { transform: translateY(0); } }
-@media (prefers-reduced-motion: reduce) { .px-scene, .px-box:hover .px-scene, .px-box:focus-visible .px-scene { animation: none; } }
+@keyframes px-f0 { 0% { opacity: 1; } 25%, 100% { opacity: 0; } }
+@keyframes px-f1 { 0% { opacity: 0; } 25% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes px-f2 { 0%, 25% { opacity: 0; } 50% { opacity: 1; } 75%, 100% { opacity: 0; } }
+@keyframes px-f3 { 0%, 50% { opacity: 0; } 75%, 100% { opacity: 1; } }

@@ -9,12 +9,10 @@ const PALETTE: Record<string, string> = {
   x: "#3fb0b0", M: "#c75fa0",
 };
 
-/** Pixelová scéna únikovky (48×32) nakreslená z bitmapy, bez 3D modelů. Neznámé id nic nevykreslí. */
-export function PxScene({ id, className = "" }: { id: string; className?: string }) {
-  const rows = SCENES[id];
-  if (!rows) return null;
+/** Cesty (jedna na barvu) z mřížky znaků; vodorovné běhy stejné barvy se slučují. */
+function paths(grid: string[][]) {
   const byColor: Record<string, string> = {};
-  rows.forEach((row, y) => {
+  grid.forEach((row, y) => {
     let x = 0;
     while (x < row.length) {
       const c = row[x];
@@ -27,10 +25,33 @@ export function PxScene({ id, className = "" }: { id: string; className?: string
       byColor[c] = (byColor[c] ?? "") + `M${start} ${y}h${x - start}v1h-${x - start}z`;
     }
   });
+  return Object.entries(byColor);
+}
+
+/** Animovaná pixelová scéna únikovky nebo hry (48×32): 4 snímky smyčky (bublinky, pára, vlajky, mrkání…),
+ *  přepíná je CSS po krocích. Bez pohybu (reduced motion) zůstane snímek 0. Neznámé id nic nevykreslí. */
+export function PxScene({ id, className = "" }: { id: string; className?: string }) {
+  const data = SCENES[id];
+  if (!data) return null;
+  const base = data.base.map((r) => r.split(""));
+  const grids = data.frames.map((patch) => {
+    const g = base.map((r) => r.slice());
+    if (patch) {
+      for (const p of patch.split(";")) {
+        const [x, y, c] = p.split(",");
+        g[Number(y)][Number(x)] = c;
+      }
+    }
+    return g;
+  });
   return (
     <svg aria-hidden viewBox="0 0 48 32" shapeRendering="crispEdges" className={`px-scene ${className}`}>
-      {Object.entries(byColor).map(([c, d]) => (
-        <path key={c} d={d} fill={PALETTE[c] ?? "#fff"} />
+      {grids.map((g, k) => (
+        <g key={k} className={`px-fr px-fr-${k}`}>
+          {paths(g).map(([c, d]) => (
+            <path key={c} d={d} fill={PALETTE[c] ?? "#fff"} />
+          ))}
+        </g>
       ))}
     </svg>
   );
