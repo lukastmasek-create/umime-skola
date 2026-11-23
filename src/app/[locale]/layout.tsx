@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Unbounded, Onest, Pangolin } from "next/font/google";
+import { Pixelify_Sans, Onest, Pangolin } from "next/font/google";
 import "../globals.css";
 import "../learning-motion.css";
 import { MobileMenu, NavTabs } from "@/components/NavTabs";
@@ -29,9 +29,10 @@ import { tr8 } from "@/i18n/config";
 
 const SKIP_LINK = tr8("Přeskočit na obsah", "Skip to content", "Zum Inhalt springen", "Перейти к содержимому", "Перейти до вмісту", "本文へスキップ", "Saltar al contenido", "Aller au contenu");
 
-const heading = Unbounded({
+// Pixelový nadpisový font (Minecraft styl) s latin-ext pro češtinu.
+const heading = Pixelify_Sans({
   subsets: ["latin", "latin-ext", "cyrillic"],
-  weight: ["500", "700", "800"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-heading",
 });
 

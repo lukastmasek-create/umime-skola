@@ -6,12 +6,15 @@ const WIDTH = 1200;
 const HEIGHT = 22;
 const STEP = 16;
 
+// Schodovitá (pixelová) čára: vodorovný úsek, svislý skok, a tak dál.
 function wobble(base: number, amp: number, phase: number) {
   let d = "";
+  let prev = 0;
   for (let x = 0; x <= WIDTH; x += STEP) {
     const i = x / STEP;
-    const y = base + amp * Math.sin(i * 0.9 + phase) + amp * 0.45 * Math.sin(i * 2.3 + phase * 1.7);
-    d += `${d ? "L" : "M"}${x} ${y.toFixed(2)}`;
+    const y = Math.round(base + amp * Math.sin(i * 0.9 + phase) + amp * 0.45 * Math.sin(i * 2.3 + phase * 1.7));
+    d += x === 0 ? `M${x} ${y}` : `L${x} ${prev}L${x} ${y}`;
+    prev = y;
   }
   return d;
 }
@@ -28,6 +31,7 @@ export function SketchEdge({ position }: { position: "top" | "bottom" }) {
       preserveAspectRatio="none"
       aria-hidden
       focusable="false"
+      shapeRendering="crispEdges"
     >
       <path d={MAIN} className="sketch-edge-line" />
       <path d={GUIDE} className="sketch-edge-guide" />
