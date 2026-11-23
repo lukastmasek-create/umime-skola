@@ -6915,3 +6915,14 @@ hr {
   background: repeating-linear-gradient(90deg, var(--edge) 0 8px, transparent 8px 12px);
   opacity: 0.6;
 }
+
+
+/* Minecraft: zbylé karty a panely (podle vlastních tříd) jsou hranaté a mají zkosený blok */
+.about-contact,.about-note,.about-person,.about-problem,.acct-cta,.acct-pop,.acct-stat,.arena-btn,.arena-mode,.arena-panel,.arena-pin-cell,.arena-stage,.code-shell,.code-shell .sk-tab,.code-shell [class*="rounded-lg"],.code-shell [class*="rounded-md"],.code-shell [class*="rounded-xl"],.cs-files li,.cs-mini,.cs-mini-p,.def-scene,.edx .card,.edx select,.edx textarea,.edx-tile,.faq-item,.gammy,.gammy-panel,.gcard-live,.gcard-live .gcard-cover,.gs-pop,.hang-badge,.hang-in,.hang-msg-tx,.hang-panel,.home-exercise,.home-exercise-answer,.home-finder,.home-finder-go,.home-finder-select,.legal-badge,.legal-card,.legal-summary,.legal-table-wrap,.lg-roles,.lobby-bar,.lobby-card,.lobby-clock,.market-card,.mini-card,.mini-ing,.mini-opt,.mini-receipt,.mini-shelf,.pcard,.pcard-ghost,.pcard-in,.pcard-mini-well,.rp-paper,.rp-stat,.sets-field,.sets-tile,.shop-pcard .card,.shop-pcard .gammy-panel,.skip-link,.sk-ai > button,.sk-ai > div,.town3d-card,.town3d-panel,.town3d-row,.town3d-tab,.xc,.sketch-chip,[class*="rounded-["]:not([class*="rounded-[50"]):not([class*="rounded-[999"]) {
+  border-radius: 0 !important;
+}
+.about-contact,.about-note,.about-person,.about-problem,.acct-stat,.acct-pop,.faq-item,.legal-card,.lobby-card,.market-card,.mini-card,.pcard,.town3d-card,.sets-tile,.edx-tile,.rp-stat,.home-exercise,.home-finder,.sketch-chip,.arena-panel,.hang-panel,.gammy-panel {
+  box-shadow: inset 3px 3px 0 var(--mc-light), inset -3px -3px 0 var(--mc-dark), 0 5px 0 var(--shadow-ink) !important;
+}
+.about-person, .legal-card, .faq-item { border-width: 3px; }
+.sketch-chip { font-family: var(--font-heading), system-ui, sans-serif; }
