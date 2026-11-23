@@ -4,6 +4,9 @@
 // Čisté SVG (crispEdges) + CSS, žádný JS ani canvas. Vše je generované deterministicky (seed),
 // takže server i klient vykreslí totéž.
 
+import { HERO_PHASE_SCRIPT } from "@/lib/hero-phase";
+import { HeroPixelClock } from "@/components/HeroPixelClock";
+
 const W = 480;
 const H = 270;
 
@@ -30,12 +33,14 @@ function Sprite({
   x,
   y,
   flip = false,
+  only,
 }: {
   rows: string[];
   pal: Pal;
   x: number;
   y: number;
   flip?: boolean;
+  only?: string; // vykreslí jen tuto barvu (rozsvícená okna nad ztmavenou krajinou)
 }) {
   const byColor = new Map<string, string>();
   rows.forEach((row, ry) => {
@@ -49,6 +54,10 @@ function Sprite({
       while (e + 1 < row.length && row[e + 1] === ch) e++;
       const len = e - cx + 1;
       const col = pal[ch];
+      if (only && col !== only) {
+        cx = e + 1;
+        continue;
+      }
       byColor.set(col, (byColor.get(col) ?? "") + `M${cx} ${ry}h${len}v1h-${len}z`);
       cx = e + 1;
     }
@@ -154,6 +163,21 @@ const MOON = [
   ".mmmmccmmmmm.",
   "..mmmmmmmmm..",
   "....mmmmm....",
+];
+const SUN = [
+  "......r......",
+  "..r...r...r..",
+  "...r.yyy.r...",
+  "....yyyyy....",
+  "r..yyyyyyy..r",
+  "...yyyyyyy...",
+  "rr.yyyyyyy.rr",
+  "...yyyyyyy...",
+  "r..yyyyyyy..r",
+  "....yyyyy....",
+  "...r.yyy.r...",
+  "..r...r...r..",
+  "......r......",
 ];
 const CLOUD_A = [
   "....www........",
@@ -287,6 +311,16 @@ const STARS = (() => {
   }));
 })();
 
+const XSTARS = (() => {
+  const r = rng(321);
+  return Array.from({ length: 80 }, (_, i) => ({
+    x: Math.floor(r() * W),
+    y: Math.floor(r() * r() * 170) + 2,
+    k: i % 3,
+    warm: r() < 0.15,
+  }));
+})();
+
 const CLOUDS = [
   { s: CLOUD_A, x: 0, y: 34, dur: 190, delay: -60, op: 0.42, sc: 1.4 },
   { s: CLOUD_B, x: 0, y: 70, dur: 150, delay: -110, op: 0.34, sc: 1.2 },
@@ -325,27 +359,64 @@ export function HeroPixel() {
   const lampX = 196;
   const castleX = 232;
 
-  const SKY = [
-    "#070618", "#0a0922", "#0e0b2c", "#130f38", "#191344", "#201650", "#291a5c", "#331e66",
-    "#41226e", "#522874", "#652e78", "#7a357a", "#913d7b", "#aa467a", "#c25179", "#d85f78",
-    "#ea7276", "#f58a74",
-  ];
+  const SKIES: Record<string, string[]> = {
+    night: [
+      "#02020c", "#03030f", "#040415", "#05061c", "#070824", "#090b2d", "#0c0f38", "#0f1443",
+      "#13194e", "#171e58", "#1c2462", "#222b6b", "#293373", "#313b7a", "#3a4481", "#444e86",
+      "#4e578b", "#585f90",
+    ],
+    dawn: [
+      "#1a1a4e", "#212057", "#2a2561", "#352b6c", "#423178", "#533883", "#68408c", "#7f4894",
+      "#97519a", "#b05b9c", "#c8689c", "#dd7a9a", "#ec8f98", "#f6a596", "#fbb98f", "#fecb8c",
+      "#ffdb92", "#ffe8a8",
+    ],
+    day: [
+      "#1646a8", "#194cb2", "#1d53bb", "#225bc4", "#2864cc", "#2f6ed3", "#3778d9", "#4083df",
+      "#4a8ee4", "#5599e8", "#61a4ec", "#6eaff0", "#7cbaf3", "#8bc4f5", "#9acef7", "#a9d7f8",
+      "#b8e0fa", "#c8e8fb",
+    ],
+    dusk: [
+      "#070618", "#0a0922", "#0e0b2c", "#130f38", "#191344", "#201650", "#291a5c", "#331e66",
+      "#41226e", "#522874", "#652e78", "#7a357a", "#913d7b", "#aa467a", "#c25179", "#d85f78",
+      "#ea7276", "#f58a74",
+    ],
+  };
   const bandH = 11;
 
   return (
-    <div aria-hidden className="hero-pixel pointer-events-none absolute inset-0 -z-10 select-none overflow-hidden">
+    <>
+    <div
+      aria-hidden
+      data-time="dusk"
+      suppressHydrationWarning
+      className="hero-pixel pointer-events-none absolute inset-0 -z-10 select-none overflow-hidden"
+    >
       <svg
         className="absolute inset-0 h-full w-full"
         viewBox={`0 0 ${W} ${H}`}
         preserveAspectRatio="xMidYMax slice"
         shapeRendering="crispEdges"
       >
-        {/* nebe po pixelových pruzích */}
-        {SKY.map((c, i) => (
-          <rect key={i} x="0" y={i * bandH} width={W} height={i === SKY.length - 1 ? H - i * bandH : bandH + 0.5} fill={c} />
+        <defs>
+          <filter id="hp-f-night" colorInterpolationFilters="sRGB">
+            <feColorMatrix type="matrix" values="0.34 0 0 0 0.02  0 0.4 0 0 0.03  0 0 0.72 0 0.09  0 0 0 1 0" />
+          </filter>
+          <filter id="hp-f-dawn" colorInterpolationFilters="sRGB">
+            <feColorMatrix type="matrix" values="1 0 0 0 0.05  0 0.86 0 0 0.02  0 0 0.78 0 0  0 0 0 1 0" />
+          </filter>
+        </defs>
+
+        {/* nebe po pixelových pruzích, čtyři denní doby */}
+        {Object.entries(SKIES).map(([name, cols]) => (
+          <g key={name} className={`hp-sky hp-sky-${name}`}>
+            {cols.map((c, i) => (
+              <rect key={i} x="0" y={i * bandH} width={W} height={i === cols.length - 1 ? H - i * bandH : bandH + 0.5} fill={c} />
+            ))}
+          </g>
         ))}
 
         {/* hvězdy */}
+        <g className="hp-stars">
         {STARS.map((s, i) => {
           const fill = s.warm ? "#ffe9b0" : s.blue ? "#bcd6ff" : "#ffffff";
           return s.plus ? (
@@ -357,8 +428,13 @@ export function HeroPixel() {
             <rect key={i} className={`hp-star hp-star-${s.k}`} x={s.x} y={s.y} width="1" height="1" fill={fill} />
           );
         })}
+        {XSTARS.map((s, i) => (
+          <rect key={i} className={`hp-xstar hp-star hp-star-${s.k}`} x={s.x} y={s.y} width="1" height="1" fill={s.warm ? "#ffe9b0" : "#ffffff"} />
+        ))}
+        </g>
 
         {/* měsíc se září (kříž z obdélníků místo čtverce) */}
+        <g className="hp-moon">
         <g fill="#fff4c9">
           <rect x="381" y="18" width="21" height="11" opacity="0.06" />
           <rect x="386" y="13" width="11" height="21" opacity="0.06" />
@@ -366,6 +442,17 @@ export function HeroPixel() {
           <rect x="388" y="11" width="7" height="25" opacity="0.04" />
         </g>
         <Sprite rows={MOON} pal={{ m: "#fff4c9", c: "#e0cf93" }} x={385} y={17} />
+        </g>
+
+        {/* slunce: ve dne vysoko, ráno nízko nad horami */}
+        <g className="hp-sun">
+          <g fill="#fff0a0">
+            <rect x="141" y="12" width="31" height="15" opacity="0.1" transform="translate(0 6)" />
+            <rect x="148" y="6" width="17" height="33" opacity="0.1" transform="translate(0 6)" />
+            <rect x="138" y="16" width="37" height="9" opacity="0.06" transform="translate(0 6)" />
+          </g>
+          <Sprite rows={SUN} pal={{ y: "#ffe566", r: "#ffc94d" }} x={150} y={18} />
+        </g>
 
         {/* padající hvězda */}
         <g className="hp-shoot">
@@ -401,12 +488,13 @@ export function HeroPixel() {
         </g>
 
         {/* záře nad horizontem */}
-        <g fill="#ff9a7a">
+        <g className="hp-horizon" fill="#ff9a7a">
           <rect x="120" y="176" width="240" height="14" opacity="0.07" />
           <rect x="160" y="168" width="160" height="22" opacity="0.08" />
           <rect x="200" y="162" width="80" height="28" opacity="0.1" />
         </g>
 
+        <g className="hp-land">
         {/* hory */}
         <path d={MOUNTS.body} fill="#2a2468" />
         <path d={MOUNTS.side} fill="#221c58" />
@@ -470,11 +558,6 @@ export function HeroPixel() {
         {bushes4.map((x) => (
           <Sprite key={x} rows={BUSH} pal={P_BUSH} x={x} y={at(3, x, BUSH.length)} />
         ))}
-        {/* lampa se září (záře ve tvaru pixelového kříže, bez animace opacity) */}
-        <g fill={LIT} opacity="0.12">
-          <rect x={lampX - 3} y={at(3, lampX, LAMP.length) - 1} width="9" height="5" />
-          <rect x={lampX - 1} y={at(3, lampX, LAMP.length) - 3} width="5" height="9" />
-        </g>
         <Sprite rows={LAMP} pal={{ y: LIT, p: "#3a3a5a" }} x={lampX} y={at(3, lampX, LAMP.length)} />
         {flowers.map((x, i) => {
           const pals: Pal[] = [
@@ -489,16 +572,34 @@ export function HeroPixel() {
           <Sprite key={x} rows={MUSHROOM} pal={{ r: "#e04b5a", w: "#f5f0e1" }} x={x} y={at(3, x, MUSHROOM.length) + 1} />
         ))}
 
+        </g>
+
+        {/* rozsvícená okna a lampa nad ztmavenou krajinou (v noci svítí) */}
+        <g className="hp-litlayer">
+          <g fill={LIT} opacity="0.12">
+            <rect x={lampX - 3} y={at(3, lampX, LAMP.length) - 1} width="9" height="5" />
+            <rect x={lampX - 1} y={at(3, lampX, LAMP.length) - 3} width="5" height="9" />
+          </g>
+          <Sprite rows={LAMP} pal={{ y: LIT }} only={LIT} x={lampX} y={at(3, lampX, LAMP.length)} />
+          <Sprite rows={CASTLE} pal={{ y: LIT, o: LIT }} only={LIT} x={castleX} y={at(0, castleX + 8, CASTLE.length)} />
+          <Sprite rows={HOUSE} pal={{ y: LIT }} only={LIT} x={houseX} y={at(2, houseX + 7, HOUSE.length)} />
+        </g>
+
         {/* světlušky */}
+        <g className="hp-fireflies">
         {FIREFLIES.map((f, i) => (
           <g key={i} className="hp-firefly" style={{ animationDuration: `${f.dur}s`, animationDelay: `${f.d}s` }}>
             <rect x={f.x} y={f.y} width="1" height="1" fill="#ffe98a" />
             <rect x={f.x - 1} y={f.y - 1} width="3" height="3" fill="#ffe98a" opacity="0.15" />
           </g>
         ))}
+        </g>
       </svg>
       {/* jemné ztmavení za textem, aby zůstal čitelný */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_45%_at_50%_30%,rgba(10,8,32,0.55),transparent_75%)]" />
+      <div className="hp-veil absolute inset-0" />
     </div>
+    <script dangerouslySetInnerHTML={{ __html: HERO_PHASE_SCRIPT }} />
+    <HeroPixelClock />
+    </>
   );
 }

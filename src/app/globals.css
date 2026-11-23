@@ -6548,3 +6548,46 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 :root[data-motion="off"] .hero-pixel .hp-lit,
 :root[data-motion="off"] .hero-pixel .hp-firefly { animation: none; }
 :root[data-motion="off"] .hero-pixel .hp-shoot { opacity: 0; }
+
+/* Pixel hero: denní doby (data-time nastavuje HeroPixel: night | dawn | day | dusk) */
+.hero-pixel .hp-sky { display: none; }
+.hero-pixel[data-time="night"] .hp-sky-night,
+.hero-pixel[data-time="dawn"] .hp-sky-dawn,
+.hero-pixel[data-time="day"] .hp-sky-day,
+.hero-pixel[data-time="dusk"] .hp-sky-dusk { display: inline; }
+.hero-pixel .hp-veil {
+  background: radial-gradient(ellipse 60% 45% at 50% 30%, rgba(10, 8, 32, 0.55), transparent 75%);
+}
+.hero-pixel[data-time="day"] .hp-veil {
+  background: radial-gradient(ellipse 66% 50% at 50% 30%, rgba(8, 20, 70, 0.62), transparent 78%);
+}
+.hero-pixel[data-time="dawn"] .hp-veil {
+  background: radial-gradient(ellipse 64% 48% at 50% 30%, rgba(30, 14, 60, 0.6), transparent 78%);
+}
+.hero-pixel[data-time="night"] .hp-veil {
+  background: radial-gradient(ellipse 60% 45% at 50% 30%, rgba(2, 2, 14, 0.5), transparent 75%);
+}
+.hero-pixel[data-time="night"] .hp-land { filter: url(#hp-f-night); }
+.hero-pixel[data-time="dawn"] .hp-land { filter: url(#hp-f-dawn); }
+/* hvězdy: v noci hodně, večer a ráno méně, ve dne žádné */
+.hero-pixel .hp-xstar { display: none; }
+.hero-pixel[data-time="night"] .hp-xstar { display: inline; }
+.hero-pixel[data-time="dawn"] .hp-stars { opacity: 0.35; }
+.hero-pixel[data-time="day"] .hp-stars,
+.hero-pixel[data-time="day"] .hp-moon,
+.hero-pixel[data-time="day"] .hp-shoot,
+.hero-pixel[data-time="day"] .hp-fireflies,
+.hero-pixel[data-time="dawn"] .hp-shoot,
+.hero-pixel[data-time="dawn"] .hp-fireflies,
+.hero-pixel[data-time="day"] .hp-litlayer { display: none; }
+.hero-pixel[data-time="dawn"] .hp-moon { opacity: 0.45; }
+.hero-pixel .hp-sun { display: none; }
+.hero-pixel[data-time="day"] .hp-sun { display: inline; }
+.hero-pixel[data-time="dawn"] .hp-sun { display: inline; transform: translate(95px, 128px); }
+.hero-pixel[data-time="night"] .hp-horizon { display: none; }
+.hero-pixel[data-time="day"] .hp-horizon { fill: #ffffff; opacity: 0.5; }
+.hero-pixel[data-time="dawn"] .hp-horizon { fill: #ffd9a0; }
+/* mraky: ve dne bílé a výrazné, v noci tlumené */
+.hero-pixel[data-time="day"] .hp-cloud > g { opacity: 0.85; }
+.hero-pixel[data-time="dawn"] .hp-cloud > g { opacity: 0.55; }
+.hero-pixel[data-time="night"] .hp-cloud > g { opacity: 0.16; }
