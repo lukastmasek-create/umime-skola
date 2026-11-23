@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { useAccount } from "@/lib/use-account";
@@ -18,33 +18,6 @@ const GAME_CHIPS = [
   { key: "escape", icon: "escape", href: "unikovky" },
   { key: "pets", icon: "pets", href: "stale-hry/mazlicci" },
 ] as const;
-
-// Jiskry při kliknutí na ikonu: krátký prask z místa kliknutí, odstraní se samy.
-function sparks(e: MouseEvent<HTMLElement>, color: string) {
-  if (typeof document === "undefined" || document.documentElement.getAttribute("data-motion") === "off") return;
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const host = e.currentTarget;
-  const r = host.getBoundingClientRect();
-  const x = e.clientX - r.left || r.width / 2;
-  const y = e.clientY - r.top || r.height / 2;
-  for (let i = 0; i < 10; i++) {
-    const el = document.createElement("i");
-    const a = (Math.PI * 2 * i) / 10 + Math.random() * 0.5;
-    const d = 22 + Math.random() * 26;
-    el.className = "hs-spark";
-    el.style.cssText = `left:${x}px;top:${y}px;background:${color};--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d}px`;
-    host.appendChild(el);
-    window.setTimeout(() => el.remove(), 650);
-  }
-}
-
-const BOARD = [
-  { avatar: "astronaut", name: "A. K.", pct: 100 },
-  { avatar: "fox", name: "T. N.", pct: 80 },
-  { avatar: "owl", name: "E. P.", pct: 60 },
-];
-
-const portrait = (slug: string) => `/avatars-3d/${slug}-portret.webp`;
 
 type LiveTeam = { id: string; name: string; role: string; members: number; open: number };
 
@@ -141,7 +114,6 @@ export function HeroShowcase({ t, subjects, locale }: { t: HomeHeroText; subject
                 className="hs-tile"
                 data-active={i === 1 || i === 5 ? "true" : undefined}
                 style={{ ["--c" as string]: s.color }}
-                onClick={(e) => sparks(e, s.color)}
               >
                 <Icon name={s.slug} size={40} className="hs-tile-img" />
                 <span className="hs-tile-label">{s.label}</span>
@@ -159,7 +131,6 @@ export function HeroShowcase({ t, subjects, locale }: { t: HomeHeroText; subject
                 className="hs-chip"
                 title={t.games[g.key]}
                 aria-label={t.games[g.key]}
-                onClick={(e) => sparks(e, "#ffd24d")}
               >
                 <Icon name={g.icon} size={68} />
               </Link>

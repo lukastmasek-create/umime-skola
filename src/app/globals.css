@@ -4783,11 +4783,6 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 }
 .hs-tile, .hs-chip { position: relative; cursor: pointer; text-decoration: none; color: inherit; transition: transform .15s; }
 .hs-tile:hover, .hs-chip:hover, .hs-tile:focus-visible, .hs-chip:focus-visible { transform: translateY(-3px) scale(1.06); }
-.hs-spark {
-  position: absolute; width: 5px; height: 5px; border-radius: 50%; pointer-events: none; z-index: 5;
-  translate: -50% -50%; animation: hs-spark .6s ease-out forwards;
-}
-@keyframes hs-spark { to { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; } }
 .hs-tile[data-active] { border-color: var(--c); box-shadow: 0 0 14px color-mix(in srgb, var(--c) 40%, transparent); }
 .hs-tile-emoji { font-size: 22px; line-height: 1.2; }
 .hs-tile-label { font-size: 9px; font-weight: 700; color: var(--muted); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

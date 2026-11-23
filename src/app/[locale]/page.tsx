@@ -14,16 +14,12 @@ import { HeroSky } from "@/components/HeroSky";
 import { HeroTitle } from "@/components/HeroTitle";
 import { TearCard } from "@/components/TearCard";
 import { PcardArt, PcardRing, PcardTape } from "@/components/PcardArt";
-import { HangTags } from "@/components/HangTags";
-import { HangFeed } from "@/components/HangFeed";
-import { HangPanel } from "@/components/HangPanel";
-import { HangBadge, HangGround, HangIcon, HangSparks } from "@/components/HangDecor";
+import { HangIcon } from "@/components/HangDecor";
 import { HomeLobby } from "@/components/HomeLobby";
 import { getHomeLobbyText } from "@/i18n/home-lobby";
 import { ResultsPreview } from "@/components/ResultsPreview";
 import { HeroShowcase } from "@/components/HeroShowcase";
 import { getHomeHeroText } from "@/i18n/home-hero";
-import { getHomeHangText } from "@/i18n/home-hang";
 import { getHomeText } from "@/i18n/home";
 import { getHomeAudienceText } from "@/i18n/home-teachers";
 import { getAudiencePagesText } from "@/i18n/audience";
@@ -227,25 +223,6 @@ export default async function Home({
           </div>
         </section>
       )}
-
-      {/* 4b) Panel se zavěšenými štítky */}
-      <section className="zone zone-space">
-        <span className="px-stars" aria-hidden />
-        <LazyOnView placeholderHeight={700}>
-        <HangPanel>
-          <HangSparks />
-          <div className="hang-copy">
-            <HangBadge />
-            <h2 className="hang-title" style={heading}>{getHomeHangText(locale as Locale).title}</h2>
-            <p className="hang-lead">{getHomeHangText(locale as Locale).lead}</p>
-            <HangFeed messages={getHomeHangText(locale as Locale).feed} />
-          </div>
-          <HangTags tags={getHomeHangText(locale as Locale).tags} />
-          <HangGround />
-        </HangPanel>
-        </LazyOnView>
-        <SectionWave fill="#10183b" glow="#8ea2ff" />
-      </section>
 
       {/* 5) Zpět do vesmíru: kategorie */}
       <section className="zone zone-space">
