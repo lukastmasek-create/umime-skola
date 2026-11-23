@@ -16,6 +16,8 @@ import { prefersReducedMotion } from "@/lib/motion";
 // Česko, ruština Rusko, angličtina Velkou Británii… Globus sám putuje od předmětu k předmětu;
 // když na předmět najedeš (nebo ho vybereš vpravo), zastaví se u něj a ukáže jeho památku.
 
+const TAU_ = Math.PI * 2;
+const TAU = TAU_;
 const DIR = "/home/globe";
 const BASE_R = 0.26; // poloměr globu v zlomku šířky plátna při zoomu 1
 const DWELL_MS = 3000;
@@ -35,6 +37,11 @@ const FLYERS = [
   { sprite: "raketa", incl: -1.15, roll: 0.15, speed: 0.31, phase: 1.9, rho: 1.3, size: 0.105, trail: "255,170,90" },
 ] as const;
 const TRAIL_LEN = 26;
+// Dráhy světélek ve viewBoxu 100×100 (poloosy, natočení, fáze, úhlová rychlost); odpovídají cestám #orb-a / #orb-b.
+const ORBS = [
+  { rx: 53.8, ry: 19.5, rot: (-16 * Math.PI) / 180, t0: -2.55, w: TAU_ / 26, r: 1.3, color: "#fff6c8" },
+  { rx: 44.7, ry: 23.4, rot: (28 * Math.PI) / 180, t0: 3.09, w: -TAU_ / 38, r: 1, color: "#9fe7ff" },
+];
 
 const orbit = (rho: number, incl: number, roll: number, th: number) => {
   const x0 = rho * Math.cos(th);
@@ -211,7 +218,6 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-const TAU = Math.PI * 2;
 const wrapAngle = (a: number) => a - TAU * Math.round(a / TAU);
 
 type Subject = { slug: string; value: string; label: string; color: string };
@@ -237,6 +243,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
   const activeRef = useRef<string>("cestina");
   const ctlRef = useRef<{ zoomBy: (f: number) => void; reset: () => void } | null>(null);
   const releaseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const active = pinned ?? front;
   const bySlug = (slug: string) => subjects.find((s) => s.slug === slug);
@@ -263,6 +270,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
   useEffect(
     () => () => {
       if (releaseTimer.current) clearTimeout(releaseTimer.current);
+      if (hoverTimer.current) clearTimeout(hoverTimer.current);
     },
     [],
   );
@@ -524,6 +532,17 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
           fctx.ellipse(cx * dpr, cy * dpr, rx, ry, -RING_ROLL, 0, Math.PI);
           fctx.stroke();
         }
+        // dvě světélka na přerušovaných drahách (dřív SVG animateMotion, které překreslovalo celé plátno)
+        for (const o of ORBS) {
+          const th = o.t0 + (reduced ? 0 : sec * o.w);
+          const ex = o.rx * Math.cos(th), ey = o.ry * Math.sin(th);
+          const x = (50 + ex * Math.cos(o.rot) - ey * Math.sin(o.rot)) * (size / 100);
+          const y = (50 + ex * Math.sin(o.rot) + ey * Math.cos(o.rot)) * (size / 100);
+          bctx.fillStyle = o.color;
+          bctx.beginPath();
+          bctx.arc(x * dpr, y * dpr, o.r * (size / 100) * dpr, 0, TAU);
+          bctx.fill();
+        }
         // prach: polohy jednou, kreslení po dávkách podle průhlednosti (3 výplně na vrstvu místo 150)
         for (let i = 0; i < dust.length; i++) {
           const dp = dust[i];
@@ -636,6 +655,8 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
     // ovládání: tažení otáčí (se setrvačností), kolečko po kliknutí nebo Ctrl+kolečko, štípnutí a tlačítka
     // přibližují, dvojklik vrací výchozí pohled, šipky a +/- fungují z klávesnice
     let engaged = false;
+    let ctrl = false;
+    let wheelOn = false;
     let lastMoveAt = 0;
     const bump = () => {
       manualUntil = performance.now() + MANUAL_MS;
@@ -648,6 +669,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
       box.setPointerCapture(e.pointerId);
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       engaged = true;
+      setWheel(true);
       vel = 0;
       tvel = 0;
       if (pointers.size === 2) {
@@ -692,6 +714,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
     };
     const onLeave = () => {
       engaged = false;
+      setWheel(ctrl);
     };
     const onWheel = (e: WheelEvent) => {
       if (!(e.ctrlKey || engaged)) return;
@@ -699,6 +722,20 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
       userZoom = clampZoom(userZoom * Math.exp(-e.deltaY * 0.0016));
       bump();
     };
+    // Nepasivní posluchač kolečka blokuje plynulé rolování stránky, proto visí na globu jen po kliknutí nebo s Ctrl.
+    const setWheel = (on: boolean) => {
+      if (on === wheelOn) return;
+      wheelOn = on;
+      if (on) box.addEventListener("wheel", onWheel, { passive: false });
+      else box.removeEventListener("wheel", onWheel);
+    };
+    const onCtrl = (e: KeyboardEvent) => {
+      if (e.key !== "Control") return;
+      ctrl = e.type === "keydown";
+      setWheel(ctrl || engaged);
+    };
+    window.addEventListener("keydown", onCtrl);
+    window.addEventListener("keyup", onCtrl);
     const resetView = () => {
       userZoom = 1;
       vel = 0;
@@ -733,7 +770,6 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
     box.addEventListener("pointerup", onUp);
     box.addEventListener("pointercancel", onUp);
     box.addEventListener("pointerleave", onLeave);
-    box.addEventListener("wheel", onWheel, { passive: false });
     box.addEventListener("dblclick", resetView);
     box.addEventListener("keydown", onKey);
 
@@ -787,6 +823,8 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
       box.removeEventListener("pointercancel", onUp);
       box.removeEventListener("pointerleave", onLeave);
       box.removeEventListener("wheel", onWheel);
+      window.removeEventListener("keydown", onCtrl);
+      window.removeEventListener("keyup", onCtrl);
       box.removeEventListener("dblclick", resetView);
       box.removeEventListener("keydown", onKey);
       ctlRef.current = null;
@@ -796,7 +834,9 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
 
   const pin = (slug: string | null) => {
     if (releaseTimer.current) clearTimeout(releaseTimer.current);
-    if (slug) setPinned(slug);
+    if (hoverTimer.current) clearTimeout(hoverTimer.current);
+    // Úmysl: přejetí myší přes řadu karet nemá při každé z nich přerenderovat stránku a roztáčet globus.
+    if (slug) hoverTimer.current = setTimeout(() => setPinned(slug), 90);
     else releaseTimer.current = setTimeout(() => setPinned(null), 900);
   };
 
@@ -836,12 +876,6 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
               </defs>
               <use href="#orb-a" fill="none" stroke="rgba(160,190,255,0.22)" strokeWidth="0.25" strokeDasharray="1.2 1.6" />
               <use href="#orb-b" fill="none" stroke="rgba(255,190,225,0.18)" strokeWidth="0.25" strokeDasharray="0.8 1.8" />
-              <circle r="1.3" fill="#fff6c8">
-                <animateMotion dur="26s" repeatCount="indefinite"><mpath href="#orb-a" /></animateMotion>
-              </circle>
-              <circle r="1" fill="#9fe7ff">
-                <animateMotion dur="38s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#orb-b" /></animateMotion>
-              </circle>
             </svg>
             {/* eslint-disable @next/next/no-img-element */}
             {Array.from({ length: RING_COUNT }, (_, i) => (
@@ -911,9 +945,11 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
               style={{ willChange: "transform, opacity" }}
               onMouseEnter={() => pin(subject.slug)}
             >
-              <span key={subject.slug} className="globe-pop flex flex-col items-center">
+              <span key={subject.slug} className="globe-pop relative flex flex-col items-center">
+                {/* statický stín: drop-shadow filtr na animovaném spritu se přepočítával každý krok animace */}
+                <span aria-hidden className="absolute bottom-5 left-1/2 h-4 w-24 -translate-x-1/2 rounded-full bg-black/30 blur-md" />
                 <span
-                  className="globe-sprite block h-[150px] w-[150px] drop-shadow-[0_8px_8px_rgba(0,0,0,0.35)] sm:h-[190px] sm:w-[190px]"
+                  className="globe-sprite relative block h-[150px] w-[150px] sm:h-[190px] sm:w-[190px]"
                   style={{ backgroundImage: `url(${DIR}/${LANDMARK[subject.slug]}.webp)` }}
                 />
                 <span
