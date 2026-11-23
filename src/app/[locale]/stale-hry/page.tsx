@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PxHeader, PxIcon, PxStage, type PxIconName } from "@/components/pixel/PixelKit";
+import { PxScene } from "@/components/pixel/PixelScene";
 import { IdleHub } from "@/components/idle/IdleHub";
 import { getIdleText } from "@/i18n/idle";
 import { isLocale, type Locale } from "@/i18n/config";
@@ -68,11 +69,7 @@ export default async function IdleGamesPage({
                 <div className="relative flex h-40 items-start justify-between overflow-hidden p-3" style={{ background: COLORS[i % COLORS.length] }}>
                   <span aria-hidden className="absolute inset-x-0 bottom-0 h-3" style={{ background: "linear-gradient(#4cc16b 0 6px, #8a5a2b 6px)" }} />
                   {ART[i] ? (
-                    <div
-                      aria-hidden
-                      className="globe-sprite px-sprite pointer-events-none absolute bottom-1 left-1/2 h-36 w-36 -translate-x-1/2 drop-shadow-[0_6px_0_rgba(0,0,0,0.3)]"
-                      style={{ backgroundImage: `url(/home/hry/${ART[i]}.webp)` }}
-                    />
+                    <PxScene id={ART[i]} className="absolute bottom-0 left-1/2 h-[7rem] w-[10.5rem] -translate-x-1/2" />
                   ) : (
                     <span aria-hidden className="pointer-events-none absolute inset-0 flex items-center justify-center text-[#14112f]">
                       <PxIcon name="chest" scale={8} />
