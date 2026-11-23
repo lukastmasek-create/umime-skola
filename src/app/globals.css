@@ -6660,3 +6660,37 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 @media (prefers-reduced-motion: reduce) {
   .hs-subjects, .hs-class { transform: none; }
 }
+
+/* Pixel hero: polární záře, souhvězdí, planeta, kachny a ryba */
+@keyframes hp-swim { from { transform: translateX(0); } to { transform: translateX(14px); } }
+@keyframes hp-swim-r { from { transform: translateX(12px); } to { transform: translateX(0); } }
+@keyframes hp-jump {
+  0%, 90%, 100% { opacity: 0; transform: translateY(0); }
+  92% { opacity: 1; transform: translateY(-3px); }
+  95% { opacity: 1; transform: translateY(-5px); }
+  98% { opacity: 1; transform: translateY(-2px); }
+}
+@keyframes hp-aurora { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+.hero-pixel .hp-swim { animation: hp-swim 9s steps(14, end) infinite alternate; }
+.hero-pixel .hp-swim-2 { animation: hp-swim-r 11s steps(12, end) infinite alternate; }
+.hero-pixel .hp-fish { animation: hp-jump 7s steps(1, end) infinite; opacity: 0; }
+.hero-pixel .hp-aurora { display: none; animation: hp-aurora 9s ease-in-out infinite; }
+.hero-pixel[data-time="night"] .hp-aurora { display: inline; }
+.hero-pixel .hp-constel { display: none; }
+.hero-pixel[data-time="night"] .hp-constel { display: inline; }
+.hero-pixel .hp-planet { display: none; }
+.hero-pixel[data-time="night"] .hp-planet,
+.hero-pixel[data-time="dusk"] .hp-planet { display: inline; }
+.hero-pixel[data-time="dawn"] .hp-planet { display: inline; opacity: 0.4; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-pixel .hp-swim,
+  .hero-pixel .hp-swim-2,
+  .hero-pixel .hp-fish,
+  .hero-pixel .hp-aurora { animation: none; }
+  .hero-pixel .hp-fish { opacity: 0; }
+}
+:root[data-motion="off"] .hero-pixel .hp-swim,
+:root[data-motion="off"] .hero-pixel .hp-swim-2,
+:root[data-motion="off"] .hero-pixel .hp-fish,
+:root[data-motion="off"] .hero-pixel .hp-aurora { animation: none; }
+:root[data-motion="off"] .hero-pixel .hp-fish { opacity: 0; }

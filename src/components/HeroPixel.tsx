@@ -73,8 +73,25 @@ function Sprite({
   );
 }
 
+// přidá do stromů a keřů světlý okraj (h) a tmavou stranu (d), aby měly objem
+function shade(rows: string[]) {
+  return rows.map((row) => {
+    const ch = row.split("");
+    const first = ch.indexOf("l");
+    if (first >= 0) ch[first] = "h";
+    for (let i = ch.length - 1; i >= 0; i--) {
+      if (ch[i] === "g") {
+        ch[i] = "d";
+        break;
+      }
+      if (ch[i] !== ".") break;
+    }
+    return ch.join("");
+  });
+}
+
 // ---------- spritey ----------
-const PINE = [
+const PINE = shade([
   "....l....",
   "...lgg...",
   "..llggg..",
@@ -86,8 +103,8 @@ const PINE = [
   "lllgggggg",
   "....t....",
   "....t....",
-];
-const ROUND = [
+]);
+const ROUND = shade([
   "..lllll..",
   ".lllllgg.",
   "llllgggg.",
@@ -97,8 +114,8 @@ const ROUND = [
   "....t....",
   "....t....",
   "....t....",
-];
-const BUSH = ["..lll..", "lllllgg", "ggggggg"];
+]);
+const BUSH = shade(["..lll..", "lllllgg", "ggggggg"]);
 const FLOWER = [".p.", "pyp", ".p.", ".s."];
 const MUSHROOM = [".rrr.", "rwrrr", "rrrwr", "..w..", "..w.."];
 const HOUSE = [
@@ -242,12 +259,51 @@ const BFLY_A = ["p.p", ".p."];
 const BFLY_B = [".p.", "p.p"];
 const UFO = ["...ccc...", "..ccccc..", "ggggggggg", ".y.y.y.y."];
 
-const P_PINE_FAR: Pal = { l: "#2f8f7a", g: "#1f6a5c", t: "#2a2a3a" };
-const P_PINE_MID: Pal = { l: "#4fbf6a", g: "#2a7a48", t: "#5a3a22" };
-const P_PINE_NEAR: Pal = { l: "#6fe07a", g: "#2f8f4f", t: "#6b4226" };
-const P_ROUND: Pal = { l: "#78e070", g: "#2f9a4f", t: "#6b4226" };
-const P_ROUND_AUTUMN: Pal = { l: "#ffb347", g: "#d9742b", t: "#6b4226" };
-const P_BUSH: Pal = { l: "#6fe07a", g: "#2f8f4f" };
+const PLANET = [
+  "..ppppp..",
+  ".ppppppp.",
+  "ppqpppppp",
+  "pppppqppp",
+  "ppppppppp",
+  ".ppppppp.",
+  "..ppppp..",
+];
+const HOUSE_S = ["..r..", ".rrr.", "wwwww", "wywdw"];
+const BARN = [
+  "....rrr....",
+  "..rrrrrrr..",
+  ".rrrrrrrrr.",
+  "rrrrrrrrrrr",
+  "wwwwwwwwwww",
+  "wxwwwwwwxww",
+  "wwwwdddwwww",
+  "wwwwdddwwww",
+  "wwwwdddwwww",
+];
+const HAYSTACK = [".yyy.", "yyyyy", "yhyhy", "yyyyy"];
+const SCARECROW = ["..h..", ".hhh.", "..f..", "sssss", "..b..", "..b..", "..p..", "..p.."];
+const PUMPKIN = [".s.", "ooo", "ooo"];
+const WELL = [".rrrrr.", "rrrrrrr", ".p...p.", ".p...p.", "wwwwwww", "wbbbbbw", "wwwwwww"];
+const DUCK = ["..gg.", "wwwgo", "wwww."];
+const GRASS_A = ["g...g", "g.g.g", "ggggg"];
+const GRASS_B = [".g.g.", "g.g.g", "ggggg"];
+const BIRD_B = ["..x..", "xx.xx", "....."];
+const CLOUD_C = [
+  "......www.....www....",
+  "....wwwwwww.wwwwwww..",
+  "..wwwwwwwwwwwwwwwwww.",
+  ".wwwwwwwwwwwwwwwwwwww",
+  "wwwwwwwwwwwwwwwwwwwww",
+  ".lllllllllllllllllll.",
+];
+
+const P_PINE_FAR: Pal = { l: "#2f8f7a", g: "#1f6a5c", h: "#4fb09a", d: "#18564a", t: "#2a2a3a" };
+const P_PINE_MID: Pal = { l: "#4fbf6a", g: "#2a7a48", h: "#7fe08a", d: "#1f5f38", t: "#5a3a22" };
+const P_PINE_NEAR: Pal = { l: "#6fe07a", g: "#2f8f4f", h: "#a6f59a", d: "#216f3d", t: "#6b4226" };
+const P_ROUND: Pal = { l: "#78e070", g: "#2f9a4f", h: "#a7f58f", d: "#237a3f", t: "#6b4226" };
+const P_ROUND_AUTUMN: Pal = { l: "#ffb347", g: "#d9742b", h: "#ffd37a", d: "#a8541f", t: "#6b4226" };
+const P_BUSH: Pal = { l: "#6fe07a", g: "#2f8f4f", h: "#a6f59a", d: "#216f3d" };
+const P_BUSH_DARK: Pal = { l: "#2f8f4f", g: "#1f6a3a", h: "#3aa34f", d: "#195a30" };
 
 // ---------- krajina ----------
 type Hill = {
@@ -267,6 +323,7 @@ const HILLS: Hill[] = [
   { base: 198, amp: 8, f1: 0.045, f2: 0.12, ph: 3.1, top: "#46b08a", fill: "#2a6a6e", dark: "#245a5e", dither: "#307a7a" },
   { base: 216, amp: 7, f1: 0.055, f2: 0.15, ph: 0.4, top: "#68d46c", fill: "#2f8f4f", dark: "#277a43", dither: "#379c58" },
   { base: 238, amp: 6, f1: 0.07, f2: 0.18, ph: 2.2, top: "#9ae85e", fill: "#3aa34f", dark: "#2f8a43", dither: "#45b25a" },
+  { base: 262, amp: 3, f1: 0.09, f2: 0.22, ph: 4.1, top: "#3aa34f", fill: "#1f6a3a", dark: "#195a30", dither: "#257a44" },
 ];
 
 function heights(h: Hill) {
@@ -351,7 +408,7 @@ function makeMounts(base: number, amp: number, f1: number, ph1: number, f2: numb
       if ((x + y) % 2 === 0) snow2 += `M${x} ${y + d}h1v1h-1z`; // rozcuchaná spodní hrana sněhu
     }
   }
-  return { body, side, snow, snow2, ridge };
+  return { body, side, snow, snow2, ridge, ys };
 }
 const MOUNTS = makeMounts(188, 44, 0.028, 0.8, 0.071, 2.1, 0.62);
 const MOUNTS_FAR = makeMounts(176, 30, 0.04, 2.4, 0.09, 0.3, 0.7);
@@ -384,6 +441,8 @@ const CLOUDS = [
   { s: CLOUD_A, x: 0, y: 112, dur: 240, delay: -170, op: 0.3, sc: 1 },
   { s: CLOUD_B, x: 0, y: 20, dur: 130, delay: -20, op: 0.38, sc: 0.9 },
   { s: CLOUD_B, x: 0, y: 150, dur: 280, delay: -200, op: 0.22, sc: 1.1 },
+  { s: CLOUD_C, x: 0, y: 52, dur: 260, delay: -30, op: 0.28, sc: 1.3 },
+  { s: CLOUD_C, x: 0, y: 128, dur: 320, delay: -240, op: 0.2, sc: 1.6 },
 ];
 
 const BIRDS = [
@@ -402,6 +461,39 @@ const FIREFLIES = (() => {
     dur: 2.4 + r() * 3,
   }));
 })();
+
+const AURORA = [
+  { y: 50, h: 16, col: "#4dffb4", op: 0.16, ph: 0 },
+  { y: 62, h: 12, col: "#6a8cff", op: 0.13, ph: 1.7 },
+  { y: 40, h: 10, col: "#c77dff", op: 0.1, ph: 3.1 },
+].map((b) => {
+  let d = "";
+  for (let x = 0; x < W; x += 2) {
+    const y = Math.round(b.y + Math.sin(x * 0.02 + b.ph) * 9 + Math.sin(x * 0.05 + b.ph * 2) * 4);
+    const hh = b.h + Math.round(Math.sin(x * 0.04 + b.ph) * 4);
+    d += `M${x} ${y}h2v${hh}h-2z`;
+  }
+  return { ...b, d };
+});
+
+const CONST_PTS: [number, number][] = [[300, 30], [312, 26], [324, 29], [334, 36], [330, 46], [344, 52], [352, 44]];
+const CONST_LINES = (() => {
+  let d = "";
+  for (let i = 0; i < CONST_PTS.length - 1; i++) {
+    const [x0, y0] = CONST_PTS[i];
+    const [x1, y1] = CONST_PTS[i + 1];
+    const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+    for (let k = 3; k < n - 2; k += 3) {
+      d += `M${Math.round(x0 + ((x1 - x0) * k) / n)} ${Math.round(y0 + ((y1 - y0) * k) / n)}h1v1h-1z`;
+    }
+  }
+  return d;
+})();
+
+const FLOCKS = [
+  { y: 46, dur: 80, delay: -12, pts: [[0, 0], [-7, 3], [-7, -3], [-14, 6], [-14, -6]] },
+  { y: 100, dur: 120, delay: -70, pts: [[0, 0], [-6, 3], [-6, -3]] },
+];
 
 const BUTTERFLIES = (() => {
   const r = rng(555);
@@ -436,6 +528,22 @@ export function HeroPixel() {
   const fireX = 419;
   const signX = 262;
   const houseTop = at(2, houseX + 7, HOUSE.length);
+  const village = [340, 352, 366, 379];
+  const peakX = (() => {
+    let best = 270;
+    for (let x = 270; x <= 340; x++) if (MOUNTS.ys[x] < MOUNTS.ys[best]) best = x;
+    return best;
+  })();
+  const wfX = peakX + 4;
+  const wfTop = MOUNTS.ys[wfX] + 3;
+  const wfBot = HS[0][wfX];
+  const barnX = 346;
+  const wellX = 246;
+  const waterY = HS[3][pondX + 19] + 4;
+  const tufts = scatter(91, 14, 22);
+  const darkBushes = scatter(95, 6, 60);
+  const planetX = 90;
+  const planetY = 30;
   const doorY = HS[2][houseX + 11];
   // vyšlapaná cesta od dveří chaloupky dolů do popředí
   let pathD = "";
@@ -493,6 +601,14 @@ export function HeroPixel() {
           <filter id="hp-f-dawn" colorInterpolationFilters="sRGB">
             <feColorMatrix type="matrix" values="1 0 0 0 0.05  0 0.86 0 0 0.02  0 0 0.78 0 0  0 0 0 1 0" />
           </filter>
+          {Object.entries(SKIES).flatMap(([name, cols]) =>
+            cols.slice(1).map((c, i) => (
+              <pattern key={`${name}${i}`} id={`hp-d-${name}-${i}`} width="2" height="2" patternUnits="userSpaceOnUse">
+                <rect width="1" height="1" fill={c} />
+                <rect x="1" y="1" width="1" height="1" fill={c} />
+              </pattern>
+            )),
+          )}
         </defs>
 
         {/* nebe po pixelových pruzích, čtyři denní doby */}
@@ -500,6 +616,9 @@ export function HeroPixel() {
           <g key={name} className={`hp-sky hp-sky-${name}`}>
             {cols.map((c, i) => (
               <rect key={i} x="0" y={i * bandH} width={W} height={i === cols.length - 1 ? H - i * bandH : bandH + 0.5} fill={c} />
+            ))}
+            {cols.slice(1).map((_, i) => (
+              <rect key={`d${i}`} x="0" y={(i + 1) * bandH - 2} width={W} height="2" fill={`url(#hp-d-${name}-${i})`} />
             ))}
           </g>
         ))}
@@ -520,6 +639,31 @@ export function HeroPixel() {
         {XSTARS.map((s, i) => (
           <rect key={i} className={`hp-xstar hp-star hp-star-${s.k}`} x={s.x} y={s.y} width="1" height="1" fill={s.warm ? "#ffe9b0" : "#ffffff"} />
         ))}
+        </g>
+
+        {/* polární záře (jen v noci) */}
+        <g className="hp-aurora">
+          {AURORA.map((a, i) => (
+            <path key={i} d={a.d} fill={a.col} opacity={a.op} />
+          ))}
+        </g>
+
+        {/* souhvězdí (jen v noci) */}
+        <g className="hp-constel">
+          <path d={CONST_LINES} fill="#bcd6ff" opacity="0.35" />
+          {CONST_PTS.map(([x, y], i) => (
+            <rect key={i} className={`hp-star hp-star-${i % 3}`} x={x} y={y} width="2" height="2" fill="#ffffff" />
+          ))}
+        </g>
+
+        {/* prstencová planeta */}
+        <g className="hp-planet">
+          <Sprite rows={PLANET} pal={{ p: "#b07cff", q: "#8a5ad8" }} x={planetX} y={planetY} />
+          <g fill="#ffd6f5">
+            <rect x={planetX - 5} y={planetY + 4} width="19" height="1" />
+            <rect x={planetX - 6} y={planetY + 3} width="2" height="1" />
+            <rect x={planetX + 13} y={planetY + 3} width="2" height="1" />
+          </g>
         </g>
 
         {/* měsíc se září (kříž z obdélníků místo čtverce) */}
@@ -561,10 +705,15 @@ export function HeroPixel() {
           </g>
         ))}
 
-        {/* ptáci */}
-        {BIRDS.map((b, i) => (
-          <g key={i} className="hp-bird" style={{ animationDuration: `${b.dur}s`, animationDelay: `${b.delay}s` }}>
-            <Sprite rows={BIRD} pal={{ x: "#1a1240" }} x={0} y={b.y} />
+        {/* hejna ptáků, mávají křídly */}
+        {FLOCKS.map((f, i) => (
+          <g key={i} className="hp-bird" style={{ animationDuration: `${f.dur}s`, animationDelay: `${f.delay}s` }}>
+            {f.pts.map(([px, py], j) => (
+              <g key={j}>
+                <g className="hp-flip-a"><Sprite rows={BIRD} pal={{ x: "#1a1240" }} x={px} y={f.y + py} /></g>
+                <g className="hp-flip-b"><Sprite rows={BIRD_B} pal={{ x: "#1a1240" }} x={px} y={f.y + py} /></g>
+              </g>
+            ))}
           </g>
         ))}
 
@@ -596,8 +745,36 @@ export function HeroPixel() {
         <path d={MOUNTS.snow} fill="#e6e0ff" opacity="0.9" />
         <path d={MOUNTS.snow2} fill="#b9b0f0" opacity="0.9" />
 
+        {/* vodopád z hřebene, proužky vody se střídají */}
+        <rect x={wfX} y={wfTop} width="3" height={wfBot - wfTop} fill="#5aa0e8" />
+        <rect x={wfX} y={wfTop} width="1" height={wfBot - wfTop} fill="#8fc8ff" />
+        <rect x={wfX - 1} y={wfTop} width="5" height="2" fill="#8fc8ff" />
+        <g className="hp-flip-a" fill="#ffffff" opacity="0.85">
+          {Array.from({ length: Math.floor((wfBot - wfTop) / 5) }, (_, k) => (
+            <rect key={k} x={wfX + 1} y={wfTop + k * 5} width="1" height="2" />
+          ))}
+        </g>
+        <g className="hp-flip-b" fill="#ffffff" opacity="0.85">
+          {Array.from({ length: Math.floor((wfBot - wfTop) / 5) }, (_, k) => (
+            <rect key={k} x={wfX + 1} y={wfTop + k * 5 + 2} width="1" height="2" />
+          ))}
+        </g>
+
         {/* vrstva 1: modré kopce se zámkem (školou) */}
         <HillLayer h={HILLS[0]} hs={HS[0]} seed={1} />
+        {/* pára na úpatí vodopádu */}
+        <g className="hp-flip-a" fill="#ffffff" opacity="0.4">
+          <rect x={wfX - 2} y={wfBot - 2} width="7" height="2" />
+          <rect x={wfX - 1} y={wfBot - 4} width="5" height="2" />
+        </g>
+        <g className="hp-flip-b" fill="#ffffff" opacity="0.55">
+          <rect x={wfX - 3} y={wfBot - 3} width="9" height="2" />
+          <rect x={wfX} y={wfBot - 5} width="3" height="2" />
+        </g>
+        {/* vzdálená vesnice se svítícími okny */}
+        {village.map((x) => (
+          <Sprite key={x} rows={HOUSE_S} pal={{ r: "#5a3a7a", w: "#3a4a8a", y: LIT, d: "#2a2a5a" }} x={x} y={at(0, x + 2, HOUSE_S.length)} />
+        ))}
         <Sprite
           rows={CASTLE}
           pal={{ b: "#2d2a66", f: "#ff6b9a", y: LIT, o: LIT }}
@@ -629,6 +806,15 @@ export function HeroPixel() {
           <Sprite key={x} rows={PINE} pal={P_PINE_MID} x={x} y={at(1, x, PINE.length)} flip={i % 2 === 0} />
         ))}
 
+        {/* farma na teal kopci: stodola, kupky sena, strašák a dýně */}
+        <Sprite rows={BARN} pal={{ r: "#7a2a3a", w: "#b94a4a", x: "#f1efe6", d: "#4a2a2a" }} x={barnX} y={at(1, barnX + 5, BARN.length)} />
+        {[366, 373].map((x) => (
+          <Sprite key={x} rows={HAYSTACK} pal={{ y: "#e8c24a", h: "#c9a02f" }} x={x} y={at(1, x + 2, HAYSTACK.length)} />
+        ))}
+        <Sprite rows={SCARECROW} pal={{ h: "#8a5a2a", f: "#f5d9a0", s: "#c9a06a", b: "#4a6aaa", p: "#6b4226" }} x={388} y={at(1, 390, SCARECROW.length)} />
+        {[358, 382, 398].map((x) => (
+          <Sprite key={x} rows={PUMPKIN} pal={{ s: "#2f8f4f", o: "#ff8a3d" }} x={x} y={at(1, x + 1, PUMPKIN.length)} />
+        ))}
         <rect x="0" y={HILLS[1].base - 3} width={W} height="7" fill="#cfe8ff" opacity="0.07" />
 
         {/* vrstva 3: zelené kopce, chaloupka, listnáče */}
@@ -701,6 +887,18 @@ export function HeroPixel() {
             </g>
           ))}
         </g>
+        <Sprite rows={WELL} pal={{ r: "#8a3a4a", p: "#6b4226", w: "#a5aac4", b: "#3b7ad8" }} x={wellX} y={at(3, wellX + 3, WELL.length) + 1} />
+        {/* kachny plavou, občas vyskočí ryba */}
+        <g className="hp-swim">
+          <Sprite rows={DUCK} pal={{ w: "#f1efe6", g: "#2f8f4f", o: "#ff8a3d" }} x={pondX + 6} y={waterY + 3} />
+        </g>
+        <g className="hp-swim hp-swim-2">
+          <Sprite rows={DUCK} pal={{ w: "#e8d9b8", g: "#2f8f4f", o: "#ff8a3d" }} x={pondX + 18} y={waterY + 5} flip />
+        </g>
+        <g className="hp-fish">
+          <rect x={pondX + 26} y={waterY + 2} width="2" height="1" fill="#cfe8ff" />
+          <rect x={pondX + 24} y={waterY + 4} width="6" height="1" fill="#ffffff" opacity="0.6" />
+        </g>
         {rocks.map((x) => (
           <Sprite key={x} rows={ROCK} pal={{ g: "#a5aac4", d: "#6a6f88" }} x={x} y={at(3, x, ROCK.length) + 1} />
         ))}
@@ -722,10 +920,21 @@ export function HeroPixel() {
           ];
           return <Sprite key={x} rows={FLOWER} pal={pals[i % pals.length]} x={x} y={at(3, x, FLOWER.length) + 1} />;
         })}
+        {tufts.map((x) => (
+          <g key={x}>
+            <g className="hp-flip-a"><Sprite rows={GRASS_A} pal={{ g: "#6fe07a" }} x={x} y={at(3, x, 3) + 1} /></g>
+            <g className="hp-flip-b"><Sprite rows={GRASS_B} pal={{ g: "#6fe07a" }} x={x} y={at(3, x, 3) + 1} /></g>
+          </g>
+        ))}
         {mushrooms.map((x) => (
           <Sprite key={x} rows={MUSHROOM} pal={{ r: "#e04b5a", w: "#f5f0e1" }} x={x} y={at(3, x, MUSHROOM.length) + 1} />
         ))}
 
+        {/* nejbližší tmavý pás trávy a keře v popředí */}
+        <HillLayer h={HILLS[4]} hs={HS[4]} seed={5} />
+        {darkBushes.map((x) => (
+          <Sprite key={x} rows={BUSH} pal={P_BUSH_DARK} x={x} y={at(4, x, BUSH.length) + 1} />
+        ))}
         </g>
 
         {/* rozsvícená okna a lampa nad ztmavenou krajinou (v noci svítí) */}
@@ -736,6 +945,9 @@ export function HeroPixel() {
           </g>
           <Sprite rows={LAMP} pal={{ y: LIT }} only={LIT} x={lampX} y={at(3, lampX, LAMP.length)} />
           <Sprite rows={CASTLE} pal={{ y: LIT, o: LIT }} only={LIT} x={castleX} y={at(0, castleX + 8, CASTLE.length)} />
+          {village.map((x) => (
+            <Sprite key={x} rows={HOUSE_S} pal={{ y: LIT }} only={LIT} x={x} y={at(0, x + 2, HOUSE_S.length)} />
+          ))}
           <Sprite rows={HOUSE} pal={{ y: LIT }} only={LIT} x={houseX} y={at(2, houseX + 7, HOUSE.length)} />
         </g>
 
