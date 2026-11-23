@@ -5,7 +5,7 @@ import { getMaterialSubjects, getTopics, materialSubjectLabel } from "@/lib/mate
 import { getMaterialsText } from "@/i18n/materials";
 import { isLocale, type Locale } from "@/i18n/config";
 import { SpaceShell } from "@/components/SpaceShell";
-import { PaperCard } from "@/components/PaperCard";
+import { PxCard } from "@/components/pixel/PixelKit";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -19,29 +19,29 @@ export default async function MaterialsIndexPage({ params }: { params: Promise<{
   const t = getMaterialsText(locale as Locale);
 
   return (
-    <SpaceShell title={t.title} subtitle={t.subtitle} note={t.czechOnlyNote || undefined} wide>
-      <div className="pcard-pile pcard-pile-wide">
+    <SpaceShell title={t.title} subtitle={t.subtitle} note={t.czechOnlyNote || undefined} wide pixel>
+      <div className="px-grid">
         {getMaterialSubjects().map((subject, i) => {
           const topics = getTopics(subject.slug);
           const levels = [...new Set(topics.map((x) => x.level))].sort();
           return (
-            <PaperCard
+            <PxCard
               key={subject.slug}
               href={`/${locale}/materialy/${subject.slug}`}
               accent={subject.color}
               num={i + 1}
-              icon={<Icon name={subject.slug} size={92} className="pcard-icon" />}
+              icon={<Icon name={subject.slug} size={92} />}
               title={materialSubjectLabel(subject, locale as Locale)}
               text={`${t.topics}: ${topics.length}`}
             >
-              <span className="pcard-pills">
+              <span className="px-pills">
                 {levels.map((level) => (
-                  <span key={level} className="pill text-xs">
+                  <span key={level} className="px-pill">
                     {t.levels[level].title}
                   </span>
                 ))}
               </span>
-            </PaperCard>
+            </PxCard>
           );
         })}
       </div>

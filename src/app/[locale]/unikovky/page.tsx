@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ROOM_DIFFICULTY, escapeTimeLimit, getEscape } from "@/lib/escape/rewards";
 import { EscapeList, type EscapeCard } from "@/components/escape/EscapeList";
+import { PxHeader, PxStage } from "@/components/pixel/PixelKit";
 import { staticPageMetadata } from "@/lib/seo";
 
 // Nejlepší hodnocení přihlášeného hráče v každé únikovce. Bez přihlášení nebo databáze je prázdné.
@@ -42,15 +43,14 @@ export default async function EscapeRoomsPage({
   }));
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
-      <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        {t.title}
-      </h1>
-      <p className="mb-8 max-w-2xl text-[var(--muted)]">{t.subtitle}</p>
+    <PxStage>
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <PxHeader title={t.title} subtitle={t.subtitle} />
 
-      <EscapeList locale={locale as Locale} t={t} cards={cards} />
+        <EscapeList locale={locale as Locale} t={t} cards={cards} />
 
-      <p className="mt-8 text-sm text-[var(--faint)]">{t.note}</p>
-    </div>
+        <p className="px-box mt-8 px-4 py-3 text-sm text-[var(--px-dim)]">{t.note}</p>
+      </div>
+    </PxStage>
   );
 }
