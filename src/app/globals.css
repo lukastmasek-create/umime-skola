@@ -6489,3 +6489,208 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 .arena-emoji { font-size: 4.5rem; line-height: 1; filter: drop-shadow(0 12px 14px rgba(0, 0, 0, 0.55)); animation: arena-bob 3.2s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .arena-emoji { animation: none; } }
 .arena-stage h1, .arena-stage h2 { color: inherit; opacity: 1; }
+
+/* Pixel-art hero (HeroPixel) */
+@keyframes hp-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+@keyframes hp-drift {
+  from { transform: translateX(-60px); }
+  to { transform: translateX(520px); }
+}
+@keyframes hp-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@keyframes hp-shoot {
+  0%, 88% { transform: translate(0, 0); opacity: 0; }
+  89% { opacity: 1; }
+  96% { transform: translate(150px, 75px); opacity: 0; }
+  100% { transform: translate(150px, 75px); opacity: 0; }
+}
+@keyframes hp-flicker {
+  0%, 100% { opacity: 1; }
+  45% { opacity: 0.75; }
+  50% { opacity: 1; }
+  80% { opacity: 0.85; }
+}
+@keyframes hp-fly {
+  0%, 100% { transform: translate(0, 0); opacity: 0.15; }
+  25% { transform: translate(4px, -3px); opacity: 1; }
+  50% { transform: translate(8px, 1px); opacity: 0.3; }
+  75% { transform: translate(3px, 4px); opacity: 1; }
+}
+.hero-pixel .hp-star { animation: hp-blink 3s steps(2, end) infinite; }
+.hero-pixel .hp-star-1 { animation-duration: 4.4s; animation-delay: -1.2s; }
+.hero-pixel .hp-star-2 { animation-duration: 2.2s; animation-delay: -0.6s; }
+.hero-pixel .hp-cloud { animation: hp-drift 150s linear infinite; }
+.hero-pixel .hp-bird { animation: hp-drift 75s linear infinite; }
+.hero-pixel .hp-bob { animation: hp-bob 6s steps(5, end) infinite; }
+.hero-pixel .hp-shoot { animation: hp-shoot 12s linear infinite; }
+.hero-pixel .hp-lit { animation: hp-flicker 5s steps(1, end) infinite; }
+.hero-pixel .hp-firefly { animation: hp-fly 4s steps(6, end) infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-pixel .hp-star,
+  .hero-pixel .hp-cloud,
+  .hero-pixel .hp-bird,
+  .hero-pixel .hp-bob,
+  .hero-pixel .hp-shoot,
+  .hero-pixel .hp-lit,
+  .hero-pixel .hp-firefly { animation: none; }
+  .hero-pixel .hp-shoot { opacity: 0; }
+}
+:root[data-motion="off"] .hero-pixel .hp-star,
+:root[data-motion="off"] .hero-pixel .hp-cloud,
+:root[data-motion="off"] .hero-pixel .hp-bird,
+:root[data-motion="off"] .hero-pixel .hp-bob,
+:root[data-motion="off"] .hero-pixel .hp-shoot,
+:root[data-motion="off"] .hero-pixel .hp-lit,
+:root[data-motion="off"] .hero-pixel .hp-firefly { animation: none; }
+:root[data-motion="off"] .hero-pixel .hp-shoot { opacity: 0; }
+
+/* Pixel hero: denní doby (data-time nastavuje HeroPixel: night | dawn | day | dusk) */
+.hero-pixel .hp-sky { display: none; }
+.hero-pixel[data-time="night"] .hp-sky-night,
+.hero-pixel[data-time="dawn"] .hp-sky-dawn,
+.hero-pixel[data-time="day"] .hp-sky-day,
+.hero-pixel[data-time="dusk"] .hp-sky-dusk { display: inline; }
+.hero-pixel .hp-veil {
+  background: radial-gradient(ellipse 60% 45% at 50% 30%, rgba(10, 8, 32, 0.55), transparent 75%);
+}
+.hero-pixel[data-time="day"] .hp-veil {
+  background: radial-gradient(ellipse 66% 50% at 50% 30%, rgba(8, 20, 70, 0.62), transparent 78%);
+}
+.hero-pixel[data-time="dawn"] .hp-veil {
+  background: radial-gradient(ellipse 64% 48% at 50% 30%, rgba(30, 14, 60, 0.6), transparent 78%);
+}
+.hero-pixel[data-time="night"] .hp-veil {
+  background: radial-gradient(ellipse 60% 45% at 50% 30%, rgba(2, 2, 14, 0.5), transparent 75%);
+}
+.hero-pixel[data-time="night"] .hp-land { filter: url(#hp-f-night); }
+.hero-pixel[data-time="dawn"] .hp-land { filter: url(#hp-f-dawn); }
+/* hvězdy: v noci hodně, večer a ráno méně, ve dne žádné */
+.hero-pixel .hp-xstar { display: none; }
+.hero-pixel[data-time="night"] .hp-xstar { display: inline; }
+.hero-pixel[data-time="dawn"] .hp-stars { opacity: 0.35; }
+.hero-pixel[data-time="day"] .hp-stars,
+.hero-pixel[data-time="day"] .hp-moon,
+.hero-pixel[data-time="day"] .hp-shoot,
+.hero-pixel[data-time="day"] .hp-fireflies,
+.hero-pixel[data-time="dawn"] .hp-shoot,
+.hero-pixel[data-time="dawn"] .hp-fireflies,
+.hero-pixel[data-time="day"] .hp-litlayer { display: none; }
+.hero-pixel[data-time="dawn"] .hp-moon { opacity: 0.45; }
+.hero-pixel .hp-sun { display: none; }
+.hero-pixel[data-time="day"] .hp-sun { display: inline; }
+.hero-pixel[data-time="dawn"] .hp-sun { display: inline; transform: translate(95px, 128px); }
+.hero-pixel[data-time="night"] .hp-horizon { display: none; }
+.hero-pixel[data-time="day"] .hp-horizon { fill: #ffffff; opacity: 0.5; }
+.hero-pixel[data-time="dawn"] .hp-horizon { fill: #ffd9a0; }
+/* mraky: ve dne bílé a výrazné, v noci tlumené */
+.hero-pixel[data-time="day"] .hp-cloud > g { opacity: 0.85; }
+.hero-pixel[data-time="dawn"] .hp-cloud > g { opacity: 0.55; }
+.hero-pixel[data-time="night"] .hp-cloud > g { opacity: 0.16; }
+
+/* Pixel hero: další detaily (mlýn, táborák, motýli, kouř, UFO) */
+@keyframes hp-flipA { 0%, 49.9% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes hp-flipB { 0%, 49.9% { opacity: 0; } 50%, 100% { opacity: 1; } }
+@keyframes hp-rise {
+  0% { transform: translate(0, 0); opacity: 0.7; }
+  100% { transform: translate(5px, -16px); opacity: 0; }
+}
+@keyframes hp-hop {
+  0%, 70%, 100% { transform: translateY(0); }
+  78% { transform: translateY(-5px); }
+  86% { transform: translateY(0); }
+}
+.hero-pixel .hp-flip-a { animation: hp-flipA 0.9s steps(1, end) infinite; }
+.hero-pixel .hp-flip-b { animation: hp-flipB 0.9s steps(1, end) infinite; }
+.hero-pixel .hp-smoke { animation: hp-rise 4s linear infinite; }
+.hero-pixel .hp-hop { animation: hp-hop 3.6s steps(1, end) infinite; }
+.hero-pixel .hp-butterfly { animation: hp-fly 5s steps(8, end) infinite; }
+.hero-pixel .hp-ufo { animation: hp-drift 110s linear infinite; }
+/* ve dne motýli, v noci UFO a záře táboráku */
+.hero-pixel .hp-butterfly { display: none; }
+.hero-pixel[data-time="day"] .hp-butterfly,
+.hero-pixel[data-time="dawn"] .hp-butterfly { display: inline; }
+.hero-pixel .hp-ufo { display: none; }
+.hero-pixel[data-time="night"] .hp-ufo { display: inline; }
+.hero-pixel[data-time="day"] .hp-fireglow { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-pixel .hp-flip-b,
+  .hero-pixel .hp-butterfly,
+  .hero-pixel .hp-ufo { animation: none; }
+  .hero-pixel .hp-flip-b { opacity: 0; }
+  .hero-pixel .hp-flip-a,
+  .hero-pixel .hp-smoke,
+  .hero-pixel .hp-hop { animation: none; }
+}
+:root[data-motion="off"] .hero-pixel .hp-flip-a,
+:root[data-motion="off"] .hero-pixel .hp-smoke,
+:root[data-motion="off"] .hero-pixel .hp-hop,
+:root[data-motion="off"] .hero-pixel .hp-butterfly,
+:root[data-motion="off"] .hero-pixel .hp-ufo { animation: none; }
+:root[data-motion="off"] .hero-pixel .hp-flip-b { animation: none; opacity: 0; }
+
+/* Hero karty: pixelový styl (tvrdý stín, menší zaoblení, prosvítá scéna) a rozložení se stupňováním */
+.hs-card {
+  border-radius: 10px;
+  border-width: 2px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  box-shadow: 0 5px 0 var(--shadow-ink, #0b0a24), 0 0 26px rgba(124, 108, 255, 0.16);
+}
+.hs-tile { border-radius: 8px; }
+.hs-pill { border-radius: 10px; box-shadow: 0 5px 0 #1f2f9a, 0 8px 26px rgba(80, 100, 255, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35); }
+@media (min-width: 640px) and (max-width: 1023px) {
+  .hs-subjects { transform: rotate(-1deg); }
+  .hs-class { transform: rotate(1deg); }
+}
+@media (min-width: 1024px) {
+  .hs-card { background: color-mix(in srgb, var(--surface) 86%, transparent); }
+  .hs-flow { max-width: 1060px; grid-template-columns: 250px 1fr 290px; align-items: stretch; }
+  .hs-subjects { align-self: start; transform: translateY(-36px) rotate(-1.6deg); }
+  .hs-class { align-self: end; transform: translateY(34px) rotate(1.6deg); }
+  .hs-pipe { align-self: center; }
+  .hs-progress { left: 1%; top: -250px; }
+  .hs-safe { right: 1%; top: -280px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hs-subjects, .hs-class { transform: none; }
+}
+
+/* Pixel hero: polární záře, souhvězdí, planeta, kachny a ryba */
+@keyframes hp-swim { from { transform: translateX(0); } to { transform: translateX(14px); } }
+@keyframes hp-swim-r { from { transform: translateX(12px); } to { transform: translateX(0); } }
+@keyframes hp-jump {
+  0%, 90%, 100% { opacity: 0; transform: translateY(0); }
+  92% { opacity: 1; transform: translateY(-3px); }
+  95% { opacity: 1; transform: translateY(-5px); }
+  98% { opacity: 1; transform: translateY(-2px); }
+}
+@keyframes hp-aurora { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+.hero-pixel .hp-swim { animation: hp-swim 9s steps(14, end) infinite alternate; }
+.hero-pixel .hp-swim-2 { animation: hp-swim-r 11s steps(12, end) infinite alternate; }
+.hero-pixel .hp-fish { animation: hp-jump 7s steps(1, end) infinite; opacity: 0; }
+.hero-pixel .hp-aurora { display: none; animation: hp-aurora 9s ease-in-out infinite; }
+.hero-pixel[data-time="night"] .hp-aurora { display: inline; }
+.hero-pixel .hp-constel { display: none; }
+.hero-pixel[data-time="night"] .hp-constel { display: inline; }
+.hero-pixel .hp-planet { display: none; }
+.hero-pixel[data-time="night"] .hp-planet,
+.hero-pixel[data-time="dusk"] .hp-planet { display: inline; }
+.hero-pixel[data-time="dawn"] .hp-planet { display: inline; opacity: 0.4; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-pixel .hp-swim,
+  .hero-pixel .hp-swim-2,
+  .hero-pixel .hp-fish,
+  .hero-pixel .hp-aurora { animation: none; }
+  .hero-pixel .hp-fish { opacity: 0; }
+}
+:root[data-motion="off"] .hero-pixel .hp-swim,
+:root[data-motion="off"] .hero-pixel .hp-swim-2,
+:root[data-motion="off"] .hero-pixel .hp-fish,
+:root[data-motion="off"] .hero-pixel .hp-aurora { animation: none; }
+:root[data-motion="off"] .hero-pixel .hp-fish { opacity: 0; }
