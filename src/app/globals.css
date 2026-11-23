@@ -7071,8 +7071,10 @@ hr {
 }
 @media print { .px-sky, .px-ground { display: none; } .px-stage { background: none; } }
 
-/* Pixelová scéna únikovky: ostré hrany, po najetí na kartu poskočí po krocích */
-.px-scene { image-rendering: pixelated; pointer-events: none; }
-.px-box:hover .px-scene { animation: px-hop 0.5s steps(2, end) infinite; }
-@keyframes px-hop { 50% { transform: translate(-50%, -6px); } }
-@media (prefers-reduced-motion: reduce) { .px-box:hover .px-scene { animation: none; } }
+/* Pixelová scéna: ostré hrany, po načtení „vyskočí“ po krocích, po najetí na kartu dvakrát poskočí.
+   Animuje se `transform` (Tailwind centruje přes `translate`), obě vlastnosti se skládají. */
+.px-scene { image-rendering: pixelated; pointer-events: none; animation: px-pop 0.4s steps(4, end) both; }
+.px-box:hover .px-scene, .px-box:focus-visible .px-scene { animation: px-hop 0.7s steps(1, end) infinite; }
+@keyframes px-pop { from { transform: translateY(14px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes px-hop { 0%, 50%, 100% { transform: translateY(0); } 15% { transform: translateY(-8px); } 30% { transform: translateY(0); } 65% { transform: translateY(-4px); } 80% { transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .px-scene, .px-box:hover .px-scene, .px-box:focus-visible .px-scene { animation: none; } }
