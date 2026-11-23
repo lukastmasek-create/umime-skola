@@ -113,7 +113,7 @@ export default async function Home({
         <section className="gradient-hero relative">
           <HeroPixel />
           <div className="relative mx-auto flex max-w-6xl flex-col items-center px-4 pb-10 pt-12 sm:px-6 sm:pt-16 lg:pb-16 lg:pt-20">
-            <div className="flex max-w-3xl flex-col items-center gap-6 text-center">
+            <div className="flex max-w-3xl flex-col items-center gap-6 text-center lg:max-w-2xl">
               <span style={{ ["--d" as string]: "0.05s" }} className="hero-in rounded-md border-2 border-[var(--edge)] bg-[var(--surface)]/80 px-2.5 py-1 text-xs font-bold uppercase tracking-widest shadow-[0_0_18px_rgba(124,108,255,0.45)]">
                 {badge}
               </span>
