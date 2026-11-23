@@ -953,7 +953,7 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
                   style={{ backgroundImage: `url(${DIR}/${LANDMARK[subject.slug]}.webp)` }}
                 />
                 <span
-                  className="-mt-6 whitespace-nowrap rounded-full border-2 border-[#16132b] px-3 py-1 text-xs font-extrabold text-[#16132b] shadow-[0_3px_0_rgba(0,0,0,0.35)] sm:text-sm"
+                  className="-mt-6 w-max max-w-[260px] rounded-2xl border-2 border-[#16132b] px-3 py-1 text-center text-xs font-extrabold leading-tight text-[#16132b] shadow-[0_3px_0_rgba(0,0,0,0.35)] sm:text-sm"
                   style={{ background: subject.color }}
                 >
                   {subject.label} · {t.places[subject.slug]}
@@ -1005,14 +1005,16 @@ export function SubjectGlobe({ locale, subjects }: { locale: Locale; subjects: S
                   onFocus={() => onGlobe && pin(s.slug)}
                   onBlur={() => onGlobe && pin(null)}
                   aria-current={isActive ? "true" : undefined}
-                  className={`card card-hover relative flex h-full flex-col gap-1 p-2 text-[#1b1830] ${isActive ? "ring-4 ring-white/80" : ""}`}
+                  className={`card card-hover relative flex h-full min-h-[104px] flex-col items-center justify-between gap-2 p-2.5 text-center text-[#1b1830] ${isActive ? "ring-4 ring-white/80" : ""}`}
                   style={{ background: s.color, borderColor: "#16132b" }}
                 >
-                  <span className="flex items-center gap-2">
-                    <Icon name={s.slug} size={32} className="shrink-0" />
-                    <span className="text-[13px] font-bold leading-tight">{s.label}</span>
+                  <span className="flex min-w-0 max-w-full flex-1 flex-col items-center justify-center gap-1.5">
+                    <Icon name={s.slug} size={40} className="shrink-0" />
+                    <span lang={locale} className="max-w-full break-words text-[13px] font-bold leading-tight [hyphens:auto]">
+                      {s.label}
+                    </span>
                   </span>
-                  <span className="h-1.5 overflow-hidden rounded-full bg-black/15" aria-hidden>
+                  <span className="h-1.5 w-full overflow-hidden rounded-full bg-black/15" aria-hidden>
                     <span className="block h-full rounded-full bg-[#16132b]/70" style={{ width: `${pct}%`, transition: "width 0.6s ease" }} />
                   </span>
                   {sum && sum.due > 0 && (
