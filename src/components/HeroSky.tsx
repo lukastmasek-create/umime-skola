@@ -351,6 +351,7 @@ export function HeroSky({
         if (!raf) kick();
         return;
       }
+      if (!withShip) return;
       const dx = x - ship.x,
         dy = y - ship.y;
       const d = Math.hypot(dx, dy) || 1;
