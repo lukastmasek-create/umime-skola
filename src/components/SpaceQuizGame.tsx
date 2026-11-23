@@ -62,12 +62,12 @@ const UPGRADE_ICONS: Record<UpgradeKey, string> = { fire: "⚡", life: "❤️",
 const EMPTY_UPGRADES: Upgrades = { fire: 0, life: 0, slow: 0 };
 
 // Ovládací tlačítka na telefonu u retro her: které klávesy hra používá a jak se jmenují.
-type PadSpec = { keys: HeldKey[]; up?: string; down?: string };
+type PadSpec = { keys: HeldKey[]; up?: string; down?: string; wide?: boolean };
 const PADS: Partial<Record<GameSlug, PadSpec>> = {
   "pac-man": { keys: ["left", "right", "up", "down"] },
   snake: { keys: ["left", "right", "up", "down"] },
   breakout: { keys: ["left", "right", "fire"] },
-  tetris: { keys: ["left", "right", "up", "down", "fire"], up: "⟳", down: "▼" },
+  tetris: { keys: ["left", "right", "up", "down", "fire"], up: "⟳", down: "▼", wide: true },
   mole: { keys: ["left", "right", "fire"] },
   ninja: { keys: ["left", "right", "up", "down", "fire"] },
 };
@@ -898,23 +898,23 @@ export function SpaceQuizGame({
       )}
 
       {phase === "playing" && pad && (
-        <div className="fs-pad flex items-center justify-center gap-3">
+        <div className={`fs-pad flex items-center justify-center gap-3 ${pad.wide ? "w-full" : ""}`}>
           {pad.keys.includes("left") && (
             <HoldButton
               onHold={(down) => setHeld("left", down)}
               label="←"
-              className="btn-bouncy h-14 w-16 select-none rounded-2xl bg-[var(--surface-muted)] text-2xl"
+              className={`btn-bouncy h-14 select-none rounded-2xl bg-[var(--surface-muted)] text-2xl ${pad.wide ? "flex-1" : "w-16"}`}
             >
               ◀
             </HoldButton>
           )}
           {(pad.keys.includes("up") || pad.keys.includes("down")) && (
-            <div className="flex flex-col gap-2">
+            <div className={`flex gap-2 ${pad.wide ? "flex-1 flex-row" : "flex-col"}`}>
               {pad.keys.includes("up") && (
                 <HoldButton
                   onHold={(down) => setHeld("up", down)}
                   label="↑"
-                  className="btn-bouncy h-12 w-16 select-none rounded-2xl bg-[var(--surface-muted)] text-xl"
+                  className={`btn-bouncy select-none rounded-2xl bg-[var(--surface-muted)] text-xl ${pad.wide ? "h-14 flex-1" : "h-12 w-16"}`}
                 >
                   {pad.up ?? "▲"}
                 </HoldButton>
@@ -923,7 +923,7 @@ export function SpaceQuizGame({
                 <HoldButton
                   onHold={(down) => setHeld("down", down)}
                   label="↓"
-                  className="btn-bouncy h-12 w-16 select-none rounded-2xl bg-[var(--surface-muted)] text-xl"
+                  className={`btn-bouncy select-none rounded-2xl bg-[var(--surface-muted)] text-xl ${pad.wide ? "h-14 flex-1" : "h-12 w-16"}`}
                 >
                   {pad.down ?? "▼"}
                 </HoldButton>
@@ -934,7 +934,7 @@ export function SpaceQuizGame({
             <HoldButton
               onHold={(down) => setHeld("right", down)}
               label="→"
-              className="btn-bouncy h-14 w-16 select-none rounded-2xl bg-[var(--surface-muted)] text-2xl"
+              className={`btn-bouncy h-14 select-none rounded-2xl bg-[var(--surface-muted)] text-2xl ${pad.wide ? "flex-1" : "w-16"}`}
             >
               ▶
             </HoldButton>
@@ -942,7 +942,7 @@ export function SpaceQuizGame({
           {pad.keys.includes("fire") && (
             <HoldButton
               onHold={(down) => setHeld("fire", down)}
-              className="btn-bouncy h-14 flex-1 select-none rounded-2xl bg-[var(--accent-500)] text-sm font-bold text-white sm:max-w-xs"
+              className={`btn-bouncy h-14 flex-1 select-none rounded-2xl bg-[var(--accent-500)] text-sm font-bold text-white ${pad.wide ? "" : "sm:max-w-xs"}`}
             >
               {emoji} {t.fire}
             </HoldButton>

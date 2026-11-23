@@ -148,6 +148,7 @@ export default async function Home({
             </div>
             <div className="hero-in-right w-full">
               <HeroShowcase
+                locale={locale}
                 t={getHomeHeroText(locale as Locale)}
                 subjects={SUBJECTS.map((sj) => ({ slug: sj.slug, color: sj.color, label: subjectText.labels[sj.value] }))}
               />

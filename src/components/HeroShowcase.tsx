@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
+import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { useAccount } from "@/lib/use-account";
 import type { HomeHeroText } from "@/i18n/home-hero";
@@ -12,11 +13,30 @@ type Subject = { slug: string; label: string; color: string };
 
 // Ploché SVG nálepky z public/ikony (stejná sada jako jinde na webu).
 const GAME_CHIPS = [
-  { key: "farm", icon: "farm" },
-  { key: "town", icon: "city" },
-  { key: "escape", icon: "escape" },
-  { key: "pets", icon: "pets" },
+  { key: "farm", icon: "farm", href: "stale-hry/farma" },
+  { key: "town", icon: "city", href: "stale-hry/mesto" },
+  { key: "escape", icon: "escape", href: "unikovky" },
+  { key: "pets", icon: "pets", href: "stale-hry/mazlicci" },
 ] as const;
+
+// Jiskry při kliknutí na ikonu: krátký prask z místa kliknutí, odstraní se samy.
+function sparks(e: MouseEvent<HTMLElement>, color: string) {
+  if (typeof document === "undefined" || document.documentElement.getAttribute("data-motion") === "off") return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const host = e.currentTarget;
+  const r = host.getBoundingClientRect();
+  const x = e.clientX - r.left || r.width / 2;
+  const y = e.clientY - r.top || r.height / 2;
+  for (let i = 0; i < 10; i++) {
+    const el = document.createElement("i");
+    const a = (Math.PI * 2 * i) / 10 + Math.random() * 0.5;
+    const d = 22 + Math.random() * 26;
+    el.className = "hs-spark";
+    el.style.cssText = `left:${x}px;top:${y}px;background:${color};--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d}px`;
+    host.appendChild(el);
+    window.setTimeout(() => el.remove(), 650);
+  }
+}
 
 const BOARD = [
   { avatar: "astronaut", name: "A. K.", pct: 100 },
@@ -30,7 +50,7 @@ type LiveTeam = { id: string; name: string; role: string; members: number; open:
 
 const tpl = (s: string, n: number) => s.replace("{n}", String(n));
 
-export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subject[] }) {
+export function HeroShowcase({ t, subjects, locale }: { t: HomeHeroText; subjects: Subject[]; locale: string }) {
   const [account] = useAccount();
   const loggedIn = !!account && account.loggedIn;
   const [rawStreak, setStreak] = useState<number | null>(null);
@@ -76,14 +96,14 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
   const top = students.reduce((m, x) => Math.max(m, x.points), 0);
 
   return (
-    <div className="hs-stage" aria-hidden="true">
-      <svg className="hs-guides" viewBox="0 0 1000 600" preserveAspectRatio="none">
+    <div className="hs-stage">
+      <svg className="hs-guides" aria-hidden="true" viewBox="0 0 1000 600" preserveAspectRatio="none">
         <path d="M70 0 V250 Q70 330 0 330" />
         <path d="M930 0 V250 Q930 330 1000 330" />
         <path d="M500 330 V600" />
       </svg>
 
-      <div className="hs-card hs-progress space-float">
+      <div className="hs-card hs-progress space-float" aria-hidden="true">
         <div className="hs-row">
           <span className="hs-level">
             <Icon name="hero-odznak" size={52} />
@@ -100,7 +120,7 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
         </div>
       </div>
 
-      <div className="hs-card hs-safe space-float" style={{ animationDelay: "-2s" }}>
+      <div className="hs-card hs-safe space-float" style={{ animationDelay: "-2s" }} aria-hidden="true">
         <div className="hs-label hs-safe-head">
           <span className="hs-shield">✓</span> {t.safeTitle}
         </div>
@@ -115,15 +135,17 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
           <div className="hs-label hs-head">{t.subjectsTitle}</div>
           <div className="hs-subject-grid">
             {subjects.slice(0, 9).map((s, i) => (
-              <div
+              <Link
                 key={s.slug}
+                href={`/${locale}/kurzy/zakladni?predmet=${s.slug}#vyber-kurzu`}
                 className="hs-tile"
                 data-active={i === 1 || i === 5 ? "true" : undefined}
                 style={{ ["--c" as string]: s.color }}
+                onClick={(e) => sparks(e, s.color)}
               >
                 <Icon name={s.slug} size={40} className="hs-tile-img" />
                 <span className="hs-tile-label">{s.label}</span>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -131,9 +153,16 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
         <div className="hs-pipe">
           <div className="hs-chips">
             {GAME_CHIPS.map((g) => (
-              <span key={g.key} className="hs-chip" title={t.games[g.key]}>
+              <Link
+                key={g.key}
+                href={`/${locale}/${g.href}`}
+                className="hs-chip"
+                title={t.games[g.key]}
+                aria-label={t.games[g.key]}
+                onClick={(e) => sparks(e, "#ffd24d")}
+              >
                 <Icon name={g.icon} size={68} />
-              </span>
+              </Link>
             ))}
           </div>
           <svg className="hs-wires" viewBox="0 0 100 200" preserveAspectRatio="none">
@@ -148,7 +177,7 @@ export function HeroShowcase({ t, subjects }: { t: HomeHeroText; subjects: Subje
           <span className="hs-out" />
         </div>
 
-        <div className="hs-card hs-class">
+        <div className="hs-card hs-class" aria-hidden="true">
           <div className="hs-teacher">
             <img loading="lazy" decoding="async" src={portrait("wizard")} alt="" width={44} height={44} className="hs-avatar hs-avatar-lg" />
             <div>

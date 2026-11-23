@@ -12,18 +12,18 @@ const COLOR_FRAME: Record<string, string> = {
   "#ffb020": "l",
 };
 
-// Hrací plocha: 12 sloupců ve čtyřech zónách po třech. Dole jsou čtyři přistávací plochy s odpověďmi
+// Hrací plocha: 24 sloupců ve čtyřech zónách po šesti. Dole jsou čtyři přistávací plochy s odpověďmi
 // (vyvýšená podlaha, na kterou kostka dosedne). Kostka se zamkne tam, kam dopadne, a zóna, ve které
 // přistála, je zvolená odpověď.
-const COLS = 12;
-const ROWS = 15;
+// Pole se táhne přes celé plátno (bez bočního panelu).
+const COLS = 24;
+const ROWS = 16;
 const FLOOR = 2;
-const CELL = 26;
-const BX = 18;
-const BY = 12;
+const CELL = 25;
+const BX = (W - COLS * CELL) / 2;
+const BY = 10;
 const ZONES = 4;
 const ZONE_W = COLS / ZONES;
-const PX = 354;
 
 type Shape = number[][];
 const SHAPES: { m: Shape; color: string }[] = [
@@ -323,28 +323,6 @@ export class TetrisEngine extends ArcadeEngine {
         }
       drawPiece(p, p.y);
     }
-
-    // další kostka
-    ctx.fillStyle = "rgba(255,255,255,0.08)";
-    ctx.beginPath();
-    ctx.roundRect(PX, 16, 120, 90, 10);
-    ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,0.6)";
-    ctx.font = "700 11px system-ui, sans-serif";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "alphabetic";
-    ctx.fillText("NEXT", PX + 8, 32);
-    const nm = this.next.m;
-    const size = 18;
-    const ox = PX + 60 - (nm[0].length * size) / 2;
-    for (let r = 0; r < nm.length; r++)
-      for (let c = 0; c < nm[r].length; c++) if (nm[r][c]) this.cell(ctx, ox + c * size, 42 + r * size, this.next.color, size);
-
-    // nápověda ovládání
-    ctx.fillStyle = "rgba(255,255,255,0.7)";
-    ctx.font = "600 12px system-ui, sans-serif";
-    const tips = ["← →  posun", "↑  otočit", "↓  zrychlit", "mezerník  shodit"];
-    tips.forEach((t, i) => ctx.fillText(t, PX + 6, 140 + i * 20));
   }
 
   private cell(ctx: CanvasRenderingContext2D, x: number, y: number, color: string, size = CELL) {
