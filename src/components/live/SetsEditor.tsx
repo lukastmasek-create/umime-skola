@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, ClipboardList, Copy, ImagePlus, Pencil, Play, Plus, Trash2, X } from "lucide-react";
+import { PxIcon } from "@/components/pixel/PixelKit";
 import { Icon } from "@/components/Icon";
 import { fmt, getLiveText } from "@/i18n/live";
 import { getSetsExtraText } from "@/i18n/sets-extra";
 import type { Locale } from "@/i18n/config";
 import { MAX_IMAGE_CHARS, isChoice } from "@/lib/live/logic";
 import type { SetItem } from "@/lib/live/types";
-import { SET_ICON, TILE_GRADS } from "@/lib/game-icons";
+import { SET_ICON } from "@/lib/game-icons";
 import { liveApi } from "./api";
 import { errorText } from "./LiveRoom";
 import { OPTION_STYLES } from "./shared";
@@ -515,33 +516,47 @@ export function SetsEditor({ locale }: { locale: Locale }) {
       {errMsg}
       {sets === null ? (
         <p className="text-[var(--muted)]">{t.create.loading}</p>
-      ) : sets.length === 0 ? (
-        <p className="sets-tile text-[var(--muted)]">{t.sets.empty}</p>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2">
-          {sets.map((s, i) => (
-            <li key={s.id} className={`lobby-card bg-gradient-to-br ${TILE_GRADS[i % TILE_GRADS.length]}`}>
-              <Icon name={SET_ICON} size={84} className="lobby-emoji" />
-              <span className="relative mt-auto block pr-20">
-                <span className="block text-lg font-bold leading-tight">{s.title}</span>
-                <span className="block text-xs text-white/75">
-                  {fmt(t.sets.questions, { n: s.questions.length })}
-                  {s.questions.some((q) => isChoice(q) && q.image) ? " · 🖼" : ""}
-                </span>
-              </span>
-              <div className="relative mt-4 flex flex-wrap gap-2">
-                <Link href={`/${locale}/hrat-spolecne/sady/${s.id}`} className="lobby-cta px-4 py-2 text-sm">
-                  <Play aria-hidden className="h-4 w-4" /> {x.play}
-                </Link>
-                <button type="button" onClick={() => setDraft({ id: s.id, title: s.title, questions: s.questions.map(fromStored) }, false)} className="lobby-chip px-4 py-2 text-sm">
-                  <Pencil aria-hidden className="h-4 w-4" /> {t.sets.edit}
-                </button>
-                <button type="button" onClick={() => remove(s.id)} className="lobby-chip px-4 py-2 text-sm">
-                  <Trash2 aria-hidden className="h-4 w-4" /> {t.sets.remove}
-                </button>
-              </div>
-            </li>
-          ))}
+        <ul className="px-inv">
+          {sets.map((s) => {
+            // Vzácnost rámu podle počtu otázek: málo = šedá, víc = modrá, fialová, zlatá.
+            const n = s.questions.length;
+            const rarity = n >= 60 ? "is-legend" : n >= 30 ? "is-epic" : n >= 10 ? "is-rare" : "";
+            return (
+              <li key={s.id} className={`px-inv-item ${rarity}`}>
+                <div className="px-inv-head">
+                  <span className="px-slot h-14 w-14 shrink-0">
+                    <Icon name={SET_ICON} size={40} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="px-inv-title block">{s.title}</span>
+                    <span className="px-inv-meta block">
+                      {fmt(t.sets.questions, { n })}
+                      {s.questions.some((q) => isChoice(q) && q.image) ? " · 🖼" : ""}
+                    </span>
+                  </span>
+                </div>
+                <div className="px-inv-actions">
+                  <Link href={`/${locale}/hrat-spolecne/sady/${s.id}`} className="px-btn px-btn-green">
+                    <Play aria-hidden className="h-4 w-4" /> {x.play}
+                  </Link>
+                  <button type="button" onClick={() => setDraft({ id: s.id, title: s.title, questions: s.questions.map(fromStored) }, false)} className="px-chip">
+                    <Pencil aria-hidden className="h-4 w-4" /> {t.sets.edit}
+                  </button>
+                  <button type="button" onClick={() => remove(s.id)} className="px-chip">
+                    <Trash2 aria-hidden className="h-4 w-4" /> {t.sets.remove}
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+          {/* Prázdný slot: nová sada. Jediný slot, když zatím nic není. */}
+          <li>
+            <button type="button" onClick={() => setDraft({ id: null, title: "", questions: [blankQuestion()] }, false)} className="px-inv-empty w-full cursor-pointer font-bold">
+              <PxIcon name="plus" scale={5} className="text-[var(--px-gold)]" />
+              <span>{sets.length === 0 ? t.sets.empty : t.sets.newSet}</span>
+            </button>
+          </li>
         </ul>
       )}
     </div>

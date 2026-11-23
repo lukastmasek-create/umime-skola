@@ -9,7 +9,7 @@ export default async function QuestionSetsPage({ params }: { params: Promise<{ l
   if (!isLocale(locale)) notFound();
   const t = getLiveText(locale as Locale);
   return (
-    <SpaceShell title={t.sets.title} subtitle={t.sets.subtitle} back={{ href: `/${locale}/hrat-spolecne/nova`, label: t.sets.back }}>
+    <SpaceShell pixel title={t.sets.title} subtitle={t.sets.subtitle} back={{ href: `/${locale}/hrat-spolecne/nova`, label: t.sets.back }}>
       <SetsEditor locale={locale as Locale} />
     </SpaceShell>
   );

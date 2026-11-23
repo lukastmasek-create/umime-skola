@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Pixelify_Sans, Onest, Pangolin } from "next/font/google";
+import { Pixelify_Sans, Onest, Pangolin, Jersey_10 } from "next/font/google";
 import "../globals.css";
 import "../learning-motion.css";
 import { MobileMenu, NavTabs } from "@/components/NavTabs";
@@ -43,6 +43,13 @@ const heroFont = Pangolin({
   variable: "--font-hero",
 });
 
+// Pixelové písmo pro nadpisy a tlačítka „arkádového“ vzhledu (Stálé hry, Únikovky, Materiály, Moje sady).
+const pixel = Jersey_10({
+  subsets: ["latin", "latin-ext", "cyrillic"],
+  weight: "400",
+  variable: "--font-pixel",
+});
+
 const body = Onest({
   subsets: ["latin", "latin-ext", "cyrillic"],
   variable: "--font-body",
@@ -83,7 +90,7 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       suppressHydrationWarning
-      className={`h-full antialiased ${heading.variable} ${body.variable} ${heroFont.variable}`}
+      className={`h-full antialiased ${heading.variable} ${body.variable} ${heroFont.variable} ${pixel.variable}`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />

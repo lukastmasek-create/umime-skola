@@ -6696,8 +6696,7 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
 :root[data-motion="off"] .hero-pixel .hp-fish { opacity: 0; }
 
 
-/* =====================================================================
-   Minecraft / pixel vrstva pro celý web: hranaté bloky se zkosením (světlo
+/* ==============================================================   Minecraft / pixel vrstva pro celý web: hranaté bloky se zkosením (světlo
    vlevo nahoře, stín vpravo dole), pixelový font nadpisů, schodovité okraje,
    blokový posuvník a kurzor. Vše jde přes tokeny a jednu vrstvu, komponenty se nemění.
    ===================================================================== */
@@ -6926,3 +6925,154 @@ hr {
 }
 .about-person, .legal-card, .faq-item { border-width: 3px; }
 .sketch-chip { font-family: var(--font-heading), system-ui, sans-serif; }
+=======
+/* ===================================================================
+   Pixel arcade: Stálé hry, Únikovky, Materiály, Moje sady.
+   Vše pod `.px-skin`, ostatní stránky se nemění. Rám je „vroubkovaný“ (box-shadow bez rohů),
+   stín tvrdý, animace po krocích. Respektuje prefers-reduced-motion.
+   =================================================================== */
+.px-skin {
+  --px-edge: #0a0818;
+  --px-panel: #231f52;
+  --px-panel-2: #2f2a6e;
+  --px-deep: #14112f;
+  --px-text: #f6f1e4;
+  --px-dim: #cfc8e4;
+  --px-gold: #ffc933;
+  --px-green: #4cc16b;
+  --px-red: #ff5a4d;
+  --px-blue: #4fb4ff;
+  --px-hi: rgba(255, 255, 255, 0.16);
+  --px-lo: rgba(0, 0, 0, 0.34);
+  color: var(--px-text);
+  --px-notch: 0 -4px 0 0 var(--px-edge), 0 4px 0 0 var(--px-edge), -4px 0 0 0 var(--px-edge), 4px 0 0 0 var(--px-edge);
+  --px-bevel: inset 4px 4px 0 0 var(--px-hi), inset -4px -4px 0 0 var(--px-lo);
+}
+.px-font, .px-skin .px-title, .px-skin .px-btn, .px-skin .px-chip, .px-skin .px-pill, .px-skin .px-card-title, .px-skin .px-eyebrow, .px-skin .neon-h1, .px-skin .lobby-cta, .px-skin .lobby-chip, .px-skin .sets-num, .px-skin .px-select, .px-inv-title, .px-card-num, .px-hot-n {
+  font-family: var(--font-pixel), var(--font-body), monospace;
+  font-synthesis: none;
+  font-size-adjust: 0.55;
+}
+
+/* Scéna: noční obloha, hvězdy, tráva dole */
+.px-stage { position: relative; isolation: isolate; overflow: hidden; padding: 2.5rem 0 5rem; background: linear-gradient(#0d0a2a 0 30%, #1a1647 30% 60%, #28226a 60%); }
+.px-sky { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.px-sky::before {
+  content: ""; position: absolute; left: 6px; top: 8px; width: 4px; height: 4px; background: #fff;
+  box-shadow: 120px 40px #fff, 260px 90px #ffd24d, 420px 20px #fff, 560px 140px #8fd0ff, 700px 60px #fff, 860px 120px #fff, 1000px 30px #ffd24d, 1150px 100px #fff, 1290px 50px #8fd0ff, 1450px 130px #fff,
+    60px 220px #8fd0ff, 330px 260px #fff, 610px 300px #fff, 900px 240px #ffd24d, 1180px 280px #fff, 1400px 230px #fff;
+  animation: px-blink 3.2s steps(2, end) infinite;
+}
+.px-sky::after {
+  content: ""; position: absolute; right: 8%; top: 36px; width: 28px; height: 28px; background: #fff3b0;
+  box-shadow: -4px 0 #fff3b0, 4px 0 #fff3b0, 0 -4px #fff3b0, 0 4px #fff3b0, 8px 8px 0 #1a1647 inset;
+}
+@keyframes px-blink { 50% { opacity: 0.45; } }
+.px-ground {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 40px; z-index: 0; pointer-events: none;
+  background:
+    linear-gradient(var(--px-green) 0 8px, #2f8f4a 8px 16px, transparent 16px),
+    repeating-linear-gradient(90deg, #8a5a2b 0 16px, #7a4d23 16px 32px);
+}
+.px-stage-in { position: relative; z-index: 1; }
+
+/* Texty */
+.px-skin .px-title { font-weight: 700; line-height: 1.15; letter-spacing: 0.01em; color: #fff; text-shadow: 3px 3px 0 #000, 0 0 0 transparent; text-wrap: balance; }
+.px-skin .px-sub { color: var(--px-dim); }
+.px-skin .px-eyebrow { color: var(--px-green); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+
+/* Panel, tlačítko, štítek, políčko */
+.px-box { position: relative; display: flex; flex-direction: column; margin: 4px; background: var(--px-panel); color: var(--px-text); box-shadow: var(--px-notch), var(--px-bevel); }
+.px-box-hover { transition: transform 0.18s steps(3, end); }
+.px-box-hover:hover, .px-box-hover:focus-visible { transform: translateY(-6px); }
+.px-box-hover:hover::after { content: ""; position: absolute; left: 4px; right: 4px; bottom: -14px; height: 6px; background: rgba(0, 0, 0, 0.4); z-index: -1; }
+.px-skin a:focus-visible, .px-skin button:focus-visible, .px-skin select:focus-visible, .px-skin input:focus-visible, .px-skin textarea:focus-visible { outline: 3px solid #8ea2ff; outline-offset: 4px; }
+.px-btn, .px-chip { display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin: 4px; padding: 10px 16px; min-height: 44px; font-weight: 700; font-size: 0.9rem; line-height: 1; cursor: pointer; color: #14112f; background: #e6e1f5; box-shadow: var(--px-notch), inset 4px 4px 0 0 rgba(255, 255, 255, 0.5), inset -4px -4px 0 0 rgba(0, 0, 0, 0.28); transition: transform 0.08s steps(2, end); text-transform: uppercase; letter-spacing: 0.04em; }
+.px-btn:hover:not(:disabled), .px-chip:hover:not(:disabled) { filter: brightness(1.08); }
+.px-btn:active:not(:disabled), .px-chip:active:not(:disabled) { transform: translateY(4px); }
+.px-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.px-btn-green { background: var(--px-green); }
+.px-btn-gold { background: var(--px-gold); }
+.px-btn-red { background: var(--px-red); color: #fff; }
+.px-chip { background: var(--px-panel-2); color: var(--px-text); box-shadow: var(--px-notch), var(--px-bevel); text-transform: none; letter-spacing: 0; min-height: 40px; padding: 8px 14px; font-size: 0.85rem; }
+.px-chip[aria-pressed="true"] { background: var(--px-gold); color: #14112f; box-shadow: var(--px-notch), inset 4px 4px 0 0 rgba(255, 255, 255, 0.5), inset -4px -4px 0 0 rgba(0, 0, 0, 0.28); }
+.px-pill { display: inline-flex; align-items: center; gap: 6px; margin: 2px; padding: 4px 10px; font-size: 0.72rem; font-weight: 700; background: var(--px-deep); color: var(--px-text); box-shadow: 0 -2px 0 0 var(--px-edge), 0 2px 0 0 var(--px-edge), -2px 0 0 0 var(--px-edge), 2px 0 0 0 var(--px-edge); }
+.px-slot { display: inline-flex; align-items: center; justify-content: center; background: var(--px-deep); box-shadow: var(--px-notch), inset 4px 4px 0 0 rgba(0, 0, 0, 0.5), inset -4px -4px 0 0 rgba(255, 255, 255, 0.1); }
+.px-select { margin: 4px; padding: 10px 12px; min-height: 44px; font-family: var(--font-pixel), monospace; font-weight: 700; font-size: 0.85rem; color: var(--px-text); background: var(--px-deep); border: none; border-radius: 0; box-shadow: var(--px-notch), inset 4px 4px 0 0 rgba(0, 0, 0, 0.5); }
+.px-icon { display: block; image-rendering: pixelated; }
+.px-on { color: var(--px-gold); display: inline-flex; }
+.px-off { color: rgba(255, 255, 255, 0.22); display: inline-flex; }
+.px-sprite { image-rendering: auto; }
+.px-hatch { background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0 8px, transparent 8px 16px); }
+
+/* Hotbar (Minecraft): 5 slotů na hry */
+.px-hotbar { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 2rem; padding: 6px; width: fit-content; max-width: 100%; background: var(--px-deep); box-shadow: var(--px-notch), var(--px-bevel); list-style: none; }
+.px-hotbar a, .px-hotbar span.px-hot { position: relative; display: flex; height: 56px; width: 56px; align-items: center; justify-content: center; background: var(--px-panel); box-shadow: inset 3px 3px 0 0 rgba(0, 0, 0, 0.45), inset -3px -3px 0 0 var(--px-hi); }
+.px-hotbar a:hover { background: var(--px-panel-2); outline: 3px solid var(--px-gold); outline-offset: -3px; }
+.px-hotbar .px-hot-n { position: absolute; left: 4px; top: 2px; font-family: var(--font-pixel), monospace; font-size: 0.7rem; font-weight: 700; color: var(--px-dim); }
+.px-hotbar .px-hot-art { height: 40px; width: 40px; background-size: auto 100%; background-repeat: no-repeat; background-position: 0 0; }
+
+/* Karta (Materiály a obecně) */
+.px-grid { display: grid; gap: 22px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); padding: 4px; list-style: none; }
+.px-card { gap: 10px; padding: 0 0 16px; text-decoration: none; }
+.px-card-top { display: flex; height: 28px; align-items: center; justify-content: flex-end; padding: 0 10px; background: var(--ac, var(--px-blue)); box-shadow: inset 0 -4px 0 0 rgba(0, 0, 0, 0.25); }
+.px-card-num { font-family: var(--font-pixel), monospace; font-weight: 700; font-size: 0.9rem; color: #14112f; }
+.px-card-icon { margin: 4px auto 0; width: 112px; height: 112px; }
+.px-card-title { padding: 0 16px; font-size: 1.15rem; font-weight: 700; line-height: 1.2; text-align: center; }
+.px-card-text { padding: 0 16px; font-size: 0.9rem; text-align: center; color: var(--px-dim); }
+.px-card-go { align-self: center; margin-top: auto; }
+.px-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; padding: 0 12px; }
+
+/* Světlý blok v tmavé scéně (např. starší komponenty, které čekají světlé pozadí) */
+.px-paper { margin: 4px; padding: 16px; color: var(--foreground); background: var(--background); box-shadow: var(--px-notch), inset 4px 4px 0 0 rgba(255, 255, 255, 0.5), inset -4px -4px 0 0 rgba(0, 0, 0, 0.12); }
+
+/* SpaceShell v pixelovém režimu (Materiály, Moje sady) */
+.px-skin.space-page .lobby-panel { border-radius: 0; border: none; margin: 2.5rem auto; background: #1a1647; box-shadow: var(--px-notch), var(--px-bevel); }
+.px-skin .neon-h1 { font-family: var(--font-pixel), monospace; font-weight: 700; color: #fff; text-shadow: 3px 3px 0 #000; letter-spacing: 0.01em; }
+.px-skin.space-page .gradient-text { animation: none; }
+
+/* Moje sady: stávající třídy převedeny do pixelů */
+.px-skin .sets-tile { border-radius: 0; border: none; margin: 4px; background: var(--px-panel); box-shadow: var(--px-notch), var(--px-bevel); }
+.px-skin .sets-field { border-radius: 0; border: none; background: var(--px-edge); color: var(--px-text); box-shadow: var(--px-notch), inset 4px 4px 0 0 rgba(0, 0, 0, 0.5); margin: 4px; }
+.px-skin .sets-field:focus { box-shadow: var(--px-notch), inset 4px 4px 0 0 rgba(0, 0, 0, 0.5), 0 0 0 4px #8ea2ff; }
+.px-skin .sets-icon-btn { border-radius: 0; border: none; height: 40px; width: 40px; margin: 4px; background: var(--px-panel-2); box-shadow: var(--px-notch), var(--px-bevel); transition: transform 0.08s steps(2, end); }
+.px-skin .sets-icon-btn:hover:not(:disabled) { background: #3b36a0; border: none; transform: translateY(-2px); }
+.px-skin .sets-icon-btn:active:not(:disabled) { transform: translateY(3px); }
+.px-skin .sets-icon-btn.is-danger:hover:not(:disabled) { background: var(--px-red); }
+.px-skin .sets-num { border-radius: 0; box-shadow: var(--px-notch), inset -4px -4px 0 0 rgba(0, 0, 0, 0.28); font-family: var(--font-pixel), monospace; margin: 4px; }
+.px-skin .sets-sticky { border-radius: 0; border: none; backdrop-filter: none; background: var(--px-deep); box-shadow: var(--px-notch), var(--px-bevel); margin: 4px; }
+.px-skin .sets-correct { border-radius: 0; }
+.px-skin .lobby-cta { border-radius: 0; border: none; margin: 4px; padding: 12px 18px; min-height: 44px; background: var(--px-gold); color: #14112f; font-family: var(--font-pixel), monospace; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; box-shadow: var(--px-notch), inset 4px 4px 0 0 rgba(255, 255, 255, 0.5), inset -4px -4px 0 0 rgba(0, 0, 0, 0.28); transition: transform 0.08s steps(2, end); }
+.px-skin .lobby-cta:active:not(:disabled) { transform: translateY(4px); }
+.px-skin .lobby-chip { border-radius: 0; border: none; margin: 4px; min-height: 44px; background: var(--px-panel-2); font-family: var(--font-pixel), monospace; box-shadow: var(--px-notch), var(--px-bevel); transition: transform 0.08s steps(2, end); }
+.px-skin .lobby-chip:hover { background: #3b36a0; border: none; transform: translateY(-2px); }
+
+/* Moje sady: seznam jako inventář. Barva rámu podle počtu otázek (vzácnost). */
+.px-inv { display: grid; gap: 22px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); padding: 4px; list-style: none; }
+.px-inv-item { --rar: #9a94c4; position: relative; display: flex; flex-direction: column; gap: 10px; min-height: 180px; margin: 4px; padding: 16px; background: var(--px-panel); box-shadow: 0 -4px 0 0 var(--rar), 0 4px 0 0 var(--rar), -4px 0 0 0 var(--rar), 4px 0 0 0 var(--rar), var(--px-bevel); transition: transform 0.18s steps(3, end); }
+.px-inv-item:hover { transform: translateY(-4px); }
+.px-inv-item.is-rare { --rar: var(--px-blue); }
+.px-inv-item.is-epic { --rar: #c9a7ff; }
+.px-inv-item.is-legend { --rar: var(--px-gold); }
+.px-inv-head { display: flex; align-items: center; gap: 12px; }
+.px-inv-title { font-family: var(--font-pixel), monospace; font-weight: 700; font-size: 1.1rem; line-height: 1.2; overflow-wrap: anywhere; }
+.px-inv-meta { font-size: 0.8rem; color: var(--px-dim); }
+.px-inv-actions { display: flex; flex-wrap: wrap; gap: 0; margin-top: auto; }
+.px-inv-empty { display: flex; min-height: 180px; align-items: center; justify-content: center; gap: 12px; margin: 4px; padding: 16px; text-align: center; color: var(--px-dim); background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0 8px, transparent 8px 16px); box-shadow: 0 -4px 0 0 #6a63ad, 0 4px 0 0 #6a63ad, -4px 0 0 0 #6a63ad, 4px 0 0 0 #6a63ad; }
+
+@media (max-width: 480px) {
+  .px-hotbar a, .px-hotbar span.px-hot { height: 48px; width: 48px; }
+  .px-hotbar .px-hot-art { height: 34px; width: 34px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .px-sky::before { animation: none; }
+  .px-box-hover, .px-btn, .px-chip, .px-inv-item, .px-skin .sets-icon-btn, .px-skin .lobby-cta, .px-skin .lobby-chip { transition: none; }
+  .px-box-hover:hover, .px-inv-item:hover { transform: none; }
+}
+@media print { .px-sky, .px-ground { display: none; } .px-stage { background: none; } }
+
+/* Pixelová scéna únikovky: ostré hrany, po najetí na kartu poskočí po krocích */
+.px-scene { image-rendering: pixelated; pointer-events: none; }
+.px-box:hover .px-scene { animation: px-hop 0.5s steps(2, end) infinite; }
+@keyframes px-hop { 50% { transform: translate(-50%, -6px); } }
+@media (prefers-reduced-motion: reduce) { .px-box:hover .px-scene { animation: none; } }

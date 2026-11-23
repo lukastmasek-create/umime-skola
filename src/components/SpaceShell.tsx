@@ -13,6 +13,7 @@ export function SpaceShell({
   back,
   wide = false,
   full = false,
+  pixel = false,
   children,
 }: {
   title: string;
@@ -23,6 +24,8 @@ export function SpaceShell({
   wide?: boolean;
   // Panel přes celou šířku obrazovky (s 16px okraji); hlavička a patička zůstávají na svém místě.
   full?: boolean;
+  // Pixelový „arkádový“ vzhled (Materiály, Moje sady).
+  pixel?: boolean;
   children: React.ReactNode;
 }) {
   const width = wide ? "min(calc(100% - 2rem), 76rem)" : "min(calc(100% - 2rem), 56rem)";
@@ -30,7 +33,7 @@ export function SpaceShell({
   // proto režim `full` přepíše jen padding a šířku nechá na 100 %, bez zúžení.
   const panelStyle = full ? { padding: "clamp(40px, 6vw, 72px) clamp(16px, 3vw, 40px)" } : { width };
   return (
-    <div className="space-page">
+    <div className={pixel ? "space-page px-skin" : "space-page"}>
       <section className="zone zone-space">
         <span className="px-stars" aria-hidden />
         <Nebula className="absolute inset-0 -z-10" />

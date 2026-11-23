@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { EscapeText } from "@/i18n/escape";
 import type { Locale } from "@/i18n/config";
-import { DifficultyStars } from "./DifficultyStars";
+import { PxIcon, PxRow } from "@/components/pixel/PixelKit";
+import { PxScene } from "@/components/pixel/PixelScene";
 
 export type EscapeCard = EscapeText["list"]["rooms"][number] & {
   difficulty: number;
@@ -66,19 +67,14 @@ export function EscapeList({ locale, t, cards }: { locale: Locale; t: EscapeText
           .filter((g) => g.cards.length > 0)
       : [{ title: null, cards: visible }];
 
-  const chip = (activeChip: boolean) =>
-    `pill px-3 py-1.5 text-sm font-semibold transition-colors ${
-      activeChip ? "bg-[var(--brand-500)] text-white" : "bg-[var(--surface)] hover:bg-[var(--surface-muted)]"
-    }`;
-
   return (
     <div className="flex flex-col gap-6">
-      <div className="card flex flex-col gap-3 p-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="px-box flex flex-col gap-3 p-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-2">
-          <span className="text-xs font-bold uppercase tracking-wide text-[var(--faint)]">{t.subjectLabel}</span>
+          <span className="text-xs font-bold uppercase tracking-wide text-[var(--px-dim)]">{t.subjectLabel}</span>
           <div className="flex flex-wrap gap-2" role="group" aria-label={t.subjectLabel}>
             <button
-              className={chip(subject === null)}
+              className="px-chip"
               aria-pressed={subject === null}
               onClick={() => {
                 setSubject(null);
@@ -90,7 +86,7 @@ export function EscapeList({ locale, t, cards }: { locale: Locale; t: EscapeText
             {subjects.map((s) => (
               <button
                 key={s}
-                className={chip(subject === s)}
+                className="px-chip"
                 aria-pressed={subject === s}
                 onClick={() => {
                   setSubject(s);
@@ -103,7 +99,7 @@ export function EscapeList({ locale, t, cards }: { locale: Locale; t: EscapeText
           </div>
         </div>
         <label className="flex shrink-0 flex-col gap-2">
-          <span className="text-xs font-bold uppercase tracking-wide text-[var(--faint)]">{t.sortLabel}</span>
+          <span className="text-xs font-bold uppercase tracking-wide text-[var(--px-dim)]">{t.sortLabel}</span>
           <select
             value={sort}
             onChange={(e) => {
@@ -111,7 +107,7 @@ export function EscapeList({ locale, t, cards }: { locale: Locale; t: EscapeText
               setSort(next);
               remember({ sort: next, subject });
             }}
-            className="rounded-lg border-2 border-[var(--edge)] bg-[var(--surface)] px-3 py-1.5 text-sm font-semibold"
+            className="px-select"
           >
             {SORTS.map((s) => (
               <option key={s} value={s}>
@@ -122,7 +118,7 @@ export function EscapeList({ locale, t, cards }: { locale: Locale; t: EscapeText
         </label>
       </div>
 
-      <p className="-mt-3 text-sm text-[var(--faint)]" aria-live="polite">
+      <p className="-mt-3 text-sm text-[var(--px-dim)]" aria-live="polite">
         {fill(t.shown, { n: visible.length })}
       </p>
 
@@ -131,7 +127,7 @@ export function EscapeList({ locale, t, cards }: { locale: Locale; t: EscapeText
       {groups.map((group) => (
         <section key={group.title ?? "all"} className="flex flex-col gap-3">
           {group.title && (
-            <h2 className="text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+            <h2 className="px-title text-xl">
               {group.title}
             </h2>
           )}
@@ -141,47 +137,44 @@ export function EscapeList({ locale, t, cards }: { locale: Locale; t: EscapeText
               const level = t.levels[room.difficulty - 1];
               const content = (
                 <>
-                  <div
-                    className="relative flex h-40 items-start justify-between overflow-hidden rounded-xl border-2 border-[var(--edge)] p-3"
-                    style={{ backgroundColor: color }}
-                  >
-                    <div
-                      aria-hidden
-                      className="globe-sprite pointer-events-none absolute -bottom-3 left-1/2 h-44 w-44 -translate-x-1/2 drop-shadow-[0_6px_6px_rgba(0,0,0,0.35)]"
-                      style={{ backgroundImage: `url(/home/unikovky/${room.id}.webp)` }}
-                    />
-                    <span className="pill relative bg-[var(--surface)] px-2.5 py-1 text-xs">{room.subject}</span>
+                  <div className="relative flex h-40 items-start justify-between overflow-hidden p-3" style={{ backgroundColor: color }}>
+                    <span aria-hidden className="absolute inset-x-0 bottom-0 h-3" style={{ background: "linear-gradient(#4cc16b 0 6px, #8a5a2b 6px)" }} />
+                    <PxScene id={room.id} className="absolute -bottom-0 left-1/2 h-[8rem] w-[12rem] -translate-x-1/2" />
+                    <span className="px-pill relative">{room.subject}</span>
                     {room.best ? (
-                      <span className="pill relative bg-[var(--surface)] px-2.5 py-1 text-xs" title={t.best}>
+                      <span className="px-pill relative" title={t.best}>
                         <span className="sr-only">{t.best}: </span>
-                        <span className="text-[var(--accent-yellow)]">{"★".repeat(room.best)}</span>
-                        <span className="text-[var(--border-soft)]">{"★".repeat(3 - room.best)}</span>
+                        <PxRow icon="star" value={room.best} max={3} label={`${t.best}: ${room.best}/3`} />
                       </span>
                     ) : null}
                   </div>
-                  <div className="flex flex-1 flex-col gap-2">
-                    <h3 className="text-lg font-bold leading-snug">{room.name}</h3>
-                    <p className="text-sm text-[var(--muted)]">{room.description}</p>
-                    <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-xs font-semibold text-[var(--muted)]">
+                  <div className="flex flex-1 flex-col gap-2 px-4">
+                    <h3 className="px-card-title !p-0 !text-left !text-xl">{room.name}</h3>
+                    <p className="text-sm text-[var(--px-dim)]">{room.description}</p>
+                    <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-3 text-xs font-semibold text-[var(--px-dim)]">
                       <span className="flex items-center gap-1.5">
-                        <DifficultyStars value={room.difficulty} label={`${t.difficulty}: ${level} (${room.difficulty}/5)`} className="text-base" />
+                        <PxRow icon="sword" value={room.difficulty} max={5} label={`${t.difficulty}: ${level} (${room.difficulty}/5)`} />
                         <span>{level}</span>
                       </span>
-                      <span>🚪 {fill(t.roomsCount, { n: room.roomCount })}</span>
-                      <span>⏱ {fill(t.minutes, { min: room.minutes })}</span>
+                      <span className="flex items-center gap-1.5">
+                        <PxIcon name="door" scale={2} /> {fill(t.roomsCount, { n: room.roomCount })}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <PxIcon name="hourglass" scale={2} /> {fill(t.minutes, { min: room.minutes })}
+                      </span>
                     </div>
                   </div>
-                  <span className="btn-bouncy self-start bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white">
-                    {room.available ? t.play : t.soon}
+                  <span className={`px-btn ${room.available ? "px-btn-green" : ""} ml-3 self-start`} aria-hidden>
+                    {room.available ? `▶ ${t.play}` : t.soon}
                   </span>
                 </>
               );
               return room.available ? (
-                <Link key={room.id} href={`/${locale}/unikovky/${room.id}`} className="card card-hover flex flex-col gap-4 p-4">
+                <Link key={room.id} href={`/${locale}/unikovky/${room.id}`} className="px-box px-box-hover gap-4 pb-3 focus-visible:outline-none">
                   {content}
                 </Link>
               ) : (
-                <div key={room.id} className="card flex flex-col gap-4 p-4 opacity-70">
+                <div key={room.id} className="px-box px-hatch gap-4 pb-3 opacity-70">
                   {content}
                 </div>
               );
