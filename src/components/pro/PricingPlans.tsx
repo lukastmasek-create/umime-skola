@@ -54,7 +54,7 @@ export function PricingPlans({ plans, labels, locale }: { plans: PlanCard[]; lab
               <h3 className="text-xl font-bold">{p.title}</h3>
               <p className="mb-4 mt-1 text-sm text-[var(--muted)]">{p.text}</p>
               <p className="flex items-baseline gap-2">
-                <span className="text-4xl font-extrabold tabular-nums">{czk(price, locale)}</span>
+                <span className="pro-price text-4xl font-extrabold tabular-nums">{czk(price, locale)}</span>
                 <span className="text-sm text-[var(--muted)]">{showYear ? (p.monthly === null ? labels.schoolPerYear : labels.perYear) : labels.perMonth}</span>
               </p>
               <p className="mt-1 min-h-5 text-xs font-semibold text-[var(--brand-600)]">
@@ -63,8 +63,8 @@ export function PricingPlans({ plans, labels, locale }: { plans: PlanCard[]; lab
                 {!showYear && p.members && labels.perMember.replace("{n}", czk(Math.round(p.monthly! / p.members), locale))}
               </p>
               <ul className="mt-5 grid gap-2.5">
-                {p.perks.map((perk) => (
-                  <li key={perk} className="flex items-start gap-2.5 border-t border-[var(--edge)]/20 pt-2.5 text-sm">
+                {p.perks.map((perk, k) => (
+                  <li key={perk} style={{ "--i": k } as CSSProperties} className="pro-perk flex items-start gap-2.5 border-t border-[var(--edge)]/20 pt-2.5 text-sm">
                     <ProIcon name="check" className="mt-0.5 size-4 shrink-0 text-[var(--accent-green)]" />
                     <span>{perk}</span>
                   </li>
