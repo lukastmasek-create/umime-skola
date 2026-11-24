@@ -12,6 +12,8 @@ import { isLocale, type Locale } from "@/i18n/config";
 import { SpaceShell } from "@/components/SpaceShell";
 import { ProTabs } from "@/components/pro/ProTabs";
 import { ProToolPile } from "@/components/pro/ProToolPile";
+import { PlanBuilder } from "@/components/pro/PlanBuilder";
+import { getBuilderText } from "@/i18n/pro-builder";
 import { PricingPlans } from "@/components/pro/PricingPlans";
 import { getPricingLabels } from "@/i18n/pro-pricing";
 
@@ -67,6 +69,8 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
         <p className="text-sm text-[var(--muted)]">{extra.note}</p>
         <p className="text-sm text-[var(--muted)]">{t.availability}</p>
       </section>
+
+      <PlanBuilder t={getBuilderText(locale as Locale)} />
 
       <div className="card mb-8 flex flex-wrap items-center justify-between gap-3 px-7 py-6">
         <p className="font-semibold">{t.status[status]}</p>
