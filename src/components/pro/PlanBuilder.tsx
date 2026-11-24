@@ -6,11 +6,11 @@ import type { BuilderText } from "@/i18n/pro-builder";
 
 // Návrh cen (Kč/měsíc). Součet je omezen cenou celého PRO (100 Kč), takže vlastní tarif nikdy nevyjde dráž.
 const ITEMS = [
-  { id: "tutor", icon: "doucovatel", price: 59 },
-  { id: "plan", icon: "plan", price: 29 },
-  { id: "photo", icon: "fotka", price: 39 },
-  { id: "notes", icon: "poznamky", price: 29 },
-  { id: "offline", icon: "offline", price: 19 },
+  { id: "tutor", icon: "doucovatel", price: 39 },
+  { id: "plan", icon: "plan", price: 19 },
+  { id: "photo", icon: "fotka", price: 25 },
+  { id: "notes", icon: "poznamky", price: 19 },
+  { id: "offline", icon: "offline", price: 9 },
 ] as const;
 const FULL = 100;
 
