@@ -12,6 +12,8 @@ import { isLocale, type Locale } from "@/i18n/config";
 import { SpaceShell } from "@/components/SpaceShell";
 import { ProTabs } from "@/components/pro/ProTabs";
 import { ProToolPile } from "@/components/pro/ProToolPile";
+import { PricingPlans } from "@/components/pro/PricingPlans";
+import { getPricingLabels } from "@/i18n/pro-pricing";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -38,6 +40,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
   const tiers = [t.tiers.individual, t.tiers.family, t.tiers.school];
   const extra = getProExtra(locale as Locale);
   const tools = getProToolsText(locale as Locale);
+  const pl = getPricingLabels(locale as Locale);
 
   return (
     <SpaceShell title={t.title} subtitle={t.subtitle} wide>
@@ -47,36 +50,25 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
         <h2 className="mb-4 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
           {t.tiersTitle}
         </h2>
-        <div className="grid gap-4 lg:grid-cols-3">
-          {tiers.map((tier, i) => {
-            const color = ["#35d0ff", "#ffd23f", "#7cf29a"][i];
-            return (
-              <article key={tier.title} className="card flex flex-col p-5" style={{ borderTop: `4px solid ${color}` }}>
-                <h3 className="text-lg font-bold">{tier.title}</h3>
-                <p className="mb-3 text-sm text-[var(--muted)]">{tier.text}</p>
-                <p className="mb-1 flex items-baseline gap-2">
-                  <span className="text-3xl font-extrabold tabular-nums">{extra.plans[i].price}</span>
-                  <span className="text-xs text-[var(--muted)]">{extra.plans[i].per}</span>
-                </p>
-                {extra.plans[i].yearly && <p className="text-xs font-semibold text-[var(--brand-600)]">{extra.plans[i].yearly}</p>}
-                <ul className="mt-4 grid gap-2">
-                  {extra.plans[i].perks.map((perk) => (
-                    <li key={perk} className="flex items-start gap-2 border-t border-[var(--edge)] pt-2 text-sm">
-                      <ProIcon name="check" className="mt-0.5 size-4 text-[var(--accent-green)]" />
-                      <span>{perk}</span>
-                    </li>
-                  ))}
-                </ul>
-              </article>
-            );
-          })}
-        </div>
-        <p className="mt-4 text-sm font-semibold">{extra.trial}</p>
+        <PricingPlans
+          locale={locale}
+          labels={pl}
+          plans={tiers.map((tier, i) => ({
+            title: tier.title,
+            text: tier.text,
+            color: ["#35d0ff", "#ffd23f", "#7cf29a"][i],
+            perks: extra.plans[i].perks,
+            monthly: [100, 250, null][i],
+            yearly: [1000, 2500, 12000][i],
+            best: i === 1,
+            members: i === 1 ? 5 : undefined,
+          }))}
+        />
         <p className="text-sm text-[var(--muted)]">{extra.note}</p>
         <p className="text-sm text-[var(--muted)]">{t.availability}</p>
       </section>
 
-      <div className="card mb-8 flex flex-wrap items-center justify-between gap-3 p-5">
+      <div className="card mb-8 flex flex-wrap items-center justify-between gap-3 px-7 py-6">
         <p className="font-semibold">{t.status[status]}</p>
         {status === "guest" && (
           <Link href={`/${locale}/prihlaseni`} className="btn-bouncy btn-secondary btn-lg">
@@ -99,7 +91,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {extra.benefits.map((b) => (
-            <div key={b.title} className="card p-5">
+            <div key={b.title} className="card px-7 py-6">
               <ProIcon name={b.icon} className="mb-2 size-8 text-[var(--brand-600)]" />
               <h3 className="mb-1 font-bold">{b.title}</h3>
               <p className="text-sm text-[var(--muted)]">{b.text}</p>
@@ -108,7 +100,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
         </div>
       </section>
 
-      <section className="card mb-8 p-6">
+      <section className="card mb-8 px-7 py-7">
         <h2 className="mb-4 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
           {t.compareTitle}
         </h2>
@@ -132,7 +124,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
         </table>
       </section>
 
-      <div className="card flex flex-wrap items-center justify-between gap-3 p-5">
+      <div className="card flex flex-wrap items-center justify-between gap-3 px-7 py-6">
         <p className="text-sm">{t.ctaText}</p>
         <Link href={`/${locale}/kontakt`} className="btn-bouncy btn-secondary btn-lg">
           {t.cta}

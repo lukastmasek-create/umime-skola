@@ -26,8 +26,8 @@
   --danger: #d6291f;
   --font-scale: 1;
   --field-border: #8a849f;
-  --radius-card: 18px;
-  --radius-btn: 12px;
+  --radius-card: 26px;
+  --radius-btn: 16px;
   --space-section: 5rem;
   /* Kategoriální barvy grafů (ověřeny validátorem palety, světlý povrch) */
   --cat-1: #2a78d6;
@@ -4296,8 +4296,8 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
   --brand-500: #3b5bff;
   --brand-600: #8ea2ff;
   --accent-500: #ff8a6b;
-  --radius-card: 22px;
-  --radius-btn: 14px;
+  --radius-card: 28px;
+  --radius-btn: 18px;
 }
 :root:not([data-theme="light"]) .card {
   border-width: 1px;
@@ -7090,3 +7090,25 @@ hr {
 @keyframes px-f1 { 0% { opacity: 0; } 25% { opacity: 1; } 50%, 100% { opacity: 0; } }
 @keyframes px-f2 { 0%, 25% { opacity: 0; } 50% { opacity: 1; } 75%, 100% { opacity: 0; } }
 @keyframes px-f3 { 0%, 50% { opacity: 0; } 75%, 100% { opacity: 1; } }
+
+/* Ceník UčímePRO: karty tarifů s barevným pruhem, leskem a zvýrazněným tarifem */
+.pro-plan { overflow: hidden; border-top: 5px solid var(--plan, var(--brand-500)); }
+.pro-plan::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0;
+  background: radial-gradient(360px circle at 50% -10%, color-mix(in srgb, var(--plan, var(--brand-500)) 28%, transparent), transparent 70%);
+  transition: opacity 0.3s ease;
+}
+.pro-plan:hover::before { opacity: 1; }
+.pro-plan-best { box-shadow: 0 0 0 3px color-mix(in srgb, var(--plan) 70%, transparent), 0 14px 40px -14px var(--plan); animation: pro-glow 3.2s ease-in-out infinite; }
+.pro-plan-best::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 35%; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+  transform: translateX(-140%) skewX(-20deg); animation: pro-shine 4.5s ease-in-out infinite;
+}
+.pro-plan-badge {
+  position: absolute; top: 14px; right: 14px; z-index: 1; padding: 0.3rem 0.8rem; border-radius: 999px;
+  background: var(--plan); color: #16132b; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.02em;
+}
+@keyframes pro-glow { 50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--plan) 70%, transparent), 0 18px 54px -10px var(--plan); } }
+@keyframes pro-shine { 0%, 60% { transform: translateX(-140%) skewX(-20deg); } 100% { transform: translateX(420%) skewX(-20deg); } }
+@media (prefers-reduced-motion: reduce) { .pro-plan-best, .pro-plan-best::after { animation: none; } }
