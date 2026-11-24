@@ -48,7 +48,7 @@ const cs = build({
   ],
   plans: [
     { price: "200 Kč", per: "měsíčně", yearly: "nebo 2 000 Kč ročně (2 měsíce zdarma)", perks: ["1 účet", "Všechny výhody PRO pro jednotlivce", "Zrušení kdykoli"] },
-    { price: "250 Kč", per: "měsíčně", yearly: "nebo 2 500 Kč ročně (2 měsíce zdarma)", perks: ["Až 5 členů rodiny s plným PRO", "Dětský bezpečný režim", "Začínat s dítětem: tipy, jak pomoci, aniž bys rušil/a", "Plán na prázdniny, ať se po létě nic nezapomene", "Rodinný souboj s handicapem pro vyrovnané šance"] },
+    { price: "400 Kč", per: "měsíčně", yearly: "nebo 4 000 Kč ročně (2 měsíce zdarma)", perks: ["Až 5 členů rodiny s plným PRO", "Dětský bezpečný režim", "Začínat s dítětem: tipy, jak pomoci, aniž bys rušil/a", "Plán na prázdniny, ať se po létě nic nezapomene", "Rodinný souboj s handicapem pro vyrovnané šance"] },
     { price: "12 000 Kč", per: "ročně za školu", yearly: "", perks: ["Mapa mezer třídy s hotovou 20min lekcí na další hodinu", "Souběžná hodina: třída hraje týmově, učitel vidí, kdo se zasekl", "Nepsané testy podle RVP s klíčem a hodnocením", "Každý žák má jiné zadání, opisování nemá smysl", "Exit ticket za 2 minuty na konci hodiny", "Kamarád pro suplování: hodina zadaná jedním kliknutím", "Průvodce rodičovskými schůzkami: stránka o každém žákovi", "Pomalejší a rychlejší tempo bez nálepek", "Vlastní obsah školy z nahraných učebnic", "Zaškolení učitelů a přednostní podpora"] },
   ],
   trial: "30 dní zdarma",
@@ -78,7 +78,7 @@ const en = build({
   ],
   plans: [
     { price: "CZK 200", per: "per month", yearly: "or CZK 2,000 per year (2 months free)", perks: ["1 account", "All PRO features for individuals", "Cancel anytime"] },
-    { price: "CZK 250", per: "per month", yearly: "or CZK 2,500 per year (2 months free)", perks: ["Up to 5 family members with full PRO", "Child safe mode", "Start with the child: tips on how to help without interrupting", "Holiday plan so nothing is forgotten over the summer", "Family duel with a handicap for fair chances"] },
+    { price: "CZK 400", per: "per month", yearly: "or CZK 4,000 per year (2 months free)", perks: ["Up to 5 family members with full PRO", "Child safe mode", "Start with the child: tips on how to help without interrupting", "Holiday plan so nothing is forgotten over the summer", "Family duel with a handicap for fair chances"] },
     { price: "CZK 12,000", per: "per year per school", yearly: "", perks: ["Class gap map with a ready 20-minute lesson for the next class", "Live lesson: the class plays in teams and the teacher sees who is stuck", "Unseen tests based on the curriculum with key and grading", "Every pupil gets a different task, so copying is pointless", "2-minute exit ticket at the end of a lesson", "Cover teacher buddy: a lesson assigned with one click", "Parent-meeting guide: a page about each pupil", "Slower and faster pace with no labels", "School's own content from uploaded textbooks", "Teacher training and priority support"] },
   ],
   trial: "30 days free",
@@ -108,7 +108,7 @@ const de = build({
   ],
   plans: [
     { price: "200 Kč", per: "pro Monat", yearly: "oder 2.000 Kč pro Jahr (2 Monate gratis)", perks: ["1 Konto", "Alle PRO-Vorteile für Einzelpersonen", "Jederzeit kündbar"] },
-    { price: "250 Kč", per: "pro Monat", yearly: "oder 2.500 Kč pro Jahr (2 Monate gratis)", perks: ["Bis zu 5 Familienmitglieder mit vollem PRO", "Sicherer Kindermodus", "Mit dem Kind starten: Tipps zum Helfen, ohne zu stören", "Ferienplan, damit im Sommer nichts vergessen wird", "Familienduell mit Handicap für faire Chancen"] },
+    { price: "400 Kč", per: "pro Monat", yearly: "oder 4.000 Kč pro Jahr (2 Monate gratis)", perks: ["Bis zu 5 Familienmitglieder mit vollem PRO", "Sicherer Kindermodus", "Mit dem Kind starten: Tipps zum Helfen, ohne zu stören", "Ferienplan, damit im Sommer nichts vergessen wird", "Familienduell mit Handicap für faire Chancen"] },
     { price: "12.000 Kč", per: "pro Jahr und Schule", yearly: "", perks: ["Lücken-Karte der Klasse mit fertiger 20-Minuten-Lektion für die nächste Stunde", "Parallele Stunde: Die Klasse spielt im Team, die Lehrkraft sieht, wer feststeckt", "Ungeübte Tests nach Lehrplan mit Schlüssel und Bewertung", "Jedes Kind bekommt eine andere Aufgabe, Abschreiben bringt nichts", "Exit-Ticket in 2 Minuten am Stundenende", "Vertretungs-Buddy: Stunde mit einem Klick zugewiesen", "Leitfaden für Elternabende: eine Seite pro Kind", "Langsameres und schnelleres Tempo ohne Etiketten", "Eigene Inhalte der Schule aus hochgeladenen Lehrbüchern", "Lehrerschulung und bevorzugter Support"] },
   ],
   trial: "30 Tage gratis",
@@ -138,7 +138,7 @@ const ru = build({
   ],
   plans: [
     { price: "200 Kč", per: "в месяц", yearly: "или 2 000 Kč в год (2 месяца бесплатно)", perks: ["1 аккаунт", "Все возможности PRO для одного", "Отмена в любой момент"] },
-    { price: "250 Kč", per: "в месяц", yearly: "или 2 500 Kč в год (2 месяца бесплатно)", perks: ["До 5 членов семьи с полным PRO", "Безопасный детский режим", "Начинать вместе с ребёнком: советы, как помочь, не мешая", "План на каникулы, чтобы за лето ничего не забылось", "Семейная дуэль с форой для равных шансов"] },
+    { price: "400 Kč", per: "в месяц", yearly: "или 4 000 Kč в год (2 месяца бесплатно)", perks: ["До 5 членов семьи с полным PRO", "Безопасный детский режим", "Начинать вместе с ребёнком: советы, как помочь, не мешая", "План на каникулы, чтобы за лето ничего не забылось", "Семейная дуэль с форой для равных шансов"] },
     { price: "12 000 Kč", per: "в год за школу", yearly: "", perks: ["Карта пробелов класса с готовым 20-минутным уроком на следующее занятие", "Параллельный урок: класс играет командами, учитель видит, кто застрял", "Новые тесты по программе с ключом и оценкой", "У каждого ученика своё задание, списывать бессмысленно", "Exit ticket за 2 минуты в конце урока", "Помощник для замены: урок задаётся одним щелчком", "Путеводитель по родительским собраниям: страница о каждом ученике", "Медленнее и быстрее без ярлыков", "Собственный контент школы из загруженных учебников", "Обучение учителей и приоритетная поддержка"] },
   ],
   trial: "30 дней бесплатно",
@@ -168,7 +168,7 @@ const uk = build({
   ],
   plans: [
     { price: "200 Kč", per: "на місяць", yearly: "або 2 000 Kč на рік (2 місяці безкоштовно)", perks: ["1 акаунт", "Усі можливості PRO для однієї особи", "Скасування будь-коли"] },
-    { price: "250 Kč", per: "на місяць", yearly: "або 2 500 Kč на рік (2 місяці безкоштовно)", perks: ["До 5 членів родини з повним PRO", "Безпечний дитячий режим", "Починати з дитиною: поради, як допомогти, не заважаючи", "План на канікули, щоб за літо нічого не забулося", "Родинний двобій із форою для рівних шансів"] },
+    { price: "400 Kč", per: "на місяць", yearly: "або 4 000 Kč на рік (2 місяці безкоштовно)", perks: ["До 5 членів родини з повним PRO", "Безпечний дитячий режим", "Починати з дитиною: поради, як допомогти, не заважаючи", "План на канікули, щоб за літо нічого не забулося", "Родинний двобій із форою для рівних шансів"] },
     { price: "12 000 Kč", per: "на рік за школу", yearly: "", perks: ["Карта прогалин класу з готовим 20-хвилинним уроком на наступне заняття", "Паралельний урок: клас грає командами, вчитель бачить, хто застряг", "Нові тести за програмою з ключем і оцінюванням", "Кожен учень має інше завдання, списувати марно", "Exit ticket за 2 хвилини наприкінці уроку", "Помічник для заміни: урок задається одним кліком", "Путівник батьківськими зборами: сторінка про кожного учня", "Повільніший і швидший темп без ярликів", "Власний контент школи із завантажених підручників", "Навчання вчителів і пріоритетна підтримка"] },
   ],
   trial: "30 днів безкоштовно",
@@ -198,7 +198,7 @@ const ja = build({
   ],
   plans: [
     { price: "200 Kč", per: "月額", yearly: "または年額2,000 Kč（2か月分無料）", perks: ["1アカウント", "個人向けのPRO機能すべて", "いつでも解約可能"] },
-    { price: "250 Kč", per: "月額", yearly: "または年額2,500 Kč（2か月分無料）", perks: ["最大5人の家族がフルPROを利用", "お子さま向けセーフモード", "子どもと一緒に始める：邪魔せずに助けるヒント", "夏休みの間に忘れないための休暇プラン", "ハンデつきで対等に戦える家族対決"] },
+    { price: "400 Kč", per: "月額", yearly: "または年額4,000 Kč（2か月分無料）", perks: ["最大5人の家族がフルPROを利用", "お子さま向けセーフモード", "子どもと一緒に始める：邪魔せずに助けるヒント", "夏休みの間に忘れないための休暇プラン", "ハンデつきで対等に戦える家族対決"] },
     { price: "12,000 Kč", per: "学校あたり年額", yearly: "", perks: ["次の授業用の20分レッスンつき、クラスの弱点マップ", "同時進行の授業：クラスがチームで遊び、先生はつまずいている子が分かる", "学習指導要領に沿った未発表テスト（答えと採点つき）", "生徒ごとに違う課題なので、写しても意味がない", "授業の最後に2分のエグジットチケット", "代理授業の味方：1クリックで授業を設定", "保護者面談ガイド：生徒ごとの1ページ", "ラベルなしで遅く・速くできるペース調整", "アップロードした教科書からの学校独自コンテンツ", "教員研修と優先サポート"] },
   ],
   trial: "30日間無料",
@@ -228,7 +228,7 @@ const es = build({
   ],
   plans: [
     { price: "200 Kč", per: "al mes", yearly: "o 2000 Kč al año (2 meses gratis)", perks: ["1 cuenta", "Todas las ventajas PRO para una persona", "Cancela cuando quieras"] },
-    { price: "250 Kč", per: "al mes", yearly: "o 2500 Kč al año (2 meses gratis)", perks: ["Hasta 5 miembros de la familia con PRO completo", "Modo seguro para niños", "Empezar con el niño: consejos para ayudar sin molestar", "Plan de vacaciones para que no se olvide nada en verano", "Duelo familiar con ventaja para igualar las opciones"] },
+    { price: "400 Kč", per: "al mes", yearly: "o 4000 Kč al año (2 meses gratis)", perks: ["Hasta 5 miembros de la familia con PRO completo", "Modo seguro para niños", "Empezar con el niño: consejos para ayudar sin molestar", "Plan de vacaciones para que no se olvide nada en verano", "Duelo familiar con ventaja para igualar las opciones"] },
     { price: "12 000 Kč", per: "al año por colegio", yearly: "", perks: ["Mapa de lagunas de la clase con una lección de 20 minutos lista para la siguiente hora", "Clase simultánea: la clase juega en equipos y el profesor ve quién se atasca", "Pruebas inéditas según el currículo con solucionario y valoración", "Cada alumno recibe una tarea distinta, copiar no sirve de nada", "Exit ticket de 2 minutos al final de la clase", "Compañero de sustitución: una clase asignada con un clic", "Guía para reuniones con padres: una página de cada alumno", "Ritmo más lento y más rápido sin etiquetas", "Contenido propio del colegio a partir de libros subidos", "Formación del profesorado y soporte prioritario"] },
   ],
   trial: "30 días gratis",
@@ -258,7 +258,7 @@ const fr = build({
   ],
   plans: [
     { price: "200 Kč", per: "par mois", yearly: "ou 2 000 Kč par an (2 mois offerts)", perks: ["1 compte", "Tous les avantages PRO pour une personne", "Résiliation à tout moment"] },
-    { price: "250 Kč", per: "par mois", yearly: "ou 2 500 Kč par an (2 mois offerts)", perks: ["Jusqu'à 5 membres de la famille avec le PRO complet", "Mode enfant sécurisé", "Commencer avec l'enfant : conseils pour aider sans déranger", "Plan de vacances pour que rien ne soit oublié pendant l'été", "Duel familial avec handicap pour des chances égales"] },
+    { price: "400 Kč", per: "par mois", yearly: "ou 4 000 Kč par an (2 mois offerts)", perks: ["Jusqu'à 5 membres de la famille avec le PRO complet", "Mode enfant sécurisé", "Commencer avec l'enfant : conseils pour aider sans déranger", "Plan de vacances pour que rien ne soit oublié pendant l'été", "Duel familial avec handicap pour des chances égales"] },
     { price: "12 000 Kč", per: "par an et par école", yearly: "", perks: ["Carte des lacunes de la classe avec une leçon de 20 minutes prête pour le cours suivant", "Cours en direct : la classe joue en équipes et l'enseignant voit qui est bloqué", "Tests inédits selon le programme, avec corrigé et barème", "Chaque élève a un devoir différent, copier ne sert à rien", "Exit ticket de 2 minutes en fin de cours", "Copain de remplacement : un cours attribué en un clic", "Guide des réunions de parents : une page par élève", "Rythme plus lent et plus rapide sans étiquettes", "Contenu propre à l'école à partir de manuels importés", "Formation des enseignants et assistance prioritaire"] },
   ],
   trial: "30 jours offerts",

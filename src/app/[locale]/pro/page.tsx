@@ -60,8 +60,8 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
             text: tier.text,
             color: ["#35d0ff", "#ffd23f", "#7cf29a"][i],
             perks: extra.plans[i].perks,
-            monthly: [200, 250, null][i],
-            yearly: [2000, 2500, 12000][i],
+            monthly: [200, 400, null][i],
+            yearly: [2000, 4000, 12000][i],
             best: i === 1,
             members: i === 1 ? 5 : undefined,
           }))}
