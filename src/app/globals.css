@@ -26,8 +26,8 @@
   --danger: #d6291f;
   --font-scale: 1;
   --field-border: #8a849f;
-  --radius-card: 26px;
-  --radius-btn: 16px;
+  --radius-card: 32px;
+  --radius-btn: 22px;
   --space-section: 5rem;
   /* Kategoriální barvy grafů (ověřeny validátorem palety, světlý povrch) */
   --cat-1: #2a78d6;
@@ -104,6 +104,11 @@ html[data-font="classic"] {
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   --font-heading: var(--font-heading);
   --font-body: var(--font-body);
+  --radius-md: 0.6rem;
+  --radius-lg: 0.9rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
+  --radius-3xl: 2.25rem;
 }
 
 body {
@@ -4296,8 +4301,8 @@ main.sm-page { animation: sm-page 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
   --brand-500: #3b5bff;
   --brand-600: #8ea2ff;
   --accent-500: #ff8a6b;
-  --radius-card: 28px;
-  --radius-btn: 18px;
+  --radius-card: 34px;
+  --radius-btn: 24px;
 }
 :root:not([data-theme="light"]) .card {
   border-width: 1px;
@@ -7116,3 +7121,185 @@ hr {
 .pro-pick { background: var(--surface); border-color: var(--edge); cursor: pointer; transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s, background 0.2s; }
 .pro-pick:hover { transform: translateY(-3px); }
 .pro-pick.is-on { background: color-mix(in srgb, var(--brand-500) 16%, var(--surface)); border-color: var(--brand-500); box-shadow: 0 8px 26px -10px var(--brand-500); }
+
+/* Zaoblení a vejití textu: tlačítka a karty zalamují dlouhá slova, text se nikdy
+   nevylévá ven a řádky se vyvažují. */
+button,
+[role="button"],
+.btn-bouncy,
+.btn-lg,
+.pill,
+.card,
+.level-card,
+.pro-plan,
+.pro-pick {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: auto;
+  text-wrap: balance;
+}
+button,
+[role="button"],
+.btn-bouncy,
+.btn-lg {
+  line-height: 1.2;
+  text-align: center;
+  max-width: 100%;
+}
+.card > *,
+.level-card > *,
+.pro-plan > *,
+.pro-pick > * {
+  min-width: 0;
+}
+.card h1,
+.card h2,
+.card h3,
+.card h4,
+.card p,
+.card span,
+.level-card h3,
+.level-card p {
+  overflow-wrap: anywhere;
+}
+
+/* =====================================================================
+   Zaoblení: všechny karty a tlačítka jsou kulaté i v pixelové vrstvě.
+   Pixelový „vroubek“ a zkosení se mění na měkký kroužek a jemný stín,
+   který kopíruje zaoblený roh. Musí zůstat na konci souboru.
+   ===================================================================== */
+:root {
+  --radius-card: 28px;
+  --radius-btn: 20px;
+  --radius-xs: 0.4rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.6rem;
+  --radius-lg: 0.9rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
+  --radius-3xl: 2.25rem;
+}
+.px-skin {
+  --px-notch: 0 0 0 3px var(--px-edge);
+  --px-bevel: inset 0 2px 0 0 var(--px-hi), inset 0 -3px 0 0 var(--px-lo);
+}
+.card, .space-page .card { box-shadow: 0 4px 0 var(--shadow-ink), inset 0 2px 0 var(--mc-light); }
+.card-hover:hover, .space-page .card-hover:hover { box-shadow: 0 7px 0 var(--shadow-ink), inset 0 2px 0 var(--mc-light); }
+.btn-bouncy { box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.32), 0 4px 0 var(--shadow-ink); }
+.btn-bouncy:hover { box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4), 0 5px 0 var(--shadow-ink); }
+.btn-bouncy:active { box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.3), 0 1px 0 var(--shadow-ink); }
+.pill { box-shadow: none; }
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]), select, textarea { border-radius: var(--radius-btn); box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.25); }
+.hs-bar, .hs-meter, progress, .hs-bar span, .hs-meter span { border-radius: 999px; }
+.px-box, .px-card, .px-paper, .px-hotbar, .px-inv-item { border-radius: var(--radius-card); }
+.px-hotbar a, .px-hotbar span.px-hot { border-radius: 14px; }
+.px-card-top { border-radius: var(--radius-card) var(--radius-card) 0 0; }
+.px-btn, .px-chip, .px-slot, .px-select { border-radius: var(--radius-btn); }
+.px-pill { border-radius: 999px; box-shadow: 0 0 0 2px var(--px-edge); }
+.about-contact,
+.about-note,
+.about-person,
+.about-problem,
+.acct-pop,
+.acct-stat,
+.arena-mode,
+.arena-panel,
+.arena-pin-cell,
+.arena-stage,
+.card,
+.code-shell,
+.code-shell [class*="rounded-lg"],
+.code-shell [class*="rounded-md"],
+.code-shell [class*="rounded-xl"],
+.cs-files li,
+.cs-mini,
+.cs-mini-p,
+.def-scene,
+.edx .card,
+.edx-tile,
+.faq-item,
+.gammy,
+.gammy-panel,
+.gcard,
+.gcard-live,
+.gcard-live .gcard-cover,
+.gs-pop,
+.hang-msg-tx,
+.hang-panel,
+.home-exercise,
+.home-exercise-answer,
+.home-finder,
+.hs-card,
+.hs-level,
+.hs-tile,
+.legal-card,
+.legal-summary,
+.legal-table-wrap,
+.lg-roles,
+.lobby-bar,
+.lobby-card,
+.lobby-clock,
+.lobby-panel,
+.lobby-promo,
+.lobby-shell,
+.market-card,
+.mini-card,
+.mini-ing,
+.mini-receipt,
+.mini-shelf,
+.pcard,
+.pcard-ghost,
+.pcard-in,
+.pcard-mini-well,
+.rp-paper,
+.rp-stat,
+.sets-tile,
+.shop-pcard .card,
+.shop-pcard .gammy-panel,
+.sk-ai > div,
+.subject-card,
+.tech-card,
+.town3d-card,
+.town3d-panel,
+.town3d-row,
+.xc,
+[class*="panel"]:not([class*="rounded-full"]),
+[class*="rounded-["]:not([class*="rounded-[50"]):not([class*="rounded-[999"]),
+[class*="tile"]:not([class*="rounded-full"]) {
+  border-radius: var(--radius-card) !important;
+}
+.acct-cta,
+.arena-btn,
+.btn-bouncy,
+.btn-lg,
+.code-shell .sk-tab,
+.edx select,
+.edx textarea,
+.hang-badge,
+.hang-in,
+.home-finder-go,
+.home-finder-select,
+.hs-chip-card,
+.hs-pill,
+.legal-badge,
+.lobby-cta,
+.lobby-pill,
+.lobby-tab,
+.lobby-tabs,
+.mini-opt,
+.pill,
+.sets-field,
+.sk-ai > button,
+.sketch-chip,
+.skip-link,
+.town3d-tab {
+  border-radius: var(--radius-btn) !important;
+}
+[class*="card"]:not([class*="rounded-full"]):not([class*="avatar"]),
+[class*="panel"]:not([class*="rounded-full"]) { border-radius: var(--radius-card) !important; }
+[class*="tile"]:not([class*="rounded-full"]) { border-radius: min(var(--radius-card), 22px) !important; }
+.px-skin .sets-tile, .px-skin .sets-sticky, .px-skin .lobby-panel { border-radius: var(--radius-card) !important; }
+.px-skin .lobby-cta, .px-skin .lobby-chip, .px-skin .sets-icon-btn, .px-skin .sets-num, .px-skin .sets-field { border-radius: var(--radius-btn) !important; }
+a[class*="rounded-full"], button[class*="rounded-full"], span[class*="rounded-full"]:not(:empty), .pill, .hs-pill, .lobby-pill, .lobby-tab, .lobby-tabs { border-radius: 999px !important; }
+.hs-avatar, [class*="avatar"] img, img[class*="avatar"] { border-radius: 50% !important; }
