@@ -55,7 +55,7 @@ export function ProCard() {
       <h2 className="mb-1 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
         UčímePRO
       </h2>
-      <p className="mb-4 text-sm text-[var(--muted)]">Nové funkce od 100 Kč měsíčně. Zdarma zůstává všechno, co už máš.</p>
+      <p className="mb-4 text-sm text-[var(--muted)]">Nové funkce od 15 Kč měsíčně. Zdarma zůstává všechno, co už máš.</p>
       <table className="mb-4 w-full text-left text-sm">
         <thead>
           <tr className="text-[var(--faint)]">

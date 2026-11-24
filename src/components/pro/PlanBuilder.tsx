@@ -4,15 +4,15 @@ import { useState } from "react";
 import { ProIcon } from "@/components/pro/ProIcon";
 import type { BuilderText } from "@/i18n/pro-builder";
 
-// Návrh cen (Kč/měsíc). Součet je omezen cenou celého PRO (100 Kč), takže vlastní tarif nikdy nevyjde dráž.
+// Návrh cen (Kč/měsíc). Součet je omezen cenou celého PRO (200 Kč), takže vlastní tarif nikdy nevyjde dráž.
 const ITEMS = [
-  { id: "tutor", icon: "doucovatel", price: 39 },
-  { id: "plan", icon: "plan", price: 19 },
-  { id: "photo", icon: "fotka", price: 25 },
-  { id: "notes", icon: "poznamky", price: 19 },
-  { id: "offline", icon: "offline", price: 9 },
+  { id: "tutor", icon: "doucovatel", price: 80 },
+  { id: "plan", icon: "plan", price: 30 },
+  { id: "photo", icon: "fotka", price: 50 },
+  { id: "notes", icon: "poznamky", price: 25 },
+  { id: "offline", icon: "offline", price: 15 },
 ] as const;
-const FULL = 100;
+const FULL = 200;
 
 export function PlanBuilder({ t }: { t: BuilderText }) {
   const [on, setOn] = useState<string[]>(["tutor"]);
