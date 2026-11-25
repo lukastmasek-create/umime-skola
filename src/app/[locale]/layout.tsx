@@ -133,7 +133,7 @@ export default async function LocaleLayout({
           <div className="mx-auto max-w-6xl">
             <div className="footer-brand mb-7 flex flex-wrap items-center justify-between gap-5">
               <Link href={`/${locale}`} aria-label="Učíme se hrou"><SiteLogo /></Link>
-              <Link href={`/${locale}/obchod`} className="footer-shop">{dict.nav.shop} <span aria-hidden>↗</span></Link>
+              <Link href={`/${locale}/pro`} className="footer-shop">{dict.nav.shop} <span aria-hidden>↗</span></Link>
             </div>
             <nav className="flex flex-wrap items-center justify-start gap-x-6 gap-y-2 font-semibold">
               <Link href={`/${locale}#o-nas`} className="footer-link">
