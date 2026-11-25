@@ -6,6 +6,7 @@ import { DailyQuizTeaser } from "@/components/DailyQuizTeaser";
 import { TeacherCta } from "@/components/TeacherCta";
 import { Wave } from "@/components/SpaceDecor";
 import { PixelGround, PixelSky, PixelSoil } from "@/components/HomePixelScene";
+import { Campfire, Critter, PixelIcon, ShootingStar, SkyBirds } from "@/components/HomePixelArt";
 import "./home-pixel.css";
 import { LazyOnView } from "@/components/LazyOnView";
 import { LazySubjectGlobe, LazyTownLife } from "@/components/HomeLazy";
@@ -176,7 +177,7 @@ export default async function Home({
 
       <div id="hrat" className="zone hp-z1 home-anchor">
         <PixelSoil seed={3} />
-        <PixelSky seed={11} moon="moon" />
+        <PixelSky seed={11} moon="moon"><SkyBirds seed={11} /></PixelSky>
         <section className="reveal relative mx-auto max-w-6xl px-4 pb-8 pt-6 sm:px-6">
           <ul className="home-badges">
             {x.badges.map((b, i) => (
@@ -201,18 +202,24 @@ export default async function Home({
         <LazyOnView placeholderHeight={520}>
           <HomeLobby locale={locale} t={getHomeLobbyText(locale as Locale)} />
         </LazyOnView>
-        <PixelGround kind="forest" seed={5} />
+        <PixelGround kind="forest" seed={5}>
+          <Critter kind="cat" y={51} dur={48} delay={-12} />
+          <Critter kind="chick" y={51} dur={62} delay={-40} left />
+        </PixelGround>
       </div>
 
       {/* 2) Předměty: hory pod hvězdami */}
       <section id="predmety" className="zone zone-globe hp-z2 home-anchor">
-        <PixelSky seed={23} moon="planet" />
+        <PixelSky seed={23} moon="planet"><ShootingStar seed={23} /></PixelSky>
         <div className="lobby-panel lobby-panel-wide relative z-10">
           <div className="reveal mb-5 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="home-h2 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
-                {h.subjectsTitle}
-              </h2>
+              <div className="hp-head">
+                <PixelIcon kind="globe" />
+                <h2 className="home-h2 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
+                  {h.subjectsTitle}
+                </h2>
+              </div>
               <p className="mt-1 max-w-xl text-sm text-[var(--muted)]">{h.subjectsHint}</p>
             </div>
             <Link
@@ -235,7 +242,10 @@ export default async function Home({
           </div>
           <ProHomeStrip locale={locale as Locale} />
         </div>
-        <PixelGround kind="mountains" seed={9} />
+        <PixelGround kind="mountains" seed={9}>
+          <Campfire x={318} y={51} />
+          <Critter kind="slime" y={51} dur={70} delay={-25} />
+        </PixelGround>
       </section>
 
       {/* 4) Hory: jak to funguje */}
@@ -259,12 +269,16 @@ export default async function Home({
 
       {/* 5) Zpět do vesmíru: kategorie */}
       <section id="stupne" className="zone hp-z3 home-anchor">
-        <PixelSky seed={37} />
+        <PixelSky seed={37}><SkyBirds seed={37} /></PixelSky>
         <LazyOnView placeholderHeight={1100}>
         <div className="lobby-panel relative z-10">
-          <h2 className="reveal home-h2 home-h2-center mb-7 text-center text-3xl font-bold tracking-tight sm:text-4xl" style={heading}>
-            {dict.home.pickSection}
-          </h2>
+          <div className="reveal hp-head hp-head-center mb-7">
+            <PixelIcon kind="stairs" />
+            <h2 className="home-h2 home-h2-center text-center text-3xl font-bold tracking-tight sm:text-4xl" style={heading}>
+              {dict.home.pickSection}
+            </h2>
+            <PixelIcon kind="stairs" className="hp-ico-flip" />
+          </div>
           <div className="pcard-pile pcard-row">
             {CATEGORIES.map((cat, i) => (
               <TearCard key={cat.slug} href={`/${locale}/kurzy/${cat.slug}`} className="reveal reveal-stagger pcard" stagger={i % 2} accent={TILE_COLORS[i % TILE_COLORS.length]}>
@@ -285,20 +299,26 @@ export default async function Home({
           </div>
         </div>
         </LazyOnView>
-        <PixelGround kind="meadow" seed={14} />
+        <PixelGround kind="meadow" seed={14}>
+          <Critter kind="chick" y={51} dur={55} delay={-8} />
+          <Critter kind="slime" y={51} dur={66} delay={-38} left />
+        </PixelGround>
       </section>
 
       {/* 6) Pro učitele */}
       <section id="pro-ucitele" className="zone hp-z4 home-anchor">
-        <PixelSky seed={41} moon="moon" />
+        <PixelSky seed={41} moon="moon"><ShootingStar seed={41} /></PixelSky>
         <LazyOnView placeholderHeight={900}>
         <div className="lobby-panel relative z-10">
           <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10">
             <div>
               <p className="reveal mb-2 text-xs font-bold uppercase tracking-widest text-[var(--accent-green)]">{a.teachers.eyebrow}</p>
-              <h2 className="reveal home-h2 mb-4 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
-                {a.teachers.title}
-              </h2>
+              <div className="reveal hp-head mb-4">
+                <PixelIcon kind="board" />
+                <h2 className="home-h2 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
+                  {a.teachers.title}
+                </h2>
+              </div>
               <p className="reveal mb-5 max-w-xl text-lg leading-relaxed text-[var(--muted)]">{a.teachers.lead}</p>
               <ul className="gcard-cycle grid gap-3 sm:grid-cols-2">
                 {a.teachers.points.map((point, i) => (
@@ -331,17 +351,23 @@ export default async function Home({
           </div>
         </div>
         </LazyOnView>
-        <PixelGround kind="castle" seed={21} />
+        <PixelGround kind="castle" seed={21}>
+          <Campfire x={150} y={51} />
+          <Critter kind="cat" y={51} dur={52} delay={-30} left />
+        </PixelGround>
       </section>
 
       {/* 7) O nás */}
       <section id="o-nas" className="zone hp-z5 home-anchor">
-        <PixelSky seed={53} />
+        <PixelSky seed={53}><SkyBirds seed={53} /><ShootingStar seed={53} /></PixelSky>
         <LazyOnView placeholderHeight={1400}>
         <div className="lobby-panel relative z-10">
           <div className="about-top">
             <div className="reveal">
-              <h2 className="about-title home-h2" style={heading}>{h.about.title}</h2>
+              <div className="hp-head about-head">
+                <PixelIcon kind="heart" size={52} />
+                <h2 className="about-title home-h2" style={heading}>{h.about.title}</h2>
+              </div>
               <p className="about-lead">{h.about.lead}</p>
             </div>
             <aside className="about-note reveal" style={{ ["--ac" as string]: TILE_COLORS[0] }}>
@@ -405,7 +431,10 @@ export default async function Home({
         </LazyOnView>
         <div className="relative z-10">
         <div id="otazky" className="lobby-panel home-faq home-anchor">
-          <h2 className="reveal home-h2 mb-5 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>{x.faq.title}</h2>
+          <div className="reveal hp-head mb-5">
+            <PixelIcon kind="ask" />
+            <h2 className="home-h2 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>{x.faq.title}</h2>
+          </div>
           <div className="home-faq-list">
             {x.faq.items.map((item, i) => (
               <details key={item.q} className="home-faq-item reveal reveal-stagger" style={{ ["--ac" as string]: TILE_COLORS[i % TILE_COLORS.length], ["--i" as string]: i % 2 }}>
@@ -422,7 +451,11 @@ export default async function Home({
           </Link>
         </div>
         </div>
-        <PixelGround kind="town" seed={31} />
+        <PixelGround kind="town" seed={31}>
+          <Critter kind="cat" y={51} dur={58} delay={-5} />
+          <Critter kind="chick" y={51} dur={64} delay={-33} />
+          <Critter kind="slime" y={51} dur={74} delay={-50} left />
+        </PixelGround>
       </section>
     </div>
   );

@@ -5,7 +5,7 @@
 
 type Pal = Record<string, string>;
 
-function rng(seed: number) {
+export function rng(seed: number) {
   let a = seed >>> 0;
   return () => {
     a = (a + 0x6d2b79f5) >>> 0;
@@ -16,7 +16,7 @@ function rng(seed: number) {
   };
 }
 
-function Sprite({ rows, pal, x, y, flip = false, className }: { rows: string[]; pal: Pal; x: number; y: number; flip?: boolean; className?: string }) {
+export function Sprite({ rows, pal, x, y, flip = false, className }: { rows: string[]; pal: Pal; x: number; y: number; flip?: boolean; className?: string }) {
   const byColor = new Map<string, string>();
   rows.forEach((row, ry) => {
     for (let cx = 0; cx < row.length; ) {
@@ -109,9 +109,9 @@ const P_CLOUD: Pal = { w: "#3a4686", s: "#2a3466" };
 const P_CRYSTAL: Pal = { h: "#c9f2ff", c: "#5ab8ff", d: "#2f6fbf" };
 
 // ---------- obloha ----------
-type SkyProps = { seed: number; moon?: "moon" | "planet" | false; clouds?: boolean; className?: string };
+type SkyProps = { seed: number; moon?: "moon" | "planet" | false; clouds?: boolean; className?: string; children?: React.ReactNode };
 
-export function PixelSky({ seed, moon = false, clouds = true, className = "" }: SkyProps) {
+export function PixelSky({ seed, moon = false, clouds = true, className = "", children }: SkyProps) {
   const r = rng(seed);
   // dvě dlaždice hvězd s nesoudělnými rozměry, aby se vzor viditelně neopakoval
   const tile = (w: number, h: number, n: number) =>
@@ -158,6 +158,7 @@ export function PixelSky({ seed, moon = false, clouds = true, className = "" }: 
           <Sprite rows={CLOUD} pal={P_CLOUD} x={0} y={0} />
         </svg>
       ))}
+      {children}
     </div>
   );
 }
@@ -185,11 +186,12 @@ function ridgePath(ys: number[], bottom: number) {
 
 export type GroundKind = "forest" | "mountains" | "meadow" | "castle" | "town";
 
-type GroundProps = { kind: GroundKind; seed: number; className?: string };
+// children = další <g> vrstvy (zvířátka, táborák) nad hlínou, souřadnice ve viewBoxu 480 × 64; hlína začíná na y = 50.
+type GroundProps = { kind: GroundKind; seed: number; className?: string; children?: React.ReactNode };
 
 const SOIL_TOP = 50;
 
-export function PixelGround({ kind, seed, className = "" }: GroundProps) {
+export function PixelGround({ kind, seed, className = "", children }: GroundProps) {
   const r = rng(seed * 7 + 3);
   const far = ridge(seed, kind === "mountains" ? 24 : 30, kind === "mountains" ? 15 : 8, kind === "mountains" ? 0.05 : 0.028);
   const mid = ridge(seed + 11, 39, 5, 0.04);
@@ -266,6 +268,7 @@ export function PixelGround({ kind, seed, className = "" }: GroundProps) {
         <path d={stones} fill="#8a5a2b" />
         <path d={stonesDark} fill="#4a2c18" />
         <rect x="0" y={H - 1} width={W} height="1" fill="#2a1a10" />
+        {children}
       </svg>
     </div>
   );

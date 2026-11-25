@@ -6,6 +6,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { Gamepad2, Flame, Users, Play, Trophy, RotateCcw, ShoppingBag, CalendarCheck } from "lucide-react";
 import { DitherBg } from "@/components/DitherBg";
+import { PixelIcon } from "@/components/HomePixelArt";
 import type { HomeLobbyText } from "@/i18n/home-lobby";
 
 type TabKey = "play" | "challenge" | "together";
@@ -110,9 +111,12 @@ export function HomeLobby({ locale, t }: { locale: string; t: HomeLobbyText }) {
     <section className="relative mx-auto max-w-6xl px-4 pb-16 sm:px-6" aria-labelledby="lobby-title">
       <div className="lobby-shell">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 id="lobby-title" className="text-2xl font-bold tracking-tight sm:text-3xl" style={{ fontFamily: "var(--font-heading)" }}>
-            {t.title}
-          </h2>
+          <div className="hp-head">
+            <PixelIcon kind="pad" />
+            <h2 id="lobby-title" className="text-2xl font-bold tracking-tight sm:text-3xl" style={{ fontFamily: "var(--font-heading)" }}>
+              {t.title}
+            </h2>
+          </div>
           <div className="hidden md:block"><Island left={left} endsIn={t.endsIn} promo={t.promoTitle} /></div>
           <div role="tablist" aria-label={t.title} className="lobby-tabs">
             {tabs.map(([k, label, Icon]) => (
