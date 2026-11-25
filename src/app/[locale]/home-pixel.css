@@ -1,0 +1,181 @@
+/* =====================================================================
+   Úvodní stránka v pixel-art stylu hrdiny (HeroPixel).
+   Každá sekce je „level“: pásová noční obloha s hranatými hvězdami nahoře,
+   krajina a hliněná podlaha dole (HomePixelScene.tsx). Panely a karty mají
+   vroubkovaný rám z box-shadow (bez kulatých rohů), tvrdý stín a pixelový font nadpisů.
+   Vše je pod `.home-px`, ostatní stránky se nemění.
+   ===================================================================== */
+.space-page.home-px {
+  --hp-edge: #070a1c;
+  --hp-panel: #17204a;
+  --hp-panel-2: #1f2b5e;
+  --hp-deep: #0e1430;
+  --hp-hi: rgba(255, 255, 255, 0.1);
+  --hp-lo: rgba(0, 0, 0, 0.32);
+  --hp-gold: #ffd86b;
+  --hp-green: #9ae85e;
+  --hp-frame: 0 0 0 3px var(--hp-edge);
+  --hp-bevel: inset 0 3px 0 0 var(--hp-hi), inset 0 -4px 0 0 var(--hp-lo);
+  --hp-drop: 0 10px 0 0 rgba(4, 6, 18, 0.55);
+  --radius-card: 18px;
+  --radius-btn: 14px;
+  background: #0e1430;
+}
+
+/* ---------- zóny: pásová obloha místo měkkých přechodů ---------- */
+.home-px .zone { overflow: hidden; }
+.home-px .zone::before, .home-px .zone::after, .home-px .px-stars { display: none !important; }
+.home-px .hp-z1 { background: linear-gradient(#0d1430 0 18%, #101a3c 18% 40%, #142048 40% 65%, #182754 65%) !important; }
+.home-px .hp-z2 { background: linear-gradient(#182754 0 14%, #1b2558 14% 36%, #20265e 36% 62%, #282a68 62%) !important; }
+.home-px .hp-z3 { background: linear-gradient(#141a3f 0 20%, #1a1f4c 20% 45%, #241f58 45% 72%, #2e2363 72%) !important; }
+.home-px .hp-z4 { background: linear-gradient(#0f1a38 0 20%, #11223f 20% 45%, #13304a 45% 72%, #153a52 72%) !important; }
+.home-px .hp-z5 { background: linear-gradient(#0e1430 0 22%, #121a3a 22% 48%, #182046 48% 75%, #1e2552 75%) !important; }
+
+/* obloha */
+.hps-sky { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.hps-stars { position: absolute; inset: 0; }
+.hps-star-1 { animation: hps-blink 3.4s steps(2, end) infinite; }
+.hps-star-2 { animation: hps-blink 2.2s steps(2, end) -1s infinite; }
+@keyframes hps-blink { 50% { opacity: 0.25; } }
+.hps-moon { position: absolute; top: 72px; right: 7%; width: 64px; height: 64px; filter: drop-shadow(0 0 18px rgba(255, 243, 176, 0.35)); }
+.hps-moon-planet { width: 120px; height: 80px; left: 6%; right: auto; top: 96px; filter: drop-shadow(0 0 22px rgba(180, 156, 255, 0.35)); animation: hps-bob 7s steps(6, end) infinite; }
+.hps-cloud { position: absolute; opacity: 0.7; animation: hps-drift 180s linear infinite; }
+@keyframes hps-drift { from { translate: -30vw 0; } to { translate: 110vw 0; } }
+@keyframes hps-bob { 50% { translate: 0 -8px; } }
+
+/* krajina a hlína */
+.hps-ground { position: relative; z-index: 1; height: clamp(110px, 13vw, 200px); margin-top: -12px; pointer-events: none; }
+.hps-ground svg, .hps-soil svg { display: block; width: 100%; height: 100%; }
+.hps-soil { position: relative; z-index: 1; height: clamp(24px, 3vw, 40px); }
+.hps-lit { animation: hps-flicker 5s steps(1, end) infinite; }
+@keyframes hps-flicker { 0%, 100% { opacity: 1; } 47% { opacity: 1; } 48% { opacity: 0.55; } 50% { opacity: 1; } }
+
+/* ---------- panely sekcí ---------- */
+.space-page.home-px .lobby-panel {
+  border: none !important;
+  border-radius: 26px !important;
+  background: var(--hp-panel) !important;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 2px, transparent 2px) !important;
+  background-size: 16px 16px !important;
+  box-shadow: var(--hp-frame), var(--hp-bevel), var(--hp-drop) !important;
+}
+.space-page.home-px .lobby-panel::before { display: none; }
+.home-px .lobby-panel::after {
+  /* hranaté nýty v rozích, jako rám herního okna */
+  content: ""; position: absolute; inset: 14px; z-index: -1; pointer-events: none;
+  --rv: linear-gradient(#5a6aa8, #5a6aa8);
+  background: var(--rv) left top / 6px 6px no-repeat, var(--rv) right top / 6px 6px no-repeat,
+    var(--rv) left bottom / 6px 6px no-repeat, var(--rv) right bottom / 6px 6px no-repeat;
+}
+
+/* ---------- nadpisy ---------- */
+.home-px :is(.home-h2, .about-title, .about-team-title, .lobby-shell h2, .pro-strip h2, .pro-strip h3) {
+  font-family: var(--font-pixel), var(--font-heading), monospace !important;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #fff;
+  text-shadow: 3px 3px 0 #000;
+}
+.home-px .home-h2::after {
+  height: 6px; width: 3.2em; border-radius: 3px; box-shadow: 3px 3px 0 #000;
+  background: linear-gradient(90deg, #ffd86b 0 25%, #ff8a6b 25% 50%, #ff8fd0 50% 75%, #8fd0ff 75%);
+}
+.home-px :is(.gcard-title, .about-point h3, .about-person h4, .about-note h3, .about-problem h3, .pcard-title, .rp-title, .pro-tile .font-bold) {
+  font-family: var(--font-pixel), var(--font-heading), monospace;
+}
+.home-px .text-\[var\(--accent-green\)\] { color: var(--hp-green) !important; }
+
+/* ---------- karty, dlaždice, štítky: vroubkovaný rám ---------- */
+.home-px :is(.card, .gcard, .home-tpoint, .pro-tile, .about-note, .about-problem, .about-person, .about-contact, .lobby-card, .lobby-promo, .lobby-shell .lobby-island) {
+  border-radius: var(--radius-card) !important;
+  border: none !important;
+  box-shadow: var(--hp-frame), var(--hp-bevel), 0 8px 0 0 rgba(4, 6, 18, 0.5) !important;
+  margin: 3px;
+}
+.home-px :is(.card, .gcard, .home-tpoint, .about-note, .about-problem, .about-person, .about-contact):not([style*="background"]) {
+  background: var(--hp-panel-2) !important;
+}
+.home-px .home-guest::before { display: none; }
+.home-px .home-guest-ic { border-radius: 12px !important; box-shadow: 0 0 0 3px var(--hp-edge), inset -3px -3px 0 rgba(0, 0, 0, 0.25), inset 3px 3px 0 rgba(255, 255, 255, 0.45); animation-timing-function: steps(4, end); }
+.home-px .home-guest .rounded-full, .home-px .home-bar { border-radius: 6px !important; }
+.home-px .home-bar { background: repeating-linear-gradient(90deg, #9ae85e 0 8px, #6fd04a 8px 16px); animation: none; }
+
+.home-px :is(.gcard-hover, .pro-tile, .about-person, .lobby-card):hover {
+  translate: 0 -4px;
+  box-shadow: var(--hp-frame), var(--hp-bevel), 0 12px 0 0 rgba(4, 6, 18, 0.5) !important;
+}
+.home-px .fx-tilt-on { transform: none !important; background-image: none !important; }
+.home-px .fx-glow { display: none; }
+
+/* lobby */
+.home-px .lobby-tabs, .home-px .lobby-tab, .home-px .lobby-pill, .home-px .lobby-chip, .home-px .lobby-clock { border-radius: 12px !important; }
+.home-px .lobby-tabs { background: var(--hp-deep); box-shadow: 0 0 0 3px var(--hp-edge); }
+.home-px .lobby-tab { font-family: var(--font-pixel), monospace; }
+.home-px .lobby-tab[aria-selected="true"] { background: #3b4bd8; box-shadow: inset -3px -3px 0 rgba(0, 0, 0, 0.3), inset 3px 3px 0 rgba(255, 255, 255, 0.25); }
+.home-px .lobby-pill { box-shadow: 0 0 0 3px var(--hp-edge); }
+.home-px .lobby-card :is(img, svg) { image-rendering: pixelated; }
+
+/* pás předmětů */
+.home-px .mq-chip {
+  border-radius: 14px !important; border: none; rotate: 0deg !important; margin: 4px;
+  font-family: var(--font-pixel), var(--font-body), monospace;
+  background: color-mix(in srgb, var(--ac) 24%, #121a40);
+  box-shadow: var(--hp-frame), inset 3px 3px 0 color-mix(in srgb, var(--ac) 45%, transparent), inset -3px -3px 0 rgba(0, 0, 0, 0.3), 0 6px 0 0 rgba(4, 6, 18, 0.5);
+  transition: translate 0.12s steps(2, end);
+}
+.home-px .mq-chip:hover, .home-px .mq-chip:focus-visible {
+  translate: 0 -4px; background: color-mix(in srgb, var(--ac) 40%, #121a40);
+  box-shadow: var(--hp-frame), inset 3px 3px 0 color-mix(in srgb, var(--ac) 60%, transparent), inset -3px -3px 0 rgba(0, 0, 0, 0.3), 0 10px 0 0 rgba(4, 6, 18, 0.5);
+}
+
+
+/* tlačítka */
+.home-px .zone :is(.btn-bouncy, .lobby-cta) {
+  border-radius: var(--radius-btn) !important;
+  font-family: var(--font-pixel), var(--font-body), monospace;
+  box-shadow: var(--hp-frame), inset 3px 3px 0 rgba(255, 255, 255, 0.28), inset -3px -3px 0 rgba(0, 0, 0, 0.3), 0 6px 0 0 rgba(4, 6, 18, 0.55) !important;
+  margin: 3px;
+  transition: translate 0.08s steps(2, end) !important;
+}
+.home-px .zone :is(.btn-bouncy, .lobby-cta):hover { translate: 0 -2px; }
+.home-px .zone :is(.btn-bouncy, .lobby-cta):active { translate: 0 4px; box-shadow: var(--hp-frame), inset 3px 3px 0 rgba(0, 0, 0, 0.3), 0 2px 0 0 rgba(4, 6, 18, 0.55) !important; }
+.home-px .zone .btn-primary { background: #3b4bd8 !important; background-image: none !important; color: #fff; }
+.home-px .zone .btn-secondary { background: var(--hp-deep) !important; color: #fff; }
+
+/* PRO pás */
+.home-px .pro-strip::before { height: 4px; background: repeating-linear-gradient(90deg, #5a6aa8 0 8px, transparent 8px 16px); }
+.home-px .pro-tile { background: color-mix(in srgb, var(--ac) 14%, var(--hp-panel-2)) !important; }
+.home-px .pro-tile-ic { border-radius: 12px !important; box-shadow: 0 0 0 3px var(--hp-edge), inset -3px -3px 0 rgba(0, 0, 0, 0.25), inset 3px 3px 0 rgba(255, 255, 255, 0.4); }
+
+/* glóbus: tlačítka předmětů */
+
+/* karty kategorií */
+.home-px .pcard, .home-px .pcard-in, .home-px .pcard-slot, .home-px .pcard-ghost { border-radius: var(--radius-card) !important; }
+.home-px .pcard-in { box-shadow: var(--hp-frame), var(--hp-bevel) !important; }
+.home-px .pcard-in::after { border-radius: inherit; }
+.home-px .pcard-num { font-family: var(--font-pixel), monospace; }
+.home-px .pcard-go { border-radius: 10px !important; box-shadow: 0 0 0 3px var(--hp-edge); }
+
+/* učitelé */
+.home-px .home-tpoint-num { font-family: var(--font-pixel), monospace; -webkit-text-stroke: 0; color: rgba(154, 232, 94, 0.35); text-shadow: 2px 2px 0 #000; }
+.home-px .home-tpoint:hover .home-tpoint-num { color: var(--hp-green); }
+.home-px .rp-paper, .home-px .rp-card, .home-px .rp-stat, .home-px .rp-tag, .home-px .rp-lane, .home-px .rp-road { border-radius: var(--radius-card) !important; }
+.home-px .rp-paper { rotate: 0deg; box-shadow: var(--hp-frame), var(--hp-bevel), 0 10px 0 0 rgba(4, 6, 18, 0.55) !important; }
+
+/* o nás */
+.home-px :is(.about-num, .about-role) { font-family: var(--font-pixel), monospace; }
+.home-px :is(.about-avatar, .about-pic, .about-note-ic) {
+  border-radius: 12px !important; font-family: var(--font-pixel), monospace;
+  box-shadow: 0 0 0 3px var(--hp-edge), inset -3px -3px 0 rgba(0, 0, 0, 0.25), inset 3px 3px 0 rgba(255, 255, 255, 0.4) !important;
+}
+.home-px .about-point { border-bottom: 4px dashed rgba(90, 106, 168, 0.6); }
+.home-px .about-note { rotate: 0deg !important; background: #2a2b5e !important; }
+.home-px .about-note .pcard-tape { display: none; }
+.home-px .about-problem { border-left: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hps-star-1, .hps-star-2, .hps-cloud, .hps-moon-planet, .hps-lit { animation: none !important; }
+}
+:root[data-motion="off"] :is(.hps-star-1, .hps-star-2, .hps-cloud, .hps-moon-planet, .hps-lit) { animation: none !important; }

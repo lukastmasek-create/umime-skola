@@ -4,12 +4,11 @@ import { Icon } from "@/components/Icon";
 import { HomeProgress } from "@/components/HomeProgress";
 import { DailyQuizTeaser } from "@/components/DailyQuizTeaser";
 import { TeacherCta } from "@/components/TeacherCta";
-import { ALIEN_ROW, SpriteFrame, Wave } from "@/components/SpaceDecor";
-import { SectionWave } from "@/components/SectionWave";
+import { Wave } from "@/components/SpaceDecor";
+import { PixelGround, PixelSky, PixelSoil } from "@/components/HomePixelScene";
+import "./home-pixel.css";
 import { LazyOnView } from "@/components/LazyOnView";
-import { Nebula } from "@/components/SpaceDecor";
 import { LazySubjectGlobe, LazyTownLife } from "@/components/HomeLazy";
-import { GlobeSky } from "@/components/GlobeSky";
 import { HeroPixel } from "@/components/HeroPixel";
 import { HeroTitle } from "@/components/HeroTitle";
 import { TearCard } from "@/components/TearCard";
@@ -104,16 +103,14 @@ export default async function Home({
   };
 
   return (
-    <div className="space-page">
+    <div className="space-page home-px">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
       <HomeFx />
       {/* 1) Vesmír: hrdina a postup */}
-      <div className="zone zone-space">
-        <span className="px-stars" aria-hidden />
-        <section className="gradient-hero relative">
+      <section className="gradient-hero relative isolate overflow-hidden">
           <HeroPixel />
           <span className="hero-halo" aria-hidden />
           <div className="relative mx-auto flex max-w-6xl flex-col items-center px-4 pb-10 pt-12 sm:px-6 sm:pt-16 lg:pb-16 lg:pt-20">
@@ -154,20 +151,19 @@ export default async function Home({
               />
             </div>
           </div>
-        </section>
+      </section>
 
-        <section className="reveal relative mx-auto max-w-6xl px-4 pb-14 pt-4 sm:px-6">
+      <div className="zone hp-z1">
+        <PixelSoil seed={3} />
+        <PixelSky seed={11} moon="moon" />
+        <section className="reveal relative mx-auto max-w-6xl px-4 pb-14 pt-10 sm:px-6">
           <HomeProgress locale={locale as Locale} registerLabel={dict.home.createAccount} />
           <div className="mt-4">
             <DailyQuizTeaser locale={locale as Locale} />
           </div>
         </section>
-        <SectionWave fill="#0d1430" glow="#8ea2ff" />
-      </div>
 
-      {/* 1b) Lobby: co dnes zahrajeme */}
-      <div className="zone zone-space pt-4">
-        <span className="px-stars" aria-hidden />
+        {/* 1b) Lobby: co dnes zahrajeme */}
         <HomeMarquee
           locale={locale}
           label={h.subjectsTitle}
@@ -176,13 +172,12 @@ export default async function Home({
         <LazyOnView placeholderHeight={520}>
           <HomeLobby locale={locale} t={getHomeLobbyText(locale as Locale)} />
         </LazyOnView>
-        <SectionWave fill="#0d1430" glow="#ff8a6b" />
+        <PixelGround kind="forest" seed={5} />
       </div>
 
-      {/* 2) Příroda: předměty */}
-      <section className="zone zone-space zone-globe">
-        <span className="px-stars" aria-hidden />
-        <GlobeSky />
+      {/* 2) Předměty: hory pod hvězdami */}
+      <section className="zone zone-globe hp-z2">
+        <PixelSky seed={23} moon="planet" />
         <div className="lobby-panel lobby-panel-wide relative z-10">
           <div className="reveal mb-8 flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -211,7 +206,7 @@ export default async function Home({
           </div>
           <ProHomeStrip locale={locale as Locale} />
         </div>
-        <SectionWave fill="#0c1537" glow="#5ab8ff" />
+        <PixelGround kind="mountains" seed={9} />
       </section>
 
       {/* 4) Hory: jak to funguje */}
@@ -234,16 +229,8 @@ export default async function Home({
       )}
 
       {/* 5) Zpět do vesmíru: kategorie */}
-      <section className="zone zone-space">
-        <span className="px-stars" aria-hidden />
-        <SpriteFrame
-          sheet="aliens"
-          col={1}
-          row={ALIEN_ROW.kyklop}
-          size={92}
-          className="space-float absolute right-8 top-20 hidden sm:block"
-          style={{ animationDelay: "-2.5s" }}
-        />
+      <section className="zone hp-z3">
+        <PixelSky seed={37} />
         <LazyOnView placeholderHeight={1100}>
         <div className="lobby-panel relative z-10">
           <h2 className="reveal home-h2 home-h2-center mb-10 text-center text-3xl font-bold tracking-tight sm:text-4xl" style={heading}>
@@ -269,13 +256,12 @@ export default async function Home({
           </div>
         </div>
         </LazyOnView>
-        <SectionWave fill="#131d47" glow="#b49cff" />
+        <PixelGround kind="meadow" seed={14} />
       </section>
 
       {/* 6) Pro učitele */}
-      <section id="pro-ucitele" className="zone zone-tech scroll-mt-24">
-        <span className="px-stars" aria-hidden />
-        <Nebula className="absolute inset-0 -z-10" />
+      <section id="pro-ucitele" className="zone hp-z4 scroll-mt-24">
+        <PixelSky seed={41} moon="moon" />
         <LazyOnView placeholderHeight={900}>
         <div className="lobby-panel relative z-10">
           <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
@@ -316,13 +302,12 @@ export default async function Home({
           </div>
         </div>
         </LazyOnView>
-        <SectionWave fill="#14183d" glow="#b49cff" />
+        <PixelGround kind="castle" seed={21} />
       </section>
 
       {/* 7) O nás */}
-      <section id="o-nas" className="zone zone-tech scroll-mt-24">
-        <span className="px-stars" aria-hidden />
-        <Nebula className="absolute inset-0 -z-10" />
+      <section id="o-nas" className="zone hp-z5 scroll-mt-24">
+        <PixelSky seed={53} />
         <LazyOnView placeholderHeight={1400}>
         <div className="lobby-panel relative z-10">
           <div className="about-top">
@@ -382,6 +367,7 @@ export default async function Home({
           </div>
         </div>
         </LazyOnView>
+        <PixelGround kind="town" seed={31} />
       </section>
     </div>
   );
