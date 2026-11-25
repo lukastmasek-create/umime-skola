@@ -10,8 +10,8 @@
 .site-header-in { min-height: 72px; gap: 12px; }
 .site-header .nav-group, .header-shop { font-family: var(--font-pixel), var(--font-heading), sans-serif; font-size: 1.25rem; font-weight: 400; }
 .site-header :is(button, a) { transition: color 160ms ease, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease; }
-.header-shop { border: 2px solid var(--edge); background: var(--accent-yellow); color: #16132b; box-shadow: 3px 3px 0 var(--shadow-ink); }
-.header-shop:hover, .header-shop[aria-current] { background: var(--accent-500); color: white; }
+.site-header a.header-shop { border: 2px solid transparent; background: transparent; color: var(--muted); box-shadow: none; }
+.site-header a.header-shop:hover, .site-header a.header-shop[aria-current] { background: transparent; color: var(--foreground); }
 .site-header :is(a, button):focus-visible, .site-footer :is(a, button):focus-visible { outline: 3px solid var(--accent-500); outline-offset: 3px; }
 .site-menu { box-shadow: 0 14px 30px #0003; animation: chrome-in 220ms ease-out both; }
 .site-menu > div > div > button { border-color: var(--border); background: var(--surface-muted); }
@@ -34,10 +34,10 @@ body > .site-footer::before { content: ""; display: block; position: absolute; t
 @media (prefers-reduced-motion: reduce) { .site-menu, .menu-items { animation: none; } }
 html[data-motion="off"] :is(.site-menu, .menu-items) { animation: none; }
 
-/* Rounded purchase entry; override the global square pixel controls. */
+/* Keep the purchase link integrated with the header, with a generous hit area. */
 .site-header a.header-shop {
   border-radius: 9999px !important;
   padding-inline: 1rem;
-  box-shadow: 0 3px 0 var(--shadow-ink);
+  box-shadow: none;
   clip-path: none;
 }
