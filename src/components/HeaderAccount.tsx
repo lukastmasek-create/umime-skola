@@ -84,7 +84,7 @@ export function HeaderAccount({
   }
 
   if (!account) {
-    return <span className="inline-block h-9 w-40" aria-hidden />;
+    return <span className="inline-block h-9 w-16 sm:w-40" aria-hidden />;
   }
 
   if (!account.loggedIn) {
@@ -96,7 +96,7 @@ export function HeaderAccount({
         </Link>
         <Link
           href={`/${locale}/registrace`}
-          className="btn-bouncy inline-flex whitespace-nowrap bg-[var(--brand-500)] px-2.5 py-1.5 text-xs font-bold text-white sm:px-4 sm:text-sm"
+          className="btn-bouncy hidden sm:inline-flex whitespace-nowrap bg-[var(--brand-500)] px-2.5 py-1.5 text-xs font-bold text-white sm:px-4 sm:text-sm"
         >
           <SketchIcon kind="rocket" size={18} className="mr-1.5 hidden shrink-0 sm:inline-block" />
           {registerLabel}

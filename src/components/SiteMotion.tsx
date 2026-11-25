@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 // Styly jsou v globals.css v bloku „Pohyb po celém webu“.
 
 const CARD = ".card";
+const REVEAL = "main :is(.card, .gc-item, .hs-card, h2, h3, figure, blockquote), .site-footer";
 const BUTTONS = ".btn-bouncy, .btn-primary, .btn-secondary, .btn-cta";
 
 function motionOff(): boolean {
@@ -82,9 +83,10 @@ export function SiteMotion() {
     let order = 0;
     function prep(root: ParentNode) {
       if (motionOff()) return;
-      const found = root.querySelectorAll<HTMLElement>(CARD);
+      const found = root.querySelectorAll<HTMLElement>(REVEAL);
       for (const el of Array.from(found)) {
-        if (el.dataset.sm || el.classList.contains("reveal") || el.closest("[data-sm-skip],[role=dialog]")) continue;
+        if (el.parentElement?.closest(REVEAL)) continue;
+        if (el.dataset.sm || el.classList.contains("reveal") || el.closest("[data-sm-skip],[role=dialog], canvas, .gradient-hero")) continue;
         el.dataset.sm = "1";
         const r = el.getBoundingClientRect();
         if (r.top < window.innerHeight * 0.92 && r.bottom > 0) continue; // už je vidět, nic se nehýbe
@@ -95,13 +97,24 @@ export function SiteMotion() {
       }
     }
     prep(document);
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    function resetMotion() {
+      if (!motionOff()) return;
+      document.querySelectorAll<HTMLElement>(".sm-pre, .sm-in").forEach((el) => {
+        io.unobserve(el);
+        el.classList.remove("sm-pre", "sm-in");
+      });
+    }
+    media.addEventListener("change", resetMotion);
+    const preferences = new MutationObserver(resetMotion);
+    preferences.observe(document.documentElement, { attributes: true, attributeFilter: ["data-motion"] });
     // Obsah, který se dotáhne později (data z API, přepnutí záložky).
     const mo = new MutationObserver((muts) => {
       for (const m of muts) {
         m.addedNodes.forEach((n) => {
           if (n.nodeType !== 1) return;
           const el = n as HTMLElement;
-          if (el.matches(CARD) || el.querySelector(CARD)) prep(el.parentElement ?? document);
+          if (el.matches(REVEAL) || el.querySelector(REVEAL)) prep(el.parentElement ?? document);
         });
       }
     });
@@ -112,6 +125,8 @@ export function SiteMotion() {
     return () => {
       cancelAnimationFrame(raf);
       io.disconnect();
+      media.removeEventListener("change", resetMotion);
+      preferences.disconnect();
       mo.disconnect();
       // Při opětovném spuštění efektu (např. v dev režimu) se karty připraví znovu, žádná nezůstane skrytá.
       document.querySelectorAll<HTMLElement>("[data-sm]").forEach((el) => {
