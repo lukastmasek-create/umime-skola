@@ -9,7 +9,8 @@ import { getProExtra } from "@/i18n/pro-extra";
 import { getProToolsText } from "@/i18n/pro-tools";
 import { featureAvailableIn, featuresForTab } from "@/lib/pro-tools/features";
 import { isLocale, type Locale } from "@/i18n/config";
-import { SpaceShell } from "@/components/SpaceShell";
+import { HeroPixel } from "@/components/HeroPixel";
+import "./pro-pixel.css";
 import { ProTabs } from "@/components/pro/ProTabs";
 import { ProToolPile } from "@/components/pro/ProToolPile";
 import { PlanBuilder } from "@/components/pro/PlanBuilder";
@@ -45,10 +46,20 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
   const pl = getPricingLabels(locale as Locale);
 
   return (
-    <SpaceShell title={t.title} subtitle={t.subtitle} wide>
+    <div className="space-page pro-pixel-page">
+      <section className="gradient-hero relative isolate overflow-hidden">
+        <HeroPixel />
+        <header className="relative z-10 mx-auto max-w-4xl px-6 pb-32 pt-16 text-center sm:pb-48 sm:pt-24">
+          <span className="pro-pixel-label">UČÍME PRO · {locale === "cs" ? "NOVÝ LEVEL UČENÍ" : "LEVEL UP YOUR LEARNING"}</span>
+          <h1 className="neon-h1 mt-6 text-4xl sm:text-6xl">{t.title}</h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-[var(--muted)]">{t.subtitle}</p>
+          <Link href="#tarify" className="btn-bouncy btn-primary btn-lg mt-8 inline-flex">{locale === "cs" ? "Vyber si svou výbavu ↓" : "Choose your toolkit ↓"}</Link>
+        </header>
+      </section>
+      <main className="relative z-10 mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <ProTabs locale={locale as Locale} active="pro" />
 
-      <section className="mb-8">
+      <section id="tarify" className="mb-8 scroll-mt-28">
         <h2 className="mb-4 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
           {t.tiersTitle}
         </h2>
@@ -56,6 +67,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
           locale={locale}
           labels={pl}
           plans={tiers.map((tier, i) => ({
+            id: (["individual", "family", "school"] as const)[i],
             title: tier.title,
             text: tier.text,
             color: ["#35d0ff", "#ffd23f", "#7cf29a"][i],
@@ -70,7 +82,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
         <p className="text-sm text-[var(--muted)]">{t.availability}</p>
       </section>
 
-      <PlanBuilder t={getBuilderText(locale as Locale)} />
+      <PlanBuilder t={getBuilderText(locale as Locale)} locale={locale} />
       <Link href={`/${locale}/platba`} className="btn-bouncy btn-primary btn-lg mb-8 inline-flex">
         {locale === "cs" ? "Vyzkoušet platební portál →" : "Try the payment portal →"}
       </Link>
@@ -137,6 +149,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
           {t.cta}
         </Link>
       </div>
-    </SpaceShell>
+    </main>
+    </div>
   );
 }
