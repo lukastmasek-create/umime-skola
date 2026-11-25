@@ -27,11 +27,12 @@ const TEXT = {
   noAds: tr8("Bez reklamních cookies", "No advertising cookies", "Keine Werbe-Cookies", "Без рекламных cookie", "Без рекламних cookie", "広告クッキーなし", "Sin cookies publicitarias", "Sans cookies publicitaires"),
   analytics: tr8("Návštěvnost měříme souhrnně přes Cloudflare, bez cookies a sledování napříč weby.", "Cloudflare measures aggregate traffic without cookies or cross-site tracking.", "Cloudflare misst Besuche zusammengefasst, ohne Cookies oder websiteübergreifendes Tracking.", "Cloudflare измеряет общую посещаемость без cookie и отслеживания между сайтами.", "Cloudflare вимірює загальну відвідуваність без cookie та відстеження між сайтами.", "Cloudflareでクッキーやサイト間追跡を使わず、アクセス数を集計します。", "Cloudflare mide visitas agregadas sin cookies ni seguimiento entre sitios.", "Cloudflare mesure les visites agrégées sans cookies ni suivi entre sites."),
   continue: tr8("Rozumím, jdeme hrát", "Got it, let's play", "Verstanden, los geht’s", "Понятно, начнём играть", "Зрозуміло, нумо грати", "わかった、遊ぼう", "Entendido, a jugar", "Compris, on joue"),
+  reject: tr8("Odmítnout", "Reject", "Ablehnen", "Отклонить", "Відхилити", "拒否する", "Rechazar", "Refuser"),
   reopen: tr8("Informace o cookies", "Cookie information", "Cookie-Informationen", "Информация о cookie", "Інформація про cookie", "クッキーについて", "Información de cookies", "Informations sur les cookies"),
   close: tr8("Zavřít", "Close", "Schließen", "Закрыть", "Закрити", "閉じる", "Cerrar", "Fermer"),
 };
 
-// An informational notice: the site has no optional cookies to accept or reject.
+// Both actions keep only essential cookies; there are no optional cookies to enable.
 export function CookieNotice({ locale }: { locale: Locale }) {
   const dialog = useRef<HTMLDialogElement>(null);
 
@@ -93,6 +94,7 @@ export function CookieNotice({ locale }: { locale: Locale }) {
           <p className={styles.analytics}>{TEXT.analytics[locale]}</p>
           <div className={styles.actions}>
             <button type="button" className={styles.primary} onClick={dismiss} autoFocus>{TEXT.continue[locale]} <span aria-hidden="true">→</span></button>
+            <button type="button" className={styles.primary} style={{ background: "#18264a", boxShadow: "0 5px 0 #090f27" }} onClick={dismiss} title={TEXT.essential[locale]}>{TEXT.reject[locale]}</button>
             <Link href={`/${locale}/zasady-cookies`} className={styles.details} onClick={() => dialog.current?.close()}>{getFooterLinks(locale).cookies}</Link>
           </div>
         </div>
