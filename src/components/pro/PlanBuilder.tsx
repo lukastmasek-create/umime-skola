@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { ProIcon } from "@/components/pro/ProIcon";
 import type { BuilderText } from "@/i18n/pro-builder";
@@ -7,7 +8,7 @@ import type { BuilderText } from "@/i18n/pro-builder";
 import { PRO_ITEMS as ITEMS } from "@/lib/pro-prices";
 const FULL = 200;
 
-export function PlanBuilder({ t }: { t: BuilderText }) {
+export function PlanBuilder({ t, locale }: { t: BuilderText; locale?: string }) {
   const [on, setOn] = useState<string[]>(["tutor"]);
   const [yearly, setYearly] = useState(false);
   const raw = ITEMS.filter((i) => on.includes(i.id)).reduce((s, i) => s + i.price, 0);
@@ -52,6 +53,7 @@ export function PlanBuilder({ t }: { t: BuilderText }) {
           ))}
         </div>
       </div>
+      {locale && on.length > 0 && <Link href={`/${locale}/platba?plan=custom&billing=${yearly ? "yearly" : "monthly"}&features=${on.join(",")}`} className="btn-bouncy btn-primary btn-lg mt-5 inline-flex">{locale === "cs" ? "Vyzkoušet tuto výbavu →" : "Try this toolkit →"}</Link>}
       <p className="mt-3 text-xs text-[var(--muted)]">{t.note}</p>
     </section>
   );

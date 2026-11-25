@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type CSSProperties } from "react";
 import { ProIcon } from "@/components/pro/ProIcon";
 
@@ -17,7 +18,7 @@ type Labels = {
   schoolPerYear: string;
 };
 
-export type PlanCard = { title: string; text: string; color: string; perks: string[]; monthly: number | null; yearly: number; best?: boolean; members?: number };
+export type PlanCard = { id: "individual" | "family" | "school"; title: string; text: string; color: string; perks: string[]; monthly: number | null; yearly: number; best?: boolean; members?: number };
 
 const czk = (n: number, locale: string) => `${new Intl.NumberFormat(locale === "cs" ? "cs-CZ" : "en-GB").format(n)} Kč`;
 
@@ -70,6 +71,9 @@ export function PricingPlans({ plans, labels, locale }: { plans: PlanCard[]; lab
                   </li>
                 ))}
               </ul>
+              <Link href={`/${locale}/platba?plan=${p.id}&billing=${showYear ? "yearly" : "monthly"}`} className="btn-bouncy btn-primary btn-lg mt-6 inline-flex justify-center">
+                {locale === "cs" ? "Vyzkoušet demo platbu →" : "Try demo payment →"}
+              </Link>
             </article>
           );
         })}
