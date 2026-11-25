@@ -4,14 +4,7 @@ import { useState } from "react";
 import { ProIcon } from "@/components/pro/ProIcon";
 import type { BuilderText } from "@/i18n/pro-builder";
 
-// Návrh cen (Kč/měsíc). Součet je omezen cenou celého PRO (200 Kč), takže vlastní tarif nikdy nevyjde dráž.
-const ITEMS = [
-  { id: "tutor", icon: "doucovatel", price: 80 },
-  { id: "plan", icon: "plan", price: 30 },
-  { id: "photo", icon: "fotka", price: 50 },
-  { id: "notes", icon: "poznamky", price: 25 },
-  { id: "offline", icon: "offline", price: 15 },
-] as const;
+import { PRO_ITEMS as ITEMS } from "@/lib/pro-prices";
 const FULL = 200;
 
 export function PlanBuilder({ t }: { t: BuilderText }) {

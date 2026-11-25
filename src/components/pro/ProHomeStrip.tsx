@@ -12,6 +12,9 @@ export function ProHomeStrip({ locale }: { locale: Locale }) {
         {t.homeTitle}
       </h3>
       <p className="mb-4 mt-1 text-sm text-[var(--muted)]">{t.homeHint}</p>
+      <Link href={`/${locale}/platba`} className="btn-bouncy btn-primary btn-lg mb-5 inline-flex">
+        {locale === "cs" ? "Poskládat PRO · demo platby →" : "Build your PRO · payment demo →"}
+      </Link>
       <div className="grid gap-3 sm:grid-cols-3">
         {PRO_TABS.map((tab) => (
           <Link key={tab} href={`/${locale}${proTabPath(tab)}`} className="card flex items-center justify-between p-4 font-bold hover:underline">
