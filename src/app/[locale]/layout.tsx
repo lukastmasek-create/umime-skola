@@ -13,6 +13,7 @@ import { SketchIcon } from "@/components/SketchIcons";
 import { HeaderScroll } from "@/components/HeaderScroll";
 import { PencilScrollbar } from "@/components/PencilScrollbar";
 import { GlobalShortcuts } from "@/components/GlobalShortcuts";
+import { CookieNotice } from "@/components/CookieNotice";
 import { SiteMotion } from "@/components/SiteMotion";
 import { OffscreenPause } from "@/components/OffscreenPause";
 import { ScrollFade } from "@/components/ScrollFade";
@@ -159,6 +160,7 @@ export default async function LocaleLayout({
               <SketchIcon kind="info" size={16} className="sketch-chip-ico" />
               {getFooterLinks(locale as Locale).cookies}
             </Link>
+            <CookieNotice locale={locale as Locale} />
           </nav>
           <div className="mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             <a href={`mailto:${CONTACT_EMAIL}`} className="sketch-chip">
