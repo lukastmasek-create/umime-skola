@@ -32,7 +32,7 @@ function burst(x: number, y: number, color: string) {
   }
 }
 
-export function TearCard({ href, className, accent, children }: { href: string; className?: string; accent?: string; children: ReactNode }) {
+export function TearCard({ href, className, accent, stagger, children }: { href: string; className?: string; accent?: string; stagger?: number; children: ReactNode }) {
   const slot = useRef<HTMLDivElement>(null);
   const ref = useRef<HTMLAnchorElement>(null);
   const s = useRef({
@@ -189,7 +189,7 @@ export function TearCard({ href, className, accent, children }: { href: string; 
   const click = (e: React.MouseEvent) => { if (s.current.moved >= 6) { e.preventDefault(); e.stopPropagation(); } };
 
   return (
-    <div ref={slot} className="pcard-slot" style={accent ? ({ ["--ac" as string]: accent } as React.CSSProperties) : undefined}>
+    <div ref={slot} className="pcard-slot" style={{ ...(accent ? { ["--ac" as string]: accent } : null), ...(stagger !== undefined ? { ["--i" as string]: stagger } : null) } as React.CSSProperties}>
       <span className="pcard-ghost" aria-hidden />
       <Link
         ref={ref}

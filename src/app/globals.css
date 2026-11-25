@@ -6060,8 +6060,8 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
   }
 }
 @keyframes h-reveal {
-  from { filter: blur(10px); letter-spacing: 0.14em; clip-path: inset(0 0 100% 0); }
-  to { filter: blur(0); letter-spacing: normal; clip-path: inset(0 0 0 0); }
+  from { opacity: 0; translate: 0 0.35em; clip-path: inset(0 0 100% 0); }
+  to { opacity: 1; translate: 0 0; clip-path: inset(0 0 -10% 0); }
 }
 
 /* 3) Karty: po najetí se naklopí a zazáří (translate/rotate, aby nebojovaly s reveal animací) */
@@ -6087,9 +6087,9 @@ a.gcard-live:hover .sv-halo { transform: scale(1.12); opacity: 0.22; }
   background-image: linear-gradient(110deg, transparent 38%, rgba(255, 255, 255, 0.35) 50%, transparent 62%);
   background-size: 260% 100%;
   background-color: var(--brand-500);
-  animation: btn-shine 3.6s linear infinite;
+  animation: btn-sheen 3.6s linear infinite;
 }
-@keyframes btn-shine {
+@keyframes btn-sheen {
   0% { background-position: 120% 0; }
   100% { background-position: -120% 0; }
 }
@@ -7313,3 +7313,192 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="
 .px-skin .lobby-cta, .px-skin .lobby-chip, .px-skin .sets-icon-btn, .px-skin .sets-num, .px-skin .sets-field { border-radius: var(--radius-btn) !important; }
 a[class*="rounded-full"], button[class*="rounded-full"], span[class*="rounded-full"]:not(:empty), .pill, .hs-pill, .lobby-pill, .lobby-tab, .lobby-tabs { border-radius: 999px !important; }
 .hs-avatar, [class*="avatar"] img, img[class*="avatar"] { border-radius: 50% !important; }
+
+/* ===== Homepage: doladění vzhledu a plynulosti ===== */
+/* Postupný náběh položek v mřížce: každá další začne o kousek později (--i = pořadí ve řádku). */
+@supports (animation-timeline: view()) {
+  .reveal-stagger {
+    animation-range: entry calc(4% + var(--i, 0) * 7%) entry calc(40% + var(--i, 0) * 7%);
+  }
+  /* Akcentní linka pod nadpisem sekce se při najetí na obrazovku dokreslí. */
+  .home-h2::after {
+    animation: home-h2-line linear both;
+    animation-timeline: view();
+    animation-range: entry 20% cover 35%;
+  }
+}
+.home-h2 { position: relative; padding-bottom: 0.45em; }
+.home-h2::after {
+  content: ""; position: absolute; left: 0; bottom: 0; width: 2.6em; height: 4px; border-radius: 999px;
+  background: linear-gradient(90deg, #ffc933, #ff8a6b, #8fd0ff);
+  box-shadow: 0 0 12px rgba(143, 208, 255, 0.45);
+  transform-origin: left center;
+}
+.home-h2-center::after { left: 50%; translate: -50% 0; transform-origin: center; }
+@keyframes home-h2-line { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
+
+/* Karta „Tvůj postup“: jemně obíhající barevný okraj a ikona. */
+@property --home-ang { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.home-guest { position: relative; isolation: isolate; overflow: hidden; }
+.home-guest::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; padding: 1.5px; pointer-events: none;
+  background: conic-gradient(from var(--home-ang), transparent 0 55%, #8fd0ff 70%, #ff8fd0 80%, #ffc933 90%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  animation: home-orbit 6s linear infinite;
+}
+@keyframes home-orbit { to { --home-ang: 360deg; } }
+.home-guest-ic {
+  display: grid; place-items: center; flex: none; width: 46px; height: 46px; border-radius: 14px; font-size: 1.35rem; color: #14132a;
+  background: linear-gradient(145deg, #ffe07a, #ffb02e); box-shadow: 0 0 0 2px rgba(244, 239, 227, 0.6), 0 0 22px rgba(255, 201, 51, 0.45);
+  animation: home-bob 3.2s ease-in-out infinite;
+}
+@keyframes home-bob { 50% { translate: 0 -4px; rotate: -6deg; } }
+.home-bar { background: linear-gradient(90deg, var(--accent-500), #8fd0ff, #ff8fd0); background-size: 200% 100%; animation: home-bar-flow 4s linear infinite; }
+@keyframes home-bar-flow { to { background-position: -200% 0; } }
+.home-skel {
+  background: linear-gradient(100deg, var(--surface-muted) 30%, color-mix(in srgb, var(--surface-muted) 70%, #fff) 50%, var(--surface-muted) 70%);
+  background-size: 250% 100%; animation: home-skel 1.4s ease-in-out infinite;
+}
+@keyframes home-skel { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
+/* Body pro učitele: velké obrysové číslo v rohu. */
+.home-tpoint { position: relative; padding-right: 3.2rem !important; }
+.home-tpoint-num {
+  position: absolute; top: 0.7rem; right: 0.9rem; font: 800 1.6rem/1 var(--font-heading); color: transparent;
+  -webkit-text-stroke: 1.5px rgba(126, 224, 176, 0.55); transition: color 0.3s ease, -webkit-text-stroke-color 0.3s ease;
+}
+.home-tpoint:hover .home-tpoint-num { color: rgba(126, 224, 176, 0.9); -webkit-text-stroke-color: transparent; }
+
+/* UčímePRO pás: dlaždice s ikonou a šipkou, která při najetí ujede. */
+.pro-strip { position: relative; }
+.pro-strip::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(143, 208, 255, 0.45), rgba(255, 143, 208, 0.45), transparent);
+}
+.pro-tile {
+  display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 18px; color: inherit;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--ac) 10%, #121a3a), #0d1330);
+  border: 1px solid color-mix(in srgb, var(--ac) 28%, transparent);
+  box-shadow: 0 14px 28px -20px #000;
+  transition: translate 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2), border-color 0.25s ease, box-shadow 0.3s ease;
+}
+.pro-tile:hover { translate: 0 -4px; border-color: color-mix(in srgb, var(--ac) 70%, transparent); box-shadow: 0 18px 34px -18px color-mix(in srgb, var(--ac) 55%, transparent); }
+.pro-tile:focus-visible { outline: 3px solid var(--ac); outline-offset: 3px; }
+.pro-tile-ic {
+  display: grid; place-items: center; flex: none; width: 42px; height: 42px; border-radius: 13px; color: #14132a; background: var(--ac);
+  box-shadow: 0 0 0 2px rgba(244, 239, 227, 0.55); transition: rotate 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.pro-tile:hover .pro-tile-ic { rotate: -8deg; }
+.pro-tile-sub { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px; font-size: 0.78rem; line-height: 1.4; color: var(--muted); }
+.pro-tile-go { flex: none; font-weight: 800; color: var(--ac); transition: translate 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.pro-tile:hover .pro-tile-go { translate: 5px 0; }
+
+@media (hover: none) { .pro-tile:hover { translate: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .home-h2::after { animation: none !important; transform: none; opacity: 1; }
+  .home-guest::before, .home-guest-ic, .home-bar, .home-skel { animation: none !important; }
+  .pro-tile, .pro-tile-ic, .pro-tile-go, .home-tpoint-num { transition: none; }
+}
+:root[data-motion="off"] .home-guest::before,
+:root[data-motion="off"] .home-guest-ic,
+:root[data-motion="off"] .home-bar,
+:root[data-motion="off"] .home-skel { animation: none !important; }
+
+/* ===== Homepage FX (HomeFx.tsx): záře za kurzorem, jiskry, 3D náklon, holo karty, pás předmětů ===== */
+.fx-glow {
+  position: fixed; left: 0; top: 0; z-index: 1; width: 520px; height: 520px; margin: -260px 0 0 -260px; border-radius: 50%;
+  pointer-events: none; opacity: 0; mix-blend-mode: screen;
+  background: radial-gradient(closest-side, rgba(124, 108, 255, 0.16), rgba(255, 143, 208, 0.06) 55%, transparent);
+  transition: opacity 0.4s ease, translate 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: translate;
+}
+.fx-spark {
+  position: fixed; z-index: 60; width: 6px; height: 6px; margin: -3px 0 0 -3px; pointer-events: none;
+  background: var(--c); box-shadow: 0 0 8px var(--c), 0 0 2px #fff;
+  animation: fx-spark 0.8s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+@keyframes fx-spark {
+  0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.2) rotate(90deg); }
+}
+
+/* 3D náklon karet pod kurzorem (proměnné nastavuje HomeFx). !important přebíjí hover transformace karet. */
+.space-page :is(.lobby-card, .gcard-hover, .about-person, .about-note, .about-problem, .pro-tile, .rp-paper).fx-tilt-on {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(0) !important;
+  transition: transform 0.12s ease-out, translate 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2), box-shadow 0.3s ease !important;
+}
+.space-page .fx-tilt-on { background-image: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgba(255, 255, 255, 0.09), transparent 45%); }
+.space-page .lobby-card.fx-tilt-on, .space-page .rp-paper.fx-tilt-on { background-image: none; }
+
+/* Hromádka karet: holografický odlesk sleduje kurzor a při najetí přejede lesk. */
+.pcard-in::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; mix-blend-mode: screen;
+  background:
+    radial-gradient(circle at var(--gx) var(--gy), rgba(255, 255, 255, 0.28), transparent 42%),
+    linear-gradient(115deg, transparent 30%, rgba(143, 208, 255, 0.22) 45%, rgba(255, 143, 208, 0.22) 55%, transparent 70%);
+  background-size: 100% 100%, 250% 100%;
+  background-position: 0 0, 120% 0;
+  transition: opacity 0.3s ease, background-position 0.9s ease;
+}
+.pcard:hover .pcard-in::after, .pcard:focus-visible .pcard-in::after { opacity: 1; background-position: 0 0, -20% 0; }
+.pcard:hover .pcard-icon { animation: fx-icon-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes fx-icon-pop { 40% { transform: scale(1.14) rotate(-6deg); } 70% { transform: scale(0.96) rotate(3deg); } }
+
+/* Hero: pulzující neonová svatozář za nadpisem */
+.hero-halo {
+  position: absolute; left: 50%; top: 4rem; z-index: -1; width: min(780px, 95vw); aspect-ratio: 2 / 1; translate: -50% 0;
+  border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(255, 79, 216, 0.22), rgba(42, 183, 255, 0.14) 50%, transparent 75%);
+  animation: hero-halo 7s ease-in-out infinite;
+}
+@keyframes hero-halo {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.12) rotate(4deg); opacity: 1; }
+}
+.space-page .gradient-hero .neon-hl { animation: fx-neon-flicker 6s steps(1) 2.5s infinite; }
+@keyframes fx-neon-flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; } 93% { opacity: 0.55; } 94% { opacity: 1; } 96% { opacity: 0.7; } 97% { opacity: 1; }
+}
+
+/* Pás předmětů: nekonečný posun, okraje zmizí do ztracena, na najetí se zastaví */
+.mq {
+  position: relative; z-index: 2; overflow: hidden; padding: 10px 0 6px;
+  -webkit-mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.mq-track { display: flex; width: max-content; gap: 12px; animation: mq-run 48s linear infinite; }
+.mq:hover .mq-track, .mq:focus-within .mq-track { animation-play-state: paused; }
+@keyframes mq-run { to { transform: translateX(calc(-50% - 6px)); } }
+.mq-chip {
+  display: inline-flex; align-items: center; gap: 10px; flex: none; padding: 8px 18px 8px 10px; border-radius: 999px;
+  font-weight: 800; font-size: 0.95rem; white-space: nowrap; color: #f4f3ff;
+  background: color-mix(in srgb, var(--ac) 18%, #10173a);
+  border: 1.5px solid color-mix(in srgb, var(--ac) 55%, transparent);
+  box-shadow: 0 0 18px -6px var(--ac), 3px 4px 0 rgba(3, 3, 14, 0.55);
+  transition: translate 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease, box-shadow 0.25s ease;
+}
+.mq-chip:nth-child(even) { rotate: 1.5deg; }
+.mq-chip:nth-child(odd) { rotate: -1.5deg; }
+.mq-chip:hover, .mq-chip:focus-visible { translate: 0 -5px; background: color-mix(in srgb, var(--ac) 34%, #10173a); box-shadow: 0 0 28px -4px var(--ac), 4px 6px 0 rgba(3, 3, 14, 0.55); }
+.mq-chip:focus-visible { outline: 3px solid var(--ac); outline-offset: 3px; }
+
+/* Sekce: barevný přechod na okraji panelu, který pomalu obíhá */
+.space-page .lobby-panel { position: relative; isolation: isolate; }
+.space-page .lobby-panel::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: conic-gradient(from var(--home-ang), transparent 0 60%, rgba(143, 208, 255, 0.7) 72%, rgba(255, 143, 208, 0.7) 82%, transparent 94%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  animation: home-orbit 14s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-glow, .fx-spark { display: none; }
+  .hero-halo, .space-page .gradient-hero .neon-hl, .mq-track, .space-page .lobby-panel::before, .pcard:hover .pcard-icon { animation: none !important; }
+  .mq { overflow-x: auto; }
+}
+:root[data-motion="off"] .fx-glow, :root[data-motion="off"] .fx-spark { display: none; }
+:root[data-motion="off"] :is(.hero-halo, .mq-track, .space-page .lobby-panel::before, .space-page .gradient-hero .neon-hl) { animation: none !important; }
+:root[data-motion="off"] .mq { overflow-x: auto; }
