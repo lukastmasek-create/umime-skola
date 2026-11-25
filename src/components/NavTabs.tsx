@@ -67,19 +67,12 @@ export function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | 
     settings.push({ key: "registrace", href: `/${locale}/registrace`, label: dict.nav.register });
   }
   settings.push({ key: "nastaveni", href: `/${locale}/nastaveni`, label: dict.nav.settings });
+  settings.push({ key: "zaci", href: `/${locale}/zaci`, label: getAudiencePagesText(locale).students.nav });
+  settings.push({ key: "ucitele", href: `/${locale}/ucitele`, label: getAudiencePagesText(locale).teachers.nav });
   settings.push({ key: "o-nas", href: `/${locale}#o-nas`, label: home.about.title, noActive: true });
   settings.push({ key: "kontakt", href: `/${locale}/kontakt`, label: getContactText(locale).nav });
   const groups: Group[] = [
     { key: "courses", label: home.groups.courses, items: courses },
-    {
-      key: "info",
-      label: home.groups.info,
-      items: [
-        { key: "info-tymy", href: `/${locale}/tymy`, label: getTeamsText(locale).title },
-        { key: "info-ucitele", href: `/${locale}/ucitele`, label: getAudiencePagesText(locale).teachers.nav },
-        { key: "info-zaci", href: `/${locale}/zaci`, label: getAudiencePagesText(locale).students.nav },
-      ],
-    },
     {
       key: "games",
       label: home.groups.games,
@@ -92,14 +85,11 @@ export function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | 
     },
     {
       key: "shop",
-      label: home.groups.shop,
+      label: getProText(locale).nav,
       items: [
-        { key: "obchod", href: `/${locale}/obchod`, label: dict.nav.shop },
         { key: "pro", href: `/${locale}/pro`, label: getProText(locale).nav },
         { key: "rodina", href: `/${locale}/rodina`, label: getProTabsText(locale).tabs.rodina },
         { key: "skola", href: `/${locale}/skola`, label: getProTabsText(locale).tabs.skola },
-        { key: "uzivatelsky-obchod", href: `/${locale}/uzivatelsky-obchod`, label: community.navMarketplace },
-        { key: "trziste", href: `/${locale}/trziste`, label: getPlayerMarketText(locale).title },
       ],
     },
     {
@@ -112,8 +102,6 @@ export function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | 
         { key: "ai-fotka", href: `/${locale}/pro/fotka`, label: getProToolsText(locale).features.fotka.title },
         { key: "ai-poznamky", href: `/${locale}/pro/poznamky`, label: getProToolsText(locale).features.poznamky.title },
         { key: "materialy", href: `/${locale}/materialy`, label: getMaterialsText(locale).nav },
-        { key: "zaci", href: `/${locale}/zaci`, label: getAudiencePagesText(locale).students.nav },
-        { key: "ucitele", href: `/${locale}/ucitele`, label: getAudiencePagesText(locale).teachers.nav },
       ],
     },
     {
@@ -121,6 +109,8 @@ export function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | 
       label: home.groups.extras,
       items: [
         { key: "pokoj", href: `/${locale}/pokoj`, label: getRoomText(locale).nav },
+        { key: "uzivatelsky-obchod", href: `/${locale}/uzivatelsky-obchod`, label: community.navMarketplace },
+        { key: "trziste", href: `/${locale}/trziste`, label: getPlayerMarketText(locale).title },
         { key: "index", href: `/${locale}/pokoj?tab=cards`, label: home.index, noActive: true },
       ],
     },
@@ -130,13 +120,6 @@ export function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | 
       items: [
         { key: "sady", href: `/${locale}/hrat-spolecne/sady`, label: live.sets.title },
         { key: "nova", href: `/${locale}/hrat-spolecne/nova`, label: live.host.title },
-        { key: "pripojit", href: `/${locale}/hrat-spolecne`, label: live.join.title, noActive: true },
-      ],
-    },
-    {
-      key: "boards",
-      label: home.groups.boards,
-      items: [
         { key: "tymy", href: `/${locale}/tymy`, label: getTeamsText(locale).title },
         { key: "liga", href: `/${locale}/parta`, label: getSocialText(locale).league },
         { key: "zebricky", href: `/${locale}/zebricky`, label: community.navLeaderboards },
@@ -148,7 +131,7 @@ export function useGroups(locale: Locale, dict: Dictionary, loggedIn: boolean | 
 }
 
 // Na širokých obrazovkách zůstávají v liště jen tyto skupiny, ostatní jsou v tlačítku Menu.
-const PRIMARY_GROUPS = new Set(["courses", "games", "info", "study"]);
+const PRIMARY_GROUPS = new Set(["courses", "games", "study"]);
 
 export function isActiveTab(pathname: string | null, tab: Tab) {
   if (!pathname || tab.noActive) return false;
@@ -217,7 +200,7 @@ export function NavTabs({ locale, dict }: { locale: Locale; dict: Dictionary }) 
     }`;
 
   return (
-    <nav ref={rootRef} aria-label="Hlavní navigace" className="hidden min-w-0 flex-nowrap items-center md:flex max-[1149px]:[&_.nav-ico]:hidden max-[1149px]:[&_.nav-group]:px-1.5">
+    <nav ref={rootRef} aria-label="Hlavní navigace" className="hidden min-w-0 flex-nowrap items-center min-[1180px]:flex max-[1149px]:[&_.nav-ico]:hidden max-[1149px]:[&_.nav-group]:px-1.5">
       {groups.filter((group) => PRIMARY_GROUPS.has(group.key)).map((group) => {
         const open = openKey === group.key;
         const active = group.items.some((tab) => isActiveTab(pathname, tab));
@@ -278,6 +261,8 @@ export function MobileMenu({ locale, dict }: { locale: Locale; dict: Dictionary 
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [openKey, setOpenKey] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const [account] = useAccount();
   const groups = useGroups(locale, dict, account ? account.loggedIn : null);
   const t = getHomeText(locale);
@@ -285,10 +270,17 @@ export function MobileMenu({ locale, dict }: { locale: Locale; dict: Dictionary 
   useEffect(() => {
     if (!open) return;
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") { setOpen(false); triggerRef.current?.focus(); }
+    }
+    function onOutside(e: PointerEvent) {
+      if (!menuRef.current?.contains(e.target as Node)) setOpen(false);
     }
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onOutside);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onOutside);
+    };
   }, [open]);
 
   const itemClass = (active: boolean) =>
@@ -297,10 +289,11 @@ export function MobileMenu({ locale, dict }: { locale: Locale; dict: Dictionary 
     }`;
 
   return (
-    <div>
+    <div ref={menuRef}>
       <button
+        ref={triggerRef}
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => { setOpen((v) => !v); setOpenKey(null); }}
         aria-expanded={open}
         aria-controls="mobile-menu"
         aria-label={open ? t.closeMenu : t.menu}
@@ -313,17 +306,18 @@ export function MobileMenu({ locale, dict }: { locale: Locale; dict: Dictionary 
       {open && (
         <div
           id="mobile-menu"
-          className="absolute inset-x-0 top-full z-40 max-h-[calc(100vh-4rem)] overflow-y-auto border-b-2 border-[var(--edge)] bg-[var(--surface)] px-4 pb-5 pt-4 shadow-[0_8px_0_var(--shadow-ink)]"
+          className="site-menu absolute inset-x-0 top-full z-40 max-h-[calc(100dvh-5rem)] overflow-y-auto border-b-2 border-[var(--edge)] bg-[var(--surface)] px-4 pb-5 pt-4"
         >
-          <div className="flex flex-col gap-2">
+          <div className="mx-auto grid max-w-6xl items-start gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {groups.map((group) => {
               const expanded = openKey === group.key;
               const active = group.items.some((tab) => isActiveTab(pathname, tab));
               return (
-                <div key={group.key} className={PRIMARY_GROUPS.has(group.key) ? "md:hidden" : undefined}>
+                <div key={group.key} className={PRIMARY_GROUPS.has(group.key) ? "min-[1180px]:hidden" : undefined}>
                   <button
                     type="button"
                     aria-expanded={expanded}
+                    aria-controls={`menu-group-${group.key}`}
                     onClick={() => setOpenKey(expanded ? null : group.key)}
                     className={`flex w-full items-center justify-between gap-2 rounded-xl border-2 px-3 py-3 text-left text-sm font-bold ${
                       active ? "border-[var(--edge)] bg-[var(--accent-yellow)] text-[#16132b]" : "border-[var(--edge)] bg-[var(--surface)]"
@@ -336,7 +330,7 @@ export function MobileMenu({ locale, dict }: { locale: Locale; dict: Dictionary 
                     <span aria-hidden><SketchIcon kind={expanded ? "chevronUp" : "chevron"} size={16} /></span>
                   </button>
                   {expanded && (
-                    <div className="mt-2 grid grid-cols-2 gap-2">
+                    <div id={`menu-group-${group.key}`} className="menu-items mt-2 grid grid-cols-1 gap-1">
                       {group.items.map((tab) => (
                         <Link
                           key={tab.key}
@@ -350,7 +344,7 @@ export function MobileMenu({ locale, dict }: { locale: Locale; dict: Dictionary 
                       ))}
                       {group.key === "settings" && (
                         <>
-                          <p className="col-span-2 mt-1 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.languages}</p>
+                          <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{t.languages}</p>
                           <LanguageLinks locale={locale} className={itemClass} onPick={() => setOpen(false)} />
                         </>
                       )}
@@ -363,5 +357,16 @@ export function MobileMenu({ locale, dict }: { locale: Locale; dict: Dictionary 
         </div>
       )}
     </div>
+  );
+}
+
+export function HeaderShop({ locale, label }: { locale: Locale; label: string }) {
+  const pathname = usePathname();
+  const href = `/${locale}/obchod`;
+  return (
+    <Link href={href} aria-label={label} aria-current={pathname === href ? "page" : undefined} className="header-shop inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 px-2 sm:px-3">
+      <GroupIcon id="shop" size={20} />
+      <span className="hidden min-[360px]:inline">{label}</span>
+    </Link>
   );
 }
