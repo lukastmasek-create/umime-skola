@@ -362,7 +362,7 @@ export function MobileMenu({ locale, dict }: { locale: Locale; dict: Dictionary 
 
 export function HeaderShop({ locale, label }: { locale: Locale; label: string }) {
   const pathname = usePathname();
-  const href = `/${locale}/obchod`;
+  const href = `/${locale}/pro`;
   return (
     <Link href={href} aria-label={label} aria-current={pathname === href ? "page" : undefined} className="header-shop inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 px-2 sm:px-3">
       <GroupIcon id="shop" size={20} />
