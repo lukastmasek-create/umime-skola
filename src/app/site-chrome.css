@@ -33,3 +33,11 @@ body > .site-footer::before { content: ""; display: block; position: absolute; t
 }
 @media (prefers-reduced-motion: reduce) { .site-menu, .menu-items { animation: none; } }
 html[data-motion="off"] :is(.site-menu, .menu-items) { animation: none; }
+
+/* Rounded purchase entry; override the global square pixel controls. */
+.site-header a.header-shop {
+  border-radius: 9999px !important;
+  padding-inline: 1rem;
+  box-shadow: 0 3px 0 var(--shadow-ink);
+  clip-path: none;
+}
