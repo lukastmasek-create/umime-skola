@@ -23,21 +23,24 @@ export function HomeProgress({ locale, registerLabel }: { locale: Locale; regist
   const p = getProfileText(locale);
 
   if (!account) {
-    return <div className="card h-28 animate-pulse bg-[var(--surface-muted)]" aria-hidden />;
+    return <div className="card home-skel h-28" aria-hidden />;
   }
 
   if (!account.loggedIn) {
     return (
-      <div className="card flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+      <div className="card home-guest flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-4">
+          <span className="home-guest-ic" aria-hidden>★</span>
+          <div>
           <h2 className="text-lg font-bold" style={{ fontFamily: "var(--font-heading)" }}>
             {t.progressTitle}
           </h2>
           <p className="mt-1 max-w-xl text-sm text-[var(--muted)]">{t.progressGuest}</p>
+          </div>
         </div>
         <Link
           href={`/${locale}/registrace`}
-          className="btn-bouncy shrink-0 bg-[var(--brand-500)] px-5 py-2.5 text-sm font-bold text-white"
+          className="btn-bouncy btn-cta btn-primary shrink-0 px-5 py-2.5 text-sm font-bold text-white"
         >
           {registerLabel}
         </Link>
@@ -48,7 +51,7 @@ export function HomeProgress({ locale, registerLabel }: { locale: Locale; regist
   const toNext = account.neededForNext - account.intoLevel;
 
   return (
-    <div className="card flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
+    <div className="card home-guest flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
       <div className="flex items-center gap-4">
         <Avatar id={account.avatar} icon={account.icon} size={64} />
         <div className="min-w-0">
@@ -75,7 +78,7 @@ export function HomeProgress({ locale, registerLabel }: { locale: Locale; regist
           aria-valuemin={0}
           aria-valuemax={100}
         >
-          <div className="h-full bg-[var(--accent-500)] transition-[width] duration-1000 ease-out" style={{ width: `${shown ? account.percent : 0}%` }} />
+          <div className="home-bar h-full transition-[width] duration-1000 ease-out" style={{ width: `${shown ? account.percent : 0}%` }} />
         </div>
       </div>
 

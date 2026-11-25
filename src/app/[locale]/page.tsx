@@ -19,6 +19,8 @@ import { HomeLobby } from "@/components/HomeLobby";
 import { getHomeLobbyText } from "@/i18n/home-lobby";
 import { ResultsPreview } from "@/components/ResultsPreview";
 import { HeroShowcase } from "@/components/HeroShowcase";
+import { HomeFx } from "@/components/HomeFx";
+import { HomeMarquee } from "@/components/HomeMarquee";
 import { getHomeHeroText } from "@/i18n/home-hero";
 import { getHomeText } from "@/i18n/home";
 import { getHomeAudienceText } from "@/i18n/home-teachers";
@@ -107,11 +109,13 @@ export default async function Home({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
+      <HomeFx />
       {/* 1) Vesmír: hrdina a postup */}
       <div className="zone zone-space">
         <span className="px-stars" aria-hidden />
         <section className="gradient-hero relative">
           <HeroPixel />
+          <span className="hero-halo" aria-hidden />
           <div className="relative mx-auto flex max-w-6xl flex-col items-center px-4 pb-10 pt-12 sm:px-6 sm:pt-16 lg:pb-16 lg:pt-20">
             <div className="flex max-w-3xl flex-col items-center gap-6 text-center lg:max-w-2xl">
               <span style={{ ["--d" as string]: "0.05s" }} className="hero-in rounded-md border-2 border-[var(--edge)] bg-[var(--surface)]/80 px-2.5 py-1 text-xs font-bold uppercase tracking-widest shadow-[0_0_18px_rgba(124,108,255,0.45)]">
@@ -164,6 +168,11 @@ export default async function Home({
       {/* 1b) Lobby: co dnes zahrajeme */}
       <div className="zone zone-space pt-4">
         <span className="px-stars" aria-hidden />
+        <HomeMarquee
+          locale={locale}
+          label={h.subjectsTitle}
+          items={SUBJECTS.map((sj) => ({ slug: sj.slug, color: sj.color, label: subjectText.labels[sj.value] }))}
+        />
         <LazyOnView placeholderHeight={520}>
           <HomeLobby locale={locale} t={getHomeLobbyText(locale as Locale)} />
         </LazyOnView>
@@ -177,7 +186,7 @@ export default async function Home({
         <div className="lobby-panel lobby-panel-wide relative z-10">
           <div className="reveal mb-8 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
+              <h2 className="home-h2 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
                 {h.subjectsTitle}
               </h2>
               <p className="mt-1 max-w-xl text-sm text-[var(--muted)]">{h.subjectsHint}</p>
@@ -237,12 +246,12 @@ export default async function Home({
         />
         <LazyOnView placeholderHeight={1100}>
         <div className="lobby-panel relative z-10">
-          <h2 className="reveal mb-10 text-center text-3xl font-bold tracking-tight sm:text-4xl" style={heading}>
+          <h2 className="reveal home-h2 home-h2-center mb-10 text-center text-3xl font-bold tracking-tight sm:text-4xl" style={heading}>
             {dict.home.pickSection}
           </h2>
           <div className="pcard-pile">
             {CATEGORIES.map((cat, i) => (
-              <TearCard key={cat.slug} href={`/${locale}/kurzy/${cat.slug}`} className="reveal pcard" accent={TILE_COLORS[i % TILE_COLORS.length]}>
+              <TearCard key={cat.slug} href={`/${locale}/kurzy/${cat.slug}`} className="reveal reveal-stagger pcard" stagger={i % 2} accent={TILE_COLORS[i % TILE_COLORS.length]}>
                 <span className="pcard-in">
                   <PcardArt slug={cat.slug} />
                   <span className="pcard-num" aria-hidden>{String(i + 1).padStart(2, "0")}</span>
@@ -269,16 +278,17 @@ export default async function Home({
         <Nebula className="absolute inset-0 -z-10" />
         <LazyOnView placeholderHeight={900}>
         <div className="lobby-panel relative z-10">
-          <div className="grid gap-12">
+          <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
             <div>
               <p className="reveal mb-2 text-xs font-bold uppercase tracking-widest text-[var(--accent-green)]">{a.teachers.eyebrow}</p>
-              <h2 className="reveal mb-4 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
+              <h2 className="reveal home-h2 mb-4 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
                 {a.teachers.title}
               </h2>
               <p className="reveal mb-8 max-w-xl text-lg leading-relaxed text-[var(--muted)]">{a.teachers.lead}</p>
-              <ul className="gcard-cycle grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {a.teachers.points.map((point) => (
-                  <li key={point.title} className="reveal gcard gcard-hover p-4">
+              <ul className="gcard-cycle grid gap-4 sm:grid-cols-2">
+                {a.teachers.points.map((point, i) => (
+                  <li key={point.title} className="reveal reveal-stagger gcard gcard-hover home-tpoint p-4" style={{ ["--i" as string]: i % 2 }}>
+                    <span className="home-tpoint-num" aria-hidden>{String(i + 1).padStart(2, "0")}</span>
                     <h3 className="gcard-title mb-1">{point.title}</h3>
                     <p className="text-sm leading-relaxed text-[var(--muted)]">{point.text}</p>
                   </li>
@@ -317,7 +327,7 @@ export default async function Home({
         <div className="lobby-panel relative z-10">
           <div className="about-top">
             <div className="reveal">
-              <h2 className="about-title" style={heading}>{h.about.title}</h2>
+              <h2 className="about-title home-h2" style={heading}>{h.about.title}</h2>
               <p className="about-lead">{h.about.lead}</p>
             </div>
             <aside className="about-note reveal" style={{ ["--ac" as string]: TILE_COLORS[0] }}>
@@ -330,7 +340,7 @@ export default async function Home({
 
           <ol className="about-points">
             {h.about.points.map((point, i) => (
-              <li key={point.title} className="about-point reveal" style={{ ["--ac" as string]: TILE_COLORS[i % TILE_COLORS.length] }}>
+              <li key={point.title} className="about-point reveal reveal-stagger" style={{ ["--ac" as string]: TILE_COLORS[i % TILE_COLORS.length], ["--i" as string]: i }}>
                 <span className="about-num" aria-hidden>{String(i + 1).padStart(2, "0")}</span>
                 <span className="about-pic"><HangIcon kind={(["bulb", "bolt", "star"] as const)[i % 3]} size={22} /></span>
                 <h3 style={heading}>{point.title}</h3>
@@ -350,7 +360,7 @@ export default async function Home({
           <h3 className="about-team-title reveal" style={heading}>{h.about.teamTitle}</h3>
           <ul className="about-team">
             {h.about.team.map((member, i) => (
-              <li key={member.name} className="about-person reveal" style={{ ["--ac" as string]: TILE_COLORS[i % TILE_COLORS.length] }}>
+              <li key={member.name} className="about-person reveal reveal-stagger" style={{ ["--ac" as string]: TILE_COLORS[i % TILE_COLORS.length], ["--i" as string]: i % 4 }}>
                 <span className="about-avatar" aria-hidden>
                   {member.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}
                 </span>
