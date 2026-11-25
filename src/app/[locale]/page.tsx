@@ -32,6 +32,9 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { SITE_NAME, SITE_URL, pageMetadata } from "@/lib/seo";
 import { CONTACT_EMAIL, INSTAGRAM_URL } from "@/i18n/legal";
+import { locales } from "@/i18n/config";
+import { getHomeExtraText } from "@/i18n/home-extra";
+import { HomeSectionNav } from "@/components/HomeSectionNav";
 
 const TILE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
 // Sekce „Jak to funguje“ je archivovaná (skrytá). Pro návrat stačí přepnout na true.
@@ -60,6 +63,22 @@ export default async function Home({
   const sample = [{ who: "A. K.", pct: 100 }, { who: "T. N.", pct: 100 }, { who: "E. P.", pct: 60 }, { who: "J. S.", pct: 20 }];
   const subjectText = getSubjectText(locale as Locale);
   const heading = { fontFamily: "var(--font-heading)" };
+  const x = getHomeExtraText(locale as Locale);
+  const navItems = [
+    { id: "hrat", label: x.nav.play },
+    { id: "predmety", label: x.nav.subjects },
+    { id: "stupne", label: x.nav.sections },
+    { id: "pro-ucitele", label: x.nav.teachers },
+    { id: "o-nas", label: x.nav.about },
+    { id: "otazky", label: x.nav.faq },
+  ];
+  const stats = [
+    { n: SUBJECTS.length, label: x.stats.subjects, ac: TILE_COLORS[0] },
+    { n: 5, label: x.stats.levels, ac: TILE_COLORS[1] },
+    { n: locales.length, label: x.stats.languages, ac: TILE_COLORS[2] },
+    { n: 0, label: x.stats.ads, ac: TILE_COLORS[3] },
+  ];
+  const badgeIcons = ["star", "check", "bulb", "flag"] as const;
 
   // Strukturovaná data (schema.org): vyhledávače i AI modely z nich poznají, co web je a pro koho.
   // Znak „<“ se escapuje, aby JSON nemohl předčasně ukončit <script>.
@@ -153,10 +172,20 @@ export default async function Home({
           </div>
       </section>
 
-      <div className="zone hp-z1">
+      <HomeSectionNav label={x.nav.label} items={navItems} />
+
+      <div id="hrat" className="zone hp-z1 home-anchor">
         <PixelSoil seed={3} />
         <PixelSky seed={11} moon="moon" />
-        <section className="reveal relative mx-auto max-w-6xl px-4 pb-14 pt-10 sm:px-6">
+        <section className="reveal relative mx-auto max-w-6xl px-4 pb-8 pt-6 sm:px-6">
+          <ul className="home-badges">
+            {x.badges.map((b, i) => (
+              <li key={b} className="home-badge" style={{ ["--ac" as string]: TILE_COLORS[i % TILE_COLORS.length] }}>
+                <span className="home-badge-ic" aria-hidden><HangIcon kind={badgeIcons[i]} size={16} /></span>
+                {b}
+              </li>
+            ))}
+          </ul>
           <HomeProgress locale={locale as Locale} registerLabel={dict.home.createAccount} />
           <div className="mt-4">
             <DailyQuizTeaser locale={locale as Locale} />
@@ -176,10 +205,10 @@ export default async function Home({
       </div>
 
       {/* 2) Předměty: hory pod hvězdami */}
-      <section className="zone zone-globe hp-z2">
+      <section id="predmety" className="zone zone-globe hp-z2 home-anchor">
         <PixelSky seed={23} moon="planet" />
         <div className="lobby-panel lobby-panel-wide relative z-10">
-          <div className="reveal mb-8 flex flex-wrap items-end justify-between gap-3">
+          <div className="reveal mb-5 flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="home-h2 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
                 {h.subjectsTitle}
@@ -229,14 +258,14 @@ export default async function Home({
       )}
 
       {/* 5) Zpět do vesmíru: kategorie */}
-      <section className="zone hp-z3">
+      <section id="stupne" className="zone hp-z3 home-anchor">
         <PixelSky seed={37} />
         <LazyOnView placeholderHeight={1100}>
         <div className="lobby-panel relative z-10">
-          <h2 className="reveal home-h2 home-h2-center mb-10 text-center text-3xl font-bold tracking-tight sm:text-4xl" style={heading}>
+          <h2 className="reveal home-h2 home-h2-center mb-7 text-center text-3xl font-bold tracking-tight sm:text-4xl" style={heading}>
             {dict.home.pickSection}
           </h2>
-          <div className="pcard-pile">
+          <div className="pcard-pile pcard-row">
             {CATEGORIES.map((cat, i) => (
               <TearCard key={cat.slug} href={`/${locale}/kurzy/${cat.slug}`} className="reveal reveal-stagger pcard" stagger={i % 2} accent={TILE_COLORS[i % TILE_COLORS.length]}>
                 <span className="pcard-in">
@@ -260,18 +289,18 @@ export default async function Home({
       </section>
 
       {/* 6) Pro učitele */}
-      <section id="pro-ucitele" className="zone hp-z4 scroll-mt-24">
+      <section id="pro-ucitele" className="zone hp-z4 home-anchor">
         <PixelSky seed={41} moon="moon" />
         <LazyOnView placeholderHeight={900}>
         <div className="lobby-panel relative z-10">
-          <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14">
+          <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10">
             <div>
               <p className="reveal mb-2 text-xs font-bold uppercase tracking-widest text-[var(--accent-green)]">{a.teachers.eyebrow}</p>
               <h2 className="reveal home-h2 mb-4 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>
                 {a.teachers.title}
               </h2>
-              <p className="reveal mb-8 max-w-xl text-lg leading-relaxed text-[var(--muted)]">{a.teachers.lead}</p>
-              <ul className="gcard-cycle grid gap-4 sm:grid-cols-2">
+              <p className="reveal mb-5 max-w-xl text-lg leading-relaxed text-[var(--muted)]">{a.teachers.lead}</p>
+              <ul className="gcard-cycle grid gap-3 sm:grid-cols-2">
                 {a.teachers.points.map((point, i) => (
                   <li key={point.title} className="reveal reveal-stagger gcard gcard-hover home-tpoint p-4" style={{ ["--i" as string]: i % 2 }}>
                     <span className="home-tpoint-num" aria-hidden>{String(i + 1).padStart(2, "0")}</span>
@@ -280,7 +309,7 @@ export default async function Home({
                   </li>
                 ))}
               </ul>
-              <div className="mt-8 flex flex-col items-start gap-2">
+              <div className="mt-6 flex flex-col items-start gap-2">
                 <TeacherCta locale={locale as Locale} className="btn-bouncy btn-cta btn-primary btn-lg">
                   {a.teachers.cta}
                 </TeacherCta>
@@ -306,7 +335,7 @@ export default async function Home({
       </section>
 
       {/* 7) O nás */}
-      <section id="o-nas" className="zone hp-z5 scroll-mt-24">
+      <section id="o-nas" className="zone hp-z5 home-anchor">
         <PixelSky seed={53} />
         <LazyOnView placeholderHeight={1400}>
         <div className="lobby-panel relative z-10">
@@ -323,6 +352,15 @@ export default async function Home({
             </aside>
           </div>
 
+          <ul className="home-stats reveal">
+            {stats.map((st) => (
+              <li key={st.label} className="home-stat" style={{ ["--ac" as string]: st.ac }}>
+                <span className="home-stat-n">{st.n}</span>
+                <span className="home-stat-l">{st.label}</span>
+              </li>
+            ))}
+          </ul>
+
           <ol className="about-points">
             {h.about.points.map((point, i) => (
               <li key={point.title} className="about-point reveal reveal-stagger" style={{ ["--ac" as string]: TILE_COLORS[i % TILE_COLORS.length], ["--i" as string]: i }}>
@@ -332,15 +370,13 @@ export default async function Home({
                 <p>{point.text}</p>
               </li>
             ))}
-          </ol>
-
-          <div className="about-problem reveal" style={{ ["--ac" as string]: TILE_COLORS[2] }}>
-            <span className="about-pic"><HangIcon kind="search" size={22} /></span>
-            <div>
+            <li className="about-point reveal reveal-stagger" style={{ ["--ac" as string]: TILE_COLORS[3], ["--i" as string]: 3 }}>
+              <span className="about-num" aria-hidden>{String(h.about.points.length + 1).padStart(2, "0")}</span>
+              <span className="about-pic"><HangIcon kind="search" size={22} /></span>
               <h3 style={heading}>{h.about.problem.title}</h3>
               <p>{h.about.problem.text}</p>
-            </div>
-          </div>
+            </li>
+          </ol>
 
           <h3 className="about-team-title reveal" style={heading}>{h.about.teamTitle}</h3>
           <ul className="about-team">
@@ -367,6 +403,25 @@ export default async function Home({
           </div>
         </div>
         </LazyOnView>
+        <div className="relative z-10">
+        <div id="otazky" className="lobby-panel home-faq home-anchor">
+          <h2 className="reveal home-h2 mb-5 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>{x.faq.title}</h2>
+          <div className="home-faq-list">
+            {x.faq.items.map((item, i) => (
+              <details key={item.q} className="home-faq-item reveal reveal-stagger" style={{ ["--ac" as string]: TILE_COLORS[i % TILE_COLORS.length], ["--i" as string]: i % 2 }}>
+                <summary>
+                  <span>{item.q}</span>
+                  <span className="home-faq-mark" aria-hidden />
+                </summary>
+                <p>{item.a}</p>
+              </details>
+            ))}
+          </div>
+          <Link href={`/${locale}/ochrana-soukromi`} className="mt-4 inline-block text-sm font-bold text-[var(--accent-green)] hover:underline">
+            {x.faq.privacy} →
+          </Link>
+        </div>
+        </div>
         <PixelGround kind="town" seed={31} />
       </section>
     </div>
