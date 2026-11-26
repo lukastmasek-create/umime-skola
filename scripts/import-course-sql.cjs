@@ -21,6 +21,17 @@ async function main() {
   let insertedQuestions = 0;
 
   try {
+    // Remove only title-guessing placeholders from the former bulk generator.
+    const removed = await client.query(`
+      DELETE FROM "Question" AS q
+      USING "Course" AS c
+      WHERE q."courseId" = c."id"
+        AND q."explanation" = 'Kurz „' || c."title" || '“ se zaměřuje na uvedené téma.'
+        AND q."options" @> ARRAY[c."title"]::text[]
+        AND q."prompt" ~ '^(Kterému tématu se věnuje kurz|Co je hlavním zaměřením kurzu|Který název nejlépe popisuje obsah kurzu|Do kterého kurzu patří učivo|Co si procvičíš v kurzu|Který kurz se zabývá tématem|Jaké učivo označuje název|Který popis odpovídá kurzu) „'
+    `);
+    console.log(`Removed placeholder questions: ${removed.rowCount}`);
+
     // Add any newer enum values before inserting course rows that use them.
     for (const name of subjectFiles) {
       const sql = fs.readFileSync(path.join(sqlDir, name), "utf8");
