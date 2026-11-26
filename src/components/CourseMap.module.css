@@ -1,0 +1,462 @@
+.map {
+  --map-ink: #faf2ff;
+  --map-muted: #c7bedb;
+  --map-night: #151329;
+  --map-edge: #454064;
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  color: var(--map-ink);
+}
+
+.overview {
+  --region: #8be6bc;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(7rem, 12rem);
+  align-items: center;
+  gap: clamp(.5rem, 3vw, 2rem);
+  min-height: 13rem;
+  padding: clamp(.75rem, 3vw, 1.75rem);
+  border: 2px solid #565075;
+  border-radius: 1.1rem;
+  box-shadow: 0 5px 0 #100d22;
+  background: #222046;
+}
+
+.terrain {
+  --land-far: #302a54;
+  --land-near: #252344;
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 1px 1px, #a9a0d76b 1px, transparent 1.5px) 20px 12px / 93px 39px,
+    radial-gradient(circle at 1px 1px, #b3a4df86 1px, transparent 1.5px) 49px 2px / 73px 53px,
+    linear-gradient(145deg, #201e41, #332852);
+  pointer-events: none;
+}
+
+.terrain[data-stage="1"],
+.terrain[data-stage="2"],
+.terrain[data-stage="3"],
+.terrain[data-stage="4"] {
+  --land-far: color-mix(in srgb, var(--region) 27%, #262644);
+  --land-near: color-mix(in srgb, var(--region) 18%, #1b1d39);
+}
+
+.ridge,
+.foothills {
+  position: absolute;
+  inset: auto 0 0;
+  height: 68%;
+  background: var(--land-far);
+  clip-path: polygon(0 62%, 8% 62%, 8% 43%, 18% 43%, 18% 66%, 27% 66%, 27% 54%, 37% 54%, 37% 31%, 48% 31%, 48% 5%, 57% 5%, 57% 22%, 64% 22%, 64% 47%, 76% 47%, 76% 24%, 84% 24%, 84% 42%, 91% 42%, 91% 64%, 100% 64%, 100% 100%, 0 100%);
+}
+
+.foothills {
+  height: 36%;
+  background: var(--land-near);
+  clip-path: polygon(0 47%, 13% 47%, 13% 63%, 25% 63%, 25% 30%, 37% 30%, 37% 53%, 51% 53%, 51% 73%, 65% 73%, 65% 41%, 80% 41%, 80% 21%, 91% 21%, 91% 50%, 100% 50%, 100% 100%, 0 100%);
+}
+
+.pine {
+  position: absolute;
+  right: 37%;
+  bottom: 8%;
+  width: clamp(.8rem, 2.5vw, 1.3rem);
+  height: 33%;
+  max-height: 3.1rem;
+  opacity: 0;
+  background: color-mix(in srgb, var(--region) 62%, #242843);
+  clip-path: polygon(40% 0, 60% 0, 60% 20%, 72% 20%, 72% 40%, 84% 40%, 84% 61%, 100% 61%, 100% 80%, 60% 80%, 60% 100%, 40% 100%, 40% 80%, 0 80%, 0 61%, 16% 61%, 16% 40%, 28% 40%, 28% 20%, 40% 20%);
+}
+
+.pine:nth-child(4) {
+  right: 33%;
+  bottom: 12%;
+  height: 25%;
+}
+
+.pine:nth-child(5) {
+  right: 43%;
+  bottom: 6%;
+  height: 22%;
+}
+
+.terrain:not([data-stage="0"]) .pine:nth-child(3),
+.terrain:is([data-stage="2"], [data-stage="3"], [data-stage="4"]) .pine:nth-child(4),
+.terrain:is([data-stage="3"], [data-stage="4"]) .pine:nth-child(5) {
+  opacity: .8;
+}
+
+.beacon {
+  position: absolute;
+  top: 15%;
+  right: 38%;
+  width: .5rem;
+  height: .5rem;
+  opacity: 0;
+  color: var(--region);
+  background: currentColor;
+  box-shadow: 0 0 .85rem .22rem currentColor;
+}
+
+.terrain[data-stage="4"] .beacon { opacity: 1; }
+
+.journey {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.journey p { margin: 0; }
+
+.journey .total {
+  display: inline-block;
+  margin-bottom: .6rem;
+  padding: .22rem .55rem;
+  border: 1px solid #7a7197;
+  background: #1b1735;
+  color: #f2eaff;
+  font-size: .76rem;
+  font-weight: 800;
+}
+
+.eyebrow {
+  color: #ded4f9;
+  font-size: .8rem;
+  font-weight: 800;
+}
+
+.journey .nextTitle {
+  color: #fff7ff;
+  font-family: var(--font-heading, system-ui);
+  font-size: clamp(1.1rem, 3vw, 1.6rem);
+  font-weight: 800;
+  line-height: 1.2;
+  text-shadow: 0 2px 0 #17122e;
+}
+
+.journey .nextSubject {
+  margin-top: .22rem;
+  color: #e0d5f1;
+  font-size: .85rem;
+}
+
+.continue {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  min-height: 44px;
+  margin-top: .85rem;
+  padding: .5rem .9rem;
+  border: 2px solid #baf4d0;
+  border-radius: .45rem;
+  box-shadow: 0 4px 0 #235545;
+  background: #88eab2;
+  color: #111f26;
+  font-weight: 900;
+  overflow-wrap: normal;
+  text-decoration: none;
+}
+
+.continue:hover { background: #b1f4cd; }
+
+.campfire {
+  display: grid;
+  justify-items: center;
+  gap: .15rem;
+  min-width: 0;
+  padding: .45rem .3rem;
+  border: 1px solid transparent;
+  border-radius: .7rem;
+  color: #fff0dc;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color .18s, border-color .18s;
+}
+
+.campfire:hover {
+  border-color: #cc8b66;
+  background: #1d172e99;
+}
+
+.campfireLabel {
+  display: grid;
+  gap: .15rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.campfire small { color: var(--map-muted); }
+
+.hearth {
+  position: relative;
+  display: block;
+  isolation: isolate;
+  width: 6.5rem;
+  max-width: 100%;
+  height: 7rem;
+  margin-bottom: .2rem;
+}
+
+.fireGlow {
+  position: absolute;
+  inset: auto 0 5%;
+  height: 75%;
+  transform: scale(var(--fire-scale));
+  transform-origin: center 85%;
+  background: radial-gradient(ellipse at center, #ffa3428c, #ef642937 40%, transparent 68%);
+}
+
+.flame {
+  position: absolute;
+  inset: auto 50% .9rem auto;
+  width: 2.7rem;
+  height: 3.6rem;
+  transform: translateX(50%) scale(var(--fire-scale));
+  transform-origin: center bottom;
+  background: linear-gradient(165deg, #ffb452, #ff633f 68%, #a92d46);
+  clip-path: polygon(44% 0, 60% 0, 60% 15%, 70% 15%, 70% 36%, 85% 36%, 85% 51%, 100% 51%, 100% 81%, 88% 81%, 88% 95%, 72% 95%, 72% 100%, 24% 100%, 24% 93%, 10% 93%, 10% 79%, 0 79%, 0 55%, 14% 55%, 14% 40%, 28% 40%, 28% 56%, 40% 56%, 40% 32%, 44% 32%);
+}
+
+.flame::after {
+  position: absolute;
+  inset: 38% 24% 0;
+  background: linear-gradient(#fff4ab, #ffc059);
+  clip-path: polygon(48% 0, 67% 0, 67% 29%, 84% 29%, 84% 52%, 100% 52%, 100% 90%, 80% 90%, 80% 100%, 20% 100%, 20% 87%, 0 87%, 0 69%, 18% 69%, 18% 50%, 34% 50%, 34% 28%, 48% 28%);
+  animation: embers 1.3s steps(4, end) infinite alternate;
+  content: "";
+}
+
+.hearth[data-lit="false"] :is(.flame, .fireGlow) { opacity: 0; }
+
+.logs {
+  position: absolute;
+  inset: auto 15% .35rem;
+  height: 1rem;
+  background: linear-gradient(#c5845a 0 27%, #7b4553 27% 58%, #38273d 58%);
+  clip-path: polygon(0 25%, 14% 25%, 14% 0, 35% 0, 35% 25%, 65% 25%, 65% 0, 84% 0, 84% 25%, 100% 25%, 100% 76%, 90% 76%, 90% 100%, 10% 100%, 10% 76%, 0 76%);
+}
+
+@keyframes embers {
+  from { transform: translateY(2px); opacity: .86; }
+  to { transform: translateY(-2px); opacity: 1; }
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem 1rem;
+  margin: .25rem 0 0;
+  padding: 0;
+  color: var(--map-muted);
+  font-size: .8rem;
+  font-weight: 700;
+  list-style: none;
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+.regions { display: grid; gap: .65rem; }
+
+.region {
+  overflow: hidden;
+  border: 1px solid var(--map-edge);
+  border-radius: .75rem;
+  background: var(--map-night);
+}
+
+.regionHeading { margin: 0; }
+
+.regionButton {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: clamp(.35rem, 2vw, .9rem);
+  width: 100%;
+  min-height: 4.25rem;
+  padding: .55rem .85rem .65rem;
+  border: 0;
+  background: transparent;
+  color: var(--map-ink);
+  text-align: start;
+  cursor: pointer;
+}
+
+.regionButton:hover { background: #6660903a; }
+
+.subjectIcon {
+  display: grid;
+  place-items: center;
+  width: 2.7rem;
+  height: 2.7rem;
+  border: 1px solid color-mix(in srgb, var(--region) 58%, #34314b);
+  border-radius: .45rem;
+  background: #191830;
+}
+
+.subject {
+  justify-self: start;
+  padding: .2rem .35rem;
+  border-radius: .25rem;
+  background: #151329d9;
+  font-size: 1rem;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.count,
+.expand {
+  padding: .25rem .45rem;
+  border: 1px solid #686183;
+  border-radius: .3rem;
+  background: #17142c;
+  font-size: .8rem;
+  font-weight: 800;
+}
+
+.count { font-variant-numeric: tabular-nums; }
+.expand { color: var(--region); }
+
+.progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: var(--region);
+}
+
+.trail {
+  padding: .85rem clamp(.6rem, 3vw, 1.4rem) 1.1rem;
+  border-top: 1px solid var(--map-edge);
+}
+
+.grade + .grade { margin-top: 1rem; }
+
+.gradeLabel {
+  margin: 0 0 .5rem;
+  color: var(--region);
+  font-size: .8rem;
+  font-weight: 850;
+}
+
+.checkpoints {
+  position: relative;
+  display: grid;
+  gap: .35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checkpoints::before {
+  position: absolute;
+  inset: 1.5rem auto 1.5rem .61rem;
+  width: 2px;
+  background: repeating-linear-gradient(to bottom, var(--map-edge) 0 5px, transparent 5px 8px);
+  content: "";
+}
+
+.checkpoint {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.35rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .6rem;
+  min-height: 3.25rem;
+  padding: .4rem .3rem .4rem 0;
+  border-radius: .4rem;
+  color: var(--map-ink);
+  text-decoration: none;
+}
+
+.checkpoint::before {
+  position: absolute;
+  inset: 0 0 0 1.75rem;
+  border: 1px solid #39334f;
+  border-radius: inherit;
+  background: #1e1a34;
+  content: "";
+}
+
+.checkpoint[data-status="done"]::before {
+  border-color: color-mix(in srgb, var(--region) 40%, #39334f);
+  background: color-mix(in srgb, var(--region) 13%, #1e1a34);
+}
+
+.checkpoint:hover::before { border-color: var(--region); }
+
+.marker {
+  --marker-color: #9187a9;
+  position: relative;
+  display: block;
+  flex: none;
+  justify-self: center;
+  width: .82rem;
+  height: .82rem;
+  border: 2px solid var(--marker-color);
+  border-radius: 2px;
+  background: var(--map-night);
+}
+
+.marker[data-status="started"] {
+  --marker-color: #ffd183;
+  background: linear-gradient(90deg, var(--marker-color) 50%, var(--map-night) 50%);
+}
+
+.marker[data-status="done"] {
+  --marker-color: var(--region, #91edbe);
+  box-shadow: 0 0 .6rem color-mix(in srgb, var(--marker-color) 48%, transparent);
+  background: var(--marker-color);
+}
+
+.checkpointInfo,
+.arrow { position: relative; }
+
+.checkpointInfo {
+  display: grid;
+  gap: .12rem;
+  padding-left: .45rem;
+  overflow-wrap: anywhere;
+}
+
+.checkpointInfo strong { font-size: .92rem; }
+.checkpointInfo small { color: var(--map-muted); font-size: .75rem; }
+.arrow { padding: .35rem; color: var(--region); }
+
+.continue:focus-visible,
+.campfire:focus-visible,
+.checkpoint:focus-visible,
+.regionButton:focus-visible {
+  outline: 2px solid #ffdc88;
+  outline-offset: -3px;
+}
+
+@media (max-width: 480px) {
+  .overview { grid-template-columns: minmax(0, 1fr); }
+
+  .campfire {
+    grid-template-columns: minmax(0, 5.5rem) minmax(0, 1fr);
+    align-items: center;
+    justify-items: start;
+    padding-block: 0;
+    text-align: start;
+  }
+
+  .hearth { height: 6.2rem; margin: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .campfire { transition: none; }
+  .flame::after { animation: none; }
+}
