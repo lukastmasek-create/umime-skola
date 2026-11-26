@@ -36,31 +36,10 @@ import { CONTACT_EMAIL, INSTAGRAM_URL } from "@/i18n/legal";
 import { locales } from "@/i18n/config";
 import { getHomeExtraText } from "@/i18n/home-extra";
 import { HomeSectionNav } from "@/components/HomeSectionNav";
+import { HomeTrans, HomeCoinHud } from "@/components/HomeTrans";
+import { getHomeTransText } from "@/i18n/home-trans";
 
 const TILE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
-// Přechod mezi sekcemi: těžký schodovitý pás, animované ikony, štítek sekce a postavičky.
-type TransCritter = { kind: "cat" | "chick" | "slime"; dur: number; delay: number; left?: boolean };
-function HomeTrans({ fill, label, icons, critters = [] }: { fill: string; label: string; icons: Array<"star" | "check" | "bulb" | "flag" | "bolt" | "search" | "pulse">; critters?: TransCritter[] }) {
-  return (
-    <div aria-hidden className="hp-trans" style={{ ["--tf" as string]: fill }}>
-      {critters.length > 0 && (
-        <svg className="hp-trans-svg" viewBox="0 0 480 64" preserveAspectRatio="xMidYMax slice" shapeRendering="crispEdges">
-          {critters.map((c, i) => (
-            <Critter key={i} kind={c.kind} y={51} dur={c.dur} delay={c.delay} left={c.left} />
-          ))}
-        </svg>
-      )}
-      <div className="hp-trans-row">
-        <span className="hp-trans-label">{label}</span>
-        {icons.map((k, i) => (
-          <span key={i} className="hp-trans-chip" style={{ ["--ac" as string]: TILE_COLORS[i % TILE_COLORS.length], ["--i" as string]: i }}>
-            <HangIcon kind={k} size={16} />
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
 // Sekce „Jak to funguje“ je archivovaná (skrytá). Pro návrat stačí přepnout na true.
 const SHOW_HOW_IT_WORKS = false;
 
@@ -103,6 +82,8 @@ export default async function Home({
     { n: 0, label: x.stats.ads, ac: TILE_COLORS[3] },
   ];
   const badgeIcons = ["star", "check", "bulb", "flag"] as const;
+  const tt = getHomeTransText(locale as Locale);
+  const ticker = [...stats.map((st) => `${st.n} ${st.label}`), ...x.badges];
 
   // Strukturovaná data (schema.org): vyhledávače i AI modely z nich poznají, co web je a pro koho.
   // Znak „<“ se escapuje, aby JSON nemohl předčasně ukončit <script>.
@@ -152,6 +133,7 @@ export default async function Home({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
       <HomeFx />
+      <HomeCoinHud t={tt} />
       {/* 1) Vesmír: hrdina a postup */}
       <section className="gradient-hero relative isolate overflow-hidden">
           <HeroPixel />
@@ -232,7 +214,7 @@ export default async function Home({
         <PixelRise seed={61} color="#2a3c6e" />
       </div>
 
-      <HomeTrans fill="#1b2558" label={x.nav.subjects} icons={["star", "bolt", "bulb", "check", "flag"]} critters={[{ kind: "cat", dur: 40, delay: -6 }, { kind: "chick", dur: 52, delay: -20, left: true }]} />
+      <HomeTrans level={2} total={5} fill="#1b2558" label={x.nav.subjects} icons={["star", "bolt", "bulb", "check", "flag"]} critters={[{ kind: "cat", dur: 40, delay: -6 }, { kind: "frog", dur: 52, delay: -20, left: true }, { kind: "chick", dur: 61, delay: -35 }]} scenery={[{ kind: "lamp", x: 60 }, { kind: "sign", x: 300 }, { kind: "crystal", x: 420 }]} stat={stats[0]} ticker={ticker} t={tt} />
 
       {/* 2) Předměty: hory pod hvězdami */}
       <section id="predmety" className="zone zone-globe hp-z2 home-anchor">
@@ -295,7 +277,7 @@ export default async function Home({
         </section>
       )}
 
-      <HomeTrans fill="#241f58" label={x.nav.sections} icons={["pulse", "star", "search", "bolt"]} critters={[{ kind: "slime", dur: 60, delay: -14 }]} />
+      <HomeTrans level={3} total={5} fill="#241f58" label={x.nav.sections} icons={["pulse", "star", "search", "bolt"]} critters={[{ kind: "slime", dur: 60, delay: -14 }, { kind: "owl", dur: 48, delay: -30, left: true }]} scenery={[{ kind: "chest", x: 120 }, { kind: "lamp", x: 380 }]} stat={stats[1]} ticker={ticker} t={tt} />
 
       {/* 5) Zpět do vesmíru: kategorie */}
       <section id="stupne" className="zone hp-z3 home-anchor">
@@ -337,7 +319,7 @@ export default async function Home({
         <PixelRise seed={63} color="#1d4a66" />
       </section>
 
-      <HomeTrans fill="#11223f" label={x.nav.teachers} icons={["flag", "check", "pulse", "bulb"]} critters={[{ kind: "chick", dur: 46, delay: -30 }, { kind: "cat", dur: 58, delay: -4, left: true }]} />
+      <HomeTrans level={4} total={5} fill="#11223f" label={x.nav.teachers} icons={["flag", "check", "pulse", "bulb"]} critters={[{ kind: "dog", dur: 44, delay: -30 }, { kind: "robot", dur: 58, delay: -4, left: true }]} scenery={[{ kind: "sign", x: 40 }, { kind: "crystal", x: 250 }, { kind: "lamp", x: 440 }]} stat={stats[2]} ticker={ticker} t={tt} />
 
       {/* 6) Pro učitele */}
       <section id="pro-ucitele" className="zone hp-z4 home-anchor">
@@ -393,7 +375,7 @@ export default async function Home({
         <PixelRise seed={64} color="#2b3572" />
       </section>
 
-      <HomeTrans fill="#182046" label={x.nav.about} icons={["pulse", "star", "bolt", "check", "flag"]} critters={[{ kind: "slime", dur: 50, delay: -22, left: true }, { kind: "cat", dur: 66, delay: -41 }]} />
+      <HomeTrans level={5} total={5} fill="#182046" label={x.nav.about} icons={["pulse", "star", "bolt", "check", "flag"]} critters={[{ kind: "owl", dur: 50, delay: -22, left: true }, { kind: "dog", dur: 66, delay: -41 }, { kind: "frog", dur: 55, delay: -10 }]} scenery={[{ kind: "chest", x: 200 }, { kind: "lamp", x: 90 }]} stat={stats[3]} ticker={ticker} t={tt} />
 
       {/* 7) O nás */}
       <section id="o-nas" className="zone hp-z5 home-anchor">

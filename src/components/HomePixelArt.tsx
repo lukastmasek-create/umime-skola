@@ -189,9 +189,93 @@ const CRITTERS: Record<CritterKind, { a: string[]; b: string[]; pal: Pal }> = {
     ],
     pal: { w: "#fff3d6", k: "#1a1833", y: "#ffb03b", r: "#ff5d5d" },
   },
+  dog: {
+    a: [
+      "........bb..",
+      "b......bbbbk",
+      ".b.....bkbbb",
+      ".bbbbbbbbb..",
+      ".bbbbbbbbb..",
+      ".b.b...b.b..",
+      ".b.b...b.b..",
+    ],
+    b: [
+      "........bb..",
+      "b......bbbbk",
+      "b......bkbbb",
+      ".bbbbbbbbb..",
+      ".bbbbbbbbb..",
+      "..b.b.b.b...",
+      ".b...b...b..",
+    ],
+    pal: { b: "#c98a4b", k: "#1a1833" },
+  },
+  frog: {
+    a: [
+      "........",
+      ".ww..ww.",
+      ".wk..wk.",
+      "gggggggg",
+      "ghhhhhhg",
+      ".gggggg.",
+      "gg....gg",
+    ],
+    b: [
+      ".ww..ww.",
+      ".wk..wk.",
+      "gggggggg",
+      "ghhhhhhg",
+      ".gggggg.",
+      ".g....g.",
+      "g......g",
+    ],
+    pal: { g: "#5bc45b", h: "#b6f28a", w: "#ffffff", k: "#1a1833" },
+  },
+  owl: {
+    a: [
+      ".o....o.",
+      ".oooooo.",
+      "owwoowwo",
+      "owkookwo",
+      "oooyyooo",
+      ".olllll.",
+      "..y..y..",
+    ],
+    b: [
+      "........",
+      ".o....o.",
+      ".oooooo.",
+      "owkookwo",
+      "oooyyooo",
+      ".olllll.",
+      "..y..y..",
+    ],
+    pal: { o: "#8a6a4a", w: "#fff3d6", k: "#1a1833", y: "#ffb03b", l: "#c9a77a" },
+  },
+  robot: {
+    a: [
+      "...r....",
+      "...s....",
+      ".ssssss.",
+      ".sbssbs.",
+      ".ssssss.",
+      "..dddd..",
+      "..d..d..",
+    ],
+    b: [
+      "...r....",
+      "...s....",
+      ".ssssss.",
+      ".sbssbs.",
+      ".ssssss.",
+      "..dddd..",
+      ".d....d.",
+    ],
+    pal: { s: "#9fb3d9", b: "#5ab8ff", r: "#ff5d5d", d: "#5a6aa8" },
+  },
 };
 
-export type CritterKind = "cat" | "slime" | "chick";
+export type CritterKind = "cat" | "slime" | "chick" | "dog" | "frog" | "owl" | "robot";
 
 // Vrací <g> do SVG krajiny (viewBox 480 × 64). `y` je řádek, na kterém zvířátko stojí.
 // Kreslí se ve dvojnásobné velikosti (2 × 2 body krajiny na pixel), aby bylo vidět i na telefonu.
