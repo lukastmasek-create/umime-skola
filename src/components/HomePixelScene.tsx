@@ -309,6 +309,9 @@ export function PixelSeam({ seed, className = "" }: { seed: number; className?: 
   let crumbsFar = "";
   let stones = "";
   let gems = "";
+  let fade1 = "";
+  let fade2 = "";
+  let fade3 = "";
   for (let x = 0; x < W; ) {
     const w = 2 + Math.floor(r() * 3);
     const long = r() < 0.12;
@@ -317,8 +320,13 @@ export function PixelSeam({ seed, className = "" }: { seed: number; className?: 
     rim += `M${x} ${d}h${w}v1h-${w}z`;
     if (long && r() < 0.35) gems += `M${x + Math.floor(w / 2)} ${d - 2}h1v1h-1z`;
     for (let i = 0; i < w; i++) {
-      if (r() < 0.32) crumbs += `M${x + i} ${d + 2}h1v1h-1z`;
-      if (r() < 0.12) crumbsFar += `M${x + i} ${d + 4 + Math.floor(r() * 3)}h1v1h-1z`;
+      const px = x + i;
+      // rozpad hlíny do oblohy: pod každým sloupcem tři řídnoucí řádky ditheru (50 %, 25 %, 12 %)
+      if ((px + d) % 2 === 0) fade1 += `M${px} ${d + 1}h1v1h-1z`;
+      if (px % 4 === 0 && (d + 2) % 2 === 0) fade2 += `M${px} ${d + 2}h1v1h-1z`;
+      if (px % 8 === 0 && (d + 3) % 2 === 1) fade3 += `M${px} ${d + 3}h1v1h-1z`;
+      if (r() < 0.32) crumbs += `M${px} ${d + 2}h1v1h-1z`;
+      if (r() < 0.12) crumbsFar += `M${px} ${d + 4 + Math.floor(r() * 3)}h1v1h-1z`;
     }
     x += w;
   }
@@ -334,6 +342,9 @@ export function PixelSeam({ seed, className = "" }: { seed: number; className?: 
         <path d={soil} fill="#6b4226" />
         <path d={stones} fill="#8a5a2b" />
         <path d={rim} fill="#4a2c18" />
+        <path d={fade1} fill="#6b4226" />
+        <path d={fade2} fill="#6b4226" opacity={0.6} />
+        <path d={fade3} fill="#4a2c18" opacity={0.6} />
         <path d={crumbs} fill="#4a2c18" />
         <path d={crumbsFar} fill="#3a2414" opacity={0.7} />
         <path d={gems} fill="#8fd0ff" className="hps-gem" />
