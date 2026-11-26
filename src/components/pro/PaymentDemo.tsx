@@ -22,13 +22,13 @@ export function PaymentDemo({ t, cs, initial }: { t: BuilderText; cs: boolean; i
     <p className="card mb-6 px-5 py-4 text-sm"><strong>{cs ? "Jen zkouška nanečisto." : "Practice only."}</strong> {cs ? "Nic se nestrhne, předplatné se neaktivuje. Nezadávej žádné platební údaje." : "No charge or subscription activation. Do not enter any payment details."}</p>
     {step === "select" && <div role="group" aria-label={cs ? "Tarif" : "Plan"} className="mb-6 flex flex-wrap gap-3">{CHECKOUT_PLANS.map(p => <button type="button" key={p} aria-pressed={plan === p} className={`btn-bouncy btn-lg ${plan === p ? "btn-primary" : "btn-secondary"}`} onClick={() => { setPlan(p); if (p === "school") setYearly(true); }}>{names[p]}</button>)}</div>}
     <ol className="mb-6 flex flex-wrap gap-3 text-sm font-bold" aria-label={cs ? "Průběh objednávky" : "Order progress"}>
-      {[cs ? "Výběr funkcí" : "Features", cs ? "Souhrn a platba" : "Review and payment", cs ? "Hotovo" : "Done"].map((label, i) => <li key={label} aria-current={i === ["select", "checkout", "done"].indexOf(step) ? "step" : undefined} className={`rounded-full border-2 px-4 py-2 ${i === ["select", "checkout", "done"].indexOf(step) ? "border-[var(--accent-green)] bg-[var(--surface)]" : "border-[var(--edge)]"}`}>{i + 1}. {label}</li>)}
+      {[cs ? "Výběr funkcí" : "Features", cs ? "Souhrn nabídky" : "Plan summary", cs ? "Hotovo" : "Done"].map((label, i) => <li key={label} aria-current={i === ["select", "checkout", "done"].indexOf(step) ? "step" : undefined} className={`rounded-full border-2 px-4 py-2 ${i === ["select", "checkout", "done"].indexOf(step) ? "border-[var(--accent-green)] bg-[var(--surface)]" : "border-[var(--edge)]"}`}>{i + 1}. {label}</li>)}
     </ol>
-    <h2 ref={heading} tabIndex={-1} className="mb-5 text-2xl font-bold">{step === "select" ? t.title : step === "checkout" ? (cs ? "Zkontroluj svůj výběr" : "Review your selection") : (cs ? "Demo platba proběhla!" : "Demo payment complete!")}</h2>
+    <h2 ref={heading} tabIndex={-1} className="mb-5 text-2xl font-bold">{step === "select" ? t.title : step === "checkout" ? (cs ? "Zkontroluj svůj výběr" : "Review your selection") : (cs ? "Demo dokončeno" : "Demo complete")}</h2>
     {step === "done" ? <section className="card px-7 py-10 text-center" role="status">
       <ProIcon name="check" className="mx-auto mb-4 size-12 text-[var(--accent-green)]" />
       <p className="text-xl font-bold">{money(price)} · {yearly ? t.perYear : t.perMonth}</p>
-      <p className="mx-auto mb-6 mt-3 max-w-lg text-[var(--muted)]">{cs ? "Vyzkoušel sis celý nákup. Žádná platba ani objednávka nevznikla a tvůj účet zůstává beze změny." : "You tried the full purchase flow. No payment or order was created and your account is unchanged."}</p>
+      <p className="mx-auto mb-6 mt-3 max-w-lg text-[var(--muted)]">{cs ? "Prošel sis ukázku tarifu. Žádná platba ani objednávka nevznikla a tvůj účet zůstává beze změny." : "You reviewed the plan demo. No payment or order was created and your account is unchanged."}</p>
       <button type="button" onClick={() => next("select")} className="btn-bouncy btn-secondary btn-lg">{cs ? "Vyzkoušet znovu" : "Try again"}</button>
     </section> : <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
       <section className="card p-5 sm:p-7">
@@ -47,8 +47,8 @@ export function PaymentDemo({ t, cs, initial }: { t: BuilderText; cs: boolean; i
           </div>
           <button type="button" className="mt-5 text-sm font-bold underline" onClick={() => setSelected(PRO_ITEMS.map(i => i.id))}>{cs ? "Vybrat všechny funkce" : "Select all features"}</button></>}
         </> : <>
-          <h3 className="font-bold">{cs ? "Demo platební metoda" : "Demo payment method"}</h3>
-          <div className="my-5 rounded-2xl border-2 border-[var(--brand-500)] bg-[var(--surface)] p-5"><span className="font-bold">{cs ? "Testovací karta" : "Test card"} ···· 4242</span><p className="mt-2 text-sm text-[var(--muted)]">{cs ? "Připravená simulace. Číslo karty ani osobní údaje nejsou potřeba." : "Ready-made simulation. No card number or personal details needed."}</p></div>
+          <h3 className="font-bold">{cs ? "Souhrn vybraného tarifu" : "Selected plan summary"}</h3>
+          <p className="mt-3 text-sm text-[var(--muted)]">{cs ? "Toto je jen ukázka nabídky. Zatím nelze vytvořit objednávku ani provést platbu." : "This is a plan preview. Orders and payments are not available yet."}</p>
           <p className="text-sm text-[var(--muted)]">{t.note}</p>
           <button type="button" className="mt-6 font-bold underline" onClick={() => next("select")}>← {cs ? "Upravit výběr" : "Edit selection"}</button>
         </>}
@@ -59,8 +59,8 @@ export function PaymentDemo({ t, cs, initial }: { t: BuilderText; cs: boolean; i
         <ul className="space-y-3 text-sm">{PRO_ITEMS.filter(i => plan === "custom" ? selected.includes(i.id) : true).map(i => <li key={i.id} className="flex justify-between gap-3"><span>{t.items[i.id].title}</span>{plan === "custom" && <span className="shrink-0 font-bold">{money(i.price * (yearly ? 10 : 1))}</span>}</li>)}</ul>
         {!canContinue && <p className="text-sm">{t.pick}</p>}
         <div className="my-5 border-t border-[var(--edge)] pt-5" aria-live="polite" aria-atomic="true"><p className="text-sm text-[var(--muted)]">{t.total}</p><p className="mt-1 text-4xl font-extrabold tabular-nums">{money(price)}</p><p className="text-sm text-[var(--muted)]">{yearly ? t.perYear : t.perMonth}</p>{yearly && price > 0 && plan !== "school" && <p className="mt-2 text-sm font-bold text-[var(--accent-green)]">{cs ? "2 měsíce zdarma · ušetříš " : "2 months free · save "}{money(checkoutPrice(plan, selected, false) * 2)}</p>}</div>
-        <button type="button" disabled={!canContinue} onClick={() => next(step === "select" ? "checkout" : "done")} className="btn-bouncy btn-primary btn-lg w-full disabled:cursor-not-allowed disabled:opacity-40">{step === "select" ? (cs ? "Pokračovat k platbě →" : "Continue to payment →") : (cs ? "Simulovat platbu" : "Simulate payment")}</button>
-        <p className="mt-3 text-center text-xs text-[var(--muted)]">{cs ? "DEMO · Žádné skutečné platby" : "DEMO · No real payments"}</p>
+        <button type="button" disabled={!canContinue} onClick={() => next(step === "select" ? "checkout" : "done")} className="btn-bouncy btn-primary btn-lg w-full disabled:cursor-not-allowed disabled:opacity-40">{step === "select" ? (cs ? "Zobrazit souhrn →" : "View summary →") : (cs ? "Dokončit ukázku" : "Finish preview")}</button>
+        <p className="mt-3 text-center text-xs text-[var(--muted)]">{cs ? "DEMO · Bez objednávky a platby" : "DEMO · No order or payment"}</p>
       </aside>
     </div>}
   </div>;
