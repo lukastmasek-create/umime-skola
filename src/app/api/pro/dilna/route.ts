@@ -52,6 +52,7 @@ async function generate(body: Record<string, unknown>, userId: string) {
       turns: [{ role: "user", content: text ? `Zdroj:\n${text}` : "Vytvoř hru z textu na fotce." }],
       image: image || undefined,
       maxTokens: 1500,
+      temperature: 0.3,
     });
   } catch (e) {
     if (e instanceof LiveError) throw e;

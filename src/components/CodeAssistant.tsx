@@ -4,28 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { SketchIcon } from "@/components/SketchIcons";
 import { getAssistContext } from "@/lib/code-assist";
+import { AiMarkdown } from "@/components/ai/AiMarkdown";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
-const QUICK = ["Vysvětli mi můj kód", "Proč to nefunguje?", "Dej mi nápovědu", "Jak to vylepšit?"];
-
-// Vykreslí odpověď: bloky ``` jako kód, zbytek jako text (bez markdownu).
-function Reply({ text }: { text: string }) {
-  const parts = text.split(/```(?:[a-z]*)\n?([\s\S]*?)```/);
-  return (
-    <>
-      {parts.map((p, i) =>
-        i % 2 === 1 ? (
-          <pre key={i} className="my-2 overflow-x-auto rounded-lg bg-[#0f0d24] p-2.5 font-mono text-xs leading-5 text-[#f6f1e4]">
-            {p.trimEnd()}
-          </pre>
-        ) : p.trim() ? (
-          <p key={i} className="whitespace-pre-wrap">{p.trim()}</p>
-        ) : null,
-      )}
-    </>
-  );
-}
+const QUICK = ["Vysvětli mi můj kód", "Proč to nefunguje?", "Dej mi nápovědu", "Jak to vylepšit?", "Najdi chybu", "Co zkusit dál?"];
+const STORE_KEY = "umime-code-ai-v1";
 
 // Plovoucí AI pomocník s kódem. Vidí, co má žák právě otevřené v editoru (jde vypnout).
 export function CodeAssistant() {
@@ -36,6 +20,24 @@ export function CodeAssistant() {
   const [useCode, setUseCode] = useState(true);
   const [error, setError] = useState("");
   const box = useRef<HTMLDivElement>(null);
+
+  // Konverzace přežije přechod mezi editory a obnovení stránky (jen v této záložce).
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(STORE_KEY) ?? "[]") as Msg[];
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (Array.isArray(saved)) setMsgs(saved.filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string").slice(-20));
+    } catch {
+      /* bez úložiště */
+    }
+  }, []);
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STORE_KEY, JSON.stringify(msgs.slice(-20)));
+    } catch {
+      /* bez úložiště */
+    }
+  }, [msgs]);
 
   useEffect(() => {
     box.current?.scrollTo({ top: box.current.scrollHeight });
@@ -86,6 +88,11 @@ export function CodeAssistant() {
                 <h2 className="text-sm font-bold leading-tight text-white">AI pomocník</h2>
                 <p className="text-[11px] text-[#9d96bf]">Ptej se na kód, chyby i nápady</p>
               </div>
+              {msgs.length > 0 && (
+                <button type="button" onClick={() => { setMsgs([]); setError(""); }} title="Nový rozhovor" className="rounded-md px-2 py-1 text-xs font-bold text-[#cfc8e4] hover:bg-[#2c2a52]">
+                  Nový
+                </button>
+              )}
               <button type="button" onClick={() => setOpen(false)} aria-label="Zavřít pomocníka" className="rounded-md px-2 py-1 text-lg leading-none text-[#cfc8e4] hover:bg-[#2c2a52]">
                 ×
               </button>
@@ -104,7 +111,7 @@ export function CodeAssistant() {
                     m.role === "user" ? "self-end bg-[#353b86] text-white" : "self-start bg-[#2c2a52] text-[#f6f1e4]"
                   }`}
                 >
-                  {m.role === "user" ? <p className="whitespace-pre-wrap">{m.content}</p> : <Reply text={m.content} />}
+                  {m.role === "user" ? <p className="whitespace-pre-wrap">{m.content}</p> : <AiMarkdown text={m.content} dark />}
                 </div>
               ))}
               {busy && <p className="text-[#9d96bf]" role="status">Přemýšlím…</p>}
@@ -127,7 +134,7 @@ export function CodeAssistant() {
                 <input
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  maxLength={500}
+                  maxLength={1500}
                   placeholder="Zeptej se…"
                   aria-label="Tvoje otázka"
                   className="min-w-0 flex-1 rounded-lg border-2 border-[#35305f] bg-[#0f0d24] px-3 py-2 text-sm text-white outline-none focus:border-[#ffc933]"

@@ -9,6 +9,7 @@ import { cleanSetQuestions } from "@/lib/live/logic";
 import { distractorPrompt, notesPrompt, oralFinishPrompt, oralPrompt, photoPrompt, tutorPrompt } from "@/lib/pro-tools/ai-prompts";
 import { isLocale } from "@/i18n/config";
 import { oralTranscript, oralTurns } from "@/lib/pro-tools/oral";
+import { isSpaceGrade, isSpaceSubject, isSpaceTool, spacePrompt, SPACE_MAX_CHARS, SPACE_MAX_TURNS } from "@/lib/pro-tools/ai-space";
 
 export const dynamic = "force-dynamic";
 
@@ -46,19 +47,39 @@ export async function POST(request: Request) {
     const locale = typeof body.locale === "string" && isLocale(body.locale) ? body.locale : "cs";
     const mode = body.mode;
 
+    // AI prostor: chat s nástroji (doučovač, vysvětlení, zkoušení, kontrola textu…), předmětem a ročníkem.
+    if (mode === "chat") {
+      const turns = cleanTurns(body.messages, { maxTurns: SPACE_MAX_TURNS, maxChars: SPACE_MAX_CHARS });
+      if (turns.length === 0) throw new LiveError("invalid-message");
+      const tool = isSpaceTool(body.tool) ? body.tool : "tutor";
+      const subject = isSpaceSubject(body.subject) ? body.subject : "auto";
+      const grade = isSpaceGrade(body.grade) ? body.grade : "auto";
+      const image = parseImage(body.image);
+      const long = tool === "summary" || tool === "plan" || tool === "check" || tool === "ideas";
+      return {
+        reply: await run({
+          system: spacePrompt(locale, tool, subject, grade),
+          turns,
+          image,
+          maxTokens: long ? 1400 : 900,
+          temperature: tool === "ideas" || tool === "language" ? 0.7 : 0.4,
+        }),
+      };
+    }
+
     if (mode === "tutor") {
-      const turns = cleanTurns(body.messages);
+      const turns = cleanTurns(body.messages, { maxTurns: 12, maxChars: 1000 });
       if (turns.length === 0) throw new LiveError("invalid-message");
       // Fotka se připojuje jen k poslední zprávě žáka.
       const image = parseImage(body.image);
-      return { reply: await run({ system: tutorPrompt(locale), turns, image, maxTokens: 500 }) };
+      return { reply: await run({ system: tutorPrompt(locale), turns, image, maxTokens: 700, temperature: 0.4 }) };
     }
 
     if (mode === "photo") {
       const image = parseImage(body.image);
       if (!image) throw new LiveError("invalid-image");
       const turns: ChatTurn[] = [{ role: "user", content: "Vytvoř podobné příklady k úloze na fotce." }];
-      const text = await run({ system: photoPrompt(locale), turns, image, maxTokens: 900 });
+      const text = await run({ system: photoPrompt(locale), turns, image, maxTokens: 900, temperature: 0.3 });
       const data = extractJson<{ task?: string; method?: string; examples?: { question?: string; answer?: string }[] }>(text);
       const examples = (data?.examples ?? [])
         .filter((e) => typeof e?.question === "string" && e.question.trim())
@@ -78,6 +99,7 @@ export async function POST(request: Request) {
           system: oralFinishPrompt(locale, topic),
           turns: [{ role: "user", content: "Konverzace zkoušení:\n" + transcript.map((t) => `${t.role === "user" ? "Žák" : "Zkoušející"}: ${t.content}`).join("\n") }],
           maxTokens: 500,
+          temperature: 0.2,
         });
         const d = extractJson<{ score?: number; right?: unknown; missing?: unknown; advice?: string }>(text);
         return {
@@ -88,7 +110,7 @@ export async function POST(request: Request) {
         };
       }
       // První otázku položí zkoušející sám, proto se konverzace může začít prázdnou zprávou.
-      return { reply: await run({ system: oralPrompt(locale, topic), turns: oralTurns(body.messages), maxTokens: 300 }) };
+      return { reply: await run({ system: oralPrompt(locale, topic), turns: oralTurns(body.messages), maxTokens: 300, temperature: 0.6 }) };
     }
 
     if (mode === "notes") {
@@ -100,6 +122,7 @@ export async function POST(request: Request) {
         turns: [{ role: "user", content: text ? `Moje poznámky:\n${text}` : "Udělej kartičky z poznámek na fotce." }],
         image,
         maxTokens: 1200,
+        temperature: 0.2,
       });
       const d = extractJson<{ title?: string; cards?: { front?: string; back?: string }[] }>(out);
       const cards = (d?.cards ?? [])
@@ -124,6 +147,7 @@ export async function POST(request: Request) {
         system: distractorPrompt(locale),
         turns: [{ role: "user", content: items.map((i, n) => `${n + 1}. Otázka: ${i.question}\nSprávná odpověď: ${i.answer}`).join("\n\n") }],
         maxTokens: 1500,
+        temperature: 0.4,
       });
       const wrong = extractJson<{ wrong?: unknown }>(out)?.wrong;
       const questions = cleanSetQuestions(

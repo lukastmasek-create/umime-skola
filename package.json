@@ -87,6 +87,7 @@
     "react-rough-notation": "1.0.8",
     "react-virtuoso": "4.18.19",
     "recharts": "3.10.1",
+    "remark-gfm": "4.0.1",
     "sonner": "2.0.8",
     "swiper": "14.3.0",
     "tailwind-merge": "3.7.0",

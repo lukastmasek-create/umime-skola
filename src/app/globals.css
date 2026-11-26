@@ -7504,3 +7504,13 @@ a[class*="rounded-full"], button[class*="rounded-full"], span[class*="rounded-fu
 :root[data-motion="off"] .fx-glow, :root[data-motion="off"] .fx-spark { display: none; }
 :root[data-motion="off"] :is(.hero-halo, .mq-track, .space-page .lobby-panel::before, .space-page .gradient-hero .neon-hl) { animation: none !important; }
 :root[data-motion="off"] .mq { overflow-x: auto; }
+
+/* AI prostor: pole pro psaní je uvnitř rámečku skladatele, vlastní okraj a stín nemá (fokus ukazuje rámeček). */
+textarea.ai-composer,
+textarea.ai-composer:focus {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  outline: none;
+}

@@ -6,7 +6,7 @@ import { proTiers } from "@/lib/pro-server";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getProToolsText } from "@/i18n/pro-tools";
 import { featureAvailableIn, featureTier, isProFeature, type ProFeatureSlug } from "@/lib/pro-tools/features";
-import { AiTutor } from "@/components/pro/AiTutor";
+import { AiSpace } from "@/components/ai/AiSpace";
 import { ExamRunner } from "@/components/pro/ExamRunner";
 import { MistakeNotebook } from "@/components/pro/MistakeNotebook";
 import { NotesCards } from "@/components/pro/NotesCards";
@@ -22,7 +22,7 @@ import { SpaceShell } from "@/components/SpaceShell";
 export const dynamic = "force-dynamic";
 
 const VIEWS: Record<ProFeatureSlug, (props: { locale: Locale }) => React.ReactNode> = {
-  doucovatel: (p) => <AiTutor {...p} />,
+  doucovatel: (p) => <AiSpace {...p} />,
   plan: (p) => <StudyPlan {...p} />,
   zkouska: (p) => <ExamRunner {...p} />,
   fotka: (p) => <PhotoTasks {...p} />,
@@ -68,7 +68,7 @@ export default async function ProToolPage({ params }: { params: Promise<{ locale
   }
 
   return (
-    <SpaceShell title={f.title} subtitle={f.text} back={{ href: `/${locale}/pro`, label: "UčímePRO" }}>
+    <SpaceShell title={f.title} subtitle={f.text} back={{ href: `/${locale}/pro`, label: "UčímePRO" }} full={feature === "doucovatel" && allowed}>
       {allowed ? (
         VIEWS[feature]({ locale })
       ) : (

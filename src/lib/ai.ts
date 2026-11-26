@@ -1,5 +1,8 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { LiveError } from "@/lib/live/service";
+import { cleanReply } from "@/lib/ai-clean";
+
+export { cleanReply };
 
 // Sdílené generování textu: výchozí je Cloudflare Workers AI (binding AI ve wrangler.jsonc, bez klíče,
 // 10 000 neuronů denně zdarma). Když binding chybí a je nastavený ANTHROPIC_API_KEY, použije se placené Anthropic API.
@@ -32,28 +35,28 @@ export type GenerateOptions = {
   maxTokens?: number;
   /** Obrázek jako data URL (data:image/jpeg;base64,...). Připojí se k poslední zprávě uživatele. */
   image?: string;
+  /** Kreativita: nízká pro JSON a fakta, vyšší pro rozhovor. */
+  temperature?: number;
 };
 
-export async function generateText({ system, turns, maxTokens = 400, image }: GenerateOptions): Promise<string> {
-  const env = aiEnv();
-  if (env.AI) {
-    const model = (image ? env.WORKERS_AI_VISION_MODEL : undefined) || env.WORKERS_AI_MODEL || WORKERS_AI_MODEL;
-    const messages: Record<string, unknown>[] = [{ role: "system", content: system }, ...turns];
-    if (image) {
-      const last = messages[messages.length - 1];
-      messages[messages.length - 1] = {
-        role: "user",
-        content: [
-          { type: "text", text: String(last.content) },
-          { type: "image_url", image_url: { url: image } },
-        ],
-      };
-    }
-    const out = await env.AI.run(model, { messages, max_tokens: maxTokens, chat_template_kwargs: { enable_thinking: false } });
-    return workersAiText(out);
+async function viaWorkersAi(ai: AiBinding, env: AiEnv, { system, turns, maxTokens = 400, image, temperature = 0.5 }: GenerateOptions): Promise<string> {
+  const model = (image ? env.WORKERS_AI_VISION_MODEL : undefined) || env.WORKERS_AI_MODEL || WORKERS_AI_MODEL;
+  const messages: Record<string, unknown>[] = [{ role: "system", content: system }, ...turns];
+  if (image) {
+    const last = messages[messages.length - 1];
+    messages[messages.length - 1] = {
+      role: "user",
+      content: [
+        { type: "text", text: String(last.content) },
+        { type: "image_url", image_url: { url: image } },
+      ],
+    };
   }
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new LiveError("ai-unavailable", 503);
+  const out = await ai.run(model, { messages, max_tokens: maxTokens, temperature, chat_template_kwargs: { enable_thinking: false } });
+  return cleanReply(workersAiText(out));
+}
+
+async function viaAnthropic(apiKey: string, { system, turns, maxTokens = 400, image, temperature = 0.5 }: GenerateOptions): Promise<string> {
   const messages = turns.map((t, i) => {
     if (image && i === turns.length - 1 && t.role === "user") {
       const m = /^data:(image\/[a-z+]+);base64,(.+)$/.exec(image);
@@ -72,15 +75,36 @@ export async function generateText({ system, turns, maxTokens = 400, image }: Ge
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "content-type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model: process.env.ANTHROPIC_MODEL || ANTHROPIC_MODEL, max_tokens: maxTokens, system, messages }),
-    signal: AbortSignal.timeout(25000),
+    body: JSON.stringify({ model: process.env.ANTHROPIC_MODEL || ANTHROPIC_MODEL, max_tokens: maxTokens, temperature, system, messages }),
+    signal: AbortSignal.timeout(30000),
   }).catch(() => null);
   if (!res || !res.ok) {
     console.error("ai: Anthropic API selhalo", res?.status);
     return "";
   }
   const data = (await res.json().catch(() => ({}))) as { content?: { type: string; text?: string }[] };
-  return (data.content ?? []).filter((c) => c.type === "text").map((c) => c.text ?? "").join("").trim();
+  return cleanReply((data.content ?? []).filter((c) => c.type === "text").map((c) => c.text ?? "").join(""));
+}
+
+/**
+ * Vygeneruje odpověď. Pořadí: Workers AI (při chybě nebo prázdné odpovědi ještě jeden pokus),
+ * pak Anthropic API, pokud je nastavený klíč. Prázdný řetězec znamená, že nic neodpovědělo.
+ */
+export async function generateText(opts: GenerateOptions): Promise<string> {
+  const env = aiEnv();
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!env.AI && !apiKey) throw new LiveError("ai-unavailable", 503);
+  if (env.AI) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const out = await viaWorkersAi(env.AI, env, attempt === 0 ? opts : { ...opts, temperature: Math.min(0.9, (opts.temperature ?? 0.5) + 0.2) });
+        if (out) return out;
+      } catch (e) {
+        console.error("ai: Workers AI selhalo", attempt, e);
+      }
+    }
+  }
+  return apiKey ? viaAnthropic(apiKey, opts) : "";
 }
 
 /** Vytáhne první JSON objekt nebo pole z odpovědi modelu (modely ho rády obalí textem nebo ```). */

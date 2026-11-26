@@ -11,7 +11,7 @@ import { isLocale } from "@/i18n/config";
 export const dynamic = "force-dynamic";
 
 async function generate(system: string, turns: ChatTurn[]): Promise<string> {
-  return generateText({ system, turns, maxTokens: 400 });
+  return generateText({ system, turns, maxTokens: 400, temperature: 0.3 });
 }
 
 async function loadTeams(userId: string): Promise<AssistantTeam[]> {

@@ -78,7 +78,7 @@ export function EdxAssistant({ locale, teams, urgent }: { locale: Locale; teams:
         ))}
       </div>
       <form onSubmit={(e) => { e.preventDefault(); void ask(text); }} className="flex items-center gap-2 rounded-2xl border border-[var(--field-border)] px-3 py-1.5">
-        <input value={text} onChange={(e) => setText(e.target.value)} maxLength={120} placeholder={t.aiPh} aria-label={t.aiPh} className="min-w-0 flex-1 !border-0 bg-transparent py-1.5 text-sm outline-none" />
+        <input value={text} onChange={(e) => setText(e.target.value)} maxLength={400} placeholder={t.aiPh} aria-label={t.aiPh} className="min-w-0 flex-1 !border-0 bg-transparent py-1.5 text-sm outline-none" />
         <button disabled={busy} aria-label={t.aiSend} className="grid size-8 place-items-center rounded-full text-[var(--muted)] hover:text-[var(--brand-600)]">
           <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round"><path d="M21 3 10 14M21 3l-7 18-4-7-7-4 18-7z" /></svg>
         </button>
