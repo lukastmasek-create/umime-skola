@@ -1,153 +1,212 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
-import { PaperCard } from "@/components/PaperCard";
+import { tr8, type Locale } from "@/i18n/config";
+import { gradeLabel } from "@/i18n/grades";
 import { fill } from "@/i18n/profile";
 import { getReviewText } from "@/i18n/review";
-import { gradeLabel } from "@/i18n/grades";
-import { courseStatus, type CourseProgress, type CourseStatus } from "@/lib/review";
-import type { Locale } from "@/i18n/config";
+import { courseStatus, MAX_TRACKED, type CourseProgress, type CourseStatus } from "@/lib/review";
+import styles from "./CourseMap.module.css";
 
 export type MapCourse = { id: string; title: string; slug: string; grade: number | null };
 export type MapSubject = { value: string; slug: string; label: string; color: string; courses: MapCourse[] };
 
-const STATUS_ICON: Record<CourseStatus, string> = { new: "○", started: "◐", done: "●" };
+type MapProgress = { loggedIn?: boolean; due?: number; courses?: Record<string, CourseProgress> };
 
-// Osobní mapa kurzů: u každého předmětu jsou kurzy po třídách a barevně se
-// ukazuje, co je nové, rozpracované a zvládnuté. Nahoře jsou tipy, kam dál.
-export function CourseMap({ locale, subjects }: { locale: Locale; subjects: MapSubject[] }) {
-  const t = getReviewText(locale);
-  const [progress, setProgress] = useState<Record<string, CourseProgress>>({});
-  const [due, setDue] = useState(0);
-  const [loggedIn, setLoggedIn] = useState(false);
+const continueLabel = tr8("Pokračovat", "Continue", "Weiterlernen", "Продолжить", "Продовжити", "続ける", "Continuar", "Continuer");
+const emptyProgress: Record<string, CourseProgress> = {};
 
-  useEffect(() => {
-    fetch("/api/opakovani?map=1")
-      .then((r) => r.json())
-      .then((d) => {
-        if (!d.loggedIn || d.error) return;
-        setLoggedIn(true);
-        setProgress(d.courses ?? {});
-        setDue(d.due ?? 0);
-      })
-      .catch(() => {});
-  }, []);
-
-  const href = (c: MapCourse) => `/${locale}/kurzy/zakladni/${c.slug}`;
-  const statusOf = (c: MapCourse) => courseStatus(progress[c.id]);
-  const label = (s: CourseStatus) => (s === "done" ? t.statusDone : s === "started" ? t.statusStarted : t.statusNew);
-
-  // Tip: v každém předmětu, kde už hráč něco dělal, nejdřív rozpracovaný kurz,
-  // jinak první nový od nejnižší třídy. Bez historie první nový kurz předmětů.
-  const touched = subjects.filter((s) => s.courses.some((c) => statusOf(c) !== "new"));
-  const pickFrom = touched.length > 0 ? touched : subjects;
-  const recommended = pickFrom
-    .flatMap((s) => {
-      const open = s.courses.find((c) => statusOf(c) === "started") ?? s.courses.find((c) => statusOf(c) === "new");
-      return open ? [{ subject: s, course: open }] : [];
-    })
-    .slice(0, 4);
-
-  const done = subjects.reduce((n, s) => n + s.courses.filter((c) => statusOf(c) === "done").length, 0);
-  const heading = { fontFamily: "var(--font-heading)" } as const;
+function Terrain({ finished, total }: { finished: number; total: number }) {
+  const ratio = total > 0 ? finished / total : 0;
+  const stage = ratio >= 1 ? 4 : ratio >= 0.5 ? 3 : ratio >= 0.25 ? 2 : finished > 0 ? 1 : 0;
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-wrap items-center gap-3">
-        {loggedIn && <span className="pill bg-[var(--surface-muted)] px-3 py-1.5 text-sm font-bold">{fill(t.progress, done)}</span>}
-        {loggedIn && due > 0 && (
-          <Link href={`/${locale}/opakovani`} className="btn-bouncy bg-[var(--accent-yellow)] px-4 py-2 text-sm font-bold text-[#16132b]">
-            {fill(t.reviewCta, due)}
-          </Link>
-        )}
+    <span className={styles.terrain} data-stage={stage} aria-hidden="true">
+      <span className={styles.ridge} />
+      <span className={styles.foothills} />
+      <span className={styles.pine} />
+      <span className={styles.pine} />
+      <span className={styles.pine} />
+      <span className={styles.beacon} />
+    </span>
+  );
+}
+
+function Campfire({ locale, data }: { locale: Locale; data: MapProgress | null }) {
+  const t = getReviewText(locale);
+  const due = data?.due ?? 0;
+  const scale = 0.3 + 1.15 * Math.log1p(Math.min(due, MAX_TRACKED)) / Math.log1p(MAX_TRACKED);
+
+  return (
+    <Link href={`/${locale}/opakovani`} className={styles.campfire}>
+      <span
+        className={styles.hearth}
+        style={{ "--fire-scale": scale } as CSSProperties}
+        data-lit={due > 0}
+        aria-hidden="true"
+      >
+        <span className={styles.fireGlow} />
+        <span className={styles.flame} />
+        <span className={styles.logs} />
+      </span>
+      <strong>{data?.loggedIn ? fill(t.reviewCta, due) : t.reviewNav}</strong>
+      {data?.loggedIn && due === 0 && <small>{t.nothingDue}</small>}
+    </Link>
+  );
+}
+
+export function CourseMap({ locale, subjects }: { locale: Locale; subjects: MapSubject[] }) {
+  const t = getReviewText(locale);
+  const [data, setData] = useState<MapProgress | null>(null);
+  const [selection, setSelection] = useState<string | null>();
+  const mapId = useId();
+
+  useEffect(() => {
+    let request: AbortController | undefined;
+
+    async function loadProgress() {
+      request?.abort();
+      const controller = new AbortController();
+      request = controller;
+
+      try {
+        const response = await fetch("/api/opakovani?map=1", { cache: "no-store", signal: controller.signal });
+        if (!response.ok) throw new Error("Could not load course progress");
+        const result: MapProgress = await response.json();
+        if (!controller.signal.aborted) setData(result);
+      } catch {
+        if (!controller.signal.aborted) setData((previous) => previous ?? {});
+      }
+    }
+
+    function restoreProgress(event: PageTransitionEvent) {
+      if (event.persisted) void loadProgress();
+    }
+
+    void loadProgress();
+    window.addEventListener("pageshow", restoreProgress);
+
+    return () => {
+      request?.abort();
+      window.removeEventListener("pageshow", restoreProgress);
+    };
+  }, []);
+
+  const progress = data?.courses ?? emptyProgress;
+  const href = (course: MapCourse) => `/${locale}/kurzy/zakladni/${course.slug}`;
+  const label: Record<CourseStatus, string> = { new: t.statusNew, started: t.statusStarted, done: t.statusDone };
+  const routes = subjects.map((subject) => {
+    const checkpoints = subject.courses.map((course) => ({ course, status: courseStatus(progress[course.id]) }));
+    const finished = checkpoints.filter(({ status }) => status === "done").length;
+    const touched = checkpoints.some(({ status }) => status !== "new");
+    return { subject, checkpoints, finished, touched };
+  });
+
+  const started = routes.flatMap(({ subject, checkpoints }) =>
+    checkpoints.filter(({ status }) => status === "started").map(({ course }) => ({ subject, course })),
+  );
+  started.sort((a, b) => progress[b.course.id].last.localeCompare(progress[a.course.id].last));
+  const nextRoute = routes.find(({ touched, finished, checkpoints }) => touched && finished < checkpoints.length)
+    ?? routes.find(({ finished, checkpoints }) => finished < checkpoints.length);
+  const nextCourse = nextRoute?.checkpoints.find(({ status }) => status === "new")?.course;
+  const next = started[0] ?? (nextRoute && nextCourse ? { subject: nextRoute.subject, course: nextCourse } : undefined);
+  const active = selection === undefined ? (data ? next?.subject.value ?? subjects[0]?.value : undefined) : selection;
+
+  const done = routes.reduce((count, route) => count + route.finished, 0);
+  const total = subjects.reduce((count, subject) => count + subject.courses.length, 0);
+
+  return (
+    <div className={styles.map}>
+      <div className={styles.overview}>
+        <Terrain finished={done} total={total} />
+        <div className={styles.journey}>
+          {data?.loggedIn && <p className={styles.total}>{fill(t.progress, done)}</p>}
+          {data && next && (
+            <>
+              <p className={styles.eyebrow}>{t.recommended}</p>
+              <p className={styles.nextTitle}>{next.course.title}</p>
+              <p className={styles.nextSubject}>{next.subject.label}</p>
+              <Link href={href(next.course)} className={styles.continue}>
+                {continueLabel[locale]} <span aria-hidden="true">→</span>
+              </Link>
+            </>
+          )}
+        </div>
+        <Campfire locale={locale} data={data} />
       </div>
 
-      {recommended.length > 0 && (
-        <section>
-          <h2 className="mb-3 text-lg font-extrabold" style={heading}>
-            {t.recommended}
-          </h2>
-          <div className="pcard-pile">
-            {recommended.map(({ subject, course }, i) => (
-              <PaperCard
-                key={course.id}
-                href={href(course)}
-                accent={subject.color}
-                num={i + 1}
-                icon={<Icon name={subject.slug} size={92} className="pcard-icon" />}
-                title={course.title}
-                text={`${subject.label} · ${label(statusOf(course))}`}
-              />
-            ))}
-          </div>
-        </section>
+      {routes.length > 0 && (
+        <ul className={styles.legend}>
+          {(["new", "started", "done"] as const).map((status) => (
+            <li key={status}><span className={styles.marker} data-status={status} aria-hidden="true" />{label[status]}</li>
+          ))}
+        </ul>
       )}
 
-      <div className="flex flex-wrap gap-4 text-xs font-semibold text-[var(--muted)]">
-        {(["new", "started", "done"] as CourseStatus[]).map((s) => (
-          <span key={s}>
-            {STATUS_ICON[s]} {label(s)}
-          </span>
-        ))}
-      </div>
+      <div className={styles.regions}>
+        {routes.map(({ subject, checkpoints, finished }) => {
+          const open = active === subject.value;
+          const headingId = `${mapId}-${subject.slug}`;
+          const grades = new Map<number | null, typeof checkpoints>();
 
-      {subjects.map((subject) => {
-        const grades = [...new Set(subject.courses.map((c) => c.grade ?? 0))].sort((a, b) => a - b);
-        const finished = subject.courses.filter((c) => statusOf(c) === "done").length;
-        return (
-          <details key={subject.value} className="card p-4 sm:p-5" open={touched.includes(subject)}>
-            <summary className="flex cursor-pointer items-center gap-3">
-              <Icon name={subject.slug} size={36} />
-              <span className="flex-1 text-lg font-extrabold" style={heading}>
-                {subject.label}
-              </span>
-              <span className="text-sm font-bold text-[var(--muted)]">
-                {finished} / {subject.courses.length}
-              </span>
-            </summary>
-            <div className="mt-3 h-2.5 overflow-hidden rounded-full border-2 border-[var(--edge)] bg-[var(--surface-muted)]">
-              <div
-                className="h-full"
-                style={{ width: `${subject.courses.length ? (finished / subject.courses.length) * 100 : 0}%`, background: subject.color }}
-              />
-            </div>
-            {grades.map((grade) => (
-              <div key={grade} className="mt-4">
-                {grade > 0 && <p className="mb-2 text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{gradeLabel(locale, "zakladni", grade)}</p>}
-                <ul className="flex flex-wrap gap-2">
-                  {subject.courses
-                    .filter((c) => (c.grade ?? 0) === grade)
-                    .map((c) => {
-                      const status = statusOf(c);
-                      const best = progress[c.id]?.best;
-                      return (
-                        <li key={c.id}>
-                          <Link
-                            href={href(c)}
-                            title={`${label(status)}${best != null && status !== "new" ? ` · ${fill(t.best, best)}` : ""}`}
-                            className={`flex items-center gap-1.5 rounded-xl border-2 px-3 py-1.5 text-sm font-semibold ${
-                              status === "done"
-                                ? "border-[var(--edge)] text-[#16132b]"
-                                : status === "started"
-                                  ? "border-[var(--edge)] bg-[var(--surface-muted)]"
-                                  : "border-[var(--border-soft)] text-[var(--muted)]"
-                            }`}
-                            style={status === "done" ? { background: subject.color } : undefined}
-                          >
-                            <span aria-hidden>{STATUS_ICON[status]}</span>
-                            {c.title}
+          if (open) {
+            for (const checkpoint of checkpoints) {
+              const grade = checkpoint.course.grade || null;
+              const group = grades.get(grade);
+              if (group) group.push(checkpoint);
+              else grades.set(grade, [checkpoint]);
+            }
+          }
+
+          return (
+            <section key={subject.value} className={styles.region} style={{ "--region": subject.color } as CSSProperties}>
+              <h2 className={styles.regionHeading}>
+                <button
+                  id={headingId}
+                  type="button"
+                  className={styles.regionButton}
+                  aria-expanded={open}
+                  aria-controls={`${headingId}-courses`}
+                  onClick={() => setSelection(open ? null : subject.value)}
+                >
+                  <Terrain finished={finished} total={checkpoints.length} />
+                  <span className={styles.subjectIcon}><Icon name={subject.slug} size={38} /></span>
+                  <span className={styles.subject}>{subject.label}</span>
+                  <span className={styles.count}>{finished}/{checkpoints.length}</span>
+                  <span className={styles.expand} aria-hidden="true">{open ? "−" : "+"}</span>
+                  <span className={styles.progress} aria-hidden="true" style={{ width: `${100 * finished / checkpoints.length}%` }} />
+                </button>
+              </h2>
+              <div id={`${headingId}-courses`} role="region" aria-labelledby={headingId} hidden={!open} className={styles.trail}>
+                {[...grades].sort(([a], [b]) => (a ?? 0) - (b ?? 0)).map(([grade, group]) => (
+                  <div key={grade ?? "ungraded"} className={styles.grade}>
+                    {grade !== null && <h3 className={styles.gradeLabel}>{gradeLabel(locale, "zakladni", grade)}</h3>}
+                    <ul className={styles.checkpoints}>
+                      {group.map(({ course, status }) => (
+                        <li key={course.id}>
+                          <Link href={href(course)} prefetch={false} className={styles.checkpoint} data-status={status}>
+                            <span className={styles.marker} data-status={status} aria-hidden="true" />
+                            <span className={styles.checkpointInfo}>
+                              <strong>{course.title}</strong>
+                              <small>
+                                {label[status]}
+                                {status !== "new" && ` · ${fill(t.best, progress[course.id].best)}`}
+                              </small>
+                            </span>
+                            <span className={styles.arrow} aria-hidden="true">→</span>
                           </Link>
                         </li>
-                      );
-                    })}
-                </ul>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
-            ))}
-          </details>
-        );
-      })}
+            </section>
+          );
+        })}
+      </div>
     </div>
   );
 }
