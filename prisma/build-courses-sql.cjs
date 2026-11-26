@@ -34,6 +34,7 @@ const problems = [];
 const seenSlugs = new Set();
 let grandTotal = 0;
 const summary = [];
+const expansionRows = [];
 
 const files = fs.readdirSync(contentDir).filter((f) => f.endsWith(".cjs")).sort();
 const datasets = files.map((file) => ({ file, data: require(path.join(contentDir, file)) }));
@@ -84,6 +85,7 @@ for (const file of files) {
     const subject = course.subject || data.subject;
     if (!SUBJECTS.includes(subject)) problems.push(`${where}: neznámý předmět ${subject}`);
     course.qs = [...course.qs, ...(extra[course.slug] || []), ...(generatedExtra.get(course.slug) || [])];
+    const generatedStart = course.qs.length - generatedExtra.get(course.slug).length;
     if (seenSlugs.has(course.slug)) problems.push(`${where}: duplicitní slug`);
     if (!/^[a-z0-9-]+$/.test(course.slug)) problems.push(`${where}: slug smí obsahovat jen a-z, 0-9 a pomlčky`);
     seenSlugs.add(course.slug);
@@ -124,9 +126,9 @@ for (const file of files) {
       const correctIndex = options.indexOf(correct);
       perDifficulty[difficulty] += 1;
       subjectQuestions += 1;
-      questionRows.push(
-        `(${esc(`q_${course.slug}_${index}`)},${esc(prompt)},ARRAY[${options.map(esc).join(",")}]::TEXT[],${correctIndex},${esc(explanation)},${difficulty},ARRAY[]::TEXT[],NULL,${index},${esc(courseId)},NULL,NOW())`,
-      );
+      const row = `(${esc(`q_${course.slug}_${index}`)},${esc(prompt)},ARRAY[${options.map(esc).join(",")}]::TEXT[],${correctIndex},${esc(explanation)},${difficulty},ARRAY[]::TEXT[],NULL,${index},${esc(courseId)},NULL,NOW())`;
+      questionRows.push(row);
+      if (index >= generatedStart) expansionRows.push(row);
     });
 
     for (let n = 1; n <= 5; n++) {
@@ -148,6 +150,17 @@ for (const file of files) {
   grandTotal += subjectQuestions;
   console.log(`${file}: ${data.courses.length} kurzů, ${subjectQuestions} otázek, ${(sql.length / 1024).toFixed(0)} KB`);
 }
+
+if (expansionRows.length !== 37000) {
+  problems.push(`Rozšíření má ${expansionRows.length} řádků místo 37000`);
+}
+const expansionSql = [
+  "-- Vygenerováno z prisma/build-courses-sql.cjs: přesně 37 000 doplňujících otázek.",
+  `INSERT INTO "Question" ("id","prompt","options","correctIndex","explanation","difficulty","answers","hint","order","courseId","levelId","createdAt") VALUES\n${expansionRows.join(",\n")}\nON CONFLICT ("id") DO NOTHING;`,
+  "",
+].join("\n\n");
+fs.writeFileSync(path.join(outDir, "questions-expansion-37000.sql"), expansionSql, "utf8");
+console.log(`questions-expansion-37000.sql: ${expansionRows.length} řádků`);
 
 console.log("\n" + summary.join("\n"));
 console.log(`\nCelkem: ${seenSlugs.size} kurzů, ${grandTotal} otázek`);
