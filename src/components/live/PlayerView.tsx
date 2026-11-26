@@ -7,18 +7,11 @@ import type { Locale } from "@/i18n/config";
 import type { AnswerResult, ChestOutcome, ChestResult, LiveView } from "@/lib/live/types";
 import { forget, liveApi, type Identity } from "./api";
 import { errorText } from "./LiveRoom";
-import { CHEST_AMOUNTS, isSyncMode } from "@/lib/live/logic";
+import { isSyncMode } from "@/lib/live/logic";
 import { Countdown, EndsIn, Leaderboard, OptionButton, TEAM_STYLES, TeamScores } from "./shared";
-import { ChestClosed, ChestOpen, LootIcon } from "./ChestArt";
+import { ChestClosed, ChestOpen } from "./ChestArt";
 
 type Feedback = { choice: number; correct: boolean; correctIndex: number; explanation?: string; chests: number; points: number; question: NonNullable<LiveView["question"]> };
-
-// Všechny odměny, které může truhla obsahovat (stejné u každé truhly; výběr je náhodný).
-const REWARDS: { kind: ChestOutcome["kind"]; text: string }[] = [
-  { kind: "gold", text: `+${CHEST_AMOUNTS.goldMin} až +${CHEST_AMOUNTS.goldMax}` },
-  { kind: "steal", text: `−${CHEST_AMOUNTS.steal}` },
-  { kind: "lose", text: `−${CHEST_AMOUNTS.lose}` },
-];
 
 function chestMessage(t: LiveText, r: ChestResult): string {
   const o: ChestOutcome = r.outcome;
@@ -45,7 +38,7 @@ export function PlayerView({
   const [sending, setSending] = useState(false);
   // Závod/horečka: po odpovědi chvíli držíme starou otázku se zpětnou vazbou, než ukážeme další.
   const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const [chestResult, setChestResult] = useState<{ text: string; kind: ChestOutcome["kind"]; gold: number } | null>(null);
+  const [chestResult, setChestResult] = useState<{ text: string; kind: ChestOutcome["kind"] } | null>(null);
   const [chestBusy, setChestBusy] = useState(false);
   const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(
@@ -87,6 +80,7 @@ export function PlayerView({
   async function pickChest(index: number) {
     if (chestBusy) return;
     setChestBusy(true);
+    setError(null);
     const r = await liveApi<ChestResult>(`/rooms/${view.pin}/chest`, { body: { index }, identity });
     setChestBusy(false);
     if (!r.ok) {
@@ -94,7 +88,7 @@ export function PlayerView({
       setFeedback(null);
       return;
     }
-    setChestResult({ text: chestMessage(t, r), kind: r.outcome.kind, gold: r.gold });
+    setChestResult({ text: chestMessage(t, r), kind: r.outcome.kind });
     feedbackTimer.current = setTimeout(() => {
       setChestResult(null);
       setFeedback(null);
@@ -268,33 +262,27 @@ export function PlayerView({
       )}
 
       {needChest ? (
-        <div className="card flex flex-col items-center gap-4 p-6 text-center">
-          <p className="text-xl font-extrabold text-[var(--accent-green)]">{t.play.correct}</p>
-          <h2 className="text-lg font-bold">{t.play.chestTitle}</h2>
-          <p className="text-sm text-[var(--muted)]">{t.play.chestHint}</p>
-          <div className="grid w-full grid-cols-3 gap-3">
-            {([0, 1, 2] as const).map((i) => (
-              <button key={i} type="button" onClick={() => pickChest(i)} disabled={chestBusy} className="btn-bouncy flex flex-col items-center gap-2 bg-[var(--surface)] p-3 disabled:opacity-60" aria-label={`${t.play.chestTitle} ${i + 1}`}>
-                <ChestClosed tone={0} id={`chest-pick-${i}`} className="h-32 w-auto" />
-                <ul className="flex flex-col gap-1 text-sm font-extrabold">
-                  {REWARDS.map((r) => (
-                    <li key={r.kind} className="flex items-center gap-2">
-                      <LootIcon kind={r.kind} id={`chest-${i}-${r.kind}`} className="h-7 w-auto" />
-                      {r.text}
-                    </li>
-                  ))}
-                </ul>
-                <span className="rounded-full bg-[var(--surface-muted)] px-3 py-1 text-base font-extrabold">{i + 1}</span>
+        <section aria-labelledby="chest-title" className="card flex flex-col items-center gap-3 p-3 text-center sm:gap-5 sm:p-6">
+          <h2 id="chest-title" className="text-xl font-extrabold">{t.play.chestTitle}</h2>
+          <div className="grid w-full grid-cols-3 gap-1.5 sm:gap-3">
+            {[0, 1, 2].map((i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => pickChest(i)}
+                disabled={chestBusy}
+                className="grid min-h-14 min-w-0 place-items-center rounded-xl border border-[#bc854a]/50 bg-[#422c3c] p-1 transition-[background-color,border-color,transform] hover:border-[#ffd474] hover:bg-[#56364a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffd474] active:scale-95 disabled:opacity-60 motion-reduce:transition-none motion-reduce:active:scale-100 sm:p-3"
+                aria-label={`${t.play.chestTitle} ${i + 1}`}
+              >
+                <ChestClosed className="h-auto w-full max-w-40" />
               </button>
             ))}
           </div>
-        </div>
+        </section>
       ) : chestResult ? (
-        <div className="card flex flex-col items-center gap-3 p-8 text-center">
-          <ChestOpen kind={chestResult.kind} id={`chest-open-${chestResult.kind}`} className="h-52 w-auto" />
+        <div role="status" className="card flex flex-col items-center gap-3 p-4 text-center sm:p-8">
+          <ChestOpen kind={chestResult.kind} className="h-auto w-36 sm:w-48" />
           <p className="text-xl font-extrabold">{chestResult.text}</p>
-          {chestResult.kind === "gold" && <p className="text-3xl font-extrabold text-[var(--accent-green)]">+{chestResult.gold}</p>}
-          {chestResult.kind === "lose" && chestResult.gold < 0 && <p className="text-3xl font-extrabold text-[var(--danger)]">{chestResult.gold}</p>}
         </div>
       ) : (
         <div className="card flex flex-col gap-4 p-5">

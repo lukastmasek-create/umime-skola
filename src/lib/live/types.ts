@@ -94,4 +94,4 @@ export type LiveView = {
 };
 
 export type AnswerResult = { ok: true; correct?: boolean; correctIndex?: number; explanation?: string; chests?: number; won?: boolean; points?: number };
-export type ChestResult = { ok: true; outcome: ChestOutcome; gold: number; victim: string | null; all: ChestOutcome[] };
+export type ChestResult = { ok: true; outcome: ChestOutcome; gold: number; victim: string | null };

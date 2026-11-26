@@ -377,7 +377,7 @@ export async function openChest(pin: string, playerToken: string, index: unknown
   const ops: Prisma.PrismaPromise<unknown>[] = [prisma.livePlayer.update({ where: { id: player.id }, data: { gold: { increment: delta.me } } })];
   if (victim && delta.victim !== 0) ops.push(prisma.livePlayer.update({ where: { id: victim.id }, data: { gold: { increment: delta.victim } } }));
   await prisma.$transaction(ops);
-  return { ok: true, outcome, gold: delta.me, victim: victim ? victim.name : null, all };
+  return { ok: true, outcome, gold: delta.me, victim: victim ? victim.name : null };
 }
 
 // --- Řízení hry učitelem ---

@@ -61,7 +61,7 @@ export function ArenaBackdrop({ variant = "neutral", className = "" }: { variant
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || window.matchMedia("(max-width: 767px), (pointer: coarse)").matches) return;
     const gl = canvas.getContext("webgl2", { antialias: false, alpha: false, powerPreference: "low-power" });
     if (!gl) return; // zůstane WebP náhrada
     const mk = (type: number, src: string) => {
