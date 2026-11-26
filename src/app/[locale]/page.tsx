@@ -35,6 +35,7 @@ import { SITE_NAME, SITE_URL, pageMetadata } from "@/lib/seo";
 import { CONTACT_EMAIL, INSTAGRAM_URL } from "@/i18n/legal";
 import { locales } from "@/i18n/config";
 import { getHomeExtraText } from "@/i18n/home-extra";
+import { getHomeMoreText } from "@/i18n/home-more";
 import { HomeSectionNav } from "@/components/HomeSectionNav";
 import { HomeTrans, HomeCoinHud } from "@/components/HomeTrans";
 import { getHomeTransText } from "@/i18n/home-trans";
@@ -67,6 +68,7 @@ export default async function Home({
   const subjectText = getSubjectText(locale as Locale);
   const heading = { fontFamily: "var(--font-heading)" };
   const x = getHomeExtraText(locale as Locale);
+  const m = getHomeMoreText(locale as Locale);
   const navItems = [
     { id: "hrat", label: x.nav.play },
     { id: "predmety", label: x.nav.subjects },
@@ -470,6 +472,28 @@ export default async function Home({
           <Link href={`/${locale}/ochrana-soukromi`} className="mt-4 inline-block text-sm font-bold text-[var(--accent-green)] hover:underline">
             {x.faq.privacy} →
           </Link>
+        </div>
+        <div className="lobby-panel relative z-10 home-more">
+          <div className="reveal hp-head mb-5">
+            <PixelIcon kind="pad" />
+            <h2 className="home-h2 text-2xl font-bold tracking-tight sm:text-3xl" style={heading}>{m.featuresTitle}</h2>
+          </div>
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {m.features.map((f, i) => (
+              <li key={f.title} className="reveal reveal-stagger gcard gcard-hover home-tpoint p-4" style={{ ["--i" as string]: i % 2 }}>
+                <span className="home-tpoint-num" aria-hidden>{String(i + 1).padStart(2, "0")}</span>
+                <h3 className="gcard-title mb-1">{f.title}</h3>
+                <p className="text-sm leading-relaxed text-[var(--muted)]">{f.text}</p>
+              </li>
+            ))}
+          </ul>
+          <div className="reveal mt-6 flex flex-col items-start gap-2">
+            <h3 className="text-xl font-bold" style={heading}>{m.ctaTitle}</h3>
+            <p className="text-sm text-[var(--muted)]">{m.ctaText}</p>
+            <Link href={`/${locale}/kurzy/zakladni`} className="btn-bouncy btn-cta btn-primary btn-lg mt-2">
+              {a.playCta}
+            </Link>
+          </div>
         </div>
         </div>
         <PixelGround kind="town" seed={31}>
