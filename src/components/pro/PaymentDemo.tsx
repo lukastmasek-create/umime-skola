@@ -1,67 +1,112 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { ProIcon } from "@/components/pro/ProIcon";
+import { useId, useRef, useState } from "react";
 import type { BuilderText } from "@/i18n/pro-builder";
-import { CHECKOUT_PLANS, checkoutPrice, type CheckoutPlan } from "@/lib/pro-checkout";
+import { checkoutPrice, type CheckoutPlan } from "@/lib/pro-checkout";
 import { PRO_ITEMS } from "@/lib/pro-prices";
 
-export function PaymentDemo({ t, cs, initial }: { t: BuilderText; cs: boolean; initial: { plan: CheckoutPlan; yearly: boolean; selected: string[] } }) {
-  const [selected, setSelected] = useState<string[]>(initial.selected);
+type Initial = { plan: CheckoutPlan; yearly: boolean; selected: string[] };
+const TIERS = ["individual", "family", "school"] as const;
+
+export function PaymentDemo({ t, cs, initial }: { t: BuilderText; cs: boolean; initial: Initial }) {
+  const [selected, setSelected] = useState(initial.selected);
   const [yearly, setYearly] = useState(initial.yearly);
-  const [step, setStep] = useState<"select" | "checkout" | "done">("select");
-  const heading = useRef<HTMLHeadingElement>(null);
-  const [plan, setPlan] = useState<CheckoutPlan>(initial.plan);
-  const price = checkoutPrice(plan, selected, yearly);
-  const names = cs ? { custom: "Vlastní výbava", individual: "Jednotlivec", family: "Rodina", school: "Škola" } : { custom: "Custom toolkit", individual: "Individual", family: "Family", school: "School" };
-  const planNote = plan === "family" ? (cs ? "Kompletní PRO pro až 5 členů rodiny." : "Complete PRO for up to 5 family members.") : plan === "school" ? (cs ? "Školní tarif · 12 000 Kč za rok. Platba pouze ročně." : "School plan · 12,000 Kč per year. Annual billing only.") : (cs ? "Všechny funkce individuálního PRO." : "All individual PRO features.");
+  const [plan, setPlan] = useState(initial.plan);
+  const [finished, setFinished] = useState(false);
+  const dialog = useRef<HTMLDialogElement>(null);
+  const dialogTitle = useId();
+  const titleId = useId();
+  const annual = plan === "school" || yearly;
+  const price = checkoutPrice(plan, selected, annual);
+  const customPrice = checkoutPrice("custom", selected, yearly);
   const canContinue = plan !== "custom" || selected.length > 0;
   const money = (n: number) => `${new Intl.NumberFormat(cs ? "cs-CZ" : "en-GB").format(n)} Kč`;
-  const next = (s: typeof step) => { setStep(s); requestAnimationFrame(() => heading.current?.focus()); };
-  return <div>
-    <p className="card mb-6 px-5 py-4 text-sm"><strong>{cs ? "Jen zkouška nanečisto." : "Practice only."}</strong> {cs ? "Nic se nestrhne, předplatné se neaktivuje. Nezadávej žádné platební údaje." : "No charge or subscription activation. Do not enter any payment details."}</p>
-    {step === "select" && <div role="group" aria-label={cs ? "Tarif" : "Plan"} className="mb-6 flex flex-wrap gap-3">{CHECKOUT_PLANS.map(p => <button type="button" key={p} aria-pressed={plan === p} className={`btn-bouncy btn-lg ${plan === p ? "btn-primary" : "btn-secondary"}`} onClick={() => { setPlan(p); if (p === "school") setYearly(true); }}>{names[p]}</button>)}</div>}
-    <ol className="mb-6 flex flex-wrap gap-3 text-sm font-bold" aria-label={cs ? "Průběh objednávky" : "Order progress"}>
-      {[cs ? "Výběr funkcí" : "Features", cs ? "Souhrn nabídky" : "Plan summary", cs ? "Hotovo" : "Done"].map((label, i) => <li key={label} aria-current={i === ["select", "checkout", "done"].indexOf(step) ? "step" : undefined} className={`rounded-full border-2 px-4 py-2 ${i === ["select", "checkout", "done"].indexOf(step) ? "border-[var(--accent-green)] bg-[var(--surface)]" : "border-[var(--edge)]"}`}>{i + 1}. {label}</li>)}
-    </ol>
-    <h2 ref={heading} tabIndex={-1} className="mb-5 text-2xl font-bold">{step === "select" ? t.title : step === "checkout" ? (cs ? "Zkontroluj svůj výběr" : "Review your selection") : (cs ? "Demo dokončeno" : "Demo complete")}</h2>
-    {step === "done" ? <section className="card px-7 py-10 text-center" role="status">
-      <ProIcon name="check" className="mx-auto mb-4 size-12 text-[var(--accent-green)]" />
-      <p className="text-xl font-bold">{money(price)} · {yearly ? t.perYear : t.perMonth}</p>
-      <p className="mx-auto mb-6 mt-3 max-w-lg text-[var(--muted)]">{cs ? "Prošel sis ukázku tarifu. Žádná platba ani objednávka nevznikla a tvůj účet zůstává beze změny." : "You reviewed the plan demo. No payment or order was created and your account is unchanged."}</p>
-      <button type="button" onClick={() => next("select")} className="btn-bouncy btn-secondary btn-lg">{cs ? "Vyzkoušet znovu" : "Try again"}</button>
-    </section> : <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-      <section className="card p-5 sm:p-7">
-        {step === "select" ? <>
-          {plan !== "custom" ? <div><h3 className="text-xl font-bold">{names[plan]}</h3><p className="mt-3 text-[var(--muted)]">{planNote}</p></div> : <>
-          <p className="mb-5 text-sm text-[var(--muted)]">{t.hint}</p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {PRO_ITEMS.map(item => {
-              const active = selected.includes(item.id);
-              return <button type="button" key={item.id} aria-pressed={active} onClick={() => setSelected(prev => active ? prev.filter(id => id !== item.id) : [...prev, item.id])} className={`pro-pick rounded-[22px] border-2 p-5 text-left ${active ? "is-on" : ""}`}>
-                <span className="flex items-center justify-between gap-3"><ProIcon name={item.icon} className="size-8 text-[var(--brand-600)]" /><span className="text-sm font-bold">{active ? "✓ " : "+ "}{money(item.price)}</span></span>
-                <span className="mt-3 block font-bold">{t.items[item.id].title}</span>
-                <span className="mt-1 block text-sm text-[var(--muted)]">{t.items[item.id].text}</span>
-              </button>;
-            })}
-          </div>
-          <button type="button" className="mt-5 text-sm font-bold underline" onClick={() => setSelected(PRO_ITEMS.map(i => i.id))}>{cs ? "Vybrat všechny funkce" : "Select all features"}</button></>}
-        </> : <>
-          <h3 className="font-bold">{cs ? "Souhrn vybraného tarifu" : "Selected plan summary"}</h3>
-          <p className="mt-3 text-sm text-[var(--muted)]">{cs ? "Toto je jen ukázka nabídky. Zatím nelze vytvořit objednávku ani provést platbu." : "This is a plan preview. Orders and payments are not available yet."}</p>
-          <p className="text-sm text-[var(--muted)]">{t.note}</p>
-          <button type="button" className="mt-6 font-bold underline" onClick={() => next("select")}>← {cs ? "Upravit výběr" : "Edit selection"}</button>
-        </>}
-      </section>
-      <aside className="card p-6 lg:sticky lg:top-24">
-        <h3 className="text-lg font-bold">{names[plan]}</h3>
-        <div role="group" aria-label={cs ? "Fakturační období" : "Billing period"} className="my-5 flex rounded-full border-2 border-[var(--edge)] p-1">{(plan === "school" ? [true] : [false, true]).map(y => <button key={String(y)} type="button" aria-pressed={yearly === y} onClick={() => setYearly(y)} className={`flex-1 rounded-full px-3 py-2 text-sm font-bold ${yearly === y ? "bg-[var(--brand-500)] text-white" : ""}`}>{y ? t.yearly : t.monthly}</button>)}</div>
-        <ul className="space-y-3 text-sm">{PRO_ITEMS.filter(i => plan === "custom" ? selected.includes(i.id) : true).map(i => <li key={i.id} className="flex justify-between gap-3"><span>{t.items[i.id].title}</span>{plan === "custom" && <span className="shrink-0 font-bold">{money(i.price * (yearly ? 10 : 1))}</span>}</li>)}</ul>
-        {!canContinue && <p className="text-sm">{t.pick}</p>}
-        <div className="my-5 border-t border-[var(--edge)] pt-5" aria-live="polite" aria-atomic="true"><p className="text-sm text-[var(--muted)]">{t.total}</p><p className="mt-1 text-4xl font-extrabold tabular-nums">{money(price)}</p><p className="text-sm text-[var(--muted)]">{yearly ? t.perYear : t.perMonth}</p>{yearly && price > 0 && plan !== "school" && <p className="mt-2 text-sm font-bold text-[var(--accent-green)]">{cs ? "2 měsíce zdarma · ušetříš " : "2 months free · save "}{money(checkoutPrice(plan, selected, false) * 2)}</p>}</div>
-        <button type="button" disabled={!canContinue} onClick={() => next(step === "select" ? "checkout" : "done")} className="btn-bouncy btn-primary btn-lg w-full disabled:cursor-not-allowed disabled:opacity-40">{step === "select" ? (cs ? "Zobrazit souhrn →" : "View summary →") : (cs ? "Dokončit ukázku" : "Finish preview")}</button>
-        <p className="mt-3 text-center text-xs text-[var(--muted)]">{cs ? "DEMO · Bez objednávky a platby" : "DEMO · No order or payment"}</p>
+  const names = cs ? { individual: "Jednotlivec", family: "Rodina", school: "Škola", custom: "Vlastní výbava" } : { individual: "Individual", family: "Family", school: "School", custom: "Custom toolkit" };
+  const subtitles = cs ? ["Pro jeden účet", "Až pro 5 členů rodiny", "Pro žáky vybrané školy"] : ["For one account", "For up to 5 family members", "For pupils of your school"];
+  const perks = cs ? [
+    ["AI doučovač", "Osobní plán učení", "Všechny PRO funkce"],
+    ["Vše z individuálního PRO", "Správa členů rodiny", "Jeden společný tarif"],
+    ["PRO pro žáky školy", "Přiřazení školy v účtu", "Školní tarif"],
+  ] : [
+    ["AI tutor", "Personal study plan", "All PRO features"],
+    ["Everything in individual PRO", "Manage family members", "One shared plan"],
+    ["PRO for school pupils", "School linked to your account", "School plan"],
+  ];
+  const openSummary = (nextPlan: CheckoutPlan) => {
+    setPlan(nextPlan);
+    setFinished(false);
+    dialog.current?.showModal();
+  };
+  const toggleFeature = (id: string) => {
+    setPlan("custom");
+    setSelected(previous => previous.includes(id) ? previous.filter(item => item !== id) : [...previous, id]);
+  };
+  return <div className="ps-content">
+    <header className="ps-intro">
+      <div><p className="ps-eyebrow">UČÍMEPRO</p><h1 id={titleId}>{cs ? "Vyber si svůj další level." : "Choose your next level."}</h1>
+        <p className="ps-subtitle">{cs ? "Kurzy zůstávají zdarma. PRO přidá nové superschopnosti." : "Courses stay free. PRO adds new superpowers."}</p></div>
+      <div className="ps-disclaimer"><span className="ps-demo">{cs ? "DEMO · PŘIPRAVUJEME" : "DEMO · COMING SOON"}</span><p>{cs ? "Ceny jsou orientační. Zatím nelze nic koupit." : "Indicative prices. Purchases are not available yet."}</p></div>
+    </header>
+
+    <div className="ps-layout">
+      <div className="ps-plans">
+        <div className="ps-period" role="group" aria-label={cs ? "Období tarifu" : "Plan period"}>
+          {[false, true].map(value => <button key={String(value)} type="button" aria-pressed={yearly === value} onClick={() => setYearly(value)}>{value ? t.yearly : t.monthly}{value && <span> · {cs ? "2 měsíce zdarma" : "2 months free"}</span>}</button>)}
+        </div>
+        <div className="ps-cards" aria-labelledby={titleId}>
+          {TIERS.map((tier, index) => {
+            const active = tier === plan;
+            const showAnnual = tier === "school" || yearly;
+            return <article className={`ps-frame ps-tier ps-tier-${tier} ${active ? "is-selected" : ""}`} key={tier}>
+              <div className="ps-tier-inner">
+                {active && <span className="ps-selected">{cs ? "VYBRÁNO" : "SELECTED"}</span>}
+                <div aria-hidden="true" className={`ps-world ps-world-${tier}`} />
+                <h2>{names[tier]}</h2><p className="ps-tier-subtitle">{subtitles[index]}</p>
+                <div className="ps-tier-price"><p><strong>{money(checkoutPrice(tier, [], showAnnual))}</strong><span> / {showAnnual ? (cs ? "rok" : "year") : (cs ? "měsíc" : "month")}</span></p>
+                  <small>{tier === "school" ? (cs ? "Pouze roční tarif" : "Annual plan only") : showAnnual ? `${cs ? "Ušetříš" : "Save"} ${money(checkoutPrice(tier, [], false) * 2)} / ${cs ? "rok" : "year"}` : `${money(checkoutPrice(tier, [], true))} / ${cs ? "rok" : "year"}`}</small>
+                </div>
+                <ul className="ps-perks">{perks[index].map(perk => <li key={perk}>{perk}</li>)}</ul>
+                <button type="button" className={`ps-button ${active ? "ps-button-gold" : "ps-button-outline"}`} aria-pressed={active} onClick={() => active ? openSummary(tier) : setPlan(tier)}>{active ? (cs ? "Prohlédnout demo" : "Preview plan") : (cs ? "Vybrat tarif" : "Choose plan")}<span aria-hidden="true">{active ? " →" : ""}</span></button>
+              </div>
+            </article>;
+          })}
+        </div>
+      </div>
+      <aside className="ps-frame ps-summary" aria-label={cs ? "Tvůj výběr" : "Your selection"}>
+        <div className="ps-summary-inner">
+          <h2>{cs ? "Tvůj výběr" : "Your selection"}</h2><p className="ps-summary-label">{cs ? "UKÁZKA TARIFU" : "PLAN PREVIEW"}</p>
+          <dl><div><dt>{cs ? "Tarif" : "Plan"}</dt><dd>{names[plan]}</dd></div>{plan === "family" && <div><dt>{cs ? "Členové" : "Members"}</dt><dd>{cs ? "až 5" : "up to 5"}</dd></div>}
+            {plan === "custom" && <div><dt>{cs ? "Funkce" : "Features"}</dt><dd>{selected.length}</dd></div>}
+            <div><dt>{cs ? "Období" : "Period"}</dt><dd>{annual ? t.yearly : t.monthly}</dd></div></dl>
+          <div className="ps-total" aria-live="polite" aria-atomic="true"><p>{cs ? "Orientační cena" : "Indicative price"}</p><p><strong>{money(price)}</strong><span> / {annual ? (cs ? "rok" : "year") : (cs ? "měsíc" : "month")}</span></p></div>
+          {plan === "custom" && !selected.length && <p className="ps-empty">{t.pick}</p>}
+          <button type="button" disabled={!canContinue} className="ps-button ps-button-gold" onClick={() => openSummary(plan)}>{cs ? "Zobrazit souhrn" : "View summary"}<span aria-hidden="true"> →</span></button>
+          <p className="ps-demo-note">{cs ? "Jen demo. Bez objednávky a platby." : "Demo only. No order or payment."}</p>
+          <p className="ps-summary-help">{cs ? "Vše si můžeš vyzkoušet nanečisto." : "Explore every option with no commitment."}</p>
+        </div>
       </aside>
-    </div>}
+    </div>
+
+    <section className="ps-builder" aria-labelledby={`${titleId}-builder`}>
+      <header><h2 id={`${titleId}-builder`}>{cs ? "Poskládej si vlastní PRO" : "Build your own PRO"}</h2><p>{cs ? "Vyber jen funkce, které využiješ." : "Choose only the features you need."}</p></header>
+      <div className="ps-features">{PRO_ITEMS.map(item => <label className={`ps-feature ${selected.includes(item.id) ? "is-on" : ""}`} key={item.id}>
+        <input type="checkbox" checked={selected.includes(item.id)} onChange={() => toggleFeature(item.id)} />
+        <span><span className="ps-feature-title">{t.items[item.id].title}</span><span className="ps-feature-price">{money(item.price * (yearly ? 10 : 1))}<small> / {yearly ? (cs ? "rok" : "year") : (cs ? "měsíc" : "month")}</small></span></span>
+      </label>)}</div>
+      <div className="ps-builder-total"><p aria-live="polite" aria-atomic="true">{cs ? "Tvůj výběr:" : "Your toolkit:"} <strong>{money(customPrice)}</strong><span> / {yearly ? (cs ? "rok" : "year") : (cs ? "měsíc" : "month")}</span></p><small>{cs ? "Celé PRO nejvýše 200 Kč měsíčně. Ročně za cenu 10 měsíců." : "Full PRO capped at 200 Kč monthly. Annual price equals 10 months."}</small>
+        <button type="button" className="ps-button ps-button-outline" disabled={!selected.length} onClick={() => openSummary("custom")}>{cs ? "Prohlédnout výbavu" : "Preview toolkit"}<span aria-hidden="true"> →</span></button></div>
+    </section>
+    <p className="ps-free">{cs ? "Kurzy, body, kolo štěstí a rodičovský panel zůstávají zdarma." : "Courses, points, the wheel of fortune and the parent panel stay free."}</p>
+
+    <dialog ref={dialog} className="ps-dialog" aria-labelledby={dialogTitle} onClick={event => { if (event.target === event.currentTarget) dialog.current?.close(); }}>
+      <div className="ps-dialog-inner"><button className="ps-dialog-close" type="button" aria-label={cs ? "Zavřít" : "Close"} onClick={() => dialog.current?.close()}>×</button>
+        <span className="ps-demo">DEMO</span><h2 id={dialogTitle}>{finished ? (cs ? "Demo dokončeno" : "Demo complete") : (cs ? "Souhrn tvého výběru" : "Your plan summary")}</h2>
+        <p className="ps-dialog-plan">{names[plan]}</p><p className="ps-dialog-price">{money(price)} <small>/ {annual ? (cs ? "rok" : "year") : (cs ? "měsíc" : "month")}</small></p>
+        {plan === "custom" && <ul>{PRO_ITEMS.filter(item => selected.includes(item.id)).map(item => <li key={item.id}>{t.items[item.id].title}</li>)}</ul>}
+        <p>{finished ? (cs ? "Žádná objednávka ani platba nevznikla. Tvůj účet zůstává beze změny." : "No order or payment was created. Your account is unchanged.") : (cs ? "Toto je pouze ukázka nabídky. Ceny jsou orientační a předplatné zatím nelze koupit." : "This is a preview. Prices are indicative and subscriptions cannot be purchased yet.")}</p>
+        <button type="button" className="ps-button ps-button-gold" onClick={() => finished ? dialog.current?.close() : setFinished(true)}>{finished ? (cs ? "Zpět k tarifům" : "Back to plans") : (cs ? "Dokončit ukázku" : "Finish preview")}</button>
+        {!finished && <button type="button" className="ps-edit" onClick={() => dialog.current?.close()}>{cs ? "Upravit výběr" : "Edit selection"}</button>}
+      </div>
+    </dialog>
   </div>;
 }

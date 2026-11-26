@@ -9,20 +9,16 @@ import { getProExtra } from "@/i18n/pro-extra";
 import { getProToolsText } from "@/i18n/pro-tools";
 import { featureAvailableIn, featuresForTab } from "@/lib/pro-tools/features";
 import { isLocale, type Locale } from "@/i18n/config";
-import { HeroPixel } from "@/components/HeroPixel";
 import "./pro-pixel.css";
+import { ProStorefront } from "@/components/pro/ProStorefront";
 import { ProTabs } from "@/components/pro/ProTabs";
 import { ProToolPile } from "@/components/pro/ProToolPile";
-import { PlanBuilder } from "@/components/pro/PlanBuilder";
-import { getBuilderText } from "@/i18n/pro-builder";
-import { PricingPlans } from "@/components/pro/PricingPlans";
-import { getPricingLabels } from "@/i18n/pro-pricing";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const t = getProText(locale);
-  return { title: `${t.title} · Učíme se hrou`, description: t.subtitle };
+  return { title: t.title, description: t.subtitle };
 }
 
 export default async function ProPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -40,52 +36,14 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
     status = "guest";
   }
 
-  const tiers = [t.tiers.individual, t.tiers.family, t.tiers.school];
   const extra = getProExtra(locale as Locale);
   const tools = getProToolsText(locale as Locale);
-  const pl = getPricingLabels(locale as Locale);
 
   return (
     <div className="space-page pro-pixel-page">
-      <section className="gradient-hero relative isolate overflow-hidden">
-        <HeroPixel />
-        <header className="relative z-10 mx-auto max-w-4xl px-6 pb-32 pt-16 text-center sm:pb-48 sm:pt-24">
-          <span className="pro-pixel-label">UČÍME PRO · {locale === "cs" ? "NOVÝ LEVEL UČENÍ" : "LEVEL UP YOUR LEARNING"}</span>
-          <h1 className="neon-h1 mt-6 text-4xl sm:text-6xl">{t.title}</h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-[var(--muted)]">{t.subtitle}</p>
-          <Link href="#tarify" className="btn-bouncy btn-primary btn-lg mt-8 inline-flex">{locale === "cs" ? "Vyber si svou výbavu ↓" : "Choose your toolkit ↓"}</Link>
-        </header>
-      </section>
-      <main className="relative z-10 mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <ProStorefront locale={locale as Locale} />
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <ProTabs locale={locale as Locale} active="pro" />
-
-      <section id="tarify" className="mb-8 scroll-mt-28">
-        <h2 className="mb-4 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          {t.tiersTitle}
-        </h2>
-        <PricingPlans
-          locale={locale}
-          labels={pl}
-          plans={tiers.map((tier, i) => ({
-            id: (["individual", "family", "school"] as const)[i],
-            title: tier.title,
-            text: tier.text,
-            color: ["#35d0ff", "#ffd23f", "#7cf29a"][i],
-            perks: extra.plans[i].perks,
-            monthly: [200, 400, null][i],
-            yearly: [2000, 4000, 12000][i],
-            best: i === 1,
-            members: i === 1 ? 5 : undefined,
-          }))}
-        />
-        <p className="text-sm text-[var(--muted)]">{extra.note}</p>
-        <p className="text-sm text-[var(--muted)]">{t.availability}</p>
-      </section>
-
-      <PlanBuilder t={getBuilderText(locale as Locale)} locale={locale} />
-      <Link href={`/${locale}/platba`} className="btn-bouncy btn-primary btn-lg mb-8 inline-flex">
-        {locale === "cs" ? "Prohlédnout demo tarifů →" : "Preview the plans →"}
-      </Link>
 
       <div className="card mb-8 flex flex-wrap items-center justify-between gap-3 px-7 py-6">
         <p className="font-semibold">{t.status[status]}</p>
@@ -149,7 +107,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
           {t.cta}
         </Link>
       </div>
-    </main>
+    </div>
     </div>
   );
 }
