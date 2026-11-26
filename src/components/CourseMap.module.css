@@ -67,8 +67,9 @@
   position: absolute;
   right: 37%;
   bottom: 8%;
-  width: clamp(.65rem, 2.5vw, 1.3rem);
+  width: clamp(.8rem, 2.5vw, 1.3rem);
   height: 33%;
+  max-height: 3.1rem;
   opacity: 0;
   background: color-mix(in srgb, var(--region) 62%, #242843);
   clip-path: polygon(40% 0, 60% 0, 60% 20%, 72% 20%, 72% 40%, 84% 40%, 84% 61%, 100% 61%, 100% 80%, 60% 80%, 60% 100%, 40% 100%, 40% 80%, 0 80%, 0 61%, 16% 61%, 16% 40%, 28% 40%, 28% 20%, 40% 20%);
@@ -158,6 +159,7 @@
   background: #88eab2;
   color: #111f26;
   font-weight: 900;
+  overflow-wrap: normal;
   text-decoration: none;
 }
 
@@ -182,7 +184,13 @@
   background: #1d172e99;
 }
 
-.campfire strong { overflow-wrap: anywhere; }
+.campfireLabel {
+  display: grid;
+  gap: .15rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .campfire small { color: var(--map-muted); }
 
 .hearth {
@@ -302,6 +310,7 @@
   padding: .2rem .35rem;
   border-radius: .25rem;
   background: #151329d9;
+  font-size: 1rem;
   font-weight: 850;
   overflow-wrap: anywhere;
 }
@@ -431,6 +440,20 @@
 .regionButton:focus-visible {
   outline: 2px solid #ffdc88;
   outline-offset: -3px;
+}
+
+@media (max-width: 480px) {
+  .overview { grid-template-columns: minmax(0, 1fr); }
+
+  .campfire {
+    grid-template-columns: minmax(0, 5.5rem) minmax(0, 1fr);
+    align-items: center;
+    justify-items: start;
+    padding-block: 0;
+    text-align: start;
+  }
+
+  .hearth { height: 6.2rem; margin: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
