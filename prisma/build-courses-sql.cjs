@@ -60,6 +60,8 @@ for (const file of files) {
 
   for (const course of data.courses) {
     const where = `${file} / ${course.slug}`;
+    const subject = course.subject || data.subject;
+    if (!SUBJECTS.includes(subject)) problems.push(`${where}: neznámý předmět ${subject}`);
     course.qs = [...course.qs, ...(extra[course.slug] || [])];
     if (seenSlugs.has(course.slug)) problems.push(`${where}: duplicitní slug`);
     if (!/^[a-z0-9-]+$/.test(course.slug)) problems.push(`${where}: slug smí obsahovat jen a-z, 0-9 a pomlčky`);
@@ -72,7 +74,7 @@ for (const file of files) {
 
     const courseId = `c_${course.slug}`;
     courseRows.push(
-      `(${esc(courseId)},${esc(course.title)},${esc(course.slug)},${esc(course.desc)},true,'${category}'::"Category",${esc(data.subject)}::"Subject",${esc(course.section)},${gradeless ? "NULL" : course.grade},NOW(),NOW())`,
+      `(${esc(courseId)},${esc(course.title)},${esc(course.slug)},${esc(course.desc)},true,'${category}'::"Category",${esc(subject)}::"Subject",${esc(course.section)},${gradeless ? "NULL" : course.grade},NOW(),NOW())`,
     );
 
     const perDifficulty = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
@@ -111,7 +113,7 @@ for (const file of files) {
         `(${esc(`l_${course.slug}_${n}`)},${esc("Test " + n)},${n},${perDifficulty[n] > 0},${esc(courseId)},NOW(),NOW())`,
       );
     }
-    summary.push(`${data.subject.padEnd(11)} ${String(course.grade)}. tř.  ${course.slug.padEnd(34)} ${course.qs.length} otázek  (${Object.values(perDifficulty).join("/")})`);
+    summary.push(`${subject.padEnd(11)} ${String(course.grade)}. tř.  ${course.slug.padEnd(34)} ${course.qs.length} otázek  (${Object.values(perDifficulty).join("/")})`);
   }
 
   const sql = [
