@@ -1,0 +1,172 @@
+/* =====================================================================
+   Úvodní stránka: herní pohyb (načítá se po home-pixel.css).
+   Jednotné křivky: --hp-pop (přestřelí a dosedne), --hp-snap (rychlý start, měkký konec).
+   Vše je pod `.home-px`; při omezení pohybu nebo data-motion="off" se nic nehýbe.
+   ===================================================================== */
+.space-page.home-px {
+  --hp-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --hp-snap: cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+
+/* ---------- hero: obsah vyskočí, nadpis dopadá po slovech ---------- */
+@keyframes hp-hero-pop {
+  0% { opacity: 0; transform: translateY(18px) scale(0.94); }
+  60% { opacity: 1; transform: translateY(-3px) scale(1.01); }
+  100% { opacity: 1; transform: none; }
+}
+.home-px .hero-in { animation: hp-hero-pop 0.6s var(--hp-snap) both; animation-delay: var(--d, 0s); }
+.home-px h1.hero-in { animation: none; }
+.home-px .hero-in-right { animation: hp-hero-pop 0.8s var(--hp-snap) 0.7s both; }
+
+/* Slovo spadne shora, při dopadu se rozplácne a odpruží. */
+@keyframes hp-word-drop {
+  0% { opacity: 0; transform: translateY(-0.9em) scale(1.25, 0.8); }
+  45% { opacity: 1; transform: translateY(0.06em) scale(1.12, 0.86); }
+  65% { transform: translateY(-0.12em) scale(0.95, 1.06); }
+  82% { transform: translateY(0) scale(1.02, 0.98); }
+  100% { opacity: 1; transform: none; }
+}
+.home-px .hero-w {
+  display: inline-block;
+  transform-origin: 50% 100%;
+  animation: hp-word-drop 0.62s var(--hp-snap) both;
+  animation-delay: calc(0.2s + var(--i, 0) * 75ms);
+}
+
+/* Neon druhého řádku: po dopadu naskočí s blikáním jako zářivka, pak občas cukne. */
+@keyframes hp-neon-on {
+  0%, 18%, 34% { text-shadow: none; color: #b48fc0; }
+  10%, 26%, 100% { text-shadow: 0 0 6px #ff4fd8, 0 0 20px #ff1fc4, 0 0 36px #ff1fc4; color: #ffd0f5; }
+}
+@keyframes hp-neon-buzz {
+  0%, 93%, 95.5%, 100% { opacity: 1; }
+  94%, 96.5% { opacity: 0.55; }
+}
+.space-page.home-px .gradient-hero .neon-hl {
+  animation: hp-neon-on 0.7s steps(1, end) 0.95s both, hp-neon-buzz 7s steps(1, end) 2.5s infinite;
+}
+
+/* ---------- náběh při rolování: vyskočí a dosedne (vázané na scroll) ---------- */
+@keyframes hp-reveal {
+  0% { opacity: 0; transform: translateY(52px) scale(0.92); }
+  55% { opacity: 1; }
+  72% { transform: translateY(-6px) scale(1.012); }
+  100% { opacity: 1; transform: none; }
+}
+@supports (animation-timeline: view()) {
+  .home-px .reveal { animation-name: hp-reveal; }
+}
+
+/* ---------- 3D náklon karet (HomeFx): jen odlesk pryč, pixelový styl ho nemá ---------- */
+.home-px .fx-tilt-on { background-image: none !important; }
+.home-px .fx-tilt-hot { filter: brightness(1.06); }
+
+/* ---------- počítadla (HomeCountUp) ---------- */
+.hp-count { display: inline-block; font-variant-numeric: tabular-nums; }
+.hp-count number-flow-react { --number-flow-mask-height: 0.15em; }
+@keyframes hp-count-land {
+  0% { scale: 1; }
+  35% { scale: 1.28; rotate: -4deg; }
+  70% { scale: 0.94; rotate: 2deg; }
+  100% { scale: 1; rotate: 0deg; }
+}
+.hp-count.is-done { animation: hp-count-land 0.5s var(--hp-pop) 0.95s both; }
+.home-px .home-stat { transition: box-shadow 0.3s ease; }
+.home-px .home-stat:has(.is-done) { animation: hp-stat-flash 0.6s steps(3, end) 1s both; }
+@keyframes hp-stat-flash {
+  0% { box-shadow: var(--hp-frame), var(--hp-bevel), 0 6px 0 0 rgba(4, 6, 18, 0.5), 0 0 0 6px var(--ac); }
+  100% { box-shadow: var(--hp-frame), var(--hp-bevel), 0 6px 0 0 rgba(4, 6, 18, 0.5), 0 0 0 0 transparent; }
+}
+
+/* ---------- FAQ: plynulé rozbalení (kde to prohlížeč umí, jinak okamžitě) ---------- */
+.home-px .home-faq-item { interpolate-size: allow-keywords; transition: translate 0.15s var(--hp-snap); }
+.home-px .home-faq-item::details-content {
+  block-size: 0;
+  overflow: clip;
+  transition: block-size 0.42s var(--hp-snap), content-visibility 0.42s allow-discrete;
+}
+.home-px .home-faq-item[open]::details-content { block-size: auto; }
+.home-px .home-faq-item p { transition: opacity 0.3s ease 0.08s, translate 0.4s var(--hp-pop) 0.05s; }
+.home-px .home-faq-item:not([open]) p { opacity: 0; translate: 0 -8px; }
+.home-px .home-faq-item summary:hover { color: var(--ac); }
+.home-px .home-faq-item:has(summary:hover) { translate: 0 -2px; }
+.home-px .home-faq-mark { transition: rotate 0.45s var(--hp-pop), scale 0.2s var(--hp-pop); }
+.home-px .home-faq-item[open] .home-faq-mark { rotate: 180deg; }
+.home-px .home-faq-item summary:hover .home-faq-mark { scale: 1.15; }
+.home-px .home-faq-item summary:active .home-faq-mark { scale: 0.85; }
+
+/* ---------- přechody mezi sekcemi (HomeTrans) ---------- */
+/* Přechod je vidět hned: zavřená brána s cedulkou levelu, žádný prázdný pás. */
+.home-px .hp-trans { opacity: 1; translate: none; transition: none; }
+.home-px .hp-trans::before {
+  content: ""; position: absolute; inset: 0; z-index: 8; pointer-events: none;
+  background: #fff; opacity: 0;
+}
+.home-px .hp-trans.is-hit { animation: hp-trans-hit 0.4s steps(6, end); }
+.home-px .hp-trans.is-hit::before { animation: hp-trans-flash 0.3s steps(3, end) forwards; }
+@keyframes hp-trans-hit { 20% { translate: -4px 2px; } 40% { translate: 4px -2px; } 60% { translate: -2px 1px; } 80% { translate: 1px 0; } 100% { translate: 0 0; } }
+@keyframes hp-trans-flash { from { opacity: 0.22; } to { opacity: 0; } }
+
+/* Brána: nejdřív se otřese (zámek), pak se poloviny rozjedou s dojezdem. */
+.home-px .hp-gate { transition: none; }
+.home-px .hp-trans.is-open .hp-gate-l { animation: hp-gate-l 0.85s var(--hp-snap) 0.12s both; translate: none; }
+.home-px .hp-trans.is-open .hp-gate-r { animation: hp-gate-r 0.85s var(--hp-snap) 0.12s both; translate: none; }
+@keyframes hp-gate-l { 0% { translate: 0 0; } 12% { translate: 3px 0; } 20% { translate: -2px 0; } 30% { translate: 0 0; } 100% { translate: -101% 0; } }
+@keyframes hp-gate-r { 0% { translate: 0 0; } 12% { translate: -3px 0; } 20% { translate: 2px 0; } 30% { translate: 0 0; } 100% { translate: 101% 0; } }
+
+.home-px .hp-gate-plate {
+  position: absolute; z-index: 7; left: 50%; top: 50%; translate: -50% -40%;
+  font-family: var(--font-pixel), monospace; font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap;
+  background: var(--hp-gold); color: #1a1833; padding: 8px 12px; pointer-events: none;
+  box-shadow: 0 0 0 3px var(--hp-edge), 4px 4px 0 3px var(--hp-edge);
+}
+.home-px .hp-trans.is-open .hp-gate-plate { animation: hp-plate-out 0.45s var(--hp-snap) both; }
+@keyframes hp-plate-out {
+  0% { scale: 1; opacity: 1; }
+  30% { scale: 1.25; opacity: 1; }
+  100% { scale: 2.2; opacity: 0; }
+}
+
+/* Banner a ukazatel postupu naskočí až po otevření brány. */
+.home-px .hp-trans.is-open .hp-trans-lv { animation: hp-lv-pop 0.5s var(--hp-pop) 0.55s both; }
+@keyframes hp-lv-pop { 0% { scale: 0.3; rotate: -10deg; } 70% { scale: 1.15; rotate: 3deg; } 100% { scale: 1; rotate: 0deg; } }
+.home-px .hp-trans.is-open .hp-trans-bar span.on { animation: hp-bar-pop 0.4s var(--hp-pop) both; animation-delay: calc(0.75s + var(--i, 0) * 0.11s); }
+@keyframes hp-bar-pop { 0% { background: #2a3466; scale: 0.4; } 60% { scale: 1.35 1.2; } 100% { scale: 1; } }
+.home-px .hp-trans.is-open .hp-trans-chip { animation: hp-chip-in 0.45s var(--hp-pop) both, hp-trans-bob 1.6s steps(2, end) infinite; animation-delay: calc(0.6s + var(--i) * 0.08s), calc(1.2s + var(--i) * -0.3s); }
+@keyframes hp-chip-in { 0% { opacity: 0; translate: 0 14px; scale: 0.5; } 100% { opacity: 1; translate: 0 0; scale: 1; } }
+.home-px .hp-trans-chip { transition: scale 0.2s var(--hp-pop); }
+.home-px .hp-trans-chip:hover { scale: 1.2; }
+
+/* Mince: při najetí se zvednou, po sebrání vyletí obloukem a rozplynou se. */
+.home-px .hp-coin { transition: translate 0.2s var(--hp-pop); }
+.home-px .hp-coin:hover { translate: 0 -4px; }
+.home-px .hp-coin.is-taken { animation: hp-coin-take2 0.6s var(--hp-snap) forwards; }
+@keyframes hp-coin-take2 {
+  0% { translate: 0 0; scale: 1; opacity: 1; }
+  35% { translate: 0 -34px; scale: 1.5; opacity: 1; }
+  100% { translate: 0 -70px; scale: 0.3; opacity: 0; }
+}
+
+/* ---------- drobnosti ---------- */
+.home-px .home-nav-link { transition: translate 0.18s var(--hp-pop), background-color 0.2s ease, color 0.2s ease; }
+.home-px .home-nav-link[aria-current] { animation: hp-nav-pick 0.35s var(--hp-pop); }
+@keyframes hp-nav-pick { 0% { scale: 0.85; } 60% { scale: 1.08; } 100% { scale: 1; } }
+.home-px .home-badge { transition: translate 0.2s var(--hp-pop); }
+.home-px .home-badge:hover { translate: 0 -3px; }
+.home-px .home-badge:hover .home-badge-ic { animation: hp-badge-spin 0.5s var(--hp-pop); }
+@keyframes hp-badge-spin { 0% { rotate: 0deg; scale: 1; } 50% { scale: 1.2; } 100% { rotate: 360deg; scale: 1; } }
+
+/* ---------- omezení pohybu ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .home-px :is(.hero-in, .hero-in-right, .hero-w, .neon-hl, .reveal, .hp-count, .home-stat, .hp-trans, .hp-gate-plate,
+    .hp-trans-lv, .hp-trans-bar span, .hp-trans-chip, .hp-coin, .home-nav-link, .home-badge-ic) { animation: none !important; }
+  .home-px .hp-trans::before { animation: none !important; }
+  .home-px .hp-gate-plate { display: none; }
+  .home-px .home-faq-item::details-content, .home-px .home-faq-item p { transition: none; }
+}
+:root[data-motion="off"] .home-px :is(.hero-in, .hero-in-right, .hero-w, .neon-hl, .reveal, .hp-count, .home-stat, .hp-trans,
+  .hp-trans-lv, .hp-trans-bar span, .hp-trans-chip, .hp-coin, .home-nav-link, .home-badge-ic) { animation: none !important; }
+:root[data-motion="off"] .home-px .hp-trans::before { animation: none !important; }
+:root[data-motion="off"] .home-px .hp-gate-plate { display: none; }
+:root[data-motion="off"] .home-px .home-faq-item::details-content,
+:root[data-motion="off"] .home-px .home-faq-item p { transition: none; }

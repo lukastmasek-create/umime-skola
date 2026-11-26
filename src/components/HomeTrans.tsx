@@ -4,12 +4,13 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Critter, type CritterKind } from "@/components/HomePixelArt";
 import { Sprite } from "@/components/HomePixelScene";
 import { HangIcon } from "@/components/HangDecor";
+import { HomeCountUp } from "@/components/HomeCountUp";
 import type { HomeTransText } from "@/i18n/home-trans";
 
 // Herní přechod mezi sekcemi úvodní stránky („level“):
 // level banner s ukazatelem postupu, brána, která se při doscrollování rozjede, paralaxní hory,
 // dither nahoře i dole, ticker, tip dne, počítadlo, kulisy, postavičky s bublinou a mince ke sbírání.
-// Při vstupu do pohledu se stránka krátce otřese a blikne (jen když je pohyb povolený).
+// Při vstupu do pohledu se brána rozjede, přechod krátce poskočí a blikne (jen když je pohyb povolený).
 // Mince a zvuk sdílí stav s HomeCoinHud přes localStorage a událost „hp-store“.
 
 type Icon = "star" | "check" | "bulb" | "flag" | "bolt" | "search" | "pulse";
@@ -122,16 +123,16 @@ export function HomeTrans({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
-  const [count, setCount] = useState(stat.n);
   const day = useSyncExternalStore(noop, today, () => 0);
   const tip = t.tips[(day + level) % t.tips.length];
   const [taken, setTaken] = useState<boolean[]>([false, false, false]);
 
-  // brána, otřes, počítadlo a paralaxa
+  // brána, otřes a paralaxa
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const still = motionOff();
+    let hit = 0;
     const io = new IntersectionObserver(
       ([e]) => {
         if (!e.isIntersecting) return;
@@ -139,23 +140,14 @@ export function HomeTrans({
         setOpen(true);
         if (still) return;
         blip("level");
-        const page = el.closest<HTMLElement>(".space-page");
-        page?.classList.remove("hp-shake");
-        void page?.offsetWidth;
-        page?.classList.add("hp-shake");
-        window.setTimeout(() => page?.classList.remove("hp-shake"), 450);
-        if (stat.n > 0) {
-          const start = performance.now();
-          setCount(0);
-          const step = (now: number) => {
-            const k = Math.min(1, (now - start) / 900);
-            setCount(Math.round(stat.n * k));
-            if (k < 1) requestAnimationFrame(step);
-          };
-          requestAnimationFrame(step);
-        }
+        // Dopad: otřese se jen přechod, ne celá stránka (přilepená navigace zůstane v klidu).
+        hit = window.setTimeout(() => {
+          el.classList.remove("is-hit");
+          void el.offsetWidth;
+          el.classList.add("is-hit");
+        }, 520);
       },
-      { threshold: 0.35 },
+      { threshold: 0.5, rootMargin: "0px 0px -8% 0px" },
     );
     io.observe(el);
 
@@ -174,10 +166,11 @@ export function HomeTrans({
     }
     return () => {
       io.disconnect();
+      window.clearTimeout(hit);
       cancelAnimationFrame(raf);
       window.removeEventListener("scroll", onScroll);
     };
-  }, [stat.n]);
+  }, []);
 
   function take(i: number) {
     if (taken[i]) return;
@@ -205,7 +198,7 @@ export function HomeTrans({
           <span className="hp-trans-label">▸ {label}</span>
           <span className="hp-trans-bar" aria-hidden>
             {Array.from({ length: total }, (_, i) => (
-              <span key={i} className={i < level ? "on" : undefined} />
+              <span key={i} className={i < level ? "on" : undefined} style={{ ["--i" as string]: i }} />
             ))}
           </span>
         </div>
@@ -217,7 +210,7 @@ export function HomeTrans({
           ))}
         </div>
         <div className="hp-trans-stat">
-          <span className="hp-trans-stat-n">{count}</span>
+          <HomeCountUp value={stat.n} delay={450} className="hp-trans-stat-n" />
           <span className="hp-trans-stat-l">{stat.label}</span>
         </div>
       </div>
@@ -282,6 +275,9 @@ export function HomeTrans({
 
       <span className="hp-gate hp-gate-l" aria-hidden />
       <span className="hp-gate hp-gate-r" aria-hidden />
+      <span className="hp-gate-plate" aria-hidden>
+        {t.level} {level}
+      </span>
       <span className="hp-trans-dither hp-trans-dither-bottom" aria-hidden />
     </div>
   );

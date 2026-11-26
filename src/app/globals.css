@@ -7410,26 +7410,28 @@ a[class*="rounded-full"], button[class*="rounded-full"], span[class*="rounded-fu
   position: fixed; left: 0; top: 0; z-index: 1; width: 520px; height: 520px; margin: -260px 0 0 -260px; border-radius: 50%;
   pointer-events: none; opacity: 0; mix-blend-mode: screen;
   background: radial-gradient(closest-side, rgba(124, 108, 255, 0.16), rgba(255, 143, 208, 0.06) 55%, transparent);
-  transition: opacity 0.4s ease, translate 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: opacity 0.4s ease;
   will-change: translate;
 }
+/* Pixelová jiskra: hranatá, bez rozmazání. Vyletí (dx, dy), pak gravitací spadne (fall) a po krocích zhasne. */
 .fx-spark {
-  position: fixed; z-index: 60; width: 6px; height: 6px; margin: -3px 0 0 -3px; pointer-events: none;
-  background: var(--c); box-shadow: 0 0 8px var(--c), 0 0 2px #fff;
-  animation: fx-spark 0.8s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+  position: fixed; z-index: 60; width: var(--s, 4px); height: var(--s, 4px); margin: calc(var(--s, 4px) / -2) 0 0 calc(var(--s, 4px) / -2); pointer-events: none;
+  background: var(--c); box-shadow: 0 0 0 1px rgba(7, 10, 28, 0.6);
+  animation: fx-spark-x 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) forwards, fx-spark-y 0.9s cubic-bezier(0.5, -0.6, 0.9, 0.6) forwards, fx-spark-fade 0.9s steps(4, jump-none) forwards;
 }
-@keyframes fx-spark {
-  0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
-  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.2) rotate(90deg); }
-}
+@keyframes fx-spark-x { to { translate: var(--dx) 0; } }
+/* záporné y1 v křivce = jiskra nejdřív vyskočí nahoru, pak spadne */
+@keyframes fx-spark-y { to { transform: translateY(var(--fall)); } }
+@keyframes fx-spark-fade { 0%, 40% { opacity: 1; scale: 1; } 100% { opacity: 0; scale: 0.5; } }
 
 /* 3D náklon karet pod kurzorem (proměnné nastavuje HomeFx). !important přebíjí hover transformace karet. */
-.space-page :is(.lobby-card, .gcard-hover, .about-person, .about-note, .about-problem, .pro-tile, .rp-paper).fx-tilt-on {
+/* Náklon dobíhá pružně v JS, proto transform nemá vlastní transition (jinak by se zpoždění sčítala). */
+.space-page :is(.lobby-card, .gcard-hover, .about-person, .about-note, .about-problem, .pro-tile, .rp-paper, .home-stat, .home-tpoint).fx-tilt-on {
   transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(0) !important;
-  transition: transform 0.12s ease-out, translate 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2), box-shadow 0.3s ease !important;
+  transition: translate 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2), box-shadow 0.3s ease !important;
 }
-.space-page .fx-tilt-on { background-image: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgba(255, 255, 255, 0.09), transparent 45%); }
-.space-page .lobby-card.fx-tilt-on, .space-page .rp-paper.fx-tilt-on { background-image: none; }
+.space-page .fx-tilt-hot { background-image: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgba(255, 255, 255, 0.09), transparent 45%); }
+.space-page .lobby-card.fx-tilt-hot, .space-page .rp-paper.fx-tilt-hot { background-image: none; }
 
 /* Hromádka karet: holografický odlesk sleduje kurzor a při najetí přejede lesk. */
 .pcard-in::after {

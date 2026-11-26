@@ -87,7 +87,6 @@
   translate: 0 -4px;
   box-shadow: var(--hp-frame), var(--hp-bevel), 0 12px 0 0 rgba(4, 6, 18, 0.5) !important;
 }
-.home-px .fx-tilt-on { transform: none !important; background-image: none !important; }
 .home-px .fx-glow { display: none; }
 
 /* lobby */

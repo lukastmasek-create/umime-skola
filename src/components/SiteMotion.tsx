@@ -86,7 +86,8 @@ export function SiteMotion() {
       const found = root.querySelectorAll<HTMLElement>(REVEAL);
       for (const el of Array.from(found)) {
         if (el.parentElement?.closest(REVEAL)) continue;
-        if (el.dataset.sm || el.classList.contains("reveal") || el.closest("[data-sm-skip],[role=dialog], canvas, .gradient-hero")) continue;
+        // Uvnitř .reveal už běží vlastní náběh; druhý by obsah zdvojeně schoval (nadpisy karet chvíli chyběly).
+        if (el.dataset.sm || el.closest(".reveal, [data-sm-skip], [role=dialog], canvas, .gradient-hero")) continue;
         el.dataset.sm = "1";
         const r = el.getBoundingClientRect();
         if (r.top < window.innerHeight * 0.92 && r.bottom > 0) continue; // už je vidět, nic se nehýbe

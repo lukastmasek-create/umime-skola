@@ -8,6 +8,8 @@ import { Wave } from "@/components/SpaceDecor";
 import { PixelGround, PixelRise, PixelSeam, PixelSky } from "@/components/HomePixelScene";
 import { Campfire, Critter, PixelIcon, ShootingStar, SkyBirds } from "@/components/HomePixelArt";
 import "./home-pixel.css";
+import "./home-motion.css";
+import { HomeCountUp } from "@/components/HomeCountUp";
 import { LazyOnView } from "@/components/LazyOnView";
 import { LazySubjectGlobe, LazyTownLife } from "@/components/HomeLazy";
 import { HeroPixel } from "@/components/HeroPixel";
@@ -400,9 +402,9 @@ export default async function Home({
           </div>
 
           <ul className="home-stats reveal">
-            {stats.map((st) => (
-              <li key={st.label} className="home-stat" style={{ ["--ac" as string]: st.ac }}>
-                <span className="home-stat-n">{st.n}</span>
+            {stats.map((st, i) => (
+              <li key={st.label} className="home-stat" style={{ ["--ac" as string]: st.ac, ["--i" as string]: i }}>
+                <HomeCountUp value={st.n} delay={i * 120} className="home-stat-n" />
                 <span className="home-stat-l">{st.label}</span>
               </li>
             ))}
