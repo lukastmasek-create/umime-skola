@@ -59,6 +59,16 @@ export function SettingsForm({ locale, dict }: { locale: Locale; dict: Dictionar
   const [accentInput, setAccentInput] = useState(DEFAULT_ACCENT.slice(1));
   const [saved, setSaved] = useState(false);
   const [section, setSection] = useState<Section>("graphics");
+  useEffect(() => {
+    const syncSection = () => {
+      const requested = window.location.hash.slice(1);
+      if (SECTIONS.includes(requested as Section)) setSection(requested as Section);
+    };
+    syncSection();
+    window.addEventListener("hashchange", syncSection);
+    return () => window.removeEventListener("hashchange", syncSection);
+  }, []);
+
   const look = getSettingsLookText(locale);
   const sectionLabels = { ...getSettingsExtraText(locale).sections, a11y: look.a11y, shortcuts: look.shortcuts, notify: look.notify, plan: look.plan, privacy: look.privacy };
 

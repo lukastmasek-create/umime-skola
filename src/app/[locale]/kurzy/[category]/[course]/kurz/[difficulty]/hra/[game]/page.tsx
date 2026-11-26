@@ -1,3 +1,4 @@
+import { LearningVisit } from "@/components/LearningVisit";
 import { notFound } from "next/navigation";
 import { loadGameQuestions } from "@/lib/game-questions";
 import { getCategoryBySlug } from "@/lib/taxonomy";
@@ -72,6 +73,7 @@ export default async function CourseGamePage({
     if (!runnerPlayable(questions)) notFound();
     return (
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+      <LearningVisit category={category.slug} course={courseSlug} difficulty={difficulty} game={game.slug} />
         <FullscreenFrame locale={locale as Locale} backHref={backHref}>
           <RunnerGame locale={locale} courseSlug={courseSlug} backHref={backHref} questions={questions} level={difficulty} />
         </FullscreenFrame>
@@ -81,6 +83,7 @@ export default async function CourseGamePage({
   if (isClassicSlug(game.slug)) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+      <LearningVisit category={category.slug} course={courseSlug} difficulty={difficulty} game={game.slug} />
         <FullscreenFrame locale={locale as Locale} backHref={backHref}>
           <ClassicGame locale={locale as Locale} game={game.slug} questions={questions} difficulty={difficulty} courseSlug={courseSlug} backHref={backHref} />
         </FullscreenFrame>
@@ -90,6 +93,7 @@ export default async function CourseGamePage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+      <LearningVisit category={category.slug} course={courseSlug} difficulty={difficulty} game={game.slug} />
       <FullscreenFrame locale={locale as Locale} backHref={backHref}>
         <SpaceQuizGame
           locale={locale as Locale}

@@ -1,3 +1,4 @@
+import { LearningVisit } from "@/components/LearningVisit";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCategoryBySlug } from "@/lib/taxonomy";
@@ -71,6 +72,7 @@ export default async function CourseTestPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+      {questions.length > 0 && <LearningVisit category={category.slug} course={courseSlug} difficulty={difficulty} game={null} />}
       <TestRunner
         locale={locale as Locale}
         courseId={courseId}
