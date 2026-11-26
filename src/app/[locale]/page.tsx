@@ -5,7 +5,7 @@ import { HomeProgress } from "@/components/HomeProgress";
 import { DailyQuizTeaser } from "@/components/DailyQuizTeaser";
 import { TeacherCta } from "@/components/TeacherCta";
 import { Wave } from "@/components/SpaceDecor";
-import { PixelGround, PixelSeam, PixelSky } from "@/components/HomePixelScene";
+import { PixelGround, PixelRise, PixelSeam, PixelSky } from "@/components/HomePixelScene";
 import { Campfire, Critter, PixelIcon, ShootingStar, SkyBirds } from "@/components/HomePixelArt";
 import "./home-pixel.css";
 import { LazyOnView } from "@/components/LazyOnView";
@@ -206,6 +206,7 @@ export default async function Home({
           <Critter kind="cat" y={51} dur={48} delay={-12} />
           <Critter kind="chick" y={51} dur={62} delay={-40} left />
         </PixelGround>
+        <PixelRise seed={61} color="#2a3c6e" />
       </div>
 
       {/* 2) Předměty: hory pod hvězdami */}
@@ -247,6 +248,7 @@ export default async function Home({
           <Campfire x={318} y={51} />
           <Critter kind="slime" y={51} dur={70} delay={-25} />
         </PixelGround>
+        <PixelRise seed={62} color="#3b2f6e" />
       </section>
 
       {/* 4) Hory: jak to funguje */}
@@ -305,6 +307,7 @@ export default async function Home({
           <Critter kind="chick" y={51} dur={55} delay={-8} />
           <Critter kind="slime" y={51} dur={66} delay={-38} left />
         </PixelGround>
+        <PixelRise seed={63} color="#1d4a66" />
       </section>
 
       {/* 6) Pro učitele */}
@@ -358,6 +361,7 @@ export default async function Home({
           <Campfire x={150} y={51} />
           <Critter kind="cat" y={51} dur={52} delay={-30} left />
         </PixelGround>
+        <PixelRise seed={64} color="#2b3572" />
       </section>
 
       {/* 7) O nás */}

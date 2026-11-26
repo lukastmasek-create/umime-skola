@@ -70,3 +70,7 @@
 }
 :root[data-motion="off"] :is(.hp-ico, .hpc-walk, .hpc-f1, .hpc-f2, .hpc-hop, .hpf-a, .hpf-b, .hpf-glow, .hps-bird, .hpb-a, .hpb-b, .hps-shoot) { animation: none !important; }
 :root[data-motion="off"] .hps-shoot { display: none; }
+
+/* těžký přechod: kopce další sekce přes konec předchozí krajiny */
+.hps-rise { position: absolute; left: 0; right: 0; bottom: 0; height: clamp(56px, 8vw, 110px); z-index: 2; pointer-events: none; }
+.hps-rise svg { display: block; width: 100%; height: 100%; }

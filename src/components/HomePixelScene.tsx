@@ -352,3 +352,24 @@ export function PixelSeam({ seed, className = "" }: { seed: number; className?: 
     </div>
   );
 }
+
+// Těžký přechod: kopce další sekce se zvedají přes konec předchozí krajiny (pixelový paralax).
+// Vyklenutí má zubatou hranu, pod ní jednu řadu ditheru, takže přechází do PixelSeam.
+export function PixelRise({ seed, color, className = "" }: { seed: number; color: string; className?: string }) {
+  const far = ridge(seed, 34, 9, 0.035);
+  const near = ridge(seed + 7, 44, 4, 0.06);
+  let dither = "";
+  far.forEach((y, x) => {
+    if (x % 2 === 0) dither += `M${x} ${y - 2}h1v1h-1z`;
+  });
+  const H = 64;
+  return (
+    <div aria-hidden className={`hps-rise ${className}`}>
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMax slice" shapeRendering="crispEdges">
+        <path d={ridgePath(far, H)} fill={color} />
+        <path d={dither} fill={color} opacity={0.6} />
+        <path d={ridgePath(near, H)} fill={color} style={{ filter: "brightness(0.82)" }} />
+      </svg>
+    </div>
+  );
+}
