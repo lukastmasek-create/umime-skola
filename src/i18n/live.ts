@@ -85,7 +85,6 @@ export type LiveText = {
     teamWins: string;
     streakHint: string;
     chestTitle: string;
-    chestHint: string;
     youGot: string;
     stolen: string;
     lost: string;
@@ -226,7 +225,6 @@ const cs: LiveText = {
     streakHint: "Čím delší série správných odpovědí, tím víc bodů. Chyba sérii přeruší.",
     gold: "Zlato",
     chestTitle: "Vyber si truhlu",
-    chestHint: "Uvnitř je zlato, ale pozor na krádež i past.",
     youGot: "Získal jsi {n} zlata!",
     stolen: "Ukradl jsi {n} zlata hráči {name}!",
     lost: "Past! Přišel jsi o {n} zlata.",
@@ -385,7 +383,6 @@ const en: LiveText = {
     streakHint: "The longer your streak of correct answers, the more points. A mistake breaks it.",
     gold: "Gold",
     chestTitle: "Pick a chest",
-    chestHint: "Inside is gold, but watch out for steals and traps.",
     youGot: "You got {n} gold!",
     stolen: "You stole {n} gold from {name}!",
     lost: "A trap! You lost {n} gold.",
@@ -544,7 +541,6 @@ const de: LiveText = {
     streakHint: "Je länger deine Serie richtiger Antworten, desto mehr Punkte. Ein Fehler unterbricht sie.",
     gold: "Gold",
     chestTitle: "Wähle eine Truhe",
-    chestHint: "Drin ist Gold, aber Vorsicht vor Diebstahl und Fallen.",
     youGot: "Du hast {n} Gold bekommen!",
     stolen: "Du hast {n} Gold von {name} gestohlen!",
     lost: "Eine Falle! Du hast {n} Gold verloren.",
@@ -703,7 +699,6 @@ const ru: LiveText = {
     streakHint: "Чем длиннее серия правильных ответов, тем больше очков. Ошибка её прерывает.",
     gold: "Золото",
     chestTitle: "Выбери сундук",
-    chestHint: "Внутри золото, но берегись краж и ловушек.",
     youGot: "Ты получил {n} золота!",
     stolen: "Ты украл {n} золота у игрока {name}!",
     lost: "Ловушка! Ты потерял {n} золота.",
@@ -860,7 +855,6 @@ const texts: Record<Locale, LiveText> = {
       streakHint: "Чим довша серія правильних відповідей, тим більше балів. Помилка її перериває.",
       gold: "Золото",
       chestTitle: "Обери скриню",
-      chestHint: "Усередині золото, але стеж за крадіжками та пастками.",
       youGot: "Ти отримав {n} золота!",
       stolen: "Ти вкрав {n} золота у гравця {name}!",
       lost: "Пастка! Ти втратив {n} золота.",
@@ -1014,7 +1008,6 @@ const texts: Record<Locale, LiveText> = {
       streakHint: "正解が続くほどポイントが増えます。まちがえると連続記録は途切れます。",
       gold: "金貨",
       chestTitle: "トレジャーを選んでください",
-      chestHint: "中には金貨がありますが、盗みやわなに注意してください。",
       youGot: "{n}枚の金貨を獲得しました！",
       stolen: "{name}さんから{n}枚の金貨を盗みました！",
       lost: "わなにかかりました！{n}枚の金貨を失いました。",
@@ -1168,7 +1161,6 @@ const texts: Record<Locale, LiveText> = {
       streakHint: "Cuanto más larga sea tu racha de respuestas correctas, más puntos. Un fallo la rompe.",
       gold: "Oro",
       chestTitle: "Elige un cofre",
-      chestHint: "Dentro hay oro, pero cuidado con los robos y las trampas.",
       youGot: "¡Has conseguido {n} de oro!",
       stolen: "¡Has robado {n} de oro a {name}!",
       lost: "¡Trampa! Has perdido {n} de oro.",
@@ -1322,7 +1314,6 @@ const texts: Record<Locale, LiveText> = {
       streakHint: "Plus ta série de bonnes réponses est longue, plus tu gagnes de points. Une erreur la brise.",
       gold: "Or",
       chestTitle: "Choisis un coffre",
-      chestHint: "Il y a de l'or à l'intérieur, mais attention aux vols et aux pièges.",
       youGot: "Tu as obtenu {n} d'or !",
       stolen: "Tu as volé {n} d'or à {name} !",
       lost: "Un piège ! Tu as perdu {n} d'or.",

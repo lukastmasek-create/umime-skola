@@ -35,7 +35,7 @@ function JoinForm({ locale, pin, onJoined }: { locale: Locale; pin: string; onJo
   }
 
   return (
-    <form onSubmit={submit} className="card mx-auto flex max-w-md flex-col gap-4 p-6">
+    <form onSubmit={submit} className="card mx-auto flex max-w-md flex-col gap-4 p-4 sm:p-6">
       <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
         {t.join.title}
       </h1>
@@ -49,7 +49,6 @@ function JoinForm({ locale, pin, onJoined }: { locale: Locale; pin: string; onJo
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={16}
-            autoFocus
             autoComplete="nickname"
             placeholder={t.join.namePlaceholder}
             className="rounded-lg border-2 px-3 py-3 text-lg outline-none focus:border-[var(--brand-500)]"
@@ -78,7 +77,7 @@ export function LiveRoom({ locale, pin }: { locale: Locale; pin: string }) {
   if (identity === undefined) return null;
   if (!identity)
     return (
-      <div className="arena-stage px-4 py-10 sm:py-16">
+      <div className="arena-stage px-3 py-6 sm:px-4 sm:py-16">
         <ArenaBackdrop variant="neutral" />
         <JoinForm locale={locale} pin={pin} onJoined={() => {}} />
       </div>
