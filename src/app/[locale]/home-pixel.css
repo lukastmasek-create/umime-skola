@@ -390,3 +390,30 @@
 .space-page.home-px .lobby-panel { margin-top: 0.75rem !important; margin-bottom: 0.75rem !important; padding: clamp(14px, 2.2vw, 22px) !important; }
 .home-px .zone { padding-bottom: 0; }
 .home-px .hp-z1 > section { padding-top: 1rem !important; padding-bottom: 0.5rem !important; }
+
+/* ---------- přechody v2: vyšší, s postavičkami, štítkem a animací ---------- */
+.home-px .hp-trans {
+  height: 104px;
+  margin-top: -40px;
+  padding-bottom: 14px;
+  clip-path: polygon(0 34%, 3% 34%, 3% 20%, 7% 20%, 7% 8%, 12% 8%, 12% 0, 88% 0, 88% 8%, 93% 8%, 93% 20%, 97% 20%, 97% 34%, 100% 34%, 100% 100%, 0 100%);
+  box-shadow: 0 -6px 0 0 var(--hp-edge), 0 8px 0 0 var(--hp-edge);
+}
+.home-px .hp-trans-svg {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  width: 100%; height: 64px;
+  overflow: visible;
+}
+.home-px .hp-trans-row { position: relative; align-items: center; }
+.home-px .hp-trans-label {
+  font-family: var(--font-pixel), monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: #fff; text-shadow: 2px 2px 0 #000; padding: 0 8px; white-space: nowrap;
+}
+.home-px .hp-trans-chip { animation: hp-trans-bob 1.6s steps(2, end) infinite; animation-delay: calc(var(--i) * -0.3s); }
+@keyframes hp-trans-bob { 0% { translate: 0 0; } 50% { translate: 0 -4px; } 100% { translate: 0 0; } }
+@media (max-width: 640px) {
+  .home-px .hp-trans { height: 80px; margin-top: -30px; }
+  .home-px .hp-trans-svg { height: 48px; }
+  .home-px .hp-trans-label { font-size: 9px; }
+}
+@media (prefers-reduced-motion: reduce) { .home-px .hp-trans-chip { animation: none; } }

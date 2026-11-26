@@ -38,13 +38,22 @@ import { getHomeExtraText } from "@/i18n/home-extra";
 import { HomeSectionNav } from "@/components/HomeSectionNav";
 
 const TILE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
-// Přechod mezi sekcemi: schodovitý pixel okraj + řada ikon.
-function HomeTrans({ fill, icons }: { fill: string; icons: Array<"star" | "check" | "bulb" | "flag" | "bolt" | "search" | "pulse"> }) {
+// Přechod mezi sekcemi: těžký schodovitý pás, animované ikony, štítek sekce a postavičky.
+type TransCritter = { kind: "cat" | "chick" | "slime"; dur: number; delay: number; left?: boolean };
+function HomeTrans({ fill, label, icons, critters = [] }: { fill: string; label: string; icons: Array<"star" | "check" | "bulb" | "flag" | "bolt" | "search" | "pulse">; critters?: TransCritter[] }) {
   return (
     <div aria-hidden className="hp-trans" style={{ ["--tf" as string]: fill }}>
+      {critters.length > 0 && (
+        <svg className="hp-trans-svg" viewBox="0 0 480 64" preserveAspectRatio="xMidYMax slice" shapeRendering="crispEdges">
+          {critters.map((c, i) => (
+            <Critter key={i} kind={c.kind} y={51} dur={c.dur} delay={c.delay} left={c.left} />
+          ))}
+        </svg>
+      )}
       <div className="hp-trans-row">
+        <span className="hp-trans-label">{label}</span>
         {icons.map((k, i) => (
-          <span key={i} className="hp-trans-chip" style={{ ["--ac" as string]: TILE_COLORS[i % TILE_COLORS.length] }}>
+          <span key={i} className="hp-trans-chip" style={{ ["--ac" as string]: TILE_COLORS[i % TILE_COLORS.length], ["--i" as string]: i }}>
             <HangIcon kind={k} size={16} />
           </span>
         ))}
@@ -223,7 +232,7 @@ export default async function Home({
         <PixelRise seed={61} color="#2a3c6e" />
       </div>
 
-      <HomeTrans fill="#1b2558" icons={["star", "bolt", "bulb", "check", "flag"]} />
+      <HomeTrans fill="#1b2558" label={x.nav.subjects} icons={["star", "bolt", "bulb", "check", "flag"]} critters={[{ kind: "cat", dur: 40, delay: -6 }, { kind: "chick", dur: 52, delay: -20, left: true }]} />
 
       {/* 2) Předměty: hory pod hvězdami */}
       <section id="predmety" className="zone zone-globe hp-z2 home-anchor">
@@ -286,7 +295,7 @@ export default async function Home({
         </section>
       )}
 
-      <HomeTrans fill="#241f58" icons={["pulse", "star", "search", "bolt"]} />
+      <HomeTrans fill="#241f58" label={x.nav.sections} icons={["pulse", "star", "search", "bolt"]} critters={[{ kind: "slime", dur: 60, delay: -14 }]} />
 
       {/* 5) Zpět do vesmíru: kategorie */}
       <section id="stupne" className="zone hp-z3 home-anchor">
@@ -328,7 +337,7 @@ export default async function Home({
         <PixelRise seed={63} color="#1d4a66" />
       </section>
 
-      <HomeTrans fill="#11223f" icons={["flag", "check", "pulse", "bulb"]} />
+      <HomeTrans fill="#11223f" label={x.nav.teachers} icons={["flag", "check", "pulse", "bulb"]} critters={[{ kind: "chick", dur: 46, delay: -30 }, { kind: "cat", dur: 58, delay: -4, left: true }]} />
 
       {/* 6) Pro učitele */}
       <section id="pro-ucitele" className="zone hp-z4 home-anchor">
@@ -384,7 +393,7 @@ export default async function Home({
         <PixelRise seed={64} color="#2b3572" />
       </section>
 
-      <HomeTrans fill="#182046" icons={["pulse", "star", "bolt", "check", "flag"]} />
+      <HomeTrans fill="#182046" label={x.nav.about} icons={["pulse", "star", "bolt", "check", "flag"]} critters={[{ kind: "slime", dur: 50, delay: -22, left: true }, { kind: "cat", dur: 66, delay: -41 }]} />
 
       {/* 7) O nás */}
       <section id="o-nas" className="zone hp-z5 home-anchor">
