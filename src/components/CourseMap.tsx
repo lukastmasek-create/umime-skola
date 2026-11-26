@@ -51,8 +51,10 @@ function Campfire({ locale, data }: { locale: Locale; data: MapProgress | null }
         <span className={styles.flame} />
         <span className={styles.logs} />
       </span>
-      <strong>{data?.loggedIn ? fill(t.reviewCta, due) : t.reviewNav}</strong>
-      {data?.loggedIn && due === 0 && <small>{t.nothingDue}</small>}
+      <span className={styles.campfireLabel}>
+        <strong>{data?.loggedIn ? fill(t.reviewCta, due) : t.reviewNav}</strong>
+        {data?.loggedIn && due === 0 && <small>{t.nothingDue}</small>}
+      </span>
     </Link>
   );
 }
