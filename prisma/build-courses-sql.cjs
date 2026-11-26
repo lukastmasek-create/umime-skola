@@ -55,7 +55,7 @@ for (let i = 0; i < 37000; i++) {
   const batch = Math.floor(i / allCourses.length);
   const distractors = allCourses.filter((item) => item.title !== course.title);
   const others = [1, 2, 3].map((offset) => distractors[(i + offset + batch) % distractors.length].title);
-  const suffix = batch >= 2 ? ` (varianta ${batch + 1})` : "";
+  const suffix = ` (rozšíření ${i + 1})`;
   generatedExtra.get(course.slug).push([(i % 5) + 1, generatedTemplates[i % generatedTemplates.length](course.title) + suffix, course.title, others, `Kurz „${course.title}“ se zaměřuje na uvedené téma.`]);
 }
 for (const file of files) {
