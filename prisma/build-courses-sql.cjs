@@ -34,30 +34,9 @@ const problems = [];
 const seenSlugs = new Set();
 let grandTotal = 0;
 const summary = [];
-const expansionRows = [];
 
 const files = fs.readdirSync(contentDir).filter((f) => f.endsWith(".cjs")).sort();
 const datasets = files.map((file) => ({ file, data: require(path.join(contentDir, file)) }));
-const allCourses = datasets.flatMap(({ data }) => data.courses);
-const generatedExtra = new Map(allCourses.map((course) => [course.slug, []]));
-const generatedTemplates = [
-  (title) => `Kterému tématu se věnuje kurz „${title}“?`,
-  (title) => `Co je hlavním zaměřením kurzu „${title}“?`,
-  (title) => `Který název nejlépe popisuje obsah kurzu „${title}“?`,
-  (title) => `Do kterého kurzu patří učivo „${title}“?`,
-  (title) => `Co si procvičíš v kurzu „${title}“?`,
-  (title) => `Který kurz se zabývá tématem „${title}“?`,
-  (title) => `Jaké učivo označuje název „${title}“?`,
-  (title) => `Který popis odpovídá kurzu „${title}“?`,
-];
-for (let i = 0; i < 37000; i++) {
-  const course = allCourses[i % allCourses.length];
-  const batch = Math.floor(i / allCourses.length);
-  const distractors = allCourses.filter((item) => item.title !== course.title);
-  const others = [1, 2, 3].map((offset) => distractors[(i + offset + batch) % distractors.length].title);
-  const suffix = ` (rozšíření ${i + 1})`;
-  generatedExtra.get(course.slug).push([(i % 5) + 1, generatedTemplates[i % generatedTemplates.length](course.title) + suffix, course.title, others, `Kurz „${course.title}“ se zaměřuje na uvedené téma.`]);
-}
 for (const file of files) {
   const data = datasets.find((item) => item.file === file).data;
   if (!SUBJECTS.includes(data.subject)) problems.push(`${file}: neznámý předmět ${data.subject}`);
@@ -84,8 +63,7 @@ for (const file of files) {
     const where = `${file} / ${course.slug}`;
     const subject = course.subject || data.subject;
     if (!SUBJECTS.includes(subject)) problems.push(`${where}: neznámý předmět ${subject}`);
-    course.qs = [...course.qs, ...(extra[course.slug] || []), ...(generatedExtra.get(course.slug) || [])];
-    const generatedStart = course.qs.length - generatedExtra.get(course.slug).length;
+    course.qs = [...course.qs, ...(extra[course.slug] || [])];
     if (seenSlugs.has(course.slug)) problems.push(`${where}: duplicitní slug`);
     if (!/^[a-z0-9-]+$/.test(course.slug)) problems.push(`${where}: slug smí obsahovat jen a-z, 0-9 a pomlčky`);
     seenSlugs.add(course.slug);
@@ -128,7 +106,6 @@ for (const file of files) {
       subjectQuestions += 1;
       const row = `(${esc(`q_${course.slug}_${index}`)},${esc(prompt)},ARRAY[${options.map(esc).join(",")}]::TEXT[],${correctIndex},${esc(explanation)},${difficulty},ARRAY[]::TEXT[],NULL,${index},${esc(courseId)},NULL,NOW())`;
       questionRows.push(row);
-      if (index >= generatedStart) expansionRows.push(row);
     });
 
     for (let n = 1; n <= 5; n++) {
@@ -150,17 +127,6 @@ for (const file of files) {
   grandTotal += subjectQuestions;
   console.log(`${file}: ${data.courses.length} kurzů, ${subjectQuestions} otázek, ${(sql.length / 1024).toFixed(0)} KB`);
 }
-
-if (expansionRows.length !== 37000) {
-  problems.push(`Rozšíření má ${expansionRows.length} řádků místo 37000`);
-}
-const expansionSql = [
-  "-- Vygenerováno z prisma/build-courses-sql.cjs: přesně 37 000 doplňujících otázek.",
-  `INSERT INTO "Question" ("id","prompt","options","correctIndex","explanation","difficulty","answers","hint","order","courseId","levelId","createdAt") VALUES\n${expansionRows.join(",\n")}\nON CONFLICT ("id") DO NOTHING;`,
-  "",
-].join("\n\n");
-fs.writeFileSync(path.join(outDir, "questions-expansion-37000.sql"), expansionSql, "utf8");
-console.log(`questions-expansion-37000.sql: ${expansionRows.length} řádků`);
 
 console.log("\n" + summary.join("\n"));
 console.log(`\nCelkem: ${seenSlugs.size} kurzů, ${grandTotal} otázek`);
