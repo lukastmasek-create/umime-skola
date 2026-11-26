@@ -138,12 +138,12 @@
 }
 .ps-checkout-samples button:hover { color: var(--ps-ink); }
 .ps-checkout-form label { display: grid; gap: 6px; min-width: 0; font-size: 13px; font-weight: 650; }
-.ps-checkout-form input {
+.pro-storefront .ps-checkout-form input {
   width: 100%;
   min-height: 46px;
   padding: 10px 12px;
   border: 1px solid #698bb9;
-  border-radius: 0;
+  border-radius: 6px;
   background: #09162d;
   color: var(--ps-ink);
   font-size: 16px;
@@ -152,8 +152,8 @@
   transition: border-color 160ms, background-color 160ms;
 }
 .ps-checkout-form input::placeholder { color: #8297b7; }
-.ps-checkout-form input:focus { border-color: var(--ps-cyan); background: #102243; }
-.ps-checkout-form input[aria-invalid="true"] { border-color: #ffa99e; }
+.pro-storefront .ps-checkout-form input:focus { border-color: var(--ps-cyan); background: #102243; }
+.pro-storefront .ps-checkout-form input[aria-invalid="true"] { border-color: #ffa99e; }
 .ps-checkout-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
 .ps-checkout-error {
   margin: 0;
@@ -176,7 +176,20 @@
 }
 @media (max-width: 620px) {
   .ps-checkout-layout { grid-template-columns: minmax(0, 1fr); }
-  .ps-checkout-summary { padding: 12px 15px; }
+  .ps-dialog h2 { margin-bottom: 16px; }
+  .ps-checkout-summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: end;
+    gap: 4px 8px;
+    padding: 12px 15px;
+  }
+  .ps-dialog-plan, .ps-dialog-price { margin: 0; }
+  .ps-dialog-price { grid-area: 1 / 2; font-size: clamp(22px, 6.5vw, 30px); }
+  .ps-checkout-summary .ps-checkout-caption:last-child { grid-area: 2 / 2; }
+  .ps-checkout-summary :is(.ps-dialog-price, .ps-checkout-caption:last-child) { text-align: right; }
+  .ps-checkout-summary ul { grid-column: 1 / -1; }
+  .ps-checkout-form { gap: 10px; }
 }
 @media (min-width:1300px) { .ps-tier.is-selected { transform:translateY(-5px); }.ps-layout { gap:28px; }.ps-tier-inner { padding-inline:23px; } }
 @media (max-width:1199px) { .ps-layout { grid-template-columns:minmax(0,1fr) 260px; gap:18px; }.ps-cards { gap:12px; }.ps-tier-inner { padding-inline:14px; }.ps-world { width:155px; }.ps-tier h2 { font-size:26px; }.ps-tier-price strong { font-size:30px; }.ps-tier-price p>span { font-size:10px; }.ps-perks { font-size:11px; }.ps-feature { padding:14px 10px; gap:8px; }.ps-feature-price { font-size:17px; }.ps-summary-inner { padding:25px 18px; }.ps-summary h2 { font-size:28px; }.ps-total strong { font-size:35px; }.ps-intro { align-items:flex-start; }.ps-disclaimer { max-width:260px; } }
