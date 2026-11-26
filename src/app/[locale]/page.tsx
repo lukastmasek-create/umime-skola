@@ -38,6 +38,20 @@ import { getHomeExtraText } from "@/i18n/home-extra";
 import { HomeSectionNav } from "@/components/HomeSectionNav";
 
 const TILE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
+// Přechod mezi sekcemi: schodovitý pixel okraj + řada ikon.
+function HomeTrans({ fill, icons }: { fill: string; icons: Array<"star" | "check" | "bulb" | "flag" | "bolt" | "search" | "pulse" | "heart"> }) {
+  return (
+    <div aria-hidden className="hp-trans" style={{ ["--tf" as string]: fill }}>
+      <div className="hp-trans-row">
+        {icons.map((k, i) => (
+          <span key={i} className="hp-trans-chip" style={{ ["--ac" as string]: TILE_COLORS[i % TILE_COLORS.length] }}>
+            <HangIcon kind={k} size={16} />
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
 // Sekce „Jak to funguje“ je archivovaná (skrytá). Pro návrat stačí přepnout na true.
 const SHOW_HOW_IT_WORKS = false;
 
@@ -209,6 +223,8 @@ export default async function Home({
         <PixelRise seed={61} color="#2a3c6e" />
       </div>
 
+      <HomeTrans fill="#1b2558" icons={["star", "bolt", "bulb", "check", "flag"]} />
+
       {/* 2) Předměty: hory pod hvězdami */}
       <section id="predmety" className="zone zone-globe hp-z2 home-anchor">
         <PixelSeam seed={23} />
@@ -270,6 +286,8 @@ export default async function Home({
         </section>
       )}
 
+      <HomeTrans fill="#241f58" icons={["heart", "star", "search", "bolt"]} />
+
       {/* 5) Zpět do vesmíru: kategorie */}
       <section id="stupne" className="zone hp-z3 home-anchor">
         <PixelSeam seed={37} />
@@ -309,6 +327,8 @@ export default async function Home({
         </PixelGround>
         <PixelRise seed={63} color="#1d4a66" />
       </section>
+
+      <HomeTrans fill="#11223f" icons={["flag", "check", "pulse", "bulb"]} />
 
       {/* 6) Pro učitele */}
       <section id="pro-ucitele" className="zone hp-z4 home-anchor">
@@ -363,6 +383,8 @@ export default async function Home({
         </PixelGround>
         <PixelRise seed={64} color="#2b3572" />
       </section>
+
+      <HomeTrans fill="#182046" icons={["heart", "star", "bolt", "check", "flag"]} />
 
       {/* 7) O nás */}
       <section id="o-nas" className="zone hp-z5 home-anchor">

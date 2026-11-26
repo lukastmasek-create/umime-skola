@@ -360,3 +360,33 @@
 
 /* panel předmětů nezakrývá přechod z hlíny */
 .home-px .zone-globe > .lobby-panel { margin-top: clamp(24px, 3vw, 44px) !important; }
+
+/* ---------- přechody mezi sekcemi: těžké schodovité pásy ---------- */
+.home-px .hp-trans {
+  position: relative;
+  z-index: 2;
+  height: 64px;
+  margin-top: -18px;
+  background: var(--tf);
+  clip-path: polygon(0 26%, 4% 26%, 4% 12%, 9% 12%, 9% 0, 91% 0, 91% 12%, 96% 12%, 96% 26%, 100% 26%, 100% 100%, 0 100%);
+  box-shadow: 0 -4px 0 0 var(--hp-edge), 0 6px 0 0 var(--hp-edge);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 12px;
+  image-rendering: pixelated;
+}
+.home-px .hp-trans-row { display: flex; gap: 10px; }
+.home-px .hp-trans-chip {
+  display: grid; place-items: center;
+  width: 30px; height: 30px;
+  background: var(--hp-deep);
+  border: 3px solid var(--ac);
+  box-shadow: 3px 3px 0 0 var(--hp-edge);
+}
+@media (max-width: 640px) { .home-px .hp-trans { height: 48px; } .home-px .hp-trans-chip:nth-child(n+4) { display: none; } }
+
+/* ---------- kompaktnější rozestupy ---------- */
+.space-page.home-px .lobby-panel { margin-top: 0.75rem !important; margin-bottom: 0.75rem !important; padding: clamp(14px, 2.2vw, 22px) !important; }
+.home-px .zone { padding-bottom: 0; }
+.home-px .hp-z1 > section { padding-top: 1rem !important; padding-bottom: 0.5rem !important; }
