@@ -84,7 +84,7 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
 
       <PlanBuilder t={getBuilderText(locale as Locale)} locale={locale} />
       <Link href={`/${locale}/platba`} className="btn-bouncy btn-primary btn-lg mb-8 inline-flex">
-        {locale === "cs" ? "Vyzkoušet platební portál →" : "Try the payment portal →"}
+        {locale === "cs" ? "Prohlédnout demo tarifů →" : "Preview the plans →"}
       </Link>
 
       <div className="card mb-8 flex flex-wrap items-center justify-between gap-3 px-7 py-6">
