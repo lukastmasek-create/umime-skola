@@ -39,7 +39,7 @@ import { HomeSectionNav } from "@/components/HomeSectionNav";
 
 const TILE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
 // Přechod mezi sekcemi: schodovitý pixel okraj + řada ikon.
-function HomeTrans({ fill, icons }: { fill: string; icons: Array<"star" | "check" | "bulb" | "flag" | "bolt" | "search" | "pulse" | "heart"> }) {
+function HomeTrans({ fill, icons }: { fill: string; icons: Array<"star" | "check" | "bulb" | "flag" | "bolt" | "search" | "pulse"> }) {
   return (
     <div aria-hidden className="hp-trans" style={{ ["--tf" as string]: fill }}>
       <div className="hp-trans-row">
@@ -286,7 +286,7 @@ export default async function Home({
         </section>
       )}
 
-      <HomeTrans fill="#241f58" icons={["heart", "star", "search", "bolt"]} />
+      <HomeTrans fill="#241f58" icons={["pulse", "star", "search", "bolt"]} />
 
       {/* 5) Zpět do vesmíru: kategorie */}
       <section id="stupne" className="zone hp-z3 home-anchor">
@@ -384,7 +384,7 @@ export default async function Home({
         <PixelRise seed={64} color="#2b3572" />
       </section>
 
-      <HomeTrans fill="#182046" icons={["heart", "star", "bolt", "check", "flag"]} />
+      <HomeTrans fill="#182046" icons={["pulse", "star", "bolt", "check", "flag"]} />
 
       {/* 7) O nás */}
       <section id="o-nas" className="zone hp-z5 home-anchor">
