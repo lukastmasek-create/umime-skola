@@ -72,7 +72,7 @@ export function PricingPlans({ plans, labels, locale }: { plans: PlanCard[]; lab
                 ))}
               </ul>
               <Link href={`/${locale}/platba?plan=${p.id}&billing=${showYear ? "yearly" : "monthly"}`} className="btn-bouncy btn-primary btn-lg mt-6 inline-flex justify-center">
-                {locale === "cs" ? "Vyzkoušet demo platbu →" : "Try demo payment →"}
+                {locale === "cs" ? "Prohlédnout demo tarifu →" : "Preview this plan →"}
               </Link>
             </article>
           );
