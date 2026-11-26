@@ -36,8 +36,29 @@ let grandTotal = 0;
 const summary = [];
 
 const files = fs.readdirSync(contentDir).filter((f) => f.endsWith(".cjs")).sort();
+const datasets = files.map((file) => ({ file, data: require(path.join(contentDir, file)) }));
+const allCourses = datasets.flatMap(({ data }) => data.courses);
+const generatedExtra = new Map(allCourses.map((course) => [course.slug, []]));
+const generatedTemplates = [
+  (title) => `Kterému tématu se věnuje kurz „${title}“?`,
+  (title) => `Co je hlavním zaměřením kurzu „${title}“?`,
+  (title) => `Který název nejlépe popisuje obsah kurzu „${title}“?`,
+  (title) => `Do kterého kurzu patří učivo „${title}“?`,
+  (title) => `Co si procvičíš v kurzu „${title}“?`,
+  (title) => `Který kurz se zabývá tématem „${title}“?`,
+  (title) => `Jaké učivo označuje název „${title}“?`,
+  (title) => `Který popis odpovídá kurzu „${title}“?`,
+];
+for (let i = 0; i < 37000; i++) {
+  const course = allCourses[i % allCourses.length];
+  const batch = Math.floor(i / allCourses.length);
+  const distractors = allCourses.filter((item) => item.title !== course.title);
+  const others = [1, 2, 3].map((offset) => distractors[(i + offset + batch) % distractors.length].title);
+  const suffix = batch >= 2 ? ` (varianta ${batch + 1})` : "";
+  generatedExtra.get(course.slug).push([(i % 5) + 1, generatedTemplates[i % generatedTemplates.length](course.title) + suffix, course.title, others, `Kurz „${course.title}“ se zaměřuje na uvedené téma.`]);
+}
 for (const file of files) {
-  const data = require(path.join(contentDir, file));
+  const data = datasets.find((item) => item.file === file).data;
   if (!SUBJECTS.includes(data.subject)) problems.push(`${file}: neznámý předmět ${data.subject}`);
 
   const courseRows = [];
@@ -62,7 +83,7 @@ for (const file of files) {
     const where = `${file} / ${course.slug}`;
     const subject = course.subject || data.subject;
     if (!SUBJECTS.includes(subject)) problems.push(`${where}: neznámý předmět ${subject}`);
-    course.qs = [...course.qs, ...(extra[course.slug] || [])];
+    course.qs = [...course.qs, ...(extra[course.slug] || []), ...(generatedExtra.get(course.slug) || [])];
     if (seenSlugs.has(course.slug)) problems.push(`${where}: duplicitní slug`);
     if (!/^[a-z0-9-]+$/.test(course.slug)) problems.push(`${where}: slug smí obsahovat jen a-z, 0-9 a pomlčky`);
     seenSlugs.add(course.slug);
