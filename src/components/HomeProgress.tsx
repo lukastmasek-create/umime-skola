@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import NumberFlow from "@number-flow/react";
+import { HomeResume } from "@/components/HomeResume";
 import { Avatar } from "@/components/Avatar";
 import { fill, getProfileText } from "@/i18n/profile";
 import { getHomeText } from "@/i18n/home";
@@ -83,12 +84,7 @@ export function HomeProgress({ locale, registerLabel }: { locale: Locale; regist
       </div>
 
       <div className="flex gap-2">
-        <Link
-          href={`/${locale}/kurzy/zakladni`}
-          className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white"
-        >
-          {t.continueLearning}
-        </Link>
+        <HomeResume locale={locale} userId={account.userId} />
         <Link href={`/${locale}/profil`} className="btn-bouncy bg-[var(--surface)] px-4 py-2 text-sm font-bold">
           {t.openProfile}
         </Link>

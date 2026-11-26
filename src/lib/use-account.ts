@@ -7,6 +7,7 @@ import type { Favorites } from "@/lib/cosmetics";
 export type Account =
   | {
       loggedIn: true;
+      userId?: string;
       degraded?: boolean;
       name: string | null;
       avatar: string;
