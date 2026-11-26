@@ -94,6 +94,7 @@ for (const file of files) {
       if (seenPrompts.has(prompt)) problems.push(`${at}: duplicitní otázka`);
       seenPrompts.add(prompt);
       if (prompt.includes("___")) problems.push(`${at}: otázka s ___ patří do psaných testů, ne sem`);
+      if (/\(rozšíření \d+\)$/.test(prompt) || /^Kurz „.*“ se zaměřuje na uvedené téma\.$/.test(explanation)) problems.push(`${at}: šablonová otázka o názvu kurzu`);
 
       const rand = seededRandom(`${course.slug}:${index}`);
       const options = [...all];
