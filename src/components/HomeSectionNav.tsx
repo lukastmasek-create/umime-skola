@@ -62,7 +62,7 @@ export function HomeSectionNav({ label, items }: { label: string; items: { id: s
     const list = link?.parentElement?.parentElement;
     if (!link || !list) return;
     const left = link.offsetLeft - (list.clientWidth - link.offsetWidth) / 2;
-    list.scrollTo({ left, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches || document.documentElement.dataset.motion === "off" ? "auto" : "smooth" });
+    list.scrollTo({ left, behavior: "smooth" });
   }, [active]);
 
   return (

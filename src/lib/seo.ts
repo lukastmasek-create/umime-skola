@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { defaultLocale, isLocale, locales, type Locale } from "@/i18n/config";
-import { getHomeStartText } from "@/i18n/home-start";
 import { getDictionary } from "@/i18n/dictionaries";
 import { getCommunityText } from "@/i18n/community";
 import { getIdleText } from "@/i18n/idle";
@@ -70,7 +69,6 @@ type PageInfo = (locale: Locale) => { title: string; description?: string };
 
 // Stránky, které mají vlastní titulek odvozený z textů v navigaci. Popisek: podtitul stránky, jinak popis webu.
 const STATIC_PAGES = {
-  "/o-nas": (l) => ({ title: getHomeStartText(l).story }),
   "/tymy": (l) => ({ title: getTeamsText(l).title, description: getTeamsText(l).subtitle }),
   "/unikovky": (l) => ({ title: getEscapeText(l).nav }),
   "/zebricky": (l) => ({ title: getCommunityText(l).navLeaderboards }),

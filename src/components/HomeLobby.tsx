@@ -1,10 +1,10 @@
 "use client";
 
 import { Icon } from "@/components/Icon";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Gamepad2, Flame, Users, Play, Trophy, RotateCcw, ShoppingBag } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { Gamepad2, Flame, Users, Play, Trophy, RotateCcw, ShoppingBag, CalendarCheck } from "lucide-react";
 import { DitherBg } from "@/components/DitherBg";
 import { PixelIcon } from "@/components/HomePixelArt";
 import type { HomeLobbyText } from "@/i18n/home-lobby";
@@ -31,10 +31,47 @@ function useUntilMidnight() {
   return t;
 }
 
+// Ostrůvek, který mění tvar: klid, časovač do konce dne, podíl dne.
+function Island({ left, endsIn, promo }: { left: string; endsIn: string; promo: string }) {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setI((x) => (x + 1) % 3), 3500);
+    return () => clearInterval(id);
+  }, []);
+  const pct = (() => {
+    if (!left) return 0;
+    const [h, m, sec] = left.split(":").map(Number);
+    return Math.round(100 - ((h * 3600 + m * 60 + sec) / 86400) * 100);
+  })();
+  return (
+    <div className="lobby-island" data-s={i} aria-live="off">
+      {i === 0 && <span>⚡ Umíme</span>}
+      {i === 1 && <span><i className="lobby-live" /> {endsIn} <b>{left || "--:--:--"}</b></span>}
+      {i === 2 && (<>
+        <span><i className="lobby-live" /> <b>{promo}</b></span>
+        <span className="lobby-bar"><i style={{ width: `${pct}%` }} /></span>
+      </>)}
+    </div>
+  );
+}
+
 export function HomeLobby({ locale, t }: { locale: string; t: HomeLobbyText }) {
   const [tab, setTab] = useState<TabKey>("play");
   const left = useUntilMidnight();
-  const reduceMotion = useReducedMotion();
+  const dock = useRef<HTMLDivElement>(null);
+  const dockMove = (e: React.PointerEvent) => {
+    const kids = dock.current?.children;
+    if (!kids || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    for (const el of Array.from(kids) as HTMLElement[]) {
+      const r = el.getBoundingClientRect();
+      const d = Math.abs(e.clientX - (r.left + r.width / 2));
+      el.style.transform = `translateY(${-Math.max(0, 1 - d / 120) * 8}px) scale(${1 + Math.max(0, 1 - d / 120) * 0.14})`;
+    }
+  };
+  const dockReset = () => {
+    const kids = dock.current?.children;
+    if (kids) for (const el of Array.from(kids) as HTMLElement[]) el.style.transform = "";
+  };
   const l = `/${locale}`;
 
   const cards: Record<TabKey, Card[]> = {
@@ -45,6 +82,7 @@ export function HomeLobby({ locale, t }: { locale: string; t: HomeLobbyText }) {
       { key: "pets", href: `${l}/stale-hry/mazlicci`, icon: "pets", grad: "from-[#7b3dff] to-[#1a0d4d]" },
     ],
     challenge: [
+      { key: "daily", href: `${l}/denni-kviz`, icon: "daily", grad: "from-[#3b5bff] to-[#0e1a5c]" },
       { key: "escape", href: `${l}/unikovky`, icon: "escape", grad: "from-[#1ec5ff] to-[#0a2b4d]" },
       { key: "review", href: `${l}/opakovani`, icon: "review", grad: "from-[#f2a35e] to-[#7a2a2a]" },
       { key: "boards", href: `${l}/zebricky`, icon: "boards", grad: "from-[#ffc933] to-[#7a4a0a]" },
@@ -63,6 +101,7 @@ export function HomeLobby({ locale, t }: { locale: string; t: HomeLobbyText }) {
     ["together", t.tabs.together, Users],
   ];
   const quick: Record<string, { href: string; Icon: typeof Gamepad2 }> = {
+    daily: { href: `${l}/denni-kviz`, Icon: CalendarCheck },
     boards: { href: `${l}/zebricky`, Icon: Trophy },
     review: { href: `${l}/opakovani`, Icon: RotateCcw },
     shop: { href: `${l}/obchod`, Icon: ShoppingBag },
@@ -78,18 +117,11 @@ export function HomeLobby({ locale, t }: { locale: string; t: HomeLobbyText }) {
               {t.title}
             </h2>
           </div>
+          <div className="hidden md:block"><Island left={left} endsIn={t.endsIn} promo={t.promoTitle} /></div>
           <div role="tablist" aria-label={t.title} className="lobby-tabs">
             {tabs.map(([k, label, Icon]) => (
-              <button key={k} type="button" role="tab" id={`lobby-tab-${k}`} aria-controls="lobby-panel" aria-selected={tab === k} tabIndex={tab === k ? 0 : -1} onKeyDown={(event) => {
-                const keys = ["ArrowLeft", "ArrowRight", "Home", "End"];
-                if (!keys.includes(event.key)) return;
-                event.preventDefault();
-                const index = tabs.findIndex(([key]) => key === k);
-                const next = event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : (index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
-                setTab(tabs[next][0]);
-                document.getElementById(`lobby-tab-${tabs[next][0]}`)?.focus();
-              }} onClick={() => setTab(k)} className="lobby-tab">
-                {tab === k && <motion.span layoutId="lobby-pill" className="lobby-pill" transition={{ duration: reduceMotion ? 0 : 0.15 }} />}
+              <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)} className="lobby-tab">
+                {tab === k && <motion.span layoutId="lobby-pill" className="lobby-pill" transition={{ type: "spring", stiffness: 420, damping: 34 }} />}
                 <span className="relative flex items-center gap-1.5">
                   <Icon aria-hidden className="h-4 w-4" /> {label}
                 </span>
@@ -100,7 +132,7 @@ export function HomeLobby({ locale, t }: { locale: string; t: HomeLobbyText }) {
 
         <div className="mt-5 grid gap-4 lg:grid-cols-[1.1fr_1.6fr]">
           <motion.div
-            initial={false}
+            initial={{ opacity: 0, y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="lobby-promo"
@@ -123,15 +155,14 @@ export function HomeLobby({ locale, t }: { locale: string; t: HomeLobbyText }) {
           <AnimatePresence mode="wait">
             <motion.ul
               key={tab}
-              id="lobby-panel" role="tabpanel" aria-labelledby={`lobby-tab-${tab}`}
-              initial={false}
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: reduceMotion ? 0 : 0.15 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.22 }}
               className="grid grid-cols-2 gap-3"
             >
               {cards[tab].map((c, i) => (
-                <motion.li key={c.key + i} initial={false} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduceMotion ? 0 : 0.15 }}>
+                <motion.li key={c.key + i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
                   <Link href={c.href} className={`lobby-card bg-gradient-to-br ${c.grad}`}>
                     <Icon name={c.icon} size={84} className="lobby-emoji" />
                     <span className="lobby-play" aria-hidden><Play className="h-4 w-4" /></span>
@@ -146,8 +177,8 @@ export function HomeLobby({ locale, t }: { locale: string; t: HomeLobbyText }) {
           </AnimatePresence>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          {t.quick.filter(({ key }) => key !== "daily").map(({ key, label }) => {
+        <div ref={dock} onPointerMove={dockMove} onPointerLeave={dockReset} className="mt-4 flex flex-wrap gap-2">
+          {t.quick.map(({ key, label }) => {
             const { href, Icon } = quick[key];
             return (
               <Link key={key} href={href} className="lobby-chip">
