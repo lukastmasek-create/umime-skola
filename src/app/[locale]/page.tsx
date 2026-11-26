@@ -5,7 +5,7 @@ import { HomeProgress } from "@/components/HomeProgress";
 import { DailyQuizTeaser } from "@/components/DailyQuizTeaser";
 import { TeacherCta } from "@/components/TeacherCta";
 import { Wave } from "@/components/SpaceDecor";
-import { PixelGround, PixelSky, PixelSoil } from "@/components/HomePixelScene";
+import { PixelGround, PixelSeam, PixelSky } from "@/components/HomePixelScene";
 import { Campfire, Critter, PixelIcon, ShootingStar, SkyBirds } from "@/components/HomePixelArt";
 import "./home-pixel.css";
 import { LazyOnView } from "@/components/LazyOnView";
@@ -176,7 +176,7 @@ export default async function Home({
       <HomeSectionNav label={x.nav.label} items={navItems} />
 
       <div id="hrat" className="zone hp-z1 home-anchor">
-        <PixelSoil seed={3} />
+        <PixelSeam seed={3} />
         <PixelSky seed={11} moon="moon"><SkyBirds seed={11} /></PixelSky>
         <section className="reveal relative mx-auto max-w-6xl px-4 pb-8 pt-6 sm:px-6">
           <ul className="home-badges">
@@ -210,6 +210,7 @@ export default async function Home({
 
       {/* 2) Předměty: hory pod hvězdami */}
       <section id="predmety" className="zone zone-globe hp-z2 home-anchor">
+        <PixelSeam seed={23} />
         <PixelSky seed={23} moon="planet"><ShootingStar seed={23} /></PixelSky>
         <div className="lobby-panel lobby-panel-wide relative z-10">
           <div className="reveal mb-5 flex flex-wrap items-end justify-between gap-3">
@@ -269,6 +270,7 @@ export default async function Home({
 
       {/* 5) Zpět do vesmíru: kategorie */}
       <section id="stupne" className="zone hp-z3 home-anchor">
+        <PixelSeam seed={37} />
         <PixelSky seed={37}><SkyBirds seed={37} /></PixelSky>
         <LazyOnView placeholderHeight={1100}>
         <div className="lobby-panel relative z-10">
@@ -307,6 +309,7 @@ export default async function Home({
 
       {/* 6) Pro učitele */}
       <section id="pro-ucitele" className="zone hp-z4 home-anchor">
+        <PixelSeam seed={41} />
         <PixelSky seed={41} moon="moon"><ShootingStar seed={41} /></PixelSky>
         <LazyOnView placeholderHeight={900}>
         <div className="lobby-panel relative z-10">
@@ -359,6 +362,7 @@ export default async function Home({
 
       {/* 7) O nás */}
       <section id="o-nas" className="zone hp-z5 home-anchor">
+        <PixelSeam seed={53} />
         <PixelSky seed={53}><SkyBirds seed={53} /><ShootingStar seed={53} /></PixelSky>
         <LazyOnView placeholderHeight={1400}>
         <div className="lobby-panel relative z-10">

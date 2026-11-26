@@ -4,6 +4,8 @@ import { Pixelify_Sans, Onest, Pangolin, Jersey_10 } from "next/font/google";
 import "../globals.css";
 import "../site-chrome.css";
 import "../learning-motion.css";
+import "../pixel-scene.css";
+import "../chrome-pixel.css";
 import { HeaderShop, MobileMenu, NavTabs } from "@/components/NavTabs";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { HeaderAccount } from "@/components/HeaderAccount";
@@ -23,6 +25,8 @@ import { THEME_INIT_SCRIPT } from "@/lib/theme-init-script";
 import { ParentalGuard } from "@/components/ParentalGuard";
 import { getContactText } from "@/i18n/contact";
 import { getHomeText } from "@/i18n/home";
+import { PixelGround, PixelSeam, PixelSky } from "@/components/HomePixelScene";
+import { Critter } from "@/components/HomePixelArt";
 import { CONTACT_EMAIL, INSTAGRAM_HANDLE, INSTAGRAM_URL, getFooterLinks } from "@/i18n/legal";
 import { SITE_URL } from "@/lib/seo";
 import { tr8 } from "@/i18n/config";
@@ -102,7 +106,8 @@ export default async function LocaleLayout({
         <a href="#obsah" className="skip-link">
           {SKIP_LINK[locale as Locale]}
         </a>
-        <header className="site-header sticky top-0 z-40 bg-[var(--surface)]">
+        <header className="site-header chrome-px sticky top-0 z-40">
+          <PixelSky seed={61} clouds={false} className="chrome-sky" />
           <HeaderScroll />
           <div className="site-header-in mx-auto flex max-w-6xl items-center justify-between gap-1.5 px-3 py-1.5 min-[400px]:gap-3 min-[400px]:px-4 sm:px-6 xl:max-w-7xl">
             <Link href={`/${locale}`} className="site-logo shrink-0">
@@ -129,49 +134,57 @@ export default async function LocaleLayout({
         <OffscreenPause />
         <GlobalShortcuts locale={locale as Locale} dict={dict} />
         <main id="obsah" tabIndex={-1} className="world flex-1 outline-none">{children}</main>
-        <footer className="site-footer relative bg-[var(--surface)] px-4 py-10 text-sm text-[var(--muted)]">
-          <div className="mx-auto max-w-6xl">
-            <div className="footer-brand mb-7 flex flex-wrap items-center justify-between gap-5">
-              <Link href={`/${locale}`} aria-label="Učíme se hrou"><SiteLogo /></Link>
-              <Link href={`/${locale}/pro`} className="footer-shop">{dict.nav.shop} <span aria-hidden>↗</span></Link>
+        <footer className="site-footer chrome-px relative">
+          <PixelSeam seed={47} className="sf-seam" />
+          <PixelSky seed={47} moon="moon" className="chrome-sky" />
+          <div className="sf-wrap mx-auto max-w-6xl px-4 sm:px-6">
+            <div className="sf-panel">
+              <div className="sf-brand">
+                <Link href={`/${locale}`} aria-label="Učíme se hrou" className="sf-logo"><SiteLogo /></Link>
+                <Link href={`/${locale}/pro`} className="sf-shop">{dict.nav.shop} <span aria-hidden>↗</span></Link>
+              </div>
+              <nav className="sf-links">
+                <Link href={`/${locale}#o-nas`} className="footer-link">
+                  <SketchIcon kind="info" size={16} className="sketch-chip-ico" />
+                  {getHomeText(locale as Locale).about.title}
+                </Link>
+                <Link href={`/${locale}/kontakt`} className="footer-link">
+                  <SketchIcon kind="mail" size={16} className="sketch-chip-ico" />
+                  {getContactText(locale as Locale).nav}
+                </Link>
+                <Link href={`/${locale}/ochrana-soukromi`} className="footer-link">
+                  <SketchIcon kind="shield" size={16} className="sketch-chip-ico" />
+                  {getFooterLinks(locale as Locale).privacy}
+                </Link>
+                <Link href={`/${locale}/podminky`} className="footer-link">
+                  <SketchIcon kind="scroll" size={16} className="sketch-chip-ico" />
+                  {getFooterLinks(locale as Locale).terms}
+                </Link>
+                <Link href={`/${locale}/zasady-cookies`} className="footer-link">
+                  <SketchIcon kind="info" size={16} className="sketch-chip-ico" />
+                  {getFooterLinks(locale as Locale).cookies}
+                </Link>
+                <CookieNotice locale={locale as Locale} />
+              </nav>
+              <div className="sf-contact">
+                <a href={`mailto:${CONTACT_EMAIL}`} className="footer-link">
+                  <SketchIcon kind="mail" size={16} className="sketch-chip-ico" />
+                  {CONTACT_EMAIL}
+                </a>
+                <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="footer-link">
+                  <SketchIcon kind="camera" size={16} className="sketch-chip-ico" />
+                  Instagram @{INSTAGRAM_HANDLE}
+                </a>
+              </div>
             </div>
-            <nav className="flex flex-wrap items-center justify-start gap-x-6 gap-y-2 font-semibold">
-              <Link href={`/${locale}#o-nas`} className="footer-link">
-                <SketchIcon kind="info" size={16} className="sketch-chip-ico" />
-                {getHomeText(locale as Locale).about.title}
-              </Link>
-              <Link href={`/${locale}/kontakt`} className="footer-link">
-                <SketchIcon kind="mail" size={16} className="sketch-chip-ico" />
-                {getContactText(locale as Locale).nav}
-              </Link>
-              <Link href={`/${locale}/ochrana-soukromi`} className="footer-link">
-                <SketchIcon kind="shield" size={16} className="sketch-chip-ico" />
-                {getFooterLinks(locale as Locale).privacy}
-              </Link>
-              <Link href={`/${locale}/podminky`} className="footer-link">
-                <SketchIcon kind="scroll" size={16} className="sketch-chip-ico" />
-                {getFooterLinks(locale as Locale).terms}
-              </Link>
-              <Link href={`/${locale}/zasady-cookies`} className="footer-link">
-                <SketchIcon kind="info" size={16} className="sketch-chip-ico" />
-                {getFooterLinks(locale as Locale).cookies}
-              </Link>
-              <CookieNotice locale={locale as Locale} />
-            </nav>
-            <div className="mt-2 flex flex-wrap items-center justify-start gap-x-6 gap-y-2">
-              <a href={`mailto:${CONTACT_EMAIL}`} className="footer-link">
-                <SketchIcon kind="mail" size={16} className="sketch-chip-ico" />
-                {CONTACT_EMAIL}
-              </a>
-              <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className="footer-link">
-                <SketchIcon kind="camera" size={16} className="sketch-chip-ico" />
-                Instagram @{INSTAGRAM_HANDLE}
-              </a>
-            </div>
-            <p className="mt-7 border-t border-[var(--border)] pt-5 text-xs">
-              &copy; {new Date().getFullYear()} {dict.footer.rights}
-            </p>
           </div>
+          <PixelGround kind="forest" seed={77} className="sf-ground">
+            <Critter kind="cat" y={51} dur={54} delay={-18} />
+            <Critter kind="chick" y={51} dur={66} delay={-36} left />
+          </PixelGround>
+          <p className="sf-copy">
+            &copy; {new Date().getFullYear()} {dict.footer.rights}
+          </p>
         </footer>
       </body>
     </html>

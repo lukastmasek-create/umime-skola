@@ -267,7 +267,6 @@ export function PixelGround({ kind, seed, className = "", children }: GroundProp
         <rect x="0" y={SOIL_TOP} width={W} height="2" fill="#1f6a3a" />
         <path d={stones} fill="#8a5a2b" />
         <path d={stonesDark} fill="#4a2c18" />
-        <rect x="0" y={H - 1} width={W} height="1" fill="#2a1a10" />
         {children}
       </svg>
     </div>
@@ -294,6 +293,50 @@ export function PixelSoil({ seed }: { seed: number }) {
         <path d={stones} fill="#8a5a2b" />
         <path d={dark} fill="#4a2c18" />
         <rect y="11" width={W} height="1" fill="#2a1a10" />
+      </svg>
+    </div>
+  );
+}
+
+// Přechod mezi sekcemi: hlína z předchozí krajiny pokračuje, dole se nerovně „odlamuje“
+// (krápníky, drobky a občas krystal) a rozpadá do oblohy další sekce. Pozadí je průhledné.
+const SEAM_H = 14;
+export function PixelSeam({ seed, className = "" }: { seed: number; className?: string }) {
+  const r = rng(seed * 13 + 5);
+  let soil = "";
+  let rim = "";
+  let crumbs = "";
+  let crumbsFar = "";
+  let stones = "";
+  let gems = "";
+  for (let x = 0; x < W; ) {
+    const w = 2 + Math.floor(r() * 3);
+    const long = r() < 0.12;
+    const d = Math.min(SEAM_H - 4, 4 + Math.floor(r() * 3) + (long ? 2 + Math.floor(r() * 4) : 0));
+    soil += `M${x} 0h${w}v${d}h-${w}z`;
+    rim += `M${x} ${d}h${w}v1h-${w}z`;
+    if (long && r() < 0.35) gems += `M${x + Math.floor(w / 2)} ${d - 2}h1v1h-1z`;
+    for (let i = 0; i < w; i++) {
+      if (r() < 0.32) crumbs += `M${x + i} ${d + 2}h1v1h-1z`;
+      if (r() < 0.12) crumbsFar += `M${x + i} ${d + 4 + Math.floor(r() * 3)}h1v1h-1z`;
+    }
+    x += w;
+  }
+  for (let i = 0; i < 50; i++) {
+    const x = Math.floor(r() * W);
+    const y = Math.floor(r() * 3);
+    const w = 1 + Math.floor(r() * 3);
+    stones += `M${x} ${y}h${w}v1h-${w}z`;
+  }
+  return (
+    <div aria-hidden className={`hps-seam ${className}`}>
+      <svg viewBox={`0 0 ${W} ${SEAM_H}`} preserveAspectRatio="xMidYMin slice" shapeRendering="crispEdges">
+        <path d={soil} fill="#6b4226" />
+        <path d={stones} fill="#8a5a2b" />
+        <path d={rim} fill="#4a2c18" />
+        <path d={crumbs} fill="#4a2c18" />
+        <path d={crumbsFar} fill="#3a2414" opacity={0.7} />
+        <path d={gems} fill="#8fd0ff" className="hps-gem" />
       </svg>
     </div>
   );

@@ -1,0 +1,224 @@
+/* =====================================================================
+   Hlavička a patička webu ve stylu úvodní stránky: pásová noční obloha
+   s pixelovými hvězdami, tmavý rám, zkosení (bevel), tvrdý stín a pixelový font.
+   Rohy jsou zaoblené. Platí na všech stránkách a v obou motivech
+   (chrome je vždy noční, proto si přenastaví barevné tokeny).
+   ===================================================================== */
+.chrome-px {
+  --cp-edge: #070a1c;
+  --cp-panel: #17204a;
+  --cp-panel-2: #1f2b5e;
+  --cp-panel-3: #2a3876;
+  --cp-blue: #3b4bd8;
+  --cp-gold: #ffd86b;
+  --cp-hi: rgba(255, 255, 255, 0.12);
+  --cp-lo: rgba(0, 0, 0, 0.32);
+  --cp-frame: 0 0 0 3px var(--cp-edge);
+  --cp-bevel: inset 0 2px 0 0 var(--cp-hi), inset 0 -3px 0 0 var(--cp-lo);
+  --cp-ctl: var(--cp-frame), var(--cp-bevel), 0 4px 0 0 rgba(4, 6, 18, 0.55);
+  --cp-ctl-up: var(--cp-frame), var(--cp-bevel), 0 6px 0 0 rgba(4, 6, 18, 0.55);
+  --cp-stripe: linear-gradient(90deg, #ffd86b 0 25%, #ff8a6b 25% 50%, #ff8fd0 50% 75%, #8fd0ff 75%);
+
+  /* tokeny pro vnořené komponenty (jazyk, účet, menu, rozbalovací panely) */
+  color-scheme: dark;
+  --surface: var(--cp-panel);
+  --surface-muted: var(--cp-panel-2);
+  --foreground: #f6f1e4;
+  --muted: #cfc8e4;
+  --faint: #9d96bf;
+  --edge: var(--cp-edge);
+  --border: #2c3a7a;
+  --border-soft: #2c3a7a;
+  --shadow-ink: rgba(4, 6, 18, 0.6);
+  --focus-ring: #8ea2ff;
+  --brand-500: #5a6cff;
+  --accent-500: #ff7a5c;
+  color: var(--foreground);
+  isolation: isolate;
+}
+.chrome-px .logo-light { display: none !important; }
+.chrome-px .logo-dark { display: block !important; }
+.chrome-sky { z-index: -1; opacity: 0.85; }
+
+/* ---------------------------------------------------------------- hlavička */
+.site-header.chrome-px {
+  background: linear-gradient(#0a0f27 0 34%, #0d1431 34% 68%, #111a3b 68%) !important;
+  border-bottom: 0 !important;
+  box-shadow: 0 3px 0 0 var(--cp-edge), 0 8px 0 0 rgba(4, 6, 18, 0.35) !important;
+}
+.site-header.chrome-px::after {
+  /* barevný proužek pod hlavičkou, jako podtržení nadpisů na úvodní stránce */
+  content: ""; position: absolute; left: 0; right: 0; bottom: -3px; height: 3px;
+  background: var(--cp-stripe); background-size: 280px 3px; opacity: 0.9; pointer-events: none;
+}
+.site-header.chrome-px[data-scrolled] { background: linear-gradient(#0a0f27 0 34%, #0d1431 34% 68%, #111a3b 68%) !important; }
+.site-header.chrome-px .chrome-sky .hps-stars { opacity: 0.7; }
+
+.site-header.chrome-px :is(a, button, summary) { font-family: var(--font-pixel), var(--font-heading), monospace; }
+.site-header.chrome-px .nav-group,
+.site-header.chrome-px a.header-shop { font-size: 1.3rem; letter-spacing: 0.01em; }
+
+/* skupiny navigace: bez rámu, po najetí vystoupí jako tlačítko */
+.site-header.chrome-px .nav-group {
+  border: 0 !important; border-radius: 12px !important; color: var(--muted); background: transparent;
+  text-shadow: 2px 2px 0 #000;
+}
+.site-header.chrome-px .nav-group:hover,
+.site-header.chrome-px .nav-group[aria-expanded="true"] {
+  color: #fff; background: var(--cp-panel-2) !important; box-shadow: var(--cp-ctl) !important;
+}
+.site-header.chrome-px .nav-group[class*="bg-"]:not(:hover):not([aria-expanded="true"]) {
+  /* aktivní skupina (zvýrazněná komponentou) */
+  color: #16132b; background: var(--cp-gold) !important; text-shadow: none; box-shadow: var(--cp-frame), inset 0 2px 0 rgba(255, 255, 255, 0.45), inset 0 -3px 0 rgba(0, 0, 0, 0.25), 0 4px 0 0 rgba(4, 6, 18, 0.55) !important;
+}
+
+/* obchod */
+.site-header.chrome-px a.header-shop {
+  color: var(--cp-gold) !important; border: 0 !important; border-radius: 12px !important;
+  text-shadow: 2px 2px 0 #000;
+}
+.site-header.chrome-px a.header-shop:hover,
+.site-header.chrome-px a.header-shop[aria-current] {
+  background: var(--cp-panel-2) !important; box-shadow: var(--cp-ctl) !important; color: #ffe8a3 !important;
+}
+
+/* jazyk, účet, menu, přihlášení: zaoblená pixelová tlačítka */
+.site-header.chrome-px button[aria-controls="language-menu"],
+.site-header.chrome-px button[aria-controls="mobile-menu"],
+.site-header.chrome-px .site-header-in button[aria-haspopup="dialog"] {
+  border: 0 !important; border-radius: 12px !important;
+  background: var(--cp-panel-2) !important; color: #fff;
+  box-shadow: var(--cp-ctl) !important; margin: 3px;
+  transition: translate 0.08s steps(2, end), background-color 0.12s !important;
+}
+.site-header.chrome-px a[href$="/prihlaseni"] { border-radius: 12px !important; color: var(--muted); }
+.site-header.chrome-px a[href$="/prihlaseni"]:hover { color: #fff; background: var(--cp-panel-2); box-shadow: var(--cp-ctl); }
+.site-header.chrome-px a.btn-bouncy {
+  border: 0 !important; border-radius: 12px !important;
+  background: var(--cp-blue) !important; background-image: none !important; color: #fff !important;
+  box-shadow: var(--cp-frame), inset 3px 3px 0 rgba(255, 255, 255, 0.28), inset -3px -3px 0 rgba(0, 0, 0, 0.3), 0 4px 0 0 rgba(4, 6, 18, 0.55) !important;
+  margin: 3px; outline: none;
+  transition: translate 0.08s steps(2, end) !important;
+}
+.site-header.chrome-px :is(a.btn-bouncy, button[aria-controls="mobile-menu"], button[aria-controls="language-menu"]):hover { translate: 0 -2px; outline: none; }
+.site-header.chrome-px :is(a.btn-bouncy, button[aria-controls="mobile-menu"], button[aria-controls="language-menu"]):active { translate: 0 3px; }
+
+/* rozbalovací panely: zaoblené okno se mřížkou */
+.site-header.chrome-px :is(.nav-panel, #language-menu) {
+  border: 0 !important; border-radius: 18px !important;
+  background-color: var(--cp-panel) !important;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 2px, transparent 2px) !important;
+  background-size: 16px 16px !important;
+  box-shadow: var(--cp-frame), var(--cp-bevel), 0 8px 0 0 rgba(4, 6, 18, 0.55) !important;
+  margin-top: 10px;
+}
+.site-header.chrome-px .nav-panel > div:first-child { border-radius: 12px !important; background: var(--cp-panel-2); box-shadow: inset 0 -3px 0 var(--cp-lo); }
+.site-header.chrome-px :is(.nav-panel, #language-menu, .site-menu) :is(a, button) { border-radius: 10px !important; font-family: var(--font-body), sans-serif; }
+.site-header.chrome-px .site-menu {
+  border-bottom: 0 !important; background: #111a3b !important;
+  box-shadow: 0 3px 0 0 var(--cp-edge), 0 14px 30px rgba(0, 0, 0, 0.45) !important;
+}
+.site-header.chrome-px .site-menu .nav-group { text-shadow: 2px 2px 0 #000; }
+.site-header.chrome-px .site-menu > div > div > button {
+  border: 0 !important; border-radius: 14px !important; background: var(--cp-panel-2) !important; box-shadow: var(--cp-ctl) !important; margin: 3px;
+}
+
+/* ---------------------------------------------------------------- patička */
+body > footer.site-footer.chrome-px {
+  padding: 0 !important;
+  background: linear-gradient(#0e1430 0 18%, #101a3c 18% 42%, #142048 42% 68%, #182754 68%) !important;
+  background-size: auto !important;
+  border-top: 0 !important;
+  box-shadow: 0 -3px 0 0 var(--cp-edge);
+  color: var(--muted);
+  overflow: hidden;
+}
+body > footer.site-footer.chrome-px::before {
+  content: ""; display: block; position: absolute; inset: 0 0 auto; top: 0; width: auto; height: 3px;
+  background: var(--cp-stripe); background-size: 280px 3px; box-shadow: none; z-index: 2;
+}
+.site-footer.chrome-px .hps-moon { top: 40px; right: 5%; }
+.sf-wrap { position: relative; z-index: 1; padding-top: 4.5rem; }
+
+.sf-panel {
+  position: relative;
+  padding: clamp(22px, 3vw, 34px);
+  border-radius: 26px;
+  background-color: var(--cp-panel);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 2px, transparent 2px);
+  background-size: 16px 16px;
+  box-shadow: var(--cp-frame), inset 0 3px 0 0 var(--cp-hi), inset 0 -4px 0 0 var(--cp-lo), 0 10px 0 0 rgba(4, 6, 18, 0.55);
+}
+.sf-panel::after {
+  /* prošitý okraj okna */
+  content: ""; position: absolute; inset: 9px; border-radius: 19px; pointer-events: none;
+  border: 2px dashed rgba(122, 138, 210, 0.35);
+}
+.sf-panel > * { position: relative; z-index: 1; }
+
+.sf-brand { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 22px; }
+.sf-logo { filter: drop-shadow(3px 3px 0 #000); }
+.sf-shop {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 18px;
+  border-radius: 14px; background: var(--cp-blue); color: #fff;
+  font-family: var(--font-pixel), var(--font-heading), monospace; font-size: 1.35rem; letter-spacing: 0.01em;
+  box-shadow: var(--cp-frame), inset 3px 3px 0 rgba(255, 255, 255, 0.28), inset -3px -3px 0 rgba(0, 0, 0, 0.3), 0 5px 0 0 rgba(4, 6, 18, 0.55);
+  margin: 3px; transition: translate 0.08s steps(2, end);
+}
+.sf-shop:hover { translate: 0 -2px; }
+.sf-shop:active { translate: 0 3px; }
+
+.sf-links, .sf-contact { display: flex; flex-wrap: wrap; gap: 10px 12px; }
+.sf-contact { margin-top: 14px; padding-top: 16px; border-top: 2px dashed rgba(122, 138, 210, 0.3); }
+
+.site-footer.chrome-px .footer-link,
+.site-footer.chrome-px .sketch-chip {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; margin: 3px;
+  border: 0 !important; border-radius: 12px !important;
+  background: var(--cp-panel-2) !important; color: #f6f1e4;
+  font-family: var(--font-pixel), var(--font-heading), monospace; font-size: 1.15rem; font-weight: 400; letter-spacing: 0.01em;
+  box-shadow: var(--cp-ctl) !important; text-decoration: none;
+  transition: translate 0.08s steps(2, end), background-color 0.12s;
+}
+.site-footer.chrome-px .footer-link:hover,
+.site-footer.chrome-px .sketch-chip:hover {
+  translate: 0 -2px; background: var(--cp-panel-3) !important; color: #fff; text-decoration: none;
+  box-shadow: var(--cp-ctl-up) !important;
+}
+.site-footer.chrome-px .sf-contact .footer-link { font-family: var(--font-body), sans-serif; font-size: 0.9rem; font-weight: 600; }
+.site-footer.chrome-px .sketch-chip-ico { color: var(--cp-gold); }
+
+.sf-ground { margin-top: 12px !important; }
+.site-footer.chrome-px:hover .hpc-hop { animation: hpc-hop 0.5s steps(2, end) infinite; }
+.sf-copy {
+  position: relative; z-index: 1; margin: 0; padding: 12px 16px 16px; text-align: center;
+  background: #4a2c18; box-shadow: inset 0 3px 0 #2a1a10;
+  color: #f3dcc0; font-family: var(--font-pixel), var(--font-heading), monospace; font-size: 1.05rem; letter-spacing: 0.02em;
+  text-shadow: 2px 2px 0 #1a0f08;
+}
+
+@media (max-width: 639px) {
+  .sf-wrap { padding-top: 3rem; }
+  .sf-brand { justify-content: center; }
+  .sf-links, .sf-contact { justify-content: center; }
+  .site-footer.chrome-px .footer-link, .site-footer.chrome-px .sketch-chip { font-size: 1.05rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-footer.chrome-px:hover .hpc-hop { animation: none !important; }
+}
+html[data-motion="off"] .site-footer.chrome-px:hover .hpc-hop { animation: none !important; }
+
+/* čitelná velikost pixelového písma u menších ovládacích prvků hlavičky */
+.site-header-in > div:last-child :is(a, button) { font-size: 1.15rem; line-height: 1; }
+.site-header-in > div:last-child a.header-shop { font-size: 1.3rem; }
+@media (max-width: 639px) { .site-header-in > div:last-child :is(a, button) { font-size: 1.05rem; } }
+
+/* na úvodní stránce navazuje patička na hlínu poslední sekce */
+.sf-seam { display: none; position: absolute !important; inset: 0 0 auto; margin: 0 !important; z-index: 2 !important; }
+body:has(.home-px) > footer.site-footer.chrome-px { box-shadow: none; }
+body:has(.home-px) > footer.site-footer.chrome-px::before { display: none; }
+body:has(.home-px) .sf-seam { display: block; }
