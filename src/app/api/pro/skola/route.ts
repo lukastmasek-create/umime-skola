@@ -256,6 +256,7 @@ export async function POST(request: Request) {
           turns: [{ role: "user", content: text ? `Text:\n${text}` : "Vytvoř otázky z textu na fotce." }],
           image: image || undefined,
           maxTokens: 2000,
+          temperature: 0.3,
         });
       } catch (e) {
         if (e instanceof LiveError) throw e;

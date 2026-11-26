@@ -140,7 +140,8 @@ export async function POST(request: Request) {
         const tip = await generateText({
           system,
           turns: [{ role: "user", content: `Kurz: ${top.title}\nPříklady chybných otázek:\n${qs.map((q) => `- ${q.prompt} (vysvětlení: ${q.explanation})`).join("\n") || "- (bez příkladů)"}` }],
-          maxTokens: 400,
+          maxTokens: 450,
+          temperature: 0.5,
         });
         if (!tip) throw new LiveError("ai-unavailable", 503);
         return { tip, course: top.title };

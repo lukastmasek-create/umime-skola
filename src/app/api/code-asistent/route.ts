@@ -19,13 +19,13 @@ export async function POST(request: Request) {
     if (!ok) throw new LiveError("rate-limited", 429);
 
     const body = await readJson(request);
-    const turns = cleanTurns(body.messages);
+    const turns = cleanTurns(body.messages, { maxTurns: 12, maxChars: 1500 });
     if (turns.length === 0) throw new LiveError("invalid-message");
     const ctx = body.useCode === false ? null : cleanContext(body.context);
 
     let reply = "";
     try {
-      reply = await generateText({ system: codeAssistPrompt(ctx), turns, maxTokens: 600 });
+      reply = await generateText({ system: codeAssistPrompt(ctx), turns, maxTokens: 800, temperature: 0.3 });
     } catch (e) {
       if (e instanceof LiveError) throw e;
       console.error("code-asistent: generování selhalo", e);

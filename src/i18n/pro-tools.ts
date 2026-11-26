@@ -30,7 +30,7 @@ const cs = {
   toolsHint: "Vyber, s čím chceš pracovat.",
 
   features: {
-    doucovatel: { title: "AI doučovač", text: "Vysvětlí úlohu krok za krokem a dovede tě k výsledku." },
+    doucovatel: { title: "AI prostor", text: "Chaty s doučovačem, vysvětlováním, zkoušením, opravou textů, výpisky a plánem učení. Na jednom místě." },
     plan: { title: "Osobní plán učení", text: "Týdenní plán po 15 minutách podle toho, co ti nejde." },
     zkouska: { title: "Příprava na přijímačky", text: "Zkoušky nanečisto s časovým limitem a odhadem bodů." },
     fotka: { title: "Fotka úlohy", text: "Vyfoť úlohu a dostaneš pět podobných příkladů." },
@@ -299,7 +299,7 @@ const en: ProToolsText = {
   toolsHint: "Pick what you want to work with.",
 
   features: {
-    doucovatel: { title: "AI tutor", text: "Explains a task step by step and leads you to the result." },
+    doucovatel: { title: "AI space", text: "Chats with a tutor, explanations, quizzes, text checks, study notes and plans. All in one place." },
     plan: { title: "Personal study plan", text: "A weekly plan of 15 minutes a day based on what you find hard." },
     zkouska: { title: "Entrance exam prep", text: "Mock exams with a time limit and an estimate of your score." },
     fotka: { title: "Photo of a task", text: "Take a photo of a task and get five similar examples." },
