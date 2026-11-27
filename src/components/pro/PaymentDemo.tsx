@@ -4,6 +4,7 @@ import { useId, useRef, useState, type FormEvent } from "react";
 import type { BuilderText } from "@/i18n/pro-builder";
 import { checkoutPrice, type CheckoutPlan } from "@/lib/pro-checkout";
 import { PRO_ITEMS } from "@/lib/pro-prices";
+import { ProPixelIcon } from "@/components/pro/ProPixelIcon";
 
 type Initial = { plan: CheckoutPlan; yearly: boolean; selected: string[] };
 const TIERS = ["individual", "family", "school"] as const;
@@ -94,7 +95,7 @@ export function PaymentDemo({ t, cs, initial }: { t: BuilderText; cs: boolean; i
       <header><h2 id={`${titleId}-builder`}>{cs ? "Poskládej si vlastní PRO" : "Build your own PRO"}</h2><p>{cs ? "Vyber jen funkce, které využiješ." : "Choose only the features you need."}</p></header>
       <div className="ps-features">{PRO_ITEMS.map(item => <label className={`ps-feature ${selected.includes(item.id) ? "is-on" : ""}`} key={item.id}>
         <input type="checkbox" checked={selected.includes(item.id)} onChange={() => toggleFeature(item.id)} />
-        <span><span className="ps-feature-title">{t.items[item.id].title}</span><span className="ps-feature-price">{money(item.price * (yearly ? 10 : 1))}<small> / {yearly ? (cs ? "rok" : "year") : (cs ? "měsíc" : "month")}</small></span></span>
+        <span><ProPixelIcon name={item.icon} /><span className="ps-feature-title">{t.items[item.id].title}</span><span className="ps-feature-price">{money(item.price * (yearly ? 10 : 1))}<small> / {yearly ? (cs ? "rok" : "year") : (cs ? "měsíc" : "month")}</small></span></span>
       </label>)}</div>
       <div className="ps-builder-total"><p aria-live="polite" aria-atomic="true">{cs ? "Tvůj výběr:" : "Your toolkit:"} <strong>{money(customPrice)}</strong><span> / {yearly ? (cs ? "rok" : "year") : (cs ? "měsíc" : "month")}</span></p><small>{cs ? "Celé PRO nejvýše 200 Kč měsíčně. Ročně za cenu 10 měsíců." : "Full PRO capped at 200 Kč monthly. Annual price equals 10 months."}</small>
         <button type="button" className="ps-button ps-button-outline" disabled={!selected.length} onClick={() => openCheckout("custom")}>{cs ? "Vyzkoušet platbu" : "Try a demo payment"}<span aria-hidden="true"> →</span></button></div>
