@@ -89,6 +89,27 @@
 }
 .home-px .fx-glow { display: none; }
 
+/* interaktivní dlaždice v hero */
+.home-px .hs-tile {
+  background: color-mix(in srgb, var(--c) 20%, var(--hp-deep));
+  border-color: color-mix(in srgb, var(--c) 50%, var(--hp-edge));
+}
+.home-px .hs-tile:is(:hover, :focus-visible) {
+  background: color-mix(in srgb, var(--c) 32%, var(--hp-deep));
+}
+.home-px .hs-tile[data-active] { border-color: var(--c); }
+.home-px .hs-tile-label { color: #fff; }
+.home-px .hs-chip {
+  background: var(--hp-panel-2);
+  border: 2px solid var(--hp-edge);
+  box-shadow: var(--hp-bevel), 0 3px 0 var(--hp-edge);
+}
+.home-px .hs-chip:is(:hover, :focus-visible) { background: #344783; }
+.home-px :is(.hs-tile, .hs-chip, .lobby-tab, .lobby-chip, .lobby-card):focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
 /* lobby */
 .home-px .lobby-tabs, .home-px .lobby-tab, .home-px .lobby-pill, .home-px .lobby-chip, .home-px .lobby-clock { border-radius: 12px !important; }
 .home-px .lobby-tabs { background: var(--hp-deep); box-shadow: 0 0 0 3px var(--hp-edge); }
@@ -112,18 +133,32 @@
 .home-px .lobby-card :is(img, svg) { image-rendering: pixelated; }
 
 /* pás předmětů */
+.home-px .mq { mask: none; }
+.home-px .mq-track { animation-duration: 64s; }
 .home-px .mq-chip {
-  border-radius: 14px !important; border: none; rotate: 0deg !important; margin: 4px;
-  font-family: var(--font-pixel), var(--font-body), monospace;
-  background: color-mix(in srgb, var(--ac) 24%, #121a40);
-  box-shadow: var(--hp-frame), inset 3px 3px 0 color-mix(in srgb, var(--ac) 45%, transparent), inset -3px -3px 0 rgba(0, 0, 0, 0.3), 0 6px 0 0 rgba(4, 6, 18, 0.5);
-  transition: translate 0.12s steps(2, end);
+  border-radius: 14px !important;
+  border: 2px solid #000;
+  rotate: 0deg !important;
+  margin: 4px;
+  font: 800 1rem/1.35 var(--font-body), system-ui, sans-serif;
+  color: #fff;
+  -webkit-text-stroke: 3px #000;
+  paint-order: stroke fill;
+  text-shadow: -1px -1px 0 #000, 0 -1px 0 #000, 1px -1px 0 #000,
+    -1px 0 0 #000, 1px 0 0 #000, -1px 1px 0 #000, 0 1px 0 #000, 1px 1px 0 #000;
+  background: color-mix(in srgb, var(--ac) 24%, var(--hp-deep));
+  box-shadow: var(--hp-bevel), 0 4px 0 #000;
+  transition: background-color 0.15s;
 }
-.home-px .mq-chip:hover, .home-px .mq-chip:focus-visible {
-  translate: 0 -4px; background: color-mix(in srgb, var(--ac) 40%, #121a40);
-  box-shadow: var(--hp-frame), inset 3px 3px 0 color-mix(in srgb, var(--ac) 60%, transparent), inset -3px -3px 0 rgba(0, 0, 0, 0.3), 0 10px 0 0 rgba(4, 6, 18, 0.5);
+.home-px .mq-chip:is(:hover, :focus-visible) {
+  translate: none;
+  background: color-mix(in srgb, var(--ac) 36%, var(--hp-deep));
+  box-shadow: var(--hp-bevel), 0 4px 0 #000;
 }
-
+.home-px .mq-chip:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
 
 /* tlačítka */
 .home-px .zone :is(.btn-bouncy, .lobby-cta) {
