@@ -6,7 +6,7 @@ import { prefersReducedMotion } from "@/lib/motion";
 // Živé pozadí „Hrát společně“: WebGL fragment shader (deformovaný proud barev + jemné světlo,
 // které se pomalu vlní a lehce se posouvá za kurzorem). Počítá se v půlce rozlišení.
 // Pod plátnem je WebP náhrada (/arena/poster-*.webp): vykreslí se hned, a zůstane, když WebGL
-// chybí nebo je omezený pohyb (pak se shader vykreslí jen jednou). Mimo obrazovku a na skryté kartě se smyčka zastaví.
+// chybí nebo je omezený pohyb (bez spuštění shaderu). Mimo obrazovku a na skryté kartě se smyčka zastaví.
 
 export type ArenaKey = "neutral" | "quiz" | "race" | "gold" | "streak" | "survival" | "teams";
 
@@ -61,7 +61,8 @@ export function ArenaBackdrop({ variant = "neutral", className = "" }: { variant
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || window.matchMedia("(max-width: 767px), (pointer: coarse)").matches) return;
+    if (!canvas || prefersReducedMotion() || window.matchMedia("(max-width: 767px), (pointer: coarse)").matches) return;
+    if (typeof IntersectionObserver === "undefined" || typeof ResizeObserver === "undefined") return;
     const gl = canvas.getContext("webgl2", { antialias: false, alpha: false, powerPreference: "low-power" });
     if (!gl) return; // zůstane WebP náhrada
     const mk = (type: number, src: string) => {
@@ -94,9 +95,8 @@ export function ArenaBackdrop({ variant = "neutral", className = "" }: { variant
     const uMouse = u("uMouse");
 
     const mouse = { x: 0, y: 0, tx: 0, ty: 0 };
-    const still = prefersReducedMotion();
     let raf = 0;
-    let visible = true;
+    let visible = false;
     const t0 = performance.now();
 
     const resize = () => {
@@ -107,16 +107,15 @@ export function ArenaBackdrop({ variant = "neutral", className = "" }: { variant
         canvas.height = h;
       }
       gl.viewport(0, 0, w, h);
+      gl.uniform2f(uRes, w, h);
     };
     const draw = (now: number) => {
-      resize();
       mouse.x += (mouse.tx - mouse.x) * 0.05;
       mouse.y += (mouse.ty - mouse.y) * 0.05;
-      gl.uniform2f(uRes, canvas.width, canvas.height);
       gl.uniform1f(uTime, (now - t0) / 1000);
       gl.uniform2f(uMouse, mouse.x, mouse.y);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
-      canvas.dataset.ready = "1"; // CSS zprůhlední WebP náhradu až po prvním snímku
+      if (!canvas.dataset.ready) canvas.dataset.ready = "1"; // CSS zprůhlední WebP náhradu až po prvním snímku
     };
     const loop = (now: number) => {
       raf = 0;
@@ -125,8 +124,7 @@ export function ArenaBackdrop({ variant = "neutral", className = "" }: { variant
       raf = requestAnimationFrame(loop);
     };
     const start = () => {
-      if (still) return draw(performance.now());
-      if (!raf) raf = requestAnimationFrame(loop);
+      if (visible && !document.hidden && !raf) raf = requestAnimationFrame(loop);
     };
     const onMove = (e: PointerEvent) => {
       mouse.tx = (e.clientX / window.innerWidth - 0.5) * 2;
@@ -137,13 +135,16 @@ export function ArenaBackdrop({ variant = "neutral", className = "" }: { variant
       if (visible) start();
     });
     io.observe(canvas);
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+    resize();
     const onVis = () => !document.hidden && start();
     document.addEventListener("visibilitychange", onVis);
     window.addEventListener("pointermove", onMove, { passive: true });
-    start();
     return () => {
       if (raf) cancelAnimationFrame(raf);
       io.disconnect();
+      ro.disconnect();
       document.removeEventListener("visibilitychange", onVis);
       window.removeEventListener("pointermove", onMove);
       // Kontext se neruší (loseContext): v StrictMode by druhé připojení dostalo už ztracený kontext.

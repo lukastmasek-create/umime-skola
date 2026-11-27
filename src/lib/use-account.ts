@@ -43,7 +43,7 @@ function emit() {
 
 function fetchAccount(): Promise<void> {
   if (inFlight) return inFlight;
-  inFlight = fetch("/api/profil")
+  inFlight = fetch("/api/profil?summary=1")
     .then((res) => res.json())
     .then((data: Account) => {
       account = data;
@@ -79,7 +79,7 @@ function setSharedAccount(value: SetStateAction<Account>) {
 const getServerSnapshot = (): Account => null;
 const getSnapshot = (): Account => account;
 
-// Načte profil z /api/profil (null = ještě se načítá) a znovu ho načte, když
+// Načte souhrn profilu z /api/profil (null = ještě se načítá) a znovu ho načte, když
 // stránka po přihlášení nebo změně profilu pošle ACCOUNT_CHANGED_EVENT.
 export function useAccount() {
   const value = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);

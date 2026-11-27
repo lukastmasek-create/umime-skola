@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { SUBJECTS, getCategoryBySlug, type SubjectValue } from "@/lib/taxonomy";
+import { CATEGORIES, SUBJECTS, getCategoryBySlug } from "@/lib/taxonomy";
 import { getDictionary } from "@/i18n/dictionaries";
 import { getTestText } from "@/i18n/test";
 import { isLocale, type Locale } from "@/i18n/config";
@@ -12,6 +13,20 @@ export const revalidate = 0;
 
 const DIFFICULTIES = [1, 2, 3, 4, 5];
 
+// Metadata a stránka sdílejí výsledek v rámci jednoho požadavku.
+const getCourse = cache(async (courseSlug: string, category: (typeof CATEGORIES)[number]["value"]) =>
+  prisma.course.findFirst({
+    where: { slug: courseSlug, category, published: true },
+    select: {
+      title: true,
+      slug: true,
+      description: true,
+      subject: true,
+      levels: { where: { published: true }, select: { order: true } },
+    },
+  }),
+);
+
 export async function generateMetadata({
   params,
 }: {
@@ -21,10 +36,7 @@ export async function generateMetadata({
   const category = getCategoryBySlug(categorySlug);
   if (!isLocale(locale) || !category) return {};
   try {
-    const course = await prisma.course.findFirst({
-      where: { slug: courseSlug, category: category.value, published: true },
-      select: { title: true, description: true },
-    });
+    const course = await getCourse(courseSlug, category.value);
     if (!course) return { robots: { index: false } };
     return pageMetadata(
       locale,
@@ -50,27 +62,7 @@ export default async function CoursePage({
   const category = getCategoryBySlug(categorySlug);
   if (!category) notFound();
 
-  let course: {
-    title: string;
-    slug: string;
-    description: string | null;
-    subject: SubjectValue | null;
-    levels: { order: number; published: boolean }[];
-  } | null = null;
-  try {
-    course = await prisma.course.findFirst({
-      where: { slug: courseSlug, category: category.value, published: true },
-      select: {
-        title: true,
-        slug: true,
-        description: true,
-        subject: true,
-        levels: { select: { order: true, published: true } },
-      },
-    });
-  } catch {
-    course = null;
-  }
+  const course = await getCourse(courseSlug, category.value).catch(() => null);
 
   if (!course) {
     return (
@@ -89,7 +81,7 @@ export default async function CoursePage({
   }
 
   const base = `/${locale}/kurzy/${category.slug}/${course.slug}`;
-  const isAvailable = (n: number) => course.levels.some((l) => l.order === n && l.published);
+  const isAvailable = (n: number) => course.levels.some((l) => l.order === n);
 
   const grid = (kind: "kurz" | "test") => (
     <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">

@@ -3,6 +3,8 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { LazyOnView } from "./LazyOnView";
+import type { HomeLobbyText } from "@/i18n/home-lobby";
 import type { Locale } from "@/i18n/config";
 
 // Těžké sekce úvodní stránky (plátno, obrázky, animace) se stáhnou a spustí až kousek před tím,
@@ -53,6 +55,16 @@ function InView({
 const SubjectGlobe = dynamic(() => import("./SubjectGlobe").then((m) => m.SubjectGlobe), { ssr: false });
 const TownLife = dynamic(() => import("./TownLife").then((m) => m.TownLife), { ssr: false });
 const PlanetLive = dynamic(() => import("./PlanetLive").then((m) => m.PlanetLive), { ssr: false });
+
+const HomeLobby = dynamic(() => import("./HomeLobby").then((m) => m.HomeLobby), { ssr: false, loading: () => <div className="min-h-[520px]" /> });
+
+export function LazyHomeLobby({ locale, t }: { locale: Locale; t: HomeLobbyText }) {
+  return (
+    <LazyOnView placeholderHeight={520}>
+      <HomeLobby locale={locale} t={t} />
+    </LazyOnView>
+  );
+}
 
 type GlobeSubject = { slug: string; value: string; label: string; color: string };
 

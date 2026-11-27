@@ -15,6 +15,7 @@ export function LanguageSwitcher({ current }: { current: Locale }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!open) return;
     function onClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
@@ -29,7 +30,7 @@ export function LanguageSwitcher({ current }: { current: Locale }) {
       document.removeEventListener("mousedown", onClick);
       document.removeEventListener("keydown", onKey);
     };
-  }, []);
+  }, [open]);
 
   // Odkaz na stejnou stránku v jiném jazyce. Při kliknutí se zachovají i parametry (filtry) a kotva.
   function hrefFor(locale: Locale) {
@@ -58,6 +59,7 @@ export function LanguageSwitcher({ current }: { current: Locale }) {
             <Link
               key={locale}
               href={hrefFor(locale)}
+              prefetch={false}
               hrefLang={locale}
               lang={locale}
               aria-current={locale === current ? "true" : undefined}

@@ -21,6 +21,7 @@ import { OffscreenPause } from "@/components/OffscreenPause";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, locales, type Locale } from "@/i18n/config";
 import { notFound } from "next/navigation";
+import { getNavigationGroups } from "@/lib/navigation";
 import { THEME_INIT_SCRIPT } from "@/lib/theme-init-script";
 import { ParentalGuard } from "@/components/ParentalGuard";
 import { getContactText } from "@/i18n/contact";
@@ -36,7 +37,7 @@ const SKIP_LINK = tr8("Přeskočit na obsah", "Skip to content", "Zum Inhalt spr
 // Pixelový nadpisový font (Minecraft styl) s latin-ext pro češtinu.
 const heading = Pixelify_Sans({
   subsets: ["latin", "latin-ext", "cyrillic"],
-  weight: ["400", "500", "600", "700"],
+  weight: "variable",
   variable: "--font-heading",
 });
 
@@ -44,6 +45,7 @@ const heading = Pixelify_Sans({
 const heroFont = Pangolin({
   subsets: ["latin", "latin-ext", "cyrillic"],
   weight: "400",
+  preload: false,
   variable: "--font-hero",
 });
 
@@ -51,6 +53,7 @@ const heroFont = Pangolin({
 const pixel = Jersey_10({
   subsets: ["latin", "latin-ext"],
   weight: "400",
+  preload: false,
   variable: "--font-pixel",
 });
 
@@ -85,7 +88,10 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
-  const dict = getDictionary(locale as Locale);
+  const dict = getDictionary(locale);
+  const groups = getNavigationGroups(locale, dict);
+  const home = getHomeText(locale);
+  const menuText = { menu: home.menu, closeMenu: home.closeMenu, languages: home.languages };
 
   const navLink =
     "rounded-lg px-2 py-1.5 text-xs font-semibold text-[var(--muted)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)] sm:px-3 sm:py-2 sm:text-sm";
@@ -113,7 +119,7 @@ export default async function LocaleLayout({
             <Link href={`/${locale}`} className="site-logo shrink-0">
               <SiteLogo />
             </Link>
-            <NavTabs locale={locale as Locale} dict={dict} />
+            <NavTabs groups={groups} />
             <div className="flex shrink-0 items-center justify-end gap-1 text-sm sm:gap-1.5">
               <HeaderShop locale={locale as Locale} label={dict.nav.shop} />
               <LanguageSwitcher current={locale as Locale} />
@@ -123,7 +129,7 @@ export default async function LocaleLayout({
                 registerLabel={dict.nav.register}
                 linkClass={navLink}
               />
-              <MobileMenu locale={locale as Locale} dict={dict} />
+              <MobileMenu locale={locale} groups={groups} t={menuText} />
             </div>
           </div>
         </header>
@@ -132,7 +138,7 @@ export default async function LocaleLayout({
         <PencilScrollbar />
         <SiteMotion />
         <OffscreenPause />
-        <GlobalShortcuts locale={locale as Locale} dict={dict} />
+        <GlobalShortcuts locale={locale} groups={groups} t={menuText} />
         <main id="obsah" tabIndex={-1} className="world flex-1 outline-none">{children}</main>
         <footer className="site-footer chrome-px relative">
           <PixelSeam seed={47} className="sf-seam" />
@@ -146,7 +152,7 @@ export default async function LocaleLayout({
               <nav className="sf-links">
                 <Link href={`/${locale}#o-nas`} className="footer-link">
                   <SketchIcon kind="info" size={16} className="sketch-chip-ico" />
-                  {getHomeText(locale as Locale).about.title}
+                  {home.about.title}
                 </Link>
                 <Link href={`/${locale}/kontakt`} className="footer-link">
                   <SketchIcon kind="mail" size={16} className="sketch-chip-ico" />

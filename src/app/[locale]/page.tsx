@@ -11,13 +11,12 @@ import "./home-pixel.css";
 import "./home-motion.css";
 import { HomeCountUp } from "@/components/HomeCountUp";
 import { LazyOnView } from "@/components/LazyOnView";
-import { LazySubjectGlobe, LazyTownLife } from "@/components/HomeLazy";
+import { LazyHomeLobby, LazySubjectGlobe, LazyTownLife } from "@/components/HomeLazy";
 import { HeroPixel } from "@/components/HeroPixel";
 import { HeroTitle } from "@/components/HeroTitle";
 import { TearCard } from "@/components/TearCard";
 import { PcardArt, PcardRing, PcardTape } from "@/components/PcardArt";
 import { HangIcon } from "@/components/HangDecor";
-import { HomeLobby } from "@/components/HomeLobby";
 import { getHomeLobbyText } from "@/i18n/home-lobby";
 import { ResultsPreview } from "@/components/ResultsPreview";
 import { HeroShowcase } from "@/components/HeroShowcase";
@@ -206,9 +205,7 @@ export default async function Home({
           label={h.subjectsTitle}
           items={SUBJECTS.map((sj) => ({ slug: sj.slug, color: sj.color, label: subjectText.labels[sj.value] }))}
         />
-        <LazyOnView placeholderHeight={520}>
-          <HomeLobby locale={locale} t={getHomeLobbyText(locale as Locale)} />
-        </LazyOnView>
+        <LazyHomeLobby locale={locale} t={getHomeLobbyText(locale)} />
         <PixelGround kind="forest" seed={5}>
           <Critter kind="cat" y={51} dur={48} delay={-12} />
           <Critter kind="chick" y={51} dur={62} delay={-40} left />

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getDailyQuizText } from "@/i18n/daily-quiz";
+import { useAccount } from "@/lib/use-account";
 import type { Locale } from "@/i18n/config";
 
 type Status = { loggedIn: boolean; started: boolean; finished: boolean; score: number; points: number; msToNext: number };
@@ -10,22 +11,23 @@ type Status = { loggedIn: boolean; started: boolean; finished: boolean; score: n
 // Karta na úvodní stránce: stav dnešního denního kvízu a odkaz na hru.
 export function DailyQuizTeaser({ locale }: { locale: Locale }) {
   const t = getDailyQuizText(locale);
+  const [account] = useAccount();
+  const loggedIn = account?.loggedIn === true;
   const [s, setS] = useState<Status | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
-    fetch("/api/denni-kviz")
+    if (!loggedIn) return;
+    const controller = new AbortController();
+    fetch("/api/denni-kviz", { signal: controller.signal })
       .then((r) => r.json())
-      .then((d) => !cancelled && !d.error && setS(d))
+      .then((d) => !controller.signal.aborted && !d.error && setS(d))
       .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    return () => controller.abort();
+  }, [loggedIn]);
 
   // Obecnou pozvánku na denní kvíz ukazuje lobby hned pod tímto blokem; tady jen osobní stav
   // (rozehraný nebo dokončený kvíz), aby se stejná nabídka neopakovala dvakrát za sebou.
-  if (!s || !s.loggedIn || !(s.started || s.finished)) return null;
+  if (!loggedIn || !s || !s.loggedIn || !(s.started || s.finished)) return null;
   const left = `${Math.floor(s.msToNext / 3_600_000)} h ${Math.floor((s.msToNext % 3_600_000) / 60_000)} min`;
   const done = s.loggedIn && s.finished;
   const text = done

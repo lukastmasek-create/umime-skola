@@ -13,35 +13,56 @@ import { normalizeState as normalizePets, levelInfo } from "@/lib/idle/pets";
 import { computeCity, normalizeCity } from "@/lib/idle/city";
 import type { Prisma } from "@prisma/client";
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ loggedIn: false });
 
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        name: true,
-        avatar: true,
-        title: true,
-        points: true,
-        school: { select: { name: true, city: true } },
-        // Nejnovější odemčky první (přehled profilu je ukazuje jako poslední získané).
-        unlocks: { select: { key: true }, orderBy: { createdAt: "desc" } },
-      },
-    });
-    const xp = await getXp(userId);
-    const styleRow = await prisma.idleState.findUnique({ where: { userId_game: { userId, game: STYLE_GAME } } });
+    const summary = new URL(request.url).searchParams.get("summary") === "1";
+    const [user, xp, styleRow, iconVersions] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          name: true,
+          avatar: true,
+          title: true,
+          points: true,
+          school: { select: { name: true, city: true } },
+          // Nejnovější odemčky první (přehled profilu je ukazuje jako poslední získané).
+          unlocks: { select: { key: true }, orderBy: { createdAt: "desc" } },
+        },
+      }),
+      getXp(userId),
+      prisma.idleState.findUnique({ where: { userId_game: { userId, game: STYLE_GAME } } }),
+      avatarIconVersions([userId]),
+    ]);
     const style = normalizeStyle(styleRow?.data);
+    const profile = {
+      loggedIn: true,
+      frame: style.frame,
+      banner: style.banner,
+      custom: style.custom,
+      favorites: style.favorites,
+      icon: avatarIconUrl(userId, iconVersions[userId]),
+      userId,
+      name: user?.name ?? session.user.name ?? null,
+      avatar: user?.avatar ?? DEFAULT_AVATAR,
+      title: user?.title ?? null,
+      points: user?.points ?? 0,
+      school: user?.school ?? null,
+      unlocks: user?.unlocks.map((u) => u.key) ?? [],
+      ...levelProgress(xp),
+    };
+    if (summary) return NextResponse.json(profile);
+
     // Doplňky profilu: pozice v žebříčku, mazlíčci a město. Když něco selže, prostě chybí.
     const now = Date.now();
-    const [ahead, total, petRow, cityRow, iconVersions] = await Promise.all([
+    const [ahead, total, petRow, cityRow] = await Promise.all([
       prisma.user.count({ where: { points: { gt: user?.points ?? 0 } } }).catch(() => null),
       prisma.user.count().catch(() => null),
       prisma.idleState.findUnique({ where: { userId_game: { userId, game: "mazlicci" } } }).catch(() => null),
       prisma.idleState.findUnique({ where: { userId_game: { userId, game: "mesto" } } }).catch(() => null),
-      avatarIconVersions([userId]),
     ]);
     let pets: { owned: number; active: string | null; name: string; level: number } | null = null;
     try {
@@ -60,24 +81,11 @@ export async function GET() {
       city = { buildings: stats.buildings, population: Math.floor(stats.population) };
     } catch {}
     return NextResponse.json({
-      loggedIn: true,
+      ...profile,
       rank: ahead === null ? null : ahead + 1,
       players: total,
       pets,
       city,
-      frame: style.frame,
-      banner: style.banner,
-      custom: style.custom,
-      favorites: style.favorites,
-      icon: avatarIconUrl(userId, iconVersions[userId]),
-      userId,
-      name: user?.name ?? session.user.name ?? null,
-      avatar: user?.avatar ?? DEFAULT_AVATAR,
-      title: user?.title ?? null,
-      points: user?.points ?? 0,
-      school: user?.school ?? null,
-      unlocks: user?.unlocks.map((u) => u.key) ?? [],
-      ...levelProgress(xp),
     });
   } catch {
     // Databáze je chvíli nedostupná: přihlášení platí, jen nemáme data profilu.
