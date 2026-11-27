@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { hasPro } from "@/lib/pro-server";
-import { ProIcon } from "@/components/pro/ProIcon";
+import { ProPixelIcon } from "@/components/pro/ProPixelIcon";
 import { getProText } from "@/i18n/pro";
 import { getProExtra } from "@/i18n/pro-extra";
 import { getProToolsText } from "@/i18n/pro-tools";
@@ -12,7 +12,8 @@ import { isLocale, type Locale } from "@/i18n/config";
 import "./pro-pixel.css";
 import { ProStorefront } from "@/components/pro/ProStorefront";
 import { ProTabs } from "@/components/pro/ProTabs";
-import { ProToolPile } from "@/components/pro/ProToolPile";
+
+const comparisonIcons = ["kurzy", "plan", "zkouska", "offline"];
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -42,72 +43,87 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
   return (
     <div className="space-page pro-pixel-page">
       <ProStorefront locale={locale as Locale} />
-      <div className="relative z-10 mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <ProTabs locale={locale as Locale} active="pro" />
+      <div className="pro-details mx-auto max-w-6xl px-4 sm:px-6">
+        <ProTabs locale={locale as Locale} active="pro" />
 
-      <div className="card mb-8 flex flex-wrap items-center justify-between gap-3 px-7 py-6">
-        <p className="font-semibold">{t.status[status]}</p>
-        {status === "guest" && (
-          <Link href={`/${locale}/prihlaseni`} className="btn-bouncy btn-secondary btn-lg">
-            {t.status.login}
-          </Link>
-        )}
-      </div>
-
-      <section className="mb-8">
-        <h2 className="text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          {tools.toolsTitle}
-        </h2>
-        <p className="mb-4 text-sm text-[var(--muted)]">{tools.toolsHint}</p>
-        <ProToolPile locale={locale as Locale} slugs={featuresForTab("pro").filter((f) => featureAvailableIn(f.slug, locale))} />
-      </section>
-
-      <section className="mb-8">
-        <h2 className="mb-4 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          {extra.benefitsTitle}
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {extra.benefits.map((b) => (
-            <div key={b.title} className="card px-7 py-6">
-              <ProIcon name={b.icon} className="mb-2 size-8 text-[var(--brand-600)]" />
-              <h3 className="mb-1 font-bold">{b.title}</h3>
-              <p className="text-sm text-[var(--muted)]">{b.text}</p>
-            </div>
-          ))}
+        <div className="ps-frame pro-panel">
+          <div className="pro-panel-inner pro-panel-line">
+            <p>{t.status[status]}</p>
+            {status === "guest" && (
+              <Link href={`/${locale}/prihlaseni`} className="btn-bouncy btn-secondary btn-lg">
+                {t.status.login}
+              </Link>
+            )}
+          </div>
         </div>
-      </section>
 
-      <section className="card mb-8 px-7 py-7">
-        <h2 className="mb-4 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-          {t.compareTitle}
-        </h2>
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="text-[var(--faint)]">
-              <th className="py-1 font-medium" />
-              <th className="py-1 font-medium">{t.compareFree}</th>
-              <th className="py-1 font-medium text-[var(--brand-600)]">{t.comparePro}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {t.rows.map((row) => (
-              <tr key={row.what} className="border-t border-[var(--border,rgba(0,0,0,0.08))]">
-                <td className="py-2 pr-2">{row.what}</td>
-                <td className="py-2 pr-2 text-[var(--muted)]">{row.free}</td>
-                <td className="py-2 font-semibold">{row.pro}</td>
-              </tr>
+        <section aria-labelledby="pro-tools-title">
+          <h2 id="pro-tools-title">{tools.toolsTitle}</h2>
+          <p className="pro-section-intro">{tools.toolsHint}</p>
+          <div className="pro-card-grid">
+            {featuresForTab("pro").filter((f) => featureAvailableIn(f.slug, locale)).map(({ slug }) => (
+              <Link key={slug} href={`/${locale}/pro/${slug}`} className="ps-frame pro-panel pro-tool">
+                <div className="pro-panel-inner">
+                  <div className="pro-card-top">
+                    <ProPixelIcon name={slug} />
+                    <span aria-hidden="true">↗</span>
+                  </div>
+                  <h3>{tools.features[slug].title}</h3>
+                  <p>{tools.features[slug].text}</p>
+                </div>
+              </Link>
             ))}
-          </tbody>
-        </table>
-      </section>
+          </div>
+        </section>
 
-      <div className="card flex flex-wrap items-center justify-between gap-3 px-7 py-6">
-        <p className="text-sm">{t.ctaText}</p>
-        <Link href={`/${locale}/kontakt`} className="btn-bouncy btn-secondary btn-lg">
-          {t.cta}
-        </Link>
+        <section aria-labelledby="pro-benefits-title">
+          <h2 id="pro-benefits-title">{extra.benefitsTitle}</h2>
+          <div className="pro-card-grid">
+            {extra.benefits.map((benefit) => (
+              <article key={benefit.title} className="ps-frame pro-panel">
+                <div className="pro-panel-inner">
+                  <ProPixelIcon name={benefit.icon} />
+                  <h3>{benefit.title}</h3>
+                  <p>{benefit.text}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section aria-labelledby="pro-compare-title">
+          <h2 id="pro-compare-title">{t.compareTitle}</h2>
+          <div className="pro-card-grid pro-compare-grid">
+            {t.rows.map((row, index) => (
+              <article key={row.what} className="ps-frame pro-panel">
+                <div className="pro-panel-inner">
+                  <ProPixelIcon name={comparisonIcons[index] ?? "kurzy"} />
+                  <h3>{row.what}</h3>
+                  <dl className="pro-compare-options">
+                    <div>
+                      <dt>{t.compareFree}</dt>
+                      <dd>{row.free}</dd>
+                    </div>
+                    <div>
+                      <dt>{t.comparePro}</dt>
+                      <dd>{row.pro}</dd>
+                    </div>
+                  </dl>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <div className="ps-frame pro-panel">
+          <div className="pro-panel-inner pro-panel-line">
+            <p>{t.ctaText}</p>
+            <Link href={`/${locale}/kontakt`} className="btn-bouncy btn-secondary btn-lg">
+              {t.cta}
+            </Link>
+          </div>
+        </div>
       </div>
-    </div>
     </div>
   );
 }

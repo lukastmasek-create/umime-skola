@@ -7426,12 +7426,12 @@ a[class*="rounded-full"], button[class*="rounded-full"], span[class*="rounded-fu
 
 /* 3D náklon karet pod kurzorem (proměnné nastavuje HomeFx). !important přebíjí hover transformace karet. */
 /* Náklon dobíhá pružně v JS, proto transform nemá vlastní transition (jinak by se zpoždění sčítala). */
-.space-page :is(.lobby-card, .gcard-hover, .about-person, .about-note, .about-problem, .pro-tile, .rp-paper, .home-stat, .home-tpoint).fx-tilt-on {
+.space-page :is(.gcard-hover, .about-person, .about-note, .about-problem, .pro-tile, .rp-paper, .home-stat, .home-tpoint).fx-tilt-on {
   transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(0) !important;
   transition: translate 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2), box-shadow 0.3s ease !important;
 }
 .space-page .fx-tilt-hot { background-image: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgba(255, 255, 255, 0.09), transparent 45%); }
-.space-page .lobby-card.fx-tilt-hot, .space-page .rp-paper.fx-tilt-hot { background-image: none; }
+.space-page .rp-paper.fx-tilt-hot { background-image: none; }
 
 /* Hromádka karet: holografický odlesk sleduje kurzor a při najetí přejede lesk. */
 .pcard-in::after {

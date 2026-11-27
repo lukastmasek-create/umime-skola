@@ -8,7 +8,7 @@ import { useEffect } from "react";
 // Mění jen CSS proměnné a vlastnosti translate/transform, nic neposouvá rozložení.
 // Respektuje systémové omezení pohybu i přepínač „Animace“ (data-motion="off"). Styly v globals.css a home-motion.css.
 
-const TILT = ".space-page :is(.fx-tilt, .lobby-card, .gcard-hover, .about-person, .about-note, .about-problem, .pro-tile, .rp-paper, .home-stat, .home-tpoint)";
+const TILT = ".space-page :is(.fx-tilt, .gcard-hover, .about-person, .about-note, .about-problem, .pro-tile, .rp-paper, .home-stat, .home-tpoint)";
 const MAGNET = ".space-page .btn-cta, .space-page .fx-magnet";
 const SPARK_COLORS = ["#ffc933", "#ff8fd0", "#8fd0ff", "#7ee0b0", "#b49cff"];
 const MAX_TILT = 7; // stupně
