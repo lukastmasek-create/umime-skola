@@ -46,8 +46,8 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
       <div className="pro-details mx-auto max-w-6xl px-4 sm:px-6">
         <ProTabs locale={locale as Locale} active="pro" />
 
-        <div className="ps-frame pro-panel">
-          <div className="pro-panel-inner pro-panel-line">
+        <div className="ps-frame pro-frame">
+          <div className="pro-frame-inner pro-frame-line">
             <p>{t.status[status]}</p>
             {status === "guest" && (
               <Link href={`/${locale}/prihlaseni`} className="btn-bouncy btn-secondary btn-lg">
@@ -62,8 +62,8 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
           <p className="pro-section-intro">{tools.toolsHint}</p>
           <div className="pro-card-grid">
             {featuresForTab("pro").filter((f) => featureAvailableIn(f.slug, locale)).map(({ slug }) => (
-              <Link key={slug} href={`/${locale}/pro/${slug}`} className="ps-frame pro-panel pro-tool">
-                <div className="pro-panel-inner">
+              <Link key={slug} href={`/${locale}/pro/${slug}`} className="ps-frame pro-frame pro-tool">
+                <div className="pro-frame-inner">
                   <div className="pro-card-top">
                     <ProPixelIcon name={slug} />
                     <span aria-hidden="true">↗</span>
@@ -80,8 +80,8 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
           <h2 id="pro-benefits-title">{extra.benefitsTitle}</h2>
           <div className="pro-card-grid">
             {extra.benefits.map((benefit) => (
-              <article key={benefit.title} className="ps-frame pro-panel">
-                <div className="pro-panel-inner">
+              <article key={benefit.title} className="ps-frame pro-frame">
+                <div className="pro-frame-inner">
                   <ProPixelIcon name={benefit.icon} />
                   <h3>{benefit.title}</h3>
                   <p>{benefit.text}</p>
@@ -95,8 +95,8 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
           <h2 id="pro-compare-title">{t.compareTitle}</h2>
           <div className="pro-card-grid pro-compare-grid">
             {t.rows.map((row, index) => (
-              <article key={row.what} className="ps-frame pro-panel">
-                <div className="pro-panel-inner">
+              <article key={row.what} className="ps-frame pro-frame">
+                <div className="pro-frame-inner">
                   <ProPixelIcon name={comparisonIcons[index] ?? "kurzy"} />
                   <h3>{row.what}</h3>
                   <dl className="pro-compare-options">
@@ -115,8 +115,8 @@ export default async function ProPage({ params }: { params: Promise<{ locale: st
           </div>
         </section>
 
-        <div className="ps-frame pro-panel">
-          <div className="pro-panel-inner pro-panel-line">
+        <div className="ps-frame pro-frame">
+          <div className="pro-frame-inner pro-frame-line">
             <p>{t.ctaText}</p>
             <Link href={`/${locale}/kontakt`} className="btn-bouncy btn-secondary btn-lg">
               {t.cta}
