@@ -14,7 +14,7 @@ import { getSubjectText } from "@/i18n/subjects";
 import { CourseWorld } from "@/components/CourseWorld";
 import { getAllGradesLabel, gradeLabel } from "@/i18n/grades";
 import { isLocale, type Locale } from "@/i18n/config";
-import { matchesCourseQuery } from "@/lib/course-search";
+import { courseQueryFilter } from "@/lib/course-search";
 import { CourseSearch } from "@/components/CourseSearch";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
@@ -49,7 +49,7 @@ export default async function CategoryPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; category: string }>;
-  searchParams: Promise<{ predmet?: string; trida?: string; q?: string }>;
+  searchParams: Promise<{ predmet?: string | string[]; trida?: string | string[]; q?: string | string[] }>;
 }) {
   const { locale, category: categorySlug } = await params;
   if (!isLocale(locale)) notFound();
@@ -62,9 +62,9 @@ export default async function CategoryPage({
 
   // Hodnota z URL musí být platný předmět, ať do Prisma nikdy nepošleme
   // libovolný string z query parametru.
-  const selectedSubject = getSubjectBySlug(predmet);
+  const selectedSubject = getSubjectBySlug(typeof predmet === "string" ? predmet : undefined);
   const availableGrades = GRADES[category.slug];
-  const gradeNumber = Number(trida);
+  const gradeNumber = typeof trida === "string" ? Number(trida) : NaN;
   const selectedGrade = availableGrades.includes(gradeNumber) ? gradeNumber : undefined;
 
   // Po výběru předmětu se stránka posune rovnou na seznam kurzů (kotva), jinak je pod velkou mapou ostrovů.
@@ -81,30 +81,25 @@ export default async function CategoryPage({
   let courses: Course[] = [];
   let loadFailed = false;
   try {
-    courses = await prisma.course.findMany({
-      where: {
-        published: true,
-        category: category.value,
-        ...(selectedSubject ? { subject: selectedSubject.value } : {}),
-        ...(selectedGrade ? { grade: selectedGrade } : {}),
-      },
-      orderBy: [{ subject: "asc" }, { section: "asc" }, { title: "asc" }],
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        description: true,
-        subject: true,
-        section: true,
-        grade: true,
-      },
-    });
-    const grouped = await prisma.course.groupBy({
-      by: ["subject"],
-      where: { published: true, category: category.value, ...(selectedGrade ? { grade: selectedGrade } : {}) },
-      _count: { _all: true },
-    });
-    for (const g of grouped) if (g.subject) counts.set(g.subject, g._count._all);
+    const scope = {
+      published: true,
+      category: category.value,
+      grade: selectedGrade,
+    };
+    const [rows, grouped] = await Promise.all([
+      prisma.course.findMany({
+        where: { ...scope, subject: selectedSubject?.value },
+        orderBy: [{ subject: "asc" }, { section: "asc" }, { title: "asc" }],
+        select: { id: true, title: true, slug: true, description: true, subject: true, section: true, grade: true },
+      }),
+      selectedSubject ? prisma.course.groupBy({ by: ["subject"], where: scope, _count: { _all: true } }) : null,
+    ]);
+    courses = rows;
+    if (grouped) {
+      for (const row of grouped) if (row.subject) counts.set(row.subject, row._count._all);
+    } else {
+      for (const { subject } of rows) if (subject) counts.set(subject, (counts.get(subject) ?? 0) + 1);
+    }
   } catch (error) {
     // Databáze není dostupná (chybí DATABASE_URL, síť, výpadek). Chybu zalogujeme
     // a stránka řekne, že se nepodařilo načíst, ne že kurzy neexistují.
@@ -114,8 +109,8 @@ export default async function CategoryPage({
   }
 
   // Hledání mezi právě zobrazenými kurzy (po filtru předmětu a třídy).
-  const query = (q ?? "").trim().slice(0, 100);
-  if (query) courses = courses.filter((c) => matchesCourseQuery(c, query));
+  const query = typeof q === "string" ? q.trim().slice(0, 100) : "";
+  if (query) courses = courses.filter(courseQueryFilter(query));
 
   // Seskupení: předmět -> kategorie (obor) -> kurzy. V přehledu (bez předmětu a hledání) jen ukázka.
   const collapsed = !selectedSubject && !query;
@@ -156,12 +151,13 @@ export default async function CategoryPage({
 
       {availableGrades.length > 0 && (
         <div className="mb-3 flex flex-wrap gap-2">
-          <Link href={filterHref(selectedSubject?.slug)} className={chip(!selectedGrade)}>
+          <Link prefetch={false} href={filterHref(selectedSubject?.slug)} className={chip(!selectedGrade)}>
             {getAllGradesLabel(locale as Locale)}
           </Link>
           {availableGrades.map((n) => (
             <Link
               key={n}
+              prefetch={false}
               href={filterHref(selectedSubject?.slug, n)}
               className={chip(selectedGrade === n)}
             >
@@ -173,12 +169,13 @@ export default async function CategoryPage({
 
       {/* Na mobilu jednoduché tlačítko pro každý předmět; mapa ostrovů je od 640 px. */}
       <nav aria-label={subjectText.all} className="mb-6 flex flex-wrap gap-2 sm:hidden">
-        <Link href={filterHref(undefined, selectedGrade)} className={chip(!selectedSubject)}>
+        <Link prefetch={false} href={filterHref(undefined, selectedGrade)} className={chip(!selectedSubject)}>
           {subjectText.all}
         </Link>
         {SUBJECTS.filter((subject) => (counts.get(subject.value) ?? 0) > 0).map((subject) => (
           <Link
             key={subject.slug}
+            prefetch={false}
             href={filterHref(subject.slug, selectedGrade)}
             className={chip(selectedSubject?.value === subject.value)}
             aria-current={selectedSubject?.value === subject.value ? "page" : undefined}
@@ -252,6 +249,7 @@ export default async function CategoryPage({
                         {items.map((course) => (
                           <Link
                             key={course.id}
+                            prefetch={false}
                             href={`/${locale}/kurzy/${category.slug}/${course.slug}`}
                             className="card card-hover course-paper flex flex-col gap-2 overflow-hidden p-5 pt-6"
                             style={{ borderTop: `8px solid ${subject?.color ?? "var(--edge)"}`, "--course-accent": subject?.color ?? "var(--surface-muted)" } as React.CSSProperties}
@@ -281,6 +279,7 @@ export default async function CategoryPage({
                 </div>
                 {collapsed && subject && (totals.get(subjectKey) ?? 0) > PREVIEW_PER_SUBJECT && (
                   <Link
+                    prefetch={false}
                     href={filterHref(subject.slug, selectedGrade)}
                     className="btn-bouncy mt-5 inline-flex min-h-11 items-center rounded-full bg-[var(--brand-500)] px-5 py-2 text-sm font-semibold text-white"
                   >

@@ -5,37 +5,11 @@ import { auth } from "@/lib/auth";
 import { proTiers } from "@/lib/pro-server";
 import { isLocale, type Locale } from "@/i18n/config";
 import { getProToolsText } from "@/i18n/pro-tools";
-import { featureAvailableIn, featureTier, isProFeature, type ProFeatureSlug } from "@/lib/pro-tools/features";
-import { AiSpace } from "@/components/ai/AiSpace";
-import { ExamRunner } from "@/components/pro/ExamRunner";
-import { MistakeNotebook } from "@/components/pro/MistakeNotebook";
-import { NotesCards } from "@/components/pro/NotesCards";
-import { OfflineManager } from "@/components/pro/OfflineManager";
-import { OralExam } from "@/components/pro/OralExam";
-import { PhotoTasks } from "@/components/pro/PhotoTasks";
-import { Pronunciation } from "@/components/pro/Pronunciation";
-import { StudyPlan } from "@/components/pro/StudyPlan";
-import { FamilyDuel, FamilyHub, HolidayPlan } from "@/components/pro/FamilyTools";
-import { SchoolTools } from "@/components/pro/SchoolTools";
+import { featureAvailableIn, featureTier, isProFeature } from "@/lib/pro-tools/features";
+import { ProFeatureView } from "@/components/pro/ProFeatureView";
 import { SpaceShell } from "@/components/SpaceShell";
 
 export const dynamic = "force-dynamic";
-
-const VIEWS: Record<ProFeatureSlug, (props: { locale: Locale }) => React.ReactNode> = {
-  doucovatel: (p) => <AiSpace {...p} />,
-  plan: (p) => <StudyPlan {...p} />,
-  zkouska: (p) => <ExamRunner {...p} />,
-  fotka: (p) => <PhotoTasks {...p} />,
-  ustni: (p) => <OralExam {...p} />,
-  "sesit-chyb": (p) => <MistakeNotebook {...p} />,
-  poznamky: (p) => <NotesCards {...p} />,
-  vyslovnost: (p) => <Pronunciation {...p} />,
-  offline: (p) => <OfflineManager {...p} />,
-  rodina: (p) => <FamilyHub {...p} />,
-  souboj: (p) => <FamilyDuel {...p} />,
-  prazdniny: (p) => <HolidayPlan {...p} />,
-  skola: (p) => <SchoolTools {...p} />,
-};
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; feature: string }> }): Promise<Metadata> {
   const { locale, feature } = await params;
@@ -70,7 +44,7 @@ export default async function ProToolPage({ params }: { params: Promise<{ locale
   return (
     <SpaceShell title={f.title} subtitle={f.text} back={{ href: `/${locale}/pro`, label: "UčímePRO" }} full={feature === "doucovatel" && allowed}>
       {allowed ? (
-        VIEWS[feature]({ locale })
+        <ProFeatureView feature={feature} locale={locale} />
       ) : (
         <div className="card p-6">
           <h2 className="mb-1 text-lg font-bold">{t.gateTitle}</h2>

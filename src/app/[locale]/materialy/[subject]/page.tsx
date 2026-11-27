@@ -64,6 +64,7 @@ export default async function MaterialsSubjectPage({ params }: { params: Promise
                 .map((topic) => (
                   <Link
                     key={topic.slug}
+                    prefetch={false}
                     href={`/${locale}/materialy/${slug}/${topic.slug}`}
                     className="card card-hover flex flex-col gap-2 overflow-hidden p-5 pt-6"
                     style={{ borderTop: `8px solid ${subject.color}` }}

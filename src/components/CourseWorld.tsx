@@ -166,55 +166,76 @@ export function CourseWorld({ locale, islands, allHref, allLabel, noteLabel }: {
     hoverRef.current = focus;
     selRef.current = focus ? ORDER.indexOf(focus) : -1;
   }, [focus]);
-  useEffect(() => {
-    narrowRef.current = narrow;
-  }, [narrow]);
 
   useEffect(() => {
     if (!account?.loggedIn) return;
-    let alive = true;
-    fetch("/api/predmety")
-      .then((r) => r.json())
-      .then((d) => {
-        if (alive && d.loggedIn && d.subjects) setData(d.subjects);
-      })
-      .catch(() => {});
+    const desktop = window.matchMedia("(min-width: 640px)");
+    const controller = new AbortController();
+    let requested = false;
+    function load() {
+      if (!desktop.matches || requested) return;
+      requested = true;
+      fetch("/api/predmety", { signal: controller.signal })
+        .then((response) => response.json())
+        .then((result) => {
+          if (result.loggedIn && result.subjects) setData(result.subjects);
+        })
+        .catch(() => { requested = false; });
+    }
+    load();
+    desktop.addEventListener("change", load);
     return () => {
-      alive = false;
+      desktop.removeEventListener("change", load);
+      controller.abort();
     };
   }, [account?.loggedIn]);
 
   useEffect(() => {
     const box = stage.current;
     const cv = sea.current;
-    if (!box || !cv) return;
+    if (!box || !cv || typeof IntersectionObserver === "undefined" || typeof ResizeObserver === "undefined") return;
     const reduced = prefersReducedMotion();
-    const gl = cv.getContext("webgl2", { alpha: false, antialias: false, powerPreference: "low-power" });
-    let glOk = false;
-    let u: (n: string) => WebGLUniformLocation | null = () => null;
-    if (gl) {
+    let gl: WebGL2RenderingContext | null = null;
+    let program: WebGLProgram | null = null;
+    let buffer: WebGLBuffer | null = null;
+    const uniforms = new Map<string, WebGLUniformLocation | null>();
+    function initSea(canvas: HTMLCanvasElement) {
+      const context = canvas.getContext("webgl2", { alpha: false, antialias: false, powerPreference: "low-power" });
+      if (!context) return;
       try {
-        const prog = gl.createProgram()!;
-        gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VERT));
-        gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, FRAG));
-        gl.linkProgram(prog);
-        if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error("link");
-        gl.useProgram(prog);
-        const buf = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-        const loc = gl.getAttribLocation(prog, "aPos");
-        gl.enableVertexAttribArray(loc);
-        gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-        u = (n) => gl.getUniformLocation(prog, n);
-        glOk = true;
+        program = context.createProgram();
+        if (!program) return;
+        const vert = compile(context, context.VERTEX_SHADER, VERT);
+        const frag = compile(context, context.FRAGMENT_SHADER, FRAG);
+        context.attachShader(program, vert);
+        context.attachShader(program, frag);
+        context.linkProgram(program);
+        context.deleteShader(vert);
+        context.deleteShader(frag);
+        if (!context.getProgramParameter(program, context.LINK_STATUS)) throw new Error("link");
+        context.useProgram(program);
+        buffer = context.createBuffer();
+        context.bindBuffer(context.ARRAY_BUFFER, buffer);
+        context.bufferData(context.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), context.STATIC_DRAW);
+        const loc = context.getAttribLocation(program, "aPos");
+        context.enableVertexAttribArray(loc);
+        context.vertexAttribPointer(loc, 2, context.FLOAT, false, 0, 0);
+        for (const name of ["uRes", "uIsl", "uTime", "uSel", "uMouse"]) {
+          uniforms.set(name, context.getUniformLocation(program, name));
+        }
+        gl = context;
       } catch {
-        glOk = false;
+        context.deleteProgram(program);
+        context.deleteBuffer(buffer);
+
       }
     }
+    const u = (name: string) => uniforms.get(name) ?? null;
+    const islandPositions = new Float32Array(N * 3);
+    let initialized = false;
     let W = 0, H = 0;
     let raf = 0;
-    let visible = true;
+    let visible = false;
     let disposed = false;
     const mouse = { x: -1, y: -1, t: -10 };
     const t0 = performance.now();
@@ -222,29 +243,34 @@ export function CourseWorld({ locale, islands, allHref, allLabel, noteLabel }: {
       const r = box.getBoundingClientRect();
       W = r.width;
       H = r.height;
-      setNarrow(W < 640);
-      if (gl && glOk) {
+      if (!W || !H) return;
+      const isNarrow = W < 640;
+      narrowRef.current = isNarrow;
+      setNarrow(isNarrow);
+      if (!initialized) {
+        initialized = true;
+        initSea(cv);
+      }
+      if (gl) {
         const scale = Math.min(1, 900 / W) * Math.min(window.devicePixelRatio || 1, 1.25);
         cv.width = Math.max(2, Math.round(W * scale));
         cv.height = Math.max(2, Math.round(H * scale));
         gl.viewport(0, 0, cv.width, cv.height);
         gl.uniform2f(u("uRes"), cv.width, cv.height);
+        ORDER.forEach((slug, i) => {
+          const [px, py] = (isNarrow ? NARROW : WIDE)[slug];
+          islandPositions[i * 3] = px / 100;
+          islandPositions[i * 3 + 1] = 1 - (py + 4) / 100;
+          islandPositions[i * 3 + 2] = isNarrow ? 0.042 : 0.034;
+        });
+        gl.uniform3fv(u("uIsl"), islandPositions);
       }
     };
-    const pos = (slug: string): [number, number] => (narrowRef.current ? NARROW : WIDE)[slug];
     const frame = (now: number) => {
       raf = 0;
-      if (disposed) return;
+      if (disposed || !visible || !W || !H) return;
       const sec = (now - t0) / 1000;
-      if (gl && glOk) {
-        const arr = new Float32Array(N * 3);
-        ORDER.forEach((slug, i) => {
-          const [px, py] = pos(slug);
-          arr[i * 3] = px / 100;
-          arr[i * 3 + 1] = 1 - (py + 4) / 100;
-          arr[i * 3 + 2] = narrowRef.current ? 0.042 : 0.034;
-        });
-        gl.uniform3fv(u("uIsl"), arr);
+      if (gl) {
         gl.uniform1f(u("uTime"), reduced ? 3 : sec);
         gl.uniform1f(u("uSel"), selRef.current);
         gl.uniform3f(u("uMouse"), mouse.x, mouse.y, reduced ? -1 : (now - mouse.t) / 1000);
@@ -278,25 +304,27 @@ export function CourseWorld({ locale, islands, allHref, allLabel, noteLabel }: {
       kick();
     };
     const ro = new ResizeObserver(() => {
+      if (!visible) return;
       resize();
-      if (reduced) frame(performance.now());
       kick();
     });
     ro.observe(box);
-    resize();
     const io = new IntersectionObserver(([en]) => {
       visible = en.isIntersecting;
+      if (!visible) return;
+      resize();
       kick();
     });
     io.observe(box);
-    window.addEventListener("pointermove", onMove, { passive: true });
-    kick();
+    box.addEventListener("pointermove", onMove, { passive: true });
     return () => {
       disposed = true;
       cancelAnimationFrame(raf);
       ro.disconnect();
       io.disconnect();
-      window.removeEventListener("pointermove", onMove);
+      box.removeEventListener("pointermove", onMove);
+      gl?.deleteProgram(program);
+      gl?.deleteBuffer(buffer);
     };
   }, []);
 
@@ -317,12 +345,13 @@ export function CourseWorld({ locale, islands, allHref, allLabel, noteLabel }: {
         {islands.map((isl) => {
           const [x, y] = place[isl.slug] ?? [50, 50];
           const on = focus === isl.slug;
-          const sum = data?.[isl.slug];
+          const sum = account?.loggedIn ? data?.[isl.slug] : undefined;
           const pct = sum && sum.total > 0 ? Math.round((sum.done / sum.total) * 100) : null;
           return (
             <Link
               key={isl.slug}
               href={isl.href}
+              prefetch={false}
               aria-current={isl.active ? "true" : undefined}
               onMouseEnter={() => setHover(isl.slug)}
               onMouseLeave={() => setHover(null)}
@@ -365,6 +394,7 @@ export function CourseWorld({ locale, islands, allHref, allLabel, noteLabel }: {
         )}
         <Link
           href={allHref}
+          prefetch={false}
           className="btn-bouncy absolute bottom-3 left-3 z-20 bg-[var(--surface)] px-3 py-1.5 text-xs font-bold sm:text-sm"
           aria-current={!selected ? "true" : undefined}
         >

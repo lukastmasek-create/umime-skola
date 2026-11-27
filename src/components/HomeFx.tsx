@@ -135,8 +135,8 @@ export function HomeFx() {
         const b = step(it.ry, 0.16, dt);
         it.el.style.setProperty("--rx", `${it.rx.v.toFixed(2)}deg`);
         it.el.style.setProperty("--ry", `${it.ry.v.toFixed(2)}deg`);
-        if (a || b || hot) moving = true;
-        else {
+        if (a || b) moving = true;
+        else if (!hot) {
           it.el.style.removeProperty("--rx");
           it.el.style.removeProperty("--ry");
           it.el.classList.remove("fx-tilt-on", "fx-tilt-hot");
@@ -160,8 +160,8 @@ export function HomeFx() {
         const a = step(it.x, hot ? 0.2 : 0.12, dt);
         const b = step(it.y, hot ? 0.2 : 0.12, dt);
         it.el.style.translate = `${it.x.v.toFixed(1)}px ${it.y.v.toFixed(1)}px`;
-        if (a || b || hot) moving = true;
-        else {
+        if (a || b) moving = true;
+        else if (!hot) {
           it.el.style.removeProperty("translate");
           mags.delete(it.el);
         }

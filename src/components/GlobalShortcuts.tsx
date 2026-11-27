@@ -3,13 +3,11 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import type { Dictionary } from "@/i18n/dictionaries";
+import type { Group } from "@/lib/navigation";
 import type { Locale } from "@/i18n/config";
-import { getHomeText } from "@/i18n/home";
-import { useAccount } from "@/lib/use-account";
 import { SketchIcon } from "@/components/SketchIcons";
 import { PcardTape } from "@/components/PcardArt";
-import { GROUP_SVG_ICON, isActiveTab, useGroups } from "@/components/NavTabs";
+import { GROUP_SVG_ICON, isActiveTab, useVisibleNavigation } from "@/components/NavTabs";
 
 // Zkratky G + písmeno: stránka, kterou písmeno otevře. Když už na ní jste, zobrazí se její sekce (záložky).
 const LETTERS: Record<string, { path: string; label: string }> = {
@@ -88,12 +86,10 @@ function ShortcutCard({ sections, onPick }: { sections: { label: string; el: HTM
   );
 }
 
-export function GlobalShortcuts({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+export function GlobalShortcuts({ locale, groups: navigation, t }: { locale: Locale; groups: Group[]; t: { menu: string; closeMenu: string } }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [account] = useAccount();
-  const groups = useGroups(locale, dict, account ? account.loggedIn : null);
-  const t = getHomeText(locale);
+  const groups = useVisibleNavigation(navigation);
 
   // Nabídka je otevřená jen na stránce, na které byla otevřena; po přechodu jinam se sama zavře.
   const [openPath, setOpenPath] = useState<string | null>(null);

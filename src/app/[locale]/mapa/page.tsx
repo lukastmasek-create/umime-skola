@@ -26,12 +26,19 @@ export default async function MapPage({ params }: { params: Promise<{ locale: st
       orderBy: [{ grade: "asc" }, { section: "asc" }, { title: "asc" }],
       select: { id: true, title: true, slug: true, grade: true, subject: true },
     });
+    const coursesBySubject = new Map<string, MapSubject["courses"]>();
+    for (const { subject, id, title, slug, grade } of courses) {
+      if (!subject) continue;
+      const list = coursesBySubject.get(subject) ?? [];
+      list.push({ id, title, slug, grade });
+      coursesBySubject.set(subject, list);
+    }
     subjects = SUBJECTS.map((s) => ({
       value: s.value,
       label: labels[s.value],
       slug: s.slug,
       color: s.color,
-      courses: courses.filter((c) => c.subject === s.value).map(({ id, title, slug, grade }) => ({ id, title, slug, grade })),
+      courses: coursesBySubject.get(s.value) ?? [],
     })).filter((s) => s.courses.length > 0);
   } catch (error) {
     console.error("[mapa] Načtení kurzů selhalo:", error);

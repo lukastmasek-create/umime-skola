@@ -7,9 +7,15 @@ export function normalizeSearchText(text: string): string {
     .trim();
 }
 
-// Dotaz se porovná s názvem a popisem kurzu. Prázdný dotaz vyhovuje všem kurzům.
-export function matchesCourseQuery(course: { title: string; description: string | null }, query: string): boolean {
+type SearchableCourse = { title: string; description: string | null };
+
+// Dotaz se normalizuje jednou pro celý seznam kurzů.
+export function courseQueryFilter(query: string) {
   const needle = normalizeSearchText(query);
-  if (!needle) return true;
-  return normalizeSearchText(`${course.title} ${course.description ?? ""}`).includes(needle);
+  return (course: SearchableCourse) =>
+    !needle || normalizeSearchText(`${course.title} ${course.description ?? ""}`).includes(needle);
+}
+
+export function matchesCourseQuery(course: SearchableCourse, query: string): boolean {
+  return courseQueryFilter(query)(course);
 }
