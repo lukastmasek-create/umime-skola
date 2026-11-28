@@ -122,10 +122,8 @@
 }
 
 .modes li {
-  display: grid;
-  grid-template-columns: 3.25rem minmax(0, 1fr);
-  align-items: center;
-  gap: 0.625rem;
+  display: flex;
+  min-width: 0;
   border: 1px solid color-mix(in srgb, var(--mode) 38%, #17142c);
   border-radius: 0.875rem;
   background: color-mix(in srgb, var(--mode) 8%, #17142c);
@@ -133,7 +131,7 @@
 }
 
 .modes img {
-  width: 100%;
+  width: 80px;
   height: auto;
 }
 
@@ -165,7 +163,4 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .modes li {
-    grid-template-columns: 4rem minmax(0, 1fr);
-  }
 }

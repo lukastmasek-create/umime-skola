@@ -5,7 +5,7 @@ import { headingStyle } from "./ui";
 // Řádek nastavení jako karta (stejný vzhled jako karty na úvodní stránce): nadpis + popisek vlevo, ovládací prvek vpravo.
 export function SettingRow({ title, hint, control, children }: { title: string; hint?: string; control?: React.ReactNode; children?: React.ReactNode }) {
   return (
-    <div className="card p-5 sm:p-6">
+    <div className="card refresh-settings-row p-5 sm:p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <h3 className="text-base font-bold" style={headingStyle}>{title}</h3>

@@ -2,15 +2,18 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type CSSProperties, type FormEvent } from "react";
+import { useState, type CSSProperties, type FormEvent, type ReactNode } from "react";
 import { ArenaBackdrop } from "@/components/arena/ArenaBackdrop";
 import { getLiveText } from "@/i18n/live";
-import type { Locale } from "@/i18n/config";
-import { MODES } from "@/lib/live/logic";
+import { tr8, type Locale } from "@/i18n/config";
+import { isSyncMode, MODES } from "@/lib/live/logic";
 import { MODE_ACCENT } from "./shared";
 import styles from "./LiveHome.module.css";
 
-export function LiveHome({ locale }: { locale: Locale }) {
+const paced = tr8("Vlastní tempo", "Own pace", "Eigenes Tempo", "Свой темп", "Власний темп", "自分のペース", "Ritmo propio", "À son rythme");
+const together = tr8("Společná kola", "Shared rounds", "Gemeinsame Runden", "Общие раунды", "Спільні раунди", "同時ラウンド", "Rondas en grupo", "Manches communes");
+
+export function LiveHome({ locale, libraryNav }: { locale: Locale; libraryNav: ReactNode }) {
   const t = getLiveText(locale);
   const router = useRouter();
   const [pin, setPin] = useState("");
@@ -22,13 +25,14 @@ export function LiveHome({ locale }: { locale: Locale }) {
   }
 
   return (
-    <div className={`arena-stage mx-auto max-w-6xl ${styles.home}`}>
+    <div className={`arena-stage refresh-live-home mx-auto max-w-6xl ${styles.home}`}>
       <ArenaBackdrop variant="neutral" />
       <header className={styles.header}>
         <h1>{t.title}</h1>
         <p>{t.subtitle}</p>
       </header>
 
+      {libraryNav}
       <div className={styles.actions}>
         <form onSubmit={submit} aria-labelledby="join-title" className={`arena-panel ${styles.join}`}>
           <div>
@@ -76,12 +80,18 @@ export function LiveHome({ locale }: { locale: Locale }) {
         <ul>
           {MODES.map((mode) => (
             <li key={mode} style={{ "--mode": MODE_ACCENT[mode] } as CSSProperties}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/arena/emblem-${mode.toLowerCase()}.webp`} alt="" width={64} height={64} loading="lazy" decoding="async" />
-              <div>
-                <h3>{t.create.modes[mode].name}</h3>
-                <p>{t.create.modes[mode].description}</p>
-              </div>
+              <Link href={`${roomPath}/nova?mode=${mode}`} className="refresh-mode-link">
+                <div className="refresh-mode-art" aria-hidden>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/arena/emblem-${mode.toLowerCase()}.webp`} alt="" width={80} height={80} loading="lazy" decoding="async" />
+                </div>
+                <div className="refresh-mode-copy">
+                  <p className="refresh-mode-meta">{(isSyncMode(mode) ? together : paced)[locale]}</p>
+                  <h3>{t.create.modes[mode].name}</h3>
+                  <p>{t.create.modes[mode].description}</p>
+                  <span className="refresh-mode-action">{t.host.button} <span aria-hidden>→</span></span>
+                </div>
+              </Link>
             </li>
           ))}
         </ul>

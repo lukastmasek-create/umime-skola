@@ -1,10 +1,9 @@
+import { awardActivityXp, lockActivityUser } from "@/lib/activity-xp";
 import { prisma } from "@/lib/prisma";
 import { handle, readJson } from "@/lib/live/http";
 import { LiveError } from "@/lib/live/service";
 import { withinRateLimit } from "@/lib/rate-limit";
 import { attemptsLeft, cleanSnapshot, completedLate, gradeAttempt, isAssignedTo, questionStats, studentStatus, toPublic, wrongIndexes, type AnswerInput } from "@/lib/teams/logic";
-import { DAILY_ACTIVITY_XP_CAP, MAX_XP_PER_CLAIM } from "@/lib/progression";
-import { ACTIVITY_SOURCES } from "@/lib/gamify";
 import { loadAssignment, requireAssigned, requireMember, requireUserId } from "@/lib/teams/server";
 
 export const dynamic = "force-dynamic";
@@ -86,8 +85,9 @@ export async function POST(request: Request, ctx: Ctx) {
       if (body.action !== "feedback") throw new LiveError("teacher-cannot-submit", 403);
       await loadAssignment(id, aid);
       const target = String(body.userId ?? "");
-      const student = await prisma.teamMember.findFirst({ where: { teamId: id, userId: target, role: "STUDENT", status: "ACTIVE" }, select: { userId: true } });
+      const student = await prisma.teamMember.findFirst({ where: { teamId: id, userId: target, role: "STUDENT", status: "ACTIVE" }, select: { userId: true, role: true, groupId: true } });
       if (!student) throw new LiveError("user-not-found", 404);
+      await requireAssigned(aid, student);
       const text = typeof body.text === "string" ? body.text.trim().slice(0, 1000) : "";
       if (!text) await prisma.assignmentFeedback.deleteMany({ where: { assignmentId: aid, userId: target } });
       else await prisma.assignmentFeedback.upsert({ where: { assignmentId_userId: { assignmentId: aid, userId: target } }, create: { assignmentId: aid, userId: target, text }, update: { text, updatedAt: new Date() } });
@@ -103,24 +103,16 @@ export async function POST(request: Request, ctx: Ctx) {
 
     // Pokus se zapisuje transakčně s kontrolou limitu (dvě rychlá odeslání nepřekročí limit).
     const saved = await prisma.$transaction(async (tx) => {
+      await lockActivityUser(tx, userId);
       const prev = await tx.assignmentAttempt.findMany({ where: { assignmentId: aid, userId }, select: { correct: true } });
       if (a.maxAttempts != null && prev.length >= a.maxAttempts) return null;
       await tx.assignmentAttempt.create({ data: { assignmentId: aid, userId, percent: result.percent, correct: result.correct, total: result.total, wrong: wrongIndexes(result.review) } });
-      return { used: prev.length + 1, bestBefore: prev.reduce((m, x) => Math.max(m, x.correct), 0) };
+      const bestBefore = prev.reduce((best, attempt) => Math.max(best, attempt.correct), 0);
+      const improvement = (result.correct - bestBefore) * 5;
+      const gainedXp = improvement > 0 ? await awardActivityXp(tx, userId, improvement, "test") : 0;
+      return { used: prev.length + 1, gainedXp };
     });
     if (saved == null) throw new LiveError("no-attempts-left", 409);
-
-    // XP jako u testů (5 za správnou odpověď), ale jen za zlepšení oproti dřívějším pokusům,
-    // takže opakováním stejného zadání se XP farmit nedá. Platí společný denní strop.
-    let gainedXp = 0;
-    const wanted = Math.max(0, result.correct - saved.bestBefore) * 5;
-    if (wanted > 0) {
-      const startOfDay = new Date();
-      startOfDay.setUTCHours(0, 0, 0, 0);
-      const usedToday = await prisma.xpEvent.aggregate({ where: { userId, source: { in: [...ACTIVITY_SOURCES] }, createdAt: { gte: startOfDay } }, _sum: { amount: true } });
-      gainedXp = Math.min(wanted, MAX_XP_PER_CLAIM, Math.max(0, DAILY_ACTIVITY_XP_CAP - (usedToday._sum.amount ?? 0)));
-      if (gainedXp > 0) await prisma.xpEvent.create({ data: { userId, amount: gainedXp, source: "test" } });
-    }
-    return { ...result, gainedXp, passed: result.percent >= a.passPercent, left: attemptsLeft(a.maxAttempts, saved.used) };
+    return { ...result, gainedXp: saved.gainedXp, passed: result.percent >= a.passPercent, left: attemptsLeft(a.maxAttempts, saved.used) };
   });
 }

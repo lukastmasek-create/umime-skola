@@ -6,6 +6,8 @@ import "../site-chrome.css";
 import "../learning-motion.css";
 import "../pixel-scene.css";
 import "../chrome-pixel.css";
+import "../design-refresh.css";
+import { siteSearch } from "@/i18n/site-search";
 import { HeaderShop, MobileMenu, NavTabs } from "@/components/NavTabs";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { HeaderAccount } from "@/components/HeaderAccount";
@@ -121,6 +123,11 @@ export default async function LocaleLayout({
             </Link>
             <NavTabs groups={groups} />
             <div className="flex shrink-0 items-center justify-end gap-1 text-sm sm:gap-1.5">
+              <Link href={`/${locale}/hledat`} aria-label={siteSearch.title[locale]} title={siteSearch.title[locale]} className="site-search-link">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
+                  <circle cx="10" cy="10" r="6.5" /><path d="m15 15 5 5" />
+                </svg>
+              </Link>
               <HeaderShop locale={locale as Locale} label={dict.nav.shop} />
               <LanguageSwitcher current={locale as Locale} />
               <HeaderAccount

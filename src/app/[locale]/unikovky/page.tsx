@@ -1,3 +1,4 @@
+import { GameLibraryNav } from "@/components/GameLibraryNav";
 import { notFound } from "next/navigation";
 import { getEscapeText } from "@/i18n/escape";
 import { isLocale, type Locale } from "@/i18n/config";
@@ -46,6 +47,7 @@ export default async function EscapeRoomsPage({
     <PxStage>
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <PxHeader title={t.title} subtitle={t.subtitle} />
+        <GameLibraryNav locale={locale} current="unikovky" />
 
         <EscapeList locale={locale as Locale} t={t} cards={cards} />
 

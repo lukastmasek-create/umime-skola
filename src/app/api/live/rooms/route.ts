@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { clientIp, withinRateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 import { handle, readJson } from "@/lib/live/http";
 import { cleanQuestions, cleanSettings, LIMITS, MODES } from "@/lib/live/logic";
@@ -22,6 +23,7 @@ export async function POST(request: Request) {
     const body = await readJson(request);
     const session = await auth().catch(() => null);
     const userId = session?.user?.id ?? null;
+    if (!(await withinRateLimit(`live-create:${userId ?? clientIp(request)}`, 12, 600))) throw new LiveError("rate-limited", 429);
 
     const mode = MODES.includes(body.mode as LiveMode) ? (body.mode as LiveMode) : "QUIZ";
     const source = (body.source && typeof body.source === "object" ? body.source : {}) as Record<string, unknown>;
@@ -44,7 +46,7 @@ export async function POST(request: Request) {
         where: { courseId: course.id, ...(Number.isInteger(difficulty) && difficulty >= 1 && difficulty <= 5 ? { difficulty } : {}) },
         select: { prompt: true, options: true, correctIndex: true, explanation: true },
       });
-      questions = cleanQuestions(shuffle(rows).slice(0, count));
+      questions = cleanQuestions(shuffle(rows.filter(row => row.options.length === 4 && row.correctIndex >= 0 && row.correctIndex < 4)).slice(0, count));
       title = title || course.title;
     } else {
       throw new LiveError("bad-source");

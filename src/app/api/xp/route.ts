@@ -1,3 +1,4 @@
+import { sameOriginMutation } from "@/lib/request-origin";
 import { NextResponse } from "next/server";
 import { buildingLevel } from "@/lib/town-progress-server";
 import { roomXpPercent } from "@/lib/room-server";
@@ -7,11 +8,12 @@ import { XP_BONUS_PER_LEVEL } from "@/lib/town-progress";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getXp } from "@/lib/xp";
-import { DAILY_ACTIVITY_XP_CAP, MAX_XP_PER_CLAIM, levelProgress } from "@/lib/progression";
-
-const ACTIVITY_SOURCES = ["game", "test"];
+import { awardActivityXp, lockActivityUser } from "@/lib/activity-xp";
+import { withinRateLimit } from "@/lib/rate-limit";
+import { MAX_XP_PER_CLAIM, levelProgress } from "@/lib/progression";
 
 export async function POST(request: Request) {
+  if (!sameOriginMutation(request)) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) {
@@ -21,18 +23,14 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const source = typeof body?.source === "string" ? body.source : "";
   const requested = Math.floor(Number(body?.amount));
-  if (!ACTIVITY_SOURCES.includes(source) || !Number.isFinite(requested) || requested <= 0) {
+  if ((source !== "game" && source !== "test") || !Number.isFinite(requested) || requested <= 0) {
     return NextResponse.json({ error: "Neplatný požadavek." }, { status: 400 });
   }
 
   try {
-    const startOfDay = new Date();
-    startOfDay.setUTCHours(0, 0, 0, 0);
-    const usedToday = await prisma.xpEvent.aggregate({
-      where: { userId, source: { in: ACTIVITY_SOURCES }, createdAt: { gte: startOfDay } },
-      _sum: { amount: true },
-    });
-    const remaining = Math.max(0, DAILY_ACTIVITY_XP_CAP - (usedToday._sum.amount ?? 0));
+    if (!(await withinRateLimit(`xp:${userId}`, 35, 60))) {
+      return NextResponse.json({ error: "rate-limited" }, { status: 429 });
+    }
     // vylepšená škola (testy) a herna (hry) v městečku přidávají XP
     const building = source === "test" ? "skola" : source === "game" ? "herna" : null;
     const bonusLevel = building ? await buildingLevel(userId, building) : 0;
@@ -42,12 +40,12 @@ export async function POST(request: Request) {
     const craftBonus = await craftXpPercent(userId);
     // sbírka karet přidává 1 % za každou různou kartu (nejvýš 16 %)
     const collectionBonus = await collectionXpBonusPercent(userId);
-    const boosted = Math.round(requested * (1 + (XP_BONUS_PER_LEVEL * bonusLevel + roomBonus + craftBonus + collectionBonus) / 100));
-    const gained = Math.min(boosted, MAX_XP_PER_CLAIM, remaining);
-
-    if (gained > 0) {
-      await prisma.xpEvent.create({ data: { userId, amount: gained, source } });
-    }
+    const boosted = Math.round(Math.min(requested, MAX_XP_PER_CLAIM) * (1 + (XP_BONUS_PER_LEVEL * bonusLevel + roomBonus + craftBonus + collectionBonus) / 100));
+    // Arcade and practice games keep personal XP. Competitive XP has separate server-controlled sources.
+    const gained = await prisma.$transaction(async (tx) => {
+      await lockActivityUser(tx, userId);
+      return awardActivityXp(tx, userId, boosted, source);
+    });
     return NextResponse.json({
       gained,
       capped: gained < Math.min(requested, MAX_XP_PER_CLAIM),

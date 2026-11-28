@@ -3,12 +3,18 @@
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { fmt, getLiveText, type LiveText } from "@/i18n/live";
-import type { Locale } from "@/i18n/config";
+import { tr8, type Locale } from "@/i18n/config";
 import { useAccount } from "@/lib/use-account";
 import { forget, liveApi, savePlayer, useLiveView, useStoredIdentity, type Identity } from "./api";
 import { ArenaBackdrop, type ArenaKey } from "@/components/arena/ArenaBackdrop";
 import { HostView } from "./HostView";
 import { PlayerView } from "./PlayerView";
+
+const joinErrors = {
+  "room-locked": tr8("Pořadatel uzamkl připojování.", "The host has locked joining.", "Der Beitritt ist gesperrt.", "Вход закрыт организатором.", "Організатор закрив вхід.", "参加受付は終了しました。", "El anfitrión ha cerrado el acceso.", "L’hôte a fermé les inscriptions."),
+  "room-full": tr8("Místnost je plná.", "This room is full.", "Der Raum ist voll.", "Комната заполнена.", "Кімната заповнена.", "満員です。", "La sala está llena.", "La salle est pleine."),
+  "rate-limited": tr8("Příliš mnoho pokusů. Zkus to za chvíli.", "Too many attempts. Try again soon.", "Zu viele Versuche. Versuche es gleich erneut.", "Слишком много попыток. Попробуй позже.", "Забагато спроб. Спробуй пізніше.", "試行回数が多すぎます。あとでお試しください。", "Demasiados intentos. Prueba más tarde.", "Trop de tentatives. Réessaie dans un instant."),
+};
 
 export function errorText(t: LiveText, code: string | null | undefined): string {
   if (!code) return "";
@@ -57,7 +63,7 @@ function JoinForm({ locale, pin, onJoined }: { locale: Locale; pin: string; onJo
       )}
       {error && (
         <p role="alert" className="text-sm font-semibold text-[var(--danger)]">
-          {errorText(t, error)}
+          {error in joinErrors ? joinErrors[error as keyof typeof joinErrors][locale] : errorText(t, error)}
         </p>
       )}
       <button type="submit" disabled={busy || (!loggedIn && !name.trim())} className="btn-bouncy btn-primary btn-lg disabled:opacity-50">
@@ -104,7 +110,7 @@ export function LiveRoom({ locale, pin }: { locale: Locale; pin: string }) {
 
   return (
     <div className="fs-classic">
-      <div className="arena-stage w-full p-3 sm:p-6" style={{ minHeight: "70vh" }}>
+      <div className="arena-stage refresh-game-shell w-full p-3 sm:p-6" style={{ minHeight: "70vh" }}>
         <ArenaBackdrop variant={view.mode.toLowerCase() as ArenaKey} />
         {identity.kind === "host" ? (
           <HostView locale={locale} t={t} view={view} identity={identity} serverNow={serverNow} />

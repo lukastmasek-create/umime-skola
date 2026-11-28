@@ -1,5 +1,6 @@
 "use client";
 
+import { signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { getSettingsExtraText } from "@/i18n/settings-extra";
 import type { Locale } from "@/i18n/config";
@@ -95,6 +96,7 @@ export function AccountSection({ locale }: { locale: Locale }) {
                 setAcct({ ...acct, email: String(r.data.email) });
                 setEmail("");
                 setEmailPass("");
+                if (email.trim().toLowerCase() !== acct.email) await signOut({ redirectTo: `/${locale}/prihlaseni` });
               }
             }}
           >
@@ -119,7 +121,7 @@ export function AccountSection({ locale }: { locale: Locale }) {
               if (r.ok) {
                 setCur("");
                 setNext("");
-                setAcct({ ...acct, hasPassword: true });
+                await signOut({ redirectTo: `/${locale}/prihlaseni` });
               }
             }}
           >

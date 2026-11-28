@@ -2,14 +2,18 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { Podium } from "@/components/Podium";
 import { fmt, type LiveText } from "@/i18n/live";
-import type { Locale } from "@/i18n/config";
+import { tr8, type Locale } from "@/i18n/config";
 import type { LiveView } from "@/lib/live/types";
 import { liveApi, type Identity } from "./api";
 import { errorText } from "./LiveRoom";
 import { isSyncMode } from "@/lib/live/logic";
 import { Countdown, EndsIn, Leaderboard, OptionButton, TeamScores } from "./shared";
+
+const lockLabel = tr8("Zamknout připojování", "Lock joining", "Beitritt sperren", "Закрыть вход", "Закрити вхід", "参加をロック", "Cerrar el acceso", "Fermer les inscriptions");
+const unlockLabel = tr8("Povolit připojování", "Allow joining", "Beitritt erlauben", "Открыть вход", "Відкрити вхід", "参加を許可", "Permitir el acceso", "Ouvrir les inscriptions");
 
 export function HostView({
   locale,
@@ -26,13 +30,14 @@ export function HostView({
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const locked = view.settings.joinLocked === true;
   const [copied, setCopied] = useState(false);
   const unit = view.mode === "GOLD" ? t.end.gold : view.mode === "RACE" ? t.end.progress : view.mode === "SURVIVAL" ? t.end.lives : t.end.score;
   const teamNames = t.play.teamNames;
   const teams = view.teams && <TeamScores teams={view.teams} names={teamNames} />;
   const boardProps = { mode: view.mode, rows: view.leaderboard, unit, raceTarget: view.settings.raceTarget, lives: view.settings.lives, teamNames };
 
-  async function control(action: "next" | "end") {
+  async function control(action: "next" | "end" | "lock" | "unlock") {
     if (action === "end" && !window.confirm(t.play.confirmEnd)) return;
     setBusy(true);
     const r = await liveApi(`/rooms/${view.pin}/control`, { body: { action }, identity });
@@ -73,17 +78,22 @@ export function HostView({
   // --- Čekárna ---
   if (view.status === "LOBBY") {
     return (
-      <div className="flex flex-col gap-6">
-        <div className="card flex flex-col items-center gap-3 p-6 text-center">
+      <div className="refresh-host-lobby">
+        <div className="card refresh-host-invite flex flex-col items-center gap-3 p-6 text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
 <img src={`/arena/emblem-${view.mode.toLowerCase()}.webp`} alt="" width={120} height={120} decoding="async" className="arena-emblem" />
           <p className="text-sm font-semibold text-[var(--muted)]">{fmt(t.lobby.share, { site: typeof window !== "undefined" ? window.location.host : "" })}</p>
-          <p className="font-mono text-6xl font-extrabold tracking-[0.25em] sm:text-7xl" aria-label={view.pin.split("").join(" ")}>
+          <p className="refresh-room-pin font-mono font-extrabold" aria-label={view.pin.split("").join(" ")}>
             {view.pin}
           </p>
+          {joinUrl && (
+            <a href={joinUrl} className="refresh-room-qr" aria-label={t.join.title}>
+              <QRCodeSVG value={joinUrl} title={t.join.title} size={112} marginSize={4} level="M" />
+            </a>
+          )}
           <button
             type="button"
-            className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-sm font-bold"
+            className="btn-bouncy btn-secondary min-h-11 px-4 text-sm font-bold"
             onClick={async () => {
               try {
                 await navigator.clipboard.writeText(joinUrl);
@@ -98,7 +108,7 @@ export function HostView({
             {view.title} · {modeName} · {fmt(t.lobby.questions, { n: view.total })}
           </p>
         </div>
-        <div className="card flex flex-col gap-3 p-5">
+        <div className="card refresh-host-roster flex flex-col gap-4 p-5">
           <h2 className="text-lg font-bold">
             {t.lobby.players} ({view.counts.players})
           </h2>
@@ -113,12 +123,17 @@ export function HostView({
               ))}
             </ul>
           )}
+          <div className="mt-auto grid gap-3">
+            {err}
+            <button type="button" disabled={busy} onClick={() => control(locked ? "unlock" : "lock")} className="btn-bouncy btn-secondary min-h-11 px-4 text-sm font-bold">
+              {locked ? unlockLabel[locale] : lockLabel[locale]}
+            </button>
+            <button type="button" onClick={() => control("next")} disabled={busy || view.counts.players === 0} className="btn-bouncy btn-primary btn-lg disabled:opacity-50">
+              <span aria-hidden>▶ </span>{t.lobby.start}
+            </button>
+            {view.counts.players === 0 && <p className="text-center text-sm text-[var(--muted)]">{t.lobby.needPlayers}</p>}
+          </div>
         </div>
-        {err}
-        <button type="button" onClick={() => control("next")} disabled={busy || view.counts.players === 0} className="btn-bouncy btn-primary btn-lg self-center disabled:opacity-50">
-          ▶ {t.lobby.start}
-        </button>
-        {view.counts.players === 0 && <p className="text-center text-sm text-[var(--muted)]">{t.lobby.needPlayers}</p>}
       </div>
     );
   }

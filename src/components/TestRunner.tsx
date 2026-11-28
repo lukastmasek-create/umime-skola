@@ -37,6 +37,7 @@ function isCorrect(question: TestQuestion, typed: string[] | undefined, choice: 
 export function TestRunner({
   locale,
   courseId,
+  difficulty,
   title,
   t,
   questions,
@@ -44,6 +45,7 @@ export function TestRunner({
 }: {
   locale: Locale;
   courseId?: string;
+  difficulty?: number;
   title: string;
   t: TestText;
   questions: TestQuestion[];
@@ -70,7 +72,7 @@ export function TestRunner({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         results,
-        course: courseId ? { id: courseId, percent: questions.length ? (correct / questions.length) * 100 : 0 } : undefined,
+        course: courseId ? { id: courseId, difficulty } : undefined,
       }),
     }).catch(() => {});
     if (correct <= 0) return;

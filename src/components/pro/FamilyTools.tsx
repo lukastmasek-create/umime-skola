@@ -97,9 +97,9 @@ export function FamilyHub({ locale }: { locale: Locale }) {
   }
 
   return (
-    <div className="grid gap-6">
+    <div className="refresh-dashboard grid gap-6">
       {error && <p className="text-sm font-semibold text-[#ff5d73]">{error}</p>}
-      <section className="card grid gap-3 p-5">
+      <section className="card refresh-dashboard-panel grid gap-3 p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-lg font-bold" style={heading}>
             {t.famInvite}
@@ -125,19 +125,20 @@ export function FamilyHub({ locale }: { locale: Locale }) {
           {t.famMembers}
         </h2>
         {view.members.length === 0 && <p className="card p-4 text-sm text-[var(--muted)]">{t.famNoMembers}</p>}
-        <ul className="grid gap-3">
+        <ul className="grid gap-4 md:grid-cols-2">
           {view.members.map((m) => (
-            <li key={m.id} className="card grid gap-2 p-4">
+            <li key={m.id} className="card refresh-family-member grid content-start gap-3 p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="font-bold">{m.name || "—"}</p>
                 <button type="button" onClick={() => void act({ action: "remove", userId: m.id })} className="text-sm font-semibold text-[#ff5d73] hover:underline">
                   {t.famRemove}
                 </button>
               </div>
-              <p className="text-sm text-[var(--muted)]">
-                {t.famWeek.replace("{n}", String(m.doneThisWeek))} · {t.famDue.replace("{n}", String(m.due))}
-                {m.weak.length > 0 && <> · {t.famWeak.replace("{w}", m.weak.join(", "))}</>}
-              </p>
+              <ul className="refresh-family-stats">
+                <li>{t.famWeek.replace("{n}", String(m.doneThisWeek))}</li>
+                <li data-due={m.due > 0}>{t.famDue.replace("{n}", String(m.due))}</li>
+              </ul>
+              {m.weak.length > 0 && <p className="text-sm text-[var(--muted)]">{t.famWeak.replace("{w}", m.weak.join(", "))}</p>}
               <label className="flex items-start gap-2 text-sm">
                 <input type="checkbox" className="mt-1" checked={m.safe} onChange={(e) => void act({ action: "setSafe", userId: m.id, safe: e.target.checked })} />
                 <span>
@@ -149,7 +150,7 @@ export function FamilyHub({ locale }: { locale: Locale }) {
                 {busy === m.id ? t.thinking : t.famTip}
               </button>
               {tips[m.id] && (
-                <div className="rounded-xl bg-[var(--surface-muted)] p-3 text-sm">
+                <div className="rounded-xl bg-[var(--surface-muted)] p-3 text-sm" role="status">
                   {tips[m.id].tip ? (
                     <>
                       {tips[m.id].course && <p className="mb-1 text-xs font-bold text-[var(--faint)]">{t.famTipFor.replace("{c}", tips[m.id].course ?? "")}</p>}

@@ -12,7 +12,7 @@ export const REVIEW_BATCH = 10;
 
 export type ReviewItem = { box: number; due: string; course: string | null };
 // doneAt: den, kdy kurz poprvé dosáhl DONE_PERCENT (pro týdenní přehled rodiči). Starší záznamy ho nemají.
-export type CourseProgress = { tests: number; best: number; last: string; doneAt?: string };
+export type CourseProgress = { tests: number; best: number; last: string; doneAt?: string; lastAt?: number; difficulty?: number };
 export type ReviewState = {
   items: Record<string, ReviewItem>;
   courses: Record<string, CourseProgress>;
@@ -46,6 +46,8 @@ export function normalizeReview(raw: unknown): ReviewState {
         tests: Math.max(0, tests),
         best: Math.min(100, Math.max(0, best)),
         last: c.last,
+        ...(typeof c.lastAt === "number" && Number.isFinite(c.lastAt) ? { lastAt: c.lastAt } : {}),
+        ...(validReviewDifficulty(c.difficulty) ? { difficulty: c.difficulty } : {}),
         ...(typeof c.doneAt === "string" && DATE.test(c.doneAt) ? { doneAt: c.doneAt } : {}),
       };
     }
@@ -82,7 +84,11 @@ export function applyResults(state: ReviewState, results: ReviewResult[], now: n
   return { ...state, items };
 }
 
-export function recordCourse(state: ReviewState, courseId: string, percent: number, now: number): ReviewState {
+export function validReviewDifficulty(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 5;
+}
+
+export function recordCourse(state: ReviewState, courseId: string, percent: number, now: number, difficulty?: number): ReviewState {
   const prev = state.courses[courseId];
   const pct = Math.min(100, Math.max(0, Math.round(percent)));
   const today = dayKey(new Date(now));
@@ -96,6 +102,8 @@ export function recordCourse(state: ReviewState, courseId: string, percent: numb
         tests: (prev?.tests ?? 0) + 1,
         best: Math.max(prev?.best ?? 0, pct),
         last: today,
+        lastAt: now,
+        ...(validReviewDifficulty(difficulty) ? { difficulty } : {}),
         ...(doneAt ? { doneAt } : {}),
       },
     },

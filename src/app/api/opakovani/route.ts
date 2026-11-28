@@ -1,6 +1,8 @@
+import { sameOriginMutation } from "@/lib/request-origin";
 import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
+import { lockActivityUser } from "@/lib/activity-xp";
 import { prisma } from "@/lib/prisma";
 import {
   REVIEW_BATCH,
@@ -9,18 +11,19 @@ import {
   dueIds,
   normalizeReview,
   recordCourse,
+  validReviewDifficulty,
   type ReviewResult,
 } from "@/lib/review";
 import { CATEGORIES } from "@/lib/taxonomy";
 
-async function load(userId: string) {
-  const row = await prisma.idleState.findUnique({ where: { userId_game: { userId, game: REVIEW_GAME } } });
+async function load(userId: string, db: Prisma.TransactionClient = prisma) {
+  const row = await db.idleState.findUnique({ where: { userId_game: { userId, game: REVIEW_GAME } } });
   return normalizeReview(row?.data);
 }
 
-async function save(userId: string, state: unknown) {
+async function save(userId: string, state: unknown, db: Prisma.TransactionClient) {
   const json = state as Prisma.InputJsonValue;
-  await prisma.idleState.upsert({
+  await db.idleState.upsert({
     where: { userId_game: { userId, game: REVIEW_GAME } },
     create: { userId, game: REVIEW_GAME, data: json },
     update: { data: json },
@@ -118,13 +121,14 @@ export async function GET(request: Request) {
 
 // POST: zapíše výsledky odpovědí a případně výsledek testu kurzu.
 export async function POST(request: Request) {
+  if (!sameOriginMutation(request)) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: "login-required" }, { status: 401 });
 
   const body = (await request.json().catch(() => ({}))) as {
     results?: unknown;
-    course?: { id?: unknown; percent?: unknown };
+    course?: { id?: unknown; percent?: unknown; difficulty?: unknown };
   };
   const results: ReviewResult[] = Array.isArray(body.results)
     ? body.results
@@ -136,20 +140,28 @@ export async function POST(request: Request) {
   try {
     // Sleduj jen otázky, které opravdu existují (id z klienta se nedá věřit).
     const known = results.length
-      ? await prisma.question.findMany({ where: { id: { in: results.map((r) => r.id) } }, select: { id: true, courseId: true } })
+      ? await prisma.question.findMany({ where: { id: { in: results.map((r) => r.id) }, course: { published: true } }, select: { id: true, courseId: true, difficulty: true } })
       : [];
     const courseOf = new Map(known.map((q) => [q.id, q.courseId]));
     const valid = results.filter((r) => courseOf.has(r.id)).map((r) => ({ ...r, course: courseOf.get(r.id) }));
 
     const now = Date.now();
-    let state = applyResults(await load(userId), valid, now);
-    const courseId = typeof body.course?.id === "string" ? body.course.id : null;
-    const percent = Number(body.course?.percent);
-    if (courseId && Number.isFinite(percent) && (await prisma.course.count({ where: { id: courseId } })) > 0) {
-      state = recordCourse(state, courseId, percent, now);
-    }
-    await save(userId, state);
-    return NextResponse.json({ ok: true, due: dueIds(state, now).length });
+    const updated = await prisma.$transaction(async (tx) => {
+      await lockActivityUser(tx, userId);
+      let state = applyResults(await load(userId, tx), valid, now);
+      const attempt = body.course;
+      const courseId = typeof attempt?.id === "string" ? attempt.id : null;
+      const difficulty = attempt?.difficulty;
+      if (courseId && valid.length && valid.every(result => result.course === courseId)) {
+        const unique = new Map(valid.map(result => [result.id, result.correct]));
+        const percent = 100 * [...unique.values()].filter(Boolean).length / unique.size;
+        const exactDifficulty = validReviewDifficulty(difficulty) && known.every(question => question.difficulty === difficulty) ? difficulty : undefined;
+        state = recordCourse(state, courseId, percent, now, exactDifficulty);
+      }
+      await save(userId, state, tx);
+      return state;
+    });
+    return NextResponse.json({ ok: true, due: dueIds(updated, now).length });
   } catch {
     return NextResponse.json({ error: "unavailable" }, { status: 503 });
   }

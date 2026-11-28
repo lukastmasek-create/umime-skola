@@ -32,6 +32,7 @@ export function cleanSettings(raw: unknown): LiveSettings {
     raceTarget: clamp(num(r.raceTarget, DEFAULT_SETTINGS.raceTarget), LIMITS.raceTarget),
     durationMin: clamp(num(r.durationMin, DEFAULT_SETTINGS.durationMin), LIMITS.durationMin),
     lives: clamp(num(r.lives, DEFAULT_SETTINGS.lives), LIMITS.lives),
+    ...(r.joinLocked === true ? { joinLocked: true } : {}),
   };
 }
 

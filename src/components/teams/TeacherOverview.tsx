@@ -1,7 +1,7 @@
 "use client";
 
 import { Glyph } from "./Glyph";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import NumberFlow from "@number-flow/react";
 import { call } from "./api";
@@ -42,6 +42,7 @@ export function TeacherOverview({ locale, teams }: { locale: Locale; teams: { id
   const [sort, setSort] = useState<Sort>("name");
   const [q, setQ] = useState("");
   const [open, setOpen] = useState<Row | null>(null);
+  const detailDialog = useRef<HTMLDialogElement>(null);
   const teamKey = teams.map((x) => x.id).join(",");
 
   useEffect(() => {
@@ -79,10 +80,7 @@ export function TeacherOverview({ locale, teams }: { locale: Locale; teams: { id
   }, [teamKey]);
 
   useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(null);
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    if (open && detailDialog.current && !detailDialog.current.open) detailDialog.current.showModal();
   }, [open]);
 
   const stats = useMemo(() => {
@@ -118,6 +116,7 @@ export function TeacherOverview({ locale, teams }: { locale: Locale; teams: { id
     { label: t.kpi.avg, value: stats.avg === null ? "–" : <NumberFlow value={stats.avg} suffix=" %" />, sub: stats.avg === null ? t.kpi.noAvg : "" },
     { label: t.kpi.late, value: <NumberFlow value={stats.late} />, sub: "" },
   ];
+  const noResults = locale === "cs" ? "Výběru neodpovídá žádný žák." : "No students match these filters.";
   const levelLabel = (l: Row["level"]) => t.status[l];
   const cellLabel = (c: Cell) => t.cell[c.status];
   const sortBtn = (id: Sort, label: string) => (
@@ -127,11 +126,11 @@ export function TeacherOverview({ locale, teams }: { locale: Locale; teams: { id
   );
 
   return (
-    <section className="flex flex-col gap-4" aria-label={t.title}>
+    <section className="refresh-dashboard flex flex-col gap-4" aria-label={t.title}>
       <h2 className="text-xl font-extrabold">{t.title}</h2>
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {kpis.map((k) => (
-          <div key={k.label} className="card flex flex-col gap-1 p-4">
+      <div className="refresh-kpis grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {kpis.map((k, index) => (
+          <div key={k.label} data-metric={index} className="card refresh-metric flex flex-col gap-2 p-4">
             <p className="text-xs font-semibold text-[var(--muted)]">{k.label}</p>
             <p className="text-3xl font-extrabold leading-none tabular-nums" style={{ fontFamily: "var(--font-heading)" }}>{k.value}</p>
             {k.sub && <p className="text-xs text-[var(--muted)]">{k.sub}</p>}
@@ -139,7 +138,7 @@ export function TeacherOverview({ locale, teams }: { locale: Locale; teams: { id
         ))}
       </div>
 
-      <div className="card flex flex-col gap-3 p-4">
+      <div className="card refresh-dashboard-panel flex flex-col gap-3 p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="font-extrabold">{t.table.title}</h3>
           <div className="flex flex-wrap gap-1.5" role="group" aria-label={t.table.title}>
@@ -151,8 +150,9 @@ export function TeacherOverview({ locale, teams }: { locale: Locale; teams: { id
           </div>
         </div>
         <input value={q} onChange={(e) => setQ(e.target.value)} type="search" placeholder={t.table.search} aria-label={t.table.search} className="rounded-xl border-2 border-[var(--field-border)] bg-[var(--surface)] px-3 py-2 text-sm" />
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[34rem] text-left text-sm">
+        {shown.length === 0 && <p className="refresh-empty" role="status">{noResults}</p>}
+        {shown.length > 0 && <div className="overflow-x-auto">
+          <table className="refresh-dashboard-table w-full text-left text-sm">
             <thead>
               <tr className="text-xs text-[var(--muted)]">
                 <th className="py-2 pr-2">{sortBtn("name", t.table.student)}</th>
@@ -164,9 +164,9 @@ export function TeacherOverview({ locale, teams }: { locale: Locale; teams: { id
             </thead>
             <tbody>
               {shown.map((r) => (
-                <tr key={r.key} className="cursor-pointer border-t border-[var(--border-soft)] hover:bg-[var(--surface-muted)]" onClick={() => setOpen(r)}>
+                <tr key={r.key} className="border-t border-[var(--border-soft)] hover:bg-[var(--surface-muted)]">
                   <td className="py-2 pr-2">
-                    <button type="button" onClick={(e) => { e.stopPropagation(); setOpen(r); }} className="flex items-center gap-2 text-left font-bold">
+                    <button type="button" onClick={() => setOpen(r)} className="flex items-center gap-2 text-left font-bold">
                       <Badge name={r.name} size={30} round />{r.name}
                     </button>
                   </td>
@@ -178,12 +178,12 @@ export function TeacherOverview({ locale, teams }: { locale: Locale; teams: { id
               ))}
             </tbody>
           </table>
-        </div>
+        </div>}
       </div>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/45" onClick={() => setOpen(null)}>
-          <aside role="dialog" aria-modal="true" aria-label={t.detail.title} onClick={(e) => e.stopPropagation()} className="flex h-full w-full max-w-sm flex-col gap-4 overflow-y-auto bg-[var(--surface)] p-5 shadow-2xl">
+        <dialog ref={detailDialog} aria-label={t.detail.title} className="refresh-dashboard-dialog" onClose={() => setOpen(null)} onClick={(event) => { if (event.target === event.currentTarget) detailDialog.current?.close(); }}>
+          <div className="flex min-h-full flex-col gap-4 p-5">
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
                 <Badge name={open.name} size={44} round />
@@ -192,7 +192,7 @@ export function TeacherOverview({ locale, teams }: { locale: Locale; teams: { id
                   <p className="truncate text-sm text-[var(--muted)]">{open.teamName}</p>
                 </div>
               </div>
-              <button type="button" autoFocus onClick={() => setOpen(null)} aria-label={t.detail.close} className="btn-bouncy size-9 shrink-0 bg-[var(--surface)] text-lg font-bold">×</button>
+              <button type="button" autoFocus onClick={() => detailDialog.current?.close()} aria-label={t.detail.close} className="btn-bouncy size-9 shrink-0 bg-[var(--surface)] text-lg font-bold">×</button>
             </div>
             <span className={`w-fit rounded-full px-2.5 py-0.5 text-xs font-bold ${LEVEL_CLS[open.level]}`}>{levelLabel(open.level)}</span>
             <h3 className="font-extrabold">{t.detail.assignments}</h3>
@@ -214,8 +214,8 @@ export function TeacherOverview({ locale, teams }: { locale: Locale; teams: { id
               </ul>
             )}
             <Link href={`/${locale}/tymy/${open.teamId}`} className="btn-bouncy mt-auto inline-flex items-center justify-center gap-1.5 bg-[var(--brand-500)] px-4 py-2.5 text-center text-sm font-bold text-white">{t.detail.open} <Glyph name="arrowRight" /></Link>
-          </aside>
-        </div>
+          </div>
+        </dialog>
       )}
     </section>
   );

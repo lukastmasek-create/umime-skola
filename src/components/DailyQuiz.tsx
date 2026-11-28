@@ -377,7 +377,7 @@ export function DailyQuiz({ locale }: { locale: Locale }) {
   const shown = { id: q.id, prompt: q.prompt, options: q.options, correct: fb ? fb.correctIndex : -1, explanation: "" };
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-bold">
+      <div className="refresh-game-hud flex flex-wrap items-center justify-between gap-2 text-sm font-bold">
         <span>{t.question.replace("{a}", String(index + 1)).replace("{b}", String(total))}</span>
         <span className="flex flex-wrap items-center gap-2">
           <span className="pill bg-[var(--surface-muted)] px-2.5 py-1 tabular-nums">✅ {t.scoreNow.replace("{n}", String(score))}</span>
@@ -389,7 +389,7 @@ export function DailyQuiz({ locale }: { locale: Locale }) {
         </span>
       </div>
       <div className="h-2 overflow-hidden rounded-full bg-[var(--surface-muted)]" aria-hidden>
-        <div className="h-full rounded-full bg-[var(--brand-500)] transition-all" style={{ width: `${((index + (fb ? 1 : 0)) / total) * 100}%` }} />
+        <div className="h-full rounded-full bg-[var(--brand-500)] transition-[width]" style={{ width: `${((index + (fb ? 1 : 0)) / total) * 100}%` }} />
       </div>
       {timedRun && (
         <div className="flex items-center gap-2" aria-label={t.timedLabel}>
@@ -402,7 +402,7 @@ export function DailyQuiz({ locale }: { locale: Locale }) {
           <span className="w-8 text-right text-sm font-bold tabular-nums">{fb ? "" : Math.ceil((msLeft ?? limitMs) / 1000)}</span>
         </div>
       )}
-      <div className="card p-4">
+      <div className="card refresh-game-question p-4">
         <QuestionCard q={shown} picked={fb && fb.choice >= 0 ? fb.choice : fb ? 99 : null} onPick={answer} disabled={busy} />
         {fb && (
           <div className="mt-3 flex flex-col gap-2">

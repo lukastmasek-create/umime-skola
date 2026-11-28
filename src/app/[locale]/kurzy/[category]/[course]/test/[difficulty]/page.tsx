@@ -74,6 +74,7 @@ export default async function CourseTestPage({
       <TestRunner
         locale={locale as Locale}
         courseId={courseId}
+        difficulty={difficulty}
         title={`${courseTitle} · ${t.difficulties[difficulty - 1]}`}
         t={t}
         questions={questions}

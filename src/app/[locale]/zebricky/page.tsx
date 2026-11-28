@@ -1,3 +1,4 @@
+import { rankingAlias } from "@/lib/ranking-alias";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
@@ -5,7 +6,6 @@ import { prisma } from "@/lib/prisma";
 import { getCommunityText } from "@/i18n/community";
 import { isLocale, type Locale } from "@/i18n/config";
 import { Avatar } from "@/components/Avatar";
-import { avatarIcons } from "@/lib/avatar-icon";
 import { Podium } from "@/components/Podium";
 import { LeaderboardStage } from "@/components/LeaderboardStage";
 import { RewardImage } from "@/components/RewardImage";
@@ -96,23 +96,23 @@ export default async function LeaderboardPage({
     mySchool = me?.school ?? null;
 
     if (tab === "hraci") {
-      top = await prisma.user.findMany({
+      top = (await prisma.user.findMany({
         where: { points: { gt: 0 } },
         orderBy: [{ points: "desc" }, { createdAt: "asc" }],
         take: 20,
-        select: { id: true, name: true, points: true, avatar: true },
-      });
+        select: { id: true, points: true },
+      })).map(player => ({ ...player, name: rankingAlias(player.id), avatar: null }));
       if (me) {
         const ahead = await prisma.user.count({ where: { points: { gt: me.points } } });
         myRank = { rank: ahead + 1, points: me.points };
       }
     } else if (tab === "skola" && mySchool) {
-      top = await prisma.user.findMany({
+      top = (await prisma.user.findMany({
         where: { schoolId: mySchool.id, points: { gt: 0 } },
         orderBy: [{ points: "desc" }, { createdAt: "asc" }],
         take: 20,
-        select: { id: true, name: true, points: true, avatar: true },
-      });
+        select: { id: true, points: true },
+      })).map(player => ({ ...player, name: rankingAlias(player.id), avatar: null }));
     } else if (tab === "skoly") {
       const grouped = await prisma.user.groupBy({
         by: ["schoolId"],
@@ -134,7 +134,7 @@ export default async function LeaderboardPage({
             ? { ...school, total, players, average: players ? Math.round(total / players) : 0 }
             : null;
         })
-        .filter((s): s is SchoolRow => !!s && s.total > 0)
+        .filter((s): s is SchoolRow => !!s && s.total > 0 && s.players >= 5)
         .sort((a, b) => (sortByAverage ? b.average - a.average : b.total - a.total))
         .slice(0, 20);
     } else if (tab === "unikovky" && (!schoolScope || mySchool)) {
@@ -155,7 +155,7 @@ export default async function LeaderboardPage({
       const [users, runs] = await Promise.all([
         prisma.user.findMany({
           where: { id: { in: ids } },
-          select: { id: true, name: true, avatar: true, school: { select: { name: true } } },
+          select: { id: true },
         }),
         prisma.escapeRun.findMany({
           where: { room: roomId, relaxed: false, userId: { in: ids } },
@@ -170,9 +170,9 @@ export default async function LeaderboardPage({
         return [
           {
             id: user.id,
-            name: user.name,
-            avatar: user.avatar,
-            school: user.school?.name ?? null,
+            name: rankingAlias(user.id),
+            avatar: null,
+            school: null,
             seconds,
             stars: run?.stars ?? 1,
           },
@@ -184,8 +184,6 @@ export default async function LeaderboardPage({
     failed = true;
   }
 
-  // Vlastní ikonky přebarvených avatarů (jen čísla verzí, obrázky se načtou samy).
-  const icons = await avatarIcons([...top.map((p) => p.id), ...escapeRows.map((r) => r.id)]);
 
   const base = `/${locale}/zebricky`;
   const chip = (active: boolean) =>
@@ -212,7 +210,7 @@ export default async function LeaderboardPage({
             }`}
           >
             <RankBadge position={i + 1} />
-            <Avatar id={player.avatar} icon={icons[player.id]} size={36} />
+            <Avatar id={player.avatar} size={36} />
             <span className="flex-1 truncate font-semibold">{player.name || t.anonymous}</span>
             <span className="font-bold tabular-nums">{player.points}</span>
           </li>
@@ -263,7 +261,7 @@ export default async function LeaderboardPage({
               }`}
             >
               <RankBadge position={i + 1} />
-              <Avatar id={row.avatar} icon={icons[row.id]} size={36} />
+              <Avatar id={row.avatar} size={36} />
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-semibold">{row.name || t.anonymous}</span>
                 {row.school && (

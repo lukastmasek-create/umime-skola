@@ -40,3 +40,12 @@ test("normalizace zachová platný doneAt a zahodí nesmyslný", () => {
   assert.equal(ok.courses.a.doneAt, "2026-11-02");
   assert.equal(ok.courses.b.doneAt, undefined);
 });
+
+
+test("postup mapy zachová poslední přesnou obtížnost a načte starší záznamy", () => {
+  const now = at("2026-11-06");
+  const state = recordCourse({ items: {}, courses: {} }, "course-id", 60, now, 3);
+  assert.equal(normalizeReview(state).courses["course-id"].lastAt, now);
+  assert.equal(normalizeReview(state).courses["course-id"].difficulty, 3);
+  assert.equal(normalizeReview({ courses: { legacy: { tests: 1, best: 50, last: "2026-11-06" } } }).courses.legacy.difficulty, undefined);
+});

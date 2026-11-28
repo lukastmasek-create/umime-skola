@@ -730,9 +730,9 @@ export function SpaceQuizGame({
   }
 
   return (
-    <div className="fs-game arena-stage flex flex-col gap-4 p-4 sm:p-6">
+    <div className="fs-game arena-stage refresh-game-shell flex flex-col gap-4 p-4 sm:p-6">
       <ArenaBackdrop variant={GAME_ARENA[game] ?? "neutral"} />
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="refresh-game-hud flex flex-wrap items-center justify-between gap-2">
         <div className="fs-title">
           <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
             {emoji} {t.title}
@@ -804,7 +804,7 @@ export function SpaceQuizGame({
         </p>
       )}
 
-      <div className="fs-stage arena-screen relative overflow-hidden rounded-2xl">
+      <div className="fs-stage arena-screen refresh-game-screen relative overflow-hidden rounded-2xl">
         <canvas
           ref={canvasRef}
           width={GAME_WIDTH}

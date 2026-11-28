@@ -11,6 +11,10 @@ const securityHeaders = [
   // Omezuje vložení do cizích stránek, <base> a přesměrování formulářů. Plné script-src se
   // zatím nenastavuje: stránka používá inline skripty (theme-init, Next), které by se zablokovaly.
   { key: "Content-Security-Policy", value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'" },
+  ...(process.env.NODE_ENV === "production" ? [{
+    key: "Content-Security-Policy-Report-Only",
+    value: "script-src 'self' https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; report-uri /api/csp-report",
+  }] : []),
 ];
 
 const nextConfig: NextConfig = {
