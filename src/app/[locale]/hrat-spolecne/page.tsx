@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { GameLibraryNav } from "@/components/GameLibraryNav";
 import { LiveHome } from "@/components/live/LiveHome";
 import { FullscreenFrame } from "@/components/FullscreenFrame";
 import { isLocale, type Locale } from "@/i18n/config";
@@ -11,7 +12,7 @@ export default async function PlayTogetherPage({ params }: { params: Promise<{ l
   if (!isLocale(locale)) notFound();
   return (
     <FullscreenFrame locale={locale as Locale}>
-      <LiveHome locale={locale as Locale} />
+      <LiveHome locale={locale} libraryNav={<GameLibraryNav locale={locale} current="hrat-spolecne" />} />
     </FullscreenFrame>
   );
 }

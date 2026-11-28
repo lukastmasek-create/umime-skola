@@ -37,11 +37,12 @@ export function OptionButton({
       onClick={onClick}
       disabled={disabled}
       aria-pressed={state === "chosen"}
-      className="btn-bouncy relative flex min-h-20 w-full items-center gap-3 px-4 py-3 text-left text-base font-bold disabled:cursor-default sm:min-h-24 sm:text-lg"
+      data-answer-state={state ?? undefined}
+      className="btn-bouncy refresh-game-option relative flex min-h-20 w-full items-center gap-3 px-4 py-3 text-left text-base font-bold disabled:cursor-default sm:min-h-24 sm:text-lg"
       style={{
         background: s.bg,
         color: s.fg,
-        opacity: dim ? 0.35 : 1,
+        opacity: dim ? 0.7 : 1,
         outline: state === "correct" ? "4px solid var(--foreground)" : state === "chosen" ? "4px dashed var(--foreground)" : undefined,
         outlineOffset: 2,
       }}
@@ -70,7 +71,7 @@ export function Countdown({ startedAt, seconds, now, label }: { startedAt: numbe
   const pct = Math.min(100, (left / (seconds * 1000)) * 100);
   return (
     <div className="flex items-center gap-3">
-      <div className="h-4 flex-1 overflow-hidden rounded-full border-2 border-[var(--edge)] bg-[var(--surface-muted)]" role="progressbar" aria-valuemin={0} aria-valuemax={seconds} aria-valuenow={Math.ceil(left / 1000)}>
+      <div className="h-4 flex-1 overflow-hidden rounded-full border-2 border-[var(--edge)] bg-[var(--surface-muted)]" role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={seconds} aria-valuenow={Math.ceil(left / 1000)}>
         <div className="h-full rounded-full" style={{ width: `${pct}%`, background: pct > 30 ? "var(--accent-green)" : "var(--accent-500)", transition: "width 0.1s linear" }} />
       </div>
       <span className="w-14 text-right font-mono text-lg font-extrabold tabular-nums">
@@ -92,7 +93,7 @@ export function EndsIn({ endsAt, now, label }: { endsAt: number; now: () => numb
   const m = Math.floor(left / 60);
   const s = String(left % 60).padStart(2, "0");
   return (
-    <span className="pill bg-[var(--accent-yellow)] px-3 py-1 text-sm text-[#16132b]">
+    <span className="pill tabular-nums bg-[var(--accent-yellow)] px-3 py-1 text-sm text-[#16132b]">
       {label} {m}:{s}
     </span>
   );

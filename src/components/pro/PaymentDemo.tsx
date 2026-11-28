@@ -35,6 +35,14 @@ export function PaymentDemo({ t, cs, initial }: { t: BuilderText; cs: boolean; i
     ["Everything in individual PRO", "Manage family members", "One shared plan"],
     ["PRO for school pupils", "School linked to your account", "School plan"],
   ];
+  const billingPeriod = (tier: typeof TIERS[number]) => tier === "school" || yearly ? t.yearly : t.monthly;
+  const comparison = [
+    { label: cs ? "Pro koho" : "Who it’s for", values: subtitles },
+    { label: cs ? "Období" : "Billing period", values: TIERS.map(billingPeriod) },
+    { label: cs ? "Orientační cena" : "Indicative price", values: TIERS.map(tier => money(checkoutPrice(tier, [], tier === "school" || yearly))) },
+    { label: cs ? "Hlavní výhody" : "Highlights", values: perks.map(list => list.join(" · ")) },
+  ];
+
   const openCheckout = (nextPlan: CheckoutPlan) => {
     setPlan(nextPlan);
     setFinished(false);
@@ -82,7 +90,7 @@ export function PaymentDemo({ t, cs, initial }: { t: BuilderText; cs: boolean; i
           <dl><div><dt>{cs ? "Tarif" : "Plan"}</dt><dd>{names[plan]}</dd></div>{plan === "family" && <div><dt>{cs ? "Členové" : "Members"}</dt><dd>{cs ? "až 5" : "up to 5"}</dd></div>}
             {plan === "custom" && <div><dt>{cs ? "Funkce" : "Features"}</dt><dd>{selected.length}</dd></div>}
             <div><dt>{cs ? "Období" : "Period"}</dt><dd>{annual ? t.yearly : t.monthly}</dd></div></dl>
-          <div className="ps-total" aria-live="polite" aria-atomic="true"><p>{cs ? "Orientační cena" : "Indicative price"}</p><p><strong>{money(price)}</strong><span> / {annual ? (cs ? "rok" : "year") : (cs ? "měsíc" : "month")}</span></p></div>
+          <div className="ps-total" aria-live="polite" aria-atomic="true"><p>{cs ? "Orientační cena" : "Indicative price"}</p><p><strong key={price} className="refresh-price">{money(price)}</strong><span> / {annual ? (cs ? "rok" : "year") : (cs ? "měsíc" : "month")}</span></p></div>
           {plan === "custom" && !selected.length && <p className="ps-empty">{t.pick}</p>}
           <button type="button" disabled={!canContinue} className="ps-button ps-button-gold" onClick={() => openCheckout(plan)}>{cs ? "Vyzkoušet platbu" : "Try a demo payment"}<span aria-hidden="true"> →</span></button>
           <p className="ps-demo-note">{cs ? "Simulace s testovací kartou." : "Simulation with a test card."}</p>
@@ -90,6 +98,19 @@ export function PaymentDemo({ t, cs, initial }: { t: BuilderText; cs: boolean; i
         </div>
       </aside>
     </div>
+
+    <details className="refresh-pro-compare ps-frame">
+      <summary>{cs ? "Porovnat tarify" : "Compare plans"} <span aria-hidden>+</span></summary>
+      <div className="refresh-pro-table" role="region" aria-label={cs ? "Porovnání tarifů" : "Plan comparison"} tabIndex={0}>
+        <table>
+          <thead><tr><td />{TIERS.map(tier => <th key={tier} scope="col" data-selected={tier === plan}>{names[tier]}</th>)}</tr></thead>
+          <tbody>{comparison.map(row => <tr key={row.label}>
+            <th scope="row">{row.label}</th>
+            {row.values.map((value, index) => <td key={TIERS[index]} data-selected={TIERS[index] === plan}>{value}</td>)}
+          </tr>)}</tbody>
+        </table>
+      </div>
+    </details>
 
     <section className="ps-builder" aria-labelledby={`${titleId}-builder`}>
       <header><h2 id={`${titleId}-builder`}>{cs ? "Poskládej si vlastní PRO" : "Build your own PRO"}</h2><p>{cs ? "Vyber jen funkce, které využiješ." : "Choose only the features you need."}</p></header>

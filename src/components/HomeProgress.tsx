@@ -51,7 +51,7 @@ export function HomeProgress({ locale, registerLabel }: { locale: Locale; regist
   const toNext = account.neededForNext - account.intoLevel;
 
   return (
-    <div className="card home-guest flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
+    <div className="card home-guest refresh-learner-card flex flex-col gap-5 p-6">
       <div className="flex items-center gap-4">
         <Avatar id={account.avatar} icon={account.icon} size={64} />
         <div className="min-w-0">
@@ -74,6 +74,7 @@ export function HomeProgress({ locale, registerLabel }: { locale: Locale; regist
         <div
           className="mt-1.5 h-3.5 overflow-hidden rounded-full border-2 border-[var(--edge)] bg-[var(--surface-muted)]"
           role="progressbar"
+          aria-label={t.progressLevel}
           aria-valuenow={account.percent}
           aria-valuemin={0}
           aria-valuemax={100}
@@ -82,9 +83,9 @@ export function HomeProgress({ locale, registerLabel }: { locale: Locale; regist
         </div>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Link
-          href={`/${locale}/kurzy/zakladni`}
+          href={`/${locale}/mapa`}
           className="btn-bouncy bg-[var(--brand-500)] px-4 py-2 text-sm font-bold text-white"
         >
           {t.continueLearning}

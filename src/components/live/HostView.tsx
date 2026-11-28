@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { Podium } from "@/components/Podium";
 import { fmt, type LiveText } from "@/i18n/live";
 import type { Locale } from "@/i18n/config";
@@ -73,17 +74,22 @@ export function HostView({
   // --- Čekárna ---
   if (view.status === "LOBBY") {
     return (
-      <div className="flex flex-col gap-6">
-        <div className="card flex flex-col items-center gap-3 p-6 text-center">
+      <div className="refresh-host-lobby">
+        <div className="card refresh-host-invite flex flex-col items-center gap-3 p-6 text-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
 <img src={`/arena/emblem-${view.mode.toLowerCase()}.webp`} alt="" width={120} height={120} decoding="async" className="arena-emblem" />
           <p className="text-sm font-semibold text-[var(--muted)]">{fmt(t.lobby.share, { site: typeof window !== "undefined" ? window.location.host : "" })}</p>
-          <p className="font-mono text-6xl font-extrabold tracking-[0.25em] sm:text-7xl" aria-label={view.pin.split("").join(" ")}>
+          <p className="refresh-room-pin font-mono font-extrabold" aria-label={view.pin.split("").join(" ")}>
             {view.pin}
           </p>
+          {joinUrl && (
+            <a href={joinUrl} className="refresh-room-qr" aria-label={t.join.title}>
+              <QRCodeSVG value={joinUrl} title={t.join.title} size={112} marginSize={4} level="M" />
+            </a>
+          )}
           <button
             type="button"
-            className="btn-bouncy bg-[var(--surface)] px-3 py-1.5 text-sm font-bold"
+            className="btn-bouncy btn-secondary min-h-11 px-4 text-sm font-bold"
             onClick={async () => {
               try {
                 await navigator.clipboard.writeText(joinUrl);
@@ -98,7 +104,7 @@ export function HostView({
             {view.title} · {modeName} · {fmt(t.lobby.questions, { n: view.total })}
           </p>
         </div>
-        <div className="card flex flex-col gap-3 p-5">
+        <div className="card refresh-host-roster flex flex-col gap-4 p-5">
           <h2 className="text-lg font-bold">
             {t.lobby.players} ({view.counts.players})
           </h2>
@@ -113,12 +119,14 @@ export function HostView({
               ))}
             </ul>
           )}
+          <div className="mt-auto grid gap-3">
+            {err}
+            <button type="button" onClick={() => control("next")} disabled={busy || view.counts.players === 0} className="btn-bouncy btn-primary btn-lg disabled:opacity-50">
+              <span aria-hidden>▶ </span>{t.lobby.start}
+            </button>
+            {view.counts.players === 0 && <p className="text-center text-sm text-[var(--muted)]">{t.lobby.needPlayers}</p>}
+          </div>
         </div>
-        {err}
-        <button type="button" onClick={() => control("next")} disabled={busy || view.counts.players === 0} className="btn-bouncy btn-primary btn-lg self-center disabled:opacity-50">
-          ▶ {t.lobby.start}
-        </button>
-        {view.counts.players === 0 && <p className="text-center text-sm text-[var(--muted)]">{t.lobby.needPlayers}</p>}
       </div>
     );
   }

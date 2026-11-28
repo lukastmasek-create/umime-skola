@@ -43,7 +43,7 @@ function BentoTile({ accent, icon, title, span = "", delay = 0, children }: { ac
   );
 }
 
-export function CreateGame({ locale }: { locale: Locale }) {
+export function CreateGame({ locale, initialMode = "QUIZ" }: { locale: Locale; initialMode?: LiveMode }) {
   const t = getLiveText(locale);
   const router = useRouter();
   const [source, setSource] = useState<"course" | "set">("course");
@@ -54,7 +54,7 @@ export function CreateGame({ locale }: { locale: Locale }) {
   const [setId, setSetId] = useState("");
   const [difficulty, setDifficulty] = useState(0);
   const [count, setCount] = useState(10);
-  const [mode, setMode] = useState<LiveMode>("QUIZ");
+  const [mode, setMode] = useState<LiveMode>(initialMode);
   const [seconds, setSeconds] = useState(20);
   const [raceTarget, setRaceTarget] = useState(10);
   const [durationMin, setDurationMin] = useState(5);

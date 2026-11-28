@@ -6,6 +6,7 @@ import "../site-chrome.css";
 import "../learning-motion.css";
 import "../pixel-scene.css";
 import "../chrome-pixel.css";
+import "../design-refresh.css";
 import { HeaderShop, MobileMenu, NavTabs } from "@/components/NavTabs";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { HeaderAccount } from "@/components/HeaderAccount";

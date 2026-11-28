@@ -1,3 +1,4 @@
+import { Icon } from "@/components/Icon";
 import Link from "next/link";
 import { cache } from "react";
 import { notFound } from "next/navigation";
@@ -5,11 +6,13 @@ import { prisma } from "@/lib/prisma";
 import { CATEGORIES, SUBJECTS, getCategoryBySlug } from "@/lib/taxonomy";
 import { getDictionary } from "@/i18n/dictionaries";
 import { getTestText } from "@/i18n/test";
-import { isLocale, type Locale } from "@/i18n/config";
+import { isLocale, tr8, type Locale } from "@/i18n/config";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 
 export const revalidate = 0;
+
+const questionsLabel = tr8("Počet otázek", "Questions", "Anzahl der Fragen", "Количество вопросов", "Кількість запитань", "問題数", "Preguntas", "Nombre de questions");
 
 const DIFFICULTIES = [1, 2, 3, 4, 5];
 
@@ -22,6 +25,7 @@ const getCourse = cache(async (courseSlug: string, category: (typeof CATEGORIES)
       slug: true,
       description: true,
       subject: true,
+      _count: { select: { questions: true } },
       levels: { where: { published: true }, select: { order: true } },
     },
   }),
@@ -120,20 +124,23 @@ export default async function CoursePage({
     </div>
   );
 
+  const subject = SUBJECTS.find((item) => item.value === course.subject);
   return (
-    <div data-world={SUBJECTS.find((s) => s.value === course.subject)?.slug} className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-16">
+    <div data-world={subject?.slug} className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-16">
       <Link
         href={`/${locale}/kurzy/${category.slug}`}
         className="mb-4 inline-block text-sm font-medium text-[var(--faint)] hover:text-[var(--foreground)]"
       >
         ← {dict.course.backToCategory}
       </Link>
-      <h1 className="mb-1 text-3xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
-        {course.title}
-      </h1>
-      {course.description && (
-        <p className="mb-8 text-[var(--muted)]">{course.description}</p>
-      )}
+      <header className="card refresh-course-intro">
+        {subject && <span className="refresh-course-icon" aria-hidden><Icon name={subject.slug} size={56} /></span>}
+        <div>
+          <h1 className="font-bold" style={{ fontFamily: "var(--font-heading)" }}>{course.title}</h1>
+          {course.description && <p className="mt-2 text-[var(--muted)]">{course.description}</p>}
+          <p className="refresh-course-meta">{questionsLabel[locale]} <strong>{new Intl.NumberFormat(locale).format(course._count.questions)}</strong></p>
+        </div>
+      </header>
 
       <h2 className="mb-1 text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
         {t.coursesTitle}

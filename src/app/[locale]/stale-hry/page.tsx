@@ -1,15 +1,19 @@
+import { GameLibraryNav } from "@/components/GameLibraryNav";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PxHeader, PxIcon, PxStage, type PxIconName } from "@/components/pixel/PixelKit";
 import { PxScene } from "@/components/pixel/PixelScene";
 import { IdleHub } from "@/components/idle/IdleHub";
 import { getIdleText } from "@/i18n/idle";
-import { isLocale, type Locale } from "@/i18n/config";
+import { isLocale, tr8, type Locale } from "@/i18n/config";
 import { staticPageMetadata } from "@/lib/seo";
 
 const COLORS = ["#8fd0ff", "#ff8a6b", "#7ee0b0", "#ffc933", "#c9a7ff"];
 // Hra na stejném pořadí jako v texty.games: Základna, Mazlíčci, Farma, Město. null = zatím se chystá.
 const PATHS = ["zakladna", "mazlicci", "farma", "mesto", "ekonomika"] as const;
+
+const solo = tr8("Pro jednoho", "Single-player", "Einzelspieler", "Для одного", "Для одного", "1人用", "Un jugador", "Solo");
+const worlds = tr8("Herní světy", "Game worlds", "Spielwelten", "Игровые миры", "Ігрові світи", "ゲームの世界", "Mundos de juego", "Mondes de jeu");
 
 const HOT_ICON: PxIconName[] = ["door", "heart", "star", "chest", "star"];
 
@@ -31,6 +35,7 @@ export default async function IdleGamesPage({
     <PxStage>
       <div className="mx-auto max-w-5xl px-4 sm:px-6">
         <PxHeader title={t.title} subtitle={t.subtitle} />
+        <GameLibraryNav locale={locale} current="stale-hry" />
 
         {/* Hotbar: rychlý skok na hru; zamčené sloty jsou bez odkazu. */}
         <ul className="px-hotbar" aria-label={t.title}>
@@ -60,13 +65,15 @@ export default async function IdleGamesPage({
           })}
         </ul>
 
+        <section aria-labelledby="game-worlds">
+          <h2 id="game-worlds" className="refresh-worlds-title">{worlds[locale]}</h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {t.games.map((game, i) => {
             const path = PATHS[i];
             const href = path ? `/${locale}/stale-hry/${path}` : null;
             const body = (
               <>
-                <div className="relative flex h-40 items-start justify-between overflow-hidden p-3" style={{ background: COLORS[i % COLORS.length] }}>
+                <div className="refresh-world-cover relative flex items-start justify-between overflow-hidden p-3" style={{ background: COLORS[i % COLORS.length] }}>
                   <span aria-hidden className="absolute inset-x-0 bottom-0 h-3" style={{ background: "linear-gradient(#4cc16b 0 6px, #8a5a2b 6px)" }} />
                   {ART[i] ? (
                     <PxScene id={ART[i]} className="absolute bottom-0 left-1/2 h-[8rem] w-[12rem] -translate-x-1/2" />
@@ -75,13 +82,7 @@ export default async function IdleGamesPage({
                       <PxIcon name="chest" scale={8} />
                     </span>
                   )}
-                  <span className="px-title relative text-4xl text-[#14112f]" style={{ textShadow: "2px 2px 0 rgba(255,255,255,0.45)" }}>
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="px-pill relative">
-                    {!href && <PxIcon name="lock" scale={2} />}
-                    {href ? t.play : t.soon}
-                  </span>
+                  <span className="refresh-world-chip">{href ? solo[locale] : t.soon}</span>
                 </div>
                 <div className="flex flex-1 flex-col gap-2 p-4">
                   <h2 className="px-card-title !p-0 !text-left !text-xl">{game.name}</h2>
@@ -93,7 +94,7 @@ export default async function IdleGamesPage({
               </>
             );
             return href ? (
-              <Link key={game.name} href={href} className="px-box px-box-hover focus-visible:outline-none">
+              <Link key={game.name} href={href} className="px-box px-box-hover refresh-world-card">
                 {body}
               </Link>
             ) : (
@@ -103,6 +104,7 @@ export default async function IdleGamesPage({
             );
           })}
         </div>
+        </section>
 
         <p className="px-box mt-10 px-4 py-3 text-sm text-[var(--px-dim)]">{t.note}</p>
 

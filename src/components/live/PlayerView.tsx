@@ -40,6 +40,7 @@ export function PlayerView({
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [chestResult, setChestResult] = useState<{ text: string; kind: ChestOutcome["kind"] } | null>(null);
   const [chestBusy, setChestBusy] = useState(false);
+  const [pickedChest, setPickedChest] = useState<number | null>(null);
   const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(
     () => () => {
@@ -79,6 +80,7 @@ export function PlayerView({
 
   async function pickChest(index: number) {
     if (chestBusy) return;
+    setPickedChest(index);
     setChestBusy(true);
     setError(null);
     const r = await liveApi<ChestResult>(`/rooms/${view.pin}/chest`, { body: { index }, identity });
@@ -203,7 +205,7 @@ export function PlayerView({
             <p className="text-sm text-[var(--muted)]">{t.play.spectating}</p>
           </div>
         )}
-        <div className="card flex flex-col gap-4 p-5">
+        <div className="card refresh-game-question flex flex-col gap-4 p-5">
           <span className="text-sm font-semibold text-[var(--muted)]">{fmt(t.play.questionOf, { n: question.index + 1, total: view.total })}</span>
           <h1 className="text-xl font-bold leading-snug sm:text-2xl" style={{ fontFamily: "var(--font-heading)" }}>
             {question.prompt}
@@ -262,7 +264,7 @@ export function PlayerView({
       )}
 
       {needChest ? (
-        <section aria-labelledby="chest-title" className="card flex flex-col items-center gap-3 p-3 text-center sm:gap-5 sm:p-6">
+        <section aria-labelledby="chest-title" className="card refresh-chest-stage flex flex-col items-center gap-3 p-3 text-center sm:gap-5 sm:p-6">
           <h2 id="chest-title" className="text-xl font-extrabold">{t.play.chestTitle}</h2>
           <div className="grid w-full grid-cols-3 gap-1.5 sm:gap-3">
             {[0, 1, 2].map((i) => (
@@ -271,7 +273,8 @@ export function PlayerView({
                 type="button"
                 onClick={() => pickChest(i)}
                 disabled={chestBusy}
-                className="grid min-h-14 min-w-0 place-items-center rounded-xl border border-[#bc854a]/50 bg-[#422c3c] p-1 transition-[background-color,border-color,transform] hover:border-[#ffd474] hover:bg-[#56364a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffd474] active:scale-95 disabled:opacity-60 motion-reduce:transition-none motion-reduce:active:scale-100 sm:p-3"
+                data-picking={chestBusy && pickedChest === i}
+                className="refresh-chest-choice grid min-h-14 min-w-0 place-items-center rounded-xl border border-[#bc854a]/50 bg-[#422c3c] p-1 transition-[background-color,border-color,transform] hover:border-[#ffd474] hover:bg-[#56364a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ffd474] active:scale-95 disabled:opacity-60 motion-reduce:transition-none motion-reduce:active:scale-100 sm:p-3"
                 aria-label={`${t.play.chestTitle} ${i + 1}`}
               >
                 <ChestClosed className="h-auto w-full max-w-40" />
@@ -280,12 +283,12 @@ export function PlayerView({
           </div>
         </section>
       ) : chestResult ? (
-        <div role="status" className="card flex flex-col items-center gap-3 p-4 text-center sm:p-8">
+        <div role="status" className="card refresh-chest-result flex flex-col items-center gap-3 p-4 text-center sm:p-8">
           <ChestOpen kind={chestResult.kind} className="h-auto w-36 sm:w-48" />
           <p className="text-xl font-extrabold">{chestResult.text}</p>
         </div>
       ) : (
-        <div className="card flex flex-col gap-4 p-5">
+        <div className="card refresh-game-question flex flex-col gap-4 p-5">
           <h1 className="text-xl font-bold leading-snug sm:text-2xl" style={{ fontFamily: "var(--font-heading)" }}>
             {shown.prompt}
           </h1>

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { CATEGORIES, SUBJECTS } from "@/lib/taxonomy";
 import { Icon } from "@/components/Icon";
+import { HomeExercisePreview } from "@/components/HomeExercisePreview";
+import { getLiveText } from "@/i18n/live";
 import { HomeProgress } from "@/components/HomeProgress";
 import { DailyQuizTeaser } from "@/components/DailyQuizTeaser";
 import { TeacherCta } from "@/components/TeacherCta";
@@ -29,7 +31,7 @@ import { getAudiencePagesText } from "@/i18n/audience";
 import { getSubjectText } from "@/i18n/subjects";
 import { ProHomeStrip } from "@/components/pro/ProHomeStrip";
 import { getDictionary } from "@/i18n/dictionaries";
-import { isLocale, type Locale } from "@/i18n/config";
+import { isLocale, tr8, type Locale } from "@/i18n/config";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { SITE_NAME, SITE_URL, pageMetadata } from "@/lib/seo";
@@ -39,6 +41,8 @@ import { getHomeExtraText } from "@/i18n/home-extra";
 import { HomeSectionNav } from "@/components/HomeSectionNav";
 import { HomeTrans, HomeCoinHud } from "@/components/HomeTrans";
 import { getHomeTransText } from "@/i18n/home-trans";
+
+const demoLabel = tr8("Zkusit 3 otázky", "Try 3 questions", "3 Fragen ausprobieren", "Попробовать 3 вопроса", "Спробувати 3 запитання", "3問に挑戦", "Probar 3 preguntas", "Essayer 3 questions");
 
 const TILE_COLORS = ["#ffc933", "#ff8a6b", "#8fd0ff", "#7ee0b0"];
 // Sekce „Jak to funguje“ je archivovaná (skrytá). Pro návrat stačí přepnout na true.
@@ -153,14 +157,14 @@ export default async function Home({
               <p className="hero-in max-w-xl text-lg leading-relaxed text-[var(--muted)]" style={{ ["--d" as string]: "0.32s" }}>{dict.home.subtitle}</p>
               <div className="hero-in flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:gap-4" style={{ ["--d" as string]: "0.46s" }}>
                 <Link
-                  href={`/${locale}/kurzy/zakladni`}
+                  href="#zkusit"
                   className="btn-bouncy btn-cta btn-primary btn-lg btn-dot"
                 >
-                  {a.playCta}
+                  {demoLabel[locale]}
                 </Link>
-                <TeacherCta locale={locale as Locale} className="btn-bouncy btn-secondary btn-lg">
-                  {a.teacherCta}
-                </TeacherCta>
+                <Link href={`/${locale}/hrat-spolecne`} className="btn-bouncy btn-secondary btn-lg refresh-hero-join">
+                  {getLiveText(locale).join.title}
+                </Link>
               </div>
               <p className="hero-in text-sm text-[var(--muted)]" style={{ ["--d" as string]: "0.58s" }}>
                 {a.teacherHint}{" "}
@@ -193,9 +197,12 @@ export default async function Home({
               </li>
             ))}
           </ul>
-          <HomeProgress locale={locale as Locale} registerLabel={dict.home.createAccount} />
-          <div className="mt-4">
-            <DailyQuizTeaser locale={locale as Locale} />
+          <div className="refresh-home-play">
+            <HomeExercisePreview locale={locale} />
+            <div className="refresh-home-activity">
+              <HomeProgress locale={locale} registerLabel={dict.home.createAccount} />
+              <DailyQuizTeaser locale={locale} />
+            </div>
           </div>
         </section>
 

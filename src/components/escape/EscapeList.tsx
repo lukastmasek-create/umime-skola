@@ -137,10 +137,10 @@ export function EscapeList({ locale, t, cards }: { locale: Locale; t: EscapeText
               const level = t.levels[room.difficulty - 1];
               const content = (
                 <>
-                  <div className="relative flex h-40 items-start justify-between overflow-hidden p-3" style={{ backgroundColor: color }}>
+                  <div className="refresh-world-cover relative flex items-start justify-between overflow-hidden p-3" style={{ backgroundColor: color }}>
                     <span aria-hidden className="absolute inset-x-0 bottom-0 h-3" style={{ background: "linear-gradient(#4cc16b 0 6px, #8a5a2b 6px)" }} />
                     <PxScene id={room.id} className="absolute -bottom-0 left-1/2 h-[8rem] w-[12rem] -translate-x-1/2" />
-                    <span className="px-pill relative">{room.subject}</span>
+                    <span className="refresh-world-chip">{room.subject}</span>
                     {room.best ? (
                       <span className="px-pill relative" title={t.best}>
                         <span className="sr-only">{t.best}: </span>
@@ -164,13 +164,13 @@ export function EscapeList({ locale, t, cards }: { locale: Locale; t: EscapeText
                       </span>
                     </div>
                   </div>
-                  <span className={`px-btn ${room.available ? "px-btn-green" : ""} ml-3 self-start`} aria-hidden>
+                  <span className={`px-btn ${room.available ? "px-btn-green" : ""} self-start`} aria-hidden>
                     {room.available ? `▶ ${t.play}` : t.soon}
                   </span>
                 </>
               );
               return room.available ? (
-                <Link key={room.id} href={`/${locale}/unikovky/${room.id}`} className="px-box px-box-hover gap-4 pb-3 focus-visible:outline-none">
+                <Link key={room.id} href={`/${locale}/unikovky/${room.id}`} className="px-box px-box-hover refresh-world-card gap-4">
                   {content}
                 </Link>
               ) : (

@@ -16,6 +16,8 @@ export type MapSubject = { value: string; slug: string; label: string; color: st
 type MapProgress = { loggedIn?: boolean; due?: number; courses?: Record<string, CourseProgress> };
 
 const continueLabel = tr8("Pokračovat", "Continue", "Weiterlernen", "Продолжить", "Продовжити", "続ける", "Continuar", "Continuer");
+const allLabel = tr8("Všechny kurzy", "All courses", "Alle Kurse", "Все курсы", "Усі курси", "すべてのコース", "Todos los cursos", "Tous les cours");
+const noMatches = tr8("Tomuto filtru neodpovídá žádný kurz.", "No courses match this filter.", "Keine Kurse entsprechen diesem Filter.", "Нет курсов с таким фильтром.", "Немає курсів за цим фільтром.", "条件に合うコースはありません。", "No hay cursos que coincidan con este filtro.", "Aucun cours ne correspond à ce filtre.");
 const emptyProgress: Record<string, CourseProgress> = {};
 
 function Terrain({ finished, total }: { finished: number; total: number }) {
@@ -63,6 +65,7 @@ export function CourseMap({ locale, subjects }: { locale: Locale; subjects: MapS
   const t = getReviewText(locale);
   const [data, setData] = useState<MapProgress | null>(null);
   const [selection, setSelection] = useState<string | null>();
+  const [statusFilter, setStatusFilter] = useState<CourseStatus | "all">("all");
   const mapId = useId();
 
   useEffect(() => {
@@ -114,20 +117,24 @@ export function CourseMap({ locale, subjects }: { locale: Locale; subjects: MapS
     ?? routes.find(({ finished, checkpoints }) => finished < checkpoints.length);
   const nextCourse = nextRoute?.checkpoints.find(({ status }) => status === "new")?.course;
   const next = started[0] ?? (nextRoute && nextCourse ? { subject: nextRoute.subject, course: nextCourse } : undefined);
-  const active = selection === undefined ? (data ? next?.subject.value ?? subjects[0]?.value : undefined) : selection;
+  const visibleRoutes = routes.filter(({ checkpoints }) => statusFilter === "all" || checkpoints.some(({ status }) => status === statusFilter));
+  const active = selection === undefined
+    ? (visibleRoutes.find(({ subject }) => subject.value === next?.subject.value) ?? visibleRoutes[0])?.subject.value
+    : selection;
+  const startedCount = started.length;
 
   const done = routes.reduce((count, route) => count + route.finished, 0);
   const total = subjects.reduce((count, subject) => count + subject.courses.length, 0);
 
   return (
-    <div className={styles.map}>
+    <div className={`${styles.map} refresh-map`}>
       <div className={styles.overview}>
         <Terrain finished={done} total={total} />
         <div className={styles.journey}>
           {data?.loggedIn && <p className={styles.total}>{fill(t.progress, done)}</p>}
           {data && next && (
             <>
-              <p className={styles.eyebrow}>{t.recommended}</p>
+              <p className={styles.eyebrow}>{started.length > 0 ? t.statusStarted : t.recommended}</p>
               <p className={styles.nextTitle}>{next.course.title}</p>
               <p className={styles.nextSubject}>{next.subject.label}</p>
               <Link href={href(next.course)} className={styles.continue}>
@@ -140,21 +147,29 @@ export function CourseMap({ locale, subjects }: { locale: Locale; subjects: MapS
       </div>
 
       {routes.length > 0 && (
-        <ul className={styles.legend}>
-          {(["new", "started", "done"] as const).map((status) => (
-            <li key={status}><span className={styles.marker} data-status={status} aria-hidden="true" />{label[status]}</li>
+        <ul className={`${styles.legend} refresh-map-filters`}>
+          {(["all", "new", "started", "done"] as const).map((status) => (
+            <li key={status}>
+              <button type="button" aria-pressed={statusFilter === status} onClick={() => { setStatusFilter(status); setSelection(undefined); }}>
+                {status !== "all" && <span className={styles.marker} data-status={status} aria-hidden="true" />}
+                {status === "all" ? allLabel[locale] : label[status]}
+                <span className="refresh-filter-count">{status === "all" ? total : status === "done" ? done : status === "started" ? startedCount : total - startedCount - done}</span>
+              </button>
+            </li>
           ))}
         </ul>
       )}
 
+      {data && visibleRoutes.length === 0 && <p className="refresh-empty" role="status">{statusFilter === "all" ? allLabel[locale] + ": 0" : noMatches[locale]}</p>}
       <div className={styles.regions}>
-        {routes.map(({ subject, checkpoints, finished }) => {
+        {visibleRoutes.map(({ subject, checkpoints, finished }) => {
           const open = active === subject.value;
           const headingId = `${mapId}-${subject.slug}`;
           const grades = new Map<number | null, typeof checkpoints>();
 
           if (open) {
             for (const checkpoint of checkpoints) {
+              if (statusFilter !== "all" && checkpoint.status !== statusFilter) continue;
               const grade = checkpoint.course.grade || null;
               const group = grades.get(grade);
               if (group) group.push(checkpoint);
@@ -178,7 +193,7 @@ export function CourseMap({ locale, subjects }: { locale: Locale; subjects: MapS
                   <span className={styles.subject}>{subject.label}</span>
                   <span className={styles.count}>{finished}/{checkpoints.length}</span>
                   <span className={styles.expand} aria-hidden="true">{open ? "−" : "+"}</span>
-                  <span className={styles.progress} aria-hidden="true" style={{ width: `${100 * finished / checkpoints.length}%` }} />
+                  <span className={`${styles.progress} refresh-map-progress`} aria-hidden="true" style={{ width: `${100 * finished / checkpoints.length}%` }} />
                 </button>
               </h2>
               <div id={`${headingId}-courses`} role="region" aria-labelledby={headingId} hidden={!open} className={styles.trail}>
