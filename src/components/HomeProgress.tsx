@@ -51,7 +51,7 @@ export function HomeProgress({ locale, registerLabel }: { locale: Locale; regist
   const toNext = account.neededForNext - account.intoLevel;
 
   return (
-    <div className="card home-guest refresh-learner-card flex flex-col gap-5 p-6">
+    <div className="card home-guest flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
       <div className="flex items-center gap-4">
         <Avatar id={account.avatar} icon={account.icon} size={64} />
         <div className="min-w-0">

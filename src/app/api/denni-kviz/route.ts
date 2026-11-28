@@ -136,11 +136,11 @@ const pointsOf = (s: DayState) => (s.gainedPoints > 0 ? s.gainedPoints : summari
 async function board(date: string, userId: string | null) {
   const rows = await prisma.idleState.findMany({
     where: { game: GAME, data: { path: ["date"], equals: date } },
-    select: { userId: true, data: true },
+    select: { userId: true, data: true, user: { select: { name: true } } },
     take: 400,
   });
   const entries = rows
-    .map((r) => ({ userId: r.userId, name: rankingAlias(r.userId), state: normalize(r.data, date) }))
+    .map((r) => ({ userId: r.userId, name: r.user.name?.trim() || rankingAlias(r.userId), state: normalize(r.data, date) }))
     .filter((e) => e.state.finishedAt)
     .map((e) => ({
       userId: e.userId,

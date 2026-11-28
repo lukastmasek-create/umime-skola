@@ -100,8 +100,8 @@ export default async function LeaderboardPage({
         where: { points: { gt: 0 } },
         orderBy: [{ points: "desc" }, { createdAt: "asc" }],
         take: 20,
-        select: { id: true, points: true },
-      })).map(player => ({ ...player, name: rankingAlias(player.id), avatar: null }));
+        select: { id: true, name: true, points: true },
+      })).map(player => ({ ...player, name: player.name?.trim() || rankingAlias(player.id), avatar: null }));
       if (me) {
         const ahead = await prisma.user.count({ where: { points: { gt: me.points } } });
         myRank = { rank: ahead + 1, points: me.points };
@@ -111,8 +111,8 @@ export default async function LeaderboardPage({
         where: { schoolId: mySchool.id, points: { gt: 0 } },
         orderBy: [{ points: "desc" }, { createdAt: "asc" }],
         take: 20,
-        select: { id: true, points: true },
-      })).map(player => ({ ...player, name: rankingAlias(player.id), avatar: null }));
+        select: { id: true, name: true, points: true },
+      })).map(player => ({ ...player, name: player.name?.trim() || rankingAlias(player.id), avatar: null }));
     } else if (tab === "skoly") {
       const grouped = await prisma.user.groupBy({
         by: ["schoolId"],
@@ -155,7 +155,7 @@ export default async function LeaderboardPage({
       const [users, runs] = await Promise.all([
         prisma.user.findMany({
           where: { id: { in: ids } },
-          select: { id: true },
+          select: { id: true, name: true },
         }),
         prisma.escapeRun.findMany({
           where: { room: roomId, relaxed: false, userId: { in: ids } },
@@ -170,7 +170,7 @@ export default async function LeaderboardPage({
         return [
           {
             id: user.id,
-            name: rankingAlias(user.id),
+            name: user.name?.trim() || rankingAlias(user.id),
             avatar: null,
             school: null,
             seconds,
