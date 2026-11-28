@@ -278,11 +278,11 @@ async function snapshot(db: Db, userId: string, now: number) {
 }
 
 async function leaderboard(userId: string, game: ChGame) {
-  type Row = { id: string; earned: number };
+  type Row = { id: string; name: string | null; earned: number };
   const rows = await prisma.$queryRaw<Row[]>`
-    SELECT i."userId" AS "id",
+    SELECT i."userId" AS "id", u."name",
       CASE WHEN jsonb_typeof(i."data"->'totalEarned') = 'number' THEN (i."data"->>'totalEarned')::float8 ELSE 0 END AS earned
-    FROM "IdleState" i
+    FROM "IdleState" i JOIN "User" u ON u."id" = i."userId"
     WHERE i."game" = ${GAME_KEY[game]}
     ORDER BY earned DESC
     LIMIT 10`;
@@ -297,7 +297,7 @@ async function leaderboard(userId: string, game: ChGame) {
         AND (i."data"->>'totalEarned')::float8 > ${mineEarned}`;
     rank = Number(better[0]?.n ?? 0) + 1;
   }
-  return { game, rows: rows.map((r) => ({ id: rankingAlias(r.id), name: rankingAlias(r.id), avatar: null, earned: Math.round(Number(r.earned)), me: r.id === userId })), rank, mine: mineEarned };
+  return { game, rows: rows.map((r) => ({ id: rankingAlias(r.id), name: r.name?.trim() || rankingAlias(r.id), avatar: null, earned: Math.round(Number(r.earned)), me: r.id === userId })), rank, mine: mineEarned };
 }
 
 export async function GET(request: Request) {

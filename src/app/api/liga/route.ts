@@ -57,6 +57,11 @@ export async function GET() {
     const cohort = cohortOf(userId, peers.map((p) => p.userId), entry.weekKey);
     const xp = await activityXp(cohort, startOfUtcWeek(now));
     const ranked = rankCohort(cohort, xp);
+    const members = await prisma.user.findMany({
+      where: { id: { in: cohort } },
+      select: { id: true, name: true },
+    });
+    const names = new Map(members.map(member => [member.id, member.name]));
     const rank = ranked.findIndex((r) => r.userId === userId);
     return NextResponse.json({
       loggedIn: true,
@@ -71,7 +76,7 @@ export async function GET() {
         id: rankingAlias(r.userId),
         me: r.userId === userId,
         xp: r.xp,
-        name: rankingAlias(r.userId),
+        name: names.get(r.userId)?.trim() || rankingAlias(r.userId),
         avatar: null,
         icon: null,
       })),
