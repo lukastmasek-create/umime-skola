@@ -165,81 +165,53 @@ export function PaymentDemo({ t, cs, initial }: { t: BuilderText; cs: boolean; i
 }
 
 const DEMO_CARDS = { success: "4242 4242 4242 4242", decline: "4000 0000 0000 0002" };
-const EMPTY_CARD = { holder: "", number: "", expiry: "", cvc: "" };
+type CardScenario = keyof typeof DEMO_CARDS;
 
 function DemoCardForm({ cs, onSuccess }: { cs: boolean; onSuccess: () => void }) {
-  const [card, setCard] = useState(EMPTY_CARD);
-  const [error, setError] = useState<"number" | "decline" | null>(null);
-  const cardNumber = useRef<HTMLInputElement>(null);
+  const [scenario, setScenario] = useState<CardScenario | null>(null);
+  const [declined, setDeclined] = useState(false);
   const hintId = useId();
-  const errorId = useId();
 
-  function fillCard(scenario: keyof typeof DEMO_CARDS) {
-    setCard({ holder: "Demo Student", number: DEMO_CARDS[scenario], expiry: "12/39", cvc: "123" });
-    setError(null);
-  }
-
-  function updateCard(field: keyof typeof EMPTY_CARD, value: string) {
-    setCard(previous => ({ ...previous, [field]: value }));
-    if (field === "number") setError(null);
+  function fillCard(next: CardScenario) {
+    setScenario(next);
+    setDeclined(false);
   }
 
   function simulatePayment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (card.number === DEMO_CARDS.success) {
-      onSuccess();
-    } else if (card.number === DEMO_CARDS.decline) {
-      setError("decline");
-    } else {
-      setCard(previous => ({ ...previous, number: "", cvc: "" }));
-      setError("number");
-      cardNumber.current?.focus();
-    }
+    if (scenario === "success") onSuccess();
+    if (scenario === "decline") setDeclined(true);
   }
 
   return (
     <form className="ps-checkout-form" method="dialog" autoComplete="off" onSubmit={simulatePayment}>
-      <p className="ps-checkout-hint" id={hintId}>{cs ? "Použij jen testovací kartu. Údaje se nikam neposílají ani neukládají." : "Use test cards only. Card details are never sent or saved."}</p>
+      <p className="ps-checkout-hint" id={hintId}>{cs ? "Vyber jednu z testovacích karet pro simulaci." : "Choose one of the preset test cards to simulate payment."}</p>
       <div className="ps-checkout-samples">
-        <button type="button" onClick={() => fillCard("success")}>{cs ? "Vyplnit testovací kartu" : "Fill test card"}</button>
-        <button type="button" onClick={() => fillCard("decline")}>{cs ? "Použít kartu pro zamítnutí" : "Use a decline test card"}</button>
+        <button type="button" aria-pressed={scenario === "success"} onClick={() => fillCard("success")}>{cs ? "Vyplnit testovací kartu" : "Fill test card"}</button>
+        <button type="button" aria-pressed={scenario === "decline"} onClick={() => fillCard("decline")}>{cs ? "Použít kartu pro zamítnutí" : "Use a decline test card"}</button>
       </div>
       <label>
         {cs ? "Jméno na kartě" : "Name on card"}
-        <input value={card.holder} onChange={event => updateCard("holder", event.target.value)} placeholder="Demo Student" required pattern=".*\S.*" maxLength={60} />
+        <input readOnly value={scenario ? "Demo Student" : ""} placeholder="Demo Student" />
       </label>
       <label>
         {cs ? "Číslo karty" : "Card number"}
-        <input
-          ref={cardNumber}
-          inputMode="numeric"
-          value={card.number}
-          onChange={event => updateCard("number", event.target.value.replace(/\D/g, "").slice(0, 16).match(/.{1,4}/g)?.join(" ") ?? "")}
-          placeholder={DEMO_CARDS.success}
-          aria-describedby={error === "number" ? `${hintId} ${errorId}` : hintId}
-          aria-invalid={error === "number"}
-          required
-          minLength={19}
-          maxLength={19}
-          pattern="[0-9]{4}( [0-9]{4}){3}"
-        />
+        <input readOnly value={scenario ? DEMO_CARDS[scenario] : ""} placeholder={DEMO_CARDS.success} aria-describedby={hintId} />
       </label>
       <div className="ps-checkout-fields">
         <label>
           {cs ? "Platnost (MM/RR)" : "Expiry (MM/YY)"}
-          <input inputMode="numeric" value={card.expiry} onChange={event => updateCard("expiry", event.target.value.replace(/\D/g, "").slice(0, 4).replace(/^(\d{2})(\d)/, "$1/$2"))} placeholder="12/39" pattern="(0[1-9]|1[0-2])/[0-9]{2}" required maxLength={5} />
+          <input readOnly value={scenario ? "12/39" : ""} placeholder="12/39" />
         </label>
         <label>
           CVC
-          <input inputMode="numeric" value={card.cvc} onChange={event => updateCard("cvc", event.target.value.replace(/\D/g, "").slice(0, 3))} placeholder="123" pattern="[0-9]{3}" required maxLength={3} />
+          <input readOnly value={scenario ? "123" : ""} placeholder="123" />
         </label>
       </div>
-      {error && <p className="ps-checkout-error" id={errorId} role="alert">
-        {error === "decline"
-          ? (cs ? "Zkušební platba byla zamítnuta. Pro úspěšný pokus vyplň běžnou testovací kartu." : "The demo payment was declined. Fill the standard test card to try a successful payment.")
-          : (cs ? "Demo přijímá pouze testovací čísla. Použij tlačítko pro vyplnění testovací karty." : "This demo only accepts test numbers. Use the test-card button to fill the form.")}
+      {declined && <p className="ps-checkout-error" role="alert">
+        {cs ? "Zkušební platba byla zamítnuta. Pro úspěšný pokus vyplň běžnou testovací kartu." : "The demo payment was declined. Fill the standard test card to try a successful payment."}
       </p>}
-      <button type="submit" className="ps-button ps-button-gold">{cs ? "Simulovat platbu" : "Simulate payment"}</button>
+      <button type="submit" disabled={!scenario} className="ps-button ps-button-gold">{cs ? "Simulovat platbu" : "Simulate payment"}</button>
     </form>
   );
 }

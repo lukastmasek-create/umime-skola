@@ -1,3 +1,4 @@
+import { sameOriginMutation } from "@/lib/request-origin";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { auth } from "@/lib/auth";
@@ -16,6 +17,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!sameOriginMutation(request)) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: "login" }, { status: 401 });
@@ -24,14 +26,19 @@ export async function POST(request: Request) {
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
   if (!EMAIL.test(email) || email.length > 200) return NextResponse.json({ error: "bad-email" }, { status: 400 });
   try {
-    const user = await prisma.user.findUnique({ where: { id: userId }, select: { password: true } });
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { password: true, email: true } });
     if (user?.password) {
       const password = typeof body.password === "string" ? body.password : "";
       if (!(await bcrypt.compare(password, user.password))) return NextResponse.json({ error: "wrong" }, { status: 400 });
     }
     const taken = await prisma.user.findFirst({ where: { email: { equals: email, mode: "insensitive" }, NOT: { id: userId } }, select: { id: true } });
     if (taken) return NextResponse.json({ error: "taken" }, { status: 409 });
-    await prisma.user.update({ where: { id: userId }, data: { email, emailVerified: null } });
+    if (!user) return NextResponse.json({ error: "login" }, { status: 401 });
+    const changed = await prisma.user.updateMany({
+      where: { id: userId, password: user.password, email: user.email },
+      data: { email, emailVerified: null },
+    });
+    if (changed.count === 0) return NextResponse.json({ error: "wrong" }, { status: 409 });
     return NextResponse.json({ ok: true, email });
   } catch {
     return NextResponse.json({ error: "unavailable" }, { status: 503 });

@@ -143,3 +143,9 @@ test("cleanSetQuestions přijme seřazení se čtyřmi položkami a zahodí jin�
   assert.equal(items[0].kind, "order");
   assert.equal(isChoice(items[0]), false);
 });
+
+
+test("nastavení místnosti zachová výslovný zámek připojování", () => {
+  assert.equal(cleanSettings({ joinLocked: true }).joinLocked, true);
+  assert.equal(cleanSettings({ joinLocked: "true" }).joinLocked, undefined);
+});

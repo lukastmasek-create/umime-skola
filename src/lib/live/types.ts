@@ -34,6 +34,7 @@ export type LiveSettings = {
   durationMin: number;
   /** Poslední přeživší: kolik životů hráči na začátku mají. */
   lives: number;
+  joinLocked?: boolean;
 };
 
 export type ChestOutcome =

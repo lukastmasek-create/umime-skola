@@ -5,12 +5,15 @@ import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { Podium } from "@/components/Podium";
 import { fmt, type LiveText } from "@/i18n/live";
-import type { Locale } from "@/i18n/config";
+import { tr8, type Locale } from "@/i18n/config";
 import type { LiveView } from "@/lib/live/types";
 import { liveApi, type Identity } from "./api";
 import { errorText } from "./LiveRoom";
 import { isSyncMode } from "@/lib/live/logic";
 import { Countdown, EndsIn, Leaderboard, OptionButton, TeamScores } from "./shared";
+
+const lockLabel = tr8("Zamknout připojování", "Lock joining", "Beitritt sperren", "Закрыть вход", "Закрити вхід", "参加をロック", "Cerrar el acceso", "Fermer les inscriptions");
+const unlockLabel = tr8("Povolit připojování", "Allow joining", "Beitritt erlauben", "Открыть вход", "Відкрити вхід", "参加を許可", "Permitir el acceso", "Ouvrir les inscriptions");
 
 export function HostView({
   locale,
@@ -27,13 +30,14 @@ export function HostView({
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const locked = view.settings.joinLocked === true;
   const [copied, setCopied] = useState(false);
   const unit = view.mode === "GOLD" ? t.end.gold : view.mode === "RACE" ? t.end.progress : view.mode === "SURVIVAL" ? t.end.lives : t.end.score;
   const teamNames = t.play.teamNames;
   const teams = view.teams && <TeamScores teams={view.teams} names={teamNames} />;
   const boardProps = { mode: view.mode, rows: view.leaderboard, unit, raceTarget: view.settings.raceTarget, lives: view.settings.lives, teamNames };
 
-  async function control(action: "next" | "end") {
+  async function control(action: "next" | "end" | "lock" | "unlock") {
     if (action === "end" && !window.confirm(t.play.confirmEnd)) return;
     setBusy(true);
     const r = await liveApi(`/rooms/${view.pin}/control`, { body: { action }, identity });
@@ -121,6 +125,9 @@ export function HostView({
           )}
           <div className="mt-auto grid gap-3">
             {err}
+            <button type="button" disabled={busy} onClick={() => control(locked ? "unlock" : "lock")} className="btn-bouncy btn-secondary min-h-11 px-4 text-sm font-bold">
+              {locked ? unlockLabel[locale] : lockLabel[locale]}
+            </button>
             <button type="button" onClick={() => control("next")} disabled={busy || view.counts.players === 0} className="btn-bouncy btn-primary btn-lg disabled:opacity-50">
               <span aria-hidden>▶ </span>{t.lobby.start}
             </button>

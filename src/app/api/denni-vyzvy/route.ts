@@ -116,7 +116,7 @@ async function snapshot(userId: string) {
     if (!SOURCES.includes(e.source as (typeof SOURCES)[number])) continue;
     activityDays.add(dayKey(e.createdAt));
     if (e.source === "test") tests++;
-    if (e.source === "game") games++;
+    if (e.source === "game" || e.source === "live-verified" || e.source === "daily-verified") games++;
     if (e.createdAt >= weekStart) {
       weekDays.add(dayKey(e.createdAt));
       if (e.source !== "escape") weekXp += e.amount;

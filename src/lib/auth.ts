@@ -3,6 +3,7 @@ import NextAuth, { type NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
+import { createHash } from "node:crypto";
 
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { prisma } from "@/lib/prisma";
@@ -21,8 +22,9 @@ function authSecret(): string | undefined {
   return process.env.AUTH_SECRET;
 }
 
-// Jak často se role v přihlašovacím tokenu ověřuje proti databázi.
-const ROLE_REFRESH_MS = 10 * 60 * 1000;
+function credentialVersion(email: string | null, passwordHash: string | null) {
+  return createHash("sha256").update(JSON.stringify([email, passwordHash])).digest("base64url");
+}
 
 const authConfig: NextAuthConfig = {
   adapter: PrismaAdapter(prisma),
@@ -38,10 +40,10 @@ const authConfig: NextAuthConfig = {
         password: { label: "Heslo", type: "password" },
       },
       authorize: async (credentials, request) => {
-        const email = credentials?.email as string | undefined;
-        const password = credentials?.password as string | undefined;
+        const email = typeof credentials?.email === "string" ? credentials.email.trim().toLowerCase() : "";
+        const password = typeof credentials?.password === "string" ? credentials.password : "";
 
-        if (!email || !password) return null;
+        if (!email || email.length > 200 || !password || password.length > 200) return null;
         // 10 pokusů za 15 minut na jeden účet (proti hádání hesla).
         if (!(await withinRateLimit(`login:${email.trim().toLowerCase()}`, 10, 900))) return null;
         // A 30 pokusů za 15 minut z jedné IP adresy (proti zkoušení hesel napříč účty).
@@ -62,6 +64,7 @@ const authConfig: NextAuthConfig = {
           name: user.name,
           email: user.email,
           role: user.role,
+          credentialVersion: credentialVersion(user.email, user.password),
         };
       },
     }),
@@ -69,14 +72,19 @@ const authConfig: NextAuthConfig = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as { role?: string }).role;
-        token.roleCheckedAt = Date.now();
-      } else if (token.sub && Date.now() - ((token.roleCheckedAt as number | undefined) ?? 0) > ROLE_REFRESH_MS) {
-        // Role se v tokenu obnovuje z databáze, aby se změna (nebo odebrání) role projevila bez odhlášení.
-        const fresh = await prisma.user.findUnique({ where: { id: token.sub }, select: { role: true } }).catch(() => undefined);
-        if (fresh === null) return null;
-        if (fresh) token.role = fresh.role;
-        token.roleCheckedAt = Date.now();
+        const signedIn = user as { role?: string; credentialVersion?: string };
+        if (!signedIn.credentialVersion) return null;
+        token.role = signedIn.role;
+        token.credentialVersion = signedIn.credentialVersion;
+      } else {
+        if (!token.sub || typeof token.credentialVersion !== "string") return null;
+        // Check the current credentials and role before accepting a signed session.
+        const fresh = await prisma.user.findUnique({
+          where: { id: token.sub },
+          select: { role: true, email: true, password: true },
+        }).catch(() => null);
+        if (!fresh || token.credentialVersion !== credentialVersion(fresh.email, fresh.password)) return null;
+        token.role = fresh.role;
       }
       return token;
     },

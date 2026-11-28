@@ -1,10 +1,11 @@
+import { sameOriginMutation } from "@/lib/request-origin";
 import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { awardPoints } from "@/lib/points";
+import { awardActivityXp, lockActivityUser } from "@/lib/activity-xp";
+import { rankingAlias } from "@/lib/ranking-alias";
 import { DAY_MS, dayKey } from "@/lib/gamify";
-import { DAILY_ACTIVITY_XP_CAP } from "@/lib/progression";
 import { SUBJECTS } from "@/lib/taxonomy";
 import {
   FLAWLESS_BONUS_XP,
@@ -60,7 +61,7 @@ async function pickIds(date: string, subject: string | null, difficulty: number)
   const hit = cache.get(key);
   if (hit) return hit;
   const rows = await prisma.question.findMany({
-    where: subject ? { course: { subject: subject as never } } : undefined,
+    where: { course: { published: true, ...(subject ? { subject: subject as never } : {}) }, answers: { isEmpty: true } },
     select: { id: true, difficulty: true },
     orderBy: { id: "asc" },
     take: 20000,
@@ -135,11 +136,11 @@ const pointsOf = (s: DayState) => (s.gainedPoints > 0 ? s.gainedPoints : summari
 async function board(date: string, userId: string | null) {
   const rows = await prisma.idleState.findMany({
     where: { game: GAME, data: { path: ["date"], equals: date } },
-    select: { userId: true, data: true, user: { select: { name: true } } },
+    select: { userId: true, data: true },
     take: 400,
   });
   const entries = rows
-    .map((r) => ({ userId: r.userId, name: r.user.name ?? "?", state: normalize(r.data, date) }))
+    .map((r) => ({ userId: r.userId, name: rankingAlias(r.userId), state: normalize(r.data, date) }))
     .filter((e) => e.state.finishedAt)
     .map((e) => ({
       userId: e.userId,
@@ -158,14 +159,14 @@ async function board(date: string, userId: string | null) {
   };
 }
 
-async function load(userId: string, date: string) {
-  const row = await prisma.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } });
+async function load(userId: string, date: string, db: Prisma.TransactionClient = prisma) {
+  const row = await db.idleState.findUnique({ where: { userId_game: { userId, game: GAME } } });
   return normalize(row?.data, date);
 }
 
-async function save(userId: string, state: DayState) {
+async function save(userId: string, state: DayState, db: Prisma.TransactionClient) {
   const json = state as unknown as Prisma.InputJsonValue;
-  await prisma.idleState.upsert({ where: { userId_game: { userId, game: GAME } }, create: { userId, game: GAME, data: json }, update: { data: json } });
+  await db.idleState.upsert({ where: { userId_game: { userId, game: GAME } }, create: { userId, game: GAME, data: json }, update: { data: json } });
 }
 
 const msLeftFor = (s: DayState, now: number) => (s.timed && s.lastAt ? Math.max(0, TIMED_SECONDS * 1000 - (now - s.lastAt)) : null);
@@ -206,6 +207,7 @@ export async function GET() {
 // POST { action: "start", subject, difficulty, timed }: zahájí dnešní kvíz s vybraným nastavením.
 // POST { id, choice }: odpověď na další nezodpovězenou otázku dne (choice -1 = vypršel čas).
 export async function POST(request: Request) {
+  if (!sameOriginMutation(request)) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: "login-required" }, { status: 401 });
@@ -217,13 +219,18 @@ export async function POST(request: Request) {
     const subject = typeof body.subject === "string" && SUBJECT_VALUES.has(body.subject) ? body.subject : null;
     const config: QuizConfig = { subject, difficulty: clampDifficulty(body.difficulty), timed: body.timed === true };
     try {
-      const current = await load(userId, date);
-      if (current.qIds.length > 0 || current.finishedAt) return NextResponse.json({ error: "already-started" }, { status: 409 });
       const ids = await pickIds(date, config.subject, config.difficulty);
       if (ids.length < SIZE) return NextResponse.json({ error: "not-enough" }, { status: 422 });
       const questions = await questionsByIds(ids);
       if (questions.length < SIZE) return NextResponse.json({ error: "unavailable" }, { status: 503 });
-      await save(userId, { ...emptyState(date), ...config, qIds: ids, startedAt: now, lastAt: now });
+      const started = await prisma.$transaction(async (tx) => {
+        await lockActivityUser(tx, userId);
+        const current = await load(userId, date, tx);
+        if (current.qIds.length > 0 || current.finishedAt) return false;
+        await save(userId, { ...emptyState(date), ...config, qIds: ids, startedAt: now, lastAt: now }, tx);
+        return true;
+      });
+      if (!started) return NextResponse.json({ error: "already-started" }, { status: 409 });
       return NextResponse.json({ questions, config, timedSeconds: TIMED_SECONDS, msLeft: config.timed ? TIMED_SECONDS * 1000 : null });
     } catch {
       return NextResponse.json({ error: "unavailable" }, { status: 503 });
@@ -234,61 +241,62 @@ export async function POST(request: Request) {
   if (typeof body.id !== "string" || !Number.isFinite(choice) || choice < -1 || choice > 3) return NextResponse.json({ error: "bad-request" }, { status: 400 });
 
   try {
-    // Stav a otázka se načtou paralelně (oba čtení jsou nezávislá).
-    const [state, q] = await Promise.all([
-      load(userId, date),
-      prisma.question.findUnique({ where: { id: body.id }, select: { correctIndex: true, explanation: true } }),
-    ]);
-    const index = state.answers.length;
-    if (state.qIds.length === 0 || state.finishedAt || index >= SIZE || state.qIds[index] !== body.id) return NextResponse.json({ error: "out-of-order" }, { status: 409 });
-    if (!q) return NextResponse.json({ error: "unavailable" }, { status: 503 });
+    const questionId = body.id;
+    const result = await prisma.$transaction(async (tx) => {
+      await lockActivityUser(tx, userId);
+      const [state, q] = await Promise.all([
+        load(userId, date, tx),
+        tx.question.findUnique({ where: { id: questionId }, select: { correctIndex: true, explanation: true } }),
+      ]);
+      const index = state.answers.length;
+      if (state.qIds.length === 0 || state.finishedAt || index >= SIZE || state.qIds[index] !== questionId) return NextResponse.json({ error: "out-of-order" }, { status: 409 });
+      if (!q) return NextResponse.json({ error: "unavailable" }, { status: 503 });
 
-    const late = state.timed && now - state.lastAt > TIMED_SECONDS * 1000 + TIMED_GRACE_MS;
-    const correct = choice >= 0 && !late && choice === q.correctIndex;
-    const answers = [...state.answers, { id: body.id, choice, correct }];
-    const before = summarize(state.answers, configOf(state));
-    const after = summarize(answers, configOf(state));
-    const next: DayState = { ...state, answers, lastAt: now };
+      const late = state.timed && now - state.lastAt > TIMED_SECONDS * 1000 + TIMED_GRACE_MS;
+      const correct = choice >= 0 && !late && choice === q.correctIndex;
+      const answers = [...state.answers, { id: questionId, choice, correct }];
+      const before = summarize(state.answers, configOf(state));
+      const after = summarize(answers, configOf(state));
+      const next: DayState = { ...state, answers, lastAt: now };
 
-    // Body za tuto odpověď včetně případného bonusu za bezchybné kolo; XP stejně.
-    const gainedPoints = after.points - before.points;
-    let gainedXp = correct ? xpFor(state.difficulty) : 0;
-    const finished = answers.length >= SIZE;
-    if (finished) {
-      next.finishedAt = now;
-      if (after.flawless) gainedXp += FLAWLESS_BONUS_XP;
-    }
+      // Body za tuto odpověď včetně případného bonusu za bezchybné kolo; XP stejně.
+      const gainedPoints = after.points - before.points;
+      let gainedXp = correct ? xpFor(state.difficulty) : 0;
+      const finished = answers.length >= SIZE;
+      if (finished) {
+        next.finishedAt = now;
+        if (after.flawless) gainedXp += FLAWLESS_BONUS_XP;
+      }
 
-    if (gainedXp > 0) {
-      const startOfDay = new Date(now);
-      startOfDay.setUTCHours(0, 0, 0, 0);
-      const used = await prisma.xpEvent.aggregate({ where: { userId, source: { in: ["game", "test"] }, createdAt: { gte: startOfDay } }, _sum: { amount: true } });
-      gainedXp = Math.max(0, Math.min(gainedXp, DAILY_ACTIVITY_XP_CAP - (used._sum.amount ?? 0)));
-      if (gainedXp > 0) await prisma.xpEvent.create({ data: { userId, amount: gainedXp, source: "game" } });
-    }
-    if (gainedPoints > 0) await awardPoints(userId, gainedPoints, "Denní kvíz");
-    next.xp = state.xp + gainedXp;
-    next.gainedPoints = state.gainedPoints + gainedPoints;
-    await save(userId, next);
+      if (gainedXp > 0) gainedXp = await awardActivityXp(tx, userId, gainedXp, "daily-verified", now);
+      if (gainedPoints > 0) {
+        await tx.pointTransaction.create({ data: { userId, amount: gainedPoints, reason: "Denní kvíz" } });
+        await tx.user.update({ where: { id: userId }, data: { points: { increment: gainedPoints } } });
+      }
+      next.xp = state.xp + gainedXp;
+      next.gainedPoints = state.gainedPoints + gainedPoints;
+      await save(userId, next, tx);
 
-    return NextResponse.json({
-      correct,
-      timedOut: choice === -1 || late,
-      correctIndex: q.correctIndex,
-      explanation: q.explanation,
-      finished,
-      score: after.score,
-      streak: after.streak,
-      bestStreak: after.best,
-      flawless: finished && after.flawless,
-      gainedXp,
-      gainedPoints,
-      totalXp: next.xp,
-      totalPoints: next.gainedPoints,
-      seconds: secondsOf(next),
-      msLeft: finished || !state.timed ? null : TIMED_SECONDS * 1000,
-      ...(finished ? await board(date, userId) : {}),
+      return {
+        correct,
+        timedOut: choice === -1 || late,
+        correctIndex: q.correctIndex,
+        explanation: q.explanation,
+        finished,
+        score: after.score,
+        streak: after.streak,
+        bestStreak: after.best,
+        flawless: finished && after.flawless,
+        gainedXp,
+        gainedPoints,
+        totalXp: next.xp,
+        totalPoints: next.gainedPoints,
+        seconds: secondsOf(next),
+        msLeft: finished || !state.timed ? null : TIMED_SECONDS * 1000,
+      };
     });
+    if (result instanceof NextResponse) return result;
+    return NextResponse.json({ ...result, ...(result.finished ? await board(date, userId) : {}) });
   } catch {
     return NextResponse.json({ error: "unavailable" }, { status: 503 });
   }

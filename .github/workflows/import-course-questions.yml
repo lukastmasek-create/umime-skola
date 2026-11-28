@@ -4,13 +4,11 @@ on:
   push:
     branches: [main]
     paths:
-      - ".github/workflows/import-course-questions.yml"
       - "prisma/build-courses-sql.cjs"
       - "prisma/content/**"
       - "prisma/content-extra/**"
       - "prisma/sql/courses-*.sql"
       - "prisma/sql/subject-*.sql"
-      - "scripts/import-course-sql.cjs"
   workflow_dispatch:
 
 permissions:
@@ -34,6 +32,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Audit authored course questions
+        run: node scripts/audit-course-questions.cjs
 
       - name: Generate current course SQL
         run: node prisma/build-courses-sql.cjs

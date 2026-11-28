@@ -3,7 +3,7 @@ import { handle, readJson } from "@/lib/live/http";
 import { LiveError } from "@/lib/live/service";
 import { withinRateLimit } from "@/lib/rate-limit";
 import { MAX_MESSAGE } from "@/lib/teams/logic";
-import { requireAssigned, requireMember, requireUserId } from "@/lib/teams/server";
+import { loadAssignment, requireAssigned, requireMember, requireUserId } from "@/lib/teams/server";
 
 export const dynamic = "force-dynamic";
 type Ctx = RouteContext<"/api/tymy/[id]/chat">;
@@ -16,7 +16,10 @@ export async function GET(request: Request, ctx: Ctx) {
     const me = await requireMember(id, userId);
     const url = new URL(request.url);
     const assignmentId = url.searchParams.get("assignmentId") || null;
-    if (assignmentId) await requireAssigned(assignmentId, me);
+    if (assignmentId) {
+      await loadAssignment(id, assignmentId);
+      await requireAssigned(assignmentId, me);
+    }
     const rows = await prisma.teamMessage.findMany({
       where: { teamId: id, assignmentId },
       orderBy: { createdAt: "desc" },
@@ -55,8 +58,10 @@ export async function POST(request: Request, ctx: Ctx) {
     if (!text) throw new LiveError("empty");
     if (!(await withinRateLimit(`team-chat:${userId}`, 30, 60))) throw new LiveError("rate-limited", 429);
     const assignmentId = typeof body.assignmentId === "string" && body.assignmentId ? body.assignmentId : null;
-    if (assignmentId && !(await prisma.assignment.findFirst({ where: { id: assignmentId, teamId: id }, select: { id: true } }))) throw new LiveError("assignment-not-found", 404);
-    if (assignmentId) await requireAssigned(assignmentId, me);
+    if (assignmentId) {
+      await loadAssignment(id, assignmentId);
+      await requireAssigned(assignmentId, me);
+    }
     await prisma.teamMessage.create({ data: { teamId: id, assignmentId, userId, text } });
     return { ok: true };
   });

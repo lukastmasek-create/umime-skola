@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useState, type CSSProperties } from "react";
 import Link from "next/link";
+import { WeakSpots } from "@/components/WeakSpots";
 import { Icon } from "@/components/Icon";
 import { tr8, type Locale } from "@/i18n/config";
 import { gradeLabel } from "@/i18n/grades";
@@ -112,11 +113,15 @@ export function CourseMap({ locale, subjects }: { locale: Locale; subjects: MapS
   const started = routes.flatMap(({ subject, checkpoints }) =>
     checkpoints.filter(({ status }) => status === "started").map(({ course }) => ({ subject, course })),
   );
-  started.sort((a, b) => progress[b.course.id].last.localeCompare(progress[a.course.id].last));
+  started.sort((a, b) => {
+    const timestamp = (id: string) => progress[id].lastAt ?? (Date.parse(progress[id].last) || 0);
+    return timestamp(b.course.id) - timestamp(a.course.id);
+  });
   const nextRoute = routes.find(({ touched, finished, checkpoints }) => touched && finished < checkpoints.length)
     ?? routes.find(({ finished, checkpoints }) => finished < checkpoints.length);
   const nextCourse = nextRoute?.checkpoints.find(({ status }) => status === "new")?.course;
   const next = started[0] ?? (nextRoute && nextCourse ? { subject: nextRoute.subject, course: nextCourse } : undefined);
+  const resumeDifficulty = next && progress[next.course.id]?.difficulty;
   const visibleRoutes = routes.filter(({ checkpoints }) => statusFilter === "all" || checkpoints.some(({ status }) => status === statusFilter));
   const active = selection === undefined
     ? (visibleRoutes.find(({ subject }) => subject.value === next?.subject.value) ?? visibleRoutes[0])?.subject.value
@@ -137,7 +142,7 @@ export function CourseMap({ locale, subjects }: { locale: Locale; subjects: MapS
               <p className={styles.eyebrow}>{started.length > 0 ? t.statusStarted : t.recommended}</p>
               <p className={styles.nextTitle}>{next.course.title}</p>
               <p className={styles.nextSubject}>{next.subject.label}</p>
-              <Link href={href(next.course)} className={styles.continue}>
+              <Link href={resumeDifficulty ? `${href(next.course)}/test/${resumeDifficulty}` : href(next.course)} className={styles.continue}>
                 {continueLabel[locale]} <span aria-hidden="true">→</span>
               </Link>
             </>
@@ -145,6 +150,8 @@ export function CourseMap({ locale, subjects }: { locale: Locale; subjects: MapS
         </div>
         <Campfire locale={locale} data={data} />
       </div>
+
+      {data?.loggedIn && <WeakSpots locale={locale} />}
 
       {routes.length > 0 && (
         <ul className={`${styles.legend} refresh-map-filters`}>

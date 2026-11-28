@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { validNewPassword } from "@/lib/credentials";
 
 import { prisma } from "@/lib/prisma";
 import { clientIp, withinRateLimit } from "@/lib/rate-limit";
@@ -42,8 +43,8 @@ async function register(request: Request) {
     return NextResponse.json({ error: "Zadej platný e-mail." }, { status: 400 });
   }
   // Stejná pravidla jako při změně hesla v účtu (src/app/api/ucet/heslo).
-  if (password.length < 8 || password.length > 200) {
-    return NextResponse.json({ error: "Heslo musí mít 8 až 200 znaků." }, { status: 400 });
+  if (!validNewPassword(password)) {
+    return NextResponse.json({ error: "Heslo musí mít alespoň 8 znaků a nejvýše 72 bajtů (některé znaky zabírají více bajtů)." }, { status: 400 });
   }
 
   // Kontrola bez ohledu na velikost písmen, aby nevznikly duplicitní účty (např. Jan@x.cz a jan@x.cz).

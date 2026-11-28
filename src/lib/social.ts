@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { ACTIVITY_SOURCES, DAY_MS, dayKey, startOfUtcWeek } from "@/lib/gamify";
+import { rankedActivitySources } from "@/lib/activity-xp";
+import { DAY_MS, dayKey, startOfUtcWeek } from "@/lib/gamify";
 
 export const GROUP_WEEKLY_XP_PER_MEMBER = 100;
 export const MAX_GROUP_MEMBERS = 40;
@@ -11,14 +12,14 @@ export const LEAGUE_PROMOTE = 5;
 export const LEAGUE_DEMOTE = 5;
 export const LEAGUE_TIERS = 5;
 
-// XP za učení a hraní (bez odměn za výzvy) v časovém okně pro dané hráče.
+// XP ověřené na serveru pro soutěžní režimy v časovém okně pro dané hráče.
 export async function activityXp(userIds: string[], from: Date, to?: Date): Promise<Map<string, number>> {
   if (userIds.length === 0) return new Map();
   const rows = await prisma.xpEvent.groupBy({
     by: ["userId"],
     where: {
       userId: { in: userIds },
-      source: { in: [...ACTIVITY_SOURCES] },
+      source: { in: rankedActivitySources },
       createdAt: to ? { gte: from, lt: to } : { gte: from },
     },
     _sum: { amount: true },

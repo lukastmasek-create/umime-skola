@@ -5,7 +5,7 @@
 export const DAY_MS = 24 * 60 * 60 * 1000;
 
 // Zdroje XP, které se počítají jako aktivita (učení nebo hraní).
-export const ACTIVITY_SOURCES = ["game", "test", "escape"] as const;
+export const ACTIVITY_SOURCES = ["game", "test", "escape", "live-verified", "daily-verified"] as const;
 
 export type QuestId = "learn" | "test" | "escape" | "idle";
 

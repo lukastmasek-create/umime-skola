@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { DAILY_ACTIVITY_XP_CAP, MAX_XP_PER_CLAIM } from "@/lib/progression";
+import { awardActivityXp, lockActivityUser } from "@/lib/activity-xp";
 import {
   applyChest,
   chestOptions,
@@ -31,6 +31,7 @@ export class LiveError extends Error {
   }
 }
 
+const MAX_PLAYERS = 100;
 const DAY = 24 * 60 * 60 * 1000;
 
 const token = () => randomBytes(18).toString("base64url");
@@ -48,10 +49,10 @@ function roomParts(room: RoomRow) {
   };
 }
 
-async function loadRoom(pin: string): Promise<RoomRow> {
+async function loadRoom(pin: string, db: Prisma.TransactionClient = prisma): Promise<RoomRow> {
   if (!/^\d{6}$/.test(pin)) throw new LiveError("room-not-found", 404);
-  const room = await prisma.liveRoom.findUnique({ where: { pin } });
-  if (!room) throw new LiveError("room-not-found", 404);
+  const room = await db.liveRoom.findUnique({ where: { pin } });
+  if (!room || Date.now() - room.createdAt.getTime() >= DAY) throw new LiveError("room-not-found", 404);
   return room;
 }
 
@@ -98,26 +99,29 @@ export async function joinRoom(input: {
   userId: string | null;
   avatar: string | null;
 }): Promise<{ playerId: string; token: string; name: string }> {
-  const room = await loadRoom(input.pin);
-  if (room.status === "ENDED") throw new LiveError("room-ended", 409);
   const name = cleanName(input.name);
   if (!name) throw new LiveError("name-required");
 
-  if (input.userId) {
-    const existing = await prisma.livePlayer.findFirst({ where: { roomId: room.id, userId: input.userId } });
-    if (existing) return { playerId: existing.id, token: existing.token, name: existing.name };
-  }
-  // Do hry na přežití se nedá připojit za běhu, hráč by přišel o životy za kola, která nehrál.
-  if (room.mode === "SURVIVAL" && room.status !== "LOBBY") throw new LiveError("game-started", 409);
-  const t = token();
   try {
-    const p = await prisma.livePlayer.create({
-      data: { roomId: room.id, name, token: t, userId: input.userId, avatar: input.avatar },
+    return await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "LiveRoom" WHERE "pin" = ${input.pin} FOR UPDATE`;
+      const room = await loadRoom(input.pin, tx);
+      if (room.status === "ENDED" || (room.endsAt && room.endsAt.getTime() <= Date.now())) throw new LiveError("room-ended", 409);
+      if (input.userId) {
+        const existing = await tx.livePlayer.findFirst({ where: { roomId: room.id, userId: input.userId } });
+        if (existing) return { playerId: existing.id, token: existing.token, name: existing.name };
+      }
+      if (roomParts(room).settings.joinLocked) throw new LiveError("room-locked", 409);
+      if (room.mode === "SURVIVAL" && room.status !== "LOBBY") throw new LiveError("game-started", 409);
+      if ((await tx.livePlayer.count({ where: { roomId: room.id } })) >= MAX_PLAYERS) throw new LiveError("room-full", 409);
+      const player = await tx.livePlayer.create({
+        data: { roomId: room.id, name, token: token(), userId: input.userId, avatar: input.avatar },
+      });
+      return { playerId: player.id, token: player.token, name: player.name };
     });
-    return { playerId: p.id, token: t, name: p.name };
-  } catch (e) {
-    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") throw new LiveError("name-taken", 409);
-    throw e;
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") throw new LiveError("name-taken", 409);
+    throw error;
   }
 }
 
@@ -125,28 +129,23 @@ export async function joinRoom(input: {
 
 /** Přihlášenému hráči po konci hry připíše XP a body (jednou; nárok se bere atomicky). */
 async function rewardPlayer(player: { id: string; userId: string | null; rewardXp: number | null }, rank: number): Promise<{ xp: number; points: number } | null> {
-  if (!player.userId) return null;
-  if (player.rewardXp !== null) return null;
-  const claimed = await prisma.livePlayer.updateMany({ where: { id: player.id, rewardXp: null }, data: { rewardXp: 0, rewardPoints: 0 } });
-  if (claimed.count === 0) return null;
-  const correct = await prisma.liveAnswer.count({ where: { playerId: player.id, correct: true } });
-  const startOfDay = new Date();
-  startOfDay.setUTCHours(0, 0, 0, 0);
-  const used = await prisma.xpEvent.aggregate({ where: { userId: player.userId, source: { in: ["game", "test"] }, createdAt: { gte: startOfDay } }, _sum: { amount: true } });
-  const remaining = Math.max(0, DAILY_ACTIVITY_XP_CAP - (used._sum.amount ?? 0));
-  const xp = Math.min(MAX_XP_PER_CLAIM, remaining, 10 + correct * 3);
-  const points = correct * 2 + (rank === 1 ? 20 : 0);
-  await prisma.$transaction([
-    ...(xp > 0 ? [prisma.xpEvent.create({ data: { userId: player.userId, amount: xp, source: "game" } })] : []),
-    ...(points > 0
-      ? [
-          prisma.pointTransaction.create({ data: { userId: player.userId, amount: points, reason: "Živá hra" } }),
-          prisma.user.update({ where: { id: player.userId }, data: { points: { increment: points } } }),
-        ]
-      : []),
-    prisma.livePlayer.update({ where: { id: player.id }, data: { rewardXp: xp, rewardPoints: points } }),
-  ]);
-  return { xp, points };
+  const userId = player.userId;
+  if (!userId || player.rewardXp !== null) return null;
+  return prisma.$transaction(async (tx) => {
+    await lockActivityUser(tx, userId);
+    const claimed = await tx.livePlayer.updateMany({ where: { id: player.id, rewardXp: null }, data: { rewardXp: 0, rewardPoints: 0 } });
+    if (claimed.count === 0) return null;
+    const answers = await tx.liveAnswer.findMany({ where: { playerId: player.id }, select: { correct: true } });
+    const correct = answers.filter((answer) => answer.correct).length;
+    const xp = answers.length > 0 ? await awardActivityXp(tx, userId, 10 + correct * 3, "live-verified") : 0;
+    const points = answers.length > 0 ? correct * 2 + (rank === 1 ? 20 : 0) : 0;
+    if (points > 0) {
+      await tx.pointTransaction.create({ data: { userId, amount: points, reason: "Živá hra" } });
+      await tx.user.update({ where: { id: userId }, data: { points: { increment: points } } });
+    }
+    await tx.livePlayer.update({ where: { id: player.id }, data: { rewardXp: xp, rewardPoints: points } });
+    return { xp, points };
+  });
 }
 
 // --- Stav pro polling ---
@@ -156,9 +155,11 @@ type Creds = { hostSecret?: string | null; playerToken?: string | null };
 export async function getView(pin: string, creds: Creds, now = Date.now()): Promise<LiveView> {
   const room = await loadRoom(pin);
   const isHost = !!creds.hostSecret && creds.hostSecret === room.hostSecret;
-  const players = await prisma.livePlayer.findMany({ where: { roomId: room.id }, orderBy: { joinedAt: "asc" } });
-  const meRow = !isHost && creds.playerToken ? players.find((p) => p.token === creds.playerToken) : undefined;
+  const meRow = !isHost && creds.playerToken
+    ? await prisma.livePlayer.findFirst({ where: { roomId: room.id, token: creds.playerToken } })
+    : null;
   if (!isHost && !meRow) throw new LiveError("unauthorized", 401);
+  const players = await prisma.livePlayer.findMany({ where: { roomId: room.id }, orderBy: { joinedAt: "asc" } });
 
   const { mode, status, questions, settings, startedAt, endsAt } = roomParts(room);
   const sync = isSyncMode(mode);
@@ -381,6 +382,19 @@ export async function openChest(pin: string, playerToken: string, index: unknown
 }
 
 // --- Řízení hry učitelem ---
+
+export async function setRoomJoinLock(pin: string, hostSecret: string, locked: boolean) {
+  await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT "id" FROM "LiveRoom" WHERE "pin" = ${pin} FOR UPDATE`;
+    const room = await loadRoom(pin, tx);
+    if (!hostSecret || hostSecret !== room.hostSecret) throw new LiveError("unauthorized", 401);
+    if (room.status === "ENDED") throw new LiveError("room-ended", 409);
+    await tx.liveRoom.update({
+      where: { id: room.id },
+      data: { settings: { ...roomParts(room).settings, joinLocked: locked } },
+    });
+  });
+}
 
 export async function advance(pin: string, hostSecret: string, action: "next" | "end", now = Date.now()): Promise<void> {
   const room = await loadRoom(pin);

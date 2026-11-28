@@ -1,4 +1,4 @@
-import { avatarIcons } from "@/lib/avatar-icon";
+import { rankingAlias } from "@/lib/ranking-alias";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -57,12 +57,6 @@ export async function GET() {
     const cohort = cohortOf(userId, peers.map((p) => p.userId), entry.weekKey);
     const xp = await activityXp(cohort, startOfUtcWeek(now));
     const ranked = rankCohort(cohort, xp);
-    const users = await prisma.user.findMany({
-      where: { id: { in: cohort } },
-      select: { id: true, name: true, avatar: true },
-    });
-    const byId = new Map(users.map((u) => [u.id, u]));
-    const icons = await avatarIcons(cohort);
     const rank = ranked.findIndex((r) => r.userId === userId);
     return NextResponse.json({
       loggedIn: true,
@@ -74,12 +68,12 @@ export async function GET() {
       demote: ranked.length >= 10 && entry.tier > 0 ? LEAGUE_DEMOTE : 0,
       endsAt: new Date(startOfUtcWeek(now).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       rows: ranked.map((r) => ({
-        id: r.userId,
+        id: rankingAlias(r.userId),
         me: r.userId === userId,
         xp: r.xp,
-        name: byId.get(r.userId)?.name ?? null,
-        avatar: byId.get(r.userId)?.avatar ?? null,
-        icon: icons[r.userId] ?? null,
+        name: rankingAlias(r.userId),
+        avatar: null,
+        icon: null,
       })),
     });
   } catch {
